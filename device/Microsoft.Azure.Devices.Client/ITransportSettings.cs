@@ -3,8 +3,11 @@
 
 namespace Microsoft.Azure.Devices.Client
 {
-    class ClientApiVersionHelper
+    /// <summary>
+    /// Interface used to define various transport-specific settings for DeviceClient
+    /// </summary>
+    public interface ITransportSettings
     {
-        public const string ApiVersionQueryString = "api-version=2016-02-03";
+        TransportType GetTransportType();
     }
 }
