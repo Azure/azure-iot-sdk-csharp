@@ -46,11 +46,44 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        readonly RetryPolicy retryPolicy;
-        public RetryDelegatingHandler(IDelegatingHandler innerHandler)
-            :base(innerHandler)
+        class IotHubRuntimeOperationRetryStrategy : RetryStrategy
         {
-            this.retryPolicy = new RetryPolicy(new IotHubTransientErrorIgnoreStrategy(), RetryCount, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100));
+            readonly ShouldRetry defaultRetryStrategy;
+            readonly ShouldRetry throttlingRetryStrategy;
+
+            public IotHubRuntimeOperationRetryStrategy(int retryCount)
+                : base(null, false)
+            {
+                this.defaultRetryStrategy = new ExponentialBackoff(retryCount, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100)).GetShouldRetry();
+                this.throttlingRetryStrategy = new ExponentialBackoff(retryCount, TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(60), TimeSpan.FromSeconds(5)).GetShouldRetry();
+            }
+
+            public override ShouldRetry GetShouldRetry()
+            {
+                return this.ShouldRetry;
+            }
+            bool ShouldRetry(int currentRetryCount, Exception lastException, out TimeSpan retryInterval)
+            {
+                if (IsThrottling(lastException))
+                {
+                    return this.throttlingRetryStrategy(currentRetryCount, lastException, out retryInterval);
+                }
+                return this.defaultRetryStrategy(currentRetryCount, lastException, out retryInterval);
+            }
+
+            static bool IsThrottling(Exception lastException)
+            {
+                //hack - should be fixed in one of next releases - we should rely on exception type only
+                return ErrorDelegatingHandler.IsThrottling(lastException);
+            }
+        }
+
+        readonly RetryPolicy retryPolicy;
+
+        public RetryDelegatingHandler(IPipelineContext context)
+            : base(context)
+        {
+            this.retryPolicy = new RetryPolicy(new IotHubTransientErrorIgnoreStrategy(), new IotHubRuntimeOperationRetryStrategy(RetryCount));
         }
 
         public override async Task SendEventAsync(Message message, CancellationToken cancellationToken)

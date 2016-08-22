@@ -54,7 +54,9 @@
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="$(DeviceClientDir)\DotNetHelpers.cs"> <Link>DotNetHelpers.cs</Link> </Compile>
+    <Compile Include="$(DeviceClientDir)\DotNetHelpers.cs">
+      <Link>DotNetHelpers.cs</Link>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources.cs" />
     <Compile Include="TraceEventType.cs" />

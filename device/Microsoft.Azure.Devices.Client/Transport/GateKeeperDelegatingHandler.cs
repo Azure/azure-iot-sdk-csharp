@@ -19,9 +19,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
         volatile TaskCompletionSource<object> openTaskCompletionSource;
         readonly object thisLock;
 
-        public GateKeeperDelegatingHandler(IDelegatingHandler innerHandler)
+        public GateKeeperDelegatingHandler(IPipelineContext context)
+            : base(context)
         {
-            this.InnerHandler = innerHandler;
             this.thisLock = new object();
             this.openTaskCompletionSource = new TaskCompletionSource<object>(this);
         }

@@ -23,9 +23,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
     using Microsoft.WindowsAzure.Storage.Blob;
 #endif
 
-    sealed class HttpTransportHandler : DefaultDelegatingHandler
+    sealed class HttpTransportHandler : TransportHandler
     {
-        readonly Http1TransportSettings transportSettings;
         static readonly TimeSpan DefaultOperationTimeout = TimeSpan.FromSeconds(60);
         static readonly IDictionary<string, string> MapMessageProperties2HttpHeaders = new Dictionary<string, string>
             {
@@ -43,6 +42,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
 #if WINDOWS_UWP || PCL
         internal HttpTransportHandler(IotHubConnectionString iotHubConnectionString)
+            : base(null, new Http1TransportSettings())
         {
             this.deviceId = iotHubConnectionString.DeviceId;
             this.httpClientHelper = new HttpClientHelper(
@@ -54,16 +54,21 @@ namespace Microsoft.Azure.Devices.Client.Transport
         }
 #else
         internal HttpTransportHandler(IotHubConnectionString iotHubConnectionString)
-            : this(iotHubConnectionString, new Http1TransportSettings())
+            : this(null, iotHubConnectionString)
+        {
+        }
+
+        internal HttpTransportHandler(IPipelineContext context, IotHubConnectionString iotHubConnectionString)
+            : this(context, iotHubConnectionString, new Http1TransportSettings())
         {
         }
 #endif
 
 #if WINDOWS_UWP || PCL
-        internal HttpTransportHandler(IotHubConnectionString iotHubConnectionString, Http1TransportSettings transportSettings)
-            : this(iotHubConnectionString)
+        internal HttpTransportHandler(IPipelineContext context, IotHubConnectionString iotHubConnectionString, Http1TransportSettings transportSettings)
+            : base(context, transportSettings)
         {
-            this.transportSettings = transportSettings;
+            this.TransportSettings = transportSettings;
             this.deviceId = iotHubConnectionString.DeviceId;
             this.httpClientHelper = new HttpClientHelper(
                 iotHubConnectionString.HttpsEndpoint,
@@ -73,9 +78,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 null);
         }
 #else
-        internal HttpTransportHandler(IotHubConnectionString iotHubConnectionString, Http1TransportSettings transportSettings)
+        internal HttpTransportHandler(IPipelineContext context, IotHubConnectionString iotHubConnectionString, Http1TransportSettings transportSettings)
+            :base(context, transportSettings)
         {
-            this.transportSettings = transportSettings;
             this.deviceId = iotHubConnectionString.DeviceId;
             this.httpClientHelper = new HttpClientHelper(
                 iotHubConnectionString.HttpsEndpoint,
@@ -83,46 +88,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 ExceptionHandlingHelper.GetDefaultErrorMapping(),
                 DefaultOperationTimeout,
                 null,
-                this.transportSettings.ClientCertificate);
+                transportSettings.ClientCertificate);
         }
 #endif
-        /// <summary>
-        /// Create a DeviceClient from individual parameters
-        /// </summary>
-        /// <param name="hostname">The fully-qualified DNS hostname of IoT Hub</param>
-        /// <param name="authMethod">The authentication method that is used</param>
-        /// <returns>DeviceClient</returns>
-        public static HttpTransportHandler Create(string hostname, IAuthenticationMethod authMethod)
-        {
-            if (hostname == null)
-            {
-                throw new ArgumentNullException(nameof(hostname));
-            }
-
-            if (authMethod == null)
-            {
-                throw new ArgumentNullException(nameof(authMethod));
-            }
-
-            IotHubConnectionStringBuilder connectionStringBuilder = IotHubConnectionStringBuilder.Create(hostname, authMethod);
-            return CreateFromConnectionString(connectionStringBuilder.ToString());
-        }
-
-        /// <summary>
-        /// Create DeviceClient from the specified connection string
-        /// </summary>
-        /// <param name="connectionString">Connection string for the IoT hub</param>
-        /// <returns>DeviceClient</returns>
-        public static HttpTransportHandler CreateFromConnectionString(string connectionString)
-        {
-            if (connectionString == null)
-            {
-                throw new ArgumentNullException(nameof(connectionString));
-            }
-
-            IotHubConnectionString iotHubConnectionString = IotHubConnectionString.Parse(connectionString);
-            return new HttpTransportHandler(iotHubConnectionString);
-        }
 
         private Task HandleTimeoutCancellation(Func<Task> func, CancellationToken token)
         {
@@ -305,7 +273,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             // Long-polling is not supported
             if (!TimeSpan.Zero.Equals(timeout))
             {
-                throw new ArgumentOutOfRangeException("timeout", "Http Protocol does not support a non-zero receive timeout");
+                throw new ArgumentOutOfRangeException(nameof(timeout), "Http Protocol does not support a non-zero receive timeout");
             }
 
             IDictionary<string, string> customHeaders = PrepareCustomHeaders(CommonConstants.DeviceBoundPathTemplate.FormatInvariant(this.deviceId), null, CommonConstants.CloudToDeviceOperation);

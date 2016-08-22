@@ -48,6 +48,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             { typeof(ObjectDisposedException), () => new ObjectDisposedException(ErrorMessage) },
             { typeof(OperationCanceledException), () => new OperationCanceledException(ErrorMessage) },
             { typeof(TaskCanceledException), () => new TaskCanceledException(ErrorMessage) },
+            { typeof(IotHubThrottledException), () => new IotHubThrottledException(ErrorMessage, null) },
             { typeof(SocketException), () => new SocketException(1) },
         };
             
@@ -57,10 +58,12 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestCategory("Owner [mtuchkov]")]
         public async Task ErrorHandler_NoErrors_Success()
         {
+            var contextMock = Substitute.For<IPipelineContext>();
             var innerHandler = Substitute.For<IDelegatingHandler>();
             innerHandler.OpenAsync(Arg.Is(false), Arg.Any<CancellationToken>()).Returns(TaskConstants.Completed);
             innerHandler.SendEventAsync(Arg.Any<Message>(), Arg.Any<CancellationToken>()).Returns(TaskConstants.Completed);
-            var sut = new ErrorDelegatingHandler(() => innerHandler);
+            var sut = new ErrorDelegatingHandler(contextMock);
+            sut.ContinuationFactory = c => innerHandler;
 
             //emulate Gatekeeper behaviour: it opens the channel for us
             var cancellationToken = new CancellationToken();
@@ -172,12 +175,13 @@ namespace Microsoft.Azure.Devices.Client.Test
         static async Task OperationAsync_ExceptionThrownAndThenSucceed_OperationSuccessfullyCompleted(Func<IDelegatingHandler, Task<Message>> mockSetup, Func<IDelegatingHandler, Task<Message>> act, Func<IDelegatingHandler, Task<Message>> assert, Type thrownExceptionType, Type expectedExceptionType, bool reopenExpected)
         {
             int ctorCallCounter = 0;
+            var contextMock = Substitute.For<IPipelineContext>();
             var innerHandler = Substitute.For<IDelegatingHandler>();
-            var sut = new ErrorDelegatingHandler(() =>
-            {
+            var sut = new ErrorDelegatingHandler(contextMock);
+            sut.ContinuationFactory = c => {
                 ctorCallCounter++;
                 return innerHandler;
-            });
+            };
 
             //initial OpenAsync to emulate Gatekeeper behaviour
             var cancellationToken = new CancellationToken();
@@ -215,16 +219,17 @@ namespace Microsoft.Azure.Devices.Client.Test
         static async Task OperationAsync_ExceptionThrownAndThenSucceed_OperationSuccessfullyCompleted(Func<IDelegatingHandler, Task> mockSetup, Func<IDelegatingHandler, Task> act, Func<IDelegatingHandler, Task> assert, Type thrownExceptionType, Type expectedExceptionType, bool reopenExpected)
         {
             int ctorCallCounter = 0;
+            var contextMock = Substitute.For<IPipelineContext>();
             var innerHandler = Substitute.For<IDelegatingHandler>();
-            var sut = new ErrorDelegatingHandler(() =>
-            {
+            innerHandler.OpenAsync(Arg.Is(false), Arg.Any<CancellationToken>()).Returns(TaskConstants.Completed);
+            var sut = new ErrorDelegatingHandler(contextMock);
+            sut.ContinuationFactory = c => {
                 ctorCallCounter++;
                 return innerHandler;
-            });
+            };
 
             //initial OpenAsync to emulate Gatekeeper behaviour
             var cancellationToken = new CancellationToken();
-            innerHandler.OpenAsync(Arg.Is(false), Arg.Any<CancellationToken>()).Returns(TaskConstants.Completed);
             await sut.OpenAsync(false, cancellationToken);
 
             //set initial operation result that throws
@@ -258,12 +263,13 @@ namespace Microsoft.Azure.Devices.Client.Test
         static async Task OpenAsync_ExceptionThrownAndThenSucceed_SuccessfullyOpened(Func<IDelegatingHandler, Task> mockSetup, Func<IDelegatingHandler, Task> act, Func<IDelegatingHandler, Task> assert, Type thrownExceptionType, Type expectedExceptionType)
         {
             int ctorCallCounter = 0;
+            var contextMock = Substitute.For<IPipelineContext>();
             var innerHandler = Substitute.For<IDelegatingHandler>();
-            var sut = new ErrorDelegatingHandler(() =>
-            {
+            var sut = new ErrorDelegatingHandler(contextMock);
+            sut.ContinuationFactory = c => {
                 ctorCallCounter++;
                 return innerHandler;
-            });
+            };
 
             //set initial operation result that throws
 

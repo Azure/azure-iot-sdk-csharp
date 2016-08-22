@@ -202,6 +202,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="Transport\TransportHandlerFactory.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AmqpConnectionPoolSettings.cs" />
@@ -230,12 +231,15 @@
     <Compile Include="IotHubScopeConnectionPool.cs" />
     <Compile Include="IotHubSingleTokenConnection.cs" />
     <Compile Include="IotHubTokenRefresher.cs" />
+    <Compile Include="Transport\RetryDelegatingHandler.cs" />
+    <Compile Include="Transport\ProtocolRoutingDelegatingHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Transport\AmqpClientHelper.cs" />
     <Compile Include="Transport\AmqpTransportHandler.cs" />
     <Compile Include="Transport\FileUploadNotificationResponse.cs" />
     <Compile Include="Transport\FileUploadRequest.cs" />
     <Compile Include="Transport\FileUploadResponse.cs" />
+    <Compile Include="Transport\ITransportHandlerFactory.cs" />
     <Compile Include="Transport\Mqtt\ChannelMessageProcessingException.cs" />
     <Compile Include="Transport\Mqtt\ClientWebSocketChannel.cs" />
     <Compile Include="Transport\Mqtt\ClientWebSocketChannelConfig.cs" />
@@ -257,9 +261,6 @@
     <Compile Include="Transport\Mqtt\TransientErrorIgnoreStrategy.cs" />
     <Compile Include="Transport\Mqtt\Util.cs" />
     <Compile Include="Transport\Mqtt\WillMessage.cs" />
-    <Compile Include="Transport\RetryDelegatingHandler.cs" />
-    <Compile Include="Transport\RoutingDelegatingHandler.cs" />
-    <Compile Include="Transport\TransportHandler.cs" />
     <Compile Include="Transport\WebSocketConstants.cs" />
   </ItemGroup>
   <ItemGroup>

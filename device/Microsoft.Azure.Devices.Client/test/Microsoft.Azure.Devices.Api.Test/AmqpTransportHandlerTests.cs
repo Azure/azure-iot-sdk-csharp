@@ -18,52 +18,52 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         [TestCategory("TransportHandlers")]
         public async Task AmqpTransportHandler_OpenAsync_TokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => AmqpTransportHandler.CreateFromConnectionString(DumpyConnectionString).OpenAsync(true, token));
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().OpenAsync(true, token));
         }
 
         [TestMethod]
         [TestCategory("TransportHandlers")]
         public async Task AmqpTransportHandler_SendEventAsync_TokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => AmqpTransportHandler.CreateFromConnectionString(DumpyConnectionString).SendEventAsync(new Message(), token));
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().SendEventAsync(new Message(), token));
         }
 
         [TestMethod]
         [TestCategory("TransportHandlers")]
         public async Task AmqpTransportHandler_SendEventAsync_MultipleMessages_TokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => AmqpTransportHandler.CreateFromConnectionString(DumpyConnectionString).SendEventAsync(new List<Message>(), token));
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().SendEventAsync(new List<Message>(), token));
         }
 
         [TestMethod]
         [TestCategory("TransportHandlers")]
         public async Task AmqpTransportHandler_ReceiveAsync_TokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => AmqpTransportHandler.CreateFromConnectionString(DumpyConnectionString).ReceiveAsync(new TimeSpan(0, 10, 0), token));
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().ReceiveAsync(new TimeSpan(0, 10, 0), token));
         }
 
         [TestMethod]
         [TestCategory("TransportHandlers")]
         public async Task AmqpTransportHandler_CompleteAsync_TokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => AmqpTransportHandler.CreateFromConnectionString(DumpyConnectionString).CompleteAsync(Guid.NewGuid().ToString(), token));
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().CompleteAsync(Guid.NewGuid().ToString(), token));
         }
 
         [TestMethod]
         [TestCategory("TransportHandlers")]
         public async Task AmqpTransportHandler_AbandonAsync_TokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => AmqpTransportHandler.CreateFromConnectionString(DumpyConnectionString).AbandonAsync(Guid.NewGuid().ToString(), token));
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().AbandonAsync(Guid.NewGuid().ToString(), token));
         }
 
         [TestMethod]
         [TestCategory("TransportHandlers")]
         public async Task AmqpTransportHandler_RejectAsync_TokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => AmqpTransportHandler.CreateFromConnectionString(DumpyConnectionString).RejectAsync(Guid.NewGuid().ToString(), token));
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().RejectAsync(Guid.NewGuid().ToString(), token));
         }
 
-        private async Task TestOperationCanceledByToken(Func<CancellationToken, Task> asyncMethod)
+        async Task TestOperationCanceledByToken(Func<CancellationToken, Task> asyncMethod)
         {
             var tokenSource = new CancellationTokenSource();
             tokenSource.Cancel();
@@ -76,6 +76,11 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             {
                 Assert.Fail("Fail to skip execution of this operation using cancellation token.");
             }
+        }
+
+        AmqpTransportHandler CreateFromConnectionString()
+        {
+            return new AmqpTransportHandler(new PipelineContext(), IotHubConnectionString.Parse(DumpyConnectionString), new AmqpTransportSettings(TransportType.Amqp_Tcp_Only));
         }
     }
 }

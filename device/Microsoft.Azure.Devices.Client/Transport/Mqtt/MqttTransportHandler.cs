@@ -92,20 +92,20 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         Func<MethodRequestInternal, Task> messageListener;
 
-        internal MqttTransportHandler(IotHubConnectionString iotHubConnectionString)
-            : this(iotHubConnectionString, new MqttTransportSettings(TransportType.Mqtt_Tcp_Only))
+        internal MqttTransportHandler(IPipelineContext context, IotHubConnectionString iotHubConnectionString)
+            : this(context, iotHubConnectionString, new MqttTransportSettings(TransportType.Mqtt_Tcp_Only))
         {
 
         }
 
-        internal MqttTransportHandler(IotHubConnectionString iotHubConnectionString, MqttTransportSettings settings, Func<MethodRequestInternal, Task> onMethodCallback = null)
-            : this(iotHubConnectionString, settings, null)
+        internal MqttTransportHandler(IPipelineContext context, IotHubConnectionString iotHubConnectionString, MqttTransportSettings settings, Func<MethodRequestInternal, Task> onMethodCallback = null)
+            : this(context, iotHubConnectionString, settings, null)
         {
             this.messageListener = onMethodCallback;
         }
 
-        internal MqttTransportHandler(IotHubConnectionString iotHubConnectionString, MqttTransportSettings settings, Func<IPAddress, int, Task<IChannel>> channelFactory)
-            : base(settings)
+        internal MqttTransportHandler(IPipelineContext context, IotHubConnectionString iotHubConnectionString, MqttTransportSettings settings, Func<IPAddress, int, Task<IChannel>> channelFactory)
+            : base(context, settings)
         {
             this.mqttIotHubAdapterFactory = new MqttIotHubAdapterFactory(settings);
             this.messageQueue = new ConcurrentQueue<Message>();
@@ -134,45 +134,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
 
             this.closeRetryPolicy = new RetryPolicy(new TransientErrorIgnoreStrategy(), 5, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
-        }
-
-        /// <summary>
-        /// Create a DeviceClient from individual parameters
-        /// </summary>
-        /// <param name="hostname">The fully-qualified DNS hostname of IoT Hub</param>
-        /// <param name="authMethod">The authentication method that is used</param>
-        /// <returns>DeviceClient</returns>
-        public static MqttTransportHandler Create(string hostname, IAuthenticationMethod authMethod)
-        {
-            if (hostname == null)
-            {
-                throw new ArgumentNullException(nameof(hostname));
-            }
-
-            if (authMethod == null)
-            {
-                throw new ArgumentNullException(nameof(authMethod));
-            }
-
-            IotHubConnectionStringBuilder connectionStringBuilder = IotHubConnectionStringBuilder.Create(hostname, authMethod);
-            return CreateFromConnectionString(connectionStringBuilder.ToString());
-        }
-
-        /// <summary>
-        /// Create DeviceClient from the specified connection string
-        /// </summary>
-        /// <param name="connectionString">Connection string for the IoT hub</param>
-        /// <returns>DeviceClient</returns>
-        public static MqttTransportHandler CreateFromConnectionString(string connectionString)
-        {
-            if (connectionString == null)
-            {
-                throw new ArgumentNullException(nameof(connectionString));
-            }
-
-            IotHubConnectionString iotHubConnectionString = IotHubConnectionString.Parse(connectionString);
-
-            return new MqttTransportHandler(iotHubConnectionString);
         }
 
         #region Client operations
