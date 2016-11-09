@@ -55,6 +55,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return await base.ReceiveAsync(timeout, cancellationToken);
         }
 
+        public override async Task EnableMethodsAsync(CancellationToken cancellationToken)
+        {
+            await this.EnsureOpenedAsync(false, cancellationToken);
+            await base.EnableMethodsAsync(cancellationToken);
+        }
+
         /// <summary>
         /// Deletes a received message from the device queue
         /// </summary>
@@ -93,6 +99,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             await this.EnsureOpenedAsync(false, cancellationToken);
             await base.SendEventAsync(message, cancellationToken);
+        }
+
+        public override async Task SendMethodResponseAsync(MethodResponse methodResponse, CancellationToken cancellationToken)
+        {
+            await base.SendMethodResponseAsync(methodResponse, cancellationToken);
         }
 
         /// <summary>

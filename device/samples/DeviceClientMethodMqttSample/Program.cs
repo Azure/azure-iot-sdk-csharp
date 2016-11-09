@@ -4,6 +4,7 @@
 namespace Microsoft.Azure.Devices.Client.Samples
 {
     using System;
+    using System.Text;
 
     class Program
     {
@@ -25,27 +26,27 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
         }
 
-        static MethodCallbackReturn WriteToConsole(string payload, object userContext)
+        static MethodCallbackReturn WriteToConsole(byte[] payload, object userContext)
         {
             Console.WriteLine();
             Console.WriteLine("\t{0}", payload);
             Console.WriteLine();
 
-            return MethodCallbackReturn.MethodCallbackReturnFactory("{}", 200);
+            return MethodCallbackReturn.MethodCallbackReturnFactory(new byte[0], 200);
         }
 
-        static MethodCallbackReturn GetDeviceName(string payload, object userContext)
+        static MethodCallbackReturn GetDeviceName(byte[] payload, object userContext)
         {
             MethodCallbackReturn retValue;
             if (userContext == null)
             {
-                retValue = MethodCallbackReturn.MethodCallbackReturnFactory("{}", 500);
+                retValue = MethodCallbackReturn.MethodCallbackReturnFactory(new byte[0], 500);
             }
             else
             {
                 var d = userContext as DeviceData;
                 string result = "{\"name\":\"" + d.Name + "\"}";
-                retValue = MethodCallbackReturn.MethodCallbackReturnFactory(result, 200);
+                retValue = MethodCallbackReturn.MethodCallbackReturnFactory(Encoding.UTF8.GetBytes(result), 200);
             }
             return retValue;
         }

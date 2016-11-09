@@ -26,7 +26,11 @@ namespace Microsoft.Azure.Devices.Client
     using AsyncTaskOfMessage = System.Threading.Tasks.Task<Message>;
 #endif
 
-    public delegate MethodCallbackReturn MethodCallback(string payload, object userContext);
+#if NETMF
+    public delegate MethodCallbackReturn MethodCallback(byte[] payload, object userContext);
+#else
+    public delegate MethodCallbackReturn MethodCallback([System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArrayAttribute] byte[] payload, object userContext);
+#endif
 
     /*
      * Class Diagramm and Chain of Responsibility in Device Client 
@@ -144,21 +148,27 @@ namespace Microsoft.Azure.Devices.Client
 
         DefaultDelegatingHandler CreateTransportHandler(IotHubConnectionString iotHubConnectionString, ITransportSettings transportSetting)
         {
+            DefaultDelegatingHandler transportHandler;
             switch (transportSetting.GetTransportType())
             {
                 case TransportType.Amqp_WebSocket_Only:
                 case TransportType.Amqp_Tcp_Only:
-                    return new AmqpTransportHandler(iotHubConnectionString, transportSetting as AmqpTransportSettings);
+                    transportHandler =  new AmqpTransportHandler(iotHubConnectionString, transportSetting as AmqpTransportSettings);
+                    break;
                 case TransportType.Http1:
-                    return new HttpTransportHandler(iotHubConnectionString, transportSetting as Http1TransportSettings);
+                    transportHandler = new HttpTransportHandler(iotHubConnectionString, transportSetting as Http1TransportSettings);
+                    break;
 #if !WINDOWS_UWP && !NETMF
                 case TransportType.Mqtt_WebSocket_Only:
                 case TransportType.Mqtt_Tcp_Only:
-                    return new MqttTransportHandler(iotHubConnectionString, transportSetting as MqttTransportSettings);
+                    transportHandler = new MqttTransportHandler(iotHubConnectionString, transportSetting as MqttTransportSettings);
+                    break;
 #endif
                 default:
                     throw new InvalidOperationException("Unsupported Transport Setting {0}".FormatInvariant(transportSetting));
             }
+            transportHandler.SetMethodCallHandler(OnMethodCalled);
+            return transportHandler;
         }
 
 #else
@@ -168,6 +178,11 @@ namespace Microsoft.Azure.Devices.Client
                 new ErrorDelegatingHandler(() => new HttpTransportHandler(iotHubConnectionString)));
         }
 #endif
+
+        internal AsyncTask SendMethodResponseAsync(MethodResponse methodResponse)
+        {
+            return ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.SendMethodResponseAsync(methodResponse, operationTimeoutCancellationToken));
+        }
 
         /// <summary>
         /// Create an Amqp DeviceClient from individual parameters
@@ -521,8 +536,6 @@ namespace Microsoft.Azure.Devices.Client
             return ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.ReceiveAsync(timeout, operationTimeoutCancellationToken));
         }
 
-
-
 #if WINDOWS_UWP
         [Windows.Foundation.Metadata.DefaultOverloadAttribute()]
 #endif
@@ -728,7 +741,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public AsyncTask EnableMethodsAsync()
         {
-            throw new NotImplementedException();
+            return ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.EnableMethodsAsync(operationTimeoutCancellationToken));
         }
 
         /// <summary>
@@ -767,23 +780,37 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        internal async void OnMethodCalled(Method method)
+        internal async void OnMethodCalled(MethodRequest methodRequest)
         {
-            if (method == null)
+            if (methodRequest == null)
             {
                 /* codes_SRS_DEVICECLIENT_10_012: [ If the given method argument is null, throw ArgumentNullException. ]*/
                 throw new ArgumentNullException();
             }
 
-            Tuple<MethodCallback, object> m;
-            lock (this.deviceCallbackLock)
+            MethodResponse methodResponse;
+            const int DefaultResponseStatusCode = 404;
+            
+            if (this.deviceMethods != null && this.deviceMethods.ContainsKey(methodRequest.Name))
+            {   
+                Tuple<MethodCallback, object> m;
+                lock (this.deviceCallbackLock)
+                {
+                    /* codes_SRS_DEVICECLIENT_10_013: [ If the given method does not have an associated delegate, the KeyNotFoundException shall be percolated up. ]*/
+                    m = this.deviceMethods[methodRequest.Name];
+                }
+                
+                /* codes_SRS_DEVICECLIENT_10_011: [ The OnMethodCalled shall invoke the specified delegate. ]*/
+                MethodCallbackReturn rv = await Task.Run(() => m.Item1(methodRequest.GetBytes(), m.Item2));
+                methodResponse = new MethodResponse(rv.Result, methodRequest.RequestId, rv.Status);
+            }
+            else
             {
-                /* codes_SRS_DEVICECLIENT_10_013: [ If the given method does not have an associated delegate, the KeyNotFoundException shall be percolated up. ]*/
-                m = this.deviceMethods[method.Name];
+                /* codes_SRS_DEVICECLIENT_10_012: [ If the given method does not have a delegate, the respose shall be set to Unsupported. ]*/
+                methodResponse = new MethodResponse(methodRequest.RequestId, DefaultResponseStatusCode);
             }
 
-            /* codes_SRS_DEVICECLIENT_10_011: [ The OnMethodCalled shall invoke the specified delegate. ]*/
-            MethodCallbackReturn rv = await Task.Run(() => m.Item1(method.Payload, m.Item2));
+            await this.SendMethodResponseAsync(methodResponse);
         }
 
         public void Dispose()

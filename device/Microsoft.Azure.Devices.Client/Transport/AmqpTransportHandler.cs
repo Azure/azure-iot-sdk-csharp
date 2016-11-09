@@ -20,12 +20,15 @@ namespace Microsoft.Azure.Devices.Client.Transport
         readonly string deviceId;
         readonly Client.FaultTolerantAmqpObject<SendingAmqpLink> faultTolerantEventSendingLink;
         readonly Client.FaultTolerantAmqpObject<ReceivingAmqpLink> faultTolerantDeviceBoundReceivingLink;
+        readonly Client.FaultTolerantAmqpObject<SendingAmqpLink> faultTolerantMethodSendingLink;
+        readonly Client.FaultTolerantAmqpObject<ReceivingAmqpLink> faultTolerantMethodReceivingLink;
         readonly IotHubConnectionString iotHubConnectionString;
         readonly TimeSpan openTimeout;
         readonly TimeSpan operationTimeout;
         readonly uint prefetchCount;
 
-        int eventsDeliveryTag;
+        Action<MethodRequest> messageListener;
+
         int closed;
 
         public AmqpTransportHandler(IotHubConnectionString connectionString, AmqpTransportSettings transportSettings)
@@ -50,6 +53,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             this.prefetchCount = transportSettings.PrefetchCount;
             this.faultTolerantEventSendingLink = new Client.FaultTolerantAmqpObject<SendingAmqpLink>(this.CreateEventSendingLinkAsync, this.IotHubConnection.CloseLink);
             this.faultTolerantDeviceBoundReceivingLink = new Client.FaultTolerantAmqpObject<ReceivingAmqpLink>(this.CreateDeviceBoundReceivingLinkAsync, this.IotHubConnection.CloseLink);
+            this.faultTolerantMethodSendingLink = new Client.FaultTolerantAmqpObject<SendingAmqpLink>(this.CreateMethodSendingLinkAsync, this.IotHubConnection.CloseLink);
+            this.faultTolerantMethodReceivingLink = new Client.FaultTolerantAmqpObject<ReceivingAmqpLink>(this.CreateMethodReceivingLinkAsync, this.IotHubConnection.CloseLink);
             this.iotHubConnectionString = connectionString;
         }
 
@@ -214,6 +219,55 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return message;
         }
 
+        public override Task EnableMethodsAsync(CancellationToken cancellationToken)
+        {
+            return this.HandleTimeoutCancellation(async () =>
+            {
+                try
+                {
+                    if (this.messageListener != null)
+                    {
+                        SendingAmqpLink methodSendingLink = await this.GetMethodSendingLinkAsync(cancellationToken);
+                        ReceivingAmqpLink methodReceivingLink = await this.GetMethodReceivingLinkAsync(cancellationToken);
+
+                        methodReceivingLink.RegisterMessageListener(amqpMessage =>
+                        {
+                            MethodRequest methodRequest = MethodConverter.ConstructMethodRequestFromAmqpMessage(amqpMessage);
+                            this.messageListener(methodRequest);
+
+                            methodReceivingLink.DisposeDelivery(amqpMessage, true, AmqpConstants.AcceptedOutcome);
+                        });
+                    }
+                }
+                catch (Exception exception)
+                {
+                    if (exception.IsFatal())
+                    {
+                        throw;
+                    }
+
+                    throw AmqpClientHelper.ToIotHubClientContract(exception);
+                }
+            }, cancellationToken);
+        }
+
+        public override async Task SendMethodResponseAsync(MethodResponse methodResponse, CancellationToken cancellationToken)
+        {
+            await this.HandleTimeoutCancellation(async () =>
+            {
+                Outcome outcome;
+                using (AmqpMessage amqpMessage = methodResponse.ToAmqpMessage())
+                {
+                    outcome = await this.SendAmqpMethodResponseAsync(amqpMessage, cancellationToken);
+                }
+
+                if (outcome.DescriptorCode != Accepted.Code)
+                {
+                    throw AmqpErrorMapper.GetExceptionFromOutcome(outcome);
+                }
+            }, cancellationToken);
+        }
+
         public override Task CompleteAsync(string lockToken, CancellationToken cancellationToken)
         {
             return this.HandleTimeoutCancellation(() => this.DisposeMessageAsync(lockToken, AmqpConstants.AcceptedOutcome, cancellationToken), cancellationToken);
@@ -227,6 +281,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
         public override Task RejectAsync(string lockToken, CancellationToken cancellationToken)
         {
             return this.HandleTimeoutCancellation(() => this.DisposeMessageAsync(lockToken, AmqpConstants.RejectedOutcome, cancellationToken), cancellationToken);
+        }
+
+        public override void SetMethodCallHandler(Action<MethodRequest> onMethodCall)
+        {
+            this.messageListener = onMethodCall;
         }
 
         protected override void Dispose(bool disposing)
@@ -248,6 +307,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 GC.SuppressFinalize(this);
                 this.faultTolerantEventSendingLink.CloseAsync().Fork();
                 this.faultTolerantDeviceBoundReceivingLink.CloseAsync().Fork();
+                this.faultTolerantMethodReceivingLink.CloseAsync().Fork();
+                this.faultTolerantMethodSendingLink.CloseAsync().Fork();
                 this.IotHubConnection.Release(this.deviceId);
             }
         }
@@ -258,7 +319,28 @@ namespace Microsoft.Azure.Devices.Client.Transport
             try
             {
                 SendingAmqpLink eventSendingLink = await this.GetEventSendingLinkAsync(cancellationToken);
-                outcome = await eventSendingLink.SendMessageAsync(amqpMessage, IotHubConnection.GetNextDeliveryTag(ref this.eventsDeliveryTag), AmqpConstants.NullBinary, this.operationTimeout);
+                outcome = await eventSendingLink.SendMessageAsync(amqpMessage, new ArraySegment<byte>(Guid.NewGuid().ToByteArray()), AmqpConstants.NullBinary, this.operationTimeout);
+            }
+            catch (Exception exception)
+            {
+                if (exception.IsFatal())
+                {
+                    throw;
+                }
+
+                throw AmqpClientHelper.ToIotHubClientContract(exception);
+            }
+
+            return outcome;
+        }
+
+        async Task<Outcome> SendAmqpMethodResponseAsync(AmqpMessage amqpMessage, CancellationToken cancellationToken)
+        {
+            Outcome outcome;
+            try
+            {
+                SendingAmqpLink methodRespSendingLink = await this.GetMethodSendingLinkAsync(cancellationToken);
+                outcome = await methodRespSendingLink.SendMessageAsync(amqpMessage, new ArraySegment<byte>(Guid.NewGuid().ToByteArray()), AmqpConstants.NullBinary, this.operationTimeout);
             }
             catch (Exception exception)
             {
@@ -343,6 +425,41 @@ namespace Microsoft.Azure.Devices.Client.Transport
             string path = string.Format(CultureInfo.InvariantCulture, CommonConstants.DeviceBoundPathTemplate, System.Net.WebUtility.UrlEncode(this.deviceId));
 
             return await this.IotHubConnection.CreateReceivingLinkAsync(path, this.iotHubConnectionString, timeout, this.prefetchCount, cancellationToken);
+        }
+
+        async Task<SendingAmqpLink> GetMethodSendingLinkAsync(CancellationToken cancellationToken)
+        {
+            SendingAmqpLink methodSendingLink;
+            if (!this.faultTolerantMethodSendingLink.TryGetOpenedObject(out methodSendingLink))
+            {
+                methodSendingLink = await this.faultTolerantMethodSendingLink.GetOrCreateAsync(this.openTimeout, cancellationToken);
+            }
+            return methodSendingLink;
+        }
+
+        async Task<SendingAmqpLink> CreateMethodSendingLinkAsync(TimeSpan timeout, CancellationToken cancellationToken)
+        {
+            string path = string.Format(CultureInfo.InvariantCulture, CommonConstants.DeviceMethodPathTemplate, System.Net.WebUtility.UrlEncode(this.deviceId));
+
+            return await this.IotHubConnection.CreateMethodSendingLinkAsync(path, this.iotHubConnectionString, timeout, cancellationToken, this.deviceId);
+        }
+
+        async Task<ReceivingAmqpLink> GetMethodReceivingLinkAsync(CancellationToken cancellationToken)
+        {
+            ReceivingAmqpLink methodReceivingLink;
+            if (!this.faultTolerantMethodReceivingLink.TryGetOpenedObject(out methodReceivingLink))
+            {
+                methodReceivingLink = await this.faultTolerantMethodReceivingLink.GetOrCreateAsync(this.openTimeout, cancellationToken);
+            }
+
+            return methodReceivingLink;
+        }
+
+        async Task<ReceivingAmqpLink> CreateMethodReceivingLinkAsync(TimeSpan timeout, CancellationToken cancellationToken)
+        {
+            string path = string.Format(CultureInfo.InvariantCulture, CommonConstants.DeviceMethodPathTemplate, System.Net.WebUtility.UrlEncode(this.deviceId));
+
+            return await this.IotHubConnection.CreateMethodReceivingLinkAsync(path, this.iotHubConnectionString, timeout, this.prefetchCount, cancellationToken, this.deviceId);
         }
     }
 }

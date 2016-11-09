@@ -483,7 +483,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             throw new NotImplementedException();
         }
 
-        public override Task SendMethodResponseAsync(Method method, CancellationToken ct)
+        public override Task SendMethodResponseAsync(MethodResponse methodResponse, CancellationToken ct)
         {
             throw new NotImplementedException();
         }

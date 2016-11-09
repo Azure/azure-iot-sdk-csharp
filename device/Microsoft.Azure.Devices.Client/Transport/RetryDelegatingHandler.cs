@@ -73,6 +73,26 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
+        public override async Task SendMethodResponseAsync(MethodResponse method, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var sendState = new SendMessageState();
+                await this.retryPolicy.ExecuteAsync(() =>
+                {
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        return Common.TaskConstants.Completed;
+                    }
+                    return base.SendMethodResponseAsync(method, cancellationToken);
+                }, cancellationToken);
+            }
+            catch (IotHubClientTransientException ex)
+            {
+                GetNormalizedIotHubException(ex).Throw();
+            }
+        }
+
         public override async Task SendEventAsync(IEnumerable<Message> messages, CancellationToken cancellationToken)
         {
             try
@@ -122,6 +142,19 @@ namespace Microsoft.Azure.Devices.Client.Transport
             try
             {
                 return await this.retryPolicy.ExecuteAsync(() => base.ReceiveAsync(timeout, cancellationToken), cancellationToken);
+            }
+            catch (IotHubClientTransientException ex)
+            {
+                GetNormalizedIotHubException(ex).Throw();
+                throw;
+            }
+        }
+
+        public override async Task EnableMethodsAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                await this.retryPolicy.ExecuteAsync(() => base.EnableMethodsAsync(cancellationToken), cancellationToken);
             }
             catch (IotHubClientTransientException ex)
             {

@@ -255,11 +255,17 @@
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\MessageSystemPropertyNames.cs">
       <Link>MessageSystemPropertyNames.cs</Link>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\Method.cs">
-      <Link>Method.cs</Link>
-    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\MethodCallbackReturn.cs">
       <Link>MethodCallbackReturn.cs</Link>
+	</Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\MethodRequest.cs">
+      <Link>MethodRequest.cs</Link>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\MethodResponse.cs">
+      <Link>MethodResponse.cs</Link>
+    </Compile>	
+    <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\MethodConverter.cs">
+      <Link>MethodConverter.cs</Link>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\PutOperationType.cs">
       <Link>PutOperationType.cs</Link>

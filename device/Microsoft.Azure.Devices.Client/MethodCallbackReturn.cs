@@ -4,6 +4,7 @@
 namespace Microsoft.Azure.Devices.Client
 {
     using System.IO;
+    using System.Text;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Schema;
 
@@ -12,16 +13,20 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public sealed class MethodCallbackReturn
     {
-        string result;
+        byte[] result;
 
         /// <summary>
         /// Factory will make a new instance of the return class and validates that the payload
         /// is correct JSON. Throws.
         /// </summary>
-        /// <param name="payload"></param>
+        /// <param name="result"></param>
         /// <param name="status"></param>
         /// <returns></returns>
-        public static MethodCallbackReturn MethodCallbackReturnFactory(string result, int status)
+#if NETMF
+        public static MethodCallbackReturn MethodCallbackReturnFactory(byte[] payload, int status)
+#else
+        public static MethodCallbackReturn MethodCallbackReturnFactory([System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArrayAttribute] byte[] result, int status)
+#endif
         {
             /* codes_SRS_METHODCALLBACKRETURN_10_001: [ MethodCallbackReturnFactory shall instanciate a new MethodCallbackReturn with given properties. ] */
             MethodCallbackReturn retValue = new MethodCallbackReturn(status);
@@ -42,15 +47,15 @@ namespace Microsoft.Azure.Devices.Client
         /// Property containing entire result data. The formatting is checked for JSON correctness
         /// upon setting this property.
         /// </summary>
-        internal string Result
+        internal byte[] Result
         {
             private set
             {
                 /* codes_SRS_METHODCALLBACKRETURN_10_002: [** Result shall check if the input is validate JSON ] */
-                JsonTextReader reader = new JsonTextReader(new StringReader(value));
+                //JsonTextReader reader = new JsonTextReader(new StringReader(value));
 
                 /* codes_SRS_METHODCALLBACKRETURN_10_003: [ Result shall percolate the invalid token exception to the caller ] */
-                while (reader.Read()) ;  // throws if not valid JSON
+                //while (reader.Read()) ;  // throws if not valid JSON
 
                 this.result = value;
             }

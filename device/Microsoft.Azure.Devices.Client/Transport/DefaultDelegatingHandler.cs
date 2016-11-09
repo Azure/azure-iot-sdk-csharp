@@ -85,9 +85,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return this.InnerHandler?.EnableMethodsAsync(cancellationToken) ?? TaskConstants.Completed;
         }
 
-        public virtual Task SendMethodResponseAsync(Method method, CancellationToken cancellationToken)
+        public virtual Task SendMethodResponseAsync(MethodResponse methodResponse, CancellationToken cancellationToken)
         {
-            return this.InnerHandler?.SendMethodResponseAsync(method, cancellationToken) ?? TaskConstants.Completed;
+            return this.InnerHandler?.SendMethodResponseAsync(methodResponse, cancellationToken) ?? TaskConstants.Completed;
         }
 
         public virtual Task EnableTwinAsync(CancellationToken cancellationToken)
@@ -120,21 +120,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 }
             }
         }
-
-        private MethodCallCallback methodCallHandler;
-        public virtual MethodCallCallback MethodCallHandler
+        
+        public virtual void SetMethodCallHandler(Action<MethodRequest> onMethodCall)
         {
-            set
-            {
-                if (this.InnerHandler != null)
-                {
-                    this.InnerHandler.MethodCallHandler = value;
-                }
-                else
-                {
-                    this.methodCallHandler = value;
-                }
-            }
+            this.InnerHandler?.SetMethodCallHandler(onMethodCall);
         }
 
         protected virtual void Dispose(bool disposing)
