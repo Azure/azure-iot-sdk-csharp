@@ -5,11 +5,11 @@
     <MinimumVisualStudioVersion>10.0</MinimumVisualStudioVersion>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{4151E5D7-1C3C-4AD9-9E9A-5FA50A1FA332}</ProjectGuid>
+    <ProjectGuid>{F3BE6617-0714-4615-A916-48362BE8266D}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Microsoft.Azure.Devices.Client.PCL</RootNamespace>
-    <AssemblyName>Microsoft.Azure.Devices.Client.PCL</AssemblyName>
+    <RootNamespace>Microsoft.Azure.Devices.Shared.PCL</RootNamespace>
+    <AssemblyName>Microsoft.Azure.Devices.Shared.PCL</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -21,7 +21,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;PCL</DefineConstants>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -29,43 +29,29 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE;PCL</DefineConstants>
+    <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <SignAssembly>false</SignAssembly>
-  </PropertyGroup>
-  <PropertyGroup>
-    <AssemblyOriginatorKeyFile>35MSSharedLib1024.snk</AssemblyOriginatorKeyFile>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release_Delay_Sign|AnyCPU'">
-    <OutputPath>bin\Release_Delay_Sign\</OutputPath>
-    <DefineConstants>TRACE;PCL;RELEASE_DELAY_SIGN;NETFX_CORE</DefineConstants>
-    <Optimize>true</Optimize>
-  </PropertyGroup>
-  <PropertyGroup>
-    <DeviceClientDir>..\Microsoft.Azure.Devices.Client</DeviceClientDir>
+    <SharedCodeDir>..\Microsoft.Azure.Devices.Shared</SharedCodeDir>
   </PropertyGroup>
   <ItemGroup>
-    <!-- A reference to the entire .NET Framework is automatically included -->
-    <None Include="35MSSharedLib1024.snk" />
-    <None Include="app.config" />
     <None Include="project.json" />
+    <!-- A reference to the entire .NET Framework is automatically included -->
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="$(DeviceClientDir)\DotNetHelpers.cs"> <Link>DotNetHelpers.cs</Link> </Compile>
+    <Compile Include="$(SharedCodeDir)\ETagHolder.cs" />
+    <Compile Include="$(SharedCodeDir)\IETagHolder.cs" />
+    <Compile Include="$(SharedCodeDir)\Metadata.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Resources.cs" />
-    <Compile Include="TraceEventType.cs" />
+    <Compile Include="$(SharedCodeDir)\Twin.cs" />
+    <Compile Include="$(SharedCodeDir)\TwinCollection.cs" />
+    <Compile Include="$(SharedCodeDir)\TwinCollectionJsonConverter.cs" />
+    <Compile Include="$(SharedCodeDir)\TwinCollectionValue.cs" />
+    <Compile Include="$(SharedCodeDir)\TwinJsonConverter.cs" />
+    <Compile Include="$(SharedCodeDir)\TwinProperties.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\shared\Microsoft.Azure.Devices.Shared.PCL\Microsoft.Azure.Devices.Shared.PCL.csproj">
-      <Project>{f3be6617-0714-4615-a916-48362be8266d}</Project>
-      <Name>Microsoft.Azure.Devices.Shared.PCL</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <Import Project="..\Microsoft.Azure.Devices.Client.Shared\Microsoft.Azure.Devices.Client.Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

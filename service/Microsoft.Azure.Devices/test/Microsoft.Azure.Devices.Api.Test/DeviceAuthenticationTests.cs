@@ -11,6 +11,7 @@ namespace Microsoft.Azure.Devices.Api.Test
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Common;
+    using Microsoft.Azure.Devices.Shared;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Moq;
 

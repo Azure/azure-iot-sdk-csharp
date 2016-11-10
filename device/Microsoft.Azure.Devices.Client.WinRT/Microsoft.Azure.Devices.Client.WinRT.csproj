@@ -147,6 +147,12 @@
   <ItemGroup>
     <PRIResource Include="Resources.resw" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\shared\Microsoft.Azure.Devices.Shared.WinRT\Microsoft.Azure.Devices.Shared.WinRT.csproj">
+      <Project>{a1170be5-999d-49e5-b127-a9d6a6059d6b}</Project>
+      <Name>Microsoft.Azure.Devices.Shared.WinRT</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="..\Microsoft.Azure.Devices.Client.Shared\Microsoft.Azure.Devices.Client.Shared.projitems" Label="Shared" />
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>

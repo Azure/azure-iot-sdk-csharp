@@ -4,7 +4,7 @@
 namespace Microsoft.Azure.Devices
 {
     using System;
-    using Microsoft.Azure.Devices.Common;
+    using Microsoft.Azure.Devices.Shared;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Converters;
 

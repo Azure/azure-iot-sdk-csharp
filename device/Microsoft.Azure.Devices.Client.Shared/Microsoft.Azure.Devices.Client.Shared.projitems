@@ -42,9 +42,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\Common\ErrorCode.cs">
       <Link>ErrorCode.cs</Link>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\Common\ETagHolder.cs">
-      <Link>ETagHolder.cs</Link>
-    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\Common\ExceptionDispatcher.cs">
       <Link>ExceptionDispatcher.cs</Link>
     </Compile>
@@ -134,9 +131,6 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\Common\FxTrace.cs">
       <Link>FxTrace.cs</Link>
-    </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\Common\IETagHolder.cs">
-      <Link>IETagHolder.cs</Link>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\Common\InternalBufferManager.cs">
       <Link>InternalBufferManager.cs</Link>
