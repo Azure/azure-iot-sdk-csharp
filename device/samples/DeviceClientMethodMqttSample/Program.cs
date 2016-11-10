@@ -33,10 +33,9 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(DeviceConnectionString, TransportType.Mqtt);
 
                 deviceClient.OpenAsync().Wait();
-                deviceClient.EnableMethodsAsync().Wait();
-
                 deviceClient.SetMethodDelegate("MethodA", new MethodCallback(MethodA));
 
+                deviceClient.EnableMethodsAsync().Wait();
                 Console.WriteLine("Exited!");
             }
             catch (AggregateException ex)
