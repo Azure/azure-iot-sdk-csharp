@@ -168,7 +168,6 @@
     <Compile Include="Common\FxTrace.cs" />
     <Compile Include="Common\HashCode.cs" />
     <Compile Include="Common\IAmqpTrace.cs" />
-    <Compile Include="Common\IETagHolder.cs" />
     <Compile Include="Common\InternalBufferManager.cs" />
     <Compile Include="Common\Interop\SafeEventLogWriteHandle.cs" />
     <Compile Include="Common\Interop\UnsafeNativeMethods.cs" />
@@ -200,8 +199,6 @@
     <Compile Include="Common\WaitCallbackActionItem.cs" />
     <Compile Include="Common\WebApi\CustomHeaderConstants.cs" />
     <Compile Include="Common\WebApi\ResourceRequest.cs" />
-    <Compile Include="Converters\TwinCollectionJsonConverter.cs" />
-    <Compile Include="Converters\TwinJsonConverter.cs" />
     <Compile Include="DeliveryAcknowledgement.cs" />
     <Compile Include="DeliveryFailureReason.cs" />
     <Compile Include="Device.cs" />
@@ -213,10 +210,7 @@
     <Compile Include="DeviceJobStatus.cs" />
     <Compile Include="DeviceJobType.cs" />
     <Compile Include="QueryResultType.cs" />
-    <Compile Include="TwinCollection.cs" />
     <Compile Include="BulkRegistryOperationResult.cs" />
-    <Compile Include="Twin.cs" />
-    <Compile Include="TwinCollectionValue.cs" />
     <Compile Include="IQuery.cs" />
     <Compile Include="Query.cs" />
     <Compile Include="JobClient\CloudToDeviceMethod.cs" />
@@ -227,11 +221,9 @@
     <Compile Include="JobClient\JobRequest.cs" />
     <Compile Include="JobClient\JobResponse.cs" />
     <Compile Include="QueryResult.cs" />
-    <Compile Include="Metadata.cs" />
     <Compile Include="QuerySpecification.cs" />
     <Compile Include="DeviceStatus.cs" />
     <Compile Include="EndpointKind.cs" />
-    <Compile Include="ETagHolder.cs" />
     <Compile Include="ExceptionHandlingHelper.cs" />
     <Compile Include="ExportDevicesRequest.cs" />
     <Compile Include="ExportImportDevice.cs" />
@@ -273,7 +265,6 @@
     <Compile Include="ServiceClient.cs" />
     <Compile Include="ServiceStatistics.cs" />
     <Compile Include="SymmetricKey.cs" />
-    <Compile Include="TwinProperties.cs" />
     <Compile Include="X509Thumbprint.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -290,7 +281,12 @@
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\..\shared\Microsoft.Azure.Devices.Shared\Microsoft.Azure.Devices.Shared.csproj">
+      <Project>{835230fc-8d03-4cd1-8845-5a9d1b0b837d}</Project>
+      <Name>Microsoft.Azure.Devices.Shared</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

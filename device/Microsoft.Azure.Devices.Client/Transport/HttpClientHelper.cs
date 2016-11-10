@@ -16,6 +16,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Azure.Devices.Client.Extensions;
+    using Microsoft.Azure.Devices.Shared;
 #if !WINDOWS_UWP && !PCL
     using System.Net.Http.Formatting;
     using System.Security.Cryptography.X509Certificates;

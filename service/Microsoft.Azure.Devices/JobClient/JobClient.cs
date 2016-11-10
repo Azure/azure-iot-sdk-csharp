@@ -7,6 +7,7 @@ namespace Microsoft.Azure.Devices
     using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
+    using Microsoft.Azure.Devices.Shared;
 
     /// <summary>
     /// Job management

@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace Microsoft.Azure.Devices.Converters
+namespace Microsoft.Azure.Devices.Shared
 {
     using System;
     using System.Reflection;
@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Converters
             serializer.Serialize(writer, properties.JObject);
         }
 
-        public override bool CanConvert(Type objectType) => typeof(TwinCollection).IsAssignableFrom(objectType);
+        public override bool CanConvert(Type objectType) => typeof(TwinCollection).GetTypeInfo().IsAssignableFrom(objectType.GetTypeInfo());
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
@@ -35,3 +35,4 @@ namespace Microsoft.Azure.Devices.Converters
         }
     }
 }
+

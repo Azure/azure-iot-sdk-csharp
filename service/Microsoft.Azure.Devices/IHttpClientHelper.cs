@@ -10,6 +10,7 @@ namespace Microsoft.Azure.Devices
     using System.Net.Http.Headers;
     using System.Threading;
     using System.Threading.Tasks;
+    using Microsoft.Azure.Devices.Shared;
 
     using Microsoft.Azure.Devices.Common;
 

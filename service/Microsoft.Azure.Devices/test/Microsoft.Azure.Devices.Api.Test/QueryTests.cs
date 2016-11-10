@@ -8,6 +8,7 @@ namespace Microsoft.Azure.Devices.Api.Test
     using System.Threading.Tasks;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Newtonsoft.Json;
+    using Microsoft.Azure.Devices.Shared;
 
     [TestClass]
     public class QueryTests

@@ -22,6 +22,7 @@ namespace Microsoft.Azure.Devices
     using Microsoft.Azure.Devices.Common;
     using Microsoft.Azure.Devices.Common.Exceptions;
     using Microsoft.Azure.Devices.Common.Extensions;
+    using Microsoft.Azure.Devices.Shared;
 
     sealed class HttpClientHelper : IHttpClientHelper
     {

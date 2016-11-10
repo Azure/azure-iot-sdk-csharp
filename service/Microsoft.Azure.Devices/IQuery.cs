@@ -5,6 +5,7 @@ namespace Microsoft.Azure.Devices
 {
     using System.Collections.Generic;
     using System.Threading.Tasks;
+    using Microsoft.Azure.Devices.Shared;
 
     /// <summary>
     ///     This wraps underlying paged query result access logic.

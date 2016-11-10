@@ -282,6 +282,12 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\..\shared\Microsoft.Azure.Devices.Shared\Microsoft.Azure.Devices.Shared.csproj">
+      <Project>{835230fc-8d03-4cd1-8845-5a9d1b0b837d}</Project>
+      <Name>Microsoft.Azure.Devices.Shared</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="..\Microsoft.Azure.Devices.Client.Shared\Microsoft.Azure.Devices.Client.Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

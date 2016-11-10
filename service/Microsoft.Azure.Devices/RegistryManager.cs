@@ -8,6 +8,7 @@ namespace Microsoft.Azure.Devices
     using System.Net.Http.Headers;
     using System.Threading;
     using System.Threading.Tasks;
+    using Microsoft.Azure.Devices.Shared;
 
     /// <summary>
     /// Contains methods that services can use to perform create, remove, update and delete operations on devices.

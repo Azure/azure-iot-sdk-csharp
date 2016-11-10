@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace Microsoft.Azure.Devices.Converters
+namespace Microsoft.Azure.Devices.Shared
 {
     using System;
     using System.Collections.Generic;
@@ -126,7 +126,7 @@ namespace Microsoft.Azure.Devices.Converters
 
         public override bool CanWrite => true;
 
-        public override bool CanConvert(Type objectType) => typeof(Twin).IsAssignableFrom(objectType);
+        public override bool CanConvert(Type objectType) => typeof(Twin).GetTypeInfo().IsAssignableFrom(objectType.GetTypeInfo());
 
 
         private static Dictionary<string, object> GetTagsForTwin(JsonReader reader)

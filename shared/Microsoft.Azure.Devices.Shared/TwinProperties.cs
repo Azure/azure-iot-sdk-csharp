@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace Microsoft.Azure.Devices
+namespace Microsoft.Azure.Devices.Shared
 {
     /// <summary>
     /// Represents <see cref="Twin"/> properties
@@ -28,3 +28,4 @@ namespace Microsoft.Azure.Devices
         public TwinCollection Reported { get; set; }
     }
 }
+

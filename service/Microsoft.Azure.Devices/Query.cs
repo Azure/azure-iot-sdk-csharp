@@ -8,6 +8,7 @@ namespace Microsoft.Azure.Devices
     using System.Linq;
     using System.Threading.Tasks;
     using Newtonsoft.Json.Linq;
+    using Microsoft.Azure.Devices.Shared;
 
     /// <summary>
     ///     Query on device twins, device twin aggregates and device jobs
