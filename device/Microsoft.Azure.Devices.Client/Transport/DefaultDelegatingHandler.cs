@@ -79,6 +79,63 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return this.InnerHandler?.SendEventAsync(messages, cancellationToken) ?? TaskConstants.Completed;
         }
 
+        public virtual Task EnableMethodsAsync(CancellationToken cancellationToken)
+        {
+            return this.InnerHandler?.EnableMethodsAsync(cancellationToken) ?? TaskConstants.Completed;
+        }
+
+        public virtual Task SendMethodResponseAsync(Method method, CancellationToken cancellationToken)
+        {
+            return this.InnerHandler?.SendMethodResponseAsync(method, cancellationToken) ?? TaskConstants.Completed;
+        }
+
+        public virtual Task EnableTwinAsync(CancellationToken cancellationToken)
+        {
+            return this.InnerHandler?.EnableTwinAsync(cancellationToken) ?? TaskConstants.Completed;
+        }
+
+        public virtual Task SendTwinGetAsync(Twin twin, CancellationToken cancellationToken)
+        {
+            return this.InnerHandler?.SendTwinGetAsync(twin, cancellationToken) ?? TaskConstants.Completed;
+        }
+        
+        public virtual Task SendTwinUpdateAsync(Twin twin, TwinProperties properties, CancellationToken cancellationToken)
+        {
+            return this.InnerHandler?.SendTwinUpdateAsync(twin, properties, cancellationToken) ?? TaskConstants.Completed;
+        }
+
+        private TwinUpdateCallback twinUpdateHandler;
+        public virtual TwinUpdateCallback TwinUpdateHandler
+        {
+            set
+            {
+                if (this.InnerHandler != null)
+                {
+                    this.InnerHandler.TwinUpdateHandler = value;
+                }
+                else
+                {
+                    this.twinUpdateHandler = value;
+                }
+            }
+        }
+
+        private MethodCallCallback methodCallHandler;
+        public virtual MethodCallCallback MethodCallHandler
+        {
+            set
+            {
+                if (this.InnerHandler != null)
+                {
+                    this.InnerHandler.MethodCallHandler = value;
+                }
+                else
+                {
+                    this.methodCallHandler = value;
+                }
+            }
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             this.InnerHandler?.Dispose();

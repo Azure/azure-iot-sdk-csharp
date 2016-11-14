@@ -3,9 +3,6 @@
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
-
-    // C# using aliases cannot name an unbound generic type declaration without supplying type arguments
-    // Therefore, define a separate alias for each type argument
     using System;
     using System.Collections.Generic;
     using System.Threading;

@@ -477,6 +477,30 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             await this.subscribeCompletionSource.Task;
         }
 
+        public override Task EnableMethodsAsync(CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Task SendMethodResponseAsync(Method method, CancellationToken ct)
+        {
+            throw new NotImplementedException();
+        }
+        public override Task EnableTwinAsync(CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Task SendTwinGetAsync(Twin twin, CancellationToken ct)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Task SendTwinUpdateAsync(Twin twin, TwinProperties properties, CancellationToken ct)
+        {
+            throw new NotImplementedException();
+        }
+
         Func<IPAddress, int, Task<IChannel>> CreateChannelFactory(IotHubConnectionString iotHubConnectionString, MqttTransportSettings settings)
         {
             return (address, port) =>

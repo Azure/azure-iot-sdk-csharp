@@ -9,13 +9,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
-#if !PCL && !WINDOWS_UWP
-#endif
     using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Azure.Devices.Client.Extensions;
-
-    // Copyright (c) Microsoft. All rights reserved.
-    // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
     sealed class ErrorDelegatingHandler : DefaultDelegatingHandler
     {
