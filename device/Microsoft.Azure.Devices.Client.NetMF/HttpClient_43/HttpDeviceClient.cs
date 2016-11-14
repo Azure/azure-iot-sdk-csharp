@@ -10,6 +10,7 @@ namespace Microsoft.Azure.Devices.Client
     using Microsoft.Azure.Devices.Client.Extensions;
     using System.Collections;
     using System.Text;
+    using Microsoft.Azure.Devices.Shared;
 
     sealed class HttpDeviceClient : DeviceClientHelper
     {
