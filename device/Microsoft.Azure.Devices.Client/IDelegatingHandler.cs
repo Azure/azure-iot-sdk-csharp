@@ -8,13 +8,7 @@ namespace Microsoft.Azure.Devices.Client
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Client.Common;
-
-    // Temporary implementations until:
-    // 1) Haitham gets his method class checked in.
-    // 2) Bert refactors the Twin, etc, classes out of the shared SDK and into a common assembly
-    class Method { }
-    class Twin { }
-    class TwinProperties { }
+    using Microsoft.Azure.Devices.Shared;
 
     delegate void TwinUpdateCallback(Twin twin, Boolean fullUdpate, TwinProperties state);
     delegate void MethodCallCallback(Method method);

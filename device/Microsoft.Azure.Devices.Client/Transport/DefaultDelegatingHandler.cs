@@ -8,6 +8,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Client.Common;
+    using Microsoft.Azure.Devices.Shared;
 
     abstract class DefaultDelegatingHandler : IDelegatingHandler
     {
