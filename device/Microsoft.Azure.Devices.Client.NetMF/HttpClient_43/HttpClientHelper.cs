@@ -8,7 +8,8 @@ namespace Microsoft.Azure.Devices.Client
     using System.Net;
     using System.Collections;
     using System.Text;
-    
+    using Microsoft.Azure.Devices.Shared;
+
     using Microsoft.Azure.Devices.Client.Extensions;
     
     sealed class HttpClientHelper : IDisposable
