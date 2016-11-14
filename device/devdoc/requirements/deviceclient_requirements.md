@@ -61,6 +61,16 @@ public sealed class DeviceClient
 
     static ITransportSettings[] PopulateCertificateInTransportSettings(IotHubConnectionStringBuilder connectionStringBuilder, TransportType transportType)
     static ITransportSettings[] PopulateCertificateInTransportSettings(IotHubConnectionStringBuilder connectionStringBuilder, ITransportSettings[] transportSettings)
+
+
+    public AsyncTask EnableTwinAsync();
+
+    public AsyncTaskOfTwin GetTwinAsync();
+
+    public AsyncTask UpdateReportedStateAsync(Twin twin, TwinProperties stateDelta);
+
+    public void SetTwinStateUpdateCallback(TwinStateUpdateCallback callback);
+    
 }
 ```
 
@@ -167,3 +177,59 @@ public uint OperationTimeoutInMilliseconds
 **SRS_DEVICECLIENT_28_002: [** This property shall be defaulted to 240000 (4 minutes). **]**
 
 **SRS_DEVICECLIENT_28_003: [** If this property is set to 0, subsequent operations shall be retried indefinitely until successful or until an unrecoverable error (authentication or quota exceed) is detected **]**
+
+
+### EnableTwinAsync
+```csharp
+public AsyncTask EnableTwinAsync();
+```
+
+**SRS_DEVICECLIENT_18_001: [** `EnableTwinAsync` shall call the transport to establish twin communication with the serivce. **]**
+
+**SRS_DEVICECLIENT_18_002: [** `EnableTwinAsync` shall issue a `GET` operation to retrieve the current twin state from the service and wait for a response. **]**
+
+**SRS_DEVICECLIENT_18_003: [** If a `TwinStateUpdateCallback` has been registered, `EnableTwinAsync` shall call the callback with the state **]** 
+
+
+### GetTwinAsync
+```csharp
+public AsyncTaskOfTwin GetTwinAsync();
+```
+
+**SRS_DEVICECLIENT_18_004: [** If `EnableTwinAsync` has not previously been called, `GetTwinAsync` shall call it. **]**
+
+**SRS_DEVICECLIENT_18_005: [** `GetTwinAsync` shall issue a GET to the sevice to retrieve the current twin state. **]**
+
+**SRS_DEVICECLIENT_18_006: [** `GetTwinAsync` shall wait for a response from the `GET` operation. **]**
+
+**SRS_DEVICECLIENT_18_007: [** If the `GET` operation returns a status >= 300, `GetTwinAsync` shall fail **]**
+
+**SRS_DEVICECLIENT_18_008: [** `GetTwinAsync` shall allocate a new `Twin` object **]**
+
+**SRS_DEVICECLIENT_18_009: [** `GetTwinAsync` shall populate the contents of the `Twin` object based on the response from the service. **]**
+
+**SRS_DEVICECLIENT_18_010: [** `GetTwinAsync` shall return the new `Twin` object **]**
+
+
+### UpdateReportedStateAsync
+```csharp
+public AsyncTask UpdateReportedStateAsync(DeviceTwin twin, TwinProperties stateDelta);
+```
+
+**SRS_DEVICECLIENT_18_011: [** If `stateDelta` is not `null`, `UpdateReportedStateAsync` shall call the transport to send a `PATCH` with the state delta to the service. **]**
+
+**SRS_DEVICECLIENT_18_012: [** If `stateDelta` is `null`, `UpdateReportedStateAsync` shall call the transport to send a `PATCH` with the entire reported property state set to the service. **]**
+
+**SRS_DEVICECLIENT_18_013: [** If `stateDelta` is not null, `UpdateReportedStateAsync` shall apply the state to `Twin` object. **]**
+
+**SRS_DEVICECLIENT_18_014: [** `UpdateReportedStateAsync` shall wait for a response from the `PATCH` operation. **]**
+
+**SRS_DEVICECLIENT_18_015: [** If the `PATCH` operation returns a status >= 300, `UpdateReportedStateAsync` shall fail. **]**
+
+
+### SetTwinStateUpdateCallback
+```csharp
+public void SetTwinStateUpdateCallback(TwinStateUpdateCallback callback);
+```
+
+**SRS_DEVICECLIENT_18_016: [** `SetTwinUpdateStateCallback` shall keep track of the `callback` for future use. **]**  
