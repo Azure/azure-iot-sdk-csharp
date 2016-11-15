@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Client
 #if WINDOWS_UWP
     using AsyncTask = Windows.Foundation.IAsyncAction;
     using AsyncTaskOfMessage = Windows.Foundation.IAsyncOperation<Message>;
-    using AsyncTaskOfTwin = Windows.Foundation.IAsyncOperation<Microsoft.Azure.Devices.Shared.Twin>;
+    using AsyncTaskOfTwin = Windows.Foundation.IAsyncOperation<object>;
 #else
     using AsyncTask = System.Threading.Tasks.Task;
     using AsyncTaskOfMessage = System.Threading.Tasks.Task<Message>;
@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.Client
     /// <param name="twin">Twin object that had received the state update</param>
     /// <param name="fullUpdate">true if this is a full update (from a GET) or false if this is a partial update (from a PATCH)</param>
     /// <param name="stateDelta">Properties that were contained in the update that was received from the service</param>
-    public delegate void TwinStateUpdateCallback(Twin twin, bool fullUpdate, TwinCollection stateDelta);
+    public delegate void TwinStateUpdateCallback(object twin, bool fullUpdate, object stateDelta);
 
     /*
      * Class Diagram and Chain of Responsibility in Device Client 
@@ -957,7 +957,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="twin">Twin object with properties to push</param>
         /// <param name="stateDelta">Property delta to send to the service.  null to send the entire repoted property set</param>
         /// <returns>AsyncTask</returns>
-        public AsyncTask UpdateReportedStateAsync(Twin twin, TwinProperties stateDelta)
+        public AsyncTask UpdateReportedStateAsync(object twin, object stateDelta)
         {
             throw new NotImplementedException();
         }
