@@ -102,6 +102,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return this.ExecuteWithErrorHandlingAsync(() => base.EnableMethodsAsync(cancellationToken), false, cancellationToken);
         }
 
+        public override Task DisableMethodsAsync(CancellationToken cancellationToken)
+        {
+            return this.ExecuteWithErrorHandlingAsync(() => base.DisableMethodsAsync(cancellationToken), false, cancellationToken);
+        }
+
         public override Task AbandonAsync(string lockToken, CancellationToken cancellationToken)
         {
             return this.ExecuteWithErrorHandlingAsync(() => base.AbandonAsync(lockToken, cancellationToken), true, cancellationToken);

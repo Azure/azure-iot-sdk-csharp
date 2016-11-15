@@ -251,6 +251,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }, cancellationToken);
         }
 
+        public override Task DisableMethodsAsync(CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
         public override async Task SendMethodResponseAsync(MethodResponse methodResponse, CancellationToken cancellationToken)
         {
             await this.HandleTimeoutCancellation(async () =>

@@ -85,6 +85,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return this.InnerHandler?.EnableMethodsAsync(cancellationToken) ?? TaskConstants.Completed;
         }
 
+        public virtual Task DisableMethodsAsync(CancellationToken cancellationToken)
+        {
+            return this.InnerHandler?.DisableMethodsAsync(cancellationToken) ?? TaskConstants.Completed;
+        }
+
         public virtual Task SendMethodResponseAsync(MethodResponse methodResponse, CancellationToken cancellationToken)
         {
             return this.InnerHandler?.SendMethodResponseAsync(methodResponse, cancellationToken) ?? TaskConstants.Completed;

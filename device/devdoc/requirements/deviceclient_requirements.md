@@ -156,9 +156,11 @@ public void SetMethodDelegate(string methodName, Delegate methodDelegate)
 ```
 
 **SRS_DEVICECLIENT_10_001: [** The SetMethodDelegate shall lazy-initialize the DeviceMethods property. **]**
+**SRS_DEVICECLIENT_10_005: [** The SetMethodDelegate shall EnableMethodsAsync when called for the first time. **]**
 **SRS_DEVICECLIENT_10_002: [** If the given methodName has an associated delegate, the existing delegate shall be replaced with the newly given delegate. **]**
 **SRS_DEVICECLIENT_10_003: [** The given delegate will only be added if it is not null. **]**
 **SRS_DEVICECLIENT_10_004: [** The DeviceMethods property shall be deleted if the last delegate has been removed. **]**
+**SRS_DEVICECLIENT_10_006: [** The SetMethodDelegate shall DisableMethodsAsync when the last delegate has been removed. **]**
 
 
 ### RetryStrategy

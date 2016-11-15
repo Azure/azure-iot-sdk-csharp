@@ -61,6 +61,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
             await base.EnableMethodsAsync(cancellationToken);
         }
 
+        public override async Task DisableMethodsAsync(CancellationToken cancellationToken)
+        {
+            await this.EnsureOpenedAsync(false, cancellationToken);
+            await base.DisableMethodsAsync(cancellationToken);
+        }
+
         /// <summary>
         /// Deletes a received message from the device queue
         /// </summary>

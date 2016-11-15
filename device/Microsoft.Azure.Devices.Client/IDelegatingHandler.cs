@@ -30,6 +30,7 @@ namespace Microsoft.Azure.Devices.Client
         Task SendEventAsync(IEnumerable<Message> messages, CancellationToken cancellationToken);
 
         Task EnableMethodsAsync(CancellationToken cancellationToken);
+        Task DisableMethodsAsync(CancellationToken cancellationToken);
         Task SendMethodResponseAsync(MethodResponse methodResponse, CancellationToken cancellationToken);
 
         Task EnableTwinAsync(CancellationToken cancellationToken);

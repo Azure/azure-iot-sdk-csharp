@@ -163,6 +163,19 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
+        public override async Task DisableMethodsAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                await this.retryPolicy.ExecuteAsync(() => base.DisableMethodsAsync(cancellationToken), cancellationToken);
+            }
+            catch (IotHubClientTransientException ex)
+            {
+                GetNormalizedIotHubException(ex).Throw();
+                throw;
+            }
+        }
+
         public override async Task CompleteAsync(string lockToken, CancellationToken cancellationToken)
         {
             try

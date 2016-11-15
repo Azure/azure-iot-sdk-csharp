@@ -181,7 +181,6 @@ namespace Microsoft.Azure.Devices.Client
                 default:
                     throw new InvalidOperationException("Unsupported Transport Setting {0}".FormatInvariant(transportSetting));
             }
-            transportHandler.SetMethodCallHandler(OnMethodCalled);
             return transportHandler;
         }
 
@@ -750,15 +749,6 @@ namespace Microsoft.Azure.Devices.Client
 #endif
 
         /// <summary>
-        /// This method will initialize the transport layer internal Method handling processing. The
-        /// user must call this method at least once before method calls will be enabled.
-        /// </summary>
-        public AsyncTask EnableMethodsAsync()
-        {
-            return ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.EnableMethodsAsync(operationTimeoutCancellationToken));
-        }
-
-        /// <summary>
         /// Registers a new delgate for the named method. If a delegate is already associated with
         /// the named method, it will be replaced with the new delegate.
         /// <param name="methodName">The name of the method to associate with the delegate.</param>
@@ -773,6 +763,10 @@ namespace Microsoft.Azure.Devices.Client
                 if (this.deviceMethods == null)
                 {
                     this.deviceMethods = new Dictionary<string, Tuple<MethodCallback, object>>();
+                    this.InnerHandler.SetMethodCallHandler(this.OnMethodCalled);
+
+                    /* codes_SRS_DEVICECLIENT_10_005: [ The SetMethodDelegate shall EnableMethodsAsync when called for the first time. ]*/
+                    ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.EnableMethodsAsync(operationTimeoutCancellationToken));
                 }
 
                 /* codes_SRS_DEVICECLIENT_10_002: [ If the given methodName already has an associated delegate, the existing delegate shall be removed. ]*/
@@ -783,12 +777,16 @@ namespace Microsoft.Azure.Devices.Client
                 }
                 else
                 {
-                        this.deviceMethods[methodName] = new Tuple<MethodCallback, object>(methodDelegate, userContext);
+                    this.deviceMethods[methodName] = new Tuple<MethodCallback, object>(methodDelegate, userContext);
                 }
 
-                /* codes_SRS_DEVICECLIENT_10_004: [ The deviceMethods property shall be deleted if the last delegate has been removed. ]*/
                 if (this.deviceMethods.Count == 0)
                 {
+                    /* codes_SRS_DEVICECLIENT_10_006: [ The SetMethodDelegate shall DisableMethodsAsync when the last delegate has been removed. ]*/
+                    ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.DisableMethodsAsync(operationTimeoutCancellationToken));
+                    this.InnerHandler.SetMethodCallHandler(null);
+
+                    /* codes_SRS_DEVICECLIENT_10_004: [ The deviceMethods property shall be deleted if the last delegate has been removed. ]*/
                     this.deviceMethods = null;
                 }
             }

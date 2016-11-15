@@ -53,14 +53,18 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         static void Main(string[] args)
         {
+            DeviceClient deviceClient = null;
             try
             {
-                DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(DeviceConnectionString, TransportType.Mqtt);
+                deviceClient = DeviceClient.CreateFromConnectionString(DeviceConnectionString, TransportType.Mqtt);
 
                 deviceClient.OpenAsync().Wait();
-                deviceClient.EnableMethodsAsync().Wait();
 
+                /** Method Call processing will be enabled when the first method delegate is added. */
+                /** setup a callback for the 'WriteToConsole' method */
                 deviceClient.SetMethodDelegate("WriteToConsole", WriteToConsole, null);
+
+                /** setup a calback for the 'GetDeviceName' method */
                 deviceClient.SetMethodDelegate("GetDeviceName", GetDeviceName, new DeviceData("DeviceClientMethodMqttSample"));
 
                 Console.WriteLine("Exited!");
@@ -79,6 +83,14 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 Console.WriteLine("Error in sample: {0}", ex.Message);
             }
             Console.WriteLine("Press enter to exit...");
+
+            /** remove the 'WriteToConsole' delegate */
+            deviceClient?.SetMethodDelegate("WriteToConsole", null, null);
+
+            /** remove the 'GetDeviceName' delegate */
+            /** Method Call processing will be disabled when the last method delegate has been removed . */
+            deviceClient?.SetMethodDelegate("GetDeviceName", null, null);
+
             Console.ReadLine();
         }
     }
