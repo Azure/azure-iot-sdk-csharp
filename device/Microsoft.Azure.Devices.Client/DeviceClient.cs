@@ -734,8 +734,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Registers a new delgate for the named method. If a delegate is already associated with
         /// the named method, it will be replaced with the new delegate.
-        /// <param name="methodName"></param>
-        /// <param name="methodDelegate"></param>
+        /// <param name="methodName">The name of the method to associate with the delegate.</param>
+        /// <param name="methodDelegate">The delegate to be used when a method with the given name is called by the cloud service.</param>
         /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
         /// </summary>
         public void SetMethodDelegate(string methodName, MethodCallback methodDelegate, object userContext)

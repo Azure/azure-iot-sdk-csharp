@@ -14,32 +14,14 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         class DeviceData
         {
-            string name;
-			object deviceLock;
-
-            public DeviceData(string myName)
+             public DeviceData(string myName)
             {
-			    this.deviceLock = new object();
                 this.Name = myName;
             }
 
             public string Name
             {
-                get
-                {
-                    lock(this.deviceLock)
-                    {
-                        return this.name;
-                    }
-                }
-
-                set
-                {
-                    lock(this.deviceLock)
-                    {
-                        this.name = value;
-                    }
-                }
+                get; set;
             }
         }
 
