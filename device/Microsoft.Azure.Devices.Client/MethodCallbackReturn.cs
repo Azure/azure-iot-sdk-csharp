@@ -23,9 +23,9 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="status"></param>
         /// <returns></returns>
 #if NETMF
-        public static MethodCallbackReturn MethodCallbackReturnFactory(byte[] payload, int status)
+        public static MethodCallbackReturn NewMethodCallbackReturn(byte[] result, int status)
 #else
-        public static MethodCallbackReturn MethodCallbackReturnFactory([System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArrayAttribute] byte[] result, int status)
+        public static MethodCallbackReturn NewMethodCallbackReturn([System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArrayAttribute] byte[] result, int status)
 #endif
         {
             /* codes_SRS_METHODCALLBACKRETURN_10_001: [ MethodCallbackReturnFactory shall instanciate a new MethodCallbackReturn with given properties. ] */

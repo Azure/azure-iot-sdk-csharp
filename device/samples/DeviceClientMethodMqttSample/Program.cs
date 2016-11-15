@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         class DeviceData
         {
-             public DeviceData(string myName)
+            public DeviceData(string myName)
             {
                 this.Name = myName;
             }
@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             Console.WriteLine("\t{0}", payload);
             Console.WriteLine();
 
-            return MethodCallbackReturn.MethodCallbackReturnFactory(new byte[0], 200);
+            return MethodCallbackReturn.NewMethodCallbackReturn(new byte[0], 200);
         }
 
         static MethodCallbackReturn GetDeviceName(byte[] payload, object userContext)
@@ -40,13 +40,13 @@ namespace Microsoft.Azure.Devices.Client.Samples
             MethodCallbackReturn retValue;
             if (userContext == null)
             {
-                retValue = MethodCallbackReturn.MethodCallbackReturnFactory(new byte[0], 500);
+                retValue = MethodCallbackReturn.NewMethodCallbackReturn(new byte[0], 500);
             }
             else
             {
                 var d = userContext as DeviceData;
                 string result = "{\"name\":\"" + d.Name + "\"}";
-                retValue = MethodCallbackReturn.MethodCallbackReturnFactory(Encoding.UTF8.GetBytes(result), 200);
+                retValue = MethodCallbackReturn.NewMethodCallbackReturn(Encoding.UTF8.GetBytes(result), 200);
             }
             return retValue;
         }

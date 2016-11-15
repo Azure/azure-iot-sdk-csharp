@@ -48,31 +48,31 @@ namespace Microsoft.Azure.Devices.Client
 
     /*
      * Class Diagram and Chain of Responsibility in Device Client 
-                             +--------------------+
-                             | <<interface>>      |
-                             | IDelegatingHandler |
-                             |  * Open            |
-                             |  * Close           |
-                             |  * SendEvent       |
-                             |  * SendEvents      |
-                             |  * Receive         |
-                             |  * Complete        |
-                             |  * Abandon         |
-                             |  * Reject          |
-                             +-------+------------+
-                                     |
-                                     |implements
-                                     |
-                                     |
-                             +-------+-------+
-                             |  <<abstract>> |     
-                             |  Default      |
-     +---+inherits----------->  Delegating   <------inherits-----------------+
-     |                       |  Handler      |                               |
-     |           +--inherits->               <--inherits----+                |
-     |           |           +-------^-------+              |                |
-     |           |                   |inherits              |                |
-     |           |                   |                      |                |
+                                     +--------------------+
+                                     | <<interface>>      |
+                                     | IDelegatingHandler |
+                                     |  * Open            |
+                                     |  * Close           |
+                                     |  * SendEvent       |
+                                     |  * SendEvents      |
+                                     |  * Receive         |
+                                     |  * Complete        |
+                                     |  * Abandon         |
+                                     |  * Reject          |
+                                     +-------+------------+
+                                             |
+                                             |implements
+                                             |
+                                             |
+                                     +-------+-------+
+                                     |  <<abstract>> |     
+                                     |  Default      |
+             +---+inherits----------->  Delegating   <------inherits-----------------+
+             |                       |  Handler      |                               |
+             |           +--inherits->               <--inherits----+                |
+             |           |           +-------^-------+              |                |
+             |           |                   |inherits              |                |
+             |           |                   |                      |                |
 +------------+       +---+---------+      +--+----------+       +---+--------+       +--------------+
 |            |       |             |      |             |       |            |       | <<abstract>> |
 | GateKeeper |  use  | Retry       | use  |  Error      |  use  | Routing    |  use  | Transport    |
@@ -769,28 +769,28 @@ namespace Microsoft.Azure.Devices.Client
         {
             lock (this.deviceCallbackLock)
             {
-            /* codes_SRS_DEVICECLIENT_10_001: [ The SetMethodDelegate shall lazy-initialize the deviceMethods property. ]*/
-            if (this.deviceMethods == null)
-            {
+                /* codes_SRS_DEVICECLIENT_10_001: [ The SetMethodDelegate shall lazy-initialize the deviceMethods property. ]*/
+                if (this.deviceMethods == null)
+                {
                     this.deviceMethods = new Dictionary<string, Tuple<MethodCallback, object>>();
-            }
+                }
 
                 /* codes_SRS_DEVICECLIENT_10_002: [ If the given methodName already has an associated delegate, the existing delegate shall be removed. ]*/
                 /* codes_SRS_DEVICECLIENT_10_003: [ The given delegate will only be added if it is not null. ]*/
-            if (methodDelegate == null)
-            {
-                this.deviceMethods.Remove(methodName);
-            }
-            else
-            {
-                    this.deviceMethods[methodName] = new Tuple<MethodCallback, object>(methodDelegate, userContext);
-            }
+                if (methodDelegate == null)
+                {
+                    this.deviceMethods.Remove(methodName);
+                }
+                else
+                {
+                        this.deviceMethods[methodName] = new Tuple<MethodCallback, object>(methodDelegate, userContext);
+                }
 
                 /* codes_SRS_DEVICECLIENT_10_004: [ The deviceMethods property shall be deleted if the last delegate has been removed. ]*/
-            if (this.deviceMethods.Count == 0)
-            {
-                this.deviceMethods = null;
-            }
+                if (this.deviceMethods.Count == 0)
+                {
+                    this.deviceMethods = null;
+                }
             }
         }
 
@@ -800,16 +800,16 @@ namespace Microsoft.Azure.Devices.Client
             {
                 /* codes_SRS_DEVICECLIENT_10_012: [ If the given method argument is null, throw ArgumentNullException. ]*/
                 throw new ArgumentNullException();
-        }
+            }
 
             MethodResponse methodResponse;
             const int DefaultResponseStatusCode = 404;
             
             if (this.deviceMethods != null && this.deviceMethods.ContainsKey(methodRequest.Name))
-        {
+            {
                 Tuple<MethodCallback, object> m;
                 lock (this.deviceCallbackLock)
-            {
+                {
                     /* codes_SRS_DEVICECLIENT_10_013: [ If the given method does not have an associated delegate, the KeyNotFoundException shall be percolated up. ]*/
                     m = this.deviceMethods[methodRequest.Name];
                 }
