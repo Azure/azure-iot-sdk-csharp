@@ -132,11 +132,12 @@ public AsyncTask SendEventBatchAsync(IEnumerable<Message> messages)
 
 ### OnMethodCalled
 ```csharp
-internal void OnMethodCalled(DeviceMethod method)
+internal void OnMethodCalled(Method method)
 ```
 
-**SRS_DEVICECLIENT_10_011: [** The OnMethodCalled shall invoke the specified delegate. **]**
-**SRS_DEVICECLIENT_10_012: [** If the given method does not have a delegate, the respose shall be set to Unsupported. **]**
+**SRS_DEVICECLIENT_10_011: [** The OnMethodCalled shall invoke the associated delegate. **]**
+**SRS_DEVICECLIENT_10_012: [** If the given method argument is null, throw ArgumentNullException. **]**
+**SRS_DEVICECLIENT_10_013: [** If the given method does not have an associated delegate, the KeyNotFoundException shall be percolated up. **]**
 
 
 ### SetMethodDelegate
@@ -145,7 +146,7 @@ public void SetMethodDelegate(string methodName, Delegate methodDelegate)
 ```
 
 **SRS_DEVICECLIENT_10_001: [** The SetMethodDelegate shall lazy-initialize the DeviceMethods property. **]**
-**SRS_DEVICECLIENT_10_002: [** If the given methodName already has an associated delegate, the existing delegate shall be removed. **]**
+**SRS_DEVICECLIENT_10_002: [** If the given methodName has an associated delegate, the existing delegate shall be replaced with the newly given delegate. **]**
 **SRS_DEVICECLIENT_10_003: [** The given delegate will only be added if it is not null. **]**
 **SRS_DEVICECLIENT_10_004: [** The DeviceMethods property shall be deleted if the last delegate has been removed. **]**
 

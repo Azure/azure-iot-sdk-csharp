@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// contains the response of the device client application method handler.
         /// </summary>
-        internal MethodStatusType Status
+        internal int Status
         {
             get; set;
         }

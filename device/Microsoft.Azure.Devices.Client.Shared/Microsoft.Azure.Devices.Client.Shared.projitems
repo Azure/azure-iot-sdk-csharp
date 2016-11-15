@@ -258,8 +258,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\Method.cs">
       <Link>Method.cs</Link>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\MethodStatusType.cs">
-      <Link>MethodStatusType.cs</Link>
+    <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\MethodCallbackReturn.cs">
+      <Link>MethodCallbackReturn.cs</Link>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\PutOperationType.cs">
       <Link>PutOperationType.cs</Link>

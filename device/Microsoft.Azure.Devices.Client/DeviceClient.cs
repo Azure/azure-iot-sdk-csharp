@@ -9,6 +9,7 @@ namespace Microsoft.Azure.Devices.Client
     using System.Collections.Generic;
     using System.Text.RegularExpressions;
     using System.Threading;
+    using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Client.Extensions;
     using Microsoft.Azure.Devices.Client.Transport;
 #if !WINDOWS_UWP && !PCL
@@ -25,35 +26,35 @@ namespace Microsoft.Azure.Devices.Client
     using AsyncTaskOfMessage = System.Threading.Tasks.Task<Message>;
 #endif
 
-    public delegate string MethodCallback(string payload, out MethodStatusType status);
+    public delegate MethodCallbackReturn MethodCallback(string payload, object userContext);
 
     /*
      * Class Diagramm and Chain of Responsibility in Device Client 
-                             +--------------------+
-                             | <<interface>>      |
-                             | IDelegatingHandler |
-                             |  * Open            |
-                             |  * Close           |
-                             |  * SendEvent       |
-                             |  * SendEvents      |
-                             |  * Receive         |
-                             |  * Complete        |
-                             |  * Abandon         |
-                             |  * Reject          |
-                             +-------+------------+
-                                     |
-                                     |implements
-                                     |
-                                     |
-                             +-------+-------+
-                             |  <<abstract>> |     
-                             |  Default      |
-     +---+inherits----------->  Delegating   <------inherits-----------------+
-     |                       |  Handler      |                               |
-     |           +--inherits->               <--inherits----+                |
-     |           |           +-------^-------+              |                |
-     |           |                   |inherits              |                |
-     |           |                   |                      |                |
+                                     +--------------------+
+                                     | <<interface>>      |
+                                     | IDelegatingHandler |
+                                     |  * Open            |
+                                     |  * Close           |
+                                     |  * SendEvent       |
+                                     |  * SendEvents      |
+                                     |  * Receive         |
+                                     |  * Complete        |
+                                     |  * Abandon         |
+                                     |  * Reject          |
+                                     +-------+------------+
+                                             |
+                                             |implements
+                                             |
+                                             |
+                                     +-------+-------+
+                                     |  <<abstract>> |     
+                                     |  Default      |
+             +---+inherits----------->  Delegating   <------inherits-----------------+
+             |                       |  Handler      |                               |
+             |           +--inherits->               <--inherits----+                |
+             |           |           +-------^-------+              |                |
+             |           |                   |inherits              |                |
+             |           |                   |                      |                |
 +------------+       +---+---------+      +--+----------+       +---+--------+       +--------------+
 |            |       |             |      |             |       |            |       | <<abstract>> |
 | GateKeeper |  use  | Retry       | use  |  Error      |  use  | Routing    |  use  | Transport    |
@@ -105,6 +106,8 @@ namespace Microsoft.Azure.Devices.Client
 
         internal IDelegatingHandler InnerHandler { get; set; }
 
+        object deviceCallbackLock = new object();
+
         /// <summary>
         /// Stores the timeout used in the operation retries.
         /// </summary>
@@ -119,7 +122,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Stores Methods supported by the client device and their associated delegate.
         /// </summary>
-        Dictionary<string, MethodCallback> deviceMethods;
+        Dictionary<string, Tuple<MethodCallback, object>> deviceMethods;
 
 #if !PCL
         DeviceClient(IotHubConnectionString iotHubConnectionString, ITransportSettings[] transportSettings)
@@ -733,50 +736,54 @@ namespace Microsoft.Azure.Devices.Client
         /// the named method, it will be replaced with the new delegate.
         /// <param name="methodName"></param>
         /// <param name="methodDelegate"></param>
+        /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
         /// </summary>
-        public void SetMethodDelegate(string methodName, MethodCallback methodDelegate)
+        public void SetMethodDelegate(string methodName, MethodCallback methodDelegate, object userContext)
         {
-            /* codes_SRS_DEVICECLIENT_10_001: [ The SetMethodDelegate shall lazy-initialize the deviceMethods property. ]*/
-            if (this.deviceMethods == null)
+            lock (this.deviceCallbackLock)
             {
-                this.deviceMethods = new Dictionary<string, MethodCallback>();
-            }
+                /* codes_SRS_DEVICECLIENT_10_001: [ The SetMethodDelegate shall lazy-initialize the deviceMethods property. ]*/
+                if (this.deviceMethods == null)
+                {
+                    this.deviceMethods = new Dictionary<string, Tuple<MethodCallback, object>>();
+                }
 
-            /* codes_SRS_DEVICECLIENT_10_002: [** If the given methodName already has an associated delegate, the existing delegate shall be removed. ]*/
-            /* codes_SRS_DEVICECLIENT_10_003: [** The given delegate will only be added if it is not null. ]*/
-            if (methodDelegate == null)
-            {
-                this.deviceMethods.Remove(methodName);
-            }
-            else
-            {
-                this.deviceMethods[methodName] = methodDelegate;
-            }
+                /* codes_SRS_DEVICECLIENT_10_002: [ If the given methodName already has an associated delegate, the existing delegate shall be removed. ]*/
+                /* codes_SRS_DEVICECLIENT_10_003: [ The given delegate will only be added if it is not null. ]*/
+                if (methodDelegate == null)
+                {
+                    this.deviceMethods.Remove(methodName);
+                }
+                else
+                {
+                    this.deviceMethods[methodName] = new Tuple<MethodCallback, object>(methodDelegate, userContext);
+                }
 
-            /* codes_SRS_DEVICECLIENT_10_004: [** The deviceMethods property shall be deleted if the last delegate has been removed. ]*/
-            if (this.deviceMethods.Count == 0)
-            {
-                this.deviceMethods = null;
+                /* codes_SRS_DEVICECLIENT_10_004: [ The deviceMethods property shall be deleted if the last delegate has been removed. ]*/
+                if (this.deviceMethods.Count == 0)
+                {
+                    this.deviceMethods = null;
+                }
             }
         }
 
-        internal void OnMethodCalled(Method method)
+        internal async void OnMethodCalled(Method method)
         {
-            if (this.deviceMethods.ContainsKey(method.Name))
+            if (method == null)
             {
-                /* codes_SRS_DEVICECLIENT_10_011: [** The OnMethodCalled shall invoke the specified delegate. ]*/
-                MethodStatusType status = MethodStatusType.NotImplemented;
-                method.Result = this.deviceMethods[method.Name](method.Payload, out status);
-                method.Status = status;
-            }
-            else
-            {
-                /* codes_SRS_DEVICECLIENT_10_012: [ If the given method does not have a delegate, the respose shall be set to Unsupported. ]*/
-                method.Result = null;
-                method.Status = MethodStatusType.NotSupported;
+                /* codes_SRS_DEVICECLIENT_10_012: [ If the given method argument is null, throw ArgumentNullException. ]*/
+                throw new ArgumentNullException();
             }
 
-            // ArgumentNullException is percolated to the caller.
+            Tuple<MethodCallback, object> m;
+            lock (this.deviceCallbackLock)
+            {
+                /* codes_SRS_DEVICECLIENT_10_013: [ If the given method does not have an associated delegate, the KeyNotFoundException shall be percolated up. ]*/
+                m = this.deviceMethods[method.Name];
+            }
+
+            /* codes_SRS_DEVICECLIENT_10_011: [ The OnMethodCalled shall invoke the specified delegate. ]*/
+            MethodCallbackReturn rv = await Task.Run(() => m.Item1(method.Payload, m.Item2));
         }
 
         public void Dispose()
