@@ -6,6 +6,7 @@ namespace Microsoft.Azure.Devices
     using System;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Converters;
+    using Microsoft.Azure.Devices.Shared;
 
     /// <summary>
     /// Provides current job report when fetched
