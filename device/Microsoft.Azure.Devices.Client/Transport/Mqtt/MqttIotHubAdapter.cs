@@ -6,6 +6,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
     using System;
     using System.Diagnostics.Contracts;
     using System.IO;
+    using System.Collections.Concurrent;
     using System.Threading.Tasks;
     using DotNetty.Buffers;
     using DotNetty.Codecs.Mqtt.Packets;
@@ -25,8 +26,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             NotConnected = 0,
             Connecting = 1,
             Connected = 2,
-            Subscribing = 4,
-            Receiving = 8,
             Closed = 16
         }
         const string CommandTopicFilterFormat = "devices/{0}/messages/devicebound/#";
@@ -54,7 +53,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         
         DateTime lastChannelActivityTime;
         StateFlags stateFlags;
-        TaskCompletionSource subscribeCompletion;
+
+        ConcurrentDictionary<int, TaskCompletionSource> subscribeCompletions = new ConcurrentDictionary<int, TaskCompletionSource>();
 
         int InboundBacklogSize => this.deviceBoundOneWayProcessor.BacklogSize + this.deviceBoundTwoWayProcessor.BacklogSize;
 
@@ -133,7 +133,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 if (data is SubscribePacket)
                 {
-                    await this.SubscribeAsync(context);
+                    await this.SubscribeAsync(context, data as SubscribePacket);
                     return;
                 }
 
@@ -329,38 +329,55 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (packet.SessionPresent)
             {
-                await this.SubscribeAsync(context);
+                await this.SubscribeAsync(context, null);
             }
         }
         #endregion
 
         #region Subscribe
 
-        async Task SubscribeAsync(IChannelHandlerContext context)
+        async Task SubscribeAsync(IChannelHandlerContext context, SubscribePacket packetPassed)
         {
-            if (this.IsInState(StateFlags.Receiving) || this.IsInState(StateFlags.Subscribing))
+            string topicFilter;
+            QualityOfService qos;
+
+            if (packetPassed == null || packetPassed.Requests == null)
             {
-                return;
+                topicFilter = topicFilter = CommandTopicFilterFormat.FormatInvariant(this.deviceId);
+                qos = mqttTransportSettings.ReceivingQoS;
+            }
+            else if (packetPassed.Requests.Count == 1)
+            {
+                topicFilter = packetPassed.Requests[0].TopicFilter;
+                qos = packetPassed.Requests[0].QualityOfService;
+            }
+            else
+            {
+                throw new ArgumentException("unexpected request count.  expected 1, got " + packetPassed.Requests.Count.ToString());
             }
 
-            this.stateFlags |= StateFlags.Subscribing;
 
-            this.subscribeCompletion = new TaskCompletionSource();
-
-            string topicFilter = CommandTopicFilterFormat.FormatInvariant(this.deviceId);
-
-            var subscribePacket = new SubscribePacket(Util.GetNextPacketId(), new SubscriptionRequest(topicFilter, this.mqttTransportSettings.ReceivingQoS));
+            int packetId = Util.GetNextPacketId();
+            var subscribePacket = new SubscribePacket(packetId, new SubscriptionRequest(topicFilter, qos));
+            this.subscribeCompletions[packetId] = new TaskCompletionSource();
 
             await Util.WriteMessageAsync(context, subscribePacket, ShutdownOnWriteErrorHandler);
 
-            await this.subscribeCompletion.Task;
+            await this.subscribeCompletions[packetId].Task;
+
         }
 
-        void ProcessSubAck()
+        void ProcessSubAck(SubAckPacket packet)
         {
-            this.stateFlags &= ~StateFlags.Subscribing;
-            this.stateFlags |= StateFlags.Receiving;
-            this.subscribeCompletion.TryComplete();
+            if (packet != null)
+            {
+                TaskCompletionSource task;
+                this.subscribeCompletions.TryRemove(packet.PacketId, out task);
+                if (task != null)
+                {
+                    task.TryComplete();
+                }
+            }
         }
 
         #endregion
@@ -382,7 +399,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         await this.ProcessConnectAckAsync(context, (ConnAckPacket)packet);
                         break;
                     case PacketType.SUBACK:
-                        this.ProcessSubAck();
+                        this.ProcessSubAck(packet as SubAckPacket);
                         break;
                     case PacketType.PUBLISH:
                         this.ProcessPublish(context, (PublishPacket)packet);
@@ -413,6 +430,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 message = new Message(bodyStream, true);
 
                 Util.PopulateMessagePropertiesFromPacket(message, publish);
+
+                message.MqttTopicName = publish.TopicName;
             }
             catch (Exception ex)
             {
@@ -454,8 +473,17 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         async Task SendMessageAsync(IChannelHandlerContext context, Message message)
         {
-            string topicName = string.Format(TelemetryTopicFormat, this.deviceId);
+            string topicName;
+            if (string.IsNullOrEmpty(message.MqttTopicName))
+            {
+                topicName = string.Format(TelemetryTopicFormat, this.deviceId);
+            }
+            else
+            {
+                topicName = message.MqttTopicName;
+            }
 
+            // BKTODO: use correct QOS
             PublishPacket packet = await Util.ComposePublishPacketAsync(context, message, this.mqttTransportSettings.PublishToServerQoS, topicName);
             var publishCompletion = new TaskCompletionSource();
             var workItem = new PublishWorkItem
@@ -521,7 +549,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             if (!self.IsInState(StateFlags.Closed))
             {
                 self.stateFlags |= StateFlags.Closed;
-                self.subscribeCompletion?.TrySetException(exception);
+                foreach (var task in self.subscribeCompletions.Values)
+                {
+                    task.TrySetException(exception);
+                }
                 self.deviceBoundOneWayProcessor.Abort(exception);
                 self.deviceBoundTwoWayProcessor.Abort(exception);
                 self.serviceBoundOneWayProcessor.Abort(exception);
