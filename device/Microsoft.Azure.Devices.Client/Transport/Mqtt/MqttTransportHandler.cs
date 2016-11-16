@@ -536,7 +536,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             throw new NotImplementedException();
         }
 
-        public override Task SendMethodResponseAsync(MethodResponse methodResponse, CancellationToken ct)
+        public override async Task SendMethodResponseAsync(MethodResponse methodResponse, CancellationToken ct)
         {
             // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_005:  `SendMethodResponseAsync` shall allocate a `Message` object containing the method response. 
             // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_006:  `SendMethodResponseAsync` shall set the message topic to '$iothub/methods/res/<STATUS>/?$rid=<REQUEST_ID>' where STATUS is the return status for the method and REQUEST_ID is the request ID received from the service in the original method call. 
