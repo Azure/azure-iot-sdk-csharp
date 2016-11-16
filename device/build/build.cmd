@@ -8,7 +8,7 @@ set current-path=%~dp0
 rem // remove trailing slash
 set current-path=%current-path:~0,-1%
 
-set build-root=%current-path%\..\..\..
+set build-root=%current-path%\..\..
 rem // resolve to fully qualified path
 for %%i in ("%build-root%") do set build-root=%%~fi
 
@@ -70,12 +70,12 @@ rem ----------------------------------------------------------------------------
 rem -- build csharp iot client
 rem -----------------------------------------------------------------------------
 
-call nuget restore -config "%current-path%\NuGet.Config" "%build-root%\csharp\device\iothub_csharp_deviceclient.sln"
+call nuget restore -config "%current-path%\NuGet.Config" "%build-root%\device\iothub_csharp_deviceclient.sln"
 if %build-clean%==1 (
-    call :clean-a-solution "%build-root%\csharp\device\iothub_csharp_deviceclient.sln" %build-config% %build-platform%
+    call :clean-a-solution "%build-root%\device\iothub_csharp_deviceclient.sln" %build-config% %build-platform%
     if not !errorlevel!==0 exit /b !errorlevel!
 )
-call :build-a-solution "%build-root%\csharp\device\iothub_csharp_deviceclient.sln" %build-config% %build-platform%
+call :build-a-solution "%build-root%\device\iothub_csharp_deviceclient.sln" %build-config% %build-platform%
 if not !errorlevel!==0 exit /b !errorlevel!
 
 rem -----------------------------------------------------------------------------

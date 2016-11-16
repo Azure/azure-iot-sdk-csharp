@@ -8,7 +8,7 @@ set current-path=%~dp0
 rem // remove trailing slash
 set current-path=%current-path:~0,-1%
 
-set build-root=%current-path%\..\..\..
+set build-root=%current-path%\..\..
 rem // resolve to fully qualified path
 for %%i in ("%build-root%") do set build-root=%%~fi
 
@@ -49,10 +49,10 @@ rem -- build Micro Framework csharp iot client
 rem -----------------------------------------------------------------------------
 
 if %build-clean%==1 (
-    call :clean-a-solution "%build-root%\csharp\device\iothub_csharp_netmf_client.sln" %build-config%
+    call :clean-a-solution "%build-root%\device\iothub_csharp_netmf_client.sln" %build-config%
     if not !errorlevel!==0 exit /b !errorlevel!
 )
-call :build-a-solution "%build-root%\csharp\device\iothub_csharp_netmf_client.sln" %build-config%
+call :build-a-solution "%build-root%\device\iothub_csharp_netmf_client.sln" %build-config%
 if not !errorlevel!==0 exit /b !errorlevel!
 
 rem -----------------------------------------------------------------------------
