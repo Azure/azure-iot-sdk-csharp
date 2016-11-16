@@ -188,9 +188,32 @@ Build.wrn
 Buildx86retail.dat
 *.dat
 
+<<<<<<< HEAD
+# Tools EXE that doesn't end up in a typical build directory
+c/common/tools/macro_utils_h_generator/macro_utils_h_generator.exe
+
 # hg directories should be ignored
 **/hg/
 
+# Java
+java/**/.idea/
+java/**/out/
+java/**/target/
+java/**/*.iml
+java/**/*dependency-reduced-pom.xml
+java/**/*.crt
+
+# Node.js
+**/.settings/
+**/node_modules/
+**/.idea/
+**/coverage/
+
+=======
+# hg directories should be ignored
+**/hg/
+
+>>>>>>> origin/develop
 # VS Code stuff
 **/typings/**
 **/.vscode/**
@@ -200,9 +223,31 @@ Buildx86retail.dat
 csharp/device/NuGet/*.exe
 csharp/device/NuGet/*.nupkg
 csharp/device/.vs/*
+<<<<<<< HEAD
+service/java/.idea
+service/java/target
+service/java/iot.service.sdk.java.iml
+java/device/doc/api_reference
+java/service/doc/api_reference
+c/build_all/windows/nuget.exe
+=======
+>>>>>>> origin/develop
 csharp/device/build/nuget.exe
 
 # .NET Micro Framework Emulator files and folders
 OnBoardFlash.dat
 OnBoardFlash.dat.smd
 DOTNETMF_FS_EMULATION*/
+<<<<<<< HEAD
+/c/cmake
+/c/build
+javawrapper/device/iothub_client_javawrapper/target
+javawrapper/device/samples/direct_call_of_wrapped_functions/target
+javawrapper/device/samples/send-receive-sample/target
+javawrapper/device/samples/send-serialized-event/target
+javawrapper/device/samples/file-upload-sample/target
+javawrapper/device/samples/send-event-sample/target
+javawrapper/device/test/target
+javawrapper/device/samples/target
+=======
+>>>>>>> origin/develop
