@@ -9,8 +9,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
     class Program
     {
         // String containing Hostname, Device Id & Device Key in one of the following formats:
-        //  "HostName=<iothub_host_name>;DeviceId=<device_id>;SharedAccessKey=<device_key>"
-        //  "HostName=<iothub_host_name>;CredentialType=SharedAccessSignature;DeviceId=<device_id>;SharedAccessSignature=SharedAccessSignature sr=<iot_host>/devices/<device_id>&sig=<token>&se=<expiry_time>";
+        // "HostName=<iothub_host_name>;DeviceId=<device_id>;SharedAccessKey=<device_key>"
+        // "HostName=<iothub_host_name>;CredentialType=SharedAccessSignature;DeviceId=<device_id>;SharedAccessSignature=SharedAccessSignature sr=<iot_host>/devices/<device_id>&sig=<token>&se=<expiry_time>";
         private const string DeviceConnectionString = "<replace>";
 
         class DeviceData
@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         static MethodCallbackReturn WriteToConsole(byte[] payload, object userContext)
         {
             Console.WriteLine();
-            Console.WriteLine("\t{0}", payload);
+            Console.WriteLine("\t{0}", Encoding.UTF8.GetString(payload));
             Console.WriteLine();
 
             return MethodCallbackReturn.NewMethodCallbackReturn(new byte[0], 200);
@@ -38,14 +38,14 @@ namespace Microsoft.Azure.Devices.Client.Samples
         static MethodCallbackReturn GetDeviceName(byte[] payload, object userContext)
         {
             MethodCallbackReturn retValue;
-            if (userContext == null)
+            var userData = userContext as DeviceData;
+            if (userData == null)
             {
                 retValue = MethodCallbackReturn.NewMethodCallbackReturn(new byte[0], 500);
             }
             else
             {
-                var d = userContext as DeviceData;
-                string result = "{\"name\":\"" + d.Name + "\"}";
+                string result = "{\"name\":\"" + userData.Name + "\"}";
                 retValue = MethodCallbackReturn.NewMethodCallbackReturn(Encoding.UTF8.GetBytes(result), 200);
             }
             return retValue;
@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             DeviceClient deviceClient = null;
             try
             {
-                deviceClient = DeviceClient.CreateFromConnectionString(DeviceConnectionString, TransportType.Mqtt);
+                deviceClient = DeviceClient.CreateFromConnectionString(DeviceConnectionString, TransportType.Amqp);
 
                 deviceClient.OpenAsync().Wait();
 
@@ -64,8 +64,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 // setup a callback for the 'WriteToConsole' method
                 deviceClient.SetMethodHandler("WriteToConsole", WriteToConsole, null);
 
-                // setup a calback for the 'GetDeviceName' method
-                deviceClient.SetMethodHandler("GetDeviceName", GetDeviceName, new DeviceData("DeviceClientMethodMqttSample"));
+                // setup a callback for the 'GetDeviceName' method
+                deviceClient.SetMethodHandler("GetDeviceName", GetDeviceName, new DeviceData("DeviceClientMethodAmqpSample"));
 
                 Console.WriteLine("Exited!");
             }
@@ -82,7 +82,9 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 Console.WriteLine();
                 Console.WriteLine("Error in sample: {0}", ex.Message);
             }
-            Console.WriteLine("Press enter to exit...");
+            Console.WriteLine("Waiting for incoming subscribed Methods call.  Press enter to exit.");
+
+            Console.ReadLine();
 
             // remove the 'WriteToConsole' handler
             deviceClient?.SetMethodHandler("WriteToConsole", null, null);
@@ -90,8 +92,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
             // remove the 'GetDeviceName' handler
             // Method Call processing will be disabled when the last method handler has been removed .
             deviceClient?.SetMethodHandler("GetDeviceName", null, null);
-
-            Console.ReadLine();
         }
     }
 }

@@ -134,8 +134,8 @@ namespace Microsoft.Azure.Devices.Client
                 Role = false,
                 InitialDeliveryCount = 0,
                 Target = new Target() { Address = linkAddress.AbsoluteUri },
-                SndSettleMode = null, // SenderSettleMode.Unsettled (null as it is the default and to avoid bytes on the wire)
-                RcvSettleMode = null, // (byte)ReceiverSettleMode.First (null as it is the default and to avoid bytes on the wire)
+                SndSettleMode = (byte)SenderSettleMode.Settled,
+                RcvSettleMode = (byte)ReceiverSettleMode.First,
                 LinkName = Guid.NewGuid().ToString("N") // Use a human readable link name to help with debugging
             };
 
@@ -151,7 +151,9 @@ namespace Microsoft.Azure.Devices.Client
             return link;
         }
 
-        public async Task<ReceivingAmqpLink> CreateMethodReceivingLinkAsync(string path, IotHubConnectionString connectionString, TimeSpan timeout, uint prefetchCount, CancellationToken cancellationToken, string deviceId)
+        public async Task<ReceivingAmqpLink> CreateMethodReceivingLinkAsync(
+            string path, IotHubConnectionString connectionString, TimeSpan timeout, uint prefetchCount, CancellationToken cancellationToken, 
+            string deviceId, Action<AmqpMessage, ReceivingAmqpLink> messageListenerAction)
         {
             this.OnCreateReceivingLink(connectionString);
 
@@ -171,8 +173,8 @@ namespace Microsoft.Azure.Devices.Client
                 TotalLinkCredit = prefetchCount,
                 AutoSendFlow = prefetchCount > 0,
                 Source = new Source() { Address = linkAddress.AbsoluteUri },
-                SndSettleMode = null, // SenderSettleMode.Unsettled (null as it is the default and to avoid bytes on the wire)
-                RcvSettleMode = null,
+                SndSettleMode = (byte)SenderSettleMode.Settled,
+                RcvSettleMode = (byte)ReceiverSettleMode.First,
                 LinkName = Guid.NewGuid().ToString("N") // Use a human readable link name to help with debuggin
             };
 
@@ -181,6 +183,7 @@ namespace Microsoft.Azure.Devices.Client
 
             var link = new ReceivingAmqpLink(linkSettings);
             link.AttachTo(session);
+            link.RegisterMessageListener(amqpMessage => messageListenerAction(amqpMessage, link));
 
             var audience = this.BuildAudience(connectionString, path);
             await this.OpenLinkAsync(link, connectionString, audience, timeoutHelper.RemainingTime(), cancellationToken);
@@ -387,8 +390,7 @@ namespace Microsoft.Azure.Devices.Client
 
         protected static AmqpLinkSettings SetLinkSettingsCommonPropertiesForMethod(AmqpLinkSettings linkSettings, string deviceId)
         {
-            var TwinGA = "2016-11-14";
-            linkSettings.AddProperty(IotHubAmqpProperty.ApiVersion, TwinGA);
+            linkSettings.AddProperty(IotHubAmqpProperty.ApiVersion, ClientApiVersionHelper.ApiVersionString);
             linkSettings.AddProperty(IotHubAmqpProperty.ChannelCorrelationId, deviceId);
             return linkSettings;
         }

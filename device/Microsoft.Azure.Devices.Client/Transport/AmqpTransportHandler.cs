@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         int closed;
 
-        public AmqpTransportHandler(IotHubConnectionString connectionString, AmqpTransportSettings transportSettings)
+        public AmqpTransportHandler(IotHubConnectionString connectionString, AmqpTransportSettings transportSettings, Action<MethodRequest> onMethodCallback = null)
             : base(transportSettings)
         {
             TransportType transportType = transportSettings.GetTransportType();
@@ -56,6 +56,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             this.faultTolerantMethodSendingLink = new Client.FaultTolerantAmqpObject<SendingAmqpLink>(this.CreateMethodSendingLinkAsync, this.IotHubConnection.CloseLink);
             this.faultTolerantMethodReceivingLink = new Client.FaultTolerantAmqpObject<ReceivingAmqpLink>(this.CreateMethodReceivingLinkAsync, this.IotHubConnection.CloseLink);
             this.iotHubConnectionString = connectionString;
+            this.messageListener = onMethodCallback;
         }
 
         /// <summary>
@@ -227,26 +228,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 {
                     if (this.messageListener != null)
                     {
-                        SendingAmqpLink methodSendingLink = await this.GetMethodSendingLinkAsync(cancellationToken);
-                        ReceivingAmqpLink methodReceivingLink = await this.GetMethodReceivingLinkAsync(cancellationToken);
-
-                        methodReceivingLink.RegisterMessageListener(amqpMessage =>
-                        {
-                            MethodRequest methodRequest = MethodConverter.ConstructMethodRequestFromAmqpMessage(amqpMessage);
-                            this.messageListener(methodRequest);
-
-                            methodReceivingLink.DisposeDelivery(amqpMessage, true, AmqpConstants.AcceptedOutcome);
-                        });
+                        Task<SendingAmqpLink> methodSendingLinkTask = this.GetMethodSendingLinkAsync(cancellationToken);
+                        Task<ReceivingAmqpLink> methodReceivingLinkTask = this.GetMethodReceivingLinkAsync(cancellationToken);
+                        await Task.WhenAll(methodSendingLinkTask, methodReceivingLinkTask);
                     }
                 }
-                catch (Exception exception)
+                catch (Exception ex) when (!ex.IsFatal())
                 {
-                    if (exception.IsFatal())
-                    {
-                        throw;
-                    }
-
-                    throw AmqpClientHelper.ToIotHubClientContract(exception);
+                    throw AmqpClientHelper.ToIotHubClientContract(ex);
                 }
             }, cancellationToken);
         }
@@ -286,11 +275,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
         public override Task RejectAsync(string lockToken, CancellationToken cancellationToken)
         {
             return this.HandleTimeoutCancellation(() => this.DisposeMessageAsync(lockToken, AmqpConstants.RejectedOutcome, cancellationToken), cancellationToken);
-        }
-
-        public override void SetMethodCallHandler(Action<MethodRequest> onMethodCall)
-        {
-            this.messageListener = onMethodCall;
         }
 
         protected override void Dispose(bool disposing)
@@ -464,7 +448,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             string path = string.Format(CultureInfo.InvariantCulture, CommonConstants.DeviceMethodPathTemplate, System.Net.WebUtility.UrlEncode(this.deviceId));
 
-            return await this.IotHubConnection.CreateMethodReceivingLinkAsync(path, this.iotHubConnectionString, timeout, this.prefetchCount, cancellationToken, this.deviceId);
+            return await this.IotHubConnection.CreateMethodReceivingLinkAsync(
+                path, this.iotHubConnectionString, timeout, this.prefetchCount, cancellationToken, this.deviceId, 
+                (amqpMessage, methodReceivingLink) =>
+                {
+                    MethodRequest methodRequest = MethodConverter.ConstructMethodRequestFromAmqpMessage(amqpMessage);
+                    methodReceivingLink.DisposeDelivery(amqpMessage, true, AmqpConstants.AcceptedOutcome);
+                    this.messageListener(methodRequest);
+                });
         }
     }
 }

@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Default constructor with no body data
         /// </summary>
-        public MethodResponse()
+        internal MethodResponse()
         {
 #if !NETMF
             this.InitializeWithStream(Stream.Null, true);
@@ -72,7 +72,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Default constructor with no requestId and status data
         /// </summary>
-        public MethodResponse(string requestId, int status)
+        internal MethodResponse(string requestId, int status)
         {
 #if !NETMF
             this.InitializeWithStream(Stream.Null, true);
@@ -93,7 +93,7 @@ namespace Microsoft.Azure.Devices.Client
 #if WINDOWS_UWP
         private
 #else
-        public
+        internal
 #endif
             MethodResponse(Stream stream)
             : this()
@@ -111,10 +111,10 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="requestId">the method request id corresponding to this respond</param>
         /// <param name="status">the status code of the method call</param>
 #if NETMF
-        public MethodResponse(byte[] byteArray)
+        internal MethodResponse(byte[] byteArray)
             : this(new MemoryStream(byteArray))
 #else
-        public MethodResponse([System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArrayAttribute] byte[] byteArray, string requestId, int status)
+        internal MethodResponse([System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArrayAttribute] byte[] byteArray, string requestId, int status)
             : this(new MemoryStream(byteArray))
 #endif
         {
@@ -141,7 +141,7 @@ namespace Microsoft.Azure.Devices.Client
         }
         
 #if !WINDOWS_UWP && !PCL
-        public
+        internal
 #endif
         Stream BodyStream
         {
@@ -180,7 +180,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="InvalidOperationException">throws if the method has been called.</exception>
         /// <exception cref="ObjectDisposedException">throws if the method data has already been disposed.</exception>
         /// <remarks>This method can only be called once and afterwards method will throw <see cref="InvalidOperationException"/>.</remarks>
-        public Stream GetBodyStream()
+        internal Stream GetBodyStream()
         {
             this.ThrowIfDisposed();
             this.SetGetBodyCalled();
@@ -203,7 +203,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns></returns>
         /// <exception cref="InvalidOperationException">throws if the method has been called.</exception>
         /// <exception cref="ObjectDisposedException">throws if the method data has already been disposed.</exception>
-        public byte[] GetBytes()
+        internal byte[] GetBytes()
         {
             this.ThrowIfDisposed();
             this.SetGetBodyCalled();

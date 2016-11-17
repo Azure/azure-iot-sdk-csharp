@@ -44,25 +44,10 @@ namespace Microsoft.Azure.Devices.Client
 
             if ((sections & SectionFlag.ApplicationProperties) != 0)
             {
-                foreach (KeyValuePair<MapKey, object> pair in amqpMessage.ApplicationProperties.Map)
+                if (!(amqpMessage.ApplicationProperties?.Map.TryGetValue(new MapKey(MethodName), out methodName) ?? false))
                 {
-                    object netObject = null;
-                    if (TryGetNetObjectFromAmqpObject(pair.Value, MappingType.ApplicationProperty, out netObject))
-                    {
-                        var stringObject = netObject as string;
-
-                        // Extract only the method name from application property which we support
-                        if ((stringObject != null) && (pair.Key.ToString() == MethodName))
-                        {
-                            methodName = pair.Value.ToString();
-                        }
-                        else
-                        {
-                            // Drop non-string properties and log an error
-                            Fx.Exception.TraceHandled(new InvalidDataException("IotHub does not accept non-string Amqp properties"), "MethodConverter.UpdateMethodHeaderAndProperties");
-                        }
-                    }
-                }
+                    Fx.Exception.TraceHandled(new InvalidDataException("Method name is missing"), "MethodConverter.ConstructMethodRequestFromAmqpMessage");
+                }                
             }
 
             return new MethodRequest(methodName, methodRequestId, amqpMessage.BodyStream);
@@ -73,158 +58,16 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public static void PopulateAmqpMessageFromMethodResponse(AmqpMessage amqpMessage, MethodResponse methodResponse)
         {
-            if (methodResponse.RequestId != null)
-            {
-                amqpMessage.Properties.CorrelationId = new Guid(methodResponse.RequestId);
-            }
-
+            Fx.Assert(methodResponse.RequestId != null, "Request Id is missing in the methodResponse.");
+            
+            amqpMessage.Properties.CorrelationId = new Guid(methodResponse.RequestId);
+            
             if (amqpMessage.ApplicationProperties == null)
             {
                 amqpMessage.ApplicationProperties = new ApplicationProperties();
             }
 
-            amqpMessage.ApplicationProperties.Map[Status] = (int)methodResponse.Status;
-        }
-
-        public static bool TryGetAmqpObjectFromNetObject(object netObject, MappingType mappingType, out object amqpObject)
-        {
-            amqpObject = null;
-            if (netObject == null)
-            {
-                return false;
-            }
-
-            switch (SerializationUtilities.GetTypeId(netObject))
-            {
-                case PropertyValueType.Byte:
-                case PropertyValueType.SByte:
-                case PropertyValueType.Int16:
-                case PropertyValueType.Int32:
-                case PropertyValueType.Int64:
-                case PropertyValueType.UInt16:
-                case PropertyValueType.UInt32:
-                case PropertyValueType.UInt64:
-                case PropertyValueType.Single:
-                case PropertyValueType.Double:
-                case PropertyValueType.Boolean:
-                case PropertyValueType.Decimal:
-                case PropertyValueType.Char:
-                case PropertyValueType.Guid:
-                case PropertyValueType.DateTime:
-                case PropertyValueType.String:
-                    amqpObject = netObject;
-                    break;
-                case PropertyValueType.Stream:
-                    if (mappingType == MappingType.ApplicationProperty)
-                    {
-                        amqpObject = ReadStream((Stream)netObject);
-                    }
-                    break;
-                case PropertyValueType.Unknown:
-                    if (netObject is Stream)
-                    {
-                        if (mappingType == MappingType.ApplicationProperty)
-                        {
-                            amqpObject = ReadStream((Stream)netObject);
-                        }
-                    }
-                    else if (mappingType == MappingType.ApplicationProperty)
-                    {
-                        throw FxTrace.Exception.AsError(new SerializationException(IotHubApiResources.GetString(ApiResources.FailedToSerializeUnsupportedType, netObject.GetType().FullName)));
-                    }
-                    else if (netObject is byte[])
-                    {
-                        amqpObject = new ArraySegment<byte>((byte[])netObject);
-                    }
-                    else if (netObject is IList)
-                    {
-                        // Array is also an IList
-                        amqpObject = netObject;
-                    }
-                    else if (netObject is IDictionary)
-                    {
-                        amqpObject = new AmqpMap((IDictionary)netObject);
-                    }
-                    break;
-                default:
-                    break;
-            }
-
-            return amqpObject != null;
-        }
-
-        public static bool TryGetNetObjectFromAmqpObject(object amqpObject, MappingType mappingType, out object netObject)
-        {
-            netObject = null;
-            if (amqpObject == null)
-            {
-                return false;
-            }
-
-            switch (SerializationUtilities.GetTypeId(amqpObject))
-            {
-                case PropertyValueType.Byte:
-                case PropertyValueType.SByte:
-                case PropertyValueType.Int16:
-                case PropertyValueType.Int32:
-                case PropertyValueType.Int64:
-                case PropertyValueType.UInt16:
-                case PropertyValueType.UInt32:
-                case PropertyValueType.UInt64:
-                case PropertyValueType.Single:
-                case PropertyValueType.Double:
-                case PropertyValueType.Boolean:
-                case PropertyValueType.Decimal:
-                case PropertyValueType.Char:
-                case PropertyValueType.Guid:
-                case PropertyValueType.DateTime:
-                case PropertyValueType.String:
-                    netObject = amqpObject;
-                    break;
-                case PropertyValueType.Unknown:
-                    if (amqpObject is AmqpSymbol)
-                    {
-                        netObject = ((AmqpSymbol)amqpObject).Value;
-                    }
-                    else if (amqpObject is ArraySegment<byte>)
-                    {
-                        ArraySegment<byte> binValue = (ArraySegment<byte>)amqpObject;
-                        if (binValue.Count == binValue.Array.Length)
-                        {
-                            netObject = binValue.Array;
-                        }
-                        else
-                        {
-                            byte[] buffer = new byte[binValue.Count];
-                            Buffer.BlockCopy(binValue.Array, binValue.Offset, buffer, 0, binValue.Count);
-                            netObject = buffer;
-                        }
-                    }
-                    else if (mappingType == MappingType.ApplicationProperty)
-                    {
-                        throw FxTrace.Exception.AsError(new SerializationException(IotHubApiResources.GetString(ApiResources.FailedToSerializeUnsupportedType, amqpObject.GetType().FullName)));
-                    }
-                    else if (amqpObject is AmqpMap)
-                    {
-                        AmqpMap map = (AmqpMap)amqpObject;
-                        Dictionary<string, object> dictionary = new Dictionary<string, object>();
-                        foreach (var pair in map)
-                        {
-                            dictionary.Add(pair.Key.ToString(), pair.Value);
-                        }
-
-                        netObject = dictionary;
-                    }
-                    else
-                    {
-                        netObject = amqpObject;
-                    }
-                    break;
-                default:
-                    break;
-            }
-
-            return netObject != null;
+            amqpMessage.ApplicationProperties.Map[Status] = methodResponse.Status;
         }
 
         public static ArraySegment<byte> ReadStream(Stream stream)
