@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             Console.WriteLine("\t{0}", Encoding.UTF8.GetString(payload));
             Console.WriteLine();
 
-            return MethodCallbackReturn.NewMethodCallbackReturn(new byte[0], 200);
+            return new MethodCallbackReturn(new byte[0], 200);
         }
 
         static MethodCallbackReturn GetDeviceName(byte[] payload, object userContext)
@@ -41,12 +41,12 @@ namespace Microsoft.Azure.Devices.Client.Samples
             var userData = userContext as DeviceData;
             if (userData == null)
             {
-                retValue = MethodCallbackReturn.NewMethodCallbackReturn(new byte[0], 500);
+                retValue = new MethodCallbackReturn(new byte[0], 500);
             }
             else
             {
                 string result = "{\"name\":\"" + userData.Name + "\"}";
-                retValue = MethodCallbackReturn.NewMethodCallbackReturn(Encoding.UTF8.GetBytes(result), 200);
+                retValue = new MethodCallbackReturn(Encoding.UTF8.GetBytes(result), 200);
             }
             return retValue;
         }
@@ -66,8 +66,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
                 // setup a callback for the 'GetDeviceName' method
                 deviceClient.SetMethodHandler("GetDeviceName", GetDeviceName, new DeviceData("DeviceClientMethodAmqpSample"));
-
-                Console.WriteLine("Exited!");
             }
             catch (AggregateException ex)
             {
@@ -85,6 +83,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             Console.WriteLine("Waiting for incoming subscribed Methods call.  Press enter to exit.");
 
             Console.ReadLine();
+            Console.WriteLine("Exiting...");
 
             // remove the 'WriteToConsole' handler
             deviceClient?.SetMethodHandler("WriteToConsole", null, null);

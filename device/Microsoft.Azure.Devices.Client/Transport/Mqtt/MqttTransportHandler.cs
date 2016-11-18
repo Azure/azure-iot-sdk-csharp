@@ -90,6 +90,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         // outgoing topic names
         const string methodResponseTopic = "$iothub/methods/res/{0}/?$rid={1}";
 
+        Action<MethodRequest> messageListener;
 
         internal MqttTransportHandler(IotHubConnectionString iotHubConnectionString)
             : this(iotHubConnectionString, new MqttTransportSettings(TransportType.Mqtt_Tcp_Only))
@@ -97,9 +98,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         }
 
-        internal MqttTransportHandler(IotHubConnectionString iotHubConnectionString, MqttTransportSettings settings)
+        internal MqttTransportHandler(IotHubConnectionString iotHubConnectionString, MqttTransportSettings settings, Action<MethodRequest> onMethodCallback = null)
             : this(iotHubConnectionString, settings, null)
         {
+            this.messageListener = onMethodCallback;
         }
 
         internal MqttTransportHandler(IotHubConnectionString iotHubConnectionString, MqttTransportSettings settings, Func<IPAddress, int, Task<IChannel>> channelFactory)
@@ -360,6 +362,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         void HandleIncomingMethodPost(Message message)
         {
             // TODO: Haitham, this is where you put the code to build the MethodRequest object and call teh MethodCall handler 
+            string[] tokens = System.Text.RegularExpressions.Regex.Split(message.MqttTopicName, "/");
+
+            MethodRequest mr = new MethodRequest(tokens[3], tokens[4].Substring(6), message.BodyStream);
+            this.messageListener(mr);
         }
 
         void OnMessageReceived(Message message)
@@ -373,16 +379,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 else if (message.MqttTopicName.StartsWith(twinPatchTopicFilter))
                 {
                     HandleIncomingTwinPatch(message);
-
                 }
                 else if (message.MqttTopicName.StartsWith(methodPostTopicFilter))
                 {
                     HandleIncomingMethodPost(message);
-
                 }
                 else
                 {
-                this.messageQueue.Enqueue(message);
+                    this.messageQueue.Enqueue(message);
                 }
                 // BKTODO: what is this semaphor about?
                 this.receivingSemaphore.Release();
@@ -548,6 +552,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             await this.SendEventAsync(message, ct);
         }
+
         public override async Task EnableTwinAsync(CancellationToken cancellationToken)
         {
             // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_009:  `EnableTwinAsync` shall subscribe using the '$iothub/twin/res/#' topic filter. 

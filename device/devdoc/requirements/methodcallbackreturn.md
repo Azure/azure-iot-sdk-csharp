@@ -22,12 +22,10 @@ public sealed class MethodCallbackReturn
 ```
 
 
-### MethodCallbackReturnFactory
+### MethodCallbackReturn constructor
 ```csharp
-public static MethodCallbackReturn MethodCallbackReturnFactory(string result, int status)
+public MethodCallbackReturn(byte[] result, int status)
 ```
-
-**SRS_METHODCALLBACKRETURN_10_001: [** MethodCallbackReturnFactory shall instanciate a new MethodCallbackReturn with given properties. **]**
 
 ### Result
 ```csharp

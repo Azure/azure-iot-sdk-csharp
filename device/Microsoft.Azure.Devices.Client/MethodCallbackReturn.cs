@@ -16,22 +16,19 @@ namespace Microsoft.Azure.Devices.Client
         byte[] result;
 
         /// <summary>
-        /// Factory will make a new instance of the return class and validates that the payload
-        /// is correct JSON. Throws.
+        /// Make a new instance of the return class and validates that the payload is correct JSON.
         /// </summary>
-        /// <param name="result"></param>
-        /// <param name="status"></param>
+        /// <param name="result">data returned by the method call.</param>
+        /// <param name="status">status indicating success or failure.</param>
         /// <returns></returns>
 #if NETMF
-        public static MethodCallbackReturn NewMethodCallbackReturn(byte[] result, int status)
+        public MethodCallbackReturn(byte[] result, int status)
 #else
-        public static MethodCallbackReturn NewMethodCallbackReturn([System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArrayAttribute] byte[] result, int status)
+        public MethodCallbackReturn([System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArrayAttribute] byte[] result, int status)
 #endif
         {
-            /* codes_SRS_METHODCALLBACKRETURN_10_001: [ MethodCallbackReturnFactory shall instanciate a new MethodCallbackReturn with given properties. ] */
-            MethodCallbackReturn retValue = new MethodCallbackReturn(status);
-            retValue.Result = result;
-            return retValue;
+            this.Result = result;
+            this.Status = status;
         }
 
         /// <summary>
@@ -51,10 +48,10 @@ namespace Microsoft.Azure.Devices.Client
         {
             private set
             {
-                /* codes_SRS_METHODCALLBACKRETURN_10_002: [** Result shall check if the input is validate JSON ] */
+                // codes_SRS_METHODCALLBACKRETURN_10_002: [** Result shall check if the input is validate JSON ]
                 //JsonTextReader reader = new JsonTextReader(new StringReader(value));
 
-                /* codes_SRS_METHODCALLBACKRETURN_10_003: [ Result shall percolate the invalid token exception to the caller ] */
+                // codes_SRS_METHODCALLBACKRETURN_10_003: [ Result shall percolate the invalid token exception to the caller ]
                 //while (reader.Read()) ;  // throws if not valid JSON
 
                 this.result = value;

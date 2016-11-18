@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             Console.WriteLine("\t{0}", payload);
             Console.WriteLine();
 
-            return MethodCallbackReturn.NewMethodCallbackReturn(new byte[0], 200);
+            return new MethodCallbackReturn(new byte[0], 200);
         }
 
         static MethodCallbackReturn GetDeviceName(byte[] payload, object userContext)
@@ -40,13 +40,13 @@ namespace Microsoft.Azure.Devices.Client.Samples
             MethodCallbackReturn retValue;
             if (userContext == null)
             {
-                retValue = MethodCallbackReturn.NewMethodCallbackReturn(new byte[0], 500);
+                retValue = new MethodCallbackReturn(new byte[0], 500);
             }
             else
             {
                 var d = userContext as DeviceData;
                 string result = "{\"name\":\"" + d.Name + "\"}";
-                retValue = MethodCallbackReturn.NewMethodCallbackReturn(Encoding.UTF8.GetBytes(result), 200);
+                retValue = new MethodCallbackReturn(Encoding.UTF8.GetBytes(result), 200);
             }
             return retValue;
         }
@@ -66,8 +66,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
                 // setup a calback for the 'GetDeviceName' method
                 deviceClient.SetMethodHandler("GetDeviceName", GetDeviceName, new DeviceData("DeviceClientMethodMqttSample"));
-
-                Console.WriteLine("Exited!");
             }
             catch (AggregateException ex)
             {
@@ -84,14 +82,15 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
             Console.WriteLine("Press enter to exit...");
 
+            Console.ReadLine();
+            Console.WriteLine("Exiting...");
+
             // remove the 'WriteToConsole' handler
             deviceClient?.SetMethodHandler("WriteToConsole", null, null);
 
             // remove the 'GetDeviceName' handler
             // Method Call processing will be disabled when the last method handler has been removed .
             deviceClient?.SetMethodHandler("GetDeviceName", null, null);
-
-            Console.ReadLine();
         }
     }
 }

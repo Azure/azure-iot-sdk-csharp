@@ -175,7 +175,7 @@ namespace Microsoft.Azure.Devices.Client
 #if !WINDOWS_UWP && !NETMF
                 case TransportType.Mqtt_WebSocket_Only:
                 case TransportType.Mqtt_Tcp_Only:
-                    transportHandler = new MqttTransportHandler(iotHubConnectionString, transportSetting as MqttTransportSettings);
+                    transportHandler = new MqttTransportHandler(iotHubConnectionString, transportSetting as MqttTransportSettings, this.OnMethodCalled);
                     break;
 #endif
                 default:
