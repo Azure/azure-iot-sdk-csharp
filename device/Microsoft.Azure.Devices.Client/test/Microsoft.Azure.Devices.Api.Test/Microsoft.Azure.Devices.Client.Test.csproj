@@ -196,6 +196,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\shared\Microsoft.Azure.Devices.Shared\Microsoft.Azure.Devices.Shared.csproj">
+      <Project>{835230FC-8D03-4CD1-8845-5A9D1B0B837D}</Project>
+      <Name>Microsoft.Azure.Devices.Shared</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Microsoft.Azure.Devices.Client.csproj">
       <Project>{836b1fb6-70f0-4c7e-aa35-519c2f83aa81}</Project>
       <Name>Microsoft.Azure.Devices.Client</Name>

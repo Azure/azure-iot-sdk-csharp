@@ -27,11 +27,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
         readonly TimeSpan operationTimeout;
         readonly uint prefetchCount;
 
-        Action<MethodRequest> messageListener;
+        Func<MethodRequest, Task> messageListener;
 
         int closed;
 
-        public AmqpTransportHandler(IotHubConnectionString connectionString, AmqpTransportSettings transportSettings, Action<MethodRequest> onMethodCallback = null)
+        public AmqpTransportHandler(IotHubConnectionString connectionString, AmqpTransportSettings transportSettings, Func<MethodRequest, Task> onMethodCallback = null)
             : base(transportSettings)
         {
             TransportType transportType = transportSettings.GetTransportType();

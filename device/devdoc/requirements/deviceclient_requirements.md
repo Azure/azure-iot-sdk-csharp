@@ -142,12 +142,14 @@ public AsyncTask SendEventBatchAsync(IEnumerable<Message> messages)
 
 ### OnMethodCalled
 ```csharp
-internal void OnMethodCalled(Method method)
+internal async Task OnMethodCalled(MethodRequest methodRequest)
 ```
 
-**SRS_DEVICECLIENT_10_011: [** The OnMethodCalled shall invoke the associated delegate. **]**
-**SRS_DEVICECLIENT_10_012: [** If the given method argument is null, throw ArgumentNullException. **]**
-**SRS_DEVICECLIENT_10_013: [** If the given method does not have an associated delegate, the KeyNotFoundException shall be percolated up. **]**
+**SRS_DEVICECLIENT_10_011: [** The OnMethodCalled shall invoke the associated MethodHandler. **]**
+**SRS_DEVICECLIENT_10_012: [** If the given methodRequest argument is null, failed silently **]**
+**SRS_DEVICECLIENT_10_013: [** If the given methodRequest does not have an associated delegate, failed silently **]**
+**SRS_DEVICECLIENT_28_020: [** If the given methodRequest data is not valid json, fail silently **]**
+**SRS_DEVICECLIENT_28_021: [** If the MethodCallbackReturn from the MethodHandler is not valid json, JsonReaderException shall be throw **]**
 
 
 ### SetMethodDelegate

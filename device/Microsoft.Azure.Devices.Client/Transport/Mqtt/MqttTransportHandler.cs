@@ -90,7 +90,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         // outgoing topic names
         const string methodResponseTopic = "$iothub/methods/res/{0}/?$rid={1}";
 
-        Action<MethodRequest> messageListener;
+        Func<MethodRequest, Task> messageListener;
 
         internal MqttTransportHandler(IotHubConnectionString iotHubConnectionString)
             : this(iotHubConnectionString, new MqttTransportSettings(TransportType.Mqtt_Tcp_Only))
@@ -98,7 +98,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         }
 
-        internal MqttTransportHandler(IotHubConnectionString iotHubConnectionString, MqttTransportSettings settings, Action<MethodRequest> onMethodCallback = null)
+        internal MqttTransportHandler(IotHubConnectionString iotHubConnectionString, MqttTransportSettings settings, Func<MethodRequest, Task> onMethodCallback = null)
             : this(iotHubConnectionString, settings, null)
         {
             this.messageListener = onMethodCallback;

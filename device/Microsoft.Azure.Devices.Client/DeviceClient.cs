@@ -5,8 +5,8 @@ namespace Microsoft.Azure.Devices.Client
 {
     using Common;
     using System;
-    using System.Linq;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Text.RegularExpressions;
     using System.Threading;
     using System.Threading.Tasks;
@@ -194,7 +194,10 @@ namespace Microsoft.Azure.Devices.Client
 
         internal AsyncTask SendMethodResponseAsync(MethodResponse methodResponse)
         {
-            return ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.SendMethodResponseAsync(methodResponse, operationTimeoutCancellationToken));
+            return ApplyTimeout(operationTimeoutCancellationToken =>
+            {
+                return this.InnerHandler.SendMethodResponseAsync(methodResponse, operationTimeoutCancellationToken);
+            });
         }
 
         /// <summary>
@@ -791,47 +794,42 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        internal async void OnMethodCalled(MethodRequest methodRequest)
+        internal async Task OnMethodCalled(MethodRequest methodRequest)
         {
-            if (methodRequest == null)
-            {
-                // codes_SRS_DEVICECLIENT_10_012: [ If the given method argument is null, throw ArgumentNullException. ]
-                throw new ArgumentNullException();
-            }
-
-            MethodResponse methodResponse;
-            const int DefaultResponseStatusCode = 404;
-
             Tuple<MethodCallback, object> m = null;
-            lock (this.deviceCallbackLock)
-            {
-                if (this.deviceMethods != null && this.deviceMethods.ContainsKey(methodRequest.Name))
-                {
-                    // codes_SRS_DEVICECLIENT_10_013: [ If the given method does not have an associated delegate, the KeyNotFoundException shall be percolated up. ]
-                    m = this.deviceMethods[methodRequest.Name];
-                }
-            }
 
-            if (m != null)
-            { 
+            // codes_SRS_DEVICECLIENT_10_012: [ If the given method argument is null, fail silently ]
+            if (methodRequest != null)
+            {
+                byte[] requestData = methodRequest.GetBytes();
+
                 try
                 {
-                    // codes_SRS_DEVICECLIENT_10_011: [ The OnMethodCalled shall invoke the specified delegate. ]
-                    MethodCallbackReturn rv = await Task.Run(() => m.Item1(methodRequest.GetBytes(), m.Item2));
-                    methodResponse = new MethodResponse(rv.Result, methodRequest.RequestId, rv.Status);
+                    Utils.ValidateDataIsEmptyOrJson(requestData);
+
+                    lock (this.deviceCallbackLock)
+                    {
+                        // codes_SRS_DEVICECLIENT_10_013: [ If the given methodRequest does not have an associated delegate, fail silently ]
+                        if (this.deviceMethods != null && this.deviceMethods.ContainsKey(methodRequest.Name))
+                        {
+                            m = this.deviceMethods[methodRequest.Name];
+                        }
+                    }
                 }
                 catch (Exception)
                 {
-                    methodResponse = new MethodResponse(methodRequest.RequestId, 400);
+                    // codes_SRS_DEVICECLIENT_28_020: [ If the given methodRequest data is not valid json, fail silently ]
+                }
+
+                if (m != null)
+                {
+                    // codes_SRS_DEVICECLIENT_28_021: [ If the MethodCallbackReturn from the MethodHandler is not valid json, JsonReaderException shall be throw ]
+                    // codes_SRS_DEVICECLIENT_10_011: [ The OnMethodCalled shall invoke the specified delegate. ]
+                    MethodCallbackReturn rv = await Task.Run(() => m.Item1(requestData, m.Item2));
+                    MethodResponse methodResponse = new MethodResponse(rv.Result, methodRequest.RequestId, rv.Status);
+                    await this.SendMethodResponseAsync(methodResponse);
                 }
             }
-            else
-            {
-                // codes_SRS_DEVICECLIENT_10_012: [ If the given method does not have a delegate, the respose shall be set to Unsupported. ]
-                methodResponse = new MethodResponse(methodRequest.RequestId, DefaultResponseStatusCode);
-            }
-
-            await this.SendMethodResponseAsync(methodResponse);
         }
 
         public void Dispose()

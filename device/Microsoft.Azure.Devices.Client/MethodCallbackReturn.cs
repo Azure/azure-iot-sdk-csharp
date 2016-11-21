@@ -3,11 +3,6 @@
 
 namespace Microsoft.Azure.Devices.Client
 {
-    using System.IO;
-    using System.Text;
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Schema;
-
     /// <summary>
     /// The data structure represent the Device Twin Method that is used for triggering an activity on the device
     /// </summary>
@@ -35,7 +30,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Constructor which uses the input byte array as the body
         /// </summary>
         /// <param name="status">an integer code contianing a method call status.</param>
-        MethodCallbackReturn(int status)
+        public MethodCallbackReturn(int status)
         {
             this.Status = status;
         }
@@ -48,12 +43,10 @@ namespace Microsoft.Azure.Devices.Client
         {
             private set
             {
-                // codes_SRS_METHODCALLBACKRETURN_10_002: [** Result shall check if the input is validate JSON ]
-                //JsonTextReader reader = new JsonTextReader(new StringReader(value));
-
+                // codes_SRS_METHODCALLBACKRETURN_10_002: [ Result shall check if the input is validate JSON ]
                 // codes_SRS_METHODCALLBACKRETURN_10_003: [ Result shall percolate the invalid token exception to the caller ]
-                //while (reader.Read()) ;  // throws if not valid JSON
-
+                Utils.ValidateDataIsEmptyOrJson(value);
+                
                 this.result = value;
             }
             get
