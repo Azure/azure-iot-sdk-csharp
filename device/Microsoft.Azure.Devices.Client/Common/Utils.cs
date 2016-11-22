@@ -3,14 +3,14 @@
 
 namespace Microsoft.Azure.Devices.Client
 {
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Schema;
     using System;
     using System.IO;
     using System.Reflection;
     using System.Text;
 #if !NETMF
     using Microsoft.Azure.Devices.Client.Common;
+    using Newtonsoft.Json;
+    using Newtonsoft.Json.Schema;
 #endif
     using Extensions;
     using System.Collections;
@@ -99,6 +99,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
+#if !NETMF
         public static void ValidateDataIsEmptyOrJson(byte[] data)
         {
             if (data.Length != 0)
@@ -114,5 +115,6 @@ namespace Microsoft.Azure.Devices.Client
                 }
             }
         }
+#endif
     }
 }
