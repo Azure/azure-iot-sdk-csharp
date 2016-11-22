@@ -9,13 +9,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
-#if !PCL && !WINDOWS_UWP
-#endif
     using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Azure.Devices.Client.Extensions;
-
-    // Copyright (c) Microsoft. All rights reserved.
-    // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
     sealed class ErrorDelegatingHandler : DefaultDelegatingHandler
     {
@@ -102,6 +97,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return this.ExecuteWithErrorHandlingAsync(() => base.ReceiveAsync(timeout, cancellationToken), true, cancellationToken);
         }
 
+        public override Task EnableMethodsAsync(CancellationToken cancellationToken)
+        {
+            return this.ExecuteWithErrorHandlingAsync(() => base.EnableMethodsAsync(cancellationToken), false, cancellationToken);
+        }
+
+        public override Task DisableMethodsAsync(CancellationToken cancellationToken)
+        {
+            return this.ExecuteWithErrorHandlingAsync(() => base.DisableMethodsAsync(cancellationToken), false, cancellationToken);
+        }
+
         public override Task AbandonAsync(string lockToken, CancellationToken cancellationToken)
         {
             return this.ExecuteWithErrorHandlingAsync(() => base.AbandonAsync(lockToken, cancellationToken), true, cancellationToken);
@@ -125,6 +130,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
         public override Task SendEventAsync(Message message, CancellationToken cancellationToken)
         {
             return this.ExecuteWithErrorHandlingAsync(() => base.SendEventAsync(message, cancellationToken), true, cancellationToken);
+        }
+
+        public override Task SendMethodResponseAsync(MethodResponse methodResponse, CancellationToken cancellationToken)
+        {
+            return this.ExecuteWithErrorHandlingAsync(() => base.SendMethodResponseAsync(methodResponse, cancellationToken), true, cancellationToken);
         }
 
         Task ExecuteWithErrorHandlingAsync(Func<Task> asyncOperation, bool ensureOpen, CancellationToken cancellationToken)

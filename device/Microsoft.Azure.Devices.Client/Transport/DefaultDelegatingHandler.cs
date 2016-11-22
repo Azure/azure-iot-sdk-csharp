@@ -8,6 +8,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Client.Common;
+    using Microsoft.Azure.Devices.Shared;
 
     abstract class DefaultDelegatingHandler : IDelegatingHandler
     {
@@ -77,6 +78,57 @@ namespace Microsoft.Azure.Devices.Client.Transport
         public virtual Task SendEventAsync(IEnumerable<Message> messages, CancellationToken cancellationToken)
         {
             return this.InnerHandler?.SendEventAsync(messages, cancellationToken) ?? TaskConstants.Completed;
+        }
+
+        public virtual Task EnableMethodsAsync(CancellationToken cancellationToken)
+        {
+            return this.InnerHandler?.EnableMethodsAsync(cancellationToken) ?? TaskConstants.Completed;
+        }
+
+        public virtual Task DisableMethodsAsync(CancellationToken cancellationToken)
+        {
+            return this.InnerHandler?.DisableMethodsAsync(cancellationToken) ?? TaskConstants.Completed;
+        }
+
+        public virtual Task SendMethodResponseAsync(MethodResponse methodResponse, CancellationToken cancellationToken)
+        {
+            return this.InnerHandler?.SendMethodResponseAsync(methodResponse, cancellationToken) ?? TaskConstants.Completed;
+        }
+
+        public virtual Task EnableTwinAsync(CancellationToken cancellationToken)
+        {
+            return this.InnerHandler?.EnableTwinAsync(cancellationToken) ?? TaskConstants.Completed;
+        }
+
+        public virtual Task SendTwinGetAsync(Twin twin, CancellationToken cancellationToken)
+        {
+            return this.InnerHandler?.SendTwinGetAsync(twin, cancellationToken) ?? TaskConstants.Completed;
+        }
+        
+        public virtual Task SendTwinUpdateAsync(Twin twin, TwinProperties properties, CancellationToken cancellationToken)
+        {
+            return this.InnerHandler?.SendTwinUpdateAsync(twin, properties, cancellationToken) ?? TaskConstants.Completed;
+        }
+
+        private TwinUpdateCallback twinUpdateHandler;
+        public virtual TwinUpdateCallback TwinUpdateHandler
+        {
+            set
+            {
+                if (this.InnerHandler != null)
+                {
+                    this.InnerHandler.TwinUpdateHandler = value;
+                }
+                else
+                {
+                    this.twinUpdateHandler = value;
+                }
+            }
+        }
+        
+        public virtual void SetMethodCallHandler(Action<MethodRequest> onMethodCall)
+        {
+            this.InnerHandler?.SetMethodCallHandler(onMethodCall);
         }
 
         protected virtual void Dispose(bool disposing)

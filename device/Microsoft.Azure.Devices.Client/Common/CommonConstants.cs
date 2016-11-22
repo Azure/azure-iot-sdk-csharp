@@ -40,6 +40,7 @@ namespace Microsoft.Azure.Devices.Client
         // Device URI Templates
         public const string DeviceEventPathTemplate = "/devices/{0}/messages/events";
         public const string DeviceBoundPathTemplate = "/devices/{0}/messages/deviceBound";
+        public const string DeviceMethodPathTemplate = "/devices/{0}/methods/deviceBound";
         public const string BlobUploadStatusPathTemplate = "/devices/{0}/files/";
         public const string BlobUploadPathTemplate = "/devices/{0}/files";
         public const string DeviceBoundPathCompleteTemplate = DeviceBoundPathTemplate + "/{1}";

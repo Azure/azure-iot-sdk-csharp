@@ -12,5 +12,7 @@ namespace Microsoft.Azure.Devices.Client
         public static readonly AmqpSymbol StackTraceName = AmqpConstants.Vendor + ":stack-trace";
         public static readonly AmqpSymbol TrackingId = AmqpConstants.Vendor + ":tracking-id";
         public static readonly AmqpSymbol ClientVersion = AmqpConstants.Vendor + ":client-version";
+        public static readonly AmqpSymbol ApiVersion = AmqpConstants.Vendor + ":api-version";
+        public static readonly AmqpSymbol ChannelCorrelationId = AmqpConstants.Vendor + ":channel-correlation-id";
     }
 }

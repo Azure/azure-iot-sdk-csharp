@@ -5,12 +5,14 @@ namespace Microsoft.Azure.Devices.Client
 {
     using Common;
     using System;
-    using System.Linq;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Text.RegularExpressions;
     using System.Threading;
+    using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Client.Extensions;
     using Microsoft.Azure.Devices.Client.Transport;
+    using Microsoft.Azure.Devices.Shared;
 #if !WINDOWS_UWP && !PCL
     using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 #endif
@@ -20,40 +22,57 @@ namespace Microsoft.Azure.Devices.Client
 #if WINDOWS_UWP
     using AsyncTask = Windows.Foundation.IAsyncAction;
     using AsyncTaskOfMessage = Windows.Foundation.IAsyncOperation<Message>;
+    using AsyncTaskOfTwin = Windows.Foundation.IAsyncOperation<object>;
 #else
     using AsyncTask = System.Threading.Tasks.Task;
     using AsyncTaskOfMessage = System.Threading.Tasks.Task<Message>;
+    using AsyncTaskOfTwin = System.Threading.Tasks.Task<Microsoft.Azure.Devices.Shared.Twin>;
 #endif
 
-    public delegate string MethodCallback(string payload, out MethodStatusType status);
+#if NETMF
+    public delegate MethodCallbackReturn MethodCallback(byte[] payload, object userContext);
+#else
+    public delegate MethodCallbackReturn MethodCallback([System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArrayAttribute] byte[] payload, object userContext);
+#endif
+
+    /// <summary>
+    /// Delegate for desired state update calback into client code.  This will 
+    /// be called every time we receive state (desired or reported) from the
+    /// service.  This callback gets called after the delta has been applied
+    /// to the Twin.
+    /// </summary>
+    /// <param name="twin">Twin object that had received the state update</param>
+    /// <param name="fullUpdate">true if this is a full update (from a GET) or false if this is a partial update (from a PATCH)</param>
+    /// <param name="stateDelta">Properties that were contained in the update that was received from the service</param>
+    public delegate void TwinStateUpdateCallback(object twin, bool fullUpdate, object stateDelta);
 
     /*
-     * Class Diagramm and Chain of Responsibility in Device Client 
-                             +--------------------+
-                             | <<interface>>      |
-                             | IDelegatingHandler |
-                             |  * Open            |
-                             |  * Close           |
-                             |  * SendEvent       |
-                             |  * SendEvents      |
-                             |  * Receive         |
-                             |  * Complete        |
-                             |  * Abandon         |
-                             |  * Reject          |
-                             +-------+------------+
-                                     |
-                                     |implements
-                                     |
-                                     |
-                             +-------+-------+
-                             |  <<abstract>> |     
-                             |  Default      |
-     +---+inherits----------->  Delegating   <------inherits-----------------+
-     |                       |  Handler      |                               |
-     |           +--inherits->               <--inherits----+                |
-     |           |           +-------^-------+              |                |
-     |           |                   |inherits              |                |
-     |           |                   |                      |                |
+     * Class Diagram and Chain of Responsibility in Device Client 
+                                     +--------------------+
+                                     | <<interface>>      |
+                                     | IDelegatingHandler |
+                                     |  * Open            |
+                                     |  * Close           |
+                                     |  * SendEvent       |
+                                     |  * SendEvents      |
+                                     |  * Receive         |
+                                     |  * Complete        |
+                                     |  * Abandon         |
+                                     |  * Reject          |
+                                     +-------+------------+
+                                             |
+                                             |implements
+                                             |
+                                             |
+                                     +-------+-------+
+                                     |  <<abstract>> |     
+                                     |  Default      |
+             +---+inherits----------->  Delegating   <------inherits-----------------+
+             |                       |  Handler      |                               |
+             |           +--inherits->               <--inherits----+                |
+             |           |           +-------^-------+              |                |
+             |           |                   |inherits              |                |
+             |           |                   |                      |                |
 +------------+       +---+---------+      +--+----------+       +---+--------+       +--------------+
 |            |       |             |      |             |       |            |       | <<abstract>> |
 | GateKeeper |  use  | Retry       | use  |  Error      |  use  | Routing    |  use  | Transport    |
@@ -105,10 +124,12 @@ namespace Microsoft.Azure.Devices.Client
 
         internal IDelegatingHandler InnerHandler { get; set; }
 
+        object deviceCallbackLock = new object();
+
         /// <summary>
         /// Stores the timeout used in the operation retries.
         /// </summary>
-        /* Codes_SRS_DEVICECLIENT_28_002: [This property shall be defaulted to 240000 (4 minutes).] */
+        // Codes_SRS_DEVICECLIENT_28_002: [This property shall be defaulted to 240000 (4 minutes).]
         public uint OperationTimeoutInMilliseconds { get; set; } = 4 * 60 * 1000;
 
         /// <summary>
@@ -119,7 +140,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Stores Methods supported by the client device and their associated delegate.
         /// </summary>
-        Dictionary<string, MethodCallback> deviceMethods;
+        Dictionary<string, Tuple<MethodCallback, object>> deviceMethods;
 
 #if !PCL
         DeviceClient(IotHubConnectionString iotHubConnectionString, ITransportSettings[] transportSettings)
@@ -131,8 +152,8 @@ namespace Microsoft.Azure.Devices.Client
                 new ErrorDelegatingHandler(
                     () => new RoutingDelegatingHandler(this.CreateTransportHandler, iotHubConnectionString, transportSettings)));
 #else
-            // UWP does not support retry yet. We need to make the underlying Message stream accessible internally on UWP
-            // to be sure that either the stream has not been read or it is seekable to safely retry operation
+// UWP does not support retry yet. We need to make the underlying Message stream accessible internally on UWP
+// to be sure that either the stream has not been read or it is seekable to safely retry operation
             var innerHandler = new ErrorDelegatingHandler(
                 () => new RoutingDelegatingHandler(this.CreateTransportHandler, iotHubConnectionString, transportSettings));
 #endif
@@ -141,21 +162,26 @@ namespace Microsoft.Azure.Devices.Client
 
         DefaultDelegatingHandler CreateTransportHandler(IotHubConnectionString iotHubConnectionString, ITransportSettings transportSetting)
         {
+            DefaultDelegatingHandler transportHandler;
             switch (transportSetting.GetTransportType())
             {
                 case TransportType.Amqp_WebSocket_Only:
                 case TransportType.Amqp_Tcp_Only:
-                    return new AmqpTransportHandler(iotHubConnectionString, transportSetting as AmqpTransportSettings);
+                    transportHandler = new AmqpTransportHandler(iotHubConnectionString, transportSetting as AmqpTransportSettings, this.OnMethodCalled);
+                    break;
                 case TransportType.Http1:
-                    return new HttpTransportHandler(iotHubConnectionString, transportSetting as Http1TransportSettings);
+                    transportHandler = new HttpTransportHandler(iotHubConnectionString, transportSetting as Http1TransportSettings);
+                    break;
 #if !WINDOWS_UWP && !NETMF
                 case TransportType.Mqtt_WebSocket_Only:
                 case TransportType.Mqtt_Tcp_Only:
-                    return new MqttTransportHandler(iotHubConnectionString, transportSetting as MqttTransportSettings);
+                    transportHandler = new MqttTransportHandler(iotHubConnectionString, transportSetting as MqttTransportSettings, this.OnMethodCalled);
+                    break;
 #endif
                 default:
                     throw new InvalidOperationException("Unsupported Transport Setting {0}".FormatInvariant(transportSetting));
             }
+            return transportHandler;
         }
 
 #else
@@ -165,6 +191,14 @@ namespace Microsoft.Azure.Devices.Client
                 new ErrorDelegatingHandler(() => new HttpTransportHandler(iotHubConnectionString)));
         }
 #endif
+
+        internal AsyncTask SendMethodResponseAsync(MethodResponse methodResponse)
+        {
+            return ApplyTimeout(operationTimeoutCancellationToken =>
+            {
+                return this.InnerHandler.SendMethodResponseAsync(methodResponse, operationTimeoutCancellationToken);
+            });
+        }
 
         /// <summary>
         /// Create an Amqp DeviceClient from individual parameters
@@ -184,6 +218,7 @@ namespace Microsoft.Azure.Devices.Client
 #if WINDOWS_UWP
         [Windows.Foundation.Metadata.DefaultOverloadAttribute()]
 #endif
+
         /// <summary>
         /// Create a DeviceClient from individual parameters
         /// </summary>
@@ -485,7 +520,7 @@ namespace Microsoft.Azure.Devices.Client
 
         public AsyncTask OpenAsync()
         {
-            /* Codes_SRS_DEVICECLIENT_28_007: [ The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable(authentication, quota exceed) error occurs.] */
+            // Codes_SRS_DEVICECLIENT_28_007: [ The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable(authentication, quota exceed) error occurs.]
             return ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.OpenAsync(true, operationTimeoutCancellationToken));
         }
 
@@ -504,7 +539,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>The receive message or null if there was no message until the default timeout</returns>
         public AsyncTaskOfMessage ReceiveAsync()
         {
-            /* Codes_SRS_DEVICECLIENT_28_011: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable(authentication, quota exceed) error occurs.] */
+            // Codes_SRS_DEVICECLIENT_28_011: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable(authentication, quota exceed) error occurs.]
             return ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.ReceiveAsync(operationTimeoutCancellationToken));
         }
 
@@ -514,11 +549,9 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>The receive message or null if there was no message until the specified time has elapsed</returns>
         public AsyncTaskOfMessage ReceiveAsync(TimeSpan timeout)
         {
-            /* Codes_SRS_DEVICECLIENT_28_011: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable(authentication, quota exceed) error occurs.] */
+            // Codes_SRS_DEVICECLIENT_28_011: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable(authentication, quota exceed) error occurs.]
             return ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.ReceiveAsync(timeout, operationTimeoutCancellationToken));
         }
-
-
 
 #if WINDOWS_UWP
         [Windows.Foundation.Metadata.DefaultOverloadAttribute()]
@@ -535,7 +568,7 @@ namespace Microsoft.Azure.Devices.Client
                 throw Fx.Exception.ArgumentNull("lockToken");
             }
 
-            /* Codes_SRS_DEVICECLIENT_28_013: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.] */
+            // Codes_SRS_DEVICECLIENT_28_013: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.]
             return ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.CompleteAsync(lockToken, operationTimeoutCancellationToken));
         }
 
@@ -549,7 +582,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 throw Fx.Exception.ArgumentNull("message");
             }
-            /* Codes_SRS_DEVICECLIENT_28_015: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.] */
+            // Codes_SRS_DEVICECLIENT_28_015: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.]
             return this.CompleteAsync(message.LockToken);
         }
 
@@ -567,7 +600,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 throw Fx.Exception.ArgumentNull("lockToken");
             }
-            /* Codes_SRS_DEVICECLIENT_28_015: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.] */
+            // Codes_SRS_DEVICECLIENT_28_015: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.]
             return ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.AbandonAsync(lockToken, operationTimeoutCancellationToken));
         }
 
@@ -613,7 +646,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 throw Fx.Exception.ArgumentNull("message");
             }
-            /* Codes_SRS_DEVICECLIENT_28_017: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.] */
+            // Codes_SRS_DEVICECLIENT_28_017: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.]
             return ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.RejectAsync(message.LockToken, operationTimeoutCancellationToken));
         }
 
@@ -627,7 +660,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 throw Fx.Exception.ArgumentNull("message");
             }
-            /* Codes_SRS_DEVICECLIENT_28_019: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication or quota exceed) occurs.] */
+            // Codes_SRS_DEVICECLIENT_28_019: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication or quota exceed) occurs.]
             return ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.SendEventAsync(message, operationTimeoutCancellationToken));
         }
 
@@ -641,7 +674,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 throw Fx.Exception.ArgumentNull("messages");
             }
-            /* Codes_SRS_DEVICECLIENT_28_019: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication or quota exceed) occurs.] */
+            // Codes_SRS_DEVICECLIENT_28_019: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication or quota exceed) occurs.]
             return ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.SendEventAsync(messages, operationTimeoutCancellationToken));
         }
 
@@ -659,9 +692,9 @@ namespace Microsoft.Azure.Devices.Client
             var result = operation(operationTimeoutCancellationTokenSource.Token)
                 .WithTimeout(TimeSpan.FromMilliseconds(OperationTimeoutInMilliseconds), () => Resources.OperationTimeoutExpired, operationTimeoutCancellationTokenSource.Token);
             result.ContinueWith(t =>
-                {
-                    operationTimeoutCancellationTokenSource.Dispose();
-                });
+            {
+                operationTimeoutCancellationTokenSource.Dispose();
+            });
             return result.AsTaskOrAsyncOp();
         }
 
@@ -673,16 +706,16 @@ namespace Microsoft.Azure.Devices.Client
                     .WithTimeout(TimeSpan.MaxValue, () => Resources.OperationTimeoutExpired, CancellationToken.None)
                     .AsTaskOrAsyncOp();
             }
-            
+
             CancellationTokenSource operationTimeoutCancellationTokenSource = GetOperationTimeoutCancellationTokenSource();
 
             var result = operation(operationTimeoutCancellationTokenSource.Token)
                 .WithTimeout(TimeSpan.FromMilliseconds(OperationTimeoutInMilliseconds), () => Resources.OperationTimeoutExpired, operationTimeoutCancellationTokenSource.Token);
             result.ContinueWith(t =>
-                {
-                    operationTimeoutCancellationTokenSource.Dispose();
-                    return t.Result;
-                });
+            {
+                operationTimeoutCancellationTokenSource.Dispose();
+                return t.Result;
+            });
             return result.AsTaskOrAsyncOp();
         }
 
@@ -720,63 +753,83 @@ namespace Microsoft.Azure.Devices.Client
 #endif
 
         /// <summary>
-        /// This method will initialize the transport layer internal Method handling processing. The
-        /// user must call this method at least once before method calls will be enabled.
-        /// </summary>
-        public AsyncTask EnableMethodsAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
         /// Registers a new delgate for the named method. If a delegate is already associated with
         /// the named method, it will be replaced with the new delegate.
-        /// <param name="methodName"></param>
-        /// <param name="methodDelegate"></param>
+        /// <param name="methodName">The name of the method to associate with the delegate.</param>
+        /// <param name="methodHandler">The delegate to be used when a method with the given name is called by the cloud service.</param>
+        /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
         /// </summary>
-        public void SetMethodDelegate(string methodName, MethodCallback methodDelegate)
+        public void SetMethodHandler(string methodName, MethodCallback methodHandler, object userContext)
         {
-            /* codes_SRS_DEVICECLIENT_10_001: [ The SetMethodDelegate shall lazy-initialize the deviceMethods property. ]*/
-            if (this.deviceMethods == null)
+            lock (this.deviceCallbackLock)
             {
-                this.deviceMethods = new Dictionary<string, MethodCallback>();
-            }
+                // codes_SRS_DEVICECLIENT_10_001: [ The SetMethodHandler shall lazy-initialize the deviceMethods property. ]
+                if (this.deviceMethods == null)
+                {
+                    this.deviceMethods = new Dictionary<string, Tuple<MethodCallback, object>>();
 
-            /* codes_SRS_DEVICECLIENT_10_002: [** If the given methodName already has an associated delegate, the existing delegate shall be removed. ]*/
-            /* codes_SRS_DEVICECLIENT_10_003: [** The given delegate will only be added if it is not null. ]*/
-            if (methodDelegate == null)
-            {
-                this.deviceMethods.Remove(methodName);
-            }
-            else
-            {
-                this.deviceMethods[methodName] = methodDelegate;
-            }
+                    // codes_SRS_DEVICECLIENT_10_005: [ The SetMethodHandler shall EnableMethodsAsync when called for the first time. ]
+                    ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.EnableMethodsAsync(operationTimeoutCancellationToken));
+                }
 
-            /* codes_SRS_DEVICECLIENT_10_004: [** The deviceMethods property shall be deleted if the last delegate has been removed. ]*/
-            if (this.deviceMethods.Count == 0)
-            {
-                this.deviceMethods = null;
+                // codes_SRS_DEVICECLIENT_10_002: [ If the given methodName already has an associated delegate, the existing delegate shall be removed. ]
+                // codes_SRS_DEVICECLIENT_10_003: [ The given delegate will only be added if it is not null. ]
+                if (methodHandler == null)
+                {
+                    this.deviceMethods.Remove(methodName);
+                }
+                else
+                {
+                    this.deviceMethods[methodName] = new Tuple<MethodCallback, object>(methodHandler, userContext);
+                }
+
+                if (this.deviceMethods.Count == 0)
+                {
+                    // codes_SRS_DEVICECLIENT_10_006: [ The SetMethodHandler shall DisableMethodsAsync when the last delegate has been removed. ]
+                    ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.DisableMethodsAsync(operationTimeoutCancellationToken));
+
+                    // codes_SRS_DEVICECLIENT_10_004: [ The deviceMethods property shall be deleted if the last delegate has been removed. ]
+                    this.deviceMethods = null;
+                }
             }
         }
 
-        internal void OnMethodCalled(Method method)
+        internal async Task OnMethodCalled(MethodRequest methodRequest)
         {
-            if (this.deviceMethods.ContainsKey(method.Name))
-            {
-                /* codes_SRS_DEVICECLIENT_10_011: [** The OnMethodCalled shall invoke the specified delegate. ]*/
-                MethodStatusType status = MethodStatusType.NotImplemented;
-                method.Result = this.deviceMethods[method.Name](method.Payload, out status);
-                method.Status = status;
-            }
-            else
-            {
-                /* codes_SRS_DEVICECLIENT_10_012: [ If the given method does not have a delegate, the respose shall be set to Unsupported. ]*/
-                method.Result = null;
-                method.Status = MethodStatusType.NotSupported;
-            }
+            Tuple<MethodCallback, object> m = null;
 
-            // ArgumentNullException is percolated to the caller.
+            // codes_SRS_DEVICECLIENT_10_012: [ If the given method argument is null, fail silently ]
+            if (methodRequest != null)
+            {
+                byte[] requestData = methodRequest.GetBytes();
+
+                try
+                {
+                    Utils.ValidateDataIsEmptyOrJson(requestData);
+
+                    lock (this.deviceCallbackLock)
+                    {
+                        // codes_SRS_DEVICECLIENT_10_013: [ If the given methodRequest does not have an associated delegate, fail silently ]
+                        if (this.deviceMethods != null && this.deviceMethods.ContainsKey(methodRequest.Name))
+                        {
+                            m = this.deviceMethods[methodRequest.Name];
+                        }
+                    }
+                }
+                catch (Exception)
+                {
+                    // codes_SRS_DEVICECLIENT_28_020: [ If the given methodRequest data is not valid json, fail silently ]
+                }
+
+                if (m != null)
+                {
+                    // codes_SRS_DEVICECLIENT_28_021: [ If the MethodCallbackReturn from the MethodHandler is not valid json, JsonReaderException shall be throw ]
+                    // codes_SRS_DEVICECLIENT_10_011: [ The OnMethodCalled shall invoke the specified delegate. ]
+                    MethodCallbackReturn rv = await Task.Run(() => m.Item1(requestData, m.Item2));
+                    MethodResponse methodResponse = new MethodResponse(rv.Result, methodRequest.RequestId, rv.Status);
+                    await this.SendMethodResponseAsync(methodResponse);
+                }
+            }
         }
 
         public void Dispose()
@@ -883,5 +936,47 @@ namespace Microsoft.Azure.Devices.Client
             return transportSettings;
         }
 #endif
+        /// <summary>
+        /// Enable Twin functionality for this connection.  This establishes the appropriate
+        /// Twin connections with the service and retrieves the current state from the service.
+        /// </summary>
+        /// <returns>AsyncTask</returns>
+        public AsyncTask EnableTwinAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Retrieve a device twin object for the current device
+        /// </summary>
+        /// <returns>The device twin object for the current device</returns>
+        public AsyncTaskOfTwin GetTwinAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Push reported property changes from the Twin up to the service.  If stateDelta is passed,
+        /// this function will apply stateDelta to the Twin object.  
+        /// </summary>
+        /// <param name="twin">Twin object with properties to push</param>
+        /// <param name="stateDelta">Property delta to send to the service.  null to send the entire repoted property set</param>
+        /// <returns>AsyncTask</returns>
+        public AsyncTask UpdateReportedStateAsync(object twin, object stateDelta)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Set a callback that will be called whenever the client receives a state update 
+        /// (desired or reported) from the service.  The callback is called after the state
+        /// has been applied to the Twin object.  
+        /// </summary>
+        /// <param name="callback">Callback to call after the state update has been received and applied</param>
+        public void SetTwinStateUpdateCallback(TwinStateUpdateCallback callback)
+        {
+            throw new NotImplementedException();
+        }
+
     }
 }

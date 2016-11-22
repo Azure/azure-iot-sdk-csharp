@@ -4,9 +4,13 @@
 namespace Microsoft.Azure.Devices.Client
 {
     using System;
+    using System.IO;
     using System.Reflection;
+    using System.Text;
 #if !NETMF
     using Microsoft.Azure.Devices.Client.Common;
+    using Newtonsoft.Json;
+    using Newtonsoft.Json.Schema;
 #endif
     using Extensions;
     using System.Collections;
@@ -94,5 +98,23 @@ namespace Microsoft.Azure.Devices.Client
                     throw new NotSupportedException("Unknown value: '" + value + "'");
             }
         }
+
+#if !NETMF
+        public static void ValidateDataIsEmptyOrJson(byte[] data)
+        {
+            if (data.Length != 0)
+            {
+                var stream = new MemoryStream(data);
+                var streamReader = new StreamReader(stream, Encoding.UTF8, false, Math.Min(1024, data.Length));
+
+                using (var reader = new JsonTextReader(streamReader))
+                {
+                    while (reader.Read())
+                    {
+                    }
+                }
+            }
+        }
+#endif
     }
 }
