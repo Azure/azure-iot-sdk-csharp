@@ -22,11 +22,9 @@ namespace Microsoft.Azure.Devices.Client
 #if WINDOWS_UWP
     using AsyncTask = Windows.Foundation.IAsyncAction;
     using AsyncTaskOfMessage = Windows.Foundation.IAsyncOperation<Message>;
-    using AsyncTaskOfTwin = Windows.Foundation.IAsyncOperation<object>;
 #else
     using AsyncTask = System.Threading.Tasks.Task;
     using AsyncTaskOfMessage = System.Threading.Tasks.Task<Message>;
-    using AsyncTaskOfTwin = System.Threading.Tasks.Task<Microsoft.Azure.Devices.Shared.Twin>;
 #endif
 
 #if NETMF
@@ -34,17 +32,6 @@ namespace Microsoft.Azure.Devices.Client
 #else
     public delegate MethodCallbackReturn MethodCallback([System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArrayAttribute] byte[] payload, object userContext);
 #endif
-
-    /// <summary>
-    /// Delegate for desired state update calback into client code.  This will 
-    /// be called every time we receive state (desired or reported) from the
-    /// service.  This callback gets called after the delta has been applied
-    /// to the Twin.
-    /// </summary>
-    /// <param name="twin">Twin object that had received the state update</param>
-    /// <param name="fullUpdate">true if this is a full update (from a GET) or false if this is a partial update (from a PATCH)</param>
-    /// <param name="stateDelta">Properties that were contained in the update that was received from the service</param>
-    public delegate void TwinStateUpdateCallback(object twin, bool fullUpdate, object stateDelta);
 
     /*
      * Class Diagram and Chain of Responsibility in Device Client 
@@ -936,47 +923,6 @@ namespace Microsoft.Azure.Devices.Client
             return transportSettings;
         }
 #endif
-        /// <summary>
-        /// Enable Twin functionality for this connection.  This establishes the appropriate
-        /// Twin connections with the service and retrieves the current state from the service.
-        /// </summary>
-        /// <returns>AsyncTask</returns>
-        public AsyncTask EnableTwinAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Retrieve a device twin object for the current device
-        /// </summary>
-        /// <returns>The device twin object for the current device</returns>
-        public AsyncTaskOfTwin GetTwinAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Push reported property changes from the Twin up to the service.  If stateDelta is passed,
-        /// this function will apply stateDelta to the Twin object.  
-        /// </summary>
-        /// <param name="twin">Twin object with properties to push</param>
-        /// <param name="stateDelta">Property delta to send to the service.  null to send the entire repoted property set</param>
-        /// <returns>AsyncTask</returns>
-        public AsyncTask UpdateReportedStateAsync(object twin, object stateDelta)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Set a callback that will be called whenever the client receives a state update 
-        /// (desired or reported) from the service.  The callback is called after the state
-        /// has been applied to the Twin object.  
-        /// </summary>
-        /// <param name="callback">Callback to call after the state update has been received and applied</param>
-        public void SetTwinStateUpdateCallback(TwinStateUpdateCallback callback)
-        {
-            throw new NotImplementedException();
-        }
 
     }
 }
