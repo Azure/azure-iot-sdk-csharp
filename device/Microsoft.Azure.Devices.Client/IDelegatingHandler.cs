@@ -31,14 +31,12 @@ namespace Microsoft.Azure.Devices.Client
 
         Task EnableMethodsAsync(CancellationToken cancellationToken);
         Task DisableMethodsAsync(CancellationToken cancellationToken);
-        Task SendMethodResponseAsync(MethodResponse methodResponse, CancellationToken cancellationToken);
+        Task SendMethodResponseAsync(MethodResponseInternal methodResponse, CancellationToken cancellationToken);
 
         Task EnableTwinAsync(CancellationToken cancellationToken);
         Task SendTwinGetAsync(Twin twin, CancellationToken ct);
         Task SendTwinUpdateAsync(Twin twin, TwinProperties properties,  CancellationToken ct);
 
         TwinUpdateCallback TwinUpdateHandler { set; }
-
-        void SetMethodCallHandler(Action<MethodRequest> onMethodCall);
     }
 }

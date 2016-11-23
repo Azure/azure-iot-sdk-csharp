@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        public override async Task SendMethodResponseAsync(MethodResponse method, CancellationToken cancellationToken)
+        public override async Task SendMethodResponseAsync(MethodResponseInternal method, CancellationToken cancellationToken)
         {
             try
             {

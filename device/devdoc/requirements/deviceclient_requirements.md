@@ -134,27 +134,27 @@ public AsyncTask SendEventBatchAsync(IEnumerable<Message> messages)
 
 ### OnMethodCalled
 ```csharp
-internal async Task OnMethodCalled(MethodRequest methodRequest)
+internal async Task OnMethodCalled(MethodRequestInternal methodRequestInternal)
 ```
 
 **SRS_DEVICECLIENT_10_011: [** The OnMethodCalled shall invoke the associated MethodHandler. **]**
-**SRS_DEVICECLIENT_10_012: [** If the given methodRequest argument is null, failed silently **]**
-**SRS_DEVICECLIENT_10_013: [** If the given methodRequest does not have an associated delegate, failed silently **]**
-**SRS_DEVICECLIENT_28_020: [** If the given methodRequest data is not valid json, fail silently **]**
-**SRS_DEVICECLIENT_28_021: [** If the MethodCallbackReturn from the MethodHandler is not valid json, JsonReaderException shall be throw **]**
+**SRS_DEVICECLIENT_10_012: [** If the given methodRequestInternal argument is null, failed silently **]**
+**SRS_DEVICECLIENT_10_013: [** If the given method does not have an associated delegate, failed silently **]**
+**SRS_DEVICECLIENT_28_020: [** If the given methodRequestInternal data is not valid json, fail silently **]**
+**SRS_DEVICECLIENT_28_021: [** If the MethodResponse from the MethodHandler is not valid json, JsonReaderException shall be throw **]**
 
 
 ### SetMethodDelegate
 ```csharp
-public void SetMethodDelegate(string methodName, Delegate methodDelegate)
+public void SetMethodHandler(string methodName, MethodCallback methodHandler, object userContext)
 ```
 
-**SRS_DEVICECLIENT_10_001: [** The SetMethodDelegate shall lazy-initialize the DeviceMethods property. **]**
-**SRS_DEVICECLIENT_10_005: [** The SetMethodDelegate shall EnableMethodsAsync when called for the first time. **]**
+**SRS_DEVICECLIENT_10_001: [** The SetMethodHandler shall lazy-initialize the DeviceMethods property. **]**
+**SRS_DEVICECLIENT_10_005: [** The SetMethodHandler shall EnableMethodsAsync when called for the first time. **]**
 **SRS_DEVICECLIENT_10_002: [** If the given methodName has an associated delegate, the existing delegate shall be replaced with the newly given delegate. **]**
 **SRS_DEVICECLIENT_10_003: [** The given delegate will only be added if it is not null. **]**
 **SRS_DEVICECLIENT_10_004: [** The DeviceMethods property shall be deleted if the last delegate has been removed. **]**
-**SRS_DEVICECLIENT_10_006: [** The SetMethodDelegate shall DisableMethodsAsync when the last delegate has been removed. **]**
+**SRS_DEVICECLIENT_10_006: [** The SetMethodHandler shall DisableMethodsAsync when the last delegate has been removed. **]**
 
 
 ### RetryStrategy

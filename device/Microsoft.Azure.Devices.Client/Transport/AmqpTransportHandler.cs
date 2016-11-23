@@ -27,11 +27,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
         readonly TimeSpan operationTimeout;
         readonly uint prefetchCount;
 
-        Func<MethodRequest, Task> messageListener;
+        Func<MethodRequestInternal, Task> messageListener;
 
         int closed;
 
-        public AmqpTransportHandler(IotHubConnectionString connectionString, AmqpTransportSettings transportSettings, Func<MethodRequest, Task> onMethodCallback = null)
+        public AmqpTransportHandler(IotHubConnectionString connectionString, AmqpTransportSettings transportSettings, Func<MethodRequestInternal, Task> onMethodCallback = null)
             : base(transportSettings)
         {
             TransportType transportType = transportSettings.GetTransportType();
@@ -245,7 +245,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             throw new NotImplementedException();
         }
 
-        public override async Task SendMethodResponseAsync(MethodResponse methodResponse, CancellationToken cancellationToken)
+        public override async Task SendMethodResponseAsync(MethodResponseInternal methodResponse, CancellationToken cancellationToken)
         {
             await this.HandleTimeoutCancellation(async () =>
             {
@@ -452,9 +452,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 path, this.iotHubConnectionString, timeout, this.prefetchCount, cancellationToken, this.deviceId, 
                 (amqpMessage, methodReceivingLink) =>
                 {
-                    MethodRequest methodRequest = MethodConverter.ConstructMethodRequestFromAmqpMessage(amqpMessage);
+                    MethodRequestInternal methodRequestInternal = MethodConverter.ConstructMethodRequestFromAmqpMessage(amqpMessage);
                     methodReceivingLink.DisposeDelivery(amqpMessage, true, AmqpConstants.AcceptedOutcome);
-                    this.messageListener(methodRequest);
+                    this.messageListener(methodRequestInternal);
                 });
         }
     }

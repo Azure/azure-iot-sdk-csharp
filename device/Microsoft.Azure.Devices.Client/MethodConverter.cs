@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Copies the properties from the amqp message to the MethodRequest instance.
         /// </summary>
-        public static MethodRequest ConstructMethodRequestFromAmqpMessage(AmqpMessage amqpMessage)
+        public static MethodRequestInternal ConstructMethodRequestFromAmqpMessage(AmqpMessage amqpMessage)
         {
             if (amqpMessage == null)
             {
@@ -50,24 +50,24 @@ namespace Microsoft.Azure.Devices.Client
                 }                
             }
 
-            return new MethodRequest(methodName, methodRequestId, amqpMessage.BodyStream);
+            return new MethodRequestInternal(methodName, methodRequestId, amqpMessage.BodyStream);
         }
 
         /// <summary>
         /// Copies the Method instance's properties to the AmqpMessage instance.
         /// </summary>
-        public static void PopulateAmqpMessageFromMethodResponse(AmqpMessage amqpMessage, MethodResponse methodResponse)
+        public static void PopulateAmqpMessageFromMethodResponse(AmqpMessage amqpMessage, MethodResponseInternal methodResponseInternal)
         {
-            Fx.Assert(methodResponse.RequestId != null, "Request Id is missing in the methodResponse.");
+            Fx.Assert(methodResponseInternal.RequestId != null, "Request Id is missing in the methodResponse.");
             
-            amqpMessage.Properties.CorrelationId = new Guid(methodResponse.RequestId);
+            amqpMessage.Properties.CorrelationId = new Guid(methodResponseInternal.RequestId);
             
             if (amqpMessage.ApplicationProperties == null)
             {
                 amqpMessage.ApplicationProperties = new ApplicationProperties();
             }
 
-            amqpMessage.ApplicationProperties.Map[Status] = methodResponse.Status;
+            amqpMessage.ApplicationProperties.Map[Status] = methodResponseInternal.Status;
         }
 
         public static ArraySegment<byte> ReadStream(Stream stream)

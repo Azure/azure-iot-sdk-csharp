@@ -22,16 +22,15 @@ namespace Microsoft.Azure.Devices.Client
 #if WINDOWS_UWP
     using AsyncTask = Windows.Foundation.IAsyncAction;
     using AsyncTaskOfMessage = Windows.Foundation.IAsyncOperation<Message>;
+    using AsyncTaskOfMethodResponse = Windows.Foundation.IAsyncOperation<MethodResponse>;
 #else
     using AsyncTask = System.Threading.Tasks.Task;
     using AsyncTaskOfMessage = System.Threading.Tasks.Task<Message>;
+    using AsyncTaskOfMethodResponse = System.Threading.Tasks.Task<MethodResponse>;
+
 #endif
 
-#if NETMF
-    public delegate MethodCallbackReturn MethodCallback(byte[] payload, object userContext);
-#else
-    public delegate MethodCallbackReturn MethodCallback([System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArrayAttribute] byte[] payload, object userContext);
-#endif
+    public delegate AsyncTaskOfMethodResponse MethodCallback(MethodRequest methodRequest, object userContext);
 
     /*
      * Class Diagram and Chain of Responsibility in Device Client 
@@ -179,7 +178,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 #endif
 
-        internal AsyncTask SendMethodResponseAsync(MethodResponse methodResponse)
+        internal AsyncTask SendMethodResponseAsync(MethodResponseInternal methodResponse)
         {
             return ApplyTimeout(operationTimeoutCancellationToken =>
             {
@@ -781,14 +780,14 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        internal async Task OnMethodCalled(MethodRequest methodRequest)
+        internal async Task OnMethodCalled(MethodRequestInternal methodRequestInternal)
         {
             Tuple<MethodCallback, object> m = null;
 
-            // codes_SRS_DEVICECLIENT_10_012: [ If the given method argument is null, fail silently ]
-            if (methodRequest != null)
+            // codes_SRS_DEVICECLIENT_10_012: [ If the given methodRequestInternal argument is null, fail silently ]
+            if (methodRequestInternal != null)
             {
-                byte[] requestData = methodRequest.GetBytes();
+                byte[] requestData = methodRequestInternal.GetBytes();
 
                 try
                 {
@@ -796,25 +795,31 @@ namespace Microsoft.Azure.Devices.Client
 
                     lock (this.deviceCallbackLock)
                     {
-                        // codes_SRS_DEVICECLIENT_10_013: [ If the given methodRequest does not have an associated delegate, fail silently ]
-                        if (this.deviceMethods != null && this.deviceMethods.ContainsKey(methodRequest.Name))
+                        // codes_SRS_DEVICECLIENT_10_013: [ If the given method does not have an associated delegate, fail silently ]
+                        if (this.deviceMethods != null && this.deviceMethods.ContainsKey(methodRequestInternal.Name))
                         {
-                            m = this.deviceMethods[methodRequest.Name];
+                            m = this.deviceMethods[methodRequestInternal.Name];
                         }
                     }
                 }
                 catch (Exception)
                 {
-                    // codes_SRS_DEVICECLIENT_28_020: [ If the given methodRequest data is not valid json, fail silently ]
+                    // codes_SRS_DEVICECLIENT_28_020: [ If the given methodRequestInternal data is not valid json, fail silently ]
                 }
 
                 if (m != null)
                 {
-                    // codes_SRS_DEVICECLIENT_28_021: [ If the MethodCallbackReturn from the MethodHandler is not valid json, JsonReaderException shall be throw ]
+                    try
+                    {
                     // codes_SRS_DEVICECLIENT_10_011: [ The OnMethodCalled shall invoke the specified delegate. ]
-                    MethodCallbackReturn rv = await Task.Run(() => m.Item1(requestData, m.Item2));
-                    MethodResponse methodResponse = new MethodResponse(rv.Result, methodRequest.RequestId, rv.Status);
-                    await this.SendMethodResponseAsync(methodResponse);
+                        MethodResponse rv = await m.Item1(new MethodRequest(methodRequestInternal.Name, requestData), m.Item2);
+                        var methodResponseInternal = new MethodResponseInternal(rv.Result, methodRequestInternal.RequestId, rv.Status);
+                        await this.SendMethodResponseAsync(methodResponseInternal);
+                    }
+                    catch (Exception)
+                    {
+                        // codes_SRS_DEVICECLIENT_28_021: [ If the MethodResponse from the MethodHandler is not valid json, JsonReaderException shall be throw ]
+                    }
                 }
             }
         }

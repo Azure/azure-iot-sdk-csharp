@@ -5,6 +5,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 {
     using System;
     using System.Text;
+    using System.Threading.Tasks;
 
     class Program
     {
@@ -26,29 +27,29 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
         }
 
-        static MethodCallbackReturn WriteToConsole(byte[] payload, object userContext)
+        static Task<MethodResponse> WriteToConsole(MethodRequest methodRequest, object userContext)
         {
             Console.WriteLine();
-            Console.WriteLine("\t{0}", payload);
+            Console.WriteLine("\t{0}", methodRequest.DataAsJson);
             Console.WriteLine();
 
-            return new MethodCallbackReturn(new byte[0], 200);
+            return Task.FromResult(new MethodResponse(new byte[0], 200));
         }
 
-        static MethodCallbackReturn GetDeviceName(byte[] payload, object userContext)
+        static Task<MethodResponse> GetDeviceName(MethodRequest methodRequest, object userContext)
         {
-            MethodCallbackReturn retValue;
+            MethodResponse retValue;
             if (userContext == null)
             {
-                retValue = new MethodCallbackReturn(new byte[0], 500);
+                retValue = new MethodResponse(new byte[0], 500);
             }
             else
             {
                 var d = userContext as DeviceData;
                 string result = "{\"name\":\"" + d.Name + "\"}";
-                retValue = new MethodCallbackReturn(Encoding.UTF8.GetBytes(result), 200);
+                retValue = new MethodResponse(Encoding.UTF8.GetBytes(result), 200);
             }
-            return retValue;
+            return Task.FromResult(retValue);
         }
 
         static void Main(string[] args)

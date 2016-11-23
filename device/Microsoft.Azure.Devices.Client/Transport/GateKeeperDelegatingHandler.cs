@@ -107,7 +107,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             await base.SendEventAsync(message, cancellationToken);
         }
 
-        public override async Task SendMethodResponseAsync(MethodResponse methodResponse, CancellationToken cancellationToken)
+        public override async Task SendMethodResponseAsync(MethodResponseInternal methodResponse, CancellationToken cancellationToken)
         {
             await base.SendMethodResponseAsync(methodResponse, cancellationToken);
         }
