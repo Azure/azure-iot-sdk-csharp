@@ -49,7 +49,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     this.Context.Set(transportSetting);
                     this.InnerHandler = this.ContinuationFactory(this.Context);
 
-                    cancellationToken.ThrowIfCancellationRequested();
                     // Try to open a connection with this transport
                     await base.OpenAsync(explicitOpen, cancellationToken);
                 }

@@ -439,7 +439,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             string path = string.Format(CultureInfo.InvariantCulture, CommonConstants.DeviceMethodPathTemplate, System.Net.WebUtility.UrlEncode(this.deviceId));
 
             return await this.IotHubConnection.CreateMethodReceivingLinkAsync(
-                path, this.iotHubConnectionString, timeout, this.prefetchCount, cancellationToken, this.deviceId, 
+                path, this.iotHubConnectionString, timeout, this.prefetchCount, cancellationToken, this.deviceId,
                 (amqpMessage, methodReceivingLink) =>
                 {
                     MethodRequestInternal methodRequestInternal = MethodConverter.ConstructMethodRequestFromAmqpMessage(amqpMessage);

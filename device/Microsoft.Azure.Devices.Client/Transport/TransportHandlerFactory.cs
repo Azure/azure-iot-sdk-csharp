@@ -24,7 +24,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 case TransportType.Http1:
                     return new HttpTransportHandler(context, connectionString, transportSetting as Http1TransportSettings);
 #if !WINDOWS_UWP && !NETMF
-                    case TransportType.Mqtt:
+                    case TransportType.Mqtt_Tcp_Only:
+                    case TransportType.Mqtt_WebSocket_Only:
                         return new MqttTransportHandler(context, connectionString, transportSetting as MqttTransportSettings);
 #endif
                 default:

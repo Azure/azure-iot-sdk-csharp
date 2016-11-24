@@ -27,6 +27,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyKeyFileAttribute("35MSSharedLib1024.snk")]
 #else
 [assembly: InternalsVisibleTo("Microsoft.Azure.Devices.Client.Test")]
+[assembly: InternalsVisibleTo("Microsoft.Azure.Devices.Tests.LoadTest.Console")]
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 #endif
 
