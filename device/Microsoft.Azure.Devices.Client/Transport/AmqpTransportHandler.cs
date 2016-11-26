@@ -20,8 +20,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         readonly string deviceId;
         readonly Client.FaultTolerantAmqpObject<SendingAmqpLink> faultTolerantEventSendingLink;
         readonly Client.FaultTolerantAmqpObject<ReceivingAmqpLink> faultTolerantDeviceBoundReceivingLink;
-        readonly Client.FaultTolerantAmqpObject<SendingAmqpLink> faultTolerantMethodSendingLink;
-        readonly Client.FaultTolerantAmqpObject<ReceivingAmqpLink> faultTolerantMethodReceivingLink;
+        volatile Client.FaultTolerantAmqpObject<SendingAmqpLink> faultTolerantMethodSendingLink;
+        volatile Client.FaultTolerantAmqpObject<ReceivingAmqpLink> faultTolerantMethodReceivingLink;
         readonly IotHubConnectionString iotHubConnectionString;
         readonly TimeSpan openTimeout;
         readonly TimeSpan operationTimeout;
@@ -53,8 +53,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             this.prefetchCount = transportSettings.PrefetchCount;
             this.faultTolerantEventSendingLink = new Client.FaultTolerantAmqpObject<SendingAmqpLink>(this.CreateEventSendingLinkAsync, this.IotHubConnection.CloseLink);
             this.faultTolerantDeviceBoundReceivingLink = new Client.FaultTolerantAmqpObject<ReceivingAmqpLink>(this.CreateDeviceBoundReceivingLinkAsync, this.IotHubConnection.CloseLink);
-            this.faultTolerantMethodSendingLink = new Client.FaultTolerantAmqpObject<SendingAmqpLink>(this.CreateMethodSendingLinkAsync, this.IotHubConnection.CloseLink);
-            this.faultTolerantMethodReceivingLink = new Client.FaultTolerantAmqpObject<ReceivingAmqpLink>(this.CreateMethodReceivingLinkAsync, this.IotHubConnection.CloseLink);
             this.iotHubConnectionString = connectionString;
             this.messageListener = onMethodCallback;
         }
@@ -124,12 +122,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                      throw AmqpClientHelper.ToIotHubClientContract(exception);
                  }
              }, cancellationToken);
-        }
-
-        public override Task CloseAsync()
-        {
-            this.Close();
-            return TaskHelpers.CompletedTask;
         }
 
         public override async Task SendEventAsync(Message message, CancellationToken cancellationToken)
@@ -222,6 +214,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override Task EnableMethodsAsync(CancellationToken cancellationToken)
         {
+            if (this.faultTolerantMethodSendingLink == null)
+            {
+                this.faultTolerantMethodSendingLink = new Client.FaultTolerantAmqpObject<SendingAmqpLink>(this.CreateMethodSendingLinkAsync, this.IotHubConnection.CloseLink);
+            }
+
+            if (this.faultTolerantMethodReceivingLink == null)
+            {
+                this.faultTolerantMethodReceivingLink = new Client.FaultTolerantAmqpObject<ReceivingAmqpLink>(this.CreateMethodReceivingLinkAsync, this.IotHubConnection.CloseLink);
+            }
+
             return this.HandleTimeoutCancellation(async () =>
             {
                 try
@@ -240,9 +242,31 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }, cancellationToken);
         }
 
-        public override Task DisableMethodsAsync(CancellationToken cancellationToken)
+        public override async Task DisableMethodsAsync(CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            Task receivingLinkCloseTask;
+            if (this.faultTolerantMethodReceivingLink != null)
+            {
+                receivingLinkCloseTask = this.faultTolerantMethodReceivingLink.CloseAsync();
+                this.faultTolerantMethodReceivingLink = null;
+            }
+            else
+            {
+                receivingLinkCloseTask = TaskHelpers.CompletedTask;
+            }
+
+            Task sendingLinkCloseTask;
+            if (this.faultTolerantMethodSendingLink != null)
+            {
+                sendingLinkCloseTask = this.faultTolerantMethodSendingLink.CloseAsync();
+                this.faultTolerantMethodSendingLink = null;
+            }
+            else
+            {
+                sendingLinkCloseTask = TaskHelpers.CompletedTask;
+            }
+
+            await Task.WhenAll(receivingLinkCloseTask, sendingLinkCloseTask);
         }
 
         public override async Task SendMethodResponseAsync(MethodResponseInternal methodResponse, CancellationToken cancellationToken)
@@ -277,11 +301,15 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return this.HandleTimeoutCancellation(() => this.DisposeMessageAsync(lockToken, AmqpConstants.RejectedOutcome, cancellationToken), cancellationToken);
         }
 
-        protected override void Dispose(bool disposing)
+        protected override async void Dispose(bool disposing)
         {
             try
             {
-                this.Close();
+                await this.CloseAsync();
+            }
+            catch
+            {
+                // TODO: add traces here
             }
             finally
             {
@@ -289,15 +317,15 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        void Close()
+        public override async Task CloseAsync()
         {
             if (Interlocked.CompareExchange(ref this.closed, 1, 0) == 0)
             {
                 GC.SuppressFinalize(this);
-                this.faultTolerantEventSendingLink.CloseAsync().Fork();
-                this.faultTolerantDeviceBoundReceivingLink.CloseAsync().Fork();
-                this.faultTolerantMethodReceivingLink.CloseAsync().Fork();
-                this.faultTolerantMethodSendingLink.CloseAsync().Fork();
+                Task eventSendingLinkCloseTask = this.faultTolerantEventSendingLink.CloseAsync();
+                Task deviceBoundReceivingLinkCloseTask = this.faultTolerantDeviceBoundReceivingLink.CloseAsync();
+                Task disabledMethodTask = this.DisableMethodsAsync(CancellationToken.None);
+                await Task.WhenAll(eventSendingLinkCloseTask, deviceBoundReceivingLinkCloseTask, disabledMethodTask);
                 this.IotHubConnection.Release(this.deviceId);
             }
         }

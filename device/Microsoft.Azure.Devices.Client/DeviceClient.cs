@@ -749,33 +749,35 @@ namespace Microsoft.Azure.Devices.Client
         {
             lock (this.deviceCallbackLock)
             {
-                // codes_SRS_DEVICECLIENT_10_001: [ The SetMethodHandler shall lazy-initialize the deviceMethods property. ]
-                if (this.deviceMethods == null)
+                if (methodHandler != null)
                 {
-                    this.deviceMethods = new Dictionary<string, Tuple<MethodCallback, object>>();
+                    // codes_SRS_DEVICECLIENT_10_001: [ The SetMethodHandler shall lazy-initialize the deviceMethods property. ]
+                    if (this.deviceMethods == null)
+                    {
+                        this.deviceMethods = new Dictionary<string, Tuple<MethodCallback, object>>();
 
-                    // codes_SRS_DEVICECLIENT_10_005: [ The SetMethodHandler shall EnableMethodsAsync when called for the first time. ]
-                    ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.EnableMethodsAsync(operationTimeoutCancellationToken));
-                }
-
-                // codes_SRS_DEVICECLIENT_10_002: [ If the given methodName already has an associated delegate, the existing delegate shall be removed. ]
-                // codes_SRS_DEVICECLIENT_10_003: [ The given delegate will only be added if it is not null. ]
-                if (methodHandler == null)
-                {
-                    this.deviceMethods.Remove(methodName);
+                        // codes_SRS_DEVICECLIENT_10_005: [ The SetMethodHandler shall EnableMethodsAsync when called for the first time. ]
+                        ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.EnableMethodsAsync(operationTimeoutCancellationToken));
+                    }
+                    this.deviceMethods[methodName] = new Tuple<MethodCallback, object>(methodHandler, userContext);
                 }
                 else
                 {
-                    this.deviceMethods[methodName] = new Tuple<MethodCallback, object>(methodHandler, userContext);
-                }
+                    // codes_SRS_DEVICECLIENT_10_002: [ If the given methodName already has an associated delegate, the existing delegate shall be removed. ]
+                    // codes_SRS_DEVICECLIENT_10_003: [ The given delegate will only be added if it is not null. ]
+                    if (this.deviceMethods != null)
+                    {
+                        this.deviceMethods.Remove(methodName);
 
-                if (this.deviceMethods.Count == 0)
-                {
-                    // codes_SRS_DEVICECLIENT_10_006: [ The SetMethodHandler shall DisableMethodsAsync when the last delegate has been removed. ]
-                    ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.DisableMethodsAsync(operationTimeoutCancellationToken));
+                        if (this.deviceMethods.Count == 0)
+                        {
+                            // codes_SRS_DEVICECLIENT_10_006: [ The SetMethodHandler shall DisableMethodsAsync when the last delegate has been removed. ]
+                            ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.DisableMethodsAsync(operationTimeoutCancellationToken));
 
-                    // codes_SRS_DEVICECLIENT_10_004: [ The deviceMethods property shall be deleted if the last delegate has been removed. ]
-                    this.deviceMethods = null;
+                            // codes_SRS_DEVICECLIENT_10_004: [ The deviceMethods property shall be deleted if the last delegate has been removed. ]
+                            this.deviceMethods = null;
+                        }
+                    }
                 }
             }
         }
@@ -796,10 +798,7 @@ namespace Microsoft.Azure.Devices.Client
                     lock (this.deviceCallbackLock)
                     {
                         // codes_SRS_DEVICECLIENT_10_013: [ If the given method does not have an associated delegate, fail silently ]
-                        if (this.deviceMethods != null && this.deviceMethods.ContainsKey(methodRequestInternal.Name))
-                        {
-                            m = this.deviceMethods[methodRequestInternal.Name];
-                        }
+                        this.deviceMethods?.TryGetValue(methodRequestInternal.Name, out m);
                     }
                 }
                 catch (Exception)
@@ -818,7 +817,7 @@ namespace Microsoft.Azure.Devices.Client
                     }
                     catch (Exception)
                     {
-                        // codes_SRS_DEVICECLIENT_28_021: [ If the MethodResponse from the MethodHandler is not valid json, JsonReaderException shall be throw ]
+                        // codes_SRS_DEVICECLIENT_28_021: [ If the MethodResponse from the MethodHandler is not valid json, fail silently ]
                     }
                 }
             }

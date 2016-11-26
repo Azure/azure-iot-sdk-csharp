@@ -17,13 +17,14 @@
     [TestClass]
     public class DeviceClientTests
     {
+        static string fakeConnectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
+
         /* Tests_SRS_DEVICECLIENT_28_002: [This property shall be defaulted to 240000 (4 minutes).] */
         [TestMethod]
         [TestCategory("DevClient")]
         public void DeviceClient_OperationTimeoutInMilliseconds_Property_DefaultValue()
         {
-            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
-            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
 
             Assert.AreEqual((uint)(4 * 60 * 1000), deviceClient.OperationTimeoutInMilliseconds);
         }
@@ -32,8 +33,7 @@
         [TestCategory("DeviceClient")]
         public void DeviceClient_OperationTimeoutInMilliseconds_Property_GetSet()
         {
-            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
-            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
             deviceClient.OperationTimeoutInMilliseconds = 9999;
 
             Assert.AreEqual((uint)9999, deviceClient.OperationTimeoutInMilliseconds);
@@ -43,8 +43,7 @@
         [TestCategory("DeviceClient")]
         public async Task DeviceClient_OperationTimeoutInMilliseconds_Equals_0_Open()
         {
-            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
-            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
             deviceClient.OperationTimeoutInMilliseconds = 0;
 
             var innerHandler = Substitute.For<IDelegatingHandler>();
@@ -60,8 +59,7 @@
         [TestCategory("DeviceClient")]
         public async Task DeviceClient_OperationTimeoutInMilliseconds_Equals_0_Receive()
         {
-            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
-            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
             deviceClient.OperationTimeoutInMilliseconds = 0;
 
             var innerHandler = Substitute.For<IDelegatingHandler>();
@@ -78,8 +76,7 @@
         // Tests_SRS_DEVICECLIENT_10_012: [** If the given methodRequestInternal argument is null, fail silently **]**
         public async Task DeviceClient_OnMethodCalled_NullMethodRequest()
         {
-            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
-            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
             bool isMethodHandlerCalled = false;
             deviceClient.SetMethodHandler("testMethodName", (payload, context) =>
             {
@@ -99,8 +96,7 @@
         [TestCategory("DeviceClient")]
         public async Task DeviceClient_OnMethodCalled_MethodRequestHasEmptyBody()
         {
-            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
-            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
             bool isMethodHandlerCalled = false;
             deviceClient.SetMethodHandler("TestMethodName", (payload, context) =>
             {
@@ -122,8 +118,7 @@
         // Tests_SRS_DEVICECLIENT_28_020: [** If the given methodRequestInternal data is not valid json, fail silently **]**
         public async Task DeviceClient_OnMethodCalled_MethodRequestHasInvalidJson()
         {
-            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
-            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
             bool isMethodHandlerCalled = false;
             deviceClient.SetMethodHandler("TestMethodName", (payload, context) =>
             {
@@ -145,8 +140,7 @@
         // Tests_SRS_DEVICECLIENT_10_011: [ The OnMethodCalled shall invoke the specified delegate. ]
         public async Task DeviceClient_OnMethodCalled_MethodRequestHasValidJson()
         {
-            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
-            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
             bool isMethodHandlerCalled = false;
             deviceClient.SetMethodHandler("TestMethodName", (payload, context) =>
             {
@@ -168,8 +162,7 @@
         // Tests_SRS_DEVICECLIENT_28_021: [** If the MethodResponse from the MethodHandler is not valid json, JsonReaderException shall be throw **]**
         public async Task DeviceClient_OnMethodCalled_MethodResponseHasInvalidJson()
         {
-            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
-            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
             bool isMethodHandlerCalled = false;
             deviceClient.SetMethodHandler("TestMethodName", (payload, context) =>
             {
@@ -177,10 +170,12 @@
                 return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes("{\"name\"\"ABC\"}"), 200));
             }, "custom data");
             var innerHandler = Substitute.For<IDelegatingHandler>();
+
             deviceClient.InnerHandler = innerHandler;
             var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{\"grade\":\"good\"}")));
 
-            await TestAssert.ThrowsAsync<JsonReaderException>(() => deviceClient.OnMethodCalled(methodRequestInternal));
+            await deviceClient.OnMethodCalled(methodRequestInternal);
+
             Assert.IsTrue(isMethodHandlerCalled);
             await innerHandler.DidNotReceive().SendMethodResponseAsync(Arg.Any<MethodResponseInternal>(), Arg.Any<CancellationToken>());
         }
@@ -190,8 +185,7 @@
         // Tests_SRS_DEVICECLIENT_10_013: [** If the given method does not have an associated delegate, failed silently **]**
         public async Task DeviceClient_OnMethodCalled_NoMethodHandler()
         {
-            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
-            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
 
             var innerHandler = Substitute.For<IDelegatingHandler>();
             deviceClient.InnerHandler = innerHandler;
@@ -202,5 +196,162 @@
             await innerHandler.DidNotReceive().SendMethodResponseAsync(Arg.Any<MethodResponseInternal>(), Arg.Any<CancellationToken>());
         }
 
+        [TestMethod]
+        [TestCategory("DeviceClient")]
+        // Tests_SRS_DEVICECLIENT_10_001: [ The SetMethodHandler shall lazy-initialize the deviceMethods property. ]
+        // Tests_SRS_DEVICECLIENT_10_003: [ The given delegate will only be added if it is not null. ]
+        public async Task DeviceClient_SetMethodHandler_SetFirstMethodHandler()
+        {
+            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
+
+            var innerHandler = Substitute.For<IDelegatingHandler>();
+            deviceClient.InnerHandler = innerHandler;
+
+            bool methodCallbackCalled = false;
+            string actualMethodName = string.Empty;
+            string actualMethodBody = string.Empty;
+            object actualMethodUserContext = null;
+            MethodCallback methodCallback = (methodRequest, userContext) =>
+            {
+                actualMethodName = methodRequest.Name;
+                actualMethodBody = methodRequest.DataAsJson;
+                actualMethodUserContext = userContext;
+                methodCallbackCalled = true;
+                return Task.FromResult(new MethodResponse(new byte[0], 200));
+            };
+
+            string methodName = "TestMethodName";
+            string methodUserContext = "UserContext";
+            string methodBody = "{\"grade\":\"good\"}";
+            deviceClient.SetMethodHandler(methodName, methodCallback, methodUserContext);
+            await deviceClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody))));
+
+            await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>());
+            Assert.IsTrue(methodCallbackCalled);
+            Assert.AreEqual(methodName, actualMethodName);
+            Assert.AreEqual(methodBody, actualMethodBody);
+            Assert.AreEqual(methodUserContext, actualMethodUserContext);
+        }
+
+        [TestMethod]
+        [TestCategory("DeviceClient")]
+        // Tests_SRS_DEVICECLIENT_10_002: [ If the given methodName already has an associated delegate, the existing delegate shall be removed. ]
+        public async Task DeviceClient_SetMethodHandler_OverwriteExistingDelegate()
+        {
+            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
+
+            var innerHandler = Substitute.For<IDelegatingHandler>();
+            deviceClient.InnerHandler = innerHandler;
+
+            bool methodCallbackCalled = false;
+            string actualMethodName = string.Empty;
+            string actualMethodBody = string.Empty;
+            object actualMethodUserContext = null;
+            MethodCallback methodCallback = (methodRequest, userContext) =>
+            {
+                actualMethodName = methodRequest.Name;
+                actualMethodBody = methodRequest.DataAsJson;
+                actualMethodUserContext = userContext;
+                methodCallbackCalled = true;
+                return Task.FromResult(new MethodResponse(new byte[0], 200));
+            };
+
+            string methodName = "TestMethodName";
+            string methodUserContext = "UserContext";
+            string methodBody = "{\"grade\":\"good\"}";
+            deviceClient.SetMethodHandler(methodName, methodCallback, methodUserContext);
+            await deviceClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody))));
+
+            await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>());
+            Assert.IsTrue(methodCallbackCalled);
+            Assert.AreEqual(methodName, actualMethodName);
+            Assert.AreEqual(methodBody, actualMethodBody);
+            Assert.AreEqual(methodUserContext, actualMethodUserContext);
+
+            bool methodCallbackCalled2 = false;
+            string actualMethodName2 = string.Empty;
+            string actualMethodBody2 = string.Empty;
+            object actualMethodUserContext2 = null;
+            MethodCallback methodCallback2 = (methodRequest, userContext) =>
+            {
+                actualMethodName2 = methodRequest.Name;
+                actualMethodBody2 = methodRequest.DataAsJson;
+                actualMethodUserContext2 = userContext;
+                methodCallbackCalled2 = true;
+                return Task.FromResult(new MethodResponse(new byte[0], 200));
+            };
+
+            string methodUserContext2 = "UserContext2";
+            string methodBody2 = "{\"grade\":\"bad\"}";
+            deviceClient.SetMethodHandler(methodName, methodCallback2, methodUserContext2);
+            await deviceClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId2", new MemoryStream(Encoding.UTF8.GetBytes(methodBody2))));
+
+            await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>());
+            Assert.IsTrue(methodCallbackCalled2);
+            Assert.AreEqual(methodName, actualMethodName2);
+            Assert.AreEqual(methodBody2, actualMethodBody2);
+            Assert.AreEqual(methodUserContext2, actualMethodUserContext2);
+        }
+
+        [TestMethod]
+        [TestCategory("DeviceClient")]
+        // Tests_SRS_DEVICECLIENT_10_004: [ The deviceMethods property shall be deleted if the last delegate has been removed. ]
+        // Tests_SRS_DEVICECLIENT_10_006: [ The SetMethodHandler shall DisableMethodsAsync when the last delegate has been removed. ]
+        public async Task DeviceClient_SetMethodHandler_UnsetLastMethodHandler()
+        {
+            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
+
+            var innerHandler = Substitute.For<IDelegatingHandler>();
+            deviceClient.InnerHandler = innerHandler;
+
+            bool methodCallbackCalled = false;
+            string actualMethodName = string.Empty;
+            string actualMethodBody = string.Empty;
+            object actualMethodUserContext = null;
+            MethodCallback methodCallback = (methodRequest, userContext) =>
+            {
+                actualMethodName = methodRequest.Name;
+                actualMethodBody = methodRequest.DataAsJson;
+                actualMethodUserContext = userContext;
+                methodCallbackCalled = true;
+                return Task.FromResult(new MethodResponse(new byte[0], 200));
+            };
+
+            string methodName = "TestMethodName";
+            string methodUserContext = "UserContext";
+            string methodBody = "{\"grade\":\"good\"}";
+            deviceClient.SetMethodHandler(methodName, methodCallback, methodUserContext);
+            await deviceClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody))));
+
+            await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>());
+            Assert.IsTrue(methodCallbackCalled);
+            Assert.AreEqual(methodName, actualMethodName);
+            Assert.AreEqual(methodBody, actualMethodBody);
+            Assert.AreEqual(methodUserContext, actualMethodUserContext);
+
+            methodCallbackCalled = false;
+            deviceClient.SetMethodHandler(methodName, null, null);
+            await deviceClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody))));
+
+            await innerHandler.Received().DisableMethodsAsync(Arg.Any<CancellationToken>());
+            Assert.IsFalse(methodCallbackCalled);
+        }
+
+        [TestMethod]
+        [TestCategory("DeviceClient")]
+        public async Task DeviceClient_SetMethodHandler_UnsetWhenNoMethodHandler()
+        {
+            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
+
+            var innerHandler = Substitute.For<IDelegatingHandler>();
+            deviceClient.InnerHandler = innerHandler;
+
+            deviceClient.SetMethodHandler("TestMethodName", null, null);
+            await innerHandler.DidNotReceive().DisableMethodsAsync(Arg.Any<CancellationToken>());
+        }
     }
 }

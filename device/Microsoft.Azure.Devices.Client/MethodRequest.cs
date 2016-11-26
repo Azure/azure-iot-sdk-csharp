@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.Client
 #if !PCL
         public string DataAsJson
         {
-            get { return Data == null ? null : Encoding.UTF8.GetString(Data); }
+            get { return (Data == null || Data.Length == 0) ? null : Encoding.UTF8.GetString(Data); }
         }
 #endif
     }
