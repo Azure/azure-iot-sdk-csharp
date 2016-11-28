@@ -8,9 +8,14 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Microsoft.Azure.Devices.Client.Shared")]
+[assembly: AssemblyTitle("Microsoft.Azure.Devices.Shared")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
+[assembly: AssemblyCompany("Microsoft")]
+[assembly: AssemblyProduct("Microsoft.Azure.Devices.Shared")]
+[assembly: AssemblyCopyright("Copyright ©  2016")]
+[assembly: AssemblyTrademark("")]
+[assembly: AssemblyCulture("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible
 // to COM components.  If you need to access a type in this assembly from
@@ -25,11 +30,8 @@ using System.Runtime.InteropServices;
 #if (RELEASE_DELAY_SIGN)
 [assembly: AssemblyDelaySignAttribute(true)]
 [assembly: AssemblyKeyFileAttribute("35MSSharedLib1024.snk")]
-#else
-[assembly: InternalsVisibleTo("Microsoft.Azure.Devices.Client.Test")]
-[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 #endif
 
 // Version information for an assembly follows semantic versioning 1.0.0 (because
 // NuGet didn't support semver 2.0.0 before VS 2015). See semver.org for details.
-[assembly: AssemblyInformationalVersion("1.0.21")]
+[assembly: AssemblyInformationalVersion("1.0.1")]

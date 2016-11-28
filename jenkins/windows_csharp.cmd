@@ -7,7 +7,13 @@ set build-root=%~dp0..
 rem // resolve to fully qualified path
 for %%i in ("%build-root%") do set build-root=%%~fi
 
-REM -- C# --
+REM -- C# Shared Assembly --
+cd %build-root%\shared\build
+call build.cmd
+if errorlevel 1 goto :eof
+cd %build-root%
+
+REM -- C# Device SDK --
 cd %build-root%\device\build
 call build.cmd
 if errorlevel 1 goto :eof
