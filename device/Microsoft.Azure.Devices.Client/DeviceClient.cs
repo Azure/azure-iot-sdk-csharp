@@ -738,6 +738,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 #endif
 
+#if WIP_C2D_METHODS_AMQP
         /// <summary>
         /// Registers a new delgate for the named method. If a delegate is already associated with
         /// the named method, it will be replaced with the new delegate.
@@ -781,6 +782,7 @@ namespace Microsoft.Azure.Devices.Client
                 }
             }
         }
+#endif
 
         internal async Task OnMethodCalled(MethodRequestInternal methodRequestInternal)
         {

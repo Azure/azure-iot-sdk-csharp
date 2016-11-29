@@ -70,7 +70,8 @@
             
             await innerHandler.Received().ReceiveAsync(Arg.Is<CancellationToken>(ct => ct.CanBeCanceled == false));
         }
-        
+
+#if WIP_C2D_METHODS_AMQP
         [TestMethod]
         [TestCategory("DeviceClient")]
         // Tests_SRS_DEVICECLIENT_10_012: [** If the given methodRequestInternal argument is null, fail silently **]**
@@ -353,5 +354,6 @@
             deviceClient.SetMethodHandler("TestMethodName", null, null);
             await innerHandler.DidNotReceive().DisableMethodsAsync(Arg.Any<CancellationToken>());
         }
+#endif
     }
 }
