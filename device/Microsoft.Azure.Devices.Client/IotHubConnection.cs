@@ -152,7 +152,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         public async Task<ReceivingAmqpLink> CreateMethodReceivingLinkAsync(
-            string path, IotHubConnectionString connectionString, TimeSpan timeout, uint prefetchCount, CancellationToken cancellationToken, 
+            string path, IotHubConnectionString connectionString, TimeSpan timeout, uint prefetchCount, CancellationToken cancellationToken,
             string deviceId, Action<AmqpMessage, ReceivingAmqpLink> messageListenerAction)
         {
             this.OnCreateReceivingLink(connectionString);
@@ -355,7 +355,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        static async Task<IotHubClientWebSocket> CreateLegacyClientWebSocketAsync(Uri webSocketUri,  TimeSpan timeout)
+        static async Task<IotHubClientWebSocket> CreateLegacyClientWebSocketAsync(Uri webSocketUri, TimeSpan timeout)
         {
             var websocket = new IotHubClientWebSocket(WebSocketConstants.SubProtocols.Amqpwsb10);
             await websocket.ConnectAsync(webSocketUri.Host, webSocketUri.Port, WebSocketConstants.Scheme, timeout);
@@ -365,7 +365,7 @@ namespace Microsoft.Azure.Devices.Client
 
         static AmqpSettings CreateAmqpSettings()
         {
-            var amqpSettings = new AmqpSettings();          
+            var amqpSettings = new AmqpSettings();
 
             var amqpTransportProvider = new AmqpTransportProvider();
             amqpTransportProvider.Versions.Add(AmqpVersion_1_0_0);
@@ -380,7 +380,7 @@ namespace Microsoft.Azure.Devices.Client
 #if WINDOWS_UWP
             // System.Reflection.Assembly.GetExecutingAssembly() does not exist for UWP, therefore use a hard-coded version name
             // (This string is picked up by the bump_version script, so don't change the line below)
-            var UWPAssemblyVersion = "1.0.21";
+            var UWPAssemblyVersion = "1.0.22";
             linkSettings.AddProperty(IotHubAmqpProperty.ClientVersion, UWPAssemblyVersion);
 #else
             linkSettings.AddProperty(IotHubAmqpProperty.ClientVersion, Utils.GetClientVersion());
