@@ -100,8 +100,8 @@ namespace Microsoft.Azure.Devices.Client
     {
         const string DeviceId = "DeviceId";
         const string DeviceIdParameterPattern = @"(^\s*?|.*;\s*?)" + DeviceId + @"\s*?=.*";
-#if !PCL
         IotHubConnectionString iotHubConnectionString = null;
+#if !PCL
         const RegexOptions RegexOptions = System.Text.RegularExpressions.RegexOptions.Compiled | System.Text.RegularExpressions.RegexOptions.IgnoreCase;
 #else
         const RegexOptions RegexOptions = System.Text.RegularExpressions.RegexOptions.IgnoreCase;
@@ -128,12 +128,11 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         Dictionary<string, Tuple<MethodCallback, object>> deviceMethods;
 
-#if !PCL
         DeviceClient(IotHubConnectionString iotHubConnectionString, ITransportSettings[] transportSettings)
         {
             this.iotHubConnectionString = iotHubConnectionString;
 
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !PCL
             var innerHandler = new RetryDelegatingHandler(
                 new ErrorDelegatingHandler(
                     () => new RoutingDelegatingHandler(this.CreateTransportHandler, iotHubConnectionString, transportSettings)));
@@ -158,7 +157,7 @@ namespace Microsoft.Azure.Devices.Client
                 case TransportType.Http1:
                     transportHandler = new HttpTransportHandler(iotHubConnectionString, transportSetting as Http1TransportSettings);
                     break;
-#if !WINDOWS_UWP && !NETMF
+#if !WINDOWS_UWP && !NETMF && !PCL
                 case TransportType.Mqtt_WebSocket_Only:
                 case TransportType.Mqtt_Tcp_Only:
                     transportHandler = new MqttTransportHandler(iotHubConnectionString, transportSetting as MqttTransportSettings, this.OnMethodCalled);
@@ -169,14 +168,6 @@ namespace Microsoft.Azure.Devices.Client
             }
             return transportHandler;
         }
-
-#else
-        DeviceClient(IotHubConnectionString iotHubConnectionString)
-        {
-            this.InnerHandler = new GateKeeperDelegatingHandler(
-                new ErrorDelegatingHandler(() => new HttpTransportHandler(iotHubConnectionString)));
-        }
-#endif
 
         internal AsyncTask SendMethodResponseAsync(MethodResponseInternal methodResponse)
         {
@@ -283,7 +274,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>DeviceClient</returns>
         public static DeviceClient CreateFromConnectionString(string connectionString)
         {
-#if WINDOWS_UWP || PCL
+#if WINDOWS_UWP
             return CreateFromConnectionString(connectionString, TransportType.Http1);
 #else
             return CreateFromConnectionString(connectionString, TransportType.Amqp);
@@ -299,7 +290,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>DeviceClient</returns>
         public static DeviceClient CreateFromConnectionString(string connectionString, string deviceId)
         {
-#if WINDOWS_UWP || PCL
+#if WINDOWS_UWP
             return CreateFromConnectionString(connectionString, deviceId, TransportType.Http1);    
 #else
             return CreateFromConnectionString(connectionString, deviceId, TransportType.Amqp);
@@ -327,15 +318,11 @@ namespace Microsoft.Azure.Devices.Client
             switch (transportType)
             {
                 case TransportType.Amqp:
-#if PCL
-                    throw new NotImplementedException("Amqp protocol is not supported");
-#else
                     return CreateFromConnectionString(connectionString, new ITransportSettings[]
                     {
                         new AmqpTransportSettings(TransportType.Amqp_Tcp_Only),
                         new AmqpTransportSettings(TransportType.Amqp_WebSocket_Only)
                     });
-#endif
                 case TransportType.Mqtt:
 #if WINDOWS_UWP || PCL
                     throw new NotImplementedException("Mqtt protocol is not supported");
@@ -361,12 +348,7 @@ namespace Microsoft.Azure.Devices.Client
                     return CreateFromConnectionString(connectionString, new ITransportSettings[] { new MqttTransportSettings(transportType) });
 #endif
                 case TransportType.Http1:
-#if PCL
-                    IotHubConnectionString iotHubConnectionString = IotHubConnectionString.Parse(connectionString);
-                    return new DeviceClient(iotHubConnectionString);
-#else
-                    return CreateFromConnectionString(connectionString, new ITransportSettings[] { new Http1TransportSettings() });
-#endif
+                    return new DeviceClient(IotHubConnectionString.Parse(connectionString), new ITransportSettings[] { new Http1TransportSettings() });
                 default:
 #if !PCL
                     throw new InvalidOperationException("Unsupported Transport Type {0}".FormatInvariant(transportType));
@@ -403,7 +385,6 @@ namespace Microsoft.Azure.Devices.Client
             return CreateFromConnectionString(connectionString + ";" + DeviceId + "=" + deviceId, transportType);
         }
 
-#if !PCL
         /// <summary>
         /// Create DeviceClient from the specified connection string using a prioritized list of transports
         /// </summary>
@@ -446,7 +427,7 @@ namespace Microsoft.Azure.Devices.Client
                             throw new InvalidOperationException("Unknown implementation of ITransportSettings type");
                         }
                         break;
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !PCL
                     case TransportType.Mqtt_WebSocket_Only:
                     case TransportType.Mqtt_Tcp_Only:
                         if (!(transportSetting is MqttTransportSettings))
@@ -493,7 +474,6 @@ namespace Microsoft.Azure.Devices.Client
 
             return CreateFromConnectionString(connectionString + ";" + DeviceId + "=" + deviceId, transportSettings);
         }
-#endif
 
         private CancellationTokenSource GetOperationTimeoutCancellationTokenSource()
         {
