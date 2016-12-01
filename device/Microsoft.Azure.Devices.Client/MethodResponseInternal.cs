@@ -9,7 +9,6 @@ namespace Microsoft.Azure.Devices.Client
     using Microsoft.Azure.Devices.Client.Extensions;
     using Microsoft.Azure.Amqp;
 #if WINDOWS_UWP
-//    using Windows.Storage.Streams;
     using System.Collections.Generic;
     using Microsoft.Azure.Devices.Client.Common.Api;
 #elif NETMF
