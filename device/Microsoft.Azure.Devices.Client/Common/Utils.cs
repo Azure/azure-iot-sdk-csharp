@@ -35,23 +35,23 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (offset < 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(offset), offset, Microsoft.Azure.Devices.Client.Common.Resources.ArgumentMustBeNonNegative);
+                throw new ArgumentOutOfRangeException(nameof(offset), offset, Common.Resources.ArgumentMustBeNonNegative);
             }
 
             if (offset > bufferSize)
             {
-                throw new ArgumentOutOfRangeException(nameof(offset), offset, Microsoft.Azure.Devices.Client.Common.Resources.OffsetExceedsBufferSize.FormatInvariant(bufferSize));
+                throw new ArgumentOutOfRangeException(nameof(offset), offset, Common.Resources.OffsetExceedsBufferSize.FormatInvariant(bufferSize));
             }
 
             if (size <= 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(size), size, Microsoft.Azure.Devices.Client.Common.Resources.ArgumentMustBePositive);
+                throw new ArgumentOutOfRangeException(nameof(size), size, Common.Resources.ArgumentMustBePositive);
             }
 
             int remainingBufferSpace = bufferSize - offset;
             if (size > remainingBufferSpace)
             {
-                throw new ArgumentOutOfRangeException(nameof(size), size, Microsoft.Azure.Devices.Client.Common.Resources.SizeExceedsRemainingBufferSpace.FormatInvariant(remainingBufferSpace));
+                throw new ArgumentOutOfRangeException(nameof(size), size, Common.Resources.SizeExceedsRemainingBufferSpace.FormatInvariant(remainingBufferSpace));
             }
         }
 
