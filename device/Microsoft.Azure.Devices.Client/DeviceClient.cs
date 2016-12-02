@@ -399,7 +399,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
 #if WINDOWS_UWP || PCL
                     throw new NotImplementedException("Mqtt protocol is not supported");
 #else
-                    return CreateFromConnectionString(connectionString, new ITransportSettings[] { new MqttTransportSettings(transportType) });
+                    return CreateFromConnectionString(connectionString, new ITransportSettings[] { new MqttTransportSettings(transportType) }, pipelineBuilder);
 #endif
                 case TransportType.Http1:
 #if PCL
