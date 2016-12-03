@@ -18,13 +18,11 @@
             <group>
                 <dependency id="Microsoft.Azure.Devices.Shared" version="1.0.3" />
                 <dependency id="Newtonsoft.Json" version="6.0.8" />
-                <dependency id="PCLCrypto" version="1.0.86" />
-                <dependency id="Validation" version="2.2.8" />
+                <dependency id="PCLCrypto" version="2.0.147" />
             </group>
 
             <group targetFramework="net45" >
-              <dependency id="PCLCrypto" version="1.0.86" />
-              <dependency id="Validation" version="2.2.8" />
+                <dependency id="PCLCrypto" version="2.0.147" />
               <dependency id="Microsoft.Azure.Amqp" version="[1.1.1,2.0.0)" />
               <dependency id="DotNetty.Codecs.Mqtt-signed" version="0.3.2" />
               <dependency id="DotNetty.Handlers-signed" version="0.3.2" />
@@ -34,36 +32,29 @@
               <dependency id="Microsoft.Azure.Devices.Shared" version="1.0.3" />
             </group>
             <group targetFramework="uap">
-                <dependency id="PCLCrypto" version="1.0.86" />
-                <dependency id="Validation" version="2.2.8" />
+                <dependency id="PCLCrypto" version="2.0.147" />
                 <dependency id="Microsoft.Azure.Amqp" version="1.1.5" />
                 <dependency id="Microsoft.AspNet.WebApi.Client" version="5.2.3" />
                 <dependency id="Microsoft.Azure.Devices.Shared" version="1.0.3" />
             </group>
 
             <group targetFramework="win8">
-                <dependency id="PCLCrypto" version="1.0.86" />
-              <dependency id="Validation" version="2.2.8" />
+                <dependency id="PCLCrypto" version="2.0.147" />
             </group>
             <group targetFramework="wp8">
-                <dependency id="PCLCrypto" version="1.0.86" />
-                <dependency id="Validation" version="2.2.8" />
+                <dependency id="PCLCrypto" version="2.0.147" />
             </group>
             <group targetFramework="wpa81">
-              <dependency id="PCLCrypto" version="1.0.86" />
-              <dependency id="Validation" version="2.2.8" />
+                <dependency id="PCLCrypto" version="2.0.147" />
             </group>
             <group targetFramework="monoandroid">
-                <dependency id="PCLCrypto" version="1.0.86" />
-                <dependency id="Validation" version="2.2.8" />
+                <dependency id="PCLCrypto" version="2.0.147" />
             </group>
             <group targetFramework="monotouch">
-              <dependency id="PCLCrypto" version="1.0.86" />
-              <dependency id="Validation" version="2.2.8" />
+                <dependency id="PCLCrypto" version="2.0.147" />
             </group>
             <group targetFramework="Xamarin.iOS">
-                <dependency id="PCLCrypto" version="1.0.86" />
-                <dependency id="Validation" version="2.2.8" />
+                <dependency id="PCLCrypto" version="2.0.147" />
             </group>
         </dependencies>
     </metadata>
