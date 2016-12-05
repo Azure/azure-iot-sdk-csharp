@@ -11,6 +11,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Azure.Devices.Client.Extensions;
+    using Microsoft.Azure.Devices.Shared;
 
     sealed class ErrorDelegatingHandler : DefaultDelegatingHandler
     {
@@ -96,12 +97,27 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override Task EnableMethodsAsync(CancellationToken cancellationToken)
         {
-            return this.ExecuteWithErrorHandlingAsync(() => base.EnableMethodsAsync(cancellationToken), false, cancellationToken);
+            return this.ExecuteWithErrorHandlingAsync(() => base.EnableMethodsAsync(cancellationToken), true, cancellationToken);
         }
 
         public override Task DisableMethodsAsync(CancellationToken cancellationToken)
         {
-            return this.ExecuteWithErrorHandlingAsync(() => base.DisableMethodsAsync(cancellationToken), false, cancellationToken);
+            return this.ExecuteWithErrorHandlingAsync(() => base.DisableMethodsAsync(cancellationToken), true, cancellationToken);
+        }
+
+        public override Task EnableTwinPatchAsync(CancellationToken cancellationToken)
+        {
+            return this.ExecuteWithErrorHandlingAsync(() => base.EnableTwinPatchAsync(cancellationToken), true, cancellationToken);
+        }
+        
+        public override Task<Twin> SendTwinGetAsync(CancellationToken cancellationToken)
+        {
+            return this.ExecuteWithErrorHandlingAsync(() => base.SendTwinGetAsync(cancellationToken), true, cancellationToken);
+        }
+        
+        public override Task SendTwinPatchAsync(TwinCollection reportedProperties,  CancellationToken cancellationToken)
+        {
+            return this.ExecuteWithErrorHandlingAsync(() => base.SendTwinPatchAsync(reportedProperties, cancellationToken), true, cancellationToken);
         }
 
         public override Task AbandonAsync(string lockToken, CancellationToken cancellationToken)

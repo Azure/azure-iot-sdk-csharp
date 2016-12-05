@@ -477,24 +477,27 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
 
                 string topicName;
+                QualityOfService qos;
+                
                 if (string.IsNullOrEmpty(message.MqttTopicName))
                 {
                     topicName = string.Format(TelemetryTopicFormat, this.deviceId);
+                    qos = this.mqttTransportSettings.PublishToServerQoS;
                 }
                 else
                 {
                     topicName = message.MqttTopicName;
+                    qos = QualityOfService.AtMostOnce;
                 }
 
-                // BKTODO: use correct QOS
-                PublishPacket packet = await Util.ComposePublishPacketAsync(context, message, this.mqttTransportSettings.PublishToServerQoS, topicName);
+                PublishPacket packet = await Util.ComposePublishPacketAsync(context, message, qos, topicName);
                 var publishCompletion = new TaskCompletionSource();
                 var workItem = new PublishWorkItem
                 {
                     Completion = publishCompletion,
                     Value = packet
                 };
-                switch (this.mqttTransportSettings.PublishToServerQoS)
+                switch (qos)
                 {
                     case QualityOfService.AtMostOnce:
                         this.serviceBoundOneWayProcessor.Post(context, workItem);

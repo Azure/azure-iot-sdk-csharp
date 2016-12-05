@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Client
     using Microsoft.Azure.Devices.Client.Common;
     using Microsoft.Azure.Devices.Shared;
 
-    delegate void TwinUpdateCallback(Twin twin, Boolean fullUdpate, TwinProperties state);
+    delegate void TwinUpdateCallback(TwinCollection patch);
    
     interface IDelegatingHandler : IContinuationProvider<IDelegatingHandler>, IDisposable
     {
@@ -28,10 +28,10 @@ namespace Microsoft.Azure.Devices.Client
         Task DisableMethodsAsync(CancellationToken cancellationToken);
         Task SendMethodResponseAsync(MethodResponseInternal methodResponse, CancellationToken cancellationToken);
 
-        Task EnableTwinAsync(CancellationToken cancellationToken);
-        Task SendTwinGetAsync(Twin twin, CancellationToken ct);
-        Task SendTwinUpdateAsync(Twin twin, TwinProperties properties,  CancellationToken ct);
+        Task EnableTwinPatchAsync(CancellationToken cancellationToken);
+        Task<Twin> SendTwinGetAsync(CancellationToken ct);
+        Task SendTwinPatchAsync(TwinCollection reportedProperties,  CancellationToken ct);
 
-        TwinUpdateCallback TwinUpdateHandler { set; }
+        TwinUpdateCallback TwinUpdateHandler { get; set; }
     }
 }

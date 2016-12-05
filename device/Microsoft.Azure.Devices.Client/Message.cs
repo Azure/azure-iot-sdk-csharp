@@ -360,7 +360,7 @@ namespace Microsoft.Azure.Devices.Client
         /// For outgoing messages, contains the Mqtt topic that the message is being sent to
         /// For incoming messages, contains the Mqtt topic that the message arrived on
         /// </summary>
-        public string MqttTopicName { get; set; }
+        internal string MqttTopicName { get; set; }
 
         /// <summary>
         /// Gets the dictionary of user properties which are set when user send the data.

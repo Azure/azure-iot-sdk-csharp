@@ -143,33 +143,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             return topicFilterIndex == topicFilter.Length && topicNameIndex == topicName.Length;
         }
 
-        public static QualityOfService DeriveQos(Message message, MqttTransportSettings config)
-        {
-            QualityOfService qos;
-            string qosValue;
-            if (message.Properties.TryGetValue(config.QoSPropertyName, out qosValue))
-            {
-                int qosAsInt;
-                if (int.TryParse(qosValue, out qosAsInt))
-                {
-                    qos = (QualityOfService)qosAsInt;
-                    if (qos > QualityOfService.ExactlyOnce)
-                    {
-                        qos = config.PublishToServerQoS;
-                    }
-                }
-                else
-                {
-                    qos = config.PublishToServerQoS;
-                }
-            }
-            else
-            {
-                qos = config.PublishToServerQoS;
-            }
-            return qos;
-        }
-
         public static Message CompleteMessageFromPacket(Message message, PublishPacket packet, MqttTransportSettings mqttTransportSettings)
         {
             message.MessageId = Guid.NewGuid().ToString("N");

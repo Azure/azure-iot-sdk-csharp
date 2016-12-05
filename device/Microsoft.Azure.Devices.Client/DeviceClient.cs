@@ -565,7 +565,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         public Task<Message> ReceiveAsync()
         {
             // Codes_SRS_DEVICECLIENT_28_011: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable(authentication, quota exceed) error occurs.]
-            return ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.ReceiveAsync(operationTimeoutCancellationToken));
+            return ApplyTimeoutMessage(operationTimeoutCancellationToken => this.InnerHandler.ReceiveAsync(operationTimeoutCancellationToken));
         }
 
         /// <summary>
@@ -575,7 +575,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         public Task<Message> ReceiveAsync(TimeSpan timeout)
         {
             // Codes_SRS_DEVICECLIENT_28_011: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable(authentication, quota exceed) error occurs.]
-            return ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.ReceiveAsync(timeout, operationTimeoutCancellationToken));
+            return ApplyTimeoutMessage(operationTimeoutCancellationToken => this.InnerHandler.ReceiveAsync(timeout, operationTimeoutCancellationToken));
         }
 
         /// <summary>
@@ -730,6 +730,28 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             return result;
         }
 
+#if !WINDOWS_UWP
+        private AsyncTaskOfTwin ApplyTimeoutTwin(Func<CancellationToken, System.Threading.Tasks.Task<Twin>> operation)
+        {
+            if (OperationTimeoutInMilliseconds == 0)
+            {
+                return operation(CancellationToken.None)
+                    .WithTimeout(TimeSpan.MaxValue, () => Resources.OperationTimeoutExpired, CancellationToken.None)
+                    .AsTaskOrAsyncOp();
+            }
+
+            CancellationTokenSource operationTimeoutCancellationTokenSource = GetOperationTimeoutCancellationTokenSource();
+
+            var result = operation(operationTimeoutCancellationTokenSource.Token)
+                .WithTimeout(TimeSpan.FromMilliseconds(OperationTimeoutInMilliseconds), () => Resources.OperationTimeoutExpired, operationTimeoutCancellationTokenSource.Token);
+            result.ContinueWith(t =>
+            {
+                operationTimeoutCancellationTokenSource.Dispose();
+                return t.Result;
+            });
+            return result.AsTaskOrAsyncOp();
+        }
+#endif
 
 #if !WINDOWS_UWP && !PCL // ArturL: we should be able to support UploadToBlobAsync for UWP now
         /// <summary>
@@ -965,8 +987,21 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// <param name="userContext">Context object that will be passed into callback</param>
         public Task SetDesiredPropertyUpdateCallback(DesiredPropertyUpdateCallback callback, object userContext)
         {
-            throw new NotImplementedException();
-        }
+            return ApplyTimeout(async operationTimeoutCancellationToken =>
+            {
+                // Codes_SRS_DEVICECLIENT_18_001: `SetDesiredPropertyUpdateCallback` shall call the transport to register for PATCHes on it's first call.
+                if (!this.patchSubscribedWithService)
+                {
+                    this.InnerHandler.TwinUpdateHandler = this.OnReportedStatePatchReceived;
+                    await this.InnerHandler.EnableTwinPatchAsync(operationTimeoutCancellationToken);
+                    patchSubscribedWithService = true;
+                }
+
+                // Codes_SRS_DEVICECLIENT_18_016: `SetDesiredPropertyUpdateCallback` shall keep track of the `callback` for future use. 
+                this.desiredPropertyUpdateCallback = callback;
+                this.twinPatchCallbackContext = userContext;
+            });
+    }
 
         /// <summary>
         /// Retrieve a device twin object for the current device.
@@ -974,8 +1009,17 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// <returns>The device twin object for the current device</returns>
         public Task<Twin> GetTwinAsync()
         {
-            throw new NotImplementedException();
-        }
+            return ApplyTimeoutTwin(async operationTimeoutCancellationToken => 
+            {
+                // Codes_SRS_DEVICECLIENT_18_005: `GetTwinAsync` shall issue a GET to the sevice to retrieve the current twin state.
+                // Codes_SRS_DEVICECLIENT_18_006: `GetTwinAsync` shall wait for a response from the `GET` operation.
+                // Codes_SRS_DEVICECLIENT_18_007: If the `GET` operation returns a status >= 300, `GetTwinAsync` shall fail
+                // Codes_SRS_DEVICECLIENT_18_008: `GetTwinAsync` shall allocate a new `Twin` object
+                // Codes_SRS_DEVICECLIENT_18_009: `GetTwinAsync` shall populate the contents of the `Twin` object based on the response from the service.
+                // Codes_SRS_DEVICECLIENT_18_010: `GetTwinAsync` shall return the new `Twin` object
+                return await this.InnerHandler.SendTwinGetAsync(operationTimeoutCancellationToken);
+            });
+}
 
         /// <summary>
         /// Push reported property changes up to the service.
@@ -983,7 +1027,21 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// <param name="reportedProperties">Reported properties to push</param>
         public Task UpdateReportedPropertiesAsync(TwinCollection reportedProperties)
         {
-            throw new NotImplementedException();
+            return ApplyTimeout(async operationTimeoutCancellationToken =>
+            {
+                // Codes_SRS_DEVICECLIENT_18_012: `UpdateReportedPropertiesAsync` shall call the transport to send a `PATCH` with the entire reported property state set to the service.
+                // Codes_SRS_DEVICECLIENT_18_014: `UpdateReportedPropertiesAsync` shall wait for a response from the `PATCH` operation.
+                // Codes_SRS_DEVICECLIENT_18_015: If the `PATCH` operation returns a status >= 300, `UpdateReportedPropertiesAsync` shall fail.
+                await this.InnerHandler.SendTwinPatchAsync(reportedProperties, operationTimeoutCancellationToken);
+            });
+        }
+
+        private void OnReportedStatePatchReceived(TwinCollection patch)
+        {
+            if (this.desiredPropertyUpdateCallback != null)
+            {
+                this.desiredPropertyUpdateCallback(patch, this.twinPatchCallbackContext);
+            }
         }
 #endif // WIP_TWIN_MQTT
 

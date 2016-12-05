@@ -116,19 +116,19 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return this.InnerHandler?.SendMethodResponseAsync(methodResponse, cancellationToken) ?? TaskConstants.Completed;
         }
 
-        public virtual Task EnableTwinAsync(CancellationToken cancellationToken)
+        public virtual Task EnableTwinPatchAsync(CancellationToken cancellationToken)
         {
-            return this.InnerHandler?.EnableTwinAsync(cancellationToken) ?? TaskConstants.Completed;
+            return this.InnerHandler?.EnableTwinPatchAsync(cancellationToken) ?? TaskConstants.Completed;
         }
 
-        public virtual Task SendTwinGetAsync(Twin twin, CancellationToken cancellationToken)
+        public virtual Task<Twin> SendTwinGetAsync(CancellationToken cancellationToken)
         {
-            return this.InnerHandler?.SendTwinGetAsync(twin, cancellationToken) ?? TaskConstants.Completed;
+            return this.InnerHandler?.SendTwinGetAsync(cancellationToken) ?? Task.FromResult((Twin)null);
         }
         
-        public virtual Task SendTwinUpdateAsync(Twin twin, TwinProperties properties, CancellationToken cancellationToken)
+        public virtual Task SendTwinPatchAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
         {
-            return this.InnerHandler?.SendTwinUpdateAsync(twin, properties, cancellationToken) ?? TaskConstants.Completed;
+            return this.InnerHandler?.SendTwinPatchAsync(reportedProperties, cancellationToken) ?? TaskConstants.Completed;
         }
 
         private TwinUpdateCallback twinUpdateHandler;
@@ -143,6 +143,17 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 else
                 {
                     this.twinUpdateHandler = value;
+                }
+            }
+            get
+            {
+                if (this.InnerHandler != null)
+                {
+                    return this.InnerHandler.TwinUpdateHandler;
+                }
+                else
+                {
+                    return this.twinUpdateHandler;
                 }
             }
         }

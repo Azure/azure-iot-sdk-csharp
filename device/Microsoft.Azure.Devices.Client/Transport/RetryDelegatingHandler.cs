@@ -11,6 +11,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
+    using Microsoft.Azure.Devices.Shared;
 
     class RetryDelegatingHandler : DefaultDelegatingHandler
     {
@@ -208,6 +209,49 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 throw;
             }
         }
+        
+        public override async Task EnableTwinPatchAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                await this.retryPolicy.ExecuteAsync(() => base.EnableTwinPatchAsync(cancellationToken), cancellationToken);
+            }
+            catch (IotHubClientTransientException ex)
+            {
+                GetNormalizedIotHubException(ex).Throw();
+                throw;
+            }
+        }
+        
+        public override async Task<Twin> SendTwinGetAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                // Question for the masses:
+                // If I'm returning a Task, do I want to await this so the catch block below can catch anything that happens inside base.SendTwinGetAsync?
+                // Other methods in here do this both ways (with await and without) so it's not clear which is better.
+                return await this.retryPolicy.ExecuteAsync(() => base.SendTwinGetAsync(cancellationToken), cancellationToken);
+            }
+            catch (IotHubClientTransientException ex)
+            {
+                GetNormalizedIotHubException(ex).Throw();
+                throw;
+            }
+        }
+        
+        public override async Task SendTwinPatchAsync(TwinCollection reportedProperties,  CancellationToken cancellationToken)
+        {
+            try
+            {
+                await this.retryPolicy.ExecuteAsync(() => base.SendTwinPatchAsync(reportedProperties, cancellationToken), cancellationToken);
+            }
+            catch (IotHubClientTransientException ex)
+            {
+                GetNormalizedIotHubException(ex).Throw();
+                throw;
+            }
+        }
+        
 
         public override async Task CompleteAsync(string lockToken, CancellationToken cancellationToken)
         {

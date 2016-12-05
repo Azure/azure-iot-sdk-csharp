@@ -26,9 +26,9 @@ sealed class MqttTransportHandler : TransportHandler
     public override Task EnableMethodsAsync(CancellationToken cancellationToken);
     public override Task SendMethodResponseAsync(Method method, CancellationToken ct);
 
-    public override Task EnableTwinAsync(CancellationToken cancellationToken);
-    public override Task SendTwinGetAsync(Twin twin, CancellationToken ct);
-    public override Task SendTwinUpdateAsync(Twin twin, CancellationToken ct);
+    public override Task EnableTwinPatchAsync(CancellationToken cancellationToken);
+    public override Task<Twin> SendTwinGetAsync(CancellationToken ct);
+    public override Task SendTwinPatchAsync(TwinCollection reportedProperties, CancellationToken ct);
 }
 
 ```
@@ -40,7 +40,7 @@ public override Task EnableMethodsAsync(CancellationToken cancellationToken);
 
 **SRS_CSHARP_MQTT_TRANSPORT_18_001: [** `EnableMethodsAsync` shall subscribe using the '$iothub/methods/POST/' topic filter. **]**
 
-**SRS_CSHARP_MQTT_TRANSPORT_18_002: [** `EnableMethodsAsync` shall wait for a response to the subscription request. **]**
+**SRS_CSHARP_MQTT_TRANSPORT_18_002: [** `EnableMethodsAsync` shall wait for a SUBACK for the subscription request. **]**
 
 **SRS_CSHARP_MQTT_TRANSPORT_18_003: [** `EnableMethodsAsync` shall return failure if the subscription request fails. **]**
 
@@ -60,23 +60,21 @@ public override Task SendMethodResponseAsync(Method method, CancellationToken ct
 **SRS_CSHARP_MQTT_TRANSPORT_18_008: [** `SendMethodResponseAsync` shall send the message to the service. **]**
 
 
-### EnableTwinAsync
+### EnableTwinPatchAsync
 ```csharp
-public override Task EnableTwinAsync(CancellationToken cancellationToken);
+public override Task EnableTwinPatchAsync(CancellationToken cancellationToken);
 ```
 
-**SRS_CSHARP_MQTT_TRANSPORT_18_009: [** `EnableTwinAsync` shall subscribe using the '$iothub/twin/res/#' topic filter. **]**
+**SRS_CSHARP_MQTT_TRANSPORT_18_010: [** `EnableTwinPatchAsync` shall subscribe using the '$iothub/twin/PATCH/properties/desired/#' topic filter. **]**
 
-**SRS_CSHARP_MQTT_TRANSPORT_18_010: [** `EnableTwinAsync` shall subscribe using the '$iothub/twin/PATCH/properties/desired/#' topic filter. **]**
+**SRS_CSHARP_MQTT_TRANSPORT_18_011: [** `EnableTwinPatchAsync` shall wait for a SUBACK on the subscription request. **]**
 
-**SRS_CSHARP_MQTT_TRANSPORT_18_011: [** `EnableTwinAsync` shall wait for responses on both subscriptions. **]**
-
-**SRS_CSHARP_MQTT_TRANSPORT_18_012: [** If either subscription request fails, `EnableTwinAsync` shall return failure **]**
+**SRS_CSHARP_MQTT_TRANSPORT_18_012: [** `EnableTwinPatchAsync` shall return failure if the subscription request fails. **]**
 
 
 ### SendTwinGetAsync
 ```csharp
-public override Task SendTwinGetAsync(Twin twin, CancellationToken ct);
+public override Task<Twin> SendTwinGetAsync(CancellationToken ct);
 ```
 
 **SRS_CSHARP_MQTT_TRANSPORT_18_014: [** `SendTwinGetAsync` shall allocate a `Message` object to hold the `GET` request **]**
@@ -87,34 +85,34 @@ public override Task SendTwinGetAsync(Twin twin, CancellationToken ct);
 
 **SRS_CSHARP_MQTT_TRANSPORT_18_017: [** `SendTwinGetAsync` shall wait for a response from the service with a matching $rid value **]**
 
-**SRS_CSHARP_MQTT_TRANSPORT_18_018: [** When a response is received, `SendTwinGetAsync` shall send it to the caller using the `TwinUpdateHandler`. **]**
-
 **SRS_CSHARP_MQTT_TRANSPORT_18_019: [** If the response is failed, `SendTwinGetAsync` shall return that failure to the caller. **]**
 
 **SRS_CSHARP_MQTT_TRANSPORT_18_020: [** If the response doesn't arrive within `MqttTransportHandler.TwinTimeout`, `SendTwinGetAsync` shall fail with a timeout error **]**
 
 **SRS_CSHARP_MQTT_TRANSPORT_18_021: [** If the response contains a success code, `SendTwinGetAsync` shall return success to the caller **]** 
 
+**SRS_CSHARP_MQTT_TRANSPORT_18_018: [** When a response is received, `SendTwinGetAsync` shall return the Twin object to the caller. **]**
 
-### SendTwinUpdateAsync
+
+### SendTwinPatchAsync
 ```csharp
-public override Task SendTwinUpdateAsync(Twin twin, TwinProperties properties, CancellationToken ct);
+public override Task SendTwinPatchAsync(TwinCollection reportedProperties, CancellationToken ct);
 ```
 
-**SRS_CSHARP_MQTT_TRANSPORT_18_022: [** `SendTwinUpdateAsync` shall allocate a `Message` object to hold the update request **]**
+**SRS_CSHARP_MQTT_TRANSPORT_18_022: [** `SendTwinPatchAsync` shall allocate a `Message` object to hold the update request **]**
 
-**SRS_CSHARP_MQTT_TRANSPORT_18_023: [** `SendTwinUpdateAsync` shall generate a GUID to use as the $rid property on the request **]**
+**SRS_CSHARP_MQTT_TRANSPORT_18_023: [** `SendTwinPatchAsync` shall generate a GUID to use as the $rid property on the request **]**
 
-**SRS_CSHARP_MQTT_TRANSPORT_18_024: [** `SendTwinUpdateAsync` shall set the `Message` topic to '$iothub/twin/PATCH/properties/reported/?$rid=<REQUEST_ID>' where REQUEST_ID is the GUID that was generated **]**
+**SRS_CSHARP_MQTT_TRANSPORT_18_024: [** `SendTwinPatchAsync` shall set the `Message` topic to '$iothub/twin/PATCH/properties/reported/?$rid=<REQUEST_ID>' where REQUEST_ID is the GUID that was generated **]**
 
-**SRS_CSHARP_MQTT_TRANSPORT_18_025: [** `SendTwinUpdateAsync` shall serialize the `properties` object into a JSON string **]**
+**SRS_CSHARP_MQTT_TRANSPORT_18_025: [** `SendTwinPatchAsync` shall serialize the `reportedProperties` object into a JSON string **]**
 
-**SRS_CSHARP_MQTT_TRANSPORT_18_026: [** `SendTwinUpdateAsync` shall set the body of the message to the JSON string **]**
+**SRS_CSHARP_MQTT_TRANSPORT_18_026: [** `SendTwinPatchAsync` shall set the body of the message to the JSON string **]**
 
-**SRS_CSHARP_MQTT_TRANSPORT_18_027: [** `SendTwinUpdateAsync` shall wait for a response from the service with a matching $rid value **]**
+**SRS_CSHARP_MQTT_TRANSPORT_18_027: [** `SendTwinPatchAsync` shall wait for a response from the service with a matching $rid value **]**
 
-**SRS_CSHARP_MQTT_TRANSPORT_18_028: [** If the response is failed, `SendTwinUpdateAsync` shall return that failure to the caller. **]**
+**SRS_CSHARP_MQTT_TRANSPORT_18_028: [** If the response is failed, `SendTwinPatchAsync` shall return that failure to the caller. **]**
 
-**SRS_CSHARP_MQTT_TRANSPORT_18_029: [** If the response doesn't arrive within `MqttTransportHandler.TwinTimeout`, `SendTwinUpdateAsync` shall fail with a timeout error. **]** 
+**SRS_CSHARP_MQTT_TRANSPORT_18_029: [** If the response doesn't arrive within `MqttTransportHandler.TwinTimeout`, `SendTwinPatchAsync` shall fail with a timeout error. **]** 
 
-**SRS_CSHARP_MQTT_TRANSPORT_18_030: [** If the response contains a success code, `SendTwinUpdateAsync` shall return success to the caller. **]**
+**SRS_CSHARP_MQTT_TRANSPORT_18_030: [** If the response contains a success code, `SendTwinPatchAsync` shall return success to the caller. **]**

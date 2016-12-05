@@ -8,6 +8,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Client.Extensions;
+    using Microsoft.Azure.Devices.Shared;
 
     /// <summary>
     /// Contains the implementation of methods that a device can use to send messages to and receive from the service.
@@ -67,6 +68,24 @@ namespace Microsoft.Azure.Devices.Client.Transport
             await base.DisableMethodsAsync(cancellationToken);
         }
 
+        public override async Task EnableTwinPatchAsync(CancellationToken cancellationToken)
+        {
+            await this.EnsureOpenedAsync(false, cancellationToken);
+            await base.EnableTwinPatchAsync(cancellationToken);
+        }
+        
+        public override async Task<Twin> SendTwinGetAsync(CancellationToken cancellationToken)
+        {
+            await this.EnsureOpenedAsync(false, cancellationToken);
+            return await base.SendTwinGetAsync(cancellationToken);
+        }
+        
+        public override async Task SendTwinPatchAsync(TwinCollection reportedProperties,  CancellationToken cancellationToken)
+        {
+            await this.EnsureOpenedAsync(false, cancellationToken);
+            await base.SendTwinPatchAsync(reportedProperties, cancellationToken);
+        }
+
         /// <summary>
         /// Deletes a received message from the device queue
         /// </summary>
@@ -109,6 +128,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task SendMethodResponseAsync(MethodResponseInternal methodResponse, CancellationToken cancellationToken)
         {
+            await this.EnsureOpenedAsync(false, cancellationToken);
             await base.SendMethodResponseAsync(methodResponse, cancellationToken);
         }
 
