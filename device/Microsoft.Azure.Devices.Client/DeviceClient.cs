@@ -1,6 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+#if !WINDOWS_UWP
+#define WIP_TWIN_MQTT
+#endif
+
 namespace Microsoft.Azure.Devices.Client
 {
     using Common;
@@ -27,7 +31,18 @@ namespace Microsoft.Azure.Devices.Client
     using AsyncTask = System.Threading.Tasks.Task;
     using AsyncTaskOfMessage = System.Threading.Tasks.Task<Message>;
     using AsyncTaskOfMethodResponse = System.Threading.Tasks.Task<MethodResponse>;
+    using AsyncTaskOfTwin = System.Threading.Tasks.Task<Microsoft.Azure.Devices.Shared.Twin>;
+#endif
 
+
+#if WIP_TWIN_MQTT
+    /// <summary>
+    /// Delegate for desired property update callbacks.  This will be called
+    /// every time we receive a PATCH from the service.
+    /// </summary>
+    /// <param name="desiredProperties">Properties that were contained in the update that was received from the service</param>
+    /// <param name="userContext">Context object passed in when the callback was registered</param>
+    public delegate AsyncTask DesiredPropertyUpdateCallback(TwinCollection desiredProperties, object userContext);
 #endif
 
     public delegate AsyncTaskOfMethodResponse MethodCallback(MethodRequest methodRequest, object userContext);
@@ -128,6 +143,24 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// Stores Methods supported by the client device and their associated delegate.
         /// </summary>
         Dictionary<string, Tuple<MethodCallback, object>> deviceMethods;
+
+#if WIP_TWIN_MQTT
+        /// <summary>
+        /// Callback to call whenever the twin's desired state is updated by the service
+        /// </summary>
+        private DesiredPropertyUpdateCallback desiredPropertyUpdateCallback;
+
+        /// <summary>
+        /// Has twin funcitonality been enabled with the service?
+        /// </summary>
+        private Boolean patchSubscribedWithService = false;
+
+        /// <summary>
+        /// userContext passed when registering the twin patch callback
+        /// </summary>
+        private Object twinPatchCallbackContext = null;
+#endif
+
 
 #if !PCL
         DeviceClient(IotHubConnectionString iotHubConnectionString, ITransportSettings[] transportSettings, IDeviceClientPipelineBuilder pipelineBuilder)
@@ -986,5 +1019,39 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         }
 #endif
 
+#if WIP_TWIN_MQTT
+        /// <summary>
+        /// Set a callback that will be called whenever the client receives a state update 
+        /// (desired or reported) from the service.  This has the side-effect of subscribing
+        /// to the PATCH topic on the service.
+        /// </summary>
+        /// <param name="callback">Callback to call after the state update has been received and applied</param>
+        /// <param name="userContext">Context object that will be passed into callback</param>
+        public AsyncTask SetDesiredPropertyUpdateCallback(DesiredPropertyUpdateCallback callback, object userContext)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Retrieve a device twin object for the current device.
+        /// </summary>
+        /// <returns>The device twin object for the current device</returns>
+        public AsyncTaskOfTwin GetTwinAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Push reported property changes up to the service.
+        /// </summary>
+        /// <param name="reportedProperties">Reported properties to push</param>
+        public AsyncTask UpdateReportedPropertiesAsync(TwinCollection reportedProperties)
+        {
+            throw new NotImplementedException();
+        }
+#endif // WIP_TWIN_MQTT
+
     }
 }
+
+
