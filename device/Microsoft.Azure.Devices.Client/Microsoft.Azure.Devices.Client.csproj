@@ -222,7 +222,6 @@
     <Compile Include="Common\TaskUtils.cs" />
     <Compile Include="Common\UrlEncodedDictionarySerializer.cs" />
     <Compile Include="DeviceAuthenticationWithX509Certificate.cs" />
-    <Compile Include="DotNetHelpers.cs" />
     <Compile Include="IotHubClientWebSocket.cs" />
     <Compile Include="IotHubConnection.cs" />
     <Compile Include="IotHubDeviceMuxConnection.cs" />
@@ -279,6 +278,7 @@
     <EmbeddedResource Include="Common\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />

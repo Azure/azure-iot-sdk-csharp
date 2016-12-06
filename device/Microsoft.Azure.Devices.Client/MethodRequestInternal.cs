@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.Client
     /// The data structure represent the method request coming from the IotHub.
     /// </summary>
     public sealed class MethodRequestInternal
-#if !WINDOWS_UWP && !PCL
+#if !PCL
         : IDisposable
 #endif
     {
@@ -65,7 +65,7 @@ namespace Microsoft.Azure.Devices.Client
 #if !NETMF
             this.InitializeWithStream(Stream.Null, true);
 #endif
-#if !WINDOWS_UWP && !PCL
+#if !PCL
             this.serializedAmqpMessage = null;
 #endif
 
@@ -103,7 +103,7 @@ namespace Microsoft.Azure.Devices.Client
             get; private set;
         }
 
-#if !WINDOWS_UWP && !PCL
+#if !PCL
         internal
 #endif
         Stream BodyStream
@@ -114,7 +114,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-#if !WINDOWS_UWP && !PCL && !NETMF
+#if !PCL && !NETMF
         internal AmqpMessage SerializedAmqpMessage
         {
             get
@@ -127,7 +127,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 #endif
 
-#if !WINDOWS_UWP && !PCL
+#if !PCL
         /// <summary>
         /// Dispose the current method data instance
         /// </summary>
@@ -175,7 +175,7 @@ namespace Microsoft.Azure.Devices.Client
                 return new byte[] { };
             }
 
-#if !WINDOWS_UWP && !PCL && !NETMF
+#if !PCL && !NETMF
             BufferListStream listStream;
             if ((listStream = this.bodyStream as BufferListStream) != null)
             {
@@ -285,7 +285,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 if (disposing)
                 {
-#if !WINDOWS_UWP && !PCL && !NETMF
+#if !PCL && !NETMF
                     if (this.serializedAmqpMessage != null)
                     {
                         // in the receive scenario, this.bodyStream is a reference

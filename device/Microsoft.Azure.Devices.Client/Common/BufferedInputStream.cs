@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Client
     using System.Threading;
 
     class BufferedInputStream : Stream
-#if !WINDOWS_UWP && !PCL
+#if !PCL
         , ICloneable
 #endif
     {

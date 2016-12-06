@@ -8,7 +8,7 @@ namespace Microsoft.Azure.Devices.Client.Extensions
     using System.Linq;
     using System.Net;
     using System.Net.Http;
-#if !WINDOWS_UWP && !PCL 
+#if !PCL 
     using System.Net.Sockets;
 #endif
     using System.Text;

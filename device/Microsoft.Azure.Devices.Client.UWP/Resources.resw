@@ -198,7 +198,20 @@
   <data name="FailedToSerializeUnsupportedType" xml:space="preserve">
     <value>Serialization operation failed due to unsupported type {0}.</value>
   </data>
-  <data name="OperationTimeoutExpired" xml:space="preserve">
+  <data name="ArgumentMustBeNonNegative" xml:space="preserve">
+    <value>The value of this argument must be non-negative.</value>
+  </data>
+    <data name="ArgumentMustBePositive" xml:space="preserve">
+    <value>The value of this argument must be positive.</value>
+  </data>
+    <data name="OffsetExceedsBufferSize" xml:space="preserve">
+    <value>The specified offset exceeds the buffer size ({0} bytes).</value>
+  </data>
+    <data name="SizeExceedsRemainingBufferSpace" xml:space="preserve">
+    <value>The specified size exceeds the remaining buffer space ({0} bytes).</value>
+  </data>
+
+    <data name="OperationTimeoutExpired" xml:space="preserve">
     <value>Operation timeout expired.</value>
   </data>
 </root>

@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Azure.Devices.Sha
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Azure.Devices.Shared.PCL", "Microsoft.Azure.Devices.Shared.PCL\Microsoft.Azure.Devices.Shared.PCL.csproj", "{F3BE6617-0714-4615-A916-48362BE8266D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Azure.Devices.Shared.WinRT", "Microsoft.Azure.Devices.Shared.WinRT\Microsoft.Azure.Devices.Shared.WinRT.csproj", "{A1170BE5-999D-49E5-B127-A9D6A6059D6B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Azure.Devices.Shared.UWP", "Microsoft.Azure.Devices.Shared.UWP\Microsoft.Azure.Devices.Shared.UWP.csproj", "{A1170BE5-999D-49E5-B127-A9D6A6059D6B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

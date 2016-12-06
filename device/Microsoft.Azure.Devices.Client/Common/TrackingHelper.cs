@@ -5,7 +5,7 @@ namespace Microsoft.Azure.Devices.Client
 {
     using System;
     using System.Linq;
-#if !WINDOWS_UWP && !PCL
+#if !PCL
     using Microsoft.Azure.Amqp;
     using Microsoft.Azure.Amqp.Framing;
 #endif
@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices.Client
             return trackingId;
         }
 
-#if !WINDOWS_UWP && !PCL
+#if !PCL
         public static string GenerateTrackingId(this AmqpException exception)
         {
             return exception.GenerateTrackingId(TrackingHelper.GatewayId, string.Empty, string.Empty);
@@ -93,7 +93,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-#if !WINDOWS_UWP && !PCL
+#if !PCL
         public static string GetTrackingId(this AmqpException amqpException)
         {
             Error errorObj = amqpException.Error;

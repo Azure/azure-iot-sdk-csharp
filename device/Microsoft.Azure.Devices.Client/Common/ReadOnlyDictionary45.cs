@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.Client
     [Serializable]
 #endif
     [DebuggerDisplay("Count = {Count}")]
-#if !WINDOWS_UWP && !PCL // WinRT types cannot be generic
+#if !PCL
     public
 #endif
     class ReadOnlyDictionary45<TKey, TValue> : IDictionary<TKey, TValue>, IDictionary //, IReadOnlyDictionary<TKey, TValue>

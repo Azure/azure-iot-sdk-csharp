@@ -22,7 +22,7 @@ Go to VS 2015 Solution Explorer and right click on the solution or project and c
 For building classic desktop [.NET] [.NET] application, use NuGet Package Manager to install latest version of **Microsoft.Azure.Devices.Client** Device SDK for Azure IoT Devices NuGet package to your project.
 
 - Microsoft.Azure.Devices.Client.dll is a .NET assembly for building classic .NET desktop application.
-- Microsoft.Azure.Devices.Client.winmd (Windows Runtime Metadata) is an assembly for building [UWP] [UWP] application.
+- Microsoft.Azure.Devices.Client.UWP.dll is an assembly for building [UWP] [UWP] applications.
 
 The package is located at [Azure IoT Device Client SDK NuGet Package] [lnk-NuGet-package]
 
@@ -36,9 +36,9 @@ The package is located at [Azure IoT Device Client PCL SDK NuGet Package] [lnk-N
 
 ### Building [UWP][UWP] Apps 
 Just like classic desktop app, install [Azure IoT Device Client SDK NuGet Package] [lnk-NuGet-package].
-Microsoft.Azure.Devices.Client.winmd is [WinRT] [WinRT] version which will get installed via NuGet Package manager when you select **Universal** app in VS 2015. This is the version you need to build UWP apps.
+Microsoft.Azure.Devices.Client.UWP.dll is a [UWP] [UWP] version which will get installed via NuGet Package manager when you select **Universal** app in VS 2015. This is the version you need to build UWP apps.
 
-> Currently, **Microsoft.Azure.Devices.Client.WinRT** doesn't support MQTT protocol.
+> Currently, **Microsoft.Azure.Devices.Client.UWP** doesn't support MQTT protocol.
 
 ####  Building C# and Visual Basic UWP apps
 For building UWP, follow the same steps as you would follow if building classic .NET desktop application.
@@ -52,39 +52,6 @@ Dim message = New Microsoft.Azure.Devices.Client.Message(Encoding.ASCII.GetBytes
 Dim Async = deviceClient.SendEventAsync(message)
 ```
 where you would replace {My device connection string} with your own valid device connection string.
-
-
-#### Building Visual C++ and JavaScript UWP apps
-For Visual C++ and JavaScript UWP, you may get "Error	Failed to add reference to 'Microsoft.Azure.Amqp.Uwp' **error** while installing [Azure IoT Device Client SDK NuGet Package] [lnk-NuGet-package]. 
-
-Use the below [workaround](#workaround_uwp) for this error. Since the required dependent assemblies **fail** to install, you will have to **manually** copy them for Visual C++ and JavaScript UWP application.
-
-<a name="workaround_uwp"/>
-##### Workaround for building Visual C++ and JavaScript UWP apps
-
-Create a **temporary** blank UWP project in **C#** to get copies of the required dependent assemblies since installation of the assemblies failed. Right click on the Project in Solution Explorer in VS 2015 and click Manage NuGet Packages and install [Microsoft.Azure.Devices.Client] [lnk-NuGet-package] NuGet package.
-
-> **Build** the temporary C# UWP project
-
-Now, go to the corresponding bin folder. For example, for Debug build for x64, you will go to bin\x64\Debug and copy and paste following **4** files that would get installed.
-
-1. **Microsoft.Azure.Devices.Client.winmd**
-2. Microsoft.Azure.Amqp.Uwp.dll
-3. PCLCrypto.dll
-4. Validation.dll
-
-There are the files you need to copy in the **corresponding** bin\x64\Debug\AppX folder of your **AppX** package of your project in Visual C++ or JavaScript in which NuGet package installation **failed**.
-
-- To add the reference for your client SDK, you will reference WinRT assembly bin\x64\Debug\AppX\\**Microsoft.Azure.Devices.Client.winmd** which you just copied.
-
-For building **JavaScript** UWP app, the calls using the SDK client library would look something like this
-
-```
-var azureClient = Microsoft.Azure.Devices.Client;
-var deviceClient = azureClient.DeviceClient.createFromConnectionString(deviceConnectionString, azureClient.TransportType.amqp);
-deviceClient.sendEventAsync(eventMessage);
-```
-
 
 ### Building iOS and Android apps using Xamarin
 For building iOS and Android app in C# , you will use PCL NuGet package  located at [Azure IoT Device Client PCL SDK NuGet Package] [lnk-NuGet-package_pcl]
@@ -118,7 +85,7 @@ Once build completes, it will create
 
 1. Microsoft.Azure.Devices.Client.dll (Client SDK Assembly)
 2. Microsoft.Azure.Devices.Client.PCL.dll (PCL library)
-3. Microsoft.Azure.Devices.Client.winmd (WinRT version that you will need to UWP application)
+3. Microsoft.Azure.Devices.Client.UWP.dll (UWP version that you will need to UWP application)
 4. Sample executables 
 
 ### Option 2: Build using VS 2015 IDE
@@ -185,6 +152,6 @@ After this redeploy and re-run the application.
 [PCL]:https://msdn.microsoft.com/en-us/library/gg597391(v=vs.110).aspx
 [UWP]:https://msdn.microsoft.com/en-us/windows/uwp/get-started/universal-application-platform-guide
 [.NET]:https://www.microsoft.com/net
-[WinRT]:https://msdn.microsoft.com/en-us/windows/uwp/winrt-components/index
+[UWP]:https://msdn.microsoft.com/en-us/windows/uwp/winrt-components/index
 [Xamarin]:https://www.xamarin.com/
 

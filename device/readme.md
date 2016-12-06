@@ -11,7 +11,7 @@ The library is available as a NuGet package for you include in your own developm
  * Batches messages to improve communication efficiency.
  * Supports pluggable transport protocols.
 
-> Note: Currently, **Microsoft.Azure.Devices.Client.WinRT** doesn't support  **MQTT** protocol.
+> Note: Currently, **Microsoft.Azure.Devices.Client.UWP** doesn't support  **MQTT** protocol.
 
 For example,calling `DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(DeviceConnectionString, TransportType.Mqtt);` will result in "Mqtt protocol is not supported" exception.
 
@@ -45,11 +45,11 @@ This folder contains build scripts for the .NET client libraries and samples.
 
 This folder contains setup and getting started documents for .NET.
 
-### /Microsoft.Azure.Devices.Client  /Microsoft.Azure.Devices.Client.WinRT
+### /Microsoft.Azure.Devices.Client  /Microsoft.Azure.Devices.Client.UWP
 
 These folders contain the .NET client library source code.
 
-The Microsoft.Azure.Devices.Client.WinRT project is for building the UWP (Universal Windows Platform) version of the client library. For more information about the UWP version of this library refer to the [FAQ][faq-doc].
+The Microsoft.Azure.Devices.Client.UWP project is for building the UWP (Universal Windows Platform) version of the client library. For more information about the UWP version of this library refer to the [FAQ][faq-doc].
 
 These projects are useful if you want to modify or extend the .NET libraries.
 

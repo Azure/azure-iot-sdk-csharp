@@ -23,9 +23,6 @@ namespace Microsoft.Azure.Devices.Client
         Task<Message> ReceiveAsync(CancellationToken cancellationToken);
         Task<Message> ReceiveAsync(TimeSpan timeout, CancellationToken cancellationToken);
         Task RejectAsync(string lockToken, CancellationToken cancellationToken);
-#if WINDOWS_UWP
-        [Windows.Foundation.Metadata.DefaultOverload]
-#endif
         Task SendEventAsync(Message message, CancellationToken cancellationToken);
         Task SendEventAsync(IEnumerable<Message> messages, CancellationToken cancellationToken);
 

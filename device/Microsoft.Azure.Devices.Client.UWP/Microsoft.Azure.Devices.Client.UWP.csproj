@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{E68DA0B4-2F93-4850-A6AE-1D87DDE7F063}</ProjectGuid>
-    <OutputType>winmdobj</OutputType>
+    <ProjectGuid>{C860AF4F-605A-414D-84E8-8FF579823395}</ProjectGuid>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Microsoft.Azure.Devices.Client</RootNamespace>
-    <AssemblyName>Microsoft.Azure.Devices.Client.WinRT</AssemblyName>
+    <AssemblyName>Microsoft.Azure.Devices.Client.UWP</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
     <TargetPlatformVersion>10.0.10240.0</TargetPlatformVersion>
@@ -140,17 +140,17 @@
     <Compile Include="$(DeviceClientDir)\Transport\AmqpTransportHandler.cs" />
     <Compile Include="$(DeviceClientDir)\Transport\RoutingDelegatingHandler.cs" />
     <Compile Include="$(DeviceClientDir)\Transport\TransportHandler.cs" />
-    <Compile Include="$(DeviceClientDir)\WinRTHelpers.cs" />
-    <Compile Include="$(DeviceClientDir)\WinRTResources.cs" />
+    <Compile Include="$(DeviceClientDir)\UWPHelpers.cs" />
+    <Compile Include="$(DeviceClientDir)\UWPResources.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <PRIResource Include="Resources.resw" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\shared\Microsoft.Azure.Devices.Shared.WinRT\Microsoft.Azure.Devices.Shared.WinRT.csproj">
+    <ProjectReference Include="..\..\shared\Microsoft.Azure.Devices.Shared.UWP\Microsoft.Azure.Devices.Shared.UWP.csproj">
       <Project>{a1170be5-999d-49e5-b127-a9d6a6059d6b}</Project>
-      <Name>Microsoft.Azure.Devices.Shared.WinRT</Name>
+      <Name>Microsoft.Azure.Devices.Shared.UWP</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="..\Microsoft.Azure.Devices.Client.Shared\Microsoft.Azure.Devices.Client.Shared.projitems" Label="Shared" />

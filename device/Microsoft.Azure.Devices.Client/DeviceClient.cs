@@ -17,20 +17,7 @@ namespace Microsoft.Azure.Devices.Client
     using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 #endif
 
-    // C# using aliases cannot name an unbound generic type declaration without supplying type arguments
-    // Therefore, define a separate alias for each type argument
-#if WINDOWS_UWP
-    using AsyncTask = Windows.Foundation.IAsyncAction;
-    using AsyncTaskOfMessage = Windows.Foundation.IAsyncOperation<Message>;
-    using AsyncTaskOfMethodResponse = Windows.Foundation.IAsyncOperation<MethodResponse>;
-#else
-    using AsyncTask = System.Threading.Tasks.Task;
-    using AsyncTaskOfMessage = System.Threading.Tasks.Task<Message>;
-    using AsyncTaskOfMethodResponse = System.Threading.Tasks.Task<MethodResponse>;
-
-#endif
-
-    public delegate AsyncTaskOfMethodResponse MethodCallback(MethodRequest methodRequest, object userContext);
+    public delegate Task<MethodResponse> MethodCallback(MethodRequest methodRequest, object userContext);
 
     /*
      * Class Diagram and Chain of Responsibility in Device Client 
@@ -94,7 +81,7 @@ namespace Microsoft.Azure.Devices.Client
     /// Contains methods that a device can use to send messages to and receive from the service.
     /// </summary>
     public sealed class DeviceClient
-#if !WINDOWS_UWP && !PCL
+#if !PCL
         : IDisposable
 #endif
     {
@@ -133,7 +120,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             this.iotHubConnectionString = iotHubConnectionString;
 
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP // ArturL: we should try to support retry for UWP now that the library is no longer limited to exposing only WinRT types
             var innerHandler = new RetryDelegatingHandler(
                 new ErrorDelegatingHandler(
                     () => new RoutingDelegatingHandler(this.CreateTransportHandler, iotHubConnectionString, transportSettings)));
@@ -178,7 +165,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 #endif
 
-        internal AsyncTask SendMethodResponseAsync(MethodResponseInternal methodResponse)
+        internal Task SendMethodResponseAsync(MethodResponseInternal methodResponse)
         {
             return ApplyTimeout(operationTimeoutCancellationToken =>
             {
@@ -200,10 +187,6 @@ namespace Microsoft.Azure.Devices.Client
             return Create(hostname, authenticationMethod, TransportType.Amqp);
 #endif
         }
-
-#if WINDOWS_UWP
-        [Windows.Foundation.Metadata.DefaultOverloadAttribute()]
-#endif
 
         /// <summary>
         /// Create a DeviceClient from individual parameters
@@ -305,10 +288,6 @@ namespace Microsoft.Azure.Devices.Client
             return CreateFromConnectionString(connectionString, deviceId, TransportType.Amqp);
 #endif
         }
-
-#if WINDOWS_UWP
-        [Windows.Foundation.Metadata.DefaultOverloadAttribute()]
-#endif
 
         /// <summary>
         /// Create DeviceClient from the specified connection string using the specified transport type
@@ -471,9 +450,6 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="deviceId">Id of the device</param>
         /// <param name="transportSettings">Prioritized list of transportTypes and their settings</param>
         /// <returns>DeviceClient</returns>
-#if WINDOWS_UWP
-        [Windows.Foundation.Metadata.DefaultOverloadAttribute]
-#endif
         public static DeviceClient CreateFromConnectionString(string connectionString, string deviceId, [System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArrayAttribute] ITransportSettings[] transportSettings)
         {
             if (connectionString == null)
@@ -504,7 +480,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Explicitly open the DeviceClient instance.
         /// </summary>
 
-        public AsyncTask OpenAsync()
+        public Task OpenAsync()
         {
             // Codes_SRS_DEVICECLIENT_28_007: [ The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable(authentication, quota exceed) error occurs.]
             return ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.OpenAsync(true, operationTimeoutCancellationToken));
@@ -514,16 +490,16 @@ namespace Microsoft.Azure.Devices.Client
         /// Close the DeviceClient instance
         /// </summary>
         /// <returns></returns>
-        public AsyncTask CloseAsync()
+        public Task CloseAsync()
         {
-            return this.InnerHandler.CloseAsync().AsTaskOrAsyncOp();
+            return this.InnerHandler.CloseAsync();
         }
 
         /// <summary>
         /// Receive a message from the device queue using the default timeout.
         /// </summary>
         /// <returns>The receive message or null if there was no message until the default timeout</returns>
-        public AsyncTaskOfMessage ReceiveAsync()
+        public Task<Message> ReceiveAsync()
         {
             // Codes_SRS_DEVICECLIENT_28_011: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable(authentication, quota exceed) error occurs.]
             return ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.ReceiveAsync(operationTimeoutCancellationToken));
@@ -533,21 +509,17 @@ namespace Microsoft.Azure.Devices.Client
         /// Receive a message from the device queue with the specified timeout
         /// </summary>
         /// <returns>The receive message or null if there was no message until the specified time has elapsed</returns>
-        public AsyncTaskOfMessage ReceiveAsync(TimeSpan timeout)
+        public Task<Message> ReceiveAsync(TimeSpan timeout)
         {
             // Codes_SRS_DEVICECLIENT_28_011: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable(authentication, quota exceed) error occurs.]
             return ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.ReceiveAsync(timeout, operationTimeoutCancellationToken));
         }
 
-#if WINDOWS_UWP
-        [Windows.Foundation.Metadata.DefaultOverloadAttribute()]
-#endif
-
         /// <summary>
         /// Deletes a received message from the device queue
         /// </summary>
         /// <returns>The lock identifier for the previously received message</returns>
-        public AsyncTask CompleteAsync(string lockToken)
+        public Task CompleteAsync(string lockToken)
         {
             if (string.IsNullOrEmpty(lockToken))
             {
@@ -562,7 +534,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Deletes a received message from the device queue
         /// </summary>
         /// <returns>The previously received message</returns>
-        public AsyncTask CompleteAsync(Message message)
+        public Task CompleteAsync(Message message)
         {
             if (message == null)
             {
@@ -572,15 +544,11 @@ namespace Microsoft.Azure.Devices.Client
             return this.CompleteAsync(message.LockToken);
         }
 
-#if WINDOWS_UWP
-        [Windows.Foundation.Metadata.DefaultOverloadAttribute()]
-#endif
-
         /// <summary>
         /// Puts a received message back onto the device queue
         /// </summary>
         /// <returns>The previously received message</returns>
-        public AsyncTask AbandonAsync(string lockToken)
+        public Task AbandonAsync(string lockToken)
         {
             if (string.IsNullOrEmpty(lockToken))
             {
@@ -594,7 +562,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Puts a received message back onto the device queue
         /// </summary>
         /// <returns>The lock identifier for the previously received message</returns>
-        public AsyncTask AbandonAsync(Message message)
+        public Task AbandonAsync(Message message)
         {
             if (message == null)
             {
@@ -604,15 +572,11 @@ namespace Microsoft.Azure.Devices.Client
             return this.AbandonAsync(message.LockToken);
         }
 
-#if WINDOWS_UWP
-        [Windows.Foundation.Metadata.DefaultOverloadAttribute()]
-#endif
-
         /// <summary>
         /// Deletes a received message from the device queue and indicates to the server that the message could not be processed.
         /// </summary>
         /// <returns>The previously received message</returns>
-        public AsyncTask RejectAsync(string lockToken)
+        public Task RejectAsync(string lockToken)
         {
             if (string.IsNullOrEmpty(lockToken))
             {
@@ -626,7 +590,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Deletes a received message from the device queue and indicates to the server that the message could not be processed.
         /// </summary>
         /// <returns>The lock identifier for the previously received message</returns>
-        public AsyncTask RejectAsync(Message message)
+        public Task RejectAsync(Message message)
         {
             if (message == null)
             {
@@ -640,7 +604,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Sends an event to device hub
         /// </summary>
         /// <returns>The message containing the event</returns>
-        public AsyncTask SendEventAsync(Message message)
+        public Task SendEventAsync(Message message)
         {
             if (message == null)
             {
@@ -654,7 +618,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Sends a batch of events to device hub
         /// </summary>
         /// <returns>The task containing the event</returns>
-        public AsyncTask SendEventBatchAsync(IEnumerable<Message> messages)
+        public Task SendEventBatchAsync(IEnumerable<Message> messages)
         {
             if (messages == null)
             {
@@ -664,13 +628,12 @@ namespace Microsoft.Azure.Devices.Client
             return ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.SendEventAsync(messages, operationTimeoutCancellationToken));
         }
 
-        private AsyncTask ApplyTimeout(Func<CancellationToken, System.Threading.Tasks.Task> operation)
+        private Task ApplyTimeout(Func<CancellationToken, System.Threading.Tasks.Task> operation)
         {
             if (OperationTimeoutInMilliseconds == 0)
             {
                 return operation(CancellationToken.None)
-                    .WithTimeout(TimeSpan.MaxValue, () => Resources.OperationTimeoutExpired, CancellationToken.None)
-                    .AsTaskOrAsyncOp();
+                    .WithTimeout(TimeSpan.MaxValue, () => Resources.OperationTimeoutExpired, CancellationToken.None);
             }
 
             CancellationTokenSource operationTimeoutCancellationTokenSource = GetOperationTimeoutCancellationTokenSource();
@@ -681,16 +644,15 @@ namespace Microsoft.Azure.Devices.Client
             {
                 operationTimeoutCancellationTokenSource.Dispose();
             });
-            return result.AsTaskOrAsyncOp();
+            return result;
         }
 
-        private AsyncTaskOfMessage ApplyTimeout(Func<CancellationToken, System.Threading.Tasks.Task<Message>> operation)
+        private Task<Message> ApplyTimeout(Func<CancellationToken, System.Threading.Tasks.Task<Message>> operation)
         {
             if (OperationTimeoutInMilliseconds == 0)
             {
                 return operation(CancellationToken.None)
-                    .WithTimeout(TimeSpan.MaxValue, () => Resources.OperationTimeoutExpired, CancellationToken.None)
-                    .AsTaskOrAsyncOp();
+                    .WithTimeout(TimeSpan.MaxValue, () => Resources.OperationTimeoutExpired, CancellationToken.None);
             }
 
             CancellationTokenSource operationTimeoutCancellationTokenSource = GetOperationTimeoutCancellationTokenSource();
@@ -702,11 +664,11 @@ namespace Microsoft.Azure.Devices.Client
                 operationTimeoutCancellationTokenSource.Dispose();
                 return t.Result;
             });
-            return result.AsTaskOrAsyncOp();
+            return result;
         }
 
 
-#if !WINDOWS_UWP && !PCL
+#if !WINDOWS_UWP && !PCL // ArturL: we should be able to support UploadToBlobAsync for UWP now
         /// <summary>
         /// Uploads a stream to a block blob in a storage account associated with the IoTHub for that device.
         /// If the blob already exists, it will be overwritten.
@@ -714,7 +676,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="blobName"></param>
         /// <param name="source"></param>
         /// <returns>AsncTask</returns>
-        public AsyncTask UploadToBlobAsync(String blobName, System.IO.Stream source)
+        public Task UploadToBlobAsync(String blobName, System.IO.Stream source)
         {
             if (String.IsNullOrEmpty(blobName))
             {

@@ -53,6 +53,28 @@ namespace Microsoft.Azure.Devices.Client.Common
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to The value of this argument must be non-negative..
+        /// </summary>
+        internal static string ArgumentMustBeNonNegative
+        {
+            get
+            {
+                return ResourceManager.GetString("ArgumentMustBeNonNegative", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The value of this argument must be positive..
+        /// </summary>
+        internal static string ArgumentMustBePositive
+        {
+            get
+            {
+                return ResourceManager.GetString("ArgumentMustBePositive", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to The argument {0} is null or empty..
         /// </summary>
         internal static string ArgumentNullOrEmpty
@@ -262,6 +284,28 @@ namespace Microsoft.Azure.Devices.Client.Common
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to The specified offset exceeds the buffer size ({0} bytes)..
+        /// </summary>
+        internal static string OffsetExceedsBufferSize
+        {
+            get
+            {
+                return ResourceManager.GetString("OffsetExceedsBufferSize", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Operation timeout expired..
+        /// </summary>
+        internal static string OperationTimeoutExpired
+        {
+            get
+            {
+                return ResourceManager.GetString("OperationTimeoutExpired", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to An unexpected failure occurred. Applications should not attempt to handle this error. For diagnostic purposes, this English message is associated with the failure: {0}..
         /// </summary>
         internal static string ShipAssertExceptionMessage
@@ -269,6 +313,17 @@ namespace Microsoft.Azure.Devices.Client.Common
             get
             {
                 return ResourceManager.GetString("ShipAssertExceptionMessage", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The specified size exceeds the remaining buffer space ({0} bytes)..
+        /// </summary>
+        internal static string SizeExceedsRemainingBufferSpace
+        {
+            get
+            {
+                return ResourceManager.GetString("SizeExceedsRemainingBufferSpace", resourceCulture);
             }
         }
 
@@ -324,17 +379,6 @@ namespace Microsoft.Azure.Devices.Client.Common
             get
             {
                 return ResourceManager.GetString("ValueMustBeNonNegative", resourceCulture);
-            }
-        }
-
-        /// <summary>
-        ///   Looks up a localized string similar to Operation timeout expired..
-        /// </summary>
-        internal static string OperationTimeoutExpired
-        {
-            get
-            {
-                return ResourceManager.GetString("OperationTimeoutExpired", resourceCulture);
             }
         }
     }

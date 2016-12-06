@@ -7,12 +7,6 @@ namespace Microsoft.Azure.Devices.Client
     using System.Threading.Tasks;
     using Windows.Foundation;
 
-    static class WinRTHelpers
-    {
-        public static IAsyncOperation<T> AsTaskOrAsyncOp<T>(this Task<T> op) { return op.AsAsyncOperation<T>(); }
-        public static IAsyncAction AsTaskOrAsyncOp(this Task op) { return op.AsAsyncAction(); }
-    }
-
     //
     // Summary:
     //     Identifies the type of event that has caused the trace.

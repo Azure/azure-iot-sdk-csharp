@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.Client
         {
         }
 
-#if !PCL && !WINDOWS_UWP && !NETMF
+#if !PCL && !NETMF
         public static void ValidateBufferBounds(byte[] buffer, int offset, int size)
         {
             if (buffer == null)
@@ -55,12 +55,14 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
+#if !WINDOWS_UWP // GetExecutingAssembly is not in UWP
         public static string GetClientVersion()
         {
             Assembly a = Assembly.GetExecutingAssembly();
             var attribute = (AssemblyInformationalVersionAttribute)a.GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), true)[0];
             return a.GetName().Name + "/" + attribute.InformationalVersion;
         }
+#endif
 
 #endif
         public static DeliveryAcknowledgement ConvertDeliveryAckTypeFromString(string value)

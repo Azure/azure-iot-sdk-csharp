@@ -86,26 +86,14 @@ Using the IoT Hub c-client code from C++ is no different than using it from c. C
 
 UWP (Universal Windows Platform) is an evolution of Windows app model introduced in Windows 8. UWP provides a common app platform available on every device that runs Windows 10, including its IoT flavor, the IoT Core. (See https://msdn.microsoft.com/en-us/library/dn894631.aspx). UWP is the official application model supported on IoT Core.
 
-An existing .NET library can be made UWP-compatible by exposing WinRT interfaces and by porting the implementation to .NET Core (See http://blogs.msdn.com/b/dotnet/archive/2014/12/04/introducing-net-core.aspx)
-
-WinRT imposes certain constraints on the public APIs. Most importantly, only WinRT (and not .NET) types can be exposed. This allows other languages (including unmanaged languages like C++/CX and JavaScript) to consume such libraries.
+A new binary, Microsoft.Azure.Devices.Client.UWP.dll is built to support the UWP. This is .NET library and not a WinRT library. This means that it cannot be used to target non-.NET languages such as C++/CX and JavaScript.
 
 <a name="project"/>
 ### Project file and assembly
 
-A new project file, Microsoft.Azure.Devices.Client.WinRT.csproj has been created. The project has been added to the main solution. The project produces a WinRT AppX package with metadata in Microsoft.Azure.Devices.Client.winmd.
+A new project file, Microsoft.Azure.Devices.Client.UWP.csproj has been created. The project has been added to the main solution. The project produces an AppX package with metadata in Microsoft.Azure.Devices.Client.UWP.dll.
 
 The existing .NET library, Microsoft.Azure.Devices.Client.dll, has remained unchanged (modulo a small number of breaking changes as described below).
-
-<a name="deviceclient"/>
-### DeviceClient
-
-WinRT does not allow exporting abstract classes, therefore **DeviceClient** has become a sealed concrete class. A new private abstract class, **DeviceClientImpl** has been added to maximally reuse the existing implementation.
-
-<a name="asynchrony"/>
-### Asynchrony
-
-Only WinRT types can be exported by WinRT assemblies. The signatures of async methods such as **ReceiveAsync** have been changed to return **AsyncTask** or **AsyncTaskOfMessage**, which is aliased to **Windows.Foundation.IAsyncAction** or **Windows.Foundation.IAsyncOperation<Message>** for WinRT, or **System.Threading.Tasks.Task** and **System.Threading.Tasks.Task<Message>** for .NET.
 
 <a name="library"/>
 ### Library-specific Behaviors
@@ -119,7 +107,7 @@ Desktop apps use either text files or XML (.resx) files to create resources. The
 
 UWP uses the Windows Store resource model that replaces the hub-and-spoke model common to .NET Framework desktop apps. In UWP apps, .resw files are used to create resources. The format of the file is the same as .resx, but the packaging mechanism is different. At compile time, all the .resw files for an app are packed into a single PRI file by the MakePRI utility and included with the app's deployment package. At run time, the **Windows.ApplicationModel.Resources.ResourceLoader** class and the types in the **Windows.ApplicationModel.Resources.Core** namespace provide access to app resources.
 
-To support resources in Microsoft.Azure.Devices.Client library, the existing Resource.resx file has been copied to Resource.resw. The two files will now need to be kept in sync. Unlike in the .NET version of the library, the UWP version does not contain generated C# files. Instead, a new file, WinRTResources.cs is introduced. Whenever a new string is added to the .resx/.resw file, a corresponding entry must be copied from Resources.Designer.cs to WinRTResources.cs (follow the existing entries as an example)
+To support resources in Microsoft.Azure.Devices.Client library, the existing Resource.resx file has been copied to Resource.resw. The two files will now need to be kept in sync. Unlike in the .NET version of the library, the UWP version does not contain generated C# files. Instead, a new file, UWPResources.cs is introduced. Whenever a new string is added to the .resx/.resw file, a corresponding entry must be copied from Resources.Designer.cs to UWPResources.cs (follow the existing entries as an example)
 
 <a name="notimpluwp"/>
 ## System.NotImplementedException occurred in Microsoft.Azure.Devices.Client.winmd

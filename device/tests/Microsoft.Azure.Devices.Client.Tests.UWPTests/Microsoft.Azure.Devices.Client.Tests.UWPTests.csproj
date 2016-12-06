@@ -125,13 +125,13 @@
     <Content Include="Assets\Wide310x150Logo.scale-200.png" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Microsoft.Azure.Devices.Client.WinRT\Microsoft.Azure.Devices.Client.WinRT.csproj">
-      <Project>{e68da0b4-2f93-4850-a6ae-1d87dde7f063}</Project>
-      <Name>Microsoft.Azure.Devices.Client.WinRT</Name>
-    </ProjectReference>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <ItemGroup>
-    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
+    <ProjectReference Include="..\..\Microsoft.Azure.Devices.Client.UWP\Microsoft.Azure.Devices.Client.UWP.csproj">
+      <Project>{c860af4f-605a-414d-84e8-8ff579823395}</Project>
+      <Name>Microsoft.Azure.Devices.Client.UWP</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>

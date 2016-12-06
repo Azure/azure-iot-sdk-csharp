@@ -7,8 +7,8 @@
     <ProjectGuid>{A1170BE5-999D-49E5-B127-A9D6A6059D6B}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Microsoft.Azure.Devices.Shared.WinRT</RootNamespace>
-    <AssemblyName>Microsoft.Azure.Devices.Shared.WinRT</AssemblyName>
+    <RootNamespace>Microsoft.Azure.Devices.Shared.UWP</RootNamespace>
+    <AssemblyName>Microsoft.Azure.Devices.Shared.UWP</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
     <TargetPlatformVersion>10.0.10240.0</TargetPlatformVersion>
@@ -120,7 +120,7 @@
     <Compile Include="$(SharedCodeDir)\TwinCollectionValue.cs" />
     <Compile Include="$(SharedCodeDir)\TwinJsonConverter.cs" />
     <Compile Include="$(SharedCodeDir)\TwinProperties.cs" />
-    <EmbeddedResource Include="Properties\Microsoft.Azure.Devices.Shared.WinRT.rd.xml" />
+    <EmbeddedResource Include="Properties\Microsoft.Azure.Devices.Shared.UWP.rd.xml" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>

@@ -37,11 +37,11 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public sealed class Message :
         // TODO: this is a crazy mess, clean it up
-#if !WINDOWS_UWP && !PCL && !NETMF
+#if !PCL && !NETMF
         IDisposable, IReadOnlyIndicator
 #elif NETMF
         IDisposable
-#elif WINDOWS_UWP || PCL
+#elif PCL
         IReadOnlyIndicator
 #endif
     {
@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices.Client
             this.Properties = new ReadOnlyDictionary45<string, string>(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase), this);
             this.SystemProperties = new ReadOnlyDictionary45<string, object>(new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase), this);
             this.InitializeWithStream(Stream.Null, true);
-#if !WINDOWS_UWP && !PCL
+#if !PCL
             this.serializedAmqpMessage = null;
 #endif
 #endif
@@ -88,12 +88,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="stream">a stream which will be used as body stream.</param>
         /// <remarks>User is expected to own the disposing of the stream when using this constructor.</remarks>
         // UWP cannot expose a method with System.IO.Stream in signature. TODO: consider adding an IRandomAccessStream overload
-#if WINDOWS_UWP
-        private
-#else
-        public
-#endif
-            Message(Stream stream)
+        public Message(Stream stream)
             : this()
         {
             if (stream != null)
@@ -395,7 +390,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 #endif
 
-#if !WINDOWS_UWP && !PCL
+#if !PCL
         public
 #endif
         Stream BodyStream
@@ -406,7 +401,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-#if !WINDOWS_UWP && !PCL && !NETMF
+#if !PCL && !NETMF
         internal AmqpMessage SerializedAmqpMessage
         {
             get
@@ -426,7 +421,7 @@ namespace Microsoft.Azure.Devices.Client
         internal ArraySegment<byte> DeliveryTag { get; set; }
 #endif
 
-#if !WINDOWS_UWP && !PCL
+#if !PCL
         /// <summary>
         /// Dispose the current event data instance
         /// </summary>
@@ -474,7 +469,7 @@ namespace Microsoft.Azure.Devices.Client
                 return new byte[] { };
             }
 
-#if !WINDOWS_UWP && !PCL && !NETMF
+#if !PCL && !NETMF
             BufferListStream listStream;
             if ((listStream = this.bodyStream as BufferListStream) != null)
             {
@@ -644,7 +639,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 if (disposing)
                 {
-#if !WINDOWS_UWP && !PCL && !NETMF
+#if !PCL && !NETMF
                     if (this.serializedAmqpMessage != null)
                     {
                         // in the receive scenario, this.bodyStream is a reference
