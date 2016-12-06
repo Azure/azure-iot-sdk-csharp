@@ -11783,6 +11783,7 @@
     "Microsoft.Azure.Amqp/1.1.0": {
       "sha512": "YaGjxkotU2ZeLnM/Q/Xa0V64IgiOHXiyc7B5GHvDFMX/xEIscIQuQv8Bw0e7z2fQJVC1SplYWgCECi84cqokCw==",
       "type": "package",
+      "path": "Microsoft.Azure.Amqp/1.1.0",
       "files": [
         "Microsoft.Azure.Amqp.1.1.0.nupkg.sha512",
         "Microsoft.Azure.Amqp.nuspec",
@@ -11937,8 +11938,9 @@
       ]
     },
     "Microsoft.NETCore.Runtime.CoreCLR-arm/1.0.0": {
-      "sha512": "vUQyaKbHCa7BJAAzdfCP2FfBYOSt0YnDw7VMJLmD1/k68HIJgw1QO7GAfHhqoa39zkkvimC47QBH27wG4C5OGQ==",
+      "sha512": "hoJfIl981eXwn9Tz8onO/J1xaYApIfp/YrhjSh9rRhml1U5Wj80LBgyp/6n+KI3VlvcAraThhnHnCTp+M3Uh+w==",
       "type": "package",
+      "path": "Microsoft.NETCore.Runtime.CoreCLR-arm/1.0.0",
       "files": [
         "Microsoft.NETCore.Runtime.CoreCLR-arm.1.0.0.nupkg.sha512",
         "Microsoft.NETCore.Runtime.CoreCLR-arm.nuspec",
@@ -14981,6 +14983,7 @@
     "Validation/2.2.8": {
       "sha512": "DMNc7JhPlgRwnR+NNb+ldoluObL+RBw96aMoiZae/Looa4vgaAnIysmle/bV2OKqDNW9oUBDckPyfa2+sX6JdA==",
       "type": "package",
+      "path": "Validation/2.2.8",
       "files": [
         "README.md",
         "Validation.2.2.8.nupkg.sha512",
