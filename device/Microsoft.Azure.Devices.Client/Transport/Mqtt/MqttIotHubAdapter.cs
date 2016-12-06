@@ -208,7 +208,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 {
                     ClientId = this.deviceId,
                     HasUsername = true,
-                    Username = this.iotHubHostName + "/" + this.deviceId,
+                    Username = this.iotHubHostName + "/" + this.deviceId + "/DeviceClientType=" + Utils.GetClientVersion(),
                     HasPassword = !string.IsNullOrEmpty(this.password),
                     Password = this.password,
                     KeepAliveInSeconds = this.mqttTransportSettings.KeepAliveInSeconds,
