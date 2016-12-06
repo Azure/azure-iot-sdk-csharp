@@ -18,45 +18,50 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         [TestCategory("TransportHandlers")]
         public async Task HttpTransportHandler_SendEventAsync_TokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => HttpTransportHandler.CreateFromConnectionString(DumpyConnectionString).SendEventAsync(new Message(), token));
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().SendEventAsync(new Message(), token));
         }
 
         [TestMethod]
         [TestCategory("TransportHandlers")]
         public async Task HttpTransportHandler_SendEventAsync_MultipleMessages_TokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => HttpTransportHandler.CreateFromConnectionString(DumpyConnectionString).SendEventAsync(new List<Message>(), token));
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().SendEventAsync(new List<Message>(), token));
         }
 
         [TestMethod]
         [TestCategory("TransportHandlers")]
         public async Task HttpTransportHandler_ReceiveAsync_TokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => HttpTransportHandler.CreateFromConnectionString(DumpyConnectionString).ReceiveAsync(new TimeSpan(0, 0, 0), token));
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().ReceiveAsync(new TimeSpan(0, 0, 0), token));
         }
 
         [TestMethod]
         [TestCategory("TransportHandlers")]
         public async Task HttpTransportHandler_CompleteAsync_TokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => HttpTransportHandler.CreateFromConnectionString(DumpyConnectionString).CompleteAsync(Guid.NewGuid().ToString(), token));
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().CompleteAsync(Guid.NewGuid().ToString(), token));
         }
 
         [TestMethod]
         [TestCategory("TransportHandlers")]
         public async Task HttpTransportHandler_AbandonAsync_TokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => HttpTransportHandler.CreateFromConnectionString(DumpyConnectionString).AbandonAsync(Guid.NewGuid().ToString(), token));
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().AbandonAsync(Guid.NewGuid().ToString(), token));
         }
 
         [TestMethod]
         [TestCategory("TransportHandlers")]
         public async Task HttpTransportHandler_RejectAsync_TokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => HttpTransportHandler.CreateFromConnectionString(DumpyConnectionString).RejectAsync(Guid.NewGuid().ToString(), token));
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().RejectAsync(Guid.NewGuid().ToString(), token));
         }
 
-        private async Task TestOperationCanceledByToken(Func<CancellationToken, Task> asyncMethod)
+        HttpTransportHandler CreateFromConnectionString()
+        {
+            return new HttpTransportHandler(new PipelineContext(), IotHubConnectionString.Parse(DumpyConnectionString), new Http1TransportSettings());
+        }
+
+        async Task TestOperationCanceledByToken(Func<CancellationToken, Task> asyncMethod)
         {
             var tokenSource = new CancellationTokenSource();
             tokenSource.Cancel();

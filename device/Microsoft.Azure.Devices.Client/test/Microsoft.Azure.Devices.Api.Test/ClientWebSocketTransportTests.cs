@@ -358,7 +358,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             readComplete = true;
         }
 
-        static public async Task RunWebSocketServer()
+        public static async Task RunWebSocketServer()
         {
             try
             {

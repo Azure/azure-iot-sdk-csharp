@@ -12,10 +12,8 @@ namespace Microsoft.Azure.Devices.Client
 
     delegate void TwinUpdateCallback(Twin twin, Boolean fullUdpate, TwinProperties state);
    
-    interface IDelegatingHandler: IDisposable
+    interface IDelegatingHandler : IContinuationProvider<IDelegatingHandler>, IDisposable
     {
-        IDelegatingHandler InnerHandler { get; }
-
         Task AbandonAsync(string lockToken, CancellationToken cancellationToken);
         Task CloseAsync();
         Task CompleteAsync(string lockToken, CancellationToken cancellationToken);

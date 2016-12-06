@@ -25,6 +25,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             typeof(ObjectDisposedException),
             typeof(OperationCanceledException),
             typeof(TaskCanceledException),
+            typeof(IotHubThrottledException),
 #if !PCL && !WINDOWS_UWP
             typeof(System.Net.Sockets.SocketException),
 #endif
@@ -32,35 +33,31 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         internal static readonly HashSet<Type> TransportTransientExceptions = new HashSet<Type>
         {
+            typeof(IotHubThrottledException),
             typeof(IotHubClientTransientException),
             typeof(ServerBusyException),
             typeof(OperationCanceledException),
             typeof(TaskCanceledException),
         };
 
-        readonly Func<IDelegatingHandler> handlerFactory;
+        TaskCompletionSource<int> openCompletion;
 
-        volatile TaskCompletionSource<int> openCompletion;
-
-        public ErrorDelegatingHandler(Func<IDelegatingHandler> handlerFactory)
+        public ErrorDelegatingHandler(IPipelineContext context)
+            : base(context)
         {
-            this.handlerFactory = handlerFactory;
         }
 
         public override async Task OpenAsync(bool explicitOpen, CancellationToken cancellationToken)
         {
-            TaskCompletionSource<int> openCompletionBeforeOperationStarted = this.openCompletion;
-            IDelegatingHandler handlerBeforeOperationStarted = this.InnerHandler;
-
+            TaskCompletionSource<int> openCompletionBeforeOperationStarted = Volatile.Read(ref this.openCompletion);
             if (openCompletionBeforeOperationStarted == null)
             {
                 openCompletionBeforeOperationStarted = new TaskCompletionSource<int>();
-#pragma warning disable 420 //Reference to volitile variable will not be treated as volatile which is not quite true in this case.
                 TaskCompletionSource<int> currentOpenPromise;
                 if ((currentOpenPromise = Interlocked.CompareExchange(ref this.openCompletion, openCompletionBeforeOperationStarted, null)) == null)
-#pragma warning restore 420
                 {
-                    this.InnerHandler = this.handlerFactory();
+                    IDelegatingHandler handlerBeforeOperationStarted = this.ContinuationFactory(Context);
+                    this.InnerHandler = handlerBeforeOperationStarted;
                     try
                     {
                         await this.ExecuteWithErrorHandlingAsync(() => base.OpenAsync(explicitOpen, cancellationToken), false, cancellationToken);
@@ -149,7 +146,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 await this.EnsureOpenAsync(cancellationToken);
             }
 
-            TaskCompletionSource<int> openCompletionBeforeOperationStarted = this.openCompletion;
+            TaskCompletionSource<int> openCompletionBeforeOperationStarted = Volatile.Read(ref this.openCompletion);
             IDelegatingHandler handlerBeforeOperationStarted = this.InnerHandler;
 
             try
@@ -190,21 +187,50 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         static bool IsTransportHandlerStillUsable(Exception exception)
         {
-            return exception.Unwind(true).Any(e => TransportTransientExceptions.Contains(e.GetType()));
+            return exception.Unwind(true).Any(e => TransportTransientExceptions.Contains(e.GetType())) || IsThrottling(exception);
+        }
+
+        /// <summary>
+        /// this is a hack and it should be fixed in one of next releases - we should rely on the exception type only.
+        /// </summary>
+        /// <param name="exception"></param>
+        /// <returns></returns>
+        internal static bool IsThrottling(Exception exception)
+        {
+            if (exception is IotHubClientTransientException)
+            {
+                if (exception.InnerException == null)
+                {
+                    return false;
+                }
+                
+                //unwrap the internal exception
+                exception = exception.InnerException;
+            }
+
+            if (exception is IotHubThrottledException)
+            {
+                return true;
+            }
+
+            if (exception is IotHubException)
+            {
+                return exception.Message.Contains("throttl"); //...e/...ing/...ed;
+            }
+
+            return false;
         }
 
         static bool IsTransient(Exception exception)
         {
-            return exception.Unwind(true).Any(e => TransientExceptions.Contains(e.GetType()));
+            return exception.Unwind(true).Any(e => TransientExceptions.Contains(e.GetType())) || IsThrottling(exception);
         }
 
         void Reset(TaskCompletionSource<int> openCompletionBeforeOperationStarted, IDelegatingHandler handlerBeforeOperationStarted)
         {
-            if (openCompletionBeforeOperationStarted == this.openCompletion)
+            if (openCompletionBeforeOperationStarted == Volatile.Read(ref this.openCompletion))
             {
-#pragma warning disable 420 //Reference to volitile variable will not be treated as volatile which is not quite true in this case.
                 if (Interlocked.CompareExchange(ref this.openCompletion, null, openCompletionBeforeOperationStarted) == openCompletionBeforeOperationStarted)
-#pragma warning restore 420
                 {
                     Cleanup(handlerBeforeOperationStarted);
                 }

@@ -27,9 +27,10 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyKeyFileAttribute("35MSSharedLib1024.snk")]
 #else
 [assembly: InternalsVisibleTo("Microsoft.Azure.Devices.Client.Test")]
+[assembly: InternalsVisibleTo("Microsoft.Azure.Devices.Tests.LoadTest.Console")]
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 #endif
 
 // Version information for an assembly follows semantic versioning 1.0.0 (because
 // NuGet didn't support semver 2.0.0 before VS 2015). See semver.org for details.
-[assembly: AssemblyInformationalVersion("1.0.22")]
+[assembly: AssemblyInformationalVersion("1.1.1")]

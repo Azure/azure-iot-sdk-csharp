@@ -205,21 +205,19 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 }
                 packet.PacketId = packetId;
             }
-            using (Stream payloadStream = message.GetBodyStream())
+            Stream payloadStream = message.GetBodyStream();
+            long streamLength = payloadStream.Length;
+            if (streamLength > MaxPayloadSize)
             {
-                long streamLength = payloadStream.Length;
-                if (streamLength > MaxPayloadSize)
-                {
-                    throw new InvalidOperationException($"Message size ({streamLength} bytes) is too big to process. Maximum allowed payload size is {MaxPayloadSize}");
-                }
-
-                int length = (int)streamLength;
-                IByteBuffer buffer = context.Channel.Allocator.Buffer(length, length);
-                await buffer.WriteBytesAsync(payloadStream, length);
-                Contract.Assert(buffer.ReadableBytes == length);
-
-                packet.Payload = buffer;
+                throw new InvalidOperationException($"Message size ({streamLength} bytes) is too big to process. Maximum allowed payload size is {MaxPayloadSize}");
             }
+
+            int length = (int)streamLength;
+            IByteBuffer buffer = context.Channel.Allocator.Buffer(length, length);
+            await buffer.WriteBytesAsync(payloadStream, length);
+            Contract.Assert(buffer.ReadableBytes == length);
+
+            packet.Payload = buffer;
             return packet;
         }
 

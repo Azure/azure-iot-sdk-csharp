@@ -18,31 +18,36 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
         [TestCategory("TransportHandlers")]
         public async Task MqttTransportHandler_OpenAsync_TokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => MqttTransportHandler.CreateFromConnectionString(DumpyConnectionString).OpenAsync(true, token));
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().OpenAsync(true, token));
         }
 
         [TestMethod]
         [TestCategory("TransportHandlers")]
         public async Task MqttTransportHandler_SendEventAsync_TokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => MqttTransportHandler.CreateFromConnectionString(DumpyConnectionString).SendEventAsync(new Message(), token));
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().SendEventAsync(new Message(), token));
         }
 
         [TestMethod]
         [TestCategory("TransportHandlers")]
         public async Task MqttTransportHandler_ReceiveAsync_TokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => MqttTransportHandler.CreateFromConnectionString(DumpyConnectionString).ReceiveAsync(new TimeSpan(0, 10, 0), token));
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().ReceiveAsync(new TimeSpan(0, 10, 0), token));
         }
 
         [TestMethod]
         [TestCategory("TransportHandlers")]
         public async Task MqttTransportHandler_CompleteAsync_TokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => MqttTransportHandler.CreateFromConnectionString(DumpyConnectionString).CompleteAsync(Guid.NewGuid().ToString(), token));
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().CompleteAsync(Guid.NewGuid().ToString(), token));
         }
 
-        private async Task TestOperationCanceledByToken(Func<CancellationToken, Task> asyncMethod)
+        MqttTransportHandler CreateFromConnectionString()
+        {
+            return new MqttTransportHandler(new PipelineContext(), IotHubConnectionString.Parse(DumpyConnectionString), new MqttTransportSettings(TransportType.Mqtt_Tcp_Only));
+        }
+
+        async Task TestOperationCanceledByToken(Func<CancellationToken, Task> asyncMethod)
         {
             var tokenSource = new CancellationTokenSource();
             tokenSource.Cancel();

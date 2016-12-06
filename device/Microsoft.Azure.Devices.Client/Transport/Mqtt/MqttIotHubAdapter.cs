@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
     using Microsoft.Azure.Devices.Client.Common;
     using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Azure.Devices.Client.Extensions;
-    
+
     sealed class MqttIotHubAdapter : ChannelHandlerAdapter
     {
         [Flags]
@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         }
         const string CommandTopicFilterFormat = "devices/{0}/messages/devicebound/#";
         const string TelemetryTopicFormat = "devices/{0}/messages/events/";
-            
+
 
         static readonly Action<object> PingServerCallback = PingServer;
         static readonly Action<object> CheckConnAckTimeoutCallback = ShutdownIfNotReady;
@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         readonly SimpleWorkQueue<PublishWorkItem> serviceBoundOneWayProcessor;
         readonly OrderedTwoPhaseWorkQueue<int, PublishWorkItem> serviceBoundTwoWayProcessor;
         readonly IWillMessage willMessage;
-        
+
         DateTime lastChannelActivityTime;
         StateFlags stateFlags;
 
@@ -59,10 +59,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         int InboundBacklogSize => this.deviceBoundOneWayProcessor.BacklogSize + this.deviceBoundTwoWayProcessor.BacklogSize;
 
         public MqttIotHubAdapter(
-            string deviceId, 
-            string iotHubHostName, 
-            string password, 
-            MqttTransportSettings mqttTransportSettings, 
+            string deviceId,
+            string iotHubHostName,
+            string password,
+            MqttTransportSettings mqttTransportSettings,
             IWillMessage willMessage,
             Action onConnected,
             Action<Message> onMessageReceived,
@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             this.onConnected = onConnected;
             this.onError = onError;
             this.onMessageReceived = onMessageReceived;
-            this.pingRequestInterval = this.mqttTransportSettings.KeepAliveInSeconds > 0 ? TimeSpan.FromSeconds(this.mqttTransportSettings.KeepAliveInSeconds / 2d) : TimeSpan.MaxValue;
+            this.pingRequestInterval = this.mqttTransportSettings.KeepAliveInSeconds > 0 ? TimeSpan.FromSeconds(this.mqttTransportSettings.KeepAliveInSeconds / 4d) : TimeSpan.MaxValue;
 
             this.deviceBoundOneWayProcessor = new SimpleWorkQueue<PublishPacket>(this.AcceptMessageAsync);
             this.deviceBoundTwoWayProcessor = new OrderedTwoPhaseWorkQueue<int, PublishPacket>(this.AcceptMessageAsync, p => p.PacketId, this.SendAckAsync);
@@ -414,7 +414,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         break;
                 }
             }
-            catch (Exception ex) when(!ex.IsFatal())
+            catch (Exception ex) when (!ex.IsFatal())
             {
                 ShutdownOnError(context, ex);
             }
@@ -473,36 +473,40 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         async Task SendMessageAsync(IChannelHandlerContext context, Message message)
         {
-            string topicName;
-            if (string.IsNullOrEmpty(message.MqttTopicName))
+            using (message)
             {
-                topicName = string.Format(TelemetryTopicFormat, this.deviceId);
-            }
-            else
-            {
-                topicName = message.MqttTopicName;
-            }
 
-            // BKTODO: use correct QOS
-            PublishPacket packet = await Util.ComposePublishPacketAsync(context, message, this.mqttTransportSettings.PublishToServerQoS, topicName);
-            var publishCompletion = new TaskCompletionSource();
-            var workItem = new PublishWorkItem
-            {
-                Completion = publishCompletion,
-                Value = packet
-            };
-            switch (this.mqttTransportSettings.PublishToServerQoS)
-            {
-                case QualityOfService.AtMostOnce:
-                    this.serviceBoundOneWayProcessor.Post(context, workItem);
-                    break;
-                case QualityOfService.AtLeastOnce:
-                    this.serviceBoundTwoWayProcessor.Post(context, workItem);
-                    break;
-                default:
-                    throw new NotSupportedException($"Unsupported telemetry QoS: '{this.mqttTransportSettings.PublishToServerQoS}'");
+                string topicName;
+                if (string.IsNullOrEmpty(message.MqttTopicName))
+                {
+                    topicName = string.Format(TelemetryTopicFormat, this.deviceId);
+                }
+                else
+                {
+                    topicName = message.MqttTopicName;
+                }
+
+                // BKTODO: use correct QOS
+                PublishPacket packet = await Util.ComposePublishPacketAsync(context, message, this.mqttTransportSettings.PublishToServerQoS, topicName);
+                var publishCompletion = new TaskCompletionSource();
+                var workItem = new PublishWorkItem
+                {
+                    Completion = publishCompletion,
+                    Value = packet
+                };
+                switch (this.mqttTransportSettings.PublishToServerQoS)
+                {
+                    case QualityOfService.AtMostOnce:
+                        this.serviceBoundOneWayProcessor.Post(context, workItem);
+                        break;
+                    case QualityOfService.AtLeastOnce:
+                        this.serviceBoundTwoWayProcessor.Post(context, workItem);
+                        break;
+                    default:
+                        throw new NotSupportedException($"Unsupported telemetry QoS: '{this.mqttTransportSettings.PublishToServerQoS}'");
+                }
+                await publishCompletion.Task;
             }
-            await publishCompletion.Task;
         }
 
         Task AcknowledgeAsync(IChannelHandlerContext context, string packetIdString)
@@ -604,7 +608,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 this.serviceBoundTwoWayProcessor.Complete();
                 this.deviceBoundTwoWayProcessor.Complete();
                 await Task.WhenAll(
-                    this.serviceBoundOneWayProcessor.Completion, 
+                    this.serviceBoundOneWayProcessor.Completion,
                     this.serviceBoundTwoWayProcessor.Completion,
                     this.deviceBoundOneWayProcessor.Completion,
                     this.deviceBoundTwoWayProcessor.Completion);

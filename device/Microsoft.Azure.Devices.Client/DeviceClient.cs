@@ -1,6 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+#if !WINDOWS_UWP
+#define WIP_TWIN_MQTT
+#endif
+
 namespace Microsoft.Azure.Devices.Client
 {
     using Common;
@@ -15,6 +19,16 @@ namespace Microsoft.Azure.Devices.Client
     using Microsoft.Azure.Devices.Shared;
 #if !WINDOWS_UWP && !PCL
     using Microsoft.Azure.Devices.Client.Transport.Mqtt;
+#endif
+
+#if WIP_TWIN_MQTT
+    /// <summary>
+    /// Delegate for desired property update callbacks.  This will be called
+    /// every time we receive a PATCH from the service.
+    /// </summary>
+    /// <param name="desiredProperties">Properties that were contained in the update that was received from the service</param>
+    /// <param name="userContext">Context object passed in when the callback was registered</param>
+    public delegate Task DesiredPropertyUpdateCallback(TwinCollection desiredProperties, object userContext);
 #endif
 
     public delegate Task<MethodResponse> MethodCallback(MethodRequest methodRequest, object userContext);
@@ -75,6 +89,7 @@ namespace Microsoft.Azure.Devices.Client
                                                                                        |  everything |
                                                                                        |             |
                                                                                        +-------------+
+TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have to many overloads in most of the classes.
 */
 
     /// <summary>
@@ -87,8 +102,8 @@ namespace Microsoft.Azure.Devices.Client
     {
         const string DeviceId = "DeviceId";
         const string DeviceIdParameterPattern = @"(^\s*?|.*;\s*?)" + DeviceId + @"\s*?=.*";
-#if !PCL
         IotHubConnectionString iotHubConnectionString = null;
+#if !PCL
         const RegexOptions RegexOptions = System.Text.RegularExpressions.RegexOptions.Compiled | System.Text.RegularExpressions.RegexOptions.IgnoreCase;
 #else
         const RegexOptions RegexOptions = System.Text.RegularExpressions.RegexOptions.IgnoreCase;
@@ -115,53 +130,97 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         Dictionary<string, Tuple<MethodCallback, object>> deviceMethods;
 
+#if WIP_TWIN_MQTT
+        /// <summary>
+        /// Callback to call whenever the twin's desired state is updated by the service
+        /// </summary>
+        private DesiredPropertyUpdateCallback desiredPropertyUpdateCallback;
+
+        /// <summary>
+        /// Has twin funcitonality been enabled with the service?
+        /// </summary>
+        private Boolean patchSubscribedWithService = false;
+
+        /// <summary>
+        /// userContext passed when registering the twin patch callback
+        /// </summary>
+        private Object twinPatchCallbackContext = null;
+#endif
+
+
 #if !PCL
-        DeviceClient(IotHubConnectionString iotHubConnectionString, ITransportSettings[] transportSettings)
+        DeviceClient(IotHubConnectionString iotHubConnectionString, ITransportSettings[] transportSettings, IDeviceClientPipelineBuilder pipelineBuilder)
         {
             this.iotHubConnectionString = iotHubConnectionString;
 
-#if !WINDOWS_UWP // ArturL: we should try to support retry for UWP now that the library is no longer limited to exposing only WinRT types
-            var innerHandler = new RetryDelegatingHandler(
-                new ErrorDelegatingHandler(
-                    () => new RoutingDelegatingHandler(this.CreateTransportHandler, iotHubConnectionString, transportSettings)));
-#else
-// UWP does not support retry yet. We need to make the underlying Message stream accessible internally on UWP
-// to be sure that either the stream has not been read or it is seekable to safely retry operation
-            var innerHandler = new ErrorDelegatingHandler(
-                () => new RoutingDelegatingHandler(this.CreateTransportHandler, iotHubConnectionString, transportSettings));
-#endif
-            this.InnerHandler = new GateKeeperDelegatingHandler(innerHandler);
-        }
+            var pipelineContext = new PipelineContext();
+            pipelineContext.Set(transportSettings);
+            pipelineContext.Set(iotHubConnectionString);
 
-        DefaultDelegatingHandler CreateTransportHandler(IotHubConnectionString iotHubConnectionString, ITransportSettings transportSetting)
-        {
-            DefaultDelegatingHandler transportHandler;
-            switch (transportSetting.GetTransportType())
-            {
-                case TransportType.Amqp_WebSocket_Only:
-                case TransportType.Amqp_Tcp_Only:
-                    transportHandler = new AmqpTransportHandler(iotHubConnectionString, transportSetting as AmqpTransportSettings, this.OnMethodCalled);
-                    break;
-                case TransportType.Http1:
-                    transportHandler = new HttpTransportHandler(iotHubConnectionString, transportSetting as Http1TransportSettings);
-                    break;
-#if !WINDOWS_UWP && !NETMF
-                case TransportType.Mqtt_WebSocket_Only:
-                case TransportType.Mqtt_Tcp_Only:
-                    transportHandler = new MqttTransportHandler(iotHubConnectionString, transportSetting as MqttTransportSettings, this.OnMethodCalled);
-                    break;
-#endif
-                default:
-                    throw new InvalidOperationException("Unsupported Transport Setting {0}".FormatInvariant(transportSetting));
-            }
-            return transportHandler;
+            IDelegatingHandler innerHandler = pipelineBuilder.Build(pipelineContext);
+
+            this.InnerHandler = innerHandler;
         }
 
 #else
         DeviceClient(IotHubConnectionString iotHubConnectionString)
         {
-            this.InnerHandler = new GateKeeperDelegatingHandler(
-                new ErrorDelegatingHandler(() => new HttpTransportHandler(iotHubConnectionString)));
+            this.iotHubConnectionString = iotHubConnectionString;
+
+            var pipelineContext = new PipelineContext();
+            pipelineContext.Set(iotHubConnectionString);
+            pipelineContext.Set<ITransportSettings>(new Http1TransportSettings());
+
+            IDeviceClientPipelineBuilder pipelineBuilder = new DeviceClientPipelineBuilder()
+                .With(ctx => new GateKeeperDelegatingHandler(ctx))
+                .With(ctx => new ErrorDelegatingHandler(ctx))
+                .With(ctx => new HttpTransportHandler(ctx, ctx.Get<IotHubConnectionString>(), ctx.Get<ITransportSettings>() as Http1TransportSettings));
+
+            this.InnerHandler = pipelineBuilder.Build(pipelineContext);
+        }
+#endif
+
+        static IDeviceClientPipelineBuilder BuildPipeline()
+        {
+#if !PCL
+            var transporthandlerFactory = new TransportHandlerFactory();
+#endif
+            IDeviceClientPipelineBuilder pipelineBuilder = new DeviceClientPipelineBuilder()
+                .With(ctx => new GateKeeperDelegatingHandler(ctx))
+#if !WINDOWS_UWP && !PCL
+                .With(ctx => new RetryDelegatingHandler(ctx))
+#endif
+                .With(ctx => new ErrorDelegatingHandler(ctx))
+#if !PCL
+                .With(ctx => new ProtocolRoutingDelegatingHandler(ctx))
+                .With(ctx => transporthandlerFactory.Create(ctx));
+#else
+                .With(ctx => new HttpTransportHandler(ctx, ctx.Get<IotHubConnectionString>(), ctx.Get<ITransportSettings>() as Http1TransportSettings));
+#endif
+            return pipelineBuilder;
+        }
+
+#if !PCL
+        static TransportHandler CreateTransportHandler(IPipelineContext context)
+        {
+            var connectionString = context.Get<IotHubConnectionString>(typeof(IotHubConnectionString).Name);
+            var transportSetting = context.Get<ITransportSettings>(typeof(ITransportSettings).Name);
+
+            switch (transportSetting.GetTransportType())
+            {
+                case TransportType.Amqp_WebSocket_Only:
+                case TransportType.Amqp_Tcp_Only:
+                    return new AmqpTransportHandler(context, connectionString, transportSetting as AmqpTransportSettings);
+                case TransportType.Http1:
+                    return new HttpTransportHandler(context, connectionString, transportSetting as Http1TransportSettings);
+#if !WINDOWS_UWP && !NETMF
+                case TransportType.Mqtt_WebSocket_Only:
+                case TransportType.Mqtt_Tcp_Only:
+                    return new MqttTransportHandler(context, connectionString, transportSetting as MqttTransportSettings);
+#endif
+                default:
+                    throw new InvalidOperationException("Unsupported Transport Setting {0}".FormatInvariant(transportSetting));
+            }
         }
 #endif
 
@@ -207,7 +266,7 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentNullException(nameof(authenticationMethod));
             }
 
-            var connectionStringBuilder = IotHubConnectionStringBuilder.Create(hostname, authenticationMethod);
+            IotHubConnectionStringBuilder connectionStringBuilder = IotHubConnectionStringBuilder.Create(hostname, authenticationMethod);
 
 #if !WINDOWS_UWP && !PCL && !NETMF
             if (authenticationMethod is DeviceAuthenticationWithX509Certificate)
@@ -298,6 +357,19 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>DeviceClient</returns>
         public static DeviceClient CreateFromConnectionString(string connectionString, TransportType transportType)
         {
+            return CreateFromConnectionString(connectionString, transportType, null);
+        }
+
+        /// <summary>
+        /// Create DeviceClient from the specified connection string using the specified transport type
+        /// (PCL) Only Http transport is allowed
+        /// </summary>
+        /// <param name="connectionString">Connection string for the IoT hub (including DeviceId)</param>
+        /// <param name="transportType">Specifies whether Amqp or Http transport is used</param>
+        /// <param name="pipelineBuilder">Device client pipeline builder</param>
+        /// <returns>DeviceClient</returns>
+        internal static DeviceClient CreateFromConnectionString(string connectionString, TransportType transportType, IDeviceClientPipelineBuilder pipelineBuilder)
+        {
             if (connectionString == null)
             {
                 throw new ArgumentNullException(nameof(connectionString));
@@ -313,7 +385,8 @@ namespace Microsoft.Azure.Devices.Client
                     {
                         new AmqpTransportSettings(TransportType.Amqp_Tcp_Only),
                         new AmqpTransportSettings(TransportType.Amqp_WebSocket_Only)
-                    });
+                    },
+                    pipelineBuilder);
 #endif
                 case TransportType.Mqtt:
 #if WINDOWS_UWP || PCL
@@ -323,28 +396,28 @@ namespace Microsoft.Azure.Devices.Client
                     {
                         new MqttTransportSettings(TransportType.Mqtt_Tcp_Only),
                         new MqttTransportSettings(TransportType.Mqtt_WebSocket_Only)
-                    });
+                    }, pipelineBuilder);
 #endif
                 case TransportType.Amqp_WebSocket_Only:
                 case TransportType.Amqp_Tcp_Only:
 #if PCL
                     throw new NotImplementedException("Amqp protocol is not supported");
 #else
-                    return CreateFromConnectionString(connectionString, new ITransportSettings[] { new AmqpTransportSettings(transportType) });
+                    return CreateFromConnectionString(connectionString, new ITransportSettings[] { new AmqpTransportSettings(transportType) }, pipelineBuilder);
 #endif
                 case TransportType.Mqtt_WebSocket_Only:
                 case TransportType.Mqtt_Tcp_Only:
 #if WINDOWS_UWP || PCL
                     throw new NotImplementedException("Mqtt protocol is not supported");
 #else
-                    return CreateFromConnectionString(connectionString, new ITransportSettings[] { new MqttTransportSettings(transportType) });
+                    return CreateFromConnectionString(connectionString, new ITransportSettings[] { new MqttTransportSettings(transportType) }, pipelineBuilder);
 #endif
                 case TransportType.Http1:
 #if PCL
                     IotHubConnectionString iotHubConnectionString = IotHubConnectionString.Parse(connectionString);
                     return new DeviceClient(iotHubConnectionString);
 #else
-                    return CreateFromConnectionString(connectionString, new ITransportSettings[] { new Http1TransportSettings() });
+                    return CreateFromConnectionString(connectionString, new ITransportSettings[] { new Http1TransportSettings() }, pipelineBuilder);
 #endif
                 default:
 #if !PCL
@@ -383,13 +456,26 @@ namespace Microsoft.Azure.Devices.Client
         }
 
 #if !PCL
+
         /// <summary>
         /// Create DeviceClient from the specified connection string using a prioritized list of transports
         /// </summary>
         /// <param name="connectionString">Connection string for the IoT hub (with DeviceId)</param>
         /// <param name="transportSettings">Prioritized list of transports and their settings</param>
         /// <returns>DeviceClient</returns>
-        public static DeviceClient CreateFromConnectionString(string connectionString, [System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArrayAttribute] ITransportSettings[] transportSettings)
+        public static DeviceClient CreateFromConnectionString(string connectionString, [System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArray] ITransportSettings[] transportSettings)
+        {
+            return CreateFromConnectionString(connectionString, transportSettings, null);
+        }
+
+        /// <summary>
+        /// Create DeviceClient from the specified connection string using a prioritized list of transports
+        /// </summary>
+        /// <param name="connectionString">Connection string for the IoT hub (with DeviceId)</param>
+        /// <param name="transportSettings">Prioritized list of transports and their settings</param>
+        /// <param name="pipelineBuilder">Device client pipeline builder</param>
+        /// <returns>DeviceClient</returns>
+        internal static DeviceClient CreateFromConnectionString(string connectionString, [System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArray] ITransportSettings[] transportSettings, IDeviceClientPipelineBuilder pipelineBuilder)
         {
             if (connectionString == null)
             {
@@ -439,8 +525,10 @@ namespace Microsoft.Azure.Devices.Client
                 }
             }
 
+            pipelineBuilder = pipelineBuilder ?? BuildPipeline();
+            
             // Defer concrete DeviceClient creation to OpenAsync
-            return new DeviceClient(iotHubConnectionString, transportSettings);
+            return new DeviceClient(iotHubConnectionString, transportSettings, pipelineBuilder);
         }
 
         /// <summary>
@@ -892,5 +980,39 @@ namespace Microsoft.Azure.Devices.Client
         }
 #endif
 
+#if WIP_TWIN_MQTT
+        /// <summary>
+        /// Set a callback that will be called whenever the client receives a state update 
+        /// (desired or reported) from the service.  This has the side-effect of subscribing
+        /// to the PATCH topic on the service.
+        /// </summary>
+        /// <param name="callback">Callback to call after the state update has been received and applied</param>
+        /// <param name="userContext">Context object that will be passed into callback</param>
+        public Task SetDesiredPropertyUpdateCallback(DesiredPropertyUpdateCallback callback, object userContext)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Retrieve a device twin object for the current device.
+        /// </summary>
+        /// <returns>The device twin object for the current device</returns>
+        public Task<Twin> GetTwinAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Push reported property changes up to the service.
+        /// </summary>
+        /// <param name="reportedProperties">Reported properties to push</param>
+        public Task UpdateReportedPropertiesAsync(TwinCollection reportedProperties)
+        {
+            throw new NotImplementedException();
+        }
+#endif // WIP_TWIN_MQTT
+
     }
 }
+
+
