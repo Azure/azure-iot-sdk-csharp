@@ -710,7 +710,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             return result;
         }
 
-        private Task<Message> ApplyTimeout(Func<CancellationToken, System.Threading.Tasks.Task<Message>> operation)
+        private Task<Message> ApplyTimeoutMessage(Func<CancellationToken, System.Threading.Tasks.Task<Message>> operation)
         {
             if (OperationTimeoutInMilliseconds == 0)
             {
@@ -731,13 +731,12 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         }
 
 #if !WINDOWS_UWP
-        private AsyncTaskOfTwin ApplyTimeoutTwin(Func<CancellationToken, System.Threading.Tasks.Task<Twin>> operation)
+        private Task <Twin> ApplyTimeoutTwin(Func<CancellationToken, System.Threading.Tasks.Task<Twin>> operation)
         {
             if (OperationTimeoutInMilliseconds == 0)
             {
                 return operation(CancellationToken.None)
-                    .WithTimeout(TimeSpan.MaxValue, () => Resources.OperationTimeoutExpired, CancellationToken.None)
-                    .AsTaskOrAsyncOp();
+                    .WithTimeout(TimeSpan.MaxValue, () => Resources.OperationTimeoutExpired, CancellationToken.None);
             }
 
             CancellationTokenSource operationTimeoutCancellationTokenSource = GetOperationTimeoutCancellationTokenSource();
@@ -749,7 +748,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                 operationTimeoutCancellationTokenSource.Dispose();
                 return t.Result;
             });
-            return result.AsTaskOrAsyncOp();
+            return result;
         }
 #endif
 
