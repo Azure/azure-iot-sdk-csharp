@@ -337,11 +337,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 {
                     HandleIncomingTwinResponse(message);
                 }
-                else if (message.MqttTopicName.StartsWith(twinPatchTopicFilter))
+                else if (message.MqttTopicName.StartsWith(twinPatchTopicPrefix))
                 {
                     HandleIncomingTwinPatch(message);
                 }
-                else if (message.MqttTopicName.StartsWith(methodPostTopicFilter))
+                else if (message.MqttTopicName.StartsWith(methodPostTopicPrefix))
                 {
                     HandleIncomingMethodPost(message);
                 }
