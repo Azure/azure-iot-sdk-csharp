@@ -1,10 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-#if !WINDOWS_UWP
-#define WIP_TWIN_MQTT
-#endif
-
 namespace Microsoft.Azure.Devices.Client
 {
     using Common;
