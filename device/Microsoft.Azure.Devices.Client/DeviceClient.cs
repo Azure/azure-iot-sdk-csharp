@@ -1,6 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+#define WIP_TWIN_MQTT
+#if WINDOWS_UWP
+#undef WIP_TWIN_MQTT
+#endif
+
 namespace Microsoft.Azure.Devices.Client
 {
     using Common;
@@ -132,17 +137,17 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// <summary>
         /// Callback to call whenever the twin's desired state is updated by the service
         /// </summary>
-        private DesiredPropertyUpdateCallback desiredPropertyUpdateCallback;
+        DesiredPropertyUpdateCallback desiredPropertyUpdateCallback;
 
         /// <summary>
         /// Has twin funcitonality been enabled with the service?
         /// </summary>
-        private Boolean patchSubscribedWithService = false;
+        Boolean patchSubscribedWithService = false;
 
         /// <summary>
         /// userContext passed when registering the twin patch callback
         /// </summary>
-        private Object twinPatchCallbackContext = null;
+        Object twinPatchCallbackContext = null;
 #endif
 
 
@@ -534,7 +539,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         }
 #endif
 
-        private CancellationTokenSource GetOperationTimeoutCancellationTokenSource()
+        CancellationTokenSource GetOperationTimeoutCancellationTokenSource()
         {
             return new CancellationTokenSource(TimeSpan.FromMilliseconds(OperationTimeoutInMilliseconds));
         }
@@ -691,7 +696,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             return ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.SendEventAsync(messages, operationTimeoutCancellationToken));
         }
 
-        private Task ApplyTimeout(Func<CancellationToken, System.Threading.Tasks.Task> operation)
+        Task ApplyTimeout(Func<CancellationToken, Task> operation)
         {
             if (OperationTimeoutInMilliseconds == 0)
             {
@@ -710,7 +715,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             return result;
         }
 
-        private Task<Message> ApplyTimeoutMessage(Func<CancellationToken, System.Threading.Tasks.Task<Message>> operation)
+        Task<Message> ApplyTimeoutMessage(Func<CancellationToken, Task<Message>> operation)
         {
             if (OperationTimeoutInMilliseconds == 0)
             {
@@ -730,8 +735,8 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             return result;
         }
 
-#if !WINDOWS_UWP
-        private Task <Twin> ApplyTimeoutTwin(Func<CancellationToken, System.Threading.Tasks.Task<Twin>> operation)
+#if WIP_TWIN_MQTT
+        Task <Twin> ApplyTimeoutTwin(Func<CancellationToken, Task<Twin>> operation)
         {
             if (OperationTimeoutInMilliseconds == 0)
             {
@@ -1014,7 +1019,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                 // Codes_SRS_DEVICECLIENT_18_006: `GetTwinAsync` shall wait for a response from the `GET` operation.
                 // Codes_SRS_DEVICECLIENT_18_007: If the `GET` operation returns a status >= 300, `GetTwinAsync` shall fail
                 // Codes_SRS_DEVICECLIENT_18_008: `GetTwinAsync` shall allocate a new `Twin` object
-                // Codes_SRS_DEVICECLIENT_18_009: `GetTwinAsync` shall populate the contents of the `Twin` object based on the response from the service.
+                // Codes_SRS_DEVICECLIENT_18_009: `GetTwinAsync` shall copy the desired and reported properties from the response into the `Twin` object.
                 // Codes_SRS_DEVICECLIENT_18_010: `GetTwinAsync` shall return the new `Twin` object
                 return await this.InnerHandler.SendTwinGetAsync(operationTimeoutCancellationToken);
             });
@@ -1035,7 +1040,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             });
         }
 
-        private void OnReportedStatePatchReceived(TwinCollection patch)
+        void OnReportedStatePatchReceived(TwinCollection patch)
         {
             if (this.desiredPropertyUpdateCallback != null)
             {

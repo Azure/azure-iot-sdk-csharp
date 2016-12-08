@@ -27,8 +27,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
     using Microsoft.Azure.Devices.Client.Extensions;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
-    using TransportType = Microsoft.Azure.Devices.Client.TransportType;
     using Newtonsoft.Json;
+    using TransportType = Microsoft.Azure.Devices.Client.TransportType;
+    
     sealed class MqttTransportHandler : TransportHandler
     {
         const int ProtocolGatewayPort = 8883;
@@ -94,15 +95,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         const string twinPatchTopic = "$iothub/twin/PATCH/properties/reported/?$rid={0}";  
 
         // incoming topic regexp
-        private const string twinResponseTopicPattern = @"\$iothub/twin/res/(\d+)/\?\$rid=(.+)/";
-        private Regex twinResponseTopicRegex = new Regex(twinResponseTopicPattern, RegexOptions.None);
+        const string twinResponseTopicPattern = @"\$iothub/twin/res/(\d+)/\?\$rid=(.+)/";
+        Regex twinResponseTopicRegex = new Regex(twinResponseTopicPattern, RegexOptions.None);
 
         Func<MethodRequestInternal, Task> messageListener;
         Action<Message> twinResponseEvent;
 
-
         public TimeSpan TwinTimeout = TimeSpan.FromSeconds(5);
-
+        
         internal MqttTransportHandler(IPipelineContext context, IotHubConnectionString iotHubConnectionString)
             : this(context, iotHubConnectionString, new MqttTransportSettings(TransportType.Mqtt_Tcp_Only))
         {
@@ -148,11 +148,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         }
 
         #region Client operations
+
+        bool TransportIsOpen()
+        {
+            return ((this.State & TransportState.Open) == TransportState.Open);
+        }
         public override async Task OpenAsync(bool explicitOpen, CancellationToken cancellationToken)
         {
             this.EnsureValidState();
 
-            if ((this.State & TransportState.Open) == TransportState.Open)
+            if (this.TransportIsOpen())
             {
                 return;
             }
@@ -219,7 +224,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             return message;
         }
 
-        private async Task<bool> ReceiveMessageArrivalAsync(TimeSpan timeout, CancellationToken cancellationToken)
+        async Task<bool> ReceiveMessageArrivalAsync(TimeSpan timeout, CancellationToken cancellationToken)
         {
             bool hasMessage = false;
             using (CancellationTokenSource linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, this.disconnectAwaitersCancellationSource.Token))
@@ -323,21 +328,37 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         void HandleIncomingTwinPatch(Message message)
         {
-            StreamReader reader = new StreamReader(message.GetBodyStream(), System.Text.Encoding.UTF8);
-            string patch = reader.ReadToEnd();
-            var props = JsonConvert.DeserializeObject<TwinCollection>(patch);
-            if (this.TwinUpdateHandler != null)
+            try
             {
-                this.TwinUpdateHandler(props);
+                if (this.TwinUpdateHandler != null)
+                {
+                    using (StreamReader reader = new StreamReader(message.GetBodyStream(), System.Text.Encoding.UTF8))
+                    {
+                        string patch = reader.ReadToEnd();
+                        var props = JsonConvert.DeserializeObject<TwinCollection>(patch);
+                        this.TwinUpdateHandler(props);
+                    }
+                }
+            }
+            finally
+            {
+                message.Dispose();
             }
         }
 
         void HandleIncomingMethodPost(Message message)
         {
-            string[] tokens = System.Text.RegularExpressions.Regex.Split(message.MqttTopicName, "/");
+            try
+            {
+                string[] tokens = System.Text.RegularExpressions.Regex.Split(message.MqttTopicName, "/");
 
-            var mr = new MethodRequestInternal(tokens[3], tokens[4].Substring(6), message.BodyStream);
-            this.messageListener(mr);
+                var mr = new MethodRequestInternal(tokens[3], tokens[4].Substring(6), message.BodyStream);
+                this.messageListener(mr);
+            }
+            finally
+            {
+                message.Dispose();
+            }
         }
 
         void OnMessageReceived(Message message)
@@ -456,11 +477,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             await this.connectCompletion.Task;
 
-            if (this.connectCompletion.Task.IsCompleted)
-            {
-                await this.SubscribeAsync();
-            }
-            
+            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_031: `OpenAsync` shall subscribe using the '$iothub/twin/res/#' topic filter
+            await this.SubscribeTwinResponsesAsync();
         }
 
         bool TryStop()
@@ -492,11 +510,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             if (this.TryStateTransition(TransportState.Open, TransportState.Subscribing))
             {
-                Task[] tasks = {
-                    this.channel.WriteAsync(new SubscribePacket()),
-                    this.channel.WriteAsync(new SubscribePacket(0, new SubscriptionRequest(twinResponseTopicFilter, QualityOfService.AtMostOnce)))
-                };
-                await Task.WhenAll(tasks);
+                await this.channel.WriteAsync(new SubscribePacket());
                 
                 if (this.TryStateTransition(TransportState.Subscribing, TransportState.Receiving))
                 {
@@ -509,8 +523,23 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             await this.subscribeCompletionSource.Task;
         }
 
+        async Task SubscribeTwinResponsesAsync()
+        {
+            if (!this.TransportIsOpen())
+            {
+                throw new InvalidOperationException("Unable to enable this feature because transport is not open");
+            }
+            await this.channel.WriteAsync(new SubscribePacket(0, new SubscriptionRequest(twinResponseTopicFilter, QualityOfService.AtMostOnce)));
+        }
+
         public override async Task EnableMethodsAsync(CancellationToken cancellationToken)
         {
+            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_032: `EnableMethodsAsync` shall throw an `InvalidOperationException` if this method is called when the transport is not open.
+            if (!this.TransportIsOpen())
+            {
+                throw new InvalidOperationException("Unable to enable this feature because transport is not open");
+            }
+            
             // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_001:  `EnableMethodsAsync` shall subscribe using the '$iothub/methods/POST/' topic filter. 
             // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_002:  `EnableMethodsAsync` shall wait for a SUBACK for the subscription request. 
             // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_003:  `EnableMethodsAsync` shall return failure if the subscription request fails. 
@@ -537,13 +566,19 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public override async Task EnableTwinPatchAsync(CancellationToken cancellationToken)
         {
+            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_033: `EnableTwinPatchAsync` shall throw an `InvalidOperationException` if this method is called when the transport is not open. 
+            if (!this.TransportIsOpen())
+            {
+                throw new InvalidOperationException("Unable to enable this feature because transport is not open");
+            }
+            
             // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_010: `EnableTwinPatchAsync` shall subscribe using the '$iothub/twin/PATCH/properties/desired/#' topic filter.
             // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_011: `EnableTwinPatchAsync` shall wait for a SUBACK on the subscription request.
             // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_012: `EnableTwinPatchAsync` shall return failure if the subscription request fails.
             await this.channel.WriteAsync(new SubscribePacket(0, new SubscriptionRequest(twinPatchTopicFilter, QualityOfService.AtMostOnce)));
         }
 
-        private Boolean parseResponseTopic(string topicName, out string rid, out Int32 status)
+        Boolean parseResponseTopic(string topicName, out string rid, out Int32 status)
         {
             var match = this.twinResponseTopicRegex.Match(topicName);
             if (match.Success)
@@ -560,7 +595,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        private async Task<Message> SendTwinRequest(Message request,  string rid, CancellationToken cancellationToken)
+        async Task<Message> SendTwinRequestAsync(Message request, string rid, CancellationToken cancellationToken)
         {
             var responseReceived = new SemaphoreSlim(0);
             Message response = null; ;
@@ -598,7 +633,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             try
             {
-                twinResponseEvent += onTwinResponse;
+                this.twinResponseEvent += onTwinResponse;
 
                 await this.SendEventAsync(request, cancellationToken);
 
@@ -626,6 +661,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public override async Task<Twin> SendTwinGetAsync(CancellationToken cancellationToken)
         {
+            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_034: `SendTwinGetAsync` shall throw an `InvalidOperationException` if this method is called when the transport is not open. 
+            if (!this.TransportIsOpen())
+            {
+                throw new InvalidOperationException("Unable to use this feature because transport is not open");
+            }
+            
             // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_014:  `SendTwinGetAsync` shall allocate a `Message` object to hold the `GET` request 
             var request = new Message();
 
@@ -634,26 +675,38 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             string rid = Guid.NewGuid().ToString(); ;
             request.MqttTopicName = "$iothub/twin/GET/?$rid=" + rid;
 
+            // BKTODO: using
+
             // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_017:  `SendTwinGetAsync` shall wait for a response from the service with a matching $rid value 
             // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_019:  If the response is failed, `SendTwinGetAsync` shall return that failure to the caller.
             // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_020:  If the response doesn't arrive within `MqttTransportHandler.TwinTimeout`, `SendTwinGetAsync` shall fail with a timeout error 
-            var response = await SendTwinRequest(request, rid, cancellationToken);
-           
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_021:  If the response contains a success code, `SendTwinGetAsync` shall return success to the caller  
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_018:  When a response is received, `SendTwinGetAsync` shall return the Twin object to the caller
-            StreamReader reader = new StreamReader(response.GetBodyStream(), System.Text.Encoding.UTF8);
-            string body = reader.ReadToEnd();
+            using (var response = await SendTwinRequestAsync(request, rid, cancellationToken))
+            {
+                // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_021:  If the response contains a success code, `SendTwinGetAsync` shall return success to the caller  
+                // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_018:  When a response is received, `SendTwinGetAsync` shall return the Twin object to the caller
+                using (StreamReader reader = new StreamReader(response.GetBodyStream(), System.Text.Encoding.UTF8))
+                {
+                    string body = reader.ReadToEnd();
 
-            var props = JsonConvert.DeserializeObject<Microsoft.Azure.Devices.Shared.TwinProperties>(body);
+                    var props = JsonConvert.DeserializeObject<Microsoft.Azure.Devices.Shared.TwinProperties>(body);
 
-            var twin = new Twin();
-            twin.Properties = props;
+                    var twin = new Twin();
+                    twin.Properties = props;
 
-            return twin;
+                    return twin;
+                }
+            }
+
         }
 
         public override async Task SendTwinPatchAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
         {
+
+            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_035: `SendTwinPatchAsync` shall throw an `InvalidOperationException` if this method is called when the transport is not open. 
+            if (!this.TransportIsOpen())
+            {
+                throw new InvalidOperationException("Unable to use this feature because transport is not open");
+            }
 
             // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_025:  `SendTwinPatchAsync` shall serialize the `reported` object into a JSON string 
             var body = JsonConvert.SerializeObject(reportedProperties);
@@ -661,17 +714,19 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_022:  `SendTwinPatchAsync` shall allocate a `Message` object to hold the update request 
             // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_026:  `SendTwinPatchAsync` shall set the body of the message to the JSON string 
-            var request = new Message(bodyStream);
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_023:  `SendTwinPatchAsync` shall generate a GUID to use as the $rid property on the request 
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_024:  `SendTwinPatchAsync` shall set the `Message` topic to '$iothub/twin/PATCH/properties/reported/?$rid=<REQUEST_ID>' where REQUEST_ID is the GUID that was generated 
-            var rid = Guid.NewGuid().ToString();
-            request.MqttTopicName = twinPatchTopic.FormatInvariant(rid);
+            using (var request = new Message(bodyStream))
+            {
+                // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_023:  `SendTwinPatchAsync` shall generate a GUID to use as the $rid property on the request 
+                // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_024:  `SendTwinPatchAsync` shall set the `Message` topic to '$iothub/twin/PATCH/properties/reported/?$rid=<REQUEST_ID>' where REQUEST_ID is the GUID that was generated 
+                var rid = Guid.NewGuid().ToString();
+                request.MqttTopicName = twinPatchTopic.FormatInvariant(rid);
 
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_027:  `SendTwinPatchAsync` shall wait for a response from the service with a matching $rid value 
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_028:  If the response is failed, `SendTwinPatchAsync` shall return that failure to the caller. 
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_029:  If the response doesn't arrive within `MqttTransportHandler.TwinTimeout`, `SendTwinPatchAsync` shall fail with a timeout error.  
-            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_030:  If the response contains a success code, `SendTwinPatchAsync` shall return success to the caller. 
-            await SendTwinRequest(request, rid, cancellationToken);
+                // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_027:  `SendTwinPatchAsync` shall wait for a response from the service with a matching $rid value 
+                // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_028:  If the response is failed, `SendTwinPatchAsync` shall return that failure to the caller. 
+                // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_029:  If the response doesn't arrive within `MqttTransportHandler.TwinTimeout`, `SendTwinPatchAsync` shall fail with a timeout error.  
+                // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_030:  If the response contains a success code, `SendTwinPatchAsync` shall return success to the caller. 
+                await SendTwinRequestAsync(request, rid, cancellationToken);
+            }
         }
 
         Func<IPAddress, int, Task<IChannel>> CreateChannelFactory(IotHubConnectionString iotHubConnectionString, MqttTransportSettings settings)
@@ -818,3 +873,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         }
     }
 }
+
+
+

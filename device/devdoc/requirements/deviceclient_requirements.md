@@ -202,7 +202,7 @@ public AsyncTaskOfTwin GetTwinAsync();
 
 **SRS_DEVICECLIENT_18_008: [** `GetTwinAsync` shall allocate a new `Twin` object **]**
 
-**SRS_DEVICECLIENT_18_009: [** `GetTwinAsync` shall populate the contents of the `Twin` object based on the response from the service. **]**
+**SRS_DEVICECLIENT_18_009: [** `GetTwinAsync` shall copy the desired and reported properties from the response into the `Twin` object. **]**
 
 **SRS_DEVICECLIENT_18_010: [** `GetTwinAsync` shall return the new `Twin` object **]**
 
