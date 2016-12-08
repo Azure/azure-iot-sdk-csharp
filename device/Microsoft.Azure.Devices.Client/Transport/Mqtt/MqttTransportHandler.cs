@@ -575,7 +575,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                         ch.Pipeline
                             .AddLast(
-                                tlsHandler, 
+                                tlsHandler,
                                 MqttEncoder.Instance, 
                                 new MqttDecoder(false, MaxMessageSize), 
                                 this.mqttIotHubAdapterFactory.Create(this.OnConnected, this.OnMessageReceived, this.OnError, iotHubConnectionString, settings));
