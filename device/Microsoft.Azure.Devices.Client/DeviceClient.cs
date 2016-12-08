@@ -126,6 +126,8 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// </summary>
         Dictionary<string, Tuple<MethodCallback, object>> deviceMethods;
 
+        internal delegate Task OnMethodCalledDelegate(MethodRequestInternal methodRequestInternal);
+
 #if WIP_TWIN_MQTT
         /// <summary>
         /// Callback to call whenever the twin's desired state is updated by the service
@@ -152,6 +154,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             var pipelineContext = new PipelineContext();
             pipelineContext.Set(transportSettings);
             pipelineContext.Set(iotHubConnectionString);
+            pipelineContext.Set<OnMethodCalledDelegate>(OnMethodCalled);
 
             IDelegatingHandler innerHandler = pipelineBuilder.Build(pipelineContext);
 
@@ -195,30 +198,6 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
 #endif
             return pipelineBuilder;
         }
-
-#if !PCL
-        static TransportHandler CreateTransportHandler(IPipelineContext context)
-        {
-            var connectionString = context.Get<IotHubConnectionString>(typeof(IotHubConnectionString).Name);
-            var transportSetting = context.Get<ITransportSettings>(typeof(ITransportSettings).Name);
-
-            switch (transportSetting.GetTransportType())
-            {
-                case TransportType.Amqp_WebSocket_Only:
-                case TransportType.Amqp_Tcp_Only:
-                    return new AmqpTransportHandler(context, connectionString, transportSetting as AmqpTransportSettings);
-                case TransportType.Http1:
-                    return new HttpTransportHandler(context, connectionString, transportSetting as Http1TransportSettings);
-#if !WINDOWS_UWP && !NETMF
-                case TransportType.Mqtt_WebSocket_Only:
-                case TransportType.Mqtt_Tcp_Only:
-                    return new MqttTransportHandler(context, connectionString, transportSetting as MqttTransportSettings);
-#endif
-                default:
-                    throw new InvalidOperationException("Unsupported Transport Setting {0}".FormatInvariant(transportSetting));
-            }
-        }
-#endif
 
         internal Task SendMethodResponseAsync(MethodResponseInternal methodResponse)
         {

@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 Console.WriteLine();
                 Console.WriteLine("Error in sample: {0}", ex.Message);
             }
-            Console.WriteLine("Press enter to exit...");
+            Console.WriteLine("Waiting for incoming subscribed Methods call.  Press enter to exit.");
 
             Console.ReadLine();
             Console.WriteLine("Exiting...");

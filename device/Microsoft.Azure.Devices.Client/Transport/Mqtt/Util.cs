@@ -267,7 +267,17 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             string properties = UrlEncodedDictionarySerializer.Serialize(new ReadOnlyMergeDictionary<string, string>(systemProperties, message.Properties));
 
-            return topicName.EndsWith(SegmentSeparator, StringComparison.Ordinal) ? topicName + properties + SegmentSeparator : topicName + SegmentSeparator + properties;
+            string msg;
+            if (properties != string.Empty)
+            {
+                msg = topicName.EndsWith(SegmentSeparator, StringComparison.Ordinal) ? topicName + properties + SegmentSeparator : topicName + SegmentSeparator + properties;
+            }
+            else
+            {
+                msg = topicName;
+            }
+
+            return msg;
         }
 
         static string ConvertFromSystemProperties(object systemProperty)
