@@ -60,6 +60,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("WebSocket")]
+        [Ignore]
         public async Task ClientWebSocketChannelWriteWithoutConnectTest()
         {
             var websocket = new ClientWebSocket();
@@ -73,6 +74,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("WebSocket")]
+        [Ignore]
         public async Task ClientWebSocketChannelReadWithoutConnectTest()
         {
             var websocket = new ClientWebSocket();
@@ -87,6 +89,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("WebSocket")]
+        [Ignore]
         public async Task ClientWebSocketChannelReadAfterCloseTest()
         {
             var websocket = new ClientWebSocket();
@@ -125,6 +128,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("WebSocket")]
+        [Ignore]
         public async Task ClientWebSocketChannelWriteAfterCloseTest()
         {
             var websocket = new ClientWebSocket();
@@ -155,6 +159,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("WebSocket")]
+        [Ignore]
         public async Task MqttWebSocketClientAndServerScenario()
         {
             var websocket = new ClientWebSocket();

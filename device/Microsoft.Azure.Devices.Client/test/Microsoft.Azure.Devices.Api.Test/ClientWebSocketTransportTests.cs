@@ -46,6 +46,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("WebSocket")]
+        [Ignore]
         public void ClientWebSocketTransportWriteWithoutConnectTest()
         {
             var websocket = new ClientWebSocket();
@@ -59,6 +60,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("WebSocket")]
+        [Ignore]
         public async Task ClientWebSocketTransportReadWithoutConnectTest()
         {
             var websocket = new ClientWebSocket();
@@ -81,6 +83,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("WebSocket")]
+        [Ignore]
         public async Task ReadWriteTest()
         {
             var websocket = new ClientWebSocket();
@@ -115,6 +118,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("WebSocket")]
+        [Ignore]
         public async Task ReadAfterCloseTest()
         {
             var websocket = new ClientWebSocket();
@@ -136,6 +140,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("WebSocket")]
+        [Ignore]
         public async Task WriteAfterCloseTest()
         {
             var websocket = new ClientWebSocket();
@@ -156,6 +161,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("WebSocket")]
+        [Ignore]
         public async Task ReadAfterAbortTest()
         {
             var websocket = new ClientWebSocket();
@@ -175,6 +181,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("WebSocket")]
+        [Ignore]
         public async Task WriteAfterAbortTest()
         {
             var websocket = new ClientWebSocket();
@@ -193,6 +200,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("WebSocket")]
+        [Ignore]
         public void LegacyClientWebSocketTransportWriteWithoutConnectTest()
         {
             var websocket = new IotHubClientWebSocket(WebSocketConstants.SubProtocols.Amqpwsb10);
@@ -206,6 +214,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("WebSocket")]
+        [Ignore]
         public async Task LegacyClientWebSocketTransportReadWithoutConnectTest()
         {
             var websocket = new IotHubClientWebSocket(WebSocketConstants.SubProtocols.Amqpwsb10);
@@ -228,6 +237,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("WebSocket")]
+        [Ignore]
         public async Task LegacyWebSocketReadWriteTest()
         {
             var websocket = new IotHubClientWebSocket(WebSocketConstants.SubProtocols.Amqpwsb10);
@@ -259,6 +269,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("WebSocket")]
+        [Ignore]
         public async Task LegacyWebSocketReadAfterCloseTest()
         {
             var websocket = new IotHubClientWebSocket(WebSocketConstants.SubProtocols.Amqpwsb10);
@@ -275,6 +286,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("WebSocket")]
+        [Ignore]
         public async Task LegacyWebSocketWriteAfterCloseTest()
         {
             var websocket = new IotHubClientWebSocket(WebSocketConstants.SubProtocols.Amqpwsb10);
@@ -290,6 +302,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("WebSocket")]
+        [Ignore]
         public async Task LegacyWebSocketReadAfterAbortTest()
         {
             var websocket = new IotHubClientWebSocket(WebSocketConstants.SubProtocols.Amqpwsb10);
@@ -308,6 +321,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("WebSocket")]
+        [Ignore]
         public async Task LegacyWebSocketWriteAfterAbortTest()
         {
             var websocket = new IotHubClientWebSocket(WebSocketConstants.SubProtocols.Amqpwsb10);

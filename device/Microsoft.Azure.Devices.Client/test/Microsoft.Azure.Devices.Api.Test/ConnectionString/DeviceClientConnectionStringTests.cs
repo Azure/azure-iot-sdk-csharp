@@ -83,6 +83,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
 
         [TestMethod]
         [TestCategory("CIT")]
+        [Ignore]
         public void DeviceClient_ConnectionString_X509Certificate_DefaultTest()
         {
             string hostName = "acme.azure-devices.net";
@@ -102,6 +103,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
 
         [TestMethod]
         [TestCategory("CIT")]
+        [Ignore]
         public void DeviceClient_ConnectionString_X509Certificate_AmqpTest()
         {
             string hostName = "acme.azure-devices.net";
@@ -113,6 +115,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
 
         [TestMethod]
         [TestCategory("CIT")]
+        [Ignore]
         public void DeviceClient_ConnectionString_X509Certificate_AmqpWsTest()
         {
             string hostName = "acme.azure-devices.net";
@@ -124,6 +127,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
 
         [TestMethod]
         [TestCategory("CIT")]
+        [Ignore]
         public void DeviceClient_ConnectionString_X509Certificate_AmqpTcpTest()
         {
             string hostName = "acme.azure-devices.net";
@@ -135,6 +139,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
 
         [TestMethod]
         [TestCategory("CIT")]
+        [Ignore]
         public void DeviceClient_ConnectionString_X509Certificate_HttpTest()
         {
             string hostName = "acme.azure-devices.net";
@@ -146,6 +151,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
 
         [TestMethod]
         [TestCategory("CIT")]
+        [Ignore]
         public void DeviceClient_ConnectionString_X509Certificate_MqttTest()
         {
             string hostName = "acme.azure-devices.net";
