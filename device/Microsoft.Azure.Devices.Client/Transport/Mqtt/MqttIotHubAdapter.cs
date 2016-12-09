@@ -55,6 +55,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         StateFlags stateFlags;
 
         ConcurrentDictionary<int, TaskCompletionSource> subscribeCompletions = new ConcurrentDictionary<int, TaskCompletionSource>();
+        ConcurrentDictionary<int, TaskCompletionSource> unsubscribeCompletions = new ConcurrentDictionary<int, TaskCompletionSource>();
 
         int InboundBacklogSize => this.deviceBoundOneWayProcessor.BacklogSize + this.deviceBoundTwoWayProcessor.BacklogSize;
 
@@ -134,6 +135,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 if (data is SubscribePacket)
                 {
                     await this.SubscribeAsync(context, data as SubscribePacket);
+                    return;
+                }
+
+                if (data is UnsubscribePacket)
+                {
+                    await this.UnSubscribeAsync(context, data as UnsubscribePacket);
                     return;
                 }
 
@@ -369,14 +376,41 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         void ProcessSubAck(SubAckPacket packet)
         {
-            if (packet != null)
+            Contract.Assert(packet != null);
+
+            TaskCompletionSource task;
+
+            if (this.subscribeCompletions.TryRemove(packet.PacketId, out task))
             {
-                TaskCompletionSource task;
-                this.subscribeCompletions.TryRemove(packet.PacketId, out task);
-                if (task != null)
-                {
-                    task.TryComplete();
-                }
+                task.TryComplete();
+            }
+        }
+
+        #endregion
+
+        #region Unsubscribe
+        async Task UnSubscribeAsync(IChannelHandlerContext context, UnsubscribePacket packetPassed)
+        {
+            Contract.Assert(packetPassed != null);
+
+            int packetId = Util.GetNextPacketId();
+            packetPassed.PacketId = packetId;
+
+            this.unsubscribeCompletions[packetId] = new TaskCompletionSource();
+
+            await Util.WriteMessageAsync(context, packetPassed, ShutdownOnWriteErrorHandler);
+
+            await this.unsubscribeCompletions[packetId].Task;
+        }
+
+        void ProcessUnsubAck(UnsubAckPacket packet)
+        {
+            Contract.Assert(packet != null);
+
+            TaskCompletionSource task;
+            if (this.unsubscribeCompletions.TryRemove(packet.PacketId, out task))
+            {
+                task.TryComplete();
             }
         }
 
@@ -408,6 +442,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         await this.serviceBoundTwoWayProcessor.CompleteWorkAsync(context, ((PubAckPacket)packet).PacketId);
                         break;
                     case PacketType.PINGRESP:
+                        break;
+                    case PacketType.UNSUBACK:
+                        this.ProcessUnsubAck(packet as UnsubAckPacket);
                         break;
                     default:
                         ShutdownOnError(context, new InvalidOperationException($"Unexpected packet type {packet.PacketType}"));

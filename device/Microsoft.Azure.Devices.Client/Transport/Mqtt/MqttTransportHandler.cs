@@ -546,9 +546,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             await this.channel.WriteAsync(new SubscribePacket(0, new SubscriptionRequest(methodPostTopicFilter, QualityOfService.AtMostOnce)));
         }
 
-        public override Task DisableMethodsAsync(CancellationToken cancellationToken)
+        public override async Task DisableMethodsAsync(CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            //SRS_CSHARP_MQTT_TRANSPORT_28_001: `DisableMethodsAsync` shall unsubscribe using the '$iothub/methods/POST/' topic filter.
+            //SRS_CSHARP_MQTT_TRANSPORT_28_002: `DisableMethodsAsync` shall wait for a UNSUBACK for the unsubscription.
+            //SRS_CSHARP_MQTT_TRANSPORT_28_003: `DisableMethodsAsync` shall return failure if the unsubscription fails.
+            await this.channel.WriteAsync(new UnsubscribePacket(0, methodPostTopicFilter));
         }
 
         public override async Task SendMethodResponseAsync(MethodResponseInternal methodResponse, CancellationToken cancellationToken)
