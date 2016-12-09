@@ -176,6 +176,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override Task EnableMethodsAsync(CancellationToken cancellationToken)
         {
+#if WIP_C2D_METHODS_AMQP
             if (this.faultTolerantMethodSendingLink == null)
             {
                 this.faultTolerantMethodSendingLink = new Client.FaultTolerantAmqpObject<SendingAmqpLink>(this.CreateMethodSendingLinkAsync, this.IotHubConnection.CloseLink);
@@ -202,10 +203,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     throw AmqpClientHelper.ToIotHubClientContract(ex);
                 }
             }, cancellationToken);
+#else
+            throw new NotImplementedException();
+#endif
         }
 
         public override async Task DisableMethodsAsync(CancellationToken cancellationToken)
         {
+#if WIP_C2D_METHODS_AMQP
             Task receivingLinkCloseTask;
             if (this.faultTolerantMethodReceivingLink != null)
             {
@@ -229,6 +234,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
 
             await Task.WhenAll(receivingLinkCloseTask, sendingLinkCloseTask);
+#else
+            throw new NotImplementedException();
+#endif
         }
 
         public override async Task SendMethodResponseAsync(MethodResponseInternal methodResponse, CancellationToken cancellationToken)
