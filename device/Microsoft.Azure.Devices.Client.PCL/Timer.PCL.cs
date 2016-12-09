@@ -24,8 +24,8 @@ namespace System.Threading
                 throw new NotImplementedException("This stub implementation does not support this scenario.");
             }
 
-            _callback = callback;
-            _state = state;
+            this._callback = callback;
+            this._state = state;
         }
 
         internal bool Change(TimeSpan dueTime, TimeSpan period)
@@ -41,15 +41,11 @@ namespace System.Threading
             }
 
             // Cancel any previously running tasks (through Token).
-            Cancel();
+            this.Cancel();
 
             Task.Delay(dueTime, Token).ContinueWith(
-                (t, s) =>
-                {
-                    var tuple = (Tuple<TimerCallback, object>)s;
-                    tuple.Item1(tuple.Item2);
-                },
-                Tuple.Create(_callback, _state),
+                (task, state) => { this._callback(this._state); },
+                null,
                 CancellationToken.None,
                 TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.OnlyOnRanToCompletion,
                 TaskScheduler.Default);

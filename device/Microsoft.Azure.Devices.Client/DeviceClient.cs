@@ -137,8 +137,11 @@ namespace Microsoft.Azure.Devices.Client
                 new ErrorDelegatingHandler(
                     () => new RoutingDelegatingHandler(this.CreateTransportHandler, iotHubConnectionString, transportSettings)));
 #else
-// UWP does not support retry yet. We need to make the underlying Message stream accessible internally on UWP
+// UWP and PCL do not support retry yet. We need to make the underlying Message stream accessible internally on UWP/PCL
 // to be sure that either the stream has not been read or it is seekable to safely retry operation
+
+// RetryDelegatingHandler depends on Microsoft.Practices.EnterpriseLibrary.  EnterpriseLibrary is not available for PCL.
+
             var innerHandler = new ErrorDelegatingHandler(
                 () => new RoutingDelegatingHandler(this.CreateTransportHandler, iotHubConnectionString, transportSettings));
 #endif
@@ -348,7 +351,7 @@ namespace Microsoft.Azure.Devices.Client
                     return CreateFromConnectionString(connectionString, new ITransportSettings[] { new MqttTransportSettings(transportType) });
 #endif
                 case TransportType.Http1:
-                    return new DeviceClient(IotHubConnectionString.Parse(connectionString), new ITransportSettings[] { new Http1TransportSettings() });
+                    return CreateFromConnectionString(connectionString, new ITransportSettings[] { new Http1TransportSettings() });
                 default:
 #if !PCL
                     throw new InvalidOperationException("Unsupported Transport Type {0}".FormatInvariant(transportType));
