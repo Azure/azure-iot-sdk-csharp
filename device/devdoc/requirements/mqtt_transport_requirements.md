@@ -23,8 +23,9 @@ sealed class MqttTransportHandler : TransportHandler
     public override Task RejectAsync(string lockToken, CancellationToken cancellationToken);
     public override async Task CloseAsync();
 
-    public override Task EnableMethodsAsync(CancellationToken cancellationToken);
-    public override Task SendMethodResponseAsync(Method method, CancellationToken ct);
+    public override async Task EnableMethodsAsync(CancellationToken cancellationToken);
+    public override async Task DisableMethodsAsync(CancellationToken cancellationToken)
+    public override async Task SendMethodResponseAsync(Method method, CancellationToken ct);
 
     public override Task EnableTwinPatchAsync(CancellationToken cancellationToken);
     public override Task<Twin> SendTwinGetAsync(CancellationToken ct);
@@ -41,7 +42,7 @@ public override async Task OpenAsync(bool explicitOpen, CancellationToken cancel
 
 ### EnableMethodsAsync
 ```csharp
-public override Task EnableMethodsAsync(CancellationToken cancellationToken);
+public override async Task EnableMethodsAsync(CancellationToken cancellationToken);
 ```
 
 **SRS_CSHARP_MQTT_TRANSPORT_18_001: [** `EnableMethodsAsync` shall subscribe using the '$iothub/methods/POST/' topic filter. **]**
@@ -52,9 +53,20 @@ public override Task EnableMethodsAsync(CancellationToken cancellationToken);
 
 **SRS_CSHARP_MQTT_TRANSPORT_18_032: [** `EnableMethodsAsync` shall throw an `InvalidOperationException` if this method is called when the transport is not open. **]**
 
+### DisableMethodsAsync
+```csharp
+public override async Task DisableMethodsAsync(CancellationToken cancellationToken);
+```
+
+**SRS_CSHARP_MQTT_TRANSPORT_28_001: [** `DisableMethodsAsync` shall unsubscribe using the '$iothub/methods/POST/' topic filter. **]**
+
+**SRS_CSHARP_MQTT_TRANSPORT_28_002: [** `DisableMethodsAsync` shall wait for a UNSUBACK for the unsubscription. **]**
+
+**SRS_CSHARP_MQTT_TRANSPORT_28_003: [** `DisableMethodsAsync` shall return failure if the unsubscription fails. **]**
+
 ### SendMethodResponseAsync
 ```csharp
-public override Task SendMethodResponseAsync(Method method, CancellationToken ct);
+public override async Task SendMethodResponseAsync(Method method, CancellationToken ct);
 ```
 
 **SRS_CSHARP_MQTT_TRANSPORT_18_005: [** `SendMethodResponseAsync` shall allocate a `Message` object containing the method response. **]**
