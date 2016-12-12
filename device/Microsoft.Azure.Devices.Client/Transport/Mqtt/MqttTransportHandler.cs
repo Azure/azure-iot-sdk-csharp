@@ -95,13 +95,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         const string twinPatchTopic = "$iothub/twin/PATCH/properties/reported/?$rid={0}";  
 
         // incoming topic regexp
-        const string twinResponseTopicPattern = @"\$iothub/twin/res/(\d+)/\?\$rid=(.+)/";
+        const string twinResponseTopicPattern = @"\$iothub/twin/res/(\d+)/\?\$rid=(.+)";
         Regex twinResponseTopicRegex = new Regex(twinResponseTopicPattern, RegexOptions.None);
 
         Func<MethodRequestInternal, Task> messageListener;
         Action<Message> twinResponseEvent;
 
-        public TimeSpan TwinTimeout = TimeSpan.FromSeconds(5);
+        public TimeSpan TwinTimeout = TimeSpan.FromSeconds(60);
         
         internal MqttTransportHandler(IPipelineContext context, IotHubConnectionString iotHubConnectionString)
             : this(context, iotHubConnectionString, new MqttTransportSettings(TransportType.Mqtt_Tcp_Only))
@@ -610,6 +610,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 {
                     string receivedRid;
                     Int32 status;
+
                     if (parseResponseTopic(possibleResponse.MqttTopicName, out receivedRid, out status))
                     {
                         if (rid == receivedRid)
