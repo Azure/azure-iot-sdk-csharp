@@ -17,8 +17,8 @@ namespace Microsoft.Azure.Devices.Client.Common
         private readonly ResourceContext resourceContext;
         public ResourceManagerImpl()
         {
-            stringResourceMap = Windows.ApplicationModel.Resources.Core.ResourceManager.Current.MainResourceMap.GetSubtree("Microsoft.Azure.Devices.Client/Resources");
-            resourceContext = Windows.ApplicationModel.Resources.Core.ResourceContext.GetForCurrentView();
+            stringResourceMap = ResourceManager.Current.MainResourceMap.GetSubtree("Microsoft.Azure.Devices.Client.UWP/Resources");
+            resourceContext = ResourceContext.GetForViewIndependentUse();
         }
 
         public string GetString(string name, System.Globalization.CultureInfo culture)
