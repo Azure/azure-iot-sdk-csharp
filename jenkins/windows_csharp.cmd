@@ -25,8 +25,25 @@ call build.cmd
 if errorlevel 1 goto :eof
 cd %build-root%
 
+REM -- C# E2E Tests  --
+cd %build-root%\e2e\build
+call build.cmd
+if errorlevel 1 goto :eof
+cd %build-root%
+
 REM -- Device Explorer --
 cd %build-root%\tools\DeviceExplorer\build
 call build.cmd
 if errorlevel 1 goto :eof
 cd %build-root%
+
+REM -- Run C# E2E Tests  --
+cd %build-root%\e2e\Microsoft.Azure.Devices.E2ETests\bin\Release
+mstest /TestContainer:Microsoft.Azure.Devices.E2ETests.dll
+if errorlevel 1 goto :eof
+cd %build-root%
+
+echo.
+echo C# build completed successfully
+echo.
+
