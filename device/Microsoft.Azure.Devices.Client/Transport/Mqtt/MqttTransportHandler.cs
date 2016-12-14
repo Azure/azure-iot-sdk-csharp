@@ -29,7 +29,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
     using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
     using Newtonsoft.Json;
     using TransportType = Microsoft.Azure.Devices.Client.TransportType;
-    
+    using System.Web;
+
     sealed class MqttTransportHandler : TransportHandler
     {
         const int ProtocolGatewayPort = 8883;
@@ -95,7 +96,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         const string twinPatchTopic = "$iothub/twin/PATCH/properties/reported/?$rid={0}";  
 
         // incoming topic regexp
-        const string twinResponseTopicPattern = @"\$iothub/twin/res/(\d+)/\?\$rid=(.+)";
+        const string twinResponseTopicPattern = @"\$iothub/twin/res/(\d+)/(\?.+)";
         Regex twinResponseTopicRegex = new Regex(twinResponseTopicPattern, RegexOptions.None);
 
         Func<MethodRequestInternal, Task> messageListener;
@@ -587,7 +588,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             if (match.Success)
             {
                 status = Convert.ToInt32(match.Groups[1].Value);
-                rid = match.Groups[2].Value;
+                rid = HttpUtility.ParseQueryString(match.Groups[2].Value).Get("$rid");
                 return true;
             }
             else
