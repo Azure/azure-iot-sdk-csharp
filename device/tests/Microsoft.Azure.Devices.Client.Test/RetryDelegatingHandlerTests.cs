@@ -288,7 +288,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task Retry_CancellationTokenCanceled_SendEvent()
         {
             var innerHandlerMock = Substitute.For<IDelegatingHandler>();
-            innerHandlerMock.SendEventAsync(Arg.Any<Message>(), Arg.Any<CancellationToken>()).Returns(TaskConstants.Completed);
+            innerHandlerMock.SendEventAsync((Message)null, CancellationToken.None).ReturnsForAnyArgs(TaskConstants.Completed);
 
             var contextMock = Substitute.For<IPipelineContext>();
             var sut = new RetryDelegatingHandler(contextMock);
@@ -304,7 +304,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task Retry_CancellationTokenCanceled_SendEventWithIEnumMessage()
         {
             var innerHandlerMock = Substitute.For<IDelegatingHandler>();
-            innerHandlerMock.SendEventAsync(new List<Message>(), Arg.Any<CancellationToken>()).Returns(TaskConstants.Completed);
+            innerHandlerMock.SendEventAsync((IEnumerable<Message>)null, CancellationToken.None).ReturnsForAnyArgs(TaskConstants.Completed);
 
             var contextMock = Substitute.For<IPipelineContext>();
             var sut = new RetryDelegatingHandler(contextMock);
@@ -356,7 +356,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task Retry_CancellationTokenCanceled_Abandon()
         {
             var innerHandlerMock = Substitute.For<IDelegatingHandler>();
-            innerHandlerMock.AbandonAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(TaskConstants.Completed);
+            innerHandlerMock.AbandonAsync(null, CancellationToken.None).ReturnsForAnyArgs(TaskConstants.Completed);
 
             var contextMock = Substitute.For<IPipelineContext>();
             var sut = new RetryDelegatingHandler(contextMock);
@@ -372,7 +372,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task Retry_CancellationTokenCanceled_Reject()
         {
             var innerHandlerMock = Substitute.For<IDelegatingHandler>();
-            innerHandlerMock.RejectAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(TaskConstants.Completed);
+            innerHandlerMock.RejectAsync(null, CancellationToken.None).ReturnsForAnyArgs(TaskConstants.Completed);
 
             var contextMock = Substitute.For<IPipelineContext>();
             var sut = new RetryDelegatingHandler(contextMock);
