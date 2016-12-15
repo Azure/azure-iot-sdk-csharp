@@ -37,6 +37,12 @@ call build.cmd
 if errorlevel 1 goto :eof
 cd %build-root%
 
+REM -- Run C# device SDK unit Tests  --
+cd %build-root%\device\tests\Microsoft.Azure.Devices.Client.Test\bin\Release
+mstest /TestContainer:Microsoft.Azure.Devices.Client.Test.dll
+if errorlevel 1 goto :eof
+cd %build-root%
+
 REM -- Run C# E2E Tests  --
 cd %build-root%\e2e\Microsoft.Azure.Devices.E2ETests\bin\Release
 mstest /TestContainer:Microsoft.Azure.Devices.E2ETests.dll
