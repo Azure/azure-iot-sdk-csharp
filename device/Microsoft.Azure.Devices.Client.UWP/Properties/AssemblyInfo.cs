@@ -25,7 +25,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyDelaySignAttribute(true)]
 [assembly: AssemblyKeyFileAttribute("35MSSharedLib1024.snk")]
 #else
-[assembly: InternalsVisibleTo("Microsoft.Azure.Devices.Client.Tests.UWPTests")]
+[assembly: InternalsVisibleTo("Microsoft.Azure.Devices.Client.Test.UWP")]
 #endif
 
 // Version information for an assembly follows semantic versioning 1.0.0 (because

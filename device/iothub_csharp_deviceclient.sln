@@ -26,8 +26,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NuGet", "NuGet", "{84052DC5
 		NuGet\Microsoft.Azure.Devices.Client.targets = NuGet\Microsoft.Azure.Devices.Client.targets
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Azure.Devices.Client.Test", "Microsoft.Azure.Devices.Client\test\Microsoft.Azure.Devices.Api.Test\Microsoft.Azure.Devices.Client.Test.csproj", "{74A0E4B7-4A50-4665-A7A3-A217D06649D3}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Azure.Devices.Client.PCL", "Microsoft.Azure.Devices.Client.PCL\Microsoft.Azure.Devices.Client.PCL.csproj", "{4151E5D7-1C3C-4AD9-9E9A-5FA50A1FA332}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeviceClientSampleiOS", "samples\DeviceClientSampleiOS\DeviceClientSampleiOS.csproj", "{C6799555-4765-474F-AA62-AE3982F64B11}"
@@ -52,14 +50,16 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetty.Transport", "exter
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{E35DE890-4F92-499A-8AF4-F20BBDBFEDFD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Azure.Devices.Client.Tests.UWPTests", "tests\Microsoft.Azure.Devices.Client.Tests.UWPTests\Microsoft.Azure.Devices.Client.Tests.UWPTests.csproj", "{90A8AD2E-E941-4454-AA73-6D29A469C220}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Azure.Devices.Client.Test", "tests\Microsoft.Azure.Devices.Client.Test\Microsoft.Azure.Devices.Client.Test.csproj", "{74A0E4B7-4A50-4665-A7A3-A217D06649D3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Azure.Devices.Client.Tests.PCLTests", "tests\Microsoft.Azure.Devices.Client.Tests.PCLTests\Microsoft.Azure.Devices.Client.Tests.PCLTests.csproj", "{B88664E7-ED30-4335-ADC8-172BC7431C72}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Azure.Devices.Client.Test.UWP", "tests\Microsoft.Azure.Devices.Client.Test.UWP\Microsoft.Azure.Devices.Client.Test.UWP.csproj", "{90A8AD2E-E941-4454-AA73-6D29A469C220}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Azure.Devices.Client.Test.PCL", "tests\Microsoft.Azure.Devices.Client.Test.PCL\Microsoft.Azure.Devices.Client.Test.PCL.csproj", "{B88664E7-ED30-4335-ADC8-172BC7431C72}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Microsoft.Azure.Devices.Client.Shared", "Microsoft.Azure.Devices.Client.Shared\Microsoft.Azure.Devices.Client.Shared.shproj", "{26BBDF47-7559-4869-BD6F-A32FE21F3F25}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Azure.Devices.Shared", "..\shared\Microsoft.Azure.Devices.Shared\Microsoft.Azure.Devices.Shared.csproj", "{835230FC-8D03-4CD1-8845-5A9D1B0B837D}"
-EndProject
+EndProject  
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Azure.Devices.Shared.PCL", "..\shared\Microsoft.Azure.Devices.Shared.PCL\Microsoft.Azure.Devices.Shared.PCL.csproj", "{F3BE6617-0714-4615-A916-48362BE8266D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Azure.Devices.Shared.UWP", "..\shared\Microsoft.Azure.Devices.Shared.UWP\Microsoft.Azure.Devices.Shared.UWP.csproj", "{A1170BE5-999D-49E5-B127-A9D6A6059D6B}"

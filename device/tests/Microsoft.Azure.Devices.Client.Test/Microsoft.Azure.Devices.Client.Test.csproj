@@ -18,7 +18,7 @@
     <ReferencePath>$(ProgramFiles)\Common Files\microsoft shared\VSTT\$(VisualStudioVersion)\UITestExtensionPackages</ReferencePath>
     <IsCodedUITest>False</IsCodedUITest>
     <TestProjectType>UnitTest</TestProjectType>
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\Microsoft.Azure.Devices.Client</SolutionDir>
     <RestorePackages>true</RestorePackages>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -188,11 +188,11 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\shared\Microsoft.Azure.Devices.Shared\Microsoft.Azure.Devices.Shared.csproj">
+    <ProjectReference Include="..\..\..\shared\Microsoft.Azure.Devices.Shared\Microsoft.Azure.Devices.Shared.csproj">
       <Project>{835230FC-8D03-4CD1-8845-5A9D1B0B837D}</Project>
       <Name>Microsoft.Azure.Devices.Shared</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Microsoft.Azure.Devices.Client.csproj">
+    <ProjectReference Include="..\..\Microsoft.Azure.Devices.Client\Microsoft.Azure.Devices.Client.csproj">
       <Project>{836b1fb6-70f0-4c7e-aa35-519c2f83aa81}</Project>
       <Name>Microsoft.Azure.Devices.Client</Name>
     </ProjectReference>

@@ -12,8 +12,8 @@ namespace Microsoft.Azure.Devices.Client.Test
     [TestClass]
     public class TransportSettingsTests
     {
-        const string LocalCertFilename = "..\\..\\Microsoft.Azure.Devices.Api.Test\\LocalNoChain.pfx";
-        const string LocalCertPasswordFile = "..\\..\\Microsoft.Azure.Devices.Api.Test\\TestCertsPassword.txt";
+        const string LocalCertFilename = "..\\..\\Microsoft.Azure.Devices.Client.Test\\LocalNoChain.pfx";
+        const string LocalCertPasswordFile = "..\\..\\Microsoft.Azure.Devices.Client.Test\\TestCertsPassword.txt";
 
         [ExpectedException(typeof(ArgumentOutOfRangeException))]
         [TestMethod]

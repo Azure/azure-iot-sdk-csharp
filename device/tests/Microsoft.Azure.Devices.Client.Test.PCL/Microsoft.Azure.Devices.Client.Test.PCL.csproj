@@ -9,8 +9,8 @@
     <ProjectTypeGuids>{EFBA0AD7-5A72-4C68-AF49-83D382785DCF};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Microsoft.Azure.Devices.Client.Tests.PCLTests</RootNamespace>
-    <AssemblyName>Microsoft.Azure.Devices.Client.Tests.PCLTests</AssemblyName>
+    <RootNamespace>Microsoft.Azure.Devices.Client.Test.PCL</RootNamespace>
+    <AssemblyName>Microsoft.Azure.Devices.Client.Test.PCL</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <AndroidApplication>true</AndroidApplication>
     <AndroidResgenFile>Resources\Resource.Designer.cs</AndroidResgenFile>

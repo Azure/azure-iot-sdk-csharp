@@ -9,9 +9,9 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-[assembly: global::Android.Runtime.ResourceDesignerAttribute("Microsoft.Azure.Devices.Client.Tests.PCLTests.Resource", IsApplication=true)]
+[assembly: global::Android.Runtime.ResourceDesignerAttribute("Microsoft.Azure.Devices.Client.Test.PCL.Resource", IsApplication=true)]
 
-namespace Microsoft.Azure.Devices.Client.Tests.PCLTests
+namespace Microsoft.Azure.Devices.Client.Test.PCL
 {
 	
 	
@@ -26,30 +26,30 @@ namespace Microsoft.Azure.Devices.Client.Tests.PCLTests
 		
 		public static void UpdateIdValues()
 		{
-			global::PCLCrypto.Resource.String.ApplicationName = global::Microsoft.Azure.Devices.Client.Tests.PCLTests.Resource.String.ApplicationName;
-			global::PCLCrypto.Resource.String.Hello = global::Microsoft.Azure.Devices.Client.Tests.PCLTests.Resource.String.Hello;
-			global::Xamarin.Android.NUnitLite.Resource.Id.OptionHostName = global::Microsoft.Azure.Devices.Client.Tests.PCLTests.Resource.Id.OptionHostName;
-			global::Xamarin.Android.NUnitLite.Resource.Id.OptionPort = global::Microsoft.Azure.Devices.Client.Tests.PCLTests.Resource.Id.OptionPort;
-			global::Xamarin.Android.NUnitLite.Resource.Id.OptionRemoteServer = global::Microsoft.Azure.Devices.Client.Tests.PCLTests.Resource.Id.OptionRemoteServer;
-			global::Xamarin.Android.NUnitLite.Resource.Id.OptionsButton = global::Microsoft.Azure.Devices.Client.Tests.PCLTests.Resource.Id.OptionsButton;
-			global::Xamarin.Android.NUnitLite.Resource.Id.ResultFullName = global::Microsoft.Azure.Devices.Client.Tests.PCLTests.Resource.Id.ResultFullName;
-			global::Xamarin.Android.NUnitLite.Resource.Id.ResultMessage = global::Microsoft.Azure.Devices.Client.Tests.PCLTests.Resource.Id.ResultMessage;
-			global::Xamarin.Android.NUnitLite.Resource.Id.ResultResultState = global::Microsoft.Azure.Devices.Client.Tests.PCLTests.Resource.Id.ResultResultState;
-			global::Xamarin.Android.NUnitLite.Resource.Id.ResultRunSingleMethodTest = global::Microsoft.Azure.Devices.Client.Tests.PCLTests.Resource.Id.ResultRunSingleMethodTest;
-			global::Xamarin.Android.NUnitLite.Resource.Id.ResultStackTrace = global::Microsoft.Azure.Devices.Client.Tests.PCLTests.Resource.Id.ResultStackTrace;
-			global::Xamarin.Android.NUnitLite.Resource.Id.ResultsFailed = global::Microsoft.Azure.Devices.Client.Tests.PCLTests.Resource.Id.ResultsFailed;
-			global::Xamarin.Android.NUnitLite.Resource.Id.ResultsId = global::Microsoft.Azure.Devices.Client.Tests.PCLTests.Resource.Id.ResultsId;
-			global::Xamarin.Android.NUnitLite.Resource.Id.ResultsIgnored = global::Microsoft.Azure.Devices.Client.Tests.PCLTests.Resource.Id.ResultsIgnored;
-			global::Xamarin.Android.NUnitLite.Resource.Id.ResultsInconclusive = global::Microsoft.Azure.Devices.Client.Tests.PCLTests.Resource.Id.ResultsInconclusive;
-			global::Xamarin.Android.NUnitLite.Resource.Id.ResultsMessage = global::Microsoft.Azure.Devices.Client.Tests.PCLTests.Resource.Id.ResultsMessage;
-			global::Xamarin.Android.NUnitLite.Resource.Id.ResultsPassed = global::Microsoft.Azure.Devices.Client.Tests.PCLTests.Resource.Id.ResultsPassed;
-			global::Xamarin.Android.NUnitLite.Resource.Id.ResultsResult = global::Microsoft.Azure.Devices.Client.Tests.PCLTests.Resource.Id.ResultsResult;
-			global::Xamarin.Android.NUnitLite.Resource.Id.RunTestsButton = global::Microsoft.Azure.Devices.Client.Tests.PCLTests.Resource.Id.RunTestsButton;
-			global::Xamarin.Android.NUnitLite.Resource.Id.TestSuiteListView = global::Microsoft.Azure.Devices.Client.Tests.PCLTests.Resource.Id.TestSuiteListView;
-			global::Xamarin.Android.NUnitLite.Resource.Layout.options = global::Microsoft.Azure.Devices.Client.Tests.PCLTests.Resource.Layout.options;
-			global::Xamarin.Android.NUnitLite.Resource.Layout.results = global::Microsoft.Azure.Devices.Client.Tests.PCLTests.Resource.Layout.results;
-			global::Xamarin.Android.NUnitLite.Resource.Layout.test_result = global::Microsoft.Azure.Devices.Client.Tests.PCLTests.Resource.Layout.test_result;
-			global::Xamarin.Android.NUnitLite.Resource.Layout.test_suite = global::Microsoft.Azure.Devices.Client.Tests.PCLTests.Resource.Layout.test_suite;
+			global::PCLCrypto.Resource.String.ApplicationName = global::Microsoft.Azure.Devices.Client.Test.PCL.Resource.String.ApplicationName;
+			global::PCLCrypto.Resource.String.Hello = global::Microsoft.Azure.Devices.Client.Test.PCL.Resource.String.Hello;
+			global::Xamarin.Android.NUnitLite.Resource.Id.OptionHostName = global::Microsoft.Azure.Devices.Client.Test.PCL.Resource.Id.OptionHostName;
+			global::Xamarin.Android.NUnitLite.Resource.Id.OptionPort = global::Microsoft.Azure.Devices.Client.Test.PCL.Resource.Id.OptionPort;
+			global::Xamarin.Android.NUnitLite.Resource.Id.OptionRemoteServer = global::Microsoft.Azure.Devices.Client.Test.PCL.Resource.Id.OptionRemoteServer;
+			global::Xamarin.Android.NUnitLite.Resource.Id.OptionsButton = global::Microsoft.Azure.Devices.Client.Test.PCL.Resource.Id.OptionsButton;
+			global::Xamarin.Android.NUnitLite.Resource.Id.ResultFullName = global::Microsoft.Azure.Devices.Client.Test.PCL.Resource.Id.ResultFullName;
+			global::Xamarin.Android.NUnitLite.Resource.Id.ResultMessage = global::Microsoft.Azure.Devices.Client.Test.PCL.Resource.Id.ResultMessage;
+			global::Xamarin.Android.NUnitLite.Resource.Id.ResultResultState = global::Microsoft.Azure.Devices.Client.Test.PCL.Resource.Id.ResultResultState;
+			global::Xamarin.Android.NUnitLite.Resource.Id.ResultRunSingleMethodTest = global::Microsoft.Azure.Devices.Client.Test.PCL.Resource.Id.ResultRunSingleMethodTest;
+			global::Xamarin.Android.NUnitLite.Resource.Id.ResultStackTrace = global::Microsoft.Azure.Devices.Client.Test.PCL.Resource.Id.ResultStackTrace;
+			global::Xamarin.Android.NUnitLite.Resource.Id.ResultsFailed = global::Microsoft.Azure.Devices.Client.Test.PCL.Resource.Id.ResultsFailed;
+			global::Xamarin.Android.NUnitLite.Resource.Id.ResultsId = global::Microsoft.Azure.Devices.Client.Test.PCL.Resource.Id.ResultsId;
+			global::Xamarin.Android.NUnitLite.Resource.Id.ResultsIgnored = global::Microsoft.Azure.Devices.Client.Test.PCL.Resource.Id.ResultsIgnored;
+			global::Xamarin.Android.NUnitLite.Resource.Id.ResultsInconclusive = global::Microsoft.Azure.Devices.Client.Test.PCL.Resource.Id.ResultsInconclusive;
+			global::Xamarin.Android.NUnitLite.Resource.Id.ResultsMessage = global::Microsoft.Azure.Devices.Client.Test.PCL.Resource.Id.ResultsMessage;
+			global::Xamarin.Android.NUnitLite.Resource.Id.ResultsPassed = global::Microsoft.Azure.Devices.Client.Test.PCL.Resource.Id.ResultsPassed;
+			global::Xamarin.Android.NUnitLite.Resource.Id.ResultsResult = global::Microsoft.Azure.Devices.Client.Test.PCL.Resource.Id.ResultsResult;
+			global::Xamarin.Android.NUnitLite.Resource.Id.RunTestsButton = global::Microsoft.Azure.Devices.Client.Test.PCL.Resource.Id.RunTestsButton;
+			global::Xamarin.Android.NUnitLite.Resource.Id.TestSuiteListView = global::Microsoft.Azure.Devices.Client.Test.PCL.Resource.Id.TestSuiteListView;
+			global::Xamarin.Android.NUnitLite.Resource.Layout.options = global::Microsoft.Azure.Devices.Client.Test.PCL.Resource.Layout.options;
+			global::Xamarin.Android.NUnitLite.Resource.Layout.results = global::Microsoft.Azure.Devices.Client.Test.PCL.Resource.Layout.results;
+			global::Xamarin.Android.NUnitLite.Resource.Layout.test_result = global::Microsoft.Azure.Devices.Client.Test.PCL.Resource.Layout.test_result;
+			global::Xamarin.Android.NUnitLite.Resource.Layout.test_suite = global::Microsoft.Azure.Devices.Client.Test.PCL.Resource.Layout.test_suite;
 		}
 		
 		public partial class Attribute

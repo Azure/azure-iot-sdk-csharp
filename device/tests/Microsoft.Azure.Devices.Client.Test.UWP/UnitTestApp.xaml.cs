@@ -15,7 +15,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
-namespace Microsoft.Azure.Devices.Client.Tests.UWPTests
+namespace Microsoft.Azure.Devices.Client.Test.UWP
 {
     /// <summary>
     /// Provides application-specific behavior to supplement the default Application class.
