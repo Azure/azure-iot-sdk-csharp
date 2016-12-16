@@ -277,7 +277,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>DeviceClient</returns>
         public static DeviceClient CreateFromConnectionString(string connectionString)
         {
-#if WINDOWS_UWP
+#if WINDOWS_UWP || PCL
             return CreateFromConnectionString(connectionString, TransportType.Http1);
 #else
             return CreateFromConnectionString(connectionString, TransportType.Amqp);
@@ -293,7 +293,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>DeviceClient</returns>
         public static DeviceClient CreateFromConnectionString(string connectionString, string deviceId)
         {
-#if WINDOWS_UWP
+#if WINDOWS_UWP || PCL
             return CreateFromConnectionString(connectionString, deviceId, TransportType.Http1);    
 #else
             return CreateFromConnectionString(connectionString, deviceId, TransportType.Amqp);
