@@ -69,6 +69,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="MethodE2ETests.cs" />
     <Compile Include="TwinE2ETests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
