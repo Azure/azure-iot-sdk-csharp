@@ -106,7 +106,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     }
                     else
                     {
-                        tcs.TrySetException(t.Exception);
+                        tcs.TrySetException(t.Exception.InnerExceptions);
                     }
                 }
                 else if (t.IsCanceled)
