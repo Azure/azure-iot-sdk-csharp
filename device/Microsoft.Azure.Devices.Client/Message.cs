@@ -458,7 +458,6 @@ namespace Microsoft.Azure.Devices.Client
         /// This methods return the body stream as a byte array
         /// </summary>
         /// <returns></returns>
-        /// <exception cref="InvalidOperationException">throws if the method has been called.</exception>
         /// <exception cref="ObjectDisposedException">throws if the event data has already been disposed.</exception>
         public byte[] GetBytes()
         {
@@ -469,19 +468,24 @@ namespace Microsoft.Azure.Devices.Client
                 return new byte[] { };
             }
 
+            byte[] result;
 #if !PCL && !NETMF
             BufferListStream listStream;
             if ((listStream = this.bodyStream as BufferListStream) != null)
             {
                 // We can trust Amqp bufferListStream.Length;
-                byte[] bytes = new byte[listStream.Length];
-                listStream.Read(bytes, 0, bytes.Length);
-                return bytes;
+                result = new byte[listStream.Length];
+                listStream.Read(result, 0, result.Length);
             }
+            else
 #endif
+            {
+                // This is just fail safe code in case we are not using the Amqp protocol.
+                result = ReadFullStream(this.bodyStream);
+            }
+            TryResetBody(0);
 
-            // This is just fail safe code in case we are not using the Amqp protocol.
-            return ReadFullStream(this.bodyStream);
+            return result;
         }
 
 #if !PCL && !NETMF

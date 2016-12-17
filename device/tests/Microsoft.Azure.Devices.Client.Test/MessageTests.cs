@@ -99,10 +99,13 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void RetrievingMessageBodyStreamAfterGetBytesTest()
         {
-            var msg = new Message(new byte[0]);
+            var ms = new MemoryStream(Encoding.UTF8.GetBytes("Hello, World!"));
+            var msg = new Message(ms);
             msg.GetBytes();
 
-            TestAssert.Throws<InvalidOperationException>(() => msg.GetBodyStream());
+            var stream = msg.GetBodyStream();
+
+            Assert.AreSame(ms, stream);
         }
 
         [TestCategory("CIT")]
@@ -110,10 +113,14 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public void CallingGetBytesTwiceTest()
         {
-            var msg = new Message(new byte[0]);
+            const string MsgContents = "Hello, World!";
+
+            var msg = new Message(Encoding.UTF8.GetBytes(MsgContents));
             msg.GetBytes();
 
-            TestAssert.Throws<InvalidOperationException>(() => msg.GetBytes());
+            byte[] msgBytes = msg.GetBytes();
+
+            Assert.AreEqual(Encoding.UTF8.GetString(msgBytes), MsgContents);
         }
 
         [TestCategory("CIT")]
