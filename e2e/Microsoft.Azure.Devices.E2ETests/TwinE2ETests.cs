@@ -70,37 +70,83 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        public async Task Twin_Device_Connects_And_Gets_Twin()
+        [TestCategory("Twin-E2E")]
+        public async Task Twin_DeviceSetsReportedPropertyAndGetsItBack_Mqtt()
         {
-            var deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionString, Client.TransportType.Mqtt);
+            await _Twin_DeviceSetsReportedPropertyAndGetsItBack(Client.TransportType.Mqtt_Tcp_Only);
+        }
+
+        [TestMethod]
+        [TestCategory("Twin-E2E")]
+        public async Task Twin_DeviceSetsReportedPropertyAndGetsItBack_MqttWs()
+        {
+            await _Twin_DeviceSetsReportedPropertyAndGetsItBack(Client.TransportType.Mqtt_WebSocket_Only);
+        }
+
+        private async Task _Twin_DeviceSetsReportedPropertyAndGetsItBack(Client.TransportType transport)
+        {
+            var propName = Guid.NewGuid().ToString();
+            var propValue = Guid.NewGuid().ToString();
+
+            var deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionString, transport);
+            TwinCollection props = new TwinCollection();
+            props[propName] = propValue;
+            await deviceClient.UpdateReportedPropertiesAsync(props);
+
             var deviceTwin = await deviceClient.GetTwinAsync();
+            Assert.AreEqual<String>(deviceTwin.Properties.Reported[propName].ToString(), propValue);
+
             await deviceClient.CloseAsync();
         }
 
-        [TestMethod]
-        public async Task Twin_Service_Connects_And_Gets_Twin()
+        private async Task<String> getCurrentEtagFromService()
         {
             var registryManager = RegistryManager.CreateFromConnectionString(hubConnectionString);
             var serviceTwin = await registryManager.GetTwinAsync(deviceName);
+            string etag = serviceTwin.ETag;
             await registryManager.CloseAsync();
+            return etag;
+       }
 
+        
+        [TestMethod]
+        [TestCategory("Twin-E2E")]
+        public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_Mqtt()
+        {
+            await _Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent(Client.TransportType.Mqtt_Tcp_Only);
         }
 
         [TestMethod]
-        public async Task Twin_Service_Sets_Desired_Property_And_Device_Receives_Event()
+        [TestCategory("Twin-E2E")]
+        public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_MqttWs()
+        {
+            await _Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent(Client.TransportType.Mqtt_WebSocket_Only);
+        }
+
+        private async Task _Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent(Client.TransportType transport)
         {
             var tcs = new TaskCompletionSource<bool>();
             var propName = Guid.NewGuid().ToString();
             var propValue = Guid.NewGuid().ToString();
 
-            var deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionString, Client.TransportType.Mqtt);
+            var deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionString, transport);
             await deviceClient.OpenAsync();
             await deviceClient.SetDesiredPropertyUpdateCallback((patch, context) =>
             {
                 return Task.Run(() =>
                 {
-                    Assert.AreEqual(patch[propName].ToString(), propValue);
-                    tcs.SetResult(true);
+                    try
+                    {
+                        Assert.AreEqual(patch[propName].ToString(), propValue);
+                    }
+                    catch (Exception e)
+                    {
+                        tcs.SetException(e);
+                    }
+                    finally
+                    {
+                        tcs.SetResult(true);
+                    }
                 });
 
             }, null);
@@ -116,7 +162,20 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        public async Task Twin_Service_Sets_Desired_Property_And_Device_Receives_It_On_Next_Get()
+        [TestCategory("Twin-E2E")]
+        public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet_Mqtt()
+        {
+            await _Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet(Client.TransportType.Mqtt_Tcp_Only);
+        }
+
+        [TestMethod]
+        [TestCategory("Twin-E2E")]
+        public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet_MqttWs()
+        {
+            await _Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet(Client.TransportType.Mqtt_WebSocket_Only);
+        }
+
+        private async Task _Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet(Client.TransportType transport)
         {
             var propName = Guid.NewGuid().ToString();
             var propValue = Guid.NewGuid().ToString();
@@ -127,19 +186,32 @@ namespace Microsoft.Azure.Devices.E2ETests
             await registryManager.UpdateTwinAsync(deviceName, twinPatch, "*");
             await registryManager.CloseAsync();
 
-            var deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionString, Client.TransportType.Mqtt);
+            var deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionString, transport);
             var deviceTwin = await deviceClient.GetTwinAsync();
             Assert.AreEqual<string>(deviceTwin.Properties.Desired[propName].ToString(), propValue);
             await deviceClient.CloseAsync();
         }
 
         [TestMethod]
-        public async Task Twin_Device_Sets_Reported_Property_And_Service_Receives_It()
+        [TestCategory("Twin-E2E")]
+        public async Task Twin_DeviceSetsReportedPropertyAndServiceReceivesIt_Mqtt()
+        {
+            await _Twin_DeviceSetsReportedPropertyAndServiceReceivesIt(Client.TransportType.Mqtt_Tcp_Only);
+        }
+
+        [TestMethod]
+        [TestCategory("Twin-E2E")]
+        public async Task Twin_DeviceSetsReportedPropertyAndServiceReceivesIt_MqttWs()
+        {
+            await _Twin_DeviceSetsReportedPropertyAndServiceReceivesIt(Client.TransportType.Mqtt_WebSocket_Only);
+        }
+
+        private async Task _Twin_DeviceSetsReportedPropertyAndServiceReceivesIt(Client.TransportType transport)
         {
             var propName = Guid.NewGuid().ToString();
             var propValue = Guid.NewGuid().ToString();
 
-            var deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionString, Client.TransportType.Mqtt);
+            var deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionString, transport);
             var patch = new TwinCollection();
             patch[propName] = propValue;
             await deviceClient.UpdateReportedPropertiesAsync(patch);
