@@ -14,15 +14,10 @@
   <ItemGroup>
     <Compile Include="$(DeviceClientDir)\AmqpConnectionPoolSettings.cs">
       <Link>AmqpConnectionPoolSettings.cs</Link>
-
     </Compile>
-
     <Compile Include="$(DeviceClientDir)\AmqpTransportSettings.cs">
-
       <Link>AmqpTransportSettings.cs</Link>
-
     </Compile>
-
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\AuthenticationMethodFactory.cs">
       <Link>AuthenticationMethodFactory.cs</Link>
     </Compile>
@@ -37,9 +32,7 @@
     </Compile>
     <Compile Include="$(DeviceClientDir)\Common\Client\IotHubAmqpProperty.cs">
       <Link>IotHubAmqpProperty.cs</Link>
-
     </Compile>
-
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\Common\CommonConstants.cs">
       <Link>CommonConstants.cs</Link>
     </Compile>
@@ -299,6 +292,21 @@
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\ITransportSettings.cs">
       <Link>ITransportSettings.cs</Link>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\IPipelineContext.cs">
+      <Link>IPipelineContext.cs</Link>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\PipelineContext.cs">
+      <Link>PipelineContext.cs</Link>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\IDeviceClientPipelineBuilder.cs">
+      <Link>IDeviceClientPipelineBuilder.cs</Link>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\DeviceClientPipelineBuilder.cs">
+      <Link>DeviceClientPipelineBuilder.cs</Link>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\IContinuationProvider.cs">
+      <Link>IContinuationProvider.cs</Link>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\MappingType.cs">
       <Link>MappingType.cs</Link>
     </Compile>
@@ -344,6 +352,15 @@
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\Transport\DefaultDelegatingHandler.cs">
       <Link>DefaultDelegatingHandler.cs</Link>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\Transport\ITransportHandlerFactory.cs">
+      <Link>ITransportHandlerFactory.cs</Link>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\Transport\TransportHandlerFactory.cs">
+      <Link>TransportHandlerFactory.cs</Link>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\Transport\ProtocolRoutingDelegatingHandler.cs">
+      <Link>ProtocolRoutingDelegatingHandler.cs</Link>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\Transport\ErrorDelegatingHandler.cs">
       <Link>ErrorDelegatingHandler.cs</Link>
     </Compile>
@@ -356,20 +373,12 @@
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\Transport\HttpTransportHandler.cs">
       <Link>HttpTransportHandler.cs</Link>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\Transport\TransportHandler.cs">
+      <Link>TransportHandler.cs</Link>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\Transport\IHttpClientHelper.cs">
       <Link>IHttpClientHelper.cs</Link>
     </Compile>
-    <Compile Include="$(DeviceClientDir)\Transport\RoutingDelegatingHandler.cs">
-      <Link>RoutingDelegatingHandler.cs</Link>
-
-    </Compile>
-
-    <Compile Include="$(DeviceClientDir)\Transport\TransportHandler.cs">
-
-      <Link>TransportHandler.cs</Link>
-
-    </Compile>
-
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\Transport\TransportHandlerBase.cs">
       <Link>TransportHandlerBase.cs</Link>
     </Compile>

@@ -54,7 +54,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         static void Main(string[] args)
         {
-#if WIP_C2D_METHODS_AMQP
             DeviceClient deviceClient = null;
             try
             {
@@ -82,7 +81,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 Console.WriteLine();
                 Console.WriteLine("Error in sample: {0}", ex.Message);
             }
-            Console.WriteLine("Press enter to exit...");
+            Console.WriteLine("Waiting for incoming subscribed Methods call.  Press enter to exit.");
 
             Console.ReadLine();
             Console.WriteLine("Exiting...");
@@ -93,7 +92,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
             // remove the 'GetDeviceName' handler
             // Method Call processing will be disabled when the last method handler has been removed .
             deviceClient?.SetMethodHandler("GetDeviceName", null, null);
-#endif
         }
     }
 }

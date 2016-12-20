@@ -14,16 +14,37 @@ namespace Microsoft.Azure.Devices.Client.Transport
     {
         static readonly Task<Message> DummyResultObject = Task.FromResult((Message)null);
 
-        public IDelegatingHandler InnerHandler { get; protected set; }
+        int innerHandlerInitializing;
+        int innerHandlerInitialized;
+        IDelegatingHandler innerHandler;
 
-        protected DefaultDelegatingHandler()
-            : this(null)
+        protected DefaultDelegatingHandler(IPipelineContext context)
         {
+            this.Context = context;
         }
 
-        protected DefaultDelegatingHandler(IDelegatingHandler innerHandler)
+        public IPipelineContext Context { get; protected set; }
+
+        public ContinuationFactory<IDelegatingHandler> ContinuationFactory { get; set; }
+
+        public IDelegatingHandler InnerHandler
         {
-            this.InnerHandler = innerHandler;
+            get
+            {
+                return Volatile.Read(ref this.innerHandlerInitialized) == 0 ? this.EnsureInnerHandlerInitialized() : Volatile.Read(ref this.innerHandler);
+            }
+            protected set
+            {
+                if (Interlocked.CompareExchange(ref this.innerHandlerInitializing, 1, 0) == 0)
+                {
+                    Volatile.Write(ref this.innerHandler, value);
+                    Volatile.Write(ref this.innerHandlerInitialized, 1);
+                }
+                else
+                {
+                    Volatile.Write(ref this.innerHandler, value);
+                }
+            }
         }
 
         public virtual Task OpenAsync(bool explicitOpen, CancellationToken cancellationToken)
@@ -95,19 +116,19 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return this.InnerHandler?.SendMethodResponseAsync(methodResponse, cancellationToken) ?? TaskConstants.Completed;
         }
 
-        public virtual Task EnableTwinAsync(CancellationToken cancellationToken)
+        public virtual Task EnableTwinPatchAsync(CancellationToken cancellationToken)
         {
-            return this.InnerHandler?.EnableTwinAsync(cancellationToken) ?? TaskConstants.Completed;
+            return this.InnerHandler?.EnableTwinPatchAsync(cancellationToken) ?? TaskConstants.Completed;
         }
 
-        public virtual Task SendTwinGetAsync(Twin twin, CancellationToken cancellationToken)
+        public virtual Task<Twin> SendTwinGetAsync(CancellationToken cancellationToken)
         {
-            return this.InnerHandler?.SendTwinGetAsync(twin, cancellationToken) ?? TaskConstants.Completed;
+            return this.InnerHandler?.SendTwinGetAsync(cancellationToken) ?? Task.FromResult((Twin)null);
         }
         
-        public virtual Task SendTwinUpdateAsync(Twin twin, TwinProperties properties, CancellationToken cancellationToken)
+        public virtual Task SendTwinPatchAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
         {
-            return this.InnerHandler?.SendTwinUpdateAsync(twin, properties, cancellationToken) ?? TaskConstants.Completed;
+            return this.InnerHandler?.SendTwinPatchAsync(reportedProperties, cancellationToken) ?? TaskConstants.Completed;
         }
 
         private TwinUpdateCallback twinUpdateHandler;
@@ -124,11 +145,22 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     this.twinUpdateHandler = value;
                 }
             }
+            get
+            {
+                if (this.InnerHandler != null)
+                {
+                    return this.InnerHandler.TwinUpdateHandler;
+                }
+                else
+                {
+                    return this.twinUpdateHandler;
+                }
+            }
         }
         
         protected virtual void Dispose(bool disposing)
         {
-            this.InnerHandler?.Dispose();
+            this.innerHandler?.Dispose();
         }
 
         public void Dispose()
@@ -140,6 +172,22 @@ namespace Microsoft.Azure.Devices.Client.Transport
         ~DefaultDelegatingHandler()
         {
             this.Dispose(false);
+        }
+
+        IDelegatingHandler EnsureInnerHandlerInitialized()
+        {
+            if (Interlocked.CompareExchange(ref this.innerHandlerInitializing, 1, 0) == 0)
+            {
+                IDelegatingHandler result = this.ContinuationFactory?.Invoke(this.Context);
+                Volatile.Write(ref this.innerHandler, result);
+                Volatile.Write(ref this.innerHandlerInitialized, 1);
+                return result;
+            }
+            else
+            {
+                SpinWait.SpinUntil(() => Volatile.Read(ref this.innerHandlerInitialized) != 1);
+                return Volatile.Read(ref this.innerHandler);
+            }
         }
     }
 }

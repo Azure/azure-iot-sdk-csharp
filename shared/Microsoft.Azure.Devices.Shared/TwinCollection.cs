@@ -241,5 +241,26 @@ namespace Microsoft.Azure.Devices.Shared
 
             return true;
         }
+
+        private void TryClearMetadata(string propertyName)
+        {
+            JToken ignored;
+            if (this.jObject.TryGetValue(propertyName, out ignored))
+            {
+                this.jObject.Remove(propertyName);
+            }
+        }
+
+        /// <summary>
+        /// Clear metadata out of the collection
+        /// </summary>
+        public void ClearMetadata()
+        {
+            TryClearMetadata(MetadataName);
+            TryClearMetadata(LastUpdatedName);
+            TryClearMetadata(LastUpdatedVersionName);
+            TryClearMetadata(VersionName);
+        }
+
     }
 }

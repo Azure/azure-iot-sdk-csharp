@@ -11,6 +11,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
+    using Microsoft.Azure.Devices.Shared;
 
     class RetryDelegatingHandler : DefaultDelegatingHandler
     {
@@ -46,11 +47,44 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        readonly RetryPolicy retryPolicy;
-        public RetryDelegatingHandler(IDelegatingHandler innerHandler)
-            :base(innerHandler)
+        class IotHubRuntimeOperationRetryStrategy : RetryStrategy
         {
-            this.retryPolicy = new RetryPolicy(new IotHubTransientErrorIgnoreStrategy(), RetryCount, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100));
+            readonly ShouldRetry defaultRetryStrategy;
+            readonly ShouldRetry throttlingRetryStrategy;
+
+            public IotHubRuntimeOperationRetryStrategy(int retryCount)
+                : base(null, false)
+            {
+                this.defaultRetryStrategy = new ExponentialBackoff(retryCount, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100)).GetShouldRetry();
+                this.throttlingRetryStrategy = new ExponentialBackoff(retryCount, TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(60), TimeSpan.FromSeconds(5)).GetShouldRetry();
+            }
+
+            public override ShouldRetry GetShouldRetry()
+            {
+                return this.ShouldRetry;
+            }
+            bool ShouldRetry(int currentRetryCount, Exception lastException, out TimeSpan retryInterval)
+            {
+                if (IsThrottling(lastException))
+                {
+                    return this.throttlingRetryStrategy(currentRetryCount, lastException, out retryInterval);
+                }
+                return this.defaultRetryStrategy(currentRetryCount, lastException, out retryInterval);
+            }
+
+            static bool IsThrottling(Exception lastException)
+            {
+                //hack - should be fixed in one of next releases - we should rely on exception type only
+                return ErrorDelegatingHandler.IsThrottling(lastException);
+            }
+        }
+
+        readonly RetryPolicy retryPolicy;
+
+        public RetryDelegatingHandler(IPipelineContext context)
+            : base(context)
+        {
+            this.retryPolicy = new RetryPolicy(new IotHubTransientErrorIgnoreStrategy(), new IotHubRuntimeOperationRetryStrategy(RetryCount));
         }
 
         public override async Task SendEventAsync(Message message, CancellationToken cancellationToken)
@@ -175,6 +209,49 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 throw;
             }
         }
+        
+        public override async Task EnableTwinPatchAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                await this.retryPolicy.ExecuteAsync(() => base.EnableTwinPatchAsync(cancellationToken), cancellationToken);
+            }
+            catch (IotHubClientTransientException ex)
+            {
+                GetNormalizedIotHubException(ex).Throw();
+                throw;
+            }
+        }
+        
+        public override async Task<Twin> SendTwinGetAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                // Question for the masses:
+                // If I'm returning a Task, do I want to await this so the catch block below can catch anything that happens inside base.SendTwinGetAsync?
+                // Other methods in here do this both ways (with await and without) so it's not clear which is better.
+                return await this.retryPolicy.ExecuteAsync(() => base.SendTwinGetAsync(cancellationToken), cancellationToken);
+            }
+            catch (IotHubClientTransientException ex)
+            {
+                GetNormalizedIotHubException(ex).Throw();
+                throw;
+            }
+        }
+        
+        public override async Task SendTwinPatchAsync(TwinCollection reportedProperties,  CancellationToken cancellationToken)
+        {
+            try
+            {
+                await this.retryPolicy.ExecuteAsync(() => base.SendTwinPatchAsync(reportedProperties, cancellationToken), cancellationToken);
+            }
+            catch (IotHubClientTransientException ex)
+            {
+                GetNormalizedIotHubException(ex).Throw();
+                throw;
+            }
+        }
+        
 
         public override async Task CompleteAsync(string lockToken, CancellationToken cancellationToken)
         {

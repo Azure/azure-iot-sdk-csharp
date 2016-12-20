@@ -9,16 +9,17 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
     abstract class TransportHandler : DefaultDelegatingHandler
     {
-        readonly ITransportSettings transportSettings;
+        protected ITransportSettings TransportSettings;
 
-        protected TransportHandler(ITransportSettings transportSettings)
+        protected TransportHandler(IPipelineContext context, ITransportSettings transportSettings)
+            : base(context)
         {
-            this.transportSettings = transportSettings;
+            this.TransportSettings = transportSettings;
         }
 
         public override Task<Message> ReceiveAsync(CancellationToken cancellationToken)
         {
-            return this.ReceiveAsync(this.transportSettings.DefaultReceiveTimeout, cancellationToken);
+            return this.ReceiveAsync(this.TransportSettings.DefaultReceiveTimeout, cancellationToken);
         }
 
         protected Task HandleTimeoutCancellation(Func<Task> func, CancellationToken token)
@@ -37,7 +38,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     }
                     else
                     {
-                        tcs.TrySetException(t.Exception);
+                        tcs.TrySetException(t.Exception.InnerExceptions);
                     }
                 }
                 else if (t.IsCanceled)

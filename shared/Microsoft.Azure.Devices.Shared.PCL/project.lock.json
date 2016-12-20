@@ -1,9 +1,10 @@
 {
   "locked": false,
-  "version": 1,
+  "version": 2,
   "targets": {
     ".NETPortable,Version=v4.5,Profile=Profile111": {
       "Newtonsoft.Json/6.0.8": {
+        "type": "package",
         "compile": {
           "lib/portable-net40+sl5+wp80+win8+wpa81/Newtonsoft.Json.dll": {}
         },
@@ -18,6 +19,7 @@
       "sha512": "7ut47NDedTW19EbL0JpFDYUP62fcuz27hJrehCDNajdCS5NtqL+E39+7Um3OkNc2wl2ym7K8Ln5eNuLus6mVGQ==",
       "type": "Package",
       "files": [
+        "Newtonsoft.Json.nuspec",
         "[Content_Types].xml",
         "_rels/.rels",
         "lib/net20/Newtonsoft.Json.dll",
@@ -34,7 +36,6 @@
         "lib/portable-net40+sl5+wp80+win8+wpa81/Newtonsoft.Json.xml",
         "lib/portable-net45+wp80+win8+wpa81+aspnetcore50/Newtonsoft.Json.dll",
         "lib/portable-net45+wp80+win8+wpa81+aspnetcore50/Newtonsoft.Json.xml",
-        "Newtonsoft.Json.nuspec",
         "package/services/metadata/core-properties/d6cceb7474b245aab29598e10c6e65d6.psmdcp",
         "tools/install.ps1"
       ]
@@ -45,5 +46,7 @@
       "Newtonsoft.Json >= 6.0.8"
     ],
     ".NETPortable,Version=v4.5,Profile=Profile111": []
-  }
+  },
+  "tools": {},
+  "projectFileToolGroups": {}
 }

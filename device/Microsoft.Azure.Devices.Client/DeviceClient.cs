@@ -1,6 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+#define WIP_TWIN_MQTT
+#if WINDOWS_UWP
+#undef WIP_TWIN_MQTT
+#endif
+
 namespace Microsoft.Azure.Devices.Client
 {
     using Common;
@@ -17,20 +22,17 @@ namespace Microsoft.Azure.Devices.Client
     using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 #endif
 
-    // C# using aliases cannot name an unbound generic type declaration without supplying type arguments
-    // Therefore, define a separate alias for each type argument
-#if WINDOWS_UWP
-    using AsyncTask = Windows.Foundation.IAsyncAction;
-    using AsyncTaskOfMessage = Windows.Foundation.IAsyncOperation<Message>;
-    using AsyncTaskOfMethodResponse = Windows.Foundation.IAsyncOperation<MethodResponse>;
-#else
-    using AsyncTask = System.Threading.Tasks.Task;
-    using AsyncTaskOfMessage = System.Threading.Tasks.Task<Message>;
-    using AsyncTaskOfMethodResponse = System.Threading.Tasks.Task<MethodResponse>;
-
+#if WIP_TWIN_MQTT
+    /// <summary>
+    /// Delegate for desired property update callbacks.  This will be called
+    /// every time we receive a PATCH from the service.
+    /// </summary>
+    /// <param name="desiredProperties">Properties that were contained in the update that was received from the service</param>
+    /// <param name="userContext">Context object passed in when the callback was registered</param>
+    public delegate Task DesiredPropertyUpdateCallback(TwinCollection desiredProperties, object userContext);
 #endif
 
-    public delegate AsyncTaskOfMethodResponse MethodCallback(MethodRequest methodRequest, object userContext);
+    public delegate Task<MethodResponse> MethodCallback(MethodRequest methodRequest, object userContext);
 
     /*
      * Class Diagram and Chain of Responsibility in Device Client 
@@ -88,13 +90,14 @@ namespace Microsoft.Azure.Devices.Client
                                                                                        |  everything |
                                                                                        |             |
                                                                                        +-------------+
+TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have to many overloads in most of the classes.
 */
 
     /// <summary>
     /// Contains methods that a device can use to send messages to and receive from the service.
     /// </summary>
     public sealed class DeviceClient
-#if !WINDOWS_UWP && !PCL
+#if !PCL
         : IDisposable
 #endif
     {
@@ -128,51 +131,70 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         Dictionary<string, Tuple<MethodCallback, object>> deviceMethods;
 
-        DeviceClient(IotHubConnectionString iotHubConnectionString, ITransportSettings[] transportSettings)
+        internal delegate Task OnMethodCalledDelegate(MethodRequestInternal methodRequestInternal);
+
+#if WIP_TWIN_MQTT
+        /// <summary>
+        /// Callback to call whenever the twin's desired state is updated by the service
+        /// </summary>
+        DesiredPropertyUpdateCallback desiredPropertyUpdateCallback;
+
+        /// <summary>
+        /// Has twin funcitonality been enabled with the service?
+        /// </summary>
+        Boolean patchSubscribedWithService = false;
+
+        /// <summary>
+        /// userContext passed when registering the twin patch callback
+        /// </summary>
+        Object twinPatchCallbackContext = null;
+#endif
+
+        DeviceClient(IotHubConnectionString iotHubConnectionString, ITransportSettings[] transportSettings, IDeviceClientPipelineBuilder pipelineBuilder)
         {
             this.iotHubConnectionString = iotHubConnectionString;
 
-#if !WINDOWS_UWP && !PCL
-            var innerHandler = new RetryDelegatingHandler(
-                new ErrorDelegatingHandler(
-                    () => new RoutingDelegatingHandler(this.CreateTransportHandler, iotHubConnectionString, transportSettings)));
-#else
-// UWP and PCL do not support retry yet. We need to make the underlying Message stream accessible internally on UWP/PCL
-// to be sure that either the stream has not been read or it is seekable to safely retry operation
+            var pipelineContext = new PipelineContext();
+            pipelineContext.Set(transportSettings);
+            pipelineContext.Set(iotHubConnectionString);
+            pipelineContext.Set<OnMethodCalledDelegate>(OnMethodCalled);
 
-// RetryDelegatingHandler depends on Microsoft.Practices.EnterpriseLibrary.  EnterpriseLibrary is not available for PCL.
+            IDelegatingHandler innerHandler = pipelineBuilder.Build(pipelineContext);
 
-            var innerHandler = new ErrorDelegatingHandler(
-                () => new RoutingDelegatingHandler(this.CreateTransportHandler, iotHubConnectionString, transportSettings));
-#endif
-            this.InnerHandler = new GateKeeperDelegatingHandler(innerHandler);
+            this.InnerHandler = innerHandler;
         }
 
-        DefaultDelegatingHandler CreateTransportHandler(IotHubConnectionString iotHubConnectionString, ITransportSettings transportSetting)
+        DeviceClient(IotHubConnectionString iotHubConnectionString)
         {
-            DefaultDelegatingHandler transportHandler;
-            switch (transportSetting.GetTransportType())
-            {
-                case TransportType.Amqp_WebSocket_Only:
-                case TransportType.Amqp_Tcp_Only:
-                    transportHandler = new AmqpTransportHandler(iotHubConnectionString, transportSetting as AmqpTransportSettings, this.OnMethodCalled);
-                    break;
-                case TransportType.Http1:
-                    transportHandler = new HttpTransportHandler(iotHubConnectionString, transportSetting as Http1TransportSettings);
-                    break;
-#if !WINDOWS_UWP && !NETMF && !PCL
-                case TransportType.Mqtt_WebSocket_Only:
-                case TransportType.Mqtt_Tcp_Only:
-                    transportHandler = new MqttTransportHandler(iotHubConnectionString, transportSetting as MqttTransportSettings, this.OnMethodCalled);
-                    break;
-#endif
-                default:
-                    throw new InvalidOperationException("Unsupported Transport Setting {0}".FormatInvariant(transportSetting));
-            }
-            return transportHandler;
+            this.iotHubConnectionString = iotHubConnectionString;
+
+            var pipelineContext = new PipelineContext();
+            pipelineContext.Set(iotHubConnectionString);
+            pipelineContext.Set<ITransportSettings>(new Http1TransportSettings());
+
+            IDeviceClientPipelineBuilder pipelineBuilder = new DeviceClientPipelineBuilder()
+                .With(ctx => new GateKeeperDelegatingHandler(ctx))
+                .With(ctx => new ErrorDelegatingHandler(ctx))
+                .With(ctx => new HttpTransportHandler(ctx, ctx.Get<IotHubConnectionString>(), ctx.Get<ITransportSettings>() as Http1TransportSettings));
+
+            this.InnerHandler = pipelineBuilder.Build(pipelineContext);
         }
 
-        internal AsyncTask SendMethodResponseAsync(MethodResponseInternal methodResponse)
+        static IDeviceClientPipelineBuilder BuildPipeline()
+        {
+            var transporthandlerFactory = new TransportHandlerFactory();
+            IDeviceClientPipelineBuilder pipelineBuilder = new DeviceClientPipelineBuilder()
+                .With(ctx => new GateKeeperDelegatingHandler(ctx))
+#if !WINDOWS_UWP && !PCL
+                .With(ctx => new RetryDelegatingHandler(ctx))
+#endif
+                .With(ctx => new ErrorDelegatingHandler(ctx))
+                .With(ctx => new ProtocolRoutingDelegatingHandler(ctx))
+                .With(ctx => transporthandlerFactory.Create(ctx));
+            return pipelineBuilder;
+        }
+
+        internal Task SendMethodResponseAsync(MethodResponseInternal methodResponse)
         {
             return ApplyTimeout(operationTimeoutCancellationToken =>
             {
@@ -195,10 +217,6 @@ namespace Microsoft.Azure.Devices.Client
 #endif
         }
 
-#if WINDOWS_UWP
-        [Windows.Foundation.Metadata.DefaultOverloadAttribute()]
-#endif
-
         /// <summary>
         /// Create a DeviceClient from individual parameters
         /// </summary>
@@ -218,7 +236,7 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentNullException(nameof(authenticationMethod));
             }
 
-            var connectionStringBuilder = IotHubConnectionStringBuilder.Create(hostname, authenticationMethod);
+            IotHubConnectionStringBuilder connectionStringBuilder = IotHubConnectionStringBuilder.Create(hostname, authenticationMethod);
 
 #if !WINDOWS_UWP && !PCL && !NETMF
             if (authenticationMethod is DeviceAuthenticationWithX509Certificate)
@@ -300,10 +318,6 @@ namespace Microsoft.Azure.Devices.Client
 #endif
         }
 
-#if WINDOWS_UWP
-        [Windows.Foundation.Metadata.DefaultOverloadAttribute()]
-#endif
-
         /// <summary>
         /// Create DeviceClient from the specified connection string using the specified transport type
         /// (PCL) Only Http transport is allowed
@@ -312,6 +326,19 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="transportType">Specifies whether Amqp or Http transport is used</param>
         /// <returns>DeviceClient</returns>
         public static DeviceClient CreateFromConnectionString(string connectionString, TransportType transportType)
+        {
+            return CreateFromConnectionString(connectionString, transportType, null);
+        }
+
+        /// <summary>
+        /// Create DeviceClient from the specified connection string using the specified transport type
+        /// (PCL) Only Http transport is allowed
+        /// </summary>
+        /// <param name="connectionString">Connection string for the IoT hub (including DeviceId)</param>
+        /// <param name="transportType">Specifies whether Amqp or Http transport is used</param>
+        /// <param name="pipelineBuilder">Device client pipeline builder</param>
+        /// <returns>DeviceClient</returns>
+        internal static DeviceClient CreateFromConnectionString(string connectionString, TransportType transportType, IDeviceClientPipelineBuilder pipelineBuilder)
         {
             if (connectionString == null)
             {
@@ -325,7 +352,8 @@ namespace Microsoft.Azure.Devices.Client
                     {
                         new AmqpTransportSettings(TransportType.Amqp_Tcp_Only),
                         new AmqpTransportSettings(TransportType.Amqp_WebSocket_Only)
-                    });
+                    },
+                    pipelineBuilder);
                 case TransportType.Mqtt:
 #if WINDOWS_UWP || PCL
                     throw new NotImplementedException("Mqtt protocol is not supported");
@@ -334,24 +362,24 @@ namespace Microsoft.Azure.Devices.Client
                     {
                         new MqttTransportSettings(TransportType.Mqtt_Tcp_Only),
                         new MqttTransportSettings(TransportType.Mqtt_WebSocket_Only)
-                    });
+                    }, pipelineBuilder);
 #endif
                 case TransportType.Amqp_WebSocket_Only:
                 case TransportType.Amqp_Tcp_Only:
 #if PCL
                     throw new NotImplementedException("Amqp protocol is not supported");
 #else
-                    return CreateFromConnectionString(connectionString, new ITransportSettings[] { new AmqpTransportSettings(transportType) });
+                    return CreateFromConnectionString(connectionString, new ITransportSettings[] { new AmqpTransportSettings(transportType) }, pipelineBuilder);
 #endif
                 case TransportType.Mqtt_WebSocket_Only:
                 case TransportType.Mqtt_Tcp_Only:
 #if WINDOWS_UWP || PCL
                     throw new NotImplementedException("Mqtt protocol is not supported");
 #else
-                    return CreateFromConnectionString(connectionString, new ITransportSettings[] { new MqttTransportSettings(transportType) });
+                    return CreateFromConnectionString(connectionString, new ITransportSettings[] { new MqttTransportSettings(transportType) }, pipelineBuilder);
 #endif
                 case TransportType.Http1:
-                    return CreateFromConnectionString(connectionString, new ITransportSettings[] { new Http1TransportSettings() });
+                    return CreateFromConnectionString(connectionString, new ITransportSettings[] { new Http1TransportSettings() }, pipelineBuilder);
                 default:
 #if !PCL
                     throw new InvalidOperationException("Unsupported Transport Type {0}".FormatInvariant(transportType));
@@ -394,7 +422,19 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="connectionString">Connection string for the IoT hub (with DeviceId)</param>
         /// <param name="transportSettings">Prioritized list of transports and their settings</param>
         /// <returns>DeviceClient</returns>
-        public static DeviceClient CreateFromConnectionString(string connectionString, [System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArrayAttribute] ITransportSettings[] transportSettings)
+        public static DeviceClient CreateFromConnectionString(string connectionString, [System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArray] ITransportSettings[] transportSettings)
+        {
+            return CreateFromConnectionString(connectionString, transportSettings, null);
+        }
+
+        /// <summary>
+        /// Create DeviceClient from the specified connection string using a prioritized list of transports
+        /// </summary>
+        /// <param name="connectionString">Connection string for the IoT hub (with DeviceId)</param>
+        /// <param name="transportSettings">Prioritized list of transports and their settings</param>
+        /// <param name="pipelineBuilder">Device client pipeline builder</param>
+        /// <returns>DeviceClient</returns>
+        internal static DeviceClient CreateFromConnectionString(string connectionString, [System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArray] ITransportSettings[] transportSettings, IDeviceClientPipelineBuilder pipelineBuilder)
         {
             if (connectionString == null)
             {
@@ -444,8 +484,10 @@ namespace Microsoft.Azure.Devices.Client
                 }
             }
 
+            pipelineBuilder = pipelineBuilder ?? BuildPipeline();
+            
             // Defer concrete DeviceClient creation to OpenAsync
-            return new DeviceClient(iotHubConnectionString, transportSettings);
+            return new DeviceClient(iotHubConnectionString, transportSettings, pipelineBuilder);
         }
 
         /// <summary>
@@ -455,9 +497,6 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="deviceId">Id of the device</param>
         /// <param name="transportSettings">Prioritized list of transportTypes and their settings</param>
         /// <returns>DeviceClient</returns>
-#if WINDOWS_UWP
-        [Windows.Foundation.Metadata.DefaultOverloadAttribute]
-#endif
         public static DeviceClient CreateFromConnectionString(string connectionString, string deviceId, [System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArrayAttribute] ITransportSettings[] transportSettings)
         {
             if (connectionString == null)
@@ -478,7 +517,7 @@ namespace Microsoft.Azure.Devices.Client
             return CreateFromConnectionString(connectionString + ";" + DeviceId + "=" + deviceId, transportSettings);
         }
 
-        private CancellationTokenSource GetOperationTimeoutCancellationTokenSource()
+        CancellationTokenSource GetOperationTimeoutCancellationTokenSource()
         {
             return new CancellationTokenSource(TimeSpan.FromMilliseconds(OperationTimeoutInMilliseconds));
         }
@@ -487,7 +526,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Explicitly open the DeviceClient instance.
         /// </summary>
 
-        public AsyncTask OpenAsync()
+        public Task OpenAsync()
         {
             // Codes_SRS_DEVICECLIENT_28_007: [ The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable(authentication, quota exceed) error occurs.]
             return ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.OpenAsync(true, operationTimeoutCancellationToken));
@@ -497,40 +536,36 @@ namespace Microsoft.Azure.Devices.Client
         /// Close the DeviceClient instance
         /// </summary>
         /// <returns></returns>
-        public AsyncTask CloseAsync()
+        public Task CloseAsync()
         {
-            return this.InnerHandler.CloseAsync().AsTaskOrAsyncOp();
+            return this.InnerHandler.CloseAsync();
         }
 
         /// <summary>
         /// Receive a message from the device queue using the default timeout.
         /// </summary>
         /// <returns>The receive message or null if there was no message until the default timeout</returns>
-        public AsyncTaskOfMessage ReceiveAsync()
+        public Task<Message> ReceiveAsync()
         {
             // Codes_SRS_DEVICECLIENT_28_011: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable(authentication, quota exceed) error occurs.]
-            return ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.ReceiveAsync(operationTimeoutCancellationToken));
+            return ApplyTimeoutMessage(operationTimeoutCancellationToken => this.InnerHandler.ReceiveAsync(operationTimeoutCancellationToken));
         }
 
         /// <summary>
         /// Receive a message from the device queue with the specified timeout
         /// </summary>
         /// <returns>The receive message or null if there was no message until the specified time has elapsed</returns>
-        public AsyncTaskOfMessage ReceiveAsync(TimeSpan timeout)
+        public Task<Message> ReceiveAsync(TimeSpan timeout)
         {
             // Codes_SRS_DEVICECLIENT_28_011: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable(authentication, quota exceed) error occurs.]
-            return ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.ReceiveAsync(timeout, operationTimeoutCancellationToken));
+            return ApplyTimeoutMessage(operationTimeoutCancellationToken => this.InnerHandler.ReceiveAsync(timeout, operationTimeoutCancellationToken));
         }
-
-#if WINDOWS_UWP
-        [Windows.Foundation.Metadata.DefaultOverloadAttribute()]
-#endif
 
         /// <summary>
         /// Deletes a received message from the device queue
         /// </summary>
         /// <returns>The lock identifier for the previously received message</returns>
-        public AsyncTask CompleteAsync(string lockToken)
+        public Task CompleteAsync(string lockToken)
         {
             if (string.IsNullOrEmpty(lockToken))
             {
@@ -545,7 +580,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Deletes a received message from the device queue
         /// </summary>
         /// <returns>The previously received message</returns>
-        public AsyncTask CompleteAsync(Message message)
+        public Task CompleteAsync(Message message)
         {
             if (message == null)
             {
@@ -555,15 +590,11 @@ namespace Microsoft.Azure.Devices.Client
             return this.CompleteAsync(message.LockToken);
         }
 
-#if WINDOWS_UWP
-        [Windows.Foundation.Metadata.DefaultOverloadAttribute()]
-#endif
-
         /// <summary>
         /// Puts a received message back onto the device queue
         /// </summary>
         /// <returns>The previously received message</returns>
-        public AsyncTask AbandonAsync(string lockToken)
+        public Task AbandonAsync(string lockToken)
         {
             if (string.IsNullOrEmpty(lockToken))
             {
@@ -577,7 +608,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Puts a received message back onto the device queue
         /// </summary>
         /// <returns>The lock identifier for the previously received message</returns>
-        public AsyncTask AbandonAsync(Message message)
+        public Task AbandonAsync(Message message)
         {
             if (message == null)
             {
@@ -587,15 +618,11 @@ namespace Microsoft.Azure.Devices.Client
             return this.AbandonAsync(message.LockToken);
         }
 
-#if WINDOWS_UWP
-        [Windows.Foundation.Metadata.DefaultOverloadAttribute()]
-#endif
-
         /// <summary>
         /// Deletes a received message from the device queue and indicates to the server that the message could not be processed.
         /// </summary>
         /// <returns>The previously received message</returns>
-        public AsyncTask RejectAsync(string lockToken)
+        public Task RejectAsync(string lockToken)
         {
             if (string.IsNullOrEmpty(lockToken))
             {
@@ -609,7 +636,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Deletes a received message from the device queue and indicates to the server that the message could not be processed.
         /// </summary>
         /// <returns>The lock identifier for the previously received message</returns>
-        public AsyncTask RejectAsync(Message message)
+        public Task RejectAsync(Message message)
         {
             if (message == null)
             {
@@ -623,7 +650,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Sends an event to device hub
         /// </summary>
         /// <returns>The message containing the event</returns>
-        public AsyncTask SendEventAsync(Message message)
+        public Task SendEventAsync(Message message)
         {
             if (message == null)
             {
@@ -637,7 +664,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Sends a batch of events to device hub
         /// </summary>
         /// <returns>The task containing the event</returns>
-        public AsyncTask SendEventBatchAsync(IEnumerable<Message> messages)
+        public Task SendEventBatchAsync(IEnumerable<Message> messages)
         {
             if (messages == null)
             {
@@ -647,13 +674,12 @@ namespace Microsoft.Azure.Devices.Client
             return ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.SendEventAsync(messages, operationTimeoutCancellationToken));
         }
 
-        private AsyncTask ApplyTimeout(Func<CancellationToken, System.Threading.Tasks.Task> operation)
+        Task ApplyTimeout(Func<CancellationToken, Task> operation)
         {
             if (OperationTimeoutInMilliseconds == 0)
             {
                 return operation(CancellationToken.None)
-                    .WithTimeout(TimeSpan.MaxValue, () => Resources.OperationTimeoutExpired, CancellationToken.None)
-                    .AsTaskOrAsyncOp();
+                    .WithTimeout(TimeSpan.MaxValue, () => Resources.OperationTimeoutExpired, CancellationToken.None);
             }
 
             CancellationTokenSource operationTimeoutCancellationTokenSource = GetOperationTimeoutCancellationTokenSource();
@@ -664,16 +690,15 @@ namespace Microsoft.Azure.Devices.Client
             {
                 operationTimeoutCancellationTokenSource.Dispose();
             });
-            return result.AsTaskOrAsyncOp();
+            return result;
         }
 
-        private AsyncTaskOfMessage ApplyTimeout(Func<CancellationToken, System.Threading.Tasks.Task<Message>> operation)
+        Task<Message> ApplyTimeoutMessage(Func<CancellationToken, Task<Message>> operation)
         {
             if (OperationTimeoutInMilliseconds == 0)
             {
                 return operation(CancellationToken.None)
-                    .WithTimeout(TimeSpan.MaxValue, () => Resources.OperationTimeoutExpired, CancellationToken.None)
-                    .AsTaskOrAsyncOp();
+                    .WithTimeout(TimeSpan.MaxValue, () => Resources.OperationTimeoutExpired, CancellationToken.None);
             }
 
             CancellationTokenSource operationTimeoutCancellationTokenSource = GetOperationTimeoutCancellationTokenSource();
@@ -685,11 +710,32 @@ namespace Microsoft.Azure.Devices.Client
                 operationTimeoutCancellationTokenSource.Dispose();
                 return t.Result;
             });
-            return result.AsTaskOrAsyncOp();
+            return result;
         }
 
+#if WIP_TWIN_MQTT
+        Task <Twin> ApplyTimeoutTwin(Func<CancellationToken, Task<Twin>> operation)
+        {
+            if (OperationTimeoutInMilliseconds == 0)
+            {
+                return operation(CancellationToken.None)
+                    .WithTimeout(TimeSpan.MaxValue, () => Resources.OperationTimeoutExpired, CancellationToken.None);
+            }
 
-#if !WINDOWS_UWP && !PCL
+            CancellationTokenSource operationTimeoutCancellationTokenSource = GetOperationTimeoutCancellationTokenSource();
+
+            var result = operation(operationTimeoutCancellationTokenSource.Token)
+                .WithTimeout(TimeSpan.FromMilliseconds(OperationTimeoutInMilliseconds), () => Resources.OperationTimeoutExpired, operationTimeoutCancellationTokenSource.Token);
+            result.ContinueWith(t =>
+            {
+                operationTimeoutCancellationTokenSource.Dispose();
+                return t.Result;
+            });
+            return result;
+        }
+#endif
+
+#if !WINDOWS_UWP && !PCL // ArturL: we should be able to support UploadToBlobAsync for UWP now
         /// <summary>
         /// Uploads a stream to a block blob in a storage account associated with the IoTHub for that device.
         /// If the blob already exists, it will be overwritten.
@@ -697,7 +743,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="blobName"></param>
         /// <param name="source"></param>
         /// <returns>AsncTask</returns>
-        public AsyncTask UploadToBlobAsync(String blobName, System.IO.Stream source)
+        public Task UploadToBlobAsync(String blobName, System.IO.Stream source)
         {
             if (String.IsNullOrEmpty(blobName))
             {
@@ -721,7 +767,6 @@ namespace Microsoft.Azure.Devices.Client
         }
 #endif
 
-#if WIP_C2D_METHODS_AMQP
         /// <summary>
         /// Registers a new delgate for the named method. If a delegate is already associated with
         /// the named method, it will be replaced with the new delegate.
@@ -765,7 +810,6 @@ namespace Microsoft.Azure.Devices.Client
                 }
             }
         }
-#endif
 
         internal async Task OnMethodCalled(MethodRequestInternal methodRequestInternal)
         {
@@ -913,5 +957,75 @@ namespace Microsoft.Azure.Devices.Client
         }
 #endif
 
+#if WIP_TWIN_MQTT
+        /// <summary>
+        /// Set a callback that will be called whenever the client receives a state update 
+        /// (desired or reported) from the service.  This has the side-effect of subscribing
+        /// to the PATCH topic on the service.
+        /// </summary>
+        /// <param name="callback">Callback to call after the state update has been received and applied</param>
+        /// <param name="userContext">Context object that will be passed into callback</param>
+        public Task SetDesiredPropertyUpdateCallback(DesiredPropertyUpdateCallback callback, object userContext)
+        {
+            return ApplyTimeout(async operationTimeoutCancellationToken =>
+            {
+                // Codes_SRS_DEVICECLIENT_18_001: `SetDesiredPropertyUpdateCallback` shall call the transport to register for PATCHes on it's first call.
+                if (!this.patchSubscribedWithService)
+                {
+                    this.InnerHandler.TwinUpdateHandler = this.OnReportedStatePatchReceived;
+                    await this.InnerHandler.EnableTwinPatchAsync(operationTimeoutCancellationToken);
+                    patchSubscribedWithService = true;
+                }
+
+                // Codes_SRS_DEVICECLIENT_18_016: `SetDesiredPropertyUpdateCallback` shall keep track of the `callback` for future use. 
+                this.desiredPropertyUpdateCallback = callback;
+                this.twinPatchCallbackContext = userContext;
+            });
+    }
+
+        /// <summary>
+        /// Retrieve a device twin object for the current device.
+        /// </summary>
+        /// <returns>The device twin object for the current device</returns>
+        public Task<Twin> GetTwinAsync()
+        {
+            return ApplyTimeoutTwin(async operationTimeoutCancellationToken => 
+            {
+                // Codes_SRS_DEVICECLIENT_18_005: `GetTwinAsync` shall issue a GET to the sevice to retrieve the current twin state.
+                // Codes_SRS_DEVICECLIENT_18_006: `GetTwinAsync` shall wait for a response from the `GET` operation.
+                // Codes_SRS_DEVICECLIENT_18_007: If the `GET` operation returns a status >= 300, `GetTwinAsync` shall fail
+                // Codes_SRS_DEVICECLIENT_18_008: `GetTwinAsync` shall allocate a new `Twin` object
+                // Codes_SRS_DEVICECLIENT_18_009: `GetTwinAsync` shall copy the desired and reported properties from the response into the `Twin` object.
+                // Codes_SRS_DEVICECLIENT_18_010: `GetTwinAsync` shall return the new `Twin` object
+                return await this.InnerHandler.SendTwinGetAsync(operationTimeoutCancellationToken);
+            });
+}
+
+        /// <summary>
+        /// Push reported property changes up to the service.
+        /// </summary>
+        /// <param name="reportedProperties">Reported properties to push</param>
+        public Task UpdateReportedPropertiesAsync(TwinCollection reportedProperties)
+        {
+            return ApplyTimeout(async operationTimeoutCancellationToken =>
+            {
+                // Codes_SRS_DEVICECLIENT_18_012: `UpdateReportedPropertiesAsync` shall call the transport to send a `PATCH` with the entire reported property state set to the service.
+                // Codes_SRS_DEVICECLIENT_18_014: `UpdateReportedPropertiesAsync` shall wait for a response from the `PATCH` operation.
+                // Codes_SRS_DEVICECLIENT_18_015: If the `PATCH` operation returns a status >= 300, `UpdateReportedPropertiesAsync` shall fail.
+                await this.InnerHandler.SendTwinPatchAsync(reportedProperties, operationTimeoutCancellationToken);
+            });
+        }
+
+        void OnReportedStatePatchReceived(TwinCollection patch)
+        {
+            if (this.desiredPropertyUpdateCallback != null)
+            {
+                this.desiredPropertyUpdateCallback(patch, this.twinPatchCallbackContext);
+            }
+        }
+#endif // WIP_TWIN_MQTT
+
     }
 }
+
+

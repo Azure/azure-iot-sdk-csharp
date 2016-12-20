@@ -37,6 +37,7 @@
       "sha512": "7ut47NDedTW19EbL0JpFDYUP62fcuz27hJrehCDNajdCS5NtqL+E39+7Um3OkNc2wl2ym7K8Ln5eNuLus6mVGQ==",
       "type": "Package",
       "files": [
+        "Newtonsoft.Json.nuspec",
         "[Content_Types].xml",
         "_rels/.rels",
         "lib/net20/Newtonsoft.Json.dll",
@@ -53,7 +54,6 @@
         "lib/portable-net40+sl5+wp80+win8+wpa81/Newtonsoft.Json.xml",
         "lib/portable-net45+wp80+win8+wpa81+aspnetcore50/Newtonsoft.Json.dll",
         "lib/portable-net45+wp80+win8+wpa81+aspnetcore50/Newtonsoft.Json.xml",
-        "Newtonsoft.Json.nuspec",
         "package/services/metadata/core-properties/d6cceb7474b245aab29598e10c6e65d6.psmdcp",
         "tools/install.ps1"
       ]
@@ -62,8 +62,11 @@
       "sha512": "rcmxw9Bb5GuEW1ubVBegCCbR7YU8Ptr8tGfmyVHBnK+UQlk29TuBryHXmsTglt64ZNDXpi8rWl8x5l55JylpOw==",
       "type": "Package",
       "files": [
+        "PCLCrypto.nuspec",
         "[Content_Types].xml",
         "_rels/.rels",
+        "lib/Xamarin.iOS/PCLCrypto.dll",
+        "lib/Xamarin.iOS/PCLCrypto.xml",
         "lib/monoandroid/PCLCrypto.dll",
         "lib/monoandroid/PCLCrypto.xml",
         "lib/monotouch/PCLCrypto.dll",
@@ -82,16 +85,15 @@
         "lib/wpa81/PCLCrypto.dll",
         "lib/wpa81/PCLCrypto.pri",
         "lib/wpa81/PCLCrypto.xml",
-        "lib/Xamarin.iOS/PCLCrypto.dll",
-        "lib/Xamarin.iOS/PCLCrypto.xml",
-        "package/services/metadata/core-properties/ff0214e864344d49a93de070164a395f.psmdcp",
-        "PCLCrypto.nuspec"
+        "package/services/metadata/core-properties/ff0214e864344d49a93de070164a395f.psmdcp"
       ]
     },
     "Validation/2.2.8": {
       "sha512": "DMNc7JhPlgRwnR+NNb+ldoluObL+RBw96aMoiZae/Looa4vgaAnIysmle/bV2OKqDNW9oUBDckPyfa2+sX6JdA==",
       "type": "Package",
       "files": [
+        "README.md",
+        "Validation.nuspec",
         "[Content_Types].xml",
         "_rels/.rels",
         "lib/dotnet/Validation.dll",
@@ -101,14 +103,12 @@
         "lib/portable-net45+dnxcore50+win+wpa81+wp80+MonoAndroid10+xamarinios10+MonoTouch10/Validation.dll",
         "lib/portable-net45+dnxcore50+win+wpa81+wp80+MonoAndroid10+xamarinios10+MonoTouch10/Validation.xml",
         "package/services/metadata/core-properties/003a6ace22864119891d2dfb824fb274.psmdcp",
-        "README.md",
         "tools/2013/RequiresNotNull.snippet",
         "tools/2013/RequiresNotNullOrEmpty.snippet",
         "tools/2015/RequiresNotNull.snippet",
         "tools/2015/RequiresNotNullOrEmpty.snippet",
         "tools/install_snippets.cmd",
-        "tools/uninstall_snippets.cmd",
-        "Validation.nuspec"
+        "tools/uninstall_snippets.cmd"
       ]
     }
   },

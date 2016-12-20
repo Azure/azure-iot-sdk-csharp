@@ -36,11 +36,11 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public sealed class Message :
         // TODO: this is a crazy mess, clean it up
-#if !WINDOWS_UWP && !PCL && !NETMF
+#if !PCL && !NETMF
         IDisposable, IReadOnlyIndicator
 #elif NETMF
         IDisposable
-#elif WINDOWS_UWP || PCL
+#elif PCL
         IReadOnlyIndicator
 #endif
     {
@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Devices.Client
             this.Properties = new ReadOnlyDictionary45<string, string>(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase), this);
             this.SystemProperties = new ReadOnlyDictionary45<string, object>(new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase), this);
             this.InitializeWithStream(Stream.Null, true);
-#if !WINDOWS_UWP && !PCL
+#if !PCL
             this.serializedAmqpMessage = null;
 #endif
 #endif
@@ -87,12 +87,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="stream">a stream which will be used as body stream.</param>
         /// <remarks>User is expected to own the disposing of the stream when using this constructor.</remarks>
         // UWP cannot expose a method with System.IO.Stream in signature. TODO: consider adding an IRandomAccessStream overload
-#if WINDOWS_UWP
-        private
-#else
-        public
-#endif
-            Message(Stream stream)
+        public Message(Stream stream)
             : this()
         {
             if (stream != null)
@@ -368,7 +363,7 @@ namespace Microsoft.Azure.Devices.Client
         /// For outgoing messages, contains the Mqtt topic that the message is being sent to
         /// For incoming messages, contains the Mqtt topic that the message arrived on
         /// </summary>
-        public string MqttTopicName { get; set; }
+        internal string MqttTopicName { get; set; }
 
         /// <summary>
         /// Gets the dictionary of user properties which are set when user send the data.
@@ -398,10 +393,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 #endif
 
-#if !WINDOWS_UWP
-        public
-#endif
-        Stream BodyStream
+        public Stream BodyStream
         {
             get
             {
@@ -409,7 +401,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-#if !WINDOWS_UWP && !PCL && !NETMF
+#if !PCL && !NETMF
         internal AmqpMessage SerializedAmqpMessage
         {
             get
@@ -429,7 +421,7 @@ namespace Microsoft.Azure.Devices.Client
         internal ArraySegment<byte> DeliveryTag { get; set; }
 #endif
 
-#if !WINDOWS_UWP && !PCL
+#if !PCL
         /// <summary>
         /// Dispose the current event data instance
         /// </summary>
@@ -466,7 +458,6 @@ namespace Microsoft.Azure.Devices.Client
         /// This methods return the body stream as a byte array
         /// </summary>
         /// <returns></returns>
-        /// <exception cref="InvalidOperationException">throws if the method has been called.</exception>
         /// <exception cref="ObjectDisposedException">throws if the event data has already been disposed.</exception>
         public byte[] GetBytes()
         {
@@ -477,19 +468,24 @@ namespace Microsoft.Azure.Devices.Client
                 return new byte[] { };
             }
 
-#if !WINDOWS_UWP && !PCL && !NETMF
+            byte[] result;
+#if !PCL && !NETMF
             BufferListStream listStream;
             if ((listStream = this.bodyStream as BufferListStream) != null)
             {
                 // We can trust Amqp bufferListStream.Length;
-                byte[] bytes = new byte[listStream.Length];
-                listStream.Read(bytes, 0, bytes.Length);
-                return bytes;
+                result = new byte[listStream.Length];
+                listStream.Read(result, 0, result.Length);
             }
+            else
 #endif
+            {
+                // This is just fail safe code in case we are not using the Amqp protocol.
+                result = ReadFullStream(this.bodyStream);
+            }
+            TryResetBody(0);
 
-            // This is just fail safe code in case we are not using the Amqp protocol.
-            return ReadFullStream(this.bodyStream);
+            return result;
         }
 
 #if !NETMF
@@ -647,7 +643,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 if (disposing)
                 {
-#if !WINDOWS_UWP && !PCL && !NETMF
+#if !PCL && !NETMF
                     if (this.serializedAmqpMessage != null)
                     {
                         // in the receive scenario, this.bodyStream is a reference

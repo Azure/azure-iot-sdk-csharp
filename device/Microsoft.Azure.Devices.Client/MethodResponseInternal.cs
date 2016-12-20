@@ -31,10 +31,7 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// The data structure represent the method response that is used for interacting with IotHub.
     /// </summary>
-    public sealed class MethodResponseInternal
-#if !WINDOWS_UWP
-        :IDisposable
-#endif
+    public sealed class MethodResponseInternal : IDisposable
     {
         readonly object messageLock = new object();
 #if NETMF
@@ -63,9 +60,7 @@ namespace Microsoft.Azure.Devices.Client
 #if !NETMF
             this.InitializeWithStream(Stream.Null, true);
 #endif
-#if !WINDOWS_UWP
             this.serializedAmqpMessage = null;
-#endif
         }
 
         /// <summary>
@@ -76,9 +71,7 @@ namespace Microsoft.Azure.Devices.Client
 #if !NETMF
             this.InitializeWithStream(Stream.Null, true);
 #endif
-#if !WINDOWS_UWP
             this.serializedAmqpMessage = null;
-#endif
             this.RequestId = requestId;
             this.Status = status;
         }
@@ -89,12 +82,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="stream">a stream which will be used as body stream.</param>
         /// <remarks>User is expected to own the disposing of the stream when using this constructor.</remarks>
         // UWP cannot expose a method with System.IO.Stream in signature. TODO: consider adding an IRandomAccessStream overload
-#if WINDOWS_UWP
-        private
-#else
-        internal
-#endif
-            MethodResponseInternal(Stream stream)
+        internal MethodResponseInternal(Stream stream)
             : this()
         {
             if (stream != null)
@@ -139,10 +127,7 @@ namespace Microsoft.Azure.Devices.Client
             get; set;
         }
         
-#if !WINDOWS_UWP
-        internal
-#endif
-        Stream BodyStream
+        internal Stream BodyStream
         {
             get
             {
@@ -150,7 +135,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-#if !WINDOWS_UWP && !NETMF
+#if !NETMF
         internal AmqpMessage SerializedAmqpMessage
         {
             get
@@ -163,7 +148,6 @@ namespace Microsoft.Azure.Devices.Client
         }
 #endif
         
-#if !WINDOWS_UWP
         /// <summary>
         /// Dispose the current method data instance
         /// </summary>
@@ -194,7 +178,6 @@ namespace Microsoft.Azure.Devices.Client
             return Stream.Null;
 #endif
         }
-#endif
 
         /// <summary>
         /// This methods return the body stream as a byte array
@@ -211,7 +194,7 @@ namespace Microsoft.Azure.Devices.Client
                 return new byte[] { };
             }
 
-#if !WINDOWS_UWP && !NETMF
+#if !NETMF
             BufferListStream listStream;
             if ((listStream = this.bodyStream as BufferListStream) != null)
             {
@@ -363,7 +346,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 if (disposing)
                 {
-#if !WINDOWS_UWP && !NETMF
+#if !NETMF
                     if (this.serializedAmqpMessage != null)
                     {
                         // in the receive scenario, this.bodyStream is a reference

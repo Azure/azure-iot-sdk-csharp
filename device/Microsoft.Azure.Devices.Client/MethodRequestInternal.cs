@@ -32,10 +32,7 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// The data structure represent the method request coming from the IotHub.
     /// </summary>
-    public sealed class MethodRequestInternal
-#if !WINDOWS_UWP
-        : IDisposable
-#endif
+    public sealed class MethodRequestInternal : IDisposable
     {
         readonly object messageLock = new object();
 #if NETMF
@@ -64,10 +61,7 @@ namespace Microsoft.Azure.Devices.Client
 #if !NETMF
             this.InitializeWithStream(Stream.Null, true);
 #endif
-#if !WINDOWS_UWP
             this.serializedAmqpMessage = null;
-#endif
-
         }
 
 #if !NETMF
@@ -102,10 +96,7 @@ namespace Microsoft.Azure.Devices.Client
             get; private set;
         }
 
-#if !WINDOWS_UWP
-        internal
-#endif
-        Stream BodyStream
+        internal Stream BodyStream
         {
             get
             {
@@ -113,7 +104,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-#if !WINDOWS_UWP && !NETMF
+#if !NETMF
         internal AmqpMessage SerializedAmqpMessage
         {
             get
@@ -126,7 +117,6 @@ namespace Microsoft.Azure.Devices.Client
         }
 #endif
 
-#if !WINDOWS_UWP
         /// <summary>
         /// Dispose the current method data instance
         /// </summary>
@@ -157,7 +147,6 @@ namespace Microsoft.Azure.Devices.Client
             return Stream.Null;
 #endif
         }
-#endif
 
         /// <summary>
         /// This methods return the body stream as a byte array
@@ -174,7 +163,7 @@ namespace Microsoft.Azure.Devices.Client
                 return new byte[] { };
             }
 
-#if !WINDOWS_UWP && !NETMF
+#if !NETMF
             BufferListStream listStream;
             if ((listStream = this.bodyStream as BufferListStream) != null)
             {
@@ -284,7 +273,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 if (disposing)
                 {
-#if !WINDOWS_UWP && !NETMF
+#if !NETMF
                     if (this.serializedAmqpMessage != null)
                     {
                         // in the receive scenario, this.bodyStream is a reference

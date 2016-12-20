@@ -11,7 +11,9 @@ namespace Microsoft.Azure.Devices.Client
     using System.Net;
     using System.Net.Security;
     using System.Net.Sockets;
+    using System.Security.Authentication;
     using System.Security.Cryptography;
+    using System.Security.Cryptography.X509Certificates;
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
@@ -147,7 +149,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        public async Task ConnectAsync(string host, int port, string scheme, TimeSpan timeout)
+        public async Task ConnectAsync(string host, int port, string scheme, X509Certificate2 clientCertificate, TimeSpan timeout)
         {
             this.host = host;
             bool succeeded = false;
@@ -161,7 +163,15 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     // In the real world, web-socket will happen over HTTPS
                     var sslStream = new SslStream(this.TcpClient.GetStream(), false, IotHubConnection.OnRemoteCertificateValidation);
-                    await sslStream.AuthenticateAsClientAsync(host);
+                    var x509CertificateCollection = new X509Certificate2Collection();
+                    if (clientCertificate != null)
+                    {
+                        x509CertificateCollection.Add(clientCertificate);
+                    }
+
+                    // TODO: Do we need to make CheckCertificateRevocation user configurable?
+                    await sslStream.AuthenticateAsClientAsync(host, x509CertificateCollection, enabledSslProtocols: SslProtocols.Tls11 | SslProtocols.Tls12, checkCertificateRevocation:false);
+
                     this.WebSocketStream = sslStream;
                 }
                 else

@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
 #if !WINDOWS_UWP && !PCL
     [Serializable]
 #endif
-#if !WINDOWS_UWP && !PCL // Exporting custom exception types is not allowed in WinRT
+#if !PCL
     public
 #endif
     class IotHubException : Exception

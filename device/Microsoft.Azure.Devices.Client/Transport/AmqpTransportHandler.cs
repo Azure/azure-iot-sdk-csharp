@@ -31,8 +31,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         int closed;
 
-        public AmqpTransportHandler(IotHubConnectionString connectionString, AmqpTransportSettings transportSettings, Func<MethodRequestInternal, Task> onMethodCallback = null)
-            : base(transportSettings)
+        internal AmqpTransportHandler(IPipelineContext context, IotHubConnectionString connectionString, AmqpTransportSettings transportSettings, Func<MethodRequestInternal, Task> onMethodCallback = null)
+            :base(context, transportSettings)
         {
             TransportType transportType = transportSettings.GetTransportType();
             this.deviceId = connectionString.DeviceId;
@@ -57,46 +57,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             this.messageListener = onMethodCallback;
         }
 
-        /// <summary>
-        /// Create a DeviceClient from individual parameters
-        /// </summary>
-        /// <param name="hostname">The fully-qualified DNS hostname of IoT Hub</param>
-        /// <param name="authenticationMethod">The authentication method that is used</param>
-        /// <returns>DeviceClient</returns>
-        public static AmqpTransportHandler Create(string hostname, IAuthenticationMethod authenticationMethod)
-        {
-            if (hostname == null)
-            {
-                throw new ArgumentNullException(nameof(hostname));
-            }
+        internal IotHubConnection IotHubConnection { get; }
 
-            if (authenticationMethod == null)
-            {
-                throw new ArgumentNullException(nameof(authenticationMethod));
-            }
-
-            IotHubConnectionStringBuilder connectionStringBuilder = IotHubConnectionStringBuilder.Create(hostname, authenticationMethod);
-            return CreateFromConnectionString(connectionStringBuilder.ToString());
-        }
-
-        /// <summary>
-        /// Create DeviceClient from the specified connection string
-        /// </summary>
-        /// <param name="connectionString">Connection string for the IoT hub</param>
-        /// <returns>DeviceClient</returns>
-        public static AmqpTransportHandler CreateFromConnectionString(string connectionString)
-        {
-            if (connectionString == null)
-            {
-                throw new ArgumentNullException(nameof(connectionString));
-            }
-
-            IotHubConnectionString iotHubConnectionString = IotHubConnectionString.Parse(connectionString);
-            return new AmqpTransportHandler(iotHubConnectionString, new AmqpTransportSettings(TransportType.Amqp_Tcp_Only));
-        }
-
-        public IotHubConnection IotHubConnection { get; }
-        
         public override async Task OpenAsync(bool explicitOpen, CancellationToken cancellationToken)
         {
             if (!explicitOpen)
@@ -214,6 +176,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override Task EnableMethodsAsync(CancellationToken cancellationToken)
         {
+#if WIP_C2D_METHODS_AMQP
             if (this.faultTolerantMethodSendingLink == null)
             {
                 this.faultTolerantMethodSendingLink = new Client.FaultTolerantAmqpObject<SendingAmqpLink>(this.CreateMethodSendingLinkAsync, this.IotHubConnection.CloseLink);
@@ -240,10 +203,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     throw AmqpClientHelper.ToIotHubClientContract(ex);
                 }
             }, cancellationToken);
+#else
+            throw new NotImplementedException();
+#endif
         }
 
         public override async Task DisableMethodsAsync(CancellationToken cancellationToken)
         {
+#if WIP_C2D_METHODS_AMQP
             Task receivingLinkCloseTask;
             if (this.faultTolerantMethodReceivingLink != null)
             {
@@ -267,6 +234,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
 
             await Task.WhenAll(receivingLinkCloseTask, sendingLinkCloseTask);
+#else
+            throw new NotImplementedException();
+#endif
         }
 
         public override async Task SendMethodResponseAsync(MethodResponseInternal methodResponse, CancellationToken cancellationToken)
@@ -477,7 +447,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             string path = string.Format(CultureInfo.InvariantCulture, CommonConstants.DeviceMethodPathTemplate, System.Net.WebUtility.UrlEncode(this.deviceId));
 
             return await this.IotHubConnection.CreateMethodReceivingLinkAsync(
-                path, this.iotHubConnectionString, timeout, this.prefetchCount, cancellationToken, this.deviceId, 
+                path, this.iotHubConnectionString, timeout, this.prefetchCount, cancellationToken, this.deviceId,
                 (amqpMessage, methodReceivingLink) =>
                 {
                     MethodRequestInternal methodRequestInternal = MethodConverter.ConstructMethodRequestFromAmqpMessage(amqpMessage);

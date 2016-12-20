@@ -139,9 +139,9 @@
     </SDKReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Microsoft.Azure.Devices.Client.WinRT\Microsoft.Azure.Devices.Client.WinRT.csproj">
-      <Project>{e68da0b4-2f93-4850-a6ae-1d87dde7f063}</Project>
-      <Name>Microsoft.Azure.Devices.Client.WinRT</Name>
+    <ProjectReference Include="..\..\Microsoft.Azure.Devices.Client.UWP\Microsoft.Azure.Devices.Client.UWP.csproj">
+      <Project>{c860af4f-605a-414d-84e8-8ff579823395}</Project>
+      <Name>Microsoft.Azure.Devices.Client.UWP</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">

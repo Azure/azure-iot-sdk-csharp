@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.Client
         {
         }
 
-#if !WINDOWS_UWP && !NETMF
+#if !NETMF
         public static void ValidateBufferBounds(byte[] buffer, int offset, int size)
         {
             if (buffer == null)
@@ -55,6 +55,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
+#if !WINDOWS_UWP // GetExecutingAssembly is not in UWP
         public static string GetClientVersion()
         {
 #if !PCL
@@ -65,6 +66,7 @@ namespace Microsoft.Azure.Devices.Client
             throw new NotImplementedException("GetClientVersion() is not supported for PCL.");
 #endif
         }
+#endif
 
 #endif
         public static DeliveryAcknowledgement ConvertDeliveryAckTypeFromString(string value)

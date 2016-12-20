@@ -62,7 +62,12 @@ public sealed class DeviceClient
     static ITransportSettings[] PopulateCertificateInTransportSettings(IotHubConnectionStringBuilder connectionStringBuilder, TransportType transportType)
     static ITransportSettings[] PopulateCertificateInTransportSettings(IotHubConnectionStringBuilder connectionStringBuilder, ITransportSettings[] transportSettings)
 
+    public AsyncTaskOfTwin GetTwinAsync();
 
+    public AsyncTaskOfTwin UpdateReportedPropertiesAsync(Twin twin);
+
+    public AsyncTask SetTwinStateUpdateCallback(TwinStateUpdateCallback callback);
+    
 }
 ```
 
@@ -138,9 +143,13 @@ internal async Task OnMethodCalled(MethodRequestInternal methodRequestInternal)
 ```
 
 **SRS_DEVICECLIENT_10_011: [** The OnMethodCalled shall invoke the associated MethodHandler. **]**
+
 **SRS_DEVICECLIENT_10_012: [** If the given methodRequestInternal argument is null, failed silently **]**
+
 **SRS_DEVICECLIENT_10_013: [** If the given method does not have an associated delegate, failed silently **]**
+
 **SRS_DEVICECLIENT_28_020: [** If the given methodRequestInternal data is not valid json, fail silently **]**
+
 **SRS_DEVICECLIENT_28_021: [** If the MethodResponse from the MethodHandler is not valid json, JsonReaderException shall be throw **]**
 
 
@@ -150,10 +159,15 @@ public void SetMethodHandler(string methodName, MethodCallback methodHandler, ob
 ```
 
 **SRS_DEVICECLIENT_10_001: [** The SetMethodHandler shall lazy-initialize the DeviceMethods property. **]**
+
 **SRS_DEVICECLIENT_10_005: [** The SetMethodHandler shall EnableMethodsAsync when called for the first time. **]**
+
 **SRS_DEVICECLIENT_10_002: [** If the given methodName has an associated delegate, the existing delegate shall be replaced with the newly given delegate. **]**
+
 **SRS_DEVICECLIENT_10_003: [** The given delegate will only be added if it is not null. **]**
+
 **SRS_DEVICECLIENT_10_004: [** The DeviceMethods property shall be deleted if the last delegate has been removed. **]**
+
 **SRS_DEVICECLIENT_10_006: [** The SetMethodHandler shall DisableMethodsAsync when the last delegate has been removed. **]**
 
 
@@ -174,4 +188,43 @@ public uint OperationTimeoutInMilliseconds
 
 **SRS_DEVICECLIENT_28_003: [** If this property is set to 0, subsequent operations shall be retried indefinitely until successful or until an unrecoverable error (authentication or quota exceed) is detected **]**
 
+
+### GetTwinAsync
+```csharp
+public AsyncTaskOfTwin GetTwinAsync();
+```
+
+**SRS_DEVICECLIENT_18_005: [** `GetTwinAsync` shall issue a GET to the sevice to retrieve the current twin state. **]**
+
+**SRS_DEVICECLIENT_18_006: [** `GetTwinAsync` shall wait for a response from the `GET` operation. **]**
+
+**SRS_DEVICECLIENT_18_007: [** If the `GET` operation returns a status >= 300, `GetTwinAsync` shall fail **]**
+
+**SRS_DEVICECLIENT_18_008: [** `GetTwinAsync` shall allocate a new `Twin` object **]**
+
+**SRS_DEVICECLIENT_18_009: [** `GetTwinAsync` shall copy the desired and reported properties from the response into the `Twin` object. **]**
+
+**SRS_DEVICECLIENT_18_010: [** `GetTwinAsync` shall return the new `Twin` object **]**
+
+
+### UpdateReportedPropertiesAsync
+```csharp
+public AsyncTask UpdateReportedPropertiesAsync(TwinCollection reportedProperties);
+```
+
+**SRS_DEVICECLIENT_18_012: [** `UpdateReportedPropertiesAsync` shall call the transport to send a `PATCH` with the entire reported property state set to the service. **]**
+
+**SRS_DEVICECLIENT_18_014: [** `UpdateReportedPropertiesAsync` shall wait for a response from the `PATCH` operation. **]**
+
+**SRS_DEVICECLIENT_18_015: [** If the `PATCH` operation returns a status >= 300, `UpdateReportedPropertiesAsync` shall fail. **]**
+
+
+### SetDesiredPropertyUpdateCallback
+```csharp
+public AsyncTask SetDesiredPropertyUpdateCallback(TwinStateUpdateCallback callback);
+```
+
+**SRS_DEVICECLIENT_18_001: [** `SetDesiredPropertyUpdateCallback` shall call the transport to register for PATCHes on it's first call. **]**
+
+**SRS_DEVICECLIENT_18_016: [** `SetDesiredPropertyUpdateCallback` shall keep track of the `callback` for future use. **]**  
 

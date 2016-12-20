@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices
             }
             */
             stringResourceMap = ResourceManager.Current.MainResourceMap.GetSubtree(subtree);
-            resourceContext = ResourceContext.GetForCurrentView();
+            resourceContext = ResourceContext.GetForViewIndependentUse();
         }
 
         public string GetString(string name, System.Globalization.CultureInfo culture)

@@ -143,33 +143,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             return topicFilterIndex == topicFilter.Length && topicNameIndex == topicName.Length;
         }
 
-        public static QualityOfService DeriveQos(Message message, MqttTransportSettings config)
-        {
-            QualityOfService qos;
-            string qosValue;
-            if (message.Properties.TryGetValue(config.QoSPropertyName, out qosValue))
-            {
-                int qosAsInt;
-                if (int.TryParse(qosValue, out qosAsInt))
-                {
-                    qos = (QualityOfService)qosAsInt;
-                    if (qos > QualityOfService.ExactlyOnce)
-                    {
-                        qos = config.PublishToServerQoS;
-                    }
-                }
-                else
-                {
-                    qos = config.PublishToServerQoS;
-                }
-            }
-            else
-            {
-                qos = config.PublishToServerQoS;
-            }
-            return qos;
-        }
-
         public static Message CompleteMessageFromPacket(Message message, PublishPacket packet, MqttTransportSettings mqttTransportSettings)
         {
             message.MessageId = Guid.NewGuid().ToString("N");
@@ -205,21 +178,19 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 }
                 packet.PacketId = packetId;
             }
-            using (Stream payloadStream = message.GetBodyStream())
+            Stream payloadStream = message.GetBodyStream();
+            long streamLength = payloadStream.Length;
+            if (streamLength > MaxPayloadSize)
             {
-                long streamLength = payloadStream.Length;
-                if (streamLength > MaxPayloadSize)
-                {
-                    throw new InvalidOperationException($"Message size ({streamLength} bytes) is too big to process. Maximum allowed payload size is {MaxPayloadSize}");
-                }
-
-                int length = (int)streamLength;
-                IByteBuffer buffer = context.Channel.Allocator.Buffer(length, length);
-                await buffer.WriteBytesAsync(payloadStream, length);
-                Contract.Assert(buffer.ReadableBytes == length);
-
-                packet.Payload = buffer;
+                throw new InvalidOperationException($"Message size ({streamLength} bytes) is too big to process. Maximum allowed payload size is {MaxPayloadSize}");
             }
+
+            int length = (int)streamLength;
+            IByteBuffer buffer = context.Channel.Allocator.Buffer(length, length);
+            await buffer.WriteBytesAsync(payloadStream, length);
+            Contract.Assert(buffer.ReadableBytes == length);
+
+            packet.Payload = buffer;
             return packet;
         }
 
@@ -269,7 +240,17 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             string properties = UrlEncodedDictionarySerializer.Serialize(new ReadOnlyMergeDictionary<string, string>(systemProperties, message.Properties));
 
-            return topicName.EndsWith(SegmentSeparator, StringComparison.Ordinal) ? topicName + properties + SegmentSeparator : topicName + SegmentSeparator + properties;
+            string msg;
+            if (properties != string.Empty)
+            {
+                msg = topicName.EndsWith(SegmentSeparator, StringComparison.Ordinal) ? topicName + properties + SegmentSeparator : topicName + SegmentSeparator + properties;
+            }
+            else
+            {
+                msg = topicName;
+            }
+
+            return msg;
         }
 
         static string ConvertFromSystemProperties(object systemProperty)
