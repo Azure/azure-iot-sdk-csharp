@@ -79,6 +79,7 @@
     <Compile Include="Mqtt\ServerWebSocketChannel.cs" />
     <Compile Include="TestAssert.cs" />
     <Compile Include="TransportSettingsTests.cs" />
+    <Compile Include="DeviceClientTwinApiTests.cs" />
     <Compile Include="UtilsTests.cs" />
   </ItemGroup>
   <ItemGroup>
