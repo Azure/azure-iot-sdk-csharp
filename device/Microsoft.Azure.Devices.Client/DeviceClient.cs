@@ -150,6 +150,8 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         Object twinPatchCallbackContext = null;
 #endif
 
+
+#if !PCL
         DeviceClient(IotHubConnectionString iotHubConnectionString, ITransportSettings[] transportSettings, IDeviceClientPipelineBuilder pipelineBuilder)
         {
             this.iotHubConnectionString = iotHubConnectionString;
@@ -164,6 +166,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             this.InnerHandler = innerHandler;
         }
 
+#else
         DeviceClient(IotHubConnectionString iotHubConnectionString)
         {
             this.iotHubConnectionString = iotHubConnectionString;
@@ -179,18 +182,25 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
 
             this.InnerHandler = pipelineBuilder.Build(pipelineContext);
         }
+#endif
 
         static IDeviceClientPipelineBuilder BuildPipeline()
         {
+#if !PCL
             var transporthandlerFactory = new TransportHandlerFactory();
+#endif
             IDeviceClientPipelineBuilder pipelineBuilder = new DeviceClientPipelineBuilder()
                 .With(ctx => new GateKeeperDelegatingHandler(ctx))
 #if !WINDOWS_UWP && !PCL
                 .With(ctx => new RetryDelegatingHandler(ctx))
 #endif
                 .With(ctx => new ErrorDelegatingHandler(ctx))
+#if !PCL
                 .With(ctx => new ProtocolRoutingDelegatingHandler(ctx))
                 .With(ctx => transporthandlerFactory.Create(ctx));
+#else
+                .With(ctx => new HttpTransportHandler(ctx, ctx.Get<IotHubConnectionString>(), ctx.Get<ITransportSettings>() as Http1TransportSettings));
+#endif
             return pipelineBuilder;
         }
 
@@ -348,12 +358,16 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             switch (transportType)
             {
                 case TransportType.Amqp:
+#if PCL
+                    throw new NotImplementedException("Amqp protocol is not supported");
+#else
                     return CreateFromConnectionString(connectionString, new ITransportSettings[]
                     {
                         new AmqpTransportSettings(TransportType.Amqp_Tcp_Only),
                         new AmqpTransportSettings(TransportType.Amqp_WebSocket_Only)
                     },
                     pipelineBuilder);
+#endif
                 case TransportType.Mqtt:
 #if WINDOWS_UWP || PCL
                     throw new NotImplementedException("Mqtt protocol is not supported");
@@ -379,7 +393,12 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                     return CreateFromConnectionString(connectionString, new ITransportSettings[] { new MqttTransportSettings(transportType) }, pipelineBuilder);
 #endif
                 case TransportType.Http1:
+#if PCL
+                    IotHubConnectionString iotHubConnectionString = IotHubConnectionString.Parse(connectionString);
+                    return new DeviceClient(iotHubConnectionString);
+#else
                     return CreateFromConnectionString(connectionString, new ITransportSettings[] { new Http1TransportSettings() }, pipelineBuilder);
+#endif
                 default:
 #if !PCL
                     throw new InvalidOperationException("Unsupported Transport Type {0}".FormatInvariant(transportType));
@@ -415,6 +434,8 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
 
             return CreateFromConnectionString(connectionString + ";" + DeviceId + "=" + deviceId, transportType);
         }
+
+#if !PCL
 
         /// <summary>
         /// Create DeviceClient from the specified connection string using a prioritized list of transports
@@ -470,7 +491,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                             throw new InvalidOperationException("Unknown implementation of ITransportSettings type");
                         }
                         break;
-#if !WINDOWS_UWP && !PCL
+#if !WINDOWS_UWP
                     case TransportType.Mqtt_WebSocket_Only:
                     case TransportType.Mqtt_Tcp_Only:
                         if (!(transportSetting is MqttTransportSettings))
@@ -485,7 +506,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             }
 
             pipelineBuilder = pipelineBuilder ?? BuildPipeline();
-            
+
             // Defer concrete DeviceClient creation to OpenAsync
             return new DeviceClient(iotHubConnectionString, transportSettings, pipelineBuilder);
         }
@@ -516,6 +537,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
 
             return CreateFromConnectionString(connectionString + ";" + DeviceId + "=" + deviceId, transportSettings);
         }
+#endif
 
         CancellationTokenSource GetOperationTimeoutCancellationTokenSource()
         {
@@ -839,7 +861,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                 {
                     try
                     {
-                    // codes_SRS_DEVICECLIENT_10_011: [ The OnMethodCalled shall invoke the specified delegate. ]
+                        // codes_SRS_DEVICECLIENT_10_011: [ The OnMethodCalled shall invoke the specified delegate. ]
                         MethodResponse rv = await m.Item1(new MethodRequest(methodRequestInternal.Name, requestData), m.Item2);
                         var methodResponseInternal = new MethodResponseInternal(rv.Result, methodRequestInternal.RequestId, rv.Status);
                         await this.SendMethodResponseAsync(methodResponseInternal);
@@ -901,7 +923,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                 case TransportType.Mqtt:
                     return new ITransportSettings[]
                     {
-                        new MqttTransportSettings(TransportType.Mqtt_Tcp_Only) 
+                        new MqttTransportSettings(TransportType.Mqtt_Tcp_Only)
                         {
                             ClientCertificate = connectionStringBuilder.Certificate
                         },
@@ -981,7 +1003,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                 this.desiredPropertyUpdateCallback = callback;
                 this.twinPatchCallbackContext = userContext;
             });
-    }
+        }
 
         /// <summary>
         /// Retrieve a device twin object for the current device.
@@ -989,7 +1011,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// <returns>The device twin object for the current device</returns>
         public Task<Twin> GetTwinAsync()
         {
-            return ApplyTimeoutTwin(async operationTimeoutCancellationToken => 
+            return ApplyTimeoutTwin(async operationTimeoutCancellationToken =>
             {
                 // Codes_SRS_DEVICECLIENT_18_005: `GetTwinAsync` shall issue a GET to the sevice to retrieve the current twin state.
                 // Codes_SRS_DEVICECLIENT_18_006: `GetTwinAsync` shall wait for a response from the `GET` operation.
@@ -999,7 +1021,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                 // Codes_SRS_DEVICECLIENT_18_010: `GetTwinAsync` shall return the new `Twin` object
                 return await this.InnerHandler.SendTwinGetAsync(operationTimeoutCancellationToken);
             });
-}
+        }
 
         /// <summary>
         /// Push reported property changes up to the service.

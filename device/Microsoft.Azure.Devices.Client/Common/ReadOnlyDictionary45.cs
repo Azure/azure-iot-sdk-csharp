@@ -3,13 +3,15 @@
 
 namespace Microsoft.Azure.Devices.Client
 {
+#if !PCL
     using Microsoft.Azure.Devices.Client.Common;
+#endif
     using System;
     using System.Collections;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Diagnostics.Contracts;
-    
+
     /// <summary>
     /// Read-only wrapper for another generic dictionary.
     /// </summary>
@@ -89,7 +91,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-#region IDictionary<TKey, TValue> Members
+        #region IDictionary<TKey, TValue> Members
 
         public bool ContainsKey(TKey key)
         {
@@ -162,9 +164,9 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-#endregion
+        #endregion
 
-#region ICollection<KeyValuePair<TKey, TValue>> Members
+        #region ICollection<KeyValuePair<TKey, TValue>> Members
 
         public int Count
         {
@@ -216,27 +218,27 @@ namespace Microsoft.Azure.Devices.Client
             return m_dictionary.Remove(item);
         }
 
-#endregion
+        #endregion
 
-#region IEnumerable<KeyValuePair<TKey, TValue>> Members
+        #region IEnumerable<KeyValuePair<TKey, TValue>> Members
 
         public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
         {
             return m_dictionary.GetEnumerator();
         }
 
-#endregion
+        #endregion
 
-#region IEnumerable Members
+        #region IEnumerable Members
 
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
             return ((IEnumerable)m_dictionary).GetEnumerator();
         }
 
-#endregion
+        #endregion
 
-#region IDictionary Members
+        #region IDictionary Members
 
         private static bool IsCompatibleKey(object key)
         {
@@ -468,7 +470,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-#endregion
+        #endregion
 
         [DebuggerDisplay("Count = {Count}")]
 #if !WINDOWS_UWP && !PCL
@@ -496,7 +498,7 @@ namespace Microsoft.Azure.Devices.Client
                 m_readOnlyIndicator = readOnlyIndicator;
             }
 
-#region ICollection<T> Members
+            #region ICollection<T> Members
 
             void ICollection<TKey>.Add(TKey item)
             {
@@ -548,27 +550,27 @@ namespace Microsoft.Azure.Devices.Client
                 return m_collection.Remove(item);
             }
 
-#endregion
+            #endregion
 
-#region IEnumerable<T> Members
+            #region IEnumerable<T> Members
 
             public IEnumerator<TKey> GetEnumerator()
             {
                 return m_collection.GetEnumerator();
             }
 
-#endregion
+            #endregion
 
-#region IEnumerable Members
+            #region IEnumerable Members
 
             System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
             {
                 return ((IEnumerable)m_collection).GetEnumerator();
             }
 
-#endregion
+            #endregion
 
-#region ICollection Members
+            #region ICollection Members
 
             void ICollection.CopyTo(Array array, int index)
             {
@@ -600,7 +602,7 @@ namespace Microsoft.Azure.Devices.Client
                 }
             }
 
-#endregion
+            #endregion
         }
 
         [DebuggerDisplay("Count = {Count}")]
@@ -630,7 +632,7 @@ namespace Microsoft.Azure.Devices.Client
                 m_readOnlyIndicator = readOnlyIndicator;
             }
 
-#region ICollection<T> Members
+            #region ICollection<T> Members
 
             void ICollection<TValue>.Add(TValue item)
             {
@@ -682,27 +684,27 @@ namespace Microsoft.Azure.Devices.Client
                 return m_collection.Remove(item);
             }
 
-#endregion
+            #endregion
 
-#region IEnumerable<T> Members
+            #region IEnumerable<T> Members
 
             public IEnumerator<TValue> GetEnumerator()
             {
                 return m_collection.GetEnumerator();
             }
 
-#endregion
+            #endregion
 
-#region IEnumerable Members
+            #region IEnumerable Members
 
             System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
             {
                 return ((IEnumerable)m_collection).GetEnumerator();
             }
 
-#endregion
+            #endregion
 
-#region ICollection Members
+            #region ICollection Members
 
             void ICollection.CopyTo(Array array, int index)
             {
@@ -734,7 +736,7 @@ namespace Microsoft.Azure.Devices.Client
                 }
             }
 
-#endregion ICollection Members
+            #endregion ICollection Members
         }
 
         class AlwaysReadOnlyIndicator : IReadOnlyIndicator
@@ -745,7 +747,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
     }
-    
+
     public interface IReadOnlyIndicator
     {
         bool IsReadOnly { get; }

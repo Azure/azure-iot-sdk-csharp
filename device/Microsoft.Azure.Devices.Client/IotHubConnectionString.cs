@@ -7,7 +7,7 @@ namespace Microsoft.Azure.Devices.Client
     using System.Text;
     using System.Net;
 
-#if !NETMF
+#if !NETMF && !PCL
     using Microsoft.Azure.Amqp;
 #endif
 
@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Client
     using Microsoft.Azure.Devices.Client.Extensions;
 
     sealed class IotHubConnectionString : IAuthorizationHeaderProvider
-#if !NETMF
+#if !NETMF && !PCL
         , ICbsTokenProvider
 #endif
     {
@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.Client
             this.HostName = builder.GatewayHostName == null || builder.GatewayHostName == "" ? builder.HostName : builder.GatewayHostName;
             this.SharedAccessKeyName = builder.SharedAccessKeyName;
             this.SharedAccessKey = builder.SharedAccessKey;
-            this.SharedAccessSignature = builder.SharedAccessSignature; 
+            this.SharedAccessSignature = builder.SharedAccessSignature;
             this.IotHubName = builder.IotHubName;
             this.DeviceId = builder.DeviceId;
 
@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Devices.Client
             this.HttpsEndpoint = new Uri("https://" + this.HostName);
 #endif
 
-#if !NETMF
+#if !NETMF && !PCL
             this.AmqpEndpoint = new UriBuilder(CommonConstants.AmqpsScheme, this.HostName, AmqpConstants.DefaultSecurePort).Uri;
 #endif
         }
@@ -81,7 +81,7 @@ namespace Microsoft.Azure.Devices.Client
             private set;
         }
 
-#if !NETMF
+#if !NETMF && !PCL
         public Uri AmqpEndpoint
         {
             get;
@@ -134,7 +134,7 @@ namespace Microsoft.Azure.Devices.Client
             return this.GetPassword();
         }
 
-#if !NETMF
+#if !NETMF && !PCL
         Task<CbsToken> ICbsTokenProvider.GetTokenAsync(Uri namespaceAddress, string appliesTo, string[] requiredClaims)
         {
             string tokenValue;
@@ -156,7 +156,7 @@ namespace Microsoft.Azure.Devices.Client
 #endif
         public Uri BuildLinkAddress(string path)
         {
-#if NETMF
+#if NETMF || PCL
             throw new NotImplementedException();
 #else
             var builder = new UriBuilder(this.AmqpEndpoint)

@@ -10,6 +10,8 @@ namespace Microsoft.Azure.Devices.Client
     using System.Runtime.Serialization;
     using System.Text;
 
+#if !PCL
+
     using Microsoft.Azure.Amqp;
     using Microsoft.Azure.Amqp.Encoding;
     using Microsoft.Azure.Amqp.Framing;
@@ -45,7 +47,7 @@ namespace Microsoft.Azure.Devices.Client
                 if (!(amqpMessage.ApplicationProperties?.Map.TryGetValue(new MapKey(MethodName), out methodName) ?? false))
                 {
                     Fx.Exception.TraceHandled(new InvalidDataException("Method name is missing"), "MethodConverter.ConstructMethodRequestFromAmqpMessage");
-                }                
+                }
             }
 
             return new MethodRequestInternal(methodName, methodRequestId, amqpMessage.BodyStream);
@@ -57,9 +59,9 @@ namespace Microsoft.Azure.Devices.Client
         public static void PopulateAmqpMessageFromMethodResponse(AmqpMessage amqpMessage, MethodResponseInternal methodResponseInternal)
         {
             Fx.Assert(methodResponseInternal.RequestId != null, "Request Id is missing in the methodResponse.");
-            
+
             amqpMessage.Properties.CorrelationId = new Guid(methodResponseInternal.RequestId);
-            
+
             if (amqpMessage.ApplicationProperties == null)
             {
                 amqpMessage.ApplicationProperties = new ApplicationProperties();
@@ -78,7 +80,7 @@ namespace Microsoft.Azure.Devices.Client
                 memoryStream.Write(readBuffer, 0, bytesRead);
             }
 
-#if WINDOWS_UWP || PCL
+#if WINDOWS_UWP
 // UWP doesn't have GetBuffer. ToArray creates a copy -- make sure perf impact is acceptable
             return new ArraySegment<byte>(memoryStream.ToArray(), 0, (int)memoryStream.Length);
 #else
@@ -86,4 +88,5 @@ namespace Microsoft.Azure.Devices.Client
 #endif
         }
     }
+#endif
 }

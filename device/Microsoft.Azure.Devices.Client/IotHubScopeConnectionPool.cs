@@ -4,11 +4,11 @@
 namespace Microsoft.Azure.Devices.Client
 {
     using System;
-
+#if !PCL
     sealed class IotHubScopeConnectionPool
     {
         readonly IotHubConnectionCache cache;
-#if WINDOWS_UWP || PCL
+#if WINDOWS_UWP
         readonly IOThreadTimerSlim idleTimer;
 #else
         readonly IOThreadTimer idleTimer;
@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.Client
             this.ConnectionString = connectionString;
             this.Connection = new IotHubSingleTokenConnection(this, connectionString,  amqpTransportSettings);
             this.thisLock = new object();
-#if WINDOWS_UWP || PCL
+#if WINDOWS_UWP
             this.idleTimer = new IOThreadTimerSlim(s => ((IotHubScopeConnectionPool)s).IdleTimerCallback(), this, false);
 #else
             this.idleTimer = new IOThreadTimer(s => ((IotHubScopeConnectionPool)s).IdleTimerCallback(), this, false);
@@ -80,4 +80,5 @@ namespace Microsoft.Azure.Devices.Client
             this.Connection.CloseAsync().Fork();
         }
     }
-        }
+#endif
+}

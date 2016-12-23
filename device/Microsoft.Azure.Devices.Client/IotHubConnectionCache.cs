@@ -7,6 +7,7 @@ namespace Microsoft.Azure.Devices.Client
     using System.Collections.Generic;
     using System.Threading;
 
+#if !PCL
     class IotHubConnectionCache
     {
         readonly ConcurrentDictionary<IotHubConnectionString, IotHubScopeConnectionPool> hubScopeConnectionPools;
@@ -29,7 +30,7 @@ namespace Microsoft.Azure.Devices.Client
             }
             else
             {
-#if !WINDOWS_UWP && !PCL
+#if !WINDOWS_UWP
                 // Client certificate is per device and must be overriden
                 this.amqpTransportSettings.ClientCertificate = amqpTransportSetting.ClientCertificate;
 #endif
@@ -43,9 +44,9 @@ namespace Microsoft.Azure.Devices.Client
                 IotHubScopeConnectionPool iotHubScopeConnectionPool;
                 do
                 {
-                    iotHubScopeConnectionPool = 
+                    iotHubScopeConnectionPool =
                         this.hubScopeConnectionPools.GetOrAdd(
-                            connectionString, 
+                            connectionString,
                             k => new IotHubScopeConnectionPool(this, k, this.amqpTransportSettings)
                             );
                 }
@@ -124,7 +125,7 @@ namespace Microsoft.Azure.Devices.Client
                     HashCode.SafeGet(connectionString.SharedAccessKey),
                     HashCode.SafeGet(connectionString.SharedAccessKeyName),
                     HashCode.SafeGet(connectionString.SharedAccessSignature));
-           }
+            }
         }
 
         class DeviceScopeConnectionPoolStringComparer : IEqualityComparer<IotHubConnectionString>
@@ -158,4 +159,5 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
     }
+#endif
 }
