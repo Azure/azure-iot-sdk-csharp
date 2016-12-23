@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.-
+#if !PCL
 
 namespace Microsoft.Azure.Devices.Client.Exceptions
 {
@@ -27,3 +28,4 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         public static readonly AmqpSymbol IotHubSuspended = AmqpConstants.Vendor + ":iot-hub-suspended";
     }
 }
+#endif

@@ -9,6 +9,9 @@ namespace Microsoft.Azure.Devices.Client
     using System.IO;
     using System.Runtime.Serialization;
     using System.Text;
+
+#if !PCL
+
     using Microsoft.Azure.Amqp;
     using Microsoft.Azure.Amqp.Encoding;
     using Microsoft.Azure.Amqp.Framing;
@@ -43,7 +46,7 @@ namespace Microsoft.Azure.Devices.Client
                 }
 
                 data.CorrelationId = amqpMessage.Properties.CorrelationId != null ? amqpMessage.Properties.CorrelationId.ToString() : null;
-                data.UserId = amqpMessage.Properties.UserId.Array != null ? Encoding.UTF8.GetString(amqpMessage.Properties.UserId.Array, 0 /*index*/, amqpMessage.Properties.UserId.Array.Length) : null;
+                data.UserId = amqpMessage.Properties.UserId.Array != null ? Encoding.UTF8.GetString(amqpMessage.Properties.UserId.Array) : null;
             }
 
             if ((sections & SectionFlag.MessageAnnotations) != 0)
@@ -81,7 +84,7 @@ namespace Microsoft.Azure.Devices.Client
                     if (TryGetNetObjectFromAmqpObject(pair.Value, MappingType.ApplicationProperty, out netObject))
                     {
                         var stringObject = netObject as string;
-                        
+
                         if (stringObject != null)
                         {
                             switch (pair.Key.ToString())
@@ -99,7 +102,7 @@ namespace Microsoft.Azure.Devices.Client
                             // TODO: RDBug 4093369 Handling of non-string property values in Amqp messages
                             // Drop non-string properties and log an error
                             Fx.Exception.TraceHandled(new InvalidDataException("IotHub does not accept non-string Amqp properties"), "MessageConverter.UpdateMessageHeaderAndProperties");
-                        }                        
+                        }
                     }
                 }
             }
@@ -118,7 +121,7 @@ namespace Microsoft.Azure.Devices.Client
             }
 
 
-#if WINDOWS_UWP || PCL
+#if WINDOWS_UWP
             if (!data.ExpiryTimeUtc.Equals(default(DateTimeOffset)))
             {
                 amqpMessage.Properties.AbsoluteExpiryTime = data.ExpiryTimeUtc.DateTime;
@@ -162,7 +165,7 @@ namespace Microsoft.Azure.Devices.Client
                 }
             }
         }
-        
+
         public static bool TryGetAmqpObjectFromNetObject(object netObject, MappingType mappingType, out object amqpObject)
         {
             amqpObject = null;
@@ -343,7 +346,7 @@ namespace Microsoft.Azure.Devices.Client
                 memoryStream.Write(readBuffer, 0, bytesRead);
             }
 
-#if WINDOWS_UWP || PCL
+#if WINDOWS_UWP
             // UWP doesn't have GetBuffer. ToArray creates a copy -- make sure perf impact is acceptable
             return new ArraySegment<byte>(memoryStream.ToArray(), 0, (int)memoryStream.Length);
 #else
@@ -351,4 +354,5 @@ namespace Microsoft.Azure.Devices.Client
 #endif
         }
     }
-        }
+#endif
+}

@@ -6,12 +6,16 @@ namespace Microsoft.Azure.Devices.Client
     using System;
     using System.Threading;
     using System.Threading.Tasks;
+
+#if !PCL
     using System.Collections.Concurrent;
     using Microsoft.Azure.Amqp;
     using Microsoft.Azure.Devices.Client.Extensions;
+#endif
 
     sealed class IotHubDeviceMuxConnection : IotHubConnection
     {
+#if !PCL
         readonly IotHubDeviceScopeConnectionPool deviceScopeConnectionPool;
         readonly ConcurrentDictionary<AmqpObject, IotHubTokenRefresher> iotHubTokenRefreshers;
         readonly long cacheKey;
@@ -148,5 +152,6 @@ namespace Microsoft.Azure.Devices.Client
 
             this.iotHubTokenRefreshers.Clear();
         }
+#endif
     }
 }

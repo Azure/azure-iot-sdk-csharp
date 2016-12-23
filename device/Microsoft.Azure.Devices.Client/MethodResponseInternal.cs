@@ -7,8 +7,9 @@ namespace Microsoft.Azure.Devices.Client
     using System.Threading;
     using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Azure.Devices.Client.Extensions;
-    using Microsoft.Azure.Amqp;
 #if WINDOWS_UWP
+    using Windows.Storage.Streams;
+    using Microsoft.Azure.Amqp;
     using System.Collections.Generic;
     using Microsoft.Azure.Devices.Client.Common.Api;
 #elif NETMF
@@ -31,7 +32,10 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// The data structure represent the method response that is used for interacting with IotHub.
     /// </summary>
-    public sealed class MethodResponseInternal : IDisposable
+    public sealed class MethodResponseInternal
+#if !PCL
+        : IDisposable
+#endif
     {
         readonly object messageLock = new object();
 #if NETMF
@@ -48,7 +52,7 @@ namespace Microsoft.Azure.Devices.Client
         long sizeInBytesCalled;
 #endif
 
-#if !NETMF
+#if !PCL && !NETMF
         AmqpMessage serializedAmqpMessage;
 #endif
 
@@ -60,7 +64,9 @@ namespace Microsoft.Azure.Devices.Client
 #if !NETMF
             this.InitializeWithStream(Stream.Null, true);
 #endif
+#if !PCL
             this.serializedAmqpMessage = null;
+#endif
         }
 
         /// <summary>
@@ -71,7 +77,9 @@ namespace Microsoft.Azure.Devices.Client
 #if !NETMF
             this.InitializeWithStream(Stream.Null, true);
 #endif
+#if !PCL
             this.serializedAmqpMessage = null;
+#endif
             this.RequestId = requestId;
             this.Status = status;
         }
@@ -110,7 +118,7 @@ namespace Microsoft.Azure.Devices.Client
             this.RequestId = requestId;
             this.Status = status;
         }
-        
+
         /// <summary>
         /// contains the response of the device client application method handler.
         /// </summary>
@@ -126,8 +134,11 @@ namespace Microsoft.Azure.Devices.Client
         {
             get; set;
         }
-        
-        internal Stream BodyStream
+
+#if !PCL
+        internal
+#endif
+        Stream BodyStream
         {
             get
             {
@@ -135,7 +146,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-#if !NETMF
+#if !PCL && !NETMF
         internal AmqpMessage SerializedAmqpMessage
         {
             get
@@ -147,7 +158,8 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 #endif
-        
+
+#if !PCL
         /// <summary>
         /// Dispose the current method data instance
         /// </summary>
@@ -178,6 +190,7 @@ namespace Microsoft.Azure.Devices.Client
             return Stream.Null;
 #endif
         }
+#endif
 
         /// <summary>
         /// This methods return the body stream as a byte array
@@ -194,7 +207,7 @@ namespace Microsoft.Azure.Devices.Client
                 return new byte[] { };
             }
 
-#if !NETMF
+#if !PCL && !NETMF
             BufferListStream listStream;
             if ((listStream = this.bodyStream as BufferListStream) != null)
             {
@@ -209,7 +222,7 @@ namespace Microsoft.Azure.Devices.Client
             return ReadFullStream(this.bodyStream);
         }
 
-#if !NETMF
+#if !PCL && !NETMF
         internal AmqpMessage ToAmqpMessage(bool setBodyCalled = true)
         {
             this.ThrowIfDisposed();
@@ -259,7 +272,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 this.bodyStream.Seek(position, SeekOrigin.Begin);
                 Interlocked.Exchange(ref this.getBodyCalled, 0);
-#if !NETMF
+#if !PCL && !NETMF
                 this.serializedAmqpMessage = null;
 #endif
                 return true;
@@ -320,14 +333,14 @@ namespace Microsoft.Azure.Devices.Client
 #endif
         }
 
-#if !NETMF
+#if !PCL && !NETMF
         AmqpMessage PopulateAmqpMessageForSend(AmqpMessage message)
         {
             MethodConverter.PopulateAmqpMessageFromMethodResponse(message, this);
             return message;
         }
 #endif
-        
+
         void ThrowIfDisposed()
         {
             if (this.disposed)
@@ -346,7 +359,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 if (disposing)
                 {
-#if !NETMF
+#if !PCL && !NETMF
                     if (this.serializedAmqpMessage != null)
                     {
                         // in the receive scenario, this.bodyStream is a reference
