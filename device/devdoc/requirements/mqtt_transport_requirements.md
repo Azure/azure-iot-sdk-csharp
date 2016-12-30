@@ -40,6 +40,8 @@ public override async Task OpenAsync(bool explicitOpen, CancellationToken cancel
 ```
 **SRS_CSHARP_MQTT_TRANSPORT_18_031: [** `OpenAsync` shall subscribe using the '$iothub/twin/res/#' topic filter **]**
 
+
+
 ### EnableMethodsAsync
 ```csharp
 public override async Task EnableMethodsAsync(CancellationToken cancellationToken);
@@ -51,7 +53,7 @@ public override async Task EnableMethodsAsync(CancellationToken cancellationToke
 
 **SRS_CSHARP_MQTT_TRANSPORT_18_003: [** `EnableMethodsAsync` shall return failure if the subscription request fails. **]**
 
-**SRS_CSHARP_MQTT_TRANSPORT_18_032: [** `EnableMethodsAsync` shall throw an `InvalidOperationException` if this method is called when the transport is not open. **]**
+**SRS_CSHARP_MQTT_TRANSPORT_18_032: [** `EnableMethodsAsync` shall open the transport if this method is called when the transport is not open. **]**
 
 ### DisableMethodsAsync
 ```csharp
@@ -89,7 +91,7 @@ public override Task EnableTwinPatchAsync(CancellationToken cancellationToken);
 
 **SRS_CSHARP_MQTT_TRANSPORT_18_012: [** `EnableTwinPatchAsync` shall return failure if the subscription request fails. **]**
 
-**SRS_CSHARP_MQTT_TRANSPORT_18_033: [** `EnableTwinPatchAsync` shall throw an `InvalidOperationException` if this method is called when the transport is not open. **]**
+**SRS_CSHARP_MQTT_TRANSPORT_18_033: [** `EnableTwinPatchAsync` shall open the transport  if this method is called when the transport is not open. **]**
 
 ### SendTwinGetAsync
 ```csharp
@@ -112,7 +114,7 @@ public override Task<Twin> SendTwinGetAsync(CancellationToken ct);
 
 **SRS_CSHARP_MQTT_TRANSPORT_18_018: [** When a response is received, `SendTwinGetAsync` shall return the Twin object to the caller. **]**
 
-**SRS_CSHARP_MQTT_TRANSPORT_18_034: [** `SendTwinGetAsync` shall throw an `InvalidOperationException` if this method is called when the transport is not open. **]**
+**SRS_CSHARP_MQTT_TRANSPORT_18_034: [** `SendTwinGetAsync` shall shall open the transport  if this method is called when the transport is not open. **]**
 
 ### SendTwinPatchAsync
 ```csharp
@@ -137,4 +139,4 @@ public override Task SendTwinPatchAsync(TwinCollection reportedProperties, Cance
 
 **SRS_CSHARP_MQTT_TRANSPORT_18_030: [** If the response contains a success code, `SendTwinPatchAsync` shall return success to the caller. **]**
 
-**SRS_CSHARP_MQTT_TRANSPORT_18_035: [** `SendTwinPatchAsync` shall throw an `InvalidOperationException` if this method is called when the transport is not open. **]**
+**SRS_CSHARP_MQTT_TRANSPORT_18_035: [** `SendTwinPatchAsync` shall shall open the transport if this method is called when the transport is not open. **]**
