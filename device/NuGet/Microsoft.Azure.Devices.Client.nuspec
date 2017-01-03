@@ -48,9 +48,11 @@
                 <dependency id="PCLCrypto" version="2.0.147" />
             </group>
             <group targetFramework="monoandroid">
+                <dependency id="Microsoft.Azure.Amqp" version="2.0.2" />
                 <dependency id="PCLCrypto" version="2.0.147" />
             </group>
             <group targetFramework="monotouch">
+                <dependency id="Microsoft.Azure.Amqp" version="2.0.2" />
                 <dependency id="PCLCrypto" version="2.0.147" />
             </group>
             <group targetFramework="Xamarin.iOS">

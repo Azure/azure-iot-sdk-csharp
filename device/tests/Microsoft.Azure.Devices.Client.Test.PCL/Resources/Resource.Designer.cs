@@ -26,6 +26,7 @@ namespace Microsoft.Azure.Devices.Client.Test.PCL
 		
 		public static void UpdateIdValues()
 		{
+			global::Microsoft.Azure.Amqp.Amqp.Resource.String.ApplicationName = global::Microsoft.Azure.Devices.Client.Test.PCL.Resource.String.ApplicationName;
 			global::PCLCrypto.Resource.String.ApplicationName = global::Microsoft.Azure.Devices.Client.Test.PCL.Resource.String.ApplicationName;
 			global::PCLCrypto.Resource.String.Hello = global::Microsoft.Azure.Devices.Client.Test.PCL.Resource.String.Hello;
 			global::Xamarin.Android.NUnitLite.Resource.Id.OptionHostName = global::Microsoft.Azure.Devices.Client.Test.PCL.Resource.Id.OptionHostName;
