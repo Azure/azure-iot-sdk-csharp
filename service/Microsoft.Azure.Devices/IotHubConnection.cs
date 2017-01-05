@@ -144,6 +144,42 @@ namespace Microsoft.Azure.Devices
             return link;
         }
 
+        public async Task<RequestResponseAmqpLink> CreateRequestResponseLink(string path, TimeSpan timeout)
+        {
+            var timeoutHelper = new TimeoutHelper(timeout);
+
+            AmqpSession session;
+            if (!this.faultTolerantSession.TryGetOpenedObject(out session))
+            {
+                session = await this.faultTolerantSession.GetOrCreateAsync(timeoutHelper.RemainingTime());
+            }
+
+            var linkAddress = this.connectionString.BuildLinkAddress(path);
+
+            var linkSettings = new AmqpLinkSettings()
+            {
+                TotalLinkCredit = 0,
+                AutoSendFlow = false,
+                Source = new Source() { Address = linkAddress.AbsoluteUri },
+                SettleType = SettleMode.SettleOnDispose,
+                LinkName = Guid.NewGuid().ToString("N") // Use a human readable link name to help with debuggin
+            };
+
+            SetLinkSettingsCommonProperties(linkSettings, timeoutHelper.RemainingTime());
+
+#if WINDOWS_UWP
+            var link = new RequestResponseAmqpLink(session, linkSettings);
+#else
+            var link = new RequestResponseAmqpLink("type", session, linkAddress.AbsoluteUri, new Fields());
+#endif
+
+
+            await OpenLinkAsync(link, timeoutHelper.RemainingTime());
+
+            return link;
+        }
+
+
         public void CloseLink(AmqpLink link)
         {
             link.SafeClose();
