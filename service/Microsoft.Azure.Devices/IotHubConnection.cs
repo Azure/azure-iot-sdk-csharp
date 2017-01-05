@@ -167,12 +167,7 @@ namespace Microsoft.Azure.Devices
 
             SetLinkSettingsCommonProperties(linkSettings, timeoutHelper.RemainingTime());
 
-#if WINDOWS_UWP
-            var link = new RequestResponseAmqpLink(session, linkSettings);
-#else
             var link = new RequestResponseAmqpLink("type", session, linkAddress.AbsoluteUri, new Fields());
-#endif
-
 
             await OpenLinkAsync(link, timeoutHelper.RemainingTime());
 
