@@ -7,7 +7,6 @@ using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client.Test
 {
-
     [TestClass]
     public class DeviceClientTwinApiTests
     {
@@ -33,7 +32,6 @@ namespace Microsoft.Azure.Devices.Client.Test
                 Received(1).
                 EnableTwinPatchAsync(Arg.Any<CancellationToken>());
             Assert.AreEqual(client.desiredPropertyUpdateCallback, myCallback);
-
         }
 
         // Tests_SRS_DEVICECLIENT_18_004: `SetDesiredPropertyUpdateCallback` shall not call the transport to register for PATCHes on subsequent calls
@@ -101,7 +99,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("Twin")]
         [ExpectedException(typeof(ArgumentNullException))]
-
         public async Task DeviceClient_UpdateReportedPropertiesAsync_ThrowsIfPatchIsNull()
         {
             // arrange
@@ -127,7 +124,6 @@ namespace Microsoft.Azure.Devices.Client.Test
             // act and assert
             await client.SetDesiredPropertyUpdateCallback(null, null);
         }
-
 
         //  Tests_SRS_DEVICECLIENT_18_005: When a patch is received from the service, the `callback` shall be called.
         [TestMethod]
@@ -155,8 +151,6 @@ namespace Microsoft.Azure.Devices.Client.Test
             //assert
             Assert.AreEqual(callCount, 1);
             Assert.ReferenceEquals(myPatch, receivedPatch);
-
         }
-
     }
 }
