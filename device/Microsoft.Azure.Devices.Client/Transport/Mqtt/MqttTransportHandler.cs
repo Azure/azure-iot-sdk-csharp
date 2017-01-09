@@ -554,11 +554,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             await this.HandleTimeoutCancellation(async () =>
             {
-                // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_032: `EnableMethodsAsync` shall open the transport if this method is called when the transport is not open.
-                if (!this.TransportIsOpen())
-                {
-                    await this.OpenAsync();
-                }
                 //SRS_CSHARP_MQTT_TRANSPORT_28_001: `DisableMethodsAsync` shall unsubscribe using the '$iothub/methods/POST/' topic filter.
                 //SRS_CSHARP_MQTT_TRANSPORT_28_002: `DisableMethodsAsync` shall wait for a UNSUBACK for the unsubscription.
                 //SRS_CSHARP_MQTT_TRANSPORT_28_003: `DisableMethodsAsync` shall return failure if the unsubscription fails.

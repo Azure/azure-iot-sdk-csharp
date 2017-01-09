@@ -213,6 +213,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
 
             // act
             transport.OnConnected();
+            await transport.OpenAsync(true, CancellationToken.None);
             await transport.DisableMethodsAsync(CancellationToken.None);
 
             // assert
