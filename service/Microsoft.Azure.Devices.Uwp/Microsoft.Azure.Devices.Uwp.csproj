@@ -209,6 +209,8 @@
     <Compile Include="..\Microsoft.Azure.Devices\MessageSystemPropertyNames.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\PutOperationType.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Query.cs" />
+    <Compile Include="..\Microsoft.Azure.Devices\QueryOptions.cs" />
+    <Compile Include="..\Microsoft.Azure.Devices\QueryResponse.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\QueryResult.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\QueryResultType.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\QuerySpecification.cs" />

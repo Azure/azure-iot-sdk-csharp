@@ -24,12 +24,12 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         bool HasMoreResults { get; }
 
-        Task<IEnumerable<Twin>> GetNextAsTwinAsync();
+        Task<QueryResponse<Twin>> GetNextAsTwinAsync();
 
-        Task<IEnumerable<DeviceJob>> GetNextAsDeviceJobAsync();
+        Task<QueryResponse<DeviceJob>> GetNextAsDeviceJobAsync();
 
-        Task<IEnumerable<JobResponse>> GetNextAsJobResponseAsync();
+        Task<QueryResponse<JobResponse>> GetNextAsJobResponseAsync();
 
-        Task<IEnumerable<string>> GetNextAsJsonAsync();
+        Task<QueryResponse<string>> GetNextAsJsonAsync();
     }
 }

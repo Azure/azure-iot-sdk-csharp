@@ -337,16 +337,21 @@ namespace Microsoft.Azure.Devices
 
         public override IQuery CreateQuery(string sqlQueryString)
         {
-            return CreateQuery(sqlQueryString, null);
+            return this.CreateQuery(sqlQueryString, (QueryOptions)null);
         }
 
         public override IQuery CreateQuery(string sqlQueryString, int? pageSize)
         {
+            return this.CreateQuery(sqlQueryString, new QueryOptions { PageSize = pageSize });
+        }
+
+        public override IQuery CreateQuery(string sqlQueryString, QueryOptions options)
+        {
             return new Query((token) => this.ExecuteQueryAsync(
                 sqlQueryString,
-                pageSize,
+                options?.PageSize,
                 token,
-                CancellationToken.None));
+                CancellationToken.None), options?.ContinuationToken);
         }
 
         /// <inheritdoc/>
