@@ -26,6 +26,9 @@ namespace Microsoft.Azure.Devices
 
     sealed class HttpClientHelper : IHttpClientHelper
     {
+#if !WINDOWS_UWP
+        static readonly JsonMediaTypeFormatter JsonFormatter = new JsonMediaTypeFormatter();
+#endif
         readonly Uri baseAddress;
         readonly IAuthorizationHeaderProvider authenticationHeaderProvider;
         readonly IReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> defaultErrorMapping;
@@ -117,7 +120,7 @@ namespace Microsoft.Azure.Devices
                         var str = Newtonsoft.Json.JsonConvert.SerializeObject(entity);
                         requestMsg.Content = new StringContent(str, System.Text.Encoding.UTF8, "application/json");
 #else
-                        requestMsg.Content = new ObjectContent<T>(entity, new JsonMediaTypeFormatter());
+                        requestMsg.Content = new ObjectContent<T>(entity, JsonFormatter);
 #endif
                         return Task.FromResult(0);
                     },
@@ -145,7 +148,7 @@ namespace Microsoft.Azure.Devices
                         var str = Newtonsoft.Json.JsonConvert.SerializeObject(entity);
                         requestMsg.Content = new StringContent(str, System.Text.Encoding.UTF8, "application/json");
 #else
-                        requestMsg.Content = new ObjectContent<T>(entity, new JsonMediaTypeFormatter());
+                        requestMsg.Content = new ObjectContent<T>(entity, JsonFormatter);
 #endif
                         return Task.FromResult(0);
                     },
@@ -174,7 +177,7 @@ namespace Microsoft.Azure.Devices
                     var str = Newtonsoft.Json.JsonConvert.SerializeObject(entity);
                     requestMsg.Content = new StringContent(str, System.Text.Encoding.UTF8, "application/json");
 #else
-                    requestMsg.Content = new ObjectContent<T>(entity, new JsonMediaTypeFormatter());
+                    requestMsg.Content = new ObjectContent<T>(entity, JsonFormatter);
 #endif
                     return Task.FromResult(0);
                 },
@@ -204,7 +207,7 @@ namespace Microsoft.Azure.Devices
                     var str = Newtonsoft.Json.JsonConvert.SerializeObject(entity);
                     requestMsg.Content = new StringContent(str, System.Text.Encoding.UTF8, "application/json");
 #else
-                    requestMsg.Content = new ObjectContent<T>(entity, new JsonMediaTypeFormatter());
+                    requestMsg.Content = new ObjectContent<T>(entity, JsonFormatter);
 #endif
                     return Task.FromResult(0);
                 },
@@ -228,7 +231,7 @@ namespace Microsoft.Azure.Devices
                     var str = Newtonsoft.Json.JsonConvert.SerializeObject(entity);
                     requestMsg.Content = new StringContent(str, System.Text.Encoding.UTF8, "application/json");
 #else
-                    requestMsg.Content = new ObjectContent<T>(entity, new JsonMediaTypeFormatter());
+                    requestMsg.Content = new ObjectContent<T>(entity, JsonFormatter);
 #endif
                     return Task.FromResult(0);
                 },
@@ -254,7 +257,7 @@ namespace Microsoft.Azure.Devices
                     var str = Newtonsoft.Json.JsonConvert.SerializeObject(entity);
                     requestMsg.Content = new StringContent(str, System.Text.Encoding.UTF8, "application/json");
 #else
-                    requestMsg.Content = new ObjectContent<T>(entity, new JsonMediaTypeFormatter());
+                    requestMsg.Content = new ObjectContent<T>(entity, JsonFormatter);
 #endif
                     return Task.FromResult(0);
                 },
@@ -494,7 +497,7 @@ namespace Microsoft.Azure.Devices
 #if WINDOWS_UWP
                             throw new NotImplementedException("missing API 2!");
 #else
-                            requestMsg.Content = new ObjectContent<T1>(entity, new JsonMediaTypeFormatter());
+                            requestMsg.Content = new ObjectContent<T1>(entity, JsonFormatter);
 #endif
                         }
                     }
