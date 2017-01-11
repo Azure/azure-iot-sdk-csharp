@@ -24,6 +24,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
     sealed class HttpClientHelper : IHttpClientHelper
     {
+#if !WINDOWS_UWP && !PCL
+        static readonly JsonMediaTypeFormatter JsonFormatter = new JsonMediaTypeFormatter();
+#endif
         readonly Uri baseAddress;
         readonly IAuthorizationHeaderProvider authenticationHeaderProvider;
         readonly IReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> defaultErrorMapping;
@@ -136,7 +139,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     (requestMsg, token) =>
                     {
                         InsertEtag(requestMsg, entity, operationType);
-                        requestMsg.Content = new ObjectContent<T>(entity, new JsonMediaTypeFormatter());
+                        requestMsg.Content = new ObjectContent<T>(entity, JsonFormatter);
                         return Task.FromResult(0);
                     },
                     async (httpClient, token) => result = await ReadResponseMessageAsync<T>(httpClient, token),
@@ -277,7 +280,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             // System.Net.Http.Formatting does not exist in UWP. Need to find another way to create content
                             throw new NotImplementedException();
 #else
-                            requestMsg.Content = new ObjectContent<T>(entity, new JsonMediaTypeFormatter());
+                            requestMsg.Content = new ObjectContent<T>(entity, JsonFormatter);
 #endif
                         }
                     }
@@ -340,7 +343,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             // System.Net.Http.Formatting does not exist in UWP. Need to find another way to create content
                             throw new NotImplementedException();
 #else
-                            requestMsg.Content = new ObjectContent<T1>(entity, new JsonMediaTypeFormatter());
+                            requestMsg.Content = new ObjectContent<T1>(entity, JsonFormatter);
 #endif
                         }
                     }

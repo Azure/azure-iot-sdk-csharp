@@ -15,7 +15,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Azure.Devices.Sha
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Azure.Devices.Shared.UWP", "..\shared\Microsoft.Azure.Devices.Shared.UWP\Microsoft.Azure.Devices.Shared.UWP.csproj", "{A1170BE5-999D-49E5-B127-A9D6A6059D6B}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Nuget", "Nuget", "{7E01DA3C-E429-4BFA-B5E5-D897F41DDFF0}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Nuget", "Nuget", "{3AE4DCAB-E7D7-4AC1-A354-6688EE495D45}"
 	ProjectSection(SolutionItems) = preProject
 		NuGet\make_nuget_package.ps1 = NuGet\make_nuget_package.ps1
 		NuGet\Microsoft.Azure.Devices.nuspec = NuGet\Microsoft.Azure.Devices.nuspec

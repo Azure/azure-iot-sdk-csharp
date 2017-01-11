@@ -344,17 +344,25 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Retrieves a handle through which a result for a given query can be fetched.
         /// </summary>
-        /// <param name="sqlQueryString"></param>
-        /// <returns></returns>
+        /// <param name="sqlQueryString">The SQL query to execute</param>
+        /// <returns>A query handle</returns>
         public abstract IQuery CreateQuery(string sqlQueryString);
 
         /// <summary>
         /// Retrieves a handle through which a result for a given query can be fetched.
         /// </summary>
-        /// <param name="sqlQueryString"></param>
-        /// <param name="pageSize"></param>
-        /// <returns></returns>
+        /// <param name="sqlQueryString">The SQL query to execute</param>
+        /// <param name="pageSize">The maximum number of results to fetch in the enumeration operation</param>
+        /// <returns>A query handle</returns>
         public abstract IQuery CreateQuery(string sqlQueryString, int? pageSize);
+
+        /// <summary>
+        /// Retrieves a handle through which a result for a given query can be fetched.
+        /// </summary>
+        /// <param name="sqlQueryString">The SQL query to execute</param>
+        /// <param name="options">Query options</param>
+        /// <returns>A query handle</returns>
+        public abstract IQuery CreateQuery(string sqlQueryString, QueryOptions options);
 
         /// <summary>
         /// Copies registered device data to a set of blobs in a specific container in a storage account. 
