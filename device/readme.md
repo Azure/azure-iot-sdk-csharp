@@ -104,12 +104,12 @@ This Visual Studio solution contains the client library and sample projects.
 
 API reference documentation can be found online at https://msdn.microsoft.com/library/microsoft.azure.devices.aspx.
 
-[setup-iothub]: ../../doc/setup_iothub.md
+[setup-iothub]: ../doc/setup_iothub.md
 [devbox-setup]: doc/devbox_setup.md
 [run-sample-on-desktop-windows]: ../../doc/get_started/windows-desktop-csharp.md
 [run-sample-on-windows-iot-core]: ../../doc/get_started/windows10-iotcore-csharp.md
-[device-explorer]: ../../tools/DeviceExplorer/readme.md
-[faq-doc]: ../../doc/faq.md
+[device-explorer]: ../tools/DeviceExplorer/readme.md
+[faq-doc]: ../doc/faq.md
 [dotnet-api-ref]: https://msdn.microsoft.com/library/microsoft.azure.devices.aspx
 [azure-functions]: https://azure.microsoft.com/en-us/services/functions/
 [binding-redirect]:https://msdn.microsoft.com/en-us/library/eftw1fys(v=vs.110).aspx
