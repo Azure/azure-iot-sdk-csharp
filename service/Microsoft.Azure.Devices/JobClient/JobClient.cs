@@ -83,16 +83,6 @@ namespace Microsoft.Azure.Devices
         public abstract IQuery CreateQuery(JobType? jobType, JobStatus? jobStatus, int? pageSize);
 
         /// <summary>
-        /// Get IQuery through which job responses for specified jobType and jobStatus are retrieved page by page,
-        /// and specify page size
-        /// </summary>
-        /// <param name="jobType">The job type to query. Could be null if not querying.</param>
-        /// <param name="jobStatus">The job status to query. Could be null if not querying.</param>
-        /// <param name="options">Query options</param>
-        /// <returns></returns>
-        public abstract IQuery CreateQuery(JobType? jobType, JobStatus? jobStatus, QueryOptions options);
-
-        /// <summary>
         /// Cancels/Deletes the job with the specified ID.
         /// </summary>
         /// <param name="jobId">Id of the Job to cancel</param>

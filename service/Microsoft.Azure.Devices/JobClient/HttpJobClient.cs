@@ -99,27 +99,22 @@ namespace Microsoft.Azure.Devices
 
         public override IQuery CreateQuery()
         {
-            return this.CreateQuery(null, null, (QueryOptions)null);
+            return CreateQuery(null, null, null);
         }
 
         public override IQuery CreateQuery(int? pageSize)
         {
-            return this.CreateQuery(null, null, new QueryOptions { PageSize = pageSize });
+            return CreateQuery(null, null, pageSize);
         }
 
         public override IQuery CreateQuery(JobType? jobType, JobStatus? jobStatus)
         {
-            return this.CreateQuery(jobType, jobStatus, (QueryOptions)null);
+            return CreateQuery(jobType, jobStatus, null);
         }
 
         public override IQuery CreateQuery(JobType? jobType, JobStatus? jobStatus, int? pageSize)
         {
-            return this.CreateQuery(jobType, jobStatus, new QueryOptions { PageSize = pageSize });
-        }
-
-        public override IQuery CreateQuery(JobType? jobType, JobStatus? jobStatus, QueryOptions options)
-        {
-            return new Query((token) => this.GetJobsAsync(jobType, jobStatus, options?.PageSize, token, CancellationToken.None), options?.ContinuationToken);
+            return new Query((token) => this.GetJobsAsync(jobType, jobStatus, pageSize, token, CancellationToken.None));
         }
 
         public override Task<JobResponse> CancelJobAsync(string jobId)
