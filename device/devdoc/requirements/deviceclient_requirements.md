@@ -62,11 +62,9 @@ public sealed class DeviceClient
     static ITransportSettings[] PopulateCertificateInTransportSettings(IotHubConnectionStringBuilder connectionStringBuilder, TransportType transportType)
     static ITransportSettings[] PopulateCertificateInTransportSettings(IotHubConnectionStringBuilder connectionStringBuilder, ITransportSettings[] transportSettings)
 
-    public AsyncTaskOfTwin GetTwinAsync();
-
-    public AsyncTaskOfTwin UpdateReportedPropertiesAsync(Twin twin);
-
-    public AsyncTask SetTwinStateUpdateCallback(TwinStateUpdateCallback callback);
+    public Task<Twin> GetTwinAsync();
+    public Task UpdateReportedPropertiesAsync(TwinCollection reportedProperties)
+    public Task SetDesiredPropertyUpdateCallback(DesiredPropertyUpdateCallback callback, object userContext)
     
 }
 ```
@@ -191,40 +189,32 @@ public uint OperationTimeoutInMilliseconds
 
 ### GetTwinAsync
 ```csharp
-public AsyncTaskOfTwin GetTwinAsync();
+public Task<Twin> GetTwinAsync();
 ```
 
-**SRS_DEVICECLIENT_18_005: [** `GetTwinAsync` shall issue a GET to the sevice to retrieve the current twin state. **]**
-
-**SRS_DEVICECLIENT_18_006: [** `GetTwinAsync` shall wait for a response from the `GET` operation. **]**
-
-**SRS_DEVICECLIENT_18_007: [** If the `GET` operation returns a status >= 300, `GetTwinAsync` shall fail **]**
-
-**SRS_DEVICECLIENT_18_008: [** `GetTwinAsync` shall allocate a new `Twin` object **]**
-
-**SRS_DEVICECLIENT_18_009: [** `GetTwinAsync` shall copy the desired and reported properties from the response into the `Twin` object. **]**
-
-**SRS_DEVICECLIENT_18_010: [** `GetTwinAsync` shall return the new `Twin` object **]**
+**SRS_DEVICECLIENT_18_001: [** `GetTwinAsync` shall call `SendTwinGetAsync` on the transport to get the twin state **]**
 
 
 ### UpdateReportedPropertiesAsync
 ```csharp
-public AsyncTask UpdateReportedPropertiesAsync(TwinCollection reportedProperties);
+public Task UpdateReportedPropertiesAsync(TwinCollection reportedProperties)
 ```
 
-**SRS_DEVICECLIENT_18_012: [** `UpdateReportedPropertiesAsync` shall call the transport to send a `PATCH` with the entire reported property state set to the service. **]**
+**SRS_DEVICECLIENT_18_002: [** `UpdateReportedPropertiesAsync` shall call `SendTwinPatchAsync` on the transport to update the reported properties **]**
 
-**SRS_DEVICECLIENT_18_014: [** `UpdateReportedPropertiesAsync` shall wait for a response from the `PATCH` operation. **]**
-
-**SRS_DEVICECLIENT_18_015: [** If the `PATCH` operation returns a status >= 300, `UpdateReportedPropertiesAsync` shall fail. **]**
-
-
+**SRS_DEVICECLIENT_18_006: [** `UpdateReportedPropertiesAsync` shall throw an `ArgumentNull` exception if `reportedProperties` is null **]**
+ 
 ### SetDesiredPropertyUpdateCallback
 ```csharp
-public AsyncTask SetDesiredPropertyUpdateCallback(TwinStateUpdateCallback callback);
+public Task SetDesiredPropertyUpdateCallback(DesiredPropertyUpdateCallback callback, object userContext)
+
 ```
 
-**SRS_DEVICECLIENT_18_001: [** `SetDesiredPropertyUpdateCallback` shall call the transport to register for PATCHes on it's first call. **]**
+**SRS_DEVICECLIENT_18_003: [** `SetDesiredPropertyUpdateCallback` shall call the transport to register for PATCHes on it's first call. **]**
 
-**SRS_DEVICECLIENT_18_016: [** `SetDesiredPropertyUpdateCallback` shall keep track of the `callback` for future use. **]**  
+**SRS_DEVICECLIENT_18_004: [** `SetDesiredPropertyUpdateCallback` shall not call the transport to register for PATCHes on subsequent calls. **]**
 
+**SRS_DEVICECLIENT_18_005: [** When a patch is received from the service, the `callback` shall be called. **]**
+
+**SRS_DEVICECLIENT_18_007: [** `SetDesiredPropertyUpdateCallback` shall throw an `ArgumentNull` exception if `callback` is null **]**
+ 
