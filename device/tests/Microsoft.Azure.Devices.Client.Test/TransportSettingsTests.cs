@@ -138,6 +138,21 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("TransportSettings")]
+        public void TransportSettingsTest_DefaultTimeouts()
+        {
+            var amqpConnectionPoolSettings = new AmqpConnectionPoolSettings();
+            var transportSetting = new AmqpTransportSettings(TransportType.Amqp_WebSocket_Only, 200, amqpConnectionPoolSettings);
+            Assert.IsTrue(transportSetting.OpenTimeout == TimeSpan.FromMinutes(1), "Default OpenTimeout not set correctly");
+            Assert.IsTrue(transportSetting.OperationTimeout == TimeSpan.FromMinutes(1), "Default OperationTimeout not set correctly");
+
+            var transportSetting2 = new AmqpTransportSettings(TransportType.Amqp_WebSocket_Only, 100);
+            Assert.IsTrue(transportSetting2.OpenTimeout == TimeSpan.FromMinutes(1), "Default OpenTimeout not set correctly on transportSetting2");
+            Assert.IsTrue(transportSetting2.OperationTimeout == TimeSpan.FromMinutes(1), "Default OperationTimeout not set correctly on transportSetting2");
+        }
+
+        [TestMethod]
+        [TestCategory("CIT")]
+        [TestCategory("TransportSettings")]
         [ExpectedException(typeof(ArgumentOutOfRangeException))]
         public void ConnectionPoolSettingsTest_ZeroPoolSize()
         {
