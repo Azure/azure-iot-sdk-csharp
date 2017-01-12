@@ -233,8 +233,6 @@
     <Compile Include="DeviceJobOutcome.cs" />
     <Compile Include="DeviceJobStatus.cs" />
     <Compile Include="DeviceJobType.cs" />
-    <Compile Include="QueryOptions.cs" />
-    <Compile Include="QueryResponse.cs" />
     <Compile Include="QueryResultType.cs" />
     <Compile Include="BulkRegistryOperationResult.cs" />
     <Compile Include="IQuery.cs" />
