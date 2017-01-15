@@ -43,6 +43,23 @@
                 <dependency id="DotNetty.Common" version="0.4.2" />
                 <dependency id="DotNetty.Transport" version="0.4.2" />
             </group>
+            <group targetFramework="netstandard1.3" >
+              <dependency id="Microsoft.Azure.Amqp" version="2.0.2" />
+              <dependency id="DotNetty.Codecs.Mqtt" version="0.4.0" />
+              <dependency id="DotNetty.Handlers" version="0.4.0" />
+              <dependency id="Microsoft.Azure.Devices.Shared" version="1.0.5" />
+              <dependency id="Newtonsoft.Json" version="9.0.1" />
+              <dependency id="System.Collections.Specialized" version="4.3.0" />
+              <dependency id="System.Net.Http" version="4.3.0" />
+              <dependency id="System.Net.NameResolution" version="4.3.0" />
+              <dependency id="System.Net.Requests" version="4.3.0" />
+              <dependency id="System.Net.Security" version="4.3.0" />
+              <dependency id="System.Net.WebHeaderCollection" version="4.3.0" />
+              <dependency id="System.Net.WebSockets.Client" version="4.3.0" />
+              <dependency id="System.Reflection.Extensions" version="4.3.0" />
+              <dependency id="System.Security.Cryptography.Algorithms" version="4.3.0" />
+              <dependency id="Validation" version="2.3.7" />
+            </group>
 
             <group targetFramework="win8">
                 <dependency id="PCLCrypto" version="2.0.147" />
@@ -68,12 +85,11 @@
     </metadata>
     <files>
         <file src="..\thirdpartynotice.txt" target="thirdpartynotice.txt" />
-        <file src="..\Microsoft.Azure.Devices.Client\bin\release_delay_sign\Microsoft.Azure.Devices.Client.dll" target="lib\net45\Microsoft.Azure.Devices.Client.dll" />
-        <file src="..\Microsoft.Azure.Devices.Client.UWP\bin\release_delay_sign\Microsoft.Azure.Devices.Client.UWP.dll" target="lib\uap10.0\Microsoft.Azure.Devices.Client.UWP.dll" />
-        <file src="..\Microsoft.Azure.Devices.Client.UWP\bin\release_delay_sign\Microsoft.Azure.Devices.Client.UWP.pri" target="lib\uap10.0\Microsoft.Azure.Devices.Client.UWP.pri" />
-
-        <file src="..\Microsoft.Azure.Devices.Client.PCL\bin\release_delay_sign\Microsoft.Azure.Devices.Client.PCL.dll" target="lib\portable-net45+wp8+wpa81+win8+MonoAndroid10+MonoTouch10+Xamarin.iOS10+UAP10\Microsoft.Azure.Devices.Client.PCL.dll" />
-
+        <file src="..\Microsoft.Azure.Devices.Client\bin\release\Microsoft.Azure.Devices.Client.dll" target="lib\net45\Microsoft.Azure.Devices.Client.dll" />
+        <file src="..\Microsoft.Azure.Devices.Client.NetStandard\bin\release\Microsoft.Azure.Devices.Client.dll" target="lib\netstandard1.3\Microsoft.Azure.Devices.Client.dll" />
+        <file src="..\Microsoft.Azure.Devices.Client.UWP\bin\release\Microsoft.Azure.Devices.Client.UWP.dll" target="lib\uap10.0\Microsoft.Azure.Devices.Client.UWP.dll" />
+        <file src="..\Microsoft.Azure.Devices.Client.UWP\bin\release\Microsoft.Azure.Devices.Client.UWP.pri" target="lib\uap10.0\Microsoft.Azure.Devices.Client.UWP.pri" />
+        <file src="..\Microsoft.Azure.Devices.Client.PCL\bin\release\Microsoft.Azure.Devices.Client.PCL.dll" target="lib\portable-net45+wp8+wpa81+win8+MonoAndroid10+MonoTouch10+Xamarin.iOS10+UAP10\Microsoft.Azure.Devices.Client.PCL.dll" />
         <!-- don't forget about the .targets file containing the reference -->
         <file src="Microsoft.Azure.Devices.Client.targets" target="build\native\" />
     </files>
