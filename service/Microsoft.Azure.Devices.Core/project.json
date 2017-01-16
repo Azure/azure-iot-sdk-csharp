@@ -1,0 +1,20 @@
+﻿{
+  "supports": {},
+  "dependencies": {
+    "Microsoft.Azure.Amqp": "2.0.2",
+    "Microsoft.NETCore.Portable.Compatibility": "1.0.1",
+    "NETStandard.Library": "1.6.1",
+    "Newtonsoft.Json": "9.0.2-beta1",
+    "System.Diagnostics.TraceSource": "4.3.0",
+    "System.Net.Security": "4.3.0",
+    "System.Net.WebSockets": "4.3.0",
+    "System.Net.WebSockets.Client": "4.3.0",
+    "System.Security.Cryptography.Algorithms": "4.3.0",
+    "System.Threading.Overlapped": "4.3.0",
+    "System.Threading.Tasks": "4.3.0",
+    "WinInsider.System.Net.Http.Formatting": "1.0.2"
+  },
+  "frameworks": {
+    "netstandard1.3": {}
+  }
+}
