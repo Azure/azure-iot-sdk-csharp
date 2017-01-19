@@ -18,7 +18,7 @@
         <dependency id="Microsoft.Azure.Amqp" version="2.0.3" />
         <dependency id="PCLCrypto" version="2.0.147" />
       </group>
-      <group targetFramework="uap">
+      <group targetFramework="uap10.0">
         <dependency id="Microsoft.Azure.Devices.Shared" version="1.0.5" />
         <dependency id="Microsoft.AspNet.WebApi.Client" version="5.2.3" />
         <dependency id="Microsoft.Azure.Amqp" version="2.0.3" />

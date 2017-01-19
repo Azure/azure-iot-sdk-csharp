@@ -21,6 +21,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Nuget", "Nuget", "{3AE4DCAB
 		NuGet\Microsoft.Azure.Devices.nuspec = NuGet\Microsoft.Azure.Devices.nuspec
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UWPSample", "Samples\UWPSample\UWPSample.csproj", "{73848855-AB0E-4A37-AC3D-5111540C052D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{E26199F8-3D1F-4BC0-A70A-8597EA9865A0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleSample", "Samples\ConsoleSample\ConsoleSample.csproj", "{9F3AFC86-1941-4FA3-9DEE-B31FBC8652C9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -154,12 +160,70 @@ Global
 		{A1170BE5-999D-49E5-B127-A9D6A6059D6B}.Release|x64.Build.0 = Release|x64
 		{A1170BE5-999D-49E5-B127-A9D6A6059D6B}.Release|x86.ActiveCfg = Release|x86
 		{A1170BE5-999D-49E5-B127-A9D6A6059D6B}.Release|x86.Build.0 = Release|x86
+		{73848855-AB0E-4A37-AC3D-5111540C052D}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{73848855-AB0E-4A37-AC3D-5111540C052D}.Debug|ARM.ActiveCfg = Debug|ARM
+		{73848855-AB0E-4A37-AC3D-5111540C052D}.Debug|ARM.Build.0 = Debug|ARM
+		{73848855-AB0E-4A37-AC3D-5111540C052D}.Debug|ARM.Deploy.0 = Debug|ARM
+		{73848855-AB0E-4A37-AC3D-5111540C052D}.Debug|x64.ActiveCfg = Debug|x64
+		{73848855-AB0E-4A37-AC3D-5111540C052D}.Debug|x64.Build.0 = Debug|x64
+		{73848855-AB0E-4A37-AC3D-5111540C052D}.Debug|x64.Deploy.0 = Debug|x64
+		{73848855-AB0E-4A37-AC3D-5111540C052D}.Debug|x86.ActiveCfg = Debug|x86
+		{73848855-AB0E-4A37-AC3D-5111540C052D}.Debug|x86.Build.0 = Debug|x86
+		{73848855-AB0E-4A37-AC3D-5111540C052D}.Debug|x86.Deploy.0 = Debug|x86
+		{73848855-AB0E-4A37-AC3D-5111540C052D}.Release_Delay_Sign|Any CPU.ActiveCfg = Release|x64
+		{73848855-AB0E-4A37-AC3D-5111540C052D}.Release_Delay_Sign|Any CPU.Build.0 = Release|x64
+		{73848855-AB0E-4A37-AC3D-5111540C052D}.Release_Delay_Sign|Any CPU.Deploy.0 = Release|x64
+		{73848855-AB0E-4A37-AC3D-5111540C052D}.Release_Delay_Sign|ARM.ActiveCfg = Release|ARM
+		{73848855-AB0E-4A37-AC3D-5111540C052D}.Release_Delay_Sign|ARM.Build.0 = Release|ARM
+		{73848855-AB0E-4A37-AC3D-5111540C052D}.Release_Delay_Sign|ARM.Deploy.0 = Release|ARM
+		{73848855-AB0E-4A37-AC3D-5111540C052D}.Release_Delay_Sign|x64.ActiveCfg = Release|x64
+		{73848855-AB0E-4A37-AC3D-5111540C052D}.Release_Delay_Sign|x64.Build.0 = Release|x64
+		{73848855-AB0E-4A37-AC3D-5111540C052D}.Release_Delay_Sign|x64.Deploy.0 = Release|x64
+		{73848855-AB0E-4A37-AC3D-5111540C052D}.Release_Delay_Sign|x86.ActiveCfg = Release|x86
+		{73848855-AB0E-4A37-AC3D-5111540C052D}.Release_Delay_Sign|x86.Build.0 = Release|x86
+		{73848855-AB0E-4A37-AC3D-5111540C052D}.Release_Delay_Sign|x86.Deploy.0 = Release|x86
+		{73848855-AB0E-4A37-AC3D-5111540C052D}.Release|Any CPU.ActiveCfg = Release|x86
+		{73848855-AB0E-4A37-AC3D-5111540C052D}.Release|ARM.ActiveCfg = Release|ARM
+		{73848855-AB0E-4A37-AC3D-5111540C052D}.Release|ARM.Build.0 = Release|ARM
+		{73848855-AB0E-4A37-AC3D-5111540C052D}.Release|ARM.Deploy.0 = Release|ARM
+		{73848855-AB0E-4A37-AC3D-5111540C052D}.Release|x64.ActiveCfg = Release|x64
+		{73848855-AB0E-4A37-AC3D-5111540C052D}.Release|x64.Build.0 = Release|x64
+		{73848855-AB0E-4A37-AC3D-5111540C052D}.Release|x64.Deploy.0 = Release|x64
+		{73848855-AB0E-4A37-AC3D-5111540C052D}.Release|x86.ActiveCfg = Release|x86
+		{73848855-AB0E-4A37-AC3D-5111540C052D}.Release|x86.Build.0 = Release|x86
+		{73848855-AB0E-4A37-AC3D-5111540C052D}.Release|x86.Deploy.0 = Release|x86
+		{9F3AFC86-1941-4FA3-9DEE-B31FBC8652C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9F3AFC86-1941-4FA3-9DEE-B31FBC8652C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9F3AFC86-1941-4FA3-9DEE-B31FBC8652C9}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{9F3AFC86-1941-4FA3-9DEE-B31FBC8652C9}.Debug|ARM.Build.0 = Debug|Any CPU
+		{9F3AFC86-1941-4FA3-9DEE-B31FBC8652C9}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{9F3AFC86-1941-4FA3-9DEE-B31FBC8652C9}.Debug|x64.Build.0 = Debug|Any CPU
+		{9F3AFC86-1941-4FA3-9DEE-B31FBC8652C9}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9F3AFC86-1941-4FA3-9DEE-B31FBC8652C9}.Debug|x86.Build.0 = Debug|Any CPU
+		{9F3AFC86-1941-4FA3-9DEE-B31FBC8652C9}.Release_Delay_Sign|Any CPU.ActiveCfg = Release|Any CPU
+		{9F3AFC86-1941-4FA3-9DEE-B31FBC8652C9}.Release_Delay_Sign|Any CPU.Build.0 = Release|Any CPU
+		{9F3AFC86-1941-4FA3-9DEE-B31FBC8652C9}.Release_Delay_Sign|ARM.ActiveCfg = Release|Any CPU
+		{9F3AFC86-1941-4FA3-9DEE-B31FBC8652C9}.Release_Delay_Sign|ARM.Build.0 = Release|Any CPU
+		{9F3AFC86-1941-4FA3-9DEE-B31FBC8652C9}.Release_Delay_Sign|x64.ActiveCfg = Release|Any CPU
+		{9F3AFC86-1941-4FA3-9DEE-B31FBC8652C9}.Release_Delay_Sign|x64.Build.0 = Release|Any CPU
+		{9F3AFC86-1941-4FA3-9DEE-B31FBC8652C9}.Release_Delay_Sign|x86.ActiveCfg = Release|Any CPU
+		{9F3AFC86-1941-4FA3-9DEE-B31FBC8652C9}.Release_Delay_Sign|x86.Build.0 = Release|Any CPU
+		{9F3AFC86-1941-4FA3-9DEE-B31FBC8652C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9F3AFC86-1941-4FA3-9DEE-B31FBC8652C9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9F3AFC86-1941-4FA3-9DEE-B31FBC8652C9}.Release|ARM.ActiveCfg = Release|Any CPU
+		{9F3AFC86-1941-4FA3-9DEE-B31FBC8652C9}.Release|ARM.Build.0 = Release|Any CPU
+		{9F3AFC86-1941-4FA3-9DEE-B31FBC8652C9}.Release|x64.ActiveCfg = Release|Any CPU
+		{9F3AFC86-1941-4FA3-9DEE-B31FBC8652C9}.Release|x64.Build.0 = Release|Any CPU
+		{9F3AFC86-1941-4FA3-9DEE-B31FBC8652C9}.Release|x86.ActiveCfg = Release|Any CPU
+		{9F3AFC86-1941-4FA3-9DEE-B31FBC8652C9}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{74A0E4B7-4A50-4665-A7A3-A217D06649D3} = {A722A278-A765-4C69-A2FF-898FFE2DBE17}
+		{73848855-AB0E-4A37-AC3D-5111540C052D} = {E26199F8-3D1F-4BC0-A70A-8597EA9865A0}
+		{9F3AFC86-1941-4FA3-9DEE-B31FBC8652C9} = {E26199F8-3D1F-4BC0-A70A-8597EA9865A0}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8

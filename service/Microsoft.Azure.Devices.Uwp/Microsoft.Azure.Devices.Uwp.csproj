@@ -227,9 +227,6 @@
     <EmbeddedResource Include="Properties\Microsoft.Azure.Devices.Uwp.rd.xml" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Microsoft.Azure.Devices.Shared.UWP.csproj" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\..\shared\Microsoft.Azure.Devices.Shared.UWP\Microsoft.Azure.Devices.Shared.UWP.csproj">
       <Project>{a1170be5-999d-49e5-b127-a9d6a6059d6b}</Project>
       <Name>Microsoft.Azure.Devices.Shared.UWP</Name>
