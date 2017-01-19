@@ -113,7 +113,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
 
         internal IDelegatingHandler InnerHandler { get; set; }
 
-        object deviceCallbackLock = new object();
+        SemaphoreSlim methodsDictionarySemaphore = new SemaphoreSlim(1, 1);
 
         /// <summary>
         /// Stores the timeout used in the operation retries.
@@ -129,7 +129,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// <summary>
         /// Stores Methods supported by the client device and their associated delegate.
         /// </summary>
-        Dictionary<string, Tuple<MethodCallback, object>> deviceMethods;
+        volatile Dictionary<string, Tuple<MethodCallback, object>> deviceMethods;
 
         internal delegate Task OnMethodCalledDelegate(MethodRequestInternal methodRequestInternal);
 
@@ -736,7 +736,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         }
 
 #if WIP_TWIN_MQTT
-        Task <Twin> ApplyTimeoutTwin(Func<CancellationToken, Task<Twin>> operation)
+        Task<Twin> ApplyTimeoutTwin(Func<CancellationToken, Task<Twin>> operation)
         {
             if (OperationTimeoutInMilliseconds == 0)
             {
@@ -796,10 +796,12 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// <param name="methodHandler">The delegate to be used when a method with the given name is called by the cloud service.</param>
         /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
         /// </summary>
-        public void SetMethodHandler(string methodName, MethodCallback methodHandler, object userContext)
+        public async Task SetMethodHandlerAsync(string methodName, MethodCallback methodHandler, object userContext)
         {
-            lock (this.deviceCallbackLock)
+            try
             {
+                await methodsDictionarySemaphore.WaitAsync();
+
                 if (methodHandler != null)
                 {
                     // codes_SRS_DEVICECLIENT_10_001: [ The SetMethodHandler shall lazy-initialize the deviceMethods property. ]
@@ -808,7 +810,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                         this.deviceMethods = new Dictionary<string, Tuple<MethodCallback, object>>();
 
                         // codes_SRS_DEVICECLIENT_10_005: [ The SetMethodHandler shall EnableMethodsAsync when called for the first time. ]
-                        ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.EnableMethodsAsync(operationTimeoutCancellationToken));
+                        await ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.EnableMethodsAsync(operationTimeoutCancellationToken));
                     }
                     this.deviceMethods[methodName] = new Tuple<MethodCallback, object>(methodHandler, userContext);
                 }
@@ -823,13 +825,69 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                         if (this.deviceMethods.Count == 0)
                         {
                             // codes_SRS_DEVICECLIENT_10_006: [ The SetMethodHandler shall DisableMethodsAsync when the last delegate has been removed. ]
-                            ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.DisableMethodsAsync(operationTimeoutCancellationToken));
+                            await ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.DisableMethodsAsync(operationTimeoutCancellationToken));
 
                             // codes_SRS_DEVICECLIENT_10_004: [ The deviceMethods property shall be deleted if the last delegate has been removed. ]
                             this.deviceMethods = null;
                         }
                     }
                 }
+            }
+            finally
+            {
+                methodsDictionarySemaphore.Release();
+            }
+        }
+
+        /// <summary>
+        /// Registers a new delgate for the named method. If a delegate is already associated with
+        /// the named method, it will be replaced with the new delegate.
+        /// <param name="methodName">The name of the method to associate with the delegate.</param>
+        /// <param name="methodHandler">The delegate to be used when a method with the given name is called by the cloud service.</param>
+        /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
+        /// </summary>
+
+        [Obsolete("Please use SetMethodHandlerAsync.")]
+        public void SetMethodHandler(string methodName, MethodCallback methodHandler, object userContext)
+        {
+            methodsDictionarySemaphore.Wait();
+
+            try
+            {
+                if (methodHandler != null)
+                {
+                    // codes_SRS_DEVICECLIENT_10_001: [ The SetMethodHandler shall lazy-initialize the deviceMethods property. ]
+                    if (this.deviceMethods == null)
+                    {
+                        this.deviceMethods = new Dictionary<string, Tuple<MethodCallback, object>>();
+
+                        // codes_SRS_DEVICECLIENT_10_005: [ The SetMethodHandler shall EnableMethodsAsync when called for the first time. ]
+                        ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.EnableMethodsAsync(operationTimeoutCancellationToken)).Wait();
+                    }
+                    this.deviceMethods[methodName] = new Tuple<MethodCallback, object>(methodHandler, userContext);
+                }
+                else
+                {
+                    // codes_SRS_DEVICECLIENT_10_002: [ If the given methodName already has an associated delegate, the existing delegate shall be removed. ]
+                    // codes_SRS_DEVICECLIENT_10_003: [ The given delegate will only be added if it is not null. ]
+                    if (this.deviceMethods != null)
+                    {
+                        this.deviceMethods.Remove(methodName);
+
+                        if (this.deviceMethods.Count == 0)
+                        {
+                            // codes_SRS_DEVICECLIENT_10_006: [ The SetMethodHandler shall DisableMethodsAsync when the last delegate has been removed. ]
+                            ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.DisableMethodsAsync(operationTimeoutCancellationToken)).Wait();
+
+                            // codes_SRS_DEVICECLIENT_10_004: [ The deviceMethods property shall be deleted if the last delegate has been removed. ]
+                            this.deviceMethods = null;
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                methodsDictionarySemaphore.Release();
             }
         }
 
@@ -842,19 +900,20 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             {
                 byte[] requestData = methodRequestInternal.GetBytes();
 
+                methodsDictionarySemaphore.Wait();
                 try
                 {
-                    Utils.ValidateDataIsEmptyOrJson(requestData);
-
-                    lock (this.deviceCallbackLock)
-                    {
-                        // codes_SRS_DEVICECLIENT_10_013: [ If the given method does not have an associated delegate, fail silently ]
-                        this.deviceMethods?.TryGetValue(methodRequestInternal.Name, out m);
-                    }
+                    Utils.ValidateDataIsEmptyOrJson(requestData);                    
+                    // codes_SRS_DEVICECLIENT_10_013: [ If the given method does not have an associated delegate, fail silently ]
+                    this.deviceMethods?.TryGetValue(methodRequestInternal.Name, out m);
                 }
                 catch (Exception)
                 {
                     // codes_SRS_DEVICECLIENT_28_020: [ If the given methodRequestInternal data is not valid json, fail silently ]
+                }
+                finally
+                {
+                    methodsDictionarySemaphore.Release();
                 }
 
                 if (m != null)

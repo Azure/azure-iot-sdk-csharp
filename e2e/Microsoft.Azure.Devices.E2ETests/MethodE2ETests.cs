@@ -71,21 +71,59 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         [TestMethod]
         [TestCategory("Method-E2E")]
-        public async Task Twin_Service_Send_Method_And_Device_Receives_And_Send_Response_Over_MQTT()
+        public async Task Method_DeviceReceivesMethodAndResponse_Mqtt()
         {
             await sendMethodAndRespond(Client.TransportType.Mqtt);
+        }
+
+        [TestMethod]
+        [TestCategory("Method-E2E")]
+        public async Task Method_DeviceReceivesMethodAndResponse_Mqtt_With_Obseleted_SetMethodHandler()
+        {
+            await sendMethodAndRespond_With_Obseleted_SetMethodHandler(Client.TransportType.Mqtt);
         }
 
 #if WIP_C2D_METHODS_AMQP
         [TestMethod]
         [TestCategory("Method-E2E")]
-        public async Task Twin_Service_Send_Method_And_Device_Receives_And_Send_Response_Over_AMQP()
+        public async Task Method_DeviceReceivesMethodAndResponse_Amqp()
         {
             await sendMethodAndRespond(Client.TransportType.Amqp);
         }
 #endif
 
         async Task sendMethodAndRespond(Client.TransportType transport)
+        {
+            string deviceResponseJson = "{\"name\":\"e2e_test\"}";
+            string serviceRequestJson = "{\"a\":123}";
+            string methodName = "MethodE2ETest";
+
+            var assertResult = new TaskCompletionSource<Tuple<bool, bool>>();
+            var deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionString, transport);
+            await deviceClient.OpenAsync();
+            await deviceClient.SetMethodHandlerAsync(methodName,
+                (request, context) =>
+                {
+                    assertResult.SetResult(new Tuple<bool, bool>(request.Name.Equals(methodName), request.DataAsJson.Equals(serviceRequestJson)));
+                    return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(deviceResponseJson), 200));
+                },
+                null);
+
+            ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(hubConnectionString);
+            Task<CloudToDeviceMethodResult> directResponseFuture = serviceClient.InvokeDeviceMethodAsync(
+                deviceName,
+                new CloudToDeviceMethod(methodName, TimeSpan.FromMinutes(5)).SetPayloadJson(serviceRequestJson)
+            );
+            Assert.IsTrue(assertResult.Task.Result.Item1, "Method name is not matching with the send data");
+            Assert.IsTrue(assertResult.Task.Result.Item2, "Json data is not matching with the send data");
+            CloudToDeviceMethodResult response = await directResponseFuture;
+            Assert.AreEqual(200, response.Status);
+            Assert.AreEqual(deviceResponseJson, response.GetPayloadAsJson());
+
+            await deviceClient.CloseAsync();
+        }
+
+        async Task sendMethodAndRespond_With_Obseleted_SetMethodHandler(Client.TransportType transport)
         {
             string deviceResponseJson = "{\"name\":\"e2e_test\"}";
             string serviceRequestJson = "{\"a\":123}";

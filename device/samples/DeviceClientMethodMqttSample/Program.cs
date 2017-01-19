@@ -63,10 +63,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
                 // Method Call processing will be enabled when the first method handler is added.
                 // setup a callback for the 'WriteToConsole' method
-                deviceClient.SetMethodHandler("WriteToConsole", WriteToConsole, null);
+                deviceClient.SetMethodHandlerAsync("WriteToConsole", WriteToConsole, null).Wait();
 
                 // setup a calback for the 'GetDeviceName' method
-                deviceClient.SetMethodHandler("GetDeviceName", GetDeviceName, new DeviceData("DeviceClientMethodMqttSample"));
+                deviceClient.SetMethodHandlerAsync("GetDeviceName", GetDeviceName, new DeviceData("DeviceClientMethodMqttSample")).Wait();
             }
             catch (AggregateException ex)
             {
@@ -87,11 +87,13 @@ namespace Microsoft.Azure.Devices.Client.Samples
             Console.WriteLine("Exiting...");
 
             // remove the 'WriteToConsole' handler
-            deviceClient?.SetMethodHandler("WriteToConsole", null, null);
+            deviceClient?.SetMethodHandlerAsync("WriteToConsole", null, null).Wait();
 
             // remove the 'GetDeviceName' handler
             // Method Call processing will be disabled when the last method handler has been removed .
-            deviceClient?.SetMethodHandler("GetDeviceName", null, null);
+            deviceClient?.SetMethodHandlerAsync("GetDeviceName", null, null).Wait();
+
+            deviceClient?.CloseAsync().Wait();
         }
     }
 }

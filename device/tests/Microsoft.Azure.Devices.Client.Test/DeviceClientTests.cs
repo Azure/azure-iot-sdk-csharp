@@ -77,17 +77,17 @@
         public async Task DeviceClient_OnMethodCalled_NullMethodRequest()
         {
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            var innerHandler = Substitute.For<IDelegatingHandler>();
+            deviceClient.InnerHandler = innerHandler;
+
             bool isMethodHandlerCalled = false;
-            deviceClient.SetMethodHandler("testMethodName", (payload, context) =>
+            await deviceClient.SetMethodHandlerAsync("testMethodName", (payload, context) =>
             {
                 isMethodHandlerCalled = true;
                 return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes("{\"name\":\"ABC\"}"), 200));
             }, "custom data");
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            deviceClient.InnerHandler = innerHandler;
 
             await deviceClient.OnMethodCalled(null);
-
             await innerHandler.Received(0).SendMethodResponseAsync(Arg.Any<MethodResponseInternal>(), Arg.Any<CancellationToken>());
             Assert.IsFalse(isMethodHandlerCalled);
         }
@@ -97,18 +97,19 @@
         public async Task DeviceClient_OnMethodCalled_MethodRequestHasEmptyBody()
         {
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            var innerHandler = Substitute.For<IDelegatingHandler>();
+            deviceClient.InnerHandler = innerHandler;
+
             bool isMethodHandlerCalled = false;
-            deviceClient.SetMethodHandler("TestMethodName", (payload, context) =>
+            await deviceClient.SetMethodHandlerAsync("TestMethodName", (payload, context) =>
             {
                 isMethodHandlerCalled = true;
                 return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes("{\"name\":\"ABC\"}"), 200));
             }, "custom data");
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            deviceClient.InnerHandler = innerHandler;
+
             var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(new byte[0]));
 
             await deviceClient.OnMethodCalled(methodRequestInternal);
-            
             await innerHandler.Received().SendMethodResponseAsync(Arg.Any<MethodResponseInternal>(), Arg.Any<CancellationToken>());
             Assert.IsTrue(isMethodHandlerCalled);
         }
@@ -119,18 +120,18 @@
         public async Task DeviceClient_OnMethodCalled_MethodRequestHasInvalidJson()
         {
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            var innerHandler = Substitute.For<IDelegatingHandler>();
+            deviceClient.InnerHandler = innerHandler;
             bool isMethodHandlerCalled = false;
-            deviceClient.SetMethodHandler("TestMethodName", (payload, context) =>
+            await deviceClient.SetMethodHandlerAsync("TestMethodName", (payload, context) =>
             {
                 isMethodHandlerCalled = true;
                 return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes("{\"name\":\"ABC\"}"), 200));
             }, "custom data");
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            deviceClient.InnerHandler = innerHandler;
+
             var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{key")));
 
             await deviceClient.OnMethodCalled(methodRequestInternal);
-
             await innerHandler.DidNotReceive().SendMethodResponseAsync(Arg.Any<MethodResponseInternal>(), Arg.Any<CancellationToken>());
             Assert.IsFalse(isMethodHandlerCalled);
         }
@@ -141,18 +142,18 @@
         public async Task DeviceClient_OnMethodCalled_MethodRequestHasValidJson()
         {
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            var innerHandler = Substitute.For<IDelegatingHandler>();
+            deviceClient.InnerHandler = innerHandler;
             bool isMethodHandlerCalled = false;
-            deviceClient.SetMethodHandler("TestMethodName", (payload, context) =>
+            await deviceClient.SetMethodHandlerAsync("TestMethodName", (payload, context) =>
             {
                 isMethodHandlerCalled = true;
                 return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes("{\"name\":\"ABC\"}"), 200));
             }, "custom data");
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            deviceClient.InnerHandler = innerHandler;
+
             var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{\"grade\":\"good\"}")));
 
             await deviceClient.OnMethodCalled(methodRequestInternal);
-
             await innerHandler.Received().SendMethodResponseAsync(Arg.Any<MethodResponseInternal>(), Arg.Any<CancellationToken>());
             Assert.IsTrue(isMethodHandlerCalled);
         }
@@ -164,18 +165,126 @@
         {
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
             bool isMethodHandlerCalled = false;
+            var innerHandler = Substitute.For<IDelegatingHandler>();
+            deviceClient.InnerHandler = innerHandler;
+            await deviceClient.SetMethodHandlerAsync("TestMethodName", (payload, context) =>
+            {
+                isMethodHandlerCalled = true;
+                return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes("{\"name\"\"ABC\"}"), 200));
+            }, "custom data");
+
+            var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{\"grade\":\"good\"}")));
+
+            await deviceClient.OnMethodCalled(methodRequestInternal);
+            Assert.IsTrue(isMethodHandlerCalled);
+            await innerHandler.DidNotReceive().SendMethodResponseAsync(Arg.Any<MethodResponseInternal>(), Arg.Any<CancellationToken>());
+        }
+
+        [TestMethod]
+        [TestCategory("DeviceClient")]
+        // Tests_SRS_DEVICECLIENT_10_012: [** If the given methodRequestInternal argument is null, fail silently **]**
+        public async Task DeviceClient_OnMethodCalled_NullMethodRequest_With_SetMethodHandler()
+        {
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            var innerHandler = Substitute.For<IDelegatingHandler>();
+            deviceClient.InnerHandler = innerHandler;
+
+            bool isMethodHandlerCalled = false;
+            deviceClient.SetMethodHandler("testMethodName", (payload, context) =>
+            {
+                isMethodHandlerCalled = true;
+                return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes("{\"name\":\"ABC\"}"), 200));
+            }, "custom data");
+
+            await deviceClient.OnMethodCalled(null);
+            await innerHandler.Received(0).SendMethodResponseAsync(Arg.Any<MethodResponseInternal>(), Arg.Any<CancellationToken>());
+            Assert.IsFalse(isMethodHandlerCalled);
+        }
+
+        [TestMethod]
+        [TestCategory("DeviceClient")]
+        public async Task DeviceClient_OnMethodCalled_MethodRequestHasEmptyBody_With_SetMethodHandler()
+        {
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            var innerHandler = Substitute.For<IDelegatingHandler>();
+            deviceClient.InnerHandler = innerHandler;
+
+            bool isMethodHandlerCalled = false;
+            deviceClient.SetMethodHandler("TestMethodName", (payload, context) =>
+            {
+                isMethodHandlerCalled = true;
+                return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes("{\"name\":\"ABC\"}"), 200));
+            }, "custom data");
+
+            var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(new byte[0]));
+
+            await deviceClient.OnMethodCalled(methodRequestInternal);
+            await innerHandler.Received().SendMethodResponseAsync(Arg.Any<MethodResponseInternal>(), Arg.Any<CancellationToken>());
+            Assert.IsTrue(isMethodHandlerCalled);
+        }
+
+        [TestMethod]
+        [TestCategory("DeviceClient")]
+        // Tests_SRS_DEVICECLIENT_28_020: [** If the given methodRequestInternal data is not valid json, fail silently **]**
+        public async Task DeviceClient_OnMethodCalled_MethodRequestHasInvalidJson_With_SetMethodHandler()
+        {
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            var innerHandler = Substitute.For<IDelegatingHandler>();
+            deviceClient.InnerHandler = innerHandler;
+            bool isMethodHandlerCalled = false;
+            deviceClient.SetMethodHandler("TestMethodName", (payload, context) =>
+            {
+                isMethodHandlerCalled = true;
+                return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes("{\"name\":\"ABC\"}"), 200));
+            }, "custom data");
+
+            var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{key")));
+
+            await deviceClient.OnMethodCalled(methodRequestInternal);
+            await innerHandler.DidNotReceive().SendMethodResponseAsync(Arg.Any<MethodResponseInternal>(), Arg.Any<CancellationToken>());
+            Assert.IsFalse(isMethodHandlerCalled);
+        }
+
+        [TestMethod]
+        [TestCategory("DeviceClient")]
+        // Tests_SRS_DEVICECLIENT_10_011: [ The OnMethodCalled shall invoke the specified delegate. ]
+        public async Task DeviceClient_OnMethodCalled_MethodRequestHasValidJson_With_SetMethodHandler()
+        {
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            var innerHandler = Substitute.For<IDelegatingHandler>();
+            deviceClient.InnerHandler = innerHandler;
+            bool isMethodHandlerCalled = false;
+            deviceClient.SetMethodHandler("TestMethodName", (payload, context) =>
+            {
+                isMethodHandlerCalled = true;
+                return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes("{\"name\":\"ABC\"}"), 200));
+            }, "custom data");
+
+            var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{\"grade\":\"good\"}")));
+
+            await deviceClient.OnMethodCalled(methodRequestInternal);
+            await innerHandler.Received().SendMethodResponseAsync(Arg.Any<MethodResponseInternal>(), Arg.Any<CancellationToken>());
+            Assert.IsTrue(isMethodHandlerCalled);
+        }
+
+        [TestMethod]
+        [TestCategory("DeviceClient")]
+        // Tests_SRS_DEVICECLIENT_28_021: [** If the MethodResponse from the MethodHandler is not valid json, JsonReaderException shall be throw **]**
+        public async Task DeviceClient_OnMethodCalled_MethodResponseHasInvalidJson_With_SetMethodHandler()
+        {
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            bool isMethodHandlerCalled = false;
+            var innerHandler = Substitute.For<IDelegatingHandler>();
+            deviceClient.InnerHandler = innerHandler;
             deviceClient.SetMethodHandler("TestMethodName", (payload, context) =>
             {
                 isMethodHandlerCalled = true;
                 return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes("{\"name\"\"ABC\"}"), 200));
             }, "custom data");
-            var innerHandler = Substitute.For<IDelegatingHandler>();
 
-            deviceClient.InnerHandler = innerHandler;
             var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{\"grade\":\"good\"}")));
 
             await deviceClient.OnMethodCalled(methodRequestInternal);
-
             Assert.IsTrue(isMethodHandlerCalled);
             await innerHandler.DidNotReceive().SendMethodResponseAsync(Arg.Any<MethodResponseInternal>(), Arg.Any<CancellationToken>());
         }
@@ -224,7 +333,7 @@
             string methodName = "TestMethodName";
             string methodUserContext = "UserContext";
             string methodBody = "{\"grade\":\"good\"}";
-            deviceClient.SetMethodHandler(methodName, methodCallback, methodUserContext);
+            await deviceClient.SetMethodHandlerAsync(methodName, methodCallback, methodUserContext);
             await deviceClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody))));
 
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>());
@@ -238,6 +347,164 @@
         [TestCategory("DeviceClient")]
         // Tests_SRS_DEVICECLIENT_10_002: [ If the given methodName already has an associated delegate, the existing delegate shall be removed. ]
         public async Task DeviceClient_SetMethodHandler_OverwriteExistingDelegate()
+        {
+            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
+
+            var innerHandler = Substitute.For<IDelegatingHandler>();
+            deviceClient.InnerHandler = innerHandler;
+
+            bool methodCallbackCalled = false;
+            string actualMethodName = string.Empty;
+            string actualMethodBody = string.Empty;
+            object actualMethodUserContext = null;
+            MethodCallback methodCallback = (methodRequest, userContext) =>
+            {
+                actualMethodName = methodRequest.Name;
+                actualMethodBody = methodRequest.DataAsJson;
+                actualMethodUserContext = userContext;
+                methodCallbackCalled = true;
+                return Task.FromResult(new MethodResponse(new byte[0], 200));
+            };
+
+            string methodName = "TestMethodName";
+            string methodUserContext = "UserContext";
+            string methodBody = "{\"grade\":\"good\"}";
+            await deviceClient.SetMethodHandlerAsync(methodName, methodCallback, methodUserContext);
+            await deviceClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody))));
+
+            await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>());
+            Assert.IsTrue(methodCallbackCalled);
+            Assert.AreEqual(methodName, actualMethodName);
+            Assert.AreEqual(methodBody, actualMethodBody);
+            Assert.AreEqual(methodUserContext, actualMethodUserContext);
+
+            bool methodCallbackCalled2 = false;
+            string actualMethodName2 = string.Empty;
+            string actualMethodBody2 = string.Empty;
+            object actualMethodUserContext2 = null;
+            MethodCallback methodCallback2 = (methodRequest, userContext) =>
+            {
+                actualMethodName2 = methodRequest.Name;
+                actualMethodBody2 = methodRequest.DataAsJson;
+                actualMethodUserContext2 = userContext;
+                methodCallbackCalled2 = true;
+                return Task.FromResult(new MethodResponse(new byte[0], 200));
+            };
+
+            string methodUserContext2 = "UserContext2";
+            string methodBody2 = "{\"grade\":\"bad\"}";
+            await deviceClient.SetMethodHandlerAsync(methodName, methodCallback2, methodUserContext2);
+            await deviceClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId2", new MemoryStream(Encoding.UTF8.GetBytes(methodBody2))));
+
+            await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>());
+            Assert.IsTrue(methodCallbackCalled2);
+            Assert.AreEqual(methodName, actualMethodName2);
+            Assert.AreEqual(methodBody2, actualMethodBody2);
+            Assert.AreEqual(methodUserContext2, actualMethodUserContext2);
+        }
+
+        [TestMethod]
+        [TestCategory("DeviceClient")]
+        // Tests_SRS_DEVICECLIENT_10_004: [ The deviceMethods property shall be deleted if the last delegate has been removed. ]
+        // Tests_SRS_DEVICECLIENT_10_006: [ The SetMethodHandler shall DisableMethodsAsync when the last delegate has been removed. ]
+        public async Task DeviceClient_SetMethodHandler_UnsetLastMethodHandler()
+        {
+            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
+
+            var innerHandler = Substitute.For<IDelegatingHandler>();
+            deviceClient.InnerHandler = innerHandler;
+
+            bool methodCallbackCalled = false;
+            string actualMethodName = string.Empty;
+            string actualMethodBody = string.Empty;
+            object actualMethodUserContext = null;
+            MethodCallback methodCallback = (methodRequest, userContext) =>
+            {
+                actualMethodName = methodRequest.Name;
+                actualMethodBody = methodRequest.DataAsJson;
+                actualMethodUserContext = userContext;
+                methodCallbackCalled = true;
+                return Task.FromResult(new MethodResponse(new byte[0], 200));
+            };
+
+            string methodName = "TestMethodName";
+            string methodUserContext = "UserContext";
+            string methodBody = "{\"grade\":\"good\"}";
+            await deviceClient.SetMethodHandlerAsync(methodName, methodCallback, methodUserContext);
+            await deviceClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody))));
+
+            await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>());
+            Assert.IsTrue(methodCallbackCalled);
+            Assert.AreEqual(methodName, actualMethodName);
+            Assert.AreEqual(methodBody, actualMethodBody);
+            Assert.AreEqual(methodUserContext, actualMethodUserContext);
+
+            methodCallbackCalled = false;
+            await deviceClient.SetMethodHandlerAsync(methodName, null, null);
+            await deviceClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody))));
+
+            await innerHandler.Received().DisableMethodsAsync(Arg.Any<CancellationToken>());
+            Assert.IsFalse(methodCallbackCalled);
+        }
+
+        [TestMethod]
+        [TestCategory("DeviceClient")]
+        public async Task DeviceClient_SetMethodHandler_UnsetWhenNoMethodHandler()
+        {
+            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
+
+            var innerHandler = Substitute.For<IDelegatingHandler>();
+            deviceClient.InnerHandler = innerHandler;
+
+            await deviceClient.SetMethodHandlerAsync("TestMethodName", null, null);
+            await innerHandler.DidNotReceive().DisableMethodsAsync(Arg.Any<CancellationToken>());
+        }
+
+        [TestMethod]
+        [TestCategory("DeviceClient")]
+        // Tests_SRS_DEVICECLIENT_10_001: [ The SetMethodHandler shall lazy-initialize the deviceMethods property. ]
+        // Tests_SRS_DEVICECLIENT_10_003: [ The given delegate will only be added if it is not null. ]
+        public async Task DeviceClient_SetMethodHandler_SetFirstMethodHandler_With_SetMethodHandler()
+        {
+            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
+
+            var innerHandler = Substitute.For<IDelegatingHandler>();
+            deviceClient.InnerHandler = innerHandler;
+
+            bool methodCallbackCalled = false;
+            string actualMethodName = string.Empty;
+            string actualMethodBody = string.Empty;
+            object actualMethodUserContext = null;
+            MethodCallback methodCallback = (methodRequest, userContext) =>
+            {
+                actualMethodName = methodRequest.Name;
+                actualMethodBody = methodRequest.DataAsJson;
+                actualMethodUserContext = userContext;
+                methodCallbackCalled = true;
+                return Task.FromResult(new MethodResponse(new byte[0], 200));
+            };
+
+            string methodName = "TestMethodName";
+            string methodUserContext = "UserContext";
+            string methodBody = "{\"grade\":\"good\"}";
+            deviceClient.SetMethodHandler(methodName, methodCallback, methodUserContext);
+            await deviceClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody))));
+
+            await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>());
+            Assert.IsTrue(methodCallbackCalled);
+            Assert.AreEqual(methodName, actualMethodName);
+            Assert.AreEqual(methodBody, actualMethodBody);
+            Assert.AreEqual(methodUserContext, actualMethodUserContext);
+        }
+
+        [TestMethod]
+        [TestCategory("DeviceClient")]
+        // Tests_SRS_DEVICECLIENT_10_002: [ If the given methodName already has an associated delegate, the existing delegate shall be removed. ]
+        public async Task DeviceClient_SetMethodHandler_OverwriteExistingDelegate_With_SetMethodHandler()
         {
             string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
@@ -285,7 +552,7 @@
 
             string methodUserContext2 = "UserContext2";
             string methodBody2 = "{\"grade\":\"bad\"}";
-            deviceClient.SetMethodHandler(methodName, methodCallback2, methodUserContext2);
+            await deviceClient.SetMethodHandlerAsync(methodName, methodCallback2, methodUserContext2);
             await deviceClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId2", new MemoryStream(Encoding.UTF8.GetBytes(methodBody2))));
 
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>());
@@ -299,7 +566,7 @@
         [TestCategory("DeviceClient")]
         // Tests_SRS_DEVICECLIENT_10_004: [ The deviceMethods property shall be deleted if the last delegate has been removed. ]
         // Tests_SRS_DEVICECLIENT_10_006: [ The SetMethodHandler shall DisableMethodsAsync when the last delegate has been removed. ]
-        public async Task DeviceClient_SetMethodHandler_UnsetLastMethodHandler()
+        public async Task DeviceClient_SetMethodHandler_UnsetLastMethodHandler_With_SetMethodHandler()
         {
             string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
@@ -333,7 +600,7 @@
             Assert.AreEqual(methodUserContext, actualMethodUserContext);
 
             methodCallbackCalled = false;
-            deviceClient.SetMethodHandler(methodName, null, null);
+            await deviceClient.SetMethodHandlerAsync(methodName, null, null);
             await deviceClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody))));
 
             await innerHandler.Received().DisableMethodsAsync(Arg.Any<CancellationToken>());
@@ -342,7 +609,7 @@
 
         [TestMethod]
         [TestCategory("DeviceClient")]
-        public async Task DeviceClient_SetMethodHandler_UnsetWhenNoMethodHandler()
+        public async Task DeviceClient_SetMethodHandler_UnsetWhenNoMethodHandler_With_SetMethodHandler()
         {
             string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
