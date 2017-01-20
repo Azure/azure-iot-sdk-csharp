@@ -246,5 +246,45 @@ namespace Microsoft.Azure.Devices.Api.Test
             Assert.IsFalse(q.HasMoreResults);
             Assert.IsFalse(q.GetNextAsJsonAsync().Result.Any());
         }
+
+        [TestMethod]
+        public void QueryResult_UserSuppliedContinuation_Test()
+        {
+            // simulate json serialize/deserialize
+            var serverQueryResult = new QueryResult()
+            {
+                Type = QueryResultType.Twin,
+                Items = new List<Twin>()
+                {
+                    new Twin()
+                    {
+                        DeviceId = "test",
+                    }
+                },
+                ContinuationToken = "GYUVJDBJFKJ"
+            };
+
+            var clientQueryResult = JsonConvert.DeserializeObject<QueryResult>(JsonConvert.SerializeObject(serverQueryResult));
+
+            // test
+            string requestToken = string.Empty;
+            IQuery q = new Query(t =>
+            {
+                requestToken = t;
+                return Task.FromResult<QueryResult>(clientQueryResult);
+            });
+
+            // validate
+            Assert.IsTrue(q.HasMoreResults);
+
+            string userToken = "AEJGURIOJQ=";
+            QueryResponse<Twin> r = q.GetNextAsTwinAsync(new QueryOptions { ContinuationToken = userToken }).Result;
+            Assert.AreEqual(userToken, requestToken);
+            Assert.AreEqual(serverQueryResult.ContinuationToken, r.ContinuationToken);
+            Assert.AreEqual(1, r.Count());
+            Assert.IsInstanceOfType(r.ElementAt(0), typeof(Twin));
+            Assert.AreEqual("test", r.ElementAt(0).DeviceId);
+            Assert.IsTrue(q.HasMoreResults);
+        }
     }
 }
