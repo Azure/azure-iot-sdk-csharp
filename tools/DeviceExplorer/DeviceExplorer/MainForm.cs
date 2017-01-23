@@ -10,6 +10,8 @@ using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Devices.Common.Security;
 using Microsoft.ServiceBus.Messaging;
 using System.Reflection;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace DeviceExplorer
 {
@@ -179,6 +181,30 @@ namespace DeviceExplorer
             //  - trim leading/trailing white space from the connection string
             //  - scan and remove CR and LF characters
             return connectionString.Trim().Replace("\r", "").Replace("\n", "");
+        }
+
+        private bool isInJsonFormat(string str)
+        {
+            str = str.Trim();
+            if ((str.StartsWith("{") && str.EndsWith("}")) || //For object
+                 (str.StartsWith("[") && str.EndsWith("]"))) //For array
+            {
+                try
+                {
+                    JToken t = JToken.Parse(str);
+                    return true;
+                }
+                catch (JsonReaderException jex)
+                {
+                    //Exception in parsing json
+                    MessageBox.Show($"JSON string with invalid format.\n[{jex.Message}]", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
         }
         #endregion
 
@@ -555,11 +581,33 @@ namespace DeviceExplorer
                     }
                     else
                     {
-                        cloudToDeviceMessage = DateTime.Now.ToLocalTime() + " - " + textBoxMessage.Text;
+                        if (isInJsonFormat(textBoxMessage.Text)) //any JSON format string should start with "{" || "[" and end with "}" || "]"
+                        {
+                            JValue date = new JValue(DateTime.Now.ToLocalTime());
+                            JToken t = JToken.Parse(textBoxMessage.Text);
+                            if (t.Type.Equals(JTokenType.Object)) //JSON string is of type Object
+                            {
+                                JObject o = (JObject)t;
+                                o.Add("timestamp", date);
+                                cloudToDeviceMessage = o.ToString();
+                            }
+                            else if (t.Type.Equals(JTokenType.Array)) //JSON string is of type Array
+                            {
+                                JObject o = new JObject();
+                                o.Add("message", (JArray)t);
+                                o.Add("timestamp", date);
+                                cloudToDeviceMessage = o.ToString();
+                            }
+                        }
+                        else
+                        {
+                            cloudToDeviceMessage = DateTime.Now.ToLocalTime() + " - " + textBoxMessage.Text;
+                        }
                     }
                 }
                 else
                 {
+                    isInJsonFormat(textBoxMessage.Text); //any JSON format string should start with "{" || "[" and end with "}" || "]"
                     cloudToDeviceMessage = textBoxMessage.Text;
                 }
 
