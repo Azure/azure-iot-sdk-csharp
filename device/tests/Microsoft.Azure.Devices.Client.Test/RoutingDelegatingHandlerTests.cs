@@ -9,7 +9,17 @@ namespace Microsoft.Azure.Devices.Client.Test
     using Microsoft.Azure.Devices.Client.Common;
     using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Azure.Devices.Client.Transport;
+#if !NUNIT
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+#else
+    using NUnit.Framework;
+    using TestClassAttribute = NUnit.Framework.TestFixtureAttribute;
+    using TestMethodAttribute = NUnit.Framework.TestAttribute;
+    using ClassInitializeAttribute = NUnit.Framework.OneTimeSetUpAttribute;
+    using ClassCleanupAttribute = NUnit.Framework.OneTimeTearDownAttribute;
+    using TestCategoryAttribute = NUnit.Framework.CategoryAttribute;
+    using IgnoreAttribute = MSTestIgnoreAttribute;
+#endif
     using NSubstitute;
     using NSubstitute.ExceptionExtensions;
 

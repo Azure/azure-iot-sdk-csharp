@@ -24,6 +24,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyKeyFileAttribute("35MSSharedLib1024.snk")]
 #else
 [assembly: InternalsVisibleTo("Microsoft.Azure.Devices.Client.Test.NetStandard")]
+[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 #endif
 
 // Version information for an assembly follows semantic versioning 1.0.0 (because

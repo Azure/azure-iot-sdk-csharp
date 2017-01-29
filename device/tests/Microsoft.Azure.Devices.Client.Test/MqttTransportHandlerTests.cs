@@ -1,5 +1,16 @@
 ﻿using System;
+using Microsoft.Azure.Devices.Client;
+#if !NUNIT
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+#else
+using NUnit.Framework;
+using TestClassAttribute = NUnit.Framework.TestFixtureAttribute;
+using TestMethodAttribute = NUnit.Framework.TestAttribute;
+using ClassInitializeAttribute = NUnit.Framework.OneTimeSetUpAttribute;
+using ClassCleanupAttribute = NUnit.Framework.OneTimeTearDownAttribute;
+using TestCategoryAttribute = NUnit.Framework.CategoryAttribute;
+using IgnoreAttribute = Microsoft.Azure.Devices.Client.Test.MSTestIgnoreAttribute;
+#endif
 
 namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
 {
@@ -185,8 +196,12 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
         [TestMethod]
         [TestCategory("TransportHandlers")]
         [TestCategory("Methods")]
+#if !NUNIT
         [ExpectedException(typeof(TimeoutException))]
         public async Task MqttTransportHandler_EnableMethodsAsync_SubscribeTimesOut()
+#else
+        public void MqttTransportHandler_EnableMethodsAsync_SubscribeTimesOut()
+#endif
         {
             // arrange
             IChannel channel;
@@ -197,7 +212,13 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
 
             // act & assert
             transport.OnConnected();
+#if NUNIT
+            Assert.ThrowsAsync<TimeoutException>(async () => {
+#endif 
             await transport.EnableMethodsAsync(CancellationToken.None);
+#if NUNIT
+            });
+#endif
         }
 
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_28_001: `DisableMethodsAsync` shall unsubscribe using the '$iothub/methods/POST/' topic filter.
@@ -226,8 +247,12 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
         [TestMethod]
         [TestCategory("TransportHandlers")]
         [TestCategory("Methods")]
+#if !NUNIT
         [ExpectedException(typeof(TimeoutException))]
         public async Task MqttTransportHandler_DisablemethodsAsync_UnsubscribeTimesOut()
+#else
+        public void MqttTransportHandler_DisablemethodsAsync_UnsubscribeTimesOut()
+#endif
         {
             // arrange
             IChannel channel;
@@ -239,7 +264,13 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
 
             // act & assert
             transport.OnConnected();
+#if NUNIT
+            Assert.ThrowsAsync<TimeoutException>(async () => {
+#endif 
             await transport.EnableMethodsAsync(CancellationToken.None);
+#if NUNIT
+            });
+#endif
         }
 
         delegate bool MessageMatcher(Message msg);
@@ -304,8 +335,12 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
         [TestMethod]
         [TestCategory("TransportHandlers")]
         [TestCategory("Twin")]
+#if !NUNIT
         [ExpectedException(typeof(TimeoutException))]
         public async Task MqttTransportHandler_EnableTwinPatchAsync_TimesOut()
+#else
+        public void MqttTransportHandler_EnableTwinPatchAsync_TimesOut()
+#endif
         {
             // arrange
             IChannel channel;
@@ -316,7 +351,13 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
 
             // act & assert
             transport.OnConnected();
+#if NUNIT
+            Assert.ThrowsAsync<TimeoutException>(async () => {
+#endif
             await transport.EnableTwinPatchAsync(CancellationToken.None);
+#if NUNIT
+            });
+#endif
         }
 
         string getResponseTopic(string requestTopic, int status)
@@ -359,15 +400,23 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
             var twinReturned = await transport.SendTwinGetAsync(CancellationToken.None);
 
             // assert
+#if !NUNIT
             Assert.AreEqual<string>(twin.Properties.Desired["foo"].ToString(), twinReturned.Properties.Desired["foo"].ToString());
+#else
+            Assert.That(twinReturned.Properties.Desired["foo"].ToString(), Is.EqualTo(twin.Properties.Desired["foo"].ToString()));
+#endif
         }
 
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_019: If the response is failed, `SendTwinGetAsync` shall return that failure to the caller.
         [TestMethod]
         [TestCategory("TransportHandlers")]
         [TestCategory("Twin")]
+#if !NUNIT
         [ExpectedException(typeof(Exception))]
         public async Task MqttTransportHandler_SendTwinGetAsync_ReturnsFailure()
+#else
+        public void MqttTransportHandler_SendTwinGetAsync_ReturnsFailure()
+#endif
         {
             // arrange
             IChannel channel;
@@ -383,15 +432,25 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
                 });
 
             // act & assert
+#if NUNIT
+            Assert.ThrowsAsync<Exception>(async () => {
+#endif
             var twinReturned = await transport.SendTwinGetAsync(CancellationToken.None);
+#if NUNIT
+            });
+#endif
         }
 
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_020: If the response doesn't arrive within `MqttTransportHandler.TwinTimeout`, `SendTwinGetAsync` shall fail with a timeout error
         [TestMethod]
         [TestCategory("TransportHandlers")]
         [TestCategory("Twin")]
+#if !NUNIT
         [ExpectedException(typeof(TimeoutException))]
         public async Task MqttTransportHandler_SendTwinGetAsync_TimesOut()
+#else
+        public void MqttTransportHandler_SendTwinGetAsync_TimesOut()
+#endif
         {
             // arrange
             IChannel channel;
@@ -399,7 +458,13 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
             transport.TwinTimeout = TimeSpan.FromMilliseconds(20);
 
             // act & assert
+#if NUNIT
+            Assert.ThrowsAsync<TimeoutException>(async () => {
+#endif
             var twinReturned = await transport.SendTwinGetAsync(CancellationToken.None);
+#if NUNIT
+            });
+#endif
         }
 
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_022: `SendTwinPatchAsync` shall allocate a `Message` object to hold the update request
@@ -441,15 +506,23 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
 
             // assert
             string expectedBody = JsonConvert.SerializeObject(props);
+#if !NUNIT
             Assert.AreEqual<string>(expectedBody, receivedBody);
+#else
+            Assert.That(receivedBody, Is.EqualTo(expectedBody));
+#endif
         }
 
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_028: If the response is failed, `SendTwinPatchAsync` shall return that failure to the caller.
         [TestMethod]
         [TestCategory("TransportHandlers")]
         [TestCategory("Twin")]
+#if !NUNIT
         [ExpectedException(typeof(Exception))]
         public async Task MqttTransportHandler_SendTwinPatchAsync_ReturnsFailure()
+#else
+        public void MqttTransportHandler_SendTwinPatchAsync_ReturnsFailure()
+#endif
         {
             // arrange
             IChannel channel;
@@ -467,7 +540,12 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
                 });
 
             // act & assert
+#if NUNIT
+            Assert.ThrowsAsync<Exception>(async () => await transport.SendTwinPatchAsync(props, CancellationToken.None));
+
+#else
             await transport.SendTwinPatchAsync(props, CancellationToken.None);
+#endif
 
         }
 
@@ -475,8 +553,12 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
         [TestMethod]
         [TestCategory("TransportHandlers")]
         [TestCategory("Twin")]
+#if !NUNIT
         [ExpectedException(typeof(TimeoutException))]
         public async Task MqttTransportHandler_SendTwinPatchAsync_TimesOut()
+#else
+        public void MqttTransportHandler_SendTwinPatchAsync_TimesOut()
+#endif
         {
             // arrange
             IChannel channel;
@@ -485,7 +567,13 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
             var props = new TwinCollection();
 
             // act & assert
+#if NUNIT
+            Assert.ThrowsAsync<TimeoutException>(async () => {
+#endif
             await transport.SendTwinPatchAsync(props, CancellationToken.None);
+#if NUNIT
+            });
+#endif
         }
 
 

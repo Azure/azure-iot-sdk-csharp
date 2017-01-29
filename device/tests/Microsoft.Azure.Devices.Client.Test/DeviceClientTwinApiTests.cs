@@ -1,5 +1,16 @@
 ﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.Azure.Devices.Client;
+#if !NUNIT
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+#else
+using NUnit.Framework;
+using TestClassAttribute = NUnit.Framework.TestFixtureAttribute;
+using TestMethodAttribute = NUnit.Framework.TestAttribute;
+using ClassInitializeAttribute = NUnit.Framework.OneTimeSetUpAttribute;
+using ClassCleanupAttribute = NUnit.Framework.OneTimeTearDownAttribute;
+using TestCategoryAttribute = NUnit.Framework.CategoryAttribute;
+using IgnoreAttribute = Microsoft.Azure.Devices.Client.Test.MSTestIgnoreAttribute;
+#endif
 using NSubstitute;
 using System.Threading.Tasks;
 using System.Threading;
@@ -98,8 +109,12 @@ namespace Microsoft.Azure.Devices.Client.Test
         // Tests_SRS_DEVICECLIENT_18_006: `UpdateReportedPropertiesAsync` shall throw an `ArgumentNull` exception if `reportedProperties` is null
         [TestMethod]
         [TestCategory("Twin")]
+#if !NUNIT
         [ExpectedException(typeof(ArgumentNullException))]
         public async Task DeviceClient_UpdateReportedPropertiesAsync_ThrowsIfPatchIsNull()
+#else
+        public void DeviceClient_UpdateReportedPropertiesAsync_ThrowsIfPatchIsNull()
+#endif
         {
             // arrange
             var innerHandler = Substitute.For<IDelegatingHandler>();
@@ -107,14 +122,24 @@ namespace Microsoft.Azure.Devices.Client.Test
             client.InnerHandler = innerHandler;
 
             // act and assert
+#if NUNIT
+            Assert.ThrowsAsync<ArgumentNullException>(async () => {
+#endif 
             await client.UpdateReportedPropertiesAsync(null);
+#if NUNIT
+            });
+#endif
         }
 
         // Tests_SRS_DEVICECLIENT_18_007: `SetDesiredPropertyUpdateCallback` shall throw an `ArgumentNull` exception if `callback` is null
         [TestMethod]
         [TestCategory("Twin")]
+#if !NUNIT
         [ExpectedException(typeof(ArgumentNullException))]
         public async Task DeviceClient_SetDesiredPropertyUpdateCallback_ThrowsIfCallbackIsNull()
+#else
+        public void DeviceClient_SetDesiredPropertyUpdateCallback_ThrowsIfCallbackIsNull()
+#endif
         {
             // arrange
             var innerHandler = Substitute.For<IDelegatingHandler>();
@@ -122,7 +147,13 @@ namespace Microsoft.Azure.Devices.Client.Test
             client.InnerHandler = innerHandler;
 
             // act and assert
+#if NUNIT
+            Assert.ThrowsAsync<ArgumentNullException>(async () => {
+#endif 
             await client.SetDesiredPropertyUpdateCallback(null, null);
+        #if NUNIT
+            });
+#endif
         }
 
         //  Tests_SRS_DEVICECLIENT_18_005: When a patch is received from the service, the `callback` shall be called.
@@ -150,7 +181,11 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             //assert
             Assert.AreEqual(callCount, 1);
+#if !NUNIT
             Assert.ReferenceEquals(myPatch, receivedPatch);
+#else
+            Assert.That(receivedPatch, Is.SameAs(myPatch));
+#endif
         }
     }
 }

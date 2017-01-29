@@ -7,40 +7,74 @@ namespace Microsoft.Azure.Devices.Client.Test
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Client.ApiTest;
     using Microsoft.Azure.Devices.Client.Transport.Mqtt;
+#if !NUNIT
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+#else
+	using NUnit.Framework;
+	using TestClassAttribute = NUnit.Framework.TestFixtureAttribute;
+	using TestMethodAttribute = NUnit.Framework.TestAttribute;
+	using ClassInitializeAttribute = NUnit.Framework.OneTimeSetUpAttribute;
+	using ClassCleanupAttribute = NUnit.Framework.OneTimeTearDownAttribute;
+	using TestCategoryAttribute = NUnit.Framework.CategoryAttribute;
+	using IgnoreAttribute = MSTestIgnoreAttribute;
+#endif
 
-    [TestClass]
+	[TestClass]
     public class TransportSettingsTests
     {
         const string LocalCertFilename = "..\\..\\Microsoft.Azure.Devices.Client.Test\\LocalNoChain.pfx";
         const string LocalCertPasswordFile = "..\\..\\Microsoft.Azure.Devices.Client.Test\\TestCertsPassword.txt";
 
+#if !NUNIT
         [ExpectedException(typeof(ArgumentOutOfRangeException))]
+#endif
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("TransportSettings")]
         public void TransportSettingsTest_TransportType_Amqp()
         {
+#if NUNIT
+            Assert.Throws<ArgumentOutOfRangeException>(() => {
+#endif 
             var transportSetting = new AmqpTransportSettings(TransportType.Amqp);
+#if NUNIT
+            });
+#endif
         }
 
+#if !NUNIT
         [ExpectedException(typeof(ArgumentOutOfRangeException))]
+#endif
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("TransportSettings")]
         public void TransportSettingsTest_TransportType_Amqp_Http()
         {
+#if NUNIT
+            Assert.Throws<ArgumentOutOfRangeException>(() => {
+#endif 
             var transportSetting = new AmqpTransportSettings(TransportType.Http1);
+#if NUNIT
+            });
+#endif
         }
 
+#if !NUNIT
         [ExpectedException(typeof(ArgumentOutOfRangeException))]
+#endif
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("TransportSettings")]
         public void TransportSettingsTest_TransportType_AmqpTcp_Prefetch_0()
         {
             var amqpConnectionPoolSettings = new AmqpConnectionPoolSettings();
+#if NUNIT
+            Assert.Throws<ArgumentOutOfRangeException>(() => {
+#endif 
             var transportSetting = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only, 0, amqpConnectionPoolSettings);
+#if NUNIT
+            });
+#endif
         }
 
         [TestMethod]
@@ -94,32 +128,56 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("TransportSettings")]
+#if !NUNIT
         [ExpectedException(typeof(ArgumentOutOfRangeException))]
+#endif
         public void TransportSettingsTest_TransportType_Mqtt()
         {
+#if NUNIT
+            Assert.Throws<ArgumentOutOfRangeException>(() => {
+#endif 
             new MqttTransportSettings(TransportType.Mqtt);
+#if NUNIT
+            });
+#endif
         }
 
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("TransportSettings")]
+#if !NUNIT
         [ExpectedException(typeof(ArgumentOutOfRangeException))]
+#endif
         public void TransportSettingsTest_ZeroOperationTimeout()
         {
             var amqpConnectionPoolSettings = new AmqpConnectionPoolSettings();
-            var transportSetting = new AmqpTransportSettings(TransportType.Amqp, 200, amqpConnectionPoolSettings);
+            var transportSetting = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only, 200, amqpConnectionPoolSettings);
+#if NUNIT
+            Assert.Throws<ArgumentOutOfRangeException>(() => {
+#endif 
             transportSetting.OperationTimeout = TimeSpan.Zero;
+#if NUNIT
+            });
+#endif
         }
 
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("TransportSettings")]
+#if !NUNIT
         [ExpectedException(typeof(ArgumentOutOfRangeException))]
+#endif
         public void TransportSettingsTest_ZeroOpenTimeout()
         {
             var amqpConnectionPoolSettings = new AmqpConnectionPoolSettings();
-            var transportSetting = new AmqpTransportSettings(TransportType.Amqp, 200, amqpConnectionPoolSettings);
+            var transportSetting = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only, 200, amqpConnectionPoolSettings);
+#if NUNIT
+            Assert.Throws<ArgumentOutOfRangeException>(() => {
+#endif 
             transportSetting.OpenTimeout = TimeSpan.Zero;
+#if NUNIT
+            });
+#endif
         }
 
         [TestMethod]
@@ -153,23 +211,39 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("TransportSettings")]
+#if !NUNIT
         [ExpectedException(typeof(ArgumentOutOfRangeException))]
+#endif
         public void ConnectionPoolSettingsTest_ZeroPoolSize()
         {
             var connectionPoolSettings = new AmqpConnectionPoolSettings();
+#if NUNIT
+            Assert.Throws<ArgumentOutOfRangeException>(() => {
+#endif 
             connectionPoolSettings.MaxPoolSize = 0;
             var transportSetting = new AmqpTransportSettings(TransportType.Amqp, 200, connectionPoolSettings);
+#if NUNIT
+            });
+#endif
         }
 
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("TransportSettings")]
+#if !NUNIT
         [ExpectedException(typeof(ArgumentOutOfRangeException))]
+#endif
         public void ConnectionPoolSettingsTest_4SecsIdleTimeout()
         {
             var connectionPoolSettings = new AmqpConnectionPoolSettings();
+#if NUNIT
+            Assert.Throws<ArgumentOutOfRangeException>(() => {
+#endif 
             connectionPoolSettings.ConnectionIdleTimeout = TimeSpan.FromSeconds(4);
             var transportSetting = new AmqpTransportSettings(TransportType.Amqp, 200, connectionPoolSettings);
+#if NUNIT
+            });
+#endif
         }
 
         [TestMethod]
@@ -248,13 +322,21 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("TransportSettings")]
+#if !NUNIT
         [ExpectedException(typeof(ArgumentException))]
+#endif
         public void NullX509Certificate_AmqpTransportSettingsTest()
         {
             string hostName = "acme.azure-devices.net";
             var authMethod = new DeviceAuthenticationWithX509Certificate("device1", null);
 
+#if NUNIT
+            Assert.Throws<ArgumentException>(() => {
+#endif 
             var deviceClient = DeviceClient.Create(hostName, authMethod, new ITransportSettings[] { new AmqpTransportSettings(TransportType.Amqp_Tcp_Only, 100) });
+#if NUNIT
+            });
+#endif
         }
 
         [TestMethod]
