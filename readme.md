@@ -39,7 +39,7 @@ And if you are looking for end to end samples that show how to do simple analyti
    - [Simple UWP JS sample](device/samples/JSSample): Shows how to connect to IoT Hub and send and receive raw messages in a JavaScript [UWP](https://msdn.microsoft.com/windows/uwp/get-started/whats-a-uwp) application.
    - [Simple UWP C# sample](device/samples/UWPSample): Shows how to connect to IoT Hub and send and receive raw messages in a C# [UWP](https://msdn.microsoft.com/windows/uwp/get-started/whats-a-uwp) application.
    - [Simple .NET Micro Framework 4.3 sample](device/samples/NetMFDeviceClientHttpSample_43): Shows how to connect to IoT Hub and send and receive raw messages from a device running .NET Micro Framework 4.3.
-   - [Simple .NET Micro Framework 4.2 sample](device/samples/NetMFDeviceClientHttpSample_42): Shows how to connect to IoT Hub and send and receive raw messages from a device running .NET Micro Framework 4.2.
+   - [Simple .NET Micro Framework 4.4 sample](device/samples/NetMFDeviceClientHttpSample_44): Shows how to connect to IoT Hub and send and receive raw messages from a device running .NET Micro Framework 4.4.
 
 ## Contribution, feedback and issues
 
