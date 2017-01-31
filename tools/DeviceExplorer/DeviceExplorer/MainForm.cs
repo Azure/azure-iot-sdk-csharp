@@ -628,7 +628,6 @@ namespace DeviceExplorer
 
             string methodName = methodNameTextBox.Text;
             string payload = methodPayloadTextBox.Text;
-            payload = "'" + payload + "'";
 
             double timeout = System.Convert.ToDouble(callDeviceMethodNumericUpDown.Value);
 
