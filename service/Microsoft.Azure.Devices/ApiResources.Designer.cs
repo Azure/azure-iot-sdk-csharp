@@ -160,6 +160,15 @@ namespace Microsoft.Azure.Devices {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The ETag should be set while updating the Twin..
+        /// </summary>
+        internal static string ETagNotSetWhileUpdatingTwin {
+            get {
+                return ResourceManager.GetString("ETagNotSetWhileUpdatingTwin", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The ETag should not be set while registering the device..
         /// </summary>
         internal static string ETagSetWhileRegisteringDevice {
@@ -192,6 +201,15 @@ namespace Microsoft.Azure.Devices {
         internal static string InvalidConnectionStringEndpoint {
             get {
                 return ResourceManager.GetString("InvalidConnectionStringEndpoint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ImportMode not handled: {0}.
+        /// </summary>
+        internal static string InvalidImportMode {
+            get {
+                return ResourceManager.GetString("InvalidImportMode", resourceCulture);
             }
         }
         

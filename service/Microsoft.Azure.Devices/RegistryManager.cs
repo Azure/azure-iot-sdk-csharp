@@ -551,5 +551,37 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Updated Twin instance</returns>
         public abstract Task<Twin> UpdateTwinAsync(string deviceId, string jsonTwinPatch, string etag, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Update the mutable fields for a list of <see cref="Twin"/>s previously created within the system
+        /// </summary>
+        /// <param name="twins">List of <see cref="Twin"/>s with updated fields</param>
+        /// <returns>Result of the bulk update operation</returns>
+        public abstract Task<BulkRegistryOperationResult> UpdateTwins2Async(IEnumerable<Twin> twins);
+
+        /// <summary>
+        /// Update the mutable fields for a list of <see cref="Twin"/>s previously created within the system
+        /// </summary>
+        /// <param name="twins">List of <see cref="Twin"/>s with updated fields</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>Result of the bulk update operation</returns>
+        public abstract Task<BulkRegistryOperationResult> UpdateTwins2Async(IEnumerable<Twin> twins, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Update the mutable fields for a list of <see cref="Twin"/>s previously created within the system
+        /// </summary>
+        /// <param name="twins">List of <see cref="Twin"/>s with updated fields</param>
+        /// <param name="forceUpdate">Forces the <see cref="Twin"/> object to be updated even if it has changed since it was retrieved last time.</param>
+        /// <returns>Result of the bulk update operation</returns>
+        public abstract Task<BulkRegistryOperationResult> UpdateTwins2Async(IEnumerable<Twin> twins, bool forceUpdate);
+
+        /// <summary>
+        /// Update the mutable fields for a list of <see cref="Twin"/>s previously created within the system
+        /// </summary>
+        /// <param name="twins">List of <see cref="Twin"/>s with updated fields</param>
+        /// <param name="forceUpdate">Forces the <see cref="Twin"/> object to be updated even if it has changed since it was retrieved last time.</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>Result of the bulk update operation</returns>
+        public abstract Task<BulkRegistryOperationResult> UpdateTwins2Async(IEnumerable<Twin> twins, bool forceUpdate, CancellationToken cancellationToken);
     }
 }

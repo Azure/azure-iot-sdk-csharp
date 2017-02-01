@@ -5,6 +5,7 @@
 namespace Microsoft.Azure.Devices
 {
     using System;
+    using Microsoft.Azure.Devices.Shared;
     using Newtonsoft.Json;
 
     /// <summary>
@@ -13,6 +14,7 @@ namespace Microsoft.Azure.Devices
     public sealed class ExportImportDevice
     {
         string eTag;
+        string twinETag;
 
         /// <summary>
         /// making default ctor public
@@ -29,7 +31,7 @@ namespace Microsoft.Azure.Devices
         public ExportImportDevice(Device device, ImportMode importmode)
         {
             this.Id = device.Id;
-            this.SetETag(device.ETag);
+            this.eTag = this.SanitizeETag(device.ETag);
             this.ImportMode = importmode;
             this.Status = device.Status;
             this.StatusReason = device.StatusReason;
@@ -53,7 +55,7 @@ namespace Microsoft.Azure.Devices
             }
             set
             {
-                this.SetETag(value);
+                this.eTag = this.SanitizeETag(value);
             }
         }
 
@@ -81,7 +83,29 @@ namespace Microsoft.Azure.Devices
         [JsonProperty(PropertyName = "authentication")]
         public AuthenticationMechanism Authentication { get; set; }
 
-        void SetETag(string eTag)
+        [JsonProperty(PropertyName = "twinETag", NullValueHandling = NullValueHandling.Ignore)]
+        public string TwinETag
+        {
+            get { return this.twinETag; }
+            set { this.twinETag = this.SanitizeETag(value); }
+        }
+
+        [JsonProperty(PropertyName = "tags", NullValueHandling = NullValueHandling.Ignore)]
+        public TwinCollection Tags { get; set; }
+
+        [JsonProperty(PropertyName = "properties", NullValueHandling = NullValueHandling.Ignore)]
+        public PropertyContainer Properties { get; set; }
+
+        public sealed class PropertyContainer
+        {
+            [JsonProperty(PropertyName = "desired", NullValueHandling = NullValueHandling.Ignore)]
+            public TwinCollection DesiredProperties { get; set; }
+
+            [JsonProperty(PropertyName = "reported", NullValueHandling = NullValueHandling.Ignore)]
+            public TwinCollection ReportedProperties { get; set; }
+        }
+
+        string SanitizeETag(string eTag)
         {
             if (!string.IsNullOrWhiteSpace(eTag))
             {
@@ -99,12 +123,12 @@ namespace Microsoft.Azure.Devices
                     localETag = localETag.Remove(localETag.Length - 1);
                 }
 
-                this.eTag = localETag;
+                return localETag;
             }
             else
             {
                 // in case it is empty or contains whitespace
-                this.eTag = eTag;
+                return eTag;
             }
         }
     }

@@ -34,5 +34,11 @@ namespace Microsoft.Azure.Devices
 
         [EnumMember(Value = "deleteIfMatchETag")]
         DeleteIfMatchETag = 6,
+
+        [EnumMember(Value = "updateTwin")]
+        UpdateTwin = 7,
+
+        [EnumMember(Value = "updateTwinIfMatchETag")]
+        UpdateTwinIfMatchETag = 8
     }
 }

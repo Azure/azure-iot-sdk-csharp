@@ -420,10 +420,58 @@ namespace Microsoft.Azure.Devices
                         break;
 
                     default:
-                        throw new ArgumentException("ImportMode not handled: " + importMode);
+                        throw new ArgumentException(IotHubApiResources.GetString(ApiResources.InvalidImportMode, importMode));
                 }
 
                 var exportImportDevice = new ExportImportDevice(device, importMode);
+                exportImportDeviceList.Add(exportImportDevice);
+            }
+
+            return exportImportDeviceList;
+        }
+
+        static IEnumerable<ExportImportDevice> GenerateExportImportDeviceListForTwinBulkOperations(IEnumerable<Twin> twins, ImportMode importMode)
+        {
+            if (twins == null)
+            {
+                throw new ArgumentNullException(nameof(twins));
+            }
+
+            if (!twins.Any())
+            {
+                throw new ArgumentException(nameof(twins));
+            }
+
+            var exportImportDeviceList = new List<ExportImportDevice>(twins.Count());
+            foreach (Twin twin in twins)
+            {
+                ValidateTwinId(twin);
+
+                switch (importMode)
+                {
+                    case ImportMode.UpdateTwin:
+                        // No preconditions
+                        break;
+
+                    case ImportMode.UpdateTwinIfMatchETag:
+                        if (string.IsNullOrWhiteSpace(twin.ETag))
+                        {
+                            throw new ArgumentException(ApiResources.ETagNotSetWhileUpdatingTwin);
+                        }
+                        break;
+
+                    default:
+                        throw new ArgumentException(IotHubApiResources.GetString(ApiResources.InvalidImportMode, importMode));
+                }
+
+                var exportImportDevice = new ExportImportDevice();
+                exportImportDevice.Id = twin.DeviceId;
+                exportImportDevice.ImportMode = importMode;
+                exportImportDevice.TwinETag = importMode == ImportMode.UpdateTwinIfMatchETag ? twin.ETag : null;
+                exportImportDevice.Tags = twin.Tags;
+                exportImportDevice.Properties = new ExportImportDevice.PropertyContainer();
+                exportImportDevice.Properties.DesiredProperties = twin.Properties?.Desired;
+
                 exportImportDeviceList.Add(exportImportDevice);
             }
 
@@ -732,6 +780,29 @@ namespace Microsoft.Azure.Devices
                 etag,
                 etag == WildcardEtag ? PutOperationType.ForceUpdateEntity : PutOperationType.UpdateEntity,
                 errorMappingOverrides,
+                cancellationToken);
+        }
+
+        public override Task<BulkRegistryOperationResult> UpdateTwins2Async(IEnumerable<Twin> twins)
+        {
+            return this.UpdateTwins2Async(twins, false, CancellationToken.None);
+        }
+
+        public override Task<BulkRegistryOperationResult> UpdateTwins2Async(IEnumerable<Twin> twins, CancellationToken cancellationToken)
+        {
+            return this.UpdateTwins2Async(twins, false, cancellationToken);
+        }
+
+        public override Task<BulkRegistryOperationResult> UpdateTwins2Async(IEnumerable<Twin> twins, bool forceUpdate)
+        {
+            return this.UpdateTwins2Async(twins, forceUpdate, CancellationToken.None);
+        }
+
+        public override Task<BulkRegistryOperationResult> UpdateTwins2Async(IEnumerable<Twin> twins, bool forceUpdate, CancellationToken cancellationToken)
+        {
+            return this.BulkDeviceOperationsAsync<BulkRegistryOperationResult>(
+                GenerateExportImportDeviceListForTwinBulkOperations(twins, forceUpdate ? ImportMode.UpdateTwin : ImportMode.UpdateTwinIfMatchETag),
+                ClientApiVersionHelper.ApiVersionQueryString,
                 cancellationToken);
         }
 

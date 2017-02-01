@@ -826,5 +826,116 @@ namespace Microsoft.Azure.Devices.Api.Test
             var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
             await registryManager.RemoveDevices2Async(new List<Device>() { goodDevice1, goodDevice2 }, false, CancellationToken.None);
         }
+
+        [TestMethod]
+        [TestCategory("CIT")]
+        [TestCategory("API")]
+        [ExpectedException(typeof(ArgumentException))]
+        public async Task UpdateTwins2AsyncWithInvalidDeviceIdTest()
+        {
+            var goodTwin = new Twin("123");
+            var badTwin = new Twin("/badTwin");
+            var restOpMock = new Mock<IHttpClientHelper>();
+            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            await registryManager.UpdateTwins2Async(new List<Twin>() { goodTwin, badTwin });
+            Assert.Fail("UpdateTwins API did not throw exception when bad deviceid was used.");
+        }
+
+        [TestMethod]
+        [TestCategory("CIT")]
+        [TestCategory("API")]
+        [ExpectedException(typeof(ArgumentException))]
+        public async Task UpdateTwins2AsyncWithETagMissingTest()
+        {
+            var goodTwin = new Twin("123") { ETag = "234" };
+            var badTwin = new Twin("234");
+            var restOpMock = new Mock<IHttpClientHelper>();
+            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            await registryManager.UpdateTwins2Async(new List<Twin>() { goodTwin, badTwin });
+            Assert.Fail("UpdateTwins API did not throw exception when ETag was null.");
+        }
+
+        [TestMethod]
+        [TestCategory("CIT")]
+        [TestCategory("API")]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public async Task UpdateTwins2AsyncWithNullTwinTest()
+        {
+            var goodTwin = new Twin("123") { ETag = "234" };
+            Twin badTwin = null;
+            var restOpMock = new Mock<IHttpClientHelper>();
+            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            await registryManager.UpdateTwins2Async(new List<Twin>() { goodTwin, badTwin });
+            Assert.Fail("UpdateTwins API did not throw exception when Null twin was used.");
+        }
+
+        [TestMethod]
+        [TestCategory("CIT")]
+        [TestCategory("API")]
+        [ExpectedException(typeof(ArgumentException))]
+        public async Task UpdateTwins2AsyncWithNullTwinListTest()
+        {
+            var restOpMock = new Mock<IHttpClientHelper>();
+            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            await registryManager.UpdateTwins2Async(new List<Twin>());
+            Assert.Fail("UpdateTwins API did not throw exception when Null twin list was used.");
+        }
+
+        [TestMethod]
+        [TestCategory("CIT")]
+        [TestCategory("API")]
+        [ExpectedException(typeof(ArgumentException))]
+        public async Task UpdateTwins2AsyncWithDeviceIdNullTest()
+        {
+            var goodTwin = new Twin("123") { ETag = "234" };
+            var badTwin = new Twin();
+            var restOpMock = new Mock<IHttpClientHelper>();
+            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            await registryManager.UpdateTwins2Async(new List<Twin>() { goodTwin, badTwin });
+            Assert.Fail("UpdateTwins API did not throw exception when deviceId was null.");
+        }
+
+        [TestMethod]
+        [TestCategory("CIT")]
+        [TestCategory("API")]
+        public async Task UpdateTwins2AsyncForceUpdateTest()
+        {
+            var goodTwin1 = new Twin("123");
+            var goodTwin2 = new Twin("234");
+            var restOpMock = new Mock<IHttpClientHelper>();
+            restOpMock.Setup(restOp => restOp.PostAsync<IEnumerable<ExportImportDevice>, Task<BulkRegistryOperationResult>>(It.IsAny<Uri>(), It.IsAny<IEnumerable<ExportImportDevice>>(), It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<CancellationToken>())).ReturnsAsync(null);
+
+            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            await registryManager.UpdateTwins2Async(new List<Twin>() { goodTwin1, goodTwin2 }, true, CancellationToken.None);
+        }
+
+        [TestMethod]
+        [TestCategory("CIT")]
+        [TestCategory("API")]
+        [ExpectedException(typeof(ArgumentException))]
+        public async Task UpdateTwins2AsyncForceUpdateMissingETagTest()
+        {
+            var badTwin1 = new Twin("123");
+            var badTwin2 = new Twin("234");
+            var restOpMock = new Mock<IHttpClientHelper>();
+            restOpMock.Setup(restOp => restOp.PostAsync<IEnumerable<ExportImportDevice>, Task<BulkRegistryOperationResult>>(It.IsAny<Uri>(), It.IsAny<IEnumerable<ExportImportDevice>>(), It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<CancellationToken>())).ReturnsAsync(null);
+
+            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            await registryManager.UpdateTwins2Async(new List<Twin>() { badTwin1, badTwin2 }, false, CancellationToken.None);
+        }
+
+        [TestMethod]
+        [TestCategory("CIT")]
+        [TestCategory("API")]
+        public async Task UpdateTwins2AsyncForceUpdateFalseTest()
+        {
+            var goodTwin1 = new Twin("123") { ETag = "234" };
+            var goodTwin2 = new Twin("234") { ETag = "123" };
+            var restOpMock = new Mock<IHttpClientHelper>();
+            restOpMock.Setup(restOp => restOp.PostAsync<IEnumerable<ExportImportDevice>, Task<BulkRegistryOperationResult>>(It.IsAny<Uri>(), It.IsAny<IEnumerable<ExportImportDevice>>(), It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(), It.IsAny<IDictionary<string, string>>(), It.IsAny<CancellationToken>())).ReturnsAsync(null);
+
+            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            await registryManager.UpdateTwins2Async(new List<Twin>() { goodTwin1, goodTwin2 }, false, CancellationToken.None);
+        }
     }
 }

@@ -393,6 +393,28 @@ namespace Microsoft.Azure.Devices
                 return ResourceManager.GetString("DeviceJobParametersNullOrEmptyDeviceListEntries", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The ETag should be set while updating the Twin..
+        /// </summary>
+        internal static string ETagNotSetWhileUpdatingTwin
+        {
+            get
+            {
+                return ResourceManager.GetString("ETagNotSetWhileUpdatingTwin", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to ImportMode not handled: {0}.
+        /// </summary>
+        internal static string InvalidImportMode
+        {
+            get
+            {
+                return ResourceManager.GetString("InvalidImportMode", resourceCulture);
+            }
+        }
     }
 }
 

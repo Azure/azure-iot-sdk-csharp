@@ -204,4 +204,10 @@
   <data name="DeviceJobParametersNullOrEmptyDeviceListEntries" xml:space="preserve">
     <value>null or empty deviceId entries specified</value>
   </data>
+  <data name="ETagNotSetWhileUpdatingTwin" xml:space="preserve">
+    <value>The ETag should be set while updating the Twin.</value>
+  </data>
+  <data name="InvalidImportMode" xml:space="preserve">
+    <value>ImportMode not handled: {0}</value>
+  </data>
 </root>

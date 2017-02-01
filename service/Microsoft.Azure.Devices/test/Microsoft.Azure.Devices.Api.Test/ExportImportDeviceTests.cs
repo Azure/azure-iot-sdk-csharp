@@ -17,11 +17,13 @@ namespace Microsoft.Azure.Devices.Api.Test
         {
             // Arrange
             var exportimportDevice = new ExportImportDevice(new Device("device") { ETag = "MA=="} , ImportMode.Create);
+            exportimportDevice.TwinETag = "MA==";
 
             // nothing to Act on
 
             // Assert
             Assert.IsTrue(exportimportDevice.ETag == "MA==", "ETag was not set correctly");
+            Assert.IsTrue(exportimportDevice.TwinETag == "MA==", "Twin ETag was not set correctly");
         }
 
         [TestCategory("CIT")]
@@ -30,11 +32,13 @@ namespace Microsoft.Azure.Devices.Api.Test
         {
             // Arrange
             var exportimportDevice = new ExportImportDevice(new Device("device") { ETag = "\"MA==\"" }, ImportMode.Create);
+            exportimportDevice.TwinETag = "\"MA==\"";
 
             // nothing to Act on
 
             // Assert
             Assert.IsTrue(exportimportDevice.ETag == "MA==", "ETag was not set correctly");
+            Assert.IsTrue(exportimportDevice.TwinETag == "MA==", "Twin ETag was not set correctly");
         }
 
         [TestCategory("CIT")]
@@ -43,11 +47,13 @@ namespace Microsoft.Azure.Devices.Api.Test
         {
             // Arrange
             var exportimportDevice = new ExportImportDevice(new Device("device") { ETag = "\"\"MA==\"\"" }, ImportMode.Create);
+            exportimportDevice.TwinETag = "\"\"MA==\"\"";
 
             // nothing to Act on
 
             // Assert
             Assert.IsTrue(exportimportDevice.ETag == "\"MA==\"", "ETag was not set correctly");
+            Assert.IsTrue(exportimportDevice.TwinETag == "\"MA==\"", "Twin ETag was not set correctly");
         }
 
         [TestCategory("CIT")]
@@ -56,11 +62,13 @@ namespace Microsoft.Azure.Devices.Api.Test
         {
             // Arrange
             var exportimportDevice = new ExportImportDevice(new Device("device") { ETag = "\"\"MA==" }, ImportMode.Create);
+            exportimportDevice.TwinETag = "\"\"MA==";
 
             // nothing to Act on
 
             // Assert
             Assert.IsTrue(exportimportDevice.ETag == "\"MA==", "ETag was not set correctly");
+            Assert.IsTrue(exportimportDevice.TwinETag == "\"MA==", "Twin ETag was not set correctly");
         }
 
         [TestCategory("CIT")]
@@ -69,11 +77,13 @@ namespace Microsoft.Azure.Devices.Api.Test
         {
             // Arrange
             var exportimportDevice = new ExportImportDevice(new Device("device") { ETag = "MA==\"\"" }, ImportMode.Create);
+            exportimportDevice.TwinETag = "MA==\"\"";
 
             // nothing to Act on
 
             // Assert
             Assert.IsTrue(exportimportDevice.ETag == "MA==\"", "ETag was not set correctly");
+            Assert.IsTrue(exportimportDevice.TwinETag == "MA==\"", "Twin ETag was not set correctly");
         }
 
         [TestCategory("CIT")]
@@ -87,6 +97,7 @@ namespace Microsoft.Azure.Devices.Api.Test
 
             // Assert
             Assert.IsTrue(exportimportDevice.ETag == null, "ETag was not set correctly");
+            Assert.IsTrue(exportimportDevice.TwinETag == null, "Twin ETag was not set correctly");
         }
 
         [TestCategory("CIT")]
@@ -95,11 +106,13 @@ namespace Microsoft.Azure.Devices.Api.Test
         {
             // Arrange
             var exportimportDevice = new ExportImportDevice(new Device("device") { ETag =  string.Empty}, ImportMode.Create);
+            exportimportDevice.TwinETag = string.Empty;
 
             // nothing to Act on
 
             // Assert
             Assert.IsTrue(exportimportDevice.ETag == string.Empty, "ETag was not set correctly");
+            Assert.IsTrue(exportimportDevice.TwinETag == string.Empty, "Twin ETag was not set correctly");
         }
 
         //[TestCategory("CIT")]
