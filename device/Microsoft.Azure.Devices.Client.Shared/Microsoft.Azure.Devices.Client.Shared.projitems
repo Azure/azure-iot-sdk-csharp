@@ -12,6 +12,18 @@
     <DeviceClientDir>..\Microsoft.Azure.Devices.Client</DeviceClientDir>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(DeviceClientDir)\AmqpConnectionPoolSettings.cs">
+
+      <Link>AmqpConnectionPoolSettings.cs</Link>
+
+    </Compile>
+
+    <Compile Include="$(DeviceClientDir)\AmqpTransportSettings.cs">
+
+      <Link>AmqpTransportSettings.cs</Link>
+
+    </Compile>
+
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\AuthenticationMethodFactory.cs">
       <Link>AuthenticationMethodFactory.cs</Link>
     </Compile>
@@ -24,6 +36,12 @@
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\Common\BufferedInputStream.cs">
       <Link>BufferedInputStream.cs</Link>
     </Compile>
+    <Compile Include="$(DeviceClientDir)\Common\Client\IotHubAmqpProperty.cs">
+
+      <Link>IotHubAmqpProperty.cs</Link>
+
+    </Compile>
+
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\Common\CommonConstants.cs">
       <Link>CommonConstants.cs</Link>
     </Compile>
@@ -36,6 +54,13 @@
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\Common\Data\AccessRights.cs">
       <Link>AccessRights.cs</Link>
     </Compile>
+    <Compile Include="$(DeviceClientDir)\Common\Data\AmqpErrorMapper.cs">
+
+      <Link>AmqpErrorMapper.cs</Link>
+
+
+    </Compile>
+
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\Common\Data\SharedAccessSignatureAuthorizationRule.cs">
       <Link>SharedAccessSignatureAuthorizationRule.cs</Link>
     </Compile>
@@ -123,6 +148,12 @@
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\Common\Extensions\StringFormattingExtensions.cs">
       <Link>StringFormattingExtensions.cs</Link>
     </Compile>
+    <Compile Include="$(DeviceClientDir)\Common\FaultTolerantAmqpObject.cs">
+
+      <Link>FaultTolerantAmqpObject.cs</Link>
+
+    </Compile>
+
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\Common\Fx.cs">
       <Link>Fx.cs</Link>
     </Compile>
@@ -132,6 +163,14 @@
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\Common\FxTrace.cs">
       <Link>FxTrace.cs</Link>
     </Compile>
+    <Compile Include="$(DeviceClientDir)\Common\HashCode.cs">
+
+
+      <Link>HashCode.cs</Link>
+
+
+    </Compile>
+
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\Common\InternalBufferManager.cs">
       <Link>InternalBufferManager.cs</Link>
     </Compile>
@@ -141,6 +180,12 @@
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\Common\PartialTrustHelpers.cs">
       <Link>PartialTrustHelpers.cs</Link>
     </Compile>
+    <Compile Include="$(DeviceClientDir)\Common\PerfectHash.cs">
+      <Link>PerfectHash.cs</Link>
+
+
+    </Compile>
+
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\Common\ReadOnlyDictionary45.cs">
       <Link>ReadOnlyDictionary45.cs</Link>
     </Compile>
@@ -231,6 +276,42 @@
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\IDelegatingHandler.cs">
       <Link>IDelegatingHandler.cs</Link>
     </Compile>
+    <Compile Include="$(DeviceClientDir)\IotHubConnection.cs">
+
+      <Link>IotHubConnection.cs</Link>
+
+
+    </Compile>
+
+    <Compile Include="$(DeviceClientDir)\IotHubDeviceMuxConnection.cs">
+
+      <Link>IotHubDeviceMuxConnection.cs</Link>
+
+    </Compile>
+
+    <Compile Include="$(DeviceClientDir)\IotHubDeviceScopeConnectionPool.cs">
+
+      <Link>IotHubDeviceScopeConnectionPool.cs</Link>
+
+    </Compile>
+
+    <Compile Include="$(DeviceClientDir)\IotHubScopeConnectionPool.cs">
+
+      <Link>IotHubScopeConnectionPool.cs</Link>
+    </Compile>
+
+    <Compile Include="$(DeviceClientDir)\IotHubSingleTokenConnection.cs">
+
+      <Link>IotHubSingleTokenConnection.cs</Link>
+
+    </Compile>
+
+    <Compile Include="$(DeviceClientDir)\IotHubTokenRefresher.cs">
+
+      <Link>IotHubTokenRefresher.cs</Link>
+
+    </Compile>
+
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\IotHubConnectionCache.cs">
       <Link>IotHubConnectionCache.cs</Link>
     </Compile>
@@ -288,9 +369,44 @@
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\PutOperationType.cs">
       <Link>PutOperationType.cs</Link>
     </Compile>
+    <Compile Include="$(DeviceClientDir)\Transport\AmqpClientHelper.cs">
+
+
+      <Link>AmqpClientHelper.cs</Link>
+
+
+    </Compile>
+
+
+    <Compile Include="$(DeviceClientDir)\Transport\AmqpTransportHandler.cs">
+
+
+      <Link>AmqpTransportHandler.cs</Link>
+
+
+    </Compile>
+
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\Transport\DefaultDelegatingHandler.cs">
       <Link>DefaultDelegatingHandler.cs</Link>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\Transport\ITransportHandlerFactory.cs">
+
+      <Link>ITransportHandlerFactory.cs</Link>
+
+    </Compile>
+
+    <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\Transport\TransportHandlerFactory.cs">
+
+      <Link>TransportHandlerFactory.cs</Link>
+
+    </Compile>
+
+    <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\Transport\ProtocolRoutingDelegatingHandler.cs">
+
+      <Link>ProtocolRoutingDelegatingHandler.cs</Link>
+
+    </Compile>
+
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\Transport\ErrorDelegatingHandler.cs">
       <Link>ErrorDelegatingHandler.cs</Link>
     </Compile>
