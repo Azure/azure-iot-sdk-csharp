@@ -294,8 +294,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 GC.SuppressFinalize(this);
                 Task eventSendingLinkCloseTask = this.faultTolerantEventSendingLink.CloseAsync();
                 Task deviceBoundReceivingLinkCloseTask = this.faultTolerantDeviceBoundReceivingLink.CloseAsync();
+#if WIP_C2D_METHODS_AMQP
                 Task disabledMethodTask = this.DisableMethodsAsync(CancellationToken.None);
                 await Task.WhenAll(eventSendingLinkCloseTask, deviceBoundReceivingLinkCloseTask, disabledMethodTask);
+#else
+                await Task.WhenAll(eventSendingLinkCloseTask, deviceBoundReceivingLinkCloseTask);
+#endif
                 this.IotHubConnection.Release(this.deviceId);
             }
         }

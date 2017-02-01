@@ -1,19 +1,17 @@
 {
   "locked": false,
-  "version": 2,
+  "version": 1,
   "targets": {
     "UAP,Version=v10.0": {
-      "Microsoft.Azure.Amqp/1.1.0": {
-        "type": "package",
+      "Microsoft.Azure.Amqp/2.0.2": {
         "compile": {
-          "lib/uap10.0/Microsoft.Azure.Amqp.Uwp.dll": {}
+          "lib/uap10.0/Microsoft.Azure.Amqp.dll": {}
         },
         "runtime": {
-          "lib/uap10.0/Microsoft.Azure.Amqp.Uwp.dll": {}
+          "lib/uap10.0/Microsoft.Azure.Amqp.dll": {}
         }
       },
       "Microsoft.CSharp/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -40,7 +38,6 @@
         }
       },
       "Microsoft.NETCore/5.0.0": {
-        "type": "package",
         "dependencies": {
           "Microsoft.CSharp": "4.0.0",
           "Microsoft.NETCore.Targets": "1.0.0",
@@ -99,11 +96,8 @@
           "System.Xml.XDocument": "4.0.10"
         }
       },
-      "Microsoft.NETCore.Platforms/1.0.0": {
-        "type": "package"
-      },
+      "Microsoft.NETCore.Platforms/1.0.0": {},
       "Microsoft.NETCore.Portable.Compatibility/1.0.0": {
-        "type": "package",
         "dependencies": {
           "Microsoft.NETCore.Runtime": "1.0.0"
         },
@@ -191,21 +185,15 @@
           }
         }
       },
-      "Microsoft.NETCore.Runtime/1.0.0": {
-        "type": "package"
-      },
+      "Microsoft.NETCore.Runtime/1.0.0": {},
       "Microsoft.NETCore.Targets/1.0.0": {
-        "type": "package",
         "dependencies": {
           "Microsoft.NETCore.Platforms": "1.0.0",
           "Microsoft.NETCore.Targets.UniversalWindowsPlatform": "5.0.0"
         }
       },
-      "Microsoft.NETCore.Targets.UniversalWindowsPlatform/5.0.0": {
-        "type": "package"
-      },
+      "Microsoft.NETCore.Targets.UniversalWindowsPlatform/5.0.0": {},
       "Microsoft.NETCore.UniversalWindowsPlatform/5.0.0": {
-        "type": "package",
         "dependencies": {
           "Microsoft.NETCore": "5.0.0",
           "Microsoft.NETCore.Portable.Compatibility": "1.0.0",
@@ -238,7 +226,6 @@
         }
       },
       "Microsoft.VisualBasic/10.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -265,7 +252,6 @@
         }
       },
       "Microsoft.Win32.Primitives/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.20",
           "System.Runtime.InteropServices": "4.0.20"
@@ -278,7 +264,6 @@
         }
       },
       "Newtonsoft.Json/6.0.8": {
-        "type": "package",
         "compile": {
           "lib/netcore45/Newtonsoft.Json.dll": {}
         },
@@ -286,20 +271,62 @@
           "lib/netcore45/Newtonsoft.Json.dll": {}
         }
       },
-      "PCLCrypto/1.0.86": {
-        "type": "package",
+      "PCLCrypto/2.0.147": {
         "dependencies": {
-          "Validation": "[2.0.6, 3.0.0)"
+          "PInvoke.NCrypt": "0.3.2",
+          "Validation": "2.2.8"
         },
         "compile": {
-          "lib/win81/PCLCrypto.dll": {}
+          "lib/portable-win81+wpa81/PCLCrypto.dll": {}
         },
         "runtime": {
-          "lib/win81/PCLCrypto.dll": {}
+          "lib/portable-win81+wpa81/PCLCrypto.dll": {}
+        }
+      },
+      "PInvoke.BCrypt/0.3.2": {
+        "dependencies": {
+          "PInvoke.Kernel32": "0.3.2",
+          "PInvoke.Windows.Core": "0.3.2"
+        },
+        "compile": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.BCrypt.dll": {}
+        },
+        "runtime": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.BCrypt.dll": {}
+        }
+      },
+      "PInvoke.Kernel32/0.3.2": {
+        "dependencies": {
+          "PInvoke.Windows.Core": "0.3.2"
+        },
+        "compile": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.Kernel32.dll": {}
+        },
+        "runtime": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.Kernel32.dll": {}
+        }
+      },
+      "PInvoke.NCrypt/0.3.2": {
+        "dependencies": {
+          "PInvoke.BCrypt": "0.3.2",
+          "PInvoke.Windows.Core": "0.3.2"
+        },
+        "compile": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.NCrypt.dll": {}
+        },
+        "runtime": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.NCrypt.dll": {}
+        }
+      },
+      "PInvoke.Windows.Core/0.3.2": {
+        "compile": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.Windows.Core.dll": {}
+        },
+        "runtime": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.Windows.Core.dll": {}
         }
       },
       "System.AppContext/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.Resources.ResourceManager": "4.0.0",
@@ -314,7 +341,6 @@
         }
       },
       "System.Collections/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Diagnostics.Debug": "4.0.0",
           "System.Resources.ResourceManager": "4.0.0",
@@ -336,7 +362,6 @@
         }
       },
       "System.Collections.Concurrent/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -356,7 +381,6 @@
         }
       },
       "System.Collections.Immutable/1.1.37": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.Diagnostics.Debug": "4.0.0",
@@ -375,7 +399,6 @@
         }
       },
       "System.Collections.NonGeneric/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Diagnostics.Debug": "4.0.10",
           "System.Globalization": "4.0.10",
@@ -392,7 +415,6 @@
         }
       },
       "System.Collections.Specialized/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections.NonGeneric": "4.0.0",
           "System.Globalization": "4.0.10",
@@ -410,7 +432,6 @@
         }
       },
       "System.ComponentModel/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.20"
         },
@@ -422,7 +443,6 @@
         }
       },
       "System.ComponentModel.Annotations/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.ComponentModel": "4.0.0",
@@ -444,7 +464,6 @@
         }
       },
       "System.ComponentModel.EventBasedAsync/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Resources.ResourceManager": "4.0.0",
           "System.Runtime": "4.0.20",
@@ -459,7 +478,6 @@
         }
       },
       "System.Data.Common/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Collections.NonGeneric": "4.0.0",
@@ -479,7 +497,6 @@
         }
       },
       "System.Diagnostics.Contracts/4.0.0": {
-        "type": "package",
         "compile": {
           "ref/netcore50/System.Diagnostics.Contracts.dll": {}
         },
@@ -494,7 +511,6 @@
         }
       },
       "System.Diagnostics.Debug/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0"
         },
@@ -512,7 +528,6 @@
         }
       },
       "System.Diagnostics.StackTrace/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.20"
         },
@@ -530,7 +545,6 @@
         }
       },
       "System.Diagnostics.Tools/4.0.0": {
-        "type": "package",
         "compile": {
           "ref/netcore50/System.Diagnostics.Tools.dll": {}
         },
@@ -545,7 +559,6 @@
         }
       },
       "System.Diagnostics.Tracing/4.0.20": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Globalization": "4.0.0",
@@ -572,7 +585,6 @@
         }
       },
       "System.Dynamic.Runtime/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.Diagnostics.Debug": "4.0.0",
@@ -601,7 +613,6 @@
         }
       },
       "System.Globalization/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0"
         },
@@ -619,7 +630,6 @@
         }
       },
       "System.Globalization.Calendars/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Globalization": "4.0.0",
           "System.Runtime": "4.0.0"
@@ -638,7 +648,6 @@
         }
       },
       "System.Globalization.Extensions/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Globalization": "4.0.10",
           "System.Resources.ResourceManager": "4.0.0",
@@ -654,7 +663,6 @@
         }
       },
       "System.IO/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Globalization": "4.0.0",
           "System.Runtime": "4.0.20",
@@ -677,7 +685,6 @@
         }
       },
       "System.IO.Compression/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.IO": "4.0.0",
@@ -697,7 +704,6 @@
         }
       },
       "System.IO.Compression.ZipFile/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.IO": "4.0.10",
           "System.IO.Compression": "4.0.0",
@@ -716,7 +722,6 @@
         }
       },
       "System.IO.FileSystem/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -742,7 +747,6 @@
         }
       },
       "System.IO.FileSystem.Primitives/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.20"
         },
@@ -754,7 +758,6 @@
         }
       },
       "System.IO.IsolatedStorage/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.IO": "4.0.10",
           "System.IO.FileSystem": "4.0.0",
@@ -774,7 +777,6 @@
         }
       },
       "System.IO.UnmanagedMemoryStream/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.IO": "4.0.10",
           "System.IO.FileSystem.Primitives": "4.0.0",
@@ -792,7 +794,6 @@
         }
       },
       "System.Linq/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -808,7 +809,6 @@
         }
       },
       "System.Linq.Expressions/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.Diagnostics.Debug": "4.0.0",
@@ -838,7 +838,6 @@
         }
       },
       "System.Linq.Parallel/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Collections.Concurrent": "4.0.10",
@@ -859,7 +858,6 @@
         }
       },
       "System.Linq.Queryable/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Linq": "4.0.0",
@@ -877,7 +875,6 @@
         }
       },
       "System.Net.Http/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -902,7 +899,6 @@
         }
       },
       "System.Net.Http.Rtc/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Net.Http": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -915,7 +911,6 @@
         }
       },
       "System.Net.NetworkInformation/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0",
           "System.Runtime.InteropServices.WindowsRuntime": "4.0.0",
@@ -929,7 +924,6 @@
         }
       },
       "System.Net.Primitives/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Private.Networking": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -942,7 +936,6 @@
         }
       },
       "System.Net.Requests/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -963,7 +956,6 @@
         }
       },
       "System.Net.Sockets/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Private.Networking": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -976,7 +968,6 @@
         }
       },
       "System.Net.WebHeaderCollection/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections.NonGeneric": "4.0.0",
           "System.Collections.Specialized": "4.0.0",
@@ -991,7 +982,6 @@
         }
       },
       "System.Numerics.Vectors/4.1.0": {
-        "type": "package",
         "dependencies": {
           "System.Globalization": "4.0.10",
           "System.Resources.ResourceManager": "4.0.0",
@@ -1006,7 +996,6 @@
         }
       },
       "System.Numerics.Vectors.WindowsRuntime/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Numerics.Vectors": "4.1.0",
           "System.Runtime": "4.0.20",
@@ -1020,7 +1009,6 @@
         }
       },
       "System.ObjectModel/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -1036,7 +1024,6 @@
         }
       },
       "System.Private.DataContractSerialization/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Globalization": "4.0.10",
@@ -1071,7 +1058,6 @@
         }
       },
       "System.Private.Networking/4.0.0": {
-        "type": "package",
         "dependencies": {
           "Microsoft.Win32.Primitives": "4.0.0",
           "System.Collections": "4.0.10",
@@ -1099,7 +1085,6 @@
         }
       },
       "System.Private.ServiceModel/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Collections.Concurrent": "4.0.10",
@@ -1148,7 +1133,6 @@
         }
       },
       "System.Private.Uri/4.0.0": {
-        "type": "package",
         "compile": {
           "ref/netcore50/_._": {}
         },
@@ -1163,7 +1147,6 @@
         }
       },
       "System.Reflection/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.IO": "4.0.0",
           "System.Reflection.Primitives": "4.0.0",
@@ -1183,7 +1166,6 @@
         }
       },
       "System.Reflection.Context/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Reflection": "4.0.10",
           "System.Resources.ResourceManager": "4.0.0",
@@ -1197,7 +1179,6 @@
         }
       },
       "System.Reflection.DispatchProxy/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Linq": "4.0.0",
@@ -1222,7 +1203,6 @@
         }
       },
       "System.Reflection.Extensions/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Diagnostics.Debug": "4.0.10",
           "System.Reflection": "4.0.10",
@@ -1246,7 +1226,6 @@
         }
       },
       "System.Reflection.Metadata/1.0.22": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.Collections.Immutable": "1.1.37",
@@ -1271,7 +1250,6 @@
         }
       },
       "System.Reflection.Primitives/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0",
           "System.Threading": "4.0.0"
@@ -1290,7 +1268,6 @@
         }
       },
       "System.Reflection.TypeExtensions/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Diagnostics.Contracts": "4.0.0",
           "System.Diagnostics.Debug": "4.0.10",
@@ -1315,7 +1292,6 @@
         }
       },
       "System.Resources.ResourceManager/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Globalization": "4.0.0",
           "System.Reflection": "4.0.10",
@@ -1335,7 +1311,6 @@
         }
       },
       "System.Runtime/4.0.20": {
-        "type": "package",
         "dependencies": {
           "System.Private.Uri": "4.0.0"
         },
@@ -1353,7 +1328,6 @@
         }
       },
       "System.Runtime.Extensions/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.20"
         },
@@ -1371,7 +1345,6 @@
         }
       },
       "System.Runtime.Handles/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0"
         },
@@ -1389,7 +1362,6 @@
         }
       },
       "System.Runtime.InteropServices/4.0.20": {
-        "type": "package",
         "dependencies": {
           "System.Reflection": "4.0.0",
           "System.Reflection.Primitives": "4.0.0",
@@ -1410,7 +1382,6 @@
         }
       },
       "System.Runtime.InteropServices.WindowsRuntime/4.0.0": {
-        "type": "package",
         "compile": {
           "ref/netcore50/System.Runtime.InteropServices.WindowsRuntime.dll": {}
         },
@@ -1425,7 +1396,6 @@
         }
       },
       "System.Runtime.Numerics/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Globalization": "4.0.10",
           "System.Resources.ResourceManager": "4.0.0",
@@ -1440,7 +1410,6 @@
         }
       },
       "System.Runtime.Serialization.Json/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Private.DataContractSerialization": "4.0.0"
         },
@@ -1458,7 +1427,6 @@
         }
       },
       "System.Runtime.Serialization.Primitives/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Resources.ResourceManager": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -1471,7 +1439,6 @@
         }
       },
       "System.Runtime.Serialization.Xml/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Private.DataContractSerialization": "4.0.0",
           "System.Runtime.Serialization.Primitives": "4.0.10"
@@ -1490,7 +1457,6 @@
         }
       },
       "System.Runtime.WindowsRuntime/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Diagnostics.Debug": "4.0.10",
           "System.Globalization": "4.0.0",
@@ -1517,7 +1483,6 @@
         }
       },
       "System.Runtime.WindowsRuntime.UI.Xaml/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Globalization": "4.0.0",
           "System.Resources.ResourceManager": "4.0.0",
@@ -1533,7 +1498,6 @@
         }
       },
       "System.Security.Claims/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.Diagnostics.Debug": "4.0.0",
@@ -1552,7 +1516,6 @@
         }
       },
       "System.Security.Principal/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0"
         },
@@ -1564,7 +1527,6 @@
         }
       },
       "System.ServiceModel.Duplex/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Private.ServiceModel": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -1577,7 +1539,6 @@
         }
       },
       "System.ServiceModel.Http/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Private.ServiceModel": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -1590,7 +1551,6 @@
         }
       },
       "System.ServiceModel.NetTcp/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Private.ServiceModel": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -1603,7 +1563,6 @@
         }
       },
       "System.ServiceModel.Primitives/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Private.ServiceModel": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -1616,7 +1575,6 @@
         }
       },
       "System.ServiceModel.Security/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Private.ServiceModel": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -1629,7 +1587,6 @@
         }
       },
       "System.Text.Encoding/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0"
         },
@@ -1647,7 +1604,6 @@
         }
       },
       "System.Text.Encoding.CodePages/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Globalization": "4.0.10",
@@ -1669,7 +1625,6 @@
         }
       },
       "System.Text.Encoding.Extensions/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0",
           "System.Text.Encoding": "4.0.10"
@@ -1688,7 +1643,6 @@
         }
       },
       "System.Text.RegularExpressions/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Globalization": "4.0.10",
@@ -1705,7 +1659,6 @@
         }
       },
       "System.Threading/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0",
           "System.Threading.Tasks": "4.0.0"
@@ -1724,7 +1677,6 @@
         }
       },
       "System.Threading.Overlapped/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Resources.ResourceManager": "4.0.0",
           "System.Runtime": "4.0.20",
@@ -1741,7 +1693,6 @@
         }
       },
       "System.Threading.Tasks/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0"
         },
@@ -1759,7 +1710,6 @@
         }
       },
       "System.Threading.Tasks.Dataflow/4.5.25": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.Collections.Concurrent": "4.0.0",
@@ -1781,7 +1731,6 @@
         }
       },
       "System.Threading.Tasks.Parallel/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections.Concurrent": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -1800,7 +1749,6 @@
         }
       },
       "System.Threading.Timer/4.0.0": {
-        "type": "package",
         "compile": {
           "ref/netcore50/System.Threading.Timer.dll": {}
         },
@@ -1815,7 +1763,6 @@
         }
       },
       "System.Xml.ReaderWriter/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -1840,7 +1787,6 @@
         }
       },
       "System.Xml.XDocument/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -1862,7 +1808,6 @@
         }
       },
       "System.Xml.XmlDocument/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -1883,7 +1828,6 @@
         }
       },
       "System.Xml.XmlSerializer/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -1916,7 +1860,6 @@
         }
       },
       "Validation/2.2.8": {
-        "type": "package",
         "compile": {
           "lib/dotnet/Validation.dll": {}
         },
@@ -1926,17 +1869,15 @@
       }
     },
     "UAP,Version=v10.0/win10-arm": {
-      "Microsoft.Azure.Amqp/1.1.0": {
-        "type": "package",
+      "Microsoft.Azure.Amqp/2.0.2": {
         "compile": {
-          "lib/uap10.0/Microsoft.Azure.Amqp.Uwp.dll": {}
+          "lib/uap10.0/Microsoft.Azure.Amqp.dll": {}
         },
         "runtime": {
-          "lib/uap10.0/Microsoft.Azure.Amqp.Uwp.dll": {}
+          "lib/uap10.0/Microsoft.Azure.Amqp.dll": {}
         }
       },
       "Microsoft.CSharp/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -1963,7 +1904,6 @@
         }
       },
       "Microsoft.NETCore/5.0.0": {
-        "type": "package",
         "dependencies": {
           "Microsoft.CSharp": "4.0.0",
           "Microsoft.NETCore.Targets": "1.0.0",
@@ -2022,11 +1962,8 @@
           "System.Xml.XDocument": "4.0.10"
         }
       },
-      "Microsoft.NETCore.Platforms/1.0.0": {
-        "type": "package"
-      },
+      "Microsoft.NETCore.Platforms/1.0.0": {},
       "Microsoft.NETCore.Portable.Compatibility/1.0.0": {
-        "type": "package",
         "dependencies": {
           "Microsoft.NETCore.Runtime": "1.0.0"
         },
@@ -2061,13 +1998,11 @@
         }
       },
       "Microsoft.NETCore.Runtime/1.0.0": {
-        "type": "package",
         "dependencies": {
           "Microsoft.NETCore.Runtime.CoreCLR-arm": "1.0.0"
         }
       },
       "Microsoft.NETCore.Runtime.CoreCLR-arm/1.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "[4.0.10]",
           "System.Diagnostics.Contracts": "[4.0.0]",
@@ -2111,17 +2046,13 @@
         }
       },
       "Microsoft.NETCore.Targets/1.0.0": {
-        "type": "package",
         "dependencies": {
           "Microsoft.NETCore.Platforms": "1.0.0",
           "Microsoft.NETCore.Targets.UniversalWindowsPlatform": "5.0.0"
         }
       },
-      "Microsoft.NETCore.Targets.UniversalWindowsPlatform/5.0.0": {
-        "type": "package"
-      },
+      "Microsoft.NETCore.Targets.UniversalWindowsPlatform/5.0.0": {},
       "Microsoft.NETCore.UniversalWindowsPlatform/5.0.0": {
-        "type": "package",
         "dependencies": {
           "Microsoft.NETCore": "5.0.0",
           "Microsoft.NETCore.Portable.Compatibility": "1.0.0",
@@ -2154,7 +2085,6 @@
         }
       },
       "Microsoft.VisualBasic/10.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -2181,7 +2111,6 @@
         }
       },
       "Microsoft.Win32.Primitives/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.20",
           "System.Runtime.InteropServices": "4.0.20"
@@ -2194,7 +2123,6 @@
         }
       },
       "Newtonsoft.Json/6.0.8": {
-        "type": "package",
         "compile": {
           "lib/netcore45/Newtonsoft.Json.dll": {}
         },
@@ -2202,20 +2130,62 @@
           "lib/netcore45/Newtonsoft.Json.dll": {}
         }
       },
-      "PCLCrypto/1.0.86": {
-        "type": "package",
+      "PCLCrypto/2.0.147": {
         "dependencies": {
-          "Validation": "[2.0.6, 3.0.0)"
+          "PInvoke.NCrypt": "0.3.2",
+          "Validation": "2.2.8"
         },
         "compile": {
-          "lib/win81/PCLCrypto.dll": {}
+          "lib/portable-win81+wpa81/PCLCrypto.dll": {}
         },
         "runtime": {
-          "lib/win81/PCLCrypto.dll": {}
+          "lib/portable-win81+wpa81/PCLCrypto.dll": {}
+        }
+      },
+      "PInvoke.BCrypt/0.3.2": {
+        "dependencies": {
+          "PInvoke.Kernel32": "0.3.2",
+          "PInvoke.Windows.Core": "0.3.2"
+        },
+        "compile": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.BCrypt.dll": {}
+        },
+        "runtime": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.BCrypt.dll": {}
+        }
+      },
+      "PInvoke.Kernel32/0.3.2": {
+        "dependencies": {
+          "PInvoke.Windows.Core": "0.3.2"
+        },
+        "compile": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.Kernel32.dll": {}
+        },
+        "runtime": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.Kernel32.dll": {}
+        }
+      },
+      "PInvoke.NCrypt/0.3.2": {
+        "dependencies": {
+          "PInvoke.BCrypt": "0.3.2",
+          "PInvoke.Windows.Core": "0.3.2"
+        },
+        "compile": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.NCrypt.dll": {}
+        },
+        "runtime": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.NCrypt.dll": {}
+        }
+      },
+      "PInvoke.Windows.Core/0.3.2": {
+        "compile": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.Windows.Core.dll": {}
+        },
+        "runtime": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.Windows.Core.dll": {}
         }
       },
       "System.AppContext/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.Resources.ResourceManager": "4.0.0",
@@ -2230,7 +2200,6 @@
         }
       },
       "System.Collections/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Diagnostics.Debug": "4.0.0",
           "System.Resources.ResourceManager": "4.0.0",
@@ -2246,7 +2215,6 @@
         }
       },
       "System.Collections.Concurrent/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -2266,7 +2234,6 @@
         }
       },
       "System.Collections.Immutable/1.1.37": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.Diagnostics.Debug": "4.0.0",
@@ -2285,7 +2252,6 @@
         }
       },
       "System.Collections.NonGeneric/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Diagnostics.Debug": "4.0.10",
           "System.Globalization": "4.0.10",
@@ -2302,7 +2268,6 @@
         }
       },
       "System.Collections.Specialized/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections.NonGeneric": "4.0.0",
           "System.Globalization": "4.0.10",
@@ -2320,7 +2285,6 @@
         }
       },
       "System.ComponentModel/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.20"
         },
@@ -2332,7 +2296,6 @@
         }
       },
       "System.ComponentModel.Annotations/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.ComponentModel": "4.0.0",
@@ -2354,7 +2317,6 @@
         }
       },
       "System.ComponentModel.EventBasedAsync/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Resources.ResourceManager": "4.0.0",
           "System.Runtime": "4.0.20",
@@ -2369,7 +2331,6 @@
         }
       },
       "System.Data.Common/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Collections.NonGeneric": "4.0.0",
@@ -2389,7 +2350,6 @@
         }
       },
       "System.Diagnostics.Contracts/4.0.0": {
-        "type": "package",
         "compile": {
           "ref/netcore50/System.Diagnostics.Contracts.dll": {}
         },
@@ -2398,7 +2358,6 @@
         }
       },
       "System.Diagnostics.Debug/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0"
         },
@@ -2410,7 +2369,6 @@
         }
       },
       "System.Diagnostics.StackTrace/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.20"
         },
@@ -2422,7 +2380,6 @@
         }
       },
       "System.Diagnostics.Tools/4.0.0": {
-        "type": "package",
         "compile": {
           "ref/netcore50/System.Diagnostics.Tools.dll": {}
         },
@@ -2431,7 +2388,6 @@
         }
       },
       "System.Diagnostics.Tracing/4.0.20": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Globalization": "4.0.0",
@@ -2452,7 +2408,6 @@
         }
       },
       "System.Dynamic.Runtime/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.Diagnostics.Debug": "4.0.0",
@@ -2477,7 +2432,6 @@
         }
       },
       "System.Globalization/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0"
         },
@@ -2489,7 +2443,6 @@
         }
       },
       "System.Globalization.Calendars/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Globalization": "4.0.0",
           "System.Runtime": "4.0.0"
@@ -2502,7 +2455,6 @@
         }
       },
       "System.Globalization.Extensions/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Globalization": "4.0.10",
           "System.Resources.ResourceManager": "4.0.0",
@@ -2518,7 +2470,6 @@
         }
       },
       "System.IO/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Globalization": "4.0.0",
           "System.Runtime": "4.0.20",
@@ -2535,7 +2486,6 @@
         }
       },
       "System.IO.Compression/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.IO": "4.0.0",
@@ -2556,13 +2506,11 @@
         }
       },
       "System.IO.Compression.clrcompression-arm/4.0.0": {
-        "type": "package",
         "native": {
           "runtimes/win10-arm/native/ClrCompression.dll": {}
         }
       },
       "System.IO.Compression.ZipFile/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.IO": "4.0.10",
           "System.IO.Compression": "4.0.0",
@@ -2581,7 +2529,6 @@
         }
       },
       "System.IO.FileSystem/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -2607,7 +2554,6 @@
         }
       },
       "System.IO.FileSystem.Primitives/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.20"
         },
@@ -2619,7 +2565,6 @@
         }
       },
       "System.IO.IsolatedStorage/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.IO": "4.0.10",
           "System.IO.FileSystem": "4.0.0",
@@ -2639,7 +2584,6 @@
         }
       },
       "System.IO.UnmanagedMemoryStream/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.IO": "4.0.10",
           "System.IO.FileSystem.Primitives": "4.0.0",
@@ -2657,7 +2601,6 @@
         }
       },
       "System.Linq/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -2673,7 +2616,6 @@
         }
       },
       "System.Linq.Expressions/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.Diagnostics.Debug": "4.0.0",
@@ -2699,7 +2641,6 @@
         }
       },
       "System.Linq.Parallel/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Collections.Concurrent": "4.0.10",
@@ -2720,7 +2661,6 @@
         }
       },
       "System.Linq.Queryable/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Linq": "4.0.0",
@@ -2738,7 +2678,6 @@
         }
       },
       "System.Net.Http/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -2763,7 +2702,6 @@
         }
       },
       "System.Net.Http.Rtc/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Net.Http": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -2776,7 +2714,6 @@
         }
       },
       "System.Net.NetworkInformation/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0",
           "System.Runtime.InteropServices.WindowsRuntime": "4.0.0",
@@ -2790,7 +2727,6 @@
         }
       },
       "System.Net.Primitives/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Private.Networking": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -2803,7 +2739,6 @@
         }
       },
       "System.Net.Requests/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -2824,7 +2759,6 @@
         }
       },
       "System.Net.Sockets/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Private.Networking": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -2837,7 +2771,6 @@
         }
       },
       "System.Net.WebHeaderCollection/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections.NonGeneric": "4.0.0",
           "System.Collections.Specialized": "4.0.0",
@@ -2852,7 +2785,6 @@
         }
       },
       "System.Numerics.Vectors/4.1.0": {
-        "type": "package",
         "dependencies": {
           "System.Globalization": "4.0.10",
           "System.Resources.ResourceManager": "4.0.0",
@@ -2867,7 +2799,6 @@
         }
       },
       "System.Numerics.Vectors.WindowsRuntime/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Numerics.Vectors": "4.1.0",
           "System.Runtime": "4.0.20",
@@ -2881,7 +2812,6 @@
         }
       },
       "System.ObjectModel/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -2897,7 +2827,6 @@
         }
       },
       "System.Private.DataContractSerialization/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Globalization": "4.0.10",
@@ -2928,7 +2857,6 @@
         }
       },
       "System.Private.Networking/4.0.0": {
-        "type": "package",
         "dependencies": {
           "Microsoft.Win32.Primitives": "4.0.0",
           "System.Collections": "4.0.10",
@@ -2956,7 +2884,6 @@
         }
       },
       "System.Private.ServiceModel/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Collections.Concurrent": "4.0.10",
@@ -3005,7 +2932,6 @@
         }
       },
       "System.Private.Uri/4.0.0": {
-        "type": "package",
         "compile": {
           "ref/netcore50/_._": {}
         },
@@ -3014,7 +2940,6 @@
         }
       },
       "System.Reflection/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.IO": "4.0.0",
           "System.Reflection.Primitives": "4.0.0",
@@ -3028,7 +2953,6 @@
         }
       },
       "System.Reflection.Context/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Reflection": "4.0.10",
           "System.Resources.ResourceManager": "4.0.0",
@@ -3042,7 +2966,6 @@
         }
       },
       "System.Reflection.DispatchProxy/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Linq": "4.0.0",
@@ -3063,7 +2986,6 @@
         }
       },
       "System.Reflection.Emit/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.IO": "4.0.0",
           "System.Reflection": "4.0.0",
@@ -3079,7 +3001,6 @@
         }
       },
       "System.Reflection.Emit.ILGeneration/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Reflection": "4.0.0",
           "System.Reflection.Primitives": "4.0.0",
@@ -3093,7 +3014,6 @@
         }
       },
       "System.Reflection.Emit.Lightweight/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Reflection": "4.0.0",
           "System.Reflection.Emit.ILGeneration": "4.0.0",
@@ -3108,7 +3028,6 @@
         }
       },
       "System.Reflection.Extensions/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Diagnostics.Debug": "4.0.10",
           "System.Reflection": "4.0.10",
@@ -3126,7 +3045,6 @@
         }
       },
       "System.Reflection.Metadata/1.0.22": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.Collections.Immutable": "1.1.37",
@@ -3151,7 +3069,6 @@
         }
       },
       "System.Reflection.Primitives/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0",
           "System.Threading": "4.0.0"
@@ -3164,7 +3081,6 @@
         }
       },
       "System.Reflection.TypeExtensions/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Diagnostics.Contracts": "4.0.0",
           "System.Diagnostics.Debug": "4.0.10",
@@ -3183,7 +3099,6 @@
         }
       },
       "System.Resources.ResourceManager/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Globalization": "4.0.0",
           "System.Reflection": "4.0.10",
@@ -3197,7 +3112,6 @@
         }
       },
       "System.Runtime/4.0.20": {
-        "type": "package",
         "dependencies": {
           "System.Private.Uri": "4.0.0"
         },
@@ -3209,7 +3123,6 @@
         }
       },
       "System.Runtime.Extensions/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.20"
         },
@@ -3221,7 +3134,6 @@
         }
       },
       "System.Runtime.Handles/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0"
         },
@@ -3233,7 +3145,6 @@
         }
       },
       "System.Runtime.InteropServices/4.0.20": {
-        "type": "package",
         "dependencies": {
           "System.Reflection": "4.0.0",
           "System.Reflection.Primitives": "4.0.0",
@@ -3248,7 +3159,6 @@
         }
       },
       "System.Runtime.InteropServices.WindowsRuntime/4.0.0": {
-        "type": "package",
         "compile": {
           "ref/netcore50/System.Runtime.InteropServices.WindowsRuntime.dll": {}
         },
@@ -3257,7 +3167,6 @@
         }
       },
       "System.Runtime.Numerics/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Globalization": "4.0.10",
           "System.Resources.ResourceManager": "4.0.0",
@@ -3272,7 +3181,6 @@
         }
       },
       "System.Runtime.Serialization.Json/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Private.DataContractSerialization": "4.0.0"
         },
@@ -3284,7 +3192,6 @@
         }
       },
       "System.Runtime.Serialization.Primitives/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Resources.ResourceManager": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -3297,7 +3204,6 @@
         }
       },
       "System.Runtime.Serialization.Xml/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Private.DataContractSerialization": "4.0.0",
           "System.Runtime.Serialization.Primitives": "4.0.10"
@@ -3310,7 +3216,6 @@
         }
       },
       "System.Runtime.WindowsRuntime/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Diagnostics.Debug": "4.0.10",
           "System.Globalization": "4.0.0",
@@ -3331,7 +3236,6 @@
         }
       },
       "System.Runtime.WindowsRuntime.UI.Xaml/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Globalization": "4.0.0",
           "System.Resources.ResourceManager": "4.0.0",
@@ -3347,7 +3251,6 @@
         }
       },
       "System.Security.Claims/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.Diagnostics.Debug": "4.0.0",
@@ -3366,7 +3269,6 @@
         }
       },
       "System.Security.Principal/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0"
         },
@@ -3378,7 +3280,6 @@
         }
       },
       "System.ServiceModel.Duplex/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Private.ServiceModel": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -3391,7 +3292,6 @@
         }
       },
       "System.ServiceModel.Http/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Private.ServiceModel": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -3404,7 +3304,6 @@
         }
       },
       "System.ServiceModel.NetTcp/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Private.ServiceModel": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -3417,7 +3316,6 @@
         }
       },
       "System.ServiceModel.Primitives/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Private.ServiceModel": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -3430,7 +3328,6 @@
         }
       },
       "System.ServiceModel.Security/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Private.ServiceModel": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -3443,7 +3340,6 @@
         }
       },
       "System.Text.Encoding/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0"
         },
@@ -3455,7 +3351,6 @@
         }
       },
       "System.Text.Encoding.CodePages/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Globalization": "4.0.10",
@@ -3477,7 +3372,6 @@
         }
       },
       "System.Text.Encoding.Extensions/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0",
           "System.Text.Encoding": "4.0.10"
@@ -3490,7 +3384,6 @@
         }
       },
       "System.Text.RegularExpressions/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Globalization": "4.0.10",
@@ -3507,7 +3400,6 @@
         }
       },
       "System.Threading/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0",
           "System.Threading.Tasks": "4.0.0"
@@ -3520,7 +3412,6 @@
         }
       },
       "System.Threading.Overlapped/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Resources.ResourceManager": "4.0.0",
           "System.Runtime": "4.0.20",
@@ -3537,7 +3428,6 @@
         }
       },
       "System.Threading.Tasks/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0"
         },
@@ -3549,7 +3439,6 @@
         }
       },
       "System.Threading.Tasks.Dataflow/4.5.25": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.Collections.Concurrent": "4.0.0",
@@ -3571,7 +3460,6 @@
         }
       },
       "System.Threading.Tasks.Parallel/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections.Concurrent": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -3590,7 +3478,6 @@
         }
       },
       "System.Threading.Timer/4.0.0": {
-        "type": "package",
         "compile": {
           "ref/netcore50/System.Threading.Timer.dll": {}
         },
@@ -3599,7 +3486,6 @@
         }
       },
       "System.Xml.ReaderWriter/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -3624,7 +3510,6 @@
         }
       },
       "System.Xml.XDocument/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -3646,7 +3531,6 @@
         }
       },
       "System.Xml.XmlDocument/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -3667,7 +3551,6 @@
         }
       },
       "System.Xml.XmlSerializer/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -3696,7 +3579,6 @@
         }
       },
       "Validation/2.2.8": {
-        "type": "package",
         "compile": {
           "lib/dotnet/Validation.dll": {}
         },
@@ -3706,17 +3588,15 @@
       }
     },
     "UAP,Version=v10.0/win10-arm-aot": {
-      "Microsoft.Azure.Amqp/1.1.0": {
-        "type": "package",
+      "Microsoft.Azure.Amqp/2.0.2": {
         "compile": {
-          "lib/uap10.0/Microsoft.Azure.Amqp.Uwp.dll": {}
+          "lib/uap10.0/Microsoft.Azure.Amqp.dll": {}
         },
         "runtime": {
-          "lib/uap10.0/Microsoft.Azure.Amqp.Uwp.dll": {}
+          "lib/uap10.0/Microsoft.Azure.Amqp.dll": {}
         }
       },
       "Microsoft.CSharp/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -3743,7 +3623,6 @@
         }
       },
       "Microsoft.NETCore/5.0.0": {
-        "type": "package",
         "dependencies": {
           "Microsoft.CSharp": "4.0.0",
           "Microsoft.NETCore.Targets": "1.0.0",
@@ -3802,11 +3681,8 @@
           "System.Xml.XDocument": "4.0.10"
         }
       },
-      "Microsoft.NETCore.Platforms/1.0.0": {
-        "type": "package"
-      },
+      "Microsoft.NETCore.Platforms/1.0.0": {},
       "Microsoft.NETCore.Portable.Compatibility/1.0.0": {
-        "type": "package",
         "dependencies": {
           "Microsoft.NETCore.Runtime": "1.0.0"
         },
@@ -3842,13 +3718,11 @@
         }
       },
       "Microsoft.NETCore.Runtime/1.0.0": {
-        "type": "package",
         "dependencies": {
           "Microsoft.NETCore.Runtime.Native": "1.0.0"
         }
       },
       "Microsoft.NETCore.Runtime.Native/1.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "[4.0.10]",
           "System.Diagnostics.Contracts": "[4.0.0]",
@@ -3877,17 +3751,13 @@
         }
       },
       "Microsoft.NETCore.Targets/1.0.0": {
-        "type": "package",
         "dependencies": {
           "Microsoft.NETCore.Platforms": "1.0.0",
           "Microsoft.NETCore.Targets.UniversalWindowsPlatform": "5.0.0"
         }
       },
-      "Microsoft.NETCore.Targets.UniversalWindowsPlatform/5.0.0": {
-        "type": "package"
-      },
+      "Microsoft.NETCore.Targets.UniversalWindowsPlatform/5.0.0": {},
       "Microsoft.NETCore.UniversalWindowsPlatform/5.0.0": {
-        "type": "package",
         "dependencies": {
           "Microsoft.NETCore": "5.0.0",
           "Microsoft.NETCore.Portable.Compatibility": "1.0.0",
@@ -3920,7 +3790,6 @@
         }
       },
       "Microsoft.VisualBasic/10.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -3947,7 +3816,6 @@
         }
       },
       "Microsoft.Win32.Primitives/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.20",
           "System.Runtime.InteropServices": "4.0.20"
@@ -3960,7 +3828,6 @@
         }
       },
       "Newtonsoft.Json/6.0.8": {
-        "type": "package",
         "compile": {
           "lib/netcore45/Newtonsoft.Json.dll": {}
         },
@@ -3968,20 +3835,62 @@
           "lib/netcore45/Newtonsoft.Json.dll": {}
         }
       },
-      "PCLCrypto/1.0.86": {
-        "type": "package",
+      "PCLCrypto/2.0.147": {
         "dependencies": {
-          "Validation": "[2.0.6, 3.0.0)"
+          "PInvoke.NCrypt": "0.3.2",
+          "Validation": "2.2.8"
         },
         "compile": {
-          "lib/win81/PCLCrypto.dll": {}
+          "lib/portable-win81+wpa81/PCLCrypto.dll": {}
         },
         "runtime": {
-          "lib/win81/PCLCrypto.dll": {}
+          "lib/portable-win81+wpa81/PCLCrypto.dll": {}
+        }
+      },
+      "PInvoke.BCrypt/0.3.2": {
+        "dependencies": {
+          "PInvoke.Kernel32": "0.3.2",
+          "PInvoke.Windows.Core": "0.3.2"
+        },
+        "compile": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.BCrypt.dll": {}
+        },
+        "runtime": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.BCrypt.dll": {}
+        }
+      },
+      "PInvoke.Kernel32/0.3.2": {
+        "dependencies": {
+          "PInvoke.Windows.Core": "0.3.2"
+        },
+        "compile": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.Kernel32.dll": {}
+        },
+        "runtime": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.Kernel32.dll": {}
+        }
+      },
+      "PInvoke.NCrypt/0.3.2": {
+        "dependencies": {
+          "PInvoke.BCrypt": "0.3.2",
+          "PInvoke.Windows.Core": "0.3.2"
+        },
+        "compile": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.NCrypt.dll": {}
+        },
+        "runtime": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.NCrypt.dll": {}
+        }
+      },
+      "PInvoke.Windows.Core/0.3.2": {
+        "compile": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.Windows.Core.dll": {}
+        },
+        "runtime": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.Windows.Core.dll": {}
         }
       },
       "System.AppContext/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.Resources.ResourceManager": "4.0.0",
@@ -3996,7 +3905,6 @@
         }
       },
       "System.Collections/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Diagnostics.Debug": "4.0.0",
           "System.Resources.ResourceManager": "4.0.0",
@@ -4012,7 +3920,6 @@
         }
       },
       "System.Collections.Concurrent/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -4032,7 +3939,6 @@
         }
       },
       "System.Collections.Immutable/1.1.37": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.Diagnostics.Debug": "4.0.0",
@@ -4051,7 +3957,6 @@
         }
       },
       "System.Collections.NonGeneric/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Diagnostics.Debug": "4.0.10",
           "System.Globalization": "4.0.10",
@@ -4068,7 +3973,6 @@
         }
       },
       "System.Collections.Specialized/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections.NonGeneric": "4.0.0",
           "System.Globalization": "4.0.10",
@@ -4086,7 +3990,6 @@
         }
       },
       "System.ComponentModel/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.20"
         },
@@ -4098,7 +4001,6 @@
         }
       },
       "System.ComponentModel.Annotations/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.ComponentModel": "4.0.0",
@@ -4120,7 +4022,6 @@
         }
       },
       "System.ComponentModel.EventBasedAsync/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Resources.ResourceManager": "4.0.0",
           "System.Runtime": "4.0.20",
@@ -4135,7 +4036,6 @@
         }
       },
       "System.Data.Common/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Collections.NonGeneric": "4.0.0",
@@ -4155,7 +4055,6 @@
         }
       },
       "System.Diagnostics.Contracts/4.0.0": {
-        "type": "package",
         "compile": {
           "ref/netcore50/System.Diagnostics.Contracts.dll": {}
         },
@@ -4164,7 +4063,6 @@
         }
       },
       "System.Diagnostics.Debug/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0"
         },
@@ -4176,7 +4074,6 @@
         }
       },
       "System.Diagnostics.StackTrace/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.20"
         },
@@ -4188,7 +4085,6 @@
         }
       },
       "System.Diagnostics.Tools/4.0.0": {
-        "type": "package",
         "compile": {
           "ref/netcore50/System.Diagnostics.Tools.dll": {}
         },
@@ -4197,7 +4093,6 @@
         }
       },
       "System.Diagnostics.Tracing/4.0.20": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Globalization": "4.0.0",
@@ -4218,7 +4113,6 @@
         }
       },
       "System.Dynamic.Runtime/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.Diagnostics.Debug": "4.0.0",
@@ -4241,7 +4135,6 @@
         }
       },
       "System.Globalization/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0"
         },
@@ -4253,7 +4146,6 @@
         }
       },
       "System.Globalization.Calendars/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Globalization": "4.0.0",
           "System.Runtime": "4.0.0"
@@ -4266,7 +4158,6 @@
         }
       },
       "System.Globalization.Extensions/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Globalization": "4.0.10",
           "System.Resources.ResourceManager": "4.0.0",
@@ -4282,7 +4173,6 @@
         }
       },
       "System.IO/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Globalization": "4.0.0",
           "System.Runtime": "4.0.20",
@@ -4299,7 +4189,6 @@
         }
       },
       "System.IO.Compression/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.IO": "4.0.0",
@@ -4320,13 +4209,11 @@
         }
       },
       "System.IO.Compression.clrcompression-arm/4.0.0": {
-        "type": "package",
         "native": {
           "runtimes/win10-arm/native/ClrCompression.dll": {}
         }
       },
       "System.IO.Compression.ZipFile/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.IO": "4.0.10",
           "System.IO.Compression": "4.0.0",
@@ -4345,7 +4232,6 @@
         }
       },
       "System.IO.FileSystem/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -4371,7 +4257,6 @@
         }
       },
       "System.IO.FileSystem.Primitives/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.20"
         },
@@ -4383,7 +4268,6 @@
         }
       },
       "System.IO.IsolatedStorage/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.IO": "4.0.10",
           "System.IO.FileSystem": "4.0.0",
@@ -4403,7 +4287,6 @@
         }
       },
       "System.IO.UnmanagedMemoryStream/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.IO": "4.0.10",
           "System.IO.FileSystem.Primitives": "4.0.0",
@@ -4421,7 +4304,6 @@
         }
       },
       "System.Linq/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -4437,7 +4319,6 @@
         }
       },
       "System.Linq.Expressions/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.Diagnostics.Debug": "4.0.0",
@@ -4461,7 +4342,6 @@
         }
       },
       "System.Linq.Parallel/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Collections.Concurrent": "4.0.10",
@@ -4482,7 +4362,6 @@
         }
       },
       "System.Linq.Queryable/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Linq": "4.0.0",
@@ -4500,7 +4379,6 @@
         }
       },
       "System.Net.Http/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -4525,7 +4403,6 @@
         }
       },
       "System.Net.Http.Rtc/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Net.Http": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -4538,7 +4415,6 @@
         }
       },
       "System.Net.NetworkInformation/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0",
           "System.Runtime.InteropServices.WindowsRuntime": "4.0.0",
@@ -4552,7 +4428,6 @@
         }
       },
       "System.Net.Primitives/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Private.Networking": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -4565,7 +4440,6 @@
         }
       },
       "System.Net.Requests/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -4586,7 +4460,6 @@
         }
       },
       "System.Net.Sockets/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Private.Networking": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -4599,7 +4472,6 @@
         }
       },
       "System.Net.WebHeaderCollection/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections.NonGeneric": "4.0.0",
           "System.Collections.Specialized": "4.0.0",
@@ -4614,7 +4486,6 @@
         }
       },
       "System.Numerics.Vectors/4.1.0": {
-        "type": "package",
         "dependencies": {
           "System.Globalization": "4.0.10",
           "System.Resources.ResourceManager": "4.0.0",
@@ -4629,7 +4500,6 @@
         }
       },
       "System.Numerics.Vectors.WindowsRuntime/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Numerics.Vectors": "4.1.0",
           "System.Runtime": "4.0.20",
@@ -4643,7 +4513,6 @@
         }
       },
       "System.ObjectModel/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -4659,7 +4528,6 @@
         }
       },
       "System.Private.DataContractSerialization/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Globalization": "4.0.10",
@@ -4688,7 +4556,6 @@
         }
       },
       "System.Private.Networking/4.0.0": {
-        "type": "package",
         "dependencies": {
           "Microsoft.Win32.Primitives": "4.0.0",
           "System.Collections": "4.0.10",
@@ -4716,7 +4583,6 @@
         }
       },
       "System.Private.ServiceModel/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Collections.Concurrent": "4.0.10",
@@ -4765,7 +4631,6 @@
         }
       },
       "System.Private.Uri/4.0.0": {
-        "type": "package",
         "compile": {
           "ref/netcore50/_._": {}
         },
@@ -4774,7 +4639,6 @@
         }
       },
       "System.Reflection/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.IO": "4.0.0",
           "System.Reflection.Primitives": "4.0.0",
@@ -4788,7 +4652,6 @@
         }
       },
       "System.Reflection.Context/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Reflection": "4.0.10",
           "System.Resources.ResourceManager": "4.0.0",
@@ -4802,7 +4665,6 @@
         }
       },
       "System.Reflection.DispatchProxy/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Linq": "4.0.0",
@@ -4821,7 +4683,6 @@
         }
       },
       "System.Reflection.Emit/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.IO": "4.0.0",
           "System.Reflection": "4.0.0",
@@ -4837,7 +4698,6 @@
         }
       },
       "System.Reflection.Emit.ILGeneration/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Reflection": "4.0.0",
           "System.Reflection.Primitives": "4.0.0",
@@ -4851,7 +4711,6 @@
         }
       },
       "System.Reflection.Extensions/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Diagnostics.Debug": "4.0.10",
           "System.Reflection": "4.0.10",
@@ -4869,7 +4728,6 @@
         }
       },
       "System.Reflection.Metadata/1.0.22": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.Collections.Immutable": "1.1.37",
@@ -4894,7 +4752,6 @@
         }
       },
       "System.Reflection.Primitives/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0",
           "System.Threading": "4.0.0"
@@ -4907,7 +4764,6 @@
         }
       },
       "System.Reflection.TypeExtensions/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Diagnostics.Contracts": "4.0.0",
           "System.Diagnostics.Debug": "4.0.10",
@@ -4926,7 +4782,6 @@
         }
       },
       "System.Resources.ResourceManager/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Globalization": "4.0.0",
           "System.Reflection": "4.0.10",
@@ -4940,7 +4795,6 @@
         }
       },
       "System.Runtime/4.0.20": {
-        "type": "package",
         "dependencies": {
           "System.Private.Uri": "4.0.0"
         },
@@ -4952,7 +4806,6 @@
         }
       },
       "System.Runtime.Extensions/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.20"
         },
@@ -4964,7 +4817,6 @@
         }
       },
       "System.Runtime.Handles/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0"
         },
@@ -4976,7 +4828,6 @@
         }
       },
       "System.Runtime.InteropServices/4.0.20": {
-        "type": "package",
         "dependencies": {
           "System.Reflection": "4.0.0",
           "System.Reflection.Primitives": "4.0.0",
@@ -4991,7 +4842,6 @@
         }
       },
       "System.Runtime.InteropServices.WindowsRuntime/4.0.0": {
-        "type": "package",
         "compile": {
           "ref/netcore50/System.Runtime.InteropServices.WindowsRuntime.dll": {}
         },
@@ -5000,7 +4850,6 @@
         }
       },
       "System.Runtime.Numerics/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Globalization": "4.0.10",
           "System.Resources.ResourceManager": "4.0.0",
@@ -5015,7 +4864,6 @@
         }
       },
       "System.Runtime.Serialization.Json/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Private.DataContractSerialization": "4.0.0"
         },
@@ -5027,7 +4875,6 @@
         }
       },
       "System.Runtime.Serialization.Primitives/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Resources.ResourceManager": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -5040,7 +4887,6 @@
         }
       },
       "System.Runtime.Serialization.Xml/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Private.DataContractSerialization": "4.0.0",
           "System.Runtime.Serialization.Primitives": "4.0.10"
@@ -5053,7 +4899,6 @@
         }
       },
       "System.Runtime.WindowsRuntime/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Diagnostics.Debug": "4.0.10",
           "System.Globalization": "4.0.0",
@@ -5074,7 +4919,6 @@
         }
       },
       "System.Runtime.WindowsRuntime.UI.Xaml/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Globalization": "4.0.0",
           "System.Resources.ResourceManager": "4.0.0",
@@ -5090,7 +4934,6 @@
         }
       },
       "System.Security.Claims/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.Diagnostics.Debug": "4.0.0",
@@ -5109,7 +4952,6 @@
         }
       },
       "System.Security.Principal/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0"
         },
@@ -5121,7 +4963,6 @@
         }
       },
       "System.ServiceModel.Duplex/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Private.ServiceModel": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -5134,7 +4975,6 @@
         }
       },
       "System.ServiceModel.Http/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Private.ServiceModel": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -5147,7 +4987,6 @@
         }
       },
       "System.ServiceModel.NetTcp/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Private.ServiceModel": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -5160,7 +4999,6 @@
         }
       },
       "System.ServiceModel.Primitives/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Private.ServiceModel": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -5173,7 +5011,6 @@
         }
       },
       "System.ServiceModel.Security/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Private.ServiceModel": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -5186,7 +5023,6 @@
         }
       },
       "System.Text.Encoding/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0"
         },
@@ -5198,7 +5034,6 @@
         }
       },
       "System.Text.Encoding.CodePages/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Globalization": "4.0.10",
@@ -5220,7 +5055,6 @@
         }
       },
       "System.Text.Encoding.Extensions/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0",
           "System.Text.Encoding": "4.0.10"
@@ -5233,7 +5067,6 @@
         }
       },
       "System.Text.RegularExpressions/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Globalization": "4.0.10",
@@ -5250,7 +5083,6 @@
         }
       },
       "System.Threading/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0",
           "System.Threading.Tasks": "4.0.0"
@@ -5263,7 +5095,6 @@
         }
       },
       "System.Threading.Overlapped/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Resources.ResourceManager": "4.0.0",
           "System.Runtime": "4.0.20",
@@ -5280,7 +5111,6 @@
         }
       },
       "System.Threading.Tasks/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0"
         },
@@ -5292,7 +5122,6 @@
         }
       },
       "System.Threading.Tasks.Dataflow/4.5.25": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.Collections.Concurrent": "4.0.0",
@@ -5314,7 +5143,6 @@
         }
       },
       "System.Threading.Tasks.Parallel/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections.Concurrent": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -5333,7 +5161,6 @@
         }
       },
       "System.Threading.Timer/4.0.0": {
-        "type": "package",
         "compile": {
           "ref/netcore50/System.Threading.Timer.dll": {}
         },
@@ -5342,7 +5169,6 @@
         }
       },
       "System.Xml.ReaderWriter/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -5367,7 +5193,6 @@
         }
       },
       "System.Xml.XDocument/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -5389,7 +5214,6 @@
         }
       },
       "System.Xml.XmlDocument/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -5410,7 +5234,6 @@
         }
       },
       "System.Xml.XmlSerializer/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -5439,7 +5262,6 @@
         }
       },
       "Validation/2.2.8": {
-        "type": "package",
         "compile": {
           "lib/dotnet/Validation.dll": {}
         },
@@ -5449,17 +5271,15 @@
       }
     },
     "UAP,Version=v10.0/win10-x64": {
-      "Microsoft.Azure.Amqp/1.1.0": {
-        "type": "package",
+      "Microsoft.Azure.Amqp/2.0.2": {
         "compile": {
-          "lib/uap10.0/Microsoft.Azure.Amqp.Uwp.dll": {}
+          "lib/uap10.0/Microsoft.Azure.Amqp.dll": {}
         },
         "runtime": {
-          "lib/uap10.0/Microsoft.Azure.Amqp.Uwp.dll": {}
+          "lib/uap10.0/Microsoft.Azure.Amqp.dll": {}
         }
       },
       "Microsoft.CSharp/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -5486,7 +5306,6 @@
         }
       },
       "Microsoft.NETCore/5.0.0": {
-        "type": "package",
         "dependencies": {
           "Microsoft.CSharp": "4.0.0",
           "Microsoft.NETCore.Targets": "1.0.0",
@@ -5545,11 +5364,8 @@
           "System.Xml.XDocument": "4.0.10"
         }
       },
-      "Microsoft.NETCore.Platforms/1.0.0": {
-        "type": "package"
-      },
+      "Microsoft.NETCore.Platforms/1.0.0": {},
       "Microsoft.NETCore.Portable.Compatibility/1.0.0": {
-        "type": "package",
         "dependencies": {
           "Microsoft.NETCore.Runtime": "1.0.0"
         },
@@ -5584,14 +5400,12 @@
         }
       },
       "Microsoft.NETCore.Runtime/1.0.0": {
-        "type": "package",
         "dependencies": {
           "Microsoft.NETCore.Runtime.CoreCLR-x64": "1.0.0",
           "Microsoft.NETCore.Windows.ApiSets-x64": "1.0.0"
         }
       },
       "Microsoft.NETCore.Runtime.CoreCLR-x64/1.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "[4.0.10]",
           "System.Diagnostics.Contracts": "[4.0.0]",
@@ -5635,17 +5449,13 @@
         }
       },
       "Microsoft.NETCore.Targets/1.0.0": {
-        "type": "package",
         "dependencies": {
           "Microsoft.NETCore.Platforms": "1.0.0",
           "Microsoft.NETCore.Targets.UniversalWindowsPlatform": "5.0.0"
         }
       },
-      "Microsoft.NETCore.Targets.UniversalWindowsPlatform/5.0.0": {
-        "type": "package"
-      },
+      "Microsoft.NETCore.Targets.UniversalWindowsPlatform/5.0.0": {},
       "Microsoft.NETCore.UniversalWindowsPlatform/5.0.0": {
-        "type": "package",
         "dependencies": {
           "Microsoft.NETCore": "5.0.0",
           "Microsoft.NETCore.Portable.Compatibility": "1.0.0",
@@ -5678,13 +5488,11 @@
         }
       },
       "Microsoft.NETCore.Windows.ApiSets-x64/1.0.0": {
-        "type": "package",
         "native": {
           "runtimes/win10-x64/native/_._": {}
         }
       },
       "Microsoft.VisualBasic/10.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -5711,7 +5519,6 @@
         }
       },
       "Microsoft.Win32.Primitives/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.20",
           "System.Runtime.InteropServices": "4.0.20"
@@ -5724,7 +5531,6 @@
         }
       },
       "Newtonsoft.Json/6.0.8": {
-        "type": "package",
         "compile": {
           "lib/netcore45/Newtonsoft.Json.dll": {}
         },
@@ -5732,20 +5538,62 @@
           "lib/netcore45/Newtonsoft.Json.dll": {}
         }
       },
-      "PCLCrypto/1.0.86": {
-        "type": "package",
+      "PCLCrypto/2.0.147": {
         "dependencies": {
-          "Validation": "[2.0.6, 3.0.0)"
+          "PInvoke.NCrypt": "0.3.2",
+          "Validation": "2.2.8"
         },
         "compile": {
-          "lib/win81/PCLCrypto.dll": {}
+          "lib/portable-win81+wpa81/PCLCrypto.dll": {}
         },
         "runtime": {
-          "lib/win81/PCLCrypto.dll": {}
+          "lib/portable-win81+wpa81/PCLCrypto.dll": {}
+        }
+      },
+      "PInvoke.BCrypt/0.3.2": {
+        "dependencies": {
+          "PInvoke.Kernel32": "0.3.2",
+          "PInvoke.Windows.Core": "0.3.2"
+        },
+        "compile": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.BCrypt.dll": {}
+        },
+        "runtime": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.BCrypt.dll": {}
+        }
+      },
+      "PInvoke.Kernel32/0.3.2": {
+        "dependencies": {
+          "PInvoke.Windows.Core": "0.3.2"
+        },
+        "compile": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.Kernel32.dll": {}
+        },
+        "runtime": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.Kernel32.dll": {}
+        }
+      },
+      "PInvoke.NCrypt/0.3.2": {
+        "dependencies": {
+          "PInvoke.BCrypt": "0.3.2",
+          "PInvoke.Windows.Core": "0.3.2"
+        },
+        "compile": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.NCrypt.dll": {}
+        },
+        "runtime": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.NCrypt.dll": {}
+        }
+      },
+      "PInvoke.Windows.Core/0.3.2": {
+        "compile": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.Windows.Core.dll": {}
+        },
+        "runtime": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.Windows.Core.dll": {}
         }
       },
       "System.AppContext/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.Resources.ResourceManager": "4.0.0",
@@ -5760,7 +5608,6 @@
         }
       },
       "System.Collections/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Diagnostics.Debug": "4.0.0",
           "System.Resources.ResourceManager": "4.0.0",
@@ -5776,7 +5623,6 @@
         }
       },
       "System.Collections.Concurrent/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -5796,7 +5642,6 @@
         }
       },
       "System.Collections.Immutable/1.1.37": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.Diagnostics.Debug": "4.0.0",
@@ -5815,7 +5660,6 @@
         }
       },
       "System.Collections.NonGeneric/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Diagnostics.Debug": "4.0.10",
           "System.Globalization": "4.0.10",
@@ -5832,7 +5676,6 @@
         }
       },
       "System.Collections.Specialized/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections.NonGeneric": "4.0.0",
           "System.Globalization": "4.0.10",
@@ -5850,7 +5693,6 @@
         }
       },
       "System.ComponentModel/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.20"
         },
@@ -5862,7 +5704,6 @@
         }
       },
       "System.ComponentModel.Annotations/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.ComponentModel": "4.0.0",
@@ -5884,7 +5725,6 @@
         }
       },
       "System.ComponentModel.EventBasedAsync/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Resources.ResourceManager": "4.0.0",
           "System.Runtime": "4.0.20",
@@ -5899,7 +5739,6 @@
         }
       },
       "System.Data.Common/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Collections.NonGeneric": "4.0.0",
@@ -5919,7 +5758,6 @@
         }
       },
       "System.Diagnostics.Contracts/4.0.0": {
-        "type": "package",
         "compile": {
           "ref/netcore50/System.Diagnostics.Contracts.dll": {}
         },
@@ -5928,7 +5766,6 @@
         }
       },
       "System.Diagnostics.Debug/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0"
         },
@@ -5940,7 +5777,6 @@
         }
       },
       "System.Diagnostics.StackTrace/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.20"
         },
@@ -5952,7 +5788,6 @@
         }
       },
       "System.Diagnostics.Tools/4.0.0": {
-        "type": "package",
         "compile": {
           "ref/netcore50/System.Diagnostics.Tools.dll": {}
         },
@@ -5961,7 +5796,6 @@
         }
       },
       "System.Diagnostics.Tracing/4.0.20": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Globalization": "4.0.0",
@@ -5982,7 +5816,6 @@
         }
       },
       "System.Dynamic.Runtime/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.Diagnostics.Debug": "4.0.0",
@@ -6007,7 +5840,6 @@
         }
       },
       "System.Globalization/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0"
         },
@@ -6019,7 +5851,6 @@
         }
       },
       "System.Globalization.Calendars/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Globalization": "4.0.0",
           "System.Runtime": "4.0.0"
@@ -6032,7 +5863,6 @@
         }
       },
       "System.Globalization.Extensions/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Globalization": "4.0.10",
           "System.Resources.ResourceManager": "4.0.0",
@@ -6048,7 +5878,6 @@
         }
       },
       "System.IO/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Globalization": "4.0.0",
           "System.Runtime": "4.0.20",
@@ -6065,7 +5894,6 @@
         }
       },
       "System.IO.Compression/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.IO": "4.0.0",
@@ -6086,13 +5914,11 @@
         }
       },
       "System.IO.Compression.clrcompression-x64/4.0.0": {
-        "type": "package",
         "native": {
           "runtimes/win10-x64/native/ClrCompression.dll": {}
         }
       },
       "System.IO.Compression.ZipFile/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.IO": "4.0.10",
           "System.IO.Compression": "4.0.0",
@@ -6111,7 +5937,6 @@
         }
       },
       "System.IO.FileSystem/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -6137,7 +5962,6 @@
         }
       },
       "System.IO.FileSystem.Primitives/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.20"
         },
@@ -6149,7 +5973,6 @@
         }
       },
       "System.IO.IsolatedStorage/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.IO": "4.0.10",
           "System.IO.FileSystem": "4.0.0",
@@ -6169,7 +5992,6 @@
         }
       },
       "System.IO.UnmanagedMemoryStream/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.IO": "4.0.10",
           "System.IO.FileSystem.Primitives": "4.0.0",
@@ -6187,7 +6009,6 @@
         }
       },
       "System.Linq/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -6203,7 +6024,6 @@
         }
       },
       "System.Linq.Expressions/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.Diagnostics.Debug": "4.0.0",
@@ -6229,7 +6049,6 @@
         }
       },
       "System.Linq.Parallel/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Collections.Concurrent": "4.0.10",
@@ -6250,7 +6069,6 @@
         }
       },
       "System.Linq.Queryable/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Linq": "4.0.0",
@@ -6268,7 +6086,6 @@
         }
       },
       "System.Net.Http/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -6293,7 +6110,6 @@
         }
       },
       "System.Net.Http.Rtc/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Net.Http": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -6306,7 +6122,6 @@
         }
       },
       "System.Net.NetworkInformation/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0",
           "System.Runtime.InteropServices.WindowsRuntime": "4.0.0",
@@ -6320,7 +6135,6 @@
         }
       },
       "System.Net.Primitives/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Private.Networking": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -6333,7 +6147,6 @@
         }
       },
       "System.Net.Requests/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -6354,7 +6167,6 @@
         }
       },
       "System.Net.Sockets/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Private.Networking": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -6367,7 +6179,6 @@
         }
       },
       "System.Net.WebHeaderCollection/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections.NonGeneric": "4.0.0",
           "System.Collections.Specialized": "4.0.0",
@@ -6382,7 +6193,6 @@
         }
       },
       "System.Numerics.Vectors/4.1.0": {
-        "type": "package",
         "dependencies": {
           "System.Globalization": "4.0.10",
           "System.Resources.ResourceManager": "4.0.0",
@@ -6397,7 +6207,6 @@
         }
       },
       "System.Numerics.Vectors.WindowsRuntime/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Numerics.Vectors": "4.1.0",
           "System.Runtime": "4.0.20",
@@ -6411,7 +6220,6 @@
         }
       },
       "System.ObjectModel/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -6427,7 +6235,6 @@
         }
       },
       "System.Private.DataContractSerialization/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Globalization": "4.0.10",
@@ -6458,7 +6265,6 @@
         }
       },
       "System.Private.Networking/4.0.0": {
-        "type": "package",
         "dependencies": {
           "Microsoft.Win32.Primitives": "4.0.0",
           "System.Collections": "4.0.10",
@@ -6486,7 +6292,6 @@
         }
       },
       "System.Private.ServiceModel/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Collections.Concurrent": "4.0.10",
@@ -6535,7 +6340,6 @@
         }
       },
       "System.Private.Uri/4.0.0": {
-        "type": "package",
         "compile": {
           "ref/netcore50/_._": {}
         },
@@ -6544,7 +6348,6 @@
         }
       },
       "System.Reflection/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.IO": "4.0.0",
           "System.Reflection.Primitives": "4.0.0",
@@ -6558,7 +6361,6 @@
         }
       },
       "System.Reflection.Context/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Reflection": "4.0.10",
           "System.Resources.ResourceManager": "4.0.0",
@@ -6572,7 +6374,6 @@
         }
       },
       "System.Reflection.DispatchProxy/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Linq": "4.0.0",
@@ -6593,7 +6394,6 @@
         }
       },
       "System.Reflection.Emit/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.IO": "4.0.0",
           "System.Reflection": "4.0.0",
@@ -6609,7 +6409,6 @@
         }
       },
       "System.Reflection.Emit.ILGeneration/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Reflection": "4.0.0",
           "System.Reflection.Primitives": "4.0.0",
@@ -6623,7 +6422,6 @@
         }
       },
       "System.Reflection.Emit.Lightweight/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Reflection": "4.0.0",
           "System.Reflection.Emit.ILGeneration": "4.0.0",
@@ -6638,7 +6436,6 @@
         }
       },
       "System.Reflection.Extensions/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Diagnostics.Debug": "4.0.10",
           "System.Reflection": "4.0.10",
@@ -6656,7 +6453,6 @@
         }
       },
       "System.Reflection.Metadata/1.0.22": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.Collections.Immutable": "1.1.37",
@@ -6681,7 +6477,6 @@
         }
       },
       "System.Reflection.Primitives/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0",
           "System.Threading": "4.0.0"
@@ -6694,7 +6489,6 @@
         }
       },
       "System.Reflection.TypeExtensions/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Diagnostics.Contracts": "4.0.0",
           "System.Diagnostics.Debug": "4.0.10",
@@ -6713,7 +6507,6 @@
         }
       },
       "System.Resources.ResourceManager/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Globalization": "4.0.0",
           "System.Reflection": "4.0.10",
@@ -6727,7 +6520,6 @@
         }
       },
       "System.Runtime/4.0.20": {
-        "type": "package",
         "dependencies": {
           "System.Private.Uri": "4.0.0"
         },
@@ -6739,7 +6531,6 @@
         }
       },
       "System.Runtime.Extensions/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.20"
         },
@@ -6751,7 +6542,6 @@
         }
       },
       "System.Runtime.Handles/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0"
         },
@@ -6763,7 +6553,6 @@
         }
       },
       "System.Runtime.InteropServices/4.0.20": {
-        "type": "package",
         "dependencies": {
           "System.Reflection": "4.0.0",
           "System.Reflection.Primitives": "4.0.0",
@@ -6778,7 +6567,6 @@
         }
       },
       "System.Runtime.InteropServices.WindowsRuntime/4.0.0": {
-        "type": "package",
         "compile": {
           "ref/netcore50/System.Runtime.InteropServices.WindowsRuntime.dll": {}
         },
@@ -6787,7 +6575,6 @@
         }
       },
       "System.Runtime.Numerics/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Globalization": "4.0.10",
           "System.Resources.ResourceManager": "4.0.0",
@@ -6802,7 +6589,6 @@
         }
       },
       "System.Runtime.Serialization.Json/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Private.DataContractSerialization": "4.0.0"
         },
@@ -6814,7 +6600,6 @@
         }
       },
       "System.Runtime.Serialization.Primitives/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Resources.ResourceManager": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -6827,7 +6612,6 @@
         }
       },
       "System.Runtime.Serialization.Xml/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Private.DataContractSerialization": "4.0.0",
           "System.Runtime.Serialization.Primitives": "4.0.10"
@@ -6840,7 +6624,6 @@
         }
       },
       "System.Runtime.WindowsRuntime/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Diagnostics.Debug": "4.0.10",
           "System.Globalization": "4.0.0",
@@ -6861,7 +6644,6 @@
         }
       },
       "System.Runtime.WindowsRuntime.UI.Xaml/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Globalization": "4.0.0",
           "System.Resources.ResourceManager": "4.0.0",
@@ -6877,7 +6659,6 @@
         }
       },
       "System.Security.Claims/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.Diagnostics.Debug": "4.0.0",
@@ -6896,7 +6677,6 @@
         }
       },
       "System.Security.Principal/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0"
         },
@@ -6908,7 +6688,6 @@
         }
       },
       "System.ServiceModel.Duplex/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Private.ServiceModel": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -6921,7 +6700,6 @@
         }
       },
       "System.ServiceModel.Http/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Private.ServiceModel": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -6934,7 +6712,6 @@
         }
       },
       "System.ServiceModel.NetTcp/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Private.ServiceModel": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -6947,7 +6724,6 @@
         }
       },
       "System.ServiceModel.Primitives/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Private.ServiceModel": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -6960,7 +6736,6 @@
         }
       },
       "System.ServiceModel.Security/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Private.ServiceModel": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -6973,7 +6748,6 @@
         }
       },
       "System.Text.Encoding/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0"
         },
@@ -6985,7 +6759,6 @@
         }
       },
       "System.Text.Encoding.CodePages/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Globalization": "4.0.10",
@@ -7007,7 +6780,6 @@
         }
       },
       "System.Text.Encoding.Extensions/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0",
           "System.Text.Encoding": "4.0.10"
@@ -7020,7 +6792,6 @@
         }
       },
       "System.Text.RegularExpressions/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Globalization": "4.0.10",
@@ -7037,7 +6808,6 @@
         }
       },
       "System.Threading/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0",
           "System.Threading.Tasks": "4.0.0"
@@ -7050,7 +6820,6 @@
         }
       },
       "System.Threading.Overlapped/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Resources.ResourceManager": "4.0.0",
           "System.Runtime": "4.0.20",
@@ -7067,7 +6836,6 @@
         }
       },
       "System.Threading.Tasks/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0"
         },
@@ -7079,7 +6847,6 @@
         }
       },
       "System.Threading.Tasks.Dataflow/4.5.25": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.Collections.Concurrent": "4.0.0",
@@ -7101,7 +6868,6 @@
         }
       },
       "System.Threading.Tasks.Parallel/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections.Concurrent": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -7120,7 +6886,6 @@
         }
       },
       "System.Threading.Timer/4.0.0": {
-        "type": "package",
         "compile": {
           "ref/netcore50/System.Threading.Timer.dll": {}
         },
@@ -7129,7 +6894,6 @@
         }
       },
       "System.Xml.ReaderWriter/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -7154,7 +6918,6 @@
         }
       },
       "System.Xml.XDocument/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -7176,7 +6939,6 @@
         }
       },
       "System.Xml.XmlDocument/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -7197,7 +6959,6 @@
         }
       },
       "System.Xml.XmlSerializer/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -7226,7 +6987,6 @@
         }
       },
       "Validation/2.2.8": {
-        "type": "package",
         "compile": {
           "lib/dotnet/Validation.dll": {}
         },
@@ -7236,17 +6996,15 @@
       }
     },
     "UAP,Version=v10.0/win10-x64-aot": {
-      "Microsoft.Azure.Amqp/1.1.0": {
-        "type": "package",
+      "Microsoft.Azure.Amqp/2.0.2": {
         "compile": {
-          "lib/uap10.0/Microsoft.Azure.Amqp.Uwp.dll": {}
+          "lib/uap10.0/Microsoft.Azure.Amqp.dll": {}
         },
         "runtime": {
-          "lib/uap10.0/Microsoft.Azure.Amqp.Uwp.dll": {}
+          "lib/uap10.0/Microsoft.Azure.Amqp.dll": {}
         }
       },
       "Microsoft.CSharp/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -7273,7 +7031,6 @@
         }
       },
       "Microsoft.NETCore/5.0.0": {
-        "type": "package",
         "dependencies": {
           "Microsoft.CSharp": "4.0.0",
           "Microsoft.NETCore.Targets": "1.0.0",
@@ -7332,11 +7089,8 @@
           "System.Xml.XDocument": "4.0.10"
         }
       },
-      "Microsoft.NETCore.Platforms/1.0.0": {
-        "type": "package"
-      },
+      "Microsoft.NETCore.Platforms/1.0.0": {},
       "Microsoft.NETCore.Portable.Compatibility/1.0.0": {
-        "type": "package",
         "dependencies": {
           "Microsoft.NETCore.Runtime": "1.0.0"
         },
@@ -7372,13 +7126,11 @@
         }
       },
       "Microsoft.NETCore.Runtime/1.0.0": {
-        "type": "package",
         "dependencies": {
           "Microsoft.NETCore.Runtime.Native": "1.0.0"
         }
       },
       "Microsoft.NETCore.Runtime.Native/1.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "[4.0.10]",
           "System.Diagnostics.Contracts": "[4.0.0]",
@@ -7407,17 +7159,13 @@
         }
       },
       "Microsoft.NETCore.Targets/1.0.0": {
-        "type": "package",
         "dependencies": {
           "Microsoft.NETCore.Platforms": "1.0.0",
           "Microsoft.NETCore.Targets.UniversalWindowsPlatform": "5.0.0"
         }
       },
-      "Microsoft.NETCore.Targets.UniversalWindowsPlatform/5.0.0": {
-        "type": "package"
-      },
+      "Microsoft.NETCore.Targets.UniversalWindowsPlatform/5.0.0": {},
       "Microsoft.NETCore.UniversalWindowsPlatform/5.0.0": {
-        "type": "package",
         "dependencies": {
           "Microsoft.NETCore": "5.0.0",
           "Microsoft.NETCore.Portable.Compatibility": "1.0.0",
@@ -7450,7 +7198,6 @@
         }
       },
       "Microsoft.VisualBasic/10.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -7477,7 +7224,6 @@
         }
       },
       "Microsoft.Win32.Primitives/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.20",
           "System.Runtime.InteropServices": "4.0.20"
@@ -7490,7 +7236,6 @@
         }
       },
       "Newtonsoft.Json/6.0.8": {
-        "type": "package",
         "compile": {
           "lib/netcore45/Newtonsoft.Json.dll": {}
         },
@@ -7498,20 +7243,62 @@
           "lib/netcore45/Newtonsoft.Json.dll": {}
         }
       },
-      "PCLCrypto/1.0.86": {
-        "type": "package",
+      "PCLCrypto/2.0.147": {
         "dependencies": {
-          "Validation": "[2.0.6, 3.0.0)"
+          "PInvoke.NCrypt": "0.3.2",
+          "Validation": "2.2.8"
         },
         "compile": {
-          "lib/win81/PCLCrypto.dll": {}
+          "lib/portable-win81+wpa81/PCLCrypto.dll": {}
         },
         "runtime": {
-          "lib/win81/PCLCrypto.dll": {}
+          "lib/portable-win81+wpa81/PCLCrypto.dll": {}
+        }
+      },
+      "PInvoke.BCrypt/0.3.2": {
+        "dependencies": {
+          "PInvoke.Kernel32": "0.3.2",
+          "PInvoke.Windows.Core": "0.3.2"
+        },
+        "compile": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.BCrypt.dll": {}
+        },
+        "runtime": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.BCrypt.dll": {}
+        }
+      },
+      "PInvoke.Kernel32/0.3.2": {
+        "dependencies": {
+          "PInvoke.Windows.Core": "0.3.2"
+        },
+        "compile": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.Kernel32.dll": {}
+        },
+        "runtime": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.Kernel32.dll": {}
+        }
+      },
+      "PInvoke.NCrypt/0.3.2": {
+        "dependencies": {
+          "PInvoke.BCrypt": "0.3.2",
+          "PInvoke.Windows.Core": "0.3.2"
+        },
+        "compile": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.NCrypt.dll": {}
+        },
+        "runtime": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.NCrypt.dll": {}
+        }
+      },
+      "PInvoke.Windows.Core/0.3.2": {
+        "compile": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.Windows.Core.dll": {}
+        },
+        "runtime": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.Windows.Core.dll": {}
         }
       },
       "System.AppContext/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.Resources.ResourceManager": "4.0.0",
@@ -7526,7 +7313,6 @@
         }
       },
       "System.Collections/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Diagnostics.Debug": "4.0.0",
           "System.Resources.ResourceManager": "4.0.0",
@@ -7542,7 +7328,6 @@
         }
       },
       "System.Collections.Concurrent/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -7562,7 +7347,6 @@
         }
       },
       "System.Collections.Immutable/1.1.37": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.Diagnostics.Debug": "4.0.0",
@@ -7581,7 +7365,6 @@
         }
       },
       "System.Collections.NonGeneric/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Diagnostics.Debug": "4.0.10",
           "System.Globalization": "4.0.10",
@@ -7598,7 +7381,6 @@
         }
       },
       "System.Collections.Specialized/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections.NonGeneric": "4.0.0",
           "System.Globalization": "4.0.10",
@@ -7616,7 +7398,6 @@
         }
       },
       "System.ComponentModel/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.20"
         },
@@ -7628,7 +7409,6 @@
         }
       },
       "System.ComponentModel.Annotations/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.ComponentModel": "4.0.0",
@@ -7650,7 +7430,6 @@
         }
       },
       "System.ComponentModel.EventBasedAsync/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Resources.ResourceManager": "4.0.0",
           "System.Runtime": "4.0.20",
@@ -7665,7 +7444,6 @@
         }
       },
       "System.Data.Common/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Collections.NonGeneric": "4.0.0",
@@ -7685,7 +7463,6 @@
         }
       },
       "System.Diagnostics.Contracts/4.0.0": {
-        "type": "package",
         "compile": {
           "ref/netcore50/System.Diagnostics.Contracts.dll": {}
         },
@@ -7694,7 +7471,6 @@
         }
       },
       "System.Diagnostics.Debug/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0"
         },
@@ -7706,7 +7482,6 @@
         }
       },
       "System.Diagnostics.StackTrace/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.20"
         },
@@ -7718,7 +7493,6 @@
         }
       },
       "System.Diagnostics.Tools/4.0.0": {
-        "type": "package",
         "compile": {
           "ref/netcore50/System.Diagnostics.Tools.dll": {}
         },
@@ -7727,7 +7501,6 @@
         }
       },
       "System.Diagnostics.Tracing/4.0.20": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Globalization": "4.0.0",
@@ -7748,7 +7521,6 @@
         }
       },
       "System.Dynamic.Runtime/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.Diagnostics.Debug": "4.0.0",
@@ -7771,7 +7543,6 @@
         }
       },
       "System.Globalization/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0"
         },
@@ -7783,7 +7554,6 @@
         }
       },
       "System.Globalization.Calendars/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Globalization": "4.0.0",
           "System.Runtime": "4.0.0"
@@ -7796,7 +7566,6 @@
         }
       },
       "System.Globalization.Extensions/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Globalization": "4.0.10",
           "System.Resources.ResourceManager": "4.0.0",
@@ -7812,7 +7581,6 @@
         }
       },
       "System.IO/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Globalization": "4.0.0",
           "System.Runtime": "4.0.20",
@@ -7829,7 +7597,6 @@
         }
       },
       "System.IO.Compression/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.IO": "4.0.0",
@@ -7850,13 +7617,11 @@
         }
       },
       "System.IO.Compression.clrcompression-x64/4.0.0": {
-        "type": "package",
         "native": {
           "runtimes/win10-x64/native/ClrCompression.dll": {}
         }
       },
       "System.IO.Compression.ZipFile/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.IO": "4.0.10",
           "System.IO.Compression": "4.0.0",
@@ -7875,7 +7640,6 @@
         }
       },
       "System.IO.FileSystem/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -7901,7 +7665,6 @@
         }
       },
       "System.IO.FileSystem.Primitives/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.20"
         },
@@ -7913,7 +7676,6 @@
         }
       },
       "System.IO.IsolatedStorage/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.IO": "4.0.10",
           "System.IO.FileSystem": "4.0.0",
@@ -7933,7 +7695,6 @@
         }
       },
       "System.IO.UnmanagedMemoryStream/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.IO": "4.0.10",
           "System.IO.FileSystem.Primitives": "4.0.0",
@@ -7951,7 +7712,6 @@
         }
       },
       "System.Linq/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -7967,7 +7727,6 @@
         }
       },
       "System.Linq.Expressions/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.Diagnostics.Debug": "4.0.0",
@@ -7991,7 +7750,6 @@
         }
       },
       "System.Linq.Parallel/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Collections.Concurrent": "4.0.10",
@@ -8012,7 +7770,6 @@
         }
       },
       "System.Linq.Queryable/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Linq": "4.0.0",
@@ -8030,7 +7787,6 @@
         }
       },
       "System.Net.Http/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -8055,7 +7811,6 @@
         }
       },
       "System.Net.Http.Rtc/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Net.Http": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -8068,7 +7823,6 @@
         }
       },
       "System.Net.NetworkInformation/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0",
           "System.Runtime.InteropServices.WindowsRuntime": "4.0.0",
@@ -8082,7 +7836,6 @@
         }
       },
       "System.Net.Primitives/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Private.Networking": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -8095,7 +7848,6 @@
         }
       },
       "System.Net.Requests/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -8116,7 +7868,6 @@
         }
       },
       "System.Net.Sockets/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Private.Networking": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -8129,7 +7880,6 @@
         }
       },
       "System.Net.WebHeaderCollection/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections.NonGeneric": "4.0.0",
           "System.Collections.Specialized": "4.0.0",
@@ -8144,7 +7894,6 @@
         }
       },
       "System.Numerics.Vectors/4.1.0": {
-        "type": "package",
         "dependencies": {
           "System.Globalization": "4.0.10",
           "System.Resources.ResourceManager": "4.0.0",
@@ -8159,7 +7908,6 @@
         }
       },
       "System.Numerics.Vectors.WindowsRuntime/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Numerics.Vectors": "4.1.0",
           "System.Runtime": "4.0.20",
@@ -8173,7 +7921,6 @@
         }
       },
       "System.ObjectModel/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -8189,7 +7936,6 @@
         }
       },
       "System.Private.DataContractSerialization/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Globalization": "4.0.10",
@@ -8218,7 +7964,6 @@
         }
       },
       "System.Private.Networking/4.0.0": {
-        "type": "package",
         "dependencies": {
           "Microsoft.Win32.Primitives": "4.0.0",
           "System.Collections": "4.0.10",
@@ -8246,7 +7991,6 @@
         }
       },
       "System.Private.ServiceModel/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Collections.Concurrent": "4.0.10",
@@ -8295,7 +8039,6 @@
         }
       },
       "System.Private.Uri/4.0.0": {
-        "type": "package",
         "compile": {
           "ref/netcore50/_._": {}
         },
@@ -8304,7 +8047,6 @@
         }
       },
       "System.Reflection/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.IO": "4.0.0",
           "System.Reflection.Primitives": "4.0.0",
@@ -8318,7 +8060,6 @@
         }
       },
       "System.Reflection.Context/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Reflection": "4.0.10",
           "System.Resources.ResourceManager": "4.0.0",
@@ -8332,7 +8073,6 @@
         }
       },
       "System.Reflection.DispatchProxy/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Linq": "4.0.0",
@@ -8351,7 +8091,6 @@
         }
       },
       "System.Reflection.Emit/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.IO": "4.0.0",
           "System.Reflection": "4.0.0",
@@ -8367,7 +8106,6 @@
         }
       },
       "System.Reflection.Emit.ILGeneration/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Reflection": "4.0.0",
           "System.Reflection.Primitives": "4.0.0",
@@ -8381,7 +8119,6 @@
         }
       },
       "System.Reflection.Extensions/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Diagnostics.Debug": "4.0.10",
           "System.Reflection": "4.0.10",
@@ -8399,7 +8136,6 @@
         }
       },
       "System.Reflection.Metadata/1.0.22": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.Collections.Immutable": "1.1.37",
@@ -8424,7 +8160,6 @@
         }
       },
       "System.Reflection.Primitives/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0",
           "System.Threading": "4.0.0"
@@ -8437,7 +8172,6 @@
         }
       },
       "System.Reflection.TypeExtensions/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Diagnostics.Contracts": "4.0.0",
           "System.Diagnostics.Debug": "4.0.10",
@@ -8456,7 +8190,6 @@
         }
       },
       "System.Resources.ResourceManager/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Globalization": "4.0.0",
           "System.Reflection": "4.0.10",
@@ -8470,7 +8203,6 @@
         }
       },
       "System.Runtime/4.0.20": {
-        "type": "package",
         "dependencies": {
           "System.Private.Uri": "4.0.0"
         },
@@ -8482,7 +8214,6 @@
         }
       },
       "System.Runtime.Extensions/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.20"
         },
@@ -8494,7 +8225,6 @@
         }
       },
       "System.Runtime.Handles/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0"
         },
@@ -8506,7 +8236,6 @@
         }
       },
       "System.Runtime.InteropServices/4.0.20": {
-        "type": "package",
         "dependencies": {
           "System.Reflection": "4.0.0",
           "System.Reflection.Primitives": "4.0.0",
@@ -8521,7 +8250,6 @@
         }
       },
       "System.Runtime.InteropServices.WindowsRuntime/4.0.0": {
-        "type": "package",
         "compile": {
           "ref/netcore50/System.Runtime.InteropServices.WindowsRuntime.dll": {}
         },
@@ -8530,7 +8258,6 @@
         }
       },
       "System.Runtime.Numerics/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Globalization": "4.0.10",
           "System.Resources.ResourceManager": "4.0.0",
@@ -8545,7 +8272,6 @@
         }
       },
       "System.Runtime.Serialization.Json/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Private.DataContractSerialization": "4.0.0"
         },
@@ -8557,7 +8283,6 @@
         }
       },
       "System.Runtime.Serialization.Primitives/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Resources.ResourceManager": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -8570,7 +8295,6 @@
         }
       },
       "System.Runtime.Serialization.Xml/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Private.DataContractSerialization": "4.0.0",
           "System.Runtime.Serialization.Primitives": "4.0.10"
@@ -8583,7 +8307,6 @@
         }
       },
       "System.Runtime.WindowsRuntime/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Diagnostics.Debug": "4.0.10",
           "System.Globalization": "4.0.0",
@@ -8604,7 +8327,6 @@
         }
       },
       "System.Runtime.WindowsRuntime.UI.Xaml/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Globalization": "4.0.0",
           "System.Resources.ResourceManager": "4.0.0",
@@ -8620,7 +8342,6 @@
         }
       },
       "System.Security.Claims/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.Diagnostics.Debug": "4.0.0",
@@ -8639,7 +8360,6 @@
         }
       },
       "System.Security.Principal/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0"
         },
@@ -8651,7 +8371,6 @@
         }
       },
       "System.ServiceModel.Duplex/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Private.ServiceModel": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -8664,7 +8383,6 @@
         }
       },
       "System.ServiceModel.Http/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Private.ServiceModel": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -8677,7 +8395,6 @@
         }
       },
       "System.ServiceModel.NetTcp/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Private.ServiceModel": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -8690,7 +8407,6 @@
         }
       },
       "System.ServiceModel.Primitives/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Private.ServiceModel": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -8703,7 +8419,6 @@
         }
       },
       "System.ServiceModel.Security/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Private.ServiceModel": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -8716,7 +8431,6 @@
         }
       },
       "System.Text.Encoding/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0"
         },
@@ -8728,7 +8442,6 @@
         }
       },
       "System.Text.Encoding.CodePages/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Globalization": "4.0.10",
@@ -8750,7 +8463,6 @@
         }
       },
       "System.Text.Encoding.Extensions/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0",
           "System.Text.Encoding": "4.0.10"
@@ -8763,7 +8475,6 @@
         }
       },
       "System.Text.RegularExpressions/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Globalization": "4.0.10",
@@ -8780,7 +8491,6 @@
         }
       },
       "System.Threading/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0",
           "System.Threading.Tasks": "4.0.0"
@@ -8793,7 +8503,6 @@
         }
       },
       "System.Threading.Overlapped/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Resources.ResourceManager": "4.0.0",
           "System.Runtime": "4.0.20",
@@ -8810,7 +8519,6 @@
         }
       },
       "System.Threading.Tasks/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0"
         },
@@ -8822,7 +8530,6 @@
         }
       },
       "System.Threading.Tasks.Dataflow/4.5.25": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.Collections.Concurrent": "4.0.0",
@@ -8844,7 +8551,6 @@
         }
       },
       "System.Threading.Tasks.Parallel/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections.Concurrent": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -8863,7 +8569,6 @@
         }
       },
       "System.Threading.Timer/4.0.0": {
-        "type": "package",
         "compile": {
           "ref/netcore50/System.Threading.Timer.dll": {}
         },
@@ -8872,7 +8577,6 @@
         }
       },
       "System.Xml.ReaderWriter/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -8897,7 +8601,6 @@
         }
       },
       "System.Xml.XDocument/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -8919,7 +8622,6 @@
         }
       },
       "System.Xml.XmlDocument/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -8940,7 +8642,6 @@
         }
       },
       "System.Xml.XmlSerializer/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -8969,7 +8670,6 @@
         }
       },
       "Validation/2.2.8": {
-        "type": "package",
         "compile": {
           "lib/dotnet/Validation.dll": {}
         },
@@ -8979,17 +8679,15 @@
       }
     },
     "UAP,Version=v10.0/win10-x86": {
-      "Microsoft.Azure.Amqp/1.1.0": {
-        "type": "package",
+      "Microsoft.Azure.Amqp/2.0.2": {
         "compile": {
-          "lib/uap10.0/Microsoft.Azure.Amqp.Uwp.dll": {}
+          "lib/uap10.0/Microsoft.Azure.Amqp.dll": {}
         },
         "runtime": {
-          "lib/uap10.0/Microsoft.Azure.Amqp.Uwp.dll": {}
+          "lib/uap10.0/Microsoft.Azure.Amqp.dll": {}
         }
       },
       "Microsoft.CSharp/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -9016,7 +8714,6 @@
         }
       },
       "Microsoft.NETCore/5.0.0": {
-        "type": "package",
         "dependencies": {
           "Microsoft.CSharp": "4.0.0",
           "Microsoft.NETCore.Targets": "1.0.0",
@@ -9075,11 +8772,8 @@
           "System.Xml.XDocument": "4.0.10"
         }
       },
-      "Microsoft.NETCore.Platforms/1.0.0": {
-        "type": "package"
-      },
+      "Microsoft.NETCore.Platforms/1.0.0": {},
       "Microsoft.NETCore.Portable.Compatibility/1.0.0": {
-        "type": "package",
         "dependencies": {
           "Microsoft.NETCore.Runtime": "1.0.0"
         },
@@ -9114,14 +8808,12 @@
         }
       },
       "Microsoft.NETCore.Runtime/1.0.0": {
-        "type": "package",
         "dependencies": {
           "Microsoft.NETCore.Runtime.CoreCLR-x86": "1.0.0",
           "Microsoft.NETCore.Windows.ApiSets-x86": "1.0.0"
         }
       },
       "Microsoft.NETCore.Runtime.CoreCLR-x86/1.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "[4.0.10]",
           "System.Diagnostics.Contracts": "[4.0.0]",
@@ -9165,17 +8857,13 @@
         }
       },
       "Microsoft.NETCore.Targets/1.0.0": {
-        "type": "package",
         "dependencies": {
           "Microsoft.NETCore.Platforms": "1.0.0",
           "Microsoft.NETCore.Targets.UniversalWindowsPlatform": "5.0.0"
         }
       },
-      "Microsoft.NETCore.Targets.UniversalWindowsPlatform/5.0.0": {
-        "type": "package"
-      },
+      "Microsoft.NETCore.Targets.UniversalWindowsPlatform/5.0.0": {},
       "Microsoft.NETCore.UniversalWindowsPlatform/5.0.0": {
-        "type": "package",
         "dependencies": {
           "Microsoft.NETCore": "5.0.0",
           "Microsoft.NETCore.Portable.Compatibility": "1.0.0",
@@ -9208,13 +8896,11 @@
         }
       },
       "Microsoft.NETCore.Windows.ApiSets-x86/1.0.0": {
-        "type": "package",
         "native": {
           "runtimes/win10-x86/native/_._": {}
         }
       },
       "Microsoft.VisualBasic/10.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -9241,7 +8927,6 @@
         }
       },
       "Microsoft.Win32.Primitives/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.20",
           "System.Runtime.InteropServices": "4.0.20"
@@ -9254,7 +8939,6 @@
         }
       },
       "Newtonsoft.Json/6.0.8": {
-        "type": "package",
         "compile": {
           "lib/netcore45/Newtonsoft.Json.dll": {}
         },
@@ -9262,20 +8946,62 @@
           "lib/netcore45/Newtonsoft.Json.dll": {}
         }
       },
-      "PCLCrypto/1.0.86": {
-        "type": "package",
+      "PCLCrypto/2.0.147": {
         "dependencies": {
-          "Validation": "[2.0.6, 3.0.0)"
+          "PInvoke.NCrypt": "0.3.2",
+          "Validation": "2.2.8"
         },
         "compile": {
-          "lib/win81/PCLCrypto.dll": {}
+          "lib/portable-win81+wpa81/PCLCrypto.dll": {}
         },
         "runtime": {
-          "lib/win81/PCLCrypto.dll": {}
+          "lib/portable-win81+wpa81/PCLCrypto.dll": {}
+        }
+      },
+      "PInvoke.BCrypt/0.3.2": {
+        "dependencies": {
+          "PInvoke.Kernel32": "0.3.2",
+          "PInvoke.Windows.Core": "0.3.2"
+        },
+        "compile": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.BCrypt.dll": {}
+        },
+        "runtime": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.BCrypt.dll": {}
+        }
+      },
+      "PInvoke.Kernel32/0.3.2": {
+        "dependencies": {
+          "PInvoke.Windows.Core": "0.3.2"
+        },
+        "compile": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.Kernel32.dll": {}
+        },
+        "runtime": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.Kernel32.dll": {}
+        }
+      },
+      "PInvoke.NCrypt/0.3.2": {
+        "dependencies": {
+          "PInvoke.BCrypt": "0.3.2",
+          "PInvoke.Windows.Core": "0.3.2"
+        },
+        "compile": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.NCrypt.dll": {}
+        },
+        "runtime": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.NCrypt.dll": {}
+        }
+      },
+      "PInvoke.Windows.Core/0.3.2": {
+        "compile": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.Windows.Core.dll": {}
+        },
+        "runtime": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.Windows.Core.dll": {}
         }
       },
       "System.AppContext/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.Resources.ResourceManager": "4.0.0",
@@ -9290,7 +9016,6 @@
         }
       },
       "System.Collections/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Diagnostics.Debug": "4.0.0",
           "System.Resources.ResourceManager": "4.0.0",
@@ -9306,7 +9031,6 @@
         }
       },
       "System.Collections.Concurrent/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -9326,7 +9050,6 @@
         }
       },
       "System.Collections.Immutable/1.1.37": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.Diagnostics.Debug": "4.0.0",
@@ -9345,7 +9068,6 @@
         }
       },
       "System.Collections.NonGeneric/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Diagnostics.Debug": "4.0.10",
           "System.Globalization": "4.0.10",
@@ -9362,7 +9084,6 @@
         }
       },
       "System.Collections.Specialized/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections.NonGeneric": "4.0.0",
           "System.Globalization": "4.0.10",
@@ -9380,7 +9101,6 @@
         }
       },
       "System.ComponentModel/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.20"
         },
@@ -9392,7 +9112,6 @@
         }
       },
       "System.ComponentModel.Annotations/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.ComponentModel": "4.0.0",
@@ -9414,7 +9133,6 @@
         }
       },
       "System.ComponentModel.EventBasedAsync/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Resources.ResourceManager": "4.0.0",
           "System.Runtime": "4.0.20",
@@ -9429,7 +9147,6 @@
         }
       },
       "System.Data.Common/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Collections.NonGeneric": "4.0.0",
@@ -9449,7 +9166,6 @@
         }
       },
       "System.Diagnostics.Contracts/4.0.0": {
-        "type": "package",
         "compile": {
           "ref/netcore50/System.Diagnostics.Contracts.dll": {}
         },
@@ -9458,7 +9174,6 @@
         }
       },
       "System.Diagnostics.Debug/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0"
         },
@@ -9470,7 +9185,6 @@
         }
       },
       "System.Diagnostics.StackTrace/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.20"
         },
@@ -9482,7 +9196,6 @@
         }
       },
       "System.Diagnostics.Tools/4.0.0": {
-        "type": "package",
         "compile": {
           "ref/netcore50/System.Diagnostics.Tools.dll": {}
         },
@@ -9491,7 +9204,6 @@
         }
       },
       "System.Diagnostics.Tracing/4.0.20": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Globalization": "4.0.0",
@@ -9512,7 +9224,6 @@
         }
       },
       "System.Dynamic.Runtime/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.Diagnostics.Debug": "4.0.0",
@@ -9537,7 +9248,6 @@
         }
       },
       "System.Globalization/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0"
         },
@@ -9549,7 +9259,6 @@
         }
       },
       "System.Globalization.Calendars/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Globalization": "4.0.0",
           "System.Runtime": "4.0.0"
@@ -9562,7 +9271,6 @@
         }
       },
       "System.Globalization.Extensions/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Globalization": "4.0.10",
           "System.Resources.ResourceManager": "4.0.0",
@@ -9578,7 +9286,6 @@
         }
       },
       "System.IO/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Globalization": "4.0.0",
           "System.Runtime": "4.0.20",
@@ -9595,7 +9302,6 @@
         }
       },
       "System.IO.Compression/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.IO": "4.0.0",
@@ -9616,13 +9322,11 @@
         }
       },
       "System.IO.Compression.clrcompression-x86/4.0.0": {
-        "type": "package",
         "native": {
           "runtimes/win10-x86/native/ClrCompression.dll": {}
         }
       },
       "System.IO.Compression.ZipFile/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.IO": "4.0.10",
           "System.IO.Compression": "4.0.0",
@@ -9641,7 +9345,6 @@
         }
       },
       "System.IO.FileSystem/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -9667,7 +9370,6 @@
         }
       },
       "System.IO.FileSystem.Primitives/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.20"
         },
@@ -9679,7 +9381,6 @@
         }
       },
       "System.IO.IsolatedStorage/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.IO": "4.0.10",
           "System.IO.FileSystem": "4.0.0",
@@ -9699,7 +9400,6 @@
         }
       },
       "System.IO.UnmanagedMemoryStream/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.IO": "4.0.10",
           "System.IO.FileSystem.Primitives": "4.0.0",
@@ -9717,7 +9417,6 @@
         }
       },
       "System.Linq/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -9733,7 +9432,6 @@
         }
       },
       "System.Linq.Expressions/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.Diagnostics.Debug": "4.0.0",
@@ -9759,7 +9457,6 @@
         }
       },
       "System.Linq.Parallel/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Collections.Concurrent": "4.0.10",
@@ -9780,7 +9477,6 @@
         }
       },
       "System.Linq.Queryable/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Linq": "4.0.0",
@@ -9798,7 +9494,6 @@
         }
       },
       "System.Net.Http/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -9823,7 +9518,6 @@
         }
       },
       "System.Net.Http.Rtc/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Net.Http": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -9836,7 +9530,6 @@
         }
       },
       "System.Net.NetworkInformation/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0",
           "System.Runtime.InteropServices.WindowsRuntime": "4.0.0",
@@ -9850,7 +9543,6 @@
         }
       },
       "System.Net.Primitives/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Private.Networking": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -9863,7 +9555,6 @@
         }
       },
       "System.Net.Requests/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -9884,7 +9575,6 @@
         }
       },
       "System.Net.Sockets/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Private.Networking": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -9897,7 +9587,6 @@
         }
       },
       "System.Net.WebHeaderCollection/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections.NonGeneric": "4.0.0",
           "System.Collections.Specialized": "4.0.0",
@@ -9912,7 +9601,6 @@
         }
       },
       "System.Numerics.Vectors/4.1.0": {
-        "type": "package",
         "dependencies": {
           "System.Globalization": "4.0.10",
           "System.Resources.ResourceManager": "4.0.0",
@@ -9927,7 +9615,6 @@
         }
       },
       "System.Numerics.Vectors.WindowsRuntime/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Numerics.Vectors": "4.1.0",
           "System.Runtime": "4.0.20",
@@ -9941,7 +9628,6 @@
         }
       },
       "System.ObjectModel/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -9957,7 +9643,6 @@
         }
       },
       "System.Private.DataContractSerialization/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Globalization": "4.0.10",
@@ -9988,7 +9673,6 @@
         }
       },
       "System.Private.Networking/4.0.0": {
-        "type": "package",
         "dependencies": {
           "Microsoft.Win32.Primitives": "4.0.0",
           "System.Collections": "4.0.10",
@@ -10016,7 +9700,6 @@
         }
       },
       "System.Private.ServiceModel/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Collections.Concurrent": "4.0.10",
@@ -10065,7 +9748,6 @@
         }
       },
       "System.Private.Uri/4.0.0": {
-        "type": "package",
         "compile": {
           "ref/netcore50/_._": {}
         },
@@ -10074,7 +9756,6 @@
         }
       },
       "System.Reflection/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.IO": "4.0.0",
           "System.Reflection.Primitives": "4.0.0",
@@ -10088,7 +9769,6 @@
         }
       },
       "System.Reflection.Context/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Reflection": "4.0.10",
           "System.Resources.ResourceManager": "4.0.0",
@@ -10102,7 +9782,6 @@
         }
       },
       "System.Reflection.DispatchProxy/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Linq": "4.0.0",
@@ -10123,7 +9802,6 @@
         }
       },
       "System.Reflection.Emit/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.IO": "4.0.0",
           "System.Reflection": "4.0.0",
@@ -10139,7 +9817,6 @@
         }
       },
       "System.Reflection.Emit.ILGeneration/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Reflection": "4.0.0",
           "System.Reflection.Primitives": "4.0.0",
@@ -10153,7 +9830,6 @@
         }
       },
       "System.Reflection.Emit.Lightweight/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Reflection": "4.0.0",
           "System.Reflection.Emit.ILGeneration": "4.0.0",
@@ -10168,7 +9844,6 @@
         }
       },
       "System.Reflection.Extensions/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Diagnostics.Debug": "4.0.10",
           "System.Reflection": "4.0.10",
@@ -10186,7 +9861,6 @@
         }
       },
       "System.Reflection.Metadata/1.0.22": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.Collections.Immutable": "1.1.37",
@@ -10211,7 +9885,6 @@
         }
       },
       "System.Reflection.Primitives/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0",
           "System.Threading": "4.0.0"
@@ -10224,7 +9897,6 @@
         }
       },
       "System.Reflection.TypeExtensions/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Diagnostics.Contracts": "4.0.0",
           "System.Diagnostics.Debug": "4.0.10",
@@ -10243,7 +9915,6 @@
         }
       },
       "System.Resources.ResourceManager/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Globalization": "4.0.0",
           "System.Reflection": "4.0.10",
@@ -10257,7 +9928,6 @@
         }
       },
       "System.Runtime/4.0.20": {
-        "type": "package",
         "dependencies": {
           "System.Private.Uri": "4.0.0"
         },
@@ -10269,7 +9939,6 @@
         }
       },
       "System.Runtime.Extensions/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.20"
         },
@@ -10281,7 +9950,6 @@
         }
       },
       "System.Runtime.Handles/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0"
         },
@@ -10293,7 +9961,6 @@
         }
       },
       "System.Runtime.InteropServices/4.0.20": {
-        "type": "package",
         "dependencies": {
           "System.Reflection": "4.0.0",
           "System.Reflection.Primitives": "4.0.0",
@@ -10308,7 +9975,6 @@
         }
       },
       "System.Runtime.InteropServices.WindowsRuntime/4.0.0": {
-        "type": "package",
         "compile": {
           "ref/netcore50/System.Runtime.InteropServices.WindowsRuntime.dll": {}
         },
@@ -10317,7 +9983,6 @@
         }
       },
       "System.Runtime.Numerics/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Globalization": "4.0.10",
           "System.Resources.ResourceManager": "4.0.0",
@@ -10332,7 +9997,6 @@
         }
       },
       "System.Runtime.Serialization.Json/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Private.DataContractSerialization": "4.0.0"
         },
@@ -10344,7 +10008,6 @@
         }
       },
       "System.Runtime.Serialization.Primitives/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Resources.ResourceManager": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -10357,7 +10020,6 @@
         }
       },
       "System.Runtime.Serialization.Xml/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Private.DataContractSerialization": "4.0.0",
           "System.Runtime.Serialization.Primitives": "4.0.10"
@@ -10370,7 +10032,6 @@
         }
       },
       "System.Runtime.WindowsRuntime/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Diagnostics.Debug": "4.0.10",
           "System.Globalization": "4.0.0",
@@ -10391,7 +10052,6 @@
         }
       },
       "System.Runtime.WindowsRuntime.UI.Xaml/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Globalization": "4.0.0",
           "System.Resources.ResourceManager": "4.0.0",
@@ -10407,7 +10067,6 @@
         }
       },
       "System.Security.Claims/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.Diagnostics.Debug": "4.0.0",
@@ -10426,7 +10085,6 @@
         }
       },
       "System.Security.Principal/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0"
         },
@@ -10438,7 +10096,6 @@
         }
       },
       "System.ServiceModel.Duplex/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Private.ServiceModel": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -10451,7 +10108,6 @@
         }
       },
       "System.ServiceModel.Http/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Private.ServiceModel": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -10464,7 +10120,6 @@
         }
       },
       "System.ServiceModel.NetTcp/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Private.ServiceModel": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -10477,7 +10132,6 @@
         }
       },
       "System.ServiceModel.Primitives/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Private.ServiceModel": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -10490,7 +10144,6 @@
         }
       },
       "System.ServiceModel.Security/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Private.ServiceModel": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -10503,7 +10156,6 @@
         }
       },
       "System.Text.Encoding/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0"
         },
@@ -10515,7 +10167,6 @@
         }
       },
       "System.Text.Encoding.CodePages/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Globalization": "4.0.10",
@@ -10537,7 +10188,6 @@
         }
       },
       "System.Text.Encoding.Extensions/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0",
           "System.Text.Encoding": "4.0.10"
@@ -10550,7 +10200,6 @@
         }
       },
       "System.Text.RegularExpressions/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Globalization": "4.0.10",
@@ -10567,7 +10216,6 @@
         }
       },
       "System.Threading/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0",
           "System.Threading.Tasks": "4.0.0"
@@ -10580,7 +10228,6 @@
         }
       },
       "System.Threading.Overlapped/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Resources.ResourceManager": "4.0.0",
           "System.Runtime": "4.0.20",
@@ -10597,7 +10244,6 @@
         }
       },
       "System.Threading.Tasks/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0"
         },
@@ -10609,7 +10255,6 @@
         }
       },
       "System.Threading.Tasks.Dataflow/4.5.25": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.Collections.Concurrent": "4.0.0",
@@ -10631,7 +10276,6 @@
         }
       },
       "System.Threading.Tasks.Parallel/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections.Concurrent": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -10650,7 +10294,6 @@
         }
       },
       "System.Threading.Timer/4.0.0": {
-        "type": "package",
         "compile": {
           "ref/netcore50/System.Threading.Timer.dll": {}
         },
@@ -10659,7 +10302,6 @@
         }
       },
       "System.Xml.ReaderWriter/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -10684,7 +10326,6 @@
         }
       },
       "System.Xml.XDocument/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -10706,7 +10347,6 @@
         }
       },
       "System.Xml.XmlDocument/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -10727,7 +10367,6 @@
         }
       },
       "System.Xml.XmlSerializer/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -10756,7 +10395,6 @@
         }
       },
       "Validation/2.2.8": {
-        "type": "package",
         "compile": {
           "lib/dotnet/Validation.dll": {}
         },
@@ -10766,17 +10404,15 @@
       }
     },
     "UAP,Version=v10.0/win10-x86-aot": {
-      "Microsoft.Azure.Amqp/1.1.0": {
-        "type": "package",
+      "Microsoft.Azure.Amqp/2.0.2": {
         "compile": {
-          "lib/uap10.0/Microsoft.Azure.Amqp.Uwp.dll": {}
+          "lib/uap10.0/Microsoft.Azure.Amqp.dll": {}
         },
         "runtime": {
-          "lib/uap10.0/Microsoft.Azure.Amqp.Uwp.dll": {}
+          "lib/uap10.0/Microsoft.Azure.Amqp.dll": {}
         }
       },
       "Microsoft.CSharp/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -10803,7 +10439,6 @@
         }
       },
       "Microsoft.NETCore/5.0.0": {
-        "type": "package",
         "dependencies": {
           "Microsoft.CSharp": "4.0.0",
           "Microsoft.NETCore.Targets": "1.0.0",
@@ -10862,11 +10497,8 @@
           "System.Xml.XDocument": "4.0.10"
         }
       },
-      "Microsoft.NETCore.Platforms/1.0.0": {
-        "type": "package"
-      },
+      "Microsoft.NETCore.Platforms/1.0.0": {},
       "Microsoft.NETCore.Portable.Compatibility/1.0.0": {
-        "type": "package",
         "dependencies": {
           "Microsoft.NETCore.Runtime": "1.0.0"
         },
@@ -10902,13 +10534,11 @@
         }
       },
       "Microsoft.NETCore.Runtime/1.0.0": {
-        "type": "package",
         "dependencies": {
           "Microsoft.NETCore.Runtime.Native": "1.0.0"
         }
       },
       "Microsoft.NETCore.Runtime.Native/1.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "[4.0.10]",
           "System.Diagnostics.Contracts": "[4.0.0]",
@@ -10937,17 +10567,13 @@
         }
       },
       "Microsoft.NETCore.Targets/1.0.0": {
-        "type": "package",
         "dependencies": {
           "Microsoft.NETCore.Platforms": "1.0.0",
           "Microsoft.NETCore.Targets.UniversalWindowsPlatform": "5.0.0"
         }
       },
-      "Microsoft.NETCore.Targets.UniversalWindowsPlatform/5.0.0": {
-        "type": "package"
-      },
+      "Microsoft.NETCore.Targets.UniversalWindowsPlatform/5.0.0": {},
       "Microsoft.NETCore.UniversalWindowsPlatform/5.0.0": {
-        "type": "package",
         "dependencies": {
           "Microsoft.NETCore": "5.0.0",
           "Microsoft.NETCore.Portable.Compatibility": "1.0.0",
@@ -10980,7 +10606,6 @@
         }
       },
       "Microsoft.VisualBasic/10.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -11007,7 +10632,6 @@
         }
       },
       "Microsoft.Win32.Primitives/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.20",
           "System.Runtime.InteropServices": "4.0.20"
@@ -11020,7 +10644,6 @@
         }
       },
       "Newtonsoft.Json/6.0.8": {
-        "type": "package",
         "compile": {
           "lib/netcore45/Newtonsoft.Json.dll": {}
         },
@@ -11028,20 +10651,62 @@
           "lib/netcore45/Newtonsoft.Json.dll": {}
         }
       },
-      "PCLCrypto/1.0.86": {
-        "type": "package",
+      "PCLCrypto/2.0.147": {
         "dependencies": {
-          "Validation": "[2.0.6, 3.0.0)"
+          "PInvoke.NCrypt": "0.3.2",
+          "Validation": "2.2.8"
         },
         "compile": {
-          "lib/win81/PCLCrypto.dll": {}
+          "lib/portable-win81+wpa81/PCLCrypto.dll": {}
         },
         "runtime": {
-          "lib/win81/PCLCrypto.dll": {}
+          "lib/portable-win81+wpa81/PCLCrypto.dll": {}
+        }
+      },
+      "PInvoke.BCrypt/0.3.2": {
+        "dependencies": {
+          "PInvoke.Kernel32": "0.3.2",
+          "PInvoke.Windows.Core": "0.3.2"
+        },
+        "compile": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.BCrypt.dll": {}
+        },
+        "runtime": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.BCrypt.dll": {}
+        }
+      },
+      "PInvoke.Kernel32/0.3.2": {
+        "dependencies": {
+          "PInvoke.Windows.Core": "0.3.2"
+        },
+        "compile": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.Kernel32.dll": {}
+        },
+        "runtime": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.Kernel32.dll": {}
+        }
+      },
+      "PInvoke.NCrypt/0.3.2": {
+        "dependencies": {
+          "PInvoke.BCrypt": "0.3.2",
+          "PInvoke.Windows.Core": "0.3.2"
+        },
+        "compile": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.NCrypt.dll": {}
+        },
+        "runtime": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.NCrypt.dll": {}
+        }
+      },
+      "PInvoke.Windows.Core/0.3.2": {
+        "compile": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.Windows.Core.dll": {}
+        },
+        "runtime": {
+          "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.Windows.Core.dll": {}
         }
       },
       "System.AppContext/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.Resources.ResourceManager": "4.0.0",
@@ -11056,7 +10721,6 @@
         }
       },
       "System.Collections/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Diagnostics.Debug": "4.0.0",
           "System.Resources.ResourceManager": "4.0.0",
@@ -11072,7 +10736,6 @@
         }
       },
       "System.Collections.Concurrent/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -11092,7 +10755,6 @@
         }
       },
       "System.Collections.Immutable/1.1.37": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.Diagnostics.Debug": "4.0.0",
@@ -11111,7 +10773,6 @@
         }
       },
       "System.Collections.NonGeneric/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Diagnostics.Debug": "4.0.10",
           "System.Globalization": "4.0.10",
@@ -11128,7 +10789,6 @@
         }
       },
       "System.Collections.Specialized/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections.NonGeneric": "4.0.0",
           "System.Globalization": "4.0.10",
@@ -11146,7 +10806,6 @@
         }
       },
       "System.ComponentModel/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.20"
         },
@@ -11158,7 +10817,6 @@
         }
       },
       "System.ComponentModel.Annotations/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.ComponentModel": "4.0.0",
@@ -11180,7 +10838,6 @@
         }
       },
       "System.ComponentModel.EventBasedAsync/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Resources.ResourceManager": "4.0.0",
           "System.Runtime": "4.0.20",
@@ -11195,7 +10852,6 @@
         }
       },
       "System.Data.Common/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Collections.NonGeneric": "4.0.0",
@@ -11215,7 +10871,6 @@
         }
       },
       "System.Diagnostics.Contracts/4.0.0": {
-        "type": "package",
         "compile": {
           "ref/netcore50/System.Diagnostics.Contracts.dll": {}
         },
@@ -11224,7 +10879,6 @@
         }
       },
       "System.Diagnostics.Debug/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0"
         },
@@ -11236,7 +10890,6 @@
         }
       },
       "System.Diagnostics.StackTrace/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.20"
         },
@@ -11248,7 +10901,6 @@
         }
       },
       "System.Diagnostics.Tools/4.0.0": {
-        "type": "package",
         "compile": {
           "ref/netcore50/System.Diagnostics.Tools.dll": {}
         },
@@ -11257,7 +10909,6 @@
         }
       },
       "System.Diagnostics.Tracing/4.0.20": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Globalization": "4.0.0",
@@ -11278,7 +10929,6 @@
         }
       },
       "System.Dynamic.Runtime/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.Diagnostics.Debug": "4.0.0",
@@ -11301,7 +10951,6 @@
         }
       },
       "System.Globalization/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0"
         },
@@ -11313,7 +10962,6 @@
         }
       },
       "System.Globalization.Calendars/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Globalization": "4.0.0",
           "System.Runtime": "4.0.0"
@@ -11326,7 +10974,6 @@
         }
       },
       "System.Globalization.Extensions/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Globalization": "4.0.10",
           "System.Resources.ResourceManager": "4.0.0",
@@ -11342,7 +10989,6 @@
         }
       },
       "System.IO/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Globalization": "4.0.0",
           "System.Runtime": "4.0.20",
@@ -11359,7 +11005,6 @@
         }
       },
       "System.IO.Compression/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.IO": "4.0.0",
@@ -11380,13 +11025,11 @@
         }
       },
       "System.IO.Compression.clrcompression-x86/4.0.0": {
-        "type": "package",
         "native": {
           "runtimes/win10-x86/native/ClrCompression.dll": {}
         }
       },
       "System.IO.Compression.ZipFile/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.IO": "4.0.10",
           "System.IO.Compression": "4.0.0",
@@ -11405,7 +11048,6 @@
         }
       },
       "System.IO.FileSystem/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -11431,7 +11073,6 @@
         }
       },
       "System.IO.FileSystem.Primitives/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.20"
         },
@@ -11443,7 +11084,6 @@
         }
       },
       "System.IO.IsolatedStorage/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.IO": "4.0.10",
           "System.IO.FileSystem": "4.0.0",
@@ -11463,7 +11103,6 @@
         }
       },
       "System.IO.UnmanagedMemoryStream/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.IO": "4.0.10",
           "System.IO.FileSystem.Primitives": "4.0.0",
@@ -11481,7 +11120,6 @@
         }
       },
       "System.Linq/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -11497,7 +11135,6 @@
         }
       },
       "System.Linq.Expressions/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.Diagnostics.Debug": "4.0.0",
@@ -11521,7 +11158,6 @@
         }
       },
       "System.Linq.Parallel/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Collections.Concurrent": "4.0.10",
@@ -11542,7 +11178,6 @@
         }
       },
       "System.Linq.Queryable/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Linq": "4.0.0",
@@ -11560,7 +11195,6 @@
         }
       },
       "System.Net.Http/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -11585,7 +11219,6 @@
         }
       },
       "System.Net.Http.Rtc/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Net.Http": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -11598,7 +11231,6 @@
         }
       },
       "System.Net.NetworkInformation/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0",
           "System.Runtime.InteropServices.WindowsRuntime": "4.0.0",
@@ -11612,7 +11244,6 @@
         }
       },
       "System.Net.Primitives/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Private.Networking": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -11625,7 +11256,6 @@
         }
       },
       "System.Net.Requests/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -11646,7 +11276,6 @@
         }
       },
       "System.Net.Sockets/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Private.Networking": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -11659,7 +11288,6 @@
         }
       },
       "System.Net.WebHeaderCollection/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections.NonGeneric": "4.0.0",
           "System.Collections.Specialized": "4.0.0",
@@ -11674,7 +11302,6 @@
         }
       },
       "System.Numerics.Vectors/4.1.0": {
-        "type": "package",
         "dependencies": {
           "System.Globalization": "4.0.10",
           "System.Resources.ResourceManager": "4.0.0",
@@ -11689,7 +11316,6 @@
         }
       },
       "System.Numerics.Vectors.WindowsRuntime/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Numerics.Vectors": "4.1.0",
           "System.Runtime": "4.0.20",
@@ -11703,7 +11329,6 @@
         }
       },
       "System.ObjectModel/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -11719,7 +11344,6 @@
         }
       },
       "System.Private.DataContractSerialization/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Globalization": "4.0.10",
@@ -11748,7 +11372,6 @@
         }
       },
       "System.Private.Networking/4.0.0": {
-        "type": "package",
         "dependencies": {
           "Microsoft.Win32.Primitives": "4.0.0",
           "System.Collections": "4.0.10",
@@ -11776,7 +11399,6 @@
         }
       },
       "System.Private.ServiceModel/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Collections.Concurrent": "4.0.10",
@@ -11825,7 +11447,6 @@
         }
       },
       "System.Private.Uri/4.0.0": {
-        "type": "package",
         "compile": {
           "ref/netcore50/_._": {}
         },
@@ -11834,7 +11455,6 @@
         }
       },
       "System.Reflection/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.IO": "4.0.0",
           "System.Reflection.Primitives": "4.0.0",
@@ -11848,7 +11468,6 @@
         }
       },
       "System.Reflection.Context/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Reflection": "4.0.10",
           "System.Resources.ResourceManager": "4.0.0",
@@ -11862,7 +11481,6 @@
         }
       },
       "System.Reflection.DispatchProxy/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Linq": "4.0.0",
@@ -11881,7 +11499,6 @@
         }
       },
       "System.Reflection.Emit/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.IO": "4.0.0",
           "System.Reflection": "4.0.0",
@@ -11897,7 +11514,6 @@
         }
       },
       "System.Reflection.Emit.ILGeneration/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Reflection": "4.0.0",
           "System.Reflection.Primitives": "4.0.0",
@@ -11911,7 +11527,6 @@
         }
       },
       "System.Reflection.Extensions/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Diagnostics.Debug": "4.0.10",
           "System.Reflection": "4.0.10",
@@ -11929,7 +11544,6 @@
         }
       },
       "System.Reflection.Metadata/1.0.22": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.Collections.Immutable": "1.1.37",
@@ -11954,7 +11568,6 @@
         }
       },
       "System.Reflection.Primitives/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0",
           "System.Threading": "4.0.0"
@@ -11967,7 +11580,6 @@
         }
       },
       "System.Reflection.TypeExtensions/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Diagnostics.Contracts": "4.0.0",
           "System.Diagnostics.Debug": "4.0.10",
@@ -11986,7 +11598,6 @@
         }
       },
       "System.Resources.ResourceManager/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Globalization": "4.0.0",
           "System.Reflection": "4.0.10",
@@ -12000,7 +11611,6 @@
         }
       },
       "System.Runtime/4.0.20": {
-        "type": "package",
         "dependencies": {
           "System.Private.Uri": "4.0.0"
         },
@@ -12012,7 +11622,6 @@
         }
       },
       "System.Runtime.Extensions/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.20"
         },
@@ -12024,7 +11633,6 @@
         }
       },
       "System.Runtime.Handles/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0"
         },
@@ -12036,7 +11644,6 @@
         }
       },
       "System.Runtime.InteropServices/4.0.20": {
-        "type": "package",
         "dependencies": {
           "System.Reflection": "4.0.0",
           "System.Reflection.Primitives": "4.0.0",
@@ -12051,7 +11658,6 @@
         }
       },
       "System.Runtime.InteropServices.WindowsRuntime/4.0.0": {
-        "type": "package",
         "compile": {
           "ref/netcore50/System.Runtime.InteropServices.WindowsRuntime.dll": {}
         },
@@ -12060,7 +11666,6 @@
         }
       },
       "System.Runtime.Numerics/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Globalization": "4.0.10",
           "System.Resources.ResourceManager": "4.0.0",
@@ -12075,7 +11680,6 @@
         }
       },
       "System.Runtime.Serialization.Json/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Private.DataContractSerialization": "4.0.0"
         },
@@ -12087,7 +11691,6 @@
         }
       },
       "System.Runtime.Serialization.Primitives/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Resources.ResourceManager": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -12100,7 +11703,6 @@
         }
       },
       "System.Runtime.Serialization.Xml/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Private.DataContractSerialization": "4.0.0",
           "System.Runtime.Serialization.Primitives": "4.0.10"
@@ -12113,7 +11715,6 @@
         }
       },
       "System.Runtime.WindowsRuntime/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Diagnostics.Debug": "4.0.10",
           "System.Globalization": "4.0.0",
@@ -12134,7 +11735,6 @@
         }
       },
       "System.Runtime.WindowsRuntime.UI.Xaml/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Globalization": "4.0.0",
           "System.Resources.ResourceManager": "4.0.0",
@@ -12150,7 +11750,6 @@
         }
       },
       "System.Security.Claims/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.Diagnostics.Debug": "4.0.0",
@@ -12169,7 +11768,6 @@
         }
       },
       "System.Security.Principal/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0"
         },
@@ -12181,7 +11779,6 @@
         }
       },
       "System.ServiceModel.Duplex/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Private.ServiceModel": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -12194,7 +11791,6 @@
         }
       },
       "System.ServiceModel.Http/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Private.ServiceModel": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -12207,7 +11803,6 @@
         }
       },
       "System.ServiceModel.NetTcp/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Private.ServiceModel": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -12220,7 +11815,6 @@
         }
       },
       "System.ServiceModel.Primitives/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Private.ServiceModel": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -12233,7 +11827,6 @@
         }
       },
       "System.ServiceModel.Security/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Private.ServiceModel": "4.0.0",
           "System.Runtime": "4.0.20"
@@ -12246,7 +11839,6 @@
         }
       },
       "System.Text.Encoding/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0"
         },
@@ -12258,7 +11850,6 @@
         }
       },
       "System.Text.Encoding.CodePages/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Globalization": "4.0.10",
@@ -12280,7 +11871,6 @@
         }
       },
       "System.Text.Encoding.Extensions/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0",
           "System.Text.Encoding": "4.0.10"
@@ -12293,7 +11883,6 @@
         }
       },
       "System.Text.RegularExpressions/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Globalization": "4.0.10",
@@ -12310,7 +11899,6 @@
         }
       },
       "System.Threading/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0",
           "System.Threading.Tasks": "4.0.0"
@@ -12323,7 +11911,6 @@
         }
       },
       "System.Threading.Overlapped/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Resources.ResourceManager": "4.0.0",
           "System.Runtime": "4.0.20",
@@ -12340,7 +11927,6 @@
         }
       },
       "System.Threading.Tasks/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Runtime": "4.0.0"
         },
@@ -12352,7 +11938,6 @@
         }
       },
       "System.Threading.Tasks.Dataflow/4.5.25": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.Collections.Concurrent": "4.0.0",
@@ -12374,7 +11959,6 @@
         }
       },
       "System.Threading.Tasks.Parallel/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections.Concurrent": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -12393,7 +11977,6 @@
         }
       },
       "System.Threading.Timer/4.0.0": {
-        "type": "package",
         "compile": {
           "ref/netcore50/System.Threading.Timer.dll": {}
         },
@@ -12402,7 +11985,6 @@
         }
       },
       "System.Xml.ReaderWriter/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -12427,7 +12009,6 @@
         }
       },
       "System.Xml.XDocument/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -12449,7 +12030,6 @@
         }
       },
       "System.Xml.XmlDocument/4.0.0": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -12470,7 +12050,6 @@
         }
       },
       "System.Xml.XmlSerializer/4.0.10": {
-        "type": "package",
         "dependencies": {
           "System.Collections": "4.0.10",
           "System.Diagnostics.Debug": "4.0.10",
@@ -12499,7 +12078,6 @@
         }
       },
       "Validation/2.2.8": {
-        "type": "package",
         "compile": {
           "lib/dotnet/Validation.dll": {}
         },
@@ -12510,16 +12088,20 @@
     }
   },
   "libraries": {
-    "Microsoft.Azure.Amqp/1.1.0": {
-      "sha512": "YaGjxkotU2ZeLnM/Q/Xa0V64IgiOHXiyc7B5GHvDFMX/xEIscIQuQv8Bw0e7z2fQJVC1SplYWgCECi84cqokCw==",
+    "Microsoft.Azure.Amqp/2.0.2": {
+      "sha512": "A5MRDzkstDGUTZtmkppJFL8gN74Grlq1GtMVVdBVbPgaUi4d/qBmlSahwRm7OJwRdOp7aG35geG67Sf0E/6TRg==",
       "type": "package",
-      "path": "Microsoft.Azure.Amqp/1.1.0",
       "files": [
-        "Microsoft.Azure.Amqp.1.1.0.nupkg.sha512",
+        "Microsoft.Azure.Amqp.2.0.2.nupkg.sha512",
         "Microsoft.Azure.Amqp.nuspec",
-        "lib/net451/Microsoft.Azure.Amqp.XML",
-        "lib/net451/Microsoft.Azure.Amqp.dll",
-        "lib/uap10.0/Microsoft.Azure.Amqp.Uwp.dll"
+        "lib/monoandroid/Microsoft.Azure.Amqp.dll",
+        "lib/net45/Microsoft.Azure.Amqp.XML",
+        "lib/net45/Microsoft.Azure.Amqp.dll",
+        "lib/netstandard1.3/Microsoft.Azure.Amqp.XML",
+        "lib/netstandard1.3/Microsoft.Azure.Amqp.dll",
+        "lib/portable-net45+wp8+wpa81+win8+MonoAndroid10+MonoTouch10+Xamarin.iOS10+UAP10/Microsoft.Azure.Amqp.dll",
+        "lib/uap10.0/Microsoft.Azure.Amqp.dll",
+        "lib/uap10.0/Microsoft.Azure.Amqp.pri"
       ]
     },
     "Microsoft.CSharp/4.0.0": {
@@ -13200,34 +12782,80 @@
         "tools/install.ps1"
       ]
     },
-    "PCLCrypto/1.0.86": {
-      "sha512": "rcmxw9Bb5GuEW1ubVBegCCbR7YU8Ptr8tGfmyVHBnK+UQlk29TuBryHXmsTglt64ZNDXpi8rWl8x5l55JylpOw==",
-      "type": "Package",
+    "PCLCrypto/2.0.147": {
+      "sha512": "OFNDBjhP+qPukqB8PiGbWDo70gHsEzSKupL47JisjYFQaGwlPPCnN8ah59QCzIvsg9IUr2AecGKXF3ONpyFL9g==",
+      "type": "package",
       "files": [
+        "PCLCrypto.2.0.147.nupkg.sha512",
         "PCLCrypto.nuspec",
-        "[Content_Types].xml",
-        "_rels/.rels",
-        "lib/Xamarin.iOS/PCLCrypto.dll",
-        "lib/Xamarin.iOS/PCLCrypto.xml",
-        "lib/monoandroid/PCLCrypto.dll",
-        "lib/monoandroid/PCLCrypto.xml",
-        "lib/monotouch/PCLCrypto.dll",
-        "lib/monotouch/PCLCrypto.xml",
-        "lib/net40-Client/PCLCrypto.dll",
-        "lib/net40-Client/PCLCrypto.xml",
-        "lib/portable-net40+sl50+win+wpa81+wp80+MonoAndroid10+xamarinios10+MonoTouch10/PCLCrypto.dll",
-        "lib/portable-net40+sl50+win+wpa81+wp80+MonoAndroid10+xamarinios10+MonoTouch10/PCLCrypto.xml",
-        "lib/sl5/PCLCrypto.dll",
-        "lib/sl5/PCLCrypto.xml",
-        "lib/win81/PCLCrypto.dll",
-        "lib/win81/PCLCrypto.pri",
-        "lib/win81/PCLCrypto.xml",
-        "lib/wp8/PCLCrypto.dll",
-        "lib/wp8/PCLCrypto.xml",
-        "lib/wpa81/PCLCrypto.dll",
-        "lib/wpa81/PCLCrypto.pri",
-        "lib/wpa81/PCLCrypto.xml",
-        "package/services/metadata/core-properties/ff0214e864344d49a93de070164a395f.psmdcp"
+        "lib/MonoAndroid23/PCLCrypto.dll",
+        "lib/MonoAndroid23/PCLCrypto.xml",
+        "lib/MonoTouch10/PCLCrypto.dll",
+        "lib/MonoTouch10/PCLCrypto.xml",
+        "lib/net45/PCLCrypto.dll",
+        "lib/net45/PCLCrypto.xml",
+        "lib/portable-net45+win+wpa81+wp80+MonoAndroid10+xamarinios10+MonoTouch10/PCLCrypto.dll",
+        "lib/portable-net45+win+wpa81+wp80+MonoAndroid10+xamarinios10+MonoTouch10/PCLCrypto.xml",
+        "lib/portable-win81+wpa81/PCLCrypto.dll",
+        "lib/portable-win81+wpa81/PCLCrypto.xml",
+        "lib/wp80/PCLCrypto.dll",
+        "lib/wp80/PCLCrypto.xml",
+        "lib/xamarinios10/PCLCrypto.dll",
+        "lib/xamarinios10/PCLCrypto.xml"
+      ]
+    },
+    "PInvoke.BCrypt/0.3.2": {
+      "sha512": "6nSjPx88F+dcQgxfbM/lkYhi/zQWxwBcGAS3de/Q7YmPr5QdLNv5ZMk2UEFpMQhlFNya4TdUy5i3HKA12uMa7Q==",
+      "type": "package",
+      "files": [
+        "PInvoke.BCrypt.0.3.2.nupkg.sha512",
+        "PInvoke.BCrypt.nuspec",
+        "lib/net40/PInvoke.BCrypt.dll",
+        "lib/net40/PInvoke.BCrypt.xml",
+        "lib/portable-net40+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.BCrypt.dll",
+        "lib/portable-net40+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.BCrypt.xml",
+        "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.BCrypt.dll",
+        "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.BCrypt.xml"
+      ]
+    },
+    "PInvoke.Kernel32/0.3.2": {
+      "sha512": "zkd5Vc5AQ9B489GMNlmd0wdKnRoLl1B/TnouwcjtaqWbDJ17TQSvBRnV7xjVEpBHQtL/248EaUTcDprJe9bZMA==",
+      "type": "package",
+      "files": [
+        "PInvoke.Kernel32.0.3.2.nupkg.sha512",
+        "PInvoke.Kernel32.nuspec",
+        "lib/net40/PInvoke.Kernel32.dll",
+        "lib/net40/PInvoke.Kernel32.xml",
+        "lib/portable-net40+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.Kernel32.dll",
+        "lib/portable-net40+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.Kernel32.xml",
+        "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.Kernel32.dll",
+        "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.Kernel32.xml"
+      ]
+    },
+    "PInvoke.NCrypt/0.3.2": {
+      "sha512": "s7SIBXlr3qolZaM5mGEXG2sKBY4yFVHTWBlwhRC93le08Aj+n/IaFVnB9LBFv6mpCCivXdzad+9EX6HHds4PyQ==",
+      "type": "package",
+      "files": [
+        "PInvoke.NCrypt.0.3.2.nupkg.sha512",
+        "PInvoke.NCrypt.nuspec",
+        "lib/net40/PInvoke.NCrypt.dll",
+        "lib/net40/PInvoke.NCrypt.xml",
+        "lib/portable-net40+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.NCrypt.dll",
+        "lib/portable-net40+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.NCrypt.xml",
+        "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.NCrypt.dll",
+        "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.NCrypt.xml"
+      ]
+    },
+    "PInvoke.Windows.Core/0.3.2": {
+      "sha512": "cLG8L2mBqeM6mwKxYg34uZnW5A4cAqyWY4nh+ogxon6BOPLcuQ2QSK/b1IKduUIQg6mDgf06rZUVbuVVPi9+fg==",
+      "type": "package",
+      "files": [
+        "PInvoke.Windows.Core.0.3.2.nupkg.sha512",
+        "PInvoke.Windows.Core.nuspec",
+        "lib/portable-net40+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.Windows.Core.dll",
+        "lib/portable-net40+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.Windows.Core.xml",
+        "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.Windows.Core.dll",
+        "lib/portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10/PInvoke.Windows.Core.xml"
       ]
     },
     "System.AppContext/4.0.0": {
@@ -15951,14 +15579,12 @@
   },
   "projectFileDependencyGroups": {
     "": [
-      "Microsoft.Azure.Amqp >= 1.1.0",
+      "Microsoft.Azure.Amqp >= 2.0.2",
       "Microsoft.NETCore.UniversalWindowsPlatform >= 5.0.0",
       "Newtonsoft.Json >= 6.0.8",
-      "PCLCrypto >= 1.0.86",
+      "PCLCrypto >= 2.0.147",
       "Validation >= 2.2.8"
     ],
     "UAP,Version=v10.0": []
-  },
-  "tools": {},
-  "projectFileToolGroups": {}
+  }
 }

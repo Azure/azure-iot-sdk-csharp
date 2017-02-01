@@ -24,8 +24,6 @@ namespace Microsoft.Azure.Devices.Client
         public AmqpTransportSettings(TransportType transportType)
             : this(transportType, DefaultPrefetchCount, new AmqpConnectionPoolSettings())
         {
-            this.operationTimeout = DefaultOperationTimeout;
-            this.openTimeout = DefaultOpenTimeout;
         }
 
         public AmqpTransportSettings(TransportType transportType, uint prefetchCount)
@@ -35,6 +33,9 @@ namespace Microsoft.Azure.Devices.Client
 
         public AmqpTransportSettings(TransportType transportType, uint prefetchCount, AmqpConnectionPoolSettings amqpConnectionPoolSettings)
         {
+            this.operationTimeout = DefaultOperationTimeout;
+            this.openTimeout = DefaultOpenTimeout;
+
             if (prefetchCount <= 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(prefetchCount), "Must be greater than zero");

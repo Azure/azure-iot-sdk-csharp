@@ -130,7 +130,6 @@
     "PCLCrypto/2.0.147": {
       "sha512": "OFNDBjhP+qPukqB8PiGbWDo70gHsEzSKupL47JisjYFQaGwlPPCnN8ah59QCzIvsg9IUr2AecGKXF3ONpyFL9g==",
       "type": "package",
-      "path": "PCLCrypto/2.0.147",
       "files": [
         "PCLCrypto.2.0.147.nupkg.sha512",
         "PCLCrypto.nuspec",
@@ -153,8 +152,7 @@
     "PInvoke.BCrypt/0.3.2": {
       "sha512": "6nSjPx88F+dcQgxfbM/lkYhi/zQWxwBcGAS3de/Q7YmPr5QdLNv5ZMk2UEFpMQhlFNya4TdUy5i3HKA12uMa7Q==",
       "type": "package",
-      "path": "PInvoke.BCrypt/0.3.2",
-      "files": [
+     "files": [
         "PInvoke.BCrypt.0.3.2.nupkg.sha512",
         "PInvoke.BCrypt.nuspec",
         "lib/net40/PInvoke.BCrypt.dll",
@@ -168,7 +166,6 @@
     "PInvoke.Kernel32/0.3.2": {
       "sha512": "zkd5Vc5AQ9B489GMNlmd0wdKnRoLl1B/TnouwcjtaqWbDJ17TQSvBRnV7xjVEpBHQtL/248EaUTcDprJe9bZMA==",
       "type": "package",
-      "path": "PInvoke.Kernel32/0.3.2",
       "files": [
         "PInvoke.Kernel32.0.3.2.nupkg.sha512",
         "PInvoke.Kernel32.nuspec",
@@ -183,7 +180,6 @@
     "PInvoke.NCrypt/0.3.2": {
       "sha512": "s7SIBXlr3qolZaM5mGEXG2sKBY4yFVHTWBlwhRC93le08Aj+n/IaFVnB9LBFv6mpCCivXdzad+9EX6HHds4PyQ==",
       "type": "package",
-      "path": "PInvoke.NCrypt/0.3.2",
       "files": [
         "PInvoke.NCrypt.0.3.2.nupkg.sha512",
         "PInvoke.NCrypt.nuspec",
@@ -198,7 +194,6 @@
     "PInvoke.Windows.Core/0.3.2": {
       "sha512": "cLG8L2mBqeM6mwKxYg34uZnW5A4cAqyWY4nh+ogxon6BOPLcuQ2QSK/b1IKduUIQg6mDgf06rZUVbuVVPi9+fg==",
       "type": "package",
-      "path": "PInvoke.Windows.Core/0.3.2",
       "files": [
         "PInvoke.Windows.Core.0.3.2.nupkg.sha512",
         "PInvoke.Windows.Core.nuspec",

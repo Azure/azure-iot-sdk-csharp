@@ -137,7 +137,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// <summary>
         /// Callback to call whenever the twin's desired state is updated by the service
         /// </summary>
-        DesiredPropertyUpdateCallback desiredPropertyUpdateCallback;
+        internal DesiredPropertyUpdateCallback desiredPropertyUpdateCallback;
 
         /// <summary>
         /// Has twin funcitonality been enabled with the service?
@@ -967,9 +967,16 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// <param name="userContext">Context object that will be passed into callback</param>
         public Task SetDesiredPropertyUpdateCallback(DesiredPropertyUpdateCallback callback, object userContext)
         {
+            // Codes_SRS_DEVICECLIENT_18_007: `SetDesiredPropertyUpdateCallback` shall throw an `ArgumentNull` exception if `callback` is null
+            if (callback == null)
+            {
+                throw Fx.Exception.ArgumentNull("callback");
+            }
+
             return ApplyTimeout(async operationTimeoutCancellationToken =>
             {
-                // Codes_SRS_DEVICECLIENT_18_001: `SetDesiredPropertyUpdateCallback` shall call the transport to register for PATCHes on it's first call.
+                // Codes_SRS_DEVICECLIENT_18_003: `SetDesiredPropertyUpdateCallback` shall call the transport to register for PATCHes on it's first call.
+                // Codes_SRS_DEVICECLIENT_18_004: `SetDesiredPropertyUpdateCallback` shall not call the transport to register for PATCHes on subsequent calls
                 if (!this.patchSubscribedWithService)
                 {
                     this.InnerHandler.TwinUpdateHandler = this.OnReportedStatePatchReceived;
@@ -977,7 +984,6 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                     patchSubscribedWithService = true;
                 }
 
-                // Codes_SRS_DEVICECLIENT_18_016: `SetDesiredPropertyUpdateCallback` shall keep track of the `callback` for future use. 
                 this.desiredPropertyUpdateCallback = callback;
                 this.twinPatchCallbackContext = userContext;
             });
@@ -991,12 +997,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         {
             return ApplyTimeoutTwin(async operationTimeoutCancellationToken =>
             {
-                // Codes_SRS_DEVICECLIENT_18_005: `GetTwinAsync` shall issue a GET to the sevice to retrieve the current twin state.
-                // Codes_SRS_DEVICECLIENT_18_006: `GetTwinAsync` shall wait for a response from the `GET` operation.
-                // Codes_SRS_DEVICECLIENT_18_007: If the `GET` operation returns a status >= 300, `GetTwinAsync` shall fail
-                // Codes_SRS_DEVICECLIENT_18_008: `GetTwinAsync` shall allocate a new `Twin` object
-                // Codes_SRS_DEVICECLIENT_18_009: `GetTwinAsync` shall copy the desired and reported properties from the response into the `Twin` object.
-                // Codes_SRS_DEVICECLIENT_18_010: `GetTwinAsync` shall return the new `Twin` object
+                // Codes_SRS_DEVICECLIENT_18_001: `GetTwinAsync` shall call `SendTwinGetAsync` on the transport to get the twin state
                 return await this.InnerHandler.SendTwinGetAsync(operationTimeoutCancellationToken);
             });
         }
@@ -1007,16 +1008,20 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// <param name="reportedProperties">Reported properties to push</param>
         public Task UpdateReportedPropertiesAsync(TwinCollection reportedProperties)
         {
+            // Codes_SRS_DEVICECLIENT_18_006: `UpdateReportedPropertiesAsync` shall throw an `ArgumentNull` exception if `reportedProperties` is null
+            if (reportedProperties == null)
+            {
+                throw Fx.Exception.ArgumentNull("reportedProperties");
+            }
             return ApplyTimeout(async operationTimeoutCancellationToken =>
             {
-                // Codes_SRS_DEVICECLIENT_18_012: `UpdateReportedPropertiesAsync` shall call the transport to send a `PATCH` with the entire reported property state set to the service.
-                // Codes_SRS_DEVICECLIENT_18_014: `UpdateReportedPropertiesAsync` shall wait for a response from the `PATCH` operation.
-                // Codes_SRS_DEVICECLIENT_18_015: If the `PATCH` operation returns a status >= 300, `UpdateReportedPropertiesAsync` shall fail.
-                await this.InnerHandler.SendTwinPatchAsync(reportedProperties, operationTimeoutCancellationToken);
+                // Codes_SRS_DEVICECLIENT_18_002: `UpdateReportedPropertiesAsync` shall call `SendTwinPatchAsync` on the transport to update the reported properties
+                 await this.InnerHandler.SendTwinPatchAsync(reportedProperties, operationTimeoutCancellationToken);
             });
         }
 
-        void OnReportedStatePatchReceived(TwinCollection patch)
+    //  Codes_SRS_DEVICECLIENT_18_005: When a patch is received from the service, the `callback` shall be called.
+    void OnReportedStatePatchReceived(TwinCollection patch)
         {
             if (this.desiredPropertyUpdateCallback != null)
             {
