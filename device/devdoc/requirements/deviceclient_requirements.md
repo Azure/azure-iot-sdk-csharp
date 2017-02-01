@@ -1,4 +1,4 @@
-﻿# DeviceClient Requirements
+# DeviceClient Requirements
 
 ## Overview
 
@@ -141,6 +141,10 @@ internal async Task OnMethodCalled(MethodRequestInternal methodRequestInternal)
 ```
 
 **SRS_DEVICECLIENT_10_011: [** The OnMethodCalled shall invoke the associated MethodHandler. **]**
+
+**SRS_DEVICECLIENT_03_012: [** If the MethodResponse does not contain result, the MethodResponseInternal constructor shall be invoked with no results. **]**
+
+**SRS_DEVICECLIENT_03_013: [** Otherwise, the MethodResponseInternal constructor shall be invoked with the result supplied. **]**
 
 **SRS_DEVICECLIENT_10_012: [** If the given methodRequestInternal argument is null, failed silently **]**
 

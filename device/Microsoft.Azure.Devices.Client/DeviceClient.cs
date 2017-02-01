@@ -900,7 +900,21 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                     {
                         // codes_SRS_DEVICECLIENT_10_011: [ The OnMethodCalled shall invoke the specified delegate. ]
                         MethodResponse rv = await m.Item1(new MethodRequest(methodRequestInternal.Name, requestData), m.Item2);
-                        var methodResponseInternal = new MethodResponseInternal(rv.Result, methodRequestInternal.RequestId, rv.Status);
+
+                        MethodResponseInternal methodResponseInternal;
+
+                        // codes_SRS_DEVICECLIENT_03_012: [If the MethodResponse does not contain result, the MethodResponseInternal constructor shall be invoked with no results.]
+                        if (rv.Result == null)
+                        {
+                            methodResponseInternal = new MethodResponseInternal(methodRequestInternal.RequestId, rv.Status);
+                        }
+                        // codes_SRS_DEVICECLIENT_03_013: [Otherwise, the MethodResponseInternal constructor shall be invoked with the result supplied.]
+                        else
+                        {
+                            methodResponseInternal = new MethodResponseInternal(rv.Result, methodRequestInternal.RequestId, rv.Status);
+
+                        }
+
                         await this.SendMethodResponseAsync(methodResponseInternal);
                     }
                     catch (Exception)
