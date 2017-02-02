@@ -59,8 +59,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
             {
                 deviceClient = DeviceClient.CreateFromConnectionString(DeviceConnectionString, TransportType.Mqtt);
 
-                deviceClient.OpenAsync().Wait();
-
                 // Method Call processing will be enabled when the first method handler is added.
                 // setup a callback for the 'WriteToConsole' method
                 deviceClient.SetMethodHandlerAsync("WriteToConsole", WriteToConsole, null).Wait();

@@ -131,33 +131,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return this.InnerHandler?.SendTwinPatchAsync(reportedProperties, cancellationToken) ?? TaskConstants.Completed;
         }
 
-        private TwinUpdateCallback twinUpdateHandler;
-        public virtual TwinUpdateCallback TwinUpdateHandler
-        {
-            set
-            {
-                if (this.InnerHandler != null)
-                {
-                    this.InnerHandler.TwinUpdateHandler = value;
-                }
-                else
-                {
-                    this.twinUpdateHandler = value;
-                }
-            }
-            get
-            {
-                if (this.InnerHandler != null)
-                {
-                    return this.InnerHandler.TwinUpdateHandler;
-                }
-                else
-                {
-                    return this.twinUpdateHandler;
-                }
-            }
-        }
-        
         protected virtual void Dispose(bool disposing)
         {
             this.innerHandler?.Dispose();

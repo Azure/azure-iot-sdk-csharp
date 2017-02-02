@@ -146,7 +146,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             await client.SetDesiredPropertyUpdateCallback(myCallback, null);
 
             // act
-            innerHandler.TwinUpdateHandler(myPatch);
+            client.OnReportedStatePatchReceived(myPatch);
 
             //assert
             Assert.AreEqual(callCount, 1);

@@ -1,11 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-#define WIP_TWIN_MQTT
-#if WINDOWS_UWP
-#undef WIP_TWIN_MQTT
-#endif
-
 namespace Microsoft.Azure.Devices.Client
 {
     using Common;
@@ -22,7 +17,7 @@ namespace Microsoft.Azure.Devices.Client
     using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 #endif
 
-#if WIP_TWIN_MQTT
+#if !WINDOWS_UWP
     /// <summary>
     /// Delegate for desired property update callbacks.  This will be called
     /// every time we receive a PATCH from the service.
@@ -133,7 +128,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
 
         internal delegate Task OnMethodCalledDelegate(MethodRequestInternal methodRequestInternal);
 
-#if WIP_TWIN_MQTT
+#if !WINDOWS_UWP
         /// <summary>
         /// Callback to call whenever the twin's desired state is updated by the service
         /// </summary>
@@ -158,7 +153,9 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             pipelineContext.Set(transportSettings);
             pipelineContext.Set(iotHubConnectionString);
             pipelineContext.Set<OnMethodCalledDelegate>(OnMethodCalled);
-
+#if !WINDOWS_UWP
+            pipelineContext.Set<Action<TwinCollection>>(OnReportedStatePatchReceived);
+#endif
             IDelegatingHandler innerHandler = pipelineBuilder.Build(pipelineContext);
 
             this.InnerHandler = innerHandler;
@@ -713,7 +710,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             return result;
         }
 
-#if WIP_TWIN_MQTT
+#if !WINDOWS_UWP
         Task<Twin> ApplyTimeoutTwin(Func<CancellationToken, Task<Twin>> operation)
         {
             if (OperationTimeoutInMilliseconds == 0)
@@ -1030,7 +1027,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         }
 #endif
 
-#if WIP_TWIN_MQTT
+#if !WINDOWS_UWP
         /// <summary>
         /// Set a callback that will be called whenever the client receives a state update 
         /// (desired or reported) from the service.  This has the side-effect of subscribing
@@ -1052,7 +1049,6 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                 // Codes_SRS_DEVICECLIENT_18_004: `SetDesiredPropertyUpdateCallback` shall not call the transport to register for PATCHes on subsequent calls
                 if (!this.patchSubscribedWithService)
                 {
-                    this.InnerHandler.TwinUpdateHandler = this.OnReportedStatePatchReceived;
                     await this.InnerHandler.EnableTwinPatchAsync(operationTimeoutCancellationToken);
                     patchSubscribedWithService = true;
                 }
@@ -1093,15 +1089,15 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             });
         }
 
-    //  Codes_SRS_DEVICECLIENT_18_005: When a patch is received from the service, the `callback` shall be called.
-    void OnReportedStatePatchReceived(TwinCollection patch)
+        //  Codes_SRS_DEVICECLIENT_18_005: When a patch is received from the service, the `callback` shall be called.
+        internal void OnReportedStatePatchReceived(TwinCollection patch)
         {
             if (this.desiredPropertyUpdateCallback != null)
             {
                 this.desiredPropertyUpdateCallback(patch, this.twinPatchCallbackContext);
             }
         }
-#endif // WIP_TWIN_MQTT
+#endif
 
     }
 }

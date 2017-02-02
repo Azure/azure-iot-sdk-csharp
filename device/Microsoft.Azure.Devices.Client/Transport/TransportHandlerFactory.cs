@@ -6,6 +6,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
     using System;
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Client.Extensions;
+    using Microsoft.Azure.Devices.Shared;
 #if !WINDOWS_UWP && !NETMF && !PCL
     using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 #endif
@@ -16,6 +17,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             var connectionString = context.Get<IotHubConnectionString>();
             var transportSetting = context.Get<ITransportSettings>();
             var onMethodCallback = context.Get<DeviceClient.OnMethodCalledDelegate>();
+            var onReportedStatePatchReceived = context.Get<Action<TwinCollection>>();
 
             switch (transportSetting.GetTransportType())
             {
@@ -27,7 +29,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 #if !WINDOWS_UWP && !NETMF && !PCL
                 case TransportType.Mqtt_Tcp_Only:
                 case TransportType.Mqtt_WebSocket_Only:
-                    return new MqttTransportHandler(context, connectionString, transportSetting as MqttTransportSettings, new Func<MethodRequestInternal, Task>(onMethodCallback));
+                    return new MqttTransportHandler(context, connectionString, transportSetting as MqttTransportSettings, new Func<MethodRequestInternal, Task>(onMethodCallback), onReportedStatePatchReceived);
 #endif
                 default:
                     throw new InvalidOperationException("Unsupported Transport Setting {0}".FormatInvariant(transportSetting));

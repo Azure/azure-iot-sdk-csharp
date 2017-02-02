@@ -100,6 +100,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         Regex twinResponseTopicRegex = new Regex(twinResponseTopicPattern, RegexOptions.None);
 
         Func<MethodRequestInternal, Task> messageListener;
+        Action<TwinCollection> onReportedStatePatchListener;
         Action<Message> twinResponseEvent;
 
         public TimeSpan TwinTimeout = TimeSpan.FromSeconds(60);
@@ -110,10 +111,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         }
 
-        internal MqttTransportHandler(IPipelineContext context, IotHubConnectionString iotHubConnectionString, MqttTransportSettings settings, Func<MethodRequestInternal, Task> onMethodCallback = null)
+        internal MqttTransportHandler(IPipelineContext context, IotHubConnectionString iotHubConnectionString, MqttTransportSettings settings, Func<MethodRequestInternal, Task> onMethodCallback = null, Action<TwinCollection> onReportedStatePatchReceivedCallback = null)
             : this(context, iotHubConnectionString, settings, null)
         {
             this.messageListener = onMethodCallback;
+            this.onReportedStatePatchListener = onReportedStatePatchReceivedCallback;
         }
 
         internal MqttTransportHandler(IPipelineContext context, IotHubConnectionString iotHubConnectionString, MqttTransportSettings settings, Func<IPAddress, int, Task<IChannel>> channelFactory)
@@ -331,13 +333,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             try
             {
-                if (this.TwinUpdateHandler != null)
+                if (this.onReportedStatePatchListener != null)
                 {
                     using (StreamReader reader = new StreamReader(message.GetBodyStream(), System.Text.Encoding.UTF8))
                     {
                         string patch = reader.ReadToEnd();
                         var props = JsonConvert.DeserializeObject<TwinCollection>(patch);
-                        this.TwinUpdateHandler(props);
+                        this.onReportedStatePatchListener(props);
                     }
                 }
             }
