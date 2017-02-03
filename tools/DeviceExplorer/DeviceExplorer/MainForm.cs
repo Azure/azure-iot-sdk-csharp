@@ -10,6 +10,7 @@ using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Devices.Common.Security;
 using Microsoft.ServiceBus.Messaging;
 using System.Reflection;
+using System.IO;
 
 namespace DeviceExplorer
 {
@@ -35,12 +36,17 @@ namespace DeviceExplorer
         private static int deviceSelectedIndexForEvent = 0;
         private static int deviceSelectedIndexForC2DMessage = 0;
         private static int deviceSelectedIndexForDeviceMethod = 0;
+        private static int deviceSelectedIndexForRunFromFile = 0;
 
         private static CancellationTokenSource ctsForDataMonitoring;
         private static CancellationTokenSource ctsForFeedbackMonitoring;
         private static CancellationTokenSource ctsForDeviceMethod;
+        private static CancellationTokenSource ctsForRunFromFile;
 
         private const string DEFAULT_CONSUMER_GROUP = "$Default";
+
+        private static string runFromFileName = String.Empty;
+
         #endregion
 
         public MainForm()
@@ -125,6 +131,8 @@ namespace DeviceExplorer
                 eventHubNameTextBoxForDataTab.Text = iotHubName;
                 iotHubNameTextBoxForDeviceMethod.Text = iotHubName;
 
+                iotHubNameTextBoxForRunFromFile.Text = iotHubName;
+
                 activeIoTHubConnectionString = connectionString;
             }
             catch (Exception ex)
@@ -143,6 +151,8 @@ namespace DeviceExplorer
                 List<string> deviceIdsForEvent = new List<string>();
                 List<string> deviceIdsForC2DMessage = new List<string>();
                 List<string> deviceIdsForDeviceMethod = new List<string>();
+                List<string> deviceIdsForRunFromFile = new List<string>();
+
                 RegistryManager registryManager = RegistryManager.CreateFromConnectionString(activeIoTHubConnectionString);
 
                 var devices = await registryManager.GetDevicesAsync(MAX_COUNT_OF_DEVICES);
@@ -151,15 +161,19 @@ namespace DeviceExplorer
                     deviceIdsForEvent.Add(device.Id);
                     deviceIdsForC2DMessage.Add(device.Id);
                     deviceIdsForDeviceMethod.Add(device.Id);
+
+                    deviceIdsForRunFromFile.Add(device.Id);
                 }
                 await registryManager.CloseAsync();
                 deviceIDsComboBoxForEvent.DataSource = deviceIdsForEvent.OrderBy(c => c).ToList();
                 deviceIDsComboBoxForCloudToDeviceMessage.DataSource = deviceIdsForC2DMessage.OrderBy(c => c).ToList();
                 deviceIDsComboBoxForDeviceMethod.DataSource = deviceIdsForDeviceMethod.OrderBy(c => c).ToList();
+                deviceIDsComboBoxForRunFromFile.DataSource = deviceIdsForRunFromFile.OrderBy(c => c).ToList();
 
                 deviceIDsComboBoxForEvent.SelectedIndex = deviceSelectedIndexForEvent;
                 deviceIDsComboBoxForCloudToDeviceMessage.SelectedIndex = deviceSelectedIndexForC2DMessage;
                 deviceIDsComboBoxForDeviceMethod.SelectedIndex = deviceSelectedIndexForDeviceMethod;
+                deviceIDsComboBoxForRunFromFile.SelectedIndex = deviceSelectedIndexForRunFromFile;
             }
         }
         private void persistSettingsToAppConfig()
@@ -194,6 +208,7 @@ namespace DeviceExplorer
                 targetTextBox.Text = String.Empty;
                 eventHubNameTextBoxForDataTab.Text = String.Empty;
                 iotHubNameTextBox.Text = String.Empty;
+                iotHubNameTextBoxForRunFromFile.Text = String.Empty;
 
                 // scrub the connection string
                 dhConStringTextBox.Text = sanitizeConnectionString(dhConStringTextBox.Text);
@@ -628,6 +643,7 @@ namespace DeviceExplorer
 
             string methodName = methodNameTextBox.Text;
             string payload = methodPayloadTextBox.Text;
+            payload = "'" + payload + "'";
 
             double timeout = System.Convert.ToDouble(callDeviceMethodNumericUpDown.Value);
 
@@ -668,7 +684,8 @@ namespace DeviceExplorer
         {
             try
             {
-                if (e.TabPage == tabData || e.TabPage == tabMessagesToDevice || e.TabPage == tabDeviceMethod)
+                if (e.TabPage == tabData || e.TabPage == tabMessagesToDevice || e.TabPage == tabDeviceMethod 
+                    || e.TabPage == tabRunfromFile)
                 {
                     await updateDeviceIdsComboBoxes(runIfNullOrEmpty: false);
                 }
@@ -676,6 +693,13 @@ namespace DeviceExplorer
                 if (e.TabPage == tabManagement)
                 {
                     UpdateListOfDevices();
+                }
+
+                if (e.TabPage == tabRunfromFile)
+                {
+                    Console.WriteLine(" Tab Run from File Selected.");
+                    fileTextBox.Text = String.Empty;
+                    runButton.Enabled = false;
                 }
             }
             catch (Exception ex)
@@ -879,6 +903,129 @@ namespace DeviceExplorer
         private void deviceTwinPropertiesBtn_Click(object sender, EventArgs e)
         {
             showDevicePropertiesToolStripMenuItem_Click(this, null);
+        }
+
+        private void label25_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            if (DialogResult.OK == openRunFileDialog.ShowDialog())
+            {
+                //System.IO.StreamReader sr = new System.IO.StreamReader(openRunFileDialog.FileName);
+                runFromFileName = openRunFileDialog.FileName;
+                fileTextBox.Text = runFromFileName;
+
+                runButton.Enabled = true;
+                Console.WriteLine(runFromFileName);
+            }
+        }
+
+        private void openFileDialog1_FileOk(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+
+        }
+
+        private async void runButton_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                int counter = 0;
+                string line;
+
+                System.IO.StreamReader file =
+                   new System.IO.StreamReader(runFromFileName);
+                ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(activeIoTHubConnectionString);
+                serviceClient.PurgeMessageQueueAsync(deviceIDsComboBoxForRunFromFile.SelectedItem.ToString());
+
+                int timeout = System.Convert.ToInt32( commandTimeout.Value);
+                Console.WriteLine("timeout: " + timeout);
+
+                int lineNum = File.ReadLines(runFromFileName).Count();
+
+                while ((line = file.ReadLine()) != null)
+                {
+                    //Console.WriteLine(line);
+                    counter++;
+
+                    string[] msgToken = line.Split(';');
+                    if (2 == msgToken.Length)
+                    {
+                        string[] cmdToken = msgToken[0].Split('=');
+                        if (2 == cmdToken.Length)
+                        {
+                            
+
+                            string c2dMessage = msgToken[1]; //data
+
+                            var serviceMessage = new Microsoft.Azure.Devices.Message(Encoding.ASCII.GetBytes(c2dMessage));
+                            serviceMessage.Ack = DeliveryAcknowledgement.Full;
+                            serviceMessage.MessageId = Guid.NewGuid().ToString();
+                                                        
+                            serviceMessage.Properties.Add(cmdToken[0], cmdToken[1]);
+
+                            runningOutput.Text = "sending msg " + c2dMessage + ", " + counter + " of " + lineNum + " ...";
+
+                            await serviceClient.SendAsync(deviceIDsComboBoxForRunFromFile.SelectedItem.ToString(), serviceMessage);
+
+                            
+
+                            /*
+                            var feedbackReceiver = serviceClient.GetFeedbackReceiver();
+
+                            Console.WriteLine("\nReceiving c2d feedback from service");
+                            while (true)
+                            {
+                                var feedbackBatch = await feedbackReceiver.ReceiveAsync();
+                                if (feedbackBatch == null) continue;
+
+                                Console.ForegroundColor = ConsoleColor.Yellow;
+                                Console.WriteLine("Received feedback: {0}", string.Join(", ", feedbackBatch.Records.Select(f => f.StatusCode)));
+                                Console.ResetColor();
+
+                                await feedbackReceiver.CompleteAsync(feedbackBatch);
+                            }
+                            */
+
+                            //messagesTextBox.Text += $"Sent to Device ID: [{deviceIDsComboBoxForRunFromFile.SelectedItem.ToString()}], Message:\"{cloudToDeviceMessage}\", message Id: {serviceMessage.MessageId}\n";
+                            Console.WriteLine("cmd sent out at line: " + counter + " content: " + c2dMessage) ;
+
+                            //await serviceClient.CloseAsync();
+
+                        }else{
+                        }
+
+                    }else
+                    {
+                    }
+
+                    Thread.Sleep(timeout * 1000);
+                    runningOutput.Text = "msg " + counter + " of " + lineNum + " Done.";
+
+                    Thread.Sleep(2000);
+                }
+
+                file.Close();
+
+                // Suspend the screen.
+                //Console.ReadLine();
+            }
+            catch (InvalidOperationException ex)
+            {
+                Console.WriteLine("Failed to open file", runFromFileName);
+            }
+        }
+
+        private void label26_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void callDeviceMethodNumericUpDown_ValueChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }

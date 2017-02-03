@@ -119,7 +119,22 @@
             this.label17 = new System.Windows.Forms.Label();
             this.label14 = new System.Windows.Forms.Label();
             this.label13 = new System.Windows.Forms.Label();
+            this.tabRunfromFile = new System.Windows.Forms.TabPage();
+            this.commandTimeout = new System.Windows.Forms.NumericUpDown();
+            this.label26 = new System.Windows.Forms.Label();
+            this.Select = new System.Windows.Forms.Button();
+            this.runButton = new System.Windows.Forms.Button();
+            this.deviceIDsComboBoxForRunFromFile = new System.Windows.Forms.ComboBox();
+            this.fileTextBox = new System.Windows.Forms.TextBox();
+            this.iotHubNameTextBoxForRunFromFile = new System.Windows.Forms.TextBox();
+            this.label23 = new System.Windows.Forms.Label();
+            this.label25 = new System.Windows.Forms.Label();
+            this.label24 = new System.Windows.Forms.Label();
+            this.labelRunFromFile = new System.Windows.Forms.Label();
             this.ehStringToolTip = new System.Windows.Forms.ToolTip(this.components);
+            this.openRunFileDialog = new System.Windows.Forms.OpenFileDialog();
+            this.runningStatus = new System.Windows.Forms.Label();
+            this.runningOutput = new System.Windows.Forms.TextBox();
             this.tabCallDeviceMethod.SuspendLayout();
             this.tabPage2.SuspendLayout();
             this.groupBox5.SuspendLayout();
@@ -138,6 +153,8 @@
             this.groupBox4.SuspendLayout();
             this.tabDeviceMethod.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.callDeviceMethodNumericUpDown)).BeginInit();
+            this.tabRunfromFile.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.commandTimeout)).BeginInit();
             this.SuspendLayout();
             // 
             // tabCallDeviceMethod
@@ -150,6 +167,7 @@
             this.tabCallDeviceMethod.Controls.Add(this.tabData);
             this.tabCallDeviceMethod.Controls.Add(this.tabMessagesToDevice);
             this.tabCallDeviceMethod.Controls.Add(this.tabDeviceMethod);
+            this.tabCallDeviceMethod.Controls.Add(this.tabRunfromFile);
             this.tabCallDeviceMethod.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.tabCallDeviceMethod.Location = new System.Drawing.Point(12, 12);
             this.tabCallDeviceMethod.Name = "tabCallDeviceMethod";
@@ -1017,6 +1035,7 @@
             0,
             0,
             0});
+            this.callDeviceMethodNumericUpDown.ValueChanged += new System.EventHandler(this.callDeviceMethodNumericUpDown_ValueChanged);
             // 
             // label21
             // 
@@ -1156,6 +1175,171 @@
             this.label13.TabIndex = 0;
             this.label13.Text = "Call Method on Device";
             // 
+            // tabRunfromFile
+            // 
+            this.tabRunfromFile.Controls.Add(this.runningOutput);
+            this.tabRunfromFile.Controls.Add(this.runningStatus);
+            this.tabRunfromFile.Controls.Add(this.commandTimeout);
+            this.tabRunfromFile.Controls.Add(this.label26);
+            this.tabRunfromFile.Controls.Add(this.Select);
+            this.tabRunfromFile.Controls.Add(this.runButton);
+            this.tabRunfromFile.Controls.Add(this.deviceIDsComboBoxForRunFromFile);
+            this.tabRunfromFile.Controls.Add(this.fileTextBox);
+            this.tabRunfromFile.Controls.Add(this.iotHubNameTextBoxForRunFromFile);
+            this.tabRunfromFile.Controls.Add(this.label23);
+            this.tabRunfromFile.Controls.Add(this.label25);
+            this.tabRunfromFile.Controls.Add(this.label24);
+            this.tabRunfromFile.Controls.Add(this.labelRunFromFile);
+            this.tabRunfromFile.Location = new System.Drawing.Point(4, 25);
+            this.tabRunfromFile.Name = "tabRunfromFile";
+            this.tabRunfromFile.Padding = new System.Windows.Forms.Padding(3);
+            this.tabRunfromFile.Size = new System.Drawing.Size(751, 601);
+            this.tabRunfromFile.TabIndex = 5;
+            this.tabRunfromFile.Text = "Run From File";
+            this.tabRunfromFile.UseVisualStyleBackColor = true;
+            // 
+            // commandTimeout
+            // 
+            this.commandTimeout.Increment = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
+            this.commandTimeout.Location = new System.Drawing.Point(136, 149);
+            this.commandTimeout.Minimum = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
+            this.commandTimeout.Name = "commandTimeout";
+            this.commandTimeout.Size = new System.Drawing.Size(53, 22);
+            this.commandTimeout.TabIndex = 17;
+            this.commandTimeout.Value = new decimal(new int[] {
+            30,
+            0,
+            0,
+            0});
+            // 
+            // label26
+            // 
+            this.label26.AutoSize = true;
+            this.label26.Location = new System.Drawing.Point(13, 150);
+            this.label26.Name = "label26";
+            this.label26.Size = new System.Drawing.Size(119, 16);
+            this.label26.TabIndex = 16;
+            this.label26.Text = "Interval (Seconds):";
+            this.label26.Click += new System.EventHandler(this.label26_Click);
+            // 
+            // Select
+            // 
+            this.Select.Location = new System.Drawing.Point(584, 116);
+            this.Select.Name = "Select";
+            this.Select.Size = new System.Drawing.Size(75, 23);
+            this.Select.TabIndex = 15;
+            this.Select.Text = "Select";
+            this.Select.UseVisualStyleBackColor = true;
+            this.Select.Click += new System.EventHandler(this.button1_Click);
+            // 
+            // runButton
+            // 
+            this.runButton.Location = new System.Drawing.Point(134, 182);
+            this.runButton.Name = "runButton";
+            this.runButton.Size = new System.Drawing.Size(75, 23);
+            this.runButton.TabIndex = 14;
+            this.runButton.Text = "Run";
+            this.runButton.UseVisualStyleBackColor = true;
+            this.runButton.Click += new System.EventHandler(this.runButton_Click);
+            // 
+            // deviceIDsComboBoxForRunFromFile
+            // 
+            this.deviceIDsComboBoxForRunFromFile.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.deviceIDsComboBoxForRunFromFile.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.deviceIDsComboBoxForRunFromFile.FormattingEnabled = true;
+            this.deviceIDsComboBoxForRunFromFile.Location = new System.Drawing.Point(134, 83);
+            this.deviceIDsComboBoxForRunFromFile.Name = "deviceIDsComboBoxForRunFromFile";
+            this.deviceIDsComboBoxForRunFromFile.Size = new System.Drawing.Size(592, 24);
+            this.deviceIDsComboBoxForRunFromFile.TabIndex = 13;
+            // 
+            // fileTextBox
+            // 
+            this.fileTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.fileTextBox.Location = new System.Drawing.Point(134, 116);
+            this.fileTextBox.Name = "fileTextBox";
+            this.fileTextBox.ReadOnly = true;
+            this.fileTextBox.Size = new System.Drawing.Size(442, 22);
+            this.fileTextBox.TabIndex = 12;
+            // 
+            // iotHubNameTextBoxForRunFromFile
+            // 
+            this.iotHubNameTextBoxForRunFromFile.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.iotHubNameTextBoxForRunFromFile.Location = new System.Drawing.Point(134, 54);
+            this.iotHubNameTextBoxForRunFromFile.Name = "iotHubNameTextBoxForRunFromFile";
+            this.iotHubNameTextBoxForRunFromFile.ReadOnly = true;
+            this.iotHubNameTextBoxForRunFromFile.Size = new System.Drawing.Size(592, 22);
+            this.iotHubNameTextBoxForRunFromFile.TabIndex = 12;
+            // 
+            // label23
+            // 
+            this.label23.AutoSize = true;
+            this.label23.Location = new System.Drawing.Point(15, 86);
+            this.label23.Name = "label23";
+            this.label23.Size = new System.Drawing.Size(70, 16);
+            this.label23.TabIndex = 11;
+            this.label23.Text = "Device ID:";
+            // 
+            // label25
+            // 
+            this.label25.AutoSize = true;
+            this.label25.Location = new System.Drawing.Point(15, 117);
+            this.label25.Name = "label25";
+            this.label25.Size = new System.Drawing.Size(33, 16);
+            this.label25.TabIndex = 10;
+            this.label25.Text = "File:";
+            this.label25.Click += new System.EventHandler(this.label25_Click);
+            // 
+            // label24
+            // 
+            this.label24.AutoSize = true;
+            this.label24.Location = new System.Drawing.Point(15, 58);
+            this.label24.Name = "label24";
+            this.label24.Size = new System.Drawing.Size(59, 16);
+            this.label24.TabIndex = 10;
+            this.label24.Text = "IoT Hub:";
+            // 
+            // labelRunFromFile
+            // 
+            this.labelRunFromFile.AutoSize = true;
+            this.labelRunFromFile.Location = new System.Drawing.Point(13, 19);
+            this.labelRunFromFile.Name = "labelRunFromFile";
+            this.labelRunFromFile.Size = new System.Drawing.Size(112, 16);
+            this.labelRunFromFile.TabIndex = 0;
+            this.labelRunFromFile.Text = "Select File to Run";
+            // 
+            // openRunFileDialog
+            // 
+            this.openRunFileDialog.FileName = "openRunFileDialog";
+            this.openRunFileDialog.FileOk += new System.ComponentModel.CancelEventHandler(this.openFileDialog1_FileOk);
+            // 
+            // runningStatus
+            // 
+            this.runningStatus.AutoSize = true;
+            this.runningStatus.Location = new System.Drawing.Point(14, 244);
+            this.runningStatus.Name = "runningStatus";
+            this.runningStatus.Size = new System.Drawing.Size(100, 16);
+            this.runningStatus.TabIndex = 18;
+            this.runningStatus.Text = "Running Status:";
+            // 
+            // runningOutput
+            // 
+            this.runningOutput.BackColor = System.Drawing.SystemColors.Menu;
+            this.runningOutput.Location = new System.Drawing.Point(134, 242);
+            this.runningOutput.Name = "runningOutput";
+            this.runningOutput.Size = new System.Drawing.Size(590, 22);
+            this.runningOutput.TabIndex = 19;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1191,6 +1375,9 @@
             this.tabDeviceMethod.ResumeLayout(false);
             this.tabDeviceMethod.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.callDeviceMethodNumericUpDown)).EndInit();
+            this.tabRunfromFile.ResumeLayout(false);
+            this.tabRunfromFile.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.commandTimeout)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -1288,6 +1475,21 @@
         private System.Windows.Forms.Label label22;
         private System.Windows.Forms.NumericUpDown callDeviceMethodNumericUpDown;
         private System.Windows.Forms.Button callDeviceMethodCancelButton;
+        private System.Windows.Forms.TabPage tabRunfromFile;
+        private System.Windows.Forms.ComboBox deviceIDsComboBoxForRunFromFile;
+        private System.Windows.Forms.TextBox iotHubNameTextBoxForRunFromFile;
+        private System.Windows.Forms.Label label23;
+        private System.Windows.Forms.Label label24;
+        private System.Windows.Forms.Label labelRunFromFile;
+        private System.Windows.Forms.Label label25;
+        private System.Windows.Forms.TextBox fileTextBox;
+        private System.Windows.Forms.Button runButton;
+        private System.Windows.Forms.Button Select;
+        private System.Windows.Forms.OpenFileDialog openRunFileDialog;
+        private System.Windows.Forms.Label label26;
+        private System.Windows.Forms.NumericUpDown commandTimeout;
+        private System.Windows.Forms.TextBox runningOutput;
+        private System.Windows.Forms.Label runningStatus;
     }
 }
 
