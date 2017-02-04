@@ -612,6 +612,7 @@ namespace Microsoft.Azure.Devices.Client
 #endif
             }
 
+#if !WINDOWS_UWP
             [Fx.Tag.SecurityNote(Miscellaneous = "note that in some hosts this runs without any user context on the stack")]
             void IOCallback(uint errorCode, uint numBytes, NativeOverlapped* nativeOverlappedCallback)
             {
@@ -645,7 +646,7 @@ namespace Microsoft.Azure.Devices.Client
                     }
                 }
             }
-
+#endif
             public void Post(IOThreadScheduler iots)
             {
                 Fx.Assert(this.scheduler == null, "Post called on an overlapped that is already posted.");

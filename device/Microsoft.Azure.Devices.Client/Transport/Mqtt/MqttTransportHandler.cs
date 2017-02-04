@@ -8,6 +8,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
     using System.Collections.Generic;
     using System.IO;
     using System.Net;
+    using System.Linq;
     using System.Net.Security;
     using System.Net.WebSockets;
     using System.Security.Cryptography.X509Certificates;
@@ -18,7 +19,20 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
     using DotNetty.Codecs.Mqtt;
     using DotNetty.Codecs.Mqtt.Packets;
     using DotNetty.Common.Concurrency;
+#if !WINDOWS_UWP
     using DotNetty.Handlers.Tls;
+#endif
+#if WINDOWS_UWP
+    using DotNetty.Codecs;
+    using DotNetty.Common.Internal;
+    using Windows.Networking;
+    using Windows.Networking.Sockets;
+    using Windows.Security.Cryptography.Certificates;
+    using Windows.Storage.Streams;
+    using Windows.System.Diagnostics;
+    using Windows.System.Profile;
+#endif
+
     using DotNetty.Transport.Bootstrapping;
     using DotNetty.Transport.Channels;
     using DotNetty.Transport.Channels.Sockets;
@@ -29,7 +43,54 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
     using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
     using Newtonsoft.Json;
     using TransportType = Microsoft.Azure.Devices.Client.TransportType;
+
+#if !WINDOWS_UWP
     using System.Web;
+#endif
+
+#if WINDOWS_UWP
+    class UWPPlatform : IPlatform
+    {
+        int IPlatform.GetCurrentProcessId() => (int)ProcessDiagnosticInfo.GetForCurrentProcess().ProcessId;
+
+        byte[] IPlatform.GetDefaultDeviceId()
+        {
+            var signature = new byte[8];
+            int index = 0;
+            HardwareToken hardwareToken = HardwareIdentification.GetPackageSpecificToken(null);
+            using (DataReader dataReader = DataReader.FromBuffer(hardwareToken.Id))
+            {
+                int offset = 0;
+                while (offset < hardwareToken.Id.Length && index < 7)
+                {
+                    var hardwareEntry = new byte[4];
+                    dataReader.ReadBytes(hardwareEntry);
+                    byte componentID = hardwareEntry[0];
+                    byte componentIDReserved = hardwareEntry[1];
+
+                    if (componentIDReserved == 0)
+                    {
+                        switch (componentID)
+                        {
+                            // Per guidance in http://msdn.microsoft.com/en-us/library/windows/apps/jj553431
+                            case 1: // CPU
+                            case 2: // Memory
+                            case 4: // Network Adapter
+                            case 9: // Bios
+                                signature[index++] = hardwareEntry[2];
+                                signature[index++] = hardwareEntry[3];
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    offset += 4;
+                }
+            }
+            return signature;
+        }
+    }
+#endif
 
     sealed class MqttTransportHandler : TransportHandler
     {
@@ -59,7 +120,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 TimeSpan.FromSeconds(5),
                 elg => elg.ShutdownGracefullyAsync());
 
-        readonly IPAddress serverAddress;
+        readonly string hostName;
         readonly Func<IPAddress, int, Task<IChannel>> channelFactory;
         readonly Queue<string> completionQueue;
         readonly MqttIotHubAdapterFactory mqttIotHubAdapterFactory;
@@ -78,6 +139,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         Func<Task> cleanupFunc;
         IChannel channel;
         Exception fatalException;
+        IPAddress serverAddress;
 
         int state = (int)TransportState.NotInitialized;
         TransportState State => (TransportState)Volatile.Read(ref this.state);
@@ -124,7 +186,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             this.mqttIotHubAdapterFactory = new MqttIotHubAdapterFactory(settings);
             this.messageQueue = new ConcurrentQueue<Message>();
             this.completionQueue = new Queue<string>();
-            this.serverAddress = Dns.GetHostEntry(iotHubConnectionString.HostName).AddressList[0];
+
+            this.serverAddress = null; // this will be resolved asynchrnously in OpenAsync
+            this.hostName = iotHubConnectionString.HostName;
+
             this.qos = settings.PublishToServerQoS;
             this.eventLoopGroupKey = iotHubConnectionString.IotHubName + "#" + iotHubConnectionString.DeviceId + "#" + iotHubConnectionString.Audience;
 
@@ -150,7 +215,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             this.closeRetryPolicy = new RetryPolicy(new TransientErrorIgnoreStrategy(), 5, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
         }
 
-        #region Client operations
+#region Client operations
 
         bool TransportIsOpen()
         {
@@ -318,9 +383,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        #endregion
+#endregion
 
-        #region MQTT callbacks
+#region MQTT callbacks
         internal void OnConnected()
         {
             if (this.TryStateTransition(TransportState.Opening, TransportState.Open))
@@ -444,10 +509,19 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             while (true);
         }
 
-        #endregion
+#endregion
 
         async Task OpenAsync()
         {
+#if WINDOWS_UWP
+            HostName host = new HostName(this.hostName);
+            var endpointPairs = await DatagramSocket.GetEndpointPairsAsync(host, "");
+            var ep = endpointPairs.First();
+            this.serverAddress = IPAddress.Parse(ep.RemoteHostName.RawName);
+#else
+            this.serverAddress = Dns.GetHostEntry(this.hostName).AddressList[0];
+#endif
+
             if (this.TryStateTransition(TransportState.NotInitialized, TransportState.Opening))
             {
                 try
@@ -610,7 +684,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             if (match.Success)
             {
                 status = Convert.ToInt32(match.Groups[1].Value);
+#if WINDOWS_UWP
+                // TODO: verify that WwwFormUrlDecoder does the same as ParseQueryString
+                var decoder = new Windows.Foundation.WwwFormUrlDecoder(match.Groups[2].Value);
+                rid = decoder.GetFirstValueByName("$rid");
+#else
                 rid = HttpUtility.ParseQueryString(match.Groups[2].Value).Get("$rid");
+#endif
                 return true;
             }
             else
@@ -766,6 +846,37 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         Func<IPAddress, int, Task<IChannel>> CreateChannelFactory(IotHubConnectionString iotHubConnectionString, MqttTransportSettings settings)
         {
+#if WINDOWS_UWP
+            //throw new NotImplementedException();
+            return async (address, port) =>
+            {
+                PlatformProvider.Platform = new UWPPlatform();
+
+                var eventLoopGroup = new MultithreadEventLoopGroup();
+
+                var streamSocket = new StreamSocket();
+                await streamSocket.ConnectAsync(new HostName(iotHubConnectionString.HostName), port.ToString(), SocketProtectionLevel.PlainSocket);
+                streamSocket.Control.IgnorableServerCertificateErrors.Add(ChainValidationResult.Untrusted);
+                await streamSocket.UpgradeToSslAsync(SocketProtectionLevel.Tls12, new HostName(iotHubConnectionString.HostName));
+
+                var streamSocketChannel = new StreamSocketChannel(streamSocket);
+                /*
+                streamSocketChannel.Pipeline.AddLast(new LoggingHandler());
+                streamSocketChannel.Pipeline.AddLast("framing-enc", new LengthFieldPrepender(2));
+                streamSocketChannel.Pipeline.AddLast("framing-dec", new LengthFieldBasedFrameDecoder(ushort.MaxValue, 0, 2, 0, 2));
+                streamSocketChannel.Pipeline.AddLast("echo", new EchoClientHandler(logger));
+                */
+
+                streamSocketChannel.Pipeline.AddLast(
+                    MqttEncoder.Instance, 
+                    new MqttDecoder(false, MaxMessageSize),
+                    this.mqttIotHubAdapterFactory.Create(this.OnConnected, this.OnMessageReceived, this.OnError, iotHubConnectionString, settings));
+
+                await eventLoopGroup.GetNext().RegisterAsync(streamSocketChannel);
+
+                return streamSocketChannel;
+            };
+#else
             return (address, port) =>
             {
                 IEventLoopGroup eventLoopGroup = EventLoopGroupPool.TakeOrAdd(this.eventLoopGroupKey);
@@ -799,6 +910,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 return bootstrap.ConnectAsync(address, port);
             };
+#endif
         }
 
         Func<IPAddress, int, Task<IChannel>> CreateWebSocketChannelFactory(IotHubConnectionString iotHubConnectionString, MqttTransportSettings settings)
@@ -811,6 +923,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 var websocket = new ClientWebSocket();
                 websocket.Options.AddSubProtocol(WebSocketConstants.SubProtocols.Mqtt);
 
+#if !WINDOWS_UWP // UWP does not support proxies
                 // Check if we're configured to use a proxy server
                 IWebProxy webProxy = WebRequest.DefaultWebProxy;
                 Uri proxyAddress = webProxy?.GetProxy(websocketUri);
@@ -819,21 +932,27 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     // Configure proxy server
                     websocket.Options.Proxy = webProxy;
                 }
+#endif
 
                 if (settings.ClientCertificate != null)
                 {
                     websocket.Options.ClientCertificates.Add(settings.ClientCertificate);
                 }
+#if !WINDOWS_UWP // UseDefaultCredentials is not in UWP
                 else
                 {
                     websocket.Options.UseDefaultCredentials = true;
                 }
+#endif
 
                 using (var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromMinutes(1)))
                 {
                     await websocket.ConnectAsync(websocketUri, cancellationTokenSource.Token);
                 }
 
+#if WINDOWS_UWP
+                PlatformProvider.Platform = new UWPPlatform();
+#endif
                 var clientChannel = new ClientWebSocketChannel(null, websocket);
                 clientChannel
                     .Option(ChannelOption.Allocator, UnpooledByteBufferAllocator.Default)

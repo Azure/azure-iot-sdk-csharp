@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {
     using System;
@@ -11,7 +10,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
     using DotNetty.Buffers;
     using DotNetty.Codecs.Mqtt.Packets;
     using DotNetty.Common.Concurrency;
+#if !WINDOWS_UWP
     using DotNetty.Handlers.Tls;
+#endif
     using DotNetty.Transport.Channels;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Client.Common;
@@ -92,7 +93,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             this.serviceBoundTwoWayProcessor = new OrderedTwoPhaseWorkQueue<int, PublishWorkItem>(this.SendMessageToServerAsync, p => p.Value.PacketId, this.ProcessAckAsync);
         }
 
-        #region IChannelHandler overrides
+#region IChannelHandler overrides
 
         public override void ChannelActive(IChannelHandlerContext context)
         {
@@ -197,16 +198,20 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public override void UserEventTriggered(IChannelHandlerContext context, object @event)
         {
+#if WINDOWS_UWP
+            throw new NotImplementedException("Not supported in UWP");
+#else
             var handshakeCompletionEvent = @event as TlsHandshakeCompletionEvent;
             if (handshakeCompletionEvent != null && !handshakeCompletionEvent.IsSuccessful)
             {
                 ShutdownOnError(context, handshakeCompletionEvent.Exception);
             }
+#endif
         }
 
-        #endregion
+#endregion
 
-        #region Connect
+#region Connect
         async void Connect(IChannelHandlerContext context)
         {
             try
@@ -339,9 +344,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 await this.SubscribeAsync(context, null);
             }
         }
-        #endregion
+#endregion
 
-        #region Subscribe
+#region Subscribe
 
         async Task SubscribeAsync(IChannelHandlerContext context, SubscribePacket packetPassed)
         {
@@ -386,9 +391,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        #endregion
+#endregion
 
-        #region Unsubscribe
+#region Unsubscribe
         async Task UnSubscribeAsync(IChannelHandlerContext context, UnsubscribePacket packetPassed)
         {
             Contract.Assert(packetPassed != null);
@@ -414,9 +419,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        #endregion
+#endregion
 
-        #region Receiving
+#region Receiving
 
         async void ProcessMessage(IChannelHandlerContext context, Packet packet)
         {
@@ -484,9 +489,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             publish.Completion.Complete();
             return TaskConstants.Completed;
         }
-        #endregion
+#endregion
 
-        #region Sending
+#region Sending
         void ProcessPublish(IChannelHandlerContext context, PublishPacket packet)
         {
             if (this.IsInState(StateFlags.Closed))
@@ -584,9 +589,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 publish.Completion.TrySetException(ex);
             }
         }
-        #endregion
+#endregion
 
-        #region Shutdown
+#region Shutdown
         static async void ShutdownOnError(IChannelHandlerContext context, Exception exception)
         {
             var self = (MqttIotHubAdapter)context.Handler;
@@ -668,9 +673,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 }
             }
         }
-        #endregion
+#endregion
 
-        #region helper methods
+#region helper methods
 
         void ResumeReadingIfNecessary(IChannelHandlerContext context)
         {
@@ -693,6 +698,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             IByteBuffer copiedBuffer = Unpooled.CopiedBuffer(buffer);
             return copiedBuffer;
         }
-        #endregion
+#endregion
     }
 }

@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.Client
         {
         }
 
-#if !NETMF
+#if !PCL && !NETMF
         public static void ValidateBufferBounds(byte[] buffer, int offset, int size)
         {
             if (buffer == null)
@@ -54,21 +54,14 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentOutOfRangeException(nameof(size), size, Common.Resources.SizeExceedsRemainingBufferSpace.FormatInvariant(remainingBufferSpace));
             }
         }
-
-#if !WINDOWS_UWP // GetExecutingAssembly is not in UWP
+#endif
         public static string GetClientVersion()
         {
-#if !PCL
-            Assembly a = Assembly.GetExecutingAssembly();
-            var attribute = (AssemblyInformationalVersionAttribute)a.GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), true)[0];
-            return a.GetName().Name + "/" + attribute.InformationalVersion;
-#else
-            throw new NotImplementedException("GetClientVersion() is not supported for PCL.");
-#endif
+            // This string is picked up by the bump_version script (https://github.com/Azure/azure-iot-sdks/blob/develop/build/release/bump_version/inputs.js)
+            var CommonAssemblyVersion = "1.2.2";
+            return "Microsoft.Azure.Devices.Client/" + CommonAssemblyVersion;
         }
-#endif
 
-#endif
         public static DeliveryAcknowledgement ConvertDeliveryAckTypeFromString(string value)
         {
             switch (value)

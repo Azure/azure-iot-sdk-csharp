@@ -11,8 +11,8 @@
     <AssemblyName>Microsoft.Azure.Devices.Client.UWP</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
-    <TargetPlatformVersion>10.0.10240.0</TargetPlatformVersion>
-    <TargetPlatformMinVersion>10.0.10240.0</TargetPlatformMinVersion>
+    <TargetPlatformVersion>10.0.14393.0</TargetPlatformVersion>
+    <TargetPlatformMinVersion>10.0.14393.0</TargetPlatformMinVersion>
     <MinimumVisualStudioVersion>14</MinimumVisualStudioVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -123,6 +123,31 @@
     <Compile Include="$(DeviceClientDir)\Common\Api\IotHubApiResources.cs" />
     <Compile Include="$(DeviceClientDir)\Common\IOThreadScheduler.cs" />
     <Compile Include="$(DeviceClientDir)\Common\IOThreadTimerSlim.cs" />
+    <Compile Include="$(DeviceClientDir)\Common\ReadOnlyMergeDictionary.cs" />
+    <Compile Include="$(DeviceClientDir)\Common\UrlEncodedDictionarySerializer.cs" />
+    <Compile Include="$(DeviceClientDir)\Transport\Mqtt\ChannelMessageProcessingException.cs" />
+    <Compile Include="$(DeviceClientDir)\Transport\Mqtt\ClientWebSocketChannel.cs" />
+    <Compile Include="$(DeviceClientDir)\Transport\Mqtt\ClientWebSocketChannelConfig.cs" />
+    <Compile Include="$(DeviceClientDir)\Transport\Mqtt\ConcurrentObjectPool.cs" />
+    <Compile Include="$(DeviceClientDir)\Transport\Mqtt\ICancellable.cs" />
+    <Compile Include="$(DeviceClientDir)\Transport\Mqtt\ISessionContextProvider.cs" />
+    <Compile Include="$(DeviceClientDir)\Transport\Mqtt\IWillMessage.cs" />
+    <Compile Include="$(DeviceClientDir)\Transport\Mqtt\MqttIotHubAdapter.cs" />
+    <Compile Include="$(DeviceClientDir)\Transport\Mqtt\MqttIotHubAdapterFactory.cs" />
+    <Compile Include="$(DeviceClientDir)\Transport\Mqtt\MqttTransportHandler.cs" />
+    <Compile Include="$(DeviceClientDir)\Transport\Mqtt\MqttTransportSettings.cs" />
+    <Compile Include="$(DeviceClientDir)\Transport\Mqtt\OrderedTwoPhaseWorkQueue.cs" />
+    <Compile Include="$(DeviceClientDir)\Transport\Mqtt\PublishWorkItem.cs" />
+    <Compile Include="$(DeviceClientDir)\Transport\Mqtt\ReadOnlyByteBufferStream.cs" />
+    <Compile Include="$(DeviceClientDir)\Transport\Mqtt\ReferenceCountedObjectContainer.cs" />
+    <Compile Include="$(DeviceClientDir)\Transport\Mqtt\RouteDestinationType.cs" />
+    <Compile Include="$(DeviceClientDir)\Transport\Mqtt\SessionContextProvider.cs" />
+    <Compile Include="$(DeviceClientDir)\Transport\Mqtt\SimpleWorkQueue.cs" />
+    <Compile Include="$(DeviceClientDir)\Transport\Mqtt\StreamSocketChannel.cs" />
+    <Compile Include="$(DeviceClientDir)\Transport\Mqtt\TransientErrorIgnoreStrategy.cs" />
+    <Compile Include="$(DeviceClientDir)\Transport\Mqtt\Util.cs" />
+    <Compile Include="$(DeviceClientDir)\Transport\Mqtt\WillMessage.cs" />
+    <Compile Include="$(DeviceClientDir)\Transport\WebSocketConstants.cs" />
     <Compile Include="$(DeviceClientDir)\UWPHelpers.cs" />
     <Compile Include="$(DeviceClientDir)\UWPResources.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -152,7 +152,7 @@
     "PInvoke.BCrypt/0.3.2": {
       "sha512": "6nSjPx88F+dcQgxfbM/lkYhi/zQWxwBcGAS3de/Q7YmPr5QdLNv5ZMk2UEFpMQhlFNya4TdUy5i3HKA12uMa7Q==",
       "type": "package",
-     "files": [
+      "files": [
         "PInvoke.BCrypt.0.3.2.nupkg.sha512",
         "PInvoke.BCrypt.nuspec",
         "lib/net40/PInvoke.BCrypt.dll",

@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Client
     using Microsoft.Azure.Devices.Client.Extensions;
     using Microsoft.Azure.Devices.Client.Transport;
     using Microsoft.Azure.Devices.Shared;
-#if !WINDOWS_UWP && !PCL
+#if !PCL
     using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 #endif
 
@@ -352,7 +352,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                     },
                     pipelineBuilder);
                 case TransportType.Mqtt:
-#if WINDOWS_UWP || PCL
+#if PCL
                     throw new NotImplementedException("Mqtt protocol is not supported");
 #else
                     return CreateFromConnectionString(connectionString, new ITransportSettings[]
@@ -370,7 +370,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
 #endif
                 case TransportType.Mqtt_WebSocket_Only:
                 case TransportType.Mqtt_Tcp_Only:
-#if WINDOWS_UWP || PCL
+#if PCL
                     throw new NotImplementedException("Mqtt protocol is not supported");
 #else
                     return CreateFromConnectionString(connectionString, new ITransportSettings[] { new MqttTransportSettings(transportType) }, pipelineBuilder);
@@ -467,7 +467,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                             throw new InvalidOperationException("Unknown implementation of ITransportSettings type");
                         }
                         break;
-#if !WINDOWS_UWP && !PCL
+#if !PCL
                     case TransportType.Mqtt_WebSocket_Only:
                     case TransportType.Mqtt_Tcp_Only:
                         if (!(transportSetting is MqttTransportSettings))
