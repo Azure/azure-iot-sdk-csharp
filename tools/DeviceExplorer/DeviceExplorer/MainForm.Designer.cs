@@ -120,6 +120,9 @@
             this.label14 = new System.Windows.Forms.Label();
             this.label13 = new System.Windows.Forms.Label();
             this.tabRunfromFile = new System.Windows.Forms.TabPage();
+            this.Stop = new System.Windows.Forms.Button();
+            this.runningOutput = new System.Windows.Forms.TextBox();
+            this.runningStatus = new System.Windows.Forms.Label();
             this.commandTimeout = new System.Windows.Forms.NumericUpDown();
             this.label26 = new System.Windows.Forms.Label();
             this.Select = new System.Windows.Forms.Button();
@@ -133,8 +136,6 @@
             this.labelRunFromFile = new System.Windows.Forms.Label();
             this.ehStringToolTip = new System.Windows.Forms.ToolTip(this.components);
             this.openRunFileDialog = new System.Windows.Forms.OpenFileDialog();
-            this.runningStatus = new System.Windows.Forms.Label();
-            this.runningOutput = new System.Windows.Forms.TextBox();
             this.tabCallDeviceMethod.SuspendLayout();
             this.tabPage2.SuspendLayout();
             this.groupBox5.SuspendLayout();
@@ -1177,6 +1178,7 @@
             // 
             // tabRunfromFile
             // 
+            this.tabRunfromFile.Controls.Add(this.Stop);
             this.tabRunfromFile.Controls.Add(this.runningOutput);
             this.tabRunfromFile.Controls.Add(this.runningStatus);
             this.tabRunfromFile.Controls.Add(this.commandTimeout);
@@ -1197,6 +1199,33 @@
             this.tabRunfromFile.TabIndex = 5;
             this.tabRunfromFile.Text = "Run From File";
             this.tabRunfromFile.UseVisualStyleBackColor = true;
+            // 
+            // Stop
+            // 
+            this.Stop.Location = new System.Drawing.Point(259, 181);
+            this.Stop.Name = "Stop";
+            this.Stop.Size = new System.Drawing.Size(75, 23);
+            this.Stop.TabIndex = 20;
+            this.Stop.Text = "Stop";
+            this.Stop.UseVisualStyleBackColor = true;
+            this.Stop.Click += new System.EventHandler(this.button1_Click_1);
+            // 
+            // runningOutput
+            // 
+            this.runningOutput.BackColor = System.Drawing.SystemColors.Menu;
+            this.runningOutput.Location = new System.Drawing.Point(134, 242);
+            this.runningOutput.Name = "runningOutput";
+            this.runningOutput.Size = new System.Drawing.Size(442, 22);
+            this.runningOutput.TabIndex = 19;
+            // 
+            // runningStatus
+            // 
+            this.runningStatus.AutoSize = true;
+            this.runningStatus.Location = new System.Drawing.Point(14, 244);
+            this.runningStatus.Name = "runningStatus";
+            this.runningStatus.Size = new System.Drawing.Size(100, 16);
+            this.runningStatus.TabIndex = 18;
+            this.runningStatus.Text = "Running Status:";
             // 
             // commandTimeout
             // 
@@ -1260,6 +1289,8 @@
             this.deviceIDsComboBoxForRunFromFile.Name = "deviceIDsComboBoxForRunFromFile";
             this.deviceIDsComboBoxForRunFromFile.Size = new System.Drawing.Size(592, 24);
             this.deviceIDsComboBoxForRunFromFile.TabIndex = 13;
+            this.deviceIDsComboBoxForRunFromFile.SelectedIndexChanged += new System.EventHandler(this.deviceIDsComboBoxForRunFromFile_SelectedIndexChanged);
+            this.deviceIDsComboBoxForRunFromFile.SelectionChangeCommitted += new System.EventHandler(this.deviceIDsComboBoxForRunFromFile_SelectionChangeCommitted);
             // 
             // fileTextBox
             // 
@@ -1322,23 +1353,6 @@
             // 
             this.openRunFileDialog.FileName = "openRunFileDialog";
             this.openRunFileDialog.FileOk += new System.ComponentModel.CancelEventHandler(this.openFileDialog1_FileOk);
-            // 
-            // runningStatus
-            // 
-            this.runningStatus.AutoSize = true;
-            this.runningStatus.Location = new System.Drawing.Point(14, 244);
-            this.runningStatus.Name = "runningStatus";
-            this.runningStatus.Size = new System.Drawing.Size(100, 16);
-            this.runningStatus.TabIndex = 18;
-            this.runningStatus.Text = "Running Status:";
-            // 
-            // runningOutput
-            // 
-            this.runningOutput.BackColor = System.Drawing.SystemColors.Menu;
-            this.runningOutput.Location = new System.Drawing.Point(134, 242);
-            this.runningOutput.Name = "runningOutput";
-            this.runningOutput.Size = new System.Drawing.Size(590, 22);
-            this.runningOutput.TabIndex = 19;
             // 
             // MainForm
             // 
@@ -1490,6 +1504,7 @@
         private System.Windows.Forms.NumericUpDown commandTimeout;
         private System.Windows.Forms.TextBox runningOutput;
         private System.Windows.Forms.Label runningStatus;
+        private System.Windows.Forms.Button Stop;
     }
 }
 

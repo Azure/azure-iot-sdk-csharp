@@ -46,6 +46,7 @@ namespace DeviceExplorer
         private const string DEFAULT_CONSUMER_GROUP = "$Default";
 
         private static string runFromFileName = String.Empty;
+        private static bool stopRunFromFile = false;
 
         #endregion
 
@@ -694,13 +695,14 @@ namespace DeviceExplorer
                 {
                     UpdateListOfDevices();
                 }
-
+                /*
                 if (e.TabPage == tabRunfromFile)
                 {
                     Console.WriteLine(" Tab Run from File Selected.");
-                    fileTextBox.Text = String.Empty;
+                    //fileTextBox.Text = String.Empty;
                     runButton.Enabled = false;
                 }
+                */
             }
             catch (Exception ex)
             {
@@ -920,6 +922,7 @@ namespace DeviceExplorer
 
                 runButton.Enabled = true;
                 Console.WriteLine(runFromFileName);
+                stopRunFromFile = false;
             }
         }
 
@@ -935,12 +938,14 @@ namespace DeviceExplorer
                 int counter = 0;
                 string line;
 
+                ctsForRunFromFile = new CancellationTokenSource();
+
                 System.IO.StreamReader file =
                    new System.IO.StreamReader(runFromFileName);
                 ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(activeIoTHubConnectionString);
                 serviceClient.PurgeMessageQueueAsync(deviceIDsComboBoxForRunFromFile.SelectedItem.ToString());
 
-                int timeout = System.Convert.ToInt32( commandTimeout.Value);
+                int timeout = System.Convert.ToInt32(commandTimeout.Value);
                 Console.WriteLine("timeout: " + timeout);
 
                 int lineNum = File.ReadLines(runFromFileName).Count();
@@ -948,7 +953,14 @@ namespace DeviceExplorer
                 while ((line = file.ReadLine()) != null)
                 {
                     //Console.WriteLine(line);
+                    ctsForRunFromFile.Token.ThrowIfCancellationRequested();
+
                     counter++;
+
+                    if (true == stopRunFromFile)
+                    {
+                        return;
+                    }
 
                     string[] msgToken = line.Split(';');
                     if (2 == msgToken.Length)
@@ -956,65 +968,47 @@ namespace DeviceExplorer
                         string[] cmdToken = msgToken[0].Split('=');
                         if (2 == cmdToken.Length)
                         {
-                            
+
 
                             string c2dMessage = msgToken[1]; //data
 
                             var serviceMessage = new Microsoft.Azure.Devices.Message(Encoding.ASCII.GetBytes(c2dMessage));
                             serviceMessage.Ack = DeliveryAcknowledgement.Full;
                             serviceMessage.MessageId = Guid.NewGuid().ToString();
-                                                        
+
                             serviceMessage.Properties.Add(cmdToken[0], cmdToken[1]);
 
                             runningOutput.Text = "sending msg " + c2dMessage + ", " + counter + " of " + lineNum + " ...";
 
                             await serviceClient.SendAsync(deviceIDsComboBoxForRunFromFile.SelectedItem.ToString(), serviceMessage);
 
-                            
+                            Console.WriteLine("cmd sent out at line: " + counter + " content: " + c2dMessage);
 
-                            /*
-                            var feedbackReceiver = serviceClient.GetFeedbackReceiver();
-
-                            Console.WriteLine("\nReceiving c2d feedback from service");
-                            while (true)
-                            {
-                                var feedbackBatch = await feedbackReceiver.ReceiveAsync();
-                                if (feedbackBatch == null) continue;
-
-                                Console.ForegroundColor = ConsoleColor.Yellow;
-                                Console.WriteLine("Received feedback: {0}", string.Join(", ", feedbackBatch.Records.Select(f => f.StatusCode)));
-                                Console.ResetColor();
-
-                                await feedbackReceiver.CompleteAsync(feedbackBatch);
-                            }
-                            */
-
-                            //messagesTextBox.Text += $"Sent to Device ID: [{deviceIDsComboBoxForRunFromFile.SelectedItem.ToString()}], Message:\"{cloudToDeviceMessage}\", message Id: {serviceMessage.MessageId}\n";
-                            Console.WriteLine("cmd sent out at line: " + counter + " content: " + c2dMessage) ;
-
-                            //await serviceClient.CloseAsync();
-
-                        }else{
+                        } else {
                         }
 
-                    }else
+                    } else
                     {
                     }
 
-                    Thread.Sleep(timeout * 1000);
+                    //Thread.Sleep(timeout * 1000);
+                    await Task.Delay(timeout * 1000);
                     runningOutput.Text = "msg " + counter + " of " + lineNum + " Done.";
 
-                    Thread.Sleep(2000);
+                    await Task.Delay(2000);
+                    //Thread.Sleep(2000);
                 }
 
                 file.Close();
 
-                // Suspend the screen.
-                //Console.ReadLine();
             }
-            catch (InvalidOperationException ex)
+            catch (Exception ex)
             {
-                Console.WriteLine("Failed to open file", runFromFileName);
+                if (ctsForRunFromFile.Token.IsCancellationRequested)
+                {
+                    runningOutput.Text = String.Empty;
+                    runningOutput.Text += $"Stopped Runing. {ex.Message}\r\n";
+                }
             }
         }
 
@@ -1027,5 +1021,31 @@ namespace DeviceExplorer
         {
 
         }
+
+        private void button1_Click_1(object sender, EventArgs e)
+        {
+            stopRunFromFile = true;
+            Console.WriteLine("Stop button clicked.");
+
+            runningOutput.Text = String.Empty;
+            runningOutput.Text += "Cancelling...\r\n";
+            ctsForRunFromFile.Cancel();
+        }
+
+        private void methodPayloadTextBox_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private async void deviceIDsComboBoxForRunFromFile_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            //deviceSelectedIndexForRunFromFile = ((ComboBox)sender).SelectedIndex;
+        }
+
+        private async void deviceIDsComboBoxForRunFromFile_SelectionChangeCommitted(object sender, EventArgs e)
+        {
+            deviceSelectedIndexForRunFromFile = ((ComboBox)sender).SelectedIndex;
+        }
+        
     }
 }
