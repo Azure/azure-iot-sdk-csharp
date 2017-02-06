@@ -1363,7 +1363,7 @@
             this.MinimumSize = new System.Drawing.Size(680, 605);
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Device Explorer Twin";
+            this.Text = "Device Explorer CK";
             this.Shown += new System.EventHandler(this.MainForm_Shown);
             this.tabCallDeviceMethod.ResumeLayout(false);
             this.tabPage2.ResumeLayout(false);
