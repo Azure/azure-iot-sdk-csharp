@@ -136,6 +136,7 @@
             this.labelRunFromFile = new System.Windows.Forms.Label();
             this.ehStringToolTip = new System.Windows.Forms.ToolTip(this.components);
             this.openRunFileDialog = new System.Windows.Forms.OpenFileDialog();
+            this.logCheckBox = new System.Windows.Forms.CheckBox();
             this.tabCallDeviceMethod.SuspendLayout();
             this.tabPage2.SuspendLayout();
             this.groupBox5.SuspendLayout();
@@ -603,6 +604,7 @@
             // 
             this.groupBox3.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox3.Controls.Add(this.logCheckBox);
             this.groupBox3.Controls.Add(this.consumerGroupCheckBox);
             this.groupBox3.Controls.Add(this.label6);
             this.groupBox3.Controls.Add(this.groupNameTextBox);
@@ -1354,6 +1356,16 @@
             this.openRunFileDialog.FileName = "openRunFileDialog";
             this.openRunFileDialog.FileOk += new System.ComponentModel.CancelEventHandler(this.openFileDialog1_FileOk);
             // 
+            // logCheckBox
+            // 
+            this.logCheckBox.AutoSize = true;
+            this.logCheckBox.Location = new System.Drawing.Point(534, 157);
+            this.logCheckBox.Name = "logCheckBox";
+            this.logCheckBox.Size = new System.Drawing.Size(50, 20);
+            this.logCheckBox.TabIndex = 30;
+            this.logCheckBox.Text = "Log";
+            this.logCheckBox.UseVisualStyleBackColor = true;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1505,6 +1517,7 @@
         private System.Windows.Forms.TextBox runningOutput;
         private System.Windows.Forms.Label runningStatus;
         private System.Windows.Forms.Button Stop;
+        private System.Windows.Forms.CheckBox logCheckBox;
     }
 }
 

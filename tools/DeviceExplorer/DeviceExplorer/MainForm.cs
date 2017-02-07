@@ -404,10 +404,20 @@ namespace DeviceExplorer
         {
             EventHubClient eventHubClient = null;
             EventHubReceiver eventHubReceiver = null;
+            System.IO.StreamWriter logFile = null;
 
             try
             {
                 string selectedDevice = deviceIDsComboBoxForEvent.SelectedItem.ToString();
+                if (logCheckBox.Checked )
+                { 
+                    System.Globalization.DateTimeFormatInfo fmt = (new System.Globalization.CultureInfo("hr-HR")).DateTimeFormat;                    
+                    string path = Directory.GetCurrentDirectory();
+
+                    string logFileName = path + "\\" + selectedDevice + '_' + DateTime.Now.ToString("d", fmt);
+                    logFile = new System.IO.StreamWriter(logFileName, true);
+                }
+
                 eventHubClient = EventHubClient.CreateFromConnectionString(activeIoTHubConnectionString, "messages/events");
                 eventHubTextBox.Text = "Receiving events...\r\n";
                 eventHubPartitionsCount = eventHubClient.GetRuntimeInformation().PartitionCount;
@@ -474,11 +484,21 @@ namespace DeviceExplorer
                             eventHubTextBox.Text += "\r\n";
                         }
 
+                        if (logCheckBox.Checked && null != logFile)
+                        {
+                            logFile.WriteLine(data);
+                        }
+
                         // scroll text box to last line by moving caret to the end of the text
                         eventHubTextBox.SelectionStart = eventHubTextBox.Text.Length - 1;
                         eventHubTextBox.SelectionLength = 0;
                         eventHubTextBox.ScrollToCaret();
                     }
+                }
+
+                if (null != logFile)
+                {
+                    logFile.Close();
                 }
             }
             catch (Exception ex)
@@ -502,6 +522,11 @@ namespace DeviceExplorer
                 if (eventHubClient != null)
                 {
                     eventHubClient.Close();
+                }
+
+                if (null != logFile)
+                {
+                    logFile.Close();
                 }
                 dataMonitorButton.Enabled = true;
                 deviceIDsComboBoxForEvent.Enabled = true;
