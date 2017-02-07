@@ -416,6 +416,7 @@ namespace DeviceExplorer
                     string logFileName = path + "\\" + selectedDevice + '_' + DateTime.Now.ToString("M-d-yyyy-HHmmss",
                                      System.Globalization.CultureInfo.InvariantCulture) + ".log";
                     logFile = new System.IO.StreamWriter(logFileName, true);
+                    logFile.AutoFlush = true;
                 }
 
                 eventHubClient = EventHubClient.CreateFromConnectionString(activeIoTHubConnectionString, "messages/events");
