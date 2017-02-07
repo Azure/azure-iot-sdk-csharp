@@ -466,6 +466,12 @@ namespace DeviceExplorer
                         var data = Encoding.UTF8.GetString(eventData.GetBytes());
                         var enqueuedTime = eventData.EnqueuedTimeUtc.ToLocalTime();
 
+                        if (logCheckBox.Checked && null != logFile)
+                        {
+                            logFile.WriteLine(data);
+                        }
+
+
                         // Display only data from the selected device; otherwise, skip.
                         var connectionDeviceId = eventData.SystemProperties["iothub-connection-device-id"].ToString();
 
@@ -482,11 +488,6 @@ namespace DeviceExplorer
                                 }
                             }
                             eventHubTextBox.Text += "\r\n";
-                        }
-
-                        if (logCheckBox.Checked && null != logFile)
-                        {
-                            logFile.WriteLine(data);
                         }
 
                         // scroll text box to last line by moving caret to the end of the text
