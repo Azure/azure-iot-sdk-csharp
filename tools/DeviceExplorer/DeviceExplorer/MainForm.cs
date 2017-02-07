@@ -411,10 +411,10 @@ namespace DeviceExplorer
                 string selectedDevice = deviceIDsComboBoxForEvent.SelectedItem.ToString();
                 if (logCheckBox.Checked )
                 { 
-                    System.Globalization.DateTimeFormatInfo fmt = (new System.Globalization.CultureInfo("hr-HR")).DateTimeFormat;                    
                     string path = Directory.GetCurrentDirectory();
 
-                    string logFileName = path + "\\" + selectedDevice + '_' + DateTime.Now.ToString("d", fmt);
+                    string logFileName = path + "\\" + selectedDevice + '_' + DateTime.Now.ToString("M-d-yyyy-HHmmss",
+                                     System.Globalization.CultureInfo.InvariantCulture);
                     logFile = new System.IO.StreamWriter(logFileName, true);
                 }
 
