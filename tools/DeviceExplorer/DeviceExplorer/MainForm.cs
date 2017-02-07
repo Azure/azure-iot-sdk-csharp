@@ -414,7 +414,7 @@ namespace DeviceExplorer
                     string path = Directory.GetCurrentDirectory();
 
                     string logFileName = path + "\\" + selectedDevice + '_' + DateTime.Now.ToString("M-d-yyyy-HHmmss",
-                                     System.Globalization.CultureInfo.InvariantCulture);
+                                     System.Globalization.CultureInfo.InvariantCulture) + ".log";
                     logFile = new System.IO.StreamWriter(logFileName, true);
                 }
 
