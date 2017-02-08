@@ -70,6 +70,11 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
         }
 
+        public Task CloseAsync()
+        {
+            return this.deviceClient.CloseAsync();
+        }
+
         Task<MethodResponse> ImmediateReboot(MethodRequest methodRequest, object userContext)
         {
             this.callMeLogger(methodRequest.DataAsJson);

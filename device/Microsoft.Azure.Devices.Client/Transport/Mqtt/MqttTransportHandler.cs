@@ -870,6 +870,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 await eventLoopGroup.GetNext().RegisterAsync(streamSocketChannel);
 
+                this.ScheduleCleanup(() =>
+                {
+                    EventLoopGroupPool.Release(this.eventLoopGroupKey);
+                    return TaskConstants.Completed;
+                });
+
                 return streamSocketChannel;
             };
 #else

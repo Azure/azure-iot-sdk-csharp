@@ -89,6 +89,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             if (protocol != client.Protocol)
             {
+                if (this.client != null)
+                {
+                    this.client.CloseAsync();
+                }
                 this.client = new IoTClient(protocol, CallMeLogger, GetDeviceNameLogger, ErrorHandler);
                 this.client.Start();
             }
