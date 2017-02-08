@@ -124,6 +124,7 @@ namespace DeviceExplorer
                 {
                     object cloudToDeviceMethod = Activator.CreateInstance(typeFound, deviceMethodName, timeoutInSeconds);
                     MethodInfo methodInfo_SetPayloadJson = cloudToDeviceMethod.GetType().GetMethod("SetPayloadJson");
+                    if (string.IsNullOrWhiteSpace(deviceMethodPayload)) deviceMethodPayload  = "{}";
                     object[] parametersArray = new object[] { deviceMethodPayload };
                     dynamic cloudToDeviceMethodInstance = methodInfo_SetPayloadJson.Invoke(cloudToDeviceMethod, parametersArray);
 
