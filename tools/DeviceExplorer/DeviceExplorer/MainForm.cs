@@ -47,6 +47,7 @@ namespace DeviceExplorer
 
         private static string runFromFileName = String.Empty;
         private static bool stopRunFromFile = false;
+        System.IO.StreamWriter logFile = null;
 
         #endregion
 
@@ -404,7 +405,6 @@ namespace DeviceExplorer
         {
             EventHubClient eventHubClient = null;
             EventHubReceiver eventHubReceiver = null;
-            System.IO.StreamWriter logFile = null;
 
             try
             {
@@ -534,6 +534,7 @@ namespace DeviceExplorer
                 dataMonitorButton.Enabled = true;
                 deviceIDsComboBoxForEvent.Enabled = true;
                 cancelMonitoringButton.Enabled = false;
+                logCheckBox.Enabled = true;
             }
         }
 
@@ -542,6 +543,7 @@ namespace DeviceExplorer
             dataMonitorButton.Enabled = false;
             deviceIDsComboBoxForEvent.Enabled = false;
             cancelMonitoringButton.Enabled = true;
+            logCheckBox.Enabled = false;
             ctsForDataMonitoring = new CancellationTokenSource();
 
             // If the user has not specified a start time by selecting the check box
@@ -631,10 +633,25 @@ namespace DeviceExplorer
 
                 await serviceClient.SendAsync(deviceIDsComboBoxForCloudToDeviceMessage.SelectedItem.ToString(), serviceMessage);
 
-                messagesTextBox.Text += $"Sent to Device ID: [{deviceIDsComboBoxForCloudToDeviceMessage.SelectedItem.ToString()}], Message:\"{cloudToDeviceMessage}\", message Id: {serviceMessage.MessageId}\n";
+                string msgStr = $"Sent to Device ID: [{deviceIDsComboBoxForCloudToDeviceMessage.SelectedItem.ToString()}], Message:\"{cloudToDeviceMessage}\"";
+                
+                messagesTextBox.Text = msgStr + $", message Id: {serviceMessage.MessageId}\n";
+
+                //messagesTextBox.Text += $"Sent to Device ID: [{deviceIDsComboBoxForCloudToDeviceMessage.SelectedItem.ToString()}], Message:\"{cloudToDeviceMessage}\", message Id: {serviceMessage.MessageId}\n";
 
                 await serviceClient.CloseAsync();
 
+                if (null != logFile)
+                {
+                    if (false == checkBox1.Checked)
+                    {
+                        logFile.WriteLine(DateTime.Now.ToLocalTime().ToString() + "> " + msgStr);
+                    }
+                    else
+                    {
+                        logFile.WriteLine(msgStr);
+                    }
+                }
             }
             catch (Exception ex)
             {
