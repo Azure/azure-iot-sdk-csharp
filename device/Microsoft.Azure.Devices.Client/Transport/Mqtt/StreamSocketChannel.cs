@@ -87,11 +87,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     IBuffer buffer = data.AsBuffer();
 
                     IBuffer completion = await this.streamSocket.InputStream.ReadAsync(buffer, (uint)byteBuffer.WritableBytes, InputStreamOptions.Partial);
-
-                    byteBuffer.WriteBytes(data, 0, (int)completion.Length);
                     allocHandle.LastBytesRead = (int)completion.Length;
-
-                    if (allocHandle.LastBytesRead <= 0)
+                    if (allocHandle.LastBytesRead > 0)
+                    {
+                        byteBuffer.WriteBytes(data, 0, (int)completion.Length);
+                    }
+                    else
                     {
                         // nothing was read -> release the buffer.
                         byteBuffer.Release();
