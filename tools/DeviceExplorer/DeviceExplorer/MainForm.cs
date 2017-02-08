@@ -466,19 +466,20 @@ namespace DeviceExplorer
                     {
                         var data = Encoding.UTF8.GetString(eventData.GetBytes());
                         var enqueuedTime = eventData.EnqueuedTimeUtc.ToLocalTime();
-
-                        if (logCheckBox.Checked && null != logFile)
-                        {
-                            logFile.WriteLine(data);
-                        }
-
-
+                        
                         // Display only data from the selected device; otherwise, skip.
                         var connectionDeviceId = eventData.SystemProperties["iothub-connection-device-id"].ToString();
 
                         if (string.CompareOrdinal(selectedDevice, connectionDeviceId) == 0)
                         {
-                            eventHubTextBox.Text += $"{enqueuedTime}> Device: [{connectionDeviceId}], Data:[{data}]";
+                            string newData = $"{enqueuedTime}> Device: [{connectionDeviceId}], Data:[{data}]";
+
+                            if (logCheckBox.Checked && null != logFile)
+                            {
+                                logFile.WriteLine(newData);
+                            }
+
+                            eventHubTextBox.Text += newData;
 
                             if (eventData.Properties.Count > 0)
                             {
