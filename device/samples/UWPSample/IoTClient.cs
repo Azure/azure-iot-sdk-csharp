@@ -49,10 +49,12 @@ namespace Microsoft.Azure.Devices.Client.Samples
             {
                 this.deviceClient = DeviceClient.CreateFromConnectionString(DeviceConnectionString, this.Protocol);
 
+                await this.deviceClient.OpenAsync();
+
                 // Set up callbacks:
                 try
                 {
-                    await deviceClient.SetMethodHandlerAsync("CallMe", CallMe, null);
+                    await deviceClient.SetMethodHandlerAsync("microsoft.management.immediateReboot", ImmediateReboot, null);
                     await deviceClient.SetMethodHandlerAsync("GetDeviceName", GetDeviceName, new DeviceData("Some UWP Device"));
                 }
                 catch
@@ -68,7 +70,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
         }
 
-        Task<MethodResponse> CallMe(MethodRequest methodRequest, object userContext)
+        Task<MethodResponse> ImmediateReboot(MethodRequest methodRequest, object userContext)
         {
             this.callMeLogger(methodRequest.DataAsJson);
 

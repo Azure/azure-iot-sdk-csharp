@@ -30,7 +30,7 @@
         <Button x:Name="receiveButton"      Grid.Row="2" Grid.Column="0" Width="240" Content="Receive message" HorizontalAlignment="Left" VerticalAlignment="Top" Click="receiveButton_Click" />
         <ListBox x:Name="messageList"       Grid.Row="2" Grid.Column="1" HorizontalAlignment="Left" Height="Auto" Margin="0" VerticalAlignment="Top" BorderThickness="0"/>
 
-        <TextBlock                          Grid.Row="3" Grid.Column="0" HorizontalAlignment="Left" TextWrapping="Wrap" Text="Method `CallMe` log" VerticalAlignment="Top"/>
+        <TextBlock                          Grid.Row="3" Grid.Column="0" HorizontalAlignment="Left" TextWrapping="Wrap" Text="Method `immediateReboot` log" VerticalAlignment="Top"/>
         <ListBox x:Name="methodCallList"    Grid.Row="3" Grid.Column="1" HorizontalAlignment="Left" Height="Auto" Margin="0" VerticalAlignment="Top" BorderThickness="0"/>
 
         <TextBlock                          Grid.Row="4" Grid.Column="0" HorizontalAlignment="Left" TextWrapping="Wrap" Text="Method `GetDeviceName` log" VerticalAlignment="Top"/>
