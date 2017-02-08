@@ -49,6 +49,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 #endif
 
 #if WINDOWS_UWP
+    //
+    // Implementation of the UWP platform used to provide UWP-specific functionality for DotNetty
+    //
     class UWPPlatform : IPlatform
     {
         int IPlatform.GetCurrentProcessId() => (int)ProcessDiagnosticInfo.GetForCurrentProcess().ProcessId;
@@ -847,7 +850,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         Func<IPAddress, int, Task<IChannel>> CreateChannelFactory(IotHubConnectionString iotHubConnectionString, MqttTransportSettings settings)
         {
 #if WINDOWS_UWP
-            //throw new NotImplementedException();
             return async (address, port) =>
             {
                 PlatformProvider.Platform = new UWPPlatform();
@@ -860,12 +862,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 await streamSocket.UpgradeToSslAsync(SocketProtectionLevel.Tls12, new HostName(iotHubConnectionString.HostName));
 
                 var streamSocketChannel = new StreamSocketChannel(streamSocket);
-                /*
-                streamSocketChannel.Pipeline.AddLast(new LoggingHandler());
-                streamSocketChannel.Pipeline.AddLast("framing-enc", new LengthFieldPrepender(2));
-                streamSocketChannel.Pipeline.AddLast("framing-dec", new LengthFieldBasedFrameDecoder(ushort.MaxValue, 0, 2, 0, 2));
-                streamSocketChannel.Pipeline.AddLast("echo", new EchoClientHandler(logger));
-                */
 
                 streamSocketChannel.Pipeline.AddLast(
                     MqttEncoder.Instance, 
