@@ -6,8 +6,8 @@
       "DotNetty.Buffers/0.4.2": {
         "dependencies": {
           "DotNetty.Common": "0.4.2",
-          "NETStandard.Library": "1.6.0",
-          "System.Diagnostics.Contracts": "4.0.1"
+          "NETStandard.Library": "1.6.1",
+          "System.Diagnostics.Contracts": "4.3.0"
         },
         "compile": {
           "lib/netstandard1.3/DotNetty.Buffers.dll": {}
@@ -21,8 +21,8 @@
           "DotNetty.Buffers": "0.4.2",
           "DotNetty.Common": "0.4.2",
           "DotNetty.Transport": "0.4.2",
-          "NETStandard.Library": "1.6.0",
-          "System.Diagnostics.Contracts": "4.0.1"
+          "NETStandard.Library": "1.6.1",
+          "System.Diagnostics.Contracts": "4.3.0"
         },
         "compile": {
           "lib/netstandard1.3/DotNetty.Codecs.dll": {}
@@ -37,8 +37,8 @@
           "DotNetty.Codecs": "0.4.2",
           "DotNetty.Common": "0.4.2",
           "DotNetty.Transport": "0.4.2",
-          "NETStandard.Library": "1.6.0",
-          "System.Diagnostics.Contracts": "4.0.1"
+          "NETStandard.Library": "1.6.1",
+          "System.Diagnostics.Contracts": "4.3.0"
         },
         "compile": {
           "lib/netstandard1.3/DotNetty.Codecs.Mqtt.dll": {}
@@ -49,10 +49,10 @@
       },
       "DotNetty.Common/0.4.2": {
         "dependencies": {
-          "Microsoft.Extensions.Logging": "1.0.0",
-          "NETStandard.Library": "1.6.0",
-          "System.Diagnostics.Contracts": "4.0.1",
-          "System.Net.NetworkInformation": "4.1.0"
+          "Microsoft.Extensions.Logging": "1.1.0",
+          "NETStandard.Library": "1.6.1",
+          "System.Diagnostics.Contracts": "4.3.0",
+          "System.Net.NetworkInformation": "4.3.0"
         },
         "compile": {
           "lib/netstandard1.3/DotNetty.Common.dll": {}
@@ -65,13 +65,13 @@
         "dependencies": {
           "DotNetty.Buffers": "0.4.2",
           "DotNetty.Common": "0.4.2",
-          "NETStandard.Library": "1.6.0",
-          "System.Diagnostics.Contracts": "4.0.1",
-          "System.Diagnostics.StackTrace": "4.0.1",
-          "System.Net.NameResolution": "4.0.0",
-          "System.Net.Primitives": "4.0.11",
-          "System.Net.Sockets": "4.1.0",
-          "System.Reflection.TypeExtensions": "4.1.0"
+          "NETStandard.Library": "1.6.1",
+          "System.Diagnostics.Contracts": "4.3.0",
+          "System.Diagnostics.StackTrace": "4.3.0",
+          "System.Net.NameResolution": "4.3.0",
+          "System.Net.Primitives": "4.3.0",
+          "System.Net.Sockets": "4.3.0",
+          "System.Reflection.TypeExtensions": "4.3.0"
         },
         "compile": {
           "lib/netstandard1.3/DotNetty.Transport.dll": {}
@@ -829,9 +829,9 @@
           "lib/netstandard1.3/System.Diagnostics.DiagnosticSource.dll": {}
         }
       },
-      "System.Diagnostics.StackTrace/4.0.2": {
+      "System.Diagnostics.StackTrace/4.3.0": {
         "dependencies": {
-          "Microsoft.NETCore.Platforms": "1.0.1"
+          "Microsoft.NETCore.Platforms": "1.1.0"
         },
         "compile": {
           "ref/netstandard1.3/System.Diagnostics.StackTrace.dll": {}
@@ -1213,20 +1213,20 @@
           }
         }
       },
-      "System.Net.NameResolution/4.0.0": {
+      "System.Net.NameResolution/4.3.0": {
         "dependencies": {
-          "Microsoft.NETCore.Platforms": "1.0.1",
-          "System.Collections": "4.0.11",
-          "System.Diagnostics.Tracing": "4.1.0",
-          "System.Globalization": "4.0.11",
-          "System.Net.Primitives": "4.0.11",
-          "System.Resources.ResourceManager": "4.0.1",
-          "System.Runtime": "4.1.0",
-          "System.Runtime.Extensions": "4.1.0",
-          "System.Runtime.Handles": "4.0.1",
-          "System.Runtime.InteropServices": "4.1.0",
-          "System.Threading": "4.0.11",
-          "System.Threading.Tasks": "4.0.11"
+          "Microsoft.NETCore.Platforms": "1.1.0",
+          "System.Collections": "4.3.0",
+          "System.Diagnostics.Tracing": "4.3.0",
+          "System.Globalization": "4.3.0",
+          "System.Net.Primitives": "4.3.0",
+          "System.Resources.ResourceManager": "4.3.0",
+          "System.Runtime": "4.3.0",
+          "System.Runtime.Extensions": "4.3.0",
+          "System.Runtime.Handles": "4.3.0",
+          "System.Runtime.InteropServices": "4.3.0",
+          "System.Threading": "4.3.0",
+          "System.Threading.Tasks": "4.3.0"
         },
         "compile": {
           "ref/netstandard1.3/System.Net.NameResolution.dll": {}
@@ -1242,21 +1242,21 @@
           }
         }
       },
-      "System.Net.NetworkInformation/4.1.0": {
+      "System.Net.NetworkInformation/4.3.0": {
         "dependencies": {
-          "Microsoft.NETCore.Platforms": "1.0.1",
-          "Microsoft.Win32.Primitives": "4.0.1",
-          "System.Collections": "4.0.11",
-          "System.Diagnostics.Tracing": "4.1.0",
-          "System.Globalization": "4.0.11",
-          "System.Net.Primitives": "4.0.11",
-          "System.Resources.ResourceManager": "4.0.1",
-          "System.Runtime": "4.1.0",
-          "System.Runtime.Extensions": "4.1.0",
-          "System.Runtime.InteropServices": "4.1.0",
-          "System.Runtime.InteropServices.WindowsRuntime": "4.0.1",
-          "System.Threading": "4.0.11",
-          "System.Threading.Tasks": "4.0.11"
+          "Microsoft.NETCore.Platforms": "1.1.0",
+          "Microsoft.Win32.Primitives": "4.3.0",
+          "System.Collections": "4.3.0",
+          "System.Diagnostics.Tracing": "4.3.0",
+          "System.Globalization": "4.3.0",
+          "System.Net.Primitives": "4.3.0",
+          "System.Resources.ResourceManager": "4.3.0",
+          "System.Runtime": "4.3.0",
+          "System.Runtime.Extensions": "4.3.0",
+          "System.Runtime.InteropServices": "4.3.0",
+          "System.Runtime.InteropServices.WindowsRuntime": "4.3.0",
+          "System.Threading": "4.3.0",
+          "System.Threading.Tasks": "4.3.0"
         },
         "compile": {
           "ref/netcore50/System.Net.NetworkInformation.dll": {}
@@ -2416,8 +2416,8 @@
       "DotNetty.Buffers/0.4.2": {
         "dependencies": {
           "DotNetty.Common": "0.4.2",
-          "NETStandard.Library": "1.6.0",
-          "System.Diagnostics.Contracts": "4.0.1"
+          "NETStandard.Library": "1.6.1",
+          "System.Diagnostics.Contracts": "4.3.0"
         },
         "compile": {
           "lib/netstandard1.3/DotNetty.Buffers.dll": {}
@@ -2431,8 +2431,8 @@
           "DotNetty.Buffers": "0.4.2",
           "DotNetty.Common": "0.4.2",
           "DotNetty.Transport": "0.4.2",
-          "NETStandard.Library": "1.6.0",
-          "System.Diagnostics.Contracts": "4.0.1"
+          "NETStandard.Library": "1.6.1",
+          "System.Diagnostics.Contracts": "4.3.0"
         },
         "compile": {
           "lib/netstandard1.3/DotNetty.Codecs.dll": {}
@@ -2447,8 +2447,8 @@
           "DotNetty.Codecs": "0.4.2",
           "DotNetty.Common": "0.4.2",
           "DotNetty.Transport": "0.4.2",
-          "NETStandard.Library": "1.6.0",
-          "System.Diagnostics.Contracts": "4.0.1"
+          "NETStandard.Library": "1.6.1",
+          "System.Diagnostics.Contracts": "4.3.0"
         },
         "compile": {
           "lib/netstandard1.3/DotNetty.Codecs.Mqtt.dll": {}
@@ -2459,10 +2459,10 @@
       },
       "DotNetty.Common/0.4.2": {
         "dependencies": {
-          "Microsoft.Extensions.Logging": "1.0.0",
-          "NETStandard.Library": "1.6.0",
-          "System.Diagnostics.Contracts": "4.0.1",
-          "System.Net.NetworkInformation": "4.1.0"
+          "Microsoft.Extensions.Logging": "1.1.0",
+          "NETStandard.Library": "1.6.1",
+          "System.Diagnostics.Contracts": "4.3.0",
+          "System.Net.NetworkInformation": "4.3.0"
         },
         "compile": {
           "lib/netstandard1.3/DotNetty.Common.dll": {}
@@ -2475,13 +2475,13 @@
         "dependencies": {
           "DotNetty.Buffers": "0.4.2",
           "DotNetty.Common": "0.4.2",
-          "NETStandard.Library": "1.6.0",
-          "System.Diagnostics.Contracts": "4.0.1",
-          "System.Diagnostics.StackTrace": "4.0.1",
-          "System.Net.NameResolution": "4.0.0",
-          "System.Net.Primitives": "4.0.11",
-          "System.Net.Sockets": "4.1.0",
-          "System.Reflection.TypeExtensions": "4.1.0"
+          "NETStandard.Library": "1.6.1",
+          "System.Diagnostics.Contracts": "4.3.0",
+          "System.Diagnostics.StackTrace": "4.3.0",
+          "System.Net.NameResolution": "4.3.0",
+          "System.Net.Primitives": "4.3.0",
+          "System.Net.Sockets": "4.3.0",
+          "System.Reflection.TypeExtensions": "4.3.0"
         },
         "compile": {
           "lib/netstandard1.3/DotNetty.Transport.dll": {}
@@ -3407,9 +3407,9 @@
           "lib/netstandard1.3/System.Diagnostics.DiagnosticSource.dll": {}
         }
       },
-      "System.Diagnostics.StackTrace/4.0.2": {
+      "System.Diagnostics.StackTrace/4.3.0": {
         "dependencies": {
-          "Microsoft.NETCore.Platforms": "1.0.1"
+          "Microsoft.NETCore.Platforms": "1.1.0"
         },
         "compile": {
           "ref/netstandard1.3/System.Diagnostics.StackTrace.dll": {}
@@ -3772,21 +3772,21 @@
           "runtimes/win/lib/netcore50/System.Net.NameResolution.dll": {}
         }
       },
-      "System.Net.NetworkInformation/4.1.0": {
+      "System.Net.NetworkInformation/4.3.0": {
         "dependencies": {
-          "Microsoft.NETCore.Platforms": "1.0.1",
-          "Microsoft.Win32.Primitives": "4.0.1",
-          "System.Collections": "4.0.11",
-          "System.Diagnostics.Tracing": "4.1.0",
-          "System.Globalization": "4.0.11",
-          "System.Net.Primitives": "4.0.11",
-          "System.Resources.ResourceManager": "4.0.1",
-          "System.Runtime": "4.1.0",
-          "System.Runtime.Extensions": "4.1.0",
-          "System.Runtime.InteropServices": "4.1.0",
-          "System.Runtime.InteropServices.WindowsRuntime": "4.0.1",
-          "System.Threading": "4.0.11",
-          "System.Threading.Tasks": "4.0.11"
+          "Microsoft.NETCore.Platforms": "1.1.0",
+          "Microsoft.Win32.Primitives": "4.3.0",
+          "System.Collections": "4.3.0",
+          "System.Diagnostics.Tracing": "4.3.0",
+          "System.Globalization": "4.3.0",
+          "System.Net.Primitives": "4.3.0",
+          "System.Resources.ResourceManager": "4.3.0",
+          "System.Runtime": "4.3.0",
+          "System.Runtime.Extensions": "4.3.0",
+          "System.Runtime.InteropServices": "4.3.0",
+          "System.Runtime.InteropServices.WindowsRuntime": "4.3.0",
+          "System.Threading": "4.3.0",
+          "System.Threading.Tasks": "4.3.0"
         },
         "compile": {
           "ref/netcore50/System.Net.NetworkInformation.dll": {}
@@ -4842,8 +4842,8 @@
       "DotNetty.Buffers/0.4.2": {
         "dependencies": {
           "DotNetty.Common": "0.4.2",
-          "NETStandard.Library": "1.6.0",
-          "System.Diagnostics.Contracts": "4.0.1"
+          "NETStandard.Library": "1.6.1",
+          "System.Diagnostics.Contracts": "4.3.0"
         },
         "compile": {
           "lib/netstandard1.3/DotNetty.Buffers.dll": {}
@@ -4857,8 +4857,8 @@
           "DotNetty.Buffers": "0.4.2",
           "DotNetty.Common": "0.4.2",
           "DotNetty.Transport": "0.4.2",
-          "NETStandard.Library": "1.6.0",
-          "System.Diagnostics.Contracts": "4.0.1"
+          "NETStandard.Library": "1.6.1",
+          "System.Diagnostics.Contracts": "4.3.0"
         },
         "compile": {
           "lib/netstandard1.3/DotNetty.Codecs.dll": {}
@@ -4873,8 +4873,8 @@
           "DotNetty.Codecs": "0.4.2",
           "DotNetty.Common": "0.4.2",
           "DotNetty.Transport": "0.4.2",
-          "NETStandard.Library": "1.6.0",
-          "System.Diagnostics.Contracts": "4.0.1"
+          "NETStandard.Library": "1.6.1",
+          "System.Diagnostics.Contracts": "4.3.0"
         },
         "compile": {
           "lib/netstandard1.3/DotNetty.Codecs.Mqtt.dll": {}
@@ -4885,10 +4885,10 @@
       },
       "DotNetty.Common/0.4.2": {
         "dependencies": {
-          "Microsoft.Extensions.Logging": "1.0.0",
-          "NETStandard.Library": "1.6.0",
-          "System.Diagnostics.Contracts": "4.0.1",
-          "System.Net.NetworkInformation": "4.1.0"
+          "Microsoft.Extensions.Logging": "1.1.0",
+          "NETStandard.Library": "1.6.1",
+          "System.Diagnostics.Contracts": "4.3.0",
+          "System.Net.NetworkInformation": "4.3.0"
         },
         "compile": {
           "lib/netstandard1.3/DotNetty.Common.dll": {}
@@ -4901,13 +4901,13 @@
         "dependencies": {
           "DotNetty.Buffers": "0.4.2",
           "DotNetty.Common": "0.4.2",
-          "NETStandard.Library": "1.6.0",
-          "System.Diagnostics.Contracts": "4.0.1",
-          "System.Diagnostics.StackTrace": "4.0.1",
-          "System.Net.NameResolution": "4.0.0",
-          "System.Net.Primitives": "4.0.11",
-          "System.Net.Sockets": "4.1.0",
-          "System.Reflection.TypeExtensions": "4.1.0"
+          "NETStandard.Library": "1.6.1",
+          "System.Diagnostics.Contracts": "4.3.0",
+          "System.Diagnostics.StackTrace": "4.3.0",
+          "System.Net.NameResolution": "4.3.0",
+          "System.Net.Primitives": "4.3.0",
+          "System.Net.Sockets": "4.3.0",
+          "System.Reflection.TypeExtensions": "4.3.0"
         },
         "compile": {
           "lib/netstandard1.3/DotNetty.Transport.dll": {}
@@ -5872,9 +5872,9 @@
           "lib/netstandard1.3/System.Diagnostics.DiagnosticSource.dll": {}
         }
       },
-      "System.Diagnostics.StackTrace/4.0.2": {
+      "System.Diagnostics.StackTrace/4.3.0": {
         "dependencies": {
-          "Microsoft.NETCore.Platforms": "1.0.1"
+          "Microsoft.NETCore.Platforms": "1.1.0"
         },
         "compile": {
           "ref/netstandard1.3/System.Diagnostics.StackTrace.dll": {}
@@ -6237,21 +6237,21 @@
           "runtimes/win/lib/netcore50/System.Net.NameResolution.dll": {}
         }
       },
-      "System.Net.NetworkInformation/4.1.0": {
+      "System.Net.NetworkInformation/4.3.0": {
         "dependencies": {
-          "Microsoft.NETCore.Platforms": "1.0.1",
-          "Microsoft.Win32.Primitives": "4.0.1",
-          "System.Collections": "4.0.11",
-          "System.Diagnostics.Tracing": "4.1.0",
-          "System.Globalization": "4.0.11",
-          "System.Net.Primitives": "4.0.11",
-          "System.Resources.ResourceManager": "4.0.1",
-          "System.Runtime": "4.1.0",
-          "System.Runtime.Extensions": "4.1.0",
-          "System.Runtime.InteropServices": "4.1.0",
-          "System.Runtime.InteropServices.WindowsRuntime": "4.0.1",
-          "System.Threading": "4.0.11",
-          "System.Threading.Tasks": "4.0.11"
+          "Microsoft.NETCore.Platforms": "1.1.0",
+          "Microsoft.Win32.Primitives": "4.3.0",
+          "System.Collections": "4.3.0",
+          "System.Diagnostics.Tracing": "4.3.0",
+          "System.Globalization": "4.3.0",
+          "System.Net.Primitives": "4.3.0",
+          "System.Resources.ResourceManager": "4.3.0",
+          "System.Runtime": "4.3.0",
+          "System.Runtime.Extensions": "4.3.0",
+          "System.Runtime.InteropServices": "4.3.0",
+          "System.Runtime.InteropServices.WindowsRuntime": "4.3.0",
+          "System.Threading": "4.3.0",
+          "System.Threading.Tasks": "4.3.0"
         },
         "compile": {
           "ref/netcore50/System.Net.NetworkInformation.dll": {}
@@ -7307,8 +7307,8 @@
       "DotNetty.Buffers/0.4.2": {
         "dependencies": {
           "DotNetty.Common": "0.4.2",
-          "NETStandard.Library": "1.6.0",
-          "System.Diagnostics.Contracts": "4.0.1"
+          "NETStandard.Library": "1.6.1",
+          "System.Diagnostics.Contracts": "4.3.0"
         },
         "compile": {
           "lib/netstandard1.3/DotNetty.Buffers.dll": {}
@@ -7322,8 +7322,8 @@
           "DotNetty.Buffers": "0.4.2",
           "DotNetty.Common": "0.4.2",
           "DotNetty.Transport": "0.4.2",
-          "NETStandard.Library": "1.6.0",
-          "System.Diagnostics.Contracts": "4.0.1"
+          "NETStandard.Library": "1.6.1",
+          "System.Diagnostics.Contracts": "4.3.0"
         },
         "compile": {
           "lib/netstandard1.3/DotNetty.Codecs.dll": {}
@@ -7338,8 +7338,8 @@
           "DotNetty.Codecs": "0.4.2",
           "DotNetty.Common": "0.4.2",
           "DotNetty.Transport": "0.4.2",
-          "NETStandard.Library": "1.6.0",
-          "System.Diagnostics.Contracts": "4.0.1"
+          "NETStandard.Library": "1.6.1",
+          "System.Diagnostics.Contracts": "4.3.0"
         },
         "compile": {
           "lib/netstandard1.3/DotNetty.Codecs.Mqtt.dll": {}
@@ -7350,10 +7350,10 @@
       },
       "DotNetty.Common/0.4.2": {
         "dependencies": {
-          "Microsoft.Extensions.Logging": "1.0.0",
-          "NETStandard.Library": "1.6.0",
-          "System.Diagnostics.Contracts": "4.0.1",
-          "System.Net.NetworkInformation": "4.1.0"
+          "Microsoft.Extensions.Logging": "1.1.0",
+          "NETStandard.Library": "1.6.1",
+          "System.Diagnostics.Contracts": "4.3.0",
+          "System.Net.NetworkInformation": "4.3.0"
         },
         "compile": {
           "lib/netstandard1.3/DotNetty.Common.dll": {}
@@ -7366,13 +7366,13 @@
         "dependencies": {
           "DotNetty.Buffers": "0.4.2",
           "DotNetty.Common": "0.4.2",
-          "NETStandard.Library": "1.6.0",
-          "System.Diagnostics.Contracts": "4.0.1",
-          "System.Diagnostics.StackTrace": "4.0.1",
-          "System.Net.NameResolution": "4.0.0",
-          "System.Net.Primitives": "4.0.11",
-          "System.Net.Sockets": "4.1.0",
-          "System.Reflection.TypeExtensions": "4.1.0"
+          "NETStandard.Library": "1.6.1",
+          "System.Diagnostics.Contracts": "4.3.0",
+          "System.Diagnostics.StackTrace": "4.3.0",
+          "System.Net.NameResolution": "4.3.0",
+          "System.Net.Primitives": "4.3.0",
+          "System.Net.Sockets": "4.3.0",
+          "System.Reflection.TypeExtensions": "4.3.0"
         },
         "compile": {
           "lib/netstandard1.3/DotNetty.Transport.dll": {}
@@ -8307,9 +8307,9 @@
           "lib/netstandard1.3/System.Diagnostics.DiagnosticSource.dll": {}
         }
       },
-      "System.Diagnostics.StackTrace/4.0.2": {
+      "System.Diagnostics.StackTrace/4.3.0": {
         "dependencies": {
-          "Microsoft.NETCore.Platforms": "1.0.1"
+          "Microsoft.NETCore.Platforms": "1.1.0"
         },
         "compile": {
           "ref/netstandard1.3/System.Diagnostics.StackTrace.dll": {}
@@ -8672,21 +8672,21 @@
           "runtimes/win/lib/netcore50/System.Net.NameResolution.dll": {}
         }
       },
-      "System.Net.NetworkInformation/4.1.0": {
+      "System.Net.NetworkInformation/4.3.0": {
         "dependencies": {
-          "Microsoft.NETCore.Platforms": "1.0.1",
-          "Microsoft.Win32.Primitives": "4.0.1",
-          "System.Collections": "4.0.11",
-          "System.Diagnostics.Tracing": "4.1.0",
-          "System.Globalization": "4.0.11",
-          "System.Net.Primitives": "4.0.11",
-          "System.Resources.ResourceManager": "4.0.1",
-          "System.Runtime": "4.1.0",
-          "System.Runtime.Extensions": "4.1.0",
-          "System.Runtime.InteropServices": "4.1.0",
-          "System.Runtime.InteropServices.WindowsRuntime": "4.0.1",
-          "System.Threading": "4.0.11",
-          "System.Threading.Tasks": "4.0.11"
+          "Microsoft.NETCore.Platforms": "1.1.0",
+          "Microsoft.Win32.Primitives": "4.3.0",
+          "System.Collections": "4.3.0",
+          "System.Diagnostics.Tracing": "4.3.0",
+          "System.Globalization": "4.3.0",
+          "System.Net.Primitives": "4.3.0",
+          "System.Resources.ResourceManager": "4.3.0",
+          "System.Runtime": "4.3.0",
+          "System.Runtime.Extensions": "4.3.0",
+          "System.Runtime.InteropServices": "4.3.0",
+          "System.Runtime.InteropServices.WindowsRuntime": "4.3.0",
+          "System.Threading": "4.3.0",
+          "System.Threading.Tasks": "4.3.0"
         },
         "compile": {
           "ref/netcore50/System.Net.NetworkInformation.dll": {}
@@ -9742,8 +9742,8 @@
       "DotNetty.Buffers/0.4.2": {
         "dependencies": {
           "DotNetty.Common": "0.4.2",
-          "NETStandard.Library": "1.6.0",
-          "System.Diagnostics.Contracts": "4.0.1"
+          "NETStandard.Library": "1.6.1",
+          "System.Diagnostics.Contracts": "4.3.0"
         },
         "compile": {
           "lib/netstandard1.3/DotNetty.Buffers.dll": {}
@@ -9757,8 +9757,8 @@
           "DotNetty.Buffers": "0.4.2",
           "DotNetty.Common": "0.4.2",
           "DotNetty.Transport": "0.4.2",
-          "NETStandard.Library": "1.6.0",
-          "System.Diagnostics.Contracts": "4.0.1"
+          "NETStandard.Library": "1.6.1",
+          "System.Diagnostics.Contracts": "4.3.0"
         },
         "compile": {
           "lib/netstandard1.3/DotNetty.Codecs.dll": {}
@@ -9773,8 +9773,8 @@
           "DotNetty.Codecs": "0.4.2",
           "DotNetty.Common": "0.4.2",
           "DotNetty.Transport": "0.4.2",
-          "NETStandard.Library": "1.6.0",
-          "System.Diagnostics.Contracts": "4.0.1"
+          "NETStandard.Library": "1.6.1",
+          "System.Diagnostics.Contracts": "4.3.0"
         },
         "compile": {
           "lib/netstandard1.3/DotNetty.Codecs.Mqtt.dll": {}
@@ -9785,10 +9785,10 @@
       },
       "DotNetty.Common/0.4.2": {
         "dependencies": {
-          "Microsoft.Extensions.Logging": "1.0.0",
-          "NETStandard.Library": "1.6.0",
-          "System.Diagnostics.Contracts": "4.0.1",
-          "System.Net.NetworkInformation": "4.1.0"
+          "Microsoft.Extensions.Logging": "1.1.0",
+          "NETStandard.Library": "1.6.1",
+          "System.Diagnostics.Contracts": "4.3.0",
+          "System.Net.NetworkInformation": "4.3.0"
         },
         "compile": {
           "lib/netstandard1.3/DotNetty.Common.dll": {}
@@ -9801,13 +9801,13 @@
         "dependencies": {
           "DotNetty.Buffers": "0.4.2",
           "DotNetty.Common": "0.4.2",
-          "NETStandard.Library": "1.6.0",
-          "System.Diagnostics.Contracts": "4.0.1",
-          "System.Diagnostics.StackTrace": "4.0.1",
-          "System.Net.NameResolution": "4.0.0",
-          "System.Net.Primitives": "4.0.11",
-          "System.Net.Sockets": "4.1.0",
-          "System.Reflection.TypeExtensions": "4.1.0"
+          "NETStandard.Library": "1.6.1",
+          "System.Diagnostics.Contracts": "4.3.0",
+          "System.Diagnostics.StackTrace": "4.3.0",
+          "System.Net.NameResolution": "4.3.0",
+          "System.Net.Primitives": "4.3.0",
+          "System.Net.Sockets": "4.3.0",
+          "System.Reflection.TypeExtensions": "4.3.0"
         },
         "compile": {
           "lib/netstandard1.3/DotNetty.Transport.dll": {}
@@ -10781,9 +10781,9 @@
           "lib/netstandard1.3/System.Diagnostics.DiagnosticSource.dll": {}
         }
       },
-      "System.Diagnostics.StackTrace/4.0.2": {
+      "System.Diagnostics.StackTrace/4.3.0": {
         "dependencies": {
-          "Microsoft.NETCore.Platforms": "1.0.1"
+          "Microsoft.NETCore.Platforms": "1.1.0"
         },
         "compile": {
           "ref/netstandard1.3/System.Diagnostics.StackTrace.dll": {}
@@ -11146,21 +11146,21 @@
           "runtimes/win/lib/netcore50/System.Net.NameResolution.dll": {}
         }
       },
-      "System.Net.NetworkInformation/4.1.0": {
+      "System.Net.NetworkInformation/4.3.0": {
         "dependencies": {
-          "Microsoft.NETCore.Platforms": "1.0.1",
-          "Microsoft.Win32.Primitives": "4.0.1",
-          "System.Collections": "4.0.11",
-          "System.Diagnostics.Tracing": "4.1.0",
-          "System.Globalization": "4.0.11",
-          "System.Net.Primitives": "4.0.11",
-          "System.Resources.ResourceManager": "4.0.1",
-          "System.Runtime": "4.1.0",
-          "System.Runtime.Extensions": "4.1.0",
-          "System.Runtime.InteropServices": "4.1.0",
-          "System.Runtime.InteropServices.WindowsRuntime": "4.0.1",
-          "System.Threading": "4.0.11",
-          "System.Threading.Tasks": "4.0.11"
+          "Microsoft.NETCore.Platforms": "1.1.0",
+          "Microsoft.Win32.Primitives": "4.3.0",
+          "System.Collections": "4.3.0",
+          "System.Diagnostics.Tracing": "4.3.0",
+          "System.Globalization": "4.3.0",
+          "System.Net.Primitives": "4.3.0",
+          "System.Resources.ResourceManager": "4.3.0",
+          "System.Runtime": "4.3.0",
+          "System.Runtime.Extensions": "4.3.0",
+          "System.Runtime.InteropServices": "4.3.0",
+          "System.Runtime.InteropServices.WindowsRuntime": "4.3.0",
+          "System.Threading": "4.3.0",
+          "System.Threading.Tasks": "4.3.0"
         },
         "compile": {
           "ref/netcore50/System.Net.NetworkInformation.dll": {}
@@ -12216,8 +12216,8 @@
       "DotNetty.Buffers/0.4.2": {
         "dependencies": {
           "DotNetty.Common": "0.4.2",
-          "NETStandard.Library": "1.6.0",
-          "System.Diagnostics.Contracts": "4.0.1"
+          "NETStandard.Library": "1.6.1",
+          "System.Diagnostics.Contracts": "4.3.0"
         },
         "compile": {
           "lib/netstandard1.3/DotNetty.Buffers.dll": {}
@@ -12231,8 +12231,8 @@
           "DotNetty.Buffers": "0.4.2",
           "DotNetty.Common": "0.4.2",
           "DotNetty.Transport": "0.4.2",
-          "NETStandard.Library": "1.6.0",
-          "System.Diagnostics.Contracts": "4.0.1"
+          "NETStandard.Library": "1.6.1",
+          "System.Diagnostics.Contracts": "4.3.0"
         },
         "compile": {
           "lib/netstandard1.3/DotNetty.Codecs.dll": {}
@@ -12247,8 +12247,8 @@
           "DotNetty.Codecs": "0.4.2",
           "DotNetty.Common": "0.4.2",
           "DotNetty.Transport": "0.4.2",
-          "NETStandard.Library": "1.6.0",
-          "System.Diagnostics.Contracts": "4.0.1"
+          "NETStandard.Library": "1.6.1",
+          "System.Diagnostics.Contracts": "4.3.0"
         },
         "compile": {
           "lib/netstandard1.3/DotNetty.Codecs.Mqtt.dll": {}
@@ -12259,10 +12259,10 @@
       },
       "DotNetty.Common/0.4.2": {
         "dependencies": {
-          "Microsoft.Extensions.Logging": "1.0.0",
-          "NETStandard.Library": "1.6.0",
-          "System.Diagnostics.Contracts": "4.0.1",
-          "System.Net.NetworkInformation": "4.1.0"
+          "Microsoft.Extensions.Logging": "1.1.0",
+          "NETStandard.Library": "1.6.1",
+          "System.Diagnostics.Contracts": "4.3.0",
+          "System.Net.NetworkInformation": "4.3.0"
         },
         "compile": {
           "lib/netstandard1.3/DotNetty.Common.dll": {}
@@ -12275,13 +12275,13 @@
         "dependencies": {
           "DotNetty.Buffers": "0.4.2",
           "DotNetty.Common": "0.4.2",
-          "NETStandard.Library": "1.6.0",
-          "System.Diagnostics.Contracts": "4.0.1",
-          "System.Diagnostics.StackTrace": "4.0.1",
-          "System.Net.NameResolution": "4.0.0",
-          "System.Net.Primitives": "4.0.11",
-          "System.Net.Sockets": "4.1.0",
-          "System.Reflection.TypeExtensions": "4.1.0"
+          "NETStandard.Library": "1.6.1",
+          "System.Diagnostics.Contracts": "4.3.0",
+          "System.Diagnostics.StackTrace": "4.3.0",
+          "System.Net.NameResolution": "4.3.0",
+          "System.Net.Primitives": "4.3.0",
+          "System.Net.Sockets": "4.3.0",
+          "System.Reflection.TypeExtensions": "4.3.0"
         },
         "compile": {
           "lib/netstandard1.3/DotNetty.Transport.dll": {}
@@ -13216,9 +13216,9 @@
           "lib/netstandard1.3/System.Diagnostics.DiagnosticSource.dll": {}
         }
       },
-      "System.Diagnostics.StackTrace/4.0.2": {
+      "System.Diagnostics.StackTrace/4.3.0": {
         "dependencies": {
-          "Microsoft.NETCore.Platforms": "1.0.1"
+          "Microsoft.NETCore.Platforms": "1.1.0"
         },
         "compile": {
           "ref/netstandard1.3/System.Diagnostics.StackTrace.dll": {}
@@ -13581,21 +13581,21 @@
           "runtimes/win/lib/netcore50/System.Net.NameResolution.dll": {}
         }
       },
-      "System.Net.NetworkInformation/4.1.0": {
+      "System.Net.NetworkInformation/4.3.0": {
         "dependencies": {
-          "Microsoft.NETCore.Platforms": "1.0.1",
-          "Microsoft.Win32.Primitives": "4.0.1",
-          "System.Collections": "4.0.11",
-          "System.Diagnostics.Tracing": "4.1.0",
-          "System.Globalization": "4.0.11",
-          "System.Net.Primitives": "4.0.11",
-          "System.Resources.ResourceManager": "4.0.1",
-          "System.Runtime": "4.1.0",
-          "System.Runtime.Extensions": "4.1.0",
-          "System.Runtime.InteropServices": "4.1.0",
-          "System.Runtime.InteropServices.WindowsRuntime": "4.0.1",
-          "System.Threading": "4.0.11",
-          "System.Threading.Tasks": "4.0.11"
+          "Microsoft.NETCore.Platforms": "1.1.0",
+          "Microsoft.Win32.Primitives": "4.3.0",
+          "System.Collections": "4.3.0",
+          "System.Diagnostics.Tracing": "4.3.0",
+          "System.Globalization": "4.3.0",
+          "System.Net.Primitives": "4.3.0",
+          "System.Resources.ResourceManager": "4.3.0",
+          "System.Runtime": "4.3.0",
+          "System.Runtime.Extensions": "4.3.0",
+          "System.Runtime.InteropServices": "4.3.0",
+          "System.Runtime.InteropServices.WindowsRuntime": "4.3.0",
+          "System.Threading": "4.3.0",
+          "System.Threading.Tasks": "4.3.0"
         },
         "compile": {
           "ref/netcore50/System.Net.NetworkInformation.dll": {}
@@ -14651,8 +14651,8 @@
       "DotNetty.Buffers/0.4.2": {
         "dependencies": {
           "DotNetty.Common": "0.4.2",
-          "NETStandard.Library": "1.6.0",
-          "System.Diagnostics.Contracts": "4.0.1"
+          "NETStandard.Library": "1.6.1",
+          "System.Diagnostics.Contracts": "4.3.0"
         },
         "compile": {
           "lib/netstandard1.3/DotNetty.Buffers.dll": {}
@@ -14666,8 +14666,8 @@
           "DotNetty.Buffers": "0.4.2",
           "DotNetty.Common": "0.4.2",
           "DotNetty.Transport": "0.4.2",
-          "NETStandard.Library": "1.6.0",
-          "System.Diagnostics.Contracts": "4.0.1"
+          "NETStandard.Library": "1.6.1",
+          "System.Diagnostics.Contracts": "4.3.0"
         },
         "compile": {
           "lib/netstandard1.3/DotNetty.Codecs.dll": {}
@@ -14682,8 +14682,8 @@
           "DotNetty.Codecs": "0.4.2",
           "DotNetty.Common": "0.4.2",
           "DotNetty.Transport": "0.4.2",
-          "NETStandard.Library": "1.6.0",
-          "System.Diagnostics.Contracts": "4.0.1"
+          "NETStandard.Library": "1.6.1",
+          "System.Diagnostics.Contracts": "4.3.0"
         },
         "compile": {
           "lib/netstandard1.3/DotNetty.Codecs.Mqtt.dll": {}
@@ -14694,10 +14694,10 @@
       },
       "DotNetty.Common/0.4.2": {
         "dependencies": {
-          "Microsoft.Extensions.Logging": "1.0.0",
-          "NETStandard.Library": "1.6.0",
-          "System.Diagnostics.Contracts": "4.0.1",
-          "System.Net.NetworkInformation": "4.1.0"
+          "Microsoft.Extensions.Logging": "1.1.0",
+          "NETStandard.Library": "1.6.1",
+          "System.Diagnostics.Contracts": "4.3.0",
+          "System.Net.NetworkInformation": "4.3.0"
         },
         "compile": {
           "lib/netstandard1.3/DotNetty.Common.dll": {}
@@ -14710,13 +14710,13 @@
         "dependencies": {
           "DotNetty.Buffers": "0.4.2",
           "DotNetty.Common": "0.4.2",
-          "NETStandard.Library": "1.6.0",
-          "System.Diagnostics.Contracts": "4.0.1",
-          "System.Diagnostics.StackTrace": "4.0.1",
-          "System.Net.NameResolution": "4.0.0",
-          "System.Net.Primitives": "4.0.11",
-          "System.Net.Sockets": "4.1.0",
-          "System.Reflection.TypeExtensions": "4.1.0"
+          "NETStandard.Library": "1.6.1",
+          "System.Diagnostics.Contracts": "4.3.0",
+          "System.Diagnostics.StackTrace": "4.3.0",
+          "System.Net.NameResolution": "4.3.0",
+          "System.Net.Primitives": "4.3.0",
+          "System.Net.Sockets": "4.3.0",
+          "System.Reflection.TypeExtensions": "4.3.0"
         },
         "compile": {
           "lib/netstandard1.3/DotNetty.Transport.dll": {}
@@ -15690,9 +15690,9 @@
           "lib/netstandard1.3/System.Diagnostics.DiagnosticSource.dll": {}
         }
       },
-      "System.Diagnostics.StackTrace/4.0.2": {
+      "System.Diagnostics.StackTrace/4.3.0": {
         "dependencies": {
-          "Microsoft.NETCore.Platforms": "1.0.1"
+          "Microsoft.NETCore.Platforms": "1.1.0"
         },
         "compile": {
           "ref/netstandard1.3/System.Diagnostics.StackTrace.dll": {}
@@ -16055,21 +16055,21 @@
           "runtimes/win/lib/netcore50/System.Net.NameResolution.dll": {}
         }
       },
-      "System.Net.NetworkInformation/4.1.0": {
+      "System.Net.NetworkInformation/4.3.0": {
         "dependencies": {
-          "Microsoft.NETCore.Platforms": "1.0.1",
-          "Microsoft.Win32.Primitives": "4.0.1",
-          "System.Collections": "4.0.11",
-          "System.Diagnostics.Tracing": "4.1.0",
-          "System.Globalization": "4.0.11",
-          "System.Net.Primitives": "4.0.11",
-          "System.Resources.ResourceManager": "4.0.1",
-          "System.Runtime": "4.1.0",
-          "System.Runtime.Extensions": "4.1.0",
-          "System.Runtime.InteropServices": "4.1.0",
-          "System.Runtime.InteropServices.WindowsRuntime": "4.0.1",
-          "System.Threading": "4.0.11",
-          "System.Threading.Tasks": "4.0.11"
+          "Microsoft.NETCore.Platforms": "1.1.0",
+          "Microsoft.Win32.Primitives": "4.3.0",
+          "System.Collections": "4.3.0",
+          "System.Diagnostics.Tracing": "4.3.0",
+          "System.Globalization": "4.3.0",
+          "System.Net.Primitives": "4.3.0",
+          "System.Resources.ResourceManager": "4.3.0",
+          "System.Runtime": "4.3.0",
+          "System.Runtime.Extensions": "4.3.0",
+          "System.Runtime.InteropServices": "4.3.0",
+          "System.Runtime.InteropServices.WindowsRuntime": "4.3.0",
+          "System.Threading": "4.3.0",
+          "System.Threading.Tasks": "4.3.0"
         },
         "compile": {
           "ref/netcore50/System.Net.NetworkInformation.dll": {}
@@ -17124,7 +17124,7 @@
   },
   "libraries": {
     "DotNetty.Buffers/0.4.2": {
-      "sha512": "C++hWJZmNZRETXnqV1Q+a0idNwHMxgJKtAHqviP4m6B+YvjLSlpCPMGKK5ZONYs9sJX9Qsa1wI9upk5Hyh/BmQ==",
+      "sha512": "5/5ZnyDjEf1+w4Q7ohtwqBDAHELQkw3cGa1UYn/hpDCA3d56msCSUeZje8esqZXDwc7v8q75n3/JEcEWq4CGZg==",
       "type": "package",
       "path": "DotNetty.Buffers/0.4.2",
       "files": [
@@ -17137,7 +17137,7 @@
       ]
     },
     "DotNetty.Codecs/0.4.2": {
-      "sha512": "R93cPTPn1EhBK++QfzyeB2z3El7onIqer+rxlBh5bs1cT6djp8k5DfpVnJf4ujCbRl+H7q65x8ZZRw2KXWvTmg==",
+      "sha512": "6dXBbSa/JbY0yG4l7G0mH0/9hZ1Hpgj6F4wYZckKr9Dtp400J3rIKl9YcFQRr+xCsqp/h9ij9MAK3tF5vOiVYQ==",
       "type": "package",
       "path": "DotNetty.Codecs/0.4.2",
       "files": [
@@ -17150,7 +17150,7 @@
       ]
     },
     "DotNetty.Codecs.Mqtt/0.4.2": {
-      "sha512": "DFUaLe4Tv5w8PY02L7yDqzFEjojL/Pkr5gW/zGrRenjVRqLkbuKbyI9dteRSFhuriVRjXVmvQv/5TYeq6TZJ8Q==",
+      "sha512": "DlhLbR3uSkNvvBXfx6IwtBCb4cmo4T4g82PTzR6ceWRn8hVd1wth8njdwUhrzpgZhg5xq1RPbP1p2Hja6tPs5w==",
       "type": "package",
       "path": "DotNetty.Codecs.Mqtt/0.4.2",
       "files": [
@@ -17163,7 +17163,7 @@
       ]
     },
     "DotNetty.Common/0.4.2": {
-      "sha512": "ZA3+OnLrLmxtNMJ6e9u0Bc3NQcgbdU78DNbk3jymG+5p2WLTtS763Te9mgY60K7OFmuCh1FzNDxVGZds8aeMyQ==",
+      "sha512": "qf7mXkRAge3s2UT9+TOVjRAUuGJpxSIh9Ji4DI9HzlWMigZ9USdrEIYK+rUW42zt5j67A4ThraxFK61nugJR4g==",
       "type": "package",
       "path": "DotNetty.Common/0.4.2",
       "files": [
@@ -17176,7 +17176,7 @@
       ]
     },
     "DotNetty.Transport/0.4.2": {
-      "sha512": "J/qEUeUtTUB+aYhFBaTwV2psxe/9Oxf1G0FGhhk5sf+BOWhFPh4YrCCc7ljj2gHaamTNi5VGjjcRJVscDYB5Cg==",
+      "sha512": "eV2yA701SCJUQGHlQczVsR1joupt0FT86Wb8OdbDKfLRkKS4kqA3nyiTEuK7elw0zyigybYqkUMA3Q0IuwVbnQ==",
       "type": "package",
       "path": "DotNetty.Transport/0.4.2",
       "files": [
@@ -19480,12 +19480,12 @@
         "lib/portable-net45+win8+wpa81/System.Diagnostics.DiagnosticSource.xml"
       ]
     },
-    "System.Diagnostics.StackTrace/4.0.2": {
-      "sha512": "MmP424iVWLyeW7XGtwC5NyfzsIwodFKwhW6yns3d+Sh8WFsFoPWq2cUlJJDAteapIm2qoJ8fc3VwIUroolbsEA==",
+    "System.Diagnostics.StackTrace/4.3.0": {
+      "sha512": "BiHg0vgtd35/DM9jvtaC1eKRpWZxr0gcQd643ABG7GnvSlf5pOkY2uyd42mMOJoOmKvnpNj0F4tuoS1pacTwYw==",
       "type": "package",
-      "path": "System.Diagnostics.StackTrace/4.0.2",
+      "path": "System.Diagnostics.StackTrace/4.3.0",
       "files": [
-        "System.Diagnostics.StackTrace.4.0.2.nupkg.sha512",
+        "System.Diagnostics.StackTrace.4.3.0.nupkg.sha512",
         "System.Diagnostics.StackTrace.nuspec",
         "ThirdPartyNotices.txt",
         "dotnet_library_license.txt",
@@ -20581,46 +20581,6 @@
         "runtimes/win/lib/netcore50/System.Net.Http.Rtc.dll"
       ]
     },
-    "System.Net.NameResolution/4.0.0": {
-      "sha512": "JdqRdM1Qym3YehqdKIi5LHrpypP4JMfxKQSNCJ2z4WawkG0il+N3XfNeJOxll2XrTnG7WgYYPoeiu/KOwg0DQw==",
-      "type": "package",
-      "path": "System.Net.NameResolution/4.0.0",
-      "files": [
-        "System.Net.NameResolution.4.0.0.nupkg.sha512",
-        "System.Net.NameResolution.nuspec",
-        "ThirdPartyNotices.txt",
-        "dotnet_library_license.txt",
-        "lib/MonoAndroid10/_._",
-        "lib/MonoTouch10/_._",
-        "lib/net46/System.Net.NameResolution.dll",
-        "lib/xamarinios10/_._",
-        "lib/xamarinmac20/_._",
-        "lib/xamarintvos10/_._",
-        "lib/xamarinwatchos10/_._",
-        "ref/MonoAndroid10/_._",
-        "ref/MonoTouch10/_._",
-        "ref/net46/System.Net.NameResolution.dll",
-        "ref/netstandard1.3/System.Net.NameResolution.dll",
-        "ref/netstandard1.3/System.Net.NameResolution.xml",
-        "ref/netstandard1.3/de/System.Net.NameResolution.xml",
-        "ref/netstandard1.3/es/System.Net.NameResolution.xml",
-        "ref/netstandard1.3/fr/System.Net.NameResolution.xml",
-        "ref/netstandard1.3/it/System.Net.NameResolution.xml",
-        "ref/netstandard1.3/ja/System.Net.NameResolution.xml",
-        "ref/netstandard1.3/ko/System.Net.NameResolution.xml",
-        "ref/netstandard1.3/ru/System.Net.NameResolution.xml",
-        "ref/netstandard1.3/zh-hans/System.Net.NameResolution.xml",
-        "ref/netstandard1.3/zh-hant/System.Net.NameResolution.xml",
-        "ref/xamarinios10/_._",
-        "ref/xamarinmac20/_._",
-        "ref/xamarintvos10/_._",
-        "ref/xamarinwatchos10/_._",
-        "runtimes/unix/lib/netstandard1.3/System.Net.NameResolution.dll",
-        "runtimes/win/lib/net46/System.Net.NameResolution.dll",
-        "runtimes/win/lib/netcore50/System.Net.NameResolution.dll",
-        "runtimes/win/lib/netstandard1.3/System.Net.NameResolution.dll"
-      ]
-    },
     "System.Net.NameResolution/4.3.0": {
       "sha512": "AFYl08R7MrsrEjqpQWTZWBadqXyTzNDaWpMqyxhb0d6sGhV6xMDKueuBXlLL30gz+DIRY6MpdgnHWlCh5wmq9w==",
       "type": "package",
@@ -20661,12 +20621,12 @@
         "runtimes/win/lib/netstandard1.3/System.Net.NameResolution.dll"
       ]
     },
-    "System.Net.NetworkInformation/4.1.0": {
-      "sha512": "Q0rfeiW6QsiZuicGjrFA7cRr2+kXex0JIljTTxzI09GIftB8k+aNL31VsQD1sI2g31cw7UGDTgozA/FgeNSzsQ==",
+    "System.Net.NetworkInformation/4.3.0": {
+      "sha512": "zNVmWVry0pAu7lcrRBhwwU96WUdbsrGL3azyzsbXmVNptae1+Za+UgOe9Z6s8iaWhPn7/l4wQqhC56HZWq7tkg==",
       "type": "package",
-      "path": "System.Net.NetworkInformation/4.1.0",
+      "path": "System.Net.NetworkInformation/4.3.0",
       "files": [
-        "System.Net.NetworkInformation.4.1.0.nupkg.sha512",
+        "System.Net.NetworkInformation.4.3.0.nupkg.sha512",
         "System.Net.NetworkInformation.nuspec",
         "ThirdPartyNotices.txt",
         "dotnet_library_license.txt",
