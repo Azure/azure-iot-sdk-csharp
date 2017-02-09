@@ -17,7 +17,6 @@ namespace Microsoft.Azure.Devices.Client
     using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 #endif
 
-#if !WINDOWS_UWP
     /// <summary>
     /// Delegate for desired property update callbacks.  This will be called
     /// every time we receive a PATCH from the service.
@@ -25,7 +24,6 @@ namespace Microsoft.Azure.Devices.Client
     /// <param name="desiredProperties">Properties that were contained in the update that was received from the service</param>
     /// <param name="userContext">Context object passed in when the callback was registered</param>
     public delegate Task DesiredPropertyUpdateCallback(TwinCollection desiredProperties, object userContext);
-#endif
 
     public delegate Task<MethodResponse> MethodCallback(MethodRequest methodRequest, object userContext);
 
@@ -128,7 +126,6 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
 
         internal delegate Task OnMethodCalledDelegate(MethodRequestInternal methodRequestInternal);
 
-#if !WINDOWS_UWP
         /// <summary>
         /// Callback to call whenever the twin's desired state is updated by the service
         /// </summary>
@@ -143,7 +140,6 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// userContext passed when registering the twin patch callback
         /// </summary>
         Object twinPatchCallbackContext = null;
-#endif
 
         DeviceClient(IotHubConnectionString iotHubConnectionString, ITransportSettings[] transportSettings, IDeviceClientPipelineBuilder pipelineBuilder)
         {
@@ -153,9 +149,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             pipelineContext.Set(transportSettings);
             pipelineContext.Set(iotHubConnectionString);
             pipelineContext.Set<OnMethodCalledDelegate>(OnMethodCalled);
-#if !WINDOWS_UWP
             pipelineContext.Set<Action<TwinCollection>>(OnReportedStatePatchReceived);
-#endif
             IDelegatingHandler innerHandler = pipelineBuilder.Build(pipelineContext);
 
             this.InnerHandler = innerHandler;
@@ -710,7 +704,6 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             return result;
         }
 
-#if !WINDOWS_UWP
         Task<Twin> ApplyTimeoutTwin(Func<CancellationToken, Task<Twin>> operation)
         {
             if (OperationTimeoutInMilliseconds == 0)
@@ -730,7 +723,6 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             });
             return result;
         }
-#endif
 
 #if !WINDOWS_UWP && !PCL // ArturL: we should be able to support UploadToBlobAsync for UWP now
         /// <summary>
@@ -1027,7 +1019,6 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         }
 #endif
 
-#if !WINDOWS_UWP
         /// <summary>
         /// Set a callback that will be called whenever the client receives a state update 
         /// (desired or reported) from the service.  This has the side-effect of subscribing
@@ -1097,8 +1088,6 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                 this.desiredPropertyUpdateCallback(patch, this.twinPatchCallbackContext);
             }
         }
-#endif
-
     }
 }
 
