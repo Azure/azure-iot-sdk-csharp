@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.Common.Cloud
             uint hash1;
             uint hash2;
 
-            PerfectHash.ComputeHash(Encoding.UTF8.GetBytes(data.ToUpper()), seed1: 0, seed2: 0, hash1: out hash1, hash2: out hash2);
+            PerfectHash.ComputeHash(Encoding.UTF8.GetBytes(data.ToUpperInvariant()), seed1: 0, seed2: 0, hash1: out hash1, hash2: out hash2);
             long hashedValue = ((long)hash1 << 32) | (long)hash2;
 
             return hashedValue;
@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.Common.Cloud
             uint hash1;
             uint hash2;
 
-            PerfectHash.ComputeHash(Encoding.UTF8.GetBytes(data.ToUpper()), seed1: 0, seed2: 0, hash1: out hash1, hash2: out hash2);
+            PerfectHash.ComputeHash(Encoding.UTF8.GetBytes(data.ToUpperInvariant()), seed1: 0, seed2: 0, hash1: out hash1, hash2: out hash2);
             long hashedValue = hash1 ^ hash2;
 
             return (short)hashedValue;
