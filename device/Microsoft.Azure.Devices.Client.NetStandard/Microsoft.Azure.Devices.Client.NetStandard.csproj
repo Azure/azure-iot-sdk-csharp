@@ -67,6 +67,21 @@
     <Compile Include="System.Web\Util\HttpEncoderUtility.cs" />
     <Compile Include="System.Web\Util\UriUtil.cs" />
     <Compile Include="System.Web\Util\Utf16StringValidator.cs" />
+    <Compile Include="TransientFaultHandling\AsyncExecution.cs" />
+    <Compile Include="TransientFaultHandling\ExponentialBackoff.cs" />
+    <Compile Include="TransientFaultHandling\FixedInterval.cs" />
+    <Compile Include="TransientFaultHandling\Guard.cs" />
+    <Compile Include="TransientFaultHandling\Incremental.cs" />
+    <Compile Include="TransientFaultHandling\ITransientErrorDetectionStrategy.cs" />
+    <Compile Include="TransientFaultHandling\Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="TransientFaultHandling\RetryingEventArgs.cs" />
+    <Compile Include="TransientFaultHandling\RetryPolicy.cs" />
+    <Compile Include="TransientFaultHandling\RetryStrategy.cs" />
+    <Compile Include="TransientFaultHandling\RetryLimitExceededException.cs" />
   </ItemGroup>
   <Import Project="..\Microsoft.Azure.Devices.Client.Shared\Microsoft.Azure.Devices.Client.Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
