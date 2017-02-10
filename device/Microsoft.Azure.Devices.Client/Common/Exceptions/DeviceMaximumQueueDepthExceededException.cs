@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
     /// <summary>
     /// The exception that is thrown when an attempt to enqueue a message fails because the message queue for the device is already full.
     /// </summary>
-#if !WINDOWS_UWP && !PCL
+#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
     [Serializable]
 #endif
 #if !PCL
@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         {
         }
 
-#if !WINDOWS_UWP && !PCL
+#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
         /// <summary>
         /// Initializes a new instance of the <see cref="DeviceMaximumQueueDepthExceededException"/> class with the specified serialization and context information.
         /// </summary>

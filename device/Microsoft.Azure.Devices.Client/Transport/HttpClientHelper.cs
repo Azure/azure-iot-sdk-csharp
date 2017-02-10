@@ -18,13 +18,18 @@ namespace Microsoft.Azure.Devices.Client.Transport
     using Microsoft.Azure.Devices.Client.Extensions;
     using Microsoft.Azure.Devices.Shared;
 #if !WINDOWS_UWP && !PCL
+#if !NETSTANDARD1_3
     using System.Net.Http.Formatting;
+#else
+    using System.Text;
+    using Newtonsoft.Json;
+#endif
     using System.Security.Cryptography.X509Certificates;
 #endif
 
     sealed class HttpClientHelper : IHttpClientHelper
     {
-#if !WINDOWS_UWP && !PCL
+#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
         static readonly JsonMediaTypeFormatter JsonFormatter = new JsonMediaTypeFormatter();
 #endif
         readonly Uri baseAddress;
@@ -50,7 +55,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             this.defaultErrorMapping =
                 new ReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>(defaultErrorMapping);
 
-#if !WINDOWS_UWP && !PCL
+#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
             WebRequestHandler handler = null;
             if (clientCert != null)
             {
@@ -139,7 +144,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     (requestMsg, token) =>
                     {
                         InsertEtag(requestMsg, entity, operationType);
-                        requestMsg.Content = new ObjectContent<T>(entity, JsonFormatter);
+                        requestMsg.Content = CreateContent(entity);
                         return Task.FromResult(0);
                     },
                     async (httpClient, token) => result = await ReadResponseMessageAsync<T>(httpClient, token),
@@ -163,7 +168,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             await message.Content.ReadAsStreamAsync();
             throw new NotImplementedException();
 #else
-            T entity = await message.Content.ReadAsAsync<T>(token);
+            T entity = await ReadAsAsync<T>(message.Content, token);
 
             // Etag in the header is considered authoritative
             var eTagHolder = entity as IETagHolder;
@@ -280,7 +285,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             // System.Net.Http.Formatting does not exist in UWP. Need to find another way to create content
                             throw new NotImplementedException();
 #else
-                            requestMsg.Content = new ObjectContent<T>(entity, JsonFormatter);
+                            requestMsg.Content = CreateContent(entity);
 #endif
                         }
                     }
@@ -343,7 +348,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             // System.Net.Http.Formatting does not exist in UWP. Need to find another way to create content
                             throw new NotImplementedException();
 #else
-                            requestMsg.Content = new ObjectContent<T1>(entity, JsonFormatter);
+                            requestMsg.Content = CreateContent(entity);
 #endif
                         }
                     }
@@ -519,5 +524,34 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 this.isDisposed = true;
             }
         }
+
+#if !WINDOWS_UWP && !PCL
+#if !NETSTANDARD1_3
+        private static ObjectContent<T> CreateContent<T>(T entity)
+        {
+            return new ObjectContent<T>(entity, JsonFormatter);
+        }
+
+        private static Task<T> ReadAsAsync<T>(HttpContent content, CancellationToken token)
+        {
+            return content.ReadAsAsync<T>(token);
+        }
+#else
+        private static StringContent CreateContent<T>(T entity)
+        {
+            return new StringContent(JsonConvert.SerializeObject(entity), Encoding.UTF8, "application/json");
+        }
+
+        private static async Task<T> ReadAsAsync<T>(HttpContent content, CancellationToken token)
+        {
+            using (Stream stream = await content.ReadAsStreamAsync().ConfigureAwait(false))
+            using (StreamReader reader = new StreamReader(stream))
+            using (JsonTextReader jsonReader = new JsonTextReader(reader))
+            {
+                return new JsonSerializer().Deserialize<T>(jsonReader);
+            }
+        }
+#endif
+#endif
     }
 }

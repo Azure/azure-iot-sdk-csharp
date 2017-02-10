@@ -10,6 +10,7 @@
 
 namespace Microsoft.Azure.Devices.Client.Common.Api {
     using System;
+    using System.Reflection;
     
     
     /// <summary>
@@ -40,7 +41,7 @@ namespace Microsoft.Azure.Devices.Client.Common.Api {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
 #if !PCL
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.Azure.Devices.Client.Common.Api.ApiResources", typeof(ApiResources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.Azure.Devices.Client.Common.Api.ApiResources", typeof(ApiResources).GetTypeInfo().Assembly);
 #else
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager(typeof(ApiResources));
 #endif

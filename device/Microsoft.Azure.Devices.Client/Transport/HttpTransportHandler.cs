@@ -92,7 +92,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         }
 #endif
 
-        private Task HandleTimeoutCancellation(Func<Task> func, CancellationToken token)
+        private new Task HandleTimeoutCancellation(Func<Task> func, CancellationToken token)
         {
             var tcs = new TaskCompletionSource<bool>();
 

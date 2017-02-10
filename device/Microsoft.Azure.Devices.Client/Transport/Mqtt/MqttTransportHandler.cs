@@ -527,6 +527,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             var endpointPairs = await DatagramSocket.GetEndpointPairsAsync(host, "");
             var ep = endpointPairs.First();
             this.serverAddress = IPAddress.Parse(ep.RemoteHostName.RawName);
+#elif NETSTANDARD1_3
+            this.serverAddress = (await Dns.GetHostEntryAsync(this.hostName).ConfigureAwait(false)).AddressList[0];
 #else
             this.serverAddress = Dns.GetHostEntry(this.hostName).AddressList[0];
 #endif
@@ -939,6 +941,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
 #if !WINDOWS_UWP // UWP does not support proxies
                 // Check if we're configured to use a proxy server
+#if !NETSTANDARD1_3
                 IWebProxy webProxy = WebRequest.DefaultWebProxy;
                 Uri proxyAddress = webProxy?.GetProxy(websocketUri);
                 if (!websocketUri.Equals(proxyAddress))
@@ -946,13 +949,21 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     // Configure proxy server
                     websocket.Options.Proxy = webProxy;
                 }
+#else
+                var httpsProxy = Environment.GetEnvironmentVariable("HTTPS_PROXY");
+                if (!String.IsNullOrWhiteSpace(httpsProxy))
+                {
+                    // Configure proxy server
+                    websocket.Options.Proxy = new EnvironmentWebProxy(new Uri(httpsProxy));
+                }
+#endif
 #endif
 
                 if (settings.ClientCertificate != null)
                 {
                     websocket.Options.ClientCertificates.Add(settings.ClientCertificate);
                 }
-#if !WINDOWS_UWP // UseDefaultCredentials is not in UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_3 // UseDefaultCredentials is not in UWP and NetStandard
                 else
                 {
                     websocket.Options.UseDefaultCredentials = true;

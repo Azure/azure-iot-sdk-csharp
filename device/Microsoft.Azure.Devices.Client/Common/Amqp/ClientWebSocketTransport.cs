@@ -101,10 +101,12 @@ namespace Microsoft.Azure.Amqp.Transport
             {
                 throw new IOException(webSocketException.Message, webSocketException);
             }
+#if !NETSTANDARD1_3
             catch (HttpListenerException httpListenerException)
             {
                 throw new IOException(httpListenerException.Message, httpListenerException);
             }
+#endif
             catch (TaskCanceledException taskCanceledException)
             {
                 throw new TimeoutException(taskCanceledException.Message, taskCanceledException);
@@ -154,10 +156,12 @@ namespace Microsoft.Azure.Amqp.Transport
             {
                 throw new IOException(webSocketException.Message, webSocketException);
             }
+#if !NETSTANDARD1_3
             catch (HttpListenerException httpListenerException)
             {
                 throw new IOException(httpListenerException.Message, httpListenerException);
             }
+#endif
             catch (TaskCanceledException taskCanceledException)
             {
                 throw new TimeoutException(taskCanceledException.Message, taskCanceledException);

@@ -20,7 +20,9 @@ namespace Microsoft.Azure.Devices.Client
     using System.Collections.Generic;
 #else
     // Full .NET Framework
+#if !NETSTANDARD1_3
     using Microsoft.Azure.Devices.Client.Common.Api;
+#endif
     using System.Collections.Generic;
     using Microsoft.Azure.Amqp;
 #endif
@@ -31,10 +33,14 @@ namespace Microsoft.Azure.Devices.Client
     using DateTimeT = System.DateTime;
 #endif
 
-    /// <summary>
-    /// The data structure represent the message that is used for interacting with IotHub.
-    /// </summary>
-    public sealed class Message :
+#if NETSTANDARD1_3
+    using ApiResources = Microsoft.Azure.Devices.Client.Common.Api.ApiResources;
+#endif
+
+	/// <summary>
+	/// The data structure represent the message that is used for interacting with IotHub.
+	/// </summary>
+	public sealed class Message :
         // TODO: this is a crazy mess, clean it up
 #if !PCL && !NETMF
         IDisposable, IReadOnlyIndicator
@@ -74,10 +80,10 @@ namespace Microsoft.Azure.Devices.Client
 #else
             this.Properties = new ReadOnlyDictionary45<string, string>(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase), this);
             this.SystemProperties = new ReadOnlyDictionary45<string, object>(new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase), this);
+#endif
             this.InitializeWithStream(Stream.Null, true);
 #if !PCL
             this.serializedAmqpMessage = null;
-#endif
 #endif
         }
 
@@ -103,7 +109,7 @@ namespace Microsoft.Azure.Devices.Client
         /// form the body stream</param>
         /// <remarks>user should treat the input byte array as immutable when
         /// sending the message.</remarks>
-#if NETMF
+#if NETMF || NETSTANDARD1_3
         public Message(byte[] byteArray)
             : this(new MemoryStream(byteArray))
 #else
@@ -549,7 +555,7 @@ namespace Microsoft.Azure.Devices.Client
 #if NETMF
         internal bool IsBodyCalled
         {
-			// A safe comparison for one that will never actually perform an exchange (maybe not necessary?)
+            // A safe comparison for one that will never actually perform an exchange (maybe not necessary?)
             get { return Interlocked.CompareExchange(ref this.getBodyCalled, 9999, 9999) == 1; }
         }
 #else

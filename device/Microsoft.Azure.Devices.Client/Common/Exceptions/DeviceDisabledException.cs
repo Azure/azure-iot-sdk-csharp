@@ -7,7 +7,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
     using System.Runtime.Serialization;
     using Microsoft.Azure.Devices.Client.Extensions;
 
-#if !WINDOWS_UWP && !PCL
+#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
     [Serializable]
 #endif
 #if !PCL
@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         {
         }
 
-#if !WINDOWS_UWP && !PCL
+#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
         public DeviceDisabledException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {

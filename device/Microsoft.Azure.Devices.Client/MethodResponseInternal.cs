@@ -5,21 +5,20 @@ namespace Microsoft.Azure.Devices.Client
     using System;
     using System.IO;
     using System.Threading;
-    using Microsoft.Azure.Devices.Client.Exceptions;
-    using Microsoft.Azure.Devices.Client.Extensions;
-    using Microsoft.Azure.Amqp;
 #if WINDOWS_UWP
     using System.Collections.Generic;
+    using Microsoft.Azure.Amqp;
     using Microsoft.Azure.Devices.Client.Common.Api;
 #elif NETMF
     using System.Collections;
 #elif PCL
     using System.Collections.Generic;
+    using Microsoft.Azure.Amqp;
 #else
     // Full .NET Framework
-    using Microsoft.Azure.Devices.Client.Common.Api;
     using System.Collections.Generic;
     using Microsoft.Azure.Amqp;
+    using Microsoft.Azure.Devices.Client.Common.Api;
 #endif
 
 #if WINDOWS_UWP || PCL
@@ -97,8 +96,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="byteArray">a byte array which will be used to form the body stream</param>
         /// <param name="requestId">the method request id corresponding to this respond</param>
         /// <param name="status">the status code of the method call</param>
-#if NETMF
-        internal MethodResponse(byte[] byteArray)
+#if NETMF || NETSTANDARD1_3
+        internal MethodResponseInternal(byte[] byteArray, string requestId, int status)
             : this(new MemoryStream(byteArray))
 #else
         internal MethodResponseInternal([System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArrayAttribute] byte[] byteArray, string requestId, int status)
@@ -270,7 +269,7 @@ namespace Microsoft.Azure.Devices.Client
 #if NETMF
         internal bool IsBodyCalled
         {
-			// A safe comparison for one that will never actually perform an exchange (maybe not necessary?)
+            // A safe comparison for one that will never actually perform an exchange (maybe not necessary?)
             get { return Interlocked.CompareExchange(ref this.getBodyCalled, 9999, 9999) == 1; }
         }
 #else

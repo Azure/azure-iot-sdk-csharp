@@ -7,20 +7,20 @@ namespace Microsoft.Azure.Devices.Client
     using System.IO;
     using System.Threading;
     using Microsoft.Azure.Devices.Client.Exceptions;
-    using Microsoft.Azure.Devices.Client.Extensions;
-    using Microsoft.Azure.Amqp;
 #if WINDOWS_UWP
     using System.Collections.Generic;
+    using Microsoft.Azure.Amqp;
     using Microsoft.Azure.Devices.Client.Common.Api;
 #elif NETMF
     using System.Collections;
 #elif PCL
     using System.Collections.Generic;
+    using Microsoft.Azure.Amqp;
 #else
     // Full .NET Framework
-    using Microsoft.Azure.Devices.Client.Common.Api;
     using System.Collections.Generic;
     using Microsoft.Azure.Amqp;
+    using Microsoft.Azure.Devices.Client.Common.Api;
 #endif
 
 #if WINDOWS_UWP

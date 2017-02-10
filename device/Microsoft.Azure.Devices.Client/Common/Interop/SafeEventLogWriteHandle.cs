@@ -3,7 +3,7 @@
 
 namespace Microsoft.Azure.Devices.Client
 {
-#if !WINDOWS_UWP && !PCL
+#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
     using System;
     using System.Diagnostics;
     using System.Globalization;
