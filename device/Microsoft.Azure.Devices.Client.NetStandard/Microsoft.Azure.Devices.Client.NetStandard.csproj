@@ -61,6 +61,13 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Include="System.Web\HttpUtility.cs" />
+    <Compile Include="System.Web\Util\HttpEncoder.cs" />
+    <Compile Include="System.Web\Util\HttpEncoderUtility.cs" />
+    <Compile Include="System.Web\Util\UriUtil.cs" />
+    <Compile Include="System.Web\Util\Utf16StringValidator.cs" />
+  </ItemGroup>
   <Import Project="..\Microsoft.Azure.Devices.Client.Shared\Microsoft.Azure.Devices.Client.Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
