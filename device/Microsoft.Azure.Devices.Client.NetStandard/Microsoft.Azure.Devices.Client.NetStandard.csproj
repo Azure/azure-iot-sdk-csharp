@@ -82,6 +82,7 @@
     <Compile Include="TransientFaultHandling\RetryPolicy.cs" />
     <Compile Include="TransientFaultHandling\RetryStrategy.cs" />
     <Compile Include="TransientFaultHandling\RetryLimitExceededException.cs" />
+    <Compile Include="Transport\EnvironmentWebProxy.cs" />
   </ItemGroup>
   <Import Project="..\Microsoft.Azure.Devices.Client.Shared\Microsoft.Azure.Devices.Client.Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
