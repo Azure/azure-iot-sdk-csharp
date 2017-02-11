@@ -10,6 +10,7 @@ using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Devices.Common.Security;
 using Microsoft.ServiceBus.Messaging;
 using System.Reflection;
+using System.IO;
 
 namespace DeviceExplorer
 {
@@ -35,12 +36,19 @@ namespace DeviceExplorer
         private static int deviceSelectedIndexForEvent = 0;
         private static int deviceSelectedIndexForC2DMessage = 0;
         private static int deviceSelectedIndexForDeviceMethod = 0;
+        private static int deviceSelectedIndexForRunFromFile = 0;
 
         private static CancellationTokenSource ctsForDataMonitoring;
         private static CancellationTokenSource ctsForFeedbackMonitoring;
         private static CancellationTokenSource ctsForDeviceMethod;
+        private static CancellationTokenSource ctsForRunFromFile;
 
         private const string DEFAULT_CONSUMER_GROUP = "$Default";
+
+        private static string runFromFileName = String.Empty;
+        private static bool stopRunFromFile = false;
+        System.IO.StreamWriter logFile = null;
+
         #endregion
 
         public MainForm()
@@ -125,6 +133,8 @@ namespace DeviceExplorer
                 eventHubNameTextBoxForDataTab.Text = iotHubName;
                 iotHubNameTextBoxForDeviceMethod.Text = iotHubName;
 
+                iotHubNameTextBoxForRunFromFile.Text = iotHubName;
+
                 activeIoTHubConnectionString = connectionString;
             }
             catch (Exception ex)
@@ -143,6 +153,8 @@ namespace DeviceExplorer
                 List<string> deviceIdsForEvent = new List<string>();
                 List<string> deviceIdsForC2DMessage = new List<string>();
                 List<string> deviceIdsForDeviceMethod = new List<string>();
+                List<string> deviceIdsForRunFromFile = new List<string>();
+
                 RegistryManager registryManager = RegistryManager.CreateFromConnectionString(activeIoTHubConnectionString);
 
                 var devices = await registryManager.GetDevicesAsync(MAX_COUNT_OF_DEVICES);
@@ -151,15 +163,19 @@ namespace DeviceExplorer
                     deviceIdsForEvent.Add(device.Id);
                     deviceIdsForC2DMessage.Add(device.Id);
                     deviceIdsForDeviceMethod.Add(device.Id);
+
+                    deviceIdsForRunFromFile.Add(device.Id);
                 }
                 await registryManager.CloseAsync();
                 deviceIDsComboBoxForEvent.DataSource = deviceIdsForEvent.OrderBy(c => c).ToList();
                 deviceIDsComboBoxForCloudToDeviceMessage.DataSource = deviceIdsForC2DMessage.OrderBy(c => c).ToList();
                 deviceIDsComboBoxForDeviceMethod.DataSource = deviceIdsForDeviceMethod.OrderBy(c => c).ToList();
+                deviceIDsComboBoxForRunFromFile.DataSource = deviceIdsForRunFromFile.OrderBy(c => c).ToList();
 
                 deviceIDsComboBoxForEvent.SelectedIndex = deviceSelectedIndexForEvent;
                 deviceIDsComboBoxForCloudToDeviceMessage.SelectedIndex = deviceSelectedIndexForC2DMessage;
                 deviceIDsComboBoxForDeviceMethod.SelectedIndex = deviceSelectedIndexForDeviceMethod;
+                deviceIDsComboBoxForRunFromFile.SelectedIndex = deviceSelectedIndexForRunFromFile;
             }
         }
         private void persistSettingsToAppConfig()
@@ -194,6 +210,7 @@ namespace DeviceExplorer
                 targetTextBox.Text = String.Empty;
                 eventHubNameTextBoxForDataTab.Text = String.Empty;
                 iotHubNameTextBox.Text = String.Empty;
+                iotHubNameTextBoxForRunFromFile.Text = String.Empty;
 
                 // scrub the connection string
                 dhConStringTextBox.Text = sanitizeConnectionString(dhConStringTextBox.Text);
@@ -392,6 +409,16 @@ namespace DeviceExplorer
             try
             {
                 string selectedDevice = deviceIDsComboBoxForEvent.SelectedItem.ToString();
+                if (logCheckBox.Checked )
+                { 
+                    string path = Directory.GetCurrentDirectory();
+
+                    string logFileName = path + "\\" + selectedDevice + '_' + DateTime.Now.ToString("M-d-yyyy-HHmmss",
+                                     System.Globalization.CultureInfo.InvariantCulture) + ".log";
+                    logFile = new System.IO.StreamWriter(logFileName, true);
+                    logFile.AutoFlush = true;
+                }
+
                 eventHubClient = EventHubClient.CreateFromConnectionString(activeIoTHubConnectionString, "messages/events");
                 eventHubTextBox.Text = "Receiving events...\r\n";
                 eventHubPartitionsCount = eventHubClient.GetRuntimeInformation().PartitionCount;
@@ -439,13 +466,20 @@ namespace DeviceExplorer
                     {
                         var data = Encoding.UTF8.GetString(eventData.GetBytes());
                         var enqueuedTime = eventData.EnqueuedTimeUtc.ToLocalTime();
-
+                        
                         // Display only data from the selected device; otherwise, skip.
                         var connectionDeviceId = eventData.SystemProperties["iothub-connection-device-id"].ToString();
 
                         if (string.CompareOrdinal(selectedDevice, connectionDeviceId) == 0)
                         {
-                            eventHubTextBox.Text += $"{enqueuedTime}> Device: [{connectionDeviceId}], Data:[{data}]";
+                            string newData = $"{enqueuedTime}> Device: [{connectionDeviceId}], Data:[{data}]";
+
+                            if (logCheckBox.Checked && null != logFile)
+                            {
+                                logFile.WriteLine(newData);
+                            }
+
+                            eventHubTextBox.Text += newData;
 
                             if (eventData.Properties.Count > 0)
                             {
@@ -463,6 +497,11 @@ namespace DeviceExplorer
                         eventHubTextBox.SelectionLength = 0;
                         eventHubTextBox.ScrollToCaret();
                     }
+                }
+
+                if (null != logFile)
+                {
+                    logFile.Close();
                 }
             }
             catch (Exception ex)
@@ -487,9 +526,15 @@ namespace DeviceExplorer
                 {
                     eventHubClient.Close();
                 }
+
+                if (null != logFile)
+                {
+                    logFile.Close();
+                }
                 dataMonitorButton.Enabled = true;
                 deviceIDsComboBoxForEvent.Enabled = true;
                 cancelMonitoringButton.Enabled = false;
+                logCheckBox.Enabled = true;
             }
         }
 
@@ -498,6 +543,7 @@ namespace DeviceExplorer
             dataMonitorButton.Enabled = false;
             deviceIDsComboBoxForEvent.Enabled = false;
             cancelMonitoringButton.Enabled = true;
+            logCheckBox.Enabled = false;
             ctsForDataMonitoring = new CancellationTokenSource();
 
             // If the user has not specified a start time by selecting the check box
@@ -587,10 +633,25 @@ namespace DeviceExplorer
 
                 await serviceClient.SendAsync(deviceIDsComboBoxForCloudToDeviceMessage.SelectedItem.ToString(), serviceMessage);
 
-                messagesTextBox.Text += $"Sent to Device ID: [{deviceIDsComboBoxForCloudToDeviceMessage.SelectedItem.ToString()}], Message:\"{cloudToDeviceMessage}\", message Id: {serviceMessage.MessageId}\n";
+                string msgStr = $"Sent to Device ID: [{deviceIDsComboBoxForCloudToDeviceMessage.SelectedItem.ToString()}], Message:\"{cloudToDeviceMessage}\"";
+                
+                messagesTextBox.Text = msgStr + $", message Id: {serviceMessage.MessageId}\n";
+
+                //messagesTextBox.Text += $"Sent to Device ID: [{deviceIDsComboBoxForCloudToDeviceMessage.SelectedItem.ToString()}], Message:\"{cloudToDeviceMessage}\", message Id: {serviceMessage.MessageId}\n";
 
                 await serviceClient.CloseAsync();
 
+                if (null != logFile)
+                {
+                    if (false == checkBox1.Checked)
+                    {
+                        logFile.WriteLine(DateTime.Now.ToLocalTime().ToString() + "> " + msgStr);
+                    }
+                    else
+                    {
+                        logFile.WriteLine(msgStr);
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -628,6 +689,7 @@ namespace DeviceExplorer
 
             string methodName = methodNameTextBox.Text;
             string payload = methodPayloadTextBox.Text;
+            payload = "'" + payload + "'";
 
             double timeout = System.Convert.ToDouble(callDeviceMethodNumericUpDown.Value);
 
@@ -668,7 +730,8 @@ namespace DeviceExplorer
         {
             try
             {
-                if (e.TabPage == tabData || e.TabPage == tabMessagesToDevice || e.TabPage == tabDeviceMethod)
+                if (e.TabPage == tabData || e.TabPage == tabMessagesToDevice || e.TabPage == tabDeviceMethod 
+                    || e.TabPage == tabRunfromFile)
                 {
                     await updateDeviceIdsComboBoxes(runIfNullOrEmpty: false);
                 }
@@ -677,6 +740,14 @@ namespace DeviceExplorer
                 {
                     UpdateListOfDevices();
                 }
+                /*
+                if (e.TabPage == tabRunfromFile)
+                {
+                    Console.WriteLine(" Tab Run from File Selected.");
+                    //fileTextBox.Text = String.Empty;
+                    runButton.Enabled = false;
+                }
+                */
             }
             catch (Exception ex)
             {
@@ -880,5 +951,146 @@ namespace DeviceExplorer
         {
             showDevicePropertiesToolStripMenuItem_Click(this, null);
         }
+
+        private void label25_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            if (DialogResult.OK == openRunFileDialog.ShowDialog())
+            {
+                //System.IO.StreamReader sr = new System.IO.StreamReader(openRunFileDialog.FileName);
+                runFromFileName = openRunFileDialog.FileName;
+                fileTextBox.Text = runFromFileName;
+
+                runButton.Enabled = true;
+                Console.WriteLine(runFromFileName);
+                stopRunFromFile = false;
+            }
+        }
+
+        private void openFileDialog1_FileOk(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+
+        }
+
+        private async void runButton_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                int counter = 0;
+                string line;
+
+                ctsForRunFromFile = new CancellationTokenSource();
+
+                System.IO.StreamReader file =
+                   new System.IO.StreamReader(runFromFileName);
+                ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(activeIoTHubConnectionString);
+                serviceClient.PurgeMessageQueueAsync(deviceIDsComboBoxForRunFromFile.SelectedItem.ToString());
+
+                int timeout = System.Convert.ToInt32(commandTimeout.Value);
+                Console.WriteLine("timeout: " + timeout);
+
+                int lineNum = File.ReadLines(runFromFileName).Count();
+
+                while ((line = file.ReadLine()) != null)
+                {
+                    //Console.WriteLine(line);
+                    ctsForRunFromFile.Token.ThrowIfCancellationRequested();
+
+                    counter++;
+
+                    if (true == stopRunFromFile)
+                    {
+                        return;
+                    }
+
+                    string[] msgToken = line.Split(';');
+                    if (2 == msgToken.Length)
+                    {
+                        string[] cmdToken = msgToken[0].Split('=');
+                        if (2 == cmdToken.Length)
+                        {
+
+
+                            string c2dMessage = msgToken[1]; //data
+
+                            var serviceMessage = new Microsoft.Azure.Devices.Message(Encoding.ASCII.GetBytes(c2dMessage));
+                            serviceMessage.Ack = DeliveryAcknowledgement.Full;
+                            serviceMessage.MessageId = Guid.NewGuid().ToString();
+
+                            serviceMessage.Properties.Add(cmdToken[0], cmdToken[1]);
+
+                            runningOutput.Text = "sending msg " + c2dMessage + ", " + counter + " of " + lineNum + " ...";
+
+                            await serviceClient.SendAsync(deviceIDsComboBoxForRunFromFile.SelectedItem.ToString(), serviceMessage);
+
+                            Console.WriteLine("cmd sent out at line: " + counter + " content: " + c2dMessage);
+
+                        } else {
+                        }
+
+                    } else
+                    {
+                    }
+
+                    //Thread.Sleep(timeout * 1000);
+                    await Task.Delay(timeout * 1000);
+                    runningOutput.Text = "msg " + counter + " of " + lineNum + " Done.";
+
+                    await Task.Delay(2000);
+                    //Thread.Sleep(2000);
+                }
+
+                file.Close();
+
+            }
+            catch (Exception ex)
+            {
+                if (ctsForRunFromFile.Token.IsCancellationRequested)
+                {
+                    runningOutput.Text = String.Empty;
+                    runningOutput.Text += $"Stopped Runing. {ex.Message}\r\n";
+                }
+            }
+        }
+
+        private void label26_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void callDeviceMethodNumericUpDown_ValueChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button1_Click_1(object sender, EventArgs e)
+        {
+            stopRunFromFile = true;
+            Console.WriteLine("Stop button clicked.");
+
+            runningOutput.Text = String.Empty;
+            runningOutput.Text += "Cancelling...\r\n";
+            ctsForRunFromFile.Cancel();
+        }
+
+        private void methodPayloadTextBox_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private async void deviceIDsComboBoxForRunFromFile_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            //deviceSelectedIndexForRunFromFile = ((ComboBox)sender).SelectedIndex;
+        }
+
+        private async void deviceIDsComboBoxForRunFromFile_SelectionChangeCommitted(object sender, EventArgs e)
+        {
+            deviceSelectedIndexForRunFromFile = ((ComboBox)sender).SelectedIndex;
+        }
+        
     }
 }
