@@ -7,6 +7,7 @@ namespace Microsoft.Azure.Devices.Client
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Linq.Expressions;
     using System.Text.RegularExpressions;
     using System.Threading;
     using System.Threading.Tasks;
@@ -112,7 +113,8 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// Stores the timeout used in the operation retries.
         /// </summary>
         // Codes_SRS_DEVICECLIENT_28_002: [This property shall be defaulted to 240000 (4 minutes).]
-        public uint OperationTimeoutInMilliseconds { get; set; } = 4 * 60 * 1000;
+        const uint DefaultOperationTimeoutInMilliseconds = 4 * 60 * 1000;
+        public uint OperationTimeoutInMilliseconds { get; set; } = DefaultOperationTimeoutInMilliseconds;
 
         /// <summary>
         /// Stores the retry strategy used in the operation retries.
@@ -125,6 +127,8 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         volatile Dictionary<string, Tuple<MethodCallback, object>> deviceMethods;
 
         internal delegate Task OnMethodCalledDelegate(MethodRequestInternal methodRequestInternal);
+
+        internal delegate void OnConnectionClosedDelegate(object sender, EventArgs e);
 
         /// <summary>
         /// Callback to call whenever the twin's desired state is updated by the service
@@ -150,6 +154,8 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             pipelineContext.Set(iotHubConnectionString);
             pipelineContext.Set<OnMethodCalledDelegate>(OnMethodCalled);
             pipelineContext.Set<Action<TwinCollection>>(OnReportedStatePatchReceived);
+            pipelineContext.Set<OnConnectionClosedDelegate>(OnConnectionClosed);
+
             IDelegatingHandler innerHandler = pipelineBuilder.Build(pipelineContext);
 
             this.InnerHandler = innerHandler;
@@ -858,6 +864,27 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             }
         }
 
+        /// <summary>
+        /// The delgate for handling disrupted connection/links in the transport layer.
+        /// </summary>
+        internal async void OnConnectionClosed(object sender, EventArgs e)
+        {
+            try
+            {
+                // Retry connection recover forever until we have error callback registration from user for connection drop notification
+                OperationTimeoutInMilliseconds = 0;
+                await ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.RecoverConnections(sender, operationTimeoutCancellationToken));
+                OperationTimeoutInMilliseconds = DefaultOperationTimeoutInMilliseconds;
+            }
+            catch (Exception ex)
+            {
+                // catch all and invoke registered error handler on user code?
+            }
+        }
+
+        /// <summary>
+        /// The delgate for handling direct methods received from service.
+        /// </summary>
         internal async Task OnMethodCalled(MethodRequestInternal methodRequestInternal)
         {
             Tuple<MethodCallback, object> m = null;

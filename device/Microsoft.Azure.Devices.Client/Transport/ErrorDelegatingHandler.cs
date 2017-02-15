@@ -105,6 +105,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return this.ExecuteWithErrorHandlingAsync(() => base.DisableMethodsAsync(cancellationToken), true, cancellationToken);
         }
 
+        public override Task RecoverConnections(object o, CancellationToken cancellationToken)
+        {
+            return this.ExecuteWithErrorHandlingAsync(() => base.RecoverConnections(o, cancellationToken), true, cancellationToken);
+        }
+
         public override Task EnableTwinPatchAsync(CancellationToken cancellationToken)
         {
             return this.ExecuteWithErrorHandlingAsync(() => base.EnableTwinPatchAsync(cancellationToken), true, cancellationToken);
