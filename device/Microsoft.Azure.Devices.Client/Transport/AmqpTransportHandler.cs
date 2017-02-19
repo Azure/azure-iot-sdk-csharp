@@ -43,6 +43,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
             Func<MethodRequestInternal, Task> onMethodCallback = null)
             :base(context, transportSettings)
         {
+            if (onLinkClosedCallback == null)
+            {
+                throw new InvalidOperationException("onLinkClosedCallback is null in AmqpTransportHandler");
+            }
+            this.linkClosedListener = onLinkClosedCallback;
+
             TransportType transportType = transportSettings.GetTransportType();
             this.deviceId = connectionString.DeviceId;
             switch (transportType)
@@ -64,12 +70,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             this.faultTolerantDeviceBoundReceivingLink = new Client.FaultTolerantAmqpObject<ReceivingAmqpLink>(this.CreateDeviceBoundReceivingLinkAsync, this.IotHubConnection.CloseLink);
             this.iotHubConnectionString = connectionString;
             this.messageListener = onMethodCallback;
-
-            if (onLinkClosedCallback == null)
-            {
-                throw new InvalidOperationException("onLinkClosedCallback is null in AmqpTransportHandler");
-            }
-            this.linkClosedListener = onLinkClosedCallback;
         }
 
         internal IotHubConnection IotHubConnection { get; }
@@ -194,7 +194,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
 #if WIP_C2D_METHODS_AMQP
             Func<Task> enableMethodLinkAsyncFunc = null;
 
-            if ((link as AmqpLink).IsReceiver)
+            var amqpLink = link as AmqpLink;
+            if (amqpLink == null)
+            {
+                return Common.TaskConstants.Completed;
+            }
+
+            if (amqpLink.IsReceiver)
             {
                 this.faultTolerantMethodReceivingLink = new Client.FaultTolerantAmqpObject<ReceivingAmqpLink>(this.CreateMethodReceivingLinkAsync, this.IotHubConnection.CloseLink);
                 enableMethodLinkAsyncFunc = async () => await EnableReceivingLinkAsync(cancellationToken);
@@ -203,11 +209,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 this.faultTolerantMethodSendingLink = new Client.FaultTolerantAmqpObject<SendingAmqpLink>(this.CreateMethodSendingLinkAsync, this.IotHubConnection.CloseLink);
                 enableMethodLinkAsyncFunc = async () => await EnableSendingLinkAsync(cancellationToken);
-            }
-
-            if (enableMethodLinkAsyncFunc == null)
-            {
-                return Common.TaskConstants.Completed;
             }
 
             return this.HandleTimeoutCancellation(async () =>

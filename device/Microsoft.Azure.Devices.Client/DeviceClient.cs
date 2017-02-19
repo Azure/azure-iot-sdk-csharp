@@ -871,6 +871,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         {
             try
             {
+                // codes_SRS_DEVICECLIENT_28_022: [** The OnConnectionClosed shall invoke the RecoverConnections operation. **]**
                 // Retry connection recover forever until we have error callback registration from user for connection drop notification
                 OperationTimeoutInMilliseconds = 0;
                 await ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.RecoverConnections(sender, operationTimeoutCancellationToken));
@@ -878,6 +879,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             }
             catch (Exception ex)
             {
+                // codes_SRS_DEVICECLIENT_28_023: [**If RecoverConnections operations throw exception, the OnConnectionClosed shall failed silently **]**
                 // catch all and invoke registered error handler on user code?
             }
         }

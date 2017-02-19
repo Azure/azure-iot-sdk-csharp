@@ -222,3 +222,12 @@ public Task SetDesiredPropertyUpdateCallback(DesiredPropertyUpdateCallback callb
 
 **SRS_DEVICECLIENT_18_007: [** `SetDesiredPropertyUpdateCallback` shall throw an `ArgumentNull` exception if `callback` is null **]**
  
+
+### OnConnectionClosed
+```csharp
+internal async void OnConnectionClosed(object sender, EventArgs e)
+```
+
+**SRS_DEVICECLIENT_28_022: [** The OnConnectionClosed shall invoke the RecoverConnections process. **]**
+
+**SRS_DEVICECLIENT_28_023: [** If the invoked operations throw exception, the OnConnectionClosed shall failed silently **]**

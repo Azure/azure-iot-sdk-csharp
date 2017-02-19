@@ -7,6 +7,7 @@
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Client.Common;
+    using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Azure.Devices.Client.Transport;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -643,6 +644,38 @@
 
             deviceClient.SetMethodHandler("TestMethodName", null, null);
             await innerHandler.DidNotReceive().DisableMethodsAsync(Arg.Any<CancellationToken>());
+        }
+
+        [TestMethod]
+        [TestCategory("DeviceClient")]
+        // Tests_SRS_DEVICECLIENT_28_22: [** The OnConnectionClosed shall invoke the RecoverConnections operation. **]**
+        public async Task DeviceClient_OnConnectionClosed_Recover()
+        {
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+
+            var innerHandler = Substitute.For<IDelegatingHandler>();
+            deviceClient.InnerHandler = innerHandler;
+            var sender = new object();
+
+            deviceClient.OnConnectionClosed(sender, null);
+
+            await innerHandler.Received().RecoverConnections(sender, Arg.Any<CancellationToken>());
+        }
+
+        [TestMethod]
+        [TestCategory("DeviceClient")]
+        // Tests_SRS_DEVICECLIENT_28_023: [** If RecoverConnections operations throw exception, the OnConnectionClosed shall failed silently **]**
+        public void DeviceClient_OnConnectionClosed_RecoverThrowsExceptionWillEatUp()
+        {
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+
+            var innerHandler = Substitute.For<IDelegatingHandler>();
+            deviceClient.InnerHandler = innerHandler;
+            innerHandler.RecoverConnections(Arg.Any<object>(), Arg.Any<CancellationToken>()).Throws<InvalidOperationException>();
+            
+            deviceClient.OnConnectionClosed(null, null);
+
+            // Expected: exception should be eat up
         }
     }
 }
