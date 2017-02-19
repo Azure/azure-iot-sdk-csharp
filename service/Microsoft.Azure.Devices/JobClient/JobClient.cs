@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// Job management
     /// </summary>
-    public abstract class JobClient
+    public abstract class JobClient : IDisposable
     {
         /// <summary>
         /// Creates a JobClient from the Iot Hub connection string.
@@ -24,6 +24,19 @@ namespace Microsoft.Azure.Devices
             var iotHubConnectionString = IotHubConnectionString.Parse(connectionString);
             return new HttpJobClient(iotHubConnectionString);
         }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            this.Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool disposing) {}
 
         /// <summary>
         /// Explicitly open the JobClient instance.

@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices
     using Microsoft.Azure.Devices.Common.Data;
     using Microsoft.Azure.Devices.Common.Exceptions;
 
-    sealed class AmqpServiceClient : ServiceClient, IDisposable
+    sealed class AmqpServiceClient : ServiceClient
     {
         static readonly TimeSpan DefaultOperationTimeout = TimeSpan.FromSeconds(100);
         const string StatisticsUriFormat = "/statistics/service?" + ClientApiVersionHelper.ApiVersionQueryString;
@@ -53,9 +53,18 @@ namespace Microsoft.Azure.Devices
                 DefaultOperationTimeout,
                 client => {});
         }
-                
+
         internal AmqpServiceClient(IotHubConnectionString iotHubConnectionString, bool useWebSocketOnly, IHttpClientHelper httpClientHelper) : base()
-        {            
+        {
+            this.httpClientHelper = httpClientHelper;
+        }
+
+        internal AmqpServiceClient(IotHubConnection iotHubConnection, IHttpClientHelper httpClientHelper)
+        {
+            this.iotHubConnection = iotHubConnection;
+            this.faultTolerantSendingLink = new FaultTolerantAmqpObject<SendingAmqpLink>( this.CreateSendingLinkAsync, iotHubConnection.CloseLink );
+            this.feedbackReceiver = new AmqpFeedbackReceiver(iotHubConnection);
+            this.fileNotificationReceiver = new AmqpFileNotificationReceiver(iotHubConnection);
             this.httpClientHelper = httpClientHelper;
         }
 
@@ -101,7 +110,9 @@ namespace Microsoft.Azure.Devices
 
         public async override Task CloseAsync()
         {
+            await this.faultTolerantSendingLink.CloseAsync();
             await this.feedbackReceiver.CloseAsync();
+            await this.fileNotificationReceiver.CloseAsync();
             await this.iotHubConnection.CloseAsync();
         }
 
@@ -213,11 +224,16 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <inheritdoc/>
-        public void Dispose()
+        protected override void Dispose(bool disposing)
         {
-            this.faultTolerantSendingLink.Dispose();
-            this.feedbackReceiver.Dispose();
-            this.httpClientHelper.Dispose();
+            if (disposing)
+            {
+                this.faultTolerantSendingLink.Dispose();
+                this.fileNotificationReceiver.Dispose();
+                this.feedbackReceiver.Dispose();
+                this.iotHubConnection.Dispose();
+                this.httpClientHelper.Dispose();
+            }
         }
 
         static Uri GetStatisticsUri()
