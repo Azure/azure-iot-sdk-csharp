@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices
     using Microsoft.Azure.Devices.Common.Exceptions;
     using Newtonsoft.Json;
 
-    class HttpRegistryManager : RegistryManager, IDisposable
+    class HttpRegistryManager : RegistryManager
     {
         const string AdminUriFormat = "/$admin/{0}?{1}";
         const string RequestUriFormat = "/devices/{0}?{1}";
@@ -345,20 +345,7 @@ namespace Microsoft.Azure.Devices
                 CancellationToken.None));
         }
 
-        /// <inheritdoc/>
-        public void Dispose()
-        {
-            this.Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Dispose resources
-        /// </summary>
-        /// <param name="disposing">
-        /// Governs disposable of managed and native resources
-        /// </param>
-        protected virtual void Dispose(bool disposing)
+        protected override void Dispose(bool disposing)
         {
             if (disposing && this.httpClientHelper != null)
             {

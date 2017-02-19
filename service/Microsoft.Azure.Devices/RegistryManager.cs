@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// Contains methods that services can use to perform create, remove, update and delete operations on devices.
     /// </summary>
-    public abstract class RegistryManager
+    public abstract class RegistryManager : IDisposable
     {
         /// <summary>
         /// Creates a RegistryManager from the Iot Hub connection string.
@@ -24,6 +24,26 @@ namespace Microsoft.Azure.Devices
         {
             IotHubConnectionString iotHubConnectionString = IotHubConnectionString.Parse(connectionString);
             return new HttpRegistryManager(iotHubConnectionString);
+        }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            this.Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose( bool disposing )
+        {
+            if (disposing)
+            {
+                // Call CloseAsync() synchronously avoiding AggregateException.
+                this.CloseAsync().GetAwaiter().GetResult();
+            }
         }
 
         /// <summary>

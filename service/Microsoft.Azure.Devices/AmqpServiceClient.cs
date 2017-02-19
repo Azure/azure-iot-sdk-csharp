@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices
     using Microsoft.Azure.Devices.Common.Data;
     using Microsoft.Azure.Devices.Common.Exceptions;
 
-    sealed class AmqpServiceClient : ServiceClient, IDisposable
+    sealed class AmqpServiceClient : ServiceClient
     {
         static readonly TimeSpan DefaultOperationTimeout = TimeSpan.FromSeconds(100);
         const string StatisticsUriFormat = "/statistics/service?" + ClientApiVersionHelper.ApiVersionQueryString;
@@ -101,8 +101,10 @@ namespace Microsoft.Azure.Devices
 
         public async override Task CloseAsync()
         {
+            this.faultTolerantSendingLink.Dispose();
             await this.feedbackReceiver.CloseAsync();
             await this.iotHubConnection.CloseAsync();
+            this.httpClientHelper.Dispose();
         }
 
         public async override Task SendAsync(string deviceId, Message message)
@@ -213,11 +215,16 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <inheritdoc/>
-        public void Dispose()
+        protected override void Dispose(bool disposing)
         {
-            this.faultTolerantSendingLink.Dispose();
-            this.feedbackReceiver.Dispose();
-            this.httpClientHelper.Dispose();
+            if (disposing)
+            {
+                // This is more efficient than async and wait in base.Dispose(bool).
+                this.faultTolerantSendingLink.Dispose();
+                this.feedbackReceiver.Dispose();
+                this.iotHubConnection.Dispose();
+                this.httpClientHelper.Dispose();
+            }
         }
 
         static Uri GetStatisticsUri()
