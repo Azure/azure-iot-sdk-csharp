@@ -71,11 +71,7 @@ namespace Microsoft.Azure.Devices
 
         public override Task CloseAsync()
         {
-            if (this.httpClientHelper != null)
-            {
-                this.httpClientHelper.Dispose();
-                this.httpClientHelper = null;
-            }
+            this.Dispose();
 
             return TaskHelpers.CompletedTask;
         }
