@@ -63,6 +63,13 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             await TestOperationCanceledByToken(token => CreateFromConnectionString().RejectAsync(Guid.NewGuid().ToString(), token));
         }
 
+        [TestMethod]
+        [ExpectedException(typeof(InvalidOperationException))]
+        public void AmqpTransportHandler_Constructor_ThrowExceptionIfOnLinkClosedNotProvided()
+        {
+            var amqpTransportHandler = new AmqpTransportHandler(new PipelineContext(), IotHubConnectionString.Parse(DumpyConnectionString), new AmqpTransportSettings(TransportType.Amqp_Tcp_Only), null);
+        }
+
         async Task TestOperationCanceledByToken(Func<CancellationToken, Task> asyncMethod)
         {
             var tokenSource = new CancellationTokenSource();
@@ -80,7 +87,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
         AmqpTransportHandler CreateFromConnectionString()
         {
-            return new AmqpTransportHandler(new PipelineContext(), IotHubConnectionString.Parse(DumpyConnectionString), new AmqpTransportSettings(TransportType.Amqp_Tcp_Only));
+            return new AmqpTransportHandler(new PipelineContext(), IotHubConnectionString.Parse(DumpyConnectionString), new AmqpTransportSettings(TransportType.Amqp_Tcp_Only), (o, ea) => { });
         }
     }
 }

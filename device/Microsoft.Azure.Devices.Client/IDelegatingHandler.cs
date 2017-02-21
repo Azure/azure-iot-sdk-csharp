@@ -25,6 +25,7 @@ namespace Microsoft.Azure.Devices.Client
         Task EnableMethodsAsync(CancellationToken cancellationToken);
         Task DisableMethodsAsync(CancellationToken cancellationToken);
         Task SendMethodResponseAsync(MethodResponseInternal methodResponse, CancellationToken cancellationToken);
+        Task RecoverConnections(object o, CancellationToken cancellationToken);
 
         Task EnableTwinPatchAsync(CancellationToken cancellationToken);
         Task<Twin> SendTwinGetAsync(CancellationToken ct);

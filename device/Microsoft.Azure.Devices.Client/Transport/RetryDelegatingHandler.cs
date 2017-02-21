@@ -193,7 +193,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             catch (IotHubClientTransientException ex)
             {
                 GetNormalizedIotHubException(ex).Throw();
-                throw;
             }
         }
 
@@ -206,7 +205,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             catch (IotHubClientTransientException ex)
             {
                 GetNormalizedIotHubException(ex).Throw();
-                throw;
             }
         }
         
@@ -219,7 +217,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             catch (IotHubClientTransientException ex)
             {
                 GetNormalizedIotHubException(ex).Throw();
-                throw;
             }
         }
         
@@ -248,10 +245,20 @@ namespace Microsoft.Azure.Devices.Client.Transport
             catch (IotHubClientTransientException ex)
             {
                 GetNormalizedIotHubException(ex).Throw();
-                throw;
             }
         }
-        
+
+        public override async Task RecoverConnections(object o, CancellationToken cancellationToken)
+        {
+            try
+            {
+                await this.retryPolicy.ExecuteAsync(() => base.RecoverConnections(o, cancellationToken), cancellationToken);
+            }
+            catch (IotHubClientTransientException ex)
+            {
+                GetNormalizedIotHubException(ex).Throw();
+            }
+        }
 
         public override async Task CompleteAsync(string lockToken, CancellationToken cancellationToken)
         {
