@@ -109,30 +109,6 @@ UWP uses the Windows Store resource model that replaces the hub-and-spoke model 
 
 To support resources in Microsoft.Azure.Devices.Client library, the existing Resource.resx file has been copied to Resource.resw. The two files will now need to be kept in sync. Unlike in the .NET version of the library, the UWP version does not contain generated C# files. Instead, a new file, UWPResources.cs is introduced. Whenever a new string is added to the .resx/.resw file, a corresponding entry must be copied from Resources.Designer.cs to UWPResources.cs (follow the existing entries as an example)
 
-<a name="notimpluwp"/>
-## System.NotImplementedException occurred in Microsoft.Azure.Devices.Client.winmd
-The Universal Windows Platform (UWP) version of the .NET client device library does **not** currently support **MQTT** protocol.
-
-For example, calling `DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(DeviceConnectionString, TransportType.Mqtt);`
-will result in "Mqtt protocol is not supported" exception.
-
-<a name="httpexception"/>
-## IotHubCommunicationException or FileNotFoundException thrown when using HTTP protocol
-
-The **DeviceClient** class in the Microsoft.Azure.Devices.Client package requires the **System.Net.Http.Formatting** class to communicate with IoT Hub over HTTP.
-
-You see an **IotHubCommunicationException** or **FileNotFoundException** exception when you try to use the HTTP protocol to send a device-to-cloud message:
-
-```
-DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(DeviceConnectionString, TransportType.Http1);
-
-...
-
-await deviceClient.SendEventAsync(eventMessage);
-```
-
-To prevent these exceptions from happening, you should add **Microsoft.AspNet.WebApi.Client** NuGet package to your project.
-
 <a name="javapi2error"/>
 ## Error when using AMQP on Raspberry Pi2
 When building Qpid using Maven on a Raspberry Pi2 you might encounter a known error with the *SureFire* plugin:
