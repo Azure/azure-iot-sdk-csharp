@@ -10,6 +10,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
     using System.Threading.Tasks;
     using Microsoft.Azure.Amqp;
     using Microsoft.Azure.Amqp.Framing;
+    using Microsoft.Azure.Devices.Client.Common;
     using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Azure.Devices.Client.Extensions;
 
@@ -28,12 +29,26 @@ namespace Microsoft.Azure.Devices.Client.Transport
         readonly uint prefetchCount;
 
         Func<MethodRequestInternal, Task> messageListener;
+        Action<object, EventArgs> linkClosedListener;
+        Action<object, EventArgs> SafeAddClosedReceivingLinkHandler;
+        Action<object, EventArgs> SafeAddClosedSendingLinkHandler;
+        internal delegate void OnConnectionClosedDelegate(object sender, EventArgs e);
 
         int closed;
 
-        internal AmqpTransportHandler(IPipelineContext context, IotHubConnectionString connectionString, AmqpTransportSettings transportSettings, Func<MethodRequestInternal, Task> onMethodCallback = null)
+        internal AmqpTransportHandler(
+            IPipelineContext context, IotHubConnectionString connectionString, 
+            AmqpTransportSettings transportSettings,
+            Action<object, EventArgs> onLinkClosedCallback,
+            Func<MethodRequestInternal, Task> onMethodCallback = null)
             :base(context, transportSettings)
         {
+            if (onLinkClosedCallback == null)
+            {
+                throw new InvalidOperationException("onLinkClosedCallback is null in AmqpTransportHandler");
+            }
+            this.linkClosedListener = onLinkClosedCallback;
+
             TransportType transportType = transportSettings.GetTransportType();
             this.deviceId = connectionString.DeviceId;
             switch (transportType)
@@ -174,6 +189,47 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return message;
         }
 
+        public override Task RecoverConnections(object link, CancellationToken cancellationToken)
+        {
+#if WIP_C2D_METHODS_AMQP
+            Func<Task> enableMethodLinkAsyncFunc = null;
+
+            var amqpLink = link as AmqpLink;
+            if (amqpLink == null)
+            {
+                return Common.TaskConstants.Completed;
+            }
+
+            if (amqpLink.IsReceiver)
+            {
+                this.faultTolerantMethodReceivingLink = new Client.FaultTolerantAmqpObject<ReceivingAmqpLink>(this.CreateMethodReceivingLinkAsync, this.IotHubConnection.CloseLink);
+                enableMethodLinkAsyncFunc = async () => await EnableReceivingLinkAsync(cancellationToken);
+            }
+            else
+            {
+                this.faultTolerantMethodSendingLink = new Client.FaultTolerantAmqpObject<SendingAmqpLink>(this.CreateMethodSendingLinkAsync, this.IotHubConnection.CloseLink);
+                enableMethodLinkAsyncFunc = async () => await EnableSendingLinkAsync(cancellationToken);
+            }
+
+            return this.HandleTimeoutCancellation(async () =>
+            {
+                try
+                {
+                    if (this.messageListener != null)
+                    {
+                        await enableMethodLinkAsyncFunc();
+                    }
+                }
+                catch (Exception ex) when (!ex.IsFatal())
+                {
+                    throw AmqpClientHelper.ToIotHubClientContract(ex);
+                }
+            }, cancellationToken);
+#else
+            throw new NotImplementedException();
+#endif
+        }
+
         public override Task EnableMethodsAsync(CancellationToken cancellationToken)
         {
 #if WIP_C2D_METHODS_AMQP
@@ -193,9 +249,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 {
                     if (this.messageListener != null)
                     {
-                        Task<SendingAmqpLink> methodSendingLinkTask = this.GetMethodSendingLinkAsync(cancellationToken);
-                        Task<ReceivingAmqpLink> methodReceivingLinkTask = this.GetMethodReceivingLinkAsync(cancellationToken);
-                        await Task.WhenAll(methodSendingLinkTask, methodReceivingLinkTask);
+                        await Task.WhenAll(EnableSendingLinkAsync(cancellationToken), EnableReceivingLinkAsync(cancellationToken));
                     }
                 }
                 catch (Exception ex) when (!ex.IsFatal())
@@ -208,10 +262,30 @@ namespace Microsoft.Azure.Devices.Client.Transport
 #endif
         }
 
+#if WIP_C2D_METHODS_AMQP
+        private async Task EnableSendingLinkAsync(CancellationToken cancellationToken)
+        {
+            SendingAmqpLink methodSendingLink = await this.GetMethodSendingLinkAsync(cancellationToken);
+            this.SafeAddClosedSendingLinkHandler = this.linkClosedListener;
+            methodSendingLink.SafeAddClosed((o, ea) => this.SafeAddClosedSendingLinkHandler(o, ea));
+        }
+
+        private async Task EnableReceivingLinkAsync(CancellationToken cancellationToken)
+        {
+            ReceivingAmqpLink methodReceivingLink = await this.GetMethodReceivingLinkAsync(cancellationToken);
+            this.SafeAddClosedReceivingLinkHandler = this.linkClosedListener;
+            methodReceivingLink.SafeAddClosed((o, ea) => this.SafeAddClosedReceivingLinkHandler(o, ea));
+        }
+#endif
+
         public override async Task DisableMethodsAsync(CancellationToken cancellationToken)
         {
 #if WIP_C2D_METHODS_AMQP
             Task receivingLinkCloseTask;
+
+            this.SafeAddClosedSendingLinkHandler = (o, ea) => {};
+            this.SafeAddClosedReceivingLinkHandler = (o, ea) => {};
+
             if (this.faultTolerantMethodReceivingLink != null)
             {
                 receivingLinkCloseTask = this.faultTolerantMethodReceivingLink.CloseAsync();
