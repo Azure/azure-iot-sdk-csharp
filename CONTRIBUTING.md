@@ -25,8 +25,7 @@ For simple markdown files, we accept documentation pull requests submitted again
 If your PR is about future changes or has changes to the comments in the code itself, we'll treat is as a code change (see the next section).
 
 # Contribute code
-Pull-requests for code to be submitted against the `master` branch as well. We will review the request and once approved we will be running it in our gated build system. We try to maintain a high bar
-for code quality and maintainability, we insist on having tests associated with the code, and if necessary, additions/modifications to the requirement documents.
+Pull-requests for code to be submitted against the `master` branch. We will review the request and once approved we will be running it in our gated build system. We try to maintain a high bar for code quality and maintainability, we insist on having tests associated with the code, and if necessary, additions/modifications to the requirement documents.
 
 Also, have you signed the [Contribution License Agreement](https://cla.microsoft.com/) ([CLA](https://cla.microsoft.com/))? A friendly bot will remind you about it when you submit your pull-request.
 
