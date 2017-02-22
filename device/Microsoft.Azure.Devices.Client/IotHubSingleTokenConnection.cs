@@ -68,7 +68,18 @@ namespace Microsoft.Azure.Devices.Client
                    );
 
                 // Send Cbs token for new connection first
-                await this.iotHubTokenRefresher.SendCbsTokenAsync(timeoutHelper.RemainingTime());
+                try
+                {
+                   await this.iotHubTokenRefresher.SendCbsTokenAsync(timeoutHelper.RemainingTime());
+                }
+                catch (Exception exception) when (!exception.IsFatal())
+                {
+                    // initiate the process of closing this connection
+                    this.Release("unknown");
+
+                    throw;
+                }
+
 #if !WINDOWS_UWP && !PCL
             }
 #endif

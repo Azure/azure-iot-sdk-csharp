@@ -83,6 +83,22 @@ namespace Microsoft.Azure.Devices.Client
 
         public AmqpConnectionPoolSettings AmqpConnectionPoolSettings { get; set; }
 
+        public bool Equals(AmqpTransportSettings other)
+        {
+            if (other == null)
+            {
+                return false;
+            }
+
+            if (object.ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            // ClientCertificates are usually different
+            return (this.PrefetchCount == other.PrefetchCount && this.OpenTimeout == other.OpenTimeout && this.OperationTimeout == other.OperationTimeout && this.AmqpConnectionPoolSettings.Equals(other.AmqpConnectionPoolSettings));
+        }
+
         void SetOperationTimeout(TimeSpan timeout)
         {
             if (timeout > TimeSpan.Zero)

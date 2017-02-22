@@ -32,8 +32,14 @@ namespace Microsoft.Azure.Devices.Client
 #if !WINDOWS_UWP && !PCL
                 // Client certificate is per device and must be overriden
                 this.amqpTransportSettings.ClientCertificate = amqpTransportSetting.ClientCertificate;
-#endif
+#endif               
             }
+
+            // Uncomment when we rev the ApiVersion since this is a breaking change
+            //if (!this.amqpTransportSettings.Equals(amqpTransportSetting))
+            //{
+            //    throw new ArgumentException("AmqpTransportSettings cannot be modified from the initial settings.");
+            //}
 
             IotHubConnection iotHubConnection;
             if (connectionString.SharedAccessKeyName != null || connectionString.SharedAccessSignature != null)

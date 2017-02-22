@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             lock (this.thisLock)
             {
-                var cacheIndex = this.HashDevice(deviceId);
+                long cacheIndex = this.HashDevice(deviceId);
                 Tuple<IotHubDeviceMuxConnection, uint> selectedConnectionTuple;
                 if (!this.connectionPool.TryGetValue(cacheIndex, out selectedConnectionTuple) &&
                     this.connectionPool.Count <= this.amqpTransportSettings.AmqpConnectionPoolSettings.MaxPoolSize)
@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices.Client
                     throw new InvalidOperationException("device scope connection pool capacity reached. Consider increasing AmqpConnectionSettings.MaxPoolSize");
                 }
 
-                var numDevices = selectedConnectionTuple.Item2;
+                uint numDevices = selectedConnectionTuple.Item2;
                 if (numDevices == 0)
                 {
                     if (!this.TryCancelIdleTimer(selectedConnectionTuple.Item1))
@@ -70,7 +70,7 @@ namespace Microsoft.Azure.Devices.Client
                     throw new InvalidOperationException("device scope connection pool capacity reached. Consider increasing AmqpConnectionSettings.MaxPoolSize");
                 }
 
-                var updatedConnectionTuple = Tuple.Create(selectedConnectionTuple.Item1, numDevices);
+                Tuple<IotHubDeviceMuxConnection, uint> updatedConnectionTuple = Tuple.Create(selectedConnectionTuple.Item1, numDevices);
                 this.connectionPool[cacheIndex] = updatedConnectionTuple;
 
                 return selectedConnectionTuple.Item1;
@@ -81,15 +81,17 @@ namespace Microsoft.Azure.Devices.Client
         {
             lock (this.thisLock)
             {
-                var cacheIndex = this.HashDevice(deviceId);
+                long cacheIndex = this.HashDevice(deviceId);
                 Tuple<IotHubDeviceMuxConnection, uint> selectedConnectionTuple;
                 if (!this.connectionPool.TryGetValue(cacheIndex, out selectedConnectionTuple))
                 {
                     throw new InvalidOperationException("Unable to find iotHubMuxConnection to remove device from connection");
                 }
 
-                var numDevices = selectedConnectionTuple.Item2;
-                var updatedConnectionTuple = Tuple.Create(selectedConnectionTuple.Item1, --numDevices);
+                uint numDevices = selectedConnectionTuple.Item2;
+                Fx.AssertAndThrow(numDevices != 0, "The number of devices should be greater than zero");
+
+                Tuple<IotHubDeviceMuxConnection, uint> updatedConnectionTuple = Tuple.Create(selectedConnectionTuple.Item1, --numDevices);
                 this.connectionPool[cacheIndex] = updatedConnectionTuple;
 
                 if (numDevices == 0)

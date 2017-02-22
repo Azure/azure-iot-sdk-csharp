@@ -63,6 +63,34 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             await TestOperationCanceledByToken(token => CreateFromConnectionString().RejectAsync(Guid.NewGuid().ToString(), token));
         }
 
+        // Uncomment later once we support throwing exceptions on TransportSettingsChange
+        //[TestMethod]
+        //[TestCategory("TransportHandlers")]
+        //public void AmqpTransportHandler_RejectAmqpSettingsChange()
+        //{
+        //    var amqpTransportHandler1 = new AmqpTransportHandler(new PipelineContext(), IotHubConnectionString.Parse(DumpyConnectionString), new AmqpTransportSettings(TransportType.Amqp_Tcp_Only, 60, new AmqpConnectionPoolSettings()
+        //    {
+        //        Pooling = true,
+        //        MaxPoolSize = 10,
+        //        ConnectionIdleTimeout = TimeSpan.FromMinutes(1)
+        //    }));
+
+        //    try
+        //    {
+        //        // Try to create a set AmqpTransportHandler with different connection pool settings.
+        //        var amqpTransportHandler2 = new AmqpTransportHandler(new PipelineContext(), IotHubConnectionString.Parse(DumpyConnectionString), new AmqpTransportSettings(TransportType.Amqp_Tcp_Only, 60, new AmqpConnectionPoolSettings()
+        //        {
+        //            Pooling = true,
+        //            MaxPoolSize = 7, // different pool size
+        //            ConnectionIdleTimeout = TimeSpan.FromMinutes(1)
+        //        }));
+        //    }
+        //    catch (ArgumentException ae)
+        //    {
+        //        Assert.IsTrue(ae.Message.Contains("AmqpTransportSettings cannot be modified from the initial settings."), "Did not return the correct error message");
+        //    }
+        //}
+
         async Task TestOperationCanceledByToken(Func<CancellationToken, Task> asyncMethod)
         {
             var tokenSource = new CancellationTokenSource();

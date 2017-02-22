@@ -273,5 +273,44 @@ namespace Microsoft.Azure.Devices.Client.Test
             var authMethod2 = new DeviceAuthenticationWithX509Certificate("device2", cert);
             var device2Client = DeviceClient.Create(hostName, authMethod2, new ITransportSettings[] { new AmqpTransportSettings(TransportType.Amqp_Tcp_Only, 100) });
         }
+
+        [TestMethod]
+        [TestCategory("CIT")]
+        [TestCategory("TransportSettings")]
+        public void AmqpTransportSettingsComparisonTests()
+        {
+            var amqpTransportSettings1 = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only);
+            amqpTransportSettings1.PrefetchCount = 100;
+            amqpTransportSettings1.OpenTimeout = TimeSpan.FromMinutes(1);
+            amqpTransportSettings1.OperationTimeout = TimeSpan.FromMinutes(1);
+
+            Assert.IsTrue(amqpTransportSettings1.Equals(amqpTransportSettings1));
+            Assert.IsFalse(amqpTransportSettings1.Equals(null));
+            Assert.IsFalse(amqpTransportSettings1.Equals(new AmqpTransportSettings(TransportType.Amqp_Tcp_Only)));
+
+            var amqpTransportSettings2 = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only);
+            amqpTransportSettings2.PrefetchCount = 70;
+            amqpTransportSettings2.OpenTimeout = TimeSpan.FromMinutes(1);
+            amqpTransportSettings2.OperationTimeout = TimeSpan.FromMinutes(1);
+            Assert.IsFalse(amqpTransportSettings1.Equals(amqpTransportSettings2));
+
+            var amqpTransportSettings3 = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only);
+            amqpTransportSettings3.PrefetchCount = 100;
+            amqpTransportSettings3.OpenTimeout = TimeSpan.FromMinutes(2);
+            amqpTransportSettings3.OperationTimeout = TimeSpan.FromMinutes(1);
+            Assert.IsFalse(amqpTransportSettings1.Equals(amqpTransportSettings3));
+
+            var amqpTransportSettings4 = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only);
+            amqpTransportSettings4.PrefetchCount = 100;
+            amqpTransportSettings4.OpenTimeout = TimeSpan.FromMinutes(1);
+            amqpTransportSettings4.OperationTimeout = TimeSpan.FromMinutes(2);
+            Assert.IsFalse(amqpTransportSettings1.Equals(amqpTransportSettings4));
+
+            var amqpTransportSettings5 = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only);
+            amqpTransportSettings5.PrefetchCount = 100;
+            amqpTransportSettings5.OpenTimeout = TimeSpan.FromMinutes(1);
+            amqpTransportSettings5.OperationTimeout = TimeSpan.FromMinutes(1);
+            Assert.IsTrue(amqpTransportSettings1.Equals(amqpTransportSettings5));
+        }
     }
 }

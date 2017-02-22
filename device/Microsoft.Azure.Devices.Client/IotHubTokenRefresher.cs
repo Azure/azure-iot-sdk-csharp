@@ -4,7 +4,9 @@
 namespace Microsoft.Azure.Devices.Client
 {
     using System;
+    using System.Threading;
     using System.Threading.Tasks;
+    using Microsoft.Azure.Devices.Client.Extensions;
     using Microsoft.Azure.Amqp;
 
     sealed class IotHubTokenRefresher
@@ -16,6 +18,7 @@ namespace Microsoft.Azure.Devices.Client
         readonly AmqpSession amqpSession;
         readonly IotHubConnectionString connectionString;
         readonly string audience;
+        readonly CancellationTokenSource cancellationTokenSource;
         volatile bool taskCancelled;
 
         public IotHubTokenRefresher(AmqpSession amqpSession, IotHubConnectionString connectionString, string audience)
@@ -28,17 +31,21 @@ namespace Microsoft.Azure.Devices.Client
             this.amqpSession = amqpSession;
             this.connectionString = connectionString;
             this.audience = audience;
+            this.cancellationTokenSource = new CancellationTokenSource();
         }
 
         public void Cancel()
         {
             this.taskCancelled = true;
+            this.cancellationTokenSource.Cancel();
         }
 
         public async Task SendCbsTokenAsync(TimeSpan timeout)
         {
-            // Send a Cbs Token right away and fork off a task to continuously do it
+            // Send a Cbs Token right away and fork off a task to periodically renew it
             var cbsLink = this.amqpSession.Connection.Extensions.Find<AmqpCbsLink>();
+
+            // This can throw PutToken failure in error cases
             var expiresAtUtc = await cbsLink.SendTokenAsync(
                 this.connectionString,
                 this.connectionString.AmqpEndpoint,
@@ -51,15 +58,15 @@ namespace Microsoft.Azure.Devices.Client
 
         async Task SendCbsTokenLoopAsync(DateTime expiryTimeUtc, TimeSpan timeout)
         {
-            bool continueSendingTokens = await WaitUntilNextTokenSendTime(expiryTimeUtc);
-
-            if (!continueSendingTokens)
-            {
-                return;
-            }
-
             try
             {
+                bool continueSendingTokens = await WaitUntilNextTokenSendTime(expiryTimeUtc, this.cancellationTokenSource.Token);
+
+                if (!continueSendingTokens)
+                {
+                    return;
+                }
+
                 while (!this.amqpSession.IsClosing())
                 {
                     if (this.taskCancelled)
@@ -73,27 +80,29 @@ namespace Microsoft.Azure.Devices.Client
                         try
                         {
                             var expiresAtUtc = await cbsLink.SendTokenAsync(
-                                 this.connectionString,
-                                 this.connectionString.AmqpEndpoint,
-                                 this.audience,
-                                 this.connectionString.AmqpEndpoint.AbsoluteUri,
-                                 AccessRightsStringArray,
-                                 timeout);
+                                this.connectionString,
+                                this.connectionString.AmqpEndpoint,
+                                this.audience,
+                                this.connectionString.AmqpEndpoint.AbsoluteUri,
+                                AccessRightsStringArray,
+                                timeout);
 
-                            continueSendingTokens = await WaitUntilNextTokenSendTime(expiresAtUtc);
+                            continueSendingTokens = await WaitUntilNextTokenSendTime(expiresAtUtc, this.cancellationTokenSource.Token);
                             if (!continueSendingTokens)
                             {
                                 break;
                             }
                         }
-                        catch (Exception exception)
+                        catch (Exception exception) when (!exception.IsFatal())
                         {
-                            if (Fx.IsFatal(exception))
+                            var amqpException = exception as AmqpException;
+                            if (amqpException != null && amqpException.Error.Condition.Equals(AmqpErrorCode.NotFound))
                             {
+                                // no point in continuing CBS token renewal.
                                 throw;
                             }
 
-                            await Task.Delay(RefreshTokenRetryInterval);
+                            await Task.Delay(RefreshTokenRetryInterval, this.cancellationTokenSource.Token);
                         }
                     }
                     else
@@ -102,18 +111,13 @@ namespace Microsoft.Azure.Devices.Client
                     }
                 }
             }
-            catch (Exception e)
+            catch (Exception e) when (!e.IsFatal())
             {
-                if (Fx.IsFatal(e))
-                {
-                    throw;
-                }
-
-                // ignore other exceptions
+                // ignore exceptions
             }
         }
 
-        static async Task<bool> WaitUntilNextTokenSendTime(DateTime expiresAtUtc)
+        static async Task<bool> WaitUntilNextTokenSendTime(DateTime expiresAtUtc, CancellationToken cancellationToken)
         {
             var waitTime = ComputeTokenRefreshWaitTime(expiresAtUtc);
 
@@ -122,7 +126,7 @@ namespace Microsoft.Azure.Devices.Client
                 return false;
             }
 
-            await Task.Delay(waitTime);
+            await Task.Delay(waitTime, cancellationToken);
             return true;
         }
 

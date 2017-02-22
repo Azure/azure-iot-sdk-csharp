@@ -209,5 +209,45 @@ namespace Microsoft.Azure.Devices.Client.Test
             var singleConnection = (IotHubSingleTokenConnection)hubscopeConnectionPool.Connection;
             await singleConnection.CreateSendingLinkAsync("test", iotHubConnectionString, TimeSpan.FromMinutes(2), CancellationToken.None);
         }
+
+
+        [TestMethod]
+        [TestCategory("CIT")]
+        [TestCategory("ConnectionPool")]
+        public void AmqpConnectionPoolSettingsComparisonTests()
+        {
+            var amqpConnectionPoolSettings1 = new AmqpConnectionPoolSettings();
+            amqpConnectionPoolSettings1.Pooling = true;
+            amqpConnectionPoolSettings1.MaxPoolSize = 10;
+            amqpConnectionPoolSettings1.ConnectionIdleTimeout = TimeSpan.FromSeconds(5);
+
+            Assert.IsTrue(amqpConnectionPoolSettings1.Equals(amqpConnectionPoolSettings1));
+            Assert.IsFalse(amqpConnectionPoolSettings1.Equals(null));
+            Assert.IsFalse(amqpConnectionPoolSettings1.Equals(new AmqpConnectionPoolSettings()));
+
+            var amqpConnectionPoolSettings2 = new AmqpConnectionPoolSettings();
+            amqpConnectionPoolSettings2.Pooling = false;
+            amqpConnectionPoolSettings2.MaxPoolSize = 10;
+            amqpConnectionPoolSettings2.ConnectionIdleTimeout = TimeSpan.FromSeconds(5);
+            Assert.IsFalse(amqpConnectionPoolSettings1.Equals(amqpConnectionPoolSettings2));
+
+            var amqpConnectionPoolSettings3 = new AmqpConnectionPoolSettings();
+            amqpConnectionPoolSettings3.Pooling = true;
+            amqpConnectionPoolSettings3.MaxPoolSize = 9;
+            amqpConnectionPoolSettings3.ConnectionIdleTimeout = TimeSpan.FromSeconds(5);
+            Assert.IsFalse(amqpConnectionPoolSettings1.Equals(amqpConnectionPoolSettings3));
+
+            var amqpConnectionPoolSettings4 = new AmqpConnectionPoolSettings();
+            amqpConnectionPoolSettings4.Pooling = true;
+            amqpConnectionPoolSettings4.MaxPoolSize = 10;
+            amqpConnectionPoolSettings4.ConnectionIdleTimeout = TimeSpan.FromSeconds(6);
+            Assert.IsFalse(amqpConnectionPoolSettings1.Equals(amqpConnectionPoolSettings4));
+
+            var amqpConnectionPoolSettings5 = new AmqpConnectionPoolSettings();
+            amqpConnectionPoolSettings5.Pooling = true;
+            amqpConnectionPoolSettings5.MaxPoolSize = 10;
+            amqpConnectionPoolSettings5.ConnectionIdleTimeout = TimeSpan.FromSeconds(5);
+            Assert.IsTrue(amqpConnectionPoolSettings1.Equals(amqpConnectionPoolSettings5));
+        }
     }
 }

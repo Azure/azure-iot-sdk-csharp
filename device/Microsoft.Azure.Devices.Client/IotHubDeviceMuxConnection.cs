@@ -27,7 +27,8 @@ namespace Microsoft.Azure.Devices.Client
 
         public override Task CloseAsync()
         {
-            return this.FaultTolerantSession.CloseAsync();
+            this.FaultTolerantSession.Close();
+            return TaskHelpers.CompletedTask;
         }
 
         public override void SafeClose(Exception exception)
@@ -43,7 +44,7 @@ namespace Microsoft.Azure.Devices.Client
             }
             else
             {
-                this.CloseAsync();
+                this.SafeClose(null);
             }
         }
 
@@ -95,11 +96,7 @@ namespace Microsoft.Azure.Devices.Client
             try
             {
                 // this is a device-scope connection string. We need to send a CBS token for this specific link before opening it.
-                var iotHubLinkTokenRefresher = new IotHubTokenRefresher(
-                    this.FaultTolerantSession.Value, 
-                    connectionString, 
-                    audience
-                    );
+                var iotHubLinkTokenRefresher = new IotHubTokenRefresher(this.FaultTolerantSession.Value, connectionString, audience);
 
                 if (this.iotHubTokenRefreshers.TryAdd(link, iotHubLinkTokenRefresher))
                 {
@@ -112,6 +109,7 @@ namespace Microsoft.Azure.Devices.Client
                     });
 
                     // Send Cbs token for new link first
+                    // This will throw an exception if the device is not valid or if the token is not valid
                     await iotHubLinkTokenRefresher.SendCbsTokenAsync(timeoutHelper.RemainingTime());
                 }
 
@@ -119,13 +117,8 @@ namespace Microsoft.Azure.Devices.Client
                 // Open Amqp Link
                 await link.OpenAsync(timeoutHelper.RemainingTime());
             }
-            catch (Exception exception)
+            catch (Exception exception) when (!exception.IsFatal())
             {
-                if (exception.IsFatal())
-                {
-                    throw;
-                }
-
                 link.SafeClose(exception);
                 throw;
             }

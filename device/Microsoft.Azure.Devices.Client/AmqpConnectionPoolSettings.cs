@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Client
         static readonly TimeSpan MinConnectionIdleTimeout = TimeSpan.FromSeconds(5);
         const uint DefaultPoolSize = 100; // This will allow upto 100000 devices
         const uint MaxNumberOfPools = ushort.MaxValue;
-        internal const uint MaxDevicesPerConnection = 995; // IotHub allows upto 1000 tokens per connection. Setting the threshold just below that.
+        internal const uint MaxDevicesPerConnection = 995; // IotHub allows upto 999 tokens per connection. Setting the threshold just below that.
 
         uint maxPoolSize;
         TimeSpan connectionIdleTimeout;
@@ -61,6 +61,21 @@ namespace Microsoft.Azure.Devices.Client
                     throw new ArgumentOutOfRangeException("value");
                 }
             }
+        }
+
+        public bool Equals(AmqpConnectionPoolSettings other)
+        {
+            if (other == null)
+            {
+                return false;
+            }
+
+            if (object.ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return (this.Pooling == other.Pooling && this.MaxPoolSize == other.MaxPoolSize && this.ConnectionIdleTimeout == other.ConnectionIdleTimeout);
         }
     }
 }
