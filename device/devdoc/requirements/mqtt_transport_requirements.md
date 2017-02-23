@@ -12,6 +12,14 @@ The Mqtt Transport is used to communicate between the DeviceClient object and th
 
 sealed class MqttTransportHandler : TransportHandler
 {
+    internal MqttTransportHandler(
+        IPipelineContext context, 
+        IotHubConnectionString iotHubConnectionString, 
+        MqttTransportSettings settings, 
+        Action<object, EventArgs> onConnectionClosedCallback, 
+        Func<MethodRequestInternal, Task> onMethodCallback = null, 
+        Action<TwinCollection> onReportedStatePatchReceivedCallback = null)
+
     public static MqttTransportHandler Create(string hostname, IAuthenticationMethod authMethod);
     public static MqttTransportHandler CreateFromConnectionString(string connectionString);
     public override async Task OpenAsync(bool explicitOpen, CancellationToken cancellationToken);
@@ -19,6 +27,7 @@ sealed class MqttTransportHandler : TransportHandler
     public override async Task SendEventAsync(IEnumerable<Message> messages, CancellationToken cancellationToken);
     public override async Task<Message> ReceiveAsync(TimeSpan timeout, CancellationToken cancellationToken);
     public override async Task CompleteAsync(string lockToken, CancellationToken cancellationToken);
+    public override Task RecoverConnections(object link, CancellationToken cancellationToken);
     public override Task AbandonAsync(string lockToken, CancellationToken cancellationToken);
     public override Task RejectAsync(string lockToken, CancellationToken cancellationToken);
     public override async Task CloseAsync();
@@ -34,11 +43,38 @@ sealed class MqttTransportHandler : TransportHandler
 
 ```
 
+### MqttTransportHandler
+```csharp
+    internal MqttTransportHandler(
+        IPipelineContext context, 
+        IotHubConnectionString iotHubConnectionString, 
+        MqttTransportSettings settings, 
+        Action<object, EventArgs> onConnectionClosedCallback, 
+        Func<MethodRequestInternal, Task> onMethodCallback = null, 
+        Action<TwinCollection> onReportedStatePatchReceivedCallback = null)
+```
+**SRS_CSHARP_MQTT_TRANSPORT_28_04: [** If OnError is triggered after OpenAsync is called, onConnectionClosedCallback shall be invoked. **]**
+
+**SRS_CSHARP_MQTT_TRANSPORT_28_05: [** If OnError is triggered after ReceiveAsync is called, onConnectionClosedCallback shall be invoked. **]**
+
+**SRS_CSHARP_MQTT_TRANSPORT_28_06: [** If OnError is triggered without any prior operation, onConnectionClosedCallback shall not be invoked. **]**
+
+**SRS_CSHARP_MQTT_TRANSPORT_28_07: [** If OnError is triggered in error state, onConnectionClosedCallback shall not be invoked. **]**
+
+
+
 ### OpenAsync
 ```csharp
 public override async Task OpenAsync(bool explicitOpen, CancellationToken cancellationToken);
 ```
 **SRS_CSHARP_MQTT_TRANSPORT_18_031: [** `OpenAsync` shall subscribe using the '$iothub/twin/res/#' topic filter **]**
+
+
+## RecoverConnections
+```csharp
+public override Task RecoverConnections(object link, CancellationToken cancellationToken);
+```
+**SRS_CSHARP_MQTT_TRANSPORT_28_08: [** `RecoverConnections` shall throw IotHubClientException exception when in error state. **]**
 
 
 

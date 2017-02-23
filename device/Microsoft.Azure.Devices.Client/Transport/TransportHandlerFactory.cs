@@ -33,7 +33,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
 #if !NETMF && !PCL
                 case TransportType.Mqtt_Tcp_Only:
                 case TransportType.Mqtt_WebSocket_Only:
-                    return new MqttTransportHandler(context, connectionString, transportSetting as MqttTransportSettings, new Func<MethodRequestInternal, Task>(onMethodCallback), onReportedStatePatchReceived);
+                    return new MqttTransportHandler(
+                        context, connectionString, transportSetting as MqttTransportSettings,
+                        new Action<object, EventArgs>(OnConnectionClosedCallback),
+                        new Func<MethodRequestInternal, Task>(onMethodCallback), onReportedStatePatchReceived);
 #endif
                 default:
                     throw new InvalidOperationException("Unsupported Transport Setting {0}".FormatInvariant(transportSetting));
