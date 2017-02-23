@@ -43,10 +43,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             Func<MethodRequestInternal, Task> onMethodCallback = null)
             :base(context, transportSettings)
         {
-            if (onLinkClosedCallback == null)
-            {
-                throw new InvalidOperationException("onLinkClosedCallback is null in AmqpTransportHandler");
-            }
             this.linkClosedListener = onLinkClosedCallback;
 
             TransportType transportType = transportSettings.GetTransportType();

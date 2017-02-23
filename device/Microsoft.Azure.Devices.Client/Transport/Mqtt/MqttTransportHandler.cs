@@ -170,28 +170,36 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         const string twinResponseTopicPattern = @"\$iothub/twin/res/(\d+)/(\?.+)";
         Regex twinResponseTopicRegex = new Regex(twinResponseTopicPattern, RegexOptions.None);
 
+        Action<object, EventArgs> connectionClosedListener;
         Func<MethodRequestInternal, Task> messageListener;
         Action<TwinCollection> onReportedStatePatchListener;
         Action<Message> twinResponseEvent;
 
         public TimeSpan TwinTimeout = TimeSpan.FromSeconds(60);
-        
-        internal MqttTransportHandler(IPipelineContext context, IotHubConnectionString iotHubConnectionString)
-            : this(context, iotHubConnectionString, new MqttTransportSettings(TransportType.Mqtt_Tcp_Only))
-        {
 
-        }
-
-        internal MqttTransportHandler(IPipelineContext context, IotHubConnectionString iotHubConnectionString, MqttTransportSettings settings, Func<MethodRequestInternal, Task> onMethodCallback = null, Action<TwinCollection> onReportedStatePatchReceivedCallback = null)
-            : this(context, iotHubConnectionString, settings, null)
+        internal MqttTransportHandler(
+            IPipelineContext context, 
+            IotHubConnectionString iotHubConnectionString, 
+            MqttTransportSettings settings, 
+            Action<object, EventArgs> onConnectionClosedCallback, 
+            Func<MethodRequestInternal, Task> onMethodCallback = null, 
+            Action<TwinCollection> onReportedStatePatchReceivedCallback = null)
+            : this(context, iotHubConnectionString, settings, null, onConnectionClosedCallback)
         {
             this.messageListener = onMethodCallback;
             this.onReportedStatePatchListener = onReportedStatePatchReceivedCallback;
         }
 
-        internal MqttTransportHandler(IPipelineContext context, IotHubConnectionString iotHubConnectionString, MqttTransportSettings settings, Func<IPAddress, int, Task<IChannel>> channelFactory)
+        internal MqttTransportHandler(
+            IPipelineContext context, 
+            IotHubConnectionString iotHubConnectionString, 
+            MqttTransportSettings settings, 
+            Func<IPAddress, int, Task<IChannel>> channelFactory,
+            Action<object, EventArgs> onConnectionClosedCallback)
             : base(context, settings)
         {
+            this.connectionClosedListener = onConnectionClosedCallback;
+
             this.mqttIotHubAdapterFactory = new MqttIotHubAdapterFactory(settings);
             this.messageQueue = new ConcurrentQueue<Message>();
             this.completionQueue = new Queue<string>();
@@ -462,7 +470,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        async void OnError(Exception exception)
+        internal async void OnError(Exception exception)
         {
             try
             {
@@ -490,13 +498,30 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
-
                 await this.closeRetryPolicy.ExecuteAsync(this.CleanupAsync);
+
+                // Codes_SRS_CSHARP_MQTT_TRANSPORT_28_04: If OnError is triggered after OpenAsync is called, onConnectionClosedCallback shall be invoked.
+                // Codes_SRS_CSHARP_MQTT_TRANSPORT_28_05: If OnError is triggered after ReceiveAsync is called, onConnectionClosedCallback shall be invoked.
+                // Codes_SRS_CSHARP_MQTT_TRANSPORT_28_06: If OnError is triggered without any prior operation, onConnectionClosedCallback shall not be invoked.
+                // Codes_SRS_CSHARP_MQTT_TRANSPORT_28_07: If OnError is triggered in error state, onConnectionClosedCallback shall not be invoked.
+
+                if ((previousState & TransportState.Open) == TransportState.Open)
+                {
+                    this.connectionClosedListener(this, null);
+                }
+
             }
             catch (Exception ex) when (!ex.IsFatal())
             {
 
             }
+        }
+
+        public override Task RecoverConnections(object link, CancellationToken cancellationToken)
+        {
+            // Codes_SRS_CSHARP_MQTT_TRANSPORT_28_08: [** `RecoverConnections` shall throw IotHubClientException exception when in error state.
+            this.EnsureValidState();
+            return Common.TaskConstants.Completed;
         }
 
         TransportState MoveToStateIfPossible(TransportState destination, TransportState illegalStates)
