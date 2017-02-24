@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     /// <typeparam name="TKey">Type to be used for keys.</typeparam>
     /// <typeparam name="TValue">Type to be used for values</typeparam>
-#if !WINDOWS_UWP && !PCL
+#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
     [Serializable]
 #endif
     [DebuggerDisplay("Count = {Count}")]
@@ -25,19 +25,19 @@ namespace Microsoft.Azure.Devices.Client
     class ReadOnlyDictionary45<TKey, TValue> : IDictionary<TKey, TValue>, IDictionary //, IReadOnlyDictionary<TKey, TValue>
     {
         readonly IDictionary<TKey, TValue> m_dictionary;
-#if !WINDOWS_UWP && !PCL
+#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
         [NonSerialized]
 #endif
         Object m_syncRoot;
-#if !WINDOWS_UWP && !PCL
+#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
         [NonSerialized]
 #endif
         KeyCollection m_keys;
-#if !WINDOWS_UWP && !PCL
+#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
         [NonSerialized]
 #endif
         ValueCollection m_values;
-#if !WINDOWS_UWP && !PCL
+#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
         [NonSerialized]
 #endif
         IReadOnlyIndicator m_readOnlyIndicator;
@@ -423,7 +423,7 @@ namespace Microsoft.Azure.Devices.Client
                 return m_syncRoot;
             }
         }
-#if !WINDOWS_UWP && !PCL
+#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
         [Serializable]
 #endif
         private struct DictionaryEnumerator : IDictionaryEnumerator
@@ -471,17 +471,17 @@ namespace Microsoft.Azure.Devices.Client
         #endregion
 
         [DebuggerDisplay("Count = {Count}")]
-#if !WINDOWS_UWP && !PCL
+#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
         [Serializable]
 #endif
         public sealed class KeyCollection : ICollection<TKey>, ICollection
         {
             private readonly ICollection<TKey> m_collection;
-#if !WINDOWS_UWP && !PCL
+#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
             [NonSerialized]
 #endif
             private Object m_syncRoot;
-#if !WINDOWS_UWP && !PCL
+#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
             [NonSerialized]
 #endif
             private readonly IReadOnlyIndicator m_readOnlyIndicator;
@@ -604,17 +604,17 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         [DebuggerDisplay("Count = {Count}")]
-#if !WINDOWS_UWP && !PCL
+#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
         [Serializable]
 #endif
         public sealed class ValueCollection : ICollection<TValue>, ICollection
         {
             private readonly ICollection<TValue> m_collection;
-#if !WINDOWS_UWP && !PCL
+#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
             [NonSerialized]
 #endif
             private Object m_syncRoot;
-#if !WINDOWS_UWP && !PCL
+#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
             [NonSerialized]
 #endif
             private readonly IReadOnlyIndicator m_readOnlyIndicator;

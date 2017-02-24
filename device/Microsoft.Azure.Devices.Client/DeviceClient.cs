@@ -257,7 +257,11 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="transportSettings">Prioritized list of transportTypes and their settings</param>
         /// <returns>DeviceClient</returns>
-        public static DeviceClient Create(string hostname, IAuthenticationMethod authenticationMethod, [System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArrayAttribute] ITransportSettings[] transportSettings)
+        public static DeviceClient Create(string hostname, IAuthenticationMethod authenticationMethod,
+#if !NETSTANDARD1_3
+            [System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArrayAttribute]
+#endif
+            ITransportSettings[] transportSettings)
         {
             if (hostname == null)
             {
@@ -419,7 +423,11 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// <param name="connectionString">Connection string for the IoT hub (with DeviceId)</param>
         /// <param name="transportSettings">Prioritized list of transports and their settings</param>
         /// <returns>DeviceClient</returns>
-        public static DeviceClient CreateFromConnectionString(string connectionString, [System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArray] ITransportSettings[] transportSettings)
+        public static DeviceClient CreateFromConnectionString(string connectionString,
+#if !NETSTANDARD1_3
+            [System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArray]
+#endif
+            ITransportSettings[] transportSettings)
         {
             return CreateFromConnectionString(connectionString, transportSettings, null);
         }
@@ -431,7 +439,11 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// <param name="transportSettings">Prioritized list of transports and their settings</param>
         /// <param name="pipelineBuilder">Device client pipeline builder</param>
         /// <returns>DeviceClient</returns>
-        internal static DeviceClient CreateFromConnectionString(string connectionString, [System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArray] ITransportSettings[] transportSettings, IDeviceClientPipelineBuilder pipelineBuilder)
+        internal static DeviceClient CreateFromConnectionString(string connectionString,
+#if  !NETSTANDARD1_3
+            [System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArray]
+#endif
+            ITransportSettings[] transportSettings, IDeviceClientPipelineBuilder pipelineBuilder)
         {
             if (connectionString == null)
             {
@@ -494,7 +506,11 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// <param name="deviceId">Id of the device</param>
         /// <param name="transportSettings">Prioritized list of transportTypes and their settings</param>
         /// <returns>DeviceClient</returns>
-        public static DeviceClient CreateFromConnectionString(string connectionString, string deviceId, [System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArrayAttribute] ITransportSettings[] transportSettings)
+        public static DeviceClient CreateFromConnectionString(string connectionString, string deviceId,
+#if !NETSTANDARD1_3
+            [System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArrayAttribute]
+#endif
+        ITransportSettings[] transportSettings)
         {
             if (connectionString == null)
             {

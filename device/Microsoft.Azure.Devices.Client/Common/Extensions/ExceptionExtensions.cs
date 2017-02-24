@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Devices.Client.Extensions
                 // Racing here is harmless
                 if (ExceptionExtensions.prepForRemotingMethodInfo == null)
                 {
-#if WINDOWS_UWP || PCL // No Type.GetMethod in UWP
+#if WINDOWS_UWP || PCL || NETSTANDARD1_3 // No Type.GetMethod in UWP
                     ExceptionExtensions.prepForRemotingMethodInfo = null;
 #else
                     ExceptionExtensions.prepForRemotingMethodInfo =

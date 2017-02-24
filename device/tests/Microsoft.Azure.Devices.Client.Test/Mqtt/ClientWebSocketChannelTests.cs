@@ -15,9 +15,20 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
     using DotNetty.Handlers.Logging;
     using DotNetty.Transport.Channels;
     using Microsoft.Azure.Devices.Client.Transport.Mqtt;
+	using Microsoft.Azure.Devices.Client;
+#if !NUNIT
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+#else
+	using NUnit.Framework;
+	using TestClassAttribute = NUnit.Framework.TestFixtureAttribute;
+	using TestMethodAttribute = NUnit.Framework.TestAttribute;
+	using ClassInitializeAttribute = NUnit.Framework.OneTimeSetUpAttribute;
+	using ClassCleanupAttribute = NUnit.Framework.OneTimeTearDownAttribute;
+	using TestCategoryAttribute = NUnit.Framework.CategoryAttribute;
+	using IgnoreAttribute = MSTestIgnoreAttribute;
+#endif
 
-    [TestClass]
+	[TestClass]
     public class ClientWebSocketChannelTests
     {
         const string IotHubName = "localhost";
@@ -41,7 +52,11 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
         static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(300);
 
         [ClassInitialize()]
+#if !NUNIT
         public static void AssembyInitialize(TestContext testcontext)
+#else
+        public static void AssembyInitialize()
+#endif
         {
             listener = new HttpListener();
             listener.Prefixes.Add("http://+:" + Port + WebSocketConstants.UriSuffix + "/");
@@ -56,7 +71,9 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
             listener.Stop();
         }
 
+#if !NUNIT
         [ExpectedException(typeof(ClosedChannelException))]
+#endif
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("WebSocket")]
@@ -67,11 +84,19 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
             clientWebSocketChannel = new ClientWebSocketChannel(null, websocket);
             var threadLoop = new SingleThreadEventLoop("MQTTExecutionThread", TimeSpan.FromSeconds(1));
             await threadLoop.RegisterAsync(clientWebSocketChannel);
+#if NUNIT
+            Assert.ThrowsAsync<ClosedChannelException>(async () => {
+#endif
             await clientWebSocketChannel.WriteAndFlushAsync(new ConnectPacket());
+#if NUNIT
+            });
+#endif
         }
 
+#if !NUNIT
         [ExpectedException(typeof(ClosedChannelException))]
         [TestMethod]
+#endif
         [TestCategory("CIT")]
         [TestCategory("WebSocket")]
         [Ignore]
@@ -81,7 +106,13 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
             clientWebSocketChannel = new ClientWebSocketChannel(null, websocket);
             var threadLoop = new SingleThreadEventLoop("MQTTExecutionThread", TimeSpan.FromSeconds(1));
             await threadLoop.RegisterAsync(clientWebSocketChannel);
+#if NUNIT
+            Assert.Throws<ClosedChannelException>(() => {
+#endif
             clientWebSocketChannel.Read();
+#if NUNIT
+            });
+#endif
         }
 
         // The following tests can only be run in Administrator mode
@@ -303,7 +334,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
 
         static int GetRandomPacketId() => Guid.NewGuid().GetHashCode() & ushort.MaxValue;
 
-       static async Task RunWebSocketServer()
+        static async Task RunWebSocketServer()
         {
             HttpListenerContext context = await listener.GetContextAsync();
             if (!context.Request.IsWebSocketRequest)

@@ -8,7 +8,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
     using System.Runtime.Serialization;
 #endif
 
-#if !WINDOWS_UWP && !PCL
+#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
     [Serializable]
 #endif
 #if !PCL
@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
             this.TrackingId = trackingId;
         }
 
-#if !WINDOWS_UWP && !PCL && !NETMF
+#if !WINDOWS_UWP && !PCL && !NETMF && !NETSTANDARD1_3
         protected IotHubException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {

@@ -7,7 +7,13 @@ namespace Microsoft.Azure.Devices.Client.Test
     using System.Threading.Tasks;
 
     using Microsoft.Azure.Devices.Client.Extensions;
+    using Microsoft.Azure.Devices.Client;
+#if !NUNIT
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+#else
+    using NUnit.Framework;
+    using AssertFailedException = NUnit.Framework.AssertionException;
+#endif
 
     public static class TestAssert
     {

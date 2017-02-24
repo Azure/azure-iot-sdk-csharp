@@ -7,7 +7,17 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Client.ApiTest;
     using Microsoft.Azure.Devices.Client.Transport;
+#if !NUNIT
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+#else
+    using NUnit.Framework;
+    using TestClassAttribute = NUnit.Framework.TestFixtureAttribute;
+    using TestMethodAttribute = NUnit.Framework.TestAttribute;
+    using ClassInitializeAttribute = NUnit.Framework.OneTimeSetUpAttribute;
+    using ClassCleanupAttribute = NUnit.Framework.OneTimeTearDownAttribute;
+    using TestCategoryAttribute = NUnit.Framework.CategoryAttribute;
+    using IgnoreAttribute = MSTestIgnoreAttribute;
+#endif
 
     [TestClass]
     public class DeviceClientConnectionStringTests
@@ -163,13 +173,21 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
 
         [TestMethod]
         [TestCategory("CIT")]
+#if !NUNIT
         [ExpectedException(typeof(ArgumentException))]
+#endif
         public void DeviceClient_ConnectionString_X509Certificate_NullCertificateTest()
         {
             string hostName = "acme.azure-devices.net";
             var authMethod = new DeviceAuthenticationWithX509Certificate("device1", null);
 
+#if NUNIT
+            Assert.Throws<ArgumentException>(() => {
+#endif 
             var deviceClient = DeviceClient.Create(hostName, authMethod, TransportType.Amqp_WebSocket_Only);
+#if NUNIT
+            } );
+#endif
         }
 
         [TestMethod]

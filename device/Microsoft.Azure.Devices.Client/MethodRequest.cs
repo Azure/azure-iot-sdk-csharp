@@ -8,7 +8,7 @@ namespace Microsoft.Azure.Devices.Client
 
     public sealed class MethodRequest
     {
-#if NETMF
+#if NETMF || NETSTANDARD1_3
         public MethodRequest(string name, byte[] data)
 #else
         public MethodRequest(string name, [System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArrayAttribute]byte[] data)

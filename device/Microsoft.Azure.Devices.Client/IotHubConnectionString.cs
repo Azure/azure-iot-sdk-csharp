@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.Client
             this.IotHubName = builder.IotHubName;
             this.DeviceId = builder.DeviceId;
 
-#if WINDOWS_UWP || PCL
+#if WINDOWS_UWP || PCL || NETSTANDARD1_3
             this.HttpsEndpoint = new UriBuilder("https", this.HostName).Uri;
 #elif !NETMF
             this.HttpsEndpoint = new UriBuilder(Uri.UriSchemeHttps, this.HostName).Uri;

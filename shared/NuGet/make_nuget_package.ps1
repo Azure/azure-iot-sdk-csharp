@@ -23,10 +23,12 @@ ls Microsoft.Azure.Devices.Shared.*.nupkg | % { del $_ }
 $dotNetFile = "..\Microsoft.Azure.Devices.Shared\Properties\AssemblyInfo.cs"
 $dotNetUWPFile = "..\Microsoft.Azure.Devices.Shared.UWP\Properties\AssemblyInfo.cs"
 $dotNetPCLFile = "..\Microsoft.Azure.Devices.Shared.PCL\Properties\AssemblyInfo.cs"
+$dotNetStandardFile = "..\Microsoft.Azure.Devices.Shared.NetStandard\Properties\AssemblyInfo.cs"
 
 $v1 = GetAssemblyVersionFromFile($dotNetFile)
 $v2 = GetAssemblyVersionFromFile($dotNetUWPFile)
 $v3 = GetAssemblyVersionFromFile($dotNetPCLFile)
+$v4 = GetAssemblyVersionFromFile($dotNetStandardFile)
 
 if($v1 -ne $v2) {
     Write-Host "Error: Mismatching assembly versions in files $dotNetFile and $dotNetUWPFile. Check AssemblyInformationalVersion attribute in each file." -foregroundcolor "red"
@@ -35,6 +37,11 @@ if($v1 -ne $v2) {
 
 if($v1 -ne $v3) {
     Write-Host "Error: Mismatching assembly versions in files $dotNetFile and $dotNetPCLFile. Check AssemblyInformationalVersion attribute in each file." -foregroundcolor "red"
+    return
+}
+
+if($v1 -ne $v4) {
+    Write-Host "Error: Mismatching assembly versions in files $dotNetFile and $dotNetStandardFile. Check AssemblyInformationalVersion attribute in each file." -foregroundcolor "red"
     return
 }
 

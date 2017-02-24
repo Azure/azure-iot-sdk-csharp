@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Client.Extensions
 #endif
     using System.Text;
 
-#if !WINDOWS_UWP && !PCL // Owin NuGet package is not compatible with UAP
+#if !WINDOWS_UWP && !PCL  && !NETSTANDARD1_3// Owin NuGet package is not compatible with UAP
     using Microsoft.Owin;
 #endif
 
@@ -115,7 +115,7 @@ namespace Microsoft.Azure.Devices.Client.Extensions
             return iotHubName;
         }
 
-#if !WINDOWS_UWP && !PCL // Depends on Owin, not supported for UWP
+#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3 // Depends on Owin, not supported for UWP
         public static string GetMaskedClientIpAddress(this HttpRequestMessage requestMessage)
         {
             // note that this only works if we are hosted as an OWIN app

@@ -1,13 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Azure.Devices.Shared", "Microsoft.Azure.Devices.Shared\Microsoft.Azure.Devices.Shared.csproj", "{835230FC-8D03-4CD1-8845-5A9D1B0B837D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Azure.Devices.Shared.PCL", "Microsoft.Azure.Devices.Shared.PCL\Microsoft.Azure.Devices.Shared.PCL.csproj", "{F3BE6617-0714-4615-A916-48362BE8266D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Azure.Devices.Shared.UWP", "Microsoft.Azure.Devices.Shared.UWP\Microsoft.Azure.Devices.Shared.UWP.csproj", "{A1170BE5-999D-49E5-B127-A9D6A6059D6B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Azure.Devices.Shared.NetStandard", "Microsoft.Azure.Devices.Shared.NetStandard\Microsoft.Azure.Devices.Shared.NetStandard.csproj", "{FDE10FC3-3587-47CD-A4C6-FF697AFCFFFC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -97,6 +99,30 @@ Global
 		{A1170BE5-999D-49E5-B127-A9D6A6059D6B}.Release|x64.Build.0 = Release|x64
 		{A1170BE5-999D-49E5-B127-A9D6A6059D6B}.Release|x86.ActiveCfg = Release|x86
 		{A1170BE5-999D-49E5-B127-A9D6A6059D6B}.Release|x86.Build.0 = Release|x86
+		{FDE10FC3-3587-47CD-A4C6-FF697AFCFFFC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FDE10FC3-3587-47CD-A4C6-FF697AFCFFFC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FDE10FC3-3587-47CD-A4C6-FF697AFCFFFC}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{FDE10FC3-3587-47CD-A4C6-FF697AFCFFFC}.Debug|ARM.Build.0 = Debug|Any CPU
+		{FDE10FC3-3587-47CD-A4C6-FF697AFCFFFC}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{FDE10FC3-3587-47CD-A4C6-FF697AFCFFFC}.Debug|x64.Build.0 = Debug|Any CPU
+		{FDE10FC3-3587-47CD-A4C6-FF697AFCFFFC}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{FDE10FC3-3587-47CD-A4C6-FF697AFCFFFC}.Debug|x86.Build.0 = Debug|Any CPU
+		{FDE10FC3-3587-47CD-A4C6-FF697AFCFFFC}.Release_Delay_Sign|Any CPU.ActiveCfg = Release_Delay_Sign|Any CPU
+		{FDE10FC3-3587-47CD-A4C6-FF697AFCFFFC}.Release_Delay_Sign|Any CPU.Build.0 = Release_Delay_Sign|Any CPU
+		{FDE10FC3-3587-47CD-A4C6-FF697AFCFFFC}.Release_Delay_Sign|ARM.ActiveCfg = Release_Delay_Sign|Any CPU
+		{FDE10FC3-3587-47CD-A4C6-FF697AFCFFFC}.Release_Delay_Sign|ARM.Build.0 = Release_Delay_Sign|Any CPU
+		{FDE10FC3-3587-47CD-A4C6-FF697AFCFFFC}.Release_Delay_Sign|x64.ActiveCfg = Release_Delay_Sign|Any CPU
+		{FDE10FC3-3587-47CD-A4C6-FF697AFCFFFC}.Release_Delay_Sign|x64.Build.0 = Release_Delay_Sign|Any CPU
+		{FDE10FC3-3587-47CD-A4C6-FF697AFCFFFC}.Release_Delay_Sign|x86.ActiveCfg = Release_Delay_Sign|Any CPU
+		{FDE10FC3-3587-47CD-A4C6-FF697AFCFFFC}.Release_Delay_Sign|x86.Build.0 = Release_Delay_Sign|Any CPU
+		{FDE10FC3-3587-47CD-A4C6-FF697AFCFFFC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FDE10FC3-3587-47CD-A4C6-FF697AFCFFFC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FDE10FC3-3587-47CD-A4C6-FF697AFCFFFC}.Release|ARM.ActiveCfg = Release|Any CPU
+		{FDE10FC3-3587-47CD-A4C6-FF697AFCFFFC}.Release|ARM.Build.0 = Release|Any CPU
+		{FDE10FC3-3587-47CD-A4C6-FF697AFCFFFC}.Release|x64.ActiveCfg = Release|Any CPU
+		{FDE10FC3-3587-47CD-A4C6-FF697AFCFFFC}.Release|x64.Build.0 = Release|Any CPU
+		{FDE10FC3-3587-47CD-A4C6-FF697AFCFFFC}.Release|x86.ActiveCfg = Release|Any CPU
+		{FDE10FC3-3587-47CD-A4C6-FF697AFCFFFC}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

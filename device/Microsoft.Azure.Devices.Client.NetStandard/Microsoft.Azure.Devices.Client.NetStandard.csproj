@@ -1,0 +1,222 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{720CF7DC-3695-4826-9B17-2DF76C2D7F0D}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Microsoft.Azure.Devices.Client</RootNamespace>
+    <AssemblyName>Microsoft.Azure.Devices.Client</AssemblyName>
+    <DefaultLanguage>ja-JP</DefaultLanguage>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
+    <TargetFrameworkVersion>v5.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;NETSTANDARD1_3</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE;NETSTANDARD1_3</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup>
+    <DeviceClientDir>..\Microsoft.Azure.Devices.Client</DeviceClientDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release_Delay_Sign|AnyCPU'">
+    <OutputPath>bin\Release_Delay_Sign\</OutputPath>
+    <DefineConstants>TRACE;NETSTANDARD1_3</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Optimize>true</Optimize>
+    <NoStdLib>true</NoStdLib>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- A reference to the entire .NET Framework is automatically included -->
+    <None Include="..\Microsoft.Azure.Devices.Client\35MSSharedLib1024.snk">
+      <Link>35MSSharedLib1024.snk</Link>
+    </None>
+    <None Include="app.config" />
+    <None Include="project.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\Microsoft.Azure.Devices.Client.PCL\TraceEventType.cs">
+      <Link>TraceEventType.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.Azure.Devices.Client\Common\UrlEncodedDictionarySerializer.cs">
+      <Link>Common\UrlEncodedDictionarySerializer.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.Azure.Devices.Client\Transport\FileUploadNotificationResponse.cs">
+      <Link>Transport\FileUploadNotificationResponse.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.Azure.Devices.Client\Transport\FileUploadRequest.cs">
+      <Link>Transport\FileUploadRequest.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.Azure.Devices.Client\Transport\FileUploadResponse.cs">
+      <Link>Transport\FileUploadResponse.cs</Link>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\Microsoft.Azure.Devices.Client\AmqpClientHelper.cs">
+      <Link>AmqpClientHelper.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.Azure.Devices.Client\Common\Amqp\ClientWebSocketTransport.cs">
+      <Link>Transport\ClientWebSocketTransport.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.Azure.Devices.Client\Common\Amqp\LegacyClientWebSocketTransport.cs">
+      <Link>Common\Amqp\LegacyClientWebSocketTransport.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.Azure.Devices.Client\Common\Api\ApiResources.Designer.cs">
+      <Link>Common\Api\ApiResources.Designer.cs</Link>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ApiResources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="..\Microsoft.Azure.Devices.Client\Common\Api\IotHubApiResources.cs">
+      <Link>Common\Api\IotHubApiResources.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.Azure.Devices.Client\Common\IOThreadTimerSlim.cs">
+      <Link>Common\IOThreadTimerSlim.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.Azure.Devices.Client\Common\ReadOnlyMergeDictionary.cs">
+      <Link>Common\ReadOnlyMergeDictionary.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.Azure.Devices.Client\Common\Resources.Designer.cs">
+      <Link>Common\Resources.Designer.cs</Link>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="..\Microsoft.Azure.Devices.Client\DeviceAuthenticationWithX509Certificate.cs">
+      <Link>DeviceAuthenticationWithX509Certificate.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.Azure.Devices.Client\IotHubClientWebSocket.cs">
+      <Link>IotHubClientWebSocket.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.Azure.Devices.Client\Transport\Mqtt\ChannelMessageProcessingException.cs">
+      <Link>Transport\Mqtt\ChannelMessageProcessingException.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.Azure.Devices.Client\Transport\Mqtt\ClientWebSocketChannel.cs">
+      <Link>Transport\Mqtt\ClientWebSocketChannel.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.Azure.Devices.Client\Transport\Mqtt\ClientWebSocketChannelConfig.cs">
+      <Link>Transport\Mqtt\ClientWebSocketChannelConfig.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.Azure.Devices.Client\Transport\Mqtt\ConcurrentObjectPool.cs">
+      <Link>Transport\Mqtt\ConcurrentObjectPool.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.Azure.Devices.Client\Transport\Mqtt\ICancellable.cs">
+      <Link>Transport\Mqtt\ICancellable.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.Azure.Devices.Client\Transport\Mqtt\IWillMessage.cs">
+      <Link>Transport\Mqtt\IWillMessage.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.Azure.Devices.Client\Transport\Mqtt\MqttIotHubAdapter.cs">
+      <Link>Transport\Mqtt\MqttIotHubAdapter.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.Azure.Devices.Client\Transport\Mqtt\MqttIotHubAdapterFactory.cs">
+      <Link>Transport\Mqtt\MqttIotHubAdapterFactory.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.Azure.Devices.Client\Transport\Mqtt\MqttTransportHandler.cs">
+      <Link>Transport\Mqtt\MqttTransportHandler.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.Azure.Devices.Client\Transport\Mqtt\MqttTransportSettings.cs">
+      <Link>Transport\Mqtt\MqttTransportSettings.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.Azure.Devices.Client\Transport\Mqtt\OrderedTwoPhaseWorkQueue.cs">
+      <Link>Transport\Mqtt\OrderedTwoPhaseWorkQueue.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.Azure.Devices.Client\Transport\Mqtt\PublishWorkItem.cs">
+      <Link>Transport\Mqtt\PublishWorkItem.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.Azure.Devices.Client\Transport\Mqtt\ReferenceCountedObjectContainer.cs">
+      <Link>Transport\Mqtt\ReferenceCountedObjectContainer.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.Azure.Devices.Client\Transport\Mqtt\SimpleWorkQueue.cs">
+      <Link>Transport\Mqtt\SimpleWorkQueue.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.Azure.Devices.Client\Transport\Mqtt\TransientErrorIgnoreStrategy.cs">
+      <Link>Transport\Mqtt\TransientErrorIgnoreStrategy.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.Azure.Devices.Client\Transport\Mqtt\Util.cs">
+      <Link>Transport\Mqtt\Util.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.Azure.Devices.Client\Transport\Mqtt\WillMessage.cs">
+      <Link>Transport\Mqtt\WillMessage.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.Azure.Devices.Client\Transport\RetryDelegatingHandler.cs">
+      <Link>Transport\RetryDelegatingHandler.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.Azure.Devices.Client\Transport\WebSocketConstants.cs">
+      <Link>Common\Amqp\WebSocketConstants.cs</Link>
+    </Compile>
+    <Compile Include="System.Web\HttpUtility.cs" />
+    <Compile Include="System.Web\Util\HttpEncoder.cs" />
+    <Compile Include="System.Web\Util\HttpEncoderUtility.cs" />
+    <Compile Include="System.Web\Util\UriUtil.cs" />
+    <Compile Include="System.Web\Util\Utf16StringValidator.cs" />
+    <Compile Include="TransientFaultHandling\AsyncExecution.cs" />
+    <Compile Include="TransientFaultHandling\ExponentialBackoff.cs" />
+    <Compile Include="TransientFaultHandling\FixedInterval.cs" />
+    <Compile Include="TransientFaultHandling\Guard.cs" />
+    <Compile Include="TransientFaultHandling\Incremental.cs" />
+    <Compile Include="TransientFaultHandling\ITransientErrorDetectionStrategy.cs" />
+    <Compile Include="TransientFaultHandling\Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="TransientFaultHandling\RetryingEventArgs.cs" />
+    <Compile Include="TransientFaultHandling\RetryPolicy.cs" />
+    <Compile Include="TransientFaultHandling\RetryStrategy.cs" />
+    <Compile Include="TransientFaultHandling\RetryLimitExceededException.cs" />
+    <Compile Include="Transport\EnvironmentWebProxy.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\shared\Microsoft.Azure.Devices.Shared.NetStandard\Microsoft.Azure.Devices.Shared.NetStandard.csproj">
+      <Project>{fde10fc3-3587-47cd-a4c6-ff697afcfffc}</Project>
+      <Name>Microsoft.Azure.Devices.Shared.NetStandard</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\Microsoft.Azure.Devices.Client\Common\Api\ApiResources.resx">
+      <Link>Common\Api\ApiResources.resx</Link>
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>ApiResources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\Microsoft.Azure.Devices.Client\Common\Resources.resx">
+      <Link>Common\Resources.resx</Link>
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <Import Project="..\Microsoft.Azure.Devices.Client.Shared\Microsoft.Azure.Devices.Client.Shared.projitems" Label="Shared" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

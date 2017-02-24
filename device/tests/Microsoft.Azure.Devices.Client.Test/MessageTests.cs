@@ -8,9 +8,19 @@ namespace Microsoft.Azure.Devices.Client.Test
     using System.Text;
 
     using Microsoft.Azure.Devices.Client;
+#if !NUNIT
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+#else
+	using NUnit.Framework;
+	using TestClassAttribute = NUnit.Framework.TestFixtureAttribute;
+	using TestMethodAttribute = NUnit.Framework.TestAttribute;
+	using ClassInitializeAttribute = NUnit.Framework.OneTimeSetUpAttribute;
+	using ClassCleanupAttribute = NUnit.Framework.OneTimeTearDownAttribute;
+	using TestCategoryAttribute = NUnit.Framework.CategoryAttribute;
+	using IgnoreAttribute = MSTestIgnoreAttribute;
+#endif
 
-    [TestClass]
+	[TestClass]
     public class MessageTests
     {
         [TestCategory("CIT")]
@@ -60,10 +70,18 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestCategory("CIT")]
         [TestCategory("API")]
         [TestMethod]
+#if !NUNIT
         [ExpectedException(typeof(ArgumentNullException))]
+#endif
         public void ConstructorTakingNullByteArrayTest()
         {
+#if NUNIT
+            Assert.Throws<ArgumentNullException>(() => {
+#endif 
             new Message((byte[])null);
+#if NUNIT
+            });
+#endif
         }
 
         [TestCategory("CIT")]

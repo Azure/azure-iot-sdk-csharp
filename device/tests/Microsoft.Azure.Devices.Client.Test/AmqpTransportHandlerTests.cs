@@ -1,5 +1,15 @@
 ﻿using System;
+#if !NUNIT
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+#else
+using NUnit.Framework;
+using TestClassAttribute = NUnit.Framework.TestFixtureAttribute;
+using TestMethodAttribute = NUnit.Framework.TestAttribute;
+using ClassInitializeAttribute = NUnit.Framework.OneTimeSetUpAttribute;
+using ClassCleanupAttribute = NUnit.Framework.OneTimeTearDownAttribute;
+using TestCategoryAttribute = NUnit.Framework.CategoryAttribute;
+using IgnoreAttribute = Microsoft.Azure.Devices.Client.Test.MSTestIgnoreAttribute;
+#endif
 
 namespace Microsoft.Azure.Devices.Client.Test.Transport
 {

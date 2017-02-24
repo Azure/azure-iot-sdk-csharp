@@ -9,8 +9,22 @@ namespace Microsoft.Azure.Devices.Client.Test
     using System.Linq;
     using System.Net;
     using System.Threading.Tasks;
+#if !NETSTANDARD1_3
     using System.Web.Http;
+#endif
+    using Microsoft.Azure.Devices.Client;
+#if !NUNIT
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+#else
+    using NUnit.Framework;
+    using TestClassAttribute = NUnit.Framework.TestFixtureAttribute;
+    using TestMethodAttribute = NUnit.Framework.TestAttribute;
+    using ClassInitializeAttribute = NUnit.Framework.OneTimeSetUpAttribute;
+    using ClassCleanupAttribute = NUnit.Framework.OneTimeTearDownAttribute;
+    using TestCategoryAttribute = NUnit.Framework.CategoryAttribute;
+    using IgnoreAttribute = MSTestIgnoreAttribute;
+    using AssertFailedException = NUnit.Framework.AssertionException;
+#endif
 
     public static class ExceptionAssertions
     {
@@ -37,14 +51,22 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         public static TException WithException<TException>(this Exception exception, string message = null) where TException : Exception
         {
+#if !NUNIT
             Assert.IsInstanceOfType(exception, typeof(TException));
+#else
+            Assert.That(exception, Is.InstanceOf<TException>());
+#endif
 
             return (TException)exception;
         }
 
         public static WebException WithResponseUri(this WebException exception, Uri uri)
         {
+#if !NUNIT
             Assert.IsInstanceOfType(exception.Response, typeof(HttpWebResponse));
+#else
+            Assert.That(exception.Response, Is.InstanceOf<HttpWebResponse>());
+#endif
 
             var response = (HttpWebResponse)exception.Response;
             Assert.AreEqual(uri, response.ResponseUri);
@@ -59,7 +81,11 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         public static WebException WithStatusCode(this WebException exception, HttpStatusCode statusCode, string statusDescription = null)
         {
+#if !NUNIT
             Assert.IsInstanceOfType(exception.Response, typeof(HttpWebResponse));
+#else
+            Assert.That(exception.Response, Is.InstanceOf<HttpWebResponse>());
+#endif
 
             var response = (HttpWebResponse)exception.Response;
             Assert.AreEqual(statusCode, response.StatusCode);
@@ -80,7 +106,11 @@ namespace Microsoft.Azure.Devices.Client.Test
             }
             catch (Exception e)
             {
+#if !NUNIT
                 Assert.IsInstanceOfType(e, typeof(TException), e.ToString());
+#else
+                Assert.That(e, Is.InstanceOf<TException>(), e.ToString());
+#endif
                 return (TException)e;
             }
 
@@ -101,7 +131,11 @@ namespace Microsoft.Azure.Devices.Client.Test
             }
             catch (Exception e)
             {
+#if !NUNIT
                 Assert.IsInstanceOfType(e, exceptionType, e.ToString());
+#else
+                Assert.That(e, Is.InstanceOf(exceptionType), e.ToString());
+#endif
                 return e;
             }
 
@@ -126,6 +160,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             });
         }
 
+#if !NETSTANDARD1_3
         public static Task<HttpResponseException> WithStatusCode(this Task<HttpResponseException> exception, HttpStatusCode statusCode)
         {
             return exception.ContinueWith(e =>
@@ -140,6 +175,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             Assert.AreEqual(statusCode, exception.Response.StatusCode);
             return exception;
         }
+#endif
 
         public static TException WithSingleInnerException<TException>(this AggregateException exception)
             where TException : Exception
