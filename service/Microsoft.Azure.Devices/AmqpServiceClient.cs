@@ -219,8 +219,6 @@ namespace Microsoft.Azure.Devices
         {
             if (disposing)
             {
-                // This is more efficient than async and wait in base.Dispose(bool).
-                this.faultTolerantSendingLink.Dispose();
                 this.feedbackReceiver.Dispose();
                 this.iotHubConnection.Dispose();
                 this.httpClientHelper.Dispose();
