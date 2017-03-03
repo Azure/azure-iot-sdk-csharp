@@ -13,60 +13,25 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestClass]
     public class TwinE2ETests
     {
-
-        static string hubConnectionString;
-        static string deviceName;
-        static string deviceConnectionString;
-        static string hostName;
+        private static string hubConnectionString;
+        private static string hostName;
+        private static RegistryManager registryManager;
 
         public TestContext TestContext { get; set; }
-
-        static string GetHostName(string connectionString)
-        {
-            Regex regex = new Regex("HostName=([^;]+)", RegexOptions.None);
-            return regex.Match(connectionString).Groups[1].Value;
-        }
-
-        static string GetDeviceConnectionString(Device device)
-        {
-            var deviceConnectionString = new StringBuilder();
-            deviceConnectionString.AppendFormat("HostName={0}", hostName);
-            deviceConnectionString.AppendFormat(";DeviceId={0}", device.Id);
-            deviceConnectionString.AppendFormat(";SharedAccessKey={0}", device.Authentication.SymmetricKey.PrimaryKey);
-            return deviceConnectionString.ToString();
-        }
 
         [ClassInitialize]
         static public void ClassInitialize(TestContext testContext)
         {
-            Task.Run(async () =>
-            {
-                hubConnectionString = Environment.GetEnvironmentVariable("IOTHUB_CONNECTION_STRING");
-                deviceName = "E2E_Twin_CSharp_" + Guid.NewGuid().ToString();
-                deviceConnectionString = null;
-                hostName = GetHostName(hubConnectionString);
-
-                var registryManager = RegistryManager.CreateFromConnectionString(hubConnectionString);
-                Debug.WriteLine("Creating device " + deviceName);
-                var device = await registryManager.AddDeviceAsync(new Device(deviceName));
-                deviceConnectionString = GetDeviceConnectionString(device);
-                Debug.WriteLine("Device successfully created");
-                await registryManager.CloseAsync();
-            }).Wait();
+            var environment = TestUtil.InitializeEnvironment("E2E_Twin_CSharp_");
+            hubConnectionString = environment.Item1;
+            registryManager = environment.Item2;
+            hostName = TestUtil.GetHostName(hubConnectionString);
         }
 
         [ClassCleanup]
         static public void ClassCleanup()
         {
-            Task.Run(async () =>
-            {
-                var registryManager = RegistryManager.CreateFromConnectionString(hubConnectionString);
-
-                Debug.WriteLine("Removing device " + deviceName);
-                await registryManager.RemoveDeviceAsync(deviceName);
-                Debug.WriteLine("Device successfully removed");
-                await registryManager.CloseAsync();
-            }).Wait();
+            TestUtil.UnInitializeEnvironment(registryManager);
         }
 
         [TestMethod]
@@ -88,7 +53,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             var propName = Guid.NewGuid().ToString();
             var propValue = Guid.NewGuid().ToString();
 
-            var deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionString, transport);
+            Tuple<string, string> deviceInfo = TestUtil.CreateDevice("E2E_Twin_CSharp_", hostName, registryManager);
+            var deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, transport);
             TwinCollection props = new TwinCollection();
             props[propName] = propValue;
             await deviceClient.UpdateReportedPropertiesAsync(props);
@@ -97,17 +63,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             Assert.AreEqual<String>(deviceTwin.Properties.Reported[propName].ToString(), propValue);
 
             await deviceClient.CloseAsync();
+            TestUtil.RemoveDevice(deviceInfo.Item1, registryManager);
         }
-
-        private async Task<String> getCurrentEtagFromService()
-        {
-            var registryManager = RegistryManager.CreateFromConnectionString(hubConnectionString);
-            var serviceTwin = await registryManager.GetTwinAsync(deviceName);
-            string etag = serviceTwin.ETag;
-            await registryManager.CloseAsync();
-            return etag;
-       }
-
         
         [TestMethod]
         [TestCategory("Twin-E2E")]
@@ -129,7 +86,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             var propName = Guid.NewGuid().ToString();
             var propValue = Guid.NewGuid().ToString();
 
-            var deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionString, transport);
+            Tuple<string, string> deviceInfo = TestUtil.CreateDevice("E2E_Twin_CSharp_", hostName, registryManager);
+            var deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, transport);
             await deviceClient.OpenAsync();
             await deviceClient.SetDesiredPropertyUpdateCallback((patch, context) =>
             {
@@ -151,14 +109,13 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             }, null);
 
-            var registryManager = RegistryManager.CreateFromConnectionString(hubConnectionString);
             var twinPatch = new Twin();
             twinPatch.Properties.Desired[propName] = propValue;
-            await registryManager.UpdateTwinAsync(deviceName, twinPatch, "*");
-            await registryManager.CloseAsync();
-
+            await registryManager.UpdateTwinAsync(deviceInfo.Item1, twinPatch, "*");
+            
             await tcs.Task;
             await deviceClient.CloseAsync();
+            TestUtil.RemoveDevice(deviceInfo.Item1, registryManager);
         }
 
         [TestMethod]
@@ -180,16 +137,16 @@ namespace Microsoft.Azure.Devices.E2ETests
             var propName = Guid.NewGuid().ToString();
             var propValue = Guid.NewGuid().ToString();
 
-            var registryManager = RegistryManager.CreateFromConnectionString(hubConnectionString);
+            Tuple<string, string> deviceInfo = TestUtil.CreateDevice("E2E_Twin_CSharp_", hostName, registryManager);
             var twinPatch = new Twin();
             twinPatch.Properties.Desired[propName] = propValue;
-            await registryManager.UpdateTwinAsync(deviceName, twinPatch, "*");
-            await registryManager.CloseAsync();
-
-            var deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionString, transport);
+            await registryManager.UpdateTwinAsync(deviceInfo.Item1, twinPatch, "*");
+            
+            var deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, transport);
             var deviceTwin = await deviceClient.GetTwinAsync();
             Assert.AreEqual<string>(deviceTwin.Properties.Desired[propName].ToString(), propValue);
             await deviceClient.CloseAsync();
+            TestUtil.RemoveDevice(deviceInfo.Item1, registryManager);
         }
 
         [TestMethod]
@@ -211,19 +168,18 @@ namespace Microsoft.Azure.Devices.E2ETests
             var propName = Guid.NewGuid().ToString();
             var propValue = Guid.NewGuid().ToString();
 
-            var deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionString, transport);
+            Tuple<string, string> deviceInfo = TestUtil.CreateDevice("E2E_Twin_CSharp_", hostName, registryManager);
+            var deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, transport);
             var patch = new TwinCollection();
             patch[propName] = propValue;
             await deviceClient.UpdateReportedPropertiesAsync(patch);
             await deviceClient.CloseAsync();
 
-            var registryManager = RegistryManager.CreateFromConnectionString(hubConnectionString);
-            var serviceTwin = await registryManager.GetTwinAsync(deviceName);
+            var serviceTwin = await registryManager.GetTwinAsync(deviceInfo.Item1);
             Assert.AreEqual<string>(serviceTwin.Properties.Reported[propName].ToString(), propValue);
 
             TestContext.WriteLine("verified " + serviceTwin.Properties.Reported[propName].ToString() + "=" + propValue);
-            await registryManager.CloseAsync();
-
+            TestUtil.RemoveDevice(deviceInfo.Item1, registryManager);
         }
     }
 }
