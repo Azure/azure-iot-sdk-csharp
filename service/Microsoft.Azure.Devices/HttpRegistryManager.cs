@@ -71,8 +71,6 @@ namespace Microsoft.Azure.Devices
 
         public override Task CloseAsync()
         {
-            this.Dispose();
-
             return TaskHelpers.CompletedTask;
         }
 

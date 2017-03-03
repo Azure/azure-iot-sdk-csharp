@@ -101,10 +101,8 @@ namespace Microsoft.Azure.Devices
 
         public async override Task CloseAsync()
         {
-            this.faultTolerantSendingLink.Dispose();
             await this.feedbackReceiver.CloseAsync();
             await this.iotHubConnection.CloseAsync();
-            this.httpClientHelper.Dispose();
         }
 
         public async override Task SendAsync(string deviceId, Message message)
@@ -219,6 +217,7 @@ namespace Microsoft.Azure.Devices
         {
             if (disposing)
             {
+                this.faultTolerantSendingLink.Dispose();
                 this.feedbackReceiver.Dispose();
                 this.iotHubConnection.Dispose();
                 this.httpClientHelper.Dispose();
