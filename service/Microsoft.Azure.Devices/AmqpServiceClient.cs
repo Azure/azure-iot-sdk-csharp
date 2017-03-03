@@ -59,6 +59,15 @@ namespace Microsoft.Azure.Devices
             this.httpClientHelper = httpClientHelper;
         }
 
+        internal AmqpServiceClient(IotHubConnection iotHubConnection, IHttpClientHelper httpClientHelper)
+        {
+            this.iotHubConnection = iotHubConnection;
+            this.faultTolerantSendingLink = new FaultTolerantAmqpObject<SendingAmqpLink>( this.CreateSendingLinkAsync, iotHubConnection.CloseLink );
+            this.feedbackReceiver = new AmqpFeedbackReceiver(iotHubConnection);
+            this.fileNotificationReceiver = new AmqpFileNotificationReceiver(iotHubConnection);
+            this.httpClientHelper = httpClientHelper;
+        }
+
         public TimeSpan OpenTimeout
         {
             get
