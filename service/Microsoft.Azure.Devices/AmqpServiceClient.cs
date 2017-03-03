@@ -53,9 +53,9 @@ namespace Microsoft.Azure.Devices
                 DefaultOperationTimeout,
                 client => {});
         }
-                
+
         internal AmqpServiceClient(IotHubConnectionString iotHubConnectionString, bool useWebSocketOnly, IHttpClientHelper httpClientHelper) : base()
-        {            
+        {
             this.httpClientHelper = httpClientHelper;
         }
 
@@ -101,7 +101,9 @@ namespace Microsoft.Azure.Devices
 
         public async override Task CloseAsync()
         {
+            await this.faultTolerantSendingLink.CloseAsync();
             await this.feedbackReceiver.CloseAsync();
+            await this.fileNotificationReceiver.CloseAsync();
             await this.iotHubConnection.CloseAsync();
         }
 
@@ -218,6 +220,7 @@ namespace Microsoft.Azure.Devices
             if (disposing)
             {
                 this.faultTolerantSendingLink.Dispose();
+                this.fileNotificationReceiver.Dispose();
                 this.feedbackReceiver.Dispose();
                 this.iotHubConnection.Dispose();
                 this.httpClientHelper.Dispose();
