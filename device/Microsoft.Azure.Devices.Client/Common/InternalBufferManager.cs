@@ -3,7 +3,6 @@
 
 namespace Microsoft.Azure.Devices.Client
 {
-    using System;
     using System.Collections.Generic;
     using System.Threading;
     using System.Runtime.InteropServices;

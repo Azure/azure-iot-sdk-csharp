@@ -4,7 +4,6 @@
 using Microsoft.Azure.Devices.Client.Exceptions;
 using System;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client.Samples

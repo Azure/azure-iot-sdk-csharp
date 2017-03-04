@@ -3,7 +3,6 @@
 
 namespace Microsoft.Azure.Devices.Shared
 {
-    using System;
 
 #if WINDOWS_UWP || PCL
     using DateTimeT = System.DateTimeOffset;

@@ -6,14 +6,13 @@ namespace Microsoft.Azure.Devices.Client.Test
     using System;
     using System.Collections.Generic;
     using System.IO;
-    using System.Net.Http;
     using System.Threading;
     using System.Threading.Tasks;
     using DotNetty.Common.Concurrency;
-    using Microsoft.Azure.Devices.Client.Common;
-    using Microsoft.Azure.Devices.Client.Transport;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using NSubstitute;
+    using Common;
+    using Client.Transport;
 
     [TestClass]
     public class GateKeeperDelegatingHandlerTests

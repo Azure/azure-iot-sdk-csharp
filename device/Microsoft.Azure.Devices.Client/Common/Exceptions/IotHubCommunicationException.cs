@@ -5,7 +5,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
 {
     using System;
     using System.Runtime.Serialization;
-    
+
     /// <summary>
     /// The exception that is thrown when an attempt to communicate with the IoT Hub service fails.
     /// </summary>

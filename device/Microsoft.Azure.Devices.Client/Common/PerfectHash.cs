@@ -4,7 +4,6 @@
 namespace Microsoft.Azure.Devices.Common.Cloud
 {
     using System;
-    using System.Globalization;
     using System.Text;
 
     static class PerfectHash

@@ -5,7 +5,6 @@ namespace Microsoft.Azure.Devices.Client.Test
 {
     using System;
     using Microsoft.Azure.Devices.Client;
-    using Microsoft.Azure.Devices.Client.Test;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]

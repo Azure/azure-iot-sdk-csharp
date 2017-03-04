@@ -1,19 +1,14 @@
 ﻿namespace Microsoft.Azure.Devices.Client.Test
 {
     using System;
-    using System.Collections.Generic;
     using System.IO;
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
-    using Microsoft.Azure.Devices.Client.Common;
-    using Microsoft.Azure.Devices.Client.Exceptions;
-    using Microsoft.Azure.Devices.Client.Transport;
-    using Microsoft.Azure.Devices.Shared;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using Newtonsoft.Json;
     using NSubstitute;
     using NSubstitute.ExceptionExtensions;
+    using Common;
 
     [TestClass]
     public class DeviceClientTests

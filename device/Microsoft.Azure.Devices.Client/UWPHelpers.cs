@@ -3,10 +3,6 @@
 
 namespace Microsoft.Azure.Devices.Client
 {
-    using System;
-    using System.Threading.Tasks;
-    using Windows.Foundation;
-
     //
     // Summary:
     //     Identifies the type of event that has caused the trace.

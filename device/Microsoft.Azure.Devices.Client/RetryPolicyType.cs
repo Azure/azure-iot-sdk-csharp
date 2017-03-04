@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Microsoft.Azure.Devices.Client
+﻿namespace Microsoft.Azure.Devices.Client
 {
     /// <summary>
     /// Retry Strategy types supported by DeviceClient
