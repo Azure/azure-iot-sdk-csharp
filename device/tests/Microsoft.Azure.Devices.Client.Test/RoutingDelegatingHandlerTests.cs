@@ -6,11 +6,12 @@ namespace Microsoft.Azure.Devices.Client.Test
     using System.Net.Sockets;
     using System.Threading;
     using System.Threading.Tasks;
+    using Microsoft.Azure.Devices.Client.Common;
     using Microsoft.Azure.Devices.Client.Exceptions;
+    using Microsoft.Azure.Devices.Client.Transport;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using NSubstitute;
-    using Client.Transport;
-    using Common;
+    using NSubstitute.ExceptionExtensions;
 
     [TestClass]
     public class RoutingDelegatingHandlerTests

@@ -3,11 +3,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.Client.Test.Transport
 {
-    using Client.Transport;
     using System.Collections.Generic;
     using System.Net.Sockets;
     using System.Threading;
     using System.Threading.Tasks;
+    using Microsoft.Azure.Devices.Client.Transport;
 
     [TestClass]
     public class HttpTransportHandlerTests

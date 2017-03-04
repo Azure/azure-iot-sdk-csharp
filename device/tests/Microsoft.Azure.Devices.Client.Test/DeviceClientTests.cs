@@ -5,10 +5,10 @@
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
+    using Microsoft.Azure.Devices.Client.Common;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using NSubstitute;
     using NSubstitute.ExceptionExtensions;
-    using Common;
 
     [TestClass]
     public class DeviceClientTests
