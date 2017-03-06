@@ -5,8 +5,6 @@ namespace Microsoft.Azure.Devices.Client
     using System;
     using System.IO;
     using System.Threading;
-    using Microsoft.Azure.Devices.Client.Exceptions;
-    using Microsoft.Azure.Devices.Client.Extensions;
     using Microsoft.Azure.Amqp;
 #if WINDOWS_UWP
     using System.Collections.Generic;

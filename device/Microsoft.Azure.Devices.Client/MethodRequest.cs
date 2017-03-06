@@ -3,7 +3,6 @@
 
 namespace Microsoft.Azure.Devices.Client
 {
-    using System;
     using System.Text;
 
     public sealed class MethodRequest

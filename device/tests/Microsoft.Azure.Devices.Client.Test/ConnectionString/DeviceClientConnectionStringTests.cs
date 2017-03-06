@@ -6,7 +6,6 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
     using System;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Client.ApiTest;
-    using Microsoft.Azure.Devices.Client.Transport;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]

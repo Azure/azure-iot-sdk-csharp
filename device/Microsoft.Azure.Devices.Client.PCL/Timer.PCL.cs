@@ -5,7 +5,6 @@
 
 namespace System.Threading
 {
-    using System.Threading;
     using System.Threading.Tasks;
 
     internal delegate void TimerCallback(object state);

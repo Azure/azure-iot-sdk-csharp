@@ -4,15 +4,10 @@
 namespace Microsoft.Azure.Devices.Client
 {
     using System;
-    using System.Collections;
-    using System.Collections.Generic;
     using System.IO;
-    using System.Runtime.Serialization;
-    using System.Text;
     using Microsoft.Azure.Amqp;
     using Microsoft.Azure.Amqp.Encoding;
     using Microsoft.Azure.Amqp.Framing;
-    using Microsoft.Azure.Devices.Client.Common.Api;
 
     static class MethodConverter
     {

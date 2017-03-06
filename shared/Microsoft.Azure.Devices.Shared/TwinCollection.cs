@@ -6,7 +6,6 @@ namespace Microsoft.Azure.Devices.Shared
     using System;
     using System.Collections;
     using System.Collections.Generic;
-    using System.Dynamic;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
 

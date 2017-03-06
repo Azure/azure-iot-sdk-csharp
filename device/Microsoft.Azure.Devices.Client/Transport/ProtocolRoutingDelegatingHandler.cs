@@ -5,7 +5,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
 {
     using System;
     using System.Collections.ObjectModel;
-    using System.Diagnostics;
     using System.Linq;
 #if !PCL
     using System.Net.Sockets;

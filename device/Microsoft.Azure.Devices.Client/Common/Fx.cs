@@ -8,7 +8,6 @@ namespace Microsoft.Azure.Devices.Client
     using System.Collections.ObjectModel;
     using System.Diagnostics;
     using System.Diagnostics.CodeAnalysis;
-    using System.Globalization;
     using System.Reflection;
     using System.Runtime.CompilerServices;
 #if !WINDOWS_UWP && !PCL

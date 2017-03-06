@@ -4,7 +4,6 @@
 namespace Microsoft.Azure.Devices.Client
 {
     using System;
-    using System.Text;
     using System.Net;
 
 #if !NETMF
