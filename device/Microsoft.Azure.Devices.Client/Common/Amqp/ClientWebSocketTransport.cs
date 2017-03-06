@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Amqp.Transport
         readonly ClientWebSocket webSocket;
         readonly EndPoint localEndPoint;
         readonly EndPoint remoteEndPoint;
-        volatile CancellationTokenSource writeCancellationTokenSource;
+        volatile CancellationTokenSource cancellationTokenSource;
         bool disposed;
 
         public ClientWebSocketTransport(ClientWebSocket webSocket, EndPoint localEndpoint, EndPoint remoteEndpoint)
@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Amqp.Transport
             this.webSocket = webSocket;
             this.localEndPoint = localEndpoint;
             this.remoteEndPoint = remoteEndpoint;
-            this.writeCancellationTokenSource = new CancellationTokenSource();
+            this.cancellationTokenSource = new CancellationTokenSource();
         }
 
         public override EndPoint LocalEndPoint
@@ -84,14 +84,14 @@ namespace Microsoft.Azure.Amqp.Transport
                 if (args.Buffer != null)
                 {
                     var arraySegment = new ArraySegment<byte>(args.Buffer, args.Offset, args.Count);
-                    await this.webSocket.SendAsync(arraySegment, WebSocketMessageType.Binary, true, this.writeCancellationTokenSource.Token);
+                    await this.webSocket.SendAsync(arraySegment, WebSocketMessageType.Binary, true, this.cancellationTokenSource.Token);
                 }
                 else
                 {
                     foreach (ByteBuffer byteBuffer in args.ByteBufferList)
                     {
                         await this.webSocket.SendAsync(new ArraySegment<byte>(byteBuffer.Buffer, byteBuffer.Offset, byteBuffer.Length),
-                            WebSocketMessageType.Binary, true, this.writeCancellationTokenSource.Token);
+                            WebSocketMessageType.Binary, true, this.cancellationTokenSource.Token);
                     }
                 }
 
@@ -145,7 +145,7 @@ namespace Microsoft.Azure.Amqp.Transport
             try
             {
                 WebSocketReceiveResult receiveResult = await this.webSocket.ReceiveAsync(
-                    new ArraySegment<byte>(args.Buffer, args.Offset, args.Count), CancellationToken.None);
+                    new ArraySegment<byte>(args.Buffer, args.Offset, args.Count), this.cancellationTokenSource.Token);
 
                 succeeded = true;
                 return receiveResult.Count;
@@ -193,12 +193,13 @@ namespace Microsoft.Azure.Amqp.Transport
         {
             try
             {
-                // Cancel any pending write
-                this.CancelPendingWrite();
+                // Cancel any pending operations
+                // Cancel Read as well to handle this deadlock issue : https://github.com/aspnet/HttpSysServer/issues/136
+                this.CancelPendingOperations();
 
-                using (var cancellationTokenSource = new CancellationTokenSource(timeout))
+                using (var cancelTokenSource = new CancellationTokenSource(timeout))
                 {
-                    await this.webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, cancellationTokenSource.Token);
+                    await this.webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, cancelTokenSource.Token);
                 }
             }
             catch (Exception e)
@@ -213,11 +214,11 @@ namespace Microsoft.Azure.Amqp.Transport
             this.Abort();
         }
 
-        void CancelPendingWrite()
+        void CancelPendingOperations()
         {
             try
             {
-                this.writeCancellationTokenSource.Cancel();
+                this.cancellationTokenSource.Cancel();
             }
             catch (ObjectDisposedException)
             {

@@ -50,10 +50,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             var timeoutHelper = new TimeoutHelper(timeout);
 
-            if (this.iotHubTokenRefresher != null)
-            {
-                this.iotHubTokenRefresher.Cancel();
-            }
+            this.iotHubTokenRefresher?.Cancel();
 
             AmqpSession amqpSession = await base.CreateSessionAsync(timeoutHelper.RemainingTime(), cancellationToken);
 
@@ -74,8 +71,7 @@ namespace Microsoft.Azure.Devices.Client
                 }
                 catch (Exception exception) when (!exception.IsFatal())
                 {
-                    // initiate the process of closing this connection
-                    this.Release("unknown");
+                    amqpSession?.Connection.SafeClose();
 
                     throw;
                 }
@@ -120,12 +116,8 @@ namespace Microsoft.Azure.Devices.Client
         void CloseConnection(AmqpSession amqpSession)
         {
             // Closing the connection also closes any sessions.
-            amqpSession.Connection.SafeClose();
-
-            if (this.iotHubTokenRefresher != null)
-            {
-                this.iotHubTokenRefresher.Cancel();
-            }
+            amqpSession?.Connection.SafeClose();
+            this.iotHubTokenRefresher?.Cancel();
         }
     }
 }

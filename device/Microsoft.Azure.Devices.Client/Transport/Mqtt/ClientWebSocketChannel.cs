@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
     public class ClientWebSocketChannel : AbstractChannel
     {
         readonly ClientWebSocket webSocket;
-        readonly CancellationTokenSource writeCancellationTokenSource;
+        readonly CancellationTokenSource cancellationTokenSource;
         bool active;
 
         internal bool ReadPending { get; set; }
@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             this.active = true;
             this.Metadata = new ChannelMetadata(false, 16);
             this.Configuration = new ClientWebSocketChannelConfig();
-            this.writeCancellationTokenSource = new CancellationTokenSource();
+            this.cancellationTokenSource = new CancellationTokenSource();
         }
 
         public override IChannelConfiguration Configuration { get; }
@@ -93,20 +93,31 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             throw new NotSupportedException("ClientWebSocketChannel does not support DoDisconnect()");
         }
 
-        protected override async void DoClose()
+        protected override void DoClose()
+        {
+#pragma warning disable 4014
+            // This is to handle the deadlock issue reported here: https://github.com/aspnet/HttpSysServer/issues/136    
+            Task.Run(() =>
+            {
+                this.OnClose();
+            }).WithTimeout(TimeSpan.FromMinutes(1), () => "Timed out waiting for ClientWebSocketChannel to close");
+#pragma warning restore 4014
+        }
+
+        async void OnClose()
         {
             try
             {
                 WebSocketState webSocketState = this.webSocket.State;
                 if (webSocketState != WebSocketState.Closed && webSocketState != WebSocketState.Aborted)
                 {
-                    // Cancel any pending write
-                    this.CancelPendingWrite();
+                    // Cancel any pending operations
+                    this.CancelPendingOperations();
                     this.active = false;
 
-                    using (var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30)))
+                    using (var cancelTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30)))
                     {
-                        await this.webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, cancellationTokenSource.Token);
+                        await this.webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, cancelTokenSource.Token);
                     }
                 }
             }
@@ -197,7 +208,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         continue;
                     }
 
-                    await this.webSocket.SendAsync(byteBuffer.GetIoBuffer(), WebSocketMessageType.Binary, true, this.writeCancellationTokenSource.Token);
+                    await this.webSocket.SendAsync(byteBuffer.GetIoBuffer(), WebSocketMessageType.Binary, true, this.cancellationTokenSource.Token);
                     channelOutboundBuffer.Remove();
                 }
 
@@ -215,7 +226,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         async Task<int> DoReadBytes(IByteBuffer byteBuffer)
         {
-            WebSocketReceiveResult receiveResult = await this.webSocket.ReceiveAsync(new ArraySegment<byte>(byteBuffer.Array, byteBuffer.ArrayOffset + byteBuffer.WriterIndex, byteBuffer.WritableBytes), CancellationToken.None);
+            WebSocketReceiveResult receiveResult = 
+                await this.webSocket.ReceiveAsync(new ArraySegment<byte>(byteBuffer.Array, byteBuffer.ArrayOffset + byteBuffer.WriterIndex, byteBuffer.WritableBytes), this.cancellationTokenSource.Token);
+
             if (receiveResult.MessageType == WebSocketMessageType.Text)
             {
                 throw new ProtocolViolationException("Mqtt over WS message cannot be in text");
@@ -231,11 +244,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             return receiveResult.Count;
         }
 
-        void CancelPendingWrite()
+        void CancelPendingOperations()
         {
             try
             {
-                this.writeCancellationTokenSource.Cancel();
+                this.cancellationTokenSource.Cancel();
             }
             catch (ObjectDisposedException)
             {
@@ -259,7 +272,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             this.webSocket.Abort();
             this.webSocket.Dispose();
-            this.writeCancellationTokenSource.Dispose();
+            this.cancellationTokenSource.Dispose();
         }
     }
 }
