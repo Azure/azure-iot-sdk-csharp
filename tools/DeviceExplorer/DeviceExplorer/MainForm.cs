@@ -445,6 +445,17 @@ namespace DeviceExplorer
                                 eventHubTextBox.Text += $"'{property.Key}': '{property.Value}'\r\n";
                             }
                         }
+                        if(enableSystemProperties.Checked)
+                        {
+                            if (eventData.Properties.Count == 0)
+                            {
+                                eventHubTextBox.Text += "\r\n";
+                            }
+                            foreach (var item in eventData.SystemProperties)
+                            {
+                                eventHubTextBox.Text += $"SYSTEM>{item.Key}={item.Value}\r\n";
+                            }
+                        }
                         eventHubTextBox.Text += "\r\n";
 
                         // scroll text box to last line by moving caret to the end of the text
@@ -481,6 +492,19 @@ namespace DeviceExplorer
                                     eventHubTextBox.Text += $"'{property.Key}': '{property.Value}'\r\n";
                                 }
                             }
+
+                            if (enableSystemProperties.Checked)
+                            {
+                                if (eventData.Properties.Count == 0)
+                                {
+                                    eventHubTextBox.Text += "\r\n";
+                                }
+                                foreach (var item in eventData.SystemProperties)
+                                {
+                                    eventHubTextBox.Text += $"SYSTEM>{item.Key}={item.Value}\r\n";
+                                }
+                            }
+
                             eventHubTextBox.Text += "\r\n";
                         }
 
