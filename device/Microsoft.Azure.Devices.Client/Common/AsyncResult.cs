@@ -9,7 +9,7 @@ namespace Microsoft.Azure.Devices.Client
     using System.Diagnostics.CodeAnalysis;
     using System.Threading;
 #if !WINDOWS_UWP && !PCL
-    using System.Transactions;
+//    using System.Transactions;
 #endif
 
     // AsyncResult starts acquired; Complete releases.

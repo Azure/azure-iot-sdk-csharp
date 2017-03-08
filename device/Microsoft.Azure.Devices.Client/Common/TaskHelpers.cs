@@ -8,7 +8,7 @@ namespace Microsoft.Azure.Devices.Client
     using System.Threading;
     using System.Threading.Tasks;
 #if !WINDOWS_UWP && !PCL
-    using System.Transactions;
+//    using System.Transactions;
 #endif
     static class TaskHelpers
     {

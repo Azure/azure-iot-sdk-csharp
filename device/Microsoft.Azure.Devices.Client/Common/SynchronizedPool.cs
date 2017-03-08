@@ -6,7 +6,7 @@ namespace Microsoft.Azure.Devices.Client
     using System;
     using System.Collections.Generic;
 #if !WINDOWS_UWP && !PCL
-    using System.Security.Permissions;
+//    using System.Security.Permissions;
 #endif
     using System.Threading;
 

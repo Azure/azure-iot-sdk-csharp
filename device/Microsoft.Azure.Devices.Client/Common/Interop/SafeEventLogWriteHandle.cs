@@ -34,15 +34,15 @@ namespace Microsoft.Azure.Devices.Client
             return retval;
         }
 
-        [DllImport("advapi32", SetLastError = true)]
-        [ResourceExposure(ResourceScope.None)]
-        static extern bool DeregisterEventSource(IntPtr hEventLog);
+        //[DllImport("advapi32", SetLastError = true)]
+        //[ResourceExposure(ResourceScope.None)]
+        //static extern bool DeregisterEventSource(IntPtr hEventLog);
 
-        [SecurityCritical]
-        protected override bool ReleaseHandle()
-        {
-            return DeregisterEventSource(this.handle);
-        }
+        //[SecurityCritical]
+        //protected override bool ReleaseHandle()
+        //{
+        //    return DeregisterEventSource(this.handle);
+        //}
     }
 #endif
 }

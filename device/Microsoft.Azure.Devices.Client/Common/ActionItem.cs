@@ -88,27 +88,27 @@ namespace Microsoft.Azure.Devices.Client
                 ScheduleCallback(CallbackHelper.InvokeWithoutContextCallback);
             }
         }
-#if !WINDOWS_UWP
-        [Fx.Tag.SecurityNote(Critical = "Access critical field context and critical property " +
-            "CallbackHelper.InvokeWithContextCallback, calls into critical method ScheduleCallback; " +
-            "since nothing is known about the given context, can't be treated as safe")]
-        [SecurityCritical]
-        protected void ScheduleWithContext(SecurityContext contextToSchedule)
-        {
-            if (contextToSchedule == null)
-            {
-                throw Fx.Exception.ArgumentNull("context");
-            }
-            if (isScheduled)
-            {
-                throw Fx.Exception.AsError(new InvalidOperationException(CommonResources.ActionItemIsAlreadyScheduled));
-            }
+//#if !WINDOWS_UWP
+//        [Fx.Tag.SecurityNote(Critical = "Access critical field context and critical property " +
+//            "CallbackHelper.InvokeWithContextCallback, calls into critical method ScheduleCallback; " +
+//            "since nothing is known about the given context, can't be treated as safe")]
+//        [SecurityCritical]
+//        protected void ScheduleWithContext(SecurityContext contextToSchedule)
+//        {
+//            if (contextToSchedule == null)
+//            {
+//                throw Fx.Exception.ArgumentNull("context");
+//            }
+//            if (isScheduled)
+//            {
+//                throw Fx.Exception.AsError(new InvalidOperationException(CommonResources.ActionItemIsAlreadyScheduled));
+//            }
 
-            this.isScheduled = true;
-            this.context = contextToSchedule.CreateCopy();
-            ScheduleCallback(CallbackHelper.InvokeWithContextCallback);
-        }
-#endif
+//            this.isScheduled = true;
+//            this.context = contextToSchedule.CreateCopy();
+//            ScheduleCallback(CallbackHelper.InvokeWithContextCallback);
+//        }
+//#endif
         [Fx.Tag.SecurityNote(Critical = "Access critical property CallbackHelper.InvokeWithoutContextCallback, " +
             "Calls into critical method ScheduleCallback; not bound to a security context")]
         [SecurityCritical]

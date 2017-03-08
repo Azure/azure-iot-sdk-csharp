@@ -75,11 +75,11 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
             }
         }
 
-        public override void GetObjectData(SerializationInfo info, StreamingContext context)
-        {
-            base.GetObjectData(info, context);
-            info.AddValue(IsTransientValueSerializationStoreName, this.IsTransient);
-        }
+        //public override void GetObjectData(SerializationInfo info, StreamingContext context)
+        //{
+        //    base.GetObjectData(info, context);
+        //    info.AddValue(IsTransientValueSerializationStoreName, this.IsTransient);
+        //}
 #endif
     }
 }

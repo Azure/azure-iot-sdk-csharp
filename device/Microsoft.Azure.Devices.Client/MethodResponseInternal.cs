@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Client
     // Full .NET Framework
     using Microsoft.Azure.Devices.Client.Common.Api;
     using System.Collections.Generic;
-    using Microsoft.Azure.Amqp;
+//    using Microsoft.Azure.Amqp;
 #endif
 
 #if WINDOWS_UWP || PCL

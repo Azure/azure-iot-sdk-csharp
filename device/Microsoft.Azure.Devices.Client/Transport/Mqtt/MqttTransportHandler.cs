@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
     using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Azure.Devices.Client.Extensions;
     using Microsoft.Azure.Devices.Shared;
-    using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
+//    using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
     using Newtonsoft.Json;
     using TransportType = Microsoft.Azure.Devices.Client.TransportType;
 

@@ -10,11 +10,11 @@ namespace Microsoft.Azure.Devices.Client
     using System.Threading;
     using System.Threading.Tasks;
 
-#if !WINDOWS_UWP && !PCL
-    using System.Configuration;
+//#if !WINDOWS_UWP && !PCL
+    //using System.Configuration;
     using System.Net.WebSockets;
     using System.Security.Cryptography.X509Certificates;
-#endif
+//#endif
     using System.Net;
     using Microsoft.Azure.Amqp;
     using Microsoft.Azure.Amqp.Framing;

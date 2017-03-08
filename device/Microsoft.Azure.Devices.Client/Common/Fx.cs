@@ -11,13 +11,13 @@ namespace Microsoft.Azure.Devices.Client
     using System.Reflection;
     using System.Runtime.CompilerServices;
 #if !WINDOWS_UWP && !PCL
-    using System.Runtime.ConstrainedExecution;
+//    using System.Runtime.ConstrainedExecution;
 #endif
     using System.Runtime.InteropServices;
     using System.Security;
     using System.Threading;
 #if !WINDOWS_UWP && !PCL
-    using System.Transactions;
+//    using System.Transactions;
 #endif
 #if !PCL
     using Microsoft.Win32;
