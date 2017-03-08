@@ -79,7 +79,7 @@ namespace DeviceExplorer
                         dynamic dp = JsonConvert.DeserializeObject(updateJson, typeFound);
                         dp.DeviceId = deviceName;
                         dp.ETag = deviceTwin.ETag;
-                        registryManager.UpdateTwinAsync(dp.DeviceId, dp, dp.ETag);
+                        await registryManager.UpdateTwinAsync(dp.DeviceId, dp, dp.ETag);
                     }
                     else
                     {
