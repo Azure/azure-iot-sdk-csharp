@@ -1091,7 +1091,7 @@
             this.methodPayloadTextBox.Name = "methodPayloadTextBox";
             this.methodPayloadTextBox.Size = new System.Drawing.Size(592, 180);
             this.methodPayloadTextBox.TabIndex = 8;
-            this.methodPayloadTextBox.Text = "MethodPayload";
+            this.methodPayloadTextBox.Text = "{ \"MethodPayload\": \"Payload\" }";
             // 
             // methodNameTextBox
             // 
