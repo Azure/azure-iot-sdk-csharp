@@ -243,6 +243,11 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                     throw new ArgumentException("certificate must be present in DeviceAuthenticationWithX509Certificate");
                 }
 
+                if (!connectionStringBuilder.Certificate.HasPrivateKey)
+                {
+                    throw new ArgumentException("certificate in DeviceAuthenticationWithX509Certificate must have a private key");
+                }
+
                 return CreateFromConnectionString(connectionStringBuilder.ToString(), PopulateCertificateInTransportSettings(connectionStringBuilder, transportType));
             }
 #endif
@@ -276,6 +281,11 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                 if (connectionStringBuilder.Certificate == null)
                 {
                     throw new ArgumentException("certificate must be present in DeviceAuthenticationWithX509Certificate");
+                }
+
+                if (!connectionStringBuilder.Certificate.HasPrivateKey)
+                {
+                    throw new ArgumentException("certificate in DeviceAuthenticationWithX509Certificate must have a private key");
                 }
 
                 return CreateFromConnectionString(connectionStringBuilder.ToString(), PopulateCertificateInTransportSettings(connectionStringBuilder, transportSettings));
