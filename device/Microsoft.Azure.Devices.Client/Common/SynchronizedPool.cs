@@ -5,8 +5,8 @@ namespace Microsoft.Azure.Devices.Client
 {
     using System;
     using System.Collections.Generic;
-#if !WINDOWS_UWP && !PCL
-//    using System.Security.Permissions;
+#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
+    using System.Security.Permissions;
 #endif
     using System.Threading;
 
@@ -344,7 +344,7 @@ namespace Microsoft.Azure.Devices.Client
             public static readonly int ProcessorCount = GetProcessorCount();
 
             [Fx.Tag.SecurityNote(Critical = "Asserts in order to get the processor count from the environment", Safe = "This data isn't actually protected so it's ok to leak")]
-#if !WINDOWS_UWP && !PCL
+#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
             [EnvironmentPermission(SecurityAction.Assert, Read = "NUMBER_OF_PROCESSORS")]
 #endif
             static int GetProcessorCount()

@@ -8,7 +8,8 @@ namespace Microsoft.Azure.Devices.Client
     using Microsoft.Azure.Devices.Client.Extensions;
 #if !NETMF
     using System.Collections.Generic;
-    using PCLCrypto;
+    using System.IO;
+    using System.Security.Cryptography;
 #endif
     using System.Globalization;
 #if WINDOWS_UWP
@@ -144,11 +145,10 @@ namespace Microsoft.Azure.Devices.Client
 #else
         static string Sign(string requestString, string key)
         {
-            var algorithm = WinRTCrypto.MacAlgorithmProvider.OpenAlgorithm(MacAlgorithm.HmacSha256);
-            var hash = algorithm.CreateHash(Convert.FromBase64String(key));
-            hash.Append(Encoding.UTF8.GetBytes(requestString));
-            var mac = hash.GetValueAndReset();
-            return Convert.ToBase64String(mac);
+            using (var algorithm = new HMACSHA256(Convert.FromBase64String(key)))
+            {
+                return Convert.ToBase64String(algorithm.ComputeHash(Encoding.UTF8.GetBytes(requestString)));
+            }
         }
 #endif
     }

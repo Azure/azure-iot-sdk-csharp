@@ -8,8 +8,8 @@ namespace Microsoft.Azure.Devices.Client
     using System.Diagnostics;
     using System.Diagnostics.CodeAnalysis;
     using System.Threading;
-#if !WINDOWS_UWP && !PCL
-//    using System.Transactions;
+#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
+    using System.Transactions;
 #endif
 
     // AsyncResult starts acquired; Complete releases.
@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.Client
         Exception exception;
         bool isCompleted;
         AsyncCompletion nextAsyncCompletion;
-#if !WINDOWS_UWP && !PCL
+#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
         IAsyncResult deferredTransactionalResult;
         TransactionSignalScope transactionContext;
 #endif
@@ -117,7 +117,7 @@ namespace Microsoft.Azure.Devices.Client
             get { return null; }
         }
 
-#if !PCL
+#if !PCL && !NETSTANDARD1_3
         // Override this property to change the trace level when completing with exception
         protected virtual TraceEventType TraceEventType
         {
@@ -253,7 +253,7 @@ namespace Microsoft.Azure.Devices.Client
 
             AsyncResult thisPtr = (AsyncResult)result.AsyncState;
 
-#if !WINDOWS_UWP && !PCL
+#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
             if (thisPtr.transactionContext != null && !thisPtr.transactionContext.Signal(result))
             {
                 // The TransactionScope isn't cleaned up yet and can't be done on this thread.  Must defer
@@ -288,7 +288,7 @@ namespace Microsoft.Azure.Devices.Client
 
         protected AsyncCallback PrepareAsyncCompletion(AsyncCompletion callback)
         {
-#if !WINDOWS_UWP && !PCL
+#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
             if (this.transactionContext != null)
             {
                 // It might be an old, leftover one, if an exception was thrown within the last using (PrepareTransactionalCall()) block.
@@ -310,7 +310,7 @@ namespace Microsoft.Azure.Devices.Client
             return AsyncResult.asyncCompletionWrapperCallback;
         }
 
-#if !WINDOWS_UWP && !PCL
+#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
         protected IDisposable PrepareTransactionalCall(Transaction transaction)
         {
             if (this.transactionContext != null && !this.transactionContext.IsPotentiallyAbandoned)
@@ -352,7 +352,7 @@ namespace Microsoft.Azure.Devices.Client
 
             if (result.CompletedSynchronously)
             {
-#if !WINDOWS_UWP && !PCL
+#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
                 // Once we pass the check, we know that we own forward progress, so transactionContext is correct. Verify its state.
                 if (this.transactionContext != null)
                 {
@@ -369,7 +369,7 @@ namespace Microsoft.Azure.Devices.Client
                 }
 #endif
             }
-#if !WINDOWS_UWP && !PCL
+#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
             else if (object.ReferenceEquals(result, this.deferredTransactionalResult))
             {
                 // The transactionContext may not be current if forward progress has been made via the callback. Instead,
@@ -399,7 +399,7 @@ namespace Microsoft.Azure.Devices.Client
         AsyncCompletion GetNextCompletion()
         {
             AsyncCompletion result = this.nextAsyncCompletion;
-#if !WINDOWS_UWP && !PCL
+#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
             this.transactionContext = null;
 #endif
             this.nextAsyncCompletion = null;
@@ -460,15 +460,17 @@ namespace Microsoft.Azure.Devices.Client
             if (asyncResult.manualResetEvent != null)
             {
                 asyncResult.manualResetEvent.WaitOne();
-#if !WINDOWS_UWP && !PCL // Close does not exist in UWP
+#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3 // Close does not exist in UWP
                 asyncResult.manualResetEvent.Close();
+#else
+                asyncResult.manualResetEvent.Dispose();
 #endif
             }
 
             if (asyncResult.exception != null)
             {
                 // Trace before PrepareForRethrow to avoid weird callstack strings
-#if !PCL                
+#if !PCL && !NETSTANDARD1_3
                 Fx.Exception.TraceException(asyncResult.exception, asyncResult.TraceEventType, asyncResult.Activity);
 #else
                 Fx.Exception.TraceException(asyncResult.exception, TraceEventType.Verbose, asyncResult.Activity);
@@ -487,7 +489,7 @@ namespace Microsoft.Azure.Devices.Client
             Abandoned,
         }
 
-#if !WINDOWS_UWP && !PCL
+#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
         [Serializable]
         class TransactionSignalScope : SignalGateT<IAsyncResult>, IDisposable
         {
