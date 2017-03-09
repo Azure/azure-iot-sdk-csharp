@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices.Client
         const string UpgradeProtocolNotSupported = "Protocol Type {0} was sent to a service that does not support that type of upgrade.";
 
         static readonly byte[] maskingKey = new byte[] { 0x00, 0x00, 0x00, 0x00 };
-        static readonly SHA1CryptoServiceProvider sha1CryptoServiceProvider = InitCryptoServiceProvider();
+        static readonly SHA1 sha1CryptoServiceProvider = InitCryptoServiceProvider();
 
         readonly string webSocketRole;   
         readonly string requestPath;
@@ -474,9 +474,9 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         [SuppressMessage("Microsoft.Cryptographic.Standard", "CA5354:SHA1CannotBeUsed", Justification = "SHA-1 Hash mandated by RFC 6455")]
-        static SHA1CryptoServiceProvider InitCryptoServiceProvider()
+        static SHA1 InitCryptoServiceProvider()
         {
-            return new SHA1CryptoServiceProvider();
+            return SHA1.Create();
         }
 
         // Socket.ReceiveTimeout/SendTimeout 0 means infinite/no-timeout. When dealing with cascading timeouts
