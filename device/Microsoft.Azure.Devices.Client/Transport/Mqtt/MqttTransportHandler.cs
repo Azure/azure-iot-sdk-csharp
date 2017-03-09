@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
     using Newtonsoft.Json;
     using TransportType = Microsoft.Azure.Devices.Client.TransportType;
 
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_3
     using System.Web;
 #endif
 

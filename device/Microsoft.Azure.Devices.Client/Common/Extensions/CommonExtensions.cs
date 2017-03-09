@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Client.Extensions
 #endif
     using System.Text;
 
-#if !WINDOWS_UWP && !PCL // Owin NuGet package is not compatible with UAP
+#if !WINDOWS_UWP && !PCL  && !NETSTANDARD1_3    // Owin NuGet package is not compatible with UAP
     using Microsoft.Owin;
 #endif
 

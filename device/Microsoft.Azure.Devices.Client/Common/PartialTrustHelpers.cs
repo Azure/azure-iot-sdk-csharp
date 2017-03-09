@@ -6,11 +6,10 @@ namespace Microsoft.Azure.Devices.Client
     using System;
     using System.Reflection;
     using System.Runtime.CompilerServices;
-//    using System.Security.Permissions;
     using System.Security;
-//#if !WINDOWS_UWP && !PCL
-//    using System.Security.Permissions;
-//#endif
+#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
+    using System.Security.Permissions;
+#endif
 
     static class PartialTrustHelpers
     {
@@ -87,7 +86,7 @@ namespace Microsoft.Azure.Devices.Client
 #endif
         }
 
-#if !WINDOWS_UWP && !PCL
+#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
         [Fx.Tag.SecurityNote(Critical = "Captures security context with identity flow suppressed, " +
             "this requires satisfying a LinkDemand for infrastructure.")]
         [SecurityCritical]

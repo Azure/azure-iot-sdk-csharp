@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices.Client
 
         public void TraceHandled(Exception exception, string catchLocation, EventTraceActivity activity = null)
         {
-#if !WINDOWS_UWP && !PCL // No Trace in UWP. Consider Debug.WriteLine
+#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3 // No Trace in UWP. Consider Debug.WriteLine
 #if DEBUG
             Trace.WriteLine(string.Format(
                 CultureInfo.InvariantCulture,
@@ -98,7 +98,7 @@ namespace Microsoft.Azure.Devices.Client
             ////MessagingClientEtwProvider.Provider.EventWriteUnhandledException(this.eventSourceName + ": " + exception.ToStringSlim());
         }
 
-#if !WINDOWS_UWP && !PCL // attribute does not exist in UWP
+#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3 // attribute does not exist in UWP
         [ResourceConsumption(ResourceScope.Process)]
 #endif
         [Fx.Tag.SecurityNote(Critical = "Calls 'System.Runtime.Interop.UnsafeNativeMethods.IsDebuggerPresent()' which is a P/Invoke method",
@@ -120,7 +120,7 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     case TraceEventType.Critical:
                     case TraceEventType.Error:
-#if !WINDOWS_UWP && !PCL
+#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
                         Trace.TraceError("An Exception is being thrown: {0}", GetDetailsForThrownException(exception));
 #endif
                         ////if (MessagingClientEtwProvider.Provider.IsEnabled(
@@ -133,7 +133,7 @@ namespace Microsoft.Azure.Devices.Client
                          
                         break;
                     case TraceEventType.Warning:
-#if !WINDOWS_UWP && !PCL
+#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
                         Trace.TraceWarning("An Exception is being thrown: {0}", GetDetailsForThrownException(exception));
 #endif
                         ////if (MessagingClientEtwProvider.Provider.IsEnabled(
@@ -168,7 +168,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             string details = e.GetType().ToString();
 
-#if !WINDOWS_UWP && !PCL
+#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
             const int MaxStackFrames = 10;
             // Include the current callstack (this ensures we see the Stack in case exception is not output when caught)
             var stackTrace = new StackTrace();
@@ -201,7 +201,7 @@ namespace Microsoft.Azure.Devices.Client
                     {
                         Debugger.Launch();
                     }
-#elif !PCL
+#elif !PCL && !NETSTANDARD1_3
                     if (breakType.IsAssignableFrom(exception.GetType()))
                     {
                         // This is intended to "crash" the process so that a debugger can be attached.  If a managed

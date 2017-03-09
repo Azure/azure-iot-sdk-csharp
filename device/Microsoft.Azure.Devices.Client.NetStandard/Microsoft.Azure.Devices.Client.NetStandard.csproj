@@ -25,6 +25,7 @@
     <DefineConstants>TRACE;DEBUG;NETSTANDARD1_3</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -57,9 +58,6 @@
     </Compile>
     <Compile Include="..\Microsoft.Azure.Devices.Client\Common\Api\IotHubApiResources.cs">
       <Link>Common\Api\IotHubApiResources.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.Azure.Devices.Client\Common\Interop\UnsafeNativeMethods.cs">
-      <Link>Common\Interop\UnsafeNativeMethods.cs</Link>
     </Compile>
     <Compile Include="..\Microsoft.Azure.Devices.Client\Common\IOThreadScheduler.cs">
       <Link>Common\IOThreadScheduler.cs</Link>
@@ -188,6 +186,9 @@
       <Project>{91dfb837-d8a3-4f54-ae0d-45c95acd0c2a}</Project>
       <Name>Microsoft.Azure.Devices.Shared.Standard</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Common\Interop\" />
   </ItemGroup>
   <Import Project="..\Microsoft.Azure.Devices.Client.Shared\Microsoft.Azure.Devices.Client.Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />

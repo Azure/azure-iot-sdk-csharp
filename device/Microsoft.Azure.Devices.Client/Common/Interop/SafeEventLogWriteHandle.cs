@@ -3,7 +3,7 @@
 
 namespace Microsoft.Azure.Devices.Client
 {
-#if !WINDOWS_UWP && !PCL
+#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
     using System;
     using System.Diagnostics;
     using System.Globalization;
@@ -34,15 +34,15 @@ namespace Microsoft.Azure.Devices.Client
             return retval;
         }
 
-        //[DllImport("advapi32", SetLastError = true)]
-        //[ResourceExposure(ResourceScope.None)]
-        //static extern bool DeregisterEventSource(IntPtr hEventLog);
+        [DllImport("advapi32", SetLastError = true)]
+        [ResourceExposure(ResourceScope.None)]
+        static extern bool DeregisterEventSource(IntPtr hEventLog);
 
-        //[SecurityCritical]
-        //protected override bool ReleaseHandle()
-        //{
-        //    return DeregisterEventSource(this.handle);
-        //}
+        [SecurityCritical]
+        protected override bool ReleaseHandle()
+        {
+            return DeregisterEventSource(this.handle);
+        }
     }
 #endif
 }
