@@ -1,15 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Microsoft.Azure.Devices;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Common;
 using Microsoft.ServiceBus.Messaging;
-using System.Text.RegularExpressions;
 using System.Linq;
 
 namespace Microsoft.Azure.Devices.E2ETests

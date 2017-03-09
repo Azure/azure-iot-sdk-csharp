@@ -76,6 +76,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="FileUploadE2ETests.cs" />
     <Compile Include="MessageE2ETests.cs" />
     <Compile Include="MethodE2ETests.cs" />
     <Compile Include="TestUtil.cs" />
