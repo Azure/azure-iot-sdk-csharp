@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.Client
         int asyncReadBufferOffset;
         int remainingBytes;
 
-        public LegacyClientWebSocketTransport(IotHubClientWebSocket webSocket, TimeSpan operationTimeout,  EndPoint localEndpoint, EndPoint remoteEndpoint)
+        public LegacyClientWebSocketTransport(IotHubClientWebSocket webSocket, TimeSpan operationTimeout, EndPoint localEndpoint, EndPoint remoteEndpoint)
             : base("legacyclientwebsocket")
         {
             this.webSocket = webSocket;
@@ -105,10 +105,12 @@ namespace Microsoft.Azure.Devices.Client
             {
                 throw new IOException(webSocketException.Message, webSocketException);
             }
+#if !NETSTANDARD1_3
             catch (HttpListenerException httpListenerException)
             {
                 throw new IOException(httpListenerException.Message, httpListenerException);
             }
+#endif
             catch (TaskCanceledException taskCanceledException)
             {
                 throw new TimeoutException(taskCanceledException.Message, taskCanceledException);
@@ -136,10 +138,12 @@ namespace Microsoft.Azure.Devices.Client
             {
                 throw new IOException(webSocketException.Message, webSocketException);
             }
+#if !NETSTANDARD1_3
             catch (HttpListenerException httpListenerException)
             {
                 throw new IOException(httpListenerException.Message, httpListenerException);
             }
+#endif
             catch (TaskCanceledException taskCanceledException)
             {
                 throw new TimeoutException(taskCanceledException.Message, taskCanceledException);
@@ -210,7 +214,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             try
             {
-               await this.webSocket.CloseAsync();
+                await this.webSocket.CloseAsync();
             }
             catch (Exception e)
             {

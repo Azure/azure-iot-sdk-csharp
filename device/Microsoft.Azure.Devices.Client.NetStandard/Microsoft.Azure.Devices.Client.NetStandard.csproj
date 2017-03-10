@@ -86,8 +86,29 @@
     <Compile Include="..\Microsoft.Azure.Devices.Client\IotHubClientWebSocket.cs">
       <Link>IotHubClientWebSocket.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.Azure.Devices.Client\TransientFaultHandling\AsyncExecution.cs">
+      <Link>TransientFaultHandling\AsyncExecution.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.Azure.Devices.Client\TransientFaultHandling\AsyncExecution[T].cs">
+      <Link>TransientFaultHandling\AsyncExecution[T].cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.Azure.Devices.Client\TransientFaultHandling\ExponentialBackoff.cs">
+      <Link>TransientFaultHandling\ExponentialBackoff.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.Azure.Devices.Client\TransientFaultHandling\FixedInterval.cs">
+      <Link>TransientFaultHandling\FixedInterval.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.Azure.Devices.Client\TransientFaultHandling\Guard.cs">
+      <Link>TransientFaultHandling\Guard.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.Azure.Devices.Client\TransientFaultHandling\Incremental.cs">
+      <Link>TransientFaultHandling\Incremental.cs</Link>
+    </Compile>
     <Compile Include="..\Microsoft.Azure.Devices.Client\TransientFaultHandling\RetryingEventArgs.cs">
       <Link>TransientFaultHandling\RetryingEventArgs.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.Azure.Devices.Client\TransientFaultHandling\RetryLimitExceededException.cs">
+      <Link>TransientFaultHandling\RetryLimitExceededException.cs</Link>
     </Compile>
     <Compile Include="..\Microsoft.Azure.Devices.Client\TransientFaultHandling\RetryPolicy.cs">
       <Link>TransientFaultHandling\RetryPolicy.cs</Link>
@@ -183,6 +204,11 @@
       <Link>Transport\WebSocketConstants.cs</Link>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TransientFaultHandling\Resources.Designer.cs">
+      <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="..\Microsoft.Azure.Devices.Client\Common\Api\ApiResources.resx">
@@ -192,6 +218,10 @@
     </EmbeddedResource>
     <EmbeddedResource Include="..\Microsoft.Azure.Devices.Client\Common\Resources.resx">
       <Link>Common\Resources.resx</Link>
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TransientFaultHandling\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
