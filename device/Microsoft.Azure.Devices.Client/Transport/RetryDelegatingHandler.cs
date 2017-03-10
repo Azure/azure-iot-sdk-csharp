@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Client.Exceptions;
-//    using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
+    using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
     using Microsoft.Azure.Devices.Shared;
 
     class RetryDelegatingHandler : DefaultDelegatingHandler
@@ -59,10 +59,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 this.throttlingRetryStrategy = new ExponentialBackoff(retryCount, TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(60), TimeSpan.FromSeconds(5)).GetShouldRetry();
             }
 
-            //public override ShouldRetry GetShouldRetry()
-            //{
-            //    return this.ShouldRetry;
-            //}
+            public override ShouldRetry GetShouldRetry()
+            {
+                return this.ShouldRetry;
+            }
+
             bool ShouldRetry(int currentRetryCount, Exception lastException, out TimeSpan retryInterval)
             {
                 if (IsThrottling(lastException))

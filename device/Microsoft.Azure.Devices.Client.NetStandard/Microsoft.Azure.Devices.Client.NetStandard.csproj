@@ -86,6 +86,18 @@
     <Compile Include="..\Microsoft.Azure.Devices.Client\IotHubClientWebSocket.cs">
       <Link>IotHubClientWebSocket.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.Azure.Devices.Client\TransientFaultHandling\RetryingEventArgs.cs">
+      <Link>TransientFaultHandling\RetryingEventArgs.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.Azure.Devices.Client\TransientFaultHandling\RetryPolicy.cs">
+      <Link>TransientFaultHandling\RetryPolicy.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.Azure.Devices.Client\TransientFaultHandling\RetryStrategy.cs">
+      <Link>TransientFaultHandling\RetryStrategy.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.Azure.Devices.Client\TransientFaultHandling\ShouldRetry.cs">
+      <Link>TransientFaultHandling\ShouldRetry.cs</Link>
+    </Compile>
     <Compile Include="..\Microsoft.Azure.Devices.Client\Transport\FileUploadNotificationResponse.cs">
       <Link>Transport\FileUploadNotificationResponse.cs</Link>
     </Compile>
@@ -94,6 +106,9 @@
     </Compile>
     <Compile Include="..\Microsoft.Azure.Devices.Client\Transport\FileUploadResponse.cs">
       <Link>Transport\FileUploadResponse.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.Azure.Devices.Client\Transport\ITransientErrorDetectionStrategy.cs">
+      <Link>Transport\ITransientErrorDetectionStrategy.cs</Link>
     </Compile>
     <Compile Include="..\Microsoft.Azure.Devices.Client\Transport\Mqtt\ChannelMessageProcessingException.cs">
       <Link>Transport\Mqtt\ChannelMessageProcessingException.cs</Link>
