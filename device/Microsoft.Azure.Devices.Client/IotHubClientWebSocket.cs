@@ -129,11 +129,19 @@ namespace Microsoft.Azure.Devices.Client
             this.State = WebSocketState.Aborted;
             try
             {
+#if !NETSTANDARD1_3
                 this.WebSocketStream?.Close(); // Ungraceful close
+#else
+                this.WebSocketStream?.Dispose();
+#endif
 
                 this.WebSocketStream = null;
 
+#if !NETSTANDARD1_3
                 this.TcpClient?.Close();
+#else
+                this.TcpClient?.Dispose();
+#endif
 
                 this.TcpClient = null;
             }
@@ -199,8 +207,13 @@ namespace Microsoft.Azure.Devices.Client
                     // the HTTP response code was not 101
                     if (this.TcpClient.Connected)
                     {
+#if !NETSTANDARD1_3
                         this.WebSocketStream.Close();
                         this.TcpClient.Close();
+#else
+                        this.WebSocketStream.Dispose();
+                        this.TcpClient.Dispose();
+#endif
                     }
 
                     throw new IOException(ServerRejectedUpgradeRequest + " " + upgradeResponse);
@@ -210,8 +223,13 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     if (this.TcpClient.Connected)
                     {
+#if !NETSTANDARD1_3
                         this.WebSocketStream.Close();
                         this.TcpClient.Close();
+#else
+                        this.WebSocketStream.Dispose();
+                        this.TcpClient.Dispose();
+#endif
                     }
 
                     throw new IOException(UpgradeProtocolNotSupported.FormatInvariant(WebSocketConstants.SubProtocols.Amqpwsb10));
@@ -269,8 +287,13 @@ namespace Microsoft.Azure.Devices.Client
                         await this.WebSocketStream.WriteAsync(closeHeader, 0, closeHeader.Length);
 
                         this.State = WebSocketState.Closed;
+#if !NETSTANDARD1_3
                         this.WebSocketStream?.Close();
                         this.TcpClient?.Close();
+#else
+                        this.WebSocketStream?.Dispose();
+                        this.TcpClient?.Dispose();
+#endif
                         return 0;  // TODO: throw exception?
                     }
 
@@ -671,13 +694,21 @@ namespace Microsoft.Azure.Devices.Client
             this.State = WebSocketState.Faulted;
             if (this.WebSocketStream != null)
             {
+#if !NETSTANDARD1_3
                 this.WebSocketStream.Close();   // Ungraceful close
+#else
+                this.WebSocketStream.Dispose();
+#endif
                 this.WebSocketStream = null;
             }
 
             if (this.TcpClient != null)
             {
+#if !NETSTANDARD1_3
                 this.TcpClient.Close();
+#else
+                this.TcpClient.Dispose();
+#endif
                 this.TcpClient = null;
             }
         }
