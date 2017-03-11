@@ -937,5 +937,31 @@ namespace Microsoft.Azure.Devices.Api.Test
             var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
             await registryManager.UpdateTwins2Async(new List<Twin>() { goodTwin1, goodTwin2 }, false, CancellationToken.None);
         }
+
+        [TestMethod]
+        [TestCategory("CIT")]
+        [TestCategory("API")]
+        public void DisposeTest()
+        {
+            var restOpMock = new Mock<IHttpClientHelper>();
+            restOpMock.Setup(restOp => restOp.Dispose());
+
+            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            registryManager.Dispose();
+            restOpMock.Verify(restOp => restOp.Dispose(), Times.Once());
+        }
+    
+        [TestMethod]
+        [TestCategory("CIT")]
+        [TestCategory("API")]
+        public async Task CloseAsyncTest()
+        {
+            var restOpMock = new Mock<IHttpClientHelper>();
+            restOpMock.Setup(restOp => restOp.Dispose());
+
+            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            await registryManager.CloseAsync();
+            restOpMock.Verify(restOp => restOp.Dispose(), Times.Never());
+        }
     }
 }
