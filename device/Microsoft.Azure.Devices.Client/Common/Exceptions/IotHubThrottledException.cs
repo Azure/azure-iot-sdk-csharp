@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         {
         }
 
-#if !WINDOWS_UWP && !PCL
+#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
         /// <summary>
         /// Initializes a new instance of the <see cref="IotHubThrottledException"/> class with the specified serialization and context information.
         /// </summary>

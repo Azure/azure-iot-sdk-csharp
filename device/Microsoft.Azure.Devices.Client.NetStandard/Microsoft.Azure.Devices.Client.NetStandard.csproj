@@ -62,8 +62,8 @@
     <Compile Include="..\Microsoft.Azure.Devices.Client\Common\IOThreadScheduler.cs">
       <Link>Common\IOThreadScheduler.cs</Link>
     </Compile>
-    <Compile Include="..\Microsoft.Azure.Devices.Client\Common\IOThreadTimer.cs">
-      <Link>Common\IOThreadTimer.cs</Link>
+    <Compile Include="..\Microsoft.Azure.Devices.Client\Common\IOThreadTimerSlim.cs">
+      <Link>Common\IOThreadTimerSlim.cs</Link>
     </Compile>
     <Compile Include="..\Microsoft.Azure.Devices.Client\Common\ReadOnlyMergeDictionary.cs">
       <Link>Common\ReadOnlyMergeDictionary.cs</Link>
@@ -204,7 +204,12 @@
       <Link>Transport\WebSocketConstants.cs</Link>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TransientFaultHandling\Resources.Designer.cs">
+    <Compile Include="System.Web\HttpUtility.cs" />
+    <Compile Include="System.Web\Util\HttpEncoder.cs" />
+    <Compile Include="System.Web\Util\HttpEncoderUtility.cs" />
+    <Compile Include="System.Web\Util\UriUtil.cs" />
+    <Compile Include="System.Web\Util\Utf16StringValidator.cs" />
+    <Compile Include="TransientFaultHandling\Properties\Resources.Designer.cs">
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -221,7 +226,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <EmbeddedResource Include="TransientFaultHandling\Resources.resx">
+    <EmbeddedResource Include="TransientFaultHandling\Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>

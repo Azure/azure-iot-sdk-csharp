@@ -470,9 +470,17 @@ namespace Microsoft.Azure.Devices.Client
 
                     await this.WebSocketStream.WriteAsync(webSocketHeader, 0, webSocketHeader.Length);
 
+#if !NETSTANDARD1_3
                     this.WebSocketStream?.Close();
+#else
+                    this.WebSocketStream?.Dispose();
+#endif
 
+#if !NETSTANDARD1_3
                     this.TcpClient?.Close();
+#else
+                    this.TcpClient?.Dispose();
+#endif
                 }
 
                 succeeded = true;
@@ -713,11 +721,19 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
+#if !NETSTANDARD1_3
         bool VerifyWebSocketUpgradeResponse(NameValueCollection webSocketHeaders)
+#else
+        bool VerifyWebSocketUpgradeResponse(WebHeaderCollection webSocketHeaders)
+#endif
         {
             // verify that Upgrade header is present with a value of websocket
             string upgradeHeaderValue;
+#if !NETSTANDARD1_3
             if (null == (upgradeHeaderValue = webSocketHeaders.Get(Upgrade)))
+#else
+            if (null == (upgradeHeaderValue = webSocketHeaders[Upgrade]))
+#endif
             {
                 // Server did not respond with an upgrade header
                 return false;
@@ -731,7 +747,11 @@ namespace Microsoft.Azure.Devices.Client
 
             // verify connection header is present with a value of Upgrade
             string connectionHeaderValue;
+#if !NETSTANDARD1_3
             if (null == (connectionHeaderValue = webSocketHeaders.Get(ConnectionHeaderName)))
+#else
+            if (null == (connectionHeaderValue = webSocketHeaders[ConnectionHeaderName]))
+#endif
             {
                 // Server did not respond with an connection header
                 return false;
@@ -745,7 +765,11 @@ namespace Microsoft.Azure.Devices.Client
 
             // verify that a SecWebSocketAccept header is present with appropriate hash value string
             string secWebSocketAcceptHeaderValue;
+#if !NETSTANDARD1_3
             if (null == (secWebSocketAcceptHeaderValue = webSocketHeaders.Get(Headers.SecWebSocketAccept)))
+#else
+            if (null == (secWebSocketAcceptHeaderValue = webSocketHeaders[Headers.SecWebSocketAccept]))
+#endif
             {
                 // Server did not include the SecWebSocketAcceptHeader in the response
                 return false;
@@ -761,7 +785,11 @@ namespace Microsoft.Azure.Devices.Client
             {
                 // verify SecWebSocketProtocol contents
                 string secWebSocketProtocolHeaderValue;
+#if !NETSTANDARD1_3
                 if (null != (secWebSocketProtocolHeaderValue = webSocketHeaders.Get(Headers.SecWebSocketProtocol)))
+#else
+                if (null != (secWebSocketProtocolHeaderValue = webSocketHeaders[Headers.SecWebSocketProtocol]))
+#endif
                 {
                     // Check SecWebSocketProtocolHeader with requested protocol
                     if (!this.webSocketRole.Equals(secWebSocketProtocolHeaderValue))
@@ -965,7 +993,11 @@ namespace Microsoft.Azure.Devices.Client
                         }
 
                         string headerValue = Encoding.ASCII.GetString(this.Buffer, separatorIndex + 2, endOfLine - (separatorIndex + 2));
+#if !NETSTANDARD1_3
                         this.Headers.Add(headerName, headerValue);
+#else
+                        this.Headers[headerName] = headerValue;
+#endif
                     }
                 }
 

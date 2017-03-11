@@ -385,8 +385,8 @@ namespace Microsoft.Azure.Devices.Client
         {
             // If the AppDomain is shutting down, we may still have pending ops.  The AppDomain shutdown will clean
             // everything up.
-#if WINDOWS_UWP
-            // TODO: Reviiew if we need to do anything here for UWP
+#if WINDOWS_UWP || NETSTANDARD1_3
+            // TODO: Review if we need to do anything here for UWP
             throw new NotImplementedException();
 #else
             if (!Environment.HasShutdownStarted && !AppDomain.CurrentDomain.IsFinalizingForUnload())
@@ -604,7 +604,7 @@ namespace Microsoft.Azure.Devices.Client
 
             public ScheduledOverlapped()
             {
-#if WINDOWS_UWP || PCL
+#if WINDOWS_UWP || PCL || NETSTANDARD1_3
                 throw new NotImplementedException();
 #else
                 this.nativeOverlapped = (new Overlapped()).UnsafePack(
@@ -653,7 +653,7 @@ namespace Microsoft.Azure.Devices.Client
                 Fx.Assert(iots != null, "Post called with a null scheduler.");
 
                 this.scheduler = iots;
-#if WINDOWS_UWP
+#if WINDOWS_UWP || NETSTANDARD1_3
                 throw new NotImplementedException();
 #else
                 ThreadPool.UnsafeQueueNativeOverlapped(this.nativeOverlapped);
@@ -667,7 +667,7 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     throw Fx.AssertAndThrowFatal("Cleanup called on an overlapped that is in-flight.");
                 }
-#if WINDOWS_UWP
+#if WINDOWS_UWP || NETSTANDARD1_3
                 throw new NotImplementedException();
 #else
                 Overlapped.Free(this.nativeOverlapped);

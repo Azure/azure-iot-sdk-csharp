@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
     using Newtonsoft.Json;
     using TransportType = Microsoft.Azure.Devices.Client.TransportType;
 
-#if !WINDOWS_UWP && !NETSTANDARD1_3
+#if !WINDOWS_UWP
     using System.Web;
 #endif
 
@@ -553,7 +553,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             var ep = endpointPairs.First();
             this.serverAddress = IPAddress.Parse(ep.RemoteHostName.RawName);
 #else
+#if !NETSTANDARD1_3
             this.serverAddress = Dns.GetHostEntry(this.hostName).AddressList[0];
+#else
+            var ipAddresses = (await Dns.GetHostAddressesAsync(this.hostName))[0];
+#endif
 #endif
 
             if (this.TryStateTransition(TransportState.NotInitialized, TransportState.Opening))
@@ -977,7 +981,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 {
                     websocket.Options.ClientCertificates.Add(settings.ClientCertificate);
                 }
-#if !WINDOWS_UWP // UseDefaultCredentials is not in UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_3 // UseDefaultCredentials is not in UWP and NetStandard
                 else
                 {
                     websocket.Options.UseDefaultCredentials = true;
