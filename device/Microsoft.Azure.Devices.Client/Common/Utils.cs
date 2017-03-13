@@ -5,15 +5,11 @@ namespace Microsoft.Azure.Devices.Client
 {
     using System;
     using System.IO;
-    using System.Reflection;
     using System.Text;
 #if !NETMF
-    using Microsoft.Azure.Devices.Client.Common;
     using Newtonsoft.Json;
-    using Newtonsoft.Json.Schema;
 #endif
     using Extensions;
-    using System.Collections;
 
     static class Utils
     {

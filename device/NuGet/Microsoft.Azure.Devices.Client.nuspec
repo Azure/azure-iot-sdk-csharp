@@ -23,15 +23,17 @@
 
             <group targetFramework="net45" >
                 <dependency id="PCLCrypto" version="2.0.147" />
-              <dependency id="Microsoft.Azure.Amqp" version="2.0.3" />
-              <dependency id="DotNetty.Codecs.Mqtt-signed" version="0.3.2" />
-              <dependency id="DotNetty.Handlers-signed" version="0.3.2" />
-              <dependency id="EnterpriseLibrary.TransientFaultHandling" version="6.0.1304" />
-              <dependency id="Microsoft.AspNet.WebApi.Client" version="5.2.3" />
-              <dependency id="WindowsAzure.Storage" version="7.0.0" />
-              <dependency id="Microsoft.Azure.Devices.Shared" version="1.0.7" />
+                <dependency id="Microsoft.Azure.Amqp" version="2.0.3" />
+                <dependency id="DotNetty.Codecs.Mqtt-signed" version="0.3.2" />
+                <dependency id="DotNetty.Handlers-signed" version="0.3.2" />
+                <dependency id="EnterpriseLibrary.TransientFaultHandling" version="6.0.1304" />
+                <dependency id="Microsoft.AspNet.WebApi.Client" version="5.2.3" />
+                <dependency id="WindowsAzure.Storage" version="7.0.0" />
+                <dependency id="Microsoft.Azure.Devices.Shared" version="1.0.7" />
             </group>
+
             <group targetFramework="uap10.0">
+                <dependency id="Microsoft.NETCore.UniversalWindowsPlatform" version="[5.2.2,)"/>
                 <dependency id="PCLCrypto" version="2.0.147" />
                 <dependency id="Microsoft.Azure.Amqp" version="2.0.3" />
                 <dependency id="Microsoft.AspNet.WebApi.Client" version="5.2.3" />
@@ -47,23 +49,29 @@
             <group targetFramework="win8">
                 <dependency id="PCLCrypto" version="2.0.147" />
             </group>
+
             <group targetFramework="wp8">
                 <dependency id="PCLCrypto" version="2.0.147" />
             </group>
+
             <group targetFramework="wpa81">
                 <dependency id="PCLCrypto" version="2.0.147" />
             </group>
+
             <group targetFramework="monoandroid">
                 <dependency id="Microsoft.Azure.Amqp" version="2.0.2" />
                 <dependency id="PCLCrypto" version="2.0.147" />
             </group>
+
             <group targetFramework="monotouch">
                 <dependency id="Microsoft.Azure.Amqp" version="2.0.2" />
                 <dependency id="PCLCrypto" version="2.0.147" />
             </group>
+
             <group targetFramework="Xamarin.iOS">
                 <dependency id="PCLCrypto" version="2.0.147" />
             </group>
+        
         </dependencies>
     </metadata>
     <files>

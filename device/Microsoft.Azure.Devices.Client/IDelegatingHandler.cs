@@ -7,9 +7,8 @@ namespace Microsoft.Azure.Devices.Client
     using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
-    using Microsoft.Azure.Devices.Client.Common;
     using Microsoft.Azure.Devices.Shared;
-   
+
     interface IDelegatingHandler : IContinuationProvider<IDelegatingHandler>, IDisposable
     {
         Task AbandonAsync(string lockToken, CancellationToken cancellationToken);

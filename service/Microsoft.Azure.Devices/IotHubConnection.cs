@@ -56,6 +56,11 @@ namespace Microsoft.Azure.Devices
             this.useWebSocketOnly = useWebSocketOnly;
         }
 
+        internal IotHubConnection(Func<TimeSpan, Task<AmqpSession>> onCreate, Action<AmqpSession> onClose)
+        {
+            this.faultTolerantSession = new FaultTolerantAmqpObject<AmqpSession>(onCreate, onClose);
+        }
+
         internal IotHubConnectionString ConnectionString
         {
             get

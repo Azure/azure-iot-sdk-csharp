@@ -68,5 +68,21 @@ namespace Microsoft.Azure.Devices.Api.Test.JobClient
                 It.IsAny<Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(),
                 It.IsAny<CancellationToken>()), Times.Once);
         }
+
+        [TestMethod]
+        public void DisposeTest()
+        {
+            httpClientHelperMock.Setup(restOp => restOp.Dispose());
+            jobClient.Dispose();
+            httpClientHelperMock.Verify(restOp => restOp.Dispose(), Times.Once());
+        }
+
+        [TestMethod]
+        public async Task CloseAsyncTest()
+        {
+            httpClientHelperMock.Setup(restOp => restOp.Dispose());
+            await jobClient.CloseAsync();
+            httpClientHelperMock.Verify(restOp => restOp.Dispose(), Times.Never());
+        }
     }
 }

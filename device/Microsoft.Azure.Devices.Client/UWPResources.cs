@@ -6,9 +6,6 @@
 namespace Microsoft.Azure.Devices.Client.Common
 {
     using System;
-    using System.Threading.Tasks;
-    using Windows.Foundation;
-    using System.Linq;
     using Windows.ApplicationModel.Resources.Core;
 
     class ResourceManagerImpl

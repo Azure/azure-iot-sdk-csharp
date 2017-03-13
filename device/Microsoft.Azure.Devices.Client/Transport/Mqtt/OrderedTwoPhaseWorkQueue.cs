@@ -6,7 +6,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
-    using DotNetty.Common.Utilities;
     using DotNetty.Transport.Channels;
     using Microsoft.Azure.Devices.Client.Exceptions;
 

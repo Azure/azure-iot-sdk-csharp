@@ -4,12 +4,10 @@
 namespace Microsoft.Azure.Devices.Client
 {
     using System;
-    using System.Diagnostics.CodeAnalysis;
     using System.Diagnostics.Eventing;
     using System.Runtime.InteropServices;
     using System.Runtime.Versioning;
     using System.Security;
-    using System.Text;
     using System.Threading;
     using Microsoft.Win32.SafeHandles;
 

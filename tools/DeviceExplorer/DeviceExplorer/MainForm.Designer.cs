@@ -120,6 +120,7 @@
             this.label14 = new System.Windows.Forms.Label();
             this.label13 = new System.Windows.Forms.Label();
             this.ehStringToolTip = new System.Windows.Forms.ToolTip(this.components);
+            this.enableSystemProperties = new System.Windows.Forms.CheckBox();
             this.tabCallDeviceMethod.SuspendLayout();
             this.tabPage2.SuspendLayout();
             this.groupBox5.SuspendLayout();
@@ -584,6 +585,7 @@
             // 
             this.groupBox3.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox3.Controls.Add(this.enableSystemProperties);
             this.groupBox3.Controls.Add(this.consumerGroupCheckBox);
             this.groupBox3.Controls.Add(this.label6);
             this.groupBox3.Controls.Add(this.groupNameTextBox);
@@ -1089,7 +1091,7 @@
             this.methodPayloadTextBox.Name = "methodPayloadTextBox";
             this.methodPayloadTextBox.Size = new System.Drawing.Size(592, 180);
             this.methodPayloadTextBox.TabIndex = 8;
-            this.methodPayloadTextBox.Text = "MethodPayload";
+            this.methodPayloadTextBox.Text = "{ \"MethodPayload\": \"Payload\" }";
             // 
             // methodNameTextBox
             // 
@@ -1155,6 +1157,16 @@
             this.label13.Size = new System.Drawing.Size(143, 16);
             this.label13.TabIndex = 0;
             this.label13.Text = "Call Method on Device";
+            // 
+            // enableSystemProperties
+            // 
+            this.enableSystemProperties.AutoSize = true;
+            this.enableSystemProperties.Location = new System.Drawing.Point(563, 208);
+            this.enableSystemProperties.Name = "enableSystemProperties";
+            this.enableSystemProperties.Size = new System.Drawing.Size(170, 20);
+            this.enableSystemProperties.TabIndex = 30;
+            this.enableSystemProperties.Text = "Show system properties";
+            this.enableSystemProperties.UseVisualStyleBackColor = true;
             // 
             // MainForm
             // 
@@ -1288,6 +1300,7 @@
         private System.Windows.Forms.Label label22;
         private System.Windows.Forms.NumericUpDown callDeviceMethodNumericUpDown;
         private System.Windows.Forms.Button callDeviceMethodCancelButton;
+        private System.Windows.Forms.CheckBox enableSystemProperties;
     }
 }
 

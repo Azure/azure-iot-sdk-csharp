@@ -3,6 +3,7 @@
 
 namespace Microsoft.Azure.Devices
 {
+    using System;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -25,7 +26,7 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     /// Contains methods that services can use to send messages to devices
     /// </summary>
-    public abstract class ServiceClient
+    public abstract class ServiceClient : IDisposable
     {
         /// <summary>
         /// Make this constructor internal so that only this library may implement this abstract class.
@@ -43,6 +44,19 @@ namespace Microsoft.Azure.Devices
         {
             return CreateFromConnectionString(connectionString, TransportType.Amqp);
         }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            this.Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Releases unmanaged and - optionally - managed resources.
+        /// </summary>
+        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool disposing) {}
 
         /// <summary>
         /// Create ServiceClient from the specified connection string using specified Transport Type

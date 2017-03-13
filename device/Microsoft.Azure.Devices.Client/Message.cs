@@ -8,7 +8,6 @@ namespace Microsoft.Azure.Devices.Client
     using System;
     using System.IO;
     using System.Threading;
-    using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Azure.Devices.Client.Extensions;
 #if WINDOWS_UWP || PCL
     using Microsoft.Azure.Amqp;

@@ -4,6 +4,7 @@
 namespace Microsoft.Azure.Devices.Api.Test
 {
     using Client.Exceptions;
+    using Microsoft.Azure.Amqp;
     using Microsoft.Azure.Devices;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Moq;
@@ -100,6 +101,47 @@ namespace Microsoft.Azure.Devices.Api.Test
             var serviceClient = new AmqpServiceClient(builder.ToIotHubConnectionString(), false, restOpMock.Object);
 
             return Tuple.Create(restOpMock, serviceClient, expectedResult);
+        }
+
+        [TestMethod]
+        [TestCategory("CIT")]
+        [TestCategory("API")]
+        public async Task DisposeTest()
+        {
+            var restOpMock = new Mock<IHttpClientHelper>();
+            restOpMock.Setup(restOp => restOp.Dispose());
+            var connectionClosed = false;
+            Func<TimeSpan, Task<AmqpSession>> onCreate = _ => Task.FromResult(new AmqpSession(null, new AmqpSessionSettings(), null));
+            Action<AmqpSession> onClose = _ => { connectionClosed = true; };
+            // Instantiate AmqpServiceClient with Mock IHttpClientHelper and IotHubConnection
+            var connection = new IotHubConnection(onCreate, onClose);
+            var serviceClient = new AmqpServiceClient(connection, restOpMock.Object);
+            // This is required to cause onClose callback invocation.
+            await connection.OpenAsync(TimeSpan.FromSeconds(1));
+            serviceClient.Dispose();
+            restOpMock.Verify(restOp => restOp.Dispose(), Times.Once());
+            Assert.IsTrue(connectionClosed);
+        }
+
+        [TestMethod]
+        [TestCategory("CIT")]
+        [TestCategory("API")]
+        public async Task CloseAsyncTest()
+        {
+            var restOpMock = new Mock<IHttpClientHelper>();
+            restOpMock.Setup(restOp => restOp.Dispose());
+            var connectionClosed = false;
+            Func<TimeSpan, Task<AmqpSession>> onCreate = _ => Task.FromResult(new AmqpSession(null, new AmqpSessionSettings(), null));
+            Action<AmqpSession> onClose = _ => { connectionClosed = true; };
+
+            // Instantiate AmqpServiceClient with Mock IHttpClientHelper and IotHubConnection
+            var connection = new IotHubConnection(onCreate, onClose);
+            var serviceClient = new AmqpServiceClient(connection, restOpMock.Object);
+            // This is required to cause onClose callback invocation.
+            await connection.OpenAsync(TimeSpan.FromSeconds(1));
+            await serviceClient.CloseAsync();
+            restOpMock.Verify(restOp => restOp.Dispose(), Times.Never());
+            Assert.IsTrue(connectionClosed);
         }
     }
 }
