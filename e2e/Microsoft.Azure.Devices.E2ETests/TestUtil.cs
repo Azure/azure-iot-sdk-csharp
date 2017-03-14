@@ -79,5 +79,20 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Debug.WriteLine("Device successfully removed");
             }).Wait();
         }
+
+        public static Client.Message ComposeErrorInjectionProperties(string faultType, string reason, int delayInSecs)
+        {
+            string dataBuffer = Guid.NewGuid().ToString();
+
+            return new Client.Message(Encoding.UTF8.GetBytes(dataBuffer))
+            {
+                Properties =
+                {
+                    ["AzIoTHub_FaultOperationType"] = faultType,
+                    ["AzIoTHub_FaultOperationCloseReason"] = reason,
+                    ["AzIoTHub_FaultOperationDelayInSecs"] = delayInSecs.ToString()
+                }
+            };
+        }
     }
 }
