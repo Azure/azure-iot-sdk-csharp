@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices
     using Microsoft.Azure.Devices.Common;
     using Microsoft.Azure.Devices.Common.Exceptions;
 
-    class HttpJobClient : JobClient, IDisposable
+    class HttpJobClient : JobClient
     {
         const string JobsUriFormat = "/jobs/v2/{0}?{1}";
         const string JobsQueryFormat = "/jobs/v2/query?{0}";
@@ -58,29 +58,10 @@ namespace Microsoft.Azure.Devices
 
         public override Task CloseAsync()
         {
-            if (this.httpClientHelper != null)
-            {
-                this.httpClientHelper.Dispose();
-                this.httpClientHelper = null;
-            }
-
             return TaskHelpers.CompletedTask;
         }
 
-        /// <inheritdoc/>
-        public void Dispose()
-        {
-            this.Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Dispose resources
-        /// </summary>
-        /// <param name="disposing">
-        /// Governs disposable of managed and native resources
-        /// </param>
-        protected virtual void Dispose(bool disposing)
+        protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
