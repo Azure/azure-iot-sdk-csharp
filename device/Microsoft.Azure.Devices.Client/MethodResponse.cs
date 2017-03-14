@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="result">data returned by the method call.</param>
         /// <param name="status">status indicating success or failure.</param>
         /// <returns></returns>
-#if NETMF
+#if NETMF || NETSTANDARD1_3
         public MethodResponse(byte[] result, int status)
 #else
         public MethodResponse([System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArrayAttribute] byte[] result, int status)

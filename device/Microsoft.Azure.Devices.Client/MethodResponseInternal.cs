@@ -99,7 +99,11 @@ namespace Microsoft.Azure.Devices.Client
         internal MethodResponse(byte[] byteArray)
             : this(new MemoryStream(byteArray))
 #else
-        internal MethodResponseInternal([System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArrayAttribute] byte[] byteArray, string requestId, int status)
+        internal MethodResponseInternal(
+#if !NETSTANDARD1_3
+            [System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArrayAttribute]
+#endif
+        byte[] byteArray, string requestId, int status)
             : this(new MemoryStream(byteArray))
 #endif
         {
