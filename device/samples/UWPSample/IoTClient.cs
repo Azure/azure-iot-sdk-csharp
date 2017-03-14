@@ -49,14 +49,10 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 await this.deviceClient.OpenAsync();
 
                 // Set up callbacks:
-                try
+                if(this.Protocol == TransportType.Mqtt || this.Protocol == TransportType.Mqtt_Tcp_Only || this.Protocol == TransportType.Mqtt_WebSocket_Only)
                 {
                     await deviceClient.SetMethodHandlerAsync("microsoft.management.immediateReboot", ImmediateReboot, null);
                     await deviceClient.SetMethodHandlerAsync("GetDeviceName", GetDeviceName, new DeviceData("Some UWP Device"));
-                }
-                catch
-                {
-                    errorHandler(string.Format("Methods are not supported for protocol {0}", this.Protocol));
                 }
 
                 Debug.WriteLine("Exited!\n");
@@ -102,7 +98,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
         {
             var dataBuffer = string.Format("Msg from UWP: '{0}'. Sent at: {1}. Protocol used: {2}.", message, DateTime.Now.ToLocalTime(), Protocol);
             Message eventMessage = new Message(Encoding.UTF8.GetBytes(dataBuffer));
-            Debug.WriteLine("Sending message: '{0}'", dataBuffer);
+            Debug.WriteLine(string.Format("Sending message: '{0}'", dataBuffer));
             return deviceClient.SendEventAsync(eventMessage);
         }
 
