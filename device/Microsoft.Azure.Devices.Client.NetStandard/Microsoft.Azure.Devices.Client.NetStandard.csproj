@@ -104,6 +104,9 @@
     <Compile Include="..\Microsoft.Azure.Devices.Client\TransientFaultHandling\Incremental.cs">
       <Link>TransientFaultHandling\Incremental.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.Azure.Devices.Client\TransientFaultHandling\ITransientErrorDetectionStrategy.cs">
+      <Link>TransientFaultHandling\ITransientErrorDetectionStrategy.cs</Link>
+    </Compile>
     <Compile Include="..\Microsoft.Azure.Devices.Client\TransientFaultHandling\RetryingEventArgs.cs">
       <Link>TransientFaultHandling\RetryingEventArgs.cs</Link>
     </Compile>
@@ -127,9 +130,6 @@
     </Compile>
     <Compile Include="..\Microsoft.Azure.Devices.Client\Transport\FileUploadResponse.cs">
       <Link>Transport\FileUploadResponse.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.Azure.Devices.Client\Transport\ITransientErrorDetectionStrategy.cs">
-      <Link>Transport\ITransientErrorDetectionStrategy.cs</Link>
     </Compile>
     <Compile Include="..\Microsoft.Azure.Devices.Client\Transport\Mqtt\ChannelMessageProcessingException.cs">
       <Link>Transport\Mqtt\ChannelMessageProcessingException.cs</Link>

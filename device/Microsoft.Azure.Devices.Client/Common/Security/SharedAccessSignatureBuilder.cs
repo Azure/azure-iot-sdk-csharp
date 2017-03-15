@@ -147,7 +147,7 @@ namespace Microsoft.Azure.Devices.Client
             return Convert.ToBase64String(hmac);
         }
 #else
-        internal static string Sign(string requestString, string key)
+        static string Sign(string requestString, string key)
         {
 #if !NETSTANDARD1_3
             var algorithm = WinRTCrypto.MacAlgorithmProvider.OpenAlgorithm(MacAlgorithm.HmacSha256);
