@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
     {
         readonly ClientWebSocket webSocket;
         readonly CancellationTokenSource cancellationTokenSource;
-        bool active;
+        volatile bool active;
 
         internal bool ReadPending { get; set; }
 
@@ -95,35 +95,28 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         protected override void DoClose()
         {
+            WebSocketState webSocketState = this.webSocket.State;
+            if (webSocketState != WebSocketState.Closed && webSocketState != WebSocketState.Aborted)
+            {
+                // Cancel any pending operations
+                this.CancelPendingOperations();
+                this.active = false;
 #pragma warning disable 4014
-            // This is to handle the deadlock issue reported here: https://github.com/aspnet/HttpSysServer/issues/136    
-            Task.Run(() =>
-            {
-                this.OnClose();
-            }).WithTimeout(TimeSpan.FromMinutes(1), () => "Timed out waiting for ClientWebSocketChannel to close");
-#pragma warning restore 4014
-        }
-
-        async void OnClose()
-        {
-            try
-            {
-                WebSocketState webSocketState = this.webSocket.State;
-                if (webSocketState != WebSocketState.Closed && webSocketState != WebSocketState.Aborted)
+                Task.Run(async () =>
                 {
-                    // Cancel any pending operations
-                    this.CancelPendingOperations();
-                    this.active = false;
-
-                    using (var cancelTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30)))
+                    try
                     {
-                        await this.webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, cancelTokenSource.Token);
+                        using (var cancelTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30)))
+                        {
+                            await this.webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, cancelTokenSource.Token);
+                        }
                     }
-                }
-            }
-            catch (Exception e) when (!e.IsFatal())
-            {
-                this.Abort();
+                    catch (Exception e) when (!e.IsFatal())
+                    {
+                        this.Abort();
+                    }
+                });
+#pragma warning restore 4014
             }
         }
 
@@ -270,9 +263,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         void Abort()
         {
-            this.webSocket.Abort();
-            this.webSocket.Dispose();
-            this.cancellationTokenSource.Dispose();
+            try
+            {
+                this.webSocket.Abort();
+                this.webSocket.Dispose();
+                this.cancellationTokenSource.Dispose();
+            }
+            catch (Exception ex) when (!ex.IsFatal())
+            {
+                // ignore these exceptions
+            } 
         }
     }
 }
