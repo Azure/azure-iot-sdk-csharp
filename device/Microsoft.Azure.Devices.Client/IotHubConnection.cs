@@ -210,14 +210,28 @@ namespace Microsoft.Azure.Devices.Client
 
         protected static bool InitializeDisableServerCertificateValidation()
         {
-#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3 // No System.Configuration.ConfigurationManager in UWP/PCL, NetStandard
+#if PCL
+            return false;
+#else
+#if WINDOWS_UWP || NETSTANDARD1_3 // No System.Configuration.ConfigurationManager in UWP/PCL, NetStandard
+            bool flag;
+            if (AppContext.TryGetSwitch("DisableServerCertificateValidationKeyName", out flag) && flag == true)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+#else
             string value = ConfigurationManager.AppSettings[DisableServerCertificateValidationKeyName];
             if (!string.IsNullOrEmpty(value))
             {
                 return bool.Parse(value);
             }
-#endif
             return false;
+#endif
+#endif
         }
 
         protected virtual void OnCreateSendingLink(IotHubConnectionString connectionString)

@@ -6,6 +6,7 @@
     "Microsoft.Azure.Amqp": "2.0.4",
     "NETStandard.Library": "1.6.1",
     "Newtonsoft.Json": "9.0.1",
+    "System.AppContext": "4.3.0",
     "System.Collections.Specialized": "4.3.0",
     "System.Diagnostics.TraceSource": "4.3.0",
     "System.Net.Http": "4.3.1",
