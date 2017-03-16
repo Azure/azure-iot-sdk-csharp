@@ -475,12 +475,6 @@ namespace Microsoft.Azure.Devices.Client
 #else
                     this.WebSocketStream?.Dispose();
 #endif
-
-#if !NETSTANDARD1_3
-                    this.TcpClient?.Close();
-#else
-                    this.TcpClient?.Dispose();
-#endif
                 }
 
                 succeeded = true;
@@ -765,11 +759,7 @@ namespace Microsoft.Azure.Devices.Client
 
             // verify that a SecWebSocketAccept header is present with appropriate hash value string
             string secWebSocketAcceptHeaderValue;
-#if !NETSTANDARD1_3
-            if (null == (secWebSocketAcceptHeaderValue = webSocketHeaders.Get(Headers.SecWebSocketAccept)))
-#else
             if (null == (secWebSocketAcceptHeaderValue = webSocketHeaders[Headers.SecWebSocketAccept]))
-#endif
             {
                 // Server did not include the SecWebSocketAcceptHeader in the response
                 return false;
