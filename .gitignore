@@ -206,3 +206,6 @@ Buildx86retail.dat
 OnBoardFlash.dat
 OnBoardFlash.dat.smd
 DOTNETMF_FS_EMULATION*/
+/device/Microsoft.Azure.Devices.Client.PCL/project.lock.json
+/shared/Microsoft.Azure.Devices.Shared.NetStandard/project.lock.json
+/device/Microsoft.Azure.Devices.Client.UWP/project.lock.json
