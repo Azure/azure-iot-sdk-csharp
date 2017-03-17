@@ -17,13 +17,15 @@ namespace Microsoft.Azure.Devices.Client.Transport
     using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Azure.Devices.Client.Extensions;
     using Microsoft.Azure.Devices.Shared;
-#if !WINDOWS_UWP && !PCL
-#if !NETSTANDARD1_3
+
+#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
     using System.Net.Http.Formatting;
 #else
     using System.Text;
     using Newtonsoft.Json;
 #endif
+
+#if !WINDOWS_UWP && !PCL
     using System.Security.Cryptography.X509Certificates;
 #endif
 
@@ -525,8 +527,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-#if !WINDOWS_UWP && !PCL
-#if !NETSTANDARD1_3
+#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
         private static ObjectContent<T> CreateContent<T>(T entity)
         {
             return new ObjectContent<T>(entity, JsonFormatter);
@@ -551,7 +552,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 return new JsonSerializer().Deserialize<T>(jsonReader);
             }
         }
-#endif
 #endif
     }
 }
