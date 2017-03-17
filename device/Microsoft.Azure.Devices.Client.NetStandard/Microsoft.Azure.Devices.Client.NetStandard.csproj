@@ -237,9 +237,7 @@
       <Name>Microsoft.Azure.Devices.Shared.Standard</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Common\Interop\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="..\Microsoft.Azure.Devices.Client.Shared\Microsoft.Azure.Devices.Client.Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
