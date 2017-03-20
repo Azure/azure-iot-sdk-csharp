@@ -346,12 +346,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         }
                         else
                         {
-#if WINDOWS_UWP || PCL
-                            // System.Net.Http.Formatting does not exist in UWP. Need to find another way to create content
-                            throw new NotImplementedException();
-#else
                             requestMsg.Content = CreateContent(entity);
-#endif
                         }
                     }
 
