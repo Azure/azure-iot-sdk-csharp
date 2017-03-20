@@ -215,14 +215,11 @@ namespace Microsoft.Azure.Devices.Client
 #else
 #if WINDOWS_UWP || NETSTANDARD1_3 // No System.Configuration.ConfigurationManager in UWP/PCL, NetStandard
             bool flag;
-            if (AppContext.TryGetSwitch("DisableServerCertificateValidationKeyName", out flag) && flag == true)
-            {
-                return true;
-            }
-            else
+            if (!AppContext.TryGetSwitch("DisableServerCertificateValidationKeyName", out flag))
             {
                 return false;
             }
+            return flag;
 #else
             string value = ConfigurationManager.AppSettings[DisableServerCertificateValidationKeyName];
             if (!string.IsNullOrEmpty(value))
