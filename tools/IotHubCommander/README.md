@@ -12,7 +12,7 @@ Azure IoT Hub is a fully managed service that helps enable reliable and secure b
 * Device to Cloud
 * Cloud to Device
 * Cloud to Device event listener
-* Feedback receiver
+* Feedback Receiver
 * Read events from IotHub or EventHub
 * IotHub Migration (preview)
 
@@ -76,10 +76,16 @@ Write command below -
  * --connStr="Connection string for reading event, Device connection string".
  * --action="Abandon, Commit or None", for abandon, Commit the message. None is default command and will ask you for abandon or commit.
 
-Example -
+Example:
 
 * IotHubCommander.exe --listen=Device --connStr=HostName=something.azure-devices.net;DeviceId=123456;SharedAccessKey=2CFsCmqyHvHHmRTkD8bR/YbEIU9IM= --action=Abandon
 * IotHubCommander.exe --listen=Device --connStr=HostName=something.azure-devices.net;DeviceId=123456;SharedAccessKey=2CFsCmqyHvHHmRTkD8bR/YbEIU9IM= --action=Commit
+
+### Feedback Receiver
+This cammand is used to start receiving of feedback, sent from devices.
+
+Example: 
+--listen=Device --connStr=HostName=something.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=LIFJbieayddyDz5W3s9mnxQCzr5458FDLnZ8o8BLVXXyW6Cc=
 
 
 ### Read events from IotHub or EventHub
