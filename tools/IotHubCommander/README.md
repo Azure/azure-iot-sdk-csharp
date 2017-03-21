@@ -22,7 +22,7 @@ Azure IoT Hub is a fully managed service that helps enable reliable and secure b
 This cammand is used to emulate device, which is sending events to IotHub. Events are stored in the CSV file
 and serialized in JSON fromat defined by a template file.
 
-*Example of CSV file, which contains sample data*:
+*Example of CSV file, which contains sample data (separator is ' ')*:
 ~~~csv
 29.00	1987.12	3
 31.21	1981.11	5	
@@ -38,7 +38,6 @@ and serialized in JSON fromat defined by a template file.
    "Temp" : @1,
    "Humidity": @2,
    "Counter": @3,
-   "SwitchValue": @4
 }
 ~~~
 
