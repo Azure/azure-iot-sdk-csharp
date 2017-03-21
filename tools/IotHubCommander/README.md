@@ -137,7 +137,7 @@ The name of storage account. Migration process uses the storage to export/import
 The storage account key.
 
 ## Setup
-* Download setup.exe file from [here](https://github.com/daenetCorporation/azure-iot-sdks/blob/develop/tools/IotHubCommander/IotHubCommander/publish/setup.exe) and install.
+* Download setup.exe file from [here](https://github.com/daenetCorporation/azure-iot-sdk-csharp/blob/master/tools/IotHubCommander/IotHubCommander/publish/setup.exe) and install.
 * Write your event semicolon separated values in CSV file. i.e  
 ```csv
 29.00;1987.12;3;1;  
