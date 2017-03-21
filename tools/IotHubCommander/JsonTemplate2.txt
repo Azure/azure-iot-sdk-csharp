@@ -1,0 +1,6 @@
+﻿{
+   "Temp" : @1,
+   "Humidity": @2,
+   "Counter": @3,
+   "SwitchValue": @4
+}
