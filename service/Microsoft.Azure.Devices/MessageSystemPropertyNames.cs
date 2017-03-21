@@ -35,5 +35,13 @@ namespace Microsoft.Azure.Devices
         public const string ConnectionDeviceGenerationId = "iothub-connection-auth-generation-id";
 
         public const string ConnectionAuthMethod = "iothub-connection-auth-method";
+
+        public const string MessageSchema = "iothub-message-schema";
+
+        public const string CreationTimeUtc = "iothub-creation-time-utc";
+
+        public const string ContentEncoding = "iothub-content-encoding";
+
+        public const string ContentType = "iothub-content-type";
     }
 }
