@@ -20,18 +20,17 @@ Azure IoT Hub is a fully managed service that helps enable reliable and secure b
 ### Device to Cloud 
 
 This cammand is used to emulate device, which is sending events to IotHub. Events are stored in the CSV file
-and serialized in JSON fromat defined by a template file.
+fand serialized in JSON fromat defined by a template file.
 
-*Example of CSV file, which contains sample data (separator is ' ')*:
+*Example of CSV file, which contains sample data (separator is ';')*:
 ~~~csv
-29.00	1987.12	3
-31.21	1981.11	5	
-29.00	1987.12	3
-31.21	1981.11	5	
-29.00	1987.12	3
-31.21	1981.11	5	
+29.00;1987.12;3
+31.21;1981.11;5	
+29.00;1987.12;3
+31.21;1981.11;5	
+29.00;1987.12;3
+31.21;1981.11;5	
 ~~~
-
 *Example of JSON template file, which defines how to format events*:
 ~~~json
  {
@@ -41,16 +40,25 @@ and serialized in JSON fromat defined by a template file.
 }
 ~~~
 
-To send event from Device to Cloud, run command line promt and write command -
+Following example shows sending events Device to Cloud command:
 
-* --send=Event "for sending event to Cloud from Device".
-* --connStr="Connection string for sending event, device connection string".
-* --cmdDelay="Delay time to listen".
-* --eventFile="csv formated file path with ";" separated value".
-* --tempFile="Json template text file. You can use this file define how JSON formatted event looks like".
+~~~csv
+IotHubCommander.exe --send=event --connStr=HostName=something.azure-devices.net;DeviceId=123456;SharedAccessKey=2CFsCmqyHvH/5HmRTkD8bR/YbEIU9IM= --cmdDelay=5 --eventFile=TextData1.csv --tempFile=JsonTemplate.txt
+~~~
 
-Example -
-* IotHubCommander.exe --send=event --connStr=HostName=something.azure-devices.net;DeviceId=123456;SharedAccessKey=2CFsCmqyHvH/5HmRTkD8bR/YbEIU9IM= --cmdDelay=5 --eventFile=TextData1.csv --tempFile=JsonTemplate.txt
+*--send*
+Send event to Cloud from Device.
+
+*--connStr*
+Device connection string for sending events.
+
+*--cmdDelay*
+Delay time to listen.
+*--eventFile*
+Comma (";") separated CSV formated file path where events will be stored.
+
+*--tempFile*
+Json template text file. You can use this file define how JSON formatted event looks like.
 
 ### Send Cloud to Device command
 
@@ -63,15 +71,18 @@ To send event from Cloud to Device, run CommandLine promt and write command -
 * --eventFile="csv formated file path with ";" separated value".
 * --tempFile="Json template text file path, format of event".
 
-Example - 
+Follwing example shows Cloud to Device command:
+
+~~~csv
 * IotHubCommander.exe --send=Cloud --connStr=HostName=protadapter-testing.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=J95WJrRRbvZbSAV66CX/MKj66IJ7YnqvaqXSmIg5lY4= --deviceId=daenet-damir --eventFile=C:\GitHub\Azure-Iot-Sdks\tools\IotHubCommander\IotHubCommander\TextData2.csv --tempFile=C:\GitHub\Azure-Iot-Sdks\tools\IotHubCommander\IotHubCommander\JsonTemplate2.txt
+~~~
 
 ### Cloud to Device event Listener
 
-By using of this command you can emulate device, which is listening for Cloud-to-Device commands
-and automatically complete or abandon them.
+By using of this command you can emulate device, which is listening for Cloud-to-Device and automatically complete or abandon them.
 
-Write command below -
+Commadn for Cloud-to-Device Listener:
+
  * --listen=Device "for listening event".
  * --connStr="Connection string for reading event, Device connection string".
  * --action="Abandon, Commit or None", for abandon, Commit the message. None is default command and will ask you for abandon or commit.
