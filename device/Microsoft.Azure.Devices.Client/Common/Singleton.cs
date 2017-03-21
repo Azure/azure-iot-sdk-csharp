@@ -137,7 +137,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        bool TryRemove()
+        public bool TryRemove()
         {
             lock (this.syncLock)
             {
