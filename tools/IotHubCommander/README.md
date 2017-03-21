@@ -6,6 +6,7 @@ Azure IoT Hub is a fully managed service that helps enable reliable and secure b
 * Read events from Cloud
 * Getting feedback
 * Read events from IotHub or EventHub
+* IotHub Migration (preview)
 
 ### Evironment Setup
 * Download setup.exe file from [here](https://github.com/daenetCorporation/azure-iot-sdks/blob/develop/tools/IotHubCommander/IotHubCommander/publish/setup.exe) and install.
@@ -39,7 +40,7 @@ To send event from Device to Cloud, run CommandLien promt and write command -
 Example -
 * IotHubCommander.exe --send=event --connStr=HostName=something.azure-devices.net;DeviceId=123456;SharedAccessKey=2CFsCmqyHvH/5HmRTkD8bR/YbEIU9IM= --cmdDelay=5 --eventFile=TextData1.csv --tempFile=JsonTemplate.txt
 
-### Send Event Cloud to Device
+### Send Cloud to Device command
 
 To send event from Cloud to Device, run CommandLine promt and write command -
 * --send=Cloud "for sending event to Device from Cloud".
@@ -71,6 +72,23 @@ To get event form IotHub or EventHub write command below -
 * --connStr="IotHub or EventHub connection string, service connection string".
 * --startTime="Starting time to read events".
 * --consumerGroup="Consumer Group name, default is $Default".
+
+### IotHub Migration (preview)
+Exports all devices from origin IotHub and imports them to destination IotHub.
+
+--migrateiothub=HostName=iothub-from.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=**** --to HostName=iothub-to.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=**** acc=storageaccountname --key=**
+
+*--migrateiothub*
+The connection string of origin IotHub from where to migrate devices.
+
+*--to*
+The connection string of destination IotHub where devices will be migrated.
+
+*acc*
+The name of storage account. Migration process uses the storage to export/import device data.
+
+*key*
+The storage account key.
 
 Example
 * --connectTo=EventHub --connStr=Endpoint=sb://sonethig-myevent-test.servicebus.windows.net/;SharedAccessKeyName=ReaderPolicy;SharedAccessKey=8AKA52124IölkVqj5eabciWz99UJWpDpQLQzwyLoWVKOTg=;EntityPath=abc --startTime=-3h --consumerGroup=abc
