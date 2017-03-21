@@ -25,3 +25,6 @@
 *.snk binary
 *.vsdx binary
 *.xps binary
+*.manifest binary
+*.application binary
+*.deploy binary
