@@ -23,12 +23,12 @@
     <UpdatePeriodically>false</UpdatePeriodically>
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
-    <InstallUrl>https://github.com/daenetCorporation/azure-iot-sdk-csharp/blob/master/tools/IotHubCommander/IotHubCommander/publish/</InstallUrl>
-    <UpdateUrl>https://github.com/daenetCorporation/azure-iot-sdk-csharp/blob/master/tools/IotHubCommander/IotHubCommander/publish/</UpdateUrl>
+    <InstallUrl>https://raw.githubusercontent.com/daenetCorporation/azure-iot-sdk-csharp/master/tools/IotHubCommander/IotHubCommander/publish/</InstallUrl>
+    <UpdateUrl>https://raw.githubusercontent.com/daenetCorporation/azure-iot-sdk-csharp/master/tools/IotHubCommander/IotHubCommander/publish/</UpdateUrl>
     <PublisherName>daenet GmbH, Frankfurt am Main, Germany.</PublisherName>
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>publish.htm</WebPage>
-    <ApplicationRevision>9</ApplicationRevision>
+    <ApplicationRevision>12</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
