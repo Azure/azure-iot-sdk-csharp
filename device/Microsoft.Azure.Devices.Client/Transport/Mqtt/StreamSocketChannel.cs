@@ -94,10 +94,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     }
                     else
                     {
-                        // nothing was read -> release the buffer.
-                        byteBuffer.Release();
-                        byteBuffer = null;
-                        break;
+                        throw new OperationCanceledException();
                     }
 
                     this.Pipeline.FireChannelRead(byteBuffer);
