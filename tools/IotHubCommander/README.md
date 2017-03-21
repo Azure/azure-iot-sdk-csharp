@@ -76,17 +76,25 @@ Write command below -
  * --connStr="Connection string for reading event, Device connection string".
  * --action="Abandon, Commit or None", for abandon, Commit the message. None is default command and will ask you for abandon or commit.
 
-Example:
+Following example shows how to receive commands and automatically *abandons* commands:
 
-* IotHubCommander.exe --listen=Device --connStr=HostName=something.azure-devices.net;DeviceId=123456;SharedAccessKey=2CFsCmqyHvHHmRTkD8bR/YbEIU9IM= --action=Abandon
-* IotHubCommander.exe --listen=Device --connStr=HostName=something.azure-devices.net;DeviceId=123456;SharedAccessKey=2CFsCmqyHvHHmRTkD8bR/YbEIU9IM= --action=Commit
+~~~csv
+IotHubCommander.exe --listen=Device --connStr=HostName=something.azure-devices.net;DeviceId=123456;SharedAccessKey=2CFsCmqyHvHHmRTkD8bR/YbEIU9IM= --action=Abandon
+~~~
+
+Following example shows how to receive commands and automatically *complete* commands:
+
+~~~csv
+IotHubCommander.exe --listen=Device --connStr=HostName=something.azure-devices.net;DeviceId=123456;SharedAccessKey=2CFsCmqyHvHHmRTkD8bR/YbEIU9IM= --action=Commit
+~~~
 
 ### Feedback Receiver
 This cammand is used to start receiving of feedback, sent from devices.
 
 Example: 
---listen=Device --connStr=HostName=something.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=LIFJbieayddyDz5W3s9mnxQCzr5458FDLnZ8o8BLVXXyW6Cc=
-
+~~~csv
+IotHubCommander.exe --listen=Device --connStr=HostName=something.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=LIFJbieayddyDz5W3s9mnxQCzr5458FDLnZ8o8BLVXXyW6Cc=
+~~~
 
 ### Read events from IotHub or EventHub
 
