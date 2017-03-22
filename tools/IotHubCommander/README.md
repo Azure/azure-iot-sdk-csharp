@@ -5,15 +5,17 @@ Azure IoT Hub is a fully managed service that helps enable reliable and secure b
 
 ## Setup
 
-* Download setup.exe file from [here](https://github.com/daenetCorporation/azure-iot-sdk-csharp/blob/master/tools/IotHubCommander/IotHubCommander/publish/setup.exe) and install.
-* Write your event semicolon separated values in CSV file. i.e  
+1. Download setup.exe file from [here](https://github.com/daenetCorporation/azure-iot-sdk-csharp/blob/master/tools/IotHubCommander/IotHubCommander/publish/setup.exe) and install.
+2. Write your event semicolon separated values in CSV file. i.e  
+
 ```csv
 29.00;1987.12;3;1;  
 31.21;1981.11;5;1;   
 29.00;1987.12;3;0;  
 31.21;1981.11;5;0;  
 ```
-* Write JSON formated Template file (Template.txt). i.e  
+
+3. Write JSON formated Template file (Template.txt). i.e  
 ```JSON
 {
    "Temp" : @1,
@@ -22,7 +24,8 @@ Azure IoT Hub is a fully managed service that helps enable reliable and secure b
    "SwitchValue": @4
 }
 ```
-* Run Command Line Prompt and write commands for sending, receiving, IotHub migration etc.
+
+4. Run Command Line Prompt and write commands for sending, receiving, IotHub migration etc.
 
 ## IoTHubCommander Scenarios
 
@@ -34,7 +37,6 @@ Azure IoT Hub is a fully managed service that helps enable reliable and secure b
 * Feedback Receiver
 * Read events from IotHub or EventHub
 * IotHub Migration (preview)
-
 
 ### Device to Cloud 
 
@@ -50,6 +52,7 @@ file serialized in JSON format defined by a template file.
 29.00;1987.12;3
 31.21;1981.11;5	
 ~~~
+
 *Example of JSON template file, which defines how to format events*:
 ~~~json
  {
@@ -61,7 +64,7 @@ file serialized in JSON format defined by a template file.
 
 Following example shows sending events Device to Cloud command:
 
-~~~csv
+~~~
 IotHubCommander.exe --send=event --connStr=HostName=something.azure-devices.net;DeviceId=123456;SharedAccessKey=2CFsCmqyHvH/5HmRTkD8bR/YbEIU9IM= --cmdDelay=5 --eventFile=TextData1.csv --tempFile=JsonTemplate.txt
 ~~~
 
@@ -73,6 +76,7 @@ Device connection string for sending events.
 
 *--cmdDelay*
 Delay time to listen.
+
 *--eventFile*
 Semicolon (";") separated CSV formated file path where events will be stored.
 
@@ -85,8 +89,8 @@ By using this command you can send a list of events from Cloud to Device in pred
 
 Following example shows Cloud to Device command:
 
-~~~csv
-* IotHubCommander.exe --send=Cloud --connStr=HostName=protadapter-testing.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=J95WJrRRbvZbSAV66CX/MKj66IJ7YnqvaqXSmIg5lY4= --deviceId=daenet-damir --eventFile=C:\GitHub\Azure-Iot-Sdks\tools\IotHubCommander\IotHubCommander\TextData2.csv --tempFile=C:\GitHub\Azure-Iot-Sdks\tools\IotHubCommander\IotHubCommander\JsonTemplate2.txt
+~~~
+IotHubCommander.exe --send=Cloud --connStr=HostName=protadapter-testing.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=J95WJrRRbvZbSAV66CX/MKj66IJ7YnqvaqXSmIg5lY4= --deviceId=daenet-damir --eventFile=C:\GitHub\Azure-Iot-Sdks\tools\IotHubCommander\IotHubCommander\TextData2.csv --tempFile=C:\GitHub\Azure-Iot-Sdks\tools\IotHubCommander\IotHubCommander\JsonTemplate2.txt
 ~~~
 
 *--send*
@@ -112,13 +116,13 @@ By using of this command you can emulate device, which is listening for Cloud-to
 
 Following example shows how to receive commands and automatically *abandons*:
 
-~~~csv
+~~~
 IotHubCommander.exe --listen=Device --connStr=HostName=something.azure-devices.net;DeviceId=123456;SharedAccessKey=2CFsCmqyHvHHmRTkD8bR/YbEIU9IM= --action=Abandon
 ~~~
 
 Following example shows how to receive commands and automatically *complete*:
 
-~~~csv
+~~~
 IotHubCommander.exe --listen=Device --connStr=HostName=something.azure-devices.net;DeviceId=123456;SharedAccessKey=2CFsCmqyHvHHmRTkD8bR/YbEIU9IM= --action=Commit
 ~~~
 
@@ -177,7 +181,9 @@ Consumer Group name, default is $Default.
 ### IotHub Migration (preview)
 Exports all devices from origin IotHub and imports them to destination IotHub.
 
---migrateiothub=HostName=iothub-from.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=**** --to HostName=iothub-to.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=**** acc=storageaccountname --key=**
+~~~
+IotHubCommander.exe --migrateiothub=HostName=iothub-from.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=**** --to HostName=iothub-to.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=**** --acc=storageaccountname --key=**
+~~~
 
 *--migrateiothub*
 The connection string of origin IotHub from where to migrate devices.
@@ -185,9 +191,9 @@ The connection string of origin IotHub from where to migrate devices.
 *--to*
 The connection string of destination IotHub where devices will be migrated.
 
-*acc*
+*--acc*
 The name of storage account. Migration process uses the storage to export/import device data.
 
-*key*
+*--key*
 The storage account key.
 
