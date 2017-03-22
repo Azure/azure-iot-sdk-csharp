@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
@@ -16,6 +19,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestClass]
     public class MessageE2ETests
     {
+        private const string DevicePrefix = "E2E_Message_CSharp_";
         private static string hubConnectionString;
         private static string hostName;
         private static RegistryManager registryManager;
@@ -27,7 +31,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [ClassInitialize]
         public static void ClassInitialize(TestContext testContext)
         {
-            var environment = TestUtil.InitializeEnvironment("E2E_Message_CSharp_");
+            var environment = TestUtil.InitializeEnvironment(DevicePrefix);
             hubConnectionString = environment.Item1;
             registryManager = environment.Item2;
             hostName = TestUtil.GetHostName(hubConnectionString);
@@ -109,21 +113,26 @@ namespace Microsoft.Azure.Devices.E2ETests
             await ReceiveSingleMessage(Client.TransportType.Http1);
         }
 
-
         [TestMethod]
         [TestCategory("Message-E2E")]
         [TestCategory("Recovery")]
         public async Task Message_TcpConnectionLossSendRecovery_Amqp()
         {
-            await SendMessageRecovery(Client.TransportType.Amqp_Tcp_Only, "KillTcp", "boom", 1);
-        }
+            await SendMessageRecovery(Client.TransportType.Amqp_Tcp_Only, 
+                TestUtil.FaultType_Tcp, 
+                TestUtil.FaultCloseReason_Boom, 
+                TestUtil.DefaultDelayInSec);
+        } 
 
         [TestMethod]
         [TestCategory("Message-E2E")]
         [TestCategory("Recovery")]
         public async Task Message_TcpConnectionLossSendRecovery_AmqpWs()
         {
-            await SendMessageRecovery(Client.TransportType.Amqp_WebSocket_Only, "KillTcp", "boom", 1);
+            await SendMessageRecovery(Client.TransportType.Amqp_WebSocket_Only, 
+                TestUtil.FaultType_Tcp, 
+                TestUtil.FaultCloseReason_Boom, 
+                TestUtil.DefaultDelayInSec);
         }
 
         [Ignore]
@@ -132,7 +141,10 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Recovery")]
         public async Task Message_TcpConnectionLossSendRecovery_Mqtt()
         {
-            await SendMessageRecovery(Client.TransportType.Mqtt_Tcp_Only, "KillTcp", "boom", 1);
+            await SendMessageRecovery(Client.TransportType.Mqtt_Tcp_Only, 
+                TestUtil.FaultType_Tcp, 
+                TestUtil.FaultCloseReason_Boom, 
+                TestUtil.DefaultDelayInSec);
         }
 
         [Ignore]
@@ -141,7 +153,10 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Recovery")]
         public async Task Message_TcpConnectionLossSendRecovery_MqttWs()
         {
-            await SendMessageRecovery(Client.TransportType.Mqtt_WebSocket_Only, "KillTcp", "boom", 1);
+            await SendMessageRecovery(Client.TransportType.Mqtt_WebSocket_Only, 
+                TestUtil.FaultType_Tcp, 
+                TestUtil.FaultCloseReason_Boom, 
+                TestUtil.DefaultDelayInSec);
         }
 
         [Ignore]
@@ -150,7 +165,10 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Recovery")]
         public async Task Message_TcpConnectionLossSendRecovery_Http()
         {
-            await SendMessageRecovery(Client.TransportType.Http1, "KillTcp", "boom", 1);
+            await SendMessageRecovery(Client.TransportType.Http1, 
+                TestUtil.FaultType_Tcp, 
+                TestUtil.FaultCloseReason_Boom, 
+                TestUtil.DefaultDelayInSec);
         }
 
         [TestMethod]
@@ -158,7 +176,10 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Recovery")]
         public async Task Message_AmqpConnectionLossSendRecovery_Amqp()
         {
-            await SendMessageRecovery(Client.TransportType.Amqp_Tcp_Only, "KillAmqpConnection", "", 1);
+            await SendMessageRecovery(Client.TransportType.Amqp_Tcp_Only, 
+                TestUtil.FaultType_AmqpConn, 
+                "", 
+                TestUtil.DefaultDelayInSec);
         }
 
         [TestMethod]
@@ -166,7 +187,10 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Recovery")]
         public async Task Message_AmqpConnectionLossSendRecovery_AmqpWs()
         {
-            await SendMessageRecovery(Client.TransportType.Amqp_WebSocket_Only, "KillAmqpConnection", "", 1);
+            await SendMessageRecovery(Client.TransportType.Amqp_WebSocket_Only, 
+                TestUtil.FaultType_AmqpConn, 
+                "", 
+                TestUtil.DefaultDelayInSec);
         }
 
         [TestMethod]
@@ -174,7 +198,10 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Recovery")]
         public async Task Message_AmqpSessionLossSendRecovery_Amqp()
         {
-            await SendMessageRecovery(Client.TransportType.Amqp_Tcp_Only, "KillAmqpSession", "", 1);
+            await SendMessageRecovery(Client.TransportType.Amqp_Tcp_Only, 
+                TestUtil.FaultType_AmqpSess, 
+                "", 
+                TestUtil.DefaultDelayInSec);
         }
 
         [TestMethod]
@@ -182,7 +209,10 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Recovery")]
         public async Task Message_AmqpSessionLossSendRecovery_AmqpWs()
         {
-            await SendMessageRecovery(Client.TransportType.Amqp_WebSocket_Only, "KillAmqpSession", "", 1);
+            await SendMessageRecovery(Client.TransportType.Amqp_WebSocket_Only, 
+                TestUtil.FaultType_AmqpSess, 
+                "", 
+                TestUtil.DefaultDelayInSec);
         }
 
         [TestMethod]
@@ -190,7 +220,10 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Recovery")]
         public async Task Message_AmqpD2CLinkDropSendRecovery_Amqp()
         {
-            await SendMessageRecovery(Client.TransportType.Amqp_Tcp_Only, "KillAmqpD2CLink", "boom", 1);
+            await SendMessageRecovery(Client.TransportType.Amqp_Tcp_Only, 
+                TestUtil.FaultType_AmqpD2C, 
+                TestUtil.FaultCloseReason_Boom, 
+                TestUtil.DefaultDelayInSec);
         }
 
         [TestMethod]
@@ -198,7 +231,10 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Recovery")]
         public async Task Message_AmqpD2CLinkDropSendRecovery_AmqpWs()
         {
-            await SendMessageRecovery(Client.TransportType.Amqp_WebSocket_Only, "KillAmqpD2CLink", "boom", 1);
+            await SendMessageRecovery(Client.TransportType.Amqp_WebSocket_Only, 
+                TestUtil.FaultType_AmqpD2C, 
+                TestUtil.FaultCloseReason_Boom, 
+                TestUtil.DefaultDelayInSec);
         }
 
 
@@ -207,7 +243,10 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Recovery")]
         public async Task Message_TcpConnectionLossReceiveRecovery_Amqp()
         {
-            await ReceiveMessageRecovery(Client.TransportType.Amqp_Tcp_Only, "KillTcp", "boom", 1);
+            await ReceiveMessageRecovery(Client.TransportType.Amqp_Tcp_Only, 
+                TestUtil.FaultType_Tcp, 
+                TestUtil.FaultCloseReason_Boom, 
+                TestUtil.DefaultDelayInSec);
         }
 
         [TestMethod]
@@ -215,7 +254,10 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Recovery")]
         public async Task Message_TcpConnectionLossReceiveRecovery_AmqpWs()
         {
-            await ReceiveMessageRecovery(Client.TransportType.Amqp_WebSocket_Only, "KillTcp", "boom", 1);
+            await ReceiveMessageRecovery(Client.TransportType.Amqp_WebSocket_Only,
+                TestUtil.FaultType_Tcp,
+                TestUtil.FaultCloseReason_Boom,
+                TestUtil.DefaultDelayInSec);
         }
 
         [Ignore]
@@ -224,7 +266,10 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Recovery")]
         public async Task Message_TcpConnectionLossReceiveRecovery_Mqtt()
         {
-            await ReceiveMessageRecovery(Client.TransportType.Mqtt_Tcp_Only, "KillTcp", "boom", 1);
+            await ReceiveMessageRecovery(Client.TransportType.Mqtt_Tcp_Only,
+                TestUtil.FaultType_Tcp, 
+                TestUtil.FaultCloseReason_Boom, 
+                TestUtil.DefaultDelayInSec);
         }
 
         [Ignore]
@@ -233,7 +278,10 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Recovery")]
         public async Task Message_TcpConnectionLossReceiveRecovery_MqttWs()
         {
-            await ReceiveMessageRecovery(Client.TransportType.Mqtt_WebSocket_Only, "KillTcp", "boom", 1);
+            await ReceiveMessageRecovery(Client.TransportType.Mqtt_WebSocket_Only,
+                TestUtil.FaultType_Tcp, 
+                TestUtil.FaultCloseReason_Boom, 
+                TestUtil.DefaultDelayInSec);
         }
 
         [Ignore]
@@ -242,7 +290,10 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Recovery")]
         public async Task Message_TcpConnectionLossReceiveRecovery_Http()
         {
-            await ReceiveMessageRecovery(Client.TransportType.Http1, "KillTcp", "boom", 1);
+            await ReceiveMessageRecovery(Client.TransportType.Http1,
+                TestUtil.FaultType_Tcp, 
+                TestUtil.FaultCloseReason_Boom, 
+                TestUtil.DefaultDelayInSec);
         }
 
         [TestMethod]
@@ -250,7 +301,10 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Recovery")]
         public async Task Message_AmqpConnectionLossReceiveRecovery_Amqp()
         {
-            await ReceiveMessageRecovery(Client.TransportType.Amqp_Tcp_Only, "KillAmqpConnection", "", 1);
+            await ReceiveMessageRecovery(Client.TransportType.Amqp_Tcp_Only, 
+                TestUtil.FaultType_AmqpConn, 
+                "", 
+                TestUtil.DefaultDelayInSec);
         }
 
         [TestMethod]
@@ -258,7 +312,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Recovery")]
         public async Task Message_AmqpConnectionLossReceiveRecovery_AmqpWs()
         {
-            await ReceiveMessageRecovery(Client.TransportType.Amqp_WebSocket_Only, "KillAmqpConnection", "", 1);
+            await ReceiveMessageRecovery(Client.TransportType.Amqp_WebSocket_Only,
+                TestUtil.FaultType_AmqpConn, "", 
+                TestUtil.DefaultDelayInSec);
         }
 
         [TestMethod]
@@ -266,7 +322,10 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Recovery")]
         public async Task Message_AmqpSessionLossReceiveRecovery_Amqp()
         {
-            await ReceiveMessageRecovery(Client.TransportType.Amqp_Tcp_Only, "KillAmqpSession", "", 1);
+            await ReceiveMessageRecovery(Client.TransportType.Amqp_Tcp_Only,
+                TestUtil.FaultType_AmqpSess,
+                "", 
+                TestUtil.DefaultDelayInSec);
         }
 
         [TestMethod]
@@ -274,7 +333,10 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Recovery")]
         public async Task Message_AmqpSessionLossReceiveRecovery_AmqpWs()
         {
-            await ReceiveMessageRecovery(Client.TransportType.Amqp_WebSocket_Only, "KillAmqpSession", "", 1);
+            await ReceiveMessageRecovery(Client.TransportType.Amqp_WebSocket_Only, 
+                TestUtil.FaultType_AmqpSess,
+                "", 
+                TestUtil.DefaultDelayInSec);
         }
 
         [TestMethod]
@@ -282,7 +344,10 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Recovery")]
         public async Task Message_AmqpC2DLinkDropReceiveRecovery_Amqp()
         {
-            await ReceiveMessageRecovery(Client.TransportType.Amqp_Tcp_Only, "KillAmqpC2DLink", "boom", 1);
+            await ReceiveMessageRecovery(Client.TransportType.Amqp_Tcp_Only,
+                TestUtil.FaultType_AmqpC2D, 
+                TestUtil.FaultCloseReason_Boom, 
+                TestUtil.DefaultDelayInSec);
         }
 
         [TestMethod]
@@ -290,9 +355,237 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Recovery")]
         public async Task Message_AmqpC2DLinkDropReceiveRecovery_AmqpWs()
         {
-            await ReceiveMessageRecovery(Client.TransportType.Amqp_WebSocket_Only, "KillAmqpC2DLink", "boom", 1);
+            await ReceiveMessageRecovery(Client.TransportType.Amqp_WebSocket_Only,
+                TestUtil.FaultType_AmqpD2C, 
+                TestUtil.FaultCloseReason_Boom, 
+                TestUtil.DefaultDelayInSec);
         }
-   
+
+        [TestMethod]
+        [TestCategory("Message-E2E")]
+        [TestCategory("Recovery")]
+        public async Task Message_ThrottledConnectionRecovery_Amqp()
+        {
+            await SendMessageRecovery(Client.TransportType.Amqp_Tcp_Only,
+                TestUtil.FaultType_Throttle, 
+                TestUtil.FaultCloseReason_Boom, 
+                TestUtil.DefaultDelayInSec,
+                TestUtil.DefaultDurationInSec);
+        }
+
+        [TestMethod]
+        [TestCategory("Message-E2E")]
+        [TestCategory("Recovery")]
+        public async Task Message_ThrottledConnectionRecovery_AmqpWs()
+        {
+            await SendMessageRecovery(Client.TransportType.Amqp_WebSocket_Only,
+                TestUtil.FaultType_Throttle, 
+                TestUtil.FaultCloseReason_Boom, 
+                TestUtil.DefaultDelayInSec,
+                TestUtil.DefaultDurationInSec);
+        }
+
+        [Ignore]
+        [TestMethod]
+        [TestCategory("Message-E2E")]
+        [TestCategory("Recovery")]
+        public async Task Message_ThrottledConnectionRecovery_Mqtt()
+        {
+            await SendMessageRecovery(Client.TransportType.Mqtt_Tcp_Only,
+                TestUtil.FaultType_Throttle,
+                TestUtil.FaultCloseReason_Boom, 
+                TestUtil.DefaultDelayInSec,
+                TestUtil.DefaultDurationInSec);
+        }
+
+        [Ignore]
+        [TestMethod]
+        [TestCategory("Message-E2E")]
+        [TestCategory("Recovery")]
+        public async Task Message_ThrottledConnectionRecovery_MqttWs()
+        {
+            await SendMessageRecovery(Client.TransportType.Mqtt_WebSocket_Only, 
+                TestUtil.FaultType_Throttle, 
+                TestUtil.FaultCloseReason_Boom, 
+                TestUtil.DefaultDelayInSec,
+                TestUtil.DefaultDurationInSec);
+        }
+
+        [Ignore]
+        [TestMethod]
+        [TestCategory("Message-E2E")]
+        [TestCategory("Recovery")]
+        public async Task Message_ThrottledConnectionRecovery_Http()
+        {
+            await SendMessageRecovery(Client.TransportType.Http1,
+                TestUtil.FaultType_Throttle, 
+                TestUtil.FaultCloseReason_Boom, 
+                TestUtil.DefaultDelayInSec,
+                TestUtil.DefaultDurationInSec);
+        }
+
+        [Ignore]
+        [TestMethod]
+        [TestCategory("Message-E2E")]
+        [TestCategory("Recovery")]
+        [ExpectedException(typeof(Client.Exceptions.DeviceMaximumQueueDepthExceededException))]
+        public async Task Message_QuotaExceededRecovery_Amqp()
+        {
+            await SendMessageRecovery(Client.TransportType.Amqp_Tcp_Only,
+                TestUtil.FaultType_QuotaExceeded,
+                TestUtil.FaultCloseReason_Boom,
+                TestUtil.DefaultDelayInSec,
+                TestUtil.DefaultDurationInSec);
+        }
+
+        [Ignore]
+        [TestMethod]
+        [TestCategory("Message-E2E")]
+        [TestCategory("Recovery")]
+        [ExpectedException(typeof(Client.Exceptions.DeviceMaximumQueueDepthExceededException))]
+        public async Task Message_QuotaExceededRecovery_AmqpWs()
+        {
+            await SendMessageRecovery(Client.TransportType.Amqp_WebSocket_Only,
+                TestUtil.FaultType_QuotaExceeded,
+                TestUtil.FaultCloseReason_Boom,
+                TestUtil.DefaultDelayInSec,
+                TestUtil.DefaultDurationInSec);
+        }
+
+        [Ignore]
+        [TestMethod]
+        [TestCategory("Message-E2E")]
+        [TestCategory("Recovery")]
+        [ExpectedException(typeof(Client.Exceptions.DeviceMaximumQueueDepthExceededException))]
+        public async Task Message_QuotaExceededRecovery_Mqtt()
+        {
+            await SendMessageRecovery(Client.TransportType.Mqtt_Tcp_Only,
+                TestUtil.FaultType_QuotaExceeded,
+                TestUtil.FaultCloseReason_Boom,
+                TestUtil.DefaultDelayInSec,
+                TestUtil.DefaultDurationInSec);
+        }
+
+        [Ignore]
+        [TestMethod]
+        [TestCategory("Message-E2E")]
+        [TestCategory("Recovery")]
+        [ExpectedException(typeof(Client.Exceptions.DeviceMaximumQueueDepthExceededException))]
+        public async Task Message_QuotaExceededRecovery_MqttWs()
+        {
+            await SendMessageRecovery(Client.TransportType.Mqtt_WebSocket_Only,
+                TestUtil.FaultType_QuotaExceeded,
+                TestUtil.FaultCloseReason_Boom,
+                TestUtil.DefaultDelayInSec,
+                TestUtil.DefaultDurationInSec);
+        }
+
+        [Ignore]
+        [TestMethod]
+        [TestCategory("Message-E2E")]
+        [TestCategory("Recovery")]
+        [ExpectedException(typeof(Client.Exceptions.DeviceMaximumQueueDepthExceededException))]
+        public async Task Message_QuotaExceededRecovery_Http()
+        {
+            await SendMessageRecovery(Client.TransportType.Http1,
+                TestUtil.FaultType_QuotaExceeded,
+                TestUtil.FaultCloseReason_Boom,
+                TestUtil.DefaultDelayInSec,
+                TestUtil.DefaultDurationInSec);
+        }
+
+        [Ignore]
+        [TestMethod]
+        [TestCategory("Message-E2E")]
+        [TestCategory("Recovery")]
+        [ExpectedException(typeof(Client.Exceptions.UnauthorizedException))]
+        public async Task Message_AutheticationRecovery_Amqp()
+        {
+            await SendMessageRecovery(Client.TransportType.Amqp_Tcp_Only,
+                TestUtil.FaultType_Auth,
+                TestUtil.FaultCloseReason_Boom,
+                TestUtil.DefaultDelayInSec,
+                TestUtil.DefaultDurationInSec);
+        }
+
+        [Ignore]
+        [TestMethod]
+        [TestCategory("Message-E2E")]
+        [TestCategory("Recovery")]
+        [ExpectedException(typeof(Client.Exceptions.UnauthorizedException))]
+        public async Task Message_AutheticationRecovery_AmqpWs()
+        {
+            await SendMessageRecovery(Client.TransportType.Amqp_WebSocket_Only,
+                TestUtil.FaultType_Auth,
+                TestUtil.FaultCloseReason_Boom,
+                TestUtil.DefaultDelayInSec,
+                TestUtil.DefaultDurationInSec);
+        }
+
+        [Ignore]
+        [TestMethod]
+        [TestCategory("Message-E2E")]
+        [TestCategory("Recovery")]
+        [ExpectedException(typeof(Client.Exceptions.UnauthorizedException))]
+        public async Task Message_AutheticationRecovery_Mqtt()
+        {
+            await SendMessageRecovery(Client.TransportType.Mqtt_Tcp_Only,
+                TestUtil.FaultType_Auth,
+                TestUtil.FaultCloseReason_Boom,
+                TestUtil.DefaultDelayInSec,
+                TestUtil.DefaultDurationInSec);
+        }
+
+        [Ignore]
+        [TestMethod]
+        [TestCategory("Message-E2E")]
+        [TestCategory("Recovery")]
+        [ExpectedException(typeof(Client.Exceptions.UnauthorizedException))]
+        public async Task Message_AutheticationRecovery_MqttWs()
+        {
+            await SendMessageRecovery(Client.TransportType.Mqtt_WebSocket_Only,
+                TestUtil.FaultType_Auth,
+                TestUtil.FaultCloseReason_Boom,
+                TestUtil.DefaultDelayInSec,
+                TestUtil.DefaultDurationInSec);
+        }
+
+        [Ignore]
+        [TestMethod]
+        [TestCategory("Message-E2E")]
+        [TestCategory("Recovery")]
+        [ExpectedException(typeof(Client.Exceptions.UnauthorizedException))]
+        public async Task Message_AutheticationRecovery_Http()
+        {
+            await SendMessageRecovery(Client.TransportType.Http1,
+                TestUtil.FaultType_Auth,
+                TestUtil.FaultCloseReason_Boom,
+                TestUtil.DefaultDelayInSec,
+                TestUtil.DefaultDurationInSec);
+        }
+
+        [TestMethod]
+        [TestCategory("Message-E2E")]
+        [TestCategory("Recovery")]
+        public async Task Message_GracefulShutdown_Amqp()
+        {
+            await SendMessageRecovery(Client.TransportType.Amqp_Tcp_Only,
+                TestUtil.FaultType_ShutdownAmqp,
+                TestUtil.FaultCloseReason_Bye,
+                TestUtil.DefaultDelayInSec);
+        }
+
+        [TestMethod]
+        [TestCategory("Message-E2E")]
+        [TestCategory("Recovery")]
+        public async Task Message_GracefulShutdown_AmqpWs()
+        {
+            await SendMessageRecovery(Client.TransportType.Amqp_WebSocket_Only,
+                TestUtil.FaultType_ShutdownAmqp,
+                TestUtil.FaultCloseReason_Bye,
+                TestUtil.DefaultDelayInSec);
+        }
+
         private EventHubReceiver CreateEventHubReceiver(string deviceName, out EventHubClient eventHubClient)
         {
             eventHubClient = EventHubClient.CreateFromConnectionString(hubConnectionString, "messages/events");
@@ -332,7 +625,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private async Task SendSingleMessage(Client.TransportType transport)
         {
-            Tuple<string, string> deviceInfo = TestUtil.CreateDevice("E2E_Message_CSharp_", hostName, registryManager);
+            Tuple<string, string> deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
 
             EventHubClient eventHubClient;
             EventHubReceiver eventHubReceiver = CreateEventHubReceiver(deviceInfo.Item1, out eventHubClient);
@@ -410,7 +703,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private async Task ReceiveSingleMessage(Client.TransportType transport)
         {
-            Tuple<string, string> deviceInfo = TestUtil.CreateDevice("E2E_Message_CSharp_", hostName, registryManager);
+            Tuple<string, string> deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
             ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(hubConnectionString);
 
             var deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, transport);
@@ -432,11 +725,12 @@ namespace Microsoft.Azure.Devices.E2ETests
             TestUtil.RemoveDevice(deviceInfo.Item1, registryManager);
         }
 
-        private async Task SendMessageRecovery(Client.TransportType transport, string faultType, string reason, int delayInSec)
+        private async Task SendMessageRecovery(Client.TransportType transport, 
+            string faultType, string reason, int delayInSec, int durationInSec = 0)
         {
             await sequentialTestSemaphore.WaitAsync();
 
-            Tuple<string, string> deviceInfo = TestUtil.CreateDevice("E2E_Message_CSharp_", hostName, registryManager);
+            Tuple<string, string> deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
 
             EventHubClient eventHubClient;
             EventHubReceiver eventHubReceiver = CreateEventHubReceiver(deviceInfo.Item1, out eventHubClient);
@@ -452,7 +746,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             VerifyTestMessage(events, deviceInfo.Item1, payload, p1Value);
 
             // send error command and clear eventHubReceiver of the fault injection message
-            await deviceClient.SendEventAsync(TestUtil.ComposeErrorInjectionProperties(faultType, reason, delayInSec));
+            await deviceClient.SendEventAsync(TestUtil.ComposeErrorInjectionProperties(faultType, reason, delayInSec, durationInSec));
             await eventHubReceiver.ReceiveAsync(int.MaxValue, TimeSpan.FromSeconds(5));
 
             Thread.Sleep(1000);
@@ -473,7 +767,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await sequentialTestSemaphore.WaitAsync();
 
-            Tuple<string, string> deviceInfo = TestUtil.CreateDevice("E2E_Message_CSharp_", hostName, registryManager);
+            Tuple<string, string> deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
             ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(hubConnectionString);
 
             var deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, transport);

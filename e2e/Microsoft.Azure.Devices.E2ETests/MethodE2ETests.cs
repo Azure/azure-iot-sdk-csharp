@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Azure.Devices.Client;
 using System.Text;
@@ -11,6 +14,11 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestClass]
     public class MethodE2ETests
     {
+        private const string DeviceResponseJson = "{\"name\":\"e2e_test\"}";
+        private const string ServiceRequestJson = "{\"a\":123}";
+        private const string MethodName = "MethodE2ETest";
+        private const string DevicePrefix = "E2E_Method_CSharp_";
+
         private static string hubConnectionString;
         private static string hostName;
         private static RegistryManager registryManager;
@@ -20,7 +28,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [ClassInitialize]
         static public void ClassInitialize(TestContext testContext)
         {
-            var environment = TestUtil.InitializeEnvironment("E2E_Method_CSharp_");
+            var environment = TestUtil.InitializeEnvironment(DevicePrefix);
             hubConnectionString = environment.Item1;
             registryManager = environment.Item2;
             hostName = TestUtil.GetHostName(hubConnectionString);
@@ -66,7 +74,10 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Recovery")]
         public async Task Method_DeviceReceivesMethodAndResponseRecovery_Mqtt()
         {
-            await SendMethodAndRespondRecovery(Client.TransportType.Mqtt_Tcp_Only, "KillTcp", "boom", 1);
+            await SendMethodAndRespondRecovery(Client.TransportType.Mqtt_Tcp_Only, 
+                TestUtil.FaultType_Tcp,
+                TestUtil.FaultCloseReason_Boom,
+                TestUtil.DefaultDelayInSec);
         }
 
         [Ignore]
@@ -75,7 +86,10 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Recovery")]
         public async Task Method_DeviceReceivesMethodAndResponseRecovery_MqttWs()
         {
-            await SendMethodAndRespondRecovery(Client.TransportType.Mqtt_WebSocket_Only, "KillTcp", "boom", 1);
+            await SendMethodAndRespondRecovery(Client.TransportType.Mqtt_WebSocket_Only, 
+                TestUtil.FaultType_Tcp,
+                TestUtil.FaultCloseReason_Boom,
+                TestUtil.DefaultDelayInSec);
         }
 
 
@@ -99,7 +113,10 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Recovery")]
         public async Task Method_DeviceMethodTcpConnRecovery_Amqp()
         {
-            await SendMethodAndRespondRecovery(Client.TransportType.Amqp_Tcp_Only, "KillTcp", "boom", 1);
+            await SendMethodAndRespondRecovery(Client.TransportType.Amqp_Tcp_Only,
+                TestUtil.FaultType_Tcp,
+                TestUtil.FaultCloseReason_Boom,
+                TestUtil.DefaultDelayInSec);
         }
 
         [TestMethod]
@@ -107,7 +124,11 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Recovery")]
         public async Task Method_DeviceMethodTcpConnRecovery_AmqpWs()
         {
-            await SendMethodAndRespondRecovery(Client.TransportType.Amqp_WebSocket_Only, "KillTcp", "boom", 1);
+            await SendMethodAndRespondRecovery(Client.TransportType.Amqp_WebSocket_Only,
+                TestUtil.FaultType_Tcp,
+                TestUtil.FaultCloseReason_Boom,
+                TestUtil.DefaultDelayInSec)
+            ;
         }
 
         [TestMethod]
@@ -115,7 +136,10 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Recovery")]
         public async Task Method_DeviceMethodAmqpConnLostRecovery_Amqp()
         {
-            await SendMethodAndRespondRecovery(Client.TransportType.Amqp_Tcp_Only, "KillAmqpConnection", "boom", 1);
+            await SendMethodAndRespondRecovery(Client.TransportType.Amqp_Tcp_Only,
+                TestUtil.FaultType_AmqpConn,
+                TestUtil.FaultCloseReason_Boom,
+                TestUtil.DefaultDelayInSec);
         }
 
         [TestMethod]
@@ -123,7 +147,10 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Recovery")]
         public async Task Method_DeviceMethodAmqpConnLostRecovery_AmqpWs()
         {
-            await SendMethodAndRespondRecovery(Client.TransportType.Amqp_WebSocket_Only, "KillAmqpConnection", "boom", 1);
+            await SendMethodAndRespondRecovery(Client.TransportType.Amqp_WebSocket_Only, 
+                TestUtil.FaultType_AmqpConn,
+                TestUtil.FaultCloseReason_Boom,
+                TestUtil.DefaultDelayInSec);
         }
 
         [TestMethod]
@@ -131,7 +158,10 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Recovery")]
         public async Task Method_DeviceMethodSessionLostRecovery_Amqp()
         {
-            await SendMethodAndRespondRecovery(Client.TransportType.Amqp_Tcp_Only, "KillAmqpSession", "boom", 1);
+            await SendMethodAndRespondRecovery(Client.TransportType.Amqp_Tcp_Only,
+                TestUtil.FaultType_AmqpSess,
+                TestUtil.FaultCloseReason_Boom,
+                TestUtil.DefaultDelayInSec);
         }
 
         [TestMethod]
@@ -139,7 +169,10 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Recovery")]
         public async Task Method_DeviceMethodSessionLostRecovery_AmqpWs()
         {
-            await SendMethodAndRespondRecovery(Client.TransportType.Amqp_WebSocket_Only, "KillAmqpSession", "boom", 1);
+            await SendMethodAndRespondRecovery(Client.TransportType.Amqp_WebSocket_Only,
+                TestUtil.FaultType_AmqpSess,
+                TestUtil.FaultCloseReason_Boom,
+                TestUtil.DefaultDelayInSec);
         }
 
         [Ignore]
@@ -148,7 +181,10 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Recovery")]
         public async Task Method_DeviceMethodReqLinkDropRecovery_Amqp()
         {
-            await SendMethodAndRespondRecovery(Client.TransportType.Amqp_Tcp_Only, "KillAmqpMethodReqLink", "boom", 1);
+            await SendMethodAndRespondRecovery(Client.TransportType.Amqp_Tcp_Only,
+                TestUtil.FaultType_AmqpMethodReq,
+                TestUtil.FaultCloseReason_Boom,
+                TestUtil.DefaultDelayInSec);
         }
 
         [Ignore]
@@ -157,7 +193,10 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Recovery")]
         public async Task Method_DeviceMethodReqLinkDropRecovery_AmqpWs()
         {
-            await SendMethodAndRespondRecovery(Client.TransportType.Amqp_WebSocket_Only, "KillAmqpMethodReqLink", "boom", 1);
+            await SendMethodAndRespondRecovery(Client.TransportType.Amqp_WebSocket_Only,
+                TestUtil.FaultType_AmqpMethodReq,
+                TestUtil.FaultCloseReason_Boom,
+                TestUtil.DefaultDelayInSec);
         }
 
         [Ignore]
@@ -166,7 +205,10 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Recovery")]
         public async Task Method_DeviceMethodRespLinkDropRecovery_Amqp()
         {
-            await SendMethodAndRespondRecovery(Client.TransportType.Amqp_Tcp_Only, "KillAmqpMethodRespLink", "boom", 1);
+            await SendMethodAndRespondRecovery(Client.TransportType.Amqp_Tcp_Only,
+                TestUtil.FaultType_AmqpMethodResp,
+                TestUtil.FaultCloseReason_Boom,
+                TestUtil.DefaultDelayInSec);
         }
 
         [Ignore]
@@ -175,7 +217,10 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Recovery")]
         public async Task Method_DeviceMethodRespLinkDropRecovery_AmqpWs()
         {
-            await SendMethodAndRespondRecovery(Client.TransportType.Amqp_WebSocket_Only, "KillAmqpMethodRespLink", "boom", 1);
+            await SendMethodAndRespondRecovery(Client.TransportType.Amqp_WebSocket_Only,
+                TestUtil.FaultType_AmqpMethodResp,
+                TestUtil.FaultCloseReason_Boom,
+                TestUtil.DefaultDelayInSec);
         }
 
 #endif
@@ -197,22 +242,19 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private async Task SendMethodAndRespond(Client.TransportType transport)
         {
-            Tuple<string, string> deviceInfo = TestUtil.CreateDevice("E2E_Method_CSharp_", hostName, registryManager);
-            string deviceResponseJson = "{\"name\":\"e2e_test\"}";
-            string serviceRequestJson = "{\"a\":123}";
-            string methodName = "MethodE2ETest";
+            Tuple<string, string> deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
 
             var assertResult = new TaskCompletionSource<Tuple<bool, bool>>();
             var deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, transport);
-            await deviceClient.SetMethodHandlerAsync(methodName,
+            await deviceClient.SetMethodHandlerAsync(MethodName,
                 (request, context) =>
                 {
-                    assertResult.SetResult(new Tuple<bool, bool>(request.Name.Equals(methodName), request.DataAsJson.Equals(serviceRequestJson)));
-                    return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(deviceResponseJson), 200));
+                    assertResult.SetResult(new Tuple<bool, bool>(request.Name.Equals(MethodName), request.DataAsJson.Equals(ServiceRequestJson)));
+                    return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(DeviceResponseJson), 200));
                 },
                 null);
 
-            await ServiceSendMethodAndVerifyResponse(deviceInfo.Item1, methodName, deviceResponseJson, serviceRequestJson, assertResult);
+            await ServiceSendMethodAndVerifyResponse(deviceInfo.Item1, MethodName, DeviceResponseJson, ServiceRequestJson, assertResult);
 
             await deviceClient.CloseAsync();
             TestUtil.RemoveDevice(deviceInfo.Item1, registryManager);
@@ -220,25 +262,21 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private async Task sendMethodAndRespondWithObseletedSetMethodHandler(Client.TransportType transport)
         {
-            string deviceResponseJson = "{\"name\":\"e2e_test\"}";
-            string serviceRequestJson = "{\"a\":123}";
-            string methodName = "MethodE2ETest";
-
-            Tuple<string, string> deviceInfo = TestUtil.CreateDevice("E2E_Method_CSharp_", hostName, registryManager);
+            Tuple<string, string> deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
             var assertResult = new TaskCompletionSource<Tuple<bool, bool>>();
             var deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, transport);
-            deviceClient?.SetMethodHandler(methodName,
+            deviceClient?.SetMethodHandler(MethodName,
                 (request, context) =>
                 {
-                    assertResult.SetResult(new Tuple<bool, bool>(request.Name.Equals(methodName), request.DataAsJson.Equals(serviceRequestJson)));
-                    return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(deviceResponseJson), 200));
+                    assertResult.SetResult(new Tuple<bool, bool>(request.Name.Equals(MethodName), request.DataAsJson.Equals(ServiceRequestJson)));
+                    return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(DeviceResponseJson), 200));
                 },
                 null);
 
             // sleep to ensure async tasks started in SetMethodHandler has completed
             Thread.Sleep(5000);
 
-            await ServiceSendMethodAndVerifyResponse(deviceInfo.Item1, methodName, deviceResponseJson, serviceRequestJson, assertResult);
+            await ServiceSendMethodAndVerifyResponse(deviceInfo.Item1, MethodName, DeviceResponseJson, ServiceRequestJson, assertResult);
 
             await deviceClient.CloseAsync();
             TestUtil.RemoveDevice(deviceInfo.Item1, registryManager);
@@ -246,32 +284,28 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private async Task SendMethodAndRespondRecovery(Client.TransportType transport, string faultType, string reason, int delayInSec)
         {
-            Tuple<string, string> deviceInfo = TestUtil.CreateDevice("E2E_Method_CSharp_", hostName, registryManager);
-            string deviceResponseJson = "{\"name\":\"e2e_test\"}";
-            string serviceRequestJson = "{\"a\":123}";
-            string methodName = "MethodE2ETest";
+            Tuple<string, string> deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
 
             var assertResult = new TaskCompletionSource<Tuple<bool, bool>>();
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, transport);
-            await deviceClient.SetMethodHandlerAsync(methodName,
+            await deviceClient.SetMethodHandlerAsync(MethodName,
                 (request, context) =>
                 {
-                    assertResult.SetResult(new Tuple<bool, bool>(request.Name.Equals(methodName), request.DataAsJson.Equals(serviceRequestJson)));
-                    return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(deviceResponseJson), 200));
+                    assertResult.SetResult(new Tuple<bool, bool>(request.Name.Equals(MethodName), request.DataAsJson.Equals(ServiceRequestJson)));
+                    return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(DeviceResponseJson), 200));
                 },
                 null);
 
-            await ServiceSendMethodAndVerifyResponse(deviceInfo.Item1, methodName, deviceResponseJson, serviceRequestJson, assertResult);
+            await ServiceSendMethodAndVerifyResponse(deviceInfo.Item1, MethodName, DeviceResponseJson, ServiceRequestJson, assertResult);
 
             // send error command
             await deviceClient.SendEventAsync(TestUtil.ComposeErrorInjectionProperties(faultType, reason, delayInSec));
-            Debug.WriteLine("Drop command sent from device client.");
 
             // allow time for connection recovery
             await Task.Delay(TimeSpan.FromSeconds(3));
 
             assertResult = new TaskCompletionSource<Tuple<bool, bool>>();
-            await ServiceSendMethodAndVerifyResponse(deviceInfo.Item1, methodName, deviceResponseJson, serviceRequestJson, assertResult);
+            await ServiceSendMethodAndVerifyResponse(deviceInfo.Item1, MethodName, DeviceResponseJson, ServiceRequestJson, assertResult);
 
             await deviceClient.CloseAsync();
             TestUtil.RemoveDevice(deviceInfo.Item1, registryManager);
