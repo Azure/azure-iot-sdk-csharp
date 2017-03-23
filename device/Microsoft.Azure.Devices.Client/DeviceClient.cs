@@ -15,6 +15,9 @@ namespace Microsoft.Azure.Devices.Client
     using Microsoft.Azure.Devices.Shared;
 #if !PCL
     using Microsoft.Azure.Devices.Client.Transport.Mqtt;
+#if !WINDOWS_UWP
+    using System.Security.Cryptography.X509Certificates;
+#endif
 #endif
 
     /// <summary>
@@ -97,6 +100,9 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         const string DeviceId = "DeviceId";
         const string DeviceIdParameterPattern = @"(^\s*?|.*;\s*?)" + DeviceId + @"\s*?=.*";
         IotHubConnectionString iotHubConnectionString = null;
+#if !WINDOWS_UWP && !PCL
+        static internal X509Certificate2 Certificate { get; set; }
+#endif
 #if !PCL
         const RegexOptions RegexOptions = System.Text.RegularExpressions.RegexOptions.Compiled | System.Text.RegularExpressions.RegexOptions.IgnoreCase;
 #else
@@ -242,6 +248,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                     throw new ArgumentException("certificate must be present in DeviceAuthenticationWithX509Certificate");
                 }
 
+                Certificate = connectionStringBuilder.Certificate;
                 return CreateFromConnectionString(connectionStringBuilder.ToString(), PopulateCertificateInTransportSettings(connectionStringBuilder, transportType));
             }
 #endif
@@ -280,7 +287,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                 {
                     throw new ArgumentException("certificate must be present in DeviceAuthenticationWithX509Certificate");
                 }
-
+                Certificate = connectionStringBuilder.Certificate;
                 return CreateFromConnectionString(connectionStringBuilder.ToString(), PopulateCertificateInTransportSettings(connectionStringBuilder, transportSettings));
             }
 #endif
@@ -773,7 +780,18 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                 throw Fx.Exception.Argument("blobName", "Path segment count cannot exceed 254");
             }
 
-            var httpTransport = new HttpTransportHandler(iotHubConnectionString);
+            HttpTransportHandler httpTransport = null;
+            //We need to add the certificate to the fileUpload httpTransport if DeviceAuthenticationWithX509Certificate
+            if (Certificate != null)
+            {
+                Http1TransportSettings transportSettings = new Http1TransportSettings();
+                transportSettings.ClientCertificate = Certificate;
+                httpTransport = new HttpTransportHandler(null, iotHubConnectionString, transportSettings);
+            }
+            else
+            {
+                httpTransport = new HttpTransportHandler(iotHubConnectionString);
+            }
             return httpTransport.UploadToBlobAsync(blobName, source);
         }
 #endif
