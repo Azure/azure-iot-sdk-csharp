@@ -1,8 +1,8 @@
 ﻿{
   "supports": {},
   "dependencies": {
-    "DotNetty.Codecs.Mqtt": "0.4.0",
-    "DotNetty.Handlers": "0.4.0",
+    "DotNetty.Codecs.Mqtt": "0.4.3",
+    "DotNetty.Handlers": "0.4.3",
     "Microsoft.Azure.Amqp": "2.0.4",
     "NETStandard.Library": "1.6.1",
     "Newtonsoft.Json": "9.0.1",
