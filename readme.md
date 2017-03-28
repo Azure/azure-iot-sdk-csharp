@@ -73,3 +73,18 @@ This folder contains the following documents that are relevant to all the langua
 - [FAQ](doc/faq.md) contains frequently asked questions about the SDKs and libraries.
 - [Azure Certified for IoT device catalog](https://catalog.azureiotsuite.com/).
 
+## Long Term Support branches
+
+The project is using LTS branches to allow users that do not need the latest and greatest features to be shielded from unwanted changes.
+
+An LTS branch will be created every 6 months. The lifetime of an LTS branch is currently 1 year.
+LTS branches receive all bug fixes that fall in one of these categories:
+
+- security bugfixes
+- critical bugfixes (crashes, memory leaks, etc.)
+
+No new features or improvements will be picked up on LTS branches.
+
+LTS branches are named lts_*mm*_*yyyy*, where *mm* and *yyyy* are the month and year when the branch was created. An example of such a branch is *lts_03_2017*.
+
+![](./lts_branches.png)
