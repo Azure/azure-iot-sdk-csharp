@@ -375,5 +375,14 @@
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\MethodResponseStatusCode.cs">
       <Link>MethodResponseStatusCode.cs</Link>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\Transport\FileUploadNotificationResponse.cs">
+      <Link>FileUploadNotificationResponse.cs</Link>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\Transport\FileUploadRequest.cs">
+      <Link>FileUploadRequest.cs</Link>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\Transport\FileUploadResponse.cs">
+      <Link>FileUploadResponse.cs</Link>
+    </Compile>
   </ItemGroup>
 </Project>

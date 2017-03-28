@@ -5,6 +5,7 @@ using System;
 using System.Text;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using System.IO;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
@@ -92,6 +93,13 @@ namespace Microsoft.Azure.Devices.Client.Samples
             this.getDeviceNameLogger(methodRequest.DataAsJson);
 
             return Task.FromResult(retValue);
+        }
+
+        public async Task UploadFile(Windows.Storage.StorageFile file)
+        {
+                var fileName = file.Name;
+                using (Windows.Storage.Streams.IRandomAccessStreamWithContentType stream = await file.OpenReadAsync())
+                await deviceClient.UploadToBlobAsync(fileName, stream.AsStream());
         }
 
         public Task SendEvent(string message)

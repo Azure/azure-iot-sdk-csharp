@@ -73,6 +73,42 @@ namespace Microsoft.Azure.Devices.Client.Samples
             this.messageList.Items.Add(msg);
         }
 
+        private async void fileUploadButton_Click(object sender, RoutedEventArgs e)
+        {
+
+            Windows.Storage.Pickers.FileOpenPicker picker = new Windows.Storage.Pickers.FileOpenPicker();
+            picker.ViewMode = Windows.Storage.Pickers.PickerViewMode.Thumbnail;
+            picker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.PicturesLibrary;
+            picker.FileTypeFilter.Add("*");
+            Windows.Storage.StorageFile file = await picker.PickSingleFileAsync();
+
+            if (file != null)
+            {
+                try
+                {
+                    var watch = System.Diagnostics.Stopwatch.StartNew();
+                    fileUploadTime.Items.Clear();
+                    fileUploadTime.Items.Add("Uploading " + "'" + file.Name + "'");
+
+                    await this.client.UploadFile(file);
+
+                    fileUploadTime.Items.Clear();
+                    watch.Stop();
+                    fileUploadTime.Items.Add("'" + file.Name + "'" + " uploaded in: "+ watch.ElapsedMilliseconds + "ms");
+                }
+                catch (Exception ex)
+                {
+                    fileUploadTime.Items.Clear();
+                    fileUploadTime.Items.Add("Error occurred uploading the file. " + ex.Message);
+                    Debug.WriteLine("{0}\n", ex.Message);
+                    if (ex.InnerException != null)
+                    {
+                        Debug.WriteLine(ex.InnerException.Message + "\n");
+                    }
+                }
+            }
+
+        }
         private async void OnProtocolSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             TransportType protocol = GetProtocolIdFromName(this.protocolComboBox.SelectedValue.ToString());

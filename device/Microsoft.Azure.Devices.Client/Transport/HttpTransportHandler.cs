@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
     using Microsoft.Azure.Devices.Shared;
     using Newtonsoft.Json;
 
-#if !WINDOWS_UWP && !PCL
+#if !PCL
     using Microsoft.WindowsAzure.Storage.Blob;
 #endif
 
@@ -201,7 +201,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-#if !WINDOWS_UWP && !PCL
+#if !PCL
         internal async Task UploadToBlobAsync(String blobName, System.IO.Stream source)
         {
             var fileUploadRequest = new FileUploadRequest()
