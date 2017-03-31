@@ -88,7 +88,7 @@
           "lib/portable-net45+win+wp8/Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.dll": {}
         }
       },
-      "Microsoft.Azure.Amqp/2.0.3": {
+      "Microsoft.Azure.Amqp/2.0.4": {
         "compile": {
           "lib/uap10.0/Microsoft.Azure.Amqp.dll": {}
         },
@@ -2498,7 +2498,7 @@
           "lib/portable-net45+win+wp8/Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.dll": {}
         }
       },
-      "Microsoft.Azure.Amqp/2.0.3": {
+      "Microsoft.Azure.Amqp/2.0.4": {
         "compile": {
           "lib/uap10.0/Microsoft.Azure.Amqp.dll": {}
         },
@@ -4924,7 +4924,7 @@
           "lib/portable-net45+win+wp8/Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.dll": {}
         }
       },
-      "Microsoft.Azure.Amqp/2.0.3": {
+      "Microsoft.Azure.Amqp/2.0.4": {
         "compile": {
           "lib/uap10.0/Microsoft.Azure.Amqp.dll": {}
         },
@@ -7389,7 +7389,7 @@
           "lib/portable-net45+win+wp8/Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.dll": {}
         }
       },
-      "Microsoft.Azure.Amqp/2.0.3": {
+      "Microsoft.Azure.Amqp/2.0.4": {
         "compile": {
           "lib/uap10.0/Microsoft.Azure.Amqp.dll": {}
         },
@@ -9824,7 +9824,7 @@
           "lib/portable-net45+win+wp8/Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.dll": {}
         }
       },
-      "Microsoft.Azure.Amqp/2.0.3": {
+      "Microsoft.Azure.Amqp/2.0.4": {
         "compile": {
           "lib/uap10.0/Microsoft.Azure.Amqp.dll": {}
         },
@@ -12298,7 +12298,7 @@
           "lib/portable-net45+win+wp8/Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.dll": {}
         }
       },
-      "Microsoft.Azure.Amqp/2.0.3": {
+      "Microsoft.Azure.Amqp/2.0.4": {
         "compile": {
           "lib/uap10.0/Microsoft.Azure.Amqp.dll": {}
         },
@@ -14733,7 +14733,7 @@
           "lib/portable-net45+win+wp8/Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.dll": {}
         }
       },
-      "Microsoft.Azure.Amqp/2.0.3": {
+      "Microsoft.Azure.Amqp/2.0.4": {
         "compile": {
           "lib/uap10.0/Microsoft.Azure.Amqp.dll": {}
         },
@@ -17202,12 +17202,12 @@
         "tools/install.ps1"
       ]
     },
-    "Microsoft.Azure.Amqp/2.0.3": {
-      "sha512": "rsvO6QAPaUvcln5+riYQucdsv1mAdk8UJvNCq7pSGvjbtQ7sf4Mi5R4kt4bXg8KiXCa1qXL0v9K/QquR1Ndi4w==",
+    "Microsoft.Azure.Amqp/2.0.4": {
+      "sha512": "biYAGReRTclHy3uhBoCm7YxGCsx6temsk3txHrLPL7bomRPfxuXiJ7lQKM8dCT8QTqRNEWgXZhCOCBM5GJSN3w==",
       "type": "package",
-      "path": "Microsoft.Azure.Amqp/2.0.3",
+      "path": "Microsoft.Azure.Amqp/2.0.4",
       "files": [
-        "Microsoft.Azure.Amqp.2.0.3.nupkg.sha512",
+        "Microsoft.Azure.Amqp.2.0.4.nupkg.sha512",
         "Microsoft.Azure.Amqp.nuspec",
         "lib/monoandroid/Microsoft.Azure.Amqp.dll",
         "lib/net45/Microsoft.Azure.Amqp.XML",
