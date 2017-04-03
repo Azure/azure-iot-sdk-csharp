@@ -1,15 +1,24 @@
-﻿using System;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Azure.Devices.Client;
 using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
+using System.Diagnostics;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
     public class MethodE2ETests
     {
+        private const string DeviceResponseJson = "{\"name\":\"e2e_test\"}";
+        private const string ServiceRequestJson = "{\"a\":123}";
+        private const string MethodName = "MethodE2ETest";
+        private const string DevicePrefix = "E2E_Method_CSharp_";
+
         private static string hubConnectionString;
         private static string hostName;
         private static RegistryManager registryManager;
@@ -19,7 +28,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [ClassInitialize]
         static public void ClassInitialize(TestContext testContext)
         {
-            var environment = TestUtil.InitializeEnvironment("E2E_Method_CSharp_");
+            var environment = TestUtil.InitializeEnvironment(DevicePrefix);
             hubConnectionString = environment.Item1;
             registryManager = environment.Item2;
             hostName = TestUtil.GetHostName(hubConnectionString);
@@ -35,14 +44,14 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Method-E2E")]
         public async Task Method_DeviceReceivesMethodAndResponse_Mqtt()
         {
-            await sendMethodAndRespond(Client.TransportType.Mqtt_Tcp_Only);
+            await SendMethodAndRespond(Client.TransportType.Mqtt_Tcp_Only);
         }
 
         [TestMethod]
         [TestCategory("Method-E2E")]
         public async Task Method_DeviceReceivesMethodAndResponse_MqttWs()
         {
-            await sendMethodAndRespond(Client.TransportType.Mqtt_WebSocket_Only);
+            await SendMethodAndRespond(Client.TransportType.Mqtt_WebSocket_Only);
         }
 
         [TestMethod]
@@ -59,77 +68,240 @@ namespace Microsoft.Azure.Devices.E2ETests
             await sendMethodAndRespondWithObseletedSetMethodHandler(Client.TransportType.Mqtt_WebSocket_Only);
         }
 
+        [Ignore]
+        [TestMethod]
+        [TestCategory("Method-E2E")]
+        [TestCategory("Recovery")]
+        public async Task Method_DeviceReceivesMethodAndResponseRecovery_Mqtt()
+        {
+            await SendMethodAndRespondRecovery(Client.TransportType.Mqtt_Tcp_Only, 
+                TestUtil.FaultType_Tcp,
+                TestUtil.FaultCloseReason_Boom,
+                TestUtil.DefaultDelayInSec);
+        }
+
+        [Ignore]
+        [TestMethod]
+        [TestCategory("Method-E2E")]
+        [TestCategory("Recovery")]
+        public async Task Method_DeviceReceivesMethodAndResponseRecovery_MqttWs()
+        {
+            await SendMethodAndRespondRecovery(Client.TransportType.Mqtt_WebSocket_Only, 
+                TestUtil.FaultType_Tcp,
+                TestUtil.FaultCloseReason_Boom,
+                TestUtil.DefaultDelayInSec);
+        }
+
+
 #if WIP_C2D_METHODS_AMQP
         [TestMethod]
         [TestCategory("Method-E2E")]
         public async Task Method_DeviceReceivesMethodAndResponse_Amqp()
         {
-            await sendMethodAndRespond(Client.TransportType.Amqp);
+            await SendMethodAndRespond(Client.TransportType.Amqp_Tcp_Only);
         }
-#endif
 
-        async Task sendMethodAndRespond(Client.TransportType transport)
+        [TestMethod]
+        [TestCategory("Method-E2E")]
+        public async Task Method_DeviceReceivesMethodAndResponse_AmqpWs()
         {
-            Tuple<string, string> deviceInfo = TestUtil.CreateDevice("E2E_Method_CSharp_", hostName, registryManager);
-            string deviceResponseJson = "{\"name\":\"e2e_test\"}";
-            string serviceRequestJson = "{\"a\":123}";
-            string methodName = "MethodE2ETest";
+            await SendMethodAndRespond(Client.TransportType.Amqp_WebSocket_Only);
+        }
+
+        [TestMethod]
+        [TestCategory("Method-E2E")]
+        [TestCategory("Recovery")]
+        public async Task Method_DeviceMethodTcpConnRecovery_Amqp()
+        {
+            await SendMethodAndRespondRecovery(Client.TransportType.Amqp_Tcp_Only,
+                TestUtil.FaultType_Tcp,
+                TestUtil.FaultCloseReason_Boom,
+                TestUtil.DefaultDelayInSec);
+        }
+
+        [TestMethod]
+        [TestCategory("Method-E2E")]
+        [TestCategory("Recovery")]
+        public async Task Method_DeviceMethodTcpConnRecovery_AmqpWs()
+        {
+            await SendMethodAndRespondRecovery(Client.TransportType.Amqp_WebSocket_Only,
+                TestUtil.FaultType_Tcp,
+                TestUtil.FaultCloseReason_Boom,
+                TestUtil.DefaultDelayInSec)
+            ;
+        }
+
+        [TestMethod]
+        [TestCategory("Method-E2E")]
+        [TestCategory("Recovery")]
+        public async Task Method_DeviceMethodAmqpConnLostRecovery_Amqp()
+        {
+            await SendMethodAndRespondRecovery(Client.TransportType.Amqp_Tcp_Only,
+                TestUtil.FaultType_AmqpConn,
+                TestUtil.FaultCloseReason_Boom,
+                TestUtil.DefaultDelayInSec);
+        }
+
+        [TestMethod]
+        [TestCategory("Method-E2E")]
+        [TestCategory("Recovery")]
+        public async Task Method_DeviceMethodAmqpConnLostRecovery_AmqpWs()
+        {
+            await SendMethodAndRespondRecovery(Client.TransportType.Amqp_WebSocket_Only, 
+                TestUtil.FaultType_AmqpConn,
+                TestUtil.FaultCloseReason_Boom,
+                TestUtil.DefaultDelayInSec);
+        }
+
+        [TestMethod]
+        [TestCategory("Method-E2E")]
+        [TestCategory("Recovery")]
+        public async Task Method_DeviceMethodSessionLostRecovery_Amqp()
+        {
+            await SendMethodAndRespondRecovery(Client.TransportType.Amqp_Tcp_Only,
+                TestUtil.FaultType_AmqpSess,
+                TestUtil.FaultCloseReason_Boom,
+                TestUtil.DefaultDelayInSec);
+        }
+
+        [TestMethod]
+        [TestCategory("Method-E2E")]
+        [TestCategory("Recovery")]
+        public async Task Method_DeviceMethodSessionLostRecovery_AmqpWs()
+        {
+            await SendMethodAndRespondRecovery(Client.TransportType.Amqp_WebSocket_Only,
+                TestUtil.FaultType_AmqpSess,
+                TestUtil.FaultCloseReason_Boom,
+                TestUtil.DefaultDelayInSec);
+        }
+
+        [TestMethod]
+        [TestCategory("Method-E2E")]
+        [TestCategory("Recovery")]
+        public async Task Method_DeviceMethodReqLinkDropRecovery_Amqp()
+        {
+            await SendMethodAndRespondRecovery(Client.TransportType.Amqp_Tcp_Only,
+                TestUtil.FaultType_AmqpMethodReq,
+                TestUtil.FaultCloseReason_Boom,
+                TestUtil.DefaultDelayInSec);
+        }
+
+        [TestMethod]
+        [TestCategory("Method-E2E")]
+        [TestCategory("Recovery")]
+        public async Task Method_DeviceMethodReqLinkDropRecovery_AmqpWs()
+        {
+            await SendMethodAndRespondRecovery(Client.TransportType.Amqp_WebSocket_Only,
+                TestUtil.FaultType_AmqpMethodReq,
+                TestUtil.FaultCloseReason_Boom,
+                TestUtil.DefaultDelayInSec);
+        }
+
+        [TestMethod]
+        [TestCategory("Method-E2E")]
+        [TestCategory("Recovery")]
+        public async Task Method_DeviceMethodRespLinkDropRecovery_Amqp()
+        {
+            await SendMethodAndRespondRecovery(Client.TransportType.Amqp_Tcp_Only,
+                TestUtil.FaultType_AmqpMethodResp,
+                TestUtil.FaultCloseReason_Boom,
+                TestUtil.DefaultDelayInSec);
+        }
+
+        [TestMethod]
+        [TestCategory("Method-E2E")]
+        [TestCategory("Recovery")]
+        public async Task Method_DeviceMethodRespLinkDropRecovery_AmqpWs()
+        {
+            await SendMethodAndRespondRecovery(Client.TransportType.Amqp_WebSocket_Only,
+                TestUtil.FaultType_AmqpMethodResp,
+                TestUtil.FaultCloseReason_Boom,
+                TestUtil.DefaultDelayInSec);
+        }
+
+#endif
+        private async Task ServiceSendMethodAndVerifyResponse(string deviceName, string methodName, string respJson, string reqJson, TaskCompletionSource<Tuple<bool, bool>> rel)
+        {
+            ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(hubConnectionString);
+            Task<CloudToDeviceMethodResult> directResponseFuture = serviceClient.InvokeDeviceMethodAsync(
+                deviceName,
+                new CloudToDeviceMethod(methodName, TimeSpan.FromMinutes(5)).SetPayloadJson(reqJson)
+            );
+            CloudToDeviceMethodResult response = await directResponseFuture;
+            Assert.AreEqual(200, response.Status);
+            Assert.AreEqual(respJson, response.GetPayloadAsJson());
+            Assert.IsTrue(rel.Task.Result.Item1, "Method name is not matching with the send data");
+            Assert.IsTrue(rel.Task.Result.Item2, "Json data is not matching with the send data");
+
+            await serviceClient.CloseAsync();
+        }
+
+        private async Task SendMethodAndRespond(Client.TransportType transport)
+        {
+            Tuple<string, string> deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
 
             var assertResult = new TaskCompletionSource<Tuple<bool, bool>>();
             var deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, transport);
-            await deviceClient.SetMethodHandlerAsync(methodName,
+            await deviceClient.SetMethodHandlerAsync(MethodName,
                 (request, context) =>
                 {
-                    assertResult.SetResult(new Tuple<bool, bool>(request.Name.Equals(methodName), request.DataAsJson.Equals(serviceRequestJson)));
-                    return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(deviceResponseJson), 200));
+                    assertResult.SetResult(new Tuple<bool, bool>(request.Name.Equals(MethodName), request.DataAsJson.Equals(ServiceRequestJson)));
+                    return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(DeviceResponseJson), 200));
                 },
                 null);
 
-            ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(hubConnectionString);
-            Task<CloudToDeviceMethodResult> directResponseFuture = serviceClient.InvokeDeviceMethodAsync(
-                deviceInfo.Item1,
-                new CloudToDeviceMethod(methodName, TimeSpan.FromMinutes(5)).SetPayloadJson(serviceRequestJson)
-            );
-            Assert.IsTrue(assertResult.Task.Result.Item1, "Method name is not matching with the send data");
-            Assert.IsTrue(assertResult.Task.Result.Item2, "Json data is not matching with the send data");
-            CloudToDeviceMethodResult response = await directResponseFuture;
-            Assert.AreEqual(200, response.Status);
-            Assert.AreEqual(deviceResponseJson, response.GetPayloadAsJson());
+            await ServiceSendMethodAndVerifyResponse(deviceInfo.Item1, MethodName, DeviceResponseJson, ServiceRequestJson, assertResult);
 
             await deviceClient.CloseAsync();
             TestUtil.RemoveDevice(deviceInfo.Item1, registryManager);
         }
 
-        async Task sendMethodAndRespondWithObseletedSetMethodHandler(Client.TransportType transport)
+        private async Task sendMethodAndRespondWithObseletedSetMethodHandler(Client.TransportType transport)
         {
-            string deviceResponseJson = "{\"name\":\"e2e_test\"}";
-            string serviceRequestJson = "{\"a\":123}";
-            string methodName = "MethodE2ETest";
-
-            Tuple<string, string> deviceInfo = TestUtil.CreateDevice("E2E_Method_CSharp_", hostName, registryManager);
+            Tuple<string, string> deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
             var assertResult = new TaskCompletionSource<Tuple<bool, bool>>();
             var deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, transport);
-            deviceClient?.SetMethodHandler(methodName,
+            deviceClient?.SetMethodHandler(MethodName,
                 (request, context) =>
                 {
-                    assertResult.SetResult(new Tuple<bool, bool>(request.Name.Equals(methodName), request.DataAsJson.Equals(serviceRequestJson)));
-                    return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(deviceResponseJson), 200));
+                    assertResult.SetResult(new Tuple<bool, bool>(request.Name.Equals(MethodName), request.DataAsJson.Equals(ServiceRequestJson)));
+                    return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(DeviceResponseJson), 200));
                 },
                 null);
 
             // sleep to ensure async tasks started in SetMethodHandler has completed
             Thread.Sleep(5000);
 
-            ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(hubConnectionString);
-            Task<CloudToDeviceMethodResult> directResponseFuture = serviceClient.InvokeDeviceMethodAsync(
-                deviceInfo.Item1,
-                new CloudToDeviceMethod(methodName, TimeSpan.FromMinutes(5)).SetPayloadJson(serviceRequestJson)
-            );
-            Assert.IsTrue(assertResult.Task.Result.Item1, "Method name is not matching with the send data");
-            Assert.IsTrue(assertResult.Task.Result.Item2, "Json data is not matching with the send data");
-            CloudToDeviceMethodResult response = await directResponseFuture;
-            Assert.AreEqual(200, response.Status);
-            Assert.AreEqual(deviceResponseJson, response.GetPayloadAsJson());
+            await ServiceSendMethodAndVerifyResponse(deviceInfo.Item1, MethodName, DeviceResponseJson, ServiceRequestJson, assertResult);
+
+            await deviceClient.CloseAsync();
+            TestUtil.RemoveDevice(deviceInfo.Item1, registryManager);
+        }
+
+        private async Task SendMethodAndRespondRecovery(Client.TransportType transport, string faultType, string reason, int delayInSec)
+        {
+            Tuple<string, string> deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
+
+            var assertResult = new TaskCompletionSource<Tuple<bool, bool>>();
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, transport);
+            await deviceClient.SetMethodHandlerAsync(MethodName,
+                (request, context) =>
+                {
+                    assertResult.SetResult(new Tuple<bool, bool>(request.Name.Equals(MethodName), request.DataAsJson.Equals(ServiceRequestJson)));
+                    return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(DeviceResponseJson), 200));
+                },
+                null);
+
+            await ServiceSendMethodAndVerifyResponse(deviceInfo.Item1, MethodName, DeviceResponseJson, ServiceRequestJson, assertResult);
+
+            // send error command
+            await deviceClient.SendEventAsync(TestUtil.ComposeErrorInjectionProperties(faultType, reason, delayInSec));
+
+            // allow time for connection recovery
+            await Task.Delay(TimeSpan.FromSeconds(3));
+
+            assertResult = new TaskCompletionSource<Tuple<bool, bool>>();
+            await ServiceSendMethodAndVerifyResponse(deviceInfo.Item1, MethodName, DeviceResponseJson, ServiceRequestJson, assertResult);
 
             await deviceClient.CloseAsync();
             TestUtil.RemoveDevice(deviceInfo.Item1, registryManager);

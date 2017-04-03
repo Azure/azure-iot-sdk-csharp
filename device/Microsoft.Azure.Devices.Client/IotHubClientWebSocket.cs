@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices.Client
         const string UpgradeProtocolNotSupported = "Protocol Type {0} was sent to a service that does not support that type of upgrade.";
 
         static readonly byte[] maskingKey = new byte[] { 0x00, 0x00, 0x00, 0x00 };
-        static readonly SHA1CryptoServiceProvider sha1CryptoServiceProvider = InitCryptoServiceProvider();
+        static readonly SHA1 sha1CryptoServiceProvider = InitCryptoServiceProvider();
 
         readonly string webSocketRole;   
         readonly string requestPath;
@@ -129,11 +129,19 @@ namespace Microsoft.Azure.Devices.Client
             this.State = WebSocketState.Aborted;
             try
             {
+#if !NETSTANDARD1_3
                 this.WebSocketStream?.Close(); // Ungraceful close
+#else
+                this.WebSocketStream?.Dispose();
+#endif
 
                 this.WebSocketStream = null;
 
+#if !NETSTANDARD1_3
                 this.TcpClient?.Close();
+#else
+                this.TcpClient?.Dispose();
+#endif
 
                 this.TcpClient = null;
             }
@@ -199,8 +207,13 @@ namespace Microsoft.Azure.Devices.Client
                     // the HTTP response code was not 101
                     if (this.TcpClient.Connected)
                     {
+#if !NETSTANDARD1_3
                         this.WebSocketStream.Close();
                         this.TcpClient.Close();
+#else
+                        this.WebSocketStream.Dispose();
+                        this.TcpClient.Dispose();
+#endif
                     }
 
                     throw new IOException(ServerRejectedUpgradeRequest + " " + upgradeResponse);
@@ -210,8 +223,13 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     if (this.TcpClient.Connected)
                     {
+#if !NETSTANDARD1_3
                         this.WebSocketStream.Close();
                         this.TcpClient.Close();
+#else
+                        this.WebSocketStream.Dispose();
+                        this.TcpClient.Dispose();
+#endif
                     }
 
                     throw new IOException(UpgradeProtocolNotSupported.FormatInvariant(WebSocketConstants.SubProtocols.Amqpwsb10));
@@ -269,8 +287,13 @@ namespace Microsoft.Azure.Devices.Client
                         await this.WebSocketStream.WriteAsync(closeHeader, 0, closeHeader.Length);
 
                         this.State = WebSocketState.Closed;
+#if !NETSTANDARD1_3
                         this.WebSocketStream?.Close();
                         this.TcpClient?.Close();
+#else
+                        this.WebSocketStream?.Dispose();
+                        this.TcpClient?.Dispose();
+#endif
                         return 0;  // TODO: throw exception?
                     }
 
@@ -447,9 +470,11 @@ namespace Microsoft.Azure.Devices.Client
 
                     await this.WebSocketStream.WriteAsync(webSocketHeader, 0, webSocketHeader.Length);
 
+#if !NETSTANDARD1_3
                     this.WebSocketStream?.Close();
-
-                    this.TcpClient?.Close();
+#else
+                    this.WebSocketStream?.Dispose();
+#endif
                 }
 
                 succeeded = true;
@@ -474,9 +499,9 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         [SuppressMessage("Microsoft.Cryptographic.Standard", "CA5354:SHA1CannotBeUsed", Justification = "SHA-1 Hash mandated by RFC 6455")]
-        static SHA1CryptoServiceProvider InitCryptoServiceProvider()
+        static SHA1 InitCryptoServiceProvider()
         {
-            return new SHA1CryptoServiceProvider();
+            return SHA1.Create();
         }
 
         // Socket.ReceiveTimeout/SendTimeout 0 means infinite/no-timeout. When dealing with cascading timeouts
@@ -671,22 +696,38 @@ namespace Microsoft.Azure.Devices.Client
             this.State = WebSocketState.Faulted;
             if (this.WebSocketStream != null)
             {
+#if !NETSTANDARD1_3
                 this.WebSocketStream.Close();   // Ungraceful close
+#else
+                this.WebSocketStream.Dispose();
+#endif
                 this.WebSocketStream = null;
             }
 
             if (this.TcpClient != null)
             {
+#if !NETSTANDARD1_3
                 this.TcpClient.Close();
+#else
+                this.TcpClient.Dispose();
+#endif
                 this.TcpClient = null;
             }
         }
 
+#if !NETSTANDARD1_3
         bool VerifyWebSocketUpgradeResponse(NameValueCollection webSocketHeaders)
+#else
+        bool VerifyWebSocketUpgradeResponse(WebHeaderCollection webSocketHeaders)
+#endif
         {
             // verify that Upgrade header is present with a value of websocket
             string upgradeHeaderValue;
+#if !NETSTANDARD1_3
             if (null == (upgradeHeaderValue = webSocketHeaders.Get(Upgrade)))
+#else
+            if (null == (upgradeHeaderValue = webSocketHeaders[Upgrade]))
+#endif
             {
                 // Server did not respond with an upgrade header
                 return false;
@@ -700,7 +741,11 @@ namespace Microsoft.Azure.Devices.Client
 
             // verify connection header is present with a value of Upgrade
             string connectionHeaderValue;
+#if !NETSTANDARD1_3
             if (null == (connectionHeaderValue = webSocketHeaders.Get(ConnectionHeaderName)))
+#else
+            if (null == (connectionHeaderValue = webSocketHeaders[ConnectionHeaderName]))
+#endif
             {
                 // Server did not respond with an connection header
                 return false;
@@ -714,7 +759,7 @@ namespace Microsoft.Azure.Devices.Client
 
             // verify that a SecWebSocketAccept header is present with appropriate hash value string
             string secWebSocketAcceptHeaderValue;
-            if (null == (secWebSocketAcceptHeaderValue = webSocketHeaders.Get(Headers.SecWebSocketAccept)))
+            if (null == (secWebSocketAcceptHeaderValue = webSocketHeaders[Headers.SecWebSocketAccept]))
             {
                 // Server did not include the SecWebSocketAcceptHeader in the response
                 return false;
@@ -730,7 +775,11 @@ namespace Microsoft.Azure.Devices.Client
             {
                 // verify SecWebSocketProtocol contents
                 string secWebSocketProtocolHeaderValue;
+#if !NETSTANDARD1_3
                 if (null != (secWebSocketProtocolHeaderValue = webSocketHeaders.Get(Headers.SecWebSocketProtocol)))
+#else
+                if (null != (secWebSocketProtocolHeaderValue = webSocketHeaders[Headers.SecWebSocketProtocol]))
+#endif
                 {
                     // Check SecWebSocketProtocolHeader with requested protocol
                     if (!this.webSocketRole.Equals(secWebSocketProtocolHeaderValue))
@@ -934,7 +983,11 @@ namespace Microsoft.Azure.Devices.Client
                         }
 
                         string headerValue = Encoding.ASCII.GetString(this.Buffer, separatorIndex + 2, endOfLine - (separatorIndex + 2));
+#if !NETSTANDARD1_3
                         this.Headers.Add(headerName, headerValue);
+#else
+                        this.Headers[headerName] = headerValue;
+#endif
                     }
                 }
 

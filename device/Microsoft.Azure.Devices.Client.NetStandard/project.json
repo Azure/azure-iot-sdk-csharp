@@ -1,0 +1,29 @@
+﻿{
+  "supports": {},
+  "dependencies": {
+    "DotNetty.Codecs.Mqtt": "0.4.0",
+    "DotNetty.Handlers": "0.4.0",
+    "Microsoft.Azure.Amqp": "2.0.4",
+    "NETStandard.Library": "1.6.1",
+    "Newtonsoft.Json": "9.0.1",
+    "System.AppContext": "4.3.0",
+    "System.Collections.Specialized": "4.3.0",
+    "System.Diagnostics.TraceSource": "4.3.0",
+    "System.Net.Http": "4.3.1",
+    "System.Net.NameResolution": "4.3.0",
+    "System.Net.Requests": "4.3.0",
+    "System.Net.Security": "4.3.0",
+    "System.Net.WebHeaderCollection": "4.3.0",
+    "System.Net.WebSockets.Client": "4.3.0",
+    "System.Reflection.Extensions": "4.3.0",
+    "System.Runtime.Extensions": "4.3.0",
+    "System.Runtime.Serialization.Formatters": "4.3.0",
+    "System.Security.Cryptography.Algorithms": "4.3.0",
+    "System.Threading.Overlapped": "4.3.0",
+    "Validation": "2.4.13",
+    "WindowsAzure.Storage": "8.1.1"
+  },
+  "frameworks": {
+    "netstandard1.3": {}
+  }
+}

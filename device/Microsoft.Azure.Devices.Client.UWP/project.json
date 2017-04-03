@@ -12,6 +12,7 @@
     "Microsoft.NETCore.UniversalWindowsPlatform": "5.2.2",
     "Newtonsoft.Json": "6.0.8",
     "PCLCrypto": "2.0.147",
+    "System.AppContext": "4.3.0",
     "System.Net.WebSockets.Client": "4.3.0",
     "System.Security.Cryptography.X509Certificates": "4.3.0",
     "Validation": "2.2.8"

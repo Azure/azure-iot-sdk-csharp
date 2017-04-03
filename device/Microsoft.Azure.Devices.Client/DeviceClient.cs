@@ -15,6 +15,9 @@ namespace Microsoft.Azure.Devices.Client
     using Microsoft.Azure.Devices.Shared;
 #if !PCL
     using Microsoft.Azure.Devices.Client.Transport.Mqtt;
+#if !WINDOWS_UWP
+    using System.Security.Cryptography.X509Certificates;
+#endif
 #endif
 
     /// <summary>
@@ -97,6 +100,9 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         const string DeviceId = "DeviceId";
         const string DeviceIdParameterPattern = @"(^\s*?|.*;\s*?)" + DeviceId + @"\s*?=.*";
         IotHubConnectionString iotHubConnectionString = null;
+#if !WINDOWS_UWP && !PCL
+        static internal X509Certificate2 Certificate { get; set; }
+#endif
 #if !PCL
         const RegexOptions RegexOptions = System.Text.RegularExpressions.RegexOptions.Compiled | System.Text.RegularExpressions.RegexOptions.IgnoreCase;
 #else
@@ -246,6 +252,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                 {
                     throw new ArgumentException("certificate in DeviceAuthenticationWithX509Certificate must have a private key");
                 }
+                Certificate = connectionStringBuilder.Certificate;
 
                 return CreateFromConnectionString(connectionStringBuilder.ToString(), PopulateCertificateInTransportSettings(connectionStringBuilder, transportType));
             }
@@ -261,7 +268,11 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// <param name="authenticationMethod">The authentication method that is used</param>
         /// <param name="transportSettings">Prioritized list of transportTypes and their settings</param>
         /// <returns>DeviceClient</returns>
-        public static DeviceClient Create(string hostname, IAuthenticationMethod authenticationMethod, [System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArrayAttribute] ITransportSettings[] transportSettings)
+        public static DeviceClient Create(string hostname, IAuthenticationMethod authenticationMethod,
+#if !NETSTANDARD1_3
+            [System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArrayAttribute]
+#endif
+        ITransportSettings[] transportSettings)
         {
             if (hostname == null)
             {
@@ -287,6 +298,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                     throw new ArgumentException("certificate in DeviceAuthenticationWithX509Certificate must have a private key");
                 }
 
+                Certificate = connectionStringBuilder.Certificate;
                 return CreateFromConnectionString(connectionStringBuilder.ToString(), PopulateCertificateInTransportSettings(connectionStringBuilder, transportSettings));
             }
 #endif
@@ -428,7 +440,11 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// <param name="connectionString">Connection string for the IoT hub (with DeviceId)</param>
         /// <param name="transportSettings">Prioritized list of transports and their settings</param>
         /// <returns>DeviceClient</returns>
-        public static DeviceClient CreateFromConnectionString(string connectionString, [System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArray] ITransportSettings[] transportSettings)
+        public static DeviceClient CreateFromConnectionString(string connectionString,
+#if !NETSTANDARD1_3
+            [System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArray]
+#endif
+        ITransportSettings[] transportSettings)
         {
             return CreateFromConnectionString(connectionString, transportSettings, null);
         }
@@ -440,7 +456,12 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// <param name="transportSettings">Prioritized list of transports and their settings</param>
         /// <param name="pipelineBuilder">Device client pipeline builder</param>
         /// <returns>DeviceClient</returns>
-        internal static DeviceClient CreateFromConnectionString(string connectionString, [System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArray] ITransportSettings[] transportSettings, IDeviceClientPipelineBuilder pipelineBuilder)
+        internal static DeviceClient CreateFromConnectionString(string connectionString,
+#if !NETSTANDARD1_3
+            [System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArray]
+#endif
+        ITransportSettings[] transportSettings, IDeviceClientPipelineBuilder pipelineBuilder)
+
         {
             if (connectionString == null)
             {
@@ -503,7 +524,11 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// <param name="deviceId">Id of the device</param>
         /// <param name="transportSettings">Prioritized list of transportTypes and their settings</param>
         /// <returns>DeviceClient</returns>
-        public static DeviceClient CreateFromConnectionString(string connectionString, string deviceId, [System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArrayAttribute] ITransportSettings[] transportSettings)
+        public static DeviceClient CreateFromConnectionString(string connectionString, string deviceId,
+#if !NETSTANDARD1_3
+            [System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArrayAttribute]
+#endif
+        ITransportSettings[] transportSettings)
         {
             if (connectionString == null)
             {
@@ -766,7 +791,18 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                 throw Fx.Exception.Argument("blobName", "Path segment count cannot exceed 254");
             }
 
-            var httpTransport = new HttpTransportHandler(iotHubConnectionString);
+            HttpTransportHandler httpTransport = null;
+            //We need to add the certificate to the fileUpload httpTransport if DeviceAuthenticationWithX509Certificate
+            if (Certificate != null)
+            {
+                Http1TransportSettings transportSettings = new Http1TransportSettings();
+                transportSettings.ClientCertificate = Certificate;
+                httpTransport = new HttpTransportHandler(null, iotHubConnectionString, transportSettings);
+            }
+            else
+            {
+                httpTransport = new HttpTransportHandler(iotHubConnectionString);
+            }
             return httpTransport.UploadToBlobAsync(blobName, source);
         }
 #endif

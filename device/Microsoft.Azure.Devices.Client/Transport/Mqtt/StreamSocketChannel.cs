@@ -94,10 +94,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     }
                     else
                     {
-                        // nothing was read -> release the buffer.
-                        byteBuffer.Release();
-                        byteBuffer = null;
-                        break;
+                        throw new OperationCanceledException();
                     }
 
                     this.Pipeline.FireChannelRead(byteBuffer);
@@ -114,8 +111,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 // Since this method returns void, all exceptions must be handled here.
                 byteBuffer?.Release();
                 allocHandle?.ReadComplete();
-                this.ReadPending = false;
                 this.Pipeline.FireChannelReadComplete();
+                this.ReadPending = false;
                 this.Pipeline.FireExceptionCaught(e);
                 if (this.Active)
                 {

@@ -4,6 +4,8 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.ApplicationModel.Core;
 using Windows.UI.Core;
+using System;
+using System.Diagnostics;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
@@ -79,7 +81,15 @@ namespace Microsoft.Azure.Devices.Client.Samples
             {
                 if (this.client != null)
                 {
-                    this.client.CloseAsync();
+                    try
+                    {
+                        await this.client.CloseAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        var err = string.Format("Error {0} while closing the client", ex.Message);
+                        Debug.WriteLine(err);
+                    }
                 }
                 this.client = new IoTClient(protocol, CallMeLogger, GetDeviceNameLogger, ErrorHandler);
                 this.client.Start();

@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
             : base(message, innerException, isTransient, trackingId)
         {
         }
-#if !PCL && !WINDOWS_UWP
+#if !PCL && !WINDOWS_UWP && !NETSTANDARD1_3
         public IotHubClientException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {

@@ -245,7 +245,7 @@ This Agreement is governed by the laws of the State of New York and
 
 */
 
-	Apache Qpid Proton, obtained from https://github.com/apache/qpid-proton
+	Apache EnterpriseLibrary.TransientFaultHandling code, obtained from http://topaz.codeplex.com/
 /*
 
 

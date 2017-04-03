@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
             this.TrackingId = trackingId;
         }
 
-#if !WINDOWS_UWP && !PCL && !NETMF
+#if !WINDOWS_UWP && !PCL && !NETMF && !NETSTANDARD1_3
         protected IotHubException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
@@ -75,6 +75,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
             }
         }
 
+        // For NetStandard1.3 - error CS0115: no suitable method found to override - Method not used.
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             base.GetObjectData(info, context);

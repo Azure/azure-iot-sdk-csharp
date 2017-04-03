@@ -63,6 +63,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 return this.ShouldRetry;
             }
+
             bool ShouldRetry(int currentRetryCount, Exception lastException, out TimeSpan retryInterval)
             {
                 if (IsThrottling(lastException))

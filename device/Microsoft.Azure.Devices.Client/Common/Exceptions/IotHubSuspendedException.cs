@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         {
         }
 
-#if !WINDOWS_UWP && !PCL
+#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
         IotHubSuspendedException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
