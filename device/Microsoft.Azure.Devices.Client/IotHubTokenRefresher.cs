@@ -36,8 +36,11 @@ namespace Microsoft.Azure.Devices.Client
 
         public void Cancel()
         {
-            this.taskCancelled = true;
-            this.cancellationTokenSource.Cancel();
+            if (!this.taskCancelled)
+            {
+                this.taskCancelled = true;
+                this.cancellationTokenSource.Cancel();
+            }
         }
 
         public async Task SendCbsTokenAsync(TimeSpan timeout)
