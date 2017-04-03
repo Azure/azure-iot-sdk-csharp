@@ -200,9 +200,9 @@ namespace Microsoft.Azure.Amqp.Transport
                 // Cancel any pending write
                 this.CancelPendingWrite();
 
-                using (var cancelTokenSource = new CancellationTokenSource(timeout))
+                using (var cancellationTokenSource = new CancellationTokenSource(timeout))
                 {
-                    await this.webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, cancelTokenSource.Token);
+                    await this.webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, cancellationTokenSource.Token);
                 }
             }
             catch (Exception e)

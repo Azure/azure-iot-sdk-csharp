@@ -93,31 +93,26 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             throw new NotSupportedException("ClientWebSocketChannel does not support DoDisconnect()");
         }
 
-        protected override void DoClose()
+        protected override async void DoClose()
         {
-            this.active = false;
-            WebSocketState webSocketState = this.webSocket.State;
-            if (webSocketState != WebSocketState.Closed && webSocketState != WebSocketState.Aborted)
+            try
             {
-                // Cancel any pending write
-                this.CancelPendingWrite();
-
-#pragma warning disable 4014
-                Task.Run(async () =>
+                WebSocketState webSocketState = this.webSocket.State;
+                if (webSocketState != WebSocketState.Closed && webSocketState != WebSocketState.Aborted)
                 {
-                    try
+                    // Cancel any pending write
+                    this.CancelPendingWrite();
+                    this.active = false;
+
+                    using (var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30)))
                     {
-                        using (var cancelTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30)))
-                        {
-                            await this.webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, cancelTokenSource.Token);
-                        }
+                        await this.webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, cancellationTokenSource.Token);
                     }
-                    catch (Exception e) when (!e.IsFatal())
-                    {
-                        this.Abort();
-                    }
-                });
-#pragma warning restore 4014
+                }
+            }
+            catch (Exception e) when (!e.IsFatal())
+            {
+                this.Abort();
             }
         }
 
@@ -220,9 +215,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         async Task<int> DoReadBytes(IByteBuffer byteBuffer)
         {
-            WebSocketReceiveResult receiveResult = 
-                await this.webSocket.ReceiveAsync(new ArraySegment<byte>(byteBuffer.Array, byteBuffer.ArrayOffset + byteBuffer.WriterIndex, byteBuffer.WritableBytes), CancellationToken.None);
-
+            WebSocketReceiveResult receiveResult = await this.webSocket.ReceiveAsync(new ArraySegment<byte>(byteBuffer.Array, byteBuffer.ArrayOffset + byteBuffer.WriterIndex, byteBuffer.WritableBytes), CancellationToken.None);
             if (receiveResult.MessageType == WebSocketMessageType.Text)
             {
                 throw new ProtocolViolationException("Mqtt over WS message cannot be in text");
@@ -264,16 +257,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         void Abort()
         {
-            try
-            {
-                this.webSocket.Abort();
-                this.webSocket.Dispose();
-                this.writeCancellationTokenSource.Dispose();
-            }
-            catch (Exception ex) when (!ex.IsFatal())
-            {
-                // ignore these exceptions
-            } 
+            this.webSocket.Abort();
+            this.webSocket.Dispose();
+            this.writeCancellationTokenSource.Dispose();
         }
     }
 }
