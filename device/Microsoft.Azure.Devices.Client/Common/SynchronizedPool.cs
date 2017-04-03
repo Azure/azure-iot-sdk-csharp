@@ -211,7 +211,7 @@ namespace Microsoft.Azure.Devices.Client
 
         public bool Return(T value)
         {
-#if WINDOWS_UWP || PCL
+#if WINDOWS_UWP || PCL || NETSTANDARD1_3
             throw new NotImplementedException();
 #else
             int thisThreadID = Thread.CurrentThread.ManagedThreadId;
@@ -268,7 +268,7 @@ namespace Microsoft.Azure.Devices.Client
 
         public T Take()
         {
-#if WINDOWS_UWP || PCL
+#if WINDOWS_UWP || PCL || NETSTANDARD1_3
             throw new NotImplementedException();
 #else
             int thisThreadID = Thread.CurrentThread.ManagedThreadId;

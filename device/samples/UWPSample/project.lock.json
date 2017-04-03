@@ -3,9 +3,9 @@
   "version": 1,
   "targets": {
     "UAP,Version=v10.0": {
-      "DotNetty.Buffers/0.4.2": {
+      "DotNetty.Buffers/0.4.4": {
         "dependencies": {
-          "DotNetty.Common": "0.4.2",
+          "DotNetty.Common": "0.4.4",
           "NETStandard.Library": "1.6.1",
           "System.Diagnostics.Contracts": "4.3.0"
         },
@@ -16,11 +16,11 @@
           "lib/netstandard1.3/DotNetty.Buffers.dll": {}
         }
       },
-      "DotNetty.Codecs/0.4.2": {
+      "DotNetty.Codecs/0.4.4": {
         "dependencies": {
-          "DotNetty.Buffers": "0.4.2",
-          "DotNetty.Common": "0.4.2",
-          "DotNetty.Transport": "0.4.2",
+          "DotNetty.Buffers": "0.4.4",
+          "DotNetty.Common": "0.4.4",
+          "DotNetty.Transport": "0.4.4",
           "NETStandard.Library": "1.6.1",
           "System.Diagnostics.Contracts": "4.3.0"
         },
@@ -31,12 +31,12 @@
           "lib/netstandard1.3/DotNetty.Codecs.dll": {}
         }
       },
-      "DotNetty.Codecs.Mqtt/0.4.2": {
+      "DotNetty.Codecs.Mqtt/0.4.4": {
         "dependencies": {
-          "DotNetty.Buffers": "0.4.2",
-          "DotNetty.Codecs": "0.4.2",
-          "DotNetty.Common": "0.4.2",
-          "DotNetty.Transport": "0.4.2",
+          "DotNetty.Buffers": "0.4.4",
+          "DotNetty.Codecs": "0.4.4",
+          "DotNetty.Common": "0.4.4",
+          "DotNetty.Transport": "0.4.4",
           "NETStandard.Library": "1.6.1",
           "System.Diagnostics.Contracts": "4.3.0"
         },
@@ -47,9 +47,9 @@
           "lib/netstandard1.3/DotNetty.Codecs.Mqtt.dll": {}
         }
       },
-      "DotNetty.Common/0.4.2": {
+      "DotNetty.Common/0.4.4": {
         "dependencies": {
-          "Microsoft.Extensions.Logging": "1.1.0",
+          "Microsoft.Extensions.Logging": "1.1.1",
           "NETStandard.Library": "1.6.1",
           "System.Diagnostics.Contracts": "4.3.0",
           "System.Net.NetworkInformation": "4.3.0"
@@ -61,10 +61,10 @@
           "lib/netstandard1.3/DotNetty.Common.dll": {}
         }
       },
-      "DotNetty.Transport/0.4.2": {
+      "DotNetty.Transport/0.4.4": {
         "dependencies": {
-          "DotNetty.Buffers": "0.4.2",
-          "DotNetty.Common": "0.4.2",
+          "DotNetty.Buffers": "0.4.4",
+          "DotNetty.Common": "0.4.4",
           "NETStandard.Library": "1.6.1",
           "System.Diagnostics.Contracts": "4.3.0",
           "System.Diagnostics.StackTrace": "4.3.0",
@@ -134,10 +134,10 @@
           "lib/netstandard1.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll": {}
         }
       },
-      "Microsoft.Extensions.Logging/1.1.0": {
+      "Microsoft.Extensions.Logging/1.1.1": {
         "dependencies": {
           "Microsoft.Extensions.DependencyInjection.Abstractions": "1.1.0",
-          "Microsoft.Extensions.Logging.Abstractions": "1.1.0",
+          "Microsoft.Extensions.Logging.Abstractions": "1.1.1",
           "NETStandard.Library": "1.6.1"
         },
         "compile": {
@@ -147,7 +147,7 @@
           "lib/netstandard1.1/Microsoft.Extensions.Logging.dll": {}
         }
       },
-      "Microsoft.Extensions.Logging.Abstractions/1.1.0": {
+      "Microsoft.Extensions.Logging.Abstractions/1.1.1": {
         "dependencies": {
           "NETStandard.Library": "1.6.1"
         },
@@ -2413,9 +2413,9 @@
       }
     },
     "UAP,Version=v10.0/win10-arm": {
-      "DotNetty.Buffers/0.4.2": {
+      "DotNetty.Buffers/0.4.4": {
         "dependencies": {
-          "DotNetty.Common": "0.4.2",
+          "DotNetty.Common": "0.4.4",
           "NETStandard.Library": "1.6.1",
           "System.Diagnostics.Contracts": "4.3.0"
         },
@@ -2426,11 +2426,11 @@
           "lib/netstandard1.3/DotNetty.Buffers.dll": {}
         }
       },
-      "DotNetty.Codecs/0.4.2": {
+      "DotNetty.Codecs/0.4.4": {
         "dependencies": {
-          "DotNetty.Buffers": "0.4.2",
-          "DotNetty.Common": "0.4.2",
-          "DotNetty.Transport": "0.4.2",
+          "DotNetty.Buffers": "0.4.4",
+          "DotNetty.Common": "0.4.4",
+          "DotNetty.Transport": "0.4.4",
           "NETStandard.Library": "1.6.1",
           "System.Diagnostics.Contracts": "4.3.0"
         },
@@ -2441,12 +2441,12 @@
           "lib/netstandard1.3/DotNetty.Codecs.dll": {}
         }
       },
-      "DotNetty.Codecs.Mqtt/0.4.2": {
+      "DotNetty.Codecs.Mqtt/0.4.4": {
         "dependencies": {
-          "DotNetty.Buffers": "0.4.2",
-          "DotNetty.Codecs": "0.4.2",
-          "DotNetty.Common": "0.4.2",
-          "DotNetty.Transport": "0.4.2",
+          "DotNetty.Buffers": "0.4.4",
+          "DotNetty.Codecs": "0.4.4",
+          "DotNetty.Common": "0.4.4",
+          "DotNetty.Transport": "0.4.4",
           "NETStandard.Library": "1.6.1",
           "System.Diagnostics.Contracts": "4.3.0"
         },
@@ -2457,9 +2457,9 @@
           "lib/netstandard1.3/DotNetty.Codecs.Mqtt.dll": {}
         }
       },
-      "DotNetty.Common/0.4.2": {
+      "DotNetty.Common/0.4.4": {
         "dependencies": {
-          "Microsoft.Extensions.Logging": "1.1.0",
+          "Microsoft.Extensions.Logging": "1.1.1",
           "NETStandard.Library": "1.6.1",
           "System.Diagnostics.Contracts": "4.3.0",
           "System.Net.NetworkInformation": "4.3.0"
@@ -2471,10 +2471,10 @@
           "lib/netstandard1.3/DotNetty.Common.dll": {}
         }
       },
-      "DotNetty.Transport/0.4.2": {
+      "DotNetty.Transport/0.4.4": {
         "dependencies": {
-          "DotNetty.Buffers": "0.4.2",
-          "DotNetty.Common": "0.4.2",
+          "DotNetty.Buffers": "0.4.4",
+          "DotNetty.Common": "0.4.4",
           "NETStandard.Library": "1.6.1",
           "System.Diagnostics.Contracts": "4.3.0",
           "System.Diagnostics.StackTrace": "4.3.0",
@@ -2544,10 +2544,10 @@
           "lib/netstandard1.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll": {}
         }
       },
-      "Microsoft.Extensions.Logging/1.1.0": {
+      "Microsoft.Extensions.Logging/1.1.1": {
         "dependencies": {
           "Microsoft.Extensions.DependencyInjection.Abstractions": "1.1.0",
-          "Microsoft.Extensions.Logging.Abstractions": "1.1.0",
+          "Microsoft.Extensions.Logging.Abstractions": "1.1.1",
           "NETStandard.Library": "1.6.1"
         },
         "compile": {
@@ -2557,7 +2557,7 @@
           "lib/netstandard1.1/Microsoft.Extensions.Logging.dll": {}
         }
       },
-      "Microsoft.Extensions.Logging.Abstractions/1.1.0": {
+      "Microsoft.Extensions.Logging.Abstractions/1.1.1": {
         "dependencies": {
           "NETStandard.Library": "1.6.1"
         },
@@ -4839,9 +4839,9 @@
       }
     },
     "UAP,Version=v10.0/win10-arm-aot": {
-      "DotNetty.Buffers/0.4.2": {
+      "DotNetty.Buffers/0.4.4": {
         "dependencies": {
-          "DotNetty.Common": "0.4.2",
+          "DotNetty.Common": "0.4.4",
           "NETStandard.Library": "1.6.1",
           "System.Diagnostics.Contracts": "4.3.0"
         },
@@ -4852,11 +4852,11 @@
           "lib/netstandard1.3/DotNetty.Buffers.dll": {}
         }
       },
-      "DotNetty.Codecs/0.4.2": {
+      "DotNetty.Codecs/0.4.4": {
         "dependencies": {
-          "DotNetty.Buffers": "0.4.2",
-          "DotNetty.Common": "0.4.2",
-          "DotNetty.Transport": "0.4.2",
+          "DotNetty.Buffers": "0.4.4",
+          "DotNetty.Common": "0.4.4",
+          "DotNetty.Transport": "0.4.4",
           "NETStandard.Library": "1.6.1",
           "System.Diagnostics.Contracts": "4.3.0"
         },
@@ -4867,12 +4867,12 @@
           "lib/netstandard1.3/DotNetty.Codecs.dll": {}
         }
       },
-      "DotNetty.Codecs.Mqtt/0.4.2": {
+      "DotNetty.Codecs.Mqtt/0.4.4": {
         "dependencies": {
-          "DotNetty.Buffers": "0.4.2",
-          "DotNetty.Codecs": "0.4.2",
-          "DotNetty.Common": "0.4.2",
-          "DotNetty.Transport": "0.4.2",
+          "DotNetty.Buffers": "0.4.4",
+          "DotNetty.Codecs": "0.4.4",
+          "DotNetty.Common": "0.4.4",
+          "DotNetty.Transport": "0.4.4",
           "NETStandard.Library": "1.6.1",
           "System.Diagnostics.Contracts": "4.3.0"
         },
@@ -4883,9 +4883,9 @@
           "lib/netstandard1.3/DotNetty.Codecs.Mqtt.dll": {}
         }
       },
-      "DotNetty.Common/0.4.2": {
+      "DotNetty.Common/0.4.4": {
         "dependencies": {
-          "Microsoft.Extensions.Logging": "1.1.0",
+          "Microsoft.Extensions.Logging": "1.1.1",
           "NETStandard.Library": "1.6.1",
           "System.Diagnostics.Contracts": "4.3.0",
           "System.Net.NetworkInformation": "4.3.0"
@@ -4897,10 +4897,10 @@
           "lib/netstandard1.3/DotNetty.Common.dll": {}
         }
       },
-      "DotNetty.Transport/0.4.2": {
+      "DotNetty.Transport/0.4.4": {
         "dependencies": {
-          "DotNetty.Buffers": "0.4.2",
-          "DotNetty.Common": "0.4.2",
+          "DotNetty.Buffers": "0.4.4",
+          "DotNetty.Common": "0.4.4",
           "NETStandard.Library": "1.6.1",
           "System.Diagnostics.Contracts": "4.3.0",
           "System.Diagnostics.StackTrace": "4.3.0",
@@ -4970,10 +4970,10 @@
           "lib/netstandard1.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll": {}
         }
       },
-      "Microsoft.Extensions.Logging/1.1.0": {
+      "Microsoft.Extensions.Logging/1.1.1": {
         "dependencies": {
           "Microsoft.Extensions.DependencyInjection.Abstractions": "1.1.0",
-          "Microsoft.Extensions.Logging.Abstractions": "1.1.0",
+          "Microsoft.Extensions.Logging.Abstractions": "1.1.1",
           "NETStandard.Library": "1.6.1"
         },
         "compile": {
@@ -4983,7 +4983,7 @@
           "lib/netstandard1.1/Microsoft.Extensions.Logging.dll": {}
         }
       },
-      "Microsoft.Extensions.Logging.Abstractions/1.1.0": {
+      "Microsoft.Extensions.Logging.Abstractions/1.1.1": {
         "dependencies": {
           "NETStandard.Library": "1.6.1"
         },
@@ -7304,9 +7304,9 @@
       }
     },
     "UAP,Version=v10.0/win10-x64": {
-      "DotNetty.Buffers/0.4.2": {
+      "DotNetty.Buffers/0.4.4": {
         "dependencies": {
-          "DotNetty.Common": "0.4.2",
+          "DotNetty.Common": "0.4.4",
           "NETStandard.Library": "1.6.1",
           "System.Diagnostics.Contracts": "4.3.0"
         },
@@ -7317,11 +7317,11 @@
           "lib/netstandard1.3/DotNetty.Buffers.dll": {}
         }
       },
-      "DotNetty.Codecs/0.4.2": {
+      "DotNetty.Codecs/0.4.4": {
         "dependencies": {
-          "DotNetty.Buffers": "0.4.2",
-          "DotNetty.Common": "0.4.2",
-          "DotNetty.Transport": "0.4.2",
+          "DotNetty.Buffers": "0.4.4",
+          "DotNetty.Common": "0.4.4",
+          "DotNetty.Transport": "0.4.4",
           "NETStandard.Library": "1.6.1",
           "System.Diagnostics.Contracts": "4.3.0"
         },
@@ -7332,12 +7332,12 @@
           "lib/netstandard1.3/DotNetty.Codecs.dll": {}
         }
       },
-      "DotNetty.Codecs.Mqtt/0.4.2": {
+      "DotNetty.Codecs.Mqtt/0.4.4": {
         "dependencies": {
-          "DotNetty.Buffers": "0.4.2",
-          "DotNetty.Codecs": "0.4.2",
-          "DotNetty.Common": "0.4.2",
-          "DotNetty.Transport": "0.4.2",
+          "DotNetty.Buffers": "0.4.4",
+          "DotNetty.Codecs": "0.4.4",
+          "DotNetty.Common": "0.4.4",
+          "DotNetty.Transport": "0.4.4",
           "NETStandard.Library": "1.6.1",
           "System.Diagnostics.Contracts": "4.3.0"
         },
@@ -7348,9 +7348,9 @@
           "lib/netstandard1.3/DotNetty.Codecs.Mqtt.dll": {}
         }
       },
-      "DotNetty.Common/0.4.2": {
+      "DotNetty.Common/0.4.4": {
         "dependencies": {
-          "Microsoft.Extensions.Logging": "1.1.0",
+          "Microsoft.Extensions.Logging": "1.1.1",
           "NETStandard.Library": "1.6.1",
           "System.Diagnostics.Contracts": "4.3.0",
           "System.Net.NetworkInformation": "4.3.0"
@@ -7362,10 +7362,10 @@
           "lib/netstandard1.3/DotNetty.Common.dll": {}
         }
       },
-      "DotNetty.Transport/0.4.2": {
+      "DotNetty.Transport/0.4.4": {
         "dependencies": {
-          "DotNetty.Buffers": "0.4.2",
-          "DotNetty.Common": "0.4.2",
+          "DotNetty.Buffers": "0.4.4",
+          "DotNetty.Common": "0.4.4",
           "NETStandard.Library": "1.6.1",
           "System.Diagnostics.Contracts": "4.3.0",
           "System.Diagnostics.StackTrace": "4.3.0",
@@ -7435,10 +7435,10 @@
           "lib/netstandard1.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll": {}
         }
       },
-      "Microsoft.Extensions.Logging/1.1.0": {
+      "Microsoft.Extensions.Logging/1.1.1": {
         "dependencies": {
           "Microsoft.Extensions.DependencyInjection.Abstractions": "1.1.0",
-          "Microsoft.Extensions.Logging.Abstractions": "1.1.0",
+          "Microsoft.Extensions.Logging.Abstractions": "1.1.1",
           "NETStandard.Library": "1.6.1"
         },
         "compile": {
@@ -7448,7 +7448,7 @@
           "lib/netstandard1.1/Microsoft.Extensions.Logging.dll": {}
         }
       },
-      "Microsoft.Extensions.Logging.Abstractions/1.1.0": {
+      "Microsoft.Extensions.Logging.Abstractions/1.1.1": {
         "dependencies": {
           "NETStandard.Library": "1.6.1"
         },
@@ -9739,9 +9739,9 @@
       }
     },
     "UAP,Version=v10.0/win10-x64-aot": {
-      "DotNetty.Buffers/0.4.2": {
+      "DotNetty.Buffers/0.4.4": {
         "dependencies": {
-          "DotNetty.Common": "0.4.2",
+          "DotNetty.Common": "0.4.4",
           "NETStandard.Library": "1.6.1",
           "System.Diagnostics.Contracts": "4.3.0"
         },
@@ -9752,11 +9752,11 @@
           "lib/netstandard1.3/DotNetty.Buffers.dll": {}
         }
       },
-      "DotNetty.Codecs/0.4.2": {
+      "DotNetty.Codecs/0.4.4": {
         "dependencies": {
-          "DotNetty.Buffers": "0.4.2",
-          "DotNetty.Common": "0.4.2",
-          "DotNetty.Transport": "0.4.2",
+          "DotNetty.Buffers": "0.4.4",
+          "DotNetty.Common": "0.4.4",
+          "DotNetty.Transport": "0.4.4",
           "NETStandard.Library": "1.6.1",
           "System.Diagnostics.Contracts": "4.3.0"
         },
@@ -9767,12 +9767,12 @@
           "lib/netstandard1.3/DotNetty.Codecs.dll": {}
         }
       },
-      "DotNetty.Codecs.Mqtt/0.4.2": {
+      "DotNetty.Codecs.Mqtt/0.4.4": {
         "dependencies": {
-          "DotNetty.Buffers": "0.4.2",
-          "DotNetty.Codecs": "0.4.2",
-          "DotNetty.Common": "0.4.2",
-          "DotNetty.Transport": "0.4.2",
+          "DotNetty.Buffers": "0.4.4",
+          "DotNetty.Codecs": "0.4.4",
+          "DotNetty.Common": "0.4.4",
+          "DotNetty.Transport": "0.4.4",
           "NETStandard.Library": "1.6.1",
           "System.Diagnostics.Contracts": "4.3.0"
         },
@@ -9783,9 +9783,9 @@
           "lib/netstandard1.3/DotNetty.Codecs.Mqtt.dll": {}
         }
       },
-      "DotNetty.Common/0.4.2": {
+      "DotNetty.Common/0.4.4": {
         "dependencies": {
-          "Microsoft.Extensions.Logging": "1.1.0",
+          "Microsoft.Extensions.Logging": "1.1.1",
           "NETStandard.Library": "1.6.1",
           "System.Diagnostics.Contracts": "4.3.0",
           "System.Net.NetworkInformation": "4.3.0"
@@ -9797,10 +9797,10 @@
           "lib/netstandard1.3/DotNetty.Common.dll": {}
         }
       },
-      "DotNetty.Transport/0.4.2": {
+      "DotNetty.Transport/0.4.4": {
         "dependencies": {
-          "DotNetty.Buffers": "0.4.2",
-          "DotNetty.Common": "0.4.2",
+          "DotNetty.Buffers": "0.4.4",
+          "DotNetty.Common": "0.4.4",
           "NETStandard.Library": "1.6.1",
           "System.Diagnostics.Contracts": "4.3.0",
           "System.Diagnostics.StackTrace": "4.3.0",
@@ -9870,10 +9870,10 @@
           "lib/netstandard1.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll": {}
         }
       },
-      "Microsoft.Extensions.Logging/1.1.0": {
+      "Microsoft.Extensions.Logging/1.1.1": {
         "dependencies": {
           "Microsoft.Extensions.DependencyInjection.Abstractions": "1.1.0",
-          "Microsoft.Extensions.Logging.Abstractions": "1.1.0",
+          "Microsoft.Extensions.Logging.Abstractions": "1.1.1",
           "NETStandard.Library": "1.6.1"
         },
         "compile": {
@@ -9883,7 +9883,7 @@
           "lib/netstandard1.1/Microsoft.Extensions.Logging.dll": {}
         }
       },
-      "Microsoft.Extensions.Logging.Abstractions/1.1.0": {
+      "Microsoft.Extensions.Logging.Abstractions/1.1.1": {
         "dependencies": {
           "NETStandard.Library": "1.6.1"
         },
@@ -12213,9 +12213,9 @@
       }
     },
     "UAP,Version=v10.0/win10-x86": {
-      "DotNetty.Buffers/0.4.2": {
+      "DotNetty.Buffers/0.4.4": {
         "dependencies": {
-          "DotNetty.Common": "0.4.2",
+          "DotNetty.Common": "0.4.4",
           "NETStandard.Library": "1.6.1",
           "System.Diagnostics.Contracts": "4.3.0"
         },
@@ -12226,11 +12226,11 @@
           "lib/netstandard1.3/DotNetty.Buffers.dll": {}
         }
       },
-      "DotNetty.Codecs/0.4.2": {
+      "DotNetty.Codecs/0.4.4": {
         "dependencies": {
-          "DotNetty.Buffers": "0.4.2",
-          "DotNetty.Common": "0.4.2",
-          "DotNetty.Transport": "0.4.2",
+          "DotNetty.Buffers": "0.4.4",
+          "DotNetty.Common": "0.4.4",
+          "DotNetty.Transport": "0.4.4",
           "NETStandard.Library": "1.6.1",
           "System.Diagnostics.Contracts": "4.3.0"
         },
@@ -12241,12 +12241,12 @@
           "lib/netstandard1.3/DotNetty.Codecs.dll": {}
         }
       },
-      "DotNetty.Codecs.Mqtt/0.4.2": {
+      "DotNetty.Codecs.Mqtt/0.4.4": {
         "dependencies": {
-          "DotNetty.Buffers": "0.4.2",
-          "DotNetty.Codecs": "0.4.2",
-          "DotNetty.Common": "0.4.2",
-          "DotNetty.Transport": "0.4.2",
+          "DotNetty.Buffers": "0.4.4",
+          "DotNetty.Codecs": "0.4.4",
+          "DotNetty.Common": "0.4.4",
+          "DotNetty.Transport": "0.4.4",
           "NETStandard.Library": "1.6.1",
           "System.Diagnostics.Contracts": "4.3.0"
         },
@@ -12257,9 +12257,9 @@
           "lib/netstandard1.3/DotNetty.Codecs.Mqtt.dll": {}
         }
       },
-      "DotNetty.Common/0.4.2": {
+      "DotNetty.Common/0.4.4": {
         "dependencies": {
-          "Microsoft.Extensions.Logging": "1.1.0",
+          "Microsoft.Extensions.Logging": "1.1.1",
           "NETStandard.Library": "1.6.1",
           "System.Diagnostics.Contracts": "4.3.0",
           "System.Net.NetworkInformation": "4.3.0"
@@ -12271,10 +12271,10 @@
           "lib/netstandard1.3/DotNetty.Common.dll": {}
         }
       },
-      "DotNetty.Transport/0.4.2": {
+      "DotNetty.Transport/0.4.4": {
         "dependencies": {
-          "DotNetty.Buffers": "0.4.2",
-          "DotNetty.Common": "0.4.2",
+          "DotNetty.Buffers": "0.4.4",
+          "DotNetty.Common": "0.4.4",
           "NETStandard.Library": "1.6.1",
           "System.Diagnostics.Contracts": "4.3.0",
           "System.Diagnostics.StackTrace": "4.3.0",
@@ -12344,10 +12344,10 @@
           "lib/netstandard1.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll": {}
         }
       },
-      "Microsoft.Extensions.Logging/1.1.0": {
+      "Microsoft.Extensions.Logging/1.1.1": {
         "dependencies": {
           "Microsoft.Extensions.DependencyInjection.Abstractions": "1.1.0",
-          "Microsoft.Extensions.Logging.Abstractions": "1.1.0",
+          "Microsoft.Extensions.Logging.Abstractions": "1.1.1",
           "NETStandard.Library": "1.6.1"
         },
         "compile": {
@@ -12357,7 +12357,7 @@
           "lib/netstandard1.1/Microsoft.Extensions.Logging.dll": {}
         }
       },
-      "Microsoft.Extensions.Logging.Abstractions/1.1.0": {
+      "Microsoft.Extensions.Logging.Abstractions/1.1.1": {
         "dependencies": {
           "NETStandard.Library": "1.6.1"
         },
@@ -14648,9 +14648,9 @@
       }
     },
     "UAP,Version=v10.0/win10-x86-aot": {
-      "DotNetty.Buffers/0.4.2": {
+      "DotNetty.Buffers/0.4.4": {
         "dependencies": {
-          "DotNetty.Common": "0.4.2",
+          "DotNetty.Common": "0.4.4",
           "NETStandard.Library": "1.6.1",
           "System.Diagnostics.Contracts": "4.3.0"
         },
@@ -14661,11 +14661,11 @@
           "lib/netstandard1.3/DotNetty.Buffers.dll": {}
         }
       },
-      "DotNetty.Codecs/0.4.2": {
+      "DotNetty.Codecs/0.4.4": {
         "dependencies": {
-          "DotNetty.Buffers": "0.4.2",
-          "DotNetty.Common": "0.4.2",
-          "DotNetty.Transport": "0.4.2",
+          "DotNetty.Buffers": "0.4.4",
+          "DotNetty.Common": "0.4.4",
+          "DotNetty.Transport": "0.4.4",
           "NETStandard.Library": "1.6.1",
           "System.Diagnostics.Contracts": "4.3.0"
         },
@@ -14676,12 +14676,12 @@
           "lib/netstandard1.3/DotNetty.Codecs.dll": {}
         }
       },
-      "DotNetty.Codecs.Mqtt/0.4.2": {
+      "DotNetty.Codecs.Mqtt/0.4.4": {
         "dependencies": {
-          "DotNetty.Buffers": "0.4.2",
-          "DotNetty.Codecs": "0.4.2",
-          "DotNetty.Common": "0.4.2",
-          "DotNetty.Transport": "0.4.2",
+          "DotNetty.Buffers": "0.4.4",
+          "DotNetty.Codecs": "0.4.4",
+          "DotNetty.Common": "0.4.4",
+          "DotNetty.Transport": "0.4.4",
           "NETStandard.Library": "1.6.1",
           "System.Diagnostics.Contracts": "4.3.0"
         },
@@ -14692,9 +14692,9 @@
           "lib/netstandard1.3/DotNetty.Codecs.Mqtt.dll": {}
         }
       },
-      "DotNetty.Common/0.4.2": {
+      "DotNetty.Common/0.4.4": {
         "dependencies": {
-          "Microsoft.Extensions.Logging": "1.1.0",
+          "Microsoft.Extensions.Logging": "1.1.1",
           "NETStandard.Library": "1.6.1",
           "System.Diagnostics.Contracts": "4.3.0",
           "System.Net.NetworkInformation": "4.3.0"
@@ -14706,10 +14706,10 @@
           "lib/netstandard1.3/DotNetty.Common.dll": {}
         }
       },
-      "DotNetty.Transport/0.4.2": {
+      "DotNetty.Transport/0.4.4": {
         "dependencies": {
-          "DotNetty.Buffers": "0.4.2",
-          "DotNetty.Common": "0.4.2",
+          "DotNetty.Buffers": "0.4.4",
+          "DotNetty.Common": "0.4.4",
           "NETStandard.Library": "1.6.1",
           "System.Diagnostics.Contracts": "4.3.0",
           "System.Diagnostics.StackTrace": "4.3.0",
@@ -14779,10 +14779,10 @@
           "lib/netstandard1.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll": {}
         }
       },
-      "Microsoft.Extensions.Logging/1.1.0": {
+      "Microsoft.Extensions.Logging/1.1.1": {
         "dependencies": {
           "Microsoft.Extensions.DependencyInjection.Abstractions": "1.1.0",
-          "Microsoft.Extensions.Logging.Abstractions": "1.1.0",
+          "Microsoft.Extensions.Logging.Abstractions": "1.1.1",
           "NETStandard.Library": "1.6.1"
         },
         "compile": {
@@ -14792,7 +14792,7 @@
           "lib/netstandard1.1/Microsoft.Extensions.Logging.dll": {}
         }
       },
-      "Microsoft.Extensions.Logging.Abstractions/1.1.0": {
+      "Microsoft.Extensions.Logging.Abstractions/1.1.1": {
         "dependencies": {
           "NETStandard.Library": "1.6.1"
         },
@@ -17123,67 +17123,67 @@
     }
   },
   "libraries": {
-    "DotNetty.Buffers/0.4.2": {
-      "sha512": "5/5ZnyDjEf1+w4Q7ohtwqBDAHELQkw3cGa1UYn/hpDCA3d56msCSUeZje8esqZXDwc7v8q75n3/JEcEWq4CGZg==",
+    "DotNetty.Buffers/0.4.4": {
+      "sha512": "ISQosZUpx3gXMyb9pvEZhK8vHs4YUfqmY1WPczsWr9tS15zz20OXfd3GEzoPLndkzIrr0/7yvcxn5/nAYGU2qw==",
       "type": "package",
-      "path": "DotNetty.Buffers/0.4.2",
+      "path": "DotNetty.Buffers/0.4.4",
       "files": [
-        "DotNetty.Buffers.0.4.2.nupkg.sha512",
+        "DotNetty.Buffers.0.4.4.nupkg.sha512",
         "DotNetty.Buffers.nuspec",
-        "lib/net451/DotNetty.Buffers.dll",
-        "lib/net451/DotNetty.Buffers.xml",
+        "lib/net45/DotNetty.Buffers.dll",
+        "lib/net45/DotNetty.Buffers.xml",
         "lib/netstandard1.3/DotNetty.Buffers.dll",
         "lib/netstandard1.3/DotNetty.Buffers.xml"
       ]
     },
-    "DotNetty.Codecs/0.4.2": {
-      "sha512": "6dXBbSa/JbY0yG4l7G0mH0/9hZ1Hpgj6F4wYZckKr9Dtp400J3rIKl9YcFQRr+xCsqp/h9ij9MAK3tF5vOiVYQ==",
+    "DotNetty.Codecs/0.4.4": {
+      "sha512": "6WyB8M99IRnwtZf+0VQNQq1DW1Pi5W2HOTgta3KSmhawyuiMYxHC4uk+I17sSJC7YQbHL396mXJrcpQ3WjDLQw==",
       "type": "package",
-      "path": "DotNetty.Codecs/0.4.2",
+      "path": "DotNetty.Codecs/0.4.4",
       "files": [
-        "DotNetty.Codecs.0.4.2.nupkg.sha512",
+        "DotNetty.Codecs.0.4.4.nupkg.sha512",
         "DotNetty.Codecs.nuspec",
-        "lib/net451/DotNetty.Codecs.dll",
-        "lib/net451/DotNetty.Codecs.xml",
+        "lib/net45/DotNetty.Codecs.dll",
+        "lib/net45/DotNetty.Codecs.xml",
         "lib/netstandard1.3/DotNetty.Codecs.dll",
         "lib/netstandard1.3/DotNetty.Codecs.xml"
       ]
     },
-    "DotNetty.Codecs.Mqtt/0.4.2": {
-      "sha512": "DlhLbR3uSkNvvBXfx6IwtBCb4cmo4T4g82PTzR6ceWRn8hVd1wth8njdwUhrzpgZhg5xq1RPbP1p2Hja6tPs5w==",
+    "DotNetty.Codecs.Mqtt/0.4.4": {
+      "sha512": "jEPM6UUw66x0iQgB5RzFqRktRYR4rouH/RNbOlofpM52Y+c4A1asrpWycekP6lf/ySHLF4LUJbaxhhCFNAtang==",
       "type": "package",
-      "path": "DotNetty.Codecs.Mqtt/0.4.2",
+      "path": "DotNetty.Codecs.Mqtt/0.4.4",
       "files": [
-        "DotNetty.Codecs.Mqtt.0.4.2.nupkg.sha512",
+        "DotNetty.Codecs.Mqtt.0.4.4.nupkg.sha512",
         "DotNetty.Codecs.Mqtt.nuspec",
-        "lib/net451/DotNetty.Codecs.Mqtt.dll",
-        "lib/net451/DotNetty.Codecs.Mqtt.xml",
+        "lib/net45/DotNetty.Codecs.Mqtt.dll",
+        "lib/net45/DotNetty.Codecs.Mqtt.xml",
         "lib/netstandard1.3/DotNetty.Codecs.Mqtt.dll",
         "lib/netstandard1.3/DotNetty.Codecs.Mqtt.xml"
       ]
     },
-    "DotNetty.Common/0.4.2": {
-      "sha512": "qf7mXkRAge3s2UT9+TOVjRAUuGJpxSIh9Ji4DI9HzlWMigZ9USdrEIYK+rUW42zt5j67A4ThraxFK61nugJR4g==",
+    "DotNetty.Common/0.4.4": {
+      "sha512": "fwr80IywS8jmk9gHYFM5LwWpphZdPl9HualuS2AzTNF6eIl3Qrhprx64fPDrTwDwgt29SJ4yLrasbYNm7GOjWw==",
       "type": "package",
-      "path": "DotNetty.Common/0.4.2",
+      "path": "DotNetty.Common/0.4.4",
       "files": [
-        "DotNetty.Common.0.4.2.nupkg.sha512",
+        "DotNetty.Common.0.4.4.nupkg.sha512",
         "DotNetty.Common.nuspec",
-        "lib/net451/DotNetty.Common.dll",
-        "lib/net451/DotNetty.Common.xml",
+        "lib/net45/DotNetty.Common.dll",
+        "lib/net45/DotNetty.Common.xml",
         "lib/netstandard1.3/DotNetty.Common.dll",
         "lib/netstandard1.3/DotNetty.Common.xml"
       ]
     },
-    "DotNetty.Transport/0.4.2": {
-      "sha512": "eV2yA701SCJUQGHlQczVsR1joupt0FT86Wb8OdbDKfLRkKS4kqA3nyiTEuK7elw0zyigybYqkUMA3Q0IuwVbnQ==",
+    "DotNetty.Transport/0.4.4": {
+      "sha512": "QVCCsvBioq6mmdDMf++hXo4x6M7R3xlrgd4+5rDl30F2+7CMRz9kb3sW9PWNygs8xxEHSGceynQIIunYW/YMqA==",
       "type": "package",
-      "path": "DotNetty.Transport/0.4.2",
+      "path": "DotNetty.Transport/0.4.4",
       "files": [
-        "DotNetty.Transport.0.4.2.nupkg.sha512",
+        "DotNetty.Transport.0.4.4.nupkg.sha512",
         "DotNetty.Transport.nuspec",
-        "lib/net451/DotNetty.Transport.dll",
-        "lib/net451/DotNetty.Transport.xml",
+        "lib/net45/DotNetty.Transport.dll",
+        "lib/net45/DotNetty.Transport.xml",
         "lib/netstandard1.3/DotNetty.Transport.dll",
         "lib/netstandard1.3/DotNetty.Transport.xml"
       ]
@@ -17287,23 +17287,23 @@
         "lib/netstandard1.0/Microsoft.Extensions.DependencyInjection.Abstractions.xml"
       ]
     },
-    "Microsoft.Extensions.Logging/1.1.0": {
-      "sha512": "IbNogJJE3NRtc5/DAtKEkhXaUQK9N7I6A5G2+ZfyBzWMvAgLKSimESpNMp+gnzUYsW3YbHkeT8jLk9m/3vGY5A==",
+    "Microsoft.Extensions.Logging/1.1.1": {
+      "sha512": "cxLG416uOEFmnv7w4/rsVKD4dRYFuUY+G5WXpLVLMNIL6VYcQkDe67cx2IWBrtUieA08w9eCuxrd2pxIrJ7Wtg==",
       "type": "package",
-      "path": "Microsoft.Extensions.Logging/1.1.0",
+      "path": "Microsoft.Extensions.Logging/1.1.1",
       "files": [
-        "Microsoft.Extensions.Logging.1.1.0.nupkg.sha512",
+        "Microsoft.Extensions.Logging.1.1.1.nupkg.sha512",
         "Microsoft.Extensions.Logging.nuspec",
         "lib/netstandard1.1/Microsoft.Extensions.Logging.dll",
         "lib/netstandard1.1/Microsoft.Extensions.Logging.xml"
       ]
     },
-    "Microsoft.Extensions.Logging.Abstractions/1.1.0": {
-      "sha512": "5zDtM0Dal+pwDIj49PPq9Y8SYu6z70v55VDx70rOuquLTlaCIdv9uItkcp9c1FH/ASNdfANVnh1cTwd85dyE+Q==",
+    "Microsoft.Extensions.Logging.Abstractions/1.1.1": {
+      "sha512": "MMWQNrwQKrSigIaGpPWIK9ZZCNd9aaCHaLgwfPiJNdOfU3UE+RA093YZ7B879MdZ1qSFPcS1QLLNjD+dxXX7Aw==",
       "type": "package",
-      "path": "Microsoft.Extensions.Logging.Abstractions/1.1.0",
+      "path": "Microsoft.Extensions.Logging.Abstractions/1.1.1",
       "files": [
-        "Microsoft.Extensions.Logging.Abstractions.1.1.0.nupkg.sha512",
+        "Microsoft.Extensions.Logging.Abstractions.1.1.1.nupkg.sha512",
         "Microsoft.Extensions.Logging.Abstractions.nuspec",
         "lib/netstandard1.1/Microsoft.Extensions.Logging.Abstractions.dll",
         "lib/netstandard1.1/Microsoft.Extensions.Logging.Abstractions.xml"
