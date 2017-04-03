@@ -252,8 +252,8 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                 {
                     throw new ArgumentException("certificate in DeviceAuthenticationWithX509Certificate must have a private key");
                 }
-                Certificate = connectionStringBuilder.Certificate;
 
+                Certificate = connectionStringBuilder.Certificate;
                 return CreateFromConnectionString(connectionStringBuilder.ToString(), PopulateCertificateInTransportSettings(connectionStringBuilder, transportType));
             }
 #endif
