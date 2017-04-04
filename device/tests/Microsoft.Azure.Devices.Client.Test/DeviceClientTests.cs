@@ -112,7 +112,7 @@
 
         [TestMethod]
         [TestCategory("DeviceClient")]
-        // Tests_SRS_DEVICECLIENT_28_020: [** If the given methodRequestInternal data is not valid json, fail silently **]**
+        // Tests_SRS_DEVICECLIENT_28_020: [** If the given methodRequestInternal data is not valid json, respond with status code 400 (BAD REQUEST) **]**
         public async Task DeviceClient_OnMethodCalled_MethodRequestHasInvalidJson()
         {
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
@@ -128,7 +128,7 @@
             var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{key")));
 
             await deviceClient.OnMethodCalled(methodRequestInternal);
-            await innerHandler.DidNotReceive().SendMethodResponseAsync(Arg.Any<MethodResponseInternal>(), Arg.Any<CancellationToken>());
+            await innerHandler.Received().SendMethodResponseAsync(Arg.Is<MethodResponseInternal>(resp => resp.Status == 400), Arg.Any<CancellationToken>());
             Assert.IsFalse(isMethodHandlerCalled);
         }
 
@@ -156,7 +156,7 @@
 
         [TestMethod]
         [TestCategory("DeviceClient")]
-        // Tests_SRS_DEVICECLIENT_28_021: [** If the MethodResponse from the MethodHandler is not valid json, JsonReaderException shall be throw **]**
+        // Tests_SRS_DEVICECLIENT_28_021: [** If the MethodResponse from the MethodHandler is not valid json, respond with status code 500 (USER CODE EXCEPTION) **]**
         public async Task DeviceClient_OnMethodCalled_MethodResponseHasInvalidJson()
         {
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
@@ -173,7 +173,7 @@
 
             await deviceClient.OnMethodCalled(methodRequestInternal);
             Assert.IsTrue(isMethodHandlerCalled);
-            await innerHandler.DidNotReceive().SendMethodResponseAsync(Arg.Any<MethodResponseInternal>(), Arg.Any<CancellationToken>());
+            await innerHandler.Received().SendMethodResponseAsync(Arg.Is<MethodResponseInternal>(resp => resp.Status == 500), Arg.Any<CancellationToken>());
         }
 
         [TestMethod]
@@ -217,28 +217,6 @@
             await deviceClient.OnMethodCalled(methodRequestInternal);
             await innerHandler.Received().SendMethodResponseAsync(Arg.Any<MethodResponseInternal>(), Arg.Any<CancellationToken>());
             Assert.IsTrue(isMethodHandlerCalled);
-        }
-
-        [TestMethod]
-        [TestCategory("DeviceClient")]
-        // Tests_SRS_DEVICECLIENT_28_020: [** If the given methodRequestInternal data is not valid json, fail silently **]**
-        public async Task DeviceClient_OnMethodCalled_MethodRequestHasInvalidJson_With_SetMethodHandler()
-        {
-            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            deviceClient.InnerHandler = innerHandler;
-            bool isMethodHandlerCalled = false;
-            deviceClient.SetMethodHandler("TestMethodName", (payload, context) =>
-            {
-                isMethodHandlerCalled = true;
-                return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes("{\"name\":\"ABC\"}"), 200));
-            }, "custom data");
-
-            var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{key")));
-
-            await deviceClient.OnMethodCalled(methodRequestInternal);
-            await innerHandler.DidNotReceive().SendMethodResponseAsync(Arg.Any<MethodResponseInternal>(), Arg.Any<CancellationToken>());
-            Assert.IsFalse(isMethodHandlerCalled);
         }
 
         [TestMethod]
@@ -289,7 +267,7 @@
 
         [TestMethod]
         [TestCategory("DeviceClient")]
-        // Tests_SRS_DEVICECLIENT_28_021: [** If the MethodResponse from the MethodHandler is not valid json, JsonReaderException shall be throw **]**
+        // Tests_SRS_DEVICECLIENT_28_021: [** If the MethodResponse from the MethodHandler is not valid json, respond with status code 500 (USER CODE EXCEPTION) **]**
         public async Task DeviceClient_OnMethodCalled_MethodResponseHasInvalidJson_With_SetMethodHandler()
         {
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
@@ -306,12 +284,12 @@
 
             await deviceClient.OnMethodCalled(methodRequestInternal);
             Assert.IsTrue(isMethodHandlerCalled);
-            await innerHandler.DidNotReceive().SendMethodResponseAsync(Arg.Any<MethodResponseInternal>(), Arg.Any<CancellationToken>());
+            await innerHandler.Received().SendMethodResponseAsync(Arg.Is<MethodResponseInternal>(resp => resp.Status == 500), Arg.Any<CancellationToken>());
         }
 
         [TestMethod]
         [TestCategory("DeviceClient")]
-        // Tests_SRS_DEVICECLIENT_10_013: [** If the given method does not have an associated delegate, failed silently **]**
+        // Tests_SRS_DEVICECLIENT_10_013: [** If the given method does not have an associated delegate, respond with status code 501 (METHOD NOT IMPLEMENTED) **]**
         public async Task DeviceClient_OnMethodCalled_NoMethodHandler()
         {
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
@@ -322,7 +300,7 @@
 
             await deviceClient.OnMethodCalled(methodRequestInternal);
 
-            await innerHandler.DidNotReceive().SendMethodResponseAsync(Arg.Any<MethodResponseInternal>(), Arg.Any<CancellationToken>());
+            await innerHandler.Received().SendMethodResponseAsync(Arg.Is<MethodResponseInternal>(resp => resp.Status == 501), Arg.Any<CancellationToken>());
         }
 
         [TestMethod]
