@@ -119,13 +119,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         static readonly ConcurrentObjectPool<string, IEventLoopGroup> EventLoopGroupPool =
             new ConcurrentObjectPool<string, IEventLoopGroup>(
                 Environment.ProcessorCount,
-// This is a source-breaking change in DotNetty. It only affects UWP since it uses the latest version. Once .NET Framework switches to
-// the latest version, the #if below must be removed. Both will use the single-param delegate ('eg => ...')
-#if WINDOWS_UWP
                 () => new MultithreadEventLoopGroup(eg => new SingleThreadEventLoop(eg, "MQTTExecutionThread", TimeSpan.FromSeconds(1)), 1),
-#else
-                () => new MultithreadEventLoopGroup(() => new SingleThreadEventLoop("MQTTExecutionThread", TimeSpan.FromSeconds(1)), 1),
-#endif
                 TimeSpan.FromSeconds(5),
                 elg => elg.ShutdownGracefullyAsync());
 

@@ -939,18 +939,21 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             // codes_SRS_DEVICECLIENT_10_012: [ If the given methodRequestInternal argument is null, fail silently ]
             if (methodRequestInternal != null)
             {
+                MethodResponseInternal methodResponseInternal;
                 byte[] requestData = methodRequestInternal.GetBytes();
 
-                methodsDictionarySemaphore.Wait();
+                await methodsDictionarySemaphore.WaitAsync();
                 try
                 {
                     Utils.ValidateDataIsEmptyOrJson(requestData);                    
-                    // codes_SRS_DEVICECLIENT_10_013: [ If the given method does not have an associated delegate, fail silently ]
                     this.deviceMethods?.TryGetValue(methodRequestInternal.Name, out m);
                 }
                 catch (Exception)
                 {
-                    // codes_SRS_DEVICECLIENT_28_020: [ If the given methodRequestInternal data is not valid json, fail silently ]
+                    // codes_SRS_DEVICECLIENT_28_020: [ If the given methodRequestInternal data is not valid json, respond with status code 400 (BAD REQUEST) ]
+                    methodResponseInternal = new MethodResponseInternal(methodRequestInternal.RequestId, (int)MethodResposeStatusCode.BadRequest);
+                    await this.SendMethodResponseAsync(methodResponseInternal);
+                    return;
                 }
                 finally
                 {
@@ -964,8 +967,6 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                         // codes_SRS_DEVICECLIENT_10_011: [ The OnMethodCalled shall invoke the specified delegate. ]
                         MethodResponse rv = await m.Item1(new MethodRequest(methodRequestInternal.Name, requestData), m.Item2);
 
-                        MethodResponseInternal methodResponseInternal;
-
                         // codes_SRS_DEVICECLIENT_03_012: [If the MethodResponse does not contain result, the MethodResponseInternal constructor shall be invoked with no results.]
                         if (rv.Result == null)
                         {
@@ -975,16 +976,20 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                         else
                         {
                             methodResponseInternal = new MethodResponseInternal(rv.Result, methodRequestInternal.RequestId, rv.Status);
-
                         }
-
-                        await this.SendMethodResponseAsync(methodResponseInternal);
                     }
                     catch (Exception)
                     {
-                        // codes_SRS_DEVICECLIENT_28_021: [ If the MethodResponse from the MethodHandler is not valid json, fail silently ]
+                        // codes_SRS_DEVICECLIENT_28_021: [ If the MethodResponse from the MethodHandler is not valid json, respond with status code 500 (USER CODE EXCEPTION) ]
+                        methodResponseInternal = new MethodResponseInternal(methodRequestInternal.RequestId, (int)MethodResposeStatusCode.UserCodeException);
                     }
                 }
+                else
+                {
+                    // codes_SRS_DEVICECLIENT_10_013: [ If the given method does not have an associated delegate, respond with status code 501 (METHOD NOT IMPLEMENTED) ]
+                    methodResponseInternal = new MethodResponseInternal(methodRequestInternal.RequestId, (int)MethodResposeStatusCode.MethodNotImplemented);
+                }
+                await this.SendMethodResponseAsync(methodResponseInternal);
             }
         }
 

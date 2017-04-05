@@ -23,9 +23,9 @@
 
             <group targetFramework="net45" >
                 <dependency id="PCLCrypto" version="2.0.147" />
-                <dependency id="Microsoft.Azure.Amqp" version="2.0.3" />
-                <dependency id="DotNetty.Codecs.Mqtt-signed" version="0.3.2" />
-                <dependency id="DotNetty.Handlers-signed" version="0.3.2" />
+                <dependency id="Microsoft.Azure.Amqp" version="2.0.4" />
+                <dependency id="DotNetty.Codecs.Mqtt-signed" version="0.4.4" />
+                <dependency id="DotNetty.Handlers-signed" version="0.4.4" />
                 <dependency id="EnterpriseLibrary.TransientFaultHandling" version="6.0.1304" />
                 <dependency id="Microsoft.AspNet.WebApi.Client" version="5.2.3" />
                 <dependency id="WindowsAzure.Storage" version="7.0.0" />
@@ -35,15 +35,15 @@
             <group targetFramework="uap10.0">
                 <dependency id="Microsoft.NETCore.UniversalWindowsPlatform" version="[5.2.2,)"/>
                 <dependency id="PCLCrypto" version="2.0.147" />
-                <dependency id="Microsoft.Azure.Amqp" version="2.0.3" />
+                <dependency id="Microsoft.Azure.Amqp" version="2.0.4" />
                 <dependency id="Microsoft.AspNet.WebApi.Client" version="5.2.3" />
                 <dependency id="Microsoft.Azure.Devices.Shared" version="1.0.8" />
                 <dependency id="EnterpriseLibrary.TransientFaultHandling" version="6.0.1304" />
-                <dependency id="DotNetty.Buffers" version="0.4.2" />
-                <dependency id="DotNetty.Codecs" version="0.4.2" />
-                <dependency id="DotNetty.Codecs.Mqtt" version="0.4.2" />
-                <dependency id="DotNetty.Common" version="0.4.2" />
-                <dependency id="DotNetty.Transport" version="0.4.2" />
+                <dependency id="DotNetty.Buffers" version="0.4.4" />
+                <dependency id="DotNetty.Codecs" version="0.4.4" />
+                <dependency id="DotNetty.Codecs.Mqtt" version="0.4.4" />
+                <dependency id="DotNetty.Common" version="0.4.4" />
+                <dependency id="DotNetty.Transport" version="0.4.4" />
             </group>
 
             <group targetFramework="win8">
@@ -59,12 +59,12 @@
             </group>
 
             <group targetFramework="monoandroid">
-                <dependency id="Microsoft.Azure.Amqp" version="2.0.2" />
+                <dependency id="Microsoft.Azure.Amqp" version="2.0.4" />
                 <dependency id="PCLCrypto" version="2.0.147" />
             </group>
 
             <group targetFramework="monotouch">
-                <dependency id="Microsoft.Azure.Amqp" version="2.0.2" />
+                <dependency id="Microsoft.Azure.Amqp" version="2.0.4" />
                 <dependency id="PCLCrypto" version="2.0.147" />
             </group>
 

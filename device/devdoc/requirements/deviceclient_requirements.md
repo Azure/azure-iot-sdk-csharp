@@ -148,11 +148,11 @@ internal async Task OnMethodCalled(MethodRequestInternal methodRequestInternal)
 
 **SRS_DEVICECLIENT_10_012: [** If the given methodRequestInternal argument is null, failed silently **]**
 
-**SRS_DEVICECLIENT_10_013: [** If the given method does not have an associated delegate, failed silently **]**
+**SRS_DEVICECLIENT_10_013: [** If the given method does not have an associated delegate, respond with status code 501 (METHOD NOT IMPLEMENTED) **]**
 
-**SRS_DEVICECLIENT_28_020: [** If the given methodRequestInternal data is not valid json, fail silently **]**
+**SRS_DEVICECLIENT_28_020: [** If the given methodRequestInternal data is not valid json, respond with status code 400 (BAD REQUEST) **]**
 
-**SRS_DEVICECLIENT_28_021: [** If the MethodResponse from the MethodHandler is not valid json, JsonReaderException shall be throw **]**
+**SRS_DEVICECLIENT_28_021: [** If the MethodResponse from the MethodHandler is not valid json, respond with status code 500 (USER CODE EXCEPTION) **]**
 
 
 ### SetMethodDelegate

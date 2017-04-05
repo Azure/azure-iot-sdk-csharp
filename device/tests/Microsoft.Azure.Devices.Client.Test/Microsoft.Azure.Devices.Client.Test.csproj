@@ -87,32 +87,32 @@
   </ItemGroup>
   <Choose>
     <When Condition="'$(DotNettyPath)' == ''">
-      <ItemGroup>
-        <Reference Include="DotNetty.Buffers, Version=0.3.2.0, Culture=neutral, PublicKeyToken=e7a0210a354f294a, processorArchitecture=MSIL">
-          <HintPath>$(SolutionDir)\packages\DotNetty.Buffers-signed.0.3.2\lib\net45\DotNetty.Buffers.dll</HintPath>
-          <Private>True</Private>
-        </Reference>
-        <Reference Include="DotNetty.Codecs, Version=0.3.2.0, Culture=neutral, PublicKeyToken=e7a0210a354f294a, processorArchitecture=MSIL">
-          <HintPath>$(SolutionDir)\packages\DotNetty.Codecs-signed.0.3.2\lib\net45\DotNetty.Codecs.dll</HintPath>
-          <Private>True</Private>
-        </Reference>
-        <Reference Include="DotNetty.Codecs.Mqtt, Version=0.3.2.0, Culture=neutral, PublicKeyToken=e7a0210a354f294a, processorArchitecture=MSIL">
-          <HintPath>$(SolutionDir)\packages\DotNetty.Codecs.Mqtt-signed.0.3.2\lib\net45\DotNetty.Codecs.Mqtt.dll</HintPath>
-          <Private>True</Private>
-        </Reference>
-        <Reference Include="DotNetty.Common, Version=0.3.2.0, Culture=neutral, PublicKeyToken=e7a0210a354f294a, processorArchitecture=MSIL">
-          <HintPath>$(SolutionDir)\packages\DotNetty.Common-signed.0.3.2\lib\net45\DotNetty.Common.dll</HintPath>
-          <Private>True</Private>
-        </Reference>
-        <Reference Include="DotNetty.Handlers, Version=0.3.2.0, Culture=neutral, PublicKeyToken=e7a0210a354f294a, processorArchitecture=MSIL">
-          <HintPath>$(SolutionDir)\packages\DotNetty.Handlers-signed.0.3.2\lib\net45\DotNetty.Handlers.dll</HintPath>
-          <Private>True</Private>
-        </Reference>
-        <Reference Include="DotNetty.Transport, Version=0.3.2.0, Culture=neutral, PublicKeyToken=e7a0210a354f294a, processorArchitecture=MSIL">
-          <HintPath>$(SolutionDir)\packages\DotNetty.Transport-signed.0.3.2\lib\net45\DotNetty.Transport.dll</HintPath>
-          <Private>True</Private>
-        </Reference>
-      </ItemGroup>
+        <ItemGroup>
+            <Reference Include="DotNetty.Buffers, Version=0.4.4.0, Culture=neutral, PublicKeyToken=bc13ca065fa06c29, processorArchitecture=MSIL">
+              <HintPath>$(SolutionDir)\packages\DotNetty.Buffers.0.4.4\lib\net45\DotNetty.Buffers.dll</HintPath>
+              <Private>True</Private>
+            </Reference>
+            <Reference Include="DotNetty.Codecs, Version=0.4.4.0, Culture=neutral, PublicKeyToken=bc13ca065fa06c29, processorArchitecture=MSIL">
+              <HintPath>$(SolutionDir)\packages\DotNetty.Codecs.0.4.4\lib\net45\DotNetty.Codecs.dll</HintPath>
+              <Private>True</Private>
+            </Reference>
+            <Reference Include="DotNetty.Codecs.Mqtt, Version=0.4.4.0, Culture=neutral, PublicKeyToken=bc13ca065fa06c29, processorArchitecture=MSIL">
+              <HintPath>$(SolutionDir)\packages\DotNetty.Codecs.Mqtt.0.4.4\lib\net45\DotNetty.Codecs.Mqtt.dll</HintPath>
+              <Private>True</Private>
+            </Reference>
+            <Reference Include="DotNetty.Common, Version=0.4.4.0, Culture=neutral, PublicKeyToken=bc13ca065fa06c29, processorArchitecture=MSIL">
+              <HintPath>$(SolutionDir)\packages\DotNetty.Common.0.4.4\lib\net45\DotNetty.Common.dll</HintPath>
+              <Private>True</Private>
+            </Reference>
+            <Reference Include="DotNetty.Handlers, Version=0.4.4.0, Culture=neutral, PublicKeyToken=bc13ca065fa06c29, processorArchitecture=MSIL">
+              <HintPath>$(SolutionDir)\packages\DotNetty.Handlers.0.4.4\lib\net45\DotNetty.Handlers.dll</HintPath>
+              <Private>True</Private>
+            </Reference>
+            <Reference Include="DotNetty.Transport, Version=0.4.4.0, Culture=neutral, PublicKeyToken=bc13ca065fa06c29, processorArchitecture=MSIL">
+              <HintPath>$(SolutionDir)\packages\DotNetty.Transport.0.4.4\lib\net45\DotNetty.Transport.dll</HintPath>
+              <Private>True</Private>
+            </Reference>
+        </ItemGroup>
     </When>
     <Otherwise>
       <ItemGroup>
@@ -145,10 +145,22 @@
   </Choose>
   <ItemGroup>
     <Reference Include="Microsoft.Azure.Amqp, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>$(SolutionDir)\packages\Microsoft.Azure.Amqp.2.0.3\lib\net45\Microsoft.Azure.Amqp.dll</HintPath>
+      <HintPath>$(SolutionDir)\packages\Microsoft.Azure.Amqp.2.0.4\lib\net45\Microsoft.Azure.Amqp.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions, Version=1.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>$(SolutionDir)\packages\Microsoft.Extensions.DependencyInjection.Abstractions.1.1.0\lib\netstandard1.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Logging, Version=1.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>$(SolutionDir)\packages\Microsoft.Extensions.Logging.1.1.1\lib\netstandard1.1\Microsoft.Extensions.Logging.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions, Version=1.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>$(SolutionDir)\packages\Microsoft.Extensions.Logging.Abstractions.1.1.1\lib\netstandard1.1\Microsoft.Extensions.Logging.Abstractions.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <Private>False</Private>
     </Reference>
@@ -185,9 +197,16 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.IO.Compression" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Net.Http.Formatting, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>$(SolutionDir)\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Runtime.InteropServices.RuntimeInformation, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>$(SolutionDir)\packages\System.Runtime.InteropServices.RuntimeInformation.4.3.0\lib\net45\System.Runtime.InteropServices.RuntimeInformation.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Runtime.Serialization" />
@@ -197,6 +216,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
