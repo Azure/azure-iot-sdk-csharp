@@ -19,13 +19,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
     {
         static class PacketIdGenerator
         {
-            static ushort current = (ushort)new Random((int)DateTime.UtcNow.ToFileTimeUtc()).Next(0, ushort.MaxValue);
+            static ushort current = (ushort)new Random((int)DateTime.UtcNow.ToFileTimeUtc()).Next(1, ushort.MaxValue);
 
             public static int Next()
             {
                 unchecked
                 {
-                    return current++;
+                    return ++current == 0 ? ++current : current;
                 }
             }
         }
