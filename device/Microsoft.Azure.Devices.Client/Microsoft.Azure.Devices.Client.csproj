@@ -238,10 +238,7 @@
     <Compile Include="DeviceAuthenticationWithX509Certificate.cs" />
     <Compile Include="IotHubClientWebSocket.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Transport\FileUploadNotificationResponse.cs" />
-    <Compile Include="Transport\FileUploadRequest.cs" />
-    <Compile Include="Transport\FileUploadResponse.cs" />
-<!--
+    <!--
     <Compile Include="Transport\ITransportHandlerFactory.cs" />
 -->
     <Compile Include="Transport\Mqtt\ChannelMessageProcessingException.cs" />

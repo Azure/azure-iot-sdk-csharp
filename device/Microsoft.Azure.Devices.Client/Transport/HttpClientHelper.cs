@@ -164,9 +164,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 return (T)(object)message;
             }
 
-#if WINDOWS_UWP || PCL
-            // ReadAsAsync does not exist in UWP. Looks like all callers call this API 
-            // with HttpResponseMessage, so it might be unreachable. If you reach it, implement deserialization from stream
+#if PCL
+            //Need to check if ReadAsAsync works for PCL.
             await message.Content.ReadAsStreamAsync();
             throw new NotImplementedException();
 #else
@@ -283,8 +282,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         }
                         else
                         {
-#if WINDOWS_UWP || PCL
-                            // System.Net.Http.Formatting does not exist in UWP. Need to find another way to create content
+#if PCL
+                            //Need to check if CreateContent works for PCL.
                             throw new NotImplementedException();
 #else
                             requestMsg.Content = CreateContent(entity);
