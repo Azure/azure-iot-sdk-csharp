@@ -38,6 +38,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         public const int DefaultDelayInSec = 1;
         public const int DefaultDurationInSec = 5;
 
+        public const int ShortRetryInMilliSec = 3000;
+
         public static string GetHostName(string connectionString)
         {
             Regex regex = new Regex("HostName=([^;]+)", RegexOptions.None);
