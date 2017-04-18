@@ -29,7 +29,7 @@ using System.Reflection;
 
 #if (RELEASE_DELAY_SIGN)
 [assembly: AssemblyDelaySignAttribute(true)]
-[assembly: AssemblyKeyFileAttribute("35MSSharedLib1024.snk")]
+[assembly: AssemblyKeyFileAttribute("..\\..\\35MSSharedLib1024.snk")]
 #endif
 
 // Version information for an assembly follows semantic versioning 1.0.0 (because

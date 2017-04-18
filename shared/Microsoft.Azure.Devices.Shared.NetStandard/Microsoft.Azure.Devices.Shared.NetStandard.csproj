@@ -34,6 +34,18 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release_Delay_Sign|AnyCPU'">
+    <OutputPath>bin\Release_Delay_Sign\</OutputPath>
+    <DefineConstants>TRACE;RELEASE_DELAY_SIGN</DefineConstants>
+    <Optimize>true</Optimize>
+    <NoStdLib>true</NoStdLib>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <DocumentationFile>
+    </DocumentationFile>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\Microsoft.Azure.Devices.Shared\ETagHolder.cs" />
     <Compile Include="..\Microsoft.Azure.Devices.Shared\IETagHolder.cs" />
