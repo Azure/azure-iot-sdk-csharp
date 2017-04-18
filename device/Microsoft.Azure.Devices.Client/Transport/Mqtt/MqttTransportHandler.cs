@@ -550,7 +550,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 #if !NETSTANDARD1_3
             this.serverAddress = Dns.GetHostEntry(this.hostName).AddressList[0];
 #else
-            var ipAddresses = (await Dns.GetHostAddressesAsync(this.hostName))[0];
+            this.serverAddress = (await Dns.GetHostAddressesAsync(this.hostName))[0];
 #endif
 #endif
 
