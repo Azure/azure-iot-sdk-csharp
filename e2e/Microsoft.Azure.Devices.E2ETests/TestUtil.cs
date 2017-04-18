@@ -97,6 +97,33 @@ namespace Microsoft.Azure.Devices.E2ETests
             return new Tuple<string, string>(deviceName, deviceConnectionString);
         }
 
+        public static Tuple<string, string> CreateDeviceWithX509(string devicePrefix, string hostName, RegistryManager registryManager)
+        {
+            string deviceName = null;
+
+            Task.Run(async () =>
+            {
+                deviceName = devicePrefix + Guid.NewGuid();
+                Debug.WriteLine("Creating device " + deviceName);
+                var device1 = new Device(deviceName)
+                {
+                    Authentication = new AuthenticationMechanism()
+                    {
+                        X509Thumbprint = new X509Thumbprint()
+                        {
+                            PrimaryThumbprint = Environment.GetEnvironmentVariable("IOTHUB_PFX_X509_THUMBPRINT")
+                        }
+                    }
+                };
+
+                var device = await registryManager.AddDeviceAsync(device1);
+                Debug.WriteLine("Device successfully created");
+            }).Wait();
+
+            Thread.Sleep(1000);
+            return new Tuple<string, string>(deviceName, hostName);
+        }
+
         public static void RemoveDevice(string deviceName, RegistryManager registryManager)
         {
             Task.Run(async () =>

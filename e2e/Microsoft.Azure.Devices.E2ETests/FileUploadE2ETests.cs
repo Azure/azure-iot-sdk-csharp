@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
@@ -10,6 +11,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestClass]
     public class FileUploadE2ETests
     {
+        private const string DevicePrefix = "E2E_FileUpload_CSharp_";
         private static string hubConnectionString;
         private static string hostName;
         private static RegistryManager registryManager;
@@ -121,10 +123,61 @@ namespace Microsoft.Azure.Devices.E2ETests
             await uploadFile(Client.TransportType.Http1, bigFile);
         }
 
-        async Task uploadFile(Client.TransportType transport, string filename)
+        [TestMethod]
+        [TestCategory("FileUpload-E2E")]
+        public async Task FileUpload_X509_SmallFile_Amqp()
         {
-            Tuple<string, string> deviceInfo = TestUtil.CreateDevice("E2E_FileUpload_CSharp_", hostName, registryManager);
-            var deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, transport);
+            await uploadFile(Client.TransportType.Amqp_Tcp_Only, smallFile, true);
+        }
+
+        [TestMethod]
+        [TestCategory("FileUpload-E2E")]
+        public async Task FileUpload_X509_SmallFile_AmqpWs()
+        {
+            await uploadFile(Client.TransportType.Amqp_WebSocket_Only, smallFile, true);
+        }
+
+        [TestMethod]
+        [TestCategory("FileUpload-E2E")]
+        public async Task FileUpload_X509_SmallFile_Mqtt()
+        {
+            await uploadFile(Client.TransportType.Mqtt_Tcp_Only, smallFile, true);
+        }
+
+        [TestMethod]
+        [TestCategory("FileUpload-E2E")]
+        public async Task FileUpload_X509_SmallFile_MqttWs()
+        {
+            await uploadFile(Client.TransportType.Mqtt_WebSocket_Only, smallFile, true);
+        }
+
+        [TestMethod]
+        [TestCategory("FileUpload-E2E")]
+        public async Task FileUpload_X509_SmallFile_Http()
+        {
+            await uploadFile(Client.TransportType.Http1, smallFile, true);
+        }
+
+        async Task uploadFile(Client.TransportType transport, string filename, bool x509auth = false)
+        {
+            DeviceClient deviceClient;
+            Tuple<string, string> deviceInfo;
+            if (x509auth)
+            {
+                deviceInfo = TestUtil.CreateDeviceWithX509(DevicePrefix, hostName, registryManager);
+
+                string certBase64 = Environment.GetEnvironmentVariable("IOTHUB_X509_PFX_CERTIFICATE");
+                Byte[] buff = Convert.FromBase64String(certBase64);
+                var cert = new X509Certificate2(buff);
+
+                var auth = new DeviceAuthenticationWithX509Certificate(deviceInfo.Item1, cert);
+                deviceClient = DeviceClient.Create(deviceInfo.Item2, auth, transport);
+            }
+            else
+            {
+                deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
+                deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, transport);
+            }
 
             using (FileStream fileStreamSource = new FileStream(filename, FileMode.Open, FileAccess.Read))
             {
