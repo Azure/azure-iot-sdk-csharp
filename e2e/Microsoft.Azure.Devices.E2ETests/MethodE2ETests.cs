@@ -92,6 +92,30 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.DefaultDelayInSec);
         }
 
+        [Ignore]
+        [TestMethod]
+        [TestCategory("Method-E2E")]
+        [TestCategory("Recovery")]
+        public async Task Method_DeviceMethodGracefulShutdownRecovery_Mqtt()
+        {
+            await SendMethodAndRespondRecovery(Client.TransportType.Mqtt_Tcp_Only,
+                TestUtil.FaultType_GracefulShutdownMqtt,
+                TestUtil.FaultCloseReason_Bye,
+                TestUtil.DefaultDelayInSec);
+        }
+
+        [Ignore]
+        [TestMethod]
+        [TestCategory("Method-E2E")]
+        [TestCategory("Recovery")]
+        public async Task Method_DeviceMethodGracefulShutdownRecovery_MqttWs()
+        {
+            await SendMethodAndRespondRecovery(Client.TransportType.Mqtt_WebSocket_Only,
+                TestUtil.FaultType_GracefulShutdownMqtt,
+                TestUtil.FaultCloseReason_Bye,
+                TestUtil.DefaultDelayInSec);
+        }
+
 
 #if WIP_C2D_METHODS_AMQP
         [TestMethod]
@@ -219,6 +243,27 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.DefaultDelayInSec);
         }
 
+        [TestMethod]
+        [TestCategory("Method-E2E")]
+        [TestCategory("Recovery")]
+        public async Task Method_DeviceMethodGracefulShutdownRecovery_Amqp()
+        {
+            await SendMethodAndRespondRecovery(Client.TransportType.Amqp_Tcp_Only,
+                TestUtil.FaultType_GracefulShutdownAmqp,
+                TestUtil.FaultCloseReason_Bye,
+                TestUtil.DefaultDelayInSec);
+        }
+
+        [TestMethod]
+        [TestCategory("Method-E2E")]
+        [TestCategory("Recovery")]
+        public async Task Method_DeviceMethodGracefulShutdownRecovery_AmqpWs()
+        {
+            await SendMethodAndRespondRecovery(Client.TransportType.Amqp_WebSocket_Only,
+                TestUtil.FaultType_GracefulShutdownAmqp,
+                TestUtil.FaultCloseReason_Bye,
+                TestUtil.DefaultDelayInSec);
+        }
 #endif
         private async Task ServiceSendMethodAndVerifyResponse(string deviceName, string methodName, string respJson, string reqJson, TaskCompletionSource<Tuple<bool, bool>> rel)
         {

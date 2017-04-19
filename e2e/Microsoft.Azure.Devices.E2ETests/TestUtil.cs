@@ -29,8 +29,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         public const string FaultType_Throttle = "InvokeThrottling";
         public const string FaultType_QuotaExceeded = "InvokeMaxMessageQuota";
         public const string FaultType_Auth = "InvokeAuthError";
-        public const string FaultType_ShutdownAmqp = "ShutDownAmqp";
-        public const string FaultType_ShutdownMqtt = "ShutDownMqtt";
+        public const string FaultType_GracefulShutdownAmqp = "ShutDownAmqp";
+        public const string FaultType_GracefulShutdownMqtt = "ShutDownMqtt";
 
         public const string FaultCloseReason_Boom = "Boom";
         public const string FaultCloseReason_Bye = "byebye";
