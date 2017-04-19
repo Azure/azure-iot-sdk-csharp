@@ -16,6 +16,7 @@
     <ReferencePath>$(ProgramFiles)\Common Files\microsoft shared\VSTT\$(VisualStudioVersion)\UITestExtensionPackages</ReferencePath>
     <IsCodedUITest>False</IsCodedUITest>
     <TestProjectType>UnitTest</TestProjectType>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -82,6 +83,7 @@
     <Compile Include="TestUtil.cs" />
     <Compile Include="TwinE2ETests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="X509E2ETests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\device\Microsoft.Azure.Devices.Client\Microsoft.Azure.Devices.Client.csproj">
