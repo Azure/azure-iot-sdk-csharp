@@ -16,6 +16,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         private static int MESSAGE_COUNT = 5;
         private static String deviceId = "MyCSharpDevice";
+        private const  int TEMPERATURE_THRESHOLD = 28;
         private static float temperature;
         private static float humidity;
         private static Random rnd = new Random();
@@ -56,7 +57,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 humidity = rnd.Next(60, 80);
                 dataBuffer = string.Format("{{\"deviceId\":\"{0}\",\"messageId\":{1},\"temperature\":{2},\"humidity\":{3}}}", deviceId, count, temperature, humidity);
                 Message eventMessage = new Message(Encoding.UTF8.GetBytes(dataBuffer));
-                eventMessage.Properties.Add("temperatureAlert", (temperature > 28) ? "true" : "false");
+                eventMessage.Properties.Add("temperatureAlert", (temperature > TEMPERATURE_THRESHOLD) ? "true" : "false");
                 Console.WriteLine("\t{0}> Sending message: {1}, Data: [{2}]", DateTime.Now.ToLocalTime(), count, dataBuffer);
 
                 await deviceClient.SendEventAsync(eventMessage);
