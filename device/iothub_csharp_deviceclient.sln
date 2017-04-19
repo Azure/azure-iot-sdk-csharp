@@ -84,6 +84,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Azure.Devices.Cli
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Azure.Devices.Shared.NetStandard", "..\shared\Microsoft.Azure.Devices.Shared.NetStandard\Microsoft.Azure.Devices.Shared.NetStandard.csproj", "{91DFB837-D8A3-4F54-AE0D-45C95ACD0C2A}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NuGet", "NuGet", "{E46115D6-55B8-4F04-8176-2AB142C4EA38}"
+	ProjectSection(SolutionItems) = preProject
+		..\shared\NuGet\make_nuget_package.ps1 = ..\shared\NuGet\make_nuget_package.ps1
+		..\shared\NuGet\Microsoft.Azure.Devices.Shared.nuspec = ..\shared\NuGet\Microsoft.Azure.Devices.Shared.nuspec
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Microsoft.Azure.Devices.Client.Shared\Microsoft.Azure.Devices.Client.Shared.projitems*{26bbdf47-7559-4869-bd6f-a32fe21f3f25}*SharedItemsImports = 13
@@ -2211,6 +2217,7 @@ Global
 		{F6DB48E4-F076-4CEA-88CC-EF7FBC869FCA} = {56E8324B-E1D1-4186-8A48-ACBE11DDCFFF}
 		{FE20A3AC-EFFC-490D-BF99-31EBCA973878} = {56E8324B-E1D1-4186-8A48-ACBE11DDCFFF}
 		{C44B182E-2AC8-4E96-A461-06F40403D617} = {56E8324B-E1D1-4186-8A48-ACBE11DDCFFF}
+		{84052DC5-CEC8-4CD9-A377-A4E3491C670E} = {232B1AAF-DA0B-45F0-B29D-8A06FB5DA3EA}
 		{4151E5D7-1C3C-4AD9-9E9A-5FA50A1FA332} = {232B1AAF-DA0B-45F0-B29D-8A06FB5DA3EA}
 		{C6799555-4765-474F-AA62-AE3982F64B11} = {56E8324B-E1D1-4186-8A48-ACBE11DDCFFF}
 		{E911E322-1A4F-4C2A-82FC-2EC0B9F87831} = {56E8324B-E1D1-4186-8A48-ACBE11DDCFFF}
@@ -2236,6 +2243,7 @@ Global
 		{E3AE4182-9E96-424B-B239-D0525B5BE68B} = {56E8324B-E1D1-4186-8A48-ACBE11DDCFFF}
 		{8988AB0E-0FDD-4BD4-A65F-6479BB2C5AF8} = {232B1AAF-DA0B-45F0-B29D-8A06FB5DA3EA}
 		{91DFB837-D8A3-4F54-AE0D-45C95ACD0C2A} = {0567838B-1275-4FEC-B73B-886B6E0C25DD}
+		{E46115D6-55B8-4F04-8176-2AB142C4EA38} = {0567838B-1275-4FEC-B73B-886B6E0C25DD}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8

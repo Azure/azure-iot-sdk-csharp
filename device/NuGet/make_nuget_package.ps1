@@ -21,14 +21,17 @@ if (-Not (Test-Path 'NuGet.exe')) {
 # Delete existing packages to force rebuild
 ls Microsoft.Azure.Devices.Client.*.nupkg | % { del $_ }
 
-# Get the assembly versions from both files, make sure they match, and use that as the package version
+# Get the assembly versions from all files, make sure they match, and use that as the package version
 $dotNetFile = "..\Microsoft.Azure.Devices.Client\Properties\AssemblyInfo.cs"
 $uwpNetFile = "..\Microsoft.Azure.Devices.Client.UWP\Properties\AssemblyInfo.cs"
 $dotNetPCLFile = "..\Microsoft.Azure.Devices.Client.PCL\Properties\AssemblyInfo.cs"
+$dotNetStandardFile = "..\Microsoft.Azure.Devices.Client.NetStandard\Properties\AssemblyInfo.cs"
+
 
 $v1 = GetAssemblyVersionFromFile($dotNetFile)
 $v2 = GetAssemblyVersionFromFile($uwpNetFile)
 $v3 = GetAssemblyVersionFromFile($dotNetPCLFile)
+$v4 = GetAssemblyVersionFromFile($dotNetStandardFile)
 
 if($v1 -ne $v2) {
     Write-Host "Error: Mismatching assembly versions in files $dotNetFile and $uwpNetFile. Check AssemblyInformationalVersion attribute in each file." -foregroundcolor "red"
@@ -37,6 +40,11 @@ if($v1 -ne $v2) {
 
 if($v1 -ne $v3) {
     Write-Host "Error: Mismatching assembly versions in files $dotNetFile and $dotNetPCLFile. Check AssemblyInformationalVersion attribute in each file." -foregroundcolor "red"
+    return
+}
+
+if($v1 -ne $v4) {
+    Write-Host "Error: Mismatching assembly versions in files $dotNetFile and $dotNetStandardFile. Check AssemblyInformationalVersion attribute in each file." -foregroundcolor "red"
     return
 }
 

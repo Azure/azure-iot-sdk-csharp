@@ -8,8 +8,8 @@
     <ProjectGuid>{91DFB837-D8A3-4F54-AE0D-45C95ACD0C2A}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Microsoft.Azure.Devices.Shared.NetStandard</RootNamespace>
-    <AssemblyName>Microsoft.Azure.Devices.Shared.NetStandard</AssemblyName>
+    <RootNamespace>Microsoft.Azure.Devices.Shared</RootNamespace>
+    <AssemblyName>Microsoft.Azure.Devices.Shared</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
