@@ -15,8 +15,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
         private const string DeviceConnectionString = "<replace>";
 
         private static int MESSAGE_COUNT = 5;
+        private const  int TEMPERATURE_THRESHOLD = 30;
         private static String deviceId = "MyCSharpDevice";
-        private const  int TEMPERATURE_THRESHOLD = 28;
         private static float temperature;
         private static float humidity;
         private static Random rnd = new Random();
@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             for (int count = 0; count < MESSAGE_COUNT; count++)
             {
-                temperature = rnd.Next(20, 30);
+                temperature = rnd.Next(20, 35);
                 humidity = rnd.Next(60, 80);
                 dataBuffer = string.Format("{{\"deviceId\":\"{0}\",\"messageId\":{1},\"temperature\":{2},\"humidity\":{3}}}", deviceId, count, temperature, humidity);
                 Message eventMessage = new Message(Encoding.UTF8.GetBytes(dataBuffer));
