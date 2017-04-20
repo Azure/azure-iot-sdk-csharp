@@ -643,7 +643,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_GracefulShutdown_Amqp()
         {
             await SendMessageRecovery(Client.TransportType.Amqp_Tcp_Only,
-                TestUtil.FaultType_ShutdownAmqp,
+                TestUtil.FaultType_GracefulShutdownAmqp,
                 TestUtil.FaultCloseReason_Bye,
                 TestUtil.DefaultDelayInSec);
         }
@@ -654,7 +654,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_GracefulShutdown_AmqpWs()
         {
             await SendMessageRecovery(Client.TransportType.Amqp_WebSocket_Only,
-                TestUtil.FaultType_ShutdownAmqp,
+                TestUtil.FaultType_GracefulShutdownAmqp,
                 TestUtil.FaultCloseReason_Bye,
                 TestUtil.DefaultDelayInSec);
         }
@@ -666,7 +666,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_GracefulShutdown_Mqtt()
         {
             await SendMessageRecovery(Client.TransportType.Mqtt_Tcp_Only,
-                TestUtil.FaultType_ShutdownMqtt,
+                TestUtil.FaultType_GracefulShutdownMqtt,
                 TestUtil.FaultCloseReason_Bye,
                 TestUtil.DefaultDelayInSec);
         }
@@ -678,7 +678,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_GracefulShutdown_MqttWs()
         {
             await SendMessageRecovery(Client.TransportType.Mqtt_WebSocket_Only,
-                TestUtil.FaultType_ShutdownMqtt,
+                TestUtil.FaultType_GracefulShutdownMqtt,
                 TestUtil.FaultCloseReason_Bye,
                 TestUtil.DefaultDelayInSec);
         }

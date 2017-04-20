@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         [TestCategory("Twin-E2E")]
         [TestCategory("Recovery")]
-        public async Task Twin_DeviceReportedPropertiesTcpConnRocovery_Mqtt()
+        public async Task Twin_DeviceReportedPropertiesTcpConnRecovery_Mqtt()
         {
             await _Twin_DeviceReportedPropertiesRecovery(Client.TransportType.Mqtt_Tcp_Only, 
                 TestUtil.FaultType_Tcp,
@@ -66,13 +66,38 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         [TestCategory("Twin-E2E")]
         [TestCategory("Recovery")]
-        public async Task Twin_DeviceReportedPropertiesTcpConnRocovery_MqttWs()
+        public async Task Twin_DeviceReportedPropertiesTcpConnRecovery_MqttWs()
         {
             await _Twin_DeviceReportedPropertiesRecovery(Client.TransportType.Mqtt_WebSocket_Only, 
                 TestUtil.FaultType_Tcp,
                 TestUtil.FaultCloseReason_Boom,
                 TestUtil.DefaultDelayInSec);
         }
+
+        [Ignore]
+        [TestMethod]
+        [TestCategory("Twin-E2E")]
+        [TestCategory("Recovery")]
+        public async Task Twin_DeviceReportedPropertiesGracefulShutdownRecovery_Mqtt()
+        {
+            await _Twin_DeviceReportedPropertiesRecovery(Client.TransportType.Mqtt_Tcp_Only,
+                TestUtil.FaultType_GracefulShutdownMqtt,
+                TestUtil.FaultCloseReason_Bye,
+                TestUtil.DefaultDelayInSec);
+        }
+
+        [Ignore]
+        [TestMethod]
+        [TestCategory("Twin-E2E")]
+        [TestCategory("Recovery")]
+        public async Task Twin_DeviceReportedPropertiesGracefulShutdownRecovery_MqttWs()
+        {
+            await _Twin_DeviceReportedPropertiesRecovery(Client.TransportType.Mqtt_WebSocket_Only,
+                TestUtil.FaultType_GracefulShutdownMqtt,
+                TestUtil.FaultCloseReason_Bye,
+                TestUtil.DefaultDelayInSec);
+        }
+
 
         [TestMethod]
         [TestCategory("Twin-E2E")]
@@ -92,7 +117,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         [TestCategory("Twin-E2E")]
         [TestCategory("Recovery")]
-        public async Task Twin_DeviceDesiredPropertyUpdateTcpConnRocovery_Mqtt()
+        public async Task Twin_DeviceDesiredPropertyUpdateTcpConnRecovery_Mqtt()
         {
             await _Twin_DeviceDesiredPropertyUpdateRecovery(Client.TransportType.Mqtt_Tcp_Only, 
                 TestUtil.FaultType_Tcp,
@@ -104,13 +129,36 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         [TestCategory("Twin-E2E")]
         [TestCategory("Recovery")]
-        public async Task Twin_DeviceDesiredPropertyUpdateTcpConnRocovery_MqttWs()
+        public async Task Twin_DeviceDesiredPropertyUpdateTcpConnRecovery_MqttWs()
         {
             await _Twin_DeviceDesiredPropertyUpdateRecovery(Client.TransportType.Mqtt_WebSocket_Only,
                 TestUtil.FaultType_Tcp,
                 TestUtil.FaultCloseReason_Boom,
                 TestUtil.DefaultDelayInSec);
+        }
 
+        [Ignore]
+        [TestMethod]
+        [TestCategory("Twin-E2E")]
+        [TestCategory("Recovery")]
+        public async Task Twin_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_Mqtt()
+        {
+            await _Twin_DeviceDesiredPropertyUpdateRecovery(Client.TransportType.Mqtt_Tcp_Only,
+                TestUtil.FaultType_GracefulShutdownMqtt,
+                TestUtil.FaultCloseReason_Bye,
+                TestUtil.DefaultDelayInSec);
+        }
+
+        [Ignore]
+        [TestMethod]
+        [TestCategory("Twin-E2E")]
+        [TestCategory("Recovery")]
+        public async Task Twin_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_MqttWs()
+        {
+            await _Twin_DeviceDesiredPropertyUpdateRecovery(Client.TransportType.Mqtt_WebSocket_Only,
+                TestUtil.FaultType_GracefulShutdownMqtt,
+                TestUtil.FaultCloseReason_Bye,
+                TestUtil.DefaultDelayInSec);
         }
 
         [TestMethod]
