@@ -263,6 +263,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
         }
 #endif
 
+        public override async Task<Twin> SendTwinGetAsync(CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException("Device twins are only supported with Mqtt protocol.");
+        }
+
         public override Task<Message> ReceiveAsync(CancellationToken cancellationToken)
         {
             return this.ReceiveAsync(TimeSpan.Zero, cancellationToken);

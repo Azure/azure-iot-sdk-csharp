@@ -12,6 +12,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
     using Microsoft.Azure.Amqp.Framing;
     using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Azure.Devices.Client.Extensions;
+    using Microsoft.Azure.Devices.Shared;
 
     sealed class AmqpTransportHandler : TransportHandler
     {
@@ -413,6 +414,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
 
             return outcome;
+        }
+        public override async Task<Twin> SendTwinGetAsync(CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException("Device twins are only supported with Mqtt protocol.");
         }
 
         async Task DisposeMessageAsync(string lockToken, Outcome outcome, CancellationToken cancellationToken)
