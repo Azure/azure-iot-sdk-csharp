@@ -159,18 +159,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.DefaultDelayInSec);
         }
 
-        [Ignore]
-        [TestMethod]
-        [TestCategory("Message-E2E")]
-        [TestCategory("Recovery")]
-        public async Task Message_TcpConnectionLossSendRecovery_Http()
-        {
-            await SendMessageRecovery(Client.TransportType.Http1, 
-                TestUtil.FaultType_Tcp, 
-                TestUtil.FaultCloseReason_Boom, 
-                TestUtil.DefaultDelayInSec);
-        }
-
         [TestMethod]
         [TestCategory("Message-E2E")]
         [TestCategory("Recovery")]
@@ -279,18 +267,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_TcpConnectionLossReceiveRecovery_MqttWs()
         {
             await ReceiveMessageRecovery(Client.TransportType.Mqtt_WebSocket_Only,
-                TestUtil.FaultType_Tcp, 
-                TestUtil.FaultCloseReason_Boom, 
-                TestUtil.DefaultDelayInSec);
-        }
-
-        [Ignore]
-        [TestMethod]
-        [TestCategory("Message-E2E")]
-        [TestCategory("Recovery")]
-        public async Task Message_TcpConnectionLossReceiveRecovery_Http()
-        {
-            await ReceiveMessageRecovery(Client.TransportType.Http1,
                 TestUtil.FaultType_Tcp, 
                 TestUtil.FaultCloseReason_Boom, 
                 TestUtil.DefaultDelayInSec);
@@ -411,8 +387,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.DefaultDurationInSec);
         }
 
-        //This test should be enabled when error injection is available in the iothub
-        [Ignore]
         [TestMethod]
         [TestCategory("Message-E2E")]
         [TestCategory("Recovery")]
@@ -427,8 +401,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.ShortRetryInMilliSec);
         }
 
-        //This test should be enabled when error injection is available in the iothub
-        [Ignore]
         [TestMethod]
         [TestCategory("Message-E2E")]
         [TestCategory("Recovery")]
@@ -443,7 +415,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.ShortRetryInMilliSec);
         }
 
-        //This test should be enabled when error injection is available in the iothub
         [Ignore]
         [TestMethod]
         [TestCategory("Message-E2E")]
@@ -459,7 +430,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.ShortRetryInMilliSec);
         }
 
-        //This test should be enabled when error injection is available in the iothub
         [Ignore]
         [TestMethod]
         [TestCategory("Message-E2E")]
@@ -475,7 +445,9 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.ShortRetryInMilliSec);
         }
 
-        //This test should be enabled when error injection is available in the iothub
+        // Current implementation will map the exception message 429 from service to IotHubException
+        // IsTransient() in Client is supposed to retry on ExceptionMessage field containing "throttling"
+        // But the field is currently empty in the exception received.
         [Ignore]
         [TestMethod]
         [TestCategory("Message-E2E")]
@@ -483,16 +455,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         [ExpectedException(typeof(System.TimeoutException))]
         public async Task Message_ThrottledConnectionLongTimeNoRecovery_Http()
         {
-            await SendMessageRecovery(Client.TransportType.Http1,
-                TestUtil.FaultType_Throttle,
-                TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec,
-                TestUtil.DefaultDurationInSec,
-                TestUtil.ShortRetryInMilliSec);
+            await SendMessageThrottledForHttp();
         }
 
-        //This test should be enabled when error injection is available in the iothub
-        [Ignore]
         [TestMethod]
         [TestCategory("Message-E2E")]
         [TestCategory("Recovery")]
@@ -506,8 +471,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.DefaultDurationInSec);
         }
 
-        //This test should be enabled when error injection is available in the iothub
-        [Ignore]
         [TestMethod]
         [TestCategory("Message-E2E")]
         [TestCategory("Recovery")]
@@ -549,8 +512,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.DefaultDurationInSec);
         }
 
-        //This test should be enabled when error injection is available in the iothub
-        [Ignore]
         [TestMethod]
         [TestCategory("Message-E2E")]
         [TestCategory("Recovery")]
@@ -564,8 +525,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.DefaultDurationInSec);
         }
 
-        //This test should be enabled when error injection is available in the iothub
-        [Ignore]
         [TestMethod]
         [TestCategory("Message-E2E")]
         [TestCategory("Recovery")]
@@ -579,8 +538,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.DefaultDurationInSec);
         }
 
-        //This test should be enabled when error injection is available in the iothub
-        [Ignore]
         [TestMethod]
         [TestCategory("Message-E2E")]
         [TestCategory("Recovery")]
@@ -622,8 +579,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.DefaultDurationInSec);
         }
 
-        //This test should be enabled when error injection is available in the iothub
-        [Ignore]
         [TestMethod]
         [TestCategory("Message-E2E")]
         [TestCategory("Recovery")]
@@ -640,7 +595,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         [TestCategory("Message-E2E")]
         [TestCategory("Recovery")]
-        public async Task Message_GracefulShutdown_Amqp()
+        public async Task Message_SendGracefulShutdownSendRecovery_Amqp()
         {
             await SendMessageRecovery(Client.TransportType.Amqp_Tcp_Only,
                 TestUtil.FaultType_GracefulShutdownAmqp,
@@ -651,7 +606,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         [TestCategory("Message-E2E")]
         [TestCategory("Recovery")]
-        public async Task Message_GracefulShutdown_AmqpWs()
+        public async Task Message_GracefulShutdownSendRecovery_AmqpWs()
         {
             await SendMessageRecovery(Client.TransportType.Amqp_WebSocket_Only,
                 TestUtil.FaultType_GracefulShutdownAmqp,
@@ -663,7 +618,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         [TestCategory("Message-E2E")]
         [TestCategory("Recovery")]
-        public async Task Message_GracefulShutdown_Mqtt()
+        public async Task Message_GracefulShutdownSendRecovery_Mqtt()
         {
             await SendMessageRecovery(Client.TransportType.Mqtt_Tcp_Only,
                 TestUtil.FaultType_GracefulShutdownMqtt,
@@ -675,9 +630,55 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         [TestCategory("Message-E2E")]
         [TestCategory("Recovery")]
-        public async Task Message_GracefulShutdown_MqttWs()
+        public async Task Message_GracefulShutdownSendRecovery_MqttWs()
         {
             await SendMessageRecovery(Client.TransportType.Mqtt_WebSocket_Only,
+                TestUtil.FaultType_GracefulShutdownMqtt,
+                TestUtil.FaultCloseReason_Bye,
+                TestUtil.DefaultDelayInSec);
+        }
+
+        [TestMethod]
+        [TestCategory("Message-E2E")]
+        [TestCategory("Recovery")]
+        public async Task Message_GracefulShutdownReceiveRecovery_Amqp()
+        {
+            await ReceiveMessageRecovery(Client.TransportType.Amqp_Tcp_Only,
+                TestUtil.FaultType_GracefulShutdownAmqp,
+                TestUtil.FaultCloseReason_Bye,
+                TestUtil.DefaultDelayInSec);
+        }
+
+        [TestMethod]
+        [TestCategory("Message-E2E")]
+        [TestCategory("Recovery")]
+        public async Task Message_GracefulShutdownReceiveRecovery_AmqpWs()
+        {
+            await ReceiveMessageRecovery(Client.TransportType.Amqp_WebSocket_Only,
+                TestUtil.FaultType_GracefulShutdownAmqp,
+                TestUtil.FaultCloseReason_Bye,
+                TestUtil.DefaultDelayInSec);
+        }
+
+        [Ignore]
+        [TestMethod]
+        [TestCategory("Message-E2E")]
+        [TestCategory("Recovery")]
+        public async Task Message_GracefulShutdownReceiveRecovery_Mqtt()
+        {
+            await ReceiveMessageRecovery(Client.TransportType.Mqtt_Tcp_Only,
+                TestUtil.FaultType_GracefulShutdownMqtt,
+                TestUtil.FaultCloseReason_Bye,
+                TestUtil.DefaultDelayInSec);
+        }
+
+        [Ignore]
+        [TestMethod]
+        [TestCategory("Message-E2E")]
+        [TestCategory("Recovery")]
+        public async Task Message_GracefulShutdownReceiveRecovery_MqttWs()
+        {
+            await ReceiveMessageRecovery(Client.TransportType.Mqtt_WebSocket_Only,
                 TestUtil.FaultType_GracefulShutdownMqtt,
                 TestUtil.FaultCloseReason_Bye,
                 TestUtil.DefaultDelayInSec);
@@ -861,6 +862,36 @@ namespace Microsoft.Azure.Devices.E2ETests
             sequentialTestSemaphore.Release(1);
         }
 
+        private async Task SendMessageThrottledForHttp()
+        {
+            await sequentialTestSemaphore.WaitAsync();
+
+            Tuple<string, string> deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
+
+            EventHubClient eventHubClient;
+            EventHubReceiver eventHubReceiver = CreateEventHubReceiver(deviceInfo.Item1, out eventHubClient);
+
+            var deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, Client.TransportType.Http1);
+            deviceClient.OperationTimeoutInMilliseconds = (uint)TestUtil.ShortRetryInMilliSec;
+            await deviceClient.OpenAsync();
+
+            string payload, p1Value;
+            Client.Message testMessage = ComposeD2CTestMessage(out payload, out p1Value);
+            await deviceClient.SendEventAsync(testMessage);
+
+            var events = await eventHubReceiver.ReceiveAsync(int.MaxValue, TimeSpan.FromSeconds(5));
+            VerifyTestMessage(events, deviceInfo.Item1, payload, p1Value);
+
+            // Implementation of error injection of throttling on http is that it will throttle the
+            // fault injection message itself only.  The duration of fault has no effect on http throttle.
+            // Client is supposed to retry sending the throttling fault message until operation timeout.
+            await deviceClient.SendEventAsync(TestUtil.ComposeErrorInjectionProperties(TestUtil.FaultType_Throttle,
+                TestUtil.FaultCloseReason_Boom, TestUtil.DefaultDelayInSec, TestUtil.DefaultDurationInSec));
+
+            sequentialTestSemaphore.Release(1);
+        }
+
+
         private async Task ReceiveMessageRecovery(Client.TransportType transport, string faultType, string reason, int delayInSec)
         {
             await sequentialTestSemaphore.WaitAsync();
@@ -884,7 +915,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             // send error command
             await deviceClient.SendEventAsync(TestUtil.ComposeErrorInjectionProperties(faultType, reason, delayInSec));
 
-            Thread.Sleep(1000);
+            await Task.Delay(1000);
             await serviceClient.SendAsync(deviceInfo.Item1, ComposeC2DTestMessage(out payload, out messageId, out p1Value));
             await VerifyReceivedC2DMessage(transport, deviceClient, payload, p1Value);
 
