@@ -445,10 +445,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.ShortRetryInMilliSec);
         }
 
-        // Current implementation will map the exception message 429 from service to IotHubException
-        // IsTransient() in Client is supposed to retry on ExceptionMessage field containing "throttling"
-        // But the field is currently empty in the exception received.
-        [Ignore]
         [TestMethod]
         [TestCategory("Message-E2E")]
         [TestCategory("Recovery")]

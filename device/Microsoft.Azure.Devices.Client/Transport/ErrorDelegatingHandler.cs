@@ -208,43 +208,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         static bool IsTransportHandlerStillUsable(Exception exception)
         {
-            return exception.Unwind(true).Any(e => TransportTransientExceptions.Contains(e.GetType())) || IsThrottling(exception);
-        }
-
-        /// <summary>
-        /// this is a hack and it should be fixed in one of next releases - we should rely on the exception type only.
-        /// </summary>
-        /// <param name="exception"></param>
-        /// <returns></returns>
-        internal static bool IsThrottling(Exception exception)
-        {
-            if (exception is IotHubClientTransientException)
-            {
-                if (exception.InnerException == null)
-                {
-                    return false;
-                }
-                
-                //unwrap the internal exception
-                exception = exception.InnerException;
-            }
-
-            if (exception is IotHubThrottledException)
-            {
-                return true;
-            }
-
-            if (exception is IotHubException)
-            {
-                return exception.Message.Contains("throttl"); //...e/...ing/...ed;
-            }
-
-            return false;
+            return exception.Unwind(true).Any(e => TransportTransientExceptions.Contains(e.GetType()));
         }
 
         static bool IsTransient(Exception exception)
         {
-            return exception.Unwind(true).Any(e => TransientExceptions.Contains(e.GetType())) || IsThrottling(exception);
+            return exception.Unwind(true).Any(e => TransientExceptions.Contains(e.GetType()));
         }
 
         async Task Reset(TaskCompletionSource<int> openCompletionBeforeOperationStarted, IDelegatingHandler handlerBeforeOperationStarted)

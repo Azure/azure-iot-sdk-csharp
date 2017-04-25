@@ -66,17 +66,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             bool ShouldRetry(int currentRetryCount, Exception lastException, out TimeSpan retryInterval)
             {
-                if (IsThrottling(lastException))
+                if (lastException is IotHubThrottledException)
                 {
                     return this.throttlingRetryStrategy(currentRetryCount, lastException, out retryInterval);
                 }
                 return this.defaultRetryStrategy(currentRetryCount, lastException, out retryInterval);
-            }
-
-            static bool IsThrottling(Exception lastException)
-            {
-                //hack - should be fixed in one of next releases - we should rely on exception type only
-                return ErrorDelegatingHandler.IsThrottling(lastException);
             }
         }
 
