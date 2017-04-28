@@ -101,7 +101,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         const string DeviceIdParameterPattern = @"(^\s*?|.*;\s*?)" + DeviceId + @"\s*?=.*";
         IotHubConnectionString iotHubConnectionString = null;
 #if !WINDOWS_UWP && !PCL
-        static internal X509Certificate2 Certificate { get; set; }
+        internal X509Certificate2 Certificate { get; set; }
 #endif
 #if !PCL
         const RegexOptions RegexOptions = System.Text.RegularExpressions.RegexOptions.Compiled | System.Text.RegularExpressions.RegexOptions.IgnoreCase;
@@ -253,8 +253,9 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                     throw new ArgumentException("certificate in DeviceAuthenticationWithX509Certificate must have a private key");
                 }
 
-                Certificate = connectionStringBuilder.Certificate;
-                return CreateFromConnectionString(connectionStringBuilder.ToString(), PopulateCertificateInTransportSettings(connectionStringBuilder, transportType));
+                DeviceClient dc = CreateFromConnectionString(connectionStringBuilder.ToString(), PopulateCertificateInTransportSettings(connectionStringBuilder, transportType));
+                dc.Certificate = connectionStringBuilder.Certificate;
+                return dc;
             }
 #endif
             return CreateFromConnectionString(connectionStringBuilder.ToString(), transportType);
@@ -298,8 +299,9 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                     throw new ArgumentException("certificate in DeviceAuthenticationWithX509Certificate must have a private key");
                 }
 
-                Certificate = connectionStringBuilder.Certificate;
-                return CreateFromConnectionString(connectionStringBuilder.ToString(), PopulateCertificateInTransportSettings(connectionStringBuilder, transportSettings));
+                DeviceClient dc = CreateFromConnectionString(connectionStringBuilder.ToString(), PopulateCertificateInTransportSettings(connectionStringBuilder, transportSettings));
+                dc.Certificate = connectionStringBuilder.Certificate;
+                return dc;
             }
 #endif
             return CreateFromConnectionString(connectionStringBuilder.ToString(), transportSettings);
@@ -795,10 +797,10 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
 
             #if !WINDOWS_UWP
             //We need to add the certificate to the fileUpload httpTransport if DeviceAuthenticationWithX509Certificate
-            if (Certificate != null)
+            if (this.Certificate != null)
             {
                 Http1TransportSettings transportSettings = new Http1TransportSettings();
-                transportSettings.ClientCertificate = Certificate;
+                transportSettings.ClientCertificate = this.Certificate;
                 httpTransport = new HttpTransportHandler(null, iotHubConnectionString, transportSettings);
             }
             else
