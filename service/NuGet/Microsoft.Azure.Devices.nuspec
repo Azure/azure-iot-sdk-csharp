@@ -16,13 +16,21 @@
         <dependency id="Microsoft.AspNet.WebApi.Client" version="5.2.3" />
         <dependency id="Microsoft.AspNet.WebApi.Core" version="5.2.3" />
         <dependency id="Microsoft.Azure.Amqp" version="2.0.4" />
-        <dependency id="PCLCrypto" version="2.0.147" />
       </group>
       <group targetFramework="uap10.0">
         <dependency id="Microsoft.Azure.Devices.Shared" version="1.0.10" />
         <dependency id="Microsoft.AspNet.WebApi.Client" version="5.2.3" />
         <dependency id="Microsoft.Azure.Amqp" version="2.0.4" />
         <dependency id="PCLCrypto" version="2.0.147" />
+      </group>
+      <group targetFramework="netstandard1.5" >
+        <dependency id="Newtonsoft.Json" version="10.0.2" />
+        <dependency id="System.Diagnostics.Contracts" version="4.3.0" />
+        <dependency id="System.Security.Cryptography.Primitives" version="4.3.0" />
+        <dependency id="Microsoft.Azure.Devices.Shared" version="1.0.10" />
+        <dependency id="Microsoft.AspNet.WebApi.Client" version="5.2.3" />
+        <dependency id="Microsoft.AspNet.WebApi.Core" version="5.2.3" />
+        <dependency id="Microsoft.Azure.Amqp" version="2.0.4" />
       </group>
     </dependencies>
     <frameworkAssemblies>
