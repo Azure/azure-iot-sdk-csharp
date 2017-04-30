@@ -1,12 +1,17 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+
+using System.Linq;
+
 namespace Microsoft.Azure.Devices.Common
 {
     using System;
     using System.Text;
 #if WINDOWS_UWP
     using Windows.Security.Cryptography;
+#elif NETSTANDARD1_5
+    using System.Security.Cryptography;
 #else
     using System.Web.Security;
     using System.Security.Cryptography;
@@ -27,6 +32,15 @@ namespace Microsoft.Azure.Devices.Common
             Windows.Storage.Streams.IBuffer keyBytesBuffer = CryptographicBuffer.GenerateRandom((uint)keySize);
             byte[] keyBytes;
             CryptographicBuffer.CopyToByteArray(keyBytesBuffer, out keyBytes);
+#elif NETSTANDARD1_5
+            var keyBytes = new byte[keySize];
+            using (var cyptoProvider = RandomNumberGenerator.Create())
+            {
+                while (keyBytes.Contains(byte.MinValue))
+                {
+                    cyptoProvider.GetBytes(keyBytes);
+                }
+            }
 #else
             var keyBytes = new byte[keySize];
             using (var cyptoProvider = new RNGCryptoServiceProvider())
@@ -42,7 +56,7 @@ namespace Microsoft.Azure.Devices.Common
             return Convert.ToBase64String(GenerateKeyBytes(keySize));
         }
 
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_5
         public static string GenerateKeyInHex(int keySize)
         {
             var keyBytes = new byte[keySize];

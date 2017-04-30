@@ -5,7 +5,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
 {
     using System;
 
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_5
     [Serializable]
 #endif
     public sealed class JobNotFoundException : IotHubException

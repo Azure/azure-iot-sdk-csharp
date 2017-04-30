@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Common
         {
             uint hash1;
             uint hash2;
-#if WINDOWS_UWP
+#if WINDOWS_UWP || NETSTANDARD1_5
             string upper = data.ToUpper();
 #else
             string upper = data.ToUpper(CultureInfo.InvariantCulture);
@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.Common
             uint hash1;
             uint hash2;
 
-#if WINDOWS_UWP
+#if WINDOWS_UWP || NETSTANDARD1_5
             string upper = data.ToUpper();
 #else
             string upper = data.ToUpper(CultureInfo.InvariantCulture);

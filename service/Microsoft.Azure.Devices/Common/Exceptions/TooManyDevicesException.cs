@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
     /// Exception thrown when the list of input devices is too large for an operation 
     /// </summary>
     /// 
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_5
     [Serializable]
 #endif
     public sealed class TooManyDevicesException : IotHubException
@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         {
         }
 
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_5
         TooManyDevicesException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {

@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices
         {
             return new QueryResult
             {
-#if WINDOWS_UWP
+#if WINDOWS_UWP || NETSTANDARD1_5
                 Items = Newtonsoft.Json.JsonConvert.DeserializeObject<IEnumerable<object>>(await response.Content.ReadAsStringAsync()),
 #else
                 Items = await response.Content.ReadAsAsync<IEnumerable<object>>(),

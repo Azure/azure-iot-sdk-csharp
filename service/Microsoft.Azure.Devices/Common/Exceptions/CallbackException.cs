@@ -6,7 +6,7 @@ namespace Microsoft.Azure.Devices.Common
     using System;
     using System.Runtime.Serialization;
 
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_5
     [Serializable]
 #endif
     class CallbackException : FatalException
@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.Common
             Fx.Assert(!Fx.IsFatal(innerException), "CallbackException can't be used to wrap fatal exceptions.");
         }
 
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_5
         protected CallbackException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {

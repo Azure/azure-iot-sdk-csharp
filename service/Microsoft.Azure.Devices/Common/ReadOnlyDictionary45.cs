@@ -18,26 +18,26 @@ namespace Microsoft.Azure.Devices.Common
     ** Purpose: Read-only wrapper for another generic dictionary.
     **
     ===========================================================*/
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_5
     [Serializable]
 #endif
     [DebuggerDisplay("Count = {Count}")]
     public sealed class ReadOnlyDictionary45<TKey, TValue> : IDictionary<TKey, TValue>, IDictionary //, IReadOnlyDictionary<TKey, TValue>
     {
         readonly IDictionary<TKey, TValue> m_dictionary;
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_5
         [NonSerialized]
 #endif
         Object m_syncRoot;
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_5
         [NonSerialized]
 #endif
         KeyCollection m_keys;
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_5
         [NonSerialized]
 #endif
         ValueCollection m_values;
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_5
         [NonSerialized]
 #endif
         IReadOnlyIndicator m_readOnlyIndicator;
@@ -423,7 +423,7 @@ namespace Microsoft.Azure.Devices.Common
                 return m_syncRoot;
             }
         }
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_5
         [Serializable]
 #endif
         private struct DictionaryEnumerator : IDictionaryEnumerator
@@ -471,17 +471,17 @@ namespace Microsoft.Azure.Devices.Common
         #endregion
 
         [DebuggerDisplay("Count = {Count}")]
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_5
         [Serializable]
 #endif
         public sealed class KeyCollection : ICollection<TKey>, ICollection
         {
             private readonly ICollection<TKey> m_collection;
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_5
             [NonSerialized]
 #endif
             private Object m_syncRoot;
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_5
             [NonSerialized]
 #endif
             private readonly IReadOnlyIndicator m_readOnlyIndicator;
@@ -604,17 +604,17 @@ namespace Microsoft.Azure.Devices.Common
         }
 
         [DebuggerDisplay("Count = {Count}")]
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_5
         [Serializable]
 #endif
         public sealed class ValueCollection : ICollection<TValue>, ICollection
         {
             private readonly ICollection<TValue> m_collection;
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_5
             [NonSerialized]
 #endif
             private Object m_syncRoot;
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_5
             [NonSerialized]
 #endif
             private readonly IReadOnlyIndicator m_readOnlyIndicator;

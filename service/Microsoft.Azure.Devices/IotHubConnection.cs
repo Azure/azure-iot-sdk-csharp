@@ -4,12 +4,12 @@
 namespace Microsoft.Azure.Devices
 {
     using System;
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_5
     using System.Configuration;
 #endif
     using System.Net;
     using System.Net.Security;
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_5
     using System.Net.WebSockets;
     using System.Security.Cryptography.X509Certificates;
 #endif
@@ -36,7 +36,7 @@ namespace Microsoft.Azure.Devices
         readonly IotHubConnectionString connectionString;
         readonly AccessRights accessRights;
         readonly FaultTolerantAmqpObject<AmqpSession> faultTolerantSession;
-#if WINDOWS_UWP
+#if WINDOWS_UWP || NETSTANDARD1_5
         readonly IOThreadTimerSlim refreshTokenTimer;
 #else
         readonly IOThreadTimer refreshTokenTimer;
@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices
             this.connectionString = connectionString;
             this.accessRights = accessRights;
             this.faultTolerantSession = new FaultTolerantAmqpObject<AmqpSession>(this.CreateSessionAsync, this.CloseConnection);
-#if WINDOWS_UWP
+#if WINDOWS_UWP || NETSTANDARD1_5
             this.refreshTokenTimer = new IOThreadTimerSlim(s => ((IotHubConnection)s).OnRefreshToken(), this, false);
 #else
             this.refreshTokenTimer = new IOThreadTimer(s => ((IotHubConnection)s).OnRefreshToken(), this, false);
@@ -156,7 +156,7 @@ namespace Microsoft.Azure.Devices
 
         static bool InitializeDisableServerCertificateValidation()
         {
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_5
             string value = ConfigurationManager.AppSettings[DisableServerCertificateValidationKeyName];
             if (!string.IsNullOrEmpty(value))
             {
@@ -248,7 +248,7 @@ namespace Microsoft.Azure.Devices
             amqpSession.Connection.SafeClose();
         }
 
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_5
         static async Task<ClientWebSocket> CreateClientWebSocketAsync(Uri websocketUri, TimeSpan timeout)
         {
             var websocket = new ClientWebSocket();
@@ -284,7 +284,7 @@ namespace Microsoft.Azure.Devices
 #endif
         async Task<TransportBase> CreateClientWebSocketTransport(TimeSpan timeout)
         {
-#if WINDOWS_UWP
+#if WINDOWS_UWP || NETSTANDARD1_5
             throw new NotImplementedException("web sockets are not yet supported for UWP");
 #else
             var timeoutHelper = new TimeoutHelper(timeout);
@@ -341,7 +341,7 @@ namespace Microsoft.Azure.Devices
             var tlsTransportSettings = new TlsTransportSettings(tcpTransportSettings)
             {
                 TargetHost = this.connectionString.HostName,
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_5
                 Certificate = null, // TODO: add client cert support
                 CertificateValidationCallback = OnRemoteCertificateValidation
 #endif
@@ -409,7 +409,7 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_5
         public static bool OnRemoteCertificateValidation(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
         {
             if (sslPolicyErrors == SslPolicyErrors.None)
