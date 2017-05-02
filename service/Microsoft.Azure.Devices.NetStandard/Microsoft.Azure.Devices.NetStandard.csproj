@@ -3,10 +3,17 @@
   <PropertyGroup>
     <TargetFramework>netstandard1.5</TargetFramework>
     <RootNamespace>Microsoft.Azure.Devices</RootNamespace>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <PackageId>Microsoft.Azure.Devices.NetStandard</PackageId>
+    <Version>1.2.5</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DefineConstants>TRACE;DEBUG;NETSTANDARD1_5</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_Delay_Sign|AnyCPU'">
+    <DocumentationFile>bin\Release_Delay_Sign\netstandard1.5\Microsoft.Azure.Devices.NetStandard.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -179,13 +186,10 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.Amqp" Version="2.0.4" />
+    <PackageReference Include="Microsoft.Azure.Devices.Shared" Version="1.0.10" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.2" />
     <PackageReference Include="System.Diagnostics.Contracts" Version="4.3.0" />
     <PackageReference Include="System.Security.Cryptography.Primitives" Version="4.3.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\shared\Microsoft.Azure.Devices.Shared.NetStandard\Microsoft.Azure.Devices.Shared.NetStandard.csproj" />
   </ItemGroup>
 
   <ItemGroup>

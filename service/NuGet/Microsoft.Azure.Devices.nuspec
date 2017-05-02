@@ -22,14 +22,12 @@
         <dependency id="Microsoft.AspNet.WebApi.Client" version="5.2.3" />
         <dependency id="Microsoft.Azure.Amqp" version="2.0.4" />
         <dependency id="PCLCrypto" version="2.0.147" />
-      </group>
+      </group>               
       <group targetFramework="netstandard1.5" >
         <dependency id="Newtonsoft.Json" version="10.0.2" />
         <dependency id="System.Diagnostics.Contracts" version="4.3.0" />
         <dependency id="System.Security.Cryptography.Primitives" version="4.3.0" />
         <dependency id="Microsoft.Azure.Devices.Shared" version="1.0.10" />
-        <dependency id="Microsoft.AspNet.WebApi.Client" version="5.2.3" />
-        <dependency id="Microsoft.AspNet.WebApi.Core" version="5.2.3" />
         <dependency id="Microsoft.Azure.Amqp" version="2.0.4" />
       </group>
     </dependencies>
@@ -47,5 +45,7 @@
     <file src="..\Microsoft.Azure.Devices.Uwp\bin\release_delay_sign\Microsoft.Azure.Devices.Uwp.dll" target="lib\uap10.0\Microsoft.Azure.Devices.Uwp.dll" />
     <file src="..\Microsoft.Azure.Devices.Uwp\bin\release_delay_sign\Microsoft.Azure.Devices.Uwp.pri" target="lib\uap10.0\Microsoft.Azure.Devices.Uwp.pri" />
     <file src="..\Microsoft.Azure.Devices.Uwp\bin\release_delay_sign\Microsoft.Azure.Devices.Uwp.XML" target="lib\uap10.0\Microsoft.Azure.Devices.Uwp.XML" />
+    <file src="..\Microsoft.Azure.Devices.NetStandard\bin\release_delay_sign\netstandard1.5\Microsoft.Azure.Devices.NetStandard.dll" target="lib\netstandard1.5\Microsoft.Azure.Devices.NetStandard.dll" />
+    <file src="..\Microsoft.Azure.Devices.NetStandard\bin\release_delay_sign\netstandard1.5\Microsoft.Azure.Devices.NetStandard.XML" target="lib\netstandard1.5\Microsoft.Azure.Devices.NetStandard.XML" />
   </files>
 </package>
