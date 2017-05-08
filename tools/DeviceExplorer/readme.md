@@ -25,6 +25,7 @@ To learn more about IoT Hub, see [What is Azure IoT Hub?][what-is-iot-hub].
 - [Send cloud-to-device messages](#send)
 
 <a name="download"/>
+
 ## Getting Device Explorer
 
 You can either download a pre-built version of Device Explorer or build it yourself.
@@ -39,6 +40,7 @@ A pre-built version of the Device Explorer application for Windows can be downlo
 To build Device Explorer yourself, open the **tools\\DeviceExplorer\\DeviceExplorer.sln** file in your local copy of this repository ([azure-iot-sdks](https://github.com/Azure/azure-iot-sdks)) in Visual Studio 2015. Then build and run the solution.
 
 <a name="configure"/>
+
 ## Configure an IoT Hub connection
 
 
@@ -53,15 +55,18 @@ You only need to complete this step if you are using a Protocol Gateway (such as
 Add the address of your protocol gateway to the **Protocol Gateway HostName** field with the address of your protocol gateway before you try to get a device connection string on the **Management** tab. If you are running the protocol gateway locally on the same machine as Device Explorer, you can use **localhost** as the address, otherwise you will need the network address of the machine where you deployed the protocol gateway.
 
 <a name="managedevices"/>
+
 ## Manage devices
 -  Click the **Management** tab to manage the devices connected to the IoT hub.
 
   ![](doc/media/device_explorer/iotgetstart2.png)
 
 <a name="listdevices"/>
+
 -  Click **List** to query the list of registered devices with the connected IoT Hub.
 
 <a name="createdevice"/>
+
 ### Create device
 
 Creating a device adds device details to the device identity registry. IoT Hub uses this information to generate a device-specific connection string that enables the device to connect to the IoT hub.
@@ -75,22 +80,26 @@ Creating a device adds device details to the device identity registry. IoT Hub u
   ![](doc/media/device_explorer/iotgetstart4.png)
 
 <a name="updatedevice"/>
+
 ### Update device
 
 - Click **Update** to change the primary or secondary key for the selected device. You will need to update your device to use any new keys you generate.
 
 
 <a name="deletedevice"/>
+
 ### Delete device
 
 - Click **Delete** to delete the selected devices from the connected IoT hub.
 
 <a name="sastoken"/>
+
 ### SAS Token
 
 - Click **SAS Token...** to generate a device specific connection string with SAS token.
 
 <a name="getdatadevice"/>
+
 ### Get device connection string or configuration data
 
 - Use the mouse right click for context menu for the selected device. The menu has the following options
@@ -98,6 +107,7 @@ Creating a device adds device details to the device identity registry. IoT Hub u
   ![](doc/media/device_explorer/connstr.png)
 
 <a name="monitor"/>
+
 ## Monitor device-to-cloud events
 
 The following steps describe how to use Device Explorer to monitor device-to-cloud events sent from a sample application on a client to an IoT hub and use the **Device Explorer** utility to observe as the IoT hub receives the event data.
@@ -127,6 +137,7 @@ Run your sample application. Device Explorer should now show that the IoT hub ha
   ![](doc/media/device_explorer/iotgetstart7.png)
 
 <a name="send"/>
+
 ## Send cloud-to-device messages
 
 -  To verify that you can send cloud-to-device messages from the IoT hub to your device, go to the **Messages To Device** tab in Device Explorer.
