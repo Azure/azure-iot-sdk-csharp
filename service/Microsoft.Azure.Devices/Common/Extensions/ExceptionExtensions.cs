@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Common
     {
         const string ExceptionIdentifierName = "ExceptionId";
         static MethodInfo prepForRemotingMethodInfo;
-        
+
         public static bool IsFatal(this Exception exception)
         {
             return Fx.IsFatal(exception);
@@ -32,7 +32,11 @@ namespace Microsoft.Azure.Devices.Common
 
         public static IEnumerable<Exception> Unwind(this Exception exception, params Type[] targetTypes)
         {
+#if WINDOWS_UWP
             return exception.Unwind().Where(e => targetTypes.Any(t => t.IsInstanceOfType(e)));
+#else
+            return exception.Unwind().Where(e => targetTypes.Any(t => t.GetTypeInfo().IsInstanceOfType(e)));
+#endif
         }
 
         public static IEnumerable<TException> Unwind<TException>(this Exception exception)
@@ -49,7 +53,7 @@ namespace Microsoft.Azure.Devices.Common
                 return exception;
             }
 
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_5
             if (PartialTrustHelpers.UnsafeIsInFullTrust())
             {
                 // Racing here is harmless
@@ -71,7 +75,7 @@ namespace Microsoft.Azure.Devices.Common
             return exception;
         }
 
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_5
         public static Exception DisablePrepareForRethrow(this Exception exception)
         {
             exception.Data[AsyncResult.DisablePrepareForRethrow] = string.Empty;
@@ -121,7 +125,7 @@ namespace Microsoft.Azure.Devices.Common
         {
             while (exception != null)
             {
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_5
                 if (exception.Data != null && exception.Data.Contains(AsyncResult.DisablePrepareForRethrow))
                 {
                     return false;
@@ -135,9 +139,9 @@ namespace Microsoft.Azure.Devices.Common
 
         public static bool CheckIotHubErrorCode(this Exception ex, params ErrorCode[] errorCodeList)
         {
-            foreach(var errorCode in errorCodeList)
-            { 
-                if(ex is IotHubException && ((IotHubException) ex).Code == errorCode)
+            foreach (var errorCode in errorCodeList)
+            {
+                if (ex is IotHubException && ((IotHubException)ex).Code == errorCode)
                 {
                     return true;
                 }

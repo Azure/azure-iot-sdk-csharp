@@ -3,7 +3,7 @@
 
 namespace Microsoft.Azure.Devices.Common
 {
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_5
     using System.Threading;
     using System.Security;
     using System;

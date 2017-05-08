@@ -5,7 +5,7 @@ namespace Microsoft.Azure.Devices.Common
 {
     using System;
     using System.Diagnostics;
-#if WINDOWS_UWP
+#if WINDOWS_UWP || NETSTANDARD1_5
     using Microsoft.Azure.Devices.PlatformSupport.System.Diagnostics;
 #endif
     using System.Diagnostics.CodeAnalysis;
@@ -90,7 +90,7 @@ namespace Microsoft.Azure.Devices.Common
 
         public void TraceHandled(Exception exception, string catchLocation, EventTraceActivity activity = null)
         {
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_5
 #if DEBUG
             Trace.WriteLine(string.Format(
                 CultureInfo.InvariantCulture,
@@ -113,7 +113,7 @@ namespace Microsoft.Azure.Devices.Common
             ////MessagingClientEtwProvider.Provider.EventWriteUnhandledException(this.eventSourceName + ": " + exception.ToStringSlim());
         }
 
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_5
         [ResourceConsumption(ResourceScope.Process)]
         [Fx.Tag.SecurityNote(Critical = "Calls 'System.Runtime.Interop.UnsafeNativeMethods.IsDebuggerPresent()' which is a P/Invoke method",
             Safe = "Does not leak any resource, needed for debugging")]
@@ -174,7 +174,7 @@ namespace Microsoft.Azure.Devices.Common
         {
             string details = e.GetType().ToString();
 
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_5
             const int MaxStackFrames = 10;
 
             // Include the current callstack (this ensures we see the Stack in case exception is not output when caught)
@@ -194,14 +194,14 @@ namespace Microsoft.Azure.Devices.Common
         }
 
         [SuppressMessage(FxCop.Category.Performance, FxCop.Rule.MarkMembersAsStatic, Justification = "CSDMain #183668")]
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_5
         [Fx.Tag.SecurityNote(Critical = "Calls into critical method UnsafeNativeMethods.IsDebuggerPresent and UnsafeNativeMethods.DebugBreak",
             Safe = "Safe because it's a no-op in retail builds.")]
 #endif
         internal void BreakOnException(Exception exception)
         {
 #if DEBUG
-#if WINDOWS_UWP
+#if WINDOWS_UWP || NETSTANDARD1_5
             Debugger.Launch();
 #else
             if (Fx.BreakOnExceptionTypes != null)

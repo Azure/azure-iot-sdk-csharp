@@ -193,7 +193,7 @@ namespace Microsoft.Azure.Devices.Common
             }
         }
 
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_5
         [Fx.Tag.Blocking]
         public static bool WaitOne(WaitHandle waitHandle, TimeSpan timeout)
         {

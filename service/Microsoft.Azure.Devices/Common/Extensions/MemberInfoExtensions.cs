@@ -6,7 +6,7 @@ namespace Microsoft.Azure.Devices.Common
     using System;
     using System.Reflection;
 
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_5
     /// <summary>
     /// Extended reflection support
     /// </summary>

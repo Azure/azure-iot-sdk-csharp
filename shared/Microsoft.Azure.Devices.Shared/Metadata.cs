@@ -4,7 +4,7 @@
 namespace Microsoft.Azure.Devices.Shared
 {
 
-#if WINDOWS_UWP || PCL
+#if WINDOWS_UWP || NETSTANDARD1_5 || NETSTANDARD1_5 || PCL
     using DateTimeT = System.DateTimeOffset;
 #else
     using DateTimeT = System.DateTime;

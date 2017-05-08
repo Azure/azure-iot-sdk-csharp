@@ -6,7 +6,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
     using System;
     using System.Runtime.Serialization;
 
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_5
     [Serializable]
 #endif
     public sealed class DeviceInvalidResultCountException : IotHubException
@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
             this.MaximumResultCount = maximumResultCount;
         }
 
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_5
         DeviceInvalidResultCountException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
             private set;
         }
 
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_5
         /// <inheritdoc />
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
         {

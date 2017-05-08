@@ -336,7 +336,7 @@ namespace Microsoft.Azure.Devices
                 memoryStream.Write(readBuffer, 0, bytesRead);
             }
 
-#if WINDOWS_UWP
+#if WINDOWS_UWP || NETSTANDARD1_5
             // UWP doesn't have GetBuffer.
             return new ArraySegment<byte>(memoryStream.ToArray(), 0, (int)memoryStream.Length);
 #else

@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.Common
             { typeof(DateTime), PropertyValueType.DateTime },
             { typeof(DateTimeOffset), PropertyValueType.DateTimeOffset },
             { typeof(TimeSpan), PropertyValueType.TimeSpan },
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_5
             { typeof(BufferedInputStream), PropertyValueType.Stream },
 #endif
             ////{ typeof(XName), PropertyValueType.XName},

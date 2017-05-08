@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices
     using System.Linq;
     using System.Net;
     using System.Net.Http;
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_5
     using System.Net.Http.Formatting;
 #endif
     using System.Net.Http.Headers;
@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices
 
     sealed class HttpClientHelper : IHttpClientHelper
     {
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_5
         static readonly JsonMediaTypeFormatter JsonFormatter = new JsonMediaTypeFormatter();
 #endif
         readonly Uri baseAddress;
@@ -116,7 +116,7 @@ namespace Microsoft.Azure.Devices
                     (requestMsg, token) =>
                     {
                         InsertEtag(requestMsg, entity, operationType);
-#if WINDOWS_UWP
+#if WINDOWS_UWP || NETSTANDARD1_5
                         var str = Newtonsoft.Json.JsonConvert.SerializeObject(entity);
                         requestMsg.Content = new StringContent(str, System.Text.Encoding.UTF8, "application/json");
 #else
@@ -144,7 +144,7 @@ namespace Microsoft.Azure.Devices
                     new Uri(this.baseAddress, requestUri),
                     (requestMsg, token) =>
                     {
-#if WINDOWS_UWP
+#if WINDOWS_UWP || NETSTANDARD1_5
                         var str = Newtonsoft.Json.JsonConvert.SerializeObject(entity);
                         requestMsg.Content = new StringContent(str, System.Text.Encoding.UTF8, "application/json");
 #else
@@ -173,7 +173,7 @@ namespace Microsoft.Azure.Devices
                 (requestMsg, token) =>
                 {
                     InsertEtag(requestMsg, etag, operationType);
-#if WINDOWS_UWP
+#if WINDOWS_UWP || NETSTANDARD1_5
                     var str = Newtonsoft.Json.JsonConvert.SerializeObject(entity);
                     requestMsg.Content = new StringContent(str, System.Text.Encoding.UTF8, "application/json");
 #else
@@ -203,7 +203,7 @@ namespace Microsoft.Azure.Devices
                 {
                     // TODO: skintali: Use string etag when service side changes are ready
                     InsertEtag(requestMsg, etag, operationType);
-#if WINDOWS_UWP
+#if WINDOWS_UWP || NETSTANDARD1_5
                     var str = Newtonsoft.Json.JsonConvert.SerializeObject(entity);
                     requestMsg.Content = new StringContent(str, System.Text.Encoding.UTF8, "application/json");
 #else
@@ -227,7 +227,7 @@ namespace Microsoft.Azure.Devices
                 (requestMsg, token) =>
                 {
                     InsertEtag(requestMsg, etag, PutOperationType.UpdateEntity);
-#if WINDOWS_UWP
+#if WINDOWS_UWP || NETSTANDARD1_5
                     var str = Newtonsoft.Json.JsonConvert.SerializeObject(entity);
                     requestMsg.Content = new StringContent(str, System.Text.Encoding.UTF8, "application/json");
 #else
@@ -253,7 +253,7 @@ namespace Microsoft.Azure.Devices
                 (requestMsg, token) =>
                 {
                     InsertEtag(requestMsg, etag, putOperationType);
-#if WINDOWS_UWP
+#if WINDOWS_UWP || NETSTANDARD1_5
                     var str = Newtonsoft.Json.JsonConvert.SerializeObject(entity);
                     requestMsg.Content = new StringContent(str, System.Text.Encoding.UTF8, "application/json");
 #else
@@ -275,7 +275,7 @@ namespace Microsoft.Azure.Devices
                 return (T)(object)message;
             }
 
-#if WINDOWS_UWP
+#if WINDOWS_UWP || NETSTANDARD1_5
             var str = await message.Content.ReadAsStringAsync();
             T entity = Newtonsoft.Json.JsonConvert.DeserializeObject<T>(str);
 #else
@@ -458,7 +458,7 @@ namespace Microsoft.Azure.Devices
                 customHeaders,
                 customContentType,
                 customContentEncoding,
-                async (message, token) =>  result = message,
+                async (message, token) => result = message,
                 cancellationToken);
 
             return result;
@@ -494,7 +494,7 @@ namespace Microsoft.Azure.Devices
                         }
                         else
                         {
-#if WINDOWS_UWP
+#if WINDOWS_UWP || NETSTANDARD1_5
                             throw new NotImplementedException("missing API 2!");
 #else
                             requestMsg.Content = new ObjectContent<T1>(entity, JsonFormatter);
@@ -618,8 +618,13 @@ namespace Microsoft.Azure.Devices
 
             using (var msg = new HttpRequestMessage(httpMethod, requestUri))
             {
+#if NETSTANDARD1_5
+                msg.Headers.Add("Authorization", this.authenticationHeaderProvider.GetAuthorizationHeader());
+                msg.Headers.Add("UserAgent", Utils.GetClientVersion());
+#else
                 msg.Headers.Add(HttpRequestHeader.Authorization.ToString(), this.authenticationHeaderProvider.GetAuthorizationHeader());
                 msg.Headers.Add(HttpRequestHeader.UserAgent.ToString(), Utils.GetClientVersion());
+#endif
 
                 if (modifyRequestMessageAsync != null) await modifyRequestMessageAsync(msg, cancellationToken);
 

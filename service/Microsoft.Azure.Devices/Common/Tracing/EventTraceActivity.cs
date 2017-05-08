@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.Common.Tracing
         // this field is passed as reference to native code. 
         public Guid ActivityId;
 
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_5
         public static EventTraceActivity CreateFromThread()
         {
             Guid id = Trace.CorrelationManager.ActivityId;
