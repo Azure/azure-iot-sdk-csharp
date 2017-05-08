@@ -637,7 +637,11 @@ namespace Microsoft.Azure.Devices.Common
                 Safe = "Doesn't leak information or resources")]
             public WaitableTimer()
             {
+#if NETSTANDARD1_3
+                this.SetSafeWaitHandle(TimerHelper.CreateWaitableTimer());
+#else
                 this.SafeWaitHandle = TimerHelper.CreateWaitableTimer();
+#endif
             }
 
             public long DueTime
@@ -649,7 +653,11 @@ namespace Microsoft.Azure.Devices.Common
                 Safe = "Doesn't leak information or resources")]
             public void Set(long newDueTime)
             {
+#if NETSTANDARD1_3
+                this.dueTime = TimerHelper.Set(this.GetSafeWaitHandle(), newDueTime);
+#else
                 this.dueTime = TimerHelper.Set(this.SafeWaitHandle, newDueTime);
+#endif
             }
             [Fx.Tag.SecurityNote(Critical = "Provides a set of unsafe methods used to work with the WaitableTimer")]
             [SecurityCritical]

@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
             this.RequestedVersion = version;
         }
 
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_3
         public InvalidProtocolVersionException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {

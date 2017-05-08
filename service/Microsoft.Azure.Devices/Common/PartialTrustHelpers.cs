@@ -120,6 +120,7 @@ namespace Microsoft.Azure.Devices.Common
         [Fx.Tag.SecurityNote(Critical = "used in a security-sensitive decision")]
         [SecurityCritical]
         [FileIOPermission(SecurityAction.Assert, Unrestricted = true)]
+
         static bool IsAssemblySigned(Assembly assembly)
         {
             byte[] publicKeyToken = assembly.GetName().GetPublicKeyToken();

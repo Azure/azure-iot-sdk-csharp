@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         {
         }
 
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_3
         IotHubThrottledException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {

@@ -192,22 +192,5 @@ namespace Microsoft.Azure.Devices.Common
                 throw Fx.Exception.ArgumentOutOfRange(argumentName, timeout, CommonResources.GetString(CommonResources.TimeoutMustBePositive, argumentName, timeout));
             }
         }
-
-#if !WINDOWS_UWP
-        [Fx.Tag.Blocking]
-        public static bool WaitOne(WaitHandle waitHandle, TimeSpan timeout)
-        {
-            ThrowIfNegativeArgument(timeout);
-            if (timeout == TimeSpan.MaxValue)
-            {
-                waitHandle.WaitOne();
-                return true;
-            }
-            else
-            {
-                return waitHandle.WaitOne(timeout, false);
-            }
-        }
-#endif
     }
 }

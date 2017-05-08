@@ -29,10 +29,18 @@ namespace Microsoft.Azure.Devices.Common
                 exception = exception.InnerException;
             }
         }
-
+        
         public static IEnumerable<Exception> Unwind(this Exception exception, params Type[] targetTypes)
         {
+#if NETSTANDARD1_3
+            return exception.Unwind().Where(e => targetTypes.Any(t =>
+            {
+                var exceptionType = e.GetType();
+                return Convert.ChangeType(t, exceptionType) != null;
+            } ));
+#else
             return exception.Unwind().Where(e => targetTypes.Any(t => t.IsInstanceOfType(e)));
+#endif
         }
 
         public static IEnumerable<TException> Unwind<TException>(this Exception exception)
@@ -49,7 +57,7 @@ namespace Microsoft.Azure.Devices.Common
                 return exception;
             }
 
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_3
             if (PartialTrustHelpers.UnsafeIsInFullTrust())
             {
                 // Racing here is harmless

@@ -7,8 +7,9 @@ namespace Microsoft.Azure.Devices.Common
     using System.Diagnostics;
     using System.Diagnostics.CodeAnalysis;
     using System.Threading;
+#if !NETSTANDARD1_3
     using System.Transactions;
-    
+#endif    
     using Microsoft.Azure.Devices.Common.Tracing;
 
     // AsyncResult starts acquired; Complete releases.
@@ -28,7 +29,9 @@ namespace Microsoft.Azure.Devices.Common
         bool isCompleted;
         AsyncCompletion nextAsyncCompletion;
         IAsyncResult deferredTransactionalResult;
+#if !NETSTANDARD1_3
         TransactionSignalScope transactionContext;
+#endif
         object state;
 
         [Fx.Tag.SynchronizationObject]
@@ -248,14 +251,14 @@ namespace Microsoft.Azure.Devices.Common
             }
 
             AsyncResult thisPtr = (AsyncResult)result.AsyncState;
-
+#if !NETSTANDARD1_3
             if (thisPtr.transactionContext != null && !thisPtr.transactionContext.Signal(result))
             {
                 // The TransactionScope isn't cleaned up yet and can't be done on this thread.  Must defer
                 // the callback (which is likely to attempt to commit the transaction) until later.
                 return;
             }
-
+#endif
             AsyncCompletion callback = thisPtr.GetNextCompletion();
             if (callback == null)
             {
@@ -282,6 +285,7 @@ namespace Microsoft.Azure.Devices.Common
 
         protected AsyncCallback PrepareAsyncCompletion(AsyncCompletion callback)
         {
+#if !NETSTANDARD1_3
             if (this.transactionContext != null)
             {
                 // It might be an old, leftover one, if an exception was thrown within the last using (PrepareTransactionalCall()) block.
@@ -294,22 +298,13 @@ namespace Microsoft.Azure.Devices.Common
                     this.transactionContext.Prepared();
                 }
             }
-
+#endif
             this.nextAsyncCompletion = callback;
             if (AsyncResult.asyncCompletionWrapperCallback == null)
             {
                 AsyncResult.asyncCompletionWrapperCallback = new AsyncCallback(AsyncCompletionWrapperCallback);
             }
             return AsyncResult.asyncCompletionWrapperCallback;
-        }
-
-        protected IDisposable PrepareTransactionalCall(Transaction transaction)
-        {
-            if (this.transactionContext != null && !this.transactionContext.IsPotentiallyAbandoned)
-            {
-                ThrowInvalidAsyncResult("PrepareTransactionalCall should only be called as the object of non-nested using statements. If the Begin succeeds, Check/SyncContinue must be called before another PrepareTransactionalCall.");
-            }
-            return this.transactionContext = transaction == null ? null : new TransactionSignalScope(this, transaction);
         }
 
         protected bool CheckSyncContinue(IAsyncResult result)
@@ -342,6 +337,7 @@ namespace Microsoft.Azure.Devices.Common
 
             if (result.CompletedSynchronously)
             {
+#if !NETSTANDARD1_3
                 // Once we pass the check, we know that we own forward progress, so transactionContext is correct. Verify its state.
                 if (this.transactionContext != null)
                 {
@@ -356,7 +352,9 @@ namespace Microsoft.Azure.Devices.Common
                         ThrowInvalidAsyncResult(result);
                     }
                 }
+#endif
             }
+#if !NETSTANDARD1_3
             else if (object.ReferenceEquals(result, this.deferredTransactionalResult))
             {
                 // The transactionContext may not be current if forward progress has been made via the callback. Instead,
@@ -369,6 +367,7 @@ namespace Microsoft.Azure.Devices.Common
                 }
                 this.deferredTransactionalResult = null;
             }
+#endif
             else
             {
                 return false;
@@ -385,7 +384,9 @@ namespace Microsoft.Azure.Devices.Common
         AsyncCompletion GetNextCompletion()
         {
             AsyncCompletion result = this.nextAsyncCompletion;
+#if !NETSTANDARD1_3
             this.transactionContext = null;
+#endif
             this.nextAsyncCompletion = null;
             return result;
         }
@@ -444,7 +445,11 @@ namespace Microsoft.Azure.Devices.Common
             if (asyncResult.manualResetEvent != null)
             {
                 asyncResult.manualResetEvent.WaitOne();
+#if !NETSTANDARD1_3
                 asyncResult.manualResetEvent.Close();
+#else
+                asyncResult.manualResetEvent.Dispose();
+#endif
             }
 
             if (asyncResult.exception != null)
@@ -466,6 +471,7 @@ namespace Microsoft.Azure.Devices.Common
             Abandoned,
         }
 
+#if !NETSTANDARD1_3
         [Serializable]
         class TransactionSignalScope : SignalGate<IAsyncResult>, IDisposable
         {
@@ -559,7 +565,7 @@ namespace Microsoft.Azure.Devices.Common
                 GC.SuppressFinalize(this);
             }
         }
-
+#endif
         // can be utilized by subclasses to write core completion code for both the sync and async paths
         // in one location, signalling chainable synchronous completion with the boolean result,
         // and leveraging PrepareAsyncCompletion for conversion to an AsyncCallback.

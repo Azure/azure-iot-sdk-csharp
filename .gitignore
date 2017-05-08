@@ -212,3 +212,6 @@ DOTNETMF_FS_EMULATION*/
 /device/Microsoft.Azure.Devices.Client.NetStandard/project.lock.json
 /shared/Microsoft.Azure.Devices.Shared.PCL/project.lock.json
 /shared/Microsoft.Azure.Devices.Shared.UWP/project.lock.json
+/service/Microsoft.Azure.Devices.NetStandard/project.lock.json
+/service/Microsoft.Azure.Devices.Uwp/project.lock.json
+/service/Samples/UWPSample/project.lock.json

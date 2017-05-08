@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Common
     using System.Globalization;
     using System.Reflection;
     using System.Runtime.CompilerServices;
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_3
     using System.Runtime.ConstrainedExecution;
     using System.Runtime.InteropServices;
     using System.Security;
@@ -99,25 +99,10 @@ namespace Microsoft.Azure.Devices.Common
         ////            diagnosticTrace = InitializeTracing();
         ////        }
 
-////        return diagnosticTrace;
-////    }
-////}
+        ////        return diagnosticTrace;
+        ////    }
+        ////}
 
-#if !WINDOWS_UWP
-        public static byte[] AllocateByteArray(int size)
-        {
-            try
-            {
-                // Safe to catch OOM from this as long as the ONLY thing it does is a simple allocation of a primitive type (no method calls).
-                return new byte[size];
-            }
-            catch (OutOfMemoryException exception)
-            {
-                // Convert OOM into an exception that can be safely handled by higher layers.
-                throw Fx.Exception.AsError(new InsufficientMemoryException(CommonResources.GetString(CommonResources.BufferAllocationFailed, size), exception));
-            }
-        }
-#endif
         // Do not call the parameter "message" or else FxCop thinks it should be localized.
         [Conditional("DEBUG")]
         public static void Assert(bool condition, string description)
@@ -172,6 +157,8 @@ namespace Microsoft.Azure.Devices.Common
             throw Fx.Exception.AsError(new FatalException(description));
         }
 
+
+#if !WINDOWS_UWP && !NETSTANDARD1_3
         public static void AssertAndFailFastService(bool condition, string description)
         {
             if (!condition)
@@ -202,13 +189,12 @@ namespace Microsoft.Azure.Devices.Common
                     // Mark that a FailFast is in progress, so that we can take ourselves out of the NLB if for
                     // any reason we can't kill ourselves quickly.  Wait 15 seconds so this state gets picked up for sure.
                     Fx.FailFastInProgress = true;
-#if !WINDOWS_UWP
+
                     Thread.Sleep(TimeSpan.FromSeconds(15));
-#endif
                 }
                 finally
                 {
-#if !WINDOWS_UWP
+
                     // ########################## NOTE ###########################
                     // Environment.FailFast does not collect crash dumps when used in Azure services. 
                     // Environment.FailFast(failFastMessage);
@@ -217,14 +203,13 @@ namespace Microsoft.Azure.Devices.Common
                     // Workaround for the issue above. Throwing an unhandled exception on a separate thread to trigger process crash and crash dump collection
                     // Throwing FatalException since our service does not morph/eat up fatal exceptions
                     // We should find the tracking bug in Azure for this issue, and remove the workaround when fixed by Azure
-                    Thread failFastWorkaroundThread = new Thread(delegate()
+                    Thread failFastWorkaroundThread = new Thread(delegate ()
                     {
                         throw new FatalException(failFastMessage);
                     });
 
                     failFastWorkaroundThread.Start();
                     failFastWorkaroundThread.Join();
-#endif
                 }
             }
             catch
@@ -234,6 +219,7 @@ namespace Microsoft.Azure.Devices.Common
 
             return null; // we'll never get here since we've just fail-fasted
         }
+#endif
 
         internal static bool FailFastInProgress { get; private set; }
 
@@ -244,7 +230,7 @@ namespace Microsoft.Azure.Devices.Common
                 // FYI, CallbackException is-a FatalException
                 if (exception is FatalException || exception is OutOfMemoryException)
                 {
-#if WINDOWS_UWP
+#if WINDOWS_UWP || NETSTANDARD1_3
                     return true;
 #else
                     if (!(exception is InsufficientMemoryException))
@@ -254,7 +240,7 @@ namespace Microsoft.Azure.Devices.Common
 #endif
                 }
 
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_3
                 if( exception is ThreadAbortException ||
                     exception is AccessViolationException ||
                     exception is SEHException)
@@ -301,7 +287,7 @@ namespace Microsoft.Azure.Devices.Common
             return false;
         }
 
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_3
         // If the transaction has aborted then we switch over to a new transaction
         // which we will immediately abort after setting Transaction.Current
         public static TransactionScope CreateTransactionScope(Transaction transaction)
@@ -369,7 +355,7 @@ namespace Microsoft.Azure.Devices.Common
         }
 #endif
 
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_3
         [Fx.Tag.SecurityNote(Critical = "Construct the unsafe object IOCompletionThunk")]
         [SecurityCritical]
         public static IOCompletionCallback ThunkCallback(IOCompletionCallback callback)
@@ -389,7 +375,12 @@ namespace Microsoft.Azure.Devices.Common
             {
                 object value;
                 return TryGetDebugSwitch(Fx.AssertsFailFastName, out value) &&
-                    typeof(int).IsAssignableFrom(value.GetType()) && ((int)value) != 0;
+#if NETSTANDARD1_3
+                        typeof(int).GetTypeInfo().IsAssignableFrom(value.GetType().GetTypeInfo())
+#else
+                        typeof(int).IsAssignableFrom(value.GetType()) 
+#endif
+                    && ((int)value) != 0;
             }
         }
 
@@ -431,7 +422,12 @@ namespace Microsoft.Azure.Devices.Common
                     object value;
                     if (TryGetDebugSwitch(Fx.FastDebugName, out value))
                     {
-                        Fx.fastDebugCache = typeof(int).IsAssignableFrom(value.GetType()) && ((int)value) != 0;
+#if NETSTANDARD1_3
+                        Fx.fastDebugCache = typeof(int).GetTypeInfo().IsAssignableFrom(value.GetType().GetTypeInfo())
+#else
+                        Fx.fastDebugCache = typeof(int).IsAssignableFrom(value.GetType())
+#endif
+                            && ((int)value) != 0;
                     }
 
                     Fx.fastDebugRetrieved = true;
@@ -445,7 +441,7 @@ namespace Microsoft.Azure.Devices.Common
         static bool TryGetDebugSwitch(string name, out object value)
         {
             value = null;
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_3
             try
             {
                 RegistryKey key = Registry.LocalMachine.OpenSubKey(Fx.SBRegistryKey);
@@ -468,7 +464,7 @@ namespace Microsoft.Azure.Devices.Common
 
         [SuppressMessage(FxCop.Category.Design, FxCop.Rule.DoNotCatchGeneralExceptionTypes,
             Justification = "Don't want to hide the exception which is about to crash the process.")]
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_3
         [Fx.Tag.SecurityNote(Miscellaneous = "Must not call into PT code as it is called within a CER.")]
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 #endif
@@ -492,7 +488,7 @@ namespace Microsoft.Azure.Devices.Common
         [SuppressMessage(FxCop.Category.ReliabilityBasic, FxCop.Rule.IsFatalRule,
             Justification = "Don't want to hide the exception which is about to crash the process.")]
         [Fx.Tag.SecurityNote(Miscellaneous = "Must not call into PT code as it is called within a CER.")]
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_3
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 #endif
         static bool HandleAtThreadBase(Exception exception)
@@ -688,7 +684,7 @@ namespace Microsoft.Azure.Devices.Common
         }
 #endif // UNUSED
 
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_3
         // This can't derive from Thunk since T would be unsafe.
         [Fx.Tag.SecurityNote(Critical = "unsafe object")]
         [SecurityCritical]
@@ -768,7 +764,7 @@ namespace Microsoft.Azure.Devices.Common
         }
 #endif // UNUSED
 
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_3
         sealed class TransactionEventHandlerThunk
         {
             readonly TransactionCompletedEventHandler callback;

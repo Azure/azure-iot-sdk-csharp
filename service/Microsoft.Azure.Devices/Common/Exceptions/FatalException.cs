@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.Common
             Fx.Assert(innerException == null || !Fx.IsFatal(innerException), "FatalException can't be used to wrap fatal exceptions.");
         }
 
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_3
         protected FatalException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {

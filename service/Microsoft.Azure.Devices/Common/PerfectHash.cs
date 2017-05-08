@@ -13,7 +13,8 @@ namespace Microsoft.Azure.Devices.Common
         {
             uint hash1;
             uint hash2;
-#if WINDOWS_UWP
+
+#if WINDOWS_UWP || NETSTANDARD1_3
             string upper = data.ToUpper();
 #else
             string upper = data.ToUpper(CultureInfo.InvariantCulture);
@@ -29,12 +30,12 @@ namespace Microsoft.Azure.Devices.Common
             uint hash1;
             uint hash2;
 
-#if WINDOWS_UWP
+#if WINDOWS_UWP || NETSTANDARD1_3
             string upper = data.ToUpper();
 #else
             string upper = data.ToUpper(CultureInfo.InvariantCulture);
 #endif
-            ComputeHash(ASCIIEncoding.ASCII.GetBytes(upper), seed1: 0, seed2: 0, hash1: out hash1, hash2: out hash2);
+            PerfectHash.ComputeHash(ASCIIEncoding.ASCII.GetBytes(upper), seed1: 0, seed2: 0, hash1: out hash1, hash2: out hash2);
             long hashedValue = hash1 ^ hash2;
 
             return (short)hashedValue;

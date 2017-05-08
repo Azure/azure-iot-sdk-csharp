@@ -8,6 +8,8 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+using System.Reflection;
+
 namespace Microsoft.Azure.Devices {
     using System;
     
@@ -39,7 +41,7 @@ namespace Microsoft.Azure.Devices {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.Azure.Devices.ApiResources", typeof(ApiResources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.Azure.Devices.ApiResources", typeof(ApiResources).GetTypeInfo().Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;

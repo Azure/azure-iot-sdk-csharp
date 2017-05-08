@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.Common
             }
 
             Type type = member.DeclaringType;
-            Assembly assembly = type.Assembly;
+            Assembly assembly = type.GetTypeInfo().Assembly;
             string assemblyName = assembly.ManifestModule.Name;
             return "{0}!{1}.{2}".FormatInvariant(assemblyName, type.FullName, member.Name);
         }

@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
             this.TrackingId = trackingId;
         }
 
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_3
         protected IotHubException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {

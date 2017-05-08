@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Devices
         const string SizeExceedsRemainingBufferSpace = "The specified size exceeds the remaining buffer space bytes.";
 
         static readonly byte[] maskingKey = new byte[] { 0x00, 0x00, 0x00, 0x00 };
-        static readonly SHA1CryptoServiceProvider sha1CryptoServiceProvider = InitCryptoServiceProvider();
+        static readonly SHA1 sha1CryptoServiceProvider = InitCryptoServiceProvider();
 
         readonly string webSocketRole;   
         readonly string requestPath;
@@ -128,11 +128,18 @@ namespace Microsoft.Azure.Devices
             this.State = WebSocketState.Aborted;
             try
             {
+#if !NETSTANDARD1_3
                 this.WebSocketStream?.Close(); // Ungraceful close
-
+#else
+                this.WebSocketStream?.Dispose();
+#endif
                 this.WebSocketStream = null;
 
+#if !NETSTANDARD1_3
                 this.TcpClient?.Close();
+#else
+                this.TcpClient?.Dispose();
+#endif
 
                 this.TcpClient = null;
             }
@@ -190,8 +197,13 @@ namespace Microsoft.Azure.Devices
                     // the HTTP response code was not 101
                     if (this.TcpClient.Connected)
                     {
+#if !NETSTANDARD1_3
                         this.WebSocketStream.Close();
                         this.TcpClient.Close();
+#else
+                        this.WebSocketStream.Dispose();
+                        this.TcpClient.Dispose();
+#endif
                     }
 
                     throw new IOException(ServerRejectedUpgradeRequest + " " + upgradeResponse);
@@ -201,8 +213,13 @@ namespace Microsoft.Azure.Devices
                 {
                     if (this.TcpClient.Connected)
                     {
+#if !NETSTANDARD1_3
                         this.WebSocketStream.Close();
                         this.TcpClient.Close();
+#else
+                        this.WebSocketStream.Dispose();
+                        this.TcpClient.Dispose();
+#endif
                     }
 
                     throw new IOException(UpgradeProtocolNotSupported.FormatInvariant(WebSocketConstants.SubProtocols.Amqpwsb10));
@@ -260,8 +277,13 @@ namespace Microsoft.Azure.Devices
                         await this.WebSocketStream.WriteAsync(closeHeader, 0, closeHeader.Length);
 
                         this.State = WebSocketState.Closed;
+#if !NETSTANDARD1_3
                         this.WebSocketStream?.Close();
                         this.TcpClient?.Close();
+#else
+                        this.WebSocketStream?.Dispose();
+                        this.TcpClient?.Dispose();
+#endif
                         return 0;  // TODO: throw exception?
                     }
 
@@ -438,9 +460,13 @@ namespace Microsoft.Azure.Devices
 
                     await this.WebSocketStream.WriteAsync(webSocketHeader, 0, webSocketHeader.Length);
 
+#if !NETSTANDARD1_3
                     this.WebSocketStream?.Close();
-
                     this.TcpClient?.Close();
+#else
+                    this.WebSocketStream?.Dispose();
+                    this.TcpClient?.Dispose();
+#endif
                 }
 
                 succeeded = true;
@@ -465,9 +491,9 @@ namespace Microsoft.Azure.Devices
         }
 
         [SuppressMessage("Microsoft.Cryptographic.Standard", "CA5354:SHA1CannotBeUsed", Justification = "SHA-1 Hash mandated by RFC 6455")]
-        static SHA1CryptoServiceProvider InitCryptoServiceProvider()
+        static SHA1 InitCryptoServiceProvider()
         {
-            return new SHA1CryptoServiceProvider();
+            return SHA1.Create();
         }
 
         // Socket.ReceiveTimeout/SendTimeout 0 means infinite/no-timeout. When dealing with cascading timeouts
@@ -662,13 +688,21 @@ namespace Microsoft.Azure.Devices
             this.State = WebSocketState.Faulted;
             if (this.WebSocketStream != null)
             {
+#if !NETSTANDARD1_3
                 this.WebSocketStream.Close();   // Ungraceful close
+#else
+                this.WebSocketStream.Dispose();
+#endif
                 this.WebSocketStream = null;
             }
 
             if (this.TcpClient != null)
             {
+#if !NETSTANDARD1_3
                 this.TcpClient.Close();
+#else
+                this.TcpClient.Dispose();
+#endif
                 this.TcpClient = null;
             }
         }

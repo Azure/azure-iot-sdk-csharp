@@ -91,17 +91,6 @@ namespace Microsoft.Azure.Devices.Common
             return this.innerStream.Read(buffer, offset, count);
         }
 
-        public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
-        {
-            this.ThrowIfDisposed();
-            return new CompletedAsyncResult<int>(this.innerStream.Read(buffer, offset, count), callback, state);
-        }
-
-        public override int EndRead(IAsyncResult asyncResult)
-        {
-            return CompletedAsyncResult<int>.End(asyncResult);
-        }
-
         public override long Seek(long offset, SeekOrigin origin)
         {
             this.ThrowIfDisposed();

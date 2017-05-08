@@ -5,10 +5,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
 {
     using System;
     using System.Runtime.Serialization;
-#if !WINDOWS_UWP
-    using System.Web.UI;
-#endif
-
+    
 #if !WINDOWS_UWP
     [Serializable]
 #endif
@@ -29,7 +26,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         {
         }
 
-#if !WINDOWS_UWP
+#if !WINDOWS_UWP && !NETSTANDARD1_3
         PreconditionFailedException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
