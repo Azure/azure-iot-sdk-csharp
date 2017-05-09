@@ -5,13 +5,11 @@ namespace Microsoft.Azure.Devices.Common
 {
     using System;
     using System.Collections.Generic;
-    using System.Globalization;
     using System.Linq;
     using System.Net;
     using System.Net.Http;
     using System.Net.Sockets;
     using System.Text;
-    using System.Text.RegularExpressions;
 
     using Microsoft.Azure.Devices.Common.WebApi;
 #if !WINDOWS_UWP && !NETSTANDARD1_3
