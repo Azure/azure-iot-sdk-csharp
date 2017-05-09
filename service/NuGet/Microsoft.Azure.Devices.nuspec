@@ -26,6 +26,18 @@
         <dependency id="Microsoft.Azure.Amqp" version="2.0.4" />
         <dependency id="PCLCrypto" version="2.0.147" />
       </group>
+    <group targetFramework="netstandard1.3" >
+        <dependency id="Microsoft.Azure.Amqp" version="2.0.4" />
+        <dependency id="Newtonsoft.Json" version="9.0.1" />
+        <dependency id="System.ComponentModel.TypeConverter" version="4.3.0" />
+        <dependency id="System.Diagnostics.Contracts" version="4.3.0" />
+        <dependency id="System.Diagnostics.TraceSource" version="4.3.0"/>
+        <dependency id="System.Net.Requests" version="4.3.0" />
+        <dependency id="System.Reflection.Extensions" version="4.3.0" />
+        <dependency id="System.Runtime.Serialization.Formatters" version="4.3.0" />
+        <dependency id="System.Threading.Overlapped" version="4.3.0" />
+        <dependency id="Microsoft.Azure.Devices.Shared" version="1.0.10" />
+    </group>
     </dependencies>
     <frameworkAssemblies>
       <frameworkAssembly assemblyName="System.Core" targetFramework=".NETFramework4.5.1" />
@@ -41,5 +53,6 @@
     <file src="..\Microsoft.Azure.Devices.Uwp\bin\release_delay_sign\Microsoft.Azure.Devices.Uwp.dll" target="lib\uap10.0\Microsoft.Azure.Devices.Uwp.dll" />
     <file src="..\Microsoft.Azure.Devices.Uwp\bin\release_delay_sign\Microsoft.Azure.Devices.Uwp.pri" target="lib\uap10.0\Microsoft.Azure.Devices.Uwp.pri" />
     <file src="..\Microsoft.Azure.Devices.Uwp\bin\release_delay_sign\Microsoft.Azure.Devices.Uwp.XML" target="lib\uap10.0\Microsoft.Azure.Devices.Uwp.XML" />
+    <file src="..\Microsoft.Azure.Devices.NetStandard\bin\release_delay_sign\Microsoft.Azure.Devices.dll" target="lib\netstandard1.3\Microsoft.Azure.Devices.dll" />
   </files>
 </package>
