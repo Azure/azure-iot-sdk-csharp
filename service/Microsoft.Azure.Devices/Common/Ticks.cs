@@ -4,8 +4,6 @@
 namespace Microsoft.Azure.Devices.Common
 {
     using System;
-
-    using Microsoft.Azure.Devices.Common.Interop;
     
     static class Ticks
     {

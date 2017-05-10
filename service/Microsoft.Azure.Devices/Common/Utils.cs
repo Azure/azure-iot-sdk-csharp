@@ -4,12 +4,7 @@
 namespace Microsoft.Azure.Devices.Common
 {
     using System;
-    using System.Diagnostics;
-    using System.IO;
     using System.Reflection;
-    using System.Threading;
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Linq;
 
     static class Utils
     {
