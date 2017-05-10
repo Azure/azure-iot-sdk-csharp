@@ -3,15 +3,14 @@
     <metadata>
         <id>$id$</id>
         <version>$Version$</version>
-        <title>Microsoft Azure Devices Client</title>
-        <authors>Microsoft Corp</authors>
+        <title>Microsoft Azure IoT Device Client SDK</title>
+        <authors>Microsoft</authors>
         <requireLicenseAcceptance>true</requireLicenseAcceptance>
-        <licenseUrl>https://github.com/Azure/azure-iot-sdks/blob/master/LICENSE</licenseUrl>
+        <licenseUrl>https://github.com/Azure/azure-iot-sdk-csharp/blob/master/LICENSE</licenseUrl>
         <description>Device SDK for Azure IoT Devices</description>
         <iconUrl>http://go.microsoft.com/fwlink/?LinkID=288890</iconUrl>
-        <releaseNotes>initial version</releaseNotes>
-        <copyright>Copyright 2016</copyright>
-        <tags>Microsoft Azure IoT IoTHub Device Client .net AMQP HTTP</tags>
+        <copyright>© Microsoft Corporation. All rights reserved.</copyright>
+        <tags>Microsoft Azure IoT IoTHub Device Client .net AMQP MQTT HTTP</tags>
         <language>en-US</language>
         <dependencies>
 

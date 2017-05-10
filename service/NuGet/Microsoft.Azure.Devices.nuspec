@@ -3,12 +3,14 @@
   <metadata>
     <id>Microsoft.Azure.Devices</id>
     <version>$Version$</version>
-    <title>Microsoft Azure IoT Service SDK</title>
+    <title>Microsoft Azure IoT Service Client SDK</title>
     <authors>Microsoft</authors>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
-    <licenseUrl>https://github.com/Azure/azure-iot-sdks/blob/master/LICENSE</licenseUrl>
+	<licenseUrl>https://github.com/Azure/azure-iot-sdk-csharp/blob/master/LICENSE</licenseUrl>
     <description>Service SDK for Azure IoT Devices</description>
     <iconUrl>http://go.microsoft.com/fwlink/?LinkID=288890</iconUrl>
+    <copyright>© Microsoft Corporation. All rights reserved.</copyright>
+    <tags>Microsoft Azure IoT IoTHub Service SDK Client</tags>
     <language>en-US</language>
     <dependencies>
       <group targetFramework="net45" >
