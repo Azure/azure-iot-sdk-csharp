@@ -219,7 +219,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             string putString = String.Format("https://{0}/{1}/{2}{3}",
                 fileUploadResponse.HostName,
                 fileUploadResponse.ContainerName,
-                WebUtility.UrlEncode(fileUploadResponse.BlobName), // Pass URL encoded device name and blob name to support special characters 
+                Uri.EscapeDataString(fileUploadResponse.BlobName), // Pass URL encoded device name and blob name to support special characters 
                 fileUploadResponse.SasToken);
 
             var notification = new FileUploadNotificationResponse();
