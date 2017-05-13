@@ -20,7 +20,7 @@ using System.Runtime.CompilerServices;
 
 #if (RELEASE_DELAY_SIGN)
 [assembly: AssemblyDelaySignAttribute(true)]
-[assembly: AssemblyKeyFileAttribute("35MSSharedLib1024.snk")]
+[assembly: AssemblyKeyFileAttribute("..\\..\\35MSSharedLib1024.snk")]
 #else
 [assembly:InternalsVisibleTo("Microsoft.Azure.Devices.Client.Test.PCL")]
 #endif

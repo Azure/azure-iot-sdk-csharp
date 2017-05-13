@@ -15,17 +15,25 @@ if (-Not (Test-Path 'NuGet.exe')) {
     Invoke-WebRequest 'https://nuget.org/nuget.exe' -OutFile 'NuGet.exe'
 }
 
+# Get the assembly versions from all files, make sure they match, and use that as the package version
 $dotNetFile = "..\Microsoft.Azure.Devices\Properties\AssemblyInfo.cs"
 $uwpFile = "..\Microsoft.Azure.Devices.Uwp\Properties\AssemblyInfo.cs"
+$dotNetStandardFile = "..\Microsoft.Azure.Devices.NetStandard\Properties\AssemblyInfo.cs"
 
 # Delete existing packages to force rebuild
 ls Microsoft.Azure.Devices.*.nupkg | % { del $_ }
 
 $v1 = GetAssemblyVersionFromFile($dotNetFile)
 $v2 = GetAssemblyVersionFromFile($uwpFile)
+$v3 = GetAssemblyVersionFromFile($dotNetStandardFile)
 
 if($v1 -ne $v2) {
     Write-Host "Error: Mismatching assembly versions in files $dotNetFile and $uwpFile. Check AssemblyInformationalVersion attribute in each file." -foregroundcolor "red"
+    return
+}
+
+if($v1 -ne $v3) {
+    Write-Host "Error: Mismatching assembly versions in files $dotNetFile and $dotNetStandardFile. Check AssemblyInformationalVersion attribute in each file." -foregroundcolor "red"
     return
 }
 

@@ -8,8 +8,8 @@
     <ProjectGuid>{3081D7CD-2F05-4431-9FEF-4F8A19591AD4}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Microsoft.Azure.Devices.NetStandard</RootNamespace>
-    <AssemblyName>Microsoft.Azure.Devices.NetStandard</AssemblyName>
+    <RootNamespace>Microsoft.Azure.Devices</RootNamespace>
+    <AssemblyName>Microsoft.Azure.Devices</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -35,6 +35,18 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release_Delay_Sign|AnyCPU'">
+    <OutputPath>bin\Release_Delay_Sign\</OutputPath>
+    <DefineConstants>TRACE;NETSTANDARD1_3;RELEASE_DELAY_SIGN;</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Optimize>true</Optimize>
+    <NoStdLib>true</NoStdLib>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <DocumentationFile>bin\Release\Microsoft.Azure.Devices.NetStandard.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <None Include="project.json" />
