@@ -1,29 +1,22 @@
-﻿using Microsoft.Azure.Devices;
-using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Newtonsoft.Json;
 
 namespace DeviceExplorer
 {
     public partial class DeviceTwinPropertiesForm : Form
     {
-        private String iotHubConnectionString;
-        private String deviceName;
-        private List<string> deviceList;
-        private String deviceJson;
-        private String tagsJson;
-        private String reportedPropertiesJson;
-        private String desiredPropertiesJson;
-        private bool initialIndexSet;
-        private dynamic registryManager;
-        private bool runOnce = true;
+        private string _iotHubConnectionString;
+        private string _deviceName;
+        private List<string> _deviceList;
+        private string _deviceJson;
+        private string _tagsJson;
+        private string _reportedPropertiesJson;
+        private string _desiredPropertiesJson;
+        private bool _initialIndexSet;
+        private bool _runOnce = true;
 
         public DeviceTwinPropertiesForm()
         {
@@ -32,15 +25,15 @@ namespace DeviceExplorer
 
         public async Task<bool> GetDeviceTwinData()
         {
-            DeviceTwinAndMethod deviceMethod = new DeviceTwinAndMethod(iotHubConnectionString, deviceName);
+            DeviceTwinAndMethod deviceMethod = new DeviceTwinAndMethod(_iotHubConnectionString, _deviceName);
             DeviceTwinData deviceTwinData = await deviceMethod.GetDeviceTwinData();
 
-            deviceJson = deviceTwinData.deviceJson;
-            tagsJson = deviceTwinData.tagsJson;
-            reportedPropertiesJson = deviceTwinData.reportedPropertiesJson;
-            desiredPropertiesJson = deviceTwinData.desiredPropertiesJson;
+            _deviceJson = deviceTwinData.DeviceJson;
+            _tagsJson = deviceTwinData.TagsJson;
+            _reportedPropertiesJson = deviceTwinData.ReportedPropertiesJson;
+            _desiredPropertiesJson = deviceTwinData.DesiredPropertiesJson;
 
-            if (deviceJson == null)
+            if (_deviceJson == null)
             {
                 return false;
             }
@@ -50,41 +43,52 @@ namespace DeviceExplorer
             }
         }
 
-        public async Task<bool> UpdateDialogData()
+        static string FormatJson(string json)
         {
-            bool isOK = await GetDeviceTwinData();
-
-            jsonRichTextBox0.Text = deviceJson;
-            jsonRichTextBox1.Text = tagsJson;
-            jsonRichTextBox2.Text = reportedPropertiesJson;
-            jsonRichTextBox3.Text = desiredPropertiesJson;
-
-            if (runOnce)
-            {
-                runOnce = false;
-                jsonEditRichTextBox.Text = "{ \"properties\": { \"desired\": { " + Environment.NewLine + Environment.NewLine + Environment.NewLine + Environment.NewLine + "}}}";
-            }
-
-            return isOK;
+            // Taken from: https://stackoverflow.com/a/21407175/8080
+            var parsedJson = JsonConvert.DeserializeObject(json);
+            return JsonConvert.SerializeObject(parsedJson, Formatting.Indented);
         }
 
-        public async void Execute(String activeIotHubConnectionString, String selectedDeviceName, List<string> currentDeviceList)
+        public async Task<bool> UpdateDialogData()
         {
-            iotHubConnectionString = activeIotHubConnectionString;
-            deviceName = selectedDeviceName;
-            deviceList = currentDeviceList;
+            bool isOk = await GetDeviceTwinData();
 
-            initialIndexSet = true;
+            jsonRichTextBox0.Text = FormatJson(_deviceJson);
+            jsonRichTextBox1.Text = FormatJson(_tagsJson);
+            jsonRichTextBox2.Text = FormatJson(_reportedPropertiesJson);
+            jsonRichTextBox3.Text = FormatJson(_desiredPropertiesJson);
+
+            if (_runOnce)
+            {
+                _runOnce = false;
+                jsonEditRichTextBox.Text = FormatJson(
+                    $@"{{ ""properties"": {{ ""desired"": {{ {Environment.NewLine}{Environment.NewLine}{
+                            Environment.NewLine
+                        }{Environment.NewLine}}}}}}}"
+                );
+            }
+
+            return isOk;
+        }
+
+        public async void Execute(string activeIotHubConnectionString, string selectedDeviceName, List<string> currentDeviceList)
+        {
+            _iotHubConnectionString = activeIotHubConnectionString;
+            _deviceName = selectedDeviceName;
+            _deviceList = currentDeviceList;
+
+            _initialIndexSet = true;
 
             deviceListCombo.Items.Clear();
-            if (deviceList != null)
+            if (_deviceList != null)
             {
-                for (int i = 0; i < deviceList.Count; i++)
+                for (int i = 0; i < _deviceList.Count; i++)
                 {
-                    deviceListCombo.Items.Add(deviceList[i]);
+                    deviceListCombo.Items.Add(_deviceList[i]);
                 }
             }
-            deviceListCombo.SelectedItem = deviceName;
+            deviceListCombo.SelectedItem = _deviceName;
 
             if (await UpdateDialogData())
             {
@@ -94,12 +98,12 @@ namespace DeviceExplorer
 
         private void deviceListCombo_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (!initialIndexSet)
+            if (!_initialIndexSet)
             {
-                deviceName = deviceListCombo.SelectedItem.ToString();
+                _deviceName = deviceListCombo.SelectedItem.ToString();
                 refreshBtn_Click(this, null);
             }
-            initialIndexSet = false;
+            _initialIndexSet = false;
         }
 
         private async void refreshBtn_Click(object sender, EventArgs e)
@@ -114,7 +118,7 @@ namespace DeviceExplorer
             jsonRichTextBox2.Text = "";
             jsonRichTextBox3.Text = "";
 
-            DeviceTwinAndMethod deviceMethod = new DeviceTwinAndMethod(iotHubConnectionString, deviceName);
+            var deviceMethod = new DeviceTwinAndMethod(_iotHubConnectionString, _deviceName);
             await deviceMethod.UpdateTwinData(jsonEditRichTextBox.Text);
 
             refreshBtn_Click(this, null);
