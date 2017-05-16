@@ -60,32 +60,32 @@
   </PropertyGroup>
   <Choose>
     <When Condition="'$(DotNettyPath)' == ''">
-        <ItemGroup>
-            <Reference Include="DotNetty.Buffers, Version=0.4.4.0, Culture=neutral, PublicKeyToken=bc13ca065fa06c29, processorArchitecture=MSIL">
-              <HintPath>$(SolutionDir)\packages\DotNetty.Buffers.0.4.4\lib\net45\DotNetty.Buffers.dll</HintPath>
-              <Private>True</Private>
-            </Reference>
-            <Reference Include="DotNetty.Codecs, Version=0.4.4.0, Culture=neutral, PublicKeyToken=bc13ca065fa06c29, processorArchitecture=MSIL">
-              <HintPath>$(SolutionDir)\packages\DotNetty.Codecs.0.4.4\lib\net45\DotNetty.Codecs.dll</HintPath>
-              <Private>True</Private>
-            </Reference>
-            <Reference Include="DotNetty.Codecs.Mqtt, Version=0.4.4.0, Culture=neutral, PublicKeyToken=bc13ca065fa06c29, processorArchitecture=MSIL">
-              <HintPath>$(SolutionDir)\packages\DotNetty.Codecs.Mqtt.0.4.4\lib\net45\DotNetty.Codecs.Mqtt.dll</HintPath>
-              <Private>True</Private>
-            </Reference>
-            <Reference Include="DotNetty.Common, Version=0.4.4.0, Culture=neutral, PublicKeyToken=bc13ca065fa06c29, processorArchitecture=MSIL">
-              <HintPath>$(SolutionDir)\packages\DotNetty.Common.0.4.4\lib\net45\DotNetty.Common.dll</HintPath>
-              <Private>True</Private>
-            </Reference>
-            <Reference Include="DotNetty.Handlers, Version=0.4.4.0, Culture=neutral, PublicKeyToken=bc13ca065fa06c29, processorArchitecture=MSIL">
-              <HintPath>$(SolutionDir)\packages\DotNetty.Handlers.0.4.4\lib\net45\DotNetty.Handlers.dll</HintPath>
-              <Private>True</Private>
-            </Reference>
-            <Reference Include="DotNetty.Transport, Version=0.4.4.0, Culture=neutral, PublicKeyToken=bc13ca065fa06c29, processorArchitecture=MSIL">
-              <HintPath>$(SolutionDir)\packages\DotNetty.Transport.0.4.4\lib\net45\DotNetty.Transport.dll</HintPath>
-              <Private>True</Private>
-            </Reference>
-        </ItemGroup>
+      <ItemGroup>
+        <Reference Include="DotNetty.Buffers, Version=0.4.4.0, Culture=neutral, PublicKeyToken=bc13ca065fa06c29, processorArchitecture=MSIL">
+          <HintPath>$(SolutionDir)\packages\DotNetty.Buffers.0.4.4\lib\net45\DotNetty.Buffers.dll</HintPath>
+          <Private>True</Private>
+        </Reference>
+        <Reference Include="DotNetty.Codecs, Version=0.4.4.0, Culture=neutral, PublicKeyToken=bc13ca065fa06c29, processorArchitecture=MSIL">
+          <HintPath>$(SolutionDir)\packages\DotNetty.Codecs.0.4.4\lib\net45\DotNetty.Codecs.dll</HintPath>
+          <Private>True</Private>
+        </Reference>
+        <Reference Include="DotNetty.Codecs.Mqtt, Version=0.4.4.0, Culture=neutral, PublicKeyToken=bc13ca065fa06c29, processorArchitecture=MSIL">
+          <HintPath>$(SolutionDir)\packages\DotNetty.Codecs.Mqtt.0.4.4\lib\net45\DotNetty.Codecs.Mqtt.dll</HintPath>
+          <Private>True</Private>
+        </Reference>
+        <Reference Include="DotNetty.Common, Version=0.4.4.0, Culture=neutral, PublicKeyToken=bc13ca065fa06c29, processorArchitecture=MSIL">
+          <HintPath>$(SolutionDir)\packages\DotNetty.Common.0.4.4\lib\net45\DotNetty.Common.dll</HintPath>
+          <Private>True</Private>
+        </Reference>
+        <Reference Include="DotNetty.Handlers, Version=0.4.4.0, Culture=neutral, PublicKeyToken=bc13ca065fa06c29, processorArchitecture=MSIL">
+          <HintPath>$(SolutionDir)\packages\DotNetty.Handlers.0.4.4\lib\net45\DotNetty.Handlers.dll</HintPath>
+          <Private>True</Private>
+        </Reference>
+        <Reference Include="DotNetty.Transport, Version=0.4.4.0, Culture=neutral, PublicKeyToken=bc13ca065fa06c29, processorArchitecture=MSIL">
+          <HintPath>$(SolutionDir)\packages\DotNetty.Transport.0.4.4\lib\net45\DotNetty.Transport.dll</HintPath>
+          <Private>True</Private>
+        </Reference>
+      </ItemGroup>
     </When>
     <Otherwise>
       <ItemGroup>
@@ -222,6 +222,8 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="Transport\Mqtt\IMqttIotHubEventHandler.cs" />
+    <Compile Include="Transport\Mqtt\TransportState.cs" />
     <Compile Include="Transport\TransportHandlerFactory.cs" />
   </ItemGroup>
   <ItemGroup>

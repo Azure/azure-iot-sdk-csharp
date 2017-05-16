@@ -130,6 +130,7 @@
     <Compile Include="$(DeviceClientDir)\Transport\Mqtt\ClientWebSocketChannelConfig.cs" />
     <Compile Include="$(DeviceClientDir)\Transport\Mqtt\ConcurrentObjectPool.cs" />
     <Compile Include="$(DeviceClientDir)\Transport\Mqtt\ICancellable.cs" />
+    <Compile Include="$(DeviceClientDir)\Transport\Mqtt\IMqttIotHubEventHandler.cs" />
     <Compile Include="$(DeviceClientDir)\Transport\Mqtt\ISessionContextProvider.cs" />
     <Compile Include="$(DeviceClientDir)\Transport\Mqtt\IWillMessage.cs" />
     <Compile Include="$(DeviceClientDir)\Transport\Mqtt\MqttIotHubAdapter.cs" />
@@ -145,6 +146,7 @@
     <Compile Include="$(DeviceClientDir)\Transport\Mqtt\SimpleWorkQueue.cs" />
     <Compile Include="$(DeviceClientDir)\Transport\Mqtt\StreamSocketChannel.cs" />
     <Compile Include="$(DeviceClientDir)\Transport\Mqtt\TransientErrorIgnoreStrategy.cs" />
+    <Compile Include="$(DeviceClientDir)\Transport\Mqtt\TransportState.cs" />
     <Compile Include="$(DeviceClientDir)\Transport\Mqtt\Util.cs" />
     <Compile Include="$(DeviceClientDir)\Transport\Mqtt\WillMessage.cs" />
     <Compile Include="$(DeviceClientDir)\Transport\WebSocketConstants.cs" />

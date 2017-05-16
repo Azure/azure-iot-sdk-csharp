@@ -1,5 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System.Net.Sockets;
+
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {
     using System;
@@ -37,9 +40,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         static readonly Action<object> CheckConnAckTimeoutCallback = ShutdownIfNotReady;
         static readonly Func<IChannelHandlerContext, Exception, bool> ShutdownOnWriteErrorHandler = (ctx, ex) => { ShutdownOnError(ctx, ex); return false; };
 
-        readonly Action onConnected;
-        readonly Action<Message> onMessageReceived;
-        readonly Action<Exception> onError;
+        readonly IMqttIotHubEventHandler mqttIotHubEventHandler;
 
         readonly string deviceId;
         readonly SimpleWorkQueue<PublishPacket> deviceBoundOneWayProcessor;
@@ -66,9 +67,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             string password,
             MqttTransportSettings mqttTransportSettings,
             IWillMessage willMessage,
-            Action onConnected,
-            Action<Message> onMessageReceived,
-            Action<Exception> onError)
+            IMqttIotHubEventHandler mqttIotHubEventHandler)
         {
             Contract.Requires(deviceId != null);
             Contract.Requires(iotHubHostName != null);
@@ -81,9 +80,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             this.password = password;
             this.mqttTransportSettings = mqttTransportSettings;
             this.willMessage = willMessage;
-            this.onConnected = onConnected;
-            this.onError = onError;
-            this.onMessageReceived = onMessageReceived;
+            this.mqttIotHubEventHandler = mqttIotHubEventHandler;
             this.pingRequestInterval = this.mqttTransportSettings.KeepAliveInSeconds > 0 ? TimeSpan.FromSeconds(this.mqttTransportSettings.KeepAliveInSeconds / 4d) : TimeSpan.MaxValue;
 
             this.deviceBoundOneWayProcessor = new SimpleWorkQueue<PublishPacket>(this.AcceptMessageAsync);
@@ -186,9 +183,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public override void ChannelInactive(IChannelHandlerContext context)
         {
-            this.Shutdown(context);
-
-            base.ChannelInactive(context);
+            if (this.mqttIotHubEventHandler.State == TransportState.Closed)
+            {
+                this.Shutdown(context);
+                base.ChannelInactive(context);
+            }
+            else
+            {
+                ShutdownOnError(context, new SocketException());
+            }
         }
 
         public override void ExceptionCaught(IChannelHandlerContext context, Exception exception)
@@ -335,7 +338,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             this.stateFlags = StateFlags.Connected;
 
-            this.onConnected();
+            this.mqttIotHubEventHandler.OnConnected();
 
             this.ResumeReadingIfNecessary(context);
 
@@ -480,7 +483,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 ShutdownOnError(context, ex);
                 return TaskConstants.Completed;
             }
-            this.onMessageReceived(message);
+            this.mqttIotHubEventHandler.OnMessageReceived(message);
             return TaskConstants.Completed;
         }
 
@@ -515,43 +518,39 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         async Task SendMessageAsync(IChannelHandlerContext context, Message message)
         {
-            using (message)
-            {
-
-                string topicName;
-                QualityOfService qos;
+            string topicName;
+            QualityOfService qos;
                 
-                if (string.IsNullOrEmpty(message.MqttTopicName))
-                {
-                    topicName = string.Format(TelemetryTopicFormat, this.deviceId);
-                    qos = this.mqttTransportSettings.PublishToServerQoS;
-                }
-                else
-                {
-                    topicName = message.MqttTopicName;
-                    qos = QualityOfService.AtMostOnce;
-                }
-
-                PublishPacket packet = await Util.ComposePublishPacketAsync(context, message, qos, topicName);
-                var publishCompletion = new TaskCompletionSource();
-                var workItem = new PublishWorkItem
-                {
-                    Completion = publishCompletion,
-                    Value = packet
-                };
-                switch (qos)
-                {
-                    case QualityOfService.AtMostOnce:
-                        this.serviceBoundOneWayProcessor.Post(context, workItem);
-                        break;
-                    case QualityOfService.AtLeastOnce:
-                        this.serviceBoundTwoWayProcessor.Post(context, workItem);
-                        break;
-                    default:
-                        throw new NotSupportedException($"Unsupported telemetry QoS: '{this.mqttTransportSettings.PublishToServerQoS}'");
-                }
-                await publishCompletion.Task;
+            if (string.IsNullOrEmpty(message.MqttTopicName))
+            {
+                topicName = string.Format(TelemetryTopicFormat, this.deviceId);
+                qos = this.mqttTransportSettings.PublishToServerQoS;
             }
+            else
+            {
+                topicName = message.MqttTopicName;
+                qos = QualityOfService.AtMostOnce;
+            }
+
+            PublishPacket packet = await Util.ComposePublishPacketAsync(context, message, qos, topicName);
+            var publishCompletion = new TaskCompletionSource();
+            var workItem = new PublishWorkItem
+            {
+                Completion = publishCompletion,
+                Value = packet
+            };
+            switch (qos)
+            {
+                case QualityOfService.AtMostOnce:
+                    this.serviceBoundOneWayProcessor.Post(context, workItem);
+                    break;
+                case QualityOfService.AtLeastOnce:
+                    this.serviceBoundTwoWayProcessor.Post(context, workItem);
+                    break;
+                default:
+                    throw new NotSupportedException($"Unsupported telemetry QoS: '{this.mqttTransportSettings.PublishToServerQoS}'");
+            }
+            await publishCompletion.Task;
         }
 
         Task AcknowledgeAsync(IChannelHandlerContext context, string packetIdString)
@@ -606,7 +605,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 self.deviceBoundTwoWayProcessor.Abort(exception);
                 self.serviceBoundOneWayProcessor.Abort(exception);
                 self.serviceBoundTwoWayProcessor.Abort(exception);
-                self.onError(exception);
+                self.mqttIotHubEventHandler.OnError(exception);
                 try
                 {
                     await context.CloseAsync();
@@ -685,6 +684,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
+        // TODO: directly use HasFlag
         bool IsInState(StateFlags stateFlagsToCheck)
         {
             return (this.stateFlags & stateFlagsToCheck) == stateFlagsToCheck;

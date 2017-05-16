@@ -158,6 +158,12 @@
     <Compile Include="..\Microsoft.Azure.Devices.Client\Transport\Mqtt\ICancellable.cs">
       <Link>Transport\Mqtt\ICancellable.cs</Link>
     </Compile>
+    <Compile Include="..\Microsoft.Azure.Devices.Client\Transport\Mqtt\IMqttIotHubEventHandler.cs">
+      <Link>Transport\Mqtt\IMqttIotHubEventHandler.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.Azure.Devices.Client\Transport\Mqtt\TransportState.cs">
+      <Link>Transport\Mqtt\TransportState.cs</Link>
+    </Compile>
     <Compile Include="..\Microsoft.Azure.Devices.Client\Transport\Mqtt\ISessionContextProvider.cs">
       <Link>Transport\Mqtt\ISessionContextProvider.cs</Link>
     </Compile>

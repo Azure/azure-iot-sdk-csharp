@@ -15,9 +15,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         }
 
         public MqttIotHubAdapter Create(
-            Action onConnected, 
-            Action<Message> onMessageReceived,
-            Action<Exception> onError, 
+            IMqttIotHubEventHandler mqttIotHubEventHandler,
             IotHubConnectionString iotHubConnectionString, 
             MqttTransportSettings mqttTransportSettings)
         {
@@ -29,9 +27,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 mqttTransportSettings.ClientCertificate != null ? null : iotHubConnectionString.GetPassword(),
                 mqttTransportSettings,
                 willMessage,
-                onConnected,
-                onMessageReceived,
-                onError);
+                mqttIotHubEventHandler);
         }
     }
 }
