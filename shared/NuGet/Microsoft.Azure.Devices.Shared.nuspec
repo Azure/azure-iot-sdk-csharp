@@ -9,7 +9,7 @@
 		<licenseUrl>https://github.com/Azure/azure-iot-sdk-csharp/blob/master/LICENSE</licenseUrl>
         <description>Common code for Azure IoT Device and Service SDKs</description>
         <iconUrl>http://go.microsoft.com/fwlink/?LinkID=288890</iconUrl>
-        <copyright>Copyright 2016</copyright>
+        <projectUrl>https://github.com/Azure/azure-iot-sdk-csharp</projectUrl>
 		<copyright>© Microsoft Corporation. All rights reserved.</copyright>
         <tags>Microsoft Azure IoT IoTHub Device Service Shared</tags>
         <language>en-US</language>
