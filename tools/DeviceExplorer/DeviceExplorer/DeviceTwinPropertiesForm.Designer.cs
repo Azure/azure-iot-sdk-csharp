@@ -102,7 +102,7 @@
             // jsonRichTextBox0
             // 
             this.jsonRichTextBox0.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.jsonRichTextBox0.Font = new System.Drawing.Font("Courier New", 12F);
+            this.jsonRichTextBox0.Font = new System.Drawing.Font("Consolas", 12F);
             this.jsonRichTextBox0.Location = new System.Drawing.Point(3, 3);
             this.jsonRichTextBox0.Name = "jsonRichTextBox0";
             this.jsonRichTextBox0.ReadOnly = true;
@@ -124,7 +124,7 @@
             // jsonRichTextBox1
             // 
             this.jsonRichTextBox1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.jsonRichTextBox1.Font = new System.Drawing.Font("Courier New", 12F);
+            this.jsonRichTextBox1.Font = new System.Drawing.Font("Consolas", 12F);
             this.jsonRichTextBox1.Location = new System.Drawing.Point(3, 3);
             this.jsonRichTextBox1.Name = "jsonRichTextBox1";
             this.jsonRichTextBox1.ReadOnly = true;
@@ -146,7 +146,7 @@
             // jsonRichTextBox2
             // 
             this.jsonRichTextBox2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.jsonRichTextBox2.Font = new System.Drawing.Font("Courier New", 12F);
+            this.jsonRichTextBox2.Font = new System.Drawing.Font("Consolas", 12F);
             this.jsonRichTextBox2.Location = new System.Drawing.Point(3, 3);
             this.jsonRichTextBox2.Name = "jsonRichTextBox2";
             this.jsonRichTextBox2.ReadOnly = true;
@@ -168,7 +168,7 @@
             // jsonRichTextBox3
             // 
             this.jsonRichTextBox3.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.jsonRichTextBox3.Font = new System.Drawing.Font("Courier New", 12F);
+            this.jsonRichTextBox3.Font = new System.Drawing.Font("Consolas", 12F);
             this.jsonRichTextBox3.Location = new System.Drawing.Point(3, 3);
             this.jsonRichTextBox3.Name = "jsonRichTextBox3";
             this.jsonRichTextBox3.ReadOnly = true;
@@ -256,7 +256,7 @@
             // jsonEditRichTextBox
             // 
             this.jsonEditRichTextBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.jsonEditRichTextBox.Font = new System.Drawing.Font("Courier New", 12F);
+            this.jsonEditRichTextBox.Font = new System.Drawing.Font("Consolas", 12F);
             this.jsonEditRichTextBox.Location = new System.Drawing.Point(0, 0);
             this.jsonEditRichTextBox.Name = "jsonEditRichTextBox";
             this.jsonEditRichTextBox.Size = new System.Drawing.Size(276, 630);

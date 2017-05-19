@@ -19,10 +19,10 @@ namespace DeviceExplorer
 
     struct DeviceTwinData
     {
-        public string deviceJson;
-        public string tagsJson;
-        public string reportedPropertiesJson;
-        public string desiredPropertiesJson;
+        public string DeviceJson;
+        public string TagsJson;
+        public string ReportedPropertiesJson;
+        public string DesiredPropertiesJson;
     }
 
     class DeviceTwinAndMethod
@@ -47,10 +47,10 @@ namespace DeviceExplorer
                 var deviceTwin = await registryManager.GetTwinAsync(deviceName);
                 if (deviceTwin != null)
                 {
-                    result.deviceJson = deviceTwin.ToJson();
-                    result.tagsJson = deviceTwin.Tags.ToJson();
-                    result.reportedPropertiesJson = deviceTwin.Properties.Reported.ToJson();
-                    result.desiredPropertiesJson = deviceTwin.Properties.Desired.ToJson();
+                    result.DeviceJson = deviceTwin.ToJson();
+                    result.TagsJson = deviceTwin.Tags.ToJson();
+                    result.ReportedPropertiesJson = deviceTwin.Properties.Reported.ToJson();
+                    result.DesiredPropertiesJson = deviceTwin.Properties.Desired.ToJson();
                 }
             }
             catch (Exception ex)
