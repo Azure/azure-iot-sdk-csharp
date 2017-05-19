@@ -16,7 +16,7 @@
         <dependencies>
 
             <group>
-                <dependency id="Microsoft.Azure.Devices.Shared" version="1.0.10" />
+                <dependency id="Microsoft.Azure.Devices.Shared" version="1.0.11" />
                 <dependency id="Newtonsoft.Json" version="6.0.8" />
                 <dependency id="PCLCrypto" version="2.0.147" />
             </group>
@@ -29,7 +29,7 @@
                 <dependency id="EnterpriseLibrary.TransientFaultHandling" version="6.0.1304" />
                 <dependency id="Microsoft.AspNet.WebApi.Client" version="5.2.3" />
                 <dependency id="WindowsAzure.Storage" version="7.0.0" />
-                <dependency id="Microsoft.Azure.Devices.Shared" version="1.0.10" />
+                <dependency id="Microsoft.Azure.Devices.Shared" version="1.0.11" />
             </group>
 
             <group targetFramework="uap10.0">
@@ -37,7 +37,7 @@
                 <dependency id="PCLCrypto" version="2.0.147" />
                 <dependency id="Microsoft.Azure.Amqp" version="2.0.4" />
                 <dependency id="Microsoft.AspNet.WebApi.Client" version="5.2.3" />
-                <dependency id="Microsoft.Azure.Devices.Shared" version="1.0.10" />
+                <dependency id="Microsoft.Azure.Devices.Shared" version="1.0.11" />
                 <dependency id="EnterpriseLibrary.TransientFaultHandling" version="6.0.1304" />
                 <dependency id="DotNetty.Buffers" version="0.4.4" />
                 <dependency id="DotNetty.Codecs" version="0.4.4" />
@@ -66,7 +66,7 @@
                 <dependency id="System.Threading.Overlapped" version="4.3.0" />
                 <dependency id="Validation" version="2.4.13" />
                 <dependency id="WindowsAzure.Storage" version="8.1.1" />
-                <dependency id="Microsoft.Azure.Devices.Shared" version="1.0.10" />
+                <dependency id="Microsoft.Azure.Devices.Shared" version="1.0.11" />
             </group>
 
             <group targetFramework="win8">
