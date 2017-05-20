@@ -12,7 +12,8 @@ function GetAssemblyVersionFromFile($filename) {
 }
 
 if (-Not (Test-Path 'NuGet.exe')) {
-    Invoke-WebRequest 'https://nuget.org/nuget.exe' -OutFile 'NuGet.exe'
+    # this gets the latest nuget.exe version
+    Invoke-WebRequest 'https://dist.nuget.org/win-x86-commandline/latest/nuget.exe' -OutFile 'NuGet.exe'
 }
 
 # Get the assembly versions from all files, make sure they match, and use that as the package version
