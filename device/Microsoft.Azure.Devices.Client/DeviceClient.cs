@@ -131,6 +131,8 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// </summary>
         volatile Dictionary<string, Tuple<MethodCallback, object>> deviceMethods;
 
+        volatile Tuple<MethodCallback, object> deviceDefaultMethodCallback;
+
         internal delegate Task OnMethodCalledDelegate(MethodRequestInternal methodRequestInternal);
 
         internal delegate void OnConnectionClosedDelegate(object sender, EventArgs e);
@@ -835,7 +837,10 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                         this.deviceMethods = new Dictionary<string, Tuple<MethodCallback, object>>();
 
                         // codes_SRS_DEVICECLIENT_10_005: [ The SetMethodHandler shall EnableMethodsAsync when called for the first time. ]
-                        await ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.EnableMethodsAsync(operationTimeoutCancellationToken));
+                        if (this.deviceDefaultMethodCallback == null)
+                        {
+                            await ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.EnableMethodsAsync(operationTimeoutCancellationToken));
+                        }
                     }
                     this.deviceMethods[methodName] = new Tuple<MethodCallback, object>(methodHandler, userContext);
                 }
@@ -850,12 +855,52 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                         if (this.deviceMethods.Count == 0)
                         {
                             // codes_SRS_DEVICECLIENT_10_006: [ The SetMethodHandler shall DisableMethodsAsync when the last delegate has been removed. ]
-                            await ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.DisableMethodsAsync(operationTimeoutCancellationToken));
+                            if (this.deviceDefaultMethodCallback == null)
+                            {
+                                await ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.DisableMethodsAsync(operationTimeoutCancellationToken));
+                            }
 
                             // codes_SRS_DEVICECLIENT_10_004: [ The deviceMethods property shall be deleted if the last delegate has been removed. ]
                             this.deviceMethods = null;
                         }
                     }
+                }
+            }
+            finally
+            {
+                methodsDictionarySemaphore.Release();
+            }
+        }
+
+        /// <summary>
+        /// Registers a new delegate that is called for a method that doesn't have a delegate registered for its name. 
+        /// If a default delegate is already registered it will replace with the new delegate.
+        /// </summary>
+        /// <param name="methodHandler">The delegate to be used when a method is called by the cloud service and there is no delegate registered for that method name.</param>
+        /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
+        public async Task SetMethodDefaultHandlerAsync(MethodCallback methodHandler, object userContext)
+        {
+            try
+            {
+                await methodsDictionarySemaphore.WaitAsync();
+                if (methodHandler != null)
+                {
+                    // codes_SRS_DEVICECLIENT_10_005: [ The SetMethodHandler shall EnableMethodsAsync when called for the first time. ]
+                    if (this.deviceDefaultMethodCallback == null && this.deviceMethods == null)
+                    {
+                        await ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.EnableMethodsAsync(operationTimeoutCancellationToken));
+                    }
+                    // codes_SRS_DEVICECLIENT_24_001: [ If the default callback has already been set, it is replaced with the new callback. ]
+                    this.deviceDefaultMethodCallback = new Tuple<MethodCallback, object>(methodHandler, userContext);
+                }
+                else
+                {
+                    // codes_SRS_DEVICECLIENT_10_006: [ The SetMethodHandler shall DisableMethodsAsync when the last delegate has been removed. ]
+                    if (this.deviceMethods == null)
+                    {
+                        await ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.DisableMethodsAsync(operationTimeoutCancellationToken));
+                    }
+                    this.deviceDefaultMethodCallback = null;
                 }
             }
             finally
@@ -954,6 +999,10 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                 {
                     Utils.ValidateDataIsEmptyOrJson(requestData);                    
                     this.deviceMethods?.TryGetValue(methodRequestInternal.Name, out m);
+                    if (m == null)
+                    {
+                        m = this.deviceDefaultMethodCallback;
+                    }
                 }
                 catch (Exception)
                 {
@@ -972,6 +1021,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                     try
                     {
                         // codes_SRS_DEVICECLIENT_10_011: [ The OnMethodCalled shall invoke the specified delegate. ]
+                        // codes_SRS_DEVICECLIENT_24_002: [ The OnMethodCalled shall invoke the default delegate if there is no specified delegate for that method. ]
                         MethodResponse rv = await m.Item1(new MethodRequest(methodRequestInternal.Name, requestData), m.Item2);
 
                         // codes_SRS_DEVICECLIENT_03_012: [If the MethodResponse does not contain result, the MethodResponseInternal constructor shall be invoked with no results.]
@@ -993,7 +1043,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                 }
                 else
                 {
-                    // codes_SRS_DEVICECLIENT_10_013: [ If the given method does not have an associated delegate, respond with status code 501 (METHOD NOT IMPLEMENTED) ]
+                    // codes_SRS_DEVICECLIENT_10_013: [ If the given method does not have an associated delegate and no default delegate was registered, respond with status code 501 (METHOD NOT IMPLEMENTED) ]
                     methodResponseInternal = new MethodResponseInternal(methodRequestInternal.RequestId, (int)MethodResposeStatusCode.MethodNotImplemented);
                 }
                 await this.SendMethodResponseAsync(methodResponseInternal);

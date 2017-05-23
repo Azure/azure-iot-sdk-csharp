@@ -142,13 +142,15 @@ internal async Task OnMethodCalled(MethodRequestInternal methodRequestInternal)
 
 **SRS_DEVICECLIENT_10_011: [** The OnMethodCalled shall invoke the associated MethodHandler. **]**
 
+**SRS_DEVICECLIENT_24_002: [** The OnMethodCalled shall invoke the default delegate if there is no specified delegate for that method. **]**
+
 **SRS_DEVICECLIENT_03_012: [** If the MethodResponse does not contain result, the MethodResponseInternal constructor shall be invoked with no results. **]**
 
 **SRS_DEVICECLIENT_03_013: [** Otherwise, the MethodResponseInternal constructor shall be invoked with the result supplied. **]**
 
 **SRS_DEVICECLIENT_10_012: [** If the given methodRequestInternal argument is null, failed silently **]**
 
-**SRS_DEVICECLIENT_10_013: [** If the given method does not have an associated delegate, respond with status code 501 (METHOD NOT IMPLEMENTED) **]**
+**SRS_DEVICECLIENT_10_013: [** If the given method does not have an associated delegate and no default delegate was registered, respond with status code 501 (METHOD NOT IMPLEMENTED) **]**
 
 **SRS_DEVICECLIENT_28_020: [** If the given methodRequestInternal data is not valid json, respond with status code 400 (BAD REQUEST) **]**
 
@@ -172,6 +174,16 @@ public void SetMethodHandler(string methodName, MethodCallback methodHandler, ob
 
 **SRS_DEVICECLIENT_10_006: [** The SetMethodHandler shall DisableMethodsAsync when the last delegate has been removed. **]**
 
+### SetMethodDelegate
+```csharp
+public void SetMethodDefaultHandlerAsync(MethodCallback methodHandler, object userContext)
+```
+
+**SRS_DEVICECLIENT_10_005: [** The SetMethodHandler shall EnableMethodsAsync when called for the first time. **]**
+
+**SRS_DEVICECLIENT_24_001: [ If the default callback has already been set, it is replaced with the new callback. **]**
+
+**SRS_DEVICECLIENT_10_006: [** The SetMethodHandler shall DisableMethodsAsync when the last delegate has been removed. **]**
 
 ### RetryStrategy
 ```csharp
