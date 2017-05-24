@@ -388,7 +388,7 @@
 
         [TestMethod]
         [TestCategory("DeviceClient")]
-        // Tests_SRS_DEVICECLIENT_10_001: [ The SetMethodHandler shall lazy-initialize the deviceMethods property. ]
+        // Tests_SRS_DEVICECLIENT_10_001: [ It shall lazy-initialize the deviceMethods property. ]
         // Tests_SRS_DEVICECLIENT_10_003: [ The given delegate will only be added if it is not null. ]
         public async Task DeviceClient_SetMethodHandler_SetFirstMethodHandler()
         {
@@ -437,7 +437,7 @@
 
         [TestMethod]
         [TestCategory("DeviceClient")]
-        // Tests_SRS_DEVICECLIENT_10_001: [ The SetMethodHandler shall lazy-initialize the deviceMethods property. ]
+        // Tests_SRS_DEVICECLIENT_10_001: [ It shall lazy-initialize the deviceMethods property. ]
         // Tests_SRS_DEVICECLIENT_10_003: [ The given delegate will only be added if it is not null. ]
         public async Task DeviceClient_SetMethodHandler_SetFirstMethodDefaultHandler()
         {
@@ -609,7 +609,7 @@
         [TestMethod]
         [TestCategory("DeviceClient")]
         // Tests_SRS_DEVICECLIENT_10_004: [ The deviceMethods property shall be deleted if the last delegate has been removed. ]
-        // Tests_SRS_DEVICECLIENT_10_006: [ The SetMethodHandler shall DisableMethodsAsync when the last delegate has been removed. ]
+        // Tests_SRS_DEVICECLIENT_10_006: [ It shall DisableMethodsAsync when the last delegate has been removed. ]
         public async Task DeviceClient_SetMethodHandler_UnsetLastMethodHandler()
         {
             string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
@@ -654,7 +654,7 @@
         [TestMethod]
         [TestCategory("DeviceClient")]
         // Tests_SRS_DEVICECLIENT_10_004: [ The deviceMethods property shall be deleted if the last delegate has been removed. ]
-        // Tests_SRS_DEVICECLIENT_10_006: [ The SetMethodHandler shall DisableMethodsAsync when the last delegate has been removed. ]
+        // Tests_SRS_DEVICECLIENT_10_006: [ It shall DisableMethodsAsync when the last delegate has been removed. ]
         public async Task DeviceClient_SetMethodHandler_UnsetLastMethodHandler_WithDefaultHandlerSet()
         {
             string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
@@ -716,7 +716,7 @@
         [TestMethod]
         [TestCategory("DeviceClient")]
         // Tests_SRS_DEVICECLIENT_10_004: [ The deviceMethods property shall be deleted if the last delegate has been removed. ]
-        // Tests_SRS_DEVICECLIENT_10_006: [ The SetMethodHandler shall DisableMethodsAsync when the last delegate has been removed. ]
+        // Tests_SRS_DEVICECLIENT_10_006: [ It shall DisableMethodsAsync when the last delegate has been removed. ]
         public async Task DeviceClient_SetMethodHandler_UnsetDefaultHandlerSet()
         {
             string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
@@ -790,7 +790,7 @@
 
         [TestMethod]
         [TestCategory("DeviceClient")]
-        // Tests_SRS_DEVICECLIENT_10_001: [ The SetMethodHandler shall lazy-initialize the deviceMethods property. ]
+        // Tests_SRS_DEVICECLIENT_10_001: [ It shall lazy-initialize the deviceMethods property. ]
         // Tests_SRS_DEVICECLIENT_10_003: [ The given delegate will only be added if it is not null. ]
         public async Task DeviceClient_SetMethodHandler_SetFirstMethodHandler_With_SetMethodHandler()
         {
@@ -890,7 +890,7 @@
         [TestMethod]
         [TestCategory("DeviceClient")]
         // Tests_SRS_DEVICECLIENT_10_004: [ The deviceMethods property shall be deleted if the last delegate has been removed. ]
-        // Tests_SRS_DEVICECLIENT_10_006: [ The SetMethodHandler shall DisableMethodsAsync when the last delegate has been removed. ]
+        // Tests_SRS_DEVICECLIENT_10_006: [ It shall DisableMethodsAsync when the last delegate has been removed. ]
         public async Task DeviceClient_SetMethodHandler_UnsetLastMethodHandler_With_SetMethodHandler()
         {
             string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
