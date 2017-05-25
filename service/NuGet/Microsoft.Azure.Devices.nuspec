@@ -55,5 +55,6 @@
     <file src="..\Microsoft.Azure.Devices.Uwp\bin\release_delay_sign\Microsoft.Azure.Devices.Uwp.pri" target="lib\uap10.0\Microsoft.Azure.Devices.Uwp.pri" />
     <file src="..\Microsoft.Azure.Devices.Uwp\bin\release_delay_sign\Microsoft.Azure.Devices.Uwp.XML" target="lib\uap10.0\Microsoft.Azure.Devices.Uwp.XML" />
     <file src="..\Microsoft.Azure.Devices.NetStandard\bin\release_delay_sign\Microsoft.Azure.Devices.dll" target="lib\netstandard1.3\Microsoft.Azure.Devices.dll" />
+    <file src="..\Microsoft.Azure.Devices.NetStandard\bin\release_delay_sign\Microsoft.Azure.Devices.XML" target="lib\netstandard1.3\Microsoft.Azure.Devices.XML" />
   </files>
 </package>

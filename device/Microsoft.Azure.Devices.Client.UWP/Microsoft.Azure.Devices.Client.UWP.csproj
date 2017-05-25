@@ -178,6 +178,7 @@
     <OutputPath>bin\Release_Delay_Sign\</OutputPath>
     <DefineConstants>TRACE;NETFX_CORE;WINDOWS_UWP;RELEASE_DELAY_SIGN</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DocumentationFile>bin\Release\Microsoft.Azure.Devices.Client.Uwp.xml</DocumentationFile>
     <Optimize>true</Optimize>
     <NoStdLib>true</NoStdLib>
     <DebugType>pdbonly</DebugType>

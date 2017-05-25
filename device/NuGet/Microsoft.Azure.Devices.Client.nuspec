@@ -100,9 +100,12 @@
     <files>
         <file src="..\thirdpartynotice.txt" target="thirdpartynotice.txt" />
         <file src="..\Microsoft.Azure.Devices.Client\bin\release_delay_sign\Microsoft.Azure.Devices.Client.dll" target="lib\net45\Microsoft.Azure.Devices.Client.dll" />
+        <file src="..\Microsoft.Azure.Devices.Client\bin\release_delay_sign\Microsoft.Azure.Devices.Client.xml" target="lib\net45\Microsoft.Azure.Devices.Client.xml" />
         <file src="..\Microsoft.Azure.Devices.Client.NetStandard\bin\release_delay_sign\Microsoft.Azure.Devices.Client.dll" target="lib\netstandard1.3\Microsoft.Azure.Devices.Client.dll" />
+        <file src="..\Microsoft.Azure.Devices.Client.NetStandard\bin\release_delay_sign\Microsoft.Azure.Devices.Client.XML" target="lib\netstandard1.3\Microsoft.Azure.Devices.Client.xml" />
         <file src="..\Microsoft.Azure.Devices.Client.UWP\bin\release_delay_sign\Microsoft.Azure.Devices.Client.UWP.dll" target="lib\uap10.0\Microsoft.Azure.Devices.Client.UWP.dll" />
         <file src="..\Microsoft.Azure.Devices.Client.UWP\bin\release_delay_sign\Microsoft.Azure.Devices.Client.UWP.pri" target="lib\uap10.0\Microsoft.Azure.Devices.Client.UWP.pri" />
+        <file src="..\Microsoft.Azure.Devices.Client.UWP\bin\release_delay_sign\Microsoft.Azure.Devices.Client.UWP.XML" target="lib\uap10.0\Microsoft.Azure.Devices.Client.UWP.XML" />
         <file src="..\Microsoft.Azure.Devices.Client.PCL\bin\release_delay_sign\Microsoft.Azure.Devices.Client.PCL.dll" target="lib\portable-net45+wp8+wpa81+win8+MonoAndroid10+MonoTouch10+Xamarin.iOS10+UAP10\Microsoft.Azure.Devices.Client.PCL.dll" />
 
         <!-- don't forget about the .targets file containing the reference -->
