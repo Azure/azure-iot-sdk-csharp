@@ -142,27 +142,29 @@ internal async Task OnMethodCalled(MethodRequestInternal methodRequestInternal)
 
 **SRS_DEVICECLIENT_10_011: [** The OnMethodCalled shall invoke the associated MethodHandler. **]**
 
+**SRS_DEVICECLIENT_24_002: [** The OnMethodCalled shall invoke the default delegate if there is no specified delegate for that method. **]**
+
 **SRS_DEVICECLIENT_03_012: [** If the MethodResponse does not contain result, the MethodResponseInternal constructor shall be invoked with no results. **]**
 
 **SRS_DEVICECLIENT_03_013: [** Otherwise, the MethodResponseInternal constructor shall be invoked with the result supplied. **]**
 
 **SRS_DEVICECLIENT_10_012: [** If the given methodRequestInternal argument is null, failed silently **]**
 
-**SRS_DEVICECLIENT_10_013: [** If the given method does not have an associated delegate, respond with status code 501 (METHOD NOT IMPLEMENTED) **]**
+**SRS_DEVICECLIENT_10_013: [** If the given method does not have an associated delegate and no default delegate was registered, respond with status code 501 (METHOD NOT IMPLEMENTED) **]**
 
 **SRS_DEVICECLIENT_28_020: [** If the given methodRequestInternal data is not valid json, respond with status code 400 (BAD REQUEST) **]**
 
 **SRS_DEVICECLIENT_28_021: [** If the MethodResponse from the MethodHandler is not valid json, respond with status code 500 (USER CODE EXCEPTION) **]**
 
 
-### SetMethodDelegate
+### SetMethodHandler
 ```csharp
 public void SetMethodHandler(string methodName, MethodCallback methodHandler, object userContext)
 ```
 
-**SRS_DEVICECLIENT_10_001: [** The SetMethodHandler shall lazy-initialize the DeviceMethods property. **]**
+**SRS_DEVICECLIENT_10_001: [** It shall lazy-initialize the DeviceMethods property. **]**
 
-**SRS_DEVICECLIENT_10_005: [** The SetMethodHandler shall EnableMethodsAsync when called for the first time. **]**
+**SRS_DEVICECLIENT_10_005: [** It shall EnableMethodsAsync when called for the first time. **]**
 
 **SRS_DEVICECLIENT_10_002: [** If the given methodName has an associated delegate, the existing delegate shall be replaced with the newly given delegate. **]**
 
@@ -170,8 +172,35 @@ public void SetMethodHandler(string methodName, MethodCallback methodHandler, ob
 
 **SRS_DEVICECLIENT_10_004: [** The DeviceMethods property shall be deleted if the last delegate has been removed. **]**
 
-**SRS_DEVICECLIENT_10_006: [** The SetMethodHandler shall DisableMethodsAsync when the last delegate has been removed. **]**
+**SRS_DEVICECLIENT_10_006: [** It shall DisableMethodsAsync when the last delegate has been removed. **]**
 
+### SetMethodHandlerAsync
+```csharp
+public void SetMethodHandlerAsync(string methodName, MethodCallback methodHandler, object userContext)
+```
+
+**SRS_DEVICECLIENT_10_001: [** It shall lazy-initialize the DeviceMethods property. **]**
+
+**SRS_DEVICECLIENT_10_005: [** It shall EnableMethodsAsync when called for the first time. **]**
+
+**SRS_DEVICECLIENT_10_002: [** If the given methodName has an associated delegate, the existing delegate shall be replaced with the newly given delegate. **]**
+
+**SRS_DEVICECLIENT_10_003: [** The given delegate will only be added if it is not null. **]**
+
+**SRS_DEVICECLIENT_10_004: [** The DeviceMethods property shall be deleted if the last delegate has been removed. **]**
+
+**SRS_DEVICECLIENT_10_006: [** It shall DisableMethodsAsync when the last delegate has been removed. **]**
+
+### SetMethodDefaultHandlerAsync
+```csharp
+public void SetMethodDefaultHandlerAsync(MethodCallback methodHandler, object userContext)
+```
+
+**SRS_DEVICECLIENT_10_005: [** It shall EnableMethodsAsync when called for the first time if there is no associated delegate . **]**
+
+**SRS_DEVICECLIENT_24_001: [** If the default callback has already been set, it is replaced with the new callback. **]**
+
+**SRS_DEVICECLIENT_10_006: [** It shall DisableMethodsAsync when the last delegate has been removed. **]**
 
 ### RetryStrategy
 ```csharp
