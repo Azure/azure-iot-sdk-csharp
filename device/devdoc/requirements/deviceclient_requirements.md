@@ -64,7 +64,7 @@ public sealed class DeviceClient
 
     public Task<Twin> GetTwinAsync();
     public Task UpdateReportedPropertiesAsync(TwinCollection reportedProperties)
-    public Task SetDesiredPropertyUpdateCallback(DesiredPropertyUpdateCallback callback, object userContext)
+    public Task SetDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallback callback, object userContext)
     
 }
 ```
@@ -237,19 +237,19 @@ public Task UpdateReportedPropertiesAsync(TwinCollection reportedProperties)
 
 **SRS_DEVICECLIENT_18_006: [** `UpdateReportedPropertiesAsync` shall throw an `ArgumentNull` exception if `reportedProperties` is null **]**
  
-### SetDesiredPropertyUpdateCallback
+### SetDesiredPropertyUpdateCallbackAsync
 ```csharp
-public Task SetDesiredPropertyUpdateCallback(DesiredPropertyUpdateCallback callback, object userContext)
+public Task SetDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallback callback, object userContext)
 
 ```
 
-**SRS_DEVICECLIENT_18_003: [** `SetDesiredPropertyUpdateCallback` shall call the transport to register for PATCHes on it's first call. **]**
+**SRS_DEVICECLIENT_18_003: [** `SetDesiredPropertyUpdateCallbackAsync` shall call the transport to register for PATCHes on it's first call. **]**
 
-**SRS_DEVICECLIENT_18_004: [** `SetDesiredPropertyUpdateCallback` shall not call the transport to register for PATCHes on subsequent calls. **]**
+**SRS_DEVICECLIENT_18_004: [** `SetDesiredPropertyUpdateCallbackAsync` shall not call the transport to register for PATCHes on subsequent calls. **]**
 
 **SRS_DEVICECLIENT_18_005: [** When a patch is received from the service, the `callback` shall be called. **]**
 
-**SRS_DEVICECLIENT_18_007: [** `SetDesiredPropertyUpdateCallback` shall throw an `ArgumentNull` exception if `callback` is null **]**
+**SRS_DEVICECLIENT_18_007: [** `SetDesiredPropertyUpdateCallbackAsync` shall throw an `ArgumentNull` exception if `callback` is null **]**
  
 
 ### OnConnectionClosed
