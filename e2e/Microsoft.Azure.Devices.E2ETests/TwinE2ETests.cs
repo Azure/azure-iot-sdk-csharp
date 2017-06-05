@@ -113,6 +113,21 @@ namespace Microsoft.Azure.Devices.E2ETests
             await _Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent(Client.TransportType.Mqtt_WebSocket_Only);
         }
 
+        [TestMethod]
+        [TestCategory("Twin-E2E")]
+        public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_WithObseleteCallbackSetter_Mqtt()
+        {
+            await _Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_WithObseleteCallbackSetter(Client.TransportType.Mqtt_Tcp_Only);
+        }
+
+        [TestMethod]
+        [TestCategory("Twin-E2E")]
+        public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_WithObseleteCallbackSetter_MqttWs()
+        {
+            await _Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_WithObseleteCallbackSetter(Client.TransportType.Mqtt_WebSocket_Only);
+        }
+
+
         [Ignore]
         [TestMethod]
         [TestCategory("Twin-E2E")]
@@ -248,6 +263,44 @@ namespace Microsoft.Azure.Devices.E2ETests
             Tuple<string, string> deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
             var deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, transport);
             await deviceClient.OpenAsync();
+            await deviceClient.SetDesiredPropertyUpdateCallbackAsync((patch, context) =>
+            {
+                return Task.Run(() =>
+                {
+                    try
+                    {
+                        Assert.AreEqual(patch[propName].ToString(), propValue);
+                    }
+                    catch (Exception e)
+                    {
+                        tcs.SetException(e);
+                    }
+                    finally
+                    {
+                        tcs.SetResult(true);
+                    }
+                });
+
+            }, null);
+
+            var twinPatch = new Twin();
+            twinPatch.Properties.Desired[propName] = propValue;
+            await registryManager.UpdateTwinAsync(deviceInfo.Item1, twinPatch, "*");
+
+            await tcs.Task;
+            await deviceClient.CloseAsync();
+            TestUtil.RemoveDevice(deviceInfo.Item1, registryManager);
+        }
+
+        private async Task _Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_WithObseleteCallbackSetter(Client.TransportType transport)
+        {
+            var tcs = new TaskCompletionSource<bool>();
+            var propName = Guid.NewGuid().ToString();
+            var propValue = Guid.NewGuid().ToString();
+
+            Tuple<string, string> deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
+            var deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, transport);
+            await deviceClient.OpenAsync();
             await deviceClient.SetDesiredPropertyUpdateCallback((patch, context) =>
             {
                 return Task.Run(() =>
@@ -286,7 +339,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             Tuple<string, string> deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
             var deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, transport);
             await deviceClient.OpenAsync();
-            await deviceClient.SetDesiredPropertyUpdateCallback((patch, context) =>
+            await deviceClient.SetDesiredPropertyUpdateCallbackAsync((patch, context) =>
             {
                 return Task.Run(() =>
                 {

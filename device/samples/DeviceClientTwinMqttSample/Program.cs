@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             {
                 Console.WriteLine("Connecting to hub");
                 Client = DeviceClient.CreateFromConnectionString(DeviceConnectionString, TransportType.Mqtt);
-                Client.SetDesiredPropertyUpdateCallback(OnDesiredPropertyChanged, null).Wait();
+                Client.SetDesiredPropertyUpdateCallbackAsync(OnDesiredPropertyChanged, null).Wait();
 
                 Console.WriteLine("Retrieving twin");
                 var twinTask = Client.GetTwinAsync();

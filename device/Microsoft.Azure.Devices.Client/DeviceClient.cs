@@ -1152,9 +1152,22 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// </summary>
         /// <param name="callback">Callback to call after the state update has been received and applied</param>
         /// <param name="userContext">Context object that will be passed into callback</param>
+        [Obsolete("Please use SetDesiredPropertyUpdateCallbackAsync.")]
         public Task SetDesiredPropertyUpdateCallback(DesiredPropertyUpdateCallback callback, object userContext)
         {
-            // Codes_SRS_DEVICECLIENT_18_007: `SetDesiredPropertyUpdateCallback` shall throw an `ArgumentNull` exception if `callback` is null
+            return SetDesiredPropertyUpdateCallbackAsync(callback, userContext);
+        }
+
+        /// <summary>
+        /// Set a callback that will be called whenever the client receives a state update 
+        /// (desired or reported) from the service.  This has the side-effect of subscribing
+        /// to the PATCH topic on the service.
+        /// </summary>
+        /// <param name="callback">Callback to call after the state update has been received and applied</param>
+        /// <param name="userContext">Context object that will be passed into callback</param>
+        public Task SetDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallback callback, object userContext)
+        {
+            // Codes_SRS_DEVICECLIENT_18_007: `SetDesiredPropertyUpdateCallbackAsync` shall throw an `ArgumentNull` exception if `callback` is null
             if (callback == null)
             {
                 throw Fx.Exception.ArgumentNull("callback");
@@ -1162,8 +1175,8 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
 
             return ApplyTimeout(async operationTimeoutCancellationToken =>
             {
-                // Codes_SRS_DEVICECLIENT_18_003: `SetDesiredPropertyUpdateCallback` shall call the transport to register for PATCHes on it's first call.
-                // Codes_SRS_DEVICECLIENT_18_004: `SetDesiredPropertyUpdateCallback` shall not call the transport to register for PATCHes on subsequent calls
+                // Codes_SRS_DEVICECLIENT_18_003: `SetDesiredPropertyUpdateCallbackAsync` shall call the transport to register for PATCHes on it's first call.
+                // Codes_SRS_DEVICECLIENT_18_004: `SetDesiredPropertyUpdateCallbackAsync` shall not call the transport to register for PATCHes on subsequent calls
                 if (!this.patchSubscribedWithService)
                 {
                     await this.InnerHandler.EnableTwinPatchAsync(operationTimeoutCancellationToken);
