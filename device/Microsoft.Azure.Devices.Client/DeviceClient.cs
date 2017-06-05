@@ -1155,25 +1155,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         [Obsolete("Please use SetDesiredPropertyUpdateCallbackAsync.")]
         public Task SetDesiredPropertyUpdateCallback(DesiredPropertyUpdateCallback callback, object userContext)
         {
-            // Codes_SRS_DEVICECLIENT_18_007: `SetDesiredPropertyUpdateCallback` shall throw an `ArgumentNull` exception if `callback` is null
-            if (callback == null)
-            {
-                throw Fx.Exception.ArgumentNull("callback");
-            }
-
-            return ApplyTimeout(async operationTimeoutCancellationToken =>
-            {
-                // Codes_SRS_DEVICECLIENT_18_003: `SetDesiredPropertyUpdateCallback` shall call the transport to register for PATCHes on it's first call.
-                // Codes_SRS_DEVICECLIENT_18_004: `SetDesiredPropertyUpdateCallback` shall not call the transport to register for PATCHes on subsequent calls
-                if (!this.patchSubscribedWithService)
-                {
-                    await this.InnerHandler.EnableTwinPatchAsync(operationTimeoutCancellationToken);
-                    patchSubscribedWithService = true;
-                }
-
-                this.desiredPropertyUpdateCallback = callback;
-                this.twinPatchCallbackContext = userContext;
-            });
+            return SetDesiredPropertyUpdateCallbackAsync(callback, userContext);
         }
 
         /// <summary>
@@ -1185,7 +1167,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// <param name="userContext">Context object that will be passed into callback</param>
         public Task SetDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallback callback, object userContext)
         {
-            // Codes_SRS_DEVICECLIENT_18_007: `SetDesiredPropertyUpdateCallback` shall throw an `ArgumentNull` exception if `callback` is null
+            // Codes_SRS_DEVICECLIENT_18_007: `SetDesiredPropertyUpdateCallbackAsync` shall throw an `ArgumentNull` exception if `callback` is null
             if (callback == null)
             {
                 throw Fx.Exception.ArgumentNull("callback");
@@ -1193,8 +1175,8 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
 
             return ApplyTimeout(async operationTimeoutCancellationToken =>
             {
-                // Codes_SRS_DEVICECLIENT_18_003: `SetDesiredPropertyUpdateCallback` shall call the transport to register for PATCHes on it's first call.
-                // Codes_SRS_DEVICECLIENT_18_004: `SetDesiredPropertyUpdateCallback` shall not call the transport to register for PATCHes on subsequent calls
+                // Codes_SRS_DEVICECLIENT_18_003: `SetDesiredPropertyUpdateCallbackAsync` shall call the transport to register for PATCHes on it's first call.
+                // Codes_SRS_DEVICECLIENT_18_004: `SetDesiredPropertyUpdateCallbackAsync` shall not call the transport to register for PATCHes on subsequent calls
                 if (!this.patchSubscribedWithService)
                 {
                     await this.InnerHandler.EnableTwinPatchAsync(operationTimeoutCancellationToken);
