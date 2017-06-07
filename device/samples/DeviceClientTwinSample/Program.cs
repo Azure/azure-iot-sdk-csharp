@@ -32,16 +32,23 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         static void Main(string[] args)
         {
+            TransportType transport = TransportType.Mqtt;
             string environmentConnectionString = Environment.GetEnvironmentVariable("IOTHUB_DEVICE_CONN_STR");
             if (!String.IsNullOrEmpty(environmentConnectionString))
             {
                 DeviceConnectionString = environmentConnectionString;
             }
 
+#if WIP_C2D_METHODS_AMQP
+            if (args.Length == 1 && args[0].ToLower().Equals("amqp"))
+            {
+                transport = TransportType.Amqp;
+            }
+#endif
             try
             {
                 Console.WriteLine("Connecting to hub");
-                Client = DeviceClient.CreateFromConnectionString(DeviceConnectionString, TransportType.Mqtt);
+                Client = DeviceClient.CreateFromConnectionString(DeviceConnectionString, transport);
                 Client.SetDesiredPropertyUpdateCallbackAsync(OnDesiredPropertyChanged, null).Wait();
 
                 Console.WriteLine("Retrieving twin");

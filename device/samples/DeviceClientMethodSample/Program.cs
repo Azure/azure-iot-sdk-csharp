@@ -54,10 +54,18 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         static void Main(string[] args)
         {
+            TransportType transport = TransportType.Mqtt;
+
+#if WIP_C2D_METHODS_AMQP
+            if (args.Length == 1 && args[0].ToLower().Equals("amqp"))
+            {
+                transport = TransportType.Amqp;
+            }
+#endif
             DeviceClient deviceClient = null;
             try
             {
-                deviceClient = DeviceClient.CreateFromConnectionString(DeviceConnectionString, TransportType.Mqtt);
+                deviceClient = DeviceClient.CreateFromConnectionString(DeviceConnectionString, transport);
 
                 // Method Call processing will be enabled when the first method handler is added.
                 // setup a callback for the 'WriteToConsole' method
