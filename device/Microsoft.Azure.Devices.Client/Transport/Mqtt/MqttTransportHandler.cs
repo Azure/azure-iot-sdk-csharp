@@ -154,7 +154,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         Action<object, EventArgs> connectionClosedListener;
         Func<MethodRequestInternal, Task> messageListener;
-        Action<TwinCollection> onReportedStatePatchListener;
+        Action<TwinCollection> onDesiredStatePatchListener;
         Action<Message> twinResponseEvent;
 
         public TimeSpan TwinTimeout = TimeSpan.FromSeconds(60);
@@ -169,7 +169,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             : this(context, iotHubConnectionString, settings, null, onConnectionClosedCallback)
         {
             this.messageListener = onMethodCallback;
-            this.onReportedStatePatchListener = onReportedStatePatchReceivedCallback;
+            this.onDesiredStatePatchListener = onReportedStatePatchReceivedCallback;
         }
 
         internal MqttTransportHandler(
@@ -397,13 +397,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             try
             {
-                if (this.onReportedStatePatchListener != null)
+                if (this.onDesiredStatePatchListener != null)
                 {
                     using (StreamReader reader = new StreamReader(message.GetBodyStream(), System.Text.Encoding.UTF8))
                     {
                         string patch = reader.ReadToEnd();
                         var props = JsonConvert.DeserializeObject<TwinCollection>(patch);
-                        this.onReportedStatePatchListener(props);
+                        this.onDesiredStatePatchListener(props);
                     }
                 }
             }

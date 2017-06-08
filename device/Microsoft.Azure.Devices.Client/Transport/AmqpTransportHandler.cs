@@ -14,6 +14,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
     using Microsoft.Azure.Devices.Client.Extensions;
     using Microsoft.Azure.Devices.Shared;
     using System.IO;
+    using System.Collections.Concurrent;
+    using Newtonsoft.Json;
 
     sealed class AmqpTransportHandler : TransportHandler
     {
@@ -32,7 +34,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         readonly uint prefetchCount;
 
         Func<MethodRequestInternal, Task> messageListener;
-        Action<TwinCollection> onReportedStatePatchListener;
+        Action<TwinCollection> onDesiredStatePatchListener;
         Action<Message> twinResponseEvent;
         
         Action<object, EventArgs> linkClosedListener;
@@ -43,12 +45,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
         internal delegate void OnConnectionClosedDelegate(object sender, EventArgs e);
 
         int closed;
+        ConcurrentDictionary<string, TaskCompletionSource<AmqpMessage>> twinResponseCompletions = new ConcurrentDictionary<string, TaskCompletionSource<AmqpMessage>>();
 
         internal AmqpTransportHandler(
             IPipelineContext context, IotHubConnectionString connectionString, 
             AmqpTransportSettings transportSettings,
             Action<object, EventArgs> onLinkClosedCallback,
-            Func<MethodRequestInternal, Task> onMethodCallback = null)
+            Func<MethodRequestInternal, Task> onMethodCallback = null,
+            Action<TwinCollection> onDesiredStatePatchReceived = null)
             :base(context, transportSettings)
         {
             this.linkClosedListener = onLinkClosedCallback;
@@ -74,6 +78,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             this.faultTolerantDeviceBoundReceivingLink = new Client.FaultTolerantAmqpObject<ReceivingAmqpLink>(this.CreateDeviceBoundReceivingLinkAsync, this.IotHubConnection.CloseLink);
             this.iotHubConnectionString = connectionString;
             this.messageListener = onMethodCallback;
+            this.onDesiredStatePatchListener = onDesiredStatePatchReceived;
         }
 
         internal IotHubConnection IotHubConnection { get; }
@@ -266,7 +271,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 #endif
         }
 
-        public Task EnableTwinAsync(CancellationToken cancellationToken)
+        public override async Task EnableTwinPatchAsync(CancellationToken cancellationToken)
         {
 #if WIP_C2D_METHODS_AMQP
             if (this.faultTolerantTwinSendingLink == null)
@@ -279,7 +284,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 this.faultTolerantTwinReceivingLink = new Client.FaultTolerantAmqpObject<ReceivingAmqpLink>(this.CreateTwinReceivingLinkAsync, this.IotHubConnection.CloseLink);
             }
 
-            return this.HandleTimeoutCancellation(async () =>
+            await this.HandleTimeoutCancellation(async () =>
             {
                 try
                 {
@@ -510,21 +515,29 @@ namespace Microsoft.Azure.Devices.Client.Transport
         public override async Task<Twin> SendTwinGetAsync(CancellationToken cancellationToken)
         {
             Outcome outcome;
+            string correlationId = Guid.NewGuid().ToString();
+            
             try
             {
-                await EnableTwinAsync(cancellationToken);
+                await EnableTwinPatchAsync(cancellationToken);
                 
                 SendingAmqpLink eventSendingLink = await this.GetTwinSendingLinkAsync(cancellationToken);
-				
-				// This is test code and will be re-written in future commits
 
-                AmqpMessage getTwinMessage = AmqpMessage.Create();
-                string getCorrelationId = Guid.NewGuid().ToString();
-                getTwinMessage.Properties.CorrelationId = getCorrelationId;
-                getTwinMessage.MessageAnnotations.Map["operation"] = "GET";
+                AmqpMessage amqpMessage = AmqpMessage.Create();
+                amqpMessage.Properties.CorrelationId = correlationId;
+                amqpMessage.MessageAnnotations.Map["operation"] = "GET";
 
-                outcome = await eventSendingLink.SendMessageAsync(getTwinMessage, new ArraySegment<byte>(Guid.NewGuid().ToByteArray()), AmqpConstants.NullBinary, this.operationTimeout);
+                this.twinResponseCompletions[correlationId] = new TaskCompletionSource<AmqpMessage>();
                 
+                outcome = await eventSendingLink.SendMessageAsync(amqpMessage, new ArraySegment<byte>(Guid.NewGuid().ToByteArray()), AmqpConstants.NullBinary, this.operationTimeout);
+                if (outcome.DescriptorCode != Accepted.Code)
+                {
+                    throw AmqpErrorMapper.GetExceptionFromOutcome(outcome);
+                }
+
+                var response = await this.twinResponseCompletions[correlationId].Task;
+
+                return TwinFromResponse(response);
             }
             catch (Exception exception)
             {
@@ -535,15 +548,104 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                 throw AmqpClientHelper.ToIotHubClientContract(exception);
             }
-
-            return null;
+            finally
+            {
+                TaskCompletionSource<AmqpMessage> throwAway;
+                this.twinResponseCompletions.TryRemove(correlationId, out throwAway);
+            }
         }
 
         public override async Task SendTwinPatchAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
         {
-            // TODO
+
+            Outcome outcome;
+            string correlationId = Guid.NewGuid().ToString();
+
+            try
+            {
+                await EnableTwinPatchAsync(cancellationToken);
+
+                var body = JsonConvert.SerializeObject(reportedProperties);
+                var bodyStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(body));
+
+                // TODO: disposal?
+                var amqpMessage = AmqpMessage.Create(bodyStream, false);
+                amqpMessage.Properties.CorrelationId = correlationId;
+                amqpMessage.MessageAnnotations.Map["operation"] = "PATCH";
+                amqpMessage.MessageAnnotations.Map["resource"] = "/properties/reported";
+                amqpMessage.MessageAnnotations.Map["version"] = null;
+
+                SendingAmqpLink eventSendingLink = await this.GetTwinSendingLinkAsync(cancellationToken);
+
+                this.twinResponseCompletions[correlationId] = new TaskCompletionSource<AmqpMessage>();
+
+                outcome = await eventSendingLink.SendMessageAsync(amqpMessage, new ArraySegment<byte>(Guid.NewGuid().ToByteArray()), AmqpConstants.NullBinary, this.operationTimeout);
+                if (outcome.DescriptorCode != Accepted.Code)
+                {
+                    throw AmqpErrorMapper.GetExceptionFromOutcome(outcome);
+                }
+
+                await this.twinResponseCompletions[correlationId].Task;
+            }
+            catch (Exception exception)
+            {
+                if (exception.IsFatal())
+                {
+                    throw;
+                }
+
+                throw AmqpClientHelper.ToIotHubClientContract(exception);
+            }
+            finally
+            {
+                TaskCompletionSource<AmqpMessage> throwAway;
+                this.twinResponseCompletions.TryRemove(correlationId, out throwAway);
+            }
         }
-        
+
+        private void HandleTwinMessage(AmqpMessage message, ReceivingAmqpLink link)
+        {
+            link.DisposeDelivery(message, true, AmqpConstants.AcceptedOutcome);
+
+            string correlationId = message.Properties.CorrelationId?.ToString();
+            if (correlationId != null)
+            {
+                // If we have a correlation id, it must be a response, complete the task.
+                TaskCompletionSource<AmqpMessage> task;
+                if (this.twinResponseCompletions.TryRemove(correlationId, out task))
+                {
+                    task.SetResult(message);
+                }
+            }
+            else
+            {
+                // No correlation id? Must be a patch.
+                if (this.onDesiredStatePatchListener != null)
+                {
+                    using (StreamReader reader = new StreamReader(message.BodyStream, System.Text.Encoding.UTF8))
+                    {
+                        string patch = reader.ReadToEnd();
+                        var props = JsonConvert.DeserializeObject<TwinCollection>(patch);
+                        this.onDesiredStatePatchListener(props);
+                    }
+                }
+            }
+
+        }
+
+        private Twin TwinFromResponse(AmqpMessage message)
+        {
+            using (StreamReader reader = new StreamReader(message.BodyStream, System.Text.Encoding.UTF8))
+            {
+                string body = reader.ReadToEnd();
+                var props = JsonConvert.DeserializeObject<Microsoft.Azure.Devices.Shared.TwinProperties>(body);
+                var twin = new Twin();
+                twin.Properties = props;
+                return twin;
+            }
+        }
+
+
         async Task DisposeMessageAsync(string lockToken, Outcome outcome, CancellationToken cancellationToken)
         {
             ArraySegment<byte> deliveryTag = IotHubConnection.ConvertToDeliveryTag(lockToken);
@@ -697,23 +799,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             return link;
         }
-
-        private void HandleTwinMessage(AmqpMessage message, ReceivingAmqpLink link)
-        {
-			// Test code.  Will be reworked in future commits.
-            using (StreamReader reader = new StreamReader(message.BodyStream, System.Text.Encoding.UTF8))
-            {
-                string body = reader.ReadToEnd();
-                System.Diagnostics.Debug.WriteLine(body);
-            }
-            link.DisposeDelivery(message, true, AmqpConstants.AcceptedOutcome);
-
-			// TODO: deserialize and call one of the following:
-            // this.messageListener(twinRequestInternal);
-            // twinResponseEvent(message);
-            // this.onReportedStatePatchListener(props);
-         }
-
+    
     }
 
 }

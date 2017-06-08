@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             var connectionString = context.Get<IotHubConnectionString>();
             var transportSetting = context.Get<ITransportSettings>();
             var onMethodCallback = context.Get<DeviceClient.OnMethodCalledDelegate>();
-            var onReportedStatePatchReceived = context.Get<Action<TwinCollection>>();
+            var onDesiredStatePatchReceived = context.Get<Action<TwinCollection>>();
             var OnConnectionClosedCallback = context.Get<DeviceClient.OnConnectionClosedDelegate>();
 
             switch (transportSetting.GetTransportType())
@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     return new AmqpTransportHandler(
                         context, connectionString, transportSetting as AmqpTransportSettings, 
                         new Action<object, EventArgs>(OnConnectionClosedCallback),
-                        new Func<MethodRequestInternal, Task>(onMethodCallback));
+                        new Func<MethodRequestInternal, Task>(onMethodCallback), onDesiredStatePatchReceived);
                 case TransportType.Http1:
                     return new HttpTransportHandler(context, connectionString, transportSetting as Http1TransportSettings);
 #if !NETMF && !PCL
@@ -36,7 +36,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     return new MqttTransportHandler(
                         context, connectionString, transportSetting as MqttTransportSettings,
                         new Action<object, EventArgs>(OnConnectionClosedCallback),
-                        new Func<MethodRequestInternal, Task>(onMethodCallback), onReportedStatePatchReceived);
+                        new Func<MethodRequestInternal, Task>(onMethodCallback), onDesiredStatePatchReceived);
 #endif
                 default:
                     throw new InvalidOperationException("Unsupported Transport Setting {0}".FormatInvariant(transportSetting));
