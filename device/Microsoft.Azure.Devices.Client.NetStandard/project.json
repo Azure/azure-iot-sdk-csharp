@@ -3,7 +3,7 @@
   "dependencies": {
     "DotNetty.Codecs.Mqtt": "0.4.4",
     "DotNetty.Handlers": "0.4.4",
-    "Microsoft.Azure.Amqp": "2.0.4",
+    "Microsoft.Azure.Amqp": "2.0.6",
     "NETStandard.Library": "1.6.1",
     "Newtonsoft.Json": "9.0.1",
     "System.AppContext": "4.3.0",

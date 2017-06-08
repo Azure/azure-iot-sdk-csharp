@@ -3,7 +3,7 @@
   "version": 1,
   "targets": {
     ".NETStandard,Version=v1.3": {
-      "Microsoft.Azure.Amqp/2.0.4": {
+      "Microsoft.Azure.Amqp/2.0.6": {
         "compile": {
           "lib/netstandard1.3/Microsoft.Azure.Amqp.dll": {}
         },
@@ -1122,12 +1122,12 @@
     }
   },
   "libraries": {
-    "Microsoft.Azure.Amqp/2.0.4": {
+    "Microsoft.Azure.Amqp/2.0.6": {
       "sha512": "biYAGReRTclHy3uhBoCm7YxGCsx6temsk3txHrLPL7bomRPfxuXiJ7lQKM8dCT8QTqRNEWgXZhCOCBM5GJSN3w==",
       "type": "package",
-      "path": "Microsoft.Azure.Amqp/2.0.4",
+      "path": "Microsoft.Azure.Amqp/2.0.6",
       "files": [
-        "Microsoft.Azure.Amqp.2.0.4.nupkg.sha512",
+        "Microsoft.Azure.Amqp.2.0.6.nupkg.sha512",
         "Microsoft.Azure.Amqp.nuspec",
         "lib/monoandroid/Microsoft.Azure.Amqp.dll",
         "lib/net45/Microsoft.Azure.Amqp.XML",
@@ -4693,7 +4693,7 @@
   },
   "projectFileDependencyGroups": {
     "": [
-      "Microsoft.Azure.Amqp >= 2.0.4",
+      "Microsoft.Azure.Amqp >= 2.0.6",
       "NETStandard.Library >= 1.6.0",
       "Newtonsoft.Json >= 9.0.1",
       "System.ComponentModel.TypeConverter >= 4.3.0",

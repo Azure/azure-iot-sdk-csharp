@@ -92,11 +92,7 @@ namespace Microsoft.Azure.Devices
 
             ValidateDeviceAuthentication(device.Authentication, device.Id);
 
-            // auto generate keys if not specified
-            if (device.Authentication == null)
-            {
-                device.Authentication = new AuthenticationMechanism();
-            }
+            NormalizeDevice(device);
 
             var errorMappingOverrides = new Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>
             {
@@ -163,11 +159,7 @@ namespace Microsoft.Azure.Devices
 
             ValidateDeviceAuthentication(device.Authentication, device.Id);
 
-            // auto generate keys if not specified
-            if (device.Authentication == null)
-            {
-                device.Authentication = new AuthenticationMechanism();
-            }
+            NormalizeDevice(device);
 
             var errorMappingOverrides = new Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>()
             {
@@ -486,11 +478,7 @@ namespace Microsoft.Azure.Devices
             {
                 ValidateDeviceAuthentication(device.Authentication, device.Id);
 
-                // auto generate keys if not specified
-                if (device.Authentication == null)
-                {
-                    device.Authentication = new AuthenticationMechanism();
-                }
+                NormalizeExportImportDevice(device);
             }
 
         }
@@ -959,6 +947,43 @@ namespace Microsoft.Azure.Devices
                 cancellationToken);
 
             return await QueryResult.FromHttpResponseAsync(response);
+        }
+
+        static void NormalizeExportImportDevice(ExportImportDevice device)
+        {
+            // auto generate keys if not specified
+            if (device.Authentication == null)
+            {
+                device.Authentication = new AuthenticationMechanism();
+            }
+
+            NormalizeAuthenticationInfo(device.Authentication);
+        }
+
+        static void NormalizeDevice(Device device)
+        {
+            // auto generate keys if not specified
+            if (device.Authentication == null)
+            {
+                device.Authentication = new AuthenticationMechanism();
+            }
+
+            NormalizeAuthenticationInfo(device.Authentication);
+        }
+
+        static void NormalizeAuthenticationInfo(AuthenticationMechanism authenticationInfo)
+        {
+            //to make it backward compatible we set the type according to the values
+            //we don't set CA type - that has to be explicit
+            if (authenticationInfo.SymmetricKey != null && !authenticationInfo.SymmetricKey.IsEmpty())
+            {
+                authenticationInfo.Type = AuthenticationType.Sas;
+            }
+
+            if (authenticationInfo.X509Thumbprint != null && !authenticationInfo.X509Thumbprint.IsEmpty())
+            {
+                authenticationInfo.Type = AuthenticationType.SelfSigned;
+            }
         }
     }
 }

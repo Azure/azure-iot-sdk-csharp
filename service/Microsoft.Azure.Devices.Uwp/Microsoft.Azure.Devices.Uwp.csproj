@@ -76,6 +76,7 @@
     <Compile Include="..\Microsoft.Azure.Devices\Common\Exceptions\TooManyDevicesException.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\Extensions\AmqpExtensions.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\PerfectHash.cs" />
+    <Compile Include="..\Microsoft.Azure.Devices\AuthenticationType.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\AuthenticationMechanism.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\AuthenticationMethodFactory.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\ClientApiVersionHelper.cs" />

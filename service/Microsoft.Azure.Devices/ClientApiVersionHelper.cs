@@ -11,7 +11,8 @@ namespace Microsoft.Azure.Devices
         const string ApiVersionDMPreview = "2016-04-25-preview";
         const string ApiVersionDMPreview2 = "2016-09-30-preview";
         const string ApiVersionDMGA = "2016-11-14";
-        const string ApiVersionLatest = ApiVersionDMGA;
+        const string ApiVersionJune2017 = "2017-06-30";
+        const string ApiVersionLatest = ApiVersionJune2017;
 
         public const string ApiVersionQueryString = ApiVersionQueryPrefix + ApiVersionLatest;
         public const string ApiVersionQueryStringGA = ApiVersionQueryPrefix + ApiVersionGA;
