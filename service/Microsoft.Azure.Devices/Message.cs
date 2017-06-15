@@ -193,7 +193,7 @@ namespace Microsoft.Azure.Devices
             }
             set
             {
-                string valueToSet = null;
+                string valueToSet;
 
                 switch (value)
                 {
@@ -296,6 +296,70 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
+        /// Used to specify the schema of the message content.
+        /// </summary>
+        public string MessageSchema
+        {
+            get
+            {
+                return this.GetSystemProperty<string>(MessageSystemPropertyNames.MessageSchema);
+            }
+
+            set
+            {
+                this.SystemProperties[MessageSystemPropertyNames.MessageSchema] = value;
+            }
+        }
+
+        /// <summary>
+        /// Custom date property set by the originator of the message.
+        /// </summary>
+        public DateTime CreationTimeUtc
+        {
+            get
+            {
+                return this.GetSystemProperty<DateTime>(MessageSystemPropertyNames.CreationTimeUtc);
+            }
+
+            set
+            {
+                this.SystemProperties[MessageSystemPropertyNames.CreationTimeUtc] = value;
+            }
+        }
+
+        /// <summary>
+        /// Used to specify the content type of the message.
+        /// </summary>
+        public string ContentType
+        {
+            get
+            {
+                return this.GetSystemProperty<string>(MessageSystemPropertyNames.ContentType);
+            }
+
+            set
+            {
+                this.SystemProperties[MessageSystemPropertyNames.ContentType] = value;
+            }
+        }
+
+        /// <summary>
+        /// Used to specify the content encoding type of the message.
+        /// </summary>
+        public string ContentEncoding
+        {
+            get
+            {
+                return this.GetSystemProperty<string>(MessageSystemPropertyNames.ContentEncoding);
+            }
+
+            set
+            {
+                this.SystemProperties[MessageSystemPropertyNames.ContentEncoding] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets the dictionary of user properties which are set when user send the data.
         /// </summary>
         public IDictionary<string, string> Properties { get; private set; }
@@ -360,7 +424,7 @@ namespace Microsoft.Azure.Devices
                 };
             }
 
-            foreach (var systemProperty in this.SystemProperties)
+            foreach (KeyValuePair<string, object> systemProperty in this.SystemProperties)
             {
                 // MessageId would already be there.
                 if (message.SystemProperties.ContainsKey(systemProperty.Key))
@@ -373,7 +437,7 @@ namespace Microsoft.Azure.Devices
                 }
             }
 
-            foreach (var property in this.Properties)
+            foreach (KeyValuePair<string, string> property in this.Properties)
             {
                 message.Properties.Add(property);
             }
@@ -427,7 +491,7 @@ namespace Microsoft.Azure.Devices
             if ((listStream = this.bodyStream as BufferListStream) != null)
             {
                 // We can trust Amqp bufferListStream.Length;
-                byte[] bytes = new byte[listStream.Length];
+                var bytes = new byte[listStream.Length];
                 listStream.Read(bytes, 0, bytes.Length);
                 return bytes;
             }

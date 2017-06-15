@@ -37,25 +37,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             public const string MessageId = "$.mid";
             public const string To = "$.to";
             public const string UserId = "$.uid";
+            public const string MessageSchema = "$.schema";
+            public const string CreationTimeUtc = "$.ctime";
+            public const string ContentType = "$.ct";
+            public const string ContentEncoding = "$.ce";
         }
-
-        static class MessageSystemPropertyNames
-        {
-            public const string MessageId = "message-id";
-
-            public const string To = "to";
-
-            public const string ExpiryTimeUtc = "absolute-expiry-time";
-
-            public const string CorrelationId = "correlation-id";
-
-            public const string UserId = "user-id";
-
-            public const string Operation = "iothub-operation";
-
-            public const string Ack = "iothub-ack";
-        }
-
+        
         static readonly Dictionary<string, string> ToSystemPropertiesMap = new Dictionary<string, string>
         {
             {IotHubWirePropertyNames.AbsoluteExpiryTime, MessageSystemPropertyNames.ExpiryTimeUtc},
@@ -63,6 +50,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {IotHubWirePropertyNames.MessageId, MessageSystemPropertyNames.MessageId},
             {IotHubWirePropertyNames.To, MessageSystemPropertyNames.To},
             {IotHubWirePropertyNames.UserId, MessageSystemPropertyNames.UserId},
+            {IotHubWirePropertyNames.MessageSchema, MessageSystemPropertyNames.MessageSchema},
+            {IotHubWirePropertyNames.CreationTimeUtc, MessageSystemPropertyNames.CreationTimeUtc},
+            {IotHubWirePropertyNames.ContentType, MessageSystemPropertyNames.ContentType},
+            {IotHubWirePropertyNames.ContentEncoding, MessageSystemPropertyNames.ContentEncoding},
             {MessageSystemPropertyNames.Operation, MessageSystemPropertyNames.Operation},
             {MessageSystemPropertyNames.Ack, MessageSystemPropertyNames.Ack}
         };
@@ -74,6 +65,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {MessageSystemPropertyNames.MessageId, IotHubWirePropertyNames.MessageId},
             {MessageSystemPropertyNames.To, IotHubWirePropertyNames.To},
             {MessageSystemPropertyNames.UserId, IotHubWirePropertyNames.UserId},
+            {MessageSystemPropertyNames.MessageSchema, IotHubWirePropertyNames.MessageSchema},
+            {MessageSystemPropertyNames.CreationTimeUtc, IotHubWirePropertyNames.CreationTimeUtc},
+            {MessageSystemPropertyNames.ContentType, IotHubWirePropertyNames.ContentType},
+            {MessageSystemPropertyNames.ContentEncoding, IotHubWirePropertyNames.ContentEncoding},
             {MessageSystemPropertyNames.Operation, MessageSystemPropertyNames.Operation},
             {MessageSystemPropertyNames.Ack, MessageSystemPropertyNames.Ack}
         };
@@ -272,7 +267,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 return property.Value;
             }
-            if (property.Key == IotHubWirePropertyNames.AbsoluteExpiryTime)
+            if (property.Key == IotHubWirePropertyNames.AbsoluteExpiryTime ||
+                property.Key == IotHubWirePropertyNames.CreationTimeUtc)
             {
                 return DateTime.ParseExact(property.Value, "o", CultureInfo.InvariantCulture);
             }

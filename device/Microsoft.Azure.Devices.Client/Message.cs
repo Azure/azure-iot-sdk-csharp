@@ -1,6 +1,4 @@
-﻿
-
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace Microsoft.Azure.Devices.Client
@@ -363,6 +361,86 @@ namespace Microsoft.Azure.Devices.Client
         /// For incoming messages, contains the Mqtt topic that the message arrived on
         /// </summary>
         internal string MqttTopicName { get; set; }
+        
+        /// <summary>
+        /// Used to specify the schema of the message content.
+        /// </summary>
+        public string MessageSchema
+        {
+            get
+            {
+#if NETMF
+                return this.GetSystemProperty(MessageSystemPropertyNames.MessageSchema) as string ?? string.Empty;
+#else
+                return this.GetSystemProperty<string>(MessageSystemPropertyNames.MessageSchema);
+#endif
+            }
+
+            set
+            {
+                this.SystemProperties[MessageSystemPropertyNames.MessageSchema] = value;
+            }
+        }
+
+        /// <summary>
+        /// Custom date property set by the originator of the message.
+        /// </summary>
+        public DateTimeT CreationTimeUtc
+        {
+            get
+            {
+#if NETMF
+                return (DateTime)(this.GetSystemProperty(MessageSystemPropertyNames.CreationTimeUtc) ?? DateTime.MinValue);
+#else
+                return this.GetSystemProperty<DateTimeT>(MessageSystemPropertyNames.CreationTimeUtc);
+#endif
+            }
+
+            set
+            {
+                this.SystemProperties[MessageSystemPropertyNames.CreationTimeUtc] = value;
+            }
+        }
+
+        /// <summary>
+        /// Used to specify the content type of the message.
+        /// </summary>
+        public string ContentType
+        {
+            get
+            {
+#if NETMF
+                return this.GetSystemProperty(MessageSystemPropertyNames.ContentType) as string ?? string.Empty;
+#else
+                return this.GetSystemProperty<string>(MessageSystemPropertyNames.ContentType);
+#endif
+            }
+
+            set
+            {
+                this.SystemProperties[MessageSystemPropertyNames.ContentType] = value;
+            }
+        }
+
+        /// <summary>
+        /// Used to specify the content encoding type of the message.
+        /// </summary>
+        public string ContentEncoding
+        {
+            get
+            {
+#if NETMF
+                return this.GetSystemProperty(MessageSystemPropertyNames.ContentEncoding) as string ?? string.Empty;
+#else
+                return this.GetSystemProperty<string>(MessageSystemPropertyNames.ContentEncoding);
+#endif
+            }
+
+            set
+            {
+                this.SystemProperties[MessageSystemPropertyNames.ContentEncoding] = value;
+            }
+        }
 
         /// <summary>
         /// Gets the dictionary of user properties which are set when user send the data.

@@ -68,6 +68,26 @@ namespace Microsoft.Azure.Devices.Client
         public const string Ack = "iothub-ack";
 
         /// <summary>
+        /// [Optional] Used to specify the schema of the message content.
+        /// </summary>
+        public const string MessageSchema = "iothub-messageschema";
+
+        /// <summary>
+        /// [Optional] Custom date property set by the originator of the message.
+        /// </summary>
+        public const string CreationTimeUtc = "iothub-creationtimeutc";
+
+        /// <summary>
+        /// [Optional] Used to specify the content encoding type of the message.
+        /// </summary>
+        public const string ContentEncoding = "iothub-contentencoding";
+
+        /// <summary>
+        /// [Optional] Used to specify the content type of the message.
+        /// </summary>
+        public const string ContentType = "iothub-contenttype";
+
+        /// <summary>
         /// The lock token of the retrieved message 
         /// </summary>
         public const string MessageLockToken = "iothub-messagelocktoken";

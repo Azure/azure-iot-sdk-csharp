@@ -44,6 +44,16 @@ namespace Microsoft.Azure.Devices.Client
 
                 data.CorrelationId = amqpMessage.Properties.CorrelationId != null ? amqpMessage.Properties.CorrelationId.ToString() : null;
                 data.UserId = amqpMessage.Properties.UserId.Array != null ? Encoding.UTF8.GetString(amqpMessage.Properties.UserId.Array, 0 /*index*/, amqpMessage.Properties.UserId.Array.Length) : null;
+                
+                if (!string.IsNullOrWhiteSpace(amqpMessage.Properties.ContentType.Value))
+                {
+                    data.ContentType = amqpMessage.Properties.ContentType.Value;
+                }
+
+                if (!string.IsNullOrWhiteSpace(amqpMessage.Properties.ContentEncoding.Value))
+                {
+                    data.ContentEncoding = amqpMessage.Properties.ContentEncoding.Value;
+                }
             }
 
             if ((sections & SectionFlag.MessageAnnotations) != 0)
@@ -88,6 +98,12 @@ namespace Microsoft.Azure.Devices.Client
                             {
                                 case MessageSystemPropertyNames.Operation:
                                     data.SystemProperties[pair.Key.ToString()] = stringObject;
+                                    break;
+                                case MessageSystemPropertyNames.MessageSchema:
+                                    data.MessageSchema = stringObject;
+                                    break;
+                                case MessageSystemPropertyNames.CreationTimeUtc:
+                                    data.CreationTimeUtc = DateTime.Parse(stringObject);
                                     break;
                                 default:
                                     data.Properties[pair.Key.ToString()] = stringObject;
@@ -144,10 +160,30 @@ namespace Microsoft.Azure.Devices.Client
                 amqpMessage.ApplicationProperties = new ApplicationProperties();
             }
 
-            object deliveryAckSetting;
-            if (data.SystemProperties.TryGetValue(MessageSystemPropertyNames.Ack, out deliveryAckSetting))
+            object propertyValue;
+            if (data.SystemProperties.TryGetValue(MessageSystemPropertyNames.Ack, out propertyValue))
             {
-                amqpMessage.ApplicationProperties.Map["iothub-ack"] = (string)deliveryAckSetting;
+                amqpMessage.ApplicationProperties.Map["iothub-ack"] = (string)propertyValue;
+            }
+
+            if (data.SystemProperties.TryGetValue(MessageSystemPropertyNames.MessageSchema, out propertyValue))
+            {
+                amqpMessage.ApplicationProperties.Map[MessageSystemPropertyNames.MessageSchema] = (string)propertyValue;
+            }
+
+            if (data.SystemProperties.TryGetValue(MessageSystemPropertyNames.CreationTimeUtc, out propertyValue))
+            {
+                amqpMessage.ApplicationProperties.Map[MessageSystemPropertyNames.CreationTimeUtc] = ((DateTime)propertyValue).ToString("o");    // Convert to string that complies with ISO 8601
+            }
+
+            if (data.SystemProperties.TryGetValue(MessageSystemPropertyNames.ContentType, out propertyValue))
+            {
+                amqpMessage.Properties.ContentType = (string)propertyValue;
+            }
+
+            if (data.SystemProperties.TryGetValue(MessageSystemPropertyNames.ContentEncoding, out propertyValue))
+            {
+                amqpMessage.Properties.ContentEncoding = (string)propertyValue;
             }
 
             if (copyUserProperties && data.Properties.Count > 0)
