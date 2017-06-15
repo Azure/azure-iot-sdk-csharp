@@ -23,7 +23,7 @@
 
             <group targetFramework="net45" >
                 <dependency id="PCLCrypto" version="2.0.147" />
-                <dependency id="Microsoft.Azure.Amqp" version="2.0.4" />
+                <dependency id="Microsoft.Azure.Amqp" version="2.0.6" />
                 <dependency id="DotNetty.Codecs.Mqtt" version="0.4.4" />
                 <dependency id="DotNetty.Handlers" version="0.4.4" />
                 <dependency id="EnterpriseLibrary.TransientFaultHandling" version="6.0.1304" />
@@ -35,7 +35,7 @@
             <group targetFramework="uap10.0">
                 <dependency id="Microsoft.NETCore.UniversalWindowsPlatform" version="[5.2.2,)"/>
                 <dependency id="PCLCrypto" version="2.0.147" />
-                <dependency id="Microsoft.Azure.Amqp" version="2.0.4" />
+                <dependency id="Microsoft.Azure.Amqp" version="2.0.6" />
                 <dependency id="Microsoft.AspNet.WebApi.Client" version="5.2.3" />
                 <dependency id="Microsoft.Azure.Devices.Shared" version="1.0.11" />
                 <dependency id="EnterpriseLibrary.TransientFaultHandling" version="6.0.1304" />
@@ -48,7 +48,7 @@
             <group targetFramework="netstandard1.3" >
                 <dependency id="DotNetty.Codecs.Mqtt" version="0.4.4" />
                 <dependency id="DotNetty.Handlers" version="0.4.4" />
-                <dependency id="Microsoft.Azure.Amqp" version="2.0.4" />
+                <dependency id="Microsoft.Azure.Amqp" version="2.0.6" />
                 <dependency id="Newtonsoft.Json" version="9.0.1" />
                 <dependency id="System.AppContext" version="4.3.0"/>
                 <dependency id="System.Collections.Specialized" version="4.3.0" />
