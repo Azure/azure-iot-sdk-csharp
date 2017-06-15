@@ -141,8 +141,17 @@ namespace Microsoft.Azure.Devices.E2ETests
             Client.Message testMessage = ComposeD2CTestMessage(out payload, out p1Value);
             await deviceClient.SendEventAsync(testMessage);
 
-            var events = await eventHubReceiver.ReceiveAsync(int.MaxValue, TimeSpan.FromSeconds(5));
-            VerifyTestMessage(events, deviceInfo.Item1, payload, p1Value);
+            bool isReceived = false;
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+            while (!isReceived && sw.Elapsed.Minutes < 1)
+            {
+                var events = await eventHubReceiver.ReceiveAsync(int.MaxValue, TimeSpan.FromSeconds(5));
+                isReceived = VerifyTestMessage(events, deviceInfo.Item1, payload, p1Value);
+            }
+            sw.Stop();
+
+            Assert.IsTrue(isReceived, "Message is not received.");
 
             await deviceClient.CloseAsync();
             await eventHubClient.CloseAsync();
@@ -169,21 +178,24 @@ namespace Microsoft.Azure.Devices.E2ETests
             };
         }
 
-        private void VerifyTestMessage(IEnumerable<EventData> events, string deviceName, string payload, string p1Value)
+        private bool VerifyTestMessage(IEnumerable<EventData> events, string deviceName, string payload, string p1Value)
         {
             foreach (var eventData in events)
             {
                 var data = Encoding.UTF8.GetString(eventData.GetBytes());
-                Assert.AreEqual(data, payload);
-
-                var connectionDeviceId = eventData.SystemProperties["iothub-connection-device-id"].ToString();
-                Assert.AreEqual(connectionDeviceId.ToUpper(), deviceName.ToUpper());
-
-                Assert.AreEqual(eventData.Properties.Count, 1);
-                var property = eventData.Properties.Single();
-                Assert.AreEqual(property.Key, "property1");
-                Assert.AreEqual(property.Value, p1Value);
+                if (data.Equals(payload))
+                {
+                    var connectionDeviceId = eventData.SystemProperties["iothub-connection-device-id"].ToString();
+                    if (string.Equals(connectionDeviceId, deviceName, StringComparison.CurrentCultureIgnoreCase) &&
+                        eventData.Properties.Count == 1 &&
+                        eventData.Properties.Single().Key.Equals("property1") &&
+                        eventData.Properties.Single().Value.Equals(p1Value))
+                    {
+                        return true;
+                    }
+                }
             }
+            return false;
         }
 
         private Message ComposeC2DTestMessage(out string payload, out string messageId, out string p1Value)

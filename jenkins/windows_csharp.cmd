@@ -45,7 +45,7 @@ cd %build-root%
 
 REM -- Run C# E2E Tests  --
 cd %build-root%\e2e\Microsoft.Azure.Devices.E2ETests\bin\Release
-mstest /TestContainer:Microsoft.Azure.Devices.E2ETests.dll
+mstest /TestContainer:Microsoft.Azure.Devices.E2ETests.dll /resultsfile:testResults.trx
 if errorlevel 1 goto :eof
 cd %build-root%
 
