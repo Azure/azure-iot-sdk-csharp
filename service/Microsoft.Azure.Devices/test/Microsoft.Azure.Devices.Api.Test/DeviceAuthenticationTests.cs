@@ -633,5 +633,31 @@ namespace Microsoft.Azure.Devices.Api.Test
             var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
             await registryManager.AddDeviceAsync(deviceBadThumbprint);
         }
+
+        [TestMethod]
+        [TestCategory("CIT")]
+        [TestCategory("Auth")]
+        public async Task DeviceAuthenticationIsCertificateAuthority()
+        {
+            var deviceBadThumbprint = new Device("123")
+            {
+                ConnectionState = DeviceConnectionState.Connected,
+                Authentication = new AuthenticationMechanism
+                {
+                    Type = AuthenticationType.CertificateAuthority,
+                    SymmetricKey = null,
+                    X509Thumbprint = null
+                }
+            };
+
+            var restOpMock = new Mock<IHttpClientHelper>();
+            restOpMock.Setup(
+                restOp =>
+                    restOp.PutAsync(It.IsAny<Uri>(), It.IsAny<Device>(), It.IsAny<PutOperationType>(),
+                        It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(),
+                        It.IsAny<CancellationToken>())).ReturnsAsync(deviceBadThumbprint);
+            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            await registryManager.AddDeviceAsync(deviceBadThumbprint);
+        }
     }
 }

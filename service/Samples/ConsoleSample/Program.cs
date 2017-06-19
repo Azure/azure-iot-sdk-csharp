@@ -11,9 +11,15 @@ namespace ConsoleSample
     {
         const string connectionString = "<replace_with_iothub_connection_string>";
         const string deviceID = "new_device";
+
+        const string primaryThumbprint = "<replace_with_certificate_thumbprint>";
+        const string secondaryThumbprint = "<replace_with_certificate_thumbprint>";
+
         static void Main(string[] args)
         {
-            AddDevice().Wait();
+            AddDeviceAsync().Wait();
+            AddDeviceWithSelfSignedCertificateAsync().Wait();
+            AddDeviceWithCertificateAuthorityAuthenticationAsync().Wait();
             //SendMessage().Wait();
             //RemoveDevice().Wait();
         }
@@ -27,14 +33,47 @@ namespace ConsoleSample
             Console.WriteLine("C2D Message Sent");
         }
 
-        static async Task AddDevice()
+        static async Task AddDeviceAsync()
         {
             RegistryManager manager = RegistryManager.CreateFromConnectionString(connectionString);
             await manager.AddDeviceAsync(new Device(deviceID));
             Console.WriteLine("Device Added");
         }
 
-        static async Task RemoveDevice()
+        static async Task AddDeviceWithSelfSignedCertificateAsync()
+        {
+            RegistryManager manager = RegistryManager.CreateFromConnectionString(connectionString);
+            var device = new Device(deviceID)
+            {
+                Authentication = new AuthenticationMechanism
+                {
+                    Type = AuthenticationType.SelfSigned,
+                    X509Thumbprint = new X509Thumbprint
+                    {
+                        PrimaryThumbprint = primaryThumbprint,
+                        SecondaryThumbprint = secondaryThumbprint
+                    }
+                }
+            };
+            await manager.AddDeviceAsync(device);
+            Console.WriteLine("Device Added");
+        }
+
+        static async Task AddDeviceWithCertificateAuthorityAuthenticationAsync()
+        {
+            RegistryManager manager = RegistryManager.CreateFromConnectionString(connectionString);
+            var device = new Device(deviceID)
+            {
+                Authentication = new AuthenticationMechanism
+                {
+                    Type = AuthenticationType.CertificateAuthority
+                }
+            };
+            await manager.AddDeviceAsync(device);
+            Console.WriteLine("Device Added");
+        }
+
+        static async Task RemoveDeviceAsync()
         {
             RegistryManager manager = RegistryManager.CreateFromConnectionString(connectionString);
             await manager.RemoveDeviceAsync(deviceID);
