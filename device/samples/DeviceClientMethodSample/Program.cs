@@ -10,8 +10,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
     class Program
     {
         // String containing Hostname, Device Id & Device Key in one of the following formats:
-        // "HostName=<iothub_host_name>;DeviceId=<device_id>;SharedAccessKey=<device_key>"
-        // "HostName=<iothub_host_name>;CredentialType=SharedAccessSignature;DeviceId=<device_id>;SharedAccessSignature=SharedAccessSignature sr=<iot_host>/devices/<device_id>&sig=<token>&se=<expiry_time>";
+        //  "HostName=<iothub_host_name>;DeviceId=<device_id>;SharedAccessKey=<device_key>"
+        //  "HostName=<iothub_host_name>;CredentialType=SharedAccessSignature;DeviceId=<device_id>;SharedAccessSignature=SharedAccessSignature sr=<iot_host>/devices/<device_id>&sig=<token>&se=<expiry_time>";
         private const string DeviceConnectionString = "<replace>";
 
         class DeviceData
@@ -39,14 +39,14 @@ namespace Microsoft.Azure.Devices.Client.Samples
         static Task<MethodResponse> GetDeviceName(MethodRequest methodRequest, object userContext)
         {
             MethodResponse retValue;
-            var userData = userContext as DeviceData;
-            if (userData == null)
+            if (userContext == null)
             {
                 retValue = new MethodResponse(new byte[0], 500);
             }
             else
             {
-                string result = "{\"name\":\"" + userData.Name + "\"}";
+                var d = userContext as DeviceData;
+                string result = "{\"name\":\"" + d.Name + "\"}";
                 retValue = new MethodResponse(Encoding.UTF8.GetBytes(result), 200);
             }
             return Task.FromResult(retValue);
@@ -54,18 +54,25 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         static void Main(string[] args)
         {
+            TransportType transport = TransportType.Mqtt;
+
 #if WIP_C2D_METHODS_AMQP
+            if (args.Length == 1 && args[0].ToLower().Equals("amqp"))
+            {
+                transport = TransportType.Amqp;
+            }
+#endif
             DeviceClient deviceClient = null;
             try
             {
-                deviceClient = DeviceClient.CreateFromConnectionString(DeviceConnectionString, TransportType.Amqp);
+                deviceClient = DeviceClient.CreateFromConnectionString(DeviceConnectionString, transport);
 
                 // Method Call processing will be enabled when the first method handler is added.
                 // setup a callback for the 'WriteToConsole' method
                 deviceClient.SetMethodHandlerAsync("WriteToConsole", WriteToConsole, null).Wait();
 
-                // setup a callback for the 'GetDeviceName' method
-                deviceClient.SetMethodHandlerAsync("GetDeviceName", GetDeviceName, new DeviceData("DeviceClientMethodAmqpSample")).Wait();
+                // setup a calback for the 'GetDeviceName' method
+                deviceClient.SetMethodHandlerAsync("GetDeviceName", GetDeviceName, new DeviceData("DeviceClientMethodSample")).Wait();
             }
             catch (AggregateException ex)
             {
@@ -93,7 +100,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
             deviceClient?.SetMethodHandlerAsync("GetDeviceName", null, null).Wait();
 
             deviceClient?.CloseAsync().Wait();
-#endif
         }
     }
 }

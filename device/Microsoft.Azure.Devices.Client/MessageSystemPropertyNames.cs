@@ -26,5 +26,13 @@ namespace Microsoft.Azure.Devices.Client
         public const string Operation = "iothub-operation";
 
         public const string Ack = "iothub-ack";
+
+        public const string MessageSchema = "iothub-message-schema";
+
+        public const string CreationTimeUtc = "iothub-creation-time-utc";
+
+        public const string ContentEncoding = "iothub-content-encoding";
+
+        public const string ContentType = "iothub-content-type";
     }
 }

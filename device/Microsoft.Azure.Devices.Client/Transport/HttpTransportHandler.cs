@@ -35,6 +35,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 { MessageSystemPropertyNames.Operation, CustomHeaderConstants.Operation },
                 { MessageSystemPropertyNames.To, CustomHeaderConstants.To },
                 { MessageSystemPropertyNames.UserId, CustomHeaderConstants.UserId },
+                { MessageSystemPropertyNames.MessageSchema, CustomHeaderConstants.MessageSchema },
+                { MessageSystemPropertyNames.CreationTimeUtc, CustomHeaderConstants.CreationTimeUtc },
+                { MessageSystemPropertyNames.ContentType, CustomHeaderConstants.ContentType },
+                { MessageSystemPropertyNames.ContentEncoding, CustomHeaderConstants.ContentEncoding }
             };
 
         readonly IHttpClientHelper httpClientHelper;
@@ -150,7 +154,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             var customHeaders = new Dictionary<string, string>(message.SystemProperties.Count + message.Properties.Count);
             foreach (var property in message.SystemProperties)
             {
-                customHeaders.Add(MapMessageProperties2HttpHeaders[property.Key], property.Value.ToString());
+                string strValue = property.Value is DateTime ? ((DateTime)property.Value).ToString("o") : property.Value.ToString();
+                customHeaders.Add(MapMessageProperties2HttpHeaders[property.Key], strValue);
             }
 
             foreach (var property in message.Properties)

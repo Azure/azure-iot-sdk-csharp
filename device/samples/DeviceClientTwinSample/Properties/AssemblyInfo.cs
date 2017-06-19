@@ -4,11 +4,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("DeviceClientMethodAmqpSample")]
+[assembly: AssemblyTitle("DeviceClientTwinSample")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("HP Inc.")]
-[assembly: AssemblyProduct("DeviceClientMethodAmqpSample")]
+[assembly: AssemblyCompany("")]
+[assembly: AssemblyProduct("DeviceClientTwinSample")]
 [assembly: AssemblyCopyright("Copyright ©  2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -19,7 +19,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("6d46df7c-c810-403d-be46-c8b86099f752")]
+[assembly: Guid("f6f4a75b-47de-4543-88d4-d8a8c15b57e3")]
 
 // Version information for an assembly consists of the following four values:
 //
