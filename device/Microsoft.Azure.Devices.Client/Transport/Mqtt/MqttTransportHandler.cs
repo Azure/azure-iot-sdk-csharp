@@ -165,11 +165,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             MqttTransportSettings settings, 
             Action<object, EventArgs> onConnectionClosedCallback, 
             Func<MethodRequestInternal, Task> onMethodCallback = null, 
-            Action<TwinCollection> onReportedStatePatchReceivedCallback = null)
+            Action<TwinCollection> onDesiredStatePatchReceivedCallback = null)
             : this(context, iotHubConnectionString, settings, null, onConnectionClosedCallback)
         {
             this.messageListener = onMethodCallback;
-            this.onDesiredStatePatchListener = onReportedStatePatchReceivedCallback;
+            this.onDesiredStatePatchListener = onDesiredStatePatchReceivedCallback;
         }
 
         internal MqttTransportHandler(

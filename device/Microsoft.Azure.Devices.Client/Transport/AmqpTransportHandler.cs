@@ -35,7 +35,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         Func<MethodRequestInternal, Task> messageListener;
         Action<TwinCollection> onDesiredStatePatchListener;
-        Action<Message> twinResponseEvent;
         
         Action<object, EventArgs> linkClosedListener;
         Action<object, EventArgs> SafeAddClosedMethodReceivingLinkHandler;
@@ -239,7 +238,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 #endif
         }
 
-        public override Task EnableMethodsAsync(CancellationToken cancellationToken)
+        public override async Task EnableMethodsAsync(CancellationToken cancellationToken)
         {
 #if WIP_C2D_METHODS_AMQP
             if (this.faultTolerantMethodSendingLink == null)
@@ -252,7 +251,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 this.faultTolerantMethodReceivingLink = new Client.FaultTolerantAmqpObject<ReceivingAmqpLink>(this.CreateMethodReceivingLinkAsync, this.IotHubConnection.CloseLink);
             }
 
-            return this.HandleTimeoutCancellation(async () =>
+            await this.HandleTimeoutCancellation(async () =>
             {
                 try
                 {
@@ -511,31 +510,49 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             return outcome;
         }
-        
-        public override async Task<Twin> SendTwinGetAsync(CancellationToken cancellationToken)
+
+        private async Task<AmqpMessage> RoundTripTwinMessage(AmqpMessage amqpMessage, CancellationToken cancellationToken)
         {
-            Outcome outcome;
             string correlationId = Guid.NewGuid().ToString();
+            AmqpMessage response = null;
+
             
             try
             {
-                await EnableTwinPatchAsync(cancellationToken);
-                
+                Outcome outcome;
                 SendingAmqpLink eventSendingLink = await this.GetTwinSendingLinkAsync(cancellationToken);
 
-                AmqpMessage amqpMessage = AmqpMessage.Create();
                 amqpMessage.Properties.CorrelationId = correlationId;
-                amqpMessage.MessageAnnotations.Map["operation"] = "GET";
-
-                this.twinResponseCompletions[correlationId] = new TaskCompletionSource<AmqpMessage>();
                 
+                this.twinResponseCompletions[correlationId] = new TaskCompletionSource<AmqpMessage>();
+
                 outcome = await eventSendingLink.SendMessageAsync(amqpMessage, new ArraySegment<byte>(Guid.NewGuid().ToByteArray()), AmqpConstants.NullBinary, this.operationTimeout);
                 if (outcome.DescriptorCode != Accepted.Code)
                 {
                     throw AmqpErrorMapper.GetExceptionFromOutcome(outcome);
                 }
 
-                var response = await this.twinResponseCompletions[correlationId].Task;
+                response = await this.twinResponseCompletions[correlationId].Task;
+            }
+            finally
+            {
+                TaskCompletionSource<AmqpMessage> throwAway;
+                this.twinResponseCompletions.TryRemove(correlationId, out throwAway);
+            }
+
+            return response;
+        }
+        
+        public override async Task<Twin> SendTwinGetAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                await EnableTwinPatchAsync(cancellationToken);
+                
+                AmqpMessage amqpMessage = AmqpMessage.Create();
+                amqpMessage.MessageAnnotations.Map["operation"] = "GET";
+
+                var response = await RoundTripTwinMessage(amqpMessage, cancellationToken);
 
                 return TwinFromResponse(response);
             }
@@ -548,19 +565,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                 throw AmqpClientHelper.ToIotHubClientContract(exception);
             }
-            finally
-            {
-                TaskCompletionSource<AmqpMessage> throwAway;
-                this.twinResponseCompletions.TryRemove(correlationId, out throwAway);
-            }
         }
 
         public override async Task SendTwinPatchAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
         {
-
-            Outcome outcome;
-            string correlationId = Guid.NewGuid().ToString();
-
             try
             {
                 await EnableTwinPatchAsync(cancellationToken);
@@ -568,24 +576,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 var body = JsonConvert.SerializeObject(reportedProperties);
                 var bodyStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(body));
 
-                // TODO: disposal?
-                var amqpMessage = AmqpMessage.Create(bodyStream, false);
-                amqpMessage.Properties.CorrelationId = correlationId;
+                var amqpMessage = AmqpMessage.Create(bodyStream, true);
                 amqpMessage.MessageAnnotations.Map["operation"] = "PATCH";
                 amqpMessage.MessageAnnotations.Map["resource"] = "/properties/reported";
                 amqpMessage.MessageAnnotations.Map["version"] = null;
 
-                SendingAmqpLink eventSendingLink = await this.GetTwinSendingLinkAsync(cancellationToken);
-
-                this.twinResponseCompletions[correlationId] = new TaskCompletionSource<AmqpMessage>();
-
-                outcome = await eventSendingLink.SendMessageAsync(amqpMessage, new ArraySegment<byte>(Guid.NewGuid().ToByteArray()), AmqpConstants.NullBinary, this.operationTimeout);
-                if (outcome.DescriptorCode != Accepted.Code)
-                {
-                    throw AmqpErrorMapper.GetExceptionFromOutcome(outcome);
-                }
-
-                await this.twinResponseCompletions[correlationId].Task;
+                await RoundTripTwinMessage(amqpMessage, cancellationToken);
             }
             catch (Exception exception)
             {
@@ -595,11 +591,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 }
 
                 throw AmqpClientHelper.ToIotHubClientContract(exception);
-            }
-            finally
-            {
-                TaskCompletionSource<AmqpMessage> throwAway;
-                this.twinResponseCompletions.TryRemove(correlationId, out throwAway);
             }
         }
 
@@ -697,7 +688,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             string path = string.Format(CultureInfo.InvariantCulture, CommonConstants.DeviceEventPathTemplate, System.Net.WebUtility.UrlEncode(this.deviceId));
 
-            return await this.IotHubConnection.CreateSendingLinkAsync(path, this.iotHubConnectionString, this.deviceId, IotHubConnection.SendingLinkType.Telemetry, timeout, cancellationToken);
+            return await this.IotHubConnection.CreateSendingLinkAsync(path, this.iotHubConnectionString, this.deviceId, IotHubConnection.SendingLinkType.TelemetryEvents, timeout, cancellationToken);
         }
 
         async Task<ReceivingAmqpLink> GetDeviceBoundReceivingLinkAsync(CancellationToken cancellationToken)
@@ -715,7 +706,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             string path = string.Format(CultureInfo.InvariantCulture, CommonConstants.DeviceBoundPathTemplate, System.Net.WebUtility.UrlEncode(this.deviceId));
 
-            return await this.IotHubConnection.CreateReceivingLinkAsync(path, this.iotHubConnectionString, this.deviceId, IotHubConnection.ReceivingLinkType.Messaging, this.prefetchCount, timeout, cancellationToken);
+            return await this.IotHubConnection.CreateReceivingLinkAsync(path, this.iotHubConnectionString, this.deviceId, IotHubConnection.ReceivingLinkType.C2DMessages, this.prefetchCount, timeout, cancellationToken);
         }
 
         async Task<SendingAmqpLink> GetMethodSendingLinkAsync(CancellationToken cancellationToken)
@@ -773,7 +764,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         async Task<SendingAmqpLink> CreateTwinSendingLinkAsync(TimeSpan timeout, CancellationToken cancellationToken)
         {
-            string path = string.Format(CultureInfo.InvariantCulture, CommonConstants.DeviceMethodPathTemplate, System.Net.WebUtility.UrlEncode(this.deviceId));
+            string path = string.Format(CultureInfo.InvariantCulture, CommonConstants.DeviceTwinPathTemplate, System.Net.WebUtility.UrlEncode(this.deviceId));
 
             return await this.IotHubConnection.CreateSendingLinkAsync(path, this.iotHubConnectionString, this.deviceId, IotHubConnection.SendingLinkType.Twin, timeout, cancellationToken);
         }
@@ -791,7 +782,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         async Task<ReceivingAmqpLink> CreateTwinReceivingLinkAsync(TimeSpan timeout, CancellationToken cancellationToken)
         {
-            string path = string.Format(CultureInfo.InvariantCulture, CommonConstants.DeviceMethodPathTemplate, System.Net.WebUtility.UrlEncode(this.deviceId));
+            string path = string.Format(CultureInfo.InvariantCulture, CommonConstants.DeviceTwinPathTemplate, System.Net.WebUtility.UrlEncode(this.deviceId));
 
             var link = await this.IotHubConnection.CreateReceivingLinkAsync(path, this.iotHubConnectionString, this.deviceId, IotHubConnection.ReceivingLinkType.Twin, this.prefetchCount, timeout, cancellationToken);
 
