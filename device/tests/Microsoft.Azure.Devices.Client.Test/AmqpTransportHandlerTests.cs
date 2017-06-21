@@ -108,7 +108,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
         AmqpTransportHandler CreateFromConnectionString()
         {
-            return new AmqpTransportHandler(new PipelineContext(), IotHubConnectionString.Parse(DumpyConnectionString), new AmqpTransportSettings(TransportType.Amqp_Tcp_Only), (o, ea) => { });
+            return new AmqpTransportHandler(new PipelineContext(), IotHubConnectionString.Parse(DumpyConnectionString), new AmqpTransportSettings(TransportType.Amqp_Tcp_Only), (o, ea) => { }, (o, ea) => { });
         }
     }
 }

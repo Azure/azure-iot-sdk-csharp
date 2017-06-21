@@ -18,6 +18,14 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         private static DeviceClient Client = null;
 
+        static void ConnectionStatusChangeHandler(ConnectionStatus status, ConnectionStatusChangeReason reason)
+        {
+            Console.WriteLine();
+            Console.WriteLine("Connection Status Changed to {0}", status);
+            Console.WriteLine("Connection Status Changed Reason is {0}", reason);
+            Console.WriteLine();
+        }
+
         private static async Task OnDesiredPropertyChanged(TwinCollection desiredProperties, object userContext)
         {
             Console.WriteLine("desired property change:");
@@ -49,6 +57,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             {
                 Console.WriteLine("Connecting to hub");
                 Client = DeviceClient.CreateFromConnectionString(DeviceConnectionString, transport);
+                Client.SetConnectionStatusChangesHandler(ConnectionStatusChangeHandler);
                 Client.SetDesiredPropertyUpdateCallbackAsync(OnDesiredPropertyChanged, null).Wait();
 
                 Console.WriteLine("Retrieving twin");
@@ -64,6 +73,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 reportedProperties["DateTimeLastAppLaunch"] = DateTime.Now;
 
                 Client.UpdateReportedPropertiesAsync(reportedProperties);
+
+                Client.CloseAsync().Wait();
             }
             catch (AggregateException ex)
             {

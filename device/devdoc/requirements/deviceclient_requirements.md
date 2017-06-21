@@ -66,6 +66,9 @@ public sealed class DeviceClient
     public Task UpdateReportedPropertiesAsync(TwinCollection reportedProperties)
     public Task SetDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallback callback, object userContext)
     
+    public async Task SetMethodHandlerAsync(string methodName, MethodCallback methodHandler, object userContext)
+
+    public void SetConnectionStatusChangesHandler(ConnectionStatusChangesHandler statusChangesHandler)
 }
 ```
 
@@ -252,11 +255,31 @@ public Task SetDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallback 
 **SRS_DEVICECLIENT_18_007: [** `SetDesiredPropertyUpdateCallbackAsync` shall throw an `ArgumentNull` exception if `callback` is null **]**
  
 
-### OnConnectionClosed
+### SetConnectionStatusChangesHandler
 ```csharp
-internal async void OnConnectionClosed(object sender, EventArgs e)
+public void SetConnectionStatusChangesHandler(ConnectionStatusChangesHandler statusChangesHandler)
 ```
 
-**SRS_DEVICECLIENT_28_022: [** The OnConnectionClosed shall invoke the RecoverConnections process. **]**
+**SRS_DEVICECLIENT_28_025: [** `SetConnectionStatusChangesHandler` shall set connectionStatusChangesHandler **]**
 
-**SRS_DEVICECLIENT_28_023: [** If the invoked operations throw exception, the OnConnectionClosed shall failed silently **]**
+**SRS_DEVICECLIENT_28_026 [** `SetConnectionStatusChangesHandler` shall unset connectionStatusChangesHandler if `statusChangesHandler` is null **]**
+
+
+### OnConnectionClosed
+```csharp
+internal async void OnConnectionClosed(object sender, ConnectionEventArgs e)
+```
+
+**SRS_DEVICECLIENT_28_022: [** `OnConnectionClosed` shall invoke the RecoverConnections process. **]**
+
+**SRS_DEVICECLIENT_28_023: [** `OnConnectionClosed` shall invoke the connectionStatusChangesHandler if ConnectionStatus is changed. **]**
+
+**SRS_DEVICECLIENT_28_027: [** `OnConnectionClosed` shall invoke the connectionStatusChangesHandler if RecoverConnections throw exception **]**
+
+
+### OnConnectionOpened
+```csharp
+internal async void OnConnectionOpened(object sender, ConnectionEventArgs e)
+```
+
+**SRS_DEVICECLIENT_28_024: [** `OnConnectionOpened` shall invoke the connectionStatusChangesHandler if ConnectionStatus is changed **]**

@@ -329,6 +329,32 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             var assertResult = new TaskCompletionSource<Tuple<bool, bool>>();
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, transport);
+
+            ConnectionStatus? lastConnectionStatus = null;
+            ConnectionStatusChangeReason? lastConnectionStatusChangeReason = null;
+            int setConnectionStatusChangesHandlerCount = 0;
+
+            bool assertStatusChange = false;
+            deviceClient.SetConnectionStatusChangesHandler((status, statusChangeReason) =>
+            {
+                if (assertStatusChange) { 
+                    if (setConnectionStatusChangesHandlerCount == 0)
+                    {
+                        Assert.AreEqual(ConnectionStatus.Disconnected_Retrying, status);
+                        Assert.AreEqual(ConnectionStatusChangeReason.No_Network, statusChangeReason);
+                    }
+                    else
+                    {
+                        Assert.AreEqual(ConnectionStatus.Connected, status);
+                        Assert.AreEqual(ConnectionStatusChangeReason.Connection_Ok, statusChangeReason);
+                    }
+                }
+
+                lastConnectionStatus = status;
+                lastConnectionStatusChangeReason = statusChangeReason;
+                setConnectionStatusChangesHandlerCount++;
+            });
+
             await deviceClient.SetMethodHandlerAsync(MethodName,
                 (request, context) =>
                 {
@@ -337,18 +363,43 @@ namespace Microsoft.Azure.Devices.E2ETests
                 },
                 null);
 
+            if (transport != Client.TransportType.Http1)
+            {
+                Assert.AreEqual(1, setConnectionStatusChangesHandlerCount);
+                Assert.AreEqual(ConnectionStatus.Connected, lastConnectionStatus);
+                Assert.AreEqual(ConnectionStatusChangeReason.Connection_Ok, lastConnectionStatusChangeReason);
+            }
+
             await ServiceSendMethodAndVerifyResponse(deviceInfo.Item1, MethodName, DeviceResponseJson, ServiceRequestJson, assertResult);
 
+            // allow time for connection recovery
+            setConnectionStatusChangesHandlerCount = 0;
+            assertStatusChange = true;
+            
             // send error command
             await deviceClient.SendEventAsync(TestUtil.ComposeErrorInjectionProperties(faultType, reason, delayInSec));
 
-            // allow time for connection recovery
-            await Task.Delay(TimeSpan.FromSeconds(3));
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+            while (sw.Elapsed.Minutes < 3 && setConnectionStatusChangesHandlerCount < 2)
+            {
+                await Task.Delay(1000);
+            }
 
             assertResult = new TaskCompletionSource<Tuple<bool, bool>>();
             await ServiceSendMethodAndVerifyResponse(deviceInfo.Item1, MethodName, DeviceResponseJson, ServiceRequestJson, assertResult);
+            setConnectionStatusChangesHandlerCount = 0;
 
-            await deviceClient.CloseAsync();
+            assertStatusChange = false;
+            await deviceClient.SetMethodHandlerAsync(MethodName, null, null);
+
+            if (transport != Client.TransportType.Http1)
+            {
+                Assert.AreEqual(1, setConnectionStatusChangesHandlerCount);
+                Assert.AreEqual(ConnectionStatus.Disabled, lastConnectionStatus);
+                Assert.AreEqual(ConnectionStatusChangeReason.Client_Close, lastConnectionStatusChangeReason);
+            }
+
             TestUtil.RemoveDevice(deviceInfo.Item1, registryManager);
         }
     }
