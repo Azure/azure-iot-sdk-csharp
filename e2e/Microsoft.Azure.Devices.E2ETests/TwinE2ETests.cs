@@ -66,6 +66,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 #endif
         
+        [Ignore]
         [TestMethod]
         [TestCategory("Twin-E2E")]
         [TestCategory("Recovery")]
@@ -77,6 +78,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.DefaultDelayInSec);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("Twin-E2E")]
         [TestCategory("Recovery")]
@@ -89,6 +91,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
         
 #if WIP_C2D_METHODS_AMQP
+        [Ignore]
         [TestMethod]
         [TestCategory("Twin-E2E")]
         [TestCategory("Recovery")]
@@ -100,6 +103,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.DefaultDelayInSec);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("Twin-E2E")]
         [TestCategory("Recovery")]
