@@ -164,5 +164,5 @@ Run your sample application. Device Explorer should now show that the IoT hub ha
 [protocol-gateway]: https://github.com/Azure/azure-iot-protocol-gateway
 [lnk-devguide]: https://azure.microsoft.com/documentation/articles/iot-hub-devguide/
 [what-is-iot-hub]: https://azure.microsoft.com/documentation/articles/iot-hub-what-is-iot-hub/
-[iothub-explorer]: https://github.com/Azure/azure-iot-sdks/tree/master/tools/iothub-explorer
+[iothub-explorer]: https://github.com/Azure/iothub-explorer#iothub-explorer
 [sample-application-tutorial]: ../../doc/get_started/arduinoide-arduino-wifi101-c.md

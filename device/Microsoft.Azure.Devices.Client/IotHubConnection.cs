@@ -42,13 +42,13 @@ namespace Microsoft.Azure.Devices.Client
         readonly string twinConnectionCorrelationId = Guid.NewGuid().ToString("N");
 
         public enum SendingLinkType {
-            Telemetry,
+            TelemetryEvents,
             Methods,
             Twin
         };
 
         public enum ReceivingLinkType {
-            Messaging,
+            C2DMessages,
             Methods,
             Twin
         };
@@ -94,7 +94,7 @@ namespace Microsoft.Azure.Devices.Client
 
             switch (linkType)
             {
-                case SendingLinkType.Telemetry:
+                case SendingLinkType.TelemetryEvents:
                     linkSettings.SndSettleMode = null; // SenderSettleMode.Unsettled (null as it is the default and to avoid bytes on the wire)
                     linkSettings.RcvSettleMode = null; // (byte)ReceiverSettleMode.First (null as it is the default and to avoid bytes on the wire)
                     break;
@@ -112,7 +112,7 @@ namespace Microsoft.Azure.Devices.Client
             }
             else if (linkType == SendingLinkType.Twin)
             {
-                SetLinkSettingsCommonPropertiesForTwin(linkSettings, deviceId);
+                SetLinkSettingsCommonPropertiesForTwin(linkSettings);
             }
 
             var link = new SendingAmqpLink(linkSettings);
@@ -152,7 +152,7 @@ namespace Microsoft.Azure.Devices.Client
 
             switch (linkType)
             {
-                case ReceivingLinkType.Messaging:
+                case ReceivingLinkType.C2DMessages:
                     linkSettings.SndSettleMode = null; // SenderSettleMode.Unsettled (null as it is the default and to avoid bytes on the wire)
                     linkSettings.RcvSettleMode = (byte)ReceiverSettleMode.Second;
                     break;
@@ -170,7 +170,7 @@ namespace Microsoft.Azure.Devices.Client
             }
             else if (linkType == ReceivingLinkType.Twin)
             {
-                SetLinkSettingsCommonPropertiesForTwin(linkSettings, deviceId);
+                SetLinkSettingsCommonPropertiesForTwin(linkSettings);
             }
 
             var link = new ReceivingAmqpLink(linkSettings);
@@ -432,7 +432,7 @@ namespace Microsoft.Azure.Devices.Client
             return linkSettings;
         }
 
-        AmqpLinkSettings SetLinkSettingsCommonPropertiesForTwin(AmqpLinkSettings linkSettings, string deviceId)
+        AmqpLinkSettings SetLinkSettingsCommonPropertiesForTwin(AmqpLinkSettings linkSettings)
         {
             linkSettings.AddProperty(IotHubAmqpProperty.ApiVersion, ClientApiVersionHelper.ApiVersionString);
             linkSettings.AddProperty(IotHubAmqpProperty.ChannelCorrelationId, "twin:" + this.twinConnectionCorrelationId);
