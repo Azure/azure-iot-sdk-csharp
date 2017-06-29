@@ -80,6 +80,7 @@
     <Compile Include="TestAssert.cs" />
     <Compile Include="TransportSettingsTests.cs" />
     <Compile Include="DeviceClientTwinApiTests.cs" />
+    <Compile Include="DeviceClientConnectionStateManagerTests.cs" />
     <Compile Include="UtilsTests.cs" />
   </ItemGroup>
   <ItemGroup>

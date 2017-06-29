@@ -30,6 +30,13 @@ namespace Microsoft.Azure.Devices.Client
 
     public delegate Task<MethodResponse> MethodCallback(MethodRequest methodRequest, object userContext);
 
+    /// <summary>
+    /// Delegate for connection status changed.
+    /// </summary>
+    /// <param name="status">The updated connection status</param>
+    /// <param name="reason">The reason for the connection status change</param>
+    public delegate void ConnectionStatusChangesHandler(ConnectionStatus status, ConnectionStatusChangeReason reason);
+
     /*
      * Class Diagram and Chain of Responsibility in Device Client 
                                      +--------------------+
@@ -114,11 +121,14 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
 
         SemaphoreSlim methodsDictionarySemaphore = new SemaphoreSlim(1, 1);
 
+        DeviceClientConnectionStatusManager connectionStatusManager = new DeviceClientConnectionStatusManager();
+        
         /// <summary>
         /// Stores the timeout used in the operation retries.
         /// </summary>
         // Codes_SRS_DEVICECLIENT_28_002: [This property shall be defaulted to 240000 (4 minutes).]
         const uint DefaultOperationTimeoutInMilliseconds = 4 * 60 * 1000;
+
         public uint OperationTimeoutInMilliseconds { get; set; } = DefaultOperationTimeoutInMilliseconds;
 
         /// <summary>
@@ -133,9 +143,13 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
 
         volatile Tuple<MethodCallback, object> deviceDefaultMethodCallback;
 
+        volatile ConnectionStatusChangesHandler connectionStatusChangesHandler;
+
         internal delegate Task OnMethodCalledDelegate(MethodRequestInternal methodRequestInternal);
 
-        internal delegate void OnConnectionClosedDelegate(object sender, EventArgs e);
+        internal delegate void OnConnectionClosedDelegate(object sender, ConnectionEventArgs e);
+
+        internal delegate void OnConnectionOpenedDelegate(object sender, ConnectionEventArgs e);
 
         /// <summary>
         /// Callback to call whenever the twin's desired state is updated by the service
@@ -162,6 +176,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             pipelineContext.Set<OnMethodCalledDelegate>(OnMethodCalled);
             pipelineContext.Set<Action<TwinCollection>>(OnReportedStatePatchReceived);
             pipelineContext.Set<OnConnectionClosedDelegate>(OnConnectionClosed);
+            pipelineContext.Set<OnConnectionOpenedDelegate>(OnConnectionOpened);
 
             IDelegatingHandler innerHandler = pipelineBuilder.Build(pipelineContext);
 
@@ -275,7 +290,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
 #if !NETSTANDARD1_3
             [System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArrayAttribute]
 #endif
-        ITransportSettings[] transportSettings)
+            ITransportSettings[] transportSettings)
         {
             if (hostname == null)
             {
@@ -371,11 +386,11 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             {
                 case TransportType.Amqp:
                     return CreateFromConnectionString(connectionString, new ITransportSettings[]
-                    {
-                        new AmqpTransportSettings(TransportType.Amqp_Tcp_Only),
-                        new AmqpTransportSettings(TransportType.Amqp_WebSocket_Only)
-                    },
-                    pipelineBuilder);
+                        {
+                            new AmqpTransportSettings(TransportType.Amqp_Tcp_Only),
+                            new AmqpTransportSettings(TransportType.Amqp_WebSocket_Only)
+                        },
+                        pipelineBuilder);
                 case TransportType.Mqtt:
 #if PCL
                     throw new NotImplementedException("Mqtt protocol is not supported");
@@ -448,7 +463,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
 #if !NETSTANDARD1_3
             [System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArray]
 #endif
-        ITransportSettings[] transportSettings)
+            ITransportSettings[] transportSettings)
         {
             return CreateFromConnectionString(connectionString, transportSettings, null);
         }
@@ -464,7 +479,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
 #if !NETSTANDARD1_3
             [System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArray]
 #endif
-        ITransportSettings[] transportSettings, IDeviceClientPipelineBuilder pipelineBuilder)
+            ITransportSettings[] transportSettings, IDeviceClientPipelineBuilder pipelineBuilder)
 
         {
             if (connectionString == null)
@@ -532,7 +547,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
 #if !NETSTANDARD1_3
             [System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArrayAttribute]
 #endif
-        ITransportSettings[] transportSettings)
+            ITransportSettings[] transportSettings)
         {
             if (connectionString == null)
             {
@@ -608,7 +623,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             }
 
             // Codes_SRS_DEVICECLIENT_28_013: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.]
-            return ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.CompleteAsync(lockToken, operationTimeoutCancellationToken));
+            return ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.CompleteAsync(lockToken, operationTimeoutCancellationToken.Token));
         }
 
         /// <summary>
@@ -708,6 +723,26 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             // Codes_SRS_DEVICECLIENT_28_019: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication or quota exceed) occurs.]
             return ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.SendEventAsync(messages, operationTimeoutCancellationToken));
         }
+        
+        Task ApplyTimeout(Func<CancellationTokenSource, Task> operation)
+        {
+            if (OperationTimeoutInMilliseconds == 0)
+            {
+                var cancellationTokenSource = new CancellationTokenSource();
+                return operation(cancellationTokenSource)
+                    .WithTimeout(TimeSpan.MaxValue, () => Resources.OperationTimeoutExpired, cancellationTokenSource.Token);
+            }
+
+            CancellationTokenSource operationTimeoutCancellationTokenSource = GetOperationTimeoutCancellationTokenSource();
+
+            var result = operation(operationTimeoutCancellationTokenSource)
+                .WithTimeout(TimeSpan.FromMilliseconds(OperationTimeoutInMilliseconds), () => Resources.OperationTimeoutExpired, operationTimeoutCancellationTokenSource.Token);
+            result.ContinueWith(t =>
+            {
+                operationTimeoutCancellationTokenSource.Dispose();
+            });
+            return result;
+        }
 
         Task ApplyTimeout(Func<CancellationToken, Task> operation)
         {
@@ -797,7 +832,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
 
             HttpTransportHandler httpTransport = null;
 
-            #if !WINDOWS_UWP
+#if !WINDOWS_UWP
             //We need to add the certificate to the fileUpload httpTransport if DeviceAuthenticationWithX509Certificate
             if (this.Certificate != null)
             {
@@ -809,7 +844,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             {
                 httpTransport = new HttpTransportHandler(iotHubConnectionString);
             }
-            #else 
+#else 
             httpTransport = new HttpTransportHandler(iotHubConnectionString);
             #endif
             return httpTransport.UploadToBlobAsync(blobName, source);
@@ -952,22 +987,72 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         }
 
         /// <summary>
+        /// Registers a new delgate for the connection status changed callback. If a delegate is already associated, 
+        /// it will be replaced with the new delegate.
+        /// <param name="statusChangedCallback">The name of the method to associate with the delegate.</param>
+        /// </summary>
+
+        public void SetConnectionStatusChangesHandler(ConnectionStatusChangesHandler statusChangesHandler)
+        {
+            // codes_SRS_DEVICECLIENT_28_025: [** `SetConnectionStatusChangesHandler` shall set connectionStatusChangesHandler **]**
+            // codes_SRS_DEVICECLIENT_28_026: [** `SetConnectionStatusChangesHandler` shall unset connectionStatusChangesHandler if `statusChangesHandler` is null **]**
+            this.connectionStatusChangesHandler = statusChangesHandler;
+        }
+
+        /// <summary>
         /// The delgate for handling disrupted connection/links in the transport layer.
         /// </summary>
-        internal async void OnConnectionClosed(object sender, EventArgs e)
+        internal async void OnConnectionOpened(object sender, ConnectionEventArgs e)
         {
-            try
+            ConnectionStatusChangeResult result = this.connectionStatusManager.ChangeTo(e.ConnectionKey, ConnectionStatus.Connected);
+            if (result.IsClientStatusChanged && (connectionStatusChangesHandler != null))
             {
-                // codes_SRS_DEVICECLIENT_28_022: [** The OnConnectionClosed shall invoke the RecoverConnections operation. **]**
-                // Retry connection recover forever until we have error callback registration from user for connection drop notification
-                OperationTimeoutInMilliseconds = 0;
-                await ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.RecoverConnections(sender, operationTimeoutCancellationToken));
-                OperationTimeoutInMilliseconds = DefaultOperationTimeoutInMilliseconds;
+                // codes_SRS_DEVICECLIENT_28_024: [** `OnConnectionOpened` shall invoke the connectionStatusChangesHandler if ConnectionStatus is changed **]**  
+                this.connectionStatusChangesHandler(ConnectionStatus.Connected, ConnectionStatusChangeReason.Connection_Ok);
             }
-            catch (Exception ex)
+        }
+
+        /// <summary>
+        /// The delegate for handling disrupted connection/links in the transport layer.
+        /// </summary>
+        internal async void OnConnectionClosed(object sender, ConnectionEventArgs e)
+        {
+            ConnectionStatusChangeResult result = null;
+
+            // codes_SRS_DEVICECLIENT_28_023: [** `OnConnectionClosed` shall notify ConnectionStatusManager of the connection updates. **]**
+            if (e.ConnectionStatus == ConnectionStatus.Disconnected_Retrying)
             {
-                // codes_SRS_DEVICECLIENT_28_023: [**If RecoverConnections operations throw exception, the OnConnectionClosed shall failed silently **]**
-                // catch all and invoke registered error handler on user code?
+                try
+                {
+                    // codes_SRS_DEVICECLIENT_28_022: [** `OnConnectionClosed` shall invoke the RecoverConnections operation. **]**          
+                    await ApplyTimeout(operationTimeoutCancellationTokenSource =>
+                    {
+                        result = this.connectionStatusManager.ChangeTo(e.ConnectionKey, ConnectionStatus.Disconnected_Retrying, ConnectionStatus.Connected, operationTimeoutCancellationTokenSource);
+                        if (result.IsClientStatusChanged && (connectionStatusChangesHandler != null))
+                        {
+                            this.connectionStatusChangesHandler(ConnectionStatus.Disconnected_Retrying, ConnectionStatusChangeReason.No_Network);
+                        }
+
+                        return this.InnerHandler.RecoverConnections(sender, operationTimeoutCancellationTokenSource.Token);
+                    });
+                }
+                catch (Exception ex)
+                {
+                    // codes_SRS_DEVICECLIENT_28_027: [** `OnConnectionClosed` shall invoke the connectionStatusChangesHandler if RecoverConnections throw exception **]**
+                    result = this.connectionStatusManager.ChangeTo(e.ConnectionKey, ConnectionStatus.Disconnected);
+                    if (result.IsClientStatusChanged && (connectionStatusChangesHandler != null))
+                    {
+                        this.connectionStatusChangesHandler(ConnectionStatus.Disconnected, ConnectionStatusChangeReason.Retry_Expired);
+                    }
+                }
+            }
+            else
+            {
+                result = this.connectionStatusManager.ChangeTo(e.ConnectionKey, ConnectionStatus.Disabled);
+                if (result.IsClientStatusChanged && (connectionStatusChangesHandler != null))
+                {
+                    this.connectionStatusChangesHandler(ConnectionStatus.Disabled, ConnectionStatusChangeReason.Client_Close);
+                }
             }
         }
 

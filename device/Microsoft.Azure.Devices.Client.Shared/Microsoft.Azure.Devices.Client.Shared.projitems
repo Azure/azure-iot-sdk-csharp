@@ -333,6 +333,24 @@
     <Compile Include="$(DeviceClientDir)\Transport\AmqpTransportHandler.cs">
       <Link>AmqpTransportHandler.cs</Link>
     </Compile>
+    <Compile Include="$(DeviceClientDir)\ConnectionEventArgs.cs">
+      <Link>ConnectionEventArgs.cs</Link>
+    </Compile>
+    <Compile Include="$(DeviceClientDir)\ConnectionKeys.cs">
+      <Link>ConnectionKeys.cs</Link>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\ConnectionStatus.cs">
+      <Link>ConnectionStatus.cs</Link>
+    </Compile>
+    <Compile Include="$(DeviceClientDir)\ConnectionStatusChangeReason.cs">
+      <Link>ConnectionStatusChangeReason.cs</Link>
+    </Compile>
+    <Compile Include="$(DeviceClientDir)\ConnectionStatusChangeResult.cs">
+      <Link>ConnectionStatusChangeResult.cs</Link>
+    </Compile>
+    <Compile Include="$(DeviceClientDir)\DeviceClientConnectionStatusManager.cs">
+      <Link>DeviceClientConnectionStatusManager.cs</Link>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\Transport\DefaultDelegatingHandler.cs">
       <Link>DefaultDelegatingHandler.cs</Link>
     </Compile>

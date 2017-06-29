@@ -756,11 +756,31 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             var deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, transport);
             deviceClient.OperationTimeoutInMilliseconds = (uint)retryDurationInMilliSec;
+
+            ConnectionStatus? lastConnectionStatus = null;
+            ConnectionStatusChangeReason? lastConnectionStatusChangeReason = null;
+            int setConnectionStatusChangesHandlerCount = 0;
+
+            deviceClient.SetConnectionStatusChangesHandler((status, statusChangeReason) =>
+            {
+                lastConnectionStatus = status;
+                lastConnectionStatusChangeReason = statusChangeReason;
+                setConnectionStatusChangesHandlerCount++;
+            });
+
             await deviceClient.OpenAsync();
+
+            if (transport != Client.TransportType.Http1)
+            {
+                Assert.AreEqual(1, setConnectionStatusChangesHandlerCount);
+                Assert.AreEqual(ConnectionStatus.Connected, lastConnectionStatus);
+                Assert.AreEqual(ConnectionStatusChangeReason.Connection_Ok, lastConnectionStatusChangeReason);
+            }
 
             string payload, p1Value;
             Client.Message testMessage = ComposeD2CTestMessage(out payload, out p1Value);
             await deviceClient.SendEventAsync(testMessage);
+
 
             bool isReceived = false;
             Stopwatch sw = new Stopwatch();
@@ -779,6 +799,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await eventHubReceiver.ReceiveAsync(int.MaxValue, TimeSpan.FromSeconds(5));
 
             Thread.Sleep(1000);
+
             testMessage = ComposeD2CTestMessage(out payload, out p1Value);
             await deviceClient.SendEventAsync(testMessage);
 
@@ -792,6 +813,14 @@ namespace Microsoft.Azure.Devices.E2ETests
             sw.Stop();
 
             await deviceClient.CloseAsync();
+
+            if (transport != Client.TransportType.Http1)
+            {
+                Assert.AreEqual(2, setConnectionStatusChangesHandlerCount);
+                Assert.AreEqual(ConnectionStatus.Disabled, lastConnectionStatus);
+                Assert.AreEqual(ConnectionStatusChangeReason.Client_Close, lastConnectionStatusChangeReason);
+            }
+
             await eventHubClient.CloseAsync();
             TestUtil.RemoveDevice(deviceInfo.Item1, registryManager);
 

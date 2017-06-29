@@ -19,14 +19,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
             var onMethodCallback = context.Get<DeviceClient.OnMethodCalledDelegate>();
             var onDesiredStatePatchReceived = context.Get<Action<TwinCollection>>();
             var OnConnectionClosedCallback = context.Get<DeviceClient.OnConnectionClosedDelegate>();
+            var OnConnectionOpenedCallback = context.Get<DeviceClient.OnConnectionOpenedDelegate>();
 
             switch (transportSetting.GetTransportType())
             {
                 case TransportType.Amqp_WebSocket_Only:
                 case TransportType.Amqp_Tcp_Only:
                     return new AmqpTransportHandler(
-                        context, connectionString, transportSetting as AmqpTransportSettings, 
-                        new Action<object, EventArgs>(OnConnectionClosedCallback),
+                        context, connectionString, transportSetting as AmqpTransportSettings,
+                        new Action<object, ConnectionEventArgs>(OnConnectionOpenedCallback),
+                        new Action<object, ConnectionEventArgs>(OnConnectionClosedCallback),
                         new Func<MethodRequestInternal, Task>(onMethodCallback), onDesiredStatePatchReceived);
                 case TransportType.Http1:
                     return new HttpTransportHandler(context, connectionString, transportSetting as Http1TransportSettings);
@@ -35,7 +37,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 case TransportType.Mqtt_WebSocket_Only:
                     return new MqttTransportHandler(
                         context, connectionString, transportSetting as MqttTransportSettings,
-                        new Action<object, EventArgs>(OnConnectionClosedCallback),
+                        new Action<object, ConnectionEventArgs>(OnConnectionOpenedCallback),
+                        new Action<object, ConnectionEventArgs>(OnConnectionClosedCallback),
                         new Func<MethodRequestInternal, Task>(onMethodCallback), onDesiredStatePatchReceived);
 #endif
                 default:

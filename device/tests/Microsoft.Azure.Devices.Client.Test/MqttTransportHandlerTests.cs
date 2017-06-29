@@ -15,6 +15,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
     using Newtonsoft.Json;
     using System.IO;
     using Exceptions;
+    using Client.Transport;
 
     [TestClass]
     public class MqttTransportHandlerTests
@@ -101,7 +102,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
 
         MqttTransportHandler CreateFromConnectionString()
         {
-            return new MqttTransportHandler(new PipelineContext(), IotHubConnectionString.Parse(DumpyConnectionString), new MqttTransportSettings(Microsoft.Azure.Devices.Client.TransportType.Mqtt_Tcp_Only), (o, ea) => { });
+            return new MqttTransportHandler(new PipelineContext(), IotHubConnectionString.Parse(DumpyConnectionString), new MqttTransportSettings(Microsoft.Azure.Devices.Client.TransportType.Mqtt_Tcp_Only), (o, ea) => { }, (o, ea) => { });
         }
 
         async Task TestOperationCanceledByToken(Func<CancellationToken, Task> asyncMethod)
@@ -121,10 +122,10 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
 
         MqttTransportHandler CreateTransportHandlerWithMockChannel(out IChannel channel)
         {
-            return CreateTransportHandlerWithMockChannel(out channel, (o, ea) => { });
+            return CreateTransportHandlerWithMockChannel(out channel, (o, ea) => { }, (o, ea) => { });
         }
 
-        MqttTransportHandler CreateTransportHandlerWithMockChannel(out IChannel channel, Action<object, EventArgs> onConnectionClosedCallback)
+        MqttTransportHandler CreateTransportHandlerWithMockChannel(out IChannel channel, Action<object, ConnectionEventArgs> onConnectionOpenedCallback, Action<object, ConnectionEventArgs> onConnectionClosedCallback)
         {
             var _channel = Substitute.For<IChannel>();
             channel = _channel;
@@ -138,7 +139,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
                 return Task<IChannel>.FromResult<IChannel>(_channel);
             };
             
-            transport = new MqttTransportHandler(new PipelineContext(), IotHubConnectionString.Parse(DumpyConnectionString), new MqttTransportSettings(Microsoft.Azure.Devices.Client.TransportType.Mqtt_Tcp_Only), factory, onConnectionClosedCallback);
+            transport = new MqttTransportHandler(new PipelineContext(), IotHubConnectionString.Parse(DumpyConnectionString), new MqttTransportSettings(Microsoft.Azure.Devices.Client.TransportType.Mqtt_Tcp_Only), factory, onConnectionOpenedCallback, onConnectionClosedCallback);
             return transport;
         }
 
@@ -485,7 +486,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
         {
             // arrange
             IChannel channel;
-            var transport = CreateTransportHandlerWithMockChannel(out channel);
+            var transport = this.CreateTransportHandlerWithMockChannel(out channel);
             transport.TwinTimeout = TimeSpan.FromMilliseconds(20);
             var props = new TwinCollection();
 
@@ -499,7 +500,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
             // arrange
             IChannel channel;
             bool isCalled = false;
-            var transport = CreateTransportHandlerWithMockChannel(out channel, (o, ea) => { isCalled = true; });
+            var transport = CreateTransportHandlerWithMockChannel(out channel, (o, ea) => { }, (o, ea) => { isCalled = true; });
             transport.OnConnected();
             await transport.OpenAsync(true, CancellationToken.None);
 
@@ -517,7 +518,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
             // arrange
             IChannel channel;
             bool isCalled = false;
-            var transport = CreateTransportHandlerWithMockChannel(out channel, (o, ea) => { isCalled = true; });
+            var transport = CreateTransportHandlerWithMockChannel(out channel, (o, ea) => { }, (o, ea) => { isCalled = true; });
             transport.OnConnected();
             await transport.OpenAsync(true, CancellationToken.None);
             await transport.ReceiveAsync(new TimeSpan(0, 0, 0, 0, 5), CancellationToken.None);
@@ -536,7 +537,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
             // arrange
             IChannel channel;
             bool isCalled = false;
-            var transport = CreateTransportHandlerWithMockChannel(out channel, (o, ea) => { isCalled = true; });
+            var transport = CreateTransportHandlerWithMockChannel(out channel, (o, ea) => { }, (o, ea) => { isCalled = true; });
 
             // act
             transport.OnError(new ApplicationException("Testing"));
@@ -552,7 +553,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
             // arrange
             IChannel channel;
             bool isCalled = false;
-            var transport = CreateTransportHandlerWithMockChannel(out channel, (o, ea) => { isCalled = true; });
+            var transport = CreateTransportHandlerWithMockChannel(out channel, (o, ea) => { }, (o, ea) => { isCalled = true; });
             transport.OnError(new ApplicationException("Testing"));
 
             // act

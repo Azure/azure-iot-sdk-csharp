@@ -26,6 +26,13 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 get; set;
             }
         }
+        static void ConnectionStatusChangeHandler(ConnectionStatus status, ConnectionStatusChangeReason reason)
+        {
+            Console.WriteLine();
+            Console.WriteLine("Connection Status Changed to {0}", status);
+            Console.WriteLine("Connection Status Changed Reason is {0}", reason);
+            Console.WriteLine();
+        }
 
         static Task<MethodResponse> WriteToConsole(MethodRequest methodRequest, object userContext)
         {
@@ -66,6 +73,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
             try
             {
                 deviceClient = DeviceClient.CreateFromConnectionString(DeviceConnectionString, transport);
+
+                deviceClient.SetConnectionStatusChangesHandler(ConnectionStatusChangeHandler);
 
                 // Method Call processing will be enabled when the first method handler is added.
                 // setup a callback for the 'WriteToConsole' method

@@ -152,7 +152,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         const string twinResponseTopicPattern = @"\$iothub/twin/res/(\d+)/(\?.+)";
         Regex twinResponseTopicRegex = new Regex(twinResponseTopicPattern, RegexOptions.None);
 
-        Action<object, EventArgs> connectionClosedListener;
+        Action<object, ConnectionEventArgs> connectionOpenedListener;
+        Action<object, ConnectionEventArgs> connectionClosedListener;
         Func<MethodRequestInternal, Task> messageListener;
         Action<TwinCollection> onDesiredStatePatchListener;
         Action<Message> twinResponseEvent;
@@ -162,11 +163,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         internal MqttTransportHandler(
             IPipelineContext context, 
             IotHubConnectionString iotHubConnectionString, 
-            MqttTransportSettings settings, 
-            Action<object, EventArgs> onConnectionClosedCallback, 
+            MqttTransportSettings settings,
+            Action<object, ConnectionEventArgs> onConnectionOpenedCallback,
+            Action<object, ConnectionEventArgs> onConnectionClosedCallback, 
             Func<MethodRequestInternal, Task> onMethodCallback = null, 
             Action<TwinCollection> onDesiredStatePatchReceivedCallback = null)
-            : this(context, iotHubConnectionString, settings, null, onConnectionClosedCallback)
+            : this(context, iotHubConnectionString, settings, null, onConnectionOpenedCallback, onConnectionClosedCallback)
         {
             this.messageListener = onMethodCallback;
             this.onDesiredStatePatchListener = onDesiredStatePatchReceivedCallback;
@@ -175,11 +177,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         internal MqttTransportHandler(
             IPipelineContext context, 
             IotHubConnectionString iotHubConnectionString, 
-            MqttTransportSettings settings, 
+            MqttTransportSettings settings,
             Func<IPAddress, int, Task<IChannel>> channelFactory,
-            Action<object, EventArgs> onConnectionClosedCallback)
+            Action<object, ConnectionEventArgs> onConnectionOpenedCallback,
+            Action<object, ConnectionEventArgs> onConnectionClosedCallback)
             : base(context, settings)
         {
+            this.connectionOpenedListener = onConnectionOpenedCallback;
             this.connectionClosedListener = onConnectionClosedCallback;
 
             this.mqttIotHubAdapterFactory = new MqttIotHubAdapterFactory(settings);
@@ -372,6 +376,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             if (this.TryStop())
             {
                 await this.closeRetryPolicy.ExecuteAsync(this.CleanupAsync);
+                this.connectionClosedListener(this.channel, new ConnectionEventArgs { ConnectionKey = ConnectionKeys.MqttConnection, ConnectionStatus = ConnectionStatus.Disabled });
             }
             else
             {
@@ -390,6 +395,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             if (this.TryStateTransition(TransportState.Opening, TransportState.Open))
             {
                 this.connectCompletion.TryComplete();
+                this.connectionOpenedListener(this.channel, new ConnectionEventArgs { ConnectionKey = ConnectionKeys.MqttConnection, ConnectionStatus = ConnectionStatus.Connected });
             }
         }
 
@@ -489,7 +495,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 if ((previousState & TransportState.Open) == TransportState.Open)
                 {
-                    this.connectionClosedListener(this, null);
+                    this.connectionClosedListener(this.channel, new ConnectionEventArgs { ConnectionKey = ConnectionKeys.MqttConnection, ConnectionStatus = ConnectionStatus.Disconnected_Retrying });
                 }
 
             }
