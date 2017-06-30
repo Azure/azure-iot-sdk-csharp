@@ -73,8 +73,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 reportedProperties["DateTimeLastAppLaunch"] = DateTime.Now;
 
                 Client.UpdateReportedPropertiesAsync(reportedProperties);
-
-                Client.CloseAsync().Wait();
             }
             catch (AggregateException ex)
             {
@@ -93,6 +91,9 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
             Console.ReadLine();
             Console.WriteLine("Exiting...");
+
+            Client?.CloseAsync().Wait();
+
         }
     }
 }
