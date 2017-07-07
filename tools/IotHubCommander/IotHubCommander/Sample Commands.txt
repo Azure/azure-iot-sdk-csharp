@@ -1,0 +1,24 @@
+﻿Send Event Device to Cloud
+--------------------------
+--send=event --connStr=HostName=something.azure-devices.net;DeviceId=123456;SharedAccessKey=2CFsCmqyHvH/5lkjHmRTkD8bR/YbEIU9IM= --cmdDelay=5 --eventFile=TextData1.csv --tempFile=JsonTemplate.txt
+
+Send Event Cloud to Device
+---------------------------
+--send=Cloud --connStr=HostName=something.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=LIFJbieayddyDz5W3s9mnxQCzr5458FDLnZ8o8BLVXXyW6Cc= --deviceId=MyDevice --eventFile=TextData1.csv --tempFile=JsonTemplate.txt
+
+Cloud to Device Listener
+--------------------------
+--listen=Device --connStr=HostName=something.azure-devices.net;DeviceId=123456;SharedAccessKey=2CFsCmqyHvHHmRTkD8bR/YbEIU9IM= --action=Abandon
+--listen=Device --connStr=HostName=something.azure-devices.net;DeviceId=123456;SharedAccessKey=2CFsCmqyHvHHmRTkD8bR/YbEIU9IM= --action=Complete
+
+Feedback 
+--------------------------
+--listen=Device --connStr=HostName=something.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=LIFJbieayddyDz5W3s9mnxQCzr5458FDLnZ8o8BLVXXyW6Cc=
+--listen=Device --connStr=HostName=something.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=LIFJbieayddyDz5W3s9mnxQCzr5458FDLnZ8o8BLVXXyW6Cc=
+
+Read events form IoTHub or EventHub
+------------------------------------
+--connectTo=EventHub --connStr=Endpoint=sb://sonethig-myevent-test.servicebus.windows.net/;SharedAccessKeyName=ReaderPolicy;SharedAccessKey=8AKA52124IölkVqj5eabciWz99UJWpDpQLQzwyLoWVKOTg=;EntityPath=abc --startTime=-3h --consumerGroup=abc
+--connectTo=EventHub --connStr=Endpoint=sb://sonethig-myevent-test.servicebus.windows.net/;SharedAccessKeyName=ReaderPolicy;SharedAccessKey=8AKA52124IVqj5eabciWz99UJWpDpQLQzwyLoWVKOTg=;EntityPath=abc --startTime=-3d --consumerGroup=abc
+--connectTo=EventHub --connStr=Endpoint=sb://sonethig-myevent-test.servicebus.windows.net/;SharedAccessKeyName=ReaderPolicy;SharedAccessKey=8AKA52124IVqj5eabciWz99UJWpDpQLQzwyLoWVKOTg=;EntityPath=abc --startTime=-3s --consumerGroup=abc
+--connectTo=EventHub --connStr=Endpoint=sb://sonethig-myevent-test.servicebus.windows.net/;SharedAccessKeyName=ReaderPolicy;SharedAccessKey=8AKA52124IVqj5eabciWz99UJWpDpQLQzwyLoWVKOTg=;EntityPath=abc --startTime=now --consumerGroup=abc
