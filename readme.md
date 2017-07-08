@@ -75,7 +75,7 @@ This folder contains the following documents that are relevant to all the langua
 
 # Long Term Support
 
-The project offers a Long Term Support (LTS) version to allow users that do not need the latest feature to be shielded from unwanted changes.
+The project offers a Long Term Support (LTS) version to allow users that do not need the latest features to be shielded from unwanted changes.
 
 A new LTS version will be created every 6 months. The lifetime of an LTS branch is currently planned for one year. LTS branches receive all bug fixes that fall in one of these categories:
 
