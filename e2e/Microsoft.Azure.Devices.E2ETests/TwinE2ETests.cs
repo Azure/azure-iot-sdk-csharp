@@ -90,7 +90,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.DefaultDelayInSec);
         }
         
-#if WIP_C2D_METHODS_AMQP
         [Ignore]
         [TestMethod]
         [TestCategory("Twin-E2E")]
@@ -114,7 +113,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.FaultCloseReason_Boom,
                 TestUtil.DefaultDelayInSec);
         }
-#endif 
 
         [Ignore]
         [TestMethod]
@@ -140,7 +138,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.DefaultDelayInSec);
         }
 
-#if WIP_C2D_METHODS_AMQP
         [Ignore]
         [TestMethod]
         [TestCategory("Twin-E2E")]
@@ -164,7 +161,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.FaultCloseReason_Bye,
                 TestUtil.DefaultDelayInSec);
         }
-#endif
 
         [TestMethod]
         [TestCategory("Twin-E2E")]
@@ -180,7 +176,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             await _Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent(Client.TransportType.Mqtt_WebSocket_Only);
         }
         
-#if WIP_C2D_METHODS_AMQP
         [TestMethod]
         [TestCategory("Twin-E2E")]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_Amqp()
@@ -194,7 +189,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await _Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent(Client.TransportType.Amqp_WebSocket_Only);
         }
-#endif
 
         [TestMethod]
         [TestCategory("Twin-E2E")]
@@ -210,7 +204,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             await _Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_WithObseleteCallbackSetter(Client.TransportType.Mqtt_WebSocket_Only);
         }
 
-#if WIP_C2D_METHODS_AMQP
         [TestMethod]
         [TestCategory("Twin-E2E")]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_WithObseleteCallbackSetter_Amqp()
@@ -224,7 +217,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await _Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_WithObseleteCallbackSetter(Client.TransportType.Amqp_WebSocket_Only);
         }
-#endif
 
         [Ignore]
         [TestMethod]
@@ -250,7 +242,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.DefaultDelayInSec);
         }
         
-#if WIP_C2D_METHODS_AMQP
         [Ignore]
         [TestMethod]
         [TestCategory("Twin-E2E")]
@@ -274,7 +265,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.FaultCloseReason_Boom,
                 TestUtil.DefaultDelayInSec);
         }
-#endif
 
         [Ignore]
         [TestMethod]
@@ -300,7 +290,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.DefaultDelayInSec);
         }
         
-#if WIP_C2D_METHODS_AMQP
         [Ignore]
         [TestMethod]
         [TestCategory("Twin-E2E")]
@@ -323,8 +312,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.FaultType_GracefulShutdownAmqp,
                 TestUtil.FaultCloseReason_Bye,
                 TestUtil.DefaultDelayInSec);
-        }
-#endif 
+        } 
 
         [TestMethod]
         [TestCategory("Twin-E2E")]
@@ -340,7 +328,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             await _Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet(Client.TransportType.Mqtt_WebSocket_Only);
         }
 
-#if WIP_C2D_METHODS_AMQP
         [TestMethod]
         [TestCategory("Twin-E2E")]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet_Amqp()
@@ -354,7 +341,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await _Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet(Client.TransportType.Amqp_WebSocket_Only);
         }
-#endif
 
         [TestMethod]
         [TestCategory("Twin-E2E")]
@@ -370,7 +356,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             await _Twin_DeviceSetsReportedPropertyAndServiceReceivesIt(Client.TransportType.Mqtt_WebSocket_Only);
         }
 
-#if WIP_C2D_METHODS_AMQP
         [TestMethod]
         [TestCategory("Twin-E2E")]
         public async Task Twin_DeviceSetsReportedPropertyAndServiceReceivesIt_Amqp()
@@ -384,7 +369,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await _Twin_DeviceSetsReportedPropertyAndServiceReceivesIt(Client.TransportType.Amqp_WebSocket_Only);
         }
-#endif 
 
         private async Task _Twin_DeviceSetsReportedPropertyAndGetsItBack(Client.TransportType transport)
         {

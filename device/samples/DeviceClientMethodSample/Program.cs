@@ -63,12 +63,11 @@ namespace Microsoft.Azure.Devices.Client.Samples
         {
             TransportType transport = TransportType.Mqtt;
 
-#if WIP_C2D_METHODS_AMQP
             if (args.Length == 1 && args[0].ToLower().Equals("amqp"))
             {
                 transport = TransportType.Amqp;
             }
-#endif
+
             DeviceClient deviceClient = null;
             try
             {

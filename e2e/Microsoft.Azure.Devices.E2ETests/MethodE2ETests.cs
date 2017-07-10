@@ -116,8 +116,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.DefaultDelayInSec);
         }
 
-
-#if WIP_C2D_METHODS_AMQP
         [TestMethod]
         [TestCategory("Method-E2E")]
         public async Task Method_DeviceReceivesMethodAndResponse_Amqp()
@@ -264,7 +262,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.FaultCloseReason_Bye,
                 TestUtil.DefaultDelayInSec);
         }
-#endif
+
         private async Task ServiceSendMethodAndVerifyResponse(string deviceName, string methodName, string respJson, string reqJson, TaskCompletionSource<Tuple<bool, bool>> rel)
         {
             ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(hubConnectionString);

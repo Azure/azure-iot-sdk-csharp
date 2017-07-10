@@ -209,7 +209,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override Task RecoverConnections(object link, CancellationToken cancellationToken)
         {
-#if WIP_C2D_METHODS_AMQP
             Func<Task> enableMethodLinkAsyncFunc = null;
 
             var amqpLink = link as AmqpLink;
@@ -249,14 +248,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     throw AmqpClientHelper.ToIotHubClientContract(ex);
                 }
             }, cancellationToken);
-#else
-            throw new NotImplementedException();
-#endif
         }
 
         public override async Task EnableMethodsAsync(CancellationToken cancellationToken)
         {
-#if WIP_C2D_METHODS_AMQP
             if (this.faultTolerantMethodSendingLink == null)
             {
                 this.faultTolerantMethodSendingLink = new Client.FaultTolerantAmqpObject<SendingAmqpLink>(this.CreateMethodSendingLinkAsync, this.IotHubConnection.CloseLink);
@@ -287,14 +282,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     throw AmqpClientHelper.ToIotHubClientContract(ex);
                 }
             }, cancellationToken);
-#else
-            throw new NotImplementedException();
-#endif
         }
 
         public override async Task EnableTwinPatchAsync(CancellationToken cancellationToken)
         {
-#if WIP_C2D_METHODS_AMQP
             if (this.faultTolerantTwinSendingLink == null)
             {
                 this.faultTolerantTwinSendingLink = new Client.FaultTolerantAmqpObject<SendingAmqpLink>(this.CreateTwinSendingLinkAsync, this.IotHubConnection.CloseLink);
@@ -325,13 +316,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     throw AmqpClientHelper.ToIotHubClientContract(ex);
                 }
             }, cancellationToken);
-#else
-            throw new NotImplementedException();
-#endif
         }
 
-
-#if WIP_C2D_METHODS_AMQP
         private async Task EnableMethodSendingLinkAsync(CancellationToken cancellationToken)
         {
             SendingAmqpLink methodSendingLink = await this.GetMethodSendingLinkAsync(cancellationToken);
@@ -359,11 +345,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
             this.SafeAddClosedTwinReceivingLinkHandler = this.linkClosedListener;
             twinReceivingLink.SafeAddClosed((o, ea) => this.SafeAddClosedTwinReceivingLinkHandler(o, new ConnectionEventArgs { ConnectionKey = ConnectionKeys.AmqpTwinReceiving, ConnectionStatus = ConnectionStatus.Disconnected_Retrying, ConnectionStatusChangeReason = ConnectionStatusChangeReason.No_Network }));
         }
-#endif
 
         public override async Task DisableMethodsAsync(CancellationToken cancellationToken)
         {
-#if WIP_C2D_METHODS_AMQP
             Task receivingLinkCloseTask;
             
             this.SafeAddClosedMethodSendingLinkHandler = (o, ea) => {};
@@ -397,15 +381,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
             this.linkClosedListener(
                 this.faultTolerantMethodReceivingLink, 
                 new ConnectionEventArgs { ConnectionKey = ConnectionKeys.AmqpMethodReceiving, ConnectionStatus = ConnectionStatus.Disabled, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Client_Close });
-
-#else
-            throw new NotImplementedException();
-#endif
         }
 
         public async Task DisableTwinAsync(CancellationToken cancellationToken)
         {
-#if WIP_C2D_METHODS_AMQP
             Task receivingLinkCloseTask;
 
             this.SafeAddClosedTwinSendingLinkHandler = (o, ea) => {};
@@ -439,9 +418,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             this.linkClosedListener(
                 this.faultTolerantTwinReceivingLink, 
                 new ConnectionEventArgs { ConnectionKey = ConnectionKeys.AmqpTwinReceiving, ConnectionStatus = ConnectionStatus.Disabled, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Client_Close });
-#else
-            throw new NotImplementedException();
-#endif
         }
         
         public override async Task SendMethodResponseAsync(MethodResponseInternal methodResponse, CancellationToken cancellationToken)
@@ -497,13 +473,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
             GC.SuppressFinalize(this);
             Task eventSendingLinkCloseTask = this.faultTolerantEventSendingLink.CloseAsync();
             Task deviceBoundReceivingLinkCloseTask = this.faultTolerantDeviceBoundReceivingLink.CloseAsync();
-#if WIP_C2D_METHODS_AMQP
+
             Task disabledMethodTask = this.DisableMethodsAsync(CancellationToken.None);
             Task disableTwinTask = this.DisableTwinAsync(CancellationToken.None);
             await Task.WhenAll(eventSendingLinkCloseTask, deviceBoundReceivingLinkCloseTask, disabledMethodTask, disableTwinTask);
-#else
-            await Task.WhenAll(eventSendingLinkCloseTask, deviceBoundReceivingLinkCloseTask);
-#endif
+
             this.linkClosedListener(
                 this.faultTolerantEventSendingLink, 
                 new ConnectionEventArgs { ConnectionKey = ConnectionKeys.AmqpTelemetry, ConnectionStatus = ConnectionStatus.Disabled, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Client_Close });
@@ -835,7 +809,5 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             return link;
         }
-    
     }
-
 }
