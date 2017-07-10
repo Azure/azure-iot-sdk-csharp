@@ -376,7 +376,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             if (this.TryStop())
             {
                 await this.closeRetryPolicy.ExecuteAsync(this.CleanupAsync);
-                this.connectionClosedListener(this.channel, new ConnectionEventArgs { ConnectionKey = ConnectionKeys.MqttConnection, ConnectionStatus = ConnectionStatus.Disabled });
+                this.connectionClosedListener(this.channel, new ConnectionEventArgs { ConnectionKey = ConnectionKeys.MqttConnection, ConnectionStatus = ConnectionStatus.Disabled, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Client_Close });
             }
             else
             {
@@ -395,7 +395,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             if (this.TryStateTransition(TransportState.Opening, TransportState.Open))
             {
                 this.connectCompletion.TryComplete();
-                this.connectionOpenedListener(this.channel, new ConnectionEventArgs { ConnectionKey = ConnectionKeys.MqttConnection, ConnectionStatus = ConnectionStatus.Connected });
+                this.connectionOpenedListener(this.channel, new ConnectionEventArgs { ConnectionKey = ConnectionKeys.MqttConnection, ConnectionStatus = ConnectionStatus.Connected, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Connection_Ok});
             }
         }
 
@@ -495,7 +495,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 if ((previousState & TransportState.Open) == TransportState.Open)
                 {
-                    this.connectionClosedListener(this.channel, new ConnectionEventArgs { ConnectionKey = ConnectionKeys.MqttConnection, ConnectionStatus = ConnectionStatus.Disconnected_Retrying });
+                    this.connectionClosedListener(this.channel, new ConnectionEventArgs { ConnectionKey = ConnectionKeys.MqttConnection, ConnectionStatus = ConnectionStatus.Disconnected_Retrying, ConnectionStatusChangeReason = ConnectionStatusChangeReason.No_Network});
                 }
 
             }

@@ -100,8 +100,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
                      await Task.WhenAll(
                          this.faultTolerantEventSendingLink.OpenAsync(this.openTimeout, cancellationToken),
                          this.faultTolerantDeviceBoundReceivingLink.OpenAsync(this.openTimeout, cancellationToken));
-                     this.linkOpenedListener(this.faultTolerantEventSendingLink, new ConnectionEventArgs { ConnectionKey = ConnectionKeys.AmqpTelemetry, ConnectionStatus = ConnectionStatus.Connected });
-                     this.linkOpenedListener(this.faultTolerantDeviceBoundReceivingLink, new ConnectionEventArgs { ConnectionKey = ConnectionKeys.AmqpMessaging, ConnectionStatus = ConnectionStatus.Connected });
+                     this.linkOpenedListener(
+                         this.faultTolerantEventSendingLink, 
+                         new ConnectionEventArgs { ConnectionKey = ConnectionKeys.AmqpTelemetry, ConnectionStatus = ConnectionStatus.Connected, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Connection_Ok });
+                     this.linkOpenedListener(
+                         this.faultTolerantDeviceBoundReceivingLink, 
+                         new ConnectionEventArgs { ConnectionKey = ConnectionKeys.AmqpMessaging, ConnectionStatus = ConnectionStatus.Connected, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Connection_Ok });
                  }
                  catch (Exception exception)
                  {
@@ -232,8 +236,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     if (this.messageListener != null)
                     {
                         await enableMethodLinkAsyncFunc();
-                        this.linkOpenedListener(this.faultTolerantMethodSendingLink, new ConnectionEventArgs { ConnectionKey = ConnectionKeys.AmqpMethodSending, ConnectionStatus = ConnectionStatus.Connected });
-                        this.linkOpenedListener(this.faultTolerantMethodReceivingLink, new ConnectionEventArgs { ConnectionKey = ConnectionKeys.AmqpMethodReceiving, ConnectionStatus = ConnectionStatus.Connected });
+                        this.linkOpenedListener(
+                            this.faultTolerantMethodSendingLink, 
+                            new ConnectionEventArgs { ConnectionKey = ConnectionKeys.AmqpMethodSending, ConnectionStatus = ConnectionStatus.Connected, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Connection_Ok });
+                        this.linkOpenedListener(
+                            this.faultTolerantMethodReceivingLink, 
+                            new ConnectionEventArgs { ConnectionKey = ConnectionKeys.AmqpMethodReceiving, ConnectionStatus = ConnectionStatus.Connected, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Connection_Ok });
                     }
                 }
                 catch (Exception ex) when (!ex.IsFatal())
@@ -266,8 +274,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     if (this.messageListener != null)
                     {
                         await Task.WhenAll(EnableMethodSendingLinkAsync(cancellationToken), EnableMethodReceivingLinkAsync(cancellationToken));
-                        this.linkOpenedListener(this.faultTolerantMethodSendingLink, new ConnectionEventArgs { ConnectionKey = ConnectionKeys.AmqpMethodSending, ConnectionStatus = ConnectionStatus.Connected });
-                        this.linkOpenedListener(this.faultTolerantMethodReceivingLink, new ConnectionEventArgs { ConnectionKey = ConnectionKeys.AmqpMethodReceiving, ConnectionStatus = ConnectionStatus.Connected });
+                        this.linkOpenedListener(
+                            this.faultTolerantMethodSendingLink, 
+                            new ConnectionEventArgs { ConnectionKey = ConnectionKeys.AmqpMethodSending, ConnectionStatus = ConnectionStatus.Connected, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Connection_Ok });
+                        this.linkOpenedListener(
+                            this.faultTolerantMethodReceivingLink, 
+                            new ConnectionEventArgs { ConnectionKey = ConnectionKeys.AmqpMethodReceiving, ConnectionStatus = ConnectionStatus.Connected, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Connection_Ok });
                     }
                 }
                 catch (Exception ex) when (!ex.IsFatal())
@@ -300,8 +312,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     if (this.messageListener != null)
                     {
                         await Task.WhenAll(EnableTwinSendingLinkAsync(cancellationToken), EnableTwinReceivingLinkAsync(cancellationToken));
-                        this.linkOpenedListener(this.faultTolerantTwinSendingLink, new ConnectionEventArgs { ConnectionKey = ConnectionKeys.AmqpTwinSending, ConnectionStatus = ConnectionStatus.Connected });
-                        this.linkOpenedListener(this.faultTolerantTwinReceivingLink, new ConnectionEventArgs { ConnectionKey = ConnectionKeys.AmqpTwinReceiving, ConnectionStatus = ConnectionStatus.Connected });
+                        this.linkOpenedListener(
+                            this.faultTolerantTwinSendingLink, 
+                            new ConnectionEventArgs { ConnectionKey = ConnectionKeys.AmqpTwinSending, ConnectionStatus = ConnectionStatus.Connected, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Connection_Ok });
+                        this.linkOpenedListener(
+                            this.faultTolerantTwinReceivingLink, 
+                            new ConnectionEventArgs { ConnectionKey = ConnectionKeys.AmqpTwinReceiving, ConnectionStatus = ConnectionStatus.Connected, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Connection_Ok });
                     }
                 }
                 catch (Exception ex) when (!ex.IsFatal())
@@ -320,28 +336,28 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             SendingAmqpLink methodSendingLink = await this.GetMethodSendingLinkAsync(cancellationToken);
             this.SafeAddClosedMethodSendingLinkHandler = this.linkClosedListener;
-            methodSendingLink.SafeAddClosed((o, ea) => this.SafeAddClosedMethodSendingLinkHandler(o, new ConnectionEventArgs { ConnectionKey = ConnectionKeys.AmqpMessaging, ConnectionStatus = ConnectionStatus.Disconnected_Retrying }));
+            methodSendingLink.SafeAddClosed((o, ea) => this.SafeAddClosedMethodSendingLinkHandler(o, new ConnectionEventArgs { ConnectionKey = ConnectionKeys.AmqpMessaging, ConnectionStatus = ConnectionStatus.Disconnected_Retrying, ConnectionStatusChangeReason = ConnectionStatusChangeReason.No_Network }));
         }
 
         private async Task EnableMethodReceivingLinkAsync(CancellationToken cancellationToken)
         {
             ReceivingAmqpLink methodReceivingLink = await this.GetMethodReceivingLinkAsync(cancellationToken);
             this.SafeAddClosedMethodReceivingLinkHandler = this.linkClosedListener;
-            methodReceivingLink.SafeAddClosed((o, ea) => this.SafeAddClosedMethodReceivingLinkHandler(o, new ConnectionEventArgs { ConnectionKey = ConnectionKeys.AmqpMethodReceiving, ConnectionStatus = ConnectionStatus.Disconnected_Retrying }));
+            methodReceivingLink.SafeAddClosed((o, ea) => this.SafeAddClosedMethodReceivingLinkHandler(o, new ConnectionEventArgs { ConnectionKey = ConnectionKeys.AmqpMethodReceiving, ConnectionStatus = ConnectionStatus.Disconnected_Retrying, ConnectionStatusChangeReason = ConnectionStatusChangeReason.No_Network }));
         }
         
         private async Task EnableTwinSendingLinkAsync(CancellationToken cancellationToken)
         {
             SendingAmqpLink twinSendingLink = await this.GetTwinSendingLinkAsync(cancellationToken);
             this.SafeAddClosedTwinSendingLinkHandler = this.linkClosedListener;
-            twinSendingLink.SafeAddClosed((o, ea) => this.SafeAddClosedTwinSendingLinkHandler(o, new ConnectionEventArgs { ConnectionKey = ConnectionKeys.AmqpTwinSending, ConnectionStatus = ConnectionStatus.Disconnected_Retrying }));
+            twinSendingLink.SafeAddClosed((o, ea) => this.SafeAddClosedTwinSendingLinkHandler(o, new ConnectionEventArgs { ConnectionKey = ConnectionKeys.AmqpTwinSending, ConnectionStatus = ConnectionStatus.Disconnected_Retrying, ConnectionStatusChangeReason = ConnectionStatusChangeReason.No_Network }));
         }
 
         private async Task EnableTwinReceivingLinkAsync(CancellationToken cancellationToken)
         {
             ReceivingAmqpLink twinReceivingLink = await this.GetTwinReceivingLinkAsync(cancellationToken);
             this.SafeAddClosedTwinReceivingLinkHandler = this.linkClosedListener;
-            twinReceivingLink.SafeAddClosed((o, ea) => this.SafeAddClosedTwinReceivingLinkHandler(o, new ConnectionEventArgs { ConnectionKey = ConnectionKeys.AmqpTwinReceiving, ConnectionStatus = ConnectionStatus.Disconnected_Retrying }));
+            twinReceivingLink.SafeAddClosed((o, ea) => this.SafeAddClosedTwinReceivingLinkHandler(o, new ConnectionEventArgs { ConnectionKey = ConnectionKeys.AmqpTwinReceiving, ConnectionStatus = ConnectionStatus.Disconnected_Retrying, ConnectionStatusChangeReason = ConnectionStatusChangeReason.No_Network }));
         }
 #endif
 
@@ -375,8 +391,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
 
             await Task.WhenAll(receivingLinkCloseTask, sendingLinkCloseTask);
-            this.linkClosedListener(this.faultTolerantMethodSendingLink, new ConnectionEventArgs { ConnectionKey = ConnectionKeys.AmqpMethodSending, ConnectionStatus = ConnectionStatus.Disabled });
-            this.linkClosedListener(this.faultTolerantMethodReceivingLink, new ConnectionEventArgs { ConnectionKey = ConnectionKeys.AmqpMethodReceiving, ConnectionStatus = ConnectionStatus.Disabled });
+            this.linkClosedListener(
+                this.faultTolerantMethodSendingLink, 
+                new ConnectionEventArgs { ConnectionKey = ConnectionKeys.AmqpMethodSending, ConnectionStatus = ConnectionStatus.Disabled, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Client_Close });
+            this.linkClosedListener(
+                this.faultTolerantMethodReceivingLink, 
+                new ConnectionEventArgs { ConnectionKey = ConnectionKeys.AmqpMethodReceiving, ConnectionStatus = ConnectionStatus.Disabled, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Client_Close });
 
 #else
             throw new NotImplementedException();
@@ -413,8 +433,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
 
             await Task.WhenAll(receivingLinkCloseTask, sendingLinkCloseTask);
-            this.linkClosedListener(this.faultTolerantTwinSendingLink, new ConnectionEventArgs { ConnectionKey = ConnectionKeys.AmqpTwinSending, ConnectionStatus = ConnectionStatus.Disabled });
-            this.linkClosedListener(this.faultTolerantTwinReceivingLink, new ConnectionEventArgs { ConnectionKey = ConnectionKeys.AmqpTwinReceiving, ConnectionStatus = ConnectionStatus.Disabled });
+            this.linkClosedListener(
+                this.faultTolerantTwinSendingLink, 
+                new ConnectionEventArgs {ConnectionKey = ConnectionKeys.AmqpTwinSending, ConnectionStatus = ConnectionStatus.Disabled, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Client_Close });
+            this.linkClosedListener(
+                this.faultTolerantTwinReceivingLink, 
+                new ConnectionEventArgs { ConnectionKey = ConnectionKeys.AmqpTwinReceiving, ConnectionStatus = ConnectionStatus.Disabled, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Client_Close });
 #else
             throw new NotImplementedException();
 #endif
@@ -480,8 +504,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
 #else
             await Task.WhenAll(eventSendingLinkCloseTask, deviceBoundReceivingLinkCloseTask);
 #endif
-            this.linkClosedListener(this.faultTolerantEventSendingLink, new ConnectionEventArgs { ConnectionKey = ConnectionKeys.AmqpTelemetry, ConnectionStatus = ConnectionStatus.Disabled });
-            this.linkClosedListener(this.faultTolerantDeviceBoundReceivingLink, new ConnectionEventArgs { ConnectionKey = ConnectionKeys.AmqpMessaging, ConnectionStatus = ConnectionStatus.Disabled });
+            this.linkClosedListener(
+                this.faultTolerantEventSendingLink, 
+                new ConnectionEventArgs { ConnectionKey = ConnectionKeys.AmqpTelemetry, ConnectionStatus = ConnectionStatus.Disabled, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Client_Close });
+            this.linkClosedListener(
+                this.faultTolerantDeviceBoundReceivingLink, 
+                new ConnectionEventArgs { ConnectionKey = ConnectionKeys.AmqpMessaging, ConnectionStatus = ConnectionStatus.Disabled, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Client_Close });
 
             this.IotHubConnection.Release(this.deviceId);
         }
