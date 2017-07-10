@@ -69,6 +69,7 @@
             this.showDevicePropertiesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tabData = new System.Windows.Forms.TabPage();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.enableSystemProperties = new System.Windows.Forms.CheckBox();
             this.consumerGroupCheckBox = new System.Windows.Forms.CheckBox();
             this.label6 = new System.Windows.Forms.Label();
             this.groupNameTextBox = new System.Windows.Forms.TextBox();
@@ -119,8 +120,18 @@
             this.label17 = new System.Windows.Forms.Label();
             this.label14 = new System.Windows.Forms.Label();
             this.label13 = new System.Windows.Forms.Label();
+            this.tabCommandReceiver = new System.Windows.Forms.TabPage();
+            this.groupBox9 = new System.Windows.Forms.GroupBox();
+            this.deviceCommandsRichTxtBox = new System.Windows.Forms.RichTextBox();
+            this.groupBox8 = new System.Windows.Forms.GroupBox();
+            this.cancelReceiveCommandsBtn = new System.Windows.Forms.Button();
+            this.clearCommandsBtn = new System.Windows.Forms.Button();
+            this.receiveCommandsBtn = new System.Windows.Forms.Button();
+            this.label24 = new System.Windows.Forms.Label();
+            this.actionComboBoxForCommandReceiver = new System.Windows.Forms.ComboBox();
+            this.label23 = new System.Windows.Forms.Label();
+            this.deviceIDComboBoxForCommandReceiver = new System.Windows.Forms.ComboBox();
             this.ehStringToolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.enableSystemProperties = new System.Windows.Forms.CheckBox();
             this.tabCallDeviceMethod.SuspendLayout();
             this.tabPage2.SuspendLayout();
             this.groupBox5.SuspendLayout();
@@ -139,6 +150,9 @@
             this.groupBox4.SuspendLayout();
             this.tabDeviceMethod.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.callDeviceMethodNumericUpDown)).BeginInit();
+            this.tabCommandReceiver.SuspendLayout();
+            this.groupBox9.SuspendLayout();
+            this.groupBox8.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabCallDeviceMethod
@@ -151,6 +165,7 @@
             this.tabCallDeviceMethod.Controls.Add(this.tabData);
             this.tabCallDeviceMethod.Controls.Add(this.tabMessagesToDevice);
             this.tabCallDeviceMethod.Controls.Add(this.tabDeviceMethod);
+            this.tabCallDeviceMethod.Controls.Add(this.tabCommandReceiver);
             this.tabCallDeviceMethod.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.tabCallDeviceMethod.Location = new System.Drawing.Point(12, 12);
             this.tabCallDeviceMethod.Name = "tabCallDeviceMethod";
@@ -604,6 +619,16 @@
             this.groupBox3.TabIndex = 26;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Monitoring";
+            // 
+            // enableSystemProperties
+            // 
+            this.enableSystemProperties.AutoSize = true;
+            this.enableSystemProperties.Location = new System.Drawing.Point(563, 208);
+            this.enableSystemProperties.Name = "enableSystemProperties";
+            this.enableSystemProperties.Size = new System.Drawing.Size(170, 20);
+            this.enableSystemProperties.TabIndex = 30;
+            this.enableSystemProperties.Text = "Show system properties";
+            this.enableSystemProperties.UseVisualStyleBackColor = true;
             // 
             // consumerGroupCheckBox
             // 
@@ -1158,15 +1183,122 @@
             this.label13.TabIndex = 0;
             this.label13.Text = "Call Method on Device";
             // 
-            // enableSystemProperties
+            // tabCommandReceiver
             // 
-            this.enableSystemProperties.AutoSize = true;
-            this.enableSystemProperties.Location = new System.Drawing.Point(563, 208);
-            this.enableSystemProperties.Name = "enableSystemProperties";
-            this.enableSystemProperties.Size = new System.Drawing.Size(170, 20);
-            this.enableSystemProperties.TabIndex = 30;
-            this.enableSystemProperties.Text = "Show system properties";
-            this.enableSystemProperties.UseVisualStyleBackColor = true;
+            this.tabCommandReceiver.Controls.Add(this.groupBox9);
+            this.tabCommandReceiver.Controls.Add(this.groupBox8);
+            this.tabCommandReceiver.Location = new System.Drawing.Point(4, 25);
+            this.tabCommandReceiver.Name = "tabCommandReceiver";
+            this.tabCommandReceiver.Padding = new System.Windows.Forms.Padding(3);
+            this.tabCommandReceiver.Size = new System.Drawing.Size(751, 601);
+            this.tabCommandReceiver.TabIndex = 5;
+            this.tabCommandReceiver.Text = "Command Receiver";
+            this.tabCommandReceiver.UseVisualStyleBackColor = true;
+            // 
+            // groupBox9
+            // 
+            this.groupBox9.Controls.Add(this.deviceCommandsRichTxtBox);
+            this.groupBox9.Location = new System.Drawing.Point(6, 167);
+            this.groupBox9.Name = "groupBox9";
+            this.groupBox9.Size = new System.Drawing.Size(739, 428);
+            this.groupBox9.TabIndex = 1;
+            this.groupBox9.TabStop = false;
+            this.groupBox9.Text = "Commands";
+            // 
+            // deviceCommandsRichTxtBox
+            // 
+            this.deviceCommandsRichTxtBox.Location = new System.Drawing.Point(6, 21);
+            this.deviceCommandsRichTxtBox.Name = "deviceCommandsRichTxtBox";
+            this.deviceCommandsRichTxtBox.Size = new System.Drawing.Size(727, 454);
+            this.deviceCommandsRichTxtBox.TabIndex = 0;
+            this.deviceCommandsRichTxtBox.Text = "";
+            // 
+            // groupBox8
+            // 
+            this.groupBox8.Controls.Add(this.cancelReceiveCommandsBtn);
+            this.groupBox8.Controls.Add(this.clearCommandsBtn);
+            this.groupBox8.Controls.Add(this.receiveCommandsBtn);
+            this.groupBox8.Controls.Add(this.label24);
+            this.groupBox8.Controls.Add(this.actionComboBoxForCommandReceiver);
+            this.groupBox8.Controls.Add(this.label23);
+            this.groupBox8.Controls.Add(this.deviceIDComboBoxForCommandReceiver);
+            this.groupBox8.Location = new System.Drawing.Point(6, 6);
+            this.groupBox8.Name = "groupBox8";
+            this.groupBox8.Size = new System.Drawing.Size(739, 155);
+            this.groupBox8.TabIndex = 0;
+            this.groupBox8.TabStop = false;
+            this.groupBox8.Text = "Command Receiver";
+            // 
+            // cancelReceiveCommandsBtn
+            // 
+            this.cancelReceiveCommandsBtn.Location = new System.Drawing.Point(182, 109);
+            this.cancelReceiveCommandsBtn.Name = "cancelReceiveCommandsBtn";
+            this.cancelReceiveCommandsBtn.Size = new System.Drawing.Size(133, 30);
+            this.cancelReceiveCommandsBtn.TabIndex = 29;
+            this.cancelReceiveCommandsBtn.Text = "Stop";
+            this.cancelReceiveCommandsBtn.UseVisualStyleBackColor = true;
+            this.cancelReceiveCommandsBtn.Click += new System.EventHandler(this.cancelReceiveCommandsBtn_Click);
+            // 
+            // clearCommandsBtn
+            // 
+            this.clearCommandsBtn.Location = new System.Drawing.Point(353, 109);
+            this.clearCommandsBtn.Name = "clearCommandsBtn";
+            this.clearCommandsBtn.Size = new System.Drawing.Size(120, 30);
+            this.clearCommandsBtn.TabIndex = 28;
+            this.clearCommandsBtn.Text = "Clear";
+            this.clearCommandsBtn.UseVisualStyleBackColor = true;
+            this.clearCommandsBtn.Click += new System.EventHandler(this.clearCommandsBtn_Click);
+            // 
+            // receiveCommandsBtn
+            // 
+            this.receiveCommandsBtn.Location = new System.Drawing.Point(21, 109);
+            this.receiveCommandsBtn.Name = "receiveCommandsBtn";
+            this.receiveCommandsBtn.Size = new System.Drawing.Size(120, 30);
+            this.receiveCommandsBtn.TabIndex = 27;
+            this.receiveCommandsBtn.Text = "Start";
+            this.receiveCommandsBtn.UseVisualStyleBackColor = true;
+            this.receiveCommandsBtn.Click += new System.EventHandler(this.receiveCommandsBtn_Click);
+            // 
+            // label24
+            // 
+            this.label24.AutoSize = true;
+            this.label24.Location = new System.Drawing.Point(11, 62);
+            this.label24.Name = "label24";
+            this.label24.Size = new System.Drawing.Size(45, 16);
+            this.label24.TabIndex = 21;
+            this.label24.Text = "Action";
+            // 
+            // actionComboBoxForCommandReceiver
+            // 
+            this.actionComboBoxForCommandReceiver.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.actionComboBoxForCommandReceiver.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.actionComboBoxForCommandReceiver.FormattingEnabled = true;
+            this.actionComboBoxForCommandReceiver.Location = new System.Drawing.Point(90, 59);
+            this.actionComboBoxForCommandReceiver.Name = "actionComboBoxForCommandReceiver";
+            this.actionComboBoxForCommandReceiver.Size = new System.Drawing.Size(622, 24);
+            this.actionComboBoxForCommandReceiver.TabIndex = 22;
+            // 
+            // label23
+            // 
+            this.label23.AutoSize = true;
+            this.label23.Location = new System.Drawing.Point(11, 29);
+            this.label23.Name = "label23";
+            this.label23.Size = new System.Drawing.Size(70, 16);
+            this.label23.TabIndex = 19;
+            this.label23.Text = "Device ID:";
+            // 
+            // deviceIDComboBoxForCommandReceiver
+            // 
+            this.deviceIDComboBoxForCommandReceiver.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.deviceIDComboBoxForCommandReceiver.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.deviceIDComboBoxForCommandReceiver.FormattingEnabled = true;
+            this.deviceIDComboBoxForCommandReceiver.Location = new System.Drawing.Point(90, 26);
+            this.deviceIDComboBoxForCommandReceiver.Name = "deviceIDComboBoxForCommandReceiver";
+            this.deviceIDComboBoxForCommandReceiver.Size = new System.Drawing.Size(622, 24);
+            this.deviceIDComboBoxForCommandReceiver.TabIndex = 20;
+            this.deviceIDComboBoxForCommandReceiver.SelectionChangeCommitted += new System.EventHandler(this.deviceIDComboBoxForCommandReceiver_SelectionChangeCommitted);
             // 
             // MainForm
             // 
@@ -1203,6 +1335,10 @@
             this.tabDeviceMethod.ResumeLayout(false);
             this.tabDeviceMethod.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.callDeviceMethodNumericUpDown)).EndInit();
+            this.tabCommandReceiver.ResumeLayout(false);
+            this.groupBox9.ResumeLayout(false);
+            this.groupBox8.ResumeLayout(false);
+            this.groupBox8.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -1301,6 +1437,17 @@
         private System.Windows.Forms.NumericUpDown callDeviceMethodNumericUpDown;
         private System.Windows.Forms.Button callDeviceMethodCancelButton;
         private System.Windows.Forms.CheckBox enableSystemProperties;
+        private System.Windows.Forms.TabPage tabCommandReceiver;
+        private System.Windows.Forms.GroupBox groupBox8;
+        private System.Windows.Forms.Label label24;
+        private System.Windows.Forms.ComboBox actionComboBoxForCommandReceiver;
+        private System.Windows.Forms.Label label23;
+        private System.Windows.Forms.ComboBox deviceIDComboBoxForCommandReceiver;
+        private System.Windows.Forms.GroupBox groupBox9;
+        private System.Windows.Forms.RichTextBox deviceCommandsRichTxtBox;
+        private System.Windows.Forms.Button cancelReceiveCommandsBtn;
+        private System.Windows.Forms.Button clearCommandsBtn;
+        private System.Windows.Forms.Button receiveCommandsBtn;
     }
 }
 
