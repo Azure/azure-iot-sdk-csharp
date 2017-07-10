@@ -1008,7 +1008,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             if (result.IsClientStatusChanged && (connectionStatusChangesHandler != null))
             {
                 // codes_SRS_DEVICECLIENT_28_024: [** `OnConnectionOpened` shall invoke the connectionStatusChangesHandler if ConnectionStatus is changed **]**  
-                this.connectionStatusChangesHandler(ConnectionStatus.Connected, ConnectionStatusChangeReason.Connection_Ok);
+                this.connectionStatusChangesHandler(ConnectionStatus.Connected, e.ConnectionStatusChangeReason);
             }
         }
 
@@ -1030,7 +1030,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                         result = this.connectionStatusManager.ChangeTo(e.ConnectionKey, ConnectionStatus.Disconnected_Retrying, ConnectionStatus.Connected, operationTimeoutCancellationTokenSource);
                         if (result.IsClientStatusChanged && (connectionStatusChangesHandler != null))
                         {
-                            this.connectionStatusChangesHandler(ConnectionStatus.Disconnected_Retrying, ConnectionStatusChangeReason.No_Network);
+                            this.connectionStatusChangesHandler(e.ConnectionStatus, e.ConnectionStatusChangeReason);
                         }
 
                         return this.InnerHandler.RecoverConnections(sender, operationTimeoutCancellationTokenSource.Token);
@@ -1051,7 +1051,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                 result = this.connectionStatusManager.ChangeTo(e.ConnectionKey, ConnectionStatus.Disabled);
                 if (result.IsClientStatusChanged && (connectionStatusChangesHandler != null))
                 {
-                    this.connectionStatusChangesHandler(ConnectionStatus.Disabled, ConnectionStatusChangeReason.Client_Close);
+                    this.connectionStatusChangesHandler(ConnectionStatus.Disabled, e.ConnectionStatusChangeReason);
                 }
             }
         }

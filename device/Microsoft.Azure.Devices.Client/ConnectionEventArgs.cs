@@ -13,5 +13,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         public string ConnectionKey { get; set; }
 
         public ConnectionStatus ConnectionStatus { get; set; }
+
+        public ConnectionStatusChangeReason ConnectionStatusChangeReason { get; set; }
     }
 }
