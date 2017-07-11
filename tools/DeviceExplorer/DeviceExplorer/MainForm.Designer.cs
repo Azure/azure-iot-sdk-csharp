@@ -132,6 +132,8 @@
             this.label23 = new System.Windows.Forms.Label();
             this.deviceIDComboBoxForCommandReceiver = new System.Windows.Forms.ComboBox();
             this.ehStringToolTip = new System.Windows.Forms.ToolTip(this.components);
+            this.iotHubNameTextBoxForCommandReceiver = new System.Windows.Forms.TextBox();
+            this.label25 = new System.Windows.Forms.Label();
             this.tabCallDeviceMethod.SuspendLayout();
             this.tabPage2.SuspendLayout();
             this.groupBox5.SuspendLayout();
@@ -1198,9 +1200,9 @@
             // groupBox9
             // 
             this.groupBox9.Controls.Add(this.deviceCommandsRichTxtBox);
-            this.groupBox9.Location = new System.Drawing.Point(6, 167);
+            this.groupBox9.Location = new System.Drawing.Point(6, 213);
             this.groupBox9.Name = "groupBox9";
-            this.groupBox9.Size = new System.Drawing.Size(739, 428);
+            this.groupBox9.Size = new System.Drawing.Size(739, 382);
             this.groupBox9.TabIndex = 1;
             this.groupBox9.TabStop = false;
             this.groupBox9.Text = "Commands";
@@ -1215,6 +1217,8 @@
             // 
             // groupBox8
             // 
+            this.groupBox8.Controls.Add(this.iotHubNameTextBoxForCommandReceiver);
+            this.groupBox8.Controls.Add(this.label25);
             this.groupBox8.Controls.Add(this.cancelReceiveCommandsBtn);
             this.groupBox8.Controls.Add(this.clearCommandsBtn);
             this.groupBox8.Controls.Add(this.receiveCommandsBtn);
@@ -1224,14 +1228,14 @@
             this.groupBox8.Controls.Add(this.deviceIDComboBoxForCommandReceiver);
             this.groupBox8.Location = new System.Drawing.Point(6, 6);
             this.groupBox8.Name = "groupBox8";
-            this.groupBox8.Size = new System.Drawing.Size(739, 155);
+            this.groupBox8.Size = new System.Drawing.Size(739, 201);
             this.groupBox8.TabIndex = 0;
             this.groupBox8.TabStop = false;
             this.groupBox8.Text = "Command Receiver";
             // 
             // cancelReceiveCommandsBtn
             // 
-            this.cancelReceiveCommandsBtn.Location = new System.Drawing.Point(182, 109);
+            this.cancelReceiveCommandsBtn.Location = new System.Drawing.Point(182, 156);
             this.cancelReceiveCommandsBtn.Name = "cancelReceiveCommandsBtn";
             this.cancelReceiveCommandsBtn.Size = new System.Drawing.Size(133, 30);
             this.cancelReceiveCommandsBtn.TabIndex = 29;
@@ -1241,7 +1245,7 @@
             // 
             // clearCommandsBtn
             // 
-            this.clearCommandsBtn.Location = new System.Drawing.Point(353, 109);
+            this.clearCommandsBtn.Location = new System.Drawing.Point(353, 156);
             this.clearCommandsBtn.Name = "clearCommandsBtn";
             this.clearCommandsBtn.Size = new System.Drawing.Size(120, 30);
             this.clearCommandsBtn.TabIndex = 28;
@@ -1251,7 +1255,7 @@
             // 
             // receiveCommandsBtn
             // 
-            this.receiveCommandsBtn.Location = new System.Drawing.Point(21, 109);
+            this.receiveCommandsBtn.Location = new System.Drawing.Point(21, 156);
             this.receiveCommandsBtn.Name = "receiveCommandsBtn";
             this.receiveCommandsBtn.Size = new System.Drawing.Size(120, 30);
             this.receiveCommandsBtn.TabIndex = 27;
@@ -1262,7 +1266,7 @@
             // label24
             // 
             this.label24.AutoSize = true;
-            this.label24.Location = new System.Drawing.Point(11, 62);
+            this.label24.Location = new System.Drawing.Point(11, 107);
             this.label24.Name = "label24";
             this.label24.Size = new System.Drawing.Size(45, 16);
             this.label24.TabIndex = 21;
@@ -1274,7 +1278,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.actionComboBoxForCommandReceiver.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.actionComboBoxForCommandReceiver.FormattingEnabled = true;
-            this.actionComboBoxForCommandReceiver.Location = new System.Drawing.Point(90, 59);
+            this.actionComboBoxForCommandReceiver.Location = new System.Drawing.Point(93, 104);
             this.actionComboBoxForCommandReceiver.Name = "actionComboBoxForCommandReceiver";
             this.actionComboBoxForCommandReceiver.Size = new System.Drawing.Size(622, 24);
             this.actionComboBoxForCommandReceiver.TabIndex = 22;
@@ -1282,7 +1286,7 @@
             // label23
             // 
             this.label23.AutoSize = true;
-            this.label23.Location = new System.Drawing.Point(11, 29);
+            this.label23.Location = new System.Drawing.Point(11, 74);
             this.label23.Name = "label23";
             this.label23.Size = new System.Drawing.Size(70, 16);
             this.label23.TabIndex = 19;
@@ -1294,11 +1298,30 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.deviceIDComboBoxForCommandReceiver.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.deviceIDComboBoxForCommandReceiver.FormattingEnabled = true;
-            this.deviceIDComboBoxForCommandReceiver.Location = new System.Drawing.Point(90, 26);
+            this.deviceIDComboBoxForCommandReceiver.Location = new System.Drawing.Point(93, 66);
             this.deviceIDComboBoxForCommandReceiver.Name = "deviceIDComboBoxForCommandReceiver";
             this.deviceIDComboBoxForCommandReceiver.Size = new System.Drawing.Size(622, 24);
             this.deviceIDComboBoxForCommandReceiver.TabIndex = 20;
             this.deviceIDComboBoxForCommandReceiver.SelectionChangeCommitted += new System.EventHandler(this.deviceIDComboBoxForCommandReceiver_SelectionChangeCommitted);
+            // 
+            // iotHubNameTextBoxForCommandReceiver
+            // 
+            this.iotHubNameTextBoxForCommandReceiver.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.iotHubNameTextBoxForCommandReceiver.Location = new System.Drawing.Point(93, 31);
+            this.iotHubNameTextBoxForCommandReceiver.Name = "iotHubNameTextBoxForCommandReceiver";
+            this.iotHubNameTextBoxForCommandReceiver.ReadOnly = true;
+            this.iotHubNameTextBoxForCommandReceiver.Size = new System.Drawing.Size(622, 22);
+            this.iotHubNameTextBoxForCommandReceiver.TabIndex = 31;
+            // 
+            // label25
+            // 
+            this.label25.AutoSize = true;
+            this.label25.Location = new System.Drawing.Point(14, 35);
+            this.label25.Name = "label25";
+            this.label25.Size = new System.Drawing.Size(59, 16);
+            this.label25.TabIndex = 30;
+            this.label25.Text = "IoT Hub:";
             // 
             // MainForm
             // 
@@ -1448,6 +1471,8 @@
         private System.Windows.Forms.Button cancelReceiveCommandsBtn;
         private System.Windows.Forms.Button clearCommandsBtn;
         private System.Windows.Forms.Button receiveCommandsBtn;
+        private System.Windows.Forms.TextBox iotHubNameTextBoxForCommandReceiver;
+        private System.Windows.Forms.Label label25;
     }
 }
 

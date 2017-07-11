@@ -130,6 +130,7 @@ namespace DeviceExplorer
                 iotHubNameTextBox.Text = iotHubName;
                 eventHubNameTextBoxForDataTab.Text = iotHubName;
                 iotHubNameTextBoxForDeviceMethod.Text = iotHubName;
+                iotHubNameTextBoxForCommandReceiver.Text = iotHubName;
 
                 activeIoTHubConnectionString = connectionString;
             }
