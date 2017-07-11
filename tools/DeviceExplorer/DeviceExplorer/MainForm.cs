@@ -902,7 +902,7 @@ namespace DeviceExplorer
 
                     var msgString = Encoding.UTF8.GetString(bytes);
 
-                    deviceCommandsRichTxtBox.AppendText("Received Command:" + Environment.NewLine);
+                    deviceCommandsRichTxtBox.AppendText($"Received Command with MessageId {message.MessageId}:" + Environment.NewLine);
                     deviceCommandsRichTxtBox.AppendText(msgString);
                     deviceCommandsRichTxtBox.AppendText(Environment.NewLine);
 
