@@ -1192,7 +1192,7 @@
             this.tabCommandReceiver.Padding = new System.Windows.Forms.Padding(3);
             this.tabCommandReceiver.Size = new System.Drawing.Size(751, 601);
             this.tabCommandReceiver.TabIndex = 5;
-            this.tabCommandReceiver.Text = "Command Receiver";
+            this.tabCommandReceiver.Text = "Command Receiver (C2D)";
             this.tabCommandReceiver.UseVisualStyleBackColor = true;
             // 
             // groupBox9

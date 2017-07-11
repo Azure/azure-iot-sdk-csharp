@@ -142,13 +142,18 @@ namespace DeviceExplorer
             }
         }
 
+        /// <summary>
+        /// Fills ComboBox for selecting the action to use for received C2D message
+        /// </summary>
+        /// <param name="runIfNullOrEmpty"></param>
         private void fillCommandReceiverActionComboBox(bool runIfNullOrEmpty = true)
         {
             if (actionComboBoxForCommandReceiver.Items.Count == 0 || runIfNullOrEmpty)
             {
-                actionComboBoxForCommandReceiver.Items.Add("None");
-                actionComboBoxForCommandReceiver.Items.Add("Complete");
-                actionComboBoxForCommandReceiver.Items.Add("Abondon");
+                foreach (var action in Enum.GetValues(typeof(CommandAction)))
+                {
+                    actionComboBoxForCommandReceiver.Items.Add(action.ToString());
+                }
 
                 actionComboBoxForCommandReceiver.SelectedIndex = actionSelectedIndexForCommandReceiver;
             }
@@ -874,6 +879,12 @@ namespace DeviceExplorer
             sasTokenButton.Enabled = true;
         }
 
+        /// <summary>
+        /// Receives C2D messages
+        /// </summary>
+        /// <param name="ct"></param>
+        /// <param name="deviceId"></param>
+        /// <returns></returns>
         private async Task ReceiveCommands(CancellationToken ct, string deviceId)
         {
             using (DeviceClient client = DeviceClient.CreateFromConnectionString(activeIoTHubConnectionString, deviceId))
@@ -881,7 +892,7 @@ namespace DeviceExplorer
 
                 while (!ct.IsCancellationRequested)
                 {
-                    var message = await client.ReceiveAsync();
+                    var message = await client.ReceiveAsync(TimeSpan.FromSeconds(10));
 
                     if (message == null)
                         continue;
@@ -894,25 +905,28 @@ namespace DeviceExplorer
                     deviceCommandsRichTxtBox.AppendText(msgString);
                     deviceCommandsRichTxtBox.AppendText(Environment.NewLine);
 
-                    var action = actionComboBoxForCommandReceiver.SelectedItem?.ToString();
+                    var actionString = actionComboBoxForCommandReceiver.SelectedItem?.ToString();
+
+                    Enum.TryParse(actionString, out CommandAction action);
 
                     switch (action)
                     {
-                        case "Complete":
+                        case CommandAction.Complete:
                             {
                                 await client.CompleteAsync(message);
-                                deviceCommandsRichTxtBox.AppendText($"Command was completed succesful.");
+                                deviceCommandsRichTxtBox.AppendText("Command was completed successful.");
                                 deviceCommandsRichTxtBox.AppendText(Environment.NewLine);
                                 break;
                             }
-                        case "Abondon":
+                        case CommandAction.Abandon:
                             {
                                 await client.AbandonAsync(message);
-                                deviceCommandsRichTxtBox.AppendText($"Command was abondened succesful.");
+                                deviceCommandsRichTxtBox.AppendText("Command was abandoned successful.");
                                 deviceCommandsRichTxtBox.AppendText(Environment.NewLine);
                                 break;
                             }
-                        case "None":
+                        case CommandAction.None:
+                        default:
                             break;
                     }
                 }
@@ -949,15 +963,27 @@ namespace DeviceExplorer
             }
         }
 
+        /// <summary>
+        /// Starts receiving C2D messages
+        /// </summary>
+        /// <returns></returns>
         private async Task StartReceiveCommand()
         {
-            ctsForReceiveCommand = new CancellationTokenSource();
-            deviceCommandsRichTxtBox.AppendText($"Started receiving commands for device {deviceIDComboBoxForCommandReceiver.SelectedItem.ToString()}.");
-            deviceCommandsRichTxtBox.AppendText(Environment.NewLine);
+            var deviceId = deviceIDComboBoxForCommandReceiver.SelectedItem?.ToString();
 
-            await ReceiveCommands(ctsForReceiveCommand.Token, deviceIDComboBoxForCommandReceiver.SelectedItem.ToString());
+            if (!String.IsNullOrEmpty(deviceId))
+            {
+                ctsForReceiveCommand = new CancellationTokenSource();
+                deviceCommandsRichTxtBox.AppendText($"Started receiving commands for device {deviceIDComboBoxForCommandReceiver.SelectedItem.ToString()}.");
+                deviceCommandsRichTxtBox.AppendText(Environment.NewLine);
+
+                await ReceiveCommands(ctsForReceiveCommand.Token, deviceId);
+            }
         }
 
+        /// <summary>
+        /// Stops receiving C2D messages
+        /// </summary>
         private void StopReceiveCommands()
         {
             if (ctsForReceiveCommand != null)
