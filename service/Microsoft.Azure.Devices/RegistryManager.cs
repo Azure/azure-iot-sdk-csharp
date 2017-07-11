@@ -596,5 +596,43 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Result of the bulk update operation</returns>
         public abstract Task<BulkRegistryOperationResult> UpdateTwins2Async(IEnumerable<Twin> twins, bool forceUpdate, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Updates the mutable fields of <see cref="Twin"/>
+        /// </summary>
+        /// <param name="deviceId">Device Id</param>
+        /// <param name="newTwin">New Twin object to replace with</param>
+        /// <param name="etag">Twin's etag</param>
+        /// <returns>Updated Twin instance</returns>
+        public abstract Task<Twin> ReplaceTwinAsync(string deviceId, Twin newTwin, string etag);
+
+        /// <summary>
+        /// Updates the mutable fields of <see cref="Twin"/>
+        /// </summary>
+        /// <param name="deviceId">Device Id</param>
+        /// <param name="newTwin">New Twin object to replace with</param>
+        /// <param name="etag">Twin's etag</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>Updated Twin instance</returns>
+        public abstract Task<Twin> ReplaceTwinAsync(string deviceId, Twin newTwin, string etag, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Updates the mutable fields of <see cref="Twin"/>
+        /// </summary>
+        /// <param name="deviceId">Device Id</param>
+        /// <param name="newTwinJson">New Twin json to replace with</param>
+        /// <param name="etag">Twin's etag</param>
+        /// <returns>Updated Twin instance</returns>
+        public abstract Task<Twin> ReplaceTwinAsync(string deviceId, string newTwinJson, string etag);
+
+        /// <summary>
+        /// Updates the mutable fields of <see cref="Twin"/>
+        /// </summary>
+        /// <param name="deviceId">Device Id</param>
+        /// <param name="newTwinJson">New Twin json to replace with</param>
+        /// <param name="etag">Twin's etag</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>Updated Twin instance</returns>
+        public abstract Task<Twin> ReplaceTwinAsync(string deviceId, string newTwinJson, string etag, CancellationToken cancellationToken);
     }
 }

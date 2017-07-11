@@ -717,14 +717,46 @@ namespace Microsoft.Azure.Devices
 
         public override Task<Twin> UpdateTwinAsync(string deviceId, Twin twinPatch, string etag, CancellationToken cancellationToken)
         {
-            this.EnsureInstanceNotClosed();
+            return this.UpdateTwinInternalAsync(deviceId, twinPatch, etag, cancellationToken, false);
+        }
 
-            if (twinPatch != null)
+        public override Task<Twin> ReplaceTwinAsync(string deviceId, string newTwinJson, string etag)
+        {
+            return this.ReplaceTwinAsync(deviceId, newTwinJson, etag, CancellationToken.None);
+        }
+
+        public override Task<Twin> ReplaceTwinAsync(string deviceId, string newTwinJson, string etag, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(newTwinJson))
             {
-                twinPatch.DeviceId = deviceId;
+                throw new ArgumentNullException(nameof(newTwinJson));
             }
 
-            ValidateTwinId(twinPatch);
+            // TODO: Do we need to deserialize Twin, only to serialize it again?
+            var twin = JsonConvert.DeserializeObject<Twin>(newTwinJson);
+            return this.ReplaceTwinAsync(deviceId, twin, etag, cancellationToken);
+        }
+
+        public override Task<Twin> ReplaceTwinAsync(string deviceId, Twin newTwin, string etag)
+        {
+            return this.ReplaceTwinAsync(deviceId, newTwin, etag, CancellationToken.None);
+        }
+
+        public override Task<Twin> ReplaceTwinAsync(string deviceId, Twin newTwin, string etag, CancellationToken cancellationToken)
+        {
+            return this.UpdateTwinInternalAsync(deviceId, newTwin, etag, cancellationToken, true);
+        }
+
+        Task<Twin> UpdateTwinInternalAsync(string deviceId, Twin twin, string etag, CancellationToken cancellationToken, bool isReplace)
+        {
+            this.EnsureInstanceNotClosed();
+
+            if (twin != null)
+            {
+                twin.DeviceId = deviceId;
+            }
+
+            ValidateTwinId(twin);
 
             if (string.IsNullOrEmpty(etag))
             {
@@ -743,13 +775,26 @@ namespace Microsoft.Azure.Devices
                 }
             };
 
-            return this.httpClientHelper.PatchAsync<Twin, Twin>(
-                GetTwinUri(deviceId),
-                twinPatch,
-                etag,
-                etag == WildcardEtag ? PutOperationType.ForceUpdateEntity : PutOperationType.UpdateEntity,
-                errorMappingOverrides,
-                cancellationToken);
+            if (isReplace)
+            {
+                return this.httpClientHelper.PutAsync<Twin, Twin>(
+                    GetTwinUri(deviceId),
+                    twin,
+                    etag,
+                    etag == WildcardEtag ? PutOperationType.ForceUpdateEntity : PutOperationType.UpdateEntity,
+                    errorMappingOverrides,
+                    cancellationToken);
+            }
+            else
+            {
+                return this.httpClientHelper.PatchAsync<Twin, Twin>(
+                    GetTwinUri(deviceId),
+                    twin,
+                    etag,
+                    etag == WildcardEtag ? PutOperationType.ForceUpdateEntity : PutOperationType.UpdateEntity,
+                    errorMappingOverrides,
+                    cancellationToken);
+            }
         }
 
         public override Task<BulkRegistryOperationResult> UpdateTwins2Async(IEnumerable<Twin> twins)
