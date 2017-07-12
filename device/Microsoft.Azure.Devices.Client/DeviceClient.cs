@@ -1004,7 +1004,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// </summary>
         internal async void OnConnectionOpened(object sender, ConnectionEventArgs e)
         {
-            ConnectionStatusChangeResult result = this.connectionStatusManager.ChangeTo(e.ConnectionKey, ConnectionStatus.Connected);
+            ConnectionStatusChangeResult result = this.connectionStatusManager.ChangeTo(e.ConnectionType, ConnectionStatus.Connected);
             if (result.IsClientStatusChanged && (connectionStatusChangesHandler != null))
             {
                 // codes_SRS_DEVICECLIENT_28_024: [** `OnConnectionOpened` shall invoke the connectionStatusChangesHandler if ConnectionStatus is changed **]**  
@@ -1027,19 +1027,19 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                     // codes_SRS_DEVICECLIENT_28_022: [** `OnConnectionClosed` shall invoke the RecoverConnections operation. **]**          
                     await ApplyTimeout(operationTimeoutCancellationTokenSource =>
                     {
-                        result = this.connectionStatusManager.ChangeTo(e.ConnectionKey, ConnectionStatus.Disconnected_Retrying, ConnectionStatus.Connected, operationTimeoutCancellationTokenSource);
+                        result = this.connectionStatusManager.ChangeTo(e.ConnectionType, ConnectionStatus.Disconnected_Retrying, ConnectionStatus.Connected, operationTimeoutCancellationTokenSource);
                         if (result.IsClientStatusChanged && (connectionStatusChangesHandler != null))
                         {
                             this.connectionStatusChangesHandler(e.ConnectionStatus, e.ConnectionStatusChangeReason);
                         }
 
-                        return this.InnerHandler.RecoverConnections(sender, operationTimeoutCancellationTokenSource.Token);
+                        return this.InnerHandler.RecoverConnections(sender, e.ConnectionType, operationTimeoutCancellationTokenSource.Token);
                     });
                 }
                 catch (Exception ex)
                 {
                     // codes_SRS_DEVICECLIENT_28_027: [** `OnConnectionClosed` shall invoke the connectionStatusChangesHandler if RecoverConnections throw exception **]**
-                    result = this.connectionStatusManager.ChangeTo(e.ConnectionKey, ConnectionStatus.Disconnected);
+                    result = this.connectionStatusManager.ChangeTo(e.ConnectionType, ConnectionStatus.Disconnected);
                     if (result.IsClientStatusChanged && (connectionStatusChangesHandler != null))
                     {
                         this.connectionStatusChangesHandler(ConnectionStatus.Disconnected, ConnectionStatusChangeReason.Retry_Expired);
@@ -1048,7 +1048,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             }
             else
             {
-                result = this.connectionStatusManager.ChangeTo(e.ConnectionKey, ConnectionStatus.Disabled);
+                result = this.connectionStatusManager.ChangeTo(e.ConnectionType, ConnectionStatus.Disabled);
                 if (result.IsClientStatusChanged && (connectionStatusChangesHandler != null))
                 {
                     this.connectionStatusChangesHandler(ConnectionStatus.Disabled, e.ConnectionStatusChangeReason);

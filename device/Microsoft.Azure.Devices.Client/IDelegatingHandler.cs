@@ -7,6 +7,7 @@ namespace Microsoft.Azure.Devices.Client
     using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
+    using Microsoft.Azure.Devices.Client.Transport;
     using Microsoft.Azure.Devices.Shared;
 
     interface IDelegatingHandler : IContinuationProvider<IDelegatingHandler>, IDisposable
@@ -24,7 +25,7 @@ namespace Microsoft.Azure.Devices.Client
         Task EnableMethodsAsync(CancellationToken cancellationToken);
         Task DisableMethodsAsync(CancellationToken cancellationToken);
         Task SendMethodResponseAsync(MethodResponseInternal methodResponse, CancellationToken cancellationToken);
-        Task RecoverConnections(object o, CancellationToken cancellationToken);
+        Task RecoverConnections(object o, ConnectionType connectionType, CancellationToken cancellationToken);
 
         Task EnableTwinPatchAsync(CancellationToken cancellationToken);
         Task<Twin> SendTwinGetAsync(CancellationToken ct);

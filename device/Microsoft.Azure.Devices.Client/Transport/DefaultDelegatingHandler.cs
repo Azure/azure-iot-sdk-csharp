@@ -131,9 +131,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return this.InnerHandler?.SendTwinPatchAsync(reportedProperties, cancellationToken) ?? TaskConstants.Completed;
         }
 
-        public virtual Task RecoverConnections(object o, CancellationToken cancellationToken)
+        public virtual Task RecoverConnections(object o, ConnectionType connectionType, CancellationToken cancellationToken)
         {
-            return this.InnerHandler?.RecoverConnections(o, cancellationToken) ?? TaskConstants.Completed;
+            return this.InnerHandler?.RecoverConnections(o, connectionType, cancellationToken) ?? TaskConstants.Completed;
         }
 
         protected virtual void Dispose(bool disposing)

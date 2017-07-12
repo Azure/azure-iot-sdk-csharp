@@ -336,8 +336,8 @@
     <Compile Include="$(DeviceClientDir)\ConnectionEventArgs.cs">
       <Link>ConnectionEventArgs.cs</Link>
     </Compile>
-    <Compile Include="$(DeviceClientDir)\ConnectionKeys.cs">
-      <Link>ConnectionKeys.cs</Link>
+    <Compile Include="$(DeviceClientDir)\ConnectionType.cs">
+      <Link>ConnectionType.cs</Link>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\ConnectionStatus.cs">
       <Link>ConnectionStatus.cs</Link>

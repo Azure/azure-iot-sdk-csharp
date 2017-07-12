@@ -154,10 +154,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        public override async Task RecoverConnections(object o, CancellationToken cancellationToken)
+        public override async Task RecoverConnections(object o, ConnectionType connectionType, CancellationToken cancellationToken)
         {
             await this.EnsureOpenedAsync(false, cancellationToken);
-            await base.RecoverConnections(o, cancellationToken);
+            await base.RecoverConnections(o, connectionType, cancellationToken);
         }
 
         protected override void Dispose(bool disposing)

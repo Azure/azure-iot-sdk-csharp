@@ -7,8 +7,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
     using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.IO;
-    using System.Net;
     using System.Linq;
+    using System.Net;
     using System.Net.Security;
     using System.Net.WebSockets;
     using System.Security.Cryptography.X509Certificates;
@@ -376,7 +376,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             if (this.TryStop())
             {
                 await this.closeRetryPolicy.ExecuteAsync(this.CleanupAsync);
-                this.connectionClosedListener(this.channel, new ConnectionEventArgs { ConnectionKey = ConnectionKeys.MqttConnection, ConnectionStatus = ConnectionStatus.Disabled, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Client_Close });
+                this.connectionClosedListener(this.channel, new ConnectionEventArgs { ConnectionType = ConnectionType.MqttConnection, ConnectionStatus = ConnectionStatus.Disabled, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Client_Close });
             }
             else
             {
@@ -395,7 +395,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             if (this.TryStateTransition(TransportState.Opening, TransportState.Open))
             {
                 this.connectCompletion.TryComplete();
-                this.connectionOpenedListener(this.channel, new ConnectionEventArgs { ConnectionKey = ConnectionKeys.MqttConnection, ConnectionStatus = ConnectionStatus.Connected, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Connection_Ok});
+                this.connectionOpenedListener(this.channel, new ConnectionEventArgs { ConnectionType = ConnectionType.MqttConnection, ConnectionStatus = ConnectionStatus.Connected, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Connection_Ok});
             }
         }
 
@@ -495,7 +495,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 if ((previousState & TransportState.Open) == TransportState.Open)
                 {
-                    this.connectionClosedListener(this.channel, new ConnectionEventArgs { ConnectionKey = ConnectionKeys.MqttConnection, ConnectionStatus = ConnectionStatus.Disconnected_Retrying, ConnectionStatusChangeReason = ConnectionStatusChangeReason.No_Network});
+                    this.connectionClosedListener(this.channel, new ConnectionEventArgs { ConnectionType = ConnectionType.MqttConnection, ConnectionStatus = ConnectionStatus.Disconnected_Retrying, ConnectionStatusChangeReason = ConnectionStatusChangeReason.No_Network});
                 }
 
             }
@@ -505,7 +505,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
         
-        public override Task RecoverConnections(object link, CancellationToken cancellationToken)
+        public override Task RecoverConnections(object link, ConnectionType connectionType, CancellationToken cancellationToken)
         {
             // Codes_SRS_CSHARP_MQTT_TRANSPORT_28_08: [** `RecoverConnections` shall throw IotHubClientException exception when in error state.
             this.EnsureValidState();

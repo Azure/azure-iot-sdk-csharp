@@ -50,7 +50,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             await _Twin_DeviceSetsReportedPropertyAndGetsItBack(Client.TransportType.Mqtt_WebSocket_Only);
         }
 
-#if WIP_C2D_METHODS_AMQP
         [TestMethod]
         [TestCategory("Twin-E2E")]
         public async Task Twin_DeviceSetsReportedPropertyAndGetsItBack_Amqp()
@@ -64,7 +63,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await _Twin_DeviceSetsReportedPropertyAndGetsItBack(Client.TransportType.Amqp_WebSocket_Only);
         }
-#endif
         
         [Ignore]
         [TestMethod]
@@ -90,7 +88,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.DefaultDelayInSec);
         }
         
-        [Ignore]
         [TestMethod]
         [TestCategory("Twin-E2E")]
         [TestCategory("Recovery")]
@@ -102,7 +99,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.DefaultDelayInSec);
         }
 
-        [Ignore]
         [TestMethod]
         [TestCategory("Twin-E2E")]
         [TestCategory("Recovery")]
@@ -138,7 +134,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.DefaultDelayInSec);
         }
 
-        [Ignore]
         [TestMethod]
         [TestCategory("Twin-E2E")]
         [TestCategory("Recovery")]
@@ -150,7 +145,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.DefaultDelayInSec);
         }
 
-        [Ignore]
         [TestMethod]
         [TestCategory("Twin-E2E")]
         [TestCategory("Recovery")]
@@ -242,7 +236,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.DefaultDelayInSec);
         }
         
-        [Ignore]
         [TestMethod]
         [TestCategory("Twin-E2E")]
         [TestCategory("Recovery")]
@@ -254,7 +247,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.DefaultDelayInSec);
         }
 
-        [Ignore]
         [TestMethod]
         [TestCategory("Twin-E2E")]
         [TestCategory("Recovery")]
@@ -290,7 +282,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.DefaultDelayInSec);
         }
         
-        [Ignore]
         [TestMethod]
         [TestCategory("Twin-E2E")]
         [TestCategory("Recovery")]
@@ -302,7 +293,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.DefaultDelayInSec);
         }
 
-        [Ignore]
         [TestMethod]
         [TestCategory("Twin-E2E")]
         [TestCategory("Recovery")]

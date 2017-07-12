@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
     /// </summary>
     public class ConnectionEventArgs : EventArgs
     {
-        public string ConnectionKey { get; set; }
+        public ConnectionType ConnectionType { get; set; }
 
         public ConnectionStatus ConnectionStatus { get; set; }
 

@@ -13,20 +13,20 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         volatile ConnectionStatus status = ConnectionStatus.Disabled;
         
-        private readonly Dictionary<string, Tuple<ConnectionStatus, CancellationTokenSource>> connections;
+        private readonly Dictionary<ConnectionType, Tuple<ConnectionStatus, CancellationTokenSource>> connections;
 
         public DeviceClientConnectionStatusManager()
         {
-            connections = new Dictionary<string, Tuple<ConnectionStatus, CancellationTokenSource>>();
+            connections = new Dictionary<ConnectionType, Tuple<ConnectionStatus, CancellationTokenSource>>();
         }
 
         public ConnectionStatus State => this.status;
         
-        public ConnectionStatusChangeResult ChangeTo(string connectionKey, ConnectionStatus toState, ConnectionStatus? fromState = null, CancellationTokenSource cancellationTokenSource = null)
+        public ConnectionStatusChangeResult ChangeTo(ConnectionType connectionType, ConnectionStatus toState, ConnectionStatus? fromState = null, CancellationTokenSource cancellationTokenSource = null)
         {
             if (toState == ConnectionStatus.Disabled)
             {
-                return Disable(connectionKey, true);
+                return Disable(connectionType, true);
             }
             
             Tuple<ConnectionStatus, CancellationTokenSource> connectionValue;
@@ -50,13 +50,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             lock (lockObject)
             {
-                if (connections.ContainsKey(connectionKey))
+                if (connections.ContainsKey(connectionType))
                 {
-                    ConnectionStatus existingConnectionState = connections[connectionKey].Item1;
+                    ConnectionStatus existingConnectionState = connections[connectionType].Item1;
                     if (((existingConnectionState != ConnectionStatus.Disconnected && existingConnectionState != ConnectionStatus.Disabled) || toState == ConnectionStatus.Connected) && 
                         (!fromState.HasValue || fromState.Value == existingConnectionState))
                     {
-                        connections[connectionKey] = connectionValue;
+                        connections[connectionType] = connectionValue;
                         changeResult.IsConnectionStatusChanged = true;
                     }
                 }
@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 {
                     if (toState == ConnectionStatus.Connected && (!fromState.HasValue || fromState.Value == ConnectionStatus.Disconnected))
                     {
-                        connections.Add(connectionKey, connectionValue);
+                        connections.Add(connectionType, connectionValue);
                         changeResult.IsConnectionStatusChanged = true;
                     }
                 }
@@ -84,25 +84,25 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             lock (lockObject)
             {
-                List<string> connectionKeys = new List<string>(connections.Keys);
-                foreach (string connectionKey in connectionKeys)
+                var connectionTypes = new List<ConnectionType>(connections.Keys);
+                foreach (ConnectionType connectionType in connectionTypes)
                 {
-                    Disable(connectionKey, false);
+                    Disable(connectionType, false);
                 }
             }
             this.status = ConnectionStatus.Disabled;
         }
 
-        private ConnectionStatusChangeResult Disable(string connectionKey, bool updateState)
+        private ConnectionStatusChangeResult Disable(ConnectionType connectionType, bool updateState)
         {
             var changeResult = new ConnectionStatusChangeResult();
 
             lock (lockObject)
             {
-                if (connections.ContainsKey(connectionKey))
+                if (connections.ContainsKey(connectionType))
                 {
-                    Tuple<ConnectionStatus, CancellationTokenSource>  previousConnectionValue = connections[connectionKey];
-                    connections[connectionKey] = new Tuple<ConnectionStatus, CancellationTokenSource>(ConnectionStatus.Disabled, null);
+                    Tuple<ConnectionStatus, CancellationTokenSource>  previousConnectionValue = connections[connectionType];
+                    connections[connectionType] = new Tuple<ConnectionStatus, CancellationTokenSource>(ConnectionStatus.Disabled, null);
                     changeResult.IsConnectionStatusChanged = true;
 
                     if (updateState)

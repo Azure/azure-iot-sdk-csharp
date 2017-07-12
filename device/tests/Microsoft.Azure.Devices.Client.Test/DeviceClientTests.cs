@@ -967,7 +967,7 @@
             deviceClient.SetConnectionStatusChangesHandler(statusChangeHandler);
 
             // Connection status changes from disconnected to connected
-            deviceClient.OnConnectionOpened(new object(), new ConnectionEventArgs { ConnectionKey = ConnectionKeys.MqttConnection, ConnectionStatus = ConnectionStatus.Connected, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Connection_Ok});
+            deviceClient.OnConnectionOpened(new object(), new ConnectionEventArgs { ConnectionType = ConnectionType.MqttConnection, ConnectionStatus = ConnectionStatus.Connected, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Connection_Ok});
 
             Assert.IsTrue(handlerCalled);
             Assert.AreEqual(ConnectionStatus.Connected, status);
@@ -993,7 +993,7 @@
             deviceClient.SetConnectionStatusChangesHandler(null);
 
             // Connection status changes from disconnected to connected
-            deviceClient.OnConnectionOpened(new object(), new ConnectionEventArgs { ConnectionKey = ConnectionKeys.MqttConnection, ConnectionStatus = ConnectionStatus.Connected, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Connection_Ok});
+            deviceClient.OnConnectionOpened(new object(), new ConnectionEventArgs { ConnectionType = ConnectionType.MqttConnection, ConnectionStatus = ConnectionStatus.Connected, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Connection_Ok});
 
             Assert.IsFalse(handlerCalled);
         }
@@ -1015,14 +1015,14 @@
             };
             deviceClient.SetConnectionStatusChangesHandler(statusChangeHandler);
             // current status = disabled
-            deviceClient.OnConnectionOpened(new object(), new ConnectionEventArgs { ConnectionKey = ConnectionKeys.MqttConnection, ConnectionStatus = ConnectionStatus.Connected, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Connection_Ok});
+            deviceClient.OnConnectionOpened(new object(), new ConnectionEventArgs { ConnectionType = ConnectionType.MqttConnection, ConnectionStatus = ConnectionStatus.Connected, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Connection_Ok});
             Assert.IsTrue(handlerCalled);
             Assert.AreEqual(ConnectionStatus.Connected, status);
             Assert.AreEqual(ConnectionStatusChangeReason.Connection_Ok, statusChangeReason);
             handlerCalled = false;
 
             // current status = connected
-            deviceClient.OnConnectionOpened(new object(), new ConnectionEventArgs { ConnectionKey = ConnectionKeys.MqttConnection, ConnectionStatus = ConnectionStatus.Connected, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Connection_Ok});
+            deviceClient.OnConnectionOpened(new object(), new ConnectionEventArgs { ConnectionType = ConnectionType.MqttConnection, ConnectionStatus = ConnectionStatus.Connected, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Connection_Ok});
 
             Assert.IsFalse(handlerCalled);
         }
@@ -1048,16 +1048,16 @@
             };
             deviceClient.SetConnectionStatusChangesHandler(statusChangeHandler);
             // current status = disabled
-            deviceClient.OnConnectionOpened(new object(), new ConnectionEventArgs { ConnectionKey = ConnectionKeys.MqttConnection, ConnectionStatus = ConnectionStatus.Connected, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Connection_Ok});
+            deviceClient.OnConnectionOpened(new object(), new ConnectionEventArgs { ConnectionType = ConnectionType.MqttConnection, ConnectionStatus = ConnectionStatus.Connected, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Connection_Ok});
             Assert.IsTrue(handlerCalled);
             Assert.AreEqual(ConnectionStatus.Connected, status);
             Assert.AreEqual(ConnectionStatusChangeReason.Connection_Ok, statusChangeReason);
             handlerCalled = false;
 
             // current status = connected
-            deviceClient.OnConnectionClosed(sender, new ConnectionEventArgs { ConnectionKey = ConnectionKeys.MqttConnection, ConnectionStatus = ConnectionStatus.Disconnected_Retrying, ConnectionStatusChangeReason = ConnectionStatusChangeReason.No_Network});
+            deviceClient.OnConnectionClosed(sender, new ConnectionEventArgs { ConnectionType = ConnectionType.MqttConnection, ConnectionStatus = ConnectionStatus.Disconnected_Retrying, ConnectionStatusChangeReason = ConnectionStatusChangeReason.No_Network});
 
-            await innerHandler.Received().RecoverConnections(sender, Arg.Any<CancellationToken>());
+            await innerHandler.Received().RecoverConnections(sender, Arg.Any<ConnectionType>(), Arg.Any<CancellationToken>());
             Assert.IsTrue(handlerCalled);
             Assert.AreEqual(ConnectionStatus.Disconnected_Retrying, status);
             Assert.AreEqual(ConnectionStatusChangeReason.No_Network, statusChangeReason);
@@ -1071,7 +1071,7 @@
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
             var innerHandler = Substitute.For<IDelegatingHandler>();
             deviceClient.InnerHandler = innerHandler;
-            innerHandler.RecoverConnections(Arg.Any<object>(), Arg.Any<CancellationToken>()).Throws<InvalidOperationException>();
+            innerHandler.RecoverConnections(Arg.Any<object>(), Arg.Any<ConnectionType>(), Arg.Any<CancellationToken>()).Throws<InvalidOperationException>();
             var sender = new object();
             int handlerCalled = 0;
             ConnectionStatus? status = null;
@@ -1084,13 +1084,13 @@
             };
             deviceClient.SetConnectionStatusChangesHandler(statusChangeHandler);
             // current status = disabled
-            deviceClient.OnConnectionOpened(new object(), new ConnectionEventArgs { ConnectionKey = ConnectionKeys.MqttConnection, ConnectionStatus = ConnectionStatus.Connected, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Connection_Ok});
+            deviceClient.OnConnectionOpened(new object(), new ConnectionEventArgs { ConnectionType = ConnectionType.MqttConnection, ConnectionStatus = ConnectionStatus.Connected, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Connection_Ok});
             Assert.AreEqual(handlerCalled, 1);
             Assert.AreEqual(ConnectionStatus.Connected, status);
             Assert.AreEqual(ConnectionStatusChangeReason.Connection_Ok, statusChangeReason);
 
             // current status = connected
-            deviceClient.OnConnectionClosed(sender, new ConnectionEventArgs { ConnectionKey = ConnectionKeys.MqttConnection, ConnectionStatus = ConnectionStatus.Disconnected_Retrying, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Retry_Expired});
+            deviceClient.OnConnectionClosed(sender, new ConnectionEventArgs { ConnectionType = ConnectionType.MqttConnection, ConnectionStatus = ConnectionStatus.Disconnected_Retrying, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Retry_Expired});
 
             Assert.AreEqual(handlerCalled, 3);
             Assert.AreEqual(ConnectionStatus.Disconnected, status);
@@ -1114,13 +1114,13 @@
             };
             deviceClient.SetConnectionStatusChangesHandler(statusChangeHandler);
             // current status = disabled
-            deviceClient.OnConnectionOpened(new object(), new ConnectionEventArgs { ConnectionKey = ConnectionKeys.MqttConnection, ConnectionStatus = ConnectionStatus.Connected, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Connection_Ok});
+            deviceClient.OnConnectionOpened(new object(), new ConnectionEventArgs { ConnectionType = ConnectionType.MqttConnection, ConnectionStatus = ConnectionStatus.Connected, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Connection_Ok});
             Assert.IsTrue(handlerCalled);
             Assert.AreEqual(ConnectionStatus.Connected, status);
             handlerCalled = false;
 
             // current status = connected
-            deviceClient.OnConnectionClosed(new object(), new ConnectionEventArgs { ConnectionKey = ConnectionKeys.MqttConnection, ConnectionStatus = ConnectionStatus.Disabled, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Client_Close});
+            deviceClient.OnConnectionClosed(new object(), new ConnectionEventArgs { ConnectionType = ConnectionType.MqttConnection, ConnectionStatus = ConnectionStatus.Disabled, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Client_Close});
 
             Assert.IsTrue(handlerCalled);
             Assert.AreEqual(ConnectionStatus.Disabled, status);

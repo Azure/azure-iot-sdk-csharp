@@ -574,7 +574,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
             transport.OnError(new ApplicationException("Testing"));
 
             // act
-            await transport.RecoverConnections(null, CancellationToken.None);
+            await transport.RecoverConnections(null, ConnectionType.MqttConnection, CancellationToken.None);
         }
     }
 

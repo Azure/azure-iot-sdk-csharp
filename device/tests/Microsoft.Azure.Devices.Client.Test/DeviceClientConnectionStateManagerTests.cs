@@ -21,25 +21,25 @@
             var deviceClientConnectionStatusManager = new DeviceClientConnectionStatusManager();
             ConnectionStatusChangeResult changeResult;
 
-            changeResult = deviceClientConnectionStatusManager.ChangeTo(ConnectionKeys.AmqpTelemetry, ConnectionStatus.Connected);
+            changeResult = deviceClientConnectionStatusManager.ChangeTo(ConnectionType.AmqpTelemetry, ConnectionStatus.Connected);
             AssertConnectionStatusChangeResult(changeResult, true, true, ConnectionStatus.Connected);
 
-            changeResult = deviceClientConnectionStatusManager.ChangeTo(ConnectionKeys.AmqpTelemetry, ConnectionStatus.Disconnected_Retrying, null, new CancellationTokenSource());
+            changeResult = deviceClientConnectionStatusManager.ChangeTo(ConnectionType.AmqpTelemetry, ConnectionStatus.Disconnected_Retrying, null, new CancellationTokenSource());
             AssertConnectionStatusChangeResult(changeResult, true, true, ConnectionStatus.Disconnected_Retrying);
 
-            changeResult = deviceClientConnectionStatusManager.ChangeTo(ConnectionKeys.AmqpTelemetry, ConnectionStatus.Disconnected, ConnectionStatus.Connected);
+            changeResult = deviceClientConnectionStatusManager.ChangeTo(ConnectionType.AmqpTelemetry, ConnectionStatus.Disconnected, ConnectionStatus.Connected);
             AssertConnectionStatusChangeResult(changeResult, false, false, ConnectionStatus.Disconnected_Retrying);
 
-            changeResult = deviceClientConnectionStatusManager.ChangeTo(ConnectionKeys.AmqpTelemetry, ConnectionStatus.Disconnected);
+            changeResult = deviceClientConnectionStatusManager.ChangeTo(ConnectionType.AmqpTelemetry, ConnectionStatus.Disconnected);
             AssertConnectionStatusChangeResult(changeResult, true, true, ConnectionStatus.Disconnected);
             
-            changeResult = deviceClientConnectionStatusManager.ChangeTo(ConnectionKeys.AmqpTelemetry, ConnectionStatus.Disconnected_Retrying, null, new CancellationTokenSource());
+            changeResult = deviceClientConnectionStatusManager.ChangeTo(ConnectionType.AmqpTelemetry, ConnectionStatus.Disconnected_Retrying, null, new CancellationTokenSource());
             AssertConnectionStatusChangeResult(changeResult, false, false, ConnectionStatus.Disconnected);
 
-            changeResult = deviceClientConnectionStatusManager.ChangeTo(ConnectionKeys.AmqpTelemetry, ConnectionStatus.Disabled);
+            changeResult = deviceClientConnectionStatusManager.ChangeTo(ConnectionType.AmqpTelemetry, ConnectionStatus.Disabled);
             AssertConnectionStatusChangeResult(changeResult, true, true, ConnectionStatus.Disabled);
 
-            changeResult = deviceClientConnectionStatusManager.ChangeTo(ConnectionKeys.AmqpTelemetry, ConnectionStatus.Disconnected_Retrying, null, new CancellationTokenSource());
+            changeResult = deviceClientConnectionStatusManager.ChangeTo(ConnectionType.AmqpTelemetry, ConnectionStatus.Disconnected_Retrying, null, new CancellationTokenSource());
             AssertConnectionStatusChangeResult(changeResult, false, false, ConnectionStatus.Disabled);
         }
 
@@ -56,34 +56,34 @@
             var deviceClientConnectionStatusManager = new DeviceClientConnectionStatusManager();
             ConnectionStatusChangeResult changeResult;
 
-            changeResult = deviceClientConnectionStatusManager.ChangeTo(ConnectionKeys.AmqpTelemetry, ConnectionStatus.Connected);
+            changeResult = deviceClientConnectionStatusManager.ChangeTo(ConnectionType.AmqpTelemetry, ConnectionStatus.Connected);
             AssertConnectionStatusChangeResult(changeResult, true, true, ConnectionStatus.Connected);
 
-            changeResult = deviceClientConnectionStatusManager.ChangeTo(ConnectionKeys.AmqpMessaging, ConnectionStatus.Connected);
+            changeResult = deviceClientConnectionStatusManager.ChangeTo(ConnectionType.AmqpMessaging, ConnectionStatus.Connected);
             AssertConnectionStatusChangeResult(changeResult, true, false, ConnectionStatus.Connected);
 
-            changeResult = deviceClientConnectionStatusManager.ChangeTo(ConnectionKeys.AmqpMessaging, ConnectionStatus.Disconnected_Retrying, null, new CancellationTokenSource());
+            changeResult = deviceClientConnectionStatusManager.ChangeTo(ConnectionType.AmqpMessaging, ConnectionStatus.Disconnected_Retrying, null, new CancellationTokenSource());
             AssertConnectionStatusChangeResult(changeResult, true, true, ConnectionStatus.Disconnected_Retrying);
 
-            changeResult = deviceClientConnectionStatusManager.ChangeTo(ConnectionKeys.AmqpTelemetry, ConnectionStatus.Disconnected_Retrying, null, new CancellationTokenSource());
+            changeResult = deviceClientConnectionStatusManager.ChangeTo(ConnectionType.AmqpTelemetry, ConnectionStatus.Disconnected_Retrying, null, new CancellationTokenSource());
             AssertConnectionStatusChangeResult(changeResult, true, false, ConnectionStatus.Disconnected_Retrying);
 
-            changeResult = deviceClientConnectionStatusManager.ChangeTo(ConnectionKeys.AmqpTelemetry, ConnectionStatus.Connected);
+            changeResult = deviceClientConnectionStatusManager.ChangeTo(ConnectionType.AmqpTelemetry, ConnectionStatus.Connected);
             AssertConnectionStatusChangeResult(changeResult, true, false, ConnectionStatus.Disconnected_Retrying);
 
-            changeResult = deviceClientConnectionStatusManager.ChangeTo(ConnectionKeys.AmqpMessaging, ConnectionStatus.Disconnected);
+            changeResult = deviceClientConnectionStatusManager.ChangeTo(ConnectionType.AmqpMessaging, ConnectionStatus.Disconnected);
             AssertConnectionStatusChangeResult(changeResult, true, true, ConnectionStatus.Disconnected);
 
-            changeResult = deviceClientConnectionStatusManager.ChangeTo(ConnectionKeys.AmqpTelemetry, ConnectionStatus.Disconnected_Retrying, null, new CancellationTokenSource());
+            changeResult = deviceClientConnectionStatusManager.ChangeTo(ConnectionType.AmqpTelemetry, ConnectionStatus.Disconnected_Retrying, null, new CancellationTokenSource());
             AssertConnectionStatusChangeResult(changeResult, true, false, ConnectionStatus.Disconnected);
             
-            changeResult = deviceClientConnectionStatusManager.ChangeTo(ConnectionKeys.AmqpMessaging, ConnectionStatus.Disabled);
+            changeResult = deviceClientConnectionStatusManager.ChangeTo(ConnectionType.AmqpMessaging, ConnectionStatus.Disabled);
             AssertConnectionStatusChangeResult(changeResult, true, true, ConnectionStatus.Disconnected_Retrying);
 
-            changeResult = deviceClientConnectionStatusManager.ChangeTo(ConnectionKeys.AmqpTelemetry, ConnectionStatus.Disabled);
+            changeResult = deviceClientConnectionStatusManager.ChangeTo(ConnectionType.AmqpTelemetry, ConnectionStatus.Disabled);
             AssertConnectionStatusChangeResult(changeResult, true, true, ConnectionStatus.Disabled);
 
-            changeResult = deviceClientConnectionStatusManager.ChangeTo(ConnectionKeys.AmqpTelemetry, ConnectionStatus.Connected);
+            changeResult = deviceClientConnectionStatusManager.ChangeTo(ConnectionType.AmqpTelemetry, ConnectionStatus.Connected);
             AssertConnectionStatusChangeResult(changeResult, true, true, ConnectionStatus.Connected);
         }
 
@@ -93,15 +93,15 @@
             var deviceClientConnectionStatusManager = new DeviceClientConnectionStatusManager();
             ConnectionStatusChangeResult changeResult;
 
-            changeResult = deviceClientConnectionStatusManager.ChangeTo(ConnectionKeys.AmqpTelemetry, ConnectionStatus.Connected);
+            changeResult = deviceClientConnectionStatusManager.ChangeTo(ConnectionType.AmqpTelemetry, ConnectionStatus.Connected);
             AssertConnectionStatusChangeResult(changeResult, true, true, ConnectionStatus.Connected);
 
             var cancellationTokenSource1 = new CancellationTokenSource();
-            changeResult = deviceClientConnectionStatusManager.ChangeTo(ConnectionKeys.AmqpTelemetry, ConnectionStatus.Disconnected_Retrying, null, cancellationTokenSource1);
+            changeResult = deviceClientConnectionStatusManager.ChangeTo(ConnectionType.AmqpTelemetry, ConnectionStatus.Disconnected_Retrying, null, cancellationTokenSource1);
             AssertConnectionStatusChangeResult(changeResult, true, true, ConnectionStatus.Disconnected_Retrying);
 
             Assert.IsFalse(cancellationTokenSource1.IsCancellationRequested);
-            changeResult = deviceClientConnectionStatusManager.ChangeTo(ConnectionKeys.AmqpTelemetry, ConnectionStatus.Disabled);
+            changeResult = deviceClientConnectionStatusManager.ChangeTo(ConnectionType.AmqpTelemetry, ConnectionStatus.Disabled);
             AssertConnectionStatusChangeResult(changeResult, true, true, ConnectionStatus.Disabled);
             Assert.IsTrue(cancellationTokenSource1.IsCancellationRequested);
         }
@@ -112,18 +112,18 @@
             var deviceClientConnectionStatusManager = new DeviceClientConnectionStatusManager();
             ConnectionStatusChangeResult changeResult;
 
-            changeResult = deviceClientConnectionStatusManager.ChangeTo(ConnectionKeys.AmqpTelemetry, ConnectionStatus.Connected);
+            changeResult = deviceClientConnectionStatusManager.ChangeTo(ConnectionType.AmqpTelemetry, ConnectionStatus.Connected);
             AssertConnectionStatusChangeResult(changeResult, true, true, ConnectionStatus.Connected);
 
-            changeResult = deviceClientConnectionStatusManager.ChangeTo(ConnectionKeys.AmqpMessaging, ConnectionStatus.Connected);
+            changeResult = deviceClientConnectionStatusManager.ChangeTo(ConnectionType.AmqpMessaging, ConnectionStatus.Connected);
             AssertConnectionStatusChangeResult(changeResult, true, false, ConnectionStatus.Connected);
 
             var cancellationTokenSource1 = new CancellationTokenSource();
-            changeResult = deviceClientConnectionStatusManager.ChangeTo(ConnectionKeys.AmqpTelemetry, ConnectionStatus.Disconnected_Retrying, null, cancellationTokenSource1);
+            changeResult = deviceClientConnectionStatusManager.ChangeTo(ConnectionType.AmqpTelemetry, ConnectionStatus.Disconnected_Retrying, null, cancellationTokenSource1);
             AssertConnectionStatusChangeResult(changeResult, true, true, ConnectionStatus.Disconnected_Retrying);
 
             var cancellationTokenSource2 = new CancellationTokenSource();
-            changeResult = deviceClientConnectionStatusManager.ChangeTo(ConnectionKeys.AmqpMessaging, ConnectionStatus.Disconnected_Retrying, null, cancellationTokenSource2);
+            changeResult = deviceClientConnectionStatusManager.ChangeTo(ConnectionType.AmqpMessaging, ConnectionStatus.Disconnected_Retrying, null, cancellationTokenSource2);
             AssertConnectionStatusChangeResult(changeResult, true, false, ConnectionStatus.Disconnected_Retrying);
 
             Assert.IsFalse(cancellationTokenSource1.IsCancellationRequested);

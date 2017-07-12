@@ -243,11 +243,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        public override async Task RecoverConnections(object o, CancellationToken cancellationToken)
+        public override async Task RecoverConnections(object o, ConnectionType connectionType, CancellationToken cancellationToken)
         {
             try
             {
-                await this.retryPolicy.ExecuteAsync(() => base.RecoverConnections(o, cancellationToken), cancellationToken);
+                await this.retryPolicy.ExecuteAsync(() => base.RecoverConnections(o, connectionType, cancellationToken), cancellationToken);
             }
             catch (IotHubClientTransientException ex)
             {
