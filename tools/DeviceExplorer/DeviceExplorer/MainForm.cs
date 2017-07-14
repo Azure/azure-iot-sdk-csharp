@@ -12,6 +12,7 @@ using Microsoft.ServiceBus.Messaging;
 using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Microsoft.Azure.Devices.Client;
 
 namespace DeviceExplorer
 {
@@ -37,10 +38,13 @@ namespace DeviceExplorer
         private static int deviceSelectedIndexForEvent = 0;
         private static int deviceSelectedIndexForC2DMessage = 0;
         private static int deviceSelectedIndexForDeviceMethod = 0;
+        private static int deviceSelectedIndexForCommandReceiver = 0;
+        private static int actionSelectedIndexForCommandReceiver = 0;
 
         private static CancellationTokenSource ctsForDataMonitoring;
         private static CancellationTokenSource ctsForFeedbackMonitoring;
         private static CancellationTokenSource ctsForDeviceMethod;
+        private static CancellationTokenSource ctsForReceiveCommand;
 
         private const string DEFAULT_CONSUMER_GROUP = "$Default";
         #endregion
@@ -115,7 +119,7 @@ namespace DeviceExplorer
         {
             try
             {
-                var builder = IotHubConnectionStringBuilder.Create(connectionString);
+                var builder = Microsoft.Azure.Devices.IotHubConnectionStringBuilder.Create(connectionString);
                 iotHubHostName = builder.HostName;
 
                 targetTextBox.Text = builder.HostName;
@@ -126,6 +130,7 @@ namespace DeviceExplorer
                 iotHubNameTextBox.Text = iotHubName;
                 eventHubNameTextBoxForDataTab.Text = iotHubName;
                 iotHubNameTextBoxForDeviceMethod.Text = iotHubName;
+                iotHubNameTextBoxForCommandReceiver.Text = iotHubName;
 
                 activeIoTHubConnectionString = connectionString;
             }
@@ -138,6 +143,23 @@ namespace DeviceExplorer
             }
         }
 
+        /// <summary>
+        /// Fills ComboBox for selecting the action to use for received C2D message
+        /// </summary>
+        /// <param name="runIfNullOrEmpty"></param>
+        private void fillCommandReceiverActionComboBox(bool runIfNullOrEmpty = true)
+        {
+            if (actionComboBoxForCommandReceiver.Items.Count == 0 || runIfNullOrEmpty)
+            {
+                foreach (var action in Enum.GetValues(typeof(CommandAction)))
+                {
+                    actionComboBoxForCommandReceiver.Items.Add(action.ToString());
+                }
+
+                actionComboBoxForCommandReceiver.SelectedIndex = actionSelectedIndexForCommandReceiver;
+            }
+        }
+
         private async Task updateDeviceIdsComboBoxes(bool runIfNullOrEmpty = true)
         {
             if (!String.IsNullOrEmpty(activeIoTHubConnectionString) || runIfNullOrEmpty)
@@ -145,23 +167,28 @@ namespace DeviceExplorer
                 List<string> deviceIdsForEvent = new List<string>();
                 List<string> deviceIdsForC2DMessage = new List<string>();
                 List<string> deviceIdsForDeviceMethod = new List<string>();
+                List<string> deviceIdsForDeviceEmulation = new List<string>();
                 RegistryManager registryManager = RegistryManager.CreateFromConnectionString(activeIoTHubConnectionString);
 
                 var devices = await registryManager.GetDevicesAsync(MAX_COUNT_OF_DEVICES);
-                foreach (var device in devices)
-                {
-                    deviceIdsForEvent.Add(device.Id);
-                    deviceIdsForC2DMessage.Add(device.Id);
-                    deviceIdsForDeviceMethod.Add(device.Id);
-                }
+
+                var orderedDeviceIds = devices.Select(d => d.Id).OrderBy(c => c);
+
+                deviceIdsForEvent.AddRange(orderedDeviceIds);
+                deviceIdsForC2DMessage.AddRange(orderedDeviceIds);
+                deviceIdsForDeviceMethod.AddRange(orderedDeviceIds);
+                deviceIdsForDeviceEmulation.AddRange(orderedDeviceIds);
+
                 await registryManager.CloseAsync();
-                deviceIDsComboBoxForEvent.DataSource = deviceIdsForEvent.OrderBy(c => c).ToList();
-                deviceIDsComboBoxForCloudToDeviceMessage.DataSource = deviceIdsForC2DMessage.OrderBy(c => c).ToList();
-                deviceIDsComboBoxForDeviceMethod.DataSource = deviceIdsForDeviceMethod.OrderBy(c => c).ToList();
+                deviceIDsComboBoxForEvent.DataSource = deviceIdsForEvent;
+                deviceIDsComboBoxForCloudToDeviceMessage.DataSource = deviceIdsForC2DMessage;
+                deviceIDsComboBoxForDeviceMethod.DataSource = deviceIdsForDeviceMethod;
+                deviceIDComboBoxForCommandReceiver.DataSource = deviceIdsForDeviceEmulation;
 
                 deviceIDsComboBoxForEvent.SelectedIndex = deviceSelectedIndexForEvent;
                 deviceIDsComboBoxForCloudToDeviceMessage.SelectedIndex = deviceSelectedIndexForC2DMessage;
                 deviceIDsComboBoxForDeviceMethod.SelectedIndex = deviceSelectedIndexForDeviceMethod;
+                deviceIDComboBoxForCommandReceiver.SelectedIndex = deviceSelectedIndexForCommandReceiver;
             }
         }
         private void persistSettingsToAppConfig()
@@ -638,7 +665,7 @@ namespace DeviceExplorer
                 ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(activeIoTHubConnectionString);
 
                 var serviceMessage = new Microsoft.Azure.Devices.Message(Encoding.ASCII.GetBytes(cloudToDeviceMessage));
-                serviceMessage.Ack = DeliveryAcknowledgement.Full;
+                serviceMessage.Ack = Microsoft.Azure.Devices.DeliveryAcknowledgement.Full;
                 serviceMessage.MessageId = Guid.NewGuid().ToString();
 
                 for (var i = 0; i < messagePropertiesGrid.Rows.Count - 1; i++)
@@ -740,9 +767,14 @@ namespace DeviceExplorer
         {
             try
             {
-                if (e.TabPage == tabData || e.TabPage == tabMessagesToDevice || e.TabPage == tabDeviceMethod)
+                if (e.TabPage == tabData || e.TabPage == tabMessagesToDevice || e.TabPage == tabDeviceMethod || e.TabPage == tabCommandReceiver)
                 {
                     await updateDeviceIdsComboBoxes(runIfNullOrEmpty: false);
+                }
+
+                if (e.TabPage == tabCommandReceiver)
+                {
+                    fillCommandReceiverActionComboBox(runIfNullOrEmpty: false);
                 }
 
                 if (e.TabPage == tabManagement)
@@ -848,6 +880,60 @@ namespace DeviceExplorer
             sasTokenButton.Enabled = true;
         }
 
+        /// <summary>
+        /// Receives C2D messages
+        /// </summary>
+        /// <param name="ct"></param>
+        /// <param name="deviceId"></param>
+        /// <returns></returns>
+        private async Task ReceiveCommands(CancellationToken ct, string deviceId)
+        {
+            using (DeviceClient client = DeviceClient.CreateFromConnectionString(activeIoTHubConnectionString, deviceId))
+            {
+
+                while (!ct.IsCancellationRequested)
+                {
+                    var message = await client.ReceiveAsync(TimeSpan.FromSeconds(10));
+
+                    if (message == null)
+                        continue;
+
+                    var bytes = message.GetBytes();
+
+                    var msgString = Encoding.UTF8.GetString(bytes);
+
+                    deviceCommandsRichTxtBox.AppendText($"Received Command with MessageId {message.MessageId}:" + Environment.NewLine);
+                    deviceCommandsRichTxtBox.AppendText(msgString);
+                    deviceCommandsRichTxtBox.AppendText(Environment.NewLine);
+
+                    var actionString = actionComboBoxForCommandReceiver.SelectedItem?.ToString();
+
+                    Enum.TryParse(actionString, out CommandAction action);
+
+                    switch (action)
+                    {
+                        case CommandAction.Complete:
+                            {
+                                await client.CompleteAsync(message);
+                                deviceCommandsRichTxtBox.AppendText("Command was completed successful.");
+                                deviceCommandsRichTxtBox.AppendText(Environment.NewLine);
+                                break;
+                            }
+                        case CommandAction.Abandon:
+                            {
+                                await client.AbandonAsync(message);
+                                deviceCommandsRichTxtBox.AppendText("Command was abandoned successful.");
+                                deviceCommandsRichTxtBox.AppendText(Environment.NewLine);
+                                break;
+                            }
+                        case CommandAction.None:
+                        default:
+                            break;
+                    }
+                }
+            }
+        }
+
         private async Task MonitorFeedback(CancellationToken ct, string deviceId)
         {
             ServiceClient serviceClient = null;
@@ -875,6 +961,39 @@ namespace DeviceExplorer
             if (serviceClient != null)
             {
                 await serviceClient.CloseAsync();
+            }
+        }
+
+        /// <summary>
+        /// Starts receiving C2D messages
+        /// </summary>
+        /// <returns></returns>
+        private async Task StartReceiveCommand()
+        {
+            var deviceId = deviceIDComboBoxForCommandReceiver.SelectedItem?.ToString();
+
+            if (!String.IsNullOrEmpty(deviceId))
+            {
+                ctsForReceiveCommand = new CancellationTokenSource();
+                deviceCommandsRichTxtBox.AppendText($"Started receiving commands for device {deviceIDComboBoxForCommandReceiver.SelectedItem.ToString()}.");
+                deviceCommandsRichTxtBox.AppendText(Environment.NewLine);
+
+                await ReceiveCommands(ctsForReceiveCommand.Token, deviceId);
+            }
+        }
+
+        /// <summary>
+        /// Stops receiving C2D messages
+        /// </summary>
+        private void StopReceiveCommands()
+        {
+            if (ctsForReceiveCommand != null)
+            {
+                deviceCommandsRichTxtBox.AppendText("Stopped receiving commands.");
+                deviceCommandsRichTxtBox.AppendText(Environment.NewLine);
+
+                ctsForReceiveCommand.Cancel();
+                ctsForReceiveCommand = null;
             }
         }
 
@@ -951,6 +1070,36 @@ namespace DeviceExplorer
         private void deviceTwinPropertiesBtn_Click(object sender, EventArgs e)
         {
             showDevicePropertiesToolStripMenuItem_Click(this, null);
+        }
+
+        private void clearCommandsBtn_Click(object sender, EventArgs e)
+        {
+            deviceCommandsRichTxtBox.Clear();
+        }
+
+        private async void receiveCommandsBtn_Click(object sender, EventArgs e)
+        {
+            deviceIDComboBoxForCommandReceiver.Enabled = false;
+            actionComboBoxForCommandReceiver.Enabled = false;
+            receiveCommandsBtn.Enabled = false;
+            cancelReceiveCommandsBtn.Enabled = true;
+
+            await StartReceiveCommand();
+        }
+
+        private void cancelReceiveCommandsBtn_Click(object sender, EventArgs e)
+        {
+            StopReceiveCommands();
+
+            deviceIDComboBoxForCommandReceiver.Enabled = true;
+            actionComboBoxForCommandReceiver.Enabled = true;
+            receiveCommandsBtn.Enabled = true;
+            cancelReceiveCommandsBtn.Enabled = false;
+        }
+
+        private void deviceIDComboBoxForCommandReceiver_SelectionChangeCommitted(object sender, EventArgs e)
+        {
+            deviceSelectedIndexForCommandReceiver = ((ComboBox)sender).SelectedIndex;
         }
     }
 }
