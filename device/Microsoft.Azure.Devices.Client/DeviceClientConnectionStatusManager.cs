@@ -22,25 +22,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public ConnectionStatus State => this.status;
         
-        public ConnectionStatusChangeResult ChangeTo(ConnectionType connectionType, ConnectionStatus toState, ConnectionStatus? fromState = null, CancellationTokenSource cancellationTokenSource = null)
+        public ConnectionStatusChangeResult ChangeTo(ConnectionType connectionType, ConnectionStatus toState, ConnectionStatus? fromState = null)
         {
             if (toState == ConnectionStatus.Disabled)
             {
                 return Disable(connectionType, true);
-            }
-            
-            Tuple<ConnectionStatus, CancellationTokenSource> connectionValue;
-            if (toState == ConnectionStatus.Disconnected_Retrying)
-            {
-                if (cancellationTokenSource == null)
-                {
-                    throw new ArgumentNullException($"{nameof(cancellationTokenSource)} should be provided for retrying state.");
-                }
-                connectionValue = Tuple.Create(toState, cancellationTokenSource);
-            }
-            else
-            {
-                connectionValue = new Tuple<ConnectionStatus, CancellationTokenSource>(toState, null);
             }
 
             var changeResult = new ConnectionStatusChangeResult
@@ -53,18 +39,31 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 if (connections.ContainsKey(connectionType))
                 {
                     ConnectionStatus existingConnectionState = connections[connectionType].Item1;
+                    CancellationTokenSource existingCancellationTokenSource = connections[connectionType].Item2;
                     if (((existingConnectionState != ConnectionStatus.Disconnected && existingConnectionState != ConnectionStatus.Disabled) || toState == ConnectionStatus.Connected) && 
                         (!fromState.HasValue || fromState.Value == existingConnectionState))
                     {
-                        connections[connectionType] = connectionValue;
+                        CancellationTokenSource changeStatusCancellationTokenSource = null;
+                        if (toState == ConnectionStatus.Disconnected_Retrying)
+                        {
+                            changeStatusCancellationTokenSource = new CancellationTokenSource();
+                        }
+                        connections[connectionType] = new Tuple<ConnectionStatus, CancellationTokenSource>(toState, changeStatusCancellationTokenSource);
+                        changeResult.StatusChangeCancellationTokenSource = changeStatusCancellationTokenSource;
                         changeResult.IsConnectionStatusChanged = true;
+
+                        // When status is changed from Disconnected_Retrying, dispose cancellation token as it is no longer valid.
+                        if (existingConnectionState == ConnectionStatus.Disconnected_Retrying && existingCancellationTokenSource != null)
+                        {
+                            existingCancellationTokenSource.Dispose();
+                        }
                     }
                 }
                 else
                 {
                     if (toState == ConnectionStatus.Connected && (!fromState.HasValue || fromState.Value == ConnectionStatus.Disconnected))
                     {
-                        connections.Add(connectionType, connectionValue);
+                        connections.Add(connectionType, new Tuple<ConnectionStatus, CancellationTokenSource>(toState, null));
                         changeResult.IsConnectionStatusChanged = true;
                     }
                 }
@@ -115,6 +114,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     if (previousConnectionValue.Item2 != null)
                     {
                         previousConnectionValue.Item2.Cancel();
+                        previousConnectionValue.Item2.Dispose();
                     }
                 }
             }

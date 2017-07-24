@@ -3,12 +3,16 @@
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
+    using System.Threading;
+
     /// <summary>
     /// Connection status change result supported by DeviceClient
     /// </summary>   
     public class ConnectionStatusChangeResult
     {
         private ConnectionStatus clientStatus = ConnectionStatus.Disabled;
+
+        public CancellationTokenSource StatusChangeCancellationTokenSource { get; set; }
 
         public bool IsConnectionStatusChanged { get; set; }
         public bool IsClientStatusChanged { get; set; }
@@ -17,5 +21,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             get { return this.clientStatus; }
             set { this.clientStatus = value; }
         }
+
+
     }
 }
