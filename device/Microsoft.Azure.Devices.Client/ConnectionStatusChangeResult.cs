@@ -21,7 +21,5 @@ namespace Microsoft.Azure.Devices.Client.Transport
             get { return this.clientStatus; }
             set { this.clientStatus = value; }
         }
-
-
     }
 }
