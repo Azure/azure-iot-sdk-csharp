@@ -1027,13 +1027,14 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                     // codes_SRS_DEVICECLIENT_28_022: [** `OnConnectionClosed` shall invoke the RecoverConnections operation. **]**          
                     await ApplyTimeout(operationTimeoutCancellationTokenSource =>
                     {
-                        result = this.connectionStatusManager.ChangeTo(e.ConnectionType, ConnectionStatus.Disconnected_Retrying, ConnectionStatus.Connected, operationTimeoutCancellationTokenSource);
+                        result = this.connectionStatusManager.ChangeTo(e.ConnectionType, ConnectionStatus.Disconnected_Retrying, ConnectionStatus.Connected);
                         if (result.IsClientStatusChanged && (connectionStatusChangesHandler != null))
                         {
                             this.connectionStatusChangesHandler(e.ConnectionStatus, e.ConnectionStatusChangeReason);
                         }
 
-                        return this.InnerHandler.RecoverConnections(sender, e.ConnectionType, operationTimeoutCancellationTokenSource.Token);
+                        CancellationTokenSource linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(result.StatusChangeCancellationTokenSource.Token, operationTimeoutCancellationTokenSource.Token);
+                        return this.InnerHandler.RecoverConnections(sender, e.ConnectionType, linkedTokenSource.Token);
                     });
                 }
                 catch (Exception ex)
