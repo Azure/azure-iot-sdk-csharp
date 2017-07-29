@@ -626,7 +626,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             link.DisposeDelivery(message, true, AmqpConstants.AcceptedOutcome);
 
-            string correlationId = message.Properties.CorrelationId?.ToString();
+            string correlationId = message.Properties?.CorrelationId?.ToString();
             if (correlationId != null)
             {
                 // If we have a correlation id, it must be a response, complete the task.
