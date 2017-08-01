@@ -71,7 +71,7 @@ namespace Microsoft.Azure.Devices.Client
         public async Task<SendingAmqpLink> CreateSendingLinkAsync(
             string path,
             IotHubConnectionString connectionString,
-            string deviceId,
+            string corrId,
             SendingLinkType linkType,
             TimeSpan timeout, 
             CancellationToken cancellationToken)
@@ -108,11 +108,11 @@ namespace Microsoft.Azure.Devices.Client
             SetLinkSettingsCommonProperties(linkSettings, timeoutHelper.RemainingTime());
             if (linkType == SendingLinkType.Methods)
             {
-                SetLinkSettingsCommonPropertiesForMethod(linkSettings, deviceId);
+                SetLinkSettingsCommonPropertiesForMethod(linkSettings, corrId);
             }
             else if (linkType == SendingLinkType.Twin)
             {
-                SetLinkSettingsCommonPropertiesForTwin(linkSettings);
+                SetLinkSettingsCommonPropertiesForTwin(linkSettings, corrId);
             }
 
             var link = new SendingAmqpLink(linkSettings);
@@ -127,7 +127,7 @@ namespace Microsoft.Azure.Devices.Client
         public async Task<ReceivingAmqpLink> CreateReceivingLinkAsync(
             string path,
             IotHubConnectionString connectionString,
-            string deviceId,
+            string corrId,
             ReceivingLinkType linkType,
             uint prefetchCount,
             TimeSpan timeout,
@@ -166,11 +166,11 @@ namespace Microsoft.Azure.Devices.Client
             SetLinkSettingsCommonProperties(linkSettings, timeoutHelper.RemainingTime());
             if (linkType == ReceivingLinkType.Methods)
             {
-                SetLinkSettingsCommonPropertiesForMethod(linkSettings, deviceId);
+                SetLinkSettingsCommonPropertiesForMethod(linkSettings, corrId);
             }
             else if (linkType == ReceivingLinkType.Twin)
             {
-                SetLinkSettingsCommonPropertiesForTwin(linkSettings);
+                SetLinkSettingsCommonPropertiesForTwin(linkSettings, corrId);
             }
 
             var link = new ReceivingAmqpLink(linkSettings);
@@ -425,17 +425,17 @@ namespace Microsoft.Azure.Devices.Client
             return linkSettings;
         }
 
-        protected static AmqpLinkSettings SetLinkSettingsCommonPropertiesForMethod(AmqpLinkSettings linkSettings, string deviceId)
+        protected static AmqpLinkSettings SetLinkSettingsCommonPropertiesForMethod(AmqpLinkSettings linkSettings, string corrId)
         {
             linkSettings.AddProperty(IotHubAmqpProperty.ApiVersion, ClientApiVersionHelper.ApiVersionString);
-            linkSettings.AddProperty(IotHubAmqpProperty.ChannelCorrelationId, deviceId);
+            linkSettings.AddProperty(IotHubAmqpProperty.ChannelCorrelationId, "methods:" + corrId);
             return linkSettings;
         }
 
-        AmqpLinkSettings SetLinkSettingsCommonPropertiesForTwin(AmqpLinkSettings linkSettings)
+        AmqpLinkSettings SetLinkSettingsCommonPropertiesForTwin(AmqpLinkSettings linkSettings, string corrId)
         {
             linkSettings.AddProperty(IotHubAmqpProperty.ApiVersion, ClientApiVersionHelper.ApiVersionString);
-            linkSettings.AddProperty(IotHubAmqpProperty.ChannelCorrelationId, "twin:" + this.twinConnectionCorrelationId);
+            linkSettings.AddProperty(IotHubAmqpProperty.ChannelCorrelationId, "twin:" + corrId);
             return linkSettings;
         }
 
