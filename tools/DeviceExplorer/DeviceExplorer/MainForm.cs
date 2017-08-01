@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -9,7 +10,6 @@ using Microsoft.Azure.Devices;
 using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Devices.Common.Security;
 using Microsoft.ServiceBus.Messaging;
-using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -26,6 +26,7 @@ namespace DeviceExplorer
         #region fields
         private const int MAX_TTL_VALUE = 365;
         private const int MAX_COUNT_OF_DEVICES = 1000;
+        private const int MAX_PAST_CONNECTION_STRINGS = 5;
 
         private bool devicesListed = false;
         private static int eventHubPartitionsCount;
@@ -45,6 +46,25 @@ namespace DeviceExplorer
         private const string DEFAULT_CONSUMER_GROUP = "$Default";
         #endregion
 
+        #region properties
+
+        /// <summary>
+        /// Retrieve past connection strings stored in settings
+        /// </summary>
+        IEnumerable<string> PastConnectionStrings
+        {
+            get
+            {
+                if (Properties.Settings.Default["Microsoft_IoTHub_PastConnectionStrings"] is StringCollection pastStringsCollection)
+                {
+                    foreach (string item in pastStringsCollection)
+                        yield return item;
+                }
+            }
+        }
+
+        #endregion
+
         public MainForm()
         {
             InitializeComponent();
@@ -53,7 +73,9 @@ namespace DeviceExplorer
             try
             {
                 Properties.Settings.Default.Reload();
-                dhConStringTextBox.Text = (string)Properties.Settings.Default["Microsoft_IoTHub_ConnectionString"];
+
+                dhConStringTextBox.Items.AddRange(PastConnectionStrings.ToArray());
+                dhConStringTextBox.Text = Properties.Settings.Default["Microsoft_IoTHub_ConnectionString"] as string;
             }
             catch
             {
@@ -85,7 +107,7 @@ namespace DeviceExplorer
             sasTokenButton.Enabled = false;
 
             // Select connection box by default
-            dhConStringTextBox.Select();
+            dhConStringTextBox.Select(0, 0);
         }
 
         /// <summary>
@@ -167,6 +189,7 @@ namespace DeviceExplorer
                 deviceIDsComboBoxForDeviceMethod.SelectedIndex = deviceSelectedIndexForDeviceMethod;
             }
         }
+
         private void persistSettingsToAppConfig()
         {
             var dhSetting = dhConStringTextBox.Text;
@@ -174,6 +197,19 @@ namespace DeviceExplorer
 
             Properties.Settings.Default["Microsoft_IoTHub_ConnectionString"] = dhSetting;
             Properties.Settings.Default["Microsoft_Protocol_Gateway_Hostname"] = pgHostnameSetting;
+
+            // Insert latest string
+            if (dhConStringTextBox.Items.Contains(dhSetting) == false)
+                dhConStringTextBox.Items.Add(dhSetting);
+
+            // Save active connection string list. Union current with other items
+            var collection = new StringCollection();
+            collection.AddRange(
+                new string[] { dhSetting }
+                .Union(from string item in dhConStringTextBox.Items select item)
+                .Take(MAX_PAST_CONNECTION_STRINGS)
+                .ToArray());
+            Properties.Settings.Default["Microsoft_IoTHub_PastConnectionStrings"] = collection;
 
             Properties.Settings.Default.Save();
         }

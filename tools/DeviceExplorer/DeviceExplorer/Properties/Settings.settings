@@ -14,5 +14,8 @@
     <Setting Name="Microsoft_Protocol_Gateway_Hostname" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
+    <Setting Name="Microsoft_IoTHub_PastConnectionStrings" Type="System.Collections.Specialized.StringCollection" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
   </Settings>
 </SettingsFile>

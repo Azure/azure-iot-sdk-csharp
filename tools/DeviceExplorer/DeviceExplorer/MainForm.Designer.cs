@@ -47,7 +47,6 @@
             this.label16 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.updateSettingsButton = new System.Windows.Forms.Button();
-            this.dhConStringTextBox = new System.Windows.Forms.TextBox();
             this.tabManagement = new System.Windows.Forms.TabPage();
             this.groupBox7 = new System.Windows.Forms.GroupBox();
             this.deviceTwinPropertiesBtn = new System.Windows.Forms.Button();
@@ -121,6 +120,7 @@
             this.label14 = new System.Windows.Forms.Label();
             this.label13 = new System.Windows.Forms.Label();
             this.ehStringToolTip = new System.Windows.Forms.ToolTip(this.components);
+            this.dhConStringTextBox = new System.Windows.Forms.ComboBox();
             this.tabCallDeviceMethod.SuspendLayout();
             this.tabPage2.SuspendLayout();
             this.groupBox5.SuspendLayout();
@@ -187,11 +187,11 @@
             this.groupBox5.Controls.Add(this.sasRichTextBox);
             this.groupBox5.Controls.Add(this.generateSASButton);
             this.groupBox5.Controls.Add(this.label10);
-            this.groupBox5.Location = new System.Drawing.Point(5, 296);
+            this.groupBox5.Location = new System.Drawing.Point(5, 192);
             this.groupBox5.Margin = new System.Windows.Forms.Padding(2);
             this.groupBox5.Name = "groupBox5";
             this.groupBox5.Padding = new System.Windows.Forms.Padding(2);
-            this.groupBox5.Size = new System.Drawing.Size(741, 302);
+            this.groupBox5.Size = new System.Drawing.Size(741, 406);
             this.groupBox5.TabIndex = 13;
             this.groupBox5.TabStop = false;
             this.groupBox5.Text = "Shared Access Signature";
@@ -281,7 +281,7 @@
             this.sasRichTextBox.Margin = new System.Windows.Forms.Padding(2);
             this.sasRichTextBox.Name = "sasRichTextBox";
             this.sasRichTextBox.ReadOnly = true;
-            this.sasRichTextBox.Size = new System.Drawing.Size(732, 151);
+            this.sasRichTextBox.Size = new System.Drawing.Size(732, 255);
             this.sasRichTextBox.TabIndex = 5;
             this.sasRichTextBox.Text = "";
             // 
@@ -312,17 +312,17 @@
             // 
             this.groupBox6.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox6.Controls.Add(this.dhConStringTextBox);
             this.groupBox6.Controls.Add(this.protocolGatewayHost);
             this.groupBox6.Controls.Add(this.label16);
             this.groupBox6.Controls.Add(this.label1);
             this.groupBox6.Controls.Add(this.updateSettingsButton);
-            this.groupBox6.Controls.Add(this.dhConStringTextBox);
             this.groupBox6.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.groupBox6.Location = new System.Drawing.Point(5, 24);
             this.groupBox6.Margin = new System.Windows.Forms.Padding(2);
             this.groupBox6.Name = "groupBox6";
             this.groupBox6.Padding = new System.Windows.Forms.Padding(2);
-            this.groupBox6.Size = new System.Drawing.Size(741, 268);
+            this.groupBox6.Size = new System.Drawing.Size(741, 164);
             this.groupBox6.TabIndex = 14;
             this.groupBox6.TabStop = false;
             this.groupBox6.Text = "Connection Information";
@@ -331,15 +331,15 @@
             // 
             this.protocolGatewayHost.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.protocolGatewayHost.Location = new System.Drawing.Point(5, 199);
+            this.protocolGatewayHost.Location = new System.Drawing.Point(11, 92);
             this.protocolGatewayHost.Name = "protocolGatewayHost";
-            this.protocolGatewayHost.Size = new System.Drawing.Size(731, 22);
+            this.protocolGatewayHost.Size = new System.Drawing.Size(725, 22);
             this.protocolGatewayHost.TabIndex = 1;
             // 
             // label16
             // 
             this.label16.AutoSize = true;
-            this.label16.Location = new System.Drawing.Point(8, 180);
+            this.label16.Location = new System.Drawing.Point(8, 73);
             this.label16.Name = "label16";
             this.label16.Size = new System.Drawing.Size(185, 16);
             this.label16.TabIndex = 16;
@@ -359,25 +359,13 @@
             // 
             this.updateSettingsButton.FlatStyle = System.Windows.Forms.FlatStyle.System;
             this.updateSettingsButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.updateSettingsButton.Location = new System.Drawing.Point(5, 227);
+            this.updateSettingsButton.Location = new System.Drawing.Point(11, 120);
             this.updateSettingsButton.Name = "updateSettingsButton";
-            this.updateSettingsButton.Size = new System.Drawing.Size(131, 31);
+            this.updateSettingsButton.Size = new System.Drawing.Size(125, 31);
             this.updateSettingsButton.TabIndex = 2;
             this.updateSettingsButton.Text = "Update";
             this.updateSettingsButton.UseVisualStyleBackColor = true;
             this.updateSettingsButton.Click += new System.EventHandler(this.updateSettingsButton_Click);
-            // 
-            // dhConStringTextBox
-            // 
-            this.dhConStringTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.dhConStringTextBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.dhConStringTextBox.Location = new System.Drawing.Point(5, 39);
-            this.dhConStringTextBox.Multiline = true;
-            this.dhConStringTextBox.Name = "dhConStringTextBox";
-            this.dhConStringTextBox.Size = new System.Drawing.Size(731, 138);
-            this.dhConStringTextBox.TabIndex = 0;
-            this.dhConStringTextBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.dhConStringTextBox_KeyDown);
             // 
             // tabManagement
             // 
@@ -1169,6 +1157,16 @@
             this.label13.TabIndex = 0;
             this.label13.Text = "Call Method on Device";
             // 
+            // dhConStringTextBox
+            // 
+            this.dhConStringTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.dhConStringTextBox.FormattingEnabled = true;
+            this.dhConStringTextBox.Location = new System.Drawing.Point(11, 39);
+            this.dhConStringTextBox.Name = "dhConStringTextBox";
+            this.dhConStringTextBox.Size = new System.Drawing.Size(725, 24);
+            this.dhConStringTextBox.TabIndex = 0;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1215,7 +1213,6 @@
         private System.Windows.Forms.TabPage tabData;
         private System.Windows.Forms.TabPage tabMessagesToDevice;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.TextBox dhConStringTextBox;
         private System.Windows.Forms.Button createDeviceButton;
         private System.Windows.Forms.Button listDevicesButton;
         private System.Windows.Forms.Button updateDeviceButton;
@@ -1302,6 +1299,7 @@
         private System.Windows.Forms.NumericUpDown callDeviceMethodNumericUpDown;
         private System.Windows.Forms.Button callDeviceMethodCancelButton;
         private System.Windows.Forms.CheckBox enableSystemProperties;
+        private System.Windows.Forms.ComboBox dhConStringTextBox;
     }
 }
 
