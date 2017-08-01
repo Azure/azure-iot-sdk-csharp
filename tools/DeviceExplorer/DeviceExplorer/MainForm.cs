@@ -83,6 +83,9 @@ namespace DeviceExplorer
             updateDeviceButton.Enabled = false;
             deleteDeviceButton.Enabled = false;
             sasTokenButton.Enabled = false;
+
+            // Select connection box by default
+            dhConStringTextBox.Select();
         }
 
         /// <summary>

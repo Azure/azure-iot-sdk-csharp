@@ -52,7 +52,7 @@
             this.deviceIDComboBox.Location = new System.Drawing.Point(84, 27);
             this.deviceIDComboBox.Name = "deviceIDComboBox";
             this.deviceIDComboBox.Size = new System.Drawing.Size(386, 21);
-            this.deviceIDComboBox.TabIndex = 1;
+            this.deviceIDComboBox.TabIndex = 0;
             this.deviceIDComboBox.SelectedIndexChanged += new System.EventHandler(this.deviceIDComboBox_SelectedIndexChanged);
             // 
             // doneButton
@@ -112,7 +112,7 @@
             this.sasRichTextBox.Name = "sasRichTextBox";
             this.sasRichTextBox.ReadOnly = true;
             this.sasRichTextBox.Size = new System.Drawing.Size(418, 156);
-            this.sasRichTextBox.TabIndex = 20;
+            this.sasRichTextBox.TabIndex = 3;
             this.sasRichTextBox.Text = "";
             // 
             // label10
@@ -138,7 +138,7 @@
             0});
             this.numericUpDown1.Name = "numericUpDown1";
             this.numericUpDown1.Size = new System.Drawing.Size(299, 20);
-            this.numericUpDown1.TabIndex = 3;
+            this.numericUpDown1.TabIndex = 2;
             // 
             // label1
             // 
@@ -169,7 +169,7 @@
             this.deviceKeyComboBox.Location = new System.Drawing.Point(84, 61);
             this.deviceKeyComboBox.Name = "deviceKeyComboBox";
             this.deviceKeyComboBox.Size = new System.Drawing.Size(386, 21);
-            this.deviceKeyComboBox.TabIndex = 2;
+            this.deviceKeyComboBox.TabIndex = 1;
             this.deviceKeyComboBox.SelectedIndexChanged += new System.EventHandler(this.deviceKeyComboBox_SelectedIndexChanged);
             // 
             // SASTokenForm

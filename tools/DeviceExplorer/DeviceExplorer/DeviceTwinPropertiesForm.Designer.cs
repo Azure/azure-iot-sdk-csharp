@@ -94,7 +94,7 @@
             this.tabTwin.Location = new System.Drawing.Point(4, 22);
             this.tabTwin.Name = "tabTwin";
             this.tabTwin.Padding = new System.Windows.Forms.Padding(3);
-            this.tabTwin.Size = new System.Drawing.Size(688, 565);
+            this.tabTwin.Size = new System.Drawing.Size(586, 595);
             this.tabTwin.TabIndex = 0;
             this.tabTwin.Text = "Entire Twin";
             this.tabTwin.UseVisualStyleBackColor = true;
@@ -106,7 +106,7 @@
             this.jsonRichTextBox0.Location = new System.Drawing.Point(3, 3);
             this.jsonRichTextBox0.Name = "jsonRichTextBox0";
             this.jsonRichTextBox0.ReadOnly = true;
-            this.jsonRichTextBox0.Size = new System.Drawing.Size(682, 559);
+            this.jsonRichTextBox0.Size = new System.Drawing.Size(580, 589);
             this.jsonRichTextBox0.TabIndex = 0;
             this.jsonRichTextBox0.Text = "";
             // 
@@ -116,7 +116,7 @@
             this.tabTags.Location = new System.Drawing.Point(4, 22);
             this.tabTags.Name = "tabTags";
             this.tabTags.Padding = new System.Windows.Forms.Padding(3);
-            this.tabTags.Size = new System.Drawing.Size(688, 565);
+            this.tabTags.Size = new System.Drawing.Size(586, 595);
             this.tabTags.TabIndex = 1;
             this.tabTags.Text = "Tags";
             this.tabTags.UseVisualStyleBackColor = true;
@@ -128,7 +128,7 @@
             this.jsonRichTextBox1.Location = new System.Drawing.Point(3, 3);
             this.jsonRichTextBox1.Name = "jsonRichTextBox1";
             this.jsonRichTextBox1.ReadOnly = true;
-            this.jsonRichTextBox1.Size = new System.Drawing.Size(682, 559);
+            this.jsonRichTextBox1.Size = new System.Drawing.Size(580, 589);
             this.jsonRichTextBox1.TabIndex = 0;
             this.jsonRichTextBox1.Text = "";
             // 
@@ -138,7 +138,7 @@
             this.tabReportedProperties.Location = new System.Drawing.Point(4, 22);
             this.tabReportedProperties.Name = "tabReportedProperties";
             this.tabReportedProperties.Padding = new System.Windows.Forms.Padding(3);
-            this.tabReportedProperties.Size = new System.Drawing.Size(688, 565);
+            this.tabReportedProperties.Size = new System.Drawing.Size(586, 595);
             this.tabReportedProperties.TabIndex = 2;
             this.tabReportedProperties.Text = "Reported Properties";
             this.tabReportedProperties.UseVisualStyleBackColor = true;
@@ -150,7 +150,7 @@
             this.jsonRichTextBox2.Location = new System.Drawing.Point(3, 3);
             this.jsonRichTextBox2.Name = "jsonRichTextBox2";
             this.jsonRichTextBox2.ReadOnly = true;
-            this.jsonRichTextBox2.Size = new System.Drawing.Size(682, 559);
+            this.jsonRichTextBox2.Size = new System.Drawing.Size(580, 589);
             this.jsonRichTextBox2.TabIndex = 0;
             this.jsonRichTextBox2.Text = "";
             // 

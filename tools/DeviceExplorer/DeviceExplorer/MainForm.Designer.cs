@@ -69,6 +69,7 @@
             this.showDevicePropertiesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tabData = new System.Windows.Forms.TabPage();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.enableSystemProperties = new System.Windows.Forms.CheckBox();
             this.consumerGroupCheckBox = new System.Windows.Forms.CheckBox();
             this.label6 = new System.Windows.Forms.Label();
             this.groupNameTextBox = new System.Windows.Forms.TextBox();
@@ -120,7 +121,6 @@
             this.label14 = new System.Windows.Forms.Label();
             this.label13 = new System.Windows.Forms.Label();
             this.ehStringToolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.enableSystemProperties = new System.Windows.Forms.CheckBox();
             this.tabCallDeviceMethod.SuspendLayout();
             this.tabPage2.SuspendLayout();
             this.groupBox5.SuspendLayout();
@@ -157,6 +157,7 @@
             this.tabCallDeviceMethod.SelectedIndex = 0;
             this.tabCallDeviceMethod.Size = new System.Drawing.Size(759, 630);
             this.tabCallDeviceMethod.TabIndex = 0;
+            this.tabCallDeviceMethod.TabStop = false;
             this.tabCallDeviceMethod.Selected += new System.Windows.Forms.TabControlEventHandler(this.tabControl1_Selected);
             // 
             // tabPage2
@@ -186,11 +187,11 @@
             this.groupBox5.Controls.Add(this.sasRichTextBox);
             this.groupBox5.Controls.Add(this.generateSASButton);
             this.groupBox5.Controls.Add(this.label10);
-            this.groupBox5.Location = new System.Drawing.Point(5, 310);
+            this.groupBox5.Location = new System.Drawing.Point(5, 296);
             this.groupBox5.Margin = new System.Windows.Forms.Padding(2);
             this.groupBox5.Name = "groupBox5";
             this.groupBox5.Padding = new System.Windows.Forms.Padding(2);
-            this.groupBox5.Size = new System.Drawing.Size(622, 288);
+            this.groupBox5.Size = new System.Drawing.Size(741, 302);
             this.groupBox5.TabIndex = 13;
             this.groupBox5.TabStop = false;
             this.groupBox5.Text = "Shared Access Signature";
@@ -203,8 +204,8 @@
             this.targetTextBox.Location = new System.Drawing.Point(95, 80);
             this.targetTextBox.Margin = new System.Windows.Forms.Padding(2);
             this.targetTextBox.Name = "targetTextBox";
-            this.targetTextBox.Size = new System.Drawing.Size(522, 22);
-            this.targetTextBox.TabIndex = 16;
+            this.targetTextBox.Size = new System.Drawing.Size(641, 22);
+            this.targetTextBox.TabIndex = 2;
             // 
             // keyValueTextBox
             // 
@@ -214,8 +215,8 @@
             this.keyValueTextBox.Location = new System.Drawing.Point(95, 54);
             this.keyValueTextBox.Margin = new System.Windows.Forms.Padding(2);
             this.keyValueTextBox.Name = "keyValueTextBox";
-            this.keyValueTextBox.Size = new System.Drawing.Size(522, 22);
-            this.keyValueTextBox.TabIndex = 15;
+            this.keyValueTextBox.Size = new System.Drawing.Size(641, 22);
+            this.keyValueTextBox.TabIndex = 1;
             // 
             // keyNameTextBox
             // 
@@ -225,8 +226,8 @@
             this.keyNameTextBox.Location = new System.Drawing.Point(95, 28);
             this.keyNameTextBox.Margin = new System.Windows.Forms.Padding(2);
             this.keyNameTextBox.Name = "keyNameTextBox";
-            this.keyNameTextBox.Size = new System.Drawing.Size(522, 22);
-            this.keyNameTextBox.TabIndex = 14;
+            this.keyNameTextBox.Size = new System.Drawing.Size(641, 22);
+            this.keyNameTextBox.TabIndex = 0;
             // 
             // label9
             // 
@@ -269,7 +270,7 @@
             0});
             this.numericUpDownTTL.Name = "numericUpDownTTL";
             this.numericUpDownTTL.Size = new System.Drawing.Size(144, 22);
-            this.numericUpDownTTL.TabIndex = 10;
+            this.numericUpDownTTL.TabIndex = 3;
             // 
             // sasRichTextBox
             // 
@@ -280,19 +281,19 @@
             this.sasRichTextBox.Margin = new System.Windows.Forms.Padding(2);
             this.sasRichTextBox.Name = "sasRichTextBox";
             this.sasRichTextBox.ReadOnly = true;
-            this.sasRichTextBox.Size = new System.Drawing.Size(613, 137);
-            this.sasRichTextBox.TabIndex = 9;
+            this.sasRichTextBox.Size = new System.Drawing.Size(732, 151);
+            this.sasRichTextBox.TabIndex = 5;
             this.sasRichTextBox.Text = "";
             // 
             // generateSASButton
             // 
             this.generateSASButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.generateSASButton.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.generateSASButton.Location = new System.Drawing.Point(421, 108);
+            this.generateSASButton.Location = new System.Drawing.Point(540, 108);
             this.generateSASButton.Margin = new System.Windows.Forms.Padding(2);
             this.generateSASButton.Name = "generateSASButton";
             this.generateSASButton.Size = new System.Drawing.Size(183, 28);
-            this.generateSASButton.TabIndex = 8;
+            this.generateSASButton.TabIndex = 4;
             this.generateSASButton.Text = "Generate SAS";
             this.generateSASButton.UseVisualStyleBackColor = true;
             this.generateSASButton.Click += new System.EventHandler(this.generateSASButton_Click);
@@ -321,7 +322,7 @@
             this.groupBox6.Margin = new System.Windows.Forms.Padding(2);
             this.groupBox6.Name = "groupBox6";
             this.groupBox6.Padding = new System.Windows.Forms.Padding(2);
-            this.groupBox6.Size = new System.Drawing.Size(622, 268);
+            this.groupBox6.Size = new System.Drawing.Size(741, 268);
             this.groupBox6.TabIndex = 14;
             this.groupBox6.TabStop = false;
             this.groupBox6.Text = "Connection Information";
@@ -332,8 +333,8 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.protocolGatewayHost.Location = new System.Drawing.Point(5, 199);
             this.protocolGatewayHost.Name = "protocolGatewayHost";
-            this.protocolGatewayHost.Size = new System.Drawing.Size(612, 22);
-            this.protocolGatewayHost.TabIndex = 17;
+            this.protocolGatewayHost.Size = new System.Drawing.Size(731, 22);
+            this.protocolGatewayHost.TabIndex = 1;
             // 
             // label16
             // 
@@ -361,7 +362,7 @@
             this.updateSettingsButton.Location = new System.Drawing.Point(5, 227);
             this.updateSettingsButton.Name = "updateSettingsButton";
             this.updateSettingsButton.Size = new System.Drawing.Size(131, 31);
-            this.updateSettingsButton.TabIndex = 1;
+            this.updateSettingsButton.TabIndex = 2;
             this.updateSettingsButton.Text = "Update";
             this.updateSettingsButton.UseVisualStyleBackColor = true;
             this.updateSettingsButton.Click += new System.EventHandler(this.updateSettingsButton_Click);
@@ -374,8 +375,8 @@
             this.dhConStringTextBox.Location = new System.Drawing.Point(5, 39);
             this.dhConStringTextBox.Multiline = true;
             this.dhConStringTextBox.Name = "dhConStringTextBox";
-            this.dhConStringTextBox.Size = new System.Drawing.Size(612, 138);
-            this.dhConStringTextBox.TabIndex = 4;
+            this.dhConStringTextBox.Size = new System.Drawing.Size(731, 138);
+            this.dhConStringTextBox.TabIndex = 0;
             this.dhConStringTextBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.dhConStringTextBox_KeyDown);
             // 
             // tabManagement
@@ -412,7 +413,7 @@
             this.deviceTwinPropertiesBtn.Location = new System.Drawing.Point(626, 21);
             this.deviceTwinPropertiesBtn.Name = "deviceTwinPropertiesBtn";
             this.deviceTwinPropertiesBtn.Size = new System.Drawing.Size(100, 30);
-            this.deviceTwinPropertiesBtn.TabIndex = 7;
+            this.deviceTwinPropertiesBtn.TabIndex = 5;
             this.deviceTwinPropertiesBtn.Text = "Twin Props.";
             this.deviceTwinPropertiesBtn.UseVisualStyleBackColor = true;
             this.deviceTwinPropertiesBtn.Click += new System.EventHandler(this.deviceTwinPropertiesBtn_Click);
@@ -422,7 +423,7 @@
             this.sasTokenButton.Location = new System.Drawing.Point(502, 21);
             this.sasTokenButton.Name = "sasTokenButton";
             this.sasTokenButton.Size = new System.Drawing.Size(100, 30);
-            this.sasTokenButton.TabIndex = 6;
+            this.sasTokenButton.TabIndex = 4;
             this.sasTokenButton.Text = "SAS Token...";
             this.sasTokenButton.UseVisualStyleBackColor = true;
             this.sasTokenButton.Click += new System.EventHandler(this.sasTokenButton_Click);
@@ -432,7 +433,7 @@
             this.createDeviceButton.Location = new System.Drawing.Point(6, 21);
             this.createDeviceButton.Name = "createDeviceButton";
             this.createDeviceButton.Size = new System.Drawing.Size(100, 30);
-            this.createDeviceButton.TabIndex = 1;
+            this.createDeviceButton.TabIndex = 0;
             this.createDeviceButton.Text = "Create";
             this.createDeviceButton.UseVisualStyleBackColor = true;
             this.createDeviceButton.Click += new System.EventHandler(this.createButton_Click);
@@ -442,7 +443,7 @@
             this.listDevicesButton.Location = new System.Drawing.Point(130, 21);
             this.listDevicesButton.Name = "listDevicesButton";
             this.listDevicesButton.Size = new System.Drawing.Size(100, 30);
-            this.listDevicesButton.TabIndex = 2;
+            this.listDevicesButton.TabIndex = 1;
             this.listDevicesButton.Text = "List";
             this.listDevicesButton.UseVisualStyleBackColor = true;
             this.listDevicesButton.Click += new System.EventHandler(this.listButton_Click);
@@ -452,7 +453,7 @@
             this.updateDeviceButton.Location = new System.Drawing.Point(254, 21);
             this.updateDeviceButton.Name = "updateDeviceButton";
             this.updateDeviceButton.Size = new System.Drawing.Size(100, 30);
-            this.updateDeviceButton.TabIndex = 4;
+            this.updateDeviceButton.TabIndex = 2;
             this.updateDeviceButton.Text = "Update";
             this.updateDeviceButton.UseVisualStyleBackColor = true;
             this.updateDeviceButton.Click += new System.EventHandler(this.updateDeviceButton_Click);
@@ -462,7 +463,7 @@
             this.deleteDeviceButton.Location = new System.Drawing.Point(378, 21);
             this.deleteDeviceButton.Name = "deleteDeviceButton";
             this.deleteDeviceButton.Size = new System.Drawing.Size(100, 30);
-            this.deleteDeviceButton.TabIndex = 5;
+            this.deleteDeviceButton.TabIndex = 3;
             this.deleteDeviceButton.Text = "Delete";
             this.deleteDeviceButton.UseVisualStyleBackColor = true;
             this.deleteDeviceButton.Click += new System.EventHandler(this.deleteButton_Click);
@@ -515,7 +516,7 @@
             this.devicesGridView.Name = "devicesGridView";
             this.devicesGridView.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.devicesGridView.Size = new System.Drawing.Size(729, 458);
-            this.devicesGridView.TabIndex = 9;
+            this.devicesGridView.TabIndex = 0;
             this.devicesGridView.DataBindingComplete += new System.Windows.Forms.DataGridViewBindingCompleteEventHandler(this.devicesGridView_DataBindingComplete);
             // 
             // devicesGridViewContextMenu
@@ -605,6 +606,16 @@
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Monitoring";
             // 
+            // enableSystemProperties
+            // 
+            this.enableSystemProperties.AutoSize = true;
+            this.enableSystemProperties.Location = new System.Drawing.Point(563, 208);
+            this.enableSystemProperties.Name = "enableSystemProperties";
+            this.enableSystemProperties.Size = new System.Drawing.Size(170, 20);
+            this.enableSystemProperties.TabIndex = 7;
+            this.enableSystemProperties.Text = "Show system properties";
+            this.enableSystemProperties.UseVisualStyleBackColor = true;
+            // 
             // consumerGroupCheckBox
             // 
             this.consumerGroupCheckBox.AutoSize = true;
@@ -631,14 +642,14 @@
             this.groupNameTextBox.Location = new System.Drawing.Point(140, 155);
             this.groupNameTextBox.Name = "groupNameTextBox";
             this.groupNameTextBox.Size = new System.Drawing.Size(258, 22);
-            this.groupNameTextBox.TabIndex = 27;
+            this.groupNameTextBox.TabIndex = 3;
             // 
             // cancelMonitoringButton
             // 
             this.cancelMonitoringButton.Location = new System.Drawing.Point(182, 202);
             this.cancelMonitoringButton.Name = "cancelMonitoringButton";
             this.cancelMonitoringButton.Size = new System.Drawing.Size(133, 30);
-            this.cancelMonitoringButton.TabIndex = 26;
+            this.cancelMonitoringButton.TabIndex = 5;
             this.cancelMonitoringButton.Text = "Cancel";
             this.cancelMonitoringButton.UseVisualStyleBackColor = true;
             this.cancelMonitoringButton.Click += new System.EventHandler(this.cancelButton_Click);
@@ -657,7 +668,7 @@
             this.clearDataButton.Location = new System.Drawing.Point(353, 202);
             this.clearDataButton.Name = "clearDataButton";
             this.clearDataButton.Size = new System.Drawing.Size(120, 30);
-            this.clearDataButton.TabIndex = 21;
+            this.clearDataButton.TabIndex = 6;
             this.clearDataButton.Text = "Clear";
             this.clearDataButton.UseVisualStyleBackColor = true;
             this.clearDataButton.Click += new System.EventHandler(this.clearDataButton_Click);
@@ -698,7 +709,7 @@
             this.eventHubNameTextBoxForDataTab.Name = "eventHubNameTextBoxForDataTab";
             this.eventHubNameTextBoxForDataTab.ReadOnly = true;
             this.eventHubNameTextBoxForDataTab.Size = new System.Drawing.Size(622, 22);
-            this.eventHubNameTextBoxForDataTab.TabIndex = 17;
+            this.eventHubNameTextBoxForDataTab.TabIndex = 0;
             // 
             // deviceIDsComboBoxForEvent
             // 
@@ -709,7 +720,7 @@
             this.deviceIDsComboBoxForEvent.Location = new System.Drawing.Point(101, 73);
             this.deviceIDsComboBoxForEvent.Name = "deviceIDsComboBoxForEvent";
             this.deviceIDsComboBoxForEvent.Size = new System.Drawing.Size(622, 24);
-            this.deviceIDsComboBoxForEvent.TabIndex = 18;
+            this.deviceIDsComboBoxForEvent.TabIndex = 1;
             this.deviceIDsComboBoxForEvent.SelectionChangeCommitted += new System.EventHandler(this.deviceIDsComboBoxForEvent_SelectionChangeCommitted);
             // 
             // dateTimePicker
@@ -723,7 +734,7 @@
             this.dateTimePicker.Name = "dateTimePicker";
             this.dateTimePicker.ShowCheckBox = true;
             this.dateTimePicker.Size = new System.Drawing.Size(622, 22);
-            this.dateTimePicker.TabIndex = 22;
+            this.dateTimePicker.TabIndex = 2;
             // 
             // groupBox1
             // 
@@ -747,7 +758,7 @@
             this.eventHubTextBox.Name = "eventHubTextBox";
             this.eventHubTextBox.ReadOnly = true;
             this.eventHubTextBox.Size = new System.Drawing.Size(725, 276);
-            this.eventHubTextBox.TabIndex = 5;
+            this.eventHubTextBox.TabIndex = 0;
             this.eventHubTextBox.Text = "";
             // 
             // tabMessagesToDevice
@@ -802,7 +813,7 @@
             this.messagePropertiesGrid.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
             this.messagePropertiesGrid.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.messagePropertiesGrid.Size = new System.Drawing.Size(710, 112);
-            this.messagePropertiesGrid.TabIndex = 13;
+            this.messagePropertiesGrid.TabIndex = 5;
             // 
             // KeyColumn
             // 
@@ -828,7 +839,7 @@
             this.checkBoxMonitorFeedbackEndpoint.Location = new System.Drawing.Point(281, 148);
             this.checkBoxMonitorFeedbackEndpoint.Name = "checkBoxMonitorFeedbackEndpoint";
             this.checkBoxMonitorFeedbackEndpoint.Size = new System.Drawing.Size(192, 20);
-            this.checkBoxMonitorFeedbackEndpoint.TabIndex = 12;
+            this.checkBoxMonitorFeedbackEndpoint.TabIndex = 4;
             this.checkBoxMonitorFeedbackEndpoint.Text = "Monitor Feedback Endpoint";
             this.checkBoxMonitorFeedbackEndpoint.UseVisualStyleBackColor = true;
             this.checkBoxMonitorFeedbackEndpoint.CheckedChanged += new System.EventHandler(this.checkBoxMonitorFeedbackEndpoint_CheckedChanged);
@@ -839,7 +850,7 @@
             this.messageClearButton.MaximumSize = new System.Drawing.Size(145, 30);
             this.messageClearButton.Name = "messageClearButton";
             this.messageClearButton.Size = new System.Drawing.Size(145, 30);
-            this.messageClearButton.TabIndex = 11;
+            this.messageClearButton.TabIndex = 7;
             this.messageClearButton.Text = "Clear";
             this.messageClearButton.UseVisualStyleBackColor = true;
             this.messageClearButton.Click += new System.EventHandler(this.messageClearButton_Click);
@@ -853,7 +864,7 @@
             this.deviceIDsComboBoxForCloudToDeviceMessage.Location = new System.Drawing.Point(104, 81);
             this.deviceIDsComboBoxForCloudToDeviceMessage.Name = "deviceIDsComboBoxForCloudToDeviceMessage";
             this.deviceIDsComboBoxForCloudToDeviceMessage.Size = new System.Drawing.Size(630, 24);
-            this.deviceIDsComboBoxForCloudToDeviceMessage.TabIndex = 10;
+            this.deviceIDsComboBoxForCloudToDeviceMessage.TabIndex = 1;
             this.deviceIDsComboBoxForCloudToDeviceMessage.SelectionChangeCommitted += new System.EventHandler(this.deviceIDsComboBoxForMessage_SelectionChangeCommitted);
             // 
             // iotHubNameTextBox
@@ -864,7 +875,7 @@
             this.iotHubNameTextBox.Name = "iotHubNameTextBox";
             this.iotHubNameTextBox.ReadOnly = true;
             this.iotHubNameTextBox.Size = new System.Drawing.Size(630, 22);
-            this.iotHubNameTextBox.TabIndex = 9;
+            this.iotHubNameTextBox.TabIndex = 0;
             // 
             // label2
             // 
@@ -883,7 +894,7 @@
             this.checkBox1.Location = new System.Drawing.Point(104, 148);
             this.checkBox1.Name = "checkBox1";
             this.checkBox1.Size = new System.Drawing.Size(128, 20);
-            this.checkBox1.TabIndex = 5;
+            this.checkBox1.TabIndex = 3;
             this.checkBox1.Text = "Add Time Stamp";
             this.checkBox1.UseVisualStyleBackColor = true;
             // 
@@ -909,7 +920,7 @@
             this.messagesTextBox.Name = "messagesTextBox";
             this.messagesTextBox.ReadOnly = true;
             this.messagesTextBox.Size = new System.Drawing.Size(716, 191);
-            this.messagesTextBox.TabIndex = 7;
+            this.messagesTextBox.TabIndex = 0;
             this.messagesTextBox.Text = "";
             // 
             // label8
@@ -957,7 +968,7 @@
             this.textBoxMessage.Location = new System.Drawing.Point(104, 111);
             this.textBoxMessage.Name = "textBoxMessage";
             this.textBoxMessage.Size = new System.Drawing.Size(630, 22);
-            this.textBoxMessage.TabIndex = 4;
+            this.textBoxMessage.TabIndex = 2;
             // 
             // tabDeviceMethod
             // 
@@ -994,7 +1005,7 @@
             this.callDeviceMethodCancelButton.Location = new System.Drawing.Point(577, 328);
             this.callDeviceMethodCancelButton.Name = "callDeviceMethodCancelButton";
             this.callDeviceMethodCancelButton.Size = new System.Drawing.Size(155, 30);
-            this.callDeviceMethodCancelButton.TabIndex = 18;
+            this.callDeviceMethodCancelButton.TabIndex = 6;
             this.callDeviceMethodCancelButton.Text = "Cancel";
             this.callDeviceMethodCancelButton.UseVisualStyleBackColor = true;
             this.callDeviceMethodCancelButton.Click += new System.EventHandler(this.callDeviceMethodCancelButton_Click);
@@ -1013,7 +1024,7 @@
             this.callDeviceMethodNumericUpDown.Location = new System.Drawing.Point(266, 333);
             this.callDeviceMethodNumericUpDown.Name = "callDeviceMethodNumericUpDown";
             this.callDeviceMethodNumericUpDown.Size = new System.Drawing.Size(53, 22);
-            this.callDeviceMethodNumericUpDown.TabIndex = 15;
+            this.callDeviceMethodNumericUpDown.TabIndex = 4;
             this.callDeviceMethodNumericUpDown.Value = new decimal(new int[] {
             60,
             0,
@@ -1039,7 +1050,7 @@
             this.returnPayloadTextBox.Name = "returnPayloadTextBox";
             this.returnPayloadTextBox.ReadOnly = true;
             this.returnPayloadTextBox.Size = new System.Drawing.Size(592, 180);
-            this.returnPayloadTextBox.TabIndex = 13;
+            this.returnPayloadTextBox.TabIndex = 8;
             // 
             // returnStatusTextBox
             // 
@@ -1049,7 +1060,7 @@
             this.returnStatusTextBox.Name = "returnStatusTextBox";
             this.returnStatusTextBox.ReadOnly = true;
             this.returnStatusTextBox.Size = new System.Drawing.Size(592, 22);
-            this.returnStatusTextBox.TabIndex = 12;
+            this.returnStatusTextBox.TabIndex = 7;
             // 
             // label20
             // 
@@ -1065,7 +1076,7 @@
             this.callDeviceMethodButton.Location = new System.Drawing.Point(362, 328);
             this.callDeviceMethodButton.Name = "callDeviceMethodButton";
             this.callDeviceMethodButton.Size = new System.Drawing.Size(149, 30);
-            this.callDeviceMethodButton.TabIndex = 10;
+            this.callDeviceMethodButton.TabIndex = 5;
             this.callDeviceMethodButton.Text = "Call Method";
             this.callDeviceMethodButton.UseVisualStyleBackColor = true;
             this.callDeviceMethodButton.Click += new System.EventHandler(this.callDeviceMethodButton_Click);
@@ -1079,7 +1090,7 @@
             this.deviceIDsComboBoxForDeviceMethod.Location = new System.Drawing.Point(140, 81);
             this.deviceIDsComboBoxForDeviceMethod.Name = "deviceIDsComboBoxForDeviceMethod";
             this.deviceIDsComboBoxForDeviceMethod.Size = new System.Drawing.Size(592, 24);
-            this.deviceIDsComboBoxForDeviceMethod.TabIndex = 9;
+            this.deviceIDsComboBoxForDeviceMethod.TabIndex = 1;
             this.deviceIDsComboBoxForDeviceMethod.SelectionChangeCommitted += new System.EventHandler(this.deviceIDsComboBoxForDeviceMethod_SelectionChangeCommitted);
             // 
             // methodPayloadTextBox
@@ -1090,7 +1101,7 @@
             this.methodPayloadTextBox.Multiline = true;
             this.methodPayloadTextBox.Name = "methodPayloadTextBox";
             this.methodPayloadTextBox.Size = new System.Drawing.Size(592, 180);
-            this.methodPayloadTextBox.TabIndex = 8;
+            this.methodPayloadTextBox.TabIndex = 3;
             this.methodPayloadTextBox.Text = "{ \"MethodPayload\": \"Payload\" }";
             // 
             // methodNameTextBox
@@ -1100,7 +1111,7 @@
             this.methodNameTextBox.Location = new System.Drawing.Point(140, 112);
             this.methodNameTextBox.Name = "methodNameTextBox";
             this.methodNameTextBox.Size = new System.Drawing.Size(592, 22);
-            this.methodNameTextBox.TabIndex = 7;
+            this.methodNameTextBox.TabIndex = 2;
             this.methodNameTextBox.Text = "MethodName";
             // 
             // iotHubNameTextBoxForDeviceMethod
@@ -1111,7 +1122,7 @@
             this.iotHubNameTextBoxForDeviceMethod.Name = "iotHubNameTextBoxForDeviceMethod";
             this.iotHubNameTextBoxForDeviceMethod.ReadOnly = true;
             this.iotHubNameTextBoxForDeviceMethod.Size = new System.Drawing.Size(592, 22);
-            this.iotHubNameTextBoxForDeviceMethod.TabIndex = 5;
+            this.iotHubNameTextBoxForDeviceMethod.TabIndex = 0;
             // 
             // label19
             // 
@@ -1157,16 +1168,6 @@
             this.label13.Size = new System.Drawing.Size(143, 16);
             this.label13.TabIndex = 0;
             this.label13.Text = "Call Method on Device";
-            // 
-            // enableSystemProperties
-            // 
-            this.enableSystemProperties.AutoSize = true;
-            this.enableSystemProperties.Location = new System.Drawing.Point(563, 208);
-            this.enableSystemProperties.Name = "enableSystemProperties";
-            this.enableSystemProperties.Size = new System.Drawing.Size(170, 20);
-            this.enableSystemProperties.TabIndex = 30;
-            this.enableSystemProperties.Text = "Show system properties";
-            this.enableSystemProperties.UseVisualStyleBackColor = true;
             // 
             // MainForm
             // 
