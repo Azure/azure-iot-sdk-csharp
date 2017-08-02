@@ -11,17 +11,19 @@ namespace Microsoft.Azure.Devices
     using System.Linq;
     using System.Net;
     using System.Net.Http;
-#if !WINDOWS_UWP && !NETSTANDARD1_3
-    using System.Net.Http.Formatting;
-#endif
     using System.Net.Http.Headers;
     using System.Threading;
     using System.Threading.Tasks;
+    using System.Text;
 
     using Microsoft.Azure.Devices.Common;
     using Microsoft.Azure.Devices.Common.Exceptions;
     using Microsoft.Azure.Devices.Common.Extensions;
     using Microsoft.Azure.Devices.Shared;
+    using Newtonsoft.Json;
+#if !WINDOWS_UWP && !NETSTANDARD1_3
+    using System.Net.Http.Formatting;
+#endif
 
     sealed class HttpClientHelper : IHttpClientHelper
     {
@@ -493,11 +495,8 @@ namespace Microsoft.Azure.Devices
                         }
                         else
                         {
-#if WINDOWS_UWP || NETSTANDARD1_3
-                            throw new NotImplementedException("missing API 2!");
-#else
-                            requestMsg.Content = new ObjectContent<T1>(entity, JsonFormatter);
-#endif
+                            var str = Newtonsoft.Json.JsonConvert.SerializeObject(entity);
+                            requestMsg.Content = new StringContent(str, System.Text.Encoding.UTF8, "application/json");
                         }
                     }
 

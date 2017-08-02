@@ -419,6 +419,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             TestUtil.RemoveDevice(deviceInfo.Item1, registryManager);
         }
 
+
         private async Task _Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent(Client.TransportType transport)
         {
             var tcs = new TaskCompletionSource<bool>();
@@ -503,6 +504,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             Tuple<string, string> deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
             var deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, transport);
+            deviceClient.SetConnectionStatusChangesHandler(ConnectionStatusChangesHandler);
             await deviceClient.OpenAsync();
             await deviceClient.SetDesiredPropertyUpdateCallbackAsync((patch, context) =>
             {
@@ -538,12 +540,29 @@ namespace Microsoft.Azure.Devices.E2ETests
             twinPatch = new Twin();
             twinPatch.Properties.Desired[propName] = propValue;
             await registryManager.UpdateTwinAsync(deviceInfo.Item1, twinPatch, "*");
+
+            //await Task.Delay(TimeSpan.FromMinutes(4));
+            //if(!tcs.Task.IsCompleted)
+            //{
+            //    throw new Exception("Task didn't complete within 4 minutes");
+            //}
+            //else
+            //{
+            //    if (tcs.Task.IsFaulted)
+            //    {
+            //        throw new Exception("Task failed");
+            //    }
+            //}
+
             await tcs.Task;
 
             await deviceClient.CloseAsync();
             TestUtil.RemoveDevice(deviceInfo.Item1, registryManager);
         }
-
+        
+        private static void ConnectionStatusChangesHandler(ConnectionStatus status, ConnectionStatusChangeReason reason)
+        {
+        }
         private async Task _Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet(Client.TransportType transport)
         {
             var propName = Guid.NewGuid().ToString();

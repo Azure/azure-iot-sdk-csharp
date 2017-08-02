@@ -20,8 +20,31 @@ namespace ConsoleSample
             AddDeviceAsync().Wait();
             AddDeviceWithSelfSignedCertificateAsync().Wait();
             AddDeviceWithCertificateAuthorityAuthenticationAsync().Wait();
+
+            //CheckTwins();
             //SendMessage().Wait();
             //RemoveDevice().Wait();
+        }
+
+        static void CheckTwins()
+        {
+            var manager = RegistryManager.CreateFromConnectionString(connectionString);
+
+            var query = manager.CreateQuery("select * from devices");
+            var twins = new List<Microsoft.Azure.Devices.Shared.Twin>();
+            while (query.HasMoreResults)
+            {
+                try
+                {
+                    twins = query.GetNextAsTwinAsync().Result.ToList();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"{ex}");
+                }
+               
+            }
+
         }
 
         static async Task SendMessage()
