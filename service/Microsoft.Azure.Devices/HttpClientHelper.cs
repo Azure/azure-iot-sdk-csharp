@@ -494,7 +494,8 @@ namespace Microsoft.Azure.Devices
                         else
                         {
 #if WINDOWS_UWP || NETSTANDARD1_3
-                            throw new NotImplementedException("missing API 2!");
+                            var str = Newtonsoft.Json.JsonConvert.SerializeObject(entity);
+                            requestMsg.Content = new StringContent(str, System.Text.Encoding.UTF8, "application/json");
 #else
                             requestMsg.Content = new ObjectContent<T1>(entity, JsonFormatter);
 #endif
