@@ -150,7 +150,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Recovery")]
         public async Task Twin_DeviceReportedPropertiesGracefulShutdownRecovery_AmqpWs()
         {
-            await _Twin_DeviceReportedPropertiesRecovery(Client.TransportType.Mqtt_WebSocket_Only,
+            await _Twin_DeviceReportedPropertiesRecovery(Client.TransportType.Amqp_WebSocket_Only,
                 TestUtil.FaultType_GracefulShutdownAmqp,
                 TestUtil.FaultCloseReason_Bye,
                 TestUtil.DefaultDelayInSec);
@@ -385,6 +385,14 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             Tuple<string, string> deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
             var deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, transport);
+            TaskCompletionSource<bool> tcs = null;
+            deviceClient.SetConnectionStatusChangesHandler((status, changeReason) =>
+            {
+                if (status == ConnectionStatus.Connected && tcs != null)
+                {
+                    tcs.SetResult(true);
+                }
+            });
             TwinCollection props = new TwinCollection();
             props[propName] = propValue1;
             await deviceClient.UpdateReportedPropertiesAsync(props);
@@ -393,8 +401,9 @@ namespace Microsoft.Azure.Devices.E2ETests
             Assert.AreEqual<String>(deviceTwin.Properties.Reported[propName].ToString(), propValue1);
 
             // send error command
+            tcs = new TaskCompletionSource<bool>();
             await deviceClient.SendEventAsync(TestUtil.ComposeErrorInjectionProperties(faultType, reason, delayInSec));
-            Thread.Sleep(1000);
+            await tcs.Task.ConfigureAwait(false);
 
             deviceTwin = await deviceClient.GetTwinAsync();
             Assert.AreEqual<String>(deviceTwin.Properties.Reported[propName].ToString(), propValue1);
