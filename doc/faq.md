@@ -86,12 +86,12 @@ Using the IoT Hub c-client code from C++ is no different than using it from c. C
 
 UWP (Universal Windows Platform) is an evolution of Windows app model introduced in Windows 8. UWP provides a common app platform available on every device that runs Windows 10, including its IoT flavor, the IoT Core. (See https://msdn.microsoft.com/en-us/library/dn894631.aspx). UWP is the official application model supported on IoT Core.
 
-A new binary, Microsoft.Azure.Devices.Client.UWP.dll is built to support the UWP. This is .NET library and not a WinRT library. This means that it cannot be used to target non-.NET languages such as C++/CX and JavaScript.
+A separate version of the Microsoft.Azure.Devices.Client.dll is built to support the UWP. This is .NET library and not a WinRT library. This means that it cannot be used to target non-.NET languages such as C++/CX and JavaScript.
 
 <a name="project"/>
 ### Project file and assembly
 
-A new project file, Microsoft.Azure.Devices.Client.UWP.csproj has been created. The project has been added to the main solution. The project produces an AppX package with metadata in Microsoft.Azure.Devices.Client.UWP.dll.
+A new project file, Microsoft.Azure.Devices.Client.UWP.csproj has been created. The project has been added to the main solution. The project produces an AppX package with metadata in Microsoft.Azure.Devices.Client.dll.
 
 The existing .NET library, Microsoft.Azure.Devices.Client.dll, has remained unchanged (modulo a small number of breaking changes as described below).
 

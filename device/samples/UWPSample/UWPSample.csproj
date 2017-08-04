@@ -137,7 +137,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Microsoft.Azure.Devices.Client.UWP\Microsoft.Azure.Devices.Client.UWP.csproj">
       <Project>{c860af4f-605a-414d-84e8-8ff579823395}</Project>
-      <Name>Microsoft.Azure.Devices.Client.UWP</Name>
+      <Name>Microsoft.Azure.Devices.Client</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

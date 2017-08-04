@@ -21,8 +21,8 @@ Go to VS 2015 Solution Explorer and right click on the solution or project and c
 ### 1.) Microsoft.Azure.Devices.Client
 For building classic desktop [.NET] [.NET] application, use NuGet Package Manager to install latest version of **Microsoft.Azure.Devices.Client** Device SDK for Azure IoT Devices NuGet package to your project.
 
-- Microsoft.Azure.Devices.Client.dll is a .NET assembly for building classic .NET desktop application.
-- Microsoft.Azure.Devices.Client.UWP.dll is an assembly for building [UWP] [UWP] applications.
+Two versions of Microsoft.Azure.Devices.Client.dll are built -- one for the classic .NET desktop application and
+another for building [UWP] [UWP] applications.
 
 The package is located at [Azure IoT Device Client SDK NuGet Package] [lnk-NuGet-package]
 
@@ -36,9 +36,7 @@ The package is located at [Azure IoT Device Client PCL SDK NuGet Package] [lnk-N
 
 ### Building [UWP][UWP] Apps 
 Just like classic desktop app, install [Azure IoT Device Client SDK NuGet Package] [lnk-NuGet-package].
-Microsoft.Azure.Devices.Client.UWP.dll is a [UWP] [UWP] version which will get installed via NuGet Package manager when you select **Universal** app in VS 2015. This is the version you need to build UWP apps.
-
-> Currently, **Microsoft.Azure.Devices.Client.UWP** doesn't support MQTT protocol.
+A [UWP] [UWP]-compatible assembly Microsoft.Azure.Devices.Client.dll will get installed via NuGet Package manager when you select **Universal** app in VS 2015. This is the version you need to build UWP apps.
 
 ####  Building C# and Visual Basic UWP apps
 For building UWP, follow the same steps as you would follow if building classic .NET desktop application.
@@ -85,7 +83,7 @@ Once build completes, it will create
 
 1. Microsoft.Azure.Devices.Client.dll (Client SDK Assembly)
 2. Microsoft.Azure.Devices.Client.PCL.dll (PCL library)
-3. Microsoft.Azure.Devices.Client.UWP.dll (UWP version that you will need to UWP application)
+3. Microsoft.Azure.Devices.Client.dll (UWP version that you will need to UWP application)
 4. Sample executables 
 
 ### Option 2: Build using VS 2015 IDE
