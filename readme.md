@@ -2,8 +2,6 @@
 
 This repository contains both IoT device SDKs and IoT service SDKs. Device SDKs enable you connect client devices to Azure IoT Hub. Service SDKs enable you to manage your IoT Hub service instance.
 
-Visit http://azure.com/iotdev to learn more about developing applications for Azure IoT.
-
 The Microsoft Azure IoT device SDK for .NET contain code that facilitate building devices and applications that connect to and are managed by Azure IoT Hub services.
 
 Devices and data sources in an IoT solution can range from a simple network-connected sensor to a powerful, standalone computing device. Devices may have limited processing capability, memory, communication bandwidth, and communication protocol support. The IoT device SDKs enable you to implement client applications for a wide variety of devices.
