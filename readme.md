@@ -10,6 +10,9 @@ Devices and data sources in an IoT solution can range from a simple network-conn
 
 Each language SDK includes sample code and documentation in addition to the library code. The API reference documentation is [here](https://docs.microsoft.com/en-us/dotnet/api/overview/azure/devices?view=azure-dotnet).
 
+## Developing applications for Azure IoT
+Visit [Azure IoT Dev Center][iot-dev-center] to learn more about developing applications for Azure IoT.
+
 ### OS platforms and hardware compatibility
 
 Azure IoT device SDKs can be used with a broad range of OS platforms and devices. The minimum requirements are for the device platform to support the following:
