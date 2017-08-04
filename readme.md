@@ -6,8 +6,6 @@ This repository contains the following:
 
 To find SDKs in other languages for Azure IoT, please refer to the [azure-iot-sdks][azure-iot-sdks] repository.
 
-To find SDKs in other languages for Azure IoT, please refer to the [azure-iot-sdks][azure-iot-sdks] repository.
-
 ## Developing applications for Azure IoT
 Visit [Azure IoT Dev Center][iot-dev-center] to learn more about developing applications for Azure IoT.
 
@@ -29,9 +27,6 @@ The API reference documentation for .NET SDK is [here](dotnet-api-reference).
 In the repository, you will find a set of simple samples that will help you get started:
 * [Device SDK samples](device-sample)
 * [Service SDK samples](service-sample)
-
-## OS platforms and hardware compatibility
-
 
 ## OS platforms and hardware compatibility
 
@@ -99,6 +94,7 @@ In addition to the language SDKs, this repository ([azure-iot-sdks](https://gith
 This folder contains various build scripts to build the libraries.
 
 ### /doc
+This folder contains documents that are relevant to all the language SDKs
 
 # Long Term Support
 
@@ -129,6 +125,7 @@ Below is a table showing the mapping of the LTS branches to the packages release
 ---
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
 
+[iot-hub-documentation]: https://docs.microsoft.com/en-us/azure/iot-hub/
 [iot-dev-center]: http://azure.com/iotdev
 [azure-iot-sdks]: https://github.com/azure/azure-iot-sdks
 [device-sample]:https://github.com/Azure/azure-iot-sdk-csharp/tree/master/device/samples
