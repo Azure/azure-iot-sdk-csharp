@@ -1,29 +1,52 @@
 # Microsoft Azure IoT SDK for .NET
 
-This repository contains both IoT device SDKs and IoT service SDKs. Device SDKs enable you connect client devices to Azure IoT Hub. Service SDKs enable you to manage your IoT Hub service instance.
+This repository contains the following:
+* **Microsoft Azure IoT Hub device SDK for C#** to connect client devices to Azure IoT Hub with .NET
+* **Microsoft Azure IoT Hub service SDK for C#** to manage your IoT Hub service instance from a back-end .NET application
 
-The Microsoft Azure IoT device SDK for .NET contain code that facilitate building devices and applications that connect to and are managed by Azure IoT Hub services.
+To find SDKs in other languages for Azure IoT, please refer to the [azure-iot-sdks][azure-iot-sdks] repository.
 
-Devices and data sources in an IoT solution can range from a simple network-connected sensor to a powerful, standalone computing device. Devices may have limited processing capability, memory, communication bandwidth, and communication protocol support. The IoT device SDKs enable you to implement client applications for a wide variety of devices.
-
-Each language SDK includes sample code and documentation in addition to the library code. The API reference documentation is [here](https://docs.microsoft.com/en-us/dotnet/api/overview/azure/devices?view=azure-dotnet).
+To find SDKs in other languages for Azure IoT, please refer to the [azure-iot-sdks][azure-iot-sdks] repository.
 
 ## Developing applications for Azure IoT
 Visit [Azure IoT Dev Center][iot-dev-center] to learn more about developing applications for Azure IoT.
 
+## How to clone the repository
+
+The repository is using [GitHub Submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules) for its dependencies. In order to automatically clone these submodules, you need to use the --recursive option as described here:
+
+```
+git clone --recursive https://github.com/Azure/azure-iot-sdk-csharp.git
+```
+## How to use the Azure IoT SDKs for .NET
+Missing section, needs info
+* **Using packages and libraries**: MISSING 
+* **Compiling the source code**: MISSING
+
+The API reference documentation for .NET SDK is [here](dotnet-api-reference).
+
+## Samples
+In the repository, you will find a set of simple samples that will help you get started:
+* [Device SDK samples](device-sample)
+* [Service SDK samples](service-sample)
+
 ## OS platforms and hardware compatibility
 
-Azure IoT device SDKs can be used with a broad range of OS platforms and devices. The minimum requirements are for the device platform to support the following:
 
-- Being capable of establishing an IP connection: only IP-capable devices can communicate directly with Azure IoT Hub.
-- Support TLS: required to establish a secure communication channel with Azure IoT Hub.
-- Support SHA-256: necessary to generate the secure token for authenticating the device with the service.
-- Have a Real Time Clock or implement code to connect to an NTP server: necessary for both establishing the TLS connection and generating the secure token for authentication.
-- Having at least 64KB of RAM: the memory footprint of the SDK depends on the SDK and protocol used as well as the platform targeted. The smallest footprint is achieved using the C SDK targeting microcontrollers.
+## OS platforms and hardware compatibility
+
+The IoT Hub device SDK for .NET can be used with a broad range of OS platforms and devices.
+The minimum requirements are for the device platform to support the following:
+
+- **Being capable of establishing an IP connection**: only IP-capable devices can communicate directly with Azure IoT Hub.
+- **Support TLS**: required to establish a secure communication channel with Azure IoT Hub.
+- **Support SHA-256** (optional): necessary to generate the secure token for authenticating the device with the service. Different authentication methods are available and not all require SHA-256.
+- **Have a Real Time Clock or implement code to connect to an NTP server**: necessary for both establishing the TLS connection and generating the secure token for authentication.
+- **Having at least 64KB of RAM**: the memory footprint of the SDK depends on the SDK and protocol used as well as the platform targeted. The smallest footprint is achieved targeting microcontrollers.
 
 You can find an exhaustive list of the OS platforms the various SDKs have been tested against in the [Azure Certified for IoT device catalog](https://catalog.azureiotsuite.com/). Note that you might still be able to use the SDKs on OS and hardware platforms that are not listed on this page: all the SDKs are open sourced and designed to be portable. If you have suggestions, feedback or issues to report, refer to the Contribution and Support sections below.
 
-## Samples
+<!-- ## Samples
 
 Whithin the repository, you can find various types of simple samples that can help you get started.
 Below is a complete list of all these simple samples.
@@ -38,24 +61,36 @@ And if you are looking for end to end samples that show how to do simple analyti
    - [Simple UWP JS sample](device/samples/JSSample): Shows how to connect to IoT Hub and send and receive raw messages in a JavaScript [UWP](https://msdn.microsoft.com/windows/uwp/get-started/whats-a-uwp) application.
    - [Simple UWP C# sample](device/samples/UWPSample): Shows how to connect to IoT Hub and send and receive raw messages in a C# [UWP](https://msdn.microsoft.com/windows/uwp/get-started/whats-a-uwp) application.
    - [Simple .NET Micro Framework 4.3 sample](device/samples/NetMFDeviceClientHttpSample_43): Shows how to connect to IoT Hub and send and receive raw messages from a device running .NET Micro Framework 4.3.
-   - [Simple .NET Micro Framework 4.4 sample](device/samples/NetMFDeviceClientHttpSample_44): Shows how to connect to IoT Hub and send and receive raw messages from a device running .NET Micro Framework 4.4.
+   - [Simple .NET Micro Framework 4.4 sample](device/samples/NetMFDeviceClientHttpSample_44): Shows how to connect to IoT Hub and send and receive raw messages from a device running .NET Micro Framework 4.4. -->
+
+## Porting the Azure IoT device client SDK for .NET to new platforms
+MISSING, do we need this section?
 
 ## Contribution, feedback and issues
 
-If you encounter any bugs, have suggestions for new features or if you would like to become an active contributor to this project please follow the instructions provided in the [contribution guidelines](CONTRIBUTING.md).
+If you encounter any bugs, have suggestions for new features or if you would like to become an active contributor to this project please follow the instructions provided in the [contribution guidelines](.github/CONTRIBUTING.md).
 
 ## Support
 
-If you are having issues using one of the packages or using the Azure IoT Hub service that go beyond simple bug fixes or help requests that would be dealt within the [issues section](https://github.com/Azure/azure-iot-sdks/issues) of this project, the Microsoft Customer Support team will try and help out on a best effort basis.
+If you are having issues using one of the packages or using the Azure IoT Hub service that go beyond simple bug fixes or help requests that would be dealt within the issues section of this project, the Microsoft Customer Support team will try and help out on a best effort basis.
 To engage Microsoft support, you can create a support ticket directly from the [Azure portal](https://ms.portal.azure.com/#blade/Microsoft_Azure_Support/HelpAndSupportBlade).
 Escalated support requests for Azure IoT Hub SDKs development questions will only be available Monday thru Friday during normal coverage hours of 6 a.m. to 6 p.m. PST.
 Here is what you can expect Microsoft Support to be able to help with:
-* **Client SDKs issues**: If you are trying to compile and run the libraries on a supported platform, the Support team will be able to assist with troubleshooting or questions related to compiler issues and communications to and from the IoT Hub.  They will also try to assist with questions related to porting to an unsupported platform, but will be limited in how much assistance can be provided.  The team will be limited with trouble-shooting the hardware device itself or drivers and or specific properties on that device. 
-* **IoT Hub / Connectivity Issues**: Communication from the device client to the Azure IoT Hub service and communication from the Azure IoT Hub service to the client.  Or any other issues specifically related to the Azure IoT Hub.
-* **Portal Issues**: Issues related to the portal, that includes access, security, dashboard, devices, Alarms, Usage, Settings and Actions.
-* **REST/API Issues**: Using the IoT Hub REST/APIs that are documented in the [documentation]( https://msdn.microsoft.com/library/mt548492.aspx).
+- **SDKs issues**: If you are trying to compile and run the libraries on a supported platform, the Support team will be able to assist with troubleshooting or questions related to compiler issues and communications to and from the IoT Hub.  They will also try to assist with questions related to porting to an unsupported platform, but will be limited in how much assistance can be provided.  The team will be limited with trouble-shooting the hardware device itself or drivers and or specific properties on that device. 
+- **IoT Hub / Connectivity Issues**: Communication from the device client to the Azure IoT Hub service and communication from the Azure IoT Hub service to the client.  Or any other issues specifically related to the Azure IoT Hub.
+- **Portal Issues**: Issues related to the portal, that includes access, security, dashboard, devices, Alarms, Usage, Settings and Actions.
+- **REST/API Issues**: Using the IoT Hub REST/APIs that are documented in the [documentation](https://docs.microsoft.com/en-us/rest/api/iothub/).
 
-## Additional resources
+## Read more
+* [Azure IoT Hub documentation][iot-hub-documentation]
+* [Set up IoT Hub](doc/setup_iothub.md) describes how to configure your Azure IoT Hub service.
+* [Manage IoT Hub](doc/manage_iot_hub.md) describes how to provision devices in your Azure IoT Hub service.
+* [FAQ](doc/faq.md) contains frequently asked questions about the SDKs and libraries.
+* [Azure Certified for IoT device catalog](https://catalog.azureiotsuite.com/)
+* Missing a link for set up development environment
+* Missing a link for get started guide
+
+## SDK folder structure
 
 In addition to the language SDKs, this repository ([azure-iot-sdks](https://github.com/Azure/azure-iot-sdks)) contains the following folders:
 
@@ -64,13 +99,6 @@ In addition to the language SDKs, this repository ([azure-iot-sdks](https://gith
 This folder contains various build scripts to build the libraries.
 
 ### /doc
-
-This folder contains the following documents that are relevant to all the language SDKs:
-
-- [Set up IoT Hub](doc/setup_iothub.md) describes how to configure your Azure IoT Hub service.
-- [Manage IoT Hub](doc/manage_iot_hub.md) describes how to provision devices in your Azure IoT Hub service.
-- [FAQ](doc/faq.md) contains frequently asked questions about the SDKs and libraries.
-- [Azure Certified for IoT device catalog](https://catalog.azureiotsuite.com/).
 
 # Long Term Support
 
@@ -98,6 +126,11 @@ Below is a table showing the mapping of the LTS branches to the packages release
 ### Planned Release Schedule
 ![](./lts_branches.png)
 
+---
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
 
 [iot-dev-center]: http://azure.com/iotdev
+[azure-iot-sdks]: https://github.com/azure/azure-iot-sdks
+[device-sample]:https://github.com/Azure/azure-iot-sdk-csharp/tree/master/device/samples
+[service-sample]:https://github.com/Azure/azure-iot-sdk-csharp/tree/master/service/Samples
+[dotnet-api-reference]:https://docs.microsoft.com/en-us/dotnet/api/overview/azure/devices?view=azure-dotnet
