@@ -13,7 +13,7 @@ Each language SDK includes sample code and documentation in addition to the libr
 ## Developing applications for Azure IoT
 Visit [Azure IoT Dev Center][iot-dev-center] to learn more about developing applications for Azure IoT.
 
-### OS platforms and hardware compatibility
+## OS platforms and hardware compatibility
 
 Azure IoT device SDKs can be used with a broad range of OS platforms and devices. The minimum requirements are for the device platform to support the following:
 
