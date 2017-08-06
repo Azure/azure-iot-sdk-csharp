@@ -376,7 +376,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             if (this.TryStop())
             {
                 await this.closeRetryPolicy.ExecuteAsync(this.CleanupAsync);
-                this.connectionClosedListener(this.channel, new ConnectionEventArgs { ConnectionType = ConnectionType.MqttConnection, ConnectionStatus = ConnectionStatus.Disabled, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Client_Close });
+                this.connectionClosedListener(
+                    this.channel, 
+                    new ConnectionEventArgs
+                    {
+                        ConnectionType = ConnectionType.MqttConnection,
+                        ConnectionStatus = ConnectionStatus.Disabled,
+                        ConnectionStatusChangeReason = ConnectionStatusChangeReason.Client_Close
+                    });
             }
             else
             {
@@ -395,11 +402,18 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             if (this.TryStateTransition(TransportState.Opening, TransportState.Open))
             {
                 this.connectCompletion.TryComplete();
-                this.connectionOpenedListener(this.channel, new ConnectionEventArgs { ConnectionType = ConnectionType.MqttConnection, ConnectionStatus = ConnectionStatus.Connected, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Connection_Ok});
+                Task.Run(() => this.connectionOpenedListener(
+                    this.channel, 
+                    new ConnectionEventArgs
+                    {
+                        ConnectionType = ConnectionType.MqttConnection,
+                        ConnectionStatus = ConnectionStatus.Connected,
+                        ConnectionStatusChangeReason = ConnectionStatusChangeReason.Connection_Ok
+                    }));
             }
         }
 
-        void HandleIncomingTwinPatch(Message message)
+        async void HandleIncomingTwinPatch(Message message)
         {
             try
             {
@@ -409,7 +423,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     {
                         string patch = reader.ReadToEnd();
                         var props = JsonConvert.DeserializeObject<TwinCollection>(patch);
-                        this.onDesiredStatePatchListener(props);
+                        await Task.Run(() => this.onDesiredStatePatchListener(props));
                     }
                 }
             }
@@ -419,14 +433,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        void HandleIncomingMethodPost(Message message)
+        async void HandleIncomingMethodPost(Message message)
         {
             try
             {
                 string[] tokens = System.Text.RegularExpressions.Regex.Split(message.MqttTopicName, "/");
 
                 var mr = new MethodRequestInternal(tokens[3], tokens[4].Substring(6), message.BodyStream);
-                this.messageListener(mr);
+                await Task.Run(() =>this.messageListener(mr));
             }
             finally
             {
@@ -434,7 +448,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        public void OnMessageReceived(Message message)
+        public async void OnMessageReceived(Message message)
         {
             if ((this.State & TransportState.Open) == TransportState.Open)
             {
@@ -495,9 +509,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 if ((previousState & TransportState.Open) == TransportState.Open)
                 {
-                    this.connectionClosedListener(this.channel, new ConnectionEventArgs { ConnectionType = ConnectionType.MqttConnection, ConnectionStatus = ConnectionStatus.Disconnected_Retrying, ConnectionStatusChangeReason = ConnectionStatusChangeReason.No_Network});
+                    await Task.Run(() => this.connectionClosedListener(
+                        this.channel, 
+                        new ConnectionEventArgs
+                        {
+                            ConnectionType = ConnectionType.MqttConnection,
+                            ConnectionStatus = ConnectionStatus.Disconnected_Retrying,
+                            ConnectionStatusChangeReason = ConnectionStatusChangeReason.No_Network
+                        }));
                 }
-
             }
             catch (Exception ex) when (!ex.IsFatal())
             {
@@ -1059,6 +1079,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         }
     }
 }
+
 
 
 

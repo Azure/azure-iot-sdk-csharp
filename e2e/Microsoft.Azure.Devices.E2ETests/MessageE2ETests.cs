@@ -365,7 +365,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.DefaultDurationInSec);
         }
 
-        [Ignore]
         [TestMethod]
         [TestCategory("Message-E2E")]
         [TestCategory("Recovery")]
@@ -378,7 +377,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.DefaultDurationInSec);
         }
 
-        [Ignore]
         [TestMethod]
         [TestCategory("Message-E2E")]
         [TestCategory("Recovery")]
@@ -393,7 +391,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.ShortRetryInMilliSec);
         }
 
-        [Ignore]
         [TestMethod]
         [TestCategory("Message-E2E")]
         [TestCategory("Recovery")]
@@ -408,7 +405,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.ShortRetryInMilliSec);
         }
 
-        [Ignore]
         [TestMethod]
         [TestCategory("Message-E2E")]
         [TestCategory("Recovery")]
@@ -418,7 +414,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             await SendMessageThrottledForHttp();
         }
 
-        [Ignore]
         [TestMethod]
         [TestCategory("Message-E2E")]
         [TestCategory("Recovery")]
@@ -432,7 +427,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.DefaultDurationInSec);
         }
 
-        [Ignore]
         [TestMethod]
         [TestCategory("Message-E2E")]
         [TestCategory("Recovery")]
@@ -446,7 +440,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.DefaultDurationInSec);
         }
 
-        [Ignore]
         [TestMethod]
         [TestCategory("Message-E2E")]
         [TestCategory("Recovery")]

@@ -393,14 +393,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             Tuple<string, string> deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
             var deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, transport);
-            TaskCompletionSource<bool> tcs = null;
-            deviceClient.SetConnectionStatusChangesHandler((status, changeReason) =>
-            {
-                if (status == ConnectionStatus.Connected && tcs != null)
-                {
-                    tcs.SetResult(true);
-                }
-            });
             TwinCollection props = new TwinCollection();
             props[propName] = propValue1;
             await deviceClient.UpdateReportedPropertiesAsync(props);
@@ -409,9 +401,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             Assert.AreEqual<String>(deviceTwin.Properties.Reported[propName].ToString(), propValue1);
 
             // send error command
-            tcs = new TaskCompletionSource<bool>();
             await deviceClient.SendEventAsync(TestUtil.ComposeErrorInjectionProperties(faultType, reason, delayInSec));
-            await tcs.Task.ConfigureAwait(false);
 
             deviceTwin = await deviceClient.GetTwinAsync();
             Assert.AreEqual<String>(deviceTwin.Properties.Reported[propName].ToString(), propValue1);
@@ -474,7 +464,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             Tuple<string, string> deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
             var deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, transport);
-            await deviceClient.OpenAsync();
             await deviceClient.SetDesiredPropertyUpdateCallback((patch, context) =>
             {
                 return Task.Run(() =>
@@ -512,8 +501,30 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             Tuple<string, string> deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
             var deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, transport);
-            deviceClient.SetConnectionStatusChangesHandler(ConnectionStatusChangesHandler);
-            await deviceClient.OpenAsync();
+
+            ConnectionStatus? lastConnectionStatus = null;
+            ConnectionStatusChangeReason? lastConnectionStatusChangeReason = null;
+            int setConnectionStatusChangesHandlerCount = 0;
+            var tcsConnected = new TaskCompletionSource<bool>();
+            var tcsDisconnected = new TaskCompletionSource<bool>();
+
+            deviceClient.SetConnectionStatusChangesHandler((status, statusChangeReason) =>
+            {
+                if (status == ConnectionStatus.Disconnected_Retrying)
+                {
+                    tcsDisconnected.TrySetResult(true);
+                    Assert.AreEqual(ConnectionStatusChangeReason.No_Network, statusChangeReason);
+                }
+                else if (status == ConnectionStatus.Connected)
+                {
+                    tcsConnected.TrySetResult(true);
+                }
+
+                lastConnectionStatus = status;
+                lastConnectionStatusChangeReason = statusChangeReason;
+                setConnectionStatusChangesHandlerCount++;
+            });
+
             await deviceClient.SetDesiredPropertyUpdateCallbackAsync((patch, context) =>
             {
                 return Task.Run(() =>
@@ -534,6 +545,20 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             }, null);
 
+            // assert on successfuly connection
+            await Task.WhenAny(
+                Task.Run(async () =>
+                {
+                    await Task.Delay(1000);
+                }), tcsConnected.Task);
+            Assert.IsTrue(tcsConnected.Task.IsCompleted, "Initial connection failed");
+            if (transport != Client.TransportType.Http1)
+            {
+                Assert.AreEqual(1, setConnectionStatusChangesHandlerCount);
+                Assert.AreEqual(ConnectionStatus.Connected, lastConnectionStatus);
+                Assert.AreEqual(ConnectionStatusChangeReason.Connection_Ok, lastConnectionStatusChangeReason);
+            }
+
             var twinPatch = new Twin();
             twinPatch.Properties.Desired[propName] = propValue;
             await registryManager.UpdateTwinAsync(deviceInfo.Item1, twinPatch, "*");
@@ -542,35 +567,40 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             // send error command
             await deviceClient.SendEventAsync(TestUtil.ComposeErrorInjectionProperties(faultType, reason, delayInSec));
-            await Task.Delay(TimeSpan.FromSeconds(3));
+
+            // reset ConnectionStatusChangesHandler data
+            setConnectionStatusChangesHandlerCount = 0;
+            tcsConnected = new TaskCompletionSource<bool>();
+            tcsDisconnected = new TaskCompletionSource<bool>();
+
+            // wait for disconnection
+            await Task.WhenAny(
+                Task.Run(async () =>
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(10));
+                }), tcsDisconnected.Task);
+            Assert.IsTrue(tcsDisconnected.Task.IsCompleted, "Error injection did not interrupt the device");
+
+            // allow max 30s for connection recovery
+            await Task.WhenAny(
+                Task.Run(async () =>
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(10));
+                    return Task.FromResult(true);
+                }), tcsConnected.Task);
+            Assert.IsTrue(tcsConnected.Task.IsCompleted, "Recovery connection failed");
 
             tcs = new TaskCompletionSource<bool>();
             twinPatch = new Twin();
             twinPatch.Properties.Desired[propName] = propValue;
             await registryManager.UpdateTwinAsync(deviceInfo.Item1, twinPatch, "*");
 
-            //await Task.Delay(TimeSpan.FromMinutes(4));
-            //if(!tcs.Task.IsCompleted)
-            //{
-            //    throw new Exception("Task didn't complete within 4 minutes");
-            //}
-            //else
-            //{
-            //    if (tcs.Task.IsFaulted)
-            //    {
-            //        throw new Exception("Task failed");
-            //    }
-            //}
-
             await tcs.Task;
 
             await deviceClient.CloseAsync();
             TestUtil.RemoveDevice(deviceInfo.Item1, registryManager);
         }
-        
-        private static void ConnectionStatusChangesHandler(ConnectionStatus status, ConnectionStatusChangeReason reason)
-        {
-        }
+
         private async Task _Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet(Client.TransportType transport)
         {
             var propName = Guid.NewGuid().ToString();

@@ -3,6 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
 {
+    using System.Diagnostics;
     using System.Net.Sockets;
     using System.Threading;
     using System.Threading.Tasks;
@@ -16,6 +17,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
     using System.IO;
     using Exceptions;
     using Client.Transport;
+    using DotNetty.Common.Concurrency;
 
     [TestClass]
     public class MqttTransportHandlerTests
@@ -499,16 +501,23 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
         {
             // arrange
             IChannel channel;
-            bool isCalled = false;
-            var transport = CreateTransportHandlerWithMockChannel(out channel, (o, ea) => { }, (o, ea) => { isCalled = true; });
+            var tcs = new TaskCompletionSource<bool>();
+            var transport = CreateTransportHandlerWithMockChannel(out channel, (o, ea) => { }, (o, ea) => { tcs.SetResult(true); });
             transport.OnConnected();
             await transport.OpenAsync(true, CancellationToken.None);
 
             // act
-            transport.OnError(new ApplicationException("Testing"));
+            await Task.Run(() => transport.OnError(new ApplicationException("Testing")));
 
             // assert
-            Assert.IsTrue(isCalled);
+            await Task.WhenAny(
+                Task.Run(() =>
+                {
+                    Thread.Sleep(1000);
+                    tcs.SetResult(false);
+                }), tcs.Task);
+
+            Assert.IsTrue(tcs.Task.Result);
         }
 
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_28_05: If OnError is triggered after ReceiveAsync is called, onConnectionClosedCallback shall be invoked.
@@ -517,17 +526,24 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
         {
             // arrange
             IChannel channel;
-            bool isCalled = false;
-            var transport = CreateTransportHandlerWithMockChannel(out channel, (o, ea) => { }, (o, ea) => { isCalled = true; });
+            var tcs = new TaskCompletionSource<bool>();
+            var transport = CreateTransportHandlerWithMockChannel(out channel, (o, ea) => { }, (o, ea) => { tcs.SetResult(true); });
             transport.OnConnected();
             await transport.OpenAsync(true, CancellationToken.None);
             await transport.ReceiveAsync(new TimeSpan(0, 0, 0, 0, 5), CancellationToken.None);
 
             // act
-            transport.OnError(new ApplicationException("Testing"));
+            await Task.Run(() => transport.OnError(new ApplicationException("Testing")));
 
             // assert
-            Assert.IsTrue(isCalled);
+            await Task.WhenAny(
+                Task.Run(() => 
+                {
+                    Thread.Sleep(1000);
+                    tcs.SetResult(false);
+                }), tcs.Task);
+            
+            Assert.IsTrue(tcs.Task.Result);
         }
 
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_28_06: If OnError is triggered without any prior operation, onConnectionClosedCallback shall not be invoked.
@@ -536,14 +552,21 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
         {
             // arrange
             IChannel channel;
-            bool isCalled = false;
-            var transport = CreateTransportHandlerWithMockChannel(out channel, (o, ea) => { }, (o, ea) => { isCalled = true; });
+            var tcs = new TaskCompletionSource<bool>();
+            var transport = CreateTransportHandlerWithMockChannel(out channel, (o, ea) => { }, (o, ea) => { tcs.SetResult(true); });
 
             // act
-            transport.OnError(new ApplicationException("Testing"));
+            await Task.Run(() => transport.OnError(new ApplicationException("Testing")));
 
             // assert
-            Assert.IsFalse(isCalled);
+            await Task.WhenAny(
+                Task.Run(() =>
+                {
+                    Thread.Sleep(1000);
+                    tcs.SetResult(false);
+                }), tcs.Task);
+
+            Assert.IsFalse(tcs.Task.Result);
         }
 
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_28_07: If OnError is triggered in error state, onConnectionClosedCallback shall not be invoked.
@@ -552,15 +575,22 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
         {
             // arrange
             IChannel channel;
-            bool isCalled = false;
-            var transport = CreateTransportHandlerWithMockChannel(out channel, (o, ea) => { }, (o, ea) => { isCalled = true; });
+            var tcs = new TaskCompletionSource<bool>();
+            var transport = CreateTransportHandlerWithMockChannel(out channel, (o, ea) => { }, (o, ea) => { tcs.SetResult(true); });
             transport.OnError(new ApplicationException("Testing"));
 
             // act
-            transport.OnError(new ApplicationException("Testing"));
+            await Task.Run(() => transport.OnError(new ApplicationException("Testing")));
 
             // assert
-            Assert.IsFalse(isCalled);
+            await Task.WhenAny(
+                Task.Run(() =>
+                {
+                    Thread.Sleep(1000);
+                    tcs.SetResult(false);
+                }), tcs.Task);
+
+            Assert.IsFalse(tcs.Task.Result);
         }
 
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_28_08: [** `RecoverConnections` shall throw IotHubClientException exception when in error state.

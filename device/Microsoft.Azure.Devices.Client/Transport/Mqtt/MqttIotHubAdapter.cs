@@ -99,6 +99,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             this.Connect(context);
 
             base.ChannelActive(context);
+
+            context.Read();
         }
 
         public override async Task WriteAsync(IChannelHandlerContext context, object data)
