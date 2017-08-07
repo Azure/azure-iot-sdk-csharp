@@ -22,6 +22,7 @@ For a full step by step guide on how to use the library, checkout this [article]
 ## References
 
 To learn more on developing for the Azure IoT Hub service, visit our [developer guide](https://azure.microsoft.com/en-us/documentation/articles/iot-hub-devguide/)
+
 [This documents][devbox-setup] describes in details how to prepare you development environment as well as how to run the samples on Linux, Windows or other platforms.
 
 ## Samples
@@ -29,5 +30,5 @@ To learn more on developing for the Azure IoT Hub service, visit our [developer 
 The repository contains a set of simple samples that will help you get started.
 You can find a list of these samples with instructions on how to run them [here][samples]. 
 
-[devbox-setup]: .../device/doc/devbox_setup.md
+[devbox-setup]: ../device/doc/devbox_setup.md
 [samples]: ./Samples/
