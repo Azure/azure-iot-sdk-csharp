@@ -104,7 +104,12 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
 
         MqttTransportHandler CreateFromConnectionString()
         {
-            return new MqttTransportHandler(new PipelineContext(), IotHubConnectionString.Parse(DumpyConnectionString), new MqttTransportSettings(Microsoft.Azure.Devices.Client.TransportType.Mqtt_Tcp_Only), (o, ea) => { }, (o, ea) => { });
+            return new MqttTransportHandler(
+                new PipelineContext(), 
+                IotHubConnectionString.Parse(DumpyConnectionString), 
+                new MqttTransportSettings(Microsoft.Azure.Devices.Client.TransportType.Mqtt_Tcp_Only), 
+                (o, ea) => { }, 
+                (o, ea) => { return TaskHelpers.CompletedTask; });
         }
 
         async Task TestOperationCanceledByToken(Func<CancellationToken, Task> asyncMethod)
@@ -124,10 +129,10 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
 
         MqttTransportHandler CreateTransportHandlerWithMockChannel(out IChannel channel)
         {
-            return CreateTransportHandlerWithMockChannel(out channel, (o, ea) => { }, (o, ea) => { });
+            return CreateTransportHandlerWithMockChannel(out channel, (o, ea) => { }, (o, ea) => { return TaskHelpers.CompletedTask; });
         }
 
-        MqttTransportHandler CreateTransportHandlerWithMockChannel(out IChannel channel, Action<object, ConnectionEventArgs> onConnectionOpenedCallback, Action<object, ConnectionEventArgs> onConnectionClosedCallback)
+        MqttTransportHandler CreateTransportHandlerWithMockChannel(out IChannel channel, Action<object, ConnectionEventArgs> onConnectionOpenedCallback, Func<object, ConnectionEventArgs, Task> onConnectionClosedCallback)
         {
             var _channel = Substitute.For<IChannel>();
             channel = _channel;
@@ -502,7 +507,13 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
             // arrange
             IChannel channel;
             var tcs = new TaskCompletionSource<bool>();
-            var transport = CreateTransportHandlerWithMockChannel(out channel, (o, ea) => { }, (o, ea) => { tcs.SetResult(true); });
+            var transport = CreateTransportHandlerWithMockChannel(
+                out channel, 
+                (o, ea) => { }, 
+                (o, ea) => {
+                    tcs.SetResult(true);
+                    return TaskHelpers.CompletedTask;
+                });
             transport.OnConnected();
             await transport.OpenAsync(true, CancellationToken.None);
 
@@ -511,9 +522,9 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
 
             // assert
             await Task.WhenAny(
-                Task.Run(() =>
+                Task.Run(async () =>
                 {
-                    Thread.Sleep(1000);
+                    await Task.Delay(1000);
                     tcs.SetResult(false);
                 }), tcs.Task);
 
@@ -527,7 +538,14 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
             // arrange
             IChannel channel;
             var tcs = new TaskCompletionSource<bool>();
-            var transport = CreateTransportHandlerWithMockChannel(out channel, (o, ea) => { }, (o, ea) => { tcs.SetResult(true); });
+            var transport = CreateTransportHandlerWithMockChannel(
+                out channel, 
+                (o, ea) => { },
+                (o, ea) =>
+                {
+                    tcs.SetResult(true);
+                    return TaskHelpers.CompletedTask;
+                });
             transport.OnConnected();
             await transport.OpenAsync(true, CancellationToken.None);
             await transport.ReceiveAsync(new TimeSpan(0, 0, 0, 0, 5), CancellationToken.None);
@@ -537,9 +555,9 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
 
             // assert
             await Task.WhenAny(
-                Task.Run(() => 
+                Task.Run(async () => 
                 {
-                    Thread.Sleep(1000);
+                    await Task.Delay(1000);
                     tcs.SetResult(false);
                 }), tcs.Task);
             
@@ -553,16 +571,23 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
             // arrange
             IChannel channel;
             var tcs = new TaskCompletionSource<bool>();
-            var transport = CreateTransportHandlerWithMockChannel(out channel, (o, ea) => { }, (o, ea) => { tcs.SetResult(true); });
+            var transport = CreateTransportHandlerWithMockChannel(
+                out channel, 
+                (o, ea) => { },
+                (o, ea) =>
+                {
+                    tcs.SetResult(true);
+                    return TaskHelpers.CompletedTask;
+                });
 
             // act
             await Task.Run(() => transport.OnError(new ApplicationException("Testing")));
 
             // assert
             await Task.WhenAny(
-                Task.Run(() =>
+                Task.Run(async () =>
                 {
-                    Thread.Sleep(1000);
+                    await Task.Delay(1000);
                     tcs.SetResult(false);
                 }), tcs.Task);
 
@@ -576,7 +601,14 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
             // arrange
             IChannel channel;
             var tcs = new TaskCompletionSource<bool>();
-            var transport = CreateTransportHandlerWithMockChannel(out channel, (o, ea) => { }, (o, ea) => { tcs.SetResult(true); });
+            var transport = CreateTransportHandlerWithMockChannel(
+                out channel, 
+                (o, ea) => { },
+                (o, ea) =>
+                {
+                    tcs.SetResult(true);
+                    return TaskHelpers.CompletedTask;
+                });
             transport.OnError(new ApplicationException("Testing"));
 
             // act
@@ -584,9 +616,9 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
 
             // assert
             await Task.WhenAny(
-                Task.Run(() =>
+                Task.Run(async () =>
                 {
-                    Thread.Sleep(1000);
+                    await Task.Delay(1000);
                     tcs.SetResult(false);
                 }), tcs.Task);
 

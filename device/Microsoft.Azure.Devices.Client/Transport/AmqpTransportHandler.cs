@@ -34,28 +34,27 @@ namespace Microsoft.Azure.Devices.Client.Transport
         readonly TimeSpan openTimeout;
         readonly TimeSpan operationTimeout;
         readonly uint prefetchCount;
-        readonly SemaphoreSlim methodLinksRecoverySemaphore = new SemaphoreSlim(1, 1);
-        readonly SemaphoreSlim twinLinksRecoverySemaphore = new SemaphoreSlim(1, 1);
+        readonly SemaphoreSlim recoverySemaphore = new SemaphoreSlim(1, 1);
 
         Func<MethodRequestInternal, Task> messageListener;
 
         Action<TwinCollection> onDesiredStatePatchListener;
         Action<Message> twinResponseEvent;
         Action<object, ConnectionEventArgs> linkOpenedListener;
-        Action<object, ConnectionEventArgs> linkClosedListener;
-        Action<object, ConnectionEventArgs> SafeAddClosedMethodReceivingLinkHandler;
-        Action<object, ConnectionEventArgs> SafeAddClosedMethodSendingLinkHandler;
-        Action<object, ConnectionEventArgs> SafeAddClosedTwinReceivingLinkHandler;
-        Action<object, ConnectionEventArgs> SafeAddClosedTwinSendingLinkHandler;
+        Func<object, ConnectionEventArgs, Task> linkClosedListener;
+        Func<object, ConnectionEventArgs, Task> SafeAddClosedMethodReceivingLinkHandler;
+        Func<object, ConnectionEventArgs, Task> SafeAddClosedMethodSendingLinkHandler;
+        Func<object, ConnectionEventArgs, Task> SafeAddClosedTwinReceivingLinkHandler;
+        Func<object, ConnectionEventArgs, Task> SafeAddClosedTwinSendingLinkHandler;
         internal delegate void OnConnectionClosedDelegate(object sender, EventArgs e);
 
         string methodConnectionCorrelationId = Guid.NewGuid().ToString("N");
         string twinConnectionCorrelationId = Guid.NewGuid().ToString("N");
 
-        private string mslinkname;
-        private string mrlinkname;
-        private string tslinkname;
-        private string trlinkname;
+        private string methodSendingLinkName;
+        private string methodReceivingLinkName;
+        private string twinSendingLinkName;
+        private string twinReceivingLinkName;
 
         ConcurrentDictionary<string, TaskCompletionSource<AmqpMessage>> twinResponseCompletions = new ConcurrentDictionary<string, TaskCompletionSource<AmqpMessage>>();
 
@@ -63,7 +62,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             IPipelineContext context, IotHubConnectionString connectionString, 
             AmqpTransportSettings transportSettings,
             Action<object, ConnectionEventArgs> onLinkOpenedCallback,
-            Action<object, ConnectionEventArgs> onLinkClosedCallback,
+            Func<object, ConnectionEventArgs, Task> onLinkClosedCallback,
             Func<MethodRequestInternal, Task> onMethodCallback = null,
             Action<TwinCollection> onDesiredStatePatchReceived = null)
             :base(context, transportSettings)
@@ -223,31 +222,30 @@ namespace Microsoft.Azure.Devices.Client.Transport
             bool needMethodRecovery = false;
             bool needTwinRecovery = false;
 
-            await methodLinksRecoverySemaphore.WaitAsync();
+            await recoverySemaphore.WaitAsync();
+
             // disconnected link belongs to the current sets
             if (((connectionType == ConnectionType.AmqpMethodSending) &&
-                 ((link as SendingAmqpLink).Name == mslinkname)) ||
+                 ((link as SendingAmqpLink).Name == methodSendingLinkName)) ||
                 ((connectionType == ConnectionType.AmqpMethodReceiving) &&
-                 ((link as ReceivingAmqpLink).Name == mrlinkname)))
+                 ((link as ReceivingAmqpLink).Name == methodReceivingLinkName)))
             {
-                mslinkname = null;
-                mrlinkname = null;
+                methodSendingLinkName = null;
+                methodReceivingLinkName = null;
                 needMethodRecovery = true;
             }
-            methodLinksRecoverySemaphore.Release(1);
 
-            await twinLinksRecoverySemaphore.WaitAsync();
-            // disconnected link belongs to the current sets
             if (((connectionType == ConnectionType.AmqpTwinSending) &&
-                 ((link as SendingAmqpLink).Name == tslinkname)) ||
+                 ((link as SendingAmqpLink).Name == twinSendingLinkName)) ||
                 ((connectionType == ConnectionType.AmqpTwinReceiving) &&
-                 ((link as ReceivingAmqpLink).Name == trlinkname)))
+                 ((link as ReceivingAmqpLink).Name == twinReceivingLinkName)))
             {
-                tslinkname = null;
-                trlinkname = null;
+                twinSendingLinkName = null;
+                twinReceivingLinkName = null;
                 needTwinRecovery = true;
             }
-            twinLinksRecoverySemaphore.Release(1);
+
+            recoverySemaphore.Release(1);
 
             if (needMethodRecovery)
             {
@@ -360,8 +358,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             Task receivingLinkCloseTask;
             
-            this.SafeAddClosedMethodSendingLinkHandler = (o, ea) => {};
-            this.SafeAddClosedMethodReceivingLinkHandler = (o, ea) => {};
+            this.SafeAddClosedMethodSendingLinkHandler = (o, ea) => { return TaskHelpers.CompletedTask; };
+            this.SafeAddClosedMethodReceivingLinkHandler = (o, ea) => { return TaskHelpers.CompletedTask; };
             
             if (this.faultTolerantMethodReceivingLink != null)
             {
@@ -385,10 +383,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
 
             await Task.WhenAll(receivingLinkCloseTask, sendingLinkCloseTask);
-            this.linkClosedListener(
+            await this.linkClosedListener(
                 this.faultTolerantMethodSendingLink, 
                 new ConnectionEventArgs { ConnectionType = ConnectionType.AmqpMethodSending, ConnectionStatus = ConnectionStatus.Disabled, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Client_Close });
-            this.linkClosedListener(
+            await this.linkClosedListener(
                 this.faultTolerantMethodReceivingLink, 
                 new ConnectionEventArgs { ConnectionType = ConnectionType.AmqpMethodReceiving, ConnectionStatus = ConnectionStatus.Disabled, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Client_Close });
         }
@@ -397,8 +395,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             Task receivingLinkCloseTask;
 
-            this.SafeAddClosedTwinSendingLinkHandler = (o, ea) => {};
-            this.SafeAddClosedTwinReceivingLinkHandler = (o, ea) => {};
+            this.SafeAddClosedTwinSendingLinkHandler = (o, ea) => { return TaskHelpers.CompletedTask; };
+            this.SafeAddClosedTwinReceivingLinkHandler = (o, ea) => { return TaskHelpers.CompletedTask; };
             
             if (this.faultTolerantTwinReceivingLink != null)
             {
@@ -422,10 +420,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
 
             await Task.WhenAll(receivingLinkCloseTask, sendingLinkCloseTask);
-            this.linkClosedListener(
+            await this.linkClosedListener(
                 this.faultTolerantTwinSendingLink, 
                 new ConnectionEventArgs { ConnectionType = ConnectionType.AmqpTwinSending, ConnectionStatus = ConnectionStatus.Disabled, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Client_Close });
-            this.linkClosedListener(
+            await this.linkClosedListener(
                 this.faultTolerantTwinReceivingLink, 
                 new ConnectionEventArgs { ConnectionType = ConnectionType.AmqpTwinReceiving, ConnectionStatus = ConnectionStatus.Disabled, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Client_Close });
         }
@@ -488,10 +486,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
             Task disableTwinTask = this.DisableTwinAsync(CancellationToken.None);
             await Task.WhenAll(eventSendingLinkCloseTask, deviceBoundReceivingLinkCloseTask, disabledMethodTask, disableTwinTask);
 
-            this.linkClosedListener(
+            await this.linkClosedListener(
                 this.faultTolerantEventSendingLink, 
                 new ConnectionEventArgs { ConnectionType = ConnectionType.AmqpTelemetry, ConnectionStatus = ConnectionStatus.Disabled, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Client_Close });
-            this.linkClosedListener(
+            await this.linkClosedListener(
                 this.faultTolerantDeviceBoundReceivingLink, 
                 new ConnectionEventArgs { ConnectionType = ConnectionType.AmqpMessaging, ConnectionStatus = ConnectionStatus.Disabled, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Client_Close });
 
@@ -753,13 +751,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
             string path = string.Format(CultureInfo.InvariantCulture, CommonConstants.DeviceMethodPathTemplate, System.Net.WebUtility.UrlEncode(this.deviceId));
 
             SendingAmqpLink methodSendingLink = await this.IotHubConnection.CreateSendingLinkAsync(path, this.iotHubConnectionString, this.methodConnectionCorrelationId, IotHubConnection.SendingLinkType.Methods, timeout, cancellationToken);
-            mslinkname = String.Copy(methodSendingLink.Name);
+
+            MyStringCopy(methodSendingLink.Name, out methodSendingLinkName);
             this.SafeAddClosedMethodSendingLinkHandler = this.linkClosedListener;
             methodSendingLink.SafeAddClosed(async (o, ea) =>
-                await Task.Run(async () =>
+                await Task.Run(async() =>
                     {
-                        //await Task.Delay(1000);
-                        this.SafeAddClosedMethodSendingLinkHandler(
+                        await this.SafeAddClosedMethodSendingLinkHandler(
                             o,
                             new ConnectionEventArgs
                             {
@@ -795,13 +793,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     this.messageListener(methodRequestInternal);
                 });
 
-            mrlinkname = String.Copy(methodReceivingLink.Name);
+            MyStringCopy(methodReceivingLink.Name, out methodReceivingLinkName);
             this.SafeAddClosedMethodReceivingLinkHandler = this.linkClosedListener;
             methodReceivingLink.SafeAddClosed(async (o, ea) =>
                 await Task.Run(async () =>
                     {
-                        //await Task.Delay(1000);
-                        this.SafeAddClosedMethodReceivingLinkHandler(
+                        await this.SafeAddClosedMethodReceivingLinkHandler(
                             o,
                             new ConnectionEventArgs
                             {
@@ -831,13 +828,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             SendingAmqpLink twinSendingLink = await this.IotHubConnection.CreateSendingLinkAsync(path, this.iotHubConnectionString, this.twinConnectionCorrelationId, IotHubConnection.SendingLinkType.Twin, timeout, cancellationToken);
 
-            tslinkname = String.Copy(twinSendingLink.Name);
+            MyStringCopy(twinSendingLink.Name, out twinSendingLinkName);
             this.SafeAddClosedTwinSendingLinkHandler = this.linkClosedListener;
             twinSendingLink.SafeAddClosed(async (o, ea) => 
                 await Task.Run(async () =>
                     {
-                        await Task.Delay(1000);
-                        this.SafeAddClosedTwinSendingLinkHandler(
+                        await this.SafeAddClosedTwinSendingLinkHandler(
                             o,
                             new ConnectionEventArgs
                             {
@@ -868,13 +864,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             ReceivingAmqpLink twinReceivingLink = await this.IotHubConnection.CreateReceivingLinkAsync(path, this.iotHubConnectionString, this.twinConnectionCorrelationId, IotHubConnection.ReceivingLinkType.Twin, this.prefetchCount, timeout, cancellationToken);
 
-            trlinkname = String.Copy(twinReceivingLink.Name);
+            MyStringCopy(twinReceivingLink.Name, out twinReceivingLinkName);
             this.SafeAddClosedTwinReceivingLinkHandler = this.linkClosedListener;
             twinReceivingLink.SafeAddClosed(async (o, ea) =>
                 await Task.Run(async () =>
                     {
-                        await Task.Delay(1000);
-                        this.SafeAddClosedTwinReceivingLinkHandler(
+                        await this.SafeAddClosedTwinReceivingLinkHandler(
                             o,
                             new ConnectionEventArgs
                             {
@@ -888,6 +883,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
             twinReceivingLink.RegisterMessageListener(message => this.HandleTwinMessage(message, twinReceivingLink));
 
             return twinReceivingLink;
+        }
+
+        private void MyStringCopy(String source, out String destination)
+        {
+            char[] chars = new Char[source.Length];
+            source.CopyTo(0, chars, 0, source.Length);
+            destination = new String(chars);
         }
     }
 }

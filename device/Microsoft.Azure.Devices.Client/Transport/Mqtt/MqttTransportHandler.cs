@@ -153,7 +153,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         Regex twinResponseTopicRegex = new Regex(twinResponseTopicPattern, RegexOptions.None);
 
         Action<object, ConnectionEventArgs> connectionOpenedListener;
-        Action<object, ConnectionEventArgs> connectionClosedListener;
+        Func<object, ConnectionEventArgs, Task> connectionClosedListener;
         Func<MethodRequestInternal, Task> messageListener;
         Action<TwinCollection> onDesiredStatePatchListener;
         Action<Message> twinResponseEvent;
@@ -165,7 +165,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             IotHubConnectionString iotHubConnectionString, 
             MqttTransportSettings settings,
             Action<object, ConnectionEventArgs> onConnectionOpenedCallback,
-            Action<object, ConnectionEventArgs> onConnectionClosedCallback, 
+            Func<object, ConnectionEventArgs, Task> onConnectionClosedCallback, 
             Func<MethodRequestInternal, Task> onMethodCallback = null, 
             Action<TwinCollection> onDesiredStatePatchReceivedCallback = null)
             : this(context, iotHubConnectionString, settings, null, onConnectionOpenedCallback, onConnectionClosedCallback)
@@ -180,7 +180,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             MqttTransportSettings settings,
             Func<IPAddress, int, Task<IChannel>> channelFactory,
             Action<object, ConnectionEventArgs> onConnectionOpenedCallback,
-            Action<object, ConnectionEventArgs> onConnectionClosedCallback)
+            Func<object, ConnectionEventArgs, Task> onConnectionClosedCallback)
             : base(context, settings)
         {
             this.connectionOpenedListener = onConnectionOpenedCallback;
@@ -376,7 +376,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             if (this.TryStop())
             {
                 await this.closeRetryPolicy.ExecuteAsync(this.CleanupAsync);
-                this.connectionClosedListener(
+                await this.connectionClosedListener(
                     this.channel, 
                     new ConnectionEventArgs
                     {
@@ -413,7 +413,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        async void HandleIncomingTwinPatch(Message message)
+        async Task HandleIncomingTwinPatch(Message message)
         {
             try
             {
@@ -433,7 +433,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        async void HandleIncomingMethodPost(Message message)
+        async Task HandleIncomingMethodPost(Message message)
         {
             try
             {
@@ -458,11 +458,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 }
                 else if (message.MqttTopicName.StartsWith(twinPatchTopicPrefix))
                 {
-                    HandleIncomingTwinPatch(message);
+                    await HandleIncomingTwinPatch(message);
                 }
                 else if (message.MqttTopicName.StartsWith(methodPostTopicPrefix))
                 {
-                    HandleIncomingMethodPost(message);
+                    await HandleIncomingMethodPost(message);
                 }
                 else
                 {
@@ -509,7 +509,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 if ((previousState & TransportState.Open) == TransportState.Open)
                 {
-                    await Task.Run(() => this.connectionClosedListener(
+                    await Task.Run(async () => await this.connectionClosedListener(
                         this.channel, 
                         new ConnectionEventArgs
                         {

@@ -147,7 +147,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
 
         internal delegate Task OnMethodCalledDelegate(MethodRequestInternal methodRequestInternal);
 
-        internal delegate void OnConnectionClosedDelegate(object sender, ConnectionEventArgs e);
+        internal delegate Task OnConnectionClosedDelegate(object sender, ConnectionEventArgs e);
 
         internal delegate void OnConnectionOpenedDelegate(object sender, ConnectionEventArgs e);
 
@@ -1030,7 +1030,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// <summary>
         /// The delegate for handling disrupted connection/links in the transport layer.
         /// </summary>
-        internal async void OnConnectionClosed(object sender, ConnectionEventArgs e)
+        internal async Task OnConnectionClosed(object sender, ConnectionEventArgs e)
         {
             ConnectionStatusChangeResult result = null;
 
@@ -1040,7 +1040,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                 try
                 {
                     // codes_SRS_DEVICECLIENT_28_022: [** `OnConnectionClosed` shall invoke the RecoverConnections operation. **]**          
-                    await ApplyTimeout(operationTimeoutCancellationTokenSource =>
+                    await ApplyTimeout(async operationTimeoutCancellationTokenSource =>
                     {
                         result = this.connectionStatusManager.ChangeTo(e.ConnectionType, ConnectionStatus.Disconnected_Retrying, ConnectionStatus.Connected);
                         if (result.IsClientStatusChanged && (connectionStatusChangesHandler != null))
@@ -1049,7 +1049,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                         }
 
                         CancellationTokenSource linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(result.StatusChangeCancellationTokenSource.Token, operationTimeoutCancellationTokenSource.Token);
-                        return this.InnerHandler.RecoverConnections(sender, e.ConnectionType, linkedTokenSource.Token);
+                        await this.InnerHandler.RecoverConnections(sender, e.ConnectionType, linkedTokenSource.Token);
                     });
                 }
                 catch (Exception ex)
