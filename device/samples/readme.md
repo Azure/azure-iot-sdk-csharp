@@ -39,6 +39,6 @@ It is recommended to leverage the library packages when available to run the sam
 [This document][devbox-setup] describes in detail how to prepare your development environment as well as how to run the samples on Linux, Windows or other platforms.
 
 
-[devbox-setup]: ./doc/devbox_setup.md
+[devbox-setup]: ../doc/devbox_setup.md
 [lnk-setup-iot-hub]: https://aka.ms/howtocreateazureiothub
 [lnk-manage-iot-hub]: https://aka.ms/manageiothub
