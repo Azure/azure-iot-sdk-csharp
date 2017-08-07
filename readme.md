@@ -25,8 +25,8 @@ The API reference documentation for .NET SDK is [here](dotnet-api-reference).
 
 ## Samples
 In the repository, you will find a set of simple samples that will help you get started:
-* [Device SDK samples](device-sample)
-* [Service SDK samples](service-sample)
+* [Device SDK samples](./device/samples)
+* [Service SDK samples](./service/Samples)
 
 ## OS platforms and hardware compatibility
 
@@ -128,6 +128,4 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 [iot-hub-documentation]: https://docs.microsoft.com/en-us/azure/iot-hub/
 [iot-dev-center]: http://azure.com/iotdev
 [azure-iot-sdks]: https://github.com/azure/azure-iot-sdks
-[device-sample]:device/samples
-[service-sample]:service/Samples
 [dotnet-api-reference]:https://docs.microsoft.com/en-us/dotnet/api/overview/azure/devices?view=azure-dotnet
