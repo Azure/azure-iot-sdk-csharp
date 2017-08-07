@@ -8,6 +8,9 @@ This folder contains simple samples showing how to use the various features of t
    * **DeviceClientMqttSample**: send and receive messages from a single device over an MQTT connection
    * **DeviceClientAmqpSample**: send and receive messages from a single device over an AMQP connection
    * **DeviceClientHttpSample**: send and receive messages from a single device over an HTTP connection
+   * **NetMFDeviceCLientHttpSample_43**: send and receive messages from a single device running .NET Micro Framework 4.3.
+   * **NetMFDeviceClientHttpSample_44**: send and receive messages from a single device running .NET Micro Framework 4.4.
+   * **UWPSample**: send and receive messages from a single device running a C# [UWP](UWP) application
    * Websocket examples?
 
 * Multiplexing send and receive of several devices over a single connection (useful in Gateway scenarios where multiplexing might be needed):
@@ -23,11 +26,9 @@ This folder contains simple samples showing how to use the various features of t
 Samples:
    * **DeviceClientFileUploadSample**:
    * **DeviceClientKeysRolloverSample**:
-   * **DeviceClientSampleAndroid**:
-   * **DeviceClientSampleiOS**:
-   * **NetMFDeviceCLientHttpSample_43**:
-   * **NetMFDeviceClientHttpSample_44**:
-   * **UWPSample**:
+   * **DeviceClientSampleAndroid**: 
+   * **DeviceClientSampleiOS**: 
+
 
 
 ## How to compile and run the samples
@@ -42,3 +43,4 @@ It is recommended to leverage the library packages when available to run the sam
 [devbox-setup]: ../doc/devbox_setup.md
 [lnk-setup-iot-hub]: https://aka.ms/howtocreateazureiothub
 [lnk-manage-iot-hub]: https://aka.ms/manageiothub
+[UWP]:https://docs.microsoft.com/en-us/windows/uwp/get-started/whats-a-uwp
