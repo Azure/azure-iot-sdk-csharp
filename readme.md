@@ -58,9 +58,6 @@ And if you are looking for end to end samples that show how to do simple analyti
    - [Simple .NET Micro Framework 4.3 sample](device/samples/NetMFDeviceClientHttpSample_43): Shows how to connect to IoT Hub and send and receive raw messages from a device running .NET Micro Framework 4.3.
    - [Simple .NET Micro Framework 4.4 sample](device/samples/NetMFDeviceClientHttpSample_44): Shows how to connect to IoT Hub and send and receive raw messages from a device running .NET Micro Framework 4.4. -->
 
-## Porting the Azure IoT device client SDK for .NET to new platforms
-MISSING, do we need this section?
-
 ## Contribution, feedback and issues
 
 If you encounter any bugs, have suggestions for new features or if you would like to become an active contributor to this project please follow the instructions provided in the [contribution guidelines](.github/CONTRIBUTING.md).
@@ -82,8 +79,9 @@ Here is what you can expect Microsoft Support to be able to help with:
 * [Manage IoT Hub](doc/manage_iot_hub.md) describes how to provision devices in your Azure IoT Hub service.
 * [FAQ](doc/faq.md) contains frequently asked questions about the SDKs and libraries.
 * [Azure Certified for IoT device catalog](https://catalog.azureiotsuite.com/)
-* Missing a link for set up development environment
-* Missing a link for get started guide
+* [Set up your development environment] (devbox-setup) to prepare your development environment as well as how to run the samples on Linux, Windows or other platforms.
+* [API reference documentation for .NET] (dotnet-api-reference)
+* [Get Started with IoT Hub using .NET](get-started-dotnet)
 
 ## SDK folder structure
 
@@ -129,3 +127,5 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 [iot-dev-center]: http://azure.com/iotdev
 [azure-iot-sdks]: https://github.com/azure/azure-iot-sdks
 [dotnet-api-reference]:https://docs.microsoft.com/en-us/dotnet/api/overview/azure/devices?view=azure-dotnet
+[devbox-setup]: ./device/doc/devbox_setup.md
+[get-started-dotnet]:https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-csharp-csharp-getstarted
