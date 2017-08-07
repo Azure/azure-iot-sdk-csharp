@@ -22,5 +22,5 @@ Prior to running the samples, you will need to have an [instance of Azure IoT Hu
 [This documents][devbox-setup] describes in details how to prepare you development environment as well as how to run the samples on Linux, Windows or other platforms.
 
 
-[devbox-setup]: .../device/doc/devbox_setup.md
+[devbox-setup]: https://github.com/Azure/azure-iot-sdk-csharp/blob/master/device/doc/devbox_setup.md
 [lnk-setup-iot-hub]: https://aka.ms/howtocreateazureiothub
