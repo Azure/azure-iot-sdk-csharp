@@ -8,11 +8,11 @@ This folder contains the following
 
 * Create/remove/update/list device identities in your IoT hub
 * Send messages to your devices and get feedback when they're delivered
-
+<!-- 
     * Implements CRUD operations on Azure IoT Hub device registry
     * Interact with a Device Twins from a back-end application
     * Invoke a Cloud to Device direct Method 
-    * Implements sending a Cloud to Device message
+    * Implements sending a Cloud to Device message -->
 
 ## Usage
 
