@@ -116,6 +116,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.DefaultDelayInSec);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("Method-E2E")]
         public async Task Method_DeviceReceivesMethodAndResponse_Amqp()
@@ -123,6 +124,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await SendMethodAndRespond(Client.TransportType.Amqp_Tcp_Only);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("Method-E2E")]
         public async Task Method_DeviceReceivesMethodAndResponse_AmqpWs()
@@ -130,6 +132,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await SendMethodAndRespond(Client.TransportType.Amqp_WebSocket_Only);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("Method-E2E")]
         [TestCategory("Recovery")]
@@ -141,6 +144,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.DefaultDelayInSec);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("Method-E2E")]
         [TestCategory("Recovery")]
@@ -153,6 +157,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             ;
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("Method-E2E")]
         [TestCategory("Recovery")]
@@ -164,6 +169,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.DefaultDelayInSec);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("Method-E2E")]
         [TestCategory("Recovery")]
@@ -175,6 +181,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.DefaultDelayInSec);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("Method-E2E")]
         [TestCategory("Recovery")]
@@ -186,6 +193,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.DefaultDelayInSec);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("Method-E2E")]
         [TestCategory("Recovery")]
@@ -197,6 +205,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.DefaultDelayInSec);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("Method-E2E")]
         [TestCategory("Recovery")]
@@ -208,6 +217,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.DefaultDelayInSec);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("Method-E2E")]
         [TestCategory("Recovery")]
@@ -219,6 +229,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.DefaultDelayInSec);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("Method-E2E")]
         [TestCategory("Recovery")]
@@ -230,6 +241,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.DefaultDelayInSec);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("Method-E2E")]
         [TestCategory("Recovery")]
@@ -241,6 +253,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.DefaultDelayInSec);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("Method-E2E")]
         [TestCategory("Recovery")]
@@ -252,6 +265,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.DefaultDelayInSec);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("Method-E2E")]
         [TestCategory("Recovery")]
