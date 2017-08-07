@@ -1,11 +1,18 @@
 # Microsoft Azure IoT service SDK for C\# #
 
-The Azure IoT Service SDK for C# helps you build applications that interact with your devices and manage their identities in your IoT hub.
+This folder contains the following 
+* The Azure IoT service SDK for .NET to easily and securely manage an instance of the Microsoft Azure IoT Hub service as well as send Cloud to Device messages through IOT Hub.
+* Samples showing how to use the SDK
 
 ## Features
 
 * Create/remove/update/list device identities in your IoT hub
 * Send messages to your devices and get feedback when they're delivered
+
+    * Implements CRUD operations on Azure IoT Hub device registry
+    * Interact with a Device Twins from a back-end application
+    * Invoke a Cloud to Device direct Method 
+    * Implements sending a Cloud to Device message
 
 ## Usage
 
@@ -16,3 +23,9 @@ For a full step by step guide on how to use the library, checkout this [article]
 
 To learn more on developing for the Azure IoT Hub service, visit our [developer guide](https://azure.microsoft.com/en-us/documentation/articles/iot-hub-devguide/)
 
+## Samples
+
+The repository contains a set of simple samples that will help you get started.
+You can find a list of these samples with instructions on how to run them [here][samples]. 
+
+[samples]: ./Samples/

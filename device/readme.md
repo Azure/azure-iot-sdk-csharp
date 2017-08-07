@@ -1,8 +1,10 @@
 # Microsoft Azure IoT device SDK for .NET
 
-The Microsoft Azure IoT device SDK for .NET facilitates building devices and applications that connect to and are managed by Azure IoT Hub services.
+This folder contains the following
+* The Microsoft Azure IoT device SDK for .NET to facilitate building devices and applications that connect to and are managed by Azure IoT Hub services.
+* Documentation and samples to help you get started using this SDK.
 
-The library is available as a NuGet package for you include in your own development projects. This repository contains documentation and samples to help you get started using this SDK.
+The library is available as a NuGet package for you include in your own development projects.
 
 ## Features
 
@@ -56,11 +58,6 @@ So **workaround** would be to directly install older version of **validation.dll
 ```
 > Note: This is covered in more detail under GitHub issue [#978] [github-issue-978]
 
-
-
-
-
-
 Other useful documents include:
 - [Setup IoT Hub][setup-iothub]
 - [How to use Device Explorer][device-explorer]
@@ -105,7 +102,7 @@ This Visual Studio solution contains the client library and sample projects.
 API reference documentation can be found online at https://msdn.microsoft.com/library/microsoft.azure.devices.aspx.
 
 [setup-iothub]: ../doc/setup_iothub.md
-[devbox-setup]: doc/devbox_setup.md
+[devbox-setup]: ./doc/devbox_setup.md
 [run-sample-on-desktop-windows]: ../../doc/get_started/windows-desktop-csharp.md
 [run-sample-on-windows-iot-core]: ../../doc/get_started/windows10-iotcore-csharp.md
 [device-explorer]: ../tools/DeviceExplorer/readme.md
