@@ -17,9 +17,7 @@ The repository is using [GitHub Submodules](https://git-scm.com/book/en/v2/Git-T
 git clone --recursive https://github.com/Azure/azure-iot-sdk-csharp.git
 ```
 ## How to use the Azure IoT SDKs for .NET
-Missing section, needs info
-* **Using packages and libraries**: MISSING 
-* **Compiling the source code**: MISSING
+Refer to [this document](./device/doc/devbox_setup.md) on how to get Azuire IoT SDKs for .NET using Nuget and build applications.
 
 The API reference documentation for .NET SDK is [here](dotnet-api-reference).
 
