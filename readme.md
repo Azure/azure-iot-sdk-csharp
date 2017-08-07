@@ -79,8 +79,8 @@ Here is what you can expect Microsoft Support to be able to help with:
 * [Manage IoT Hub](doc/manage_iot_hub.md) describes how to provision devices in your Azure IoT Hub service.
 * [FAQ](doc/faq.md) contains frequently asked questions about the SDKs and libraries.
 * [Azure Certified for IoT device catalog](https://catalog.azureiotsuite.com/)
-* [Set up your development environment] (devbox-setup) to prepare your development environment as well as how to run the samples on Linux, Windows or other platforms.
-* [API reference documentation for .NET] (dotnet-api-reference)
+* [Set up your development environment](devbox-setup) to prepare your development environment as well as how to run the samples on Linux, Windows or other platforms.
+* [API reference documentation for .NET](dotnet-api-reference)
 * [Get Started with IoT Hub using .NET](get-started-dotnet)
 
 ## SDK folder structure
