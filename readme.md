@@ -79,9 +79,9 @@ Here is what you can expect Microsoft Support to be able to help with:
 * [Manage IoT Hub](doc/manage_iot_hub.md) describes how to provision devices in your Azure IoT Hub service.
 * [FAQ](doc/faq.md) contains frequently asked questions about the SDKs and libraries.
 * [Azure Certified for IoT device catalog](https://catalog.azureiotsuite.com/)
-* [Set up your development environment](devbox-setup) to prepare your development environment as well as how to run the samples on Linux, Windows or other platforms.
-* [API reference documentation for .NET](dotnet-api-reference)
-* [Get Started with IoT Hub using .NET](get-started-dotnet)
+* [Set up your development environment](./device/doc/devbox_setup.md) to prepare your development environment as well as how to run the samples on Linux, Windows or other platforms.
+* [API reference documentation for .NET](https://docs.microsoft.com/en-us/dotnet/api/overview/azure/devices?view=azure-dotnet)
+* [Get Started with IoT Hub using .NET](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-csharp-csharp-getstarted)
 
 ## SDK folder structure
 
@@ -126,6 +126,6 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 [iot-hub-documentation]: https://docs.microsoft.com/en-us/azure/iot-hub/
 [iot-dev-center]: http://azure.com/iotdev
 [azure-iot-sdks]: https://github.com/azure/azure-iot-sdks
-[dotnet-api-reference]:https://docs.microsoft.com/en-us/dotnet/api/overview/azure/devices?view=azure-dotnet
+[dotnet-api-reference]: https://docs.microsoft.com/en-us/dotnet/api/overview/azure/devices?view=azure-dotnet
 [devbox-setup]: ./device/doc/devbox_setup.md
-[get-started-dotnet]:https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-csharp-csharp-getstarted
+[get-started-dotnet]: https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-csharp-csharp-getstarted
