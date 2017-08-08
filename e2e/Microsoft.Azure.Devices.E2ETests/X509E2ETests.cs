@@ -47,6 +47,18 @@ namespace Microsoft.Azure.Devices.E2ETests
             TestUtil.UnInitializeEnvironment(registryManager);
         }
 
+        [TestInitialize]
+        public async void Initialize()
+        {
+            await sequentialTestSemaphore.WaitAsync();
+        }
+
+        [TestCleanup]
+        public void Cleanup()
+        {
+            sequentialTestSemaphore.Release(1);
+        }
+
         [TestMethod]
         [TestCategory("X509-Message-E2E")]
         public async Task X509_DeviceSendSingleMessage_Amqp()
