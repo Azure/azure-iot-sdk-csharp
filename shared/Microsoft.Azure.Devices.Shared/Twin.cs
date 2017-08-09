@@ -50,6 +50,11 @@ namespace Microsoft.Azure.Devices.Shared
         public string ETag { get; set; }
 
         /// <summary>
+        /// Twin's Version
+        /// </summary>
+        public long Version { get; set; }
+
+        /// <summary>
         /// Gets the Twin as a JSON string
         /// </summary>
         /// <param name="formatting">Optional. Formatting for the output JSON string.</param>

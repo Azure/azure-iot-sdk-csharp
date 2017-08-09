@@ -20,6 +20,7 @@ namespace Microsoft.Azure.Devices.Shared
         const string PropertiesJsonTag = "properties";
         const string DesiredPropertiesJsonTag = "desired";
         const string ReportedPropertiesJsonTag = "reported";
+        const string VersionTag = "version";
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
@@ -42,6 +43,9 @@ namespace Microsoft.Azure.Devices.Shared
 
             writer.WritePropertyName(ETagJsonTag);
             writer.WriteValue(twin.ETag);
+
+            writer.WritePropertyName(VersionTag);
+            writer.WriteValue(twin.Version);
 
             if (twin.Tags != null && twin.Tags.Count > 0)
             {
@@ -113,6 +117,9 @@ namespace Microsoft.Azure.Devices.Shared
                         break;
                     case PropertiesJsonTag:
                         PopulatePropertiesForTwin(twin, reader, serializer);
+                        break;
+                    case VersionTag:
+                        twin.Version = (long)reader.Value;
                         break;
                     default:
                         break;
