@@ -8,6 +8,7 @@ This document describes how to prepare your development environment to build and
 4.  [Sample Applications](#samplecode)
 
 <a name="windows"/>
+
 ## Setting up a Windows development environment
 
 - Install [Visual Studio 2015][visual-studio]. You can use the **Visual Studio Community** Free download if you meet the licensing requirements.
@@ -15,6 +16,7 @@ This document describes how to prepare your development environment to build and
 Be sure to include [NuGet Package Manager][NuGet-Package-Manager].
 
 <a name="directly_using_sdk"/>
+
 ## Directly using Azure IoT Device Client SDK using NuGet packages
 Go to VS 2015 Solution Explorer and right click on the solution or project and click Manage NuGet Packages. There are **2** different **NuGet** packages to choose from
 
