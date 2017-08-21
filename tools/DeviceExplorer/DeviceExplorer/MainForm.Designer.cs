@@ -69,6 +69,7 @@
             this.showDevicePropertiesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tabData = new System.Windows.Forms.TabPage();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.enableSystemProperties = new System.Windows.Forms.CheckBox();
             this.consumerGroupCheckBox = new System.Windows.Forms.CheckBox();
             this.label6 = new System.Windows.Forms.Label();
             this.groupNameTextBox = new System.Windows.Forms.TextBox();
@@ -85,9 +86,6 @@
             this.eventHubTextBox = new System.Windows.Forms.RichTextBox();
             this.tabMessagesToDevice = new System.Windows.Forms.TabPage();
             this.messagePropertiesLabel = new System.Windows.Forms.Label();
-            this.messagePropertiesGrid = new System.Windows.Forms.DataGridView();
-            this.KeyColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.ValueColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.checkBoxMonitorFeedbackEndpoint = new System.Windows.Forms.CheckBox();
             this.messageClearButton = new System.Windows.Forms.Button();
             this.deviceIDsComboBoxForCloudToDeviceMessage = new System.Windows.Forms.ComboBox();
@@ -120,7 +118,15 @@
             this.label14 = new System.Windows.Forms.Label();
             this.label13 = new System.Windows.Forms.Label();
             this.ehStringToolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.enableSystemProperties = new System.Windows.Forms.CheckBox();
+            this.tabControl1 = new System.Windows.Forms.TabControl();
+            this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.messagePropertiesGrid = new System.Windows.Forms.DataGridView();
+            this.KeyColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.ValueColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.messageSystemPropertiesGrid = new System.Windows.Forms.DataGridView();
+            this.dataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.tabCallDeviceMethod.SuspendLayout();
             this.tabPage2.SuspendLayout();
             this.groupBox5.SuspendLayout();
@@ -135,10 +141,14 @@
             this.groupBox3.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.tabMessagesToDevice.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.messagePropertiesGrid)).BeginInit();
             this.groupBox4.SuspendLayout();
             this.tabDeviceMethod.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.callDeviceMethodNumericUpDown)).BeginInit();
+            this.tabControl1.SuspendLayout();
+            this.tabPage1.SuspendLayout();
+            this.tabPage3.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.messagePropertiesGrid)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.messageSystemPropertiesGrid)).BeginInit();
             this.SuspendLayout();
             // 
             // tabCallDeviceMethod
@@ -605,6 +615,16 @@
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Monitoring";
             // 
+            // enableSystemProperties
+            // 
+            this.enableSystemProperties.AutoSize = true;
+            this.enableSystemProperties.Location = new System.Drawing.Point(563, 208);
+            this.enableSystemProperties.Name = "enableSystemProperties";
+            this.enableSystemProperties.Size = new System.Drawing.Size(170, 20);
+            this.enableSystemProperties.TabIndex = 30;
+            this.enableSystemProperties.Text = "Show system properties";
+            this.enableSystemProperties.UseVisualStyleBackColor = true;
+            // 
             // consumerGroupCheckBox
             // 
             this.consumerGroupCheckBox.AutoSize = true;
@@ -752,8 +772,8 @@
             // 
             // tabMessagesToDevice
             // 
+            this.tabMessagesToDevice.Controls.Add(this.tabControl1);
             this.tabMessagesToDevice.Controls.Add(this.messagePropertiesLabel);
-            this.tabMessagesToDevice.Controls.Add(this.messagePropertiesGrid);
             this.tabMessagesToDevice.Controls.Add(this.checkBoxMonitorFeedbackEndpoint);
             this.tabMessagesToDevice.Controls.Add(this.messageClearButton);
             this.tabMessagesToDevice.Controls.Add(this.deviceIDsComboBoxForCloudToDeviceMessage);
@@ -782,43 +802,6 @@
             this.messagePropertiesLabel.Size = new System.Drawing.Size(73, 16);
             this.messagePropertiesLabel.TabIndex = 14;
             this.messagePropertiesLabel.Text = "Properties:";
-            // 
-            // messagePropertiesGrid
-            // 
-            this.messagePropertiesGrid.AllowUserToResizeColumns = false;
-            this.messagePropertiesGrid.AllowUserToResizeRows = false;
-            this.messagePropertiesGrid.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.messagePropertiesGrid.BackgroundColor = System.Drawing.Color.White;
-            this.messagePropertiesGrid.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.messagePropertiesGrid.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.Single;
-            this.messagePropertiesGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.messagePropertiesGrid.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.KeyColumn,
-            this.ValueColumn});
-            this.messagePropertiesGrid.Location = new System.Drawing.Point(24, 206);
-            this.messagePropertiesGrid.Name = "messagePropertiesGrid";
-            this.messagePropertiesGrid.RowHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
-            this.messagePropertiesGrid.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.messagePropertiesGrid.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.messagePropertiesGrid.Size = new System.Drawing.Size(710, 112);
-            this.messagePropertiesGrid.TabIndex = 13;
-            // 
-            // KeyColumn
-            // 
-            this.KeyColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.KeyColumn.HeaderText = "Key";
-            this.KeyColumn.Name = "KeyColumn";
-            this.KeyColumn.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.KeyColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            // 
-            // ValueColumn
-            // 
-            this.ValueColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.ValueColumn.HeaderText = "Value";
-            this.ValueColumn.Name = "ValueColumn";
-            this.ValueColumn.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.ValueColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             // 
             // checkBoxMonitorFeedbackEndpoint
             // 
@@ -1158,15 +1141,113 @@
             this.label13.TabIndex = 0;
             this.label13.Text = "Call Method on Device";
             // 
-            // enableSystemProperties
+            // tabControl1
             // 
-            this.enableSystemProperties.AutoSize = true;
-            this.enableSystemProperties.Location = new System.Drawing.Point(563, 208);
-            this.enableSystemProperties.Name = "enableSystemProperties";
-            this.enableSystemProperties.Size = new System.Drawing.Size(170, 20);
-            this.enableSystemProperties.TabIndex = 30;
-            this.enableSystemProperties.Text = "Show system properties";
-            this.enableSystemProperties.UseVisualStyleBackColor = true;
+            this.tabControl1.Controls.Add(this.tabPage1);
+            this.tabControl1.Controls.Add(this.tabPage3);
+            this.tabControl1.Location = new System.Drawing.Point(24, 174);
+            this.tabControl1.Name = "tabControl1";
+            this.tabControl1.SelectedIndex = 0;
+            this.tabControl1.Size = new System.Drawing.Size(704, 153);
+            this.tabControl1.TabIndex = 15;
+            // 
+            // tabPage1
+            // 
+            this.tabPage1.Controls.Add(this.messagePropertiesGrid);
+            this.tabPage1.Location = new System.Drawing.Point(4, 25);
+            this.tabPage1.Name = "tabPage1";
+            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage1.Size = new System.Drawing.Size(696, 124);
+            this.tabPage1.TabIndex = 0;
+            this.tabPage1.Text = "Properties";
+            this.tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // tabPage3
+            // 
+            this.tabPage3.Controls.Add(this.messageSystemPropertiesGrid);
+            this.tabPage3.Location = new System.Drawing.Point(4, 25);
+            this.tabPage3.Name = "tabPage3";
+            this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage3.Size = new System.Drawing.Size(696, 124);
+            this.tabPage3.TabIndex = 1;
+            this.tabPage3.Text = "System Properties";
+            this.tabPage3.UseVisualStyleBackColor = true;
+            // 
+            // messagePropertiesGrid
+            // 
+            this.messagePropertiesGrid.AllowUserToResizeColumns = false;
+            this.messagePropertiesGrid.AllowUserToResizeRows = false;
+            this.messagePropertiesGrid.BackgroundColor = System.Drawing.Color.White;
+            this.messagePropertiesGrid.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.messagePropertiesGrid.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.Single;
+            this.messagePropertiesGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.messagePropertiesGrid.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.KeyColumn,
+            this.ValueColumn});
+            this.messagePropertiesGrid.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.messagePropertiesGrid.Location = new System.Drawing.Point(3, 3);
+            this.messagePropertiesGrid.Name = "messagePropertiesGrid";
+            this.messagePropertiesGrid.RowHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
+            this.messagePropertiesGrid.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.messagePropertiesGrid.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.messagePropertiesGrid.Size = new System.Drawing.Size(690, 118);
+            this.messagePropertiesGrid.TabIndex = 14;
+            // 
+            // KeyColumn
+            // 
+            this.KeyColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.KeyColumn.HeaderText = "Key";
+            this.KeyColumn.Name = "KeyColumn";
+            this.KeyColumn.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.KeyColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            // 
+            // ValueColumn
+            // 
+            this.ValueColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.ValueColumn.HeaderText = "Value";
+            this.ValueColumn.Name = "ValueColumn";
+            this.ValueColumn.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.ValueColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            // 
+            // messageSystemPropertiesGrid
+            // 
+            this.messageSystemPropertiesGrid.AllowUserToAddRows = false;
+            this.messageSystemPropertiesGrid.AllowUserToDeleteRows = false;
+            this.messageSystemPropertiesGrid.AllowUserToResizeColumns = false;
+            this.messageSystemPropertiesGrid.AllowUserToResizeRows = false;
+            this.messageSystemPropertiesGrid.BackgroundColor = System.Drawing.Color.White;
+            this.messageSystemPropertiesGrid.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.messageSystemPropertiesGrid.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.Single;
+            this.messageSystemPropertiesGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.messageSystemPropertiesGrid.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.dataGridViewTextBoxColumn1,
+            this.dataGridViewTextBoxColumn2});
+            this.messageSystemPropertiesGrid.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.messageSystemPropertiesGrid.Location = new System.Drawing.Point(3, 3);
+            this.messageSystemPropertiesGrid.Name = "messageSystemPropertiesGrid";
+            this.messageSystemPropertiesGrid.RowHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
+            this.messageSystemPropertiesGrid.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.messageSystemPropertiesGrid.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.messageSystemPropertiesGrid.Size = new System.Drawing.Size(690, 118);
+            this.messageSystemPropertiesGrid.TabIndex = 15;
+            // 
+            // dataGridViewTextBoxColumn1
+            // 
+            this.dataGridViewTextBoxColumn1.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.dataGridViewTextBoxColumn1.FillWeight = 30F;
+            this.dataGridViewTextBoxColumn1.HeaderText = "Key";
+            this.dataGridViewTextBoxColumn1.Name = "dataGridViewTextBoxColumn1";
+            this.dataGridViewTextBoxColumn1.ReadOnly = true;
+            this.dataGridViewTextBoxColumn1.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.dataGridViewTextBoxColumn1.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            // 
+            // dataGridViewTextBoxColumn2
+            // 
+            this.dataGridViewTextBoxColumn2.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.dataGridViewTextBoxColumn2.HeaderText = "Value";
+            this.dataGridViewTextBoxColumn2.Name = "dataGridViewTextBoxColumn2";
+            this.dataGridViewTextBoxColumn2.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.dataGridViewTextBoxColumn2.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             // 
             // MainForm
             // 
@@ -1178,6 +1259,7 @@
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Device Explorer Twin";
+            this.Load += new System.EventHandler(this.MainForm_Load);
             this.Shown += new System.EventHandler(this.MainForm_Shown);
             this.tabCallDeviceMethod.ResumeLayout(false);
             this.tabPage2.ResumeLayout(false);
@@ -1198,11 +1280,15 @@
             this.groupBox1.ResumeLayout(false);
             this.tabMessagesToDevice.ResumeLayout(false);
             this.tabMessagesToDevice.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.messagePropertiesGrid)).EndInit();
             this.groupBox4.ResumeLayout(false);
             this.tabDeviceMethod.ResumeLayout(false);
             this.tabDeviceMethod.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.callDeviceMethodNumericUpDown)).EndInit();
+            this.tabControl1.ResumeLayout(false);
+            this.tabPage1.ResumeLayout(false);
+            this.tabPage3.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.messagePropertiesGrid)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.messageSystemPropertiesGrid)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -1275,7 +1361,6 @@
         private System.Windows.Forms.Label deviceCountLabel;
         private System.Windows.Forms.Label totalLabel;
         private System.Windows.Forms.Button sasTokenButton;
-        private System.Windows.Forms.DataGridView messagePropertiesGrid;
         private System.Windows.Forms.Label messagePropertiesLabel;
         private System.Windows.Forms.ToolStripMenuItem showDevicePropertiesToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
@@ -1287,8 +1372,6 @@
         private System.Windows.Forms.Label label14;
         private System.Windows.Forms.Label label13;
         private System.Windows.Forms.TextBox iotHubNameTextBoxForDeviceMethod;
-        private System.Windows.Forms.DataGridViewTextBoxColumn KeyColumn;
-        private System.Windows.Forms.DataGridViewTextBoxColumn ValueColumn;
         private System.Windows.Forms.ComboBox deviceIDsComboBoxForDeviceMethod;
         private System.Windows.Forms.TextBox methodPayloadTextBox;
         private System.Windows.Forms.TextBox methodNameTextBox;
@@ -1301,6 +1384,15 @@
         private System.Windows.Forms.NumericUpDown callDeviceMethodNumericUpDown;
         private System.Windows.Forms.Button callDeviceMethodCancelButton;
         private System.Windows.Forms.CheckBox enableSystemProperties;
+        private System.Windows.Forms.TabControl tabControl1;
+        private System.Windows.Forms.TabPage tabPage1;
+        private System.Windows.Forms.DataGridView messagePropertiesGrid;
+        private System.Windows.Forms.DataGridViewTextBoxColumn KeyColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn ValueColumn;
+        private System.Windows.Forms.TabPage tabPage3;
+        private System.Windows.Forms.DataGridView messageSystemPropertiesGrid;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn1;
+        private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn2;
     }
 }
 
