@@ -46,8 +46,12 @@ namespace DeviceExplorer
 
         private const string MESSAGE_SYSTEM_PROPERTY_MESSAGE_ID = "message-id";
         private const string MESSAGE_SYSTEM_PROPERTY_CORRELATION_ID = "correlation-id";
+        private const string MESSAGE_SYSTEM_PROPERTY_CONTENT_TYPE = "content-type";
+        private const string MESSAGE_SYSTEM_PROPERTY_CONTENT_ENCODING = "content-encoding";
         private static DataGridViewRow messageSysPropMessageId = new DataGridViewRow();
         private static DataGridViewRow messageSysPropCorrelationId = new DataGridViewRow();
+        private static DataGridViewRow messageSysPropContentType = new DataGridViewRow();
+        private static DataGridViewRow messageSysPropContentEncoding = new DataGridViewRow();
         #endregion
 
         public MainForm()
@@ -673,6 +677,16 @@ namespace DeviceExplorer
                     serviceMessage.CorrelationId = (string)messageSysPropCorrelationId.Cells[1].Value;
                 }
 
+                if (messageSysPropContentType.Cells[1].Value != null)
+                {
+                    serviceMessage.ContentType = (string)messageSysPropContentType.Cells[1].Value;
+                }
+
+                if (messageSysPropContentEncoding.Cells[1].Value != null)
+                {
+                    serviceMessage.ContentEncoding = (string)messageSysPropContentEncoding.Cells[1].Value;
+                }
+
                 await serviceClient.SendAsync(deviceIDsComboBoxForCloudToDeviceMessage.SelectedItem.ToString(), serviceMessage);
 
                 messagesTextBox.Text += $"Sent to Device ID: [{deviceIDsComboBoxForCloudToDeviceMessage.SelectedItem.ToString()}], Message:\"{cloudToDeviceMessage}\", message Id: {serviceMessage.MessageId}\n";
@@ -973,9 +987,13 @@ namespace DeviceExplorer
         {
             messageSysPropMessageId.CreateCells(messageSystemPropertiesGrid, MESSAGE_SYSTEM_PROPERTY_MESSAGE_ID, null);
             messageSysPropCorrelationId.CreateCells(messageSystemPropertiesGrid, MESSAGE_SYSTEM_PROPERTY_CORRELATION_ID, null);
+            messageSysPropContentType.CreateCells(messageSystemPropertiesGrid, MESSAGE_SYSTEM_PROPERTY_CONTENT_TYPE, null);
+            messageSysPropContentEncoding.CreateCells(messageSystemPropertiesGrid, MESSAGE_SYSTEM_PROPERTY_CONTENT_ENCODING, null);
 
             messageSystemPropertiesGrid.Rows.Add(messageSysPropMessageId);
             messageSystemPropertiesGrid.Rows.Add(messageSysPropCorrelationId);
+            messageSystemPropertiesGrid.Rows.Add(messageSysPropContentType);
+            messageSystemPropertiesGrid.Rows.Add(messageSysPropContentEncoding);
         }
     }
 }
