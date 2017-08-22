@@ -12,7 +12,7 @@ namespace DeviceExplorer.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "14.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "15.1.0.0")]
     internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
         
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
@@ -68,6 +68,17 @@ namespace DeviceExplorer.Properties {
             }
             set {
                 this["Microsoft_Protocol_Gateway_Hostname"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public global::System.Collections.Specialized.StringCollection Microsoft_IoTHub_PastConnectionStrings {
+            get {
+                return ((global::System.Collections.Specialized.StringCollection)(this["Microsoft_IoTHub_PastConnectionStrings"]));
+            }
+            set {
+                this["Microsoft_IoTHub_PastConnectionStrings"] = value;
             }
         }
     }

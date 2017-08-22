@@ -47,11 +47,11 @@
             // createButton
             // 
             this.createButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.createButton.Location = new System.Drawing.Point(101, 278);
-            this.createButton.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.createButton.Location = new System.Drawing.Point(76, 226);
+            this.createButton.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.createButton.Name = "createButton";
-            this.createButton.Size = new System.Drawing.Size(189, 33);
-            this.createButton.TabIndex = 2;
+            this.createButton.Size = new System.Drawing.Size(142, 27);
+            this.createButton.TabIndex = 5;
             this.createButton.Text = "Create";
             this.createButton.UseVisualStyleBackColor = true;
             this.createButton.Click += new System.EventHandler(this.createButton_Click);
@@ -59,90 +59,82 @@
             // cancelButton
             // 
             this.cancelButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.cancelButton.Location = new System.Drawing.Point(356, 278);
-            this.cancelButton.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.cancelButton.Location = new System.Drawing.Point(267, 226);
+            this.cancelButton.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.cancelButton.Name = "cancelButton";
-            this.cancelButton.Size = new System.Drawing.Size(189, 33);
-            this.cancelButton.TabIndex = 3;
+            this.cancelButton.Size = new System.Drawing.Size(142, 27);
+            this.cancelButton.TabIndex = 6;
             this.cancelButton.Text = "Cancel";
             this.cancelButton.UseVisualStyleBackColor = true;
             this.cancelButton.Click += new System.EventHandler(this.cancelButton_Click);
             // 
             // deviceIDTextBox
             // 
-            this.deviceIDTextBox.Location = new System.Drawing.Point(183, 93);
-            this.deviceIDTextBox.Margin = new System.Windows.Forms.Padding(4);
+            this.deviceIDTextBox.Location = new System.Drawing.Point(137, 76);
             this.deviceIDTextBox.Name = "deviceIDTextBox";
-            this.deviceIDTextBox.Size = new System.Drawing.Size(457, 22);
-            this.deviceIDTextBox.TabIndex = 4;
+            this.deviceIDTextBox.Size = new System.Drawing.Size(344, 20);
+            this.deviceIDTextBox.TabIndex = 0;
             // 
             // generateIDCheckBox
             // 
             this.generateIDCheckBox.AutoSize = true;
-            this.generateIDCheckBox.Location = new System.Drawing.Point(183, 217);
-            this.generateIDCheckBox.Margin = new System.Windows.Forms.Padding(4);
+            this.generateIDCheckBox.Location = new System.Drawing.Point(137, 176);
             this.generateIDCheckBox.Name = "generateIDCheckBox";
-            this.generateIDCheckBox.Size = new System.Drawing.Size(140, 21);
-            this.generateIDCheckBox.TabIndex = 5;
+            this.generateIDCheckBox.Size = new System.Drawing.Size(109, 17);
+            this.generateIDCheckBox.TabIndex = 3;
             this.generateIDCheckBox.Text = "Auto Generate ID";
             this.generateIDCheckBox.UseVisualStyleBackColor = true;
             this.generateIDCheckBox.CheckedChanged += new System.EventHandler(this.generateIDCheckBox_CheckedChanged);
             // 
             // primaryKeyTextBox
             // 
-            this.primaryKeyTextBox.Location = new System.Drawing.Point(183, 130);
-            this.primaryKeyTextBox.Margin = new System.Windows.Forms.Padding(4);
+            this.primaryKeyTextBox.Location = new System.Drawing.Point(137, 106);
             this.primaryKeyTextBox.Name = "primaryKeyTextBox";
-            this.primaryKeyTextBox.Size = new System.Drawing.Size(457, 22);
-            this.primaryKeyTextBox.TabIndex = 6;
+            this.primaryKeyTextBox.Size = new System.Drawing.Size(344, 20);
+            this.primaryKeyTextBox.TabIndex = 1;
             // 
             // generateKeysCheckBox
             // 
             this.generateKeysCheckBox.AutoSize = true;
-            this.generateKeysCheckBox.Location = new System.Drawing.Point(482, 217);
-            this.generateKeysCheckBox.Margin = new System.Windows.Forms.Padding(4);
+            this.generateKeysCheckBox.Location = new System.Drawing.Point(362, 176);
             this.generateKeysCheckBox.Name = "generateKeysCheckBox";
-            this.generateKeysCheckBox.Size = new System.Drawing.Size(158, 21);
-            this.generateKeysCheckBox.TabIndex = 7;
+            this.generateKeysCheckBox.Size = new System.Drawing.Size(121, 17);
+            this.generateKeysCheckBox.TabIndex = 4;
             this.generateKeysCheckBox.Text = "Auto Generate Keys";
             this.generateKeysCheckBox.UseVisualStyleBackColor = true;
             this.generateKeysCheckBox.CheckedChanged += new System.EventHandler(this.generateKeysCheckBox_CheckedChanged);
             // 
             // secondaryKeyTextBox
             // 
-            this.secondaryKeyTextBox.Location = new System.Drawing.Point(183, 164);
-            this.secondaryKeyTextBox.Margin = new System.Windows.Forms.Padding(4);
+            this.secondaryKeyTextBox.Location = new System.Drawing.Point(137, 133);
             this.secondaryKeyTextBox.Name = "secondaryKeyTextBox";
-            this.secondaryKeyTextBox.Size = new System.Drawing.Size(457, 22);
-            this.secondaryKeyTextBox.TabIndex = 8;
+            this.secondaryKeyTextBox.Size = new System.Drawing.Size(344, 20);
+            this.secondaryKeyTextBox.TabIndex = 2;
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(13, 98);
-            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label1.Location = new System.Drawing.Point(10, 80);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(72, 17);
+            this.label1.Size = new System.Drawing.Size(58, 13);
             this.label1.TabIndex = 9;
             this.label1.Text = "Device ID:";
             // 
             // primaryLabel
             // 
             this.primaryLabel.AutoSize = true;
-            this.primaryLabel.Location = new System.Drawing.Point(13, 135);
-            this.primaryLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.primaryLabel.Location = new System.Drawing.Point(10, 110);
             this.primaryLabel.Name = "primaryLabel";
-            this.primaryLabel.Size = new System.Drawing.Size(88, 17);
+            this.primaryLabel.Size = new System.Drawing.Size(65, 13);
             this.primaryLabel.TabIndex = 10;
             this.primaryLabel.Text = "Primary Key:";
             // 
             // secondaryLabel
             // 
             this.secondaryLabel.AutoSize = true;
-            this.secondaryLabel.Location = new System.Drawing.Point(13, 169);
-            this.secondaryLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.secondaryLabel.Location = new System.Drawing.Point(10, 137);
             this.secondaryLabel.Name = "secondaryLabel";
-            this.secondaryLabel.Size = new System.Drawing.Size(108, 17);
+            this.secondaryLabel.Size = new System.Drawing.Size(82, 13);
             this.secondaryLabel.TabIndex = 11;
             this.secondaryLabel.Text = "Secondary Key:";
             // 
@@ -150,9 +142,11 @@
             // 
             this.groupBox1.Controls.Add(this.x509RadioButton);
             this.groupBox1.Controls.Add(this.keysRadioButton);
-            this.groupBox1.Location = new System.Drawing.Point(164, 12);
+            this.groupBox1.Location = new System.Drawing.Point(123, 10);
+            this.groupBox1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(341, 58);
+            this.groupBox1.Padding = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.groupBox1.Size = new System.Drawing.Size(256, 47);
             this.groupBox1.TabIndex = 12;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Device Authentication";
@@ -160,9 +154,10 @@
             // x509RadioButton
             // 
             this.x509RadioButton.AutoSize = true;
-            this.x509RadioButton.Location = new System.Drawing.Point(219, 26);
+            this.x509RadioButton.Location = new System.Drawing.Point(164, 21);
+            this.x509RadioButton.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.x509RadioButton.Name = "x509RadioButton";
-            this.x509RadioButton.Size = new System.Drawing.Size(62, 21);
+            this.x509RadioButton.Size = new System.Drawing.Size(50, 17);
             this.x509RadioButton.TabIndex = 1;
             this.x509RadioButton.TabStop = true;
             this.x509RadioButton.Text = "X509";
@@ -171,9 +166,10 @@
             // keysRadioButton
             // 
             this.keysRadioButton.AutoSize = true;
-            this.keysRadioButton.Location = new System.Drawing.Point(74, 26);
+            this.keysRadioButton.Location = new System.Drawing.Point(56, 21);
+            this.keysRadioButton.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.keysRadioButton.Name = "keysRadioButton";
-            this.keysRadioButton.Size = new System.Drawing.Size(115, 21);
+            this.keysRadioButton.Size = new System.Drawing.Size(89, 17);
             this.keysRadioButton.TabIndex = 0;
             this.keysRadioButton.TabStop = true;
             this.keysRadioButton.Text = "Security Keys";
@@ -182,10 +178,10 @@
             // 
             // CreateDeviceForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoValidate = System.Windows.Forms.AutoValidate.EnablePreventFocusChange;
-            this.ClientSize = new System.Drawing.Size(705, 336);
+            this.ClientSize = new System.Drawing.Size(529, 273);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.secondaryLabel);
             this.Controls.Add(this.primaryLabel);
@@ -198,7 +194,7 @@
             this.Controls.Add(this.cancelButton);
             this.Controls.Add(this.createButton);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-            this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.Name = "CreateDeviceForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Create Device";
