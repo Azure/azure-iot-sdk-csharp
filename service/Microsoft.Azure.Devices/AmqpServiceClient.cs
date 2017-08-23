@@ -197,11 +197,11 @@ namespace Microsoft.Azure.Devices
             CloudToDeviceMethod cloudToDeviceMethod,
             CancellationToken cancellationToken)
         {
+            TimeSpan timeout = GetInvokeDeviceMethodOperationTimeout(cloudToDeviceMethod);
             return this.httpClientHelper.PostAsync<CloudToDeviceMethod, CloudToDeviceMethodResult>(
                 GetDeviceMethodUri(deviceId),
                 cloudToDeviceMethod,
-                null,
-                null,
+                timeout,
                 null,
                 null,
                 cancellationToken);
@@ -234,6 +234,17 @@ namespace Microsoft.Azure.Devices
                 this.iotHubConnection.Dispose();
                 this.httpClientHelper.Dispose();
             }
+        }
+
+        static TimeSpan GetInvokeDeviceMethodOperationTimeout(CloudToDeviceMethod cloudToDeviceMethod)
+        {
+            // For InvokeDeviceMethod, we need to take into account the timeouts specified
+            // for the Device to connect and send a response. We also need to take into account
+            // the transmission time for the request send/receive
+            TimeSpan timeout = TimeSpan.FromSeconds(15); // For wire time
+            timeout += TimeSpan.FromSeconds(cloudToDeviceMethod.ConnectionTimeoutInSeconds ?? 0);
+            timeout += TimeSpan.FromSeconds(cloudToDeviceMethod.ResponseTimeoutInSeconds ?? 0);
+            return timeout <= DefaultOperationTimeout ? DefaultOperationTimeout : timeout;
         }
 
         static Uri GetStatisticsUri()
