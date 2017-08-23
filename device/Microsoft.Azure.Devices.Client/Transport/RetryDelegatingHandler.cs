@@ -49,14 +49,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         class IotHubRuntimeOperationRetryStrategy : RetryStrategy
         {
-            readonly ShouldRetry defaultRetryStrategy;
+            readonly RetryStrategy retryStrategy;
             readonly ShouldRetry throttlingRetryStrategy;
 
-            public IotHubRuntimeOperationRetryStrategy(int retryCount)
+            public IotHubRuntimeOperationRetryStrategy(RetryStrategy retryStrategy)
                 : base(null, false)
             {
-                this.defaultRetryStrategy = new ExponentialBackoff(retryCount, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100)).GetShouldRetry();
-                this.throttlingRetryStrategy = new ExponentialBackoff(retryCount, TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(60), TimeSpan.FromSeconds(5)).GetShouldRetry();
+                this.retryStrategy = retryStrategy;
+                this.throttlingRetryStrategy = new ExponentialBackoff(RetryCount, TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(60), TimeSpan.FromSeconds(5)).GetShouldRetry();
             }
 
             public override ShouldRetry GetShouldRetry()
@@ -64,23 +64,35 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 return this.ShouldRetry;
             }
 
-            bool ShouldRetry(int currentRetryCount, Exception lastException, out TimeSpan retryInterval)
+            bool ShouldRetry(int retryCount, Exception lastException, out TimeSpan retryInterval)
             {
                 if (lastException is IotHubThrottledException)
                 {
-                    return this.throttlingRetryStrategy(currentRetryCount, lastException, out retryInterval);
+                    return this.throttlingRetryStrategy(retryCount, lastException, out retryInterval);
                 }
-                return this.defaultRetryStrategy(currentRetryCount, lastException, out retryInterval);
+                return this.retryStrategy.GetShouldRetry()(retryCount, lastException, out retryInterval);
             }
         }
 
-        readonly RetryPolicy retryPolicy;
+        RetryPolicy retryPolicy;
+        
+        public void SetRetryStrategy(RetryStrategy retryStrategy)
+        {
+            this.retryPolicy = new RetryPolicy(new IotHubTransientErrorIgnoreStrategy(), new IotHubRuntimeOperationRetryStrategy(retryStrategy));
+        }
 
         public RetryDelegatingHandler(IPipelineContext context)
             : base(context)
         {
-            this.retryPolicy = new RetryPolicy(new IotHubTransientErrorIgnoreStrategy(), new IotHubRuntimeOperationRetryStrategy(RetryCount));
+            RetryStrategy retryStrategy;
+            if (!context.TryGet(typeof(RetryStrategy).Name, out retryStrategy))
+            {
+                retryStrategy = new ExponentialBackoff(RetryCount, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100));
+            }
+
+            this.SetRetryStrategy(retryStrategy);
         }
+        
 
         public override async Task SendEventAsync(Message message, CancellationToken cancellationToken)
         {

@@ -122,19 +122,66 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         SemaphoreSlim methodsDictionarySemaphore = new SemaphoreSlim(1, 1);
 
         DeviceClientConnectionStatusManager connectionStatusManager = new DeviceClientConnectionStatusManager();
-        
+
+        const uint DefaultOperationTimeoutInMilliseconds = 4 * 60 * 1000;
+
         /// <summary>
         /// Stores the timeout used in the operation retries.
         /// </summary>
         // Codes_SRS_DEVICECLIENT_28_002: [This property shall be defaulted to 240000 (4 minutes).]
-        const uint DefaultOperationTimeoutInMilliseconds = 4 * 60 * 1000;
-
         public uint OperationTimeoutInMilliseconds { get; set; } = DefaultOperationTimeoutInMilliseconds;
 
         /// <summary>
         /// Stores the retry strategy used in the operation retries.
         /// </summary>
+        // Codes_SRS_DEVICECLIENT_28_001: [This property shall be defaulted to the exponential retry strategy with backoff 
+        // parameters for calculating delay in between retries.]
+        [Obsolete("This has been renamed to RetryStrategyType.")]
         public RetryPolicyType RetryPolicy { get; set; }
+
+        /// <summary>
+        /// Stores the retry strategy used in the operation retries.
+        /// </summary>
+        // Codes_SRS_DEVICECLIENT_28_001: [This property shall be defaulted to the exponential retry strategy with backoff 
+        // parameters for calculating delay in between retries.]
+#if !WINDOWS_UWP && !PCL
+        public void SetRetryStrategy(Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.RetryStrategy retryStrategy)
+        {
+            var retryDelegatingHandler = GetDelegateHandler<RetryDelegatingHandler>();
+            if (retryDelegatingHandler == null)
+            {
+                throw new NotSupportedException();
+            }
+
+            retryDelegatingHandler.SetRetryStrategy(retryStrategy);
+        }
+#endif
+
+
+        private T GetDelegateHandler<T>() where T: DefaultDelegatingHandler
+        {
+            var handler = this.InnerHandler as DefaultDelegatingHandler;
+            bool isFound = false;
+
+            while (!isFound || handler == null)
+            {
+                if (handler is T)
+                {
+                    isFound = true;
+                }
+                else
+                {
+                    handler = handler.InnerHandler as DefaultDelegatingHandler;
+                }
+            }
+
+            if (!isFound)
+            {
+                return default(T);
+            }
+
+            return (T) handler;
+        }
 
         /// <summary>
         /// Stores Methods supported by the client device and their associated delegate.

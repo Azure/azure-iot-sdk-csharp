@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices.Client
                 return true;
             }
             value = default(T);
-            return true;
+            return false;
         }
     }
 }
