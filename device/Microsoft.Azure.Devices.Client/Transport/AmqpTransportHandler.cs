@@ -56,6 +56,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private string twinSendingLinkName;
         private string twinReceivingLinkName;
 
+        const int ResponseTimeoutInSeconds = 10;
+
         ConcurrentDictionary<string, TaskCompletionSource<AmqpMessage>> twinResponseCompletions = new ConcurrentDictionary<string, TaskCompletionSource<AmqpMessage>>();
 
         internal AmqpTransportHandler(
@@ -559,7 +561,19 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     throw AmqpErrorMapper.GetExceptionFromOutcome(outcome);
                 }
 
-                response = await this.twinResponseCompletions[correlationId].Task;
+                var receivingTask = this.twinResponseCompletions[correlationId].Task;
+                if (await Task.WhenAny(receivingTask, Task.Delay(TimeSpan.FromSeconds(ResponseTimeoutInSeconds))) == receivingTask)
+                {
+                    // Task completed within timeout.
+                    // Consider that the task may have faulted or been canceled.
+                    // We re-await the task so that any exceptions/cancellation is rethrown.
+                    response = await receivingTask;
+                }
+                else
+                {
+                    // Timeout happen
+                    throw new TimeoutException();
+                }
             }
             finally
             {
@@ -841,6 +855,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
                                 ConnectionStatus = ConnectionStatus.Disconnected_Retrying,
                                 ConnectionStatusChangeReason = ConnectionStatusChangeReason.No_Network
                             });
+                        foreach (var entry in twinResponseCompletions)
+                        {
+                            TaskCompletionSource<AmqpMessage> task;
+                            if (this.twinResponseCompletions.TryRemove(entry.Key, out task))
+                            {
+                                task.SetCanceled();
+                            }
+                        }
                     }
             ));
 
