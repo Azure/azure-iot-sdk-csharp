@@ -8,6 +8,7 @@ This document describes how to prepare your development environment to build and
 4.  [Sample Applications](#samplecode)
 
 <a name="windows"/>
+
 ## Setting up a Windows development environment
 
 - Install [Visual Studio 2015][visual-studio]. You can use the **Visual Studio Community** Free download if you meet the licensing requirements.
@@ -15,10 +16,13 @@ This document describes how to prepare your development environment to build and
 Be sure to include [NuGet Package Manager][NuGet-Package-Manager].
 
 <a name="directly_using_sdk"/>
+
 ## Directly using Azure IoT Device Client SDK using NuGet packages
+
 Go to VS 2015 Solution Explorer and right click on the solution or project and click Manage NuGet Packages. There are **2** different **NuGet** packages to choose from
 
 ### 1.) Microsoft.Azure.Devices.Client
+
 For building classic desktop [.NET] [.NET] application, use NuGet Package Manager to install latest version of **Microsoft.Azure.Devices.Client** Device SDK for Azure IoT Devices NuGet package to your project.
 
 Two versions of Microsoft.Azure.Devices.Client.dll are built -- one for the classic .NET desktop application and
@@ -27,6 +31,7 @@ another for building [UWP] [UWP] applications.
 The package is located at [Azure IoT Device Client SDK NuGet Package] [lnk-NuGet-package]
 
 ### 2.) Microsoft.Azure.Devices.Client.PCL
+
 [PCL] [PCL] (Portable Class Library) version of .NET library helps you to build cross-platform apps.
 For example, for bulding iOS and Android application in C# in VS 2015 using [Xamarin] [Xamarin], use NuGet Package Manager to install latest version of **Microsoft.Azure.Devices.Client.PCL** Device SDK for Azure IoT Devices NuGet package to your project.
 
@@ -34,11 +39,13 @@ The package is located at [Azure IoT Device Client PCL SDK NuGet Package] [lnk-N
 
 > Currently, **Microsoft.Azure.Devices.Client.PCL** only supports HTTPS protocol.
 
-### Building [UWP][UWP] Apps 
+### Building [UWP][UWP] Apps
+
 Just like classic desktop app, install [Azure IoT Device Client SDK NuGet Package] [lnk-NuGet-package].
 A [UWP] [UWP]-compatible assembly Microsoft.Azure.Devices.Client.dll will get installed via NuGet Package manager when you select **Universal** app in VS 2015. This is the version you need to build UWP apps.
 
-####  Building C# and Visual Basic UWP apps
+#### Building C# and Visual Basic UWP apps
+
 For building UWP, follow the same steps as you would follow if building classic .NET desktop application.
 
 For example, for building in **Visual Basic** , the calls using the SDK client library would be something like this
@@ -49,14 +56,17 @@ Dim myMessage = "Hello!" + DateTime.Now.ToString()
 Dim message = New Microsoft.Azure.Devices.Client.Message(Encoding.ASCII.GetBytes(myMessage))
 Dim Async = deviceClient.SendEventAsync(message)
 ```
+
 where you would replace {My device connection string} with your own valid device connection string.
 
 ### Building iOS and Android apps using Xamarin
+
 For building iOS and Android app in C# , you will use PCL NuGet package  located at [Azure IoT Device Client PCL SDK NuGet Package] [lnk-NuGet-package_pcl]
 
-
 <a name="building_sdk"/>
+
 ## Building the Azure IoT Device Client .NET SDK locally
+
 In some cases, you may want to build the .NET SDK libraries **locally** for development and testing purpose. For example, you may want to build the **latest** code available on the **develop** branch which follows the Continuous Integration (CI) approach and you may also want to step through the client library code while debugging.
 
 To pull latest code on **develop** branch you can use following command
@@ -70,6 +80,7 @@ To clone the **master** use following command or simply download the **.zip** fr
 There are ways you can build the C# SDK (along with samples). You can either build using command line or you can build using VS 2015 IDE
 
 ### Option 1:  Build using command line
+
 1. Open a Developer Command Prompt for VS2015.
 2. Go to scripts folder located at **csharp\\device\\build**. Run the build script `build` which will build the SDK and the samples using default option.
 
@@ -87,11 +98,13 @@ Once build completes, it will create
 4. Sample executables 
 
 ### Option 2: Build using VS 2015 IDE
+
 1. Open iothub_csharp_deviceclient.sln file in VS 2015 IDE.
 2. Select the configuration that you want and press Build->Build Solution command.
 Just like command line option it will build Device Client SDK along with the samples.
 
 ### Building NuGet Package locally
+
 In case, you want to build NuGet package **locally**, you can use following steps
 
 a.) Build Release_Delay_Sign build using VS 2015 IDE
@@ -100,13 +113,15 @@ b.) Go to csharp\device\nuget folder in Windows PowerShell command prompt and ru
 
 
 <a name="samplecode"/>
+
 ## Sample Applications
 
 This repository contains various .NET sample applications that illustrate how to use the Microsoft Azure IoT device SDK for .NET. For more information, see the [readme][readme].
 
 You can build the **samples** in VS 2015 by opening csharp\device\\**iothub_csharp_deviceclient.sln** file which has various projects for samples. To build particular sample, right click on that sample in Solution Explorer and set that project as StartUp Project and build the project. Before running the sample, set the connecting string to a valid device connection and then re-build the sample before running it.
 
-### Building for iOS and Android using C#  
+### Building for iOS and Android using C#
+
 For building for iOS and Android using C#, you need to install [Xamarin][lnk-visualstudio-xamarin] for VS 2015
 
 For building iOS sample, open **csharp\device\samples\DeviceClientSampleiOS** project file in VS 2015. You will be prompted to install Xamarin to build native iOS apps in C# if tool is not installed. Install the tool. You can test the sample on iPhone simulator running on your Mac.
@@ -116,6 +131,7 @@ For building Android sample open **csharp\device\samples\DeviceClientSampleAndro
 To check for any latest Xamarin update for Visual Studio check Tools->Options->Xamarin->Other.
 
 ### Building and running CppUWPSample (Universal Windows) C++ sample application
+
 Select CppUWPSample as as StartUp Project. Replace the connection string with a valid connection string in `MainPage.xaml.cpp` file
 On running the applciation, you will see "Could not load file or assembly Microsoft.Azure.Amqp.Uwp" error.
 
@@ -126,6 +142,7 @@ For example for building debug version for x64 copy these 3 files from device\sa
 After this redeploy and re-run the application.
 
 ### Building and running JSSample (Universal Windows) JavaScript sample application
+
 Open **JSSample.sln** file from samples\JSSample in VS 2015 IDE. Replace the connecting string with a valid connection string in `default.js` file. Deploy and run the application. The application will throw System.IO.FileNotFoundException : "Could not load file or assembly Microsoft.Azure.Amqp.Uwp".
 
 > To workaround this error copy assemblies that application has dependencies on. Copy **Microsoft.Azure.Amqp.Uwp.dll**, PCLCrypto.dll and Validation.dll into **JSSample AppX** folder from **UWPSample** folder.
