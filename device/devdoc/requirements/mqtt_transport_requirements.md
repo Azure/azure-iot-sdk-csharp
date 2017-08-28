@@ -7,7 +7,8 @@ The Mqtt Transport is used to communicate between the DeviceClient object and th
 ## References
 
 
-##Exposed API
+## Exposed API
+
 ```csharp
 
 sealed class MqttTransportHandler : TransportHandler
