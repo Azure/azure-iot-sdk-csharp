@@ -991,5 +991,31 @@ namespace DeviceExplorer
         {
             showDevicePropertiesToolStripMenuItem_Click(this, null);
         }
+
+        private void tabCallDeviceMethod_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            const int Configuration      = 0,
+                      Management         = 1,
+                      Data               = 2,
+                      MessagesToDevice   = 3,
+                      CallMethodOnDevice = 4;
+
+            switch (tabCallDeviceMethod.SelectedIndex)
+            {
+                case Configuration:
+                    this.AcceptButton = updateSettingsButton;
+                    break;
+                case Data:
+                    this.AcceptButton = dataMonitorButton;
+                    break;
+
+                default:
+                case Management:
+                case MessagesToDevice:
+                case CallMethodOnDevice:
+                    this.AcceptButton = null;
+                    break;
+            }
+        }
     }
 }

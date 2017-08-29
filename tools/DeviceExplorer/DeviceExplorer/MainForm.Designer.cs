@@ -43,6 +43,7 @@
             this.generateSASButton = new System.Windows.Forms.Button();
             this.label10 = new System.Windows.Forms.Label();
             this.groupBox6 = new System.Windows.Forms.GroupBox();
+            this.dhConStringTextBox = new System.Windows.Forms.ComboBox();
             this.protocolGatewayHost = new System.Windows.Forms.TextBox();
             this.label16 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
@@ -120,7 +121,6 @@
             this.label14 = new System.Windows.Forms.Label();
             this.label13 = new System.Windows.Forms.Label();
             this.ehStringToolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.dhConStringTextBox = new System.Windows.Forms.ComboBox();
             this.tabCallDeviceMethod.SuspendLayout();
             this.tabPage2.SuspendLayout();
             this.groupBox5.SuspendLayout();
@@ -158,6 +158,7 @@
             this.tabCallDeviceMethod.Size = new System.Drawing.Size(759, 630);
             this.tabCallDeviceMethod.TabIndex = 0;
             this.tabCallDeviceMethod.TabStop = false;
+            this.tabCallDeviceMethod.SelectedIndexChanged += new System.EventHandler(this.tabCallDeviceMethod_SelectedIndexChanged);
             this.tabCallDeviceMethod.Selected += new System.Windows.Forms.TabControlEventHandler(this.tabControl1_Selected);
             // 
             // tabPage2
@@ -326,6 +327,16 @@
             this.groupBox6.TabIndex = 14;
             this.groupBox6.TabStop = false;
             this.groupBox6.Text = "Connection Information";
+            // 
+            // dhConStringTextBox
+            // 
+            this.dhConStringTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.dhConStringTextBox.FormattingEnabled = true;
+            this.dhConStringTextBox.Location = new System.Drawing.Point(11, 39);
+            this.dhConStringTextBox.Name = "dhConStringTextBox";
+            this.dhConStringTextBox.Size = new System.Drawing.Size(725, 24);
+            this.dhConStringTextBox.TabIndex = 0;
             // 
             // protocolGatewayHost
             // 
@@ -600,17 +611,19 @@
             this.enableSystemProperties.Location = new System.Drawing.Point(563, 208);
             this.enableSystemProperties.Name = "enableSystemProperties";
             this.enableSystemProperties.Size = new System.Drawing.Size(170, 20);
-            this.enableSystemProperties.TabIndex = 7;
+            this.enableSystemProperties.TabIndex = 8;
             this.enableSystemProperties.Text = "Show system properties";
             this.enableSystemProperties.UseVisualStyleBackColor = true;
             // 
             // consumerGroupCheckBox
             // 
             this.consumerGroupCheckBox.AutoSize = true;
+            this.consumerGroupCheckBox.Checked = true;
+            this.consumerGroupCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
             this.consumerGroupCheckBox.Location = new System.Drawing.Point(407, 157);
             this.consumerGroupCheckBox.Name = "consumerGroupCheckBox";
             this.consumerGroupCheckBox.Size = new System.Drawing.Size(70, 20);
-            this.consumerGroupCheckBox.TabIndex = 29;
+            this.consumerGroupCheckBox.TabIndex = 4;
             this.consumerGroupCheckBox.Text = "Enable";
             this.consumerGroupCheckBox.UseVisualStyleBackColor = true;
             this.consumerGroupCheckBox.CheckedChanged += new System.EventHandler(this.consumerGroupCheckBox_CheckedChanged);
@@ -626,7 +639,6 @@
             // 
             // groupNameTextBox
             // 
-            this.groupNameTextBox.Enabled = false;
             this.groupNameTextBox.Location = new System.Drawing.Point(140, 155);
             this.groupNameTextBox.Name = "groupNameTextBox";
             this.groupNameTextBox.Size = new System.Drawing.Size(258, 22);
@@ -637,7 +649,7 @@
             this.cancelMonitoringButton.Location = new System.Drawing.Point(182, 202);
             this.cancelMonitoringButton.Name = "cancelMonitoringButton";
             this.cancelMonitoringButton.Size = new System.Drawing.Size(133, 30);
-            this.cancelMonitoringButton.TabIndex = 5;
+            this.cancelMonitoringButton.TabIndex = 6;
             this.cancelMonitoringButton.Text = "Cancel";
             this.cancelMonitoringButton.UseVisualStyleBackColor = true;
             this.cancelMonitoringButton.Click += new System.EventHandler(this.cancelButton_Click);
@@ -656,7 +668,7 @@
             this.clearDataButton.Location = new System.Drawing.Point(353, 202);
             this.clearDataButton.Name = "clearDataButton";
             this.clearDataButton.Size = new System.Drawing.Size(120, 30);
-            this.clearDataButton.TabIndex = 6;
+            this.clearDataButton.TabIndex = 7;
             this.clearDataButton.Text = "Clear";
             this.clearDataButton.UseVisualStyleBackColor = true;
             this.clearDataButton.Click += new System.EventHandler(this.clearDataButton_Click);
@@ -666,7 +678,7 @@
             this.dataMonitorButton.Location = new System.Drawing.Point(21, 202);
             this.dataMonitorButton.Name = "dataMonitorButton";
             this.dataMonitorButton.Size = new System.Drawing.Size(120, 30);
-            this.dataMonitorButton.TabIndex = 4;
+            this.dataMonitorButton.TabIndex = 5;
             this.dataMonitorButton.Text = "Monitor";
             this.dataMonitorButton.UseVisualStyleBackColor = true;
             this.dataMonitorButton.Click += new System.EventHandler(this.dataMonitorButton_Click);
@@ -1157,18 +1169,9 @@
             this.label13.TabIndex = 0;
             this.label13.Text = "Call Method on Device";
             // 
-            // dhConStringTextBox
-            // 
-            this.dhConStringTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.dhConStringTextBox.FormattingEnabled = true;
-            this.dhConStringTextBox.Location = new System.Drawing.Point(11, 39);
-            this.dhConStringTextBox.Name = "dhConStringTextBox";
-            this.dhConStringTextBox.Size = new System.Drawing.Size(725, 24);
-            this.dhConStringTextBox.TabIndex = 0;
-            // 
             // MainForm
             // 
+            this.AcceptButton = this.updateSettingsButton;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(783, 646);
