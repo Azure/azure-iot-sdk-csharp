@@ -354,7 +354,6 @@ namespace Microsoft.Azure.Devices.Client.Test
             await sut.CompleteAsync("", cancellationTokenSource.Token).ExpectedAsync<TaskCanceledException>();
         }
 
-
         [TestMethod]
         [TestCategory("DelegatingHandlers")]
         [TestCategory("Owner [jasminel]")]

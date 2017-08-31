@@ -5,7 +5,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {
     using System;
     using Microsoft.Azure.Devices.Client.Extensions;
-    using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
+    using Microsoft.Azure.Devices.Client.TransientFaultHandling;
 
     sealed class TransientErrorIgnoreStrategy : ITransientErrorDetectionStrategy
     {

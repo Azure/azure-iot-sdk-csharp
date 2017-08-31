@@ -1,9 +1,11 @@
 ﻿namespace Microsoft.Azure.Devices.Client
 {
+    using System;
+
     /// <summary>
     /// Retry Strategy types supported by DeviceClient
     /// </summary>
-    [System.Obsolete("This has been renamed to RetryStrategyType.")]
+    [Obsolete("This enum has been deprecated.  Please use Microsoft.Azure.Devices.Client.SetRetryPolicy(IRetryPolicy retryPolicy) instead.")]
     public enum RetryPolicyType
     {
         /// <summary>

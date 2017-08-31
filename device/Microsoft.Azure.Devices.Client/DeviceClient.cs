@@ -123,7 +123,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
 
         DeviceClientConnectionStatusManager connectionStatusManager = new DeviceClientConnectionStatusManager();
 
-        const uint DefaultOperationTimeoutInMilliseconds = 4 * 60 * 1000;
+        public const uint DefaultOperationTimeoutInMilliseconds = 4 * 60 * 1000;
 
         /// <summary>
         /// Stores the timeout used in the operation retries.
@@ -136,16 +136,16 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// </summary>
         // Codes_SRS_DEVICECLIENT_28_001: [This property shall be defaulted to the exponential retry strategy with backoff 
         // parameters for calculating delay in between retries.]
-        [Obsolete("This has been renamed to RetryStrategyType.")]
+        [Obsolete("This method has been deprecated.  Please use Microsoft.Azure.Devices.Client.SetRetryPolicy(IRetryPolicy retryPolicy) instead.")]
         public RetryPolicyType RetryPolicy { get; set; }
 
         /// <summary>
-        /// Stores the retry strategy used in the operation retries.
+        /// Sets the retry policy used in the operation retries.
         /// </summary>
         // Codes_SRS_DEVICECLIENT_28_001: [This property shall be defaulted to the exponential retry strategy with backoff 
         // parameters for calculating delay in between retries.]
 #if !WINDOWS_UWP && !PCL
-        public void SetRetryStrategy(Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.RetryStrategy retryStrategy)
+        public void SetRetryPolicy(IRetryPolicy retryPolicy)
         {
             var retryDelegatingHandler = GetDelegateHandler<RetryDelegatingHandler>();
             if (retryDelegatingHandler == null)
@@ -153,10 +153,9 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                 throw new NotSupportedException();
             }
 
-            retryDelegatingHandler.SetRetryStrategy(retryStrategy);
+            retryDelegatingHandler.SetRetryPolicy(retryPolicy);
         }
 #endif
-
 
         private T GetDelegateHandler<T>() where T: DefaultDelegatingHandler
         {

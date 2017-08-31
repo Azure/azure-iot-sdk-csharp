@@ -10,15 +10,15 @@ namespace Microsoft.Azure.Devices.Client.Transport
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Client.Exceptions;
-    using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
+    using Microsoft.Azure.Devices.Client.TransientFaultHandling;
     using Microsoft.Azure.Devices.Shared;
 
     class RetryDelegatingHandler : DefaultDelegatingHandler
     {
-        const int DefaultRetryCount = 15;
         const int UndeterminedPosition = -1;
         const string StopRetrying = "StopRetrying";
 
+        // RetryCount is used for testing purpose and is equal to MaxValue in prod.
         internal static int RetryCount = Int32.MaxValue;
 
         class SendMessageState
@@ -74,23 +74,20 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        RetryPolicy retryPolicy;
+        RetryPolicy internalRetryPolicy;
         
-        public void SetRetryStrategy(RetryStrategy retryStrategy)
+        public void SetRetryPolicy(IRetryPolicy retryPolicy)
         {
-            this.retryPolicy = new RetryPolicy(new IotHubTransientErrorIgnoreStrategy(), new IotHubRuntimeOperationRetryStrategy(retryStrategy));
+            this.internalRetryPolicy = new RetryPolicy(
+                new IotHubTransientErrorIgnoreStrategy(), 
+                new IotHubRuntimeOperationRetryStrategy(new RetryStrategyWrapper(retryPolicy)));
         }
 
         public RetryDelegatingHandler(IPipelineContext context)
             : base(context)
         {
-            RetryStrategy retryStrategy;
-            if (!context.TryGet(typeof(RetryStrategy).Name, out retryStrategy))
-            {
-                retryStrategy = new ExponentialBackoff(RetryCount, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100));
-            }
-
-            this.SetRetryStrategy(retryStrategy);
+            RetryStrategy retryStrategy = new ExponentialBackoff(RetryCount, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100));
+            this.internalRetryPolicy = new RetryPolicy(new IotHubTransientErrorIgnoreStrategy(), new IotHubRuntimeOperationRetryStrategy(retryStrategy));
         }
         
 
@@ -99,7 +96,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             try
             {
                 var sendState = new SendMessageState();
-                await this.retryPolicy.ExecuteAsync(() =>
+                await this.internalRetryPolicy.ExecuteAsync(() =>
                 {
                     if (cancellationToken.IsCancellationRequested)
                     {
@@ -119,7 +116,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             try
             {
                 var sendState = new SendMessageState();
-                await this.retryPolicy.ExecuteAsync(() =>
+                await this.internalRetryPolicy.ExecuteAsync(() =>
                 {
                     if (cancellationToken.IsCancellationRequested)
                     {
@@ -140,7 +137,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 var sendState = new SendMessageState();
                 IEnumerable<Message> messageList = messages as IList<Message> ?? messages.ToList();
-                await this.retryPolicy.ExecuteAsync(() =>
+                await this.internalRetryPolicy.ExecuteAsync(() =>
                 {
                     if (cancellationToken.IsCancellationRequested)
                     {
@@ -159,7 +156,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             try
             {
-                return await this.retryPolicy.ExecuteAsync(() =>
+                return await this.internalRetryPolicy.ExecuteAsync(() =>
                 {
                     if (cancellationToken.IsCancellationRequested)
                     {
@@ -182,7 +179,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             try
             {
-                return await this.retryPolicy.ExecuteAsync(() => base.ReceiveAsync(timeout, cancellationToken), cancellationToken);
+                return await this.internalRetryPolicy.ExecuteAsync(() => base.ReceiveAsync(timeout, cancellationToken), cancellationToken);
             }
             catch (IotHubClientTransientException ex)
             {
@@ -195,7 +192,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             try
             {
-                await this.retryPolicy.ExecuteAsync(() => base.EnableMethodsAsync(cancellationToken), cancellationToken);
+                await this.internalRetryPolicy.ExecuteAsync(() => base.EnableMethodsAsync(cancellationToken), cancellationToken);
             }
             catch (IotHubClientTransientException ex)
             {
@@ -207,7 +204,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             try
             {
-                await this.retryPolicy.ExecuteAsync(() => base.DisableMethodsAsync(cancellationToken), cancellationToken);
+                await this.internalRetryPolicy.ExecuteAsync(() => base.DisableMethodsAsync(cancellationToken), cancellationToken);
             }
             catch (IotHubClientTransientException ex)
             {
@@ -219,7 +216,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             try
             {
-                await this.retryPolicy.ExecuteAsync(() => base.EnableTwinPatchAsync(cancellationToken), cancellationToken);
+                await this.internalRetryPolicy.ExecuteAsync(() => base.EnableTwinPatchAsync(cancellationToken), cancellationToken);
             }
             catch (IotHubClientTransientException ex)
             {
@@ -234,7 +231,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 // Question for the masses:
                 // If I'm returning a Task, do I want to await this so the catch block below can catch anything that happens inside base.SendTwinGetAsync?
                 // Other methods in here do this both ways (with await and without) so it's not clear which is better.
-                return await this.retryPolicy.ExecuteAsync(() => base.SendTwinGetAsync(cancellationToken), cancellationToken);
+                return await this.internalRetryPolicy.ExecuteAsync(() => base.SendTwinGetAsync(cancellationToken), cancellationToken);
             }
             catch (IotHubClientTransientException ex)
             {
@@ -247,7 +244,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             try
             {
-                await this.retryPolicy.ExecuteAsync(() => base.SendTwinPatchAsync(reportedProperties, cancellationToken), cancellationToken);
+                await this.internalRetryPolicy.ExecuteAsync(() => base.SendTwinPatchAsync(reportedProperties, cancellationToken), cancellationToken);
             }
             catch (IotHubClientTransientException ex)
             {
@@ -259,7 +256,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             try
             {
-                await this.retryPolicy.ExecuteAsync(() => base.RecoverConnections(o, connectionType, cancellationToken), cancellationToken);
+                await this.internalRetryPolicy.ExecuteAsync(() => base.RecoverConnections(o, connectionType, cancellationToken), cancellationToken);
             }
             catch (IotHubClientTransientException ex)
             {
@@ -271,7 +268,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             try
             {
-                await this.retryPolicy.ExecuteAsync(() => base.CompleteAsync(lockToken, cancellationToken), cancellationToken);
+                await this.internalRetryPolicy.ExecuteAsync(() => base.CompleteAsync(lockToken, cancellationToken), cancellationToken);
             }
             catch (IotHubClientTransientException ex)
             {
@@ -283,7 +280,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             try
             {
-                await this.retryPolicy.ExecuteAsync(() => base.AbandonAsync(lockToken, cancellationToken), cancellationToken);
+                await this.internalRetryPolicy.ExecuteAsync(() => base.AbandonAsync(lockToken, cancellationToken), cancellationToken);
             }
             catch (IotHubClientTransientException ex)
             {
@@ -295,7 +292,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             try
             {
-                await this.retryPolicy.ExecuteAsync(() => base.RejectAsync(lockToken, cancellationToken), cancellationToken);
+                await this.internalRetryPolicy.ExecuteAsync(() => base.RejectAsync(lockToken, cancellationToken), cancellationToken);
             }
             catch (IotHubClientTransientException ex)
             {
@@ -307,7 +304,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             try
             {
-                await this.retryPolicy.ExecuteAsync(() => base.OpenAsync(explicitOpen, cancellationToken), cancellationToken);
+                await this.internalRetryPolicy.ExecuteAsync(() => base.OpenAsync(explicitOpen, cancellationToken), cancellationToken);
             }
             catch (IotHubClientTransientException ex)
             {
