@@ -146,28 +146,35 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             var auth = new DeviceAuthenticationWithX509Certificate(deviceInfo.Item1, cert);
             var deviceClient = DeviceClient.Create(deviceInfo.Item2, auth, transport);
-            await deviceClient.OpenAsync();
 
-            string payload;
-            string p1Value;
-            Client.Message testMessage = ComposeD2CTestMessage(out payload, out p1Value);
-            await deviceClient.SendEventAsync(testMessage);
-
-            bool isReceived = false;
-            Stopwatch sw = new Stopwatch();
-            sw.Start();
-            while (!isReceived && sw.Elapsed.Minutes < 1)
+            try
             {
-                var events = await eventHubReceiver.ReceiveAsync(int.MaxValue, TimeSpan.FromSeconds(5));
-                isReceived = VerifyTestMessage(events, deviceInfo.Item1, payload, p1Value);
+                await deviceClient.OpenAsync();
+
+                string payload;
+                string p1Value;
+                Client.Message testMessage = ComposeD2CTestMessage(out payload, out p1Value);
+                await deviceClient.SendEventAsync(testMessage);
+
+                bool isReceived = false;
+                Stopwatch sw = new Stopwatch();
+                sw.Start();
+                while (!isReceived && sw.Elapsed.Minutes < 1)
+                {
+                    var events = await eventHubReceiver.ReceiveAsync(int.MaxValue, TimeSpan.FromSeconds(5));
+                    isReceived = VerifyTestMessage(events, deviceInfo.Item1, payload, p1Value);
+                }
+                sw.Stop();
+
+                Assert.IsTrue(isReceived, "Message is not received.");
             }
-            sw.Stop();
-
-            Assert.IsTrue(isReceived, "Message is not received.");
-
-            await deviceClient.CloseAsync();
-            await eventHubClient.CloseAsync();
-            TestUtil.RemoveDevice(deviceInfo.Item1, registryManager);
+            finally
+            {
+                await deviceClient.CloseAsync();
+                await eventHubReceiver.CloseAsync();
+                await eventHubClient.CloseAsync();
+                TestUtil.RemoveDevice(deviceInfo.Item1, registryManager);
+            }
         }
 
         private EventHubReceiver CreateEventHubReceiver(string deviceName, out EventHubClient eventHubClient)
@@ -176,7 +183,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             var eventHubPartitionsCount = eventHubClient.GetRuntimeInformation().PartitionCount;
             string partition = EventHubPartitionKeyResolver.ResolveToPartition(deviceName, eventHubPartitionsCount);
             string consumerGroupName = Environment.GetEnvironmentVariable("IOTHUB_EVENTHUB_CONSUMER_GROUP") ?? "$Default";
-            return eventHubClient.GetConsumerGroup(consumerGroupName).CreateReceiver(partition, DateTime.Now);
+            return eventHubClient.GetConsumerGroup(consumerGroupName).CreateReceiver(partition, DateTime.Now, TestUtil.EventHubEpoch++);
         }
 
         private Client.Message ComposeD2CTestMessage(out string payload, out string p1Value)
@@ -280,23 +287,31 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             var auth = new DeviceAuthenticationWithX509Certificate(deviceInfo.Item1, cert);
             var deviceClient = DeviceClient.Create(deviceInfo.Item2, auth, transport);
-            await deviceClient.OpenAsync();
 
-            if (transport == Client.TransportType.Mqtt_Tcp_Only || transport == Client.TransportType.Mqtt_WebSocket_Only)
+            try
             {
-                // Dummy ReceiveAsync to ensure mqtt subscription registration before SendAsync() is called on service client.
-                await deviceClient.ReceiveAsync(TimeSpan.FromSeconds(2));
+                await deviceClient.OpenAsync();
+
+                if (transport == Client.TransportType.Mqtt_Tcp_Only ||
+                    transport == Client.TransportType.Mqtt_WebSocket_Only)
+                {
+                    // Dummy ReceiveAsync to ensure mqtt subscription registration before SendAsync() is called on service client.
+                    await deviceClient.ReceiveAsync(TimeSpan.FromSeconds(2));
+                }
+
+                string payload, messageId, p1Value;
+                await serviceClient.OpenAsync();
+                await serviceClient.SendAsync(deviceInfo.Item1,
+                    ComposeC2DTestMessage(out payload, out messageId, out p1Value));
+
+                await VerifyReceivedC2DMessage(transport, deviceClient, payload, p1Value);
             }
-
-            string payload, messageId, p1Value;
-            await serviceClient.OpenAsync();
-            await serviceClient.SendAsync(deviceInfo.Item1, ComposeC2DTestMessage(out payload, out messageId, out p1Value));
-
-            await VerifyReceivedC2DMessage(transport, deviceClient, payload, p1Value);
-
-            await deviceClient.CloseAsync();
-            await serviceClient.CloseAsync();
-            TestUtil.RemoveDevice(deviceInfo.Item1, registryManager);
+            finally
+            {
+                await deviceClient.CloseAsync();
+                await serviceClient.CloseAsync();
+                TestUtil.RemoveDevice(deviceInfo.Item1, registryManager);
+            }
         }
     }
 }
