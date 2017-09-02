@@ -14,14 +14,18 @@
 //implied. See the License for the specific language governing permissions
 //and limitations under the License.
 
-using System;
+// THIS FILE HAS BEEN MODIFIED FROM ITS ORIGINAL FORM.
+// Change Log:
+// 9/1/2017 jasminel Renamed namespace to Microsoft.Azure.Devices.Client.TransientFaultHandling and modified access modifier to internal.
 
-namespace Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling
+namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
 {
+    using System;
+
     /// <summary>
-    /// Contains information that is required for the <see cref="E:Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.RetryPolicy.Retrying" /> event.
+    /// Contains information that is required for the <see cref="E:Microsoft.Azure.Devices.Client.TransientFaultHandling.RetryPolicy.Retrying" /> event.
     /// </summary>
-    public class RetryingEventArgs : EventArgs
+    internal class RetryingEventArgs : EventArgs
     {
         /// <summary>
         /// Gets the current retry count.
@@ -51,7 +55,7 @@ namespace Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.RetryingEventArgs" /> class.
+        /// Initializes a new instance of the <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.RetryingEventArgs" /> class.
         /// </summary>
         /// <param name="currentRetryCount">The current retry attempt count.</param>
         /// <param name="delay">The delay that indicates how long the current thread will be suspended before the next iteration is invoked.</param>

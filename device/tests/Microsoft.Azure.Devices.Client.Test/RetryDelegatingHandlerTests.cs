@@ -272,14 +272,16 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task Retry_CancellationTokenCanceled_Open()
         {
             var innerHandlerMock = Substitute.For<IDelegatingHandler>();
+            var cancellationTokenSource = new CancellationTokenSource();
+
+            cancellationTokenSource.Cancel();
             innerHandlerMock.OpenAsync(Arg.Any<bool>(), Arg.Any<CancellationToken>()).Returns(TaskConstants.Completed);
 
             var contextMock = Substitute.For<IPipelineContext>();
             var sut = new RetryDelegatingHandler(contextMock);
             sut.ContinuationFactory = c => innerHandlerMock;
-            var cancellationTokenSource = new CancellationTokenSource();
-            cancellationTokenSource.Cancel();
-            await sut.OpenAsync(Arg.Any<bool>(), cancellationTokenSource.Token).ExpectedAsync<TaskCanceledException>();
+
+            await sut.OpenAsync(true, cancellationTokenSource.Token).ExpectedAsync<TaskCanceledException>();
         }
 
         [TestMethod]
@@ -340,14 +342,16 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task Retry_CancellationTokenCanceled_Complete()
         {
             var innerHandlerMock = Substitute.For<IDelegatingHandler>();
-            innerHandlerMock.CompleteAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(TaskConstants.Completed);
+            var cancellationTokenSource = new CancellationTokenSource();
+
+            cancellationTokenSource.Cancel();
+            innerHandlerMock.CompleteAsync(Arg.Any<string>(), cancellationTokenSource.Token).Returns(TaskConstants.Completed);
 
             var contextMock = Substitute.For<IPipelineContext>();
             var sut = new RetryDelegatingHandler(contextMock);
             sut.ContinuationFactory = c => innerHandlerMock;
-            var cancellationTokenSource = new CancellationTokenSource();
-            cancellationTokenSource.Cancel();
-            await sut.CompleteAsync(Arg.Any<string>(), cancellationTokenSource.Token).ExpectedAsync<TaskCanceledException>();
+
+            await sut.CompleteAsync("", cancellationTokenSource.Token).ExpectedAsync<TaskCanceledException>();
         }
 
         [TestMethod]
