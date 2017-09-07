@@ -339,6 +339,35 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("DelegatingHandlers")]
         [TestCategory("Owner [jasminel]")]
+        public void Retry_SetRetryPolicyVerifyInternals_Success ()
+        {
+            var innerHandlerMock = Substitute.For<IDelegatingHandler>();
+            var contextMock = Substitute.For<IPipelineContext>();
+            var sut = new RetryDelegatingHandler(contextMock);
+            sut.ContinuationFactory = c => innerHandlerMock;
+
+            var exponentialBackoff = new ExponentialBackoff(10, TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(1), TimeSpan.FromMilliseconds(10));
+            sut.SetRetryPolicy(exponentialBackoff);
+
+            Assert.AreEqual(typeof(RetryDelegatingHandler.IotHubTransientErrorIgnoreStrategy), sut.internalRetryPolicy.ErrorDetectionStrategy.GetType());
+            Assert.AreEqual(typeof(RetryDelegatingHandler.IotHubRuntimeOperationRetryStrategy), sut.internalRetryPolicy.RetryStrategy.GetType());
+            var iotHubRuntimeOperationRetryStrategy = (RetryDelegatingHandler.IotHubRuntimeOperationRetryStrategy) sut.internalRetryPolicy.RetryStrategy;
+            Assert.AreEqual(typeof(TransientFaultHandling.RetryStrategyWrapper), iotHubRuntimeOperationRetryStrategy.retryStrategy.GetType());
+            Assert.AreSame(exponentialBackoff, ((TransientFaultHandling.RetryStrategyWrapper)iotHubRuntimeOperationRetryStrategy.retryStrategy).retryPolicy);
+
+            var noretry = new NoRetry();
+            sut.SetRetryPolicy(noretry);
+
+            Assert.AreEqual(typeof(RetryDelegatingHandler.IotHubTransientErrorIgnoreStrategy), sut.internalRetryPolicy.ErrorDetectionStrategy.GetType());
+            Assert.AreEqual(typeof(RetryDelegatingHandler.IotHubRuntimeOperationRetryStrategy), sut.internalRetryPolicy.RetryStrategy.GetType());
+            iotHubRuntimeOperationRetryStrategy = (RetryDelegatingHandler.IotHubRuntimeOperationRetryStrategy)sut.internalRetryPolicy.RetryStrategy;
+            Assert.AreEqual(typeof(TransientFaultHandling.RetryStrategyWrapper), iotHubRuntimeOperationRetryStrategy.retryStrategy.GetType());
+            Assert.AreSame(noretry, ((TransientFaultHandling.RetryStrategyWrapper)iotHubRuntimeOperationRetryStrategy.retryStrategy).retryPolicy);
+        }
+
+        [TestMethod]
+        [TestCategory("DelegatingHandlers")]
+        [TestCategory("Owner [jasminel]")]
         public async Task Retry_CancellationTokenCanceled_Complete()
         {
             var innerHandlerMock = Substitute.For<IDelegatingHandler>();

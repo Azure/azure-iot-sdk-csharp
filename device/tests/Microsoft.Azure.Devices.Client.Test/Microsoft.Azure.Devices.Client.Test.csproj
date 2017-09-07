@@ -75,6 +75,7 @@
     <Compile Include="MqttTransportHandlerTests.cs" />
     <Compile Include="Mqtt\ReadListeningHandler.cs" />
     <Compile Include="RetryDelegatingHandlerTests.cs" />
+    <Compile Include="RetryPolicyTests.cs" />
     <Compile Include="RoutingDelegatingHandlerTests.cs" />
     <Compile Include="Mqtt\ServerWebSocketChannel.cs" />
     <Compile Include="TestAssert.cs" />

@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
     using Microsoft.Azure.Devices.Client.TransientFaultHandling;
     using Microsoft.Azure.Devices.Shared;
 
-    class RetryDelegatingHandler : DefaultDelegatingHandler
+    internal class RetryDelegatingHandler : DefaultDelegatingHandler
     {
         const int UndeterminedPosition = -1;
         const string StopRetrying = "StopRetrying";
@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             public ExceptionDispatchInfo OriginalError { get; set; }
         }
 
-        class IotHubTransientErrorIgnoreStrategy : ITransientErrorDetectionStrategy
+        internal class IotHubTransientErrorIgnoreStrategy : ITransientErrorDetectionStrategy
         {
             public bool IsTransient(Exception ex)
             {
@@ -47,9 +47,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        class IotHubRuntimeOperationRetryStrategy : RetryStrategy
+        internal class IotHubRuntimeOperationRetryStrategy : RetryStrategy
         {
-            readonly RetryStrategy retryStrategy;
+            internal readonly RetryStrategy retryStrategy;
             readonly ShouldRetry throttlingRetryStrategy;
 
             public IotHubRuntimeOperationRetryStrategy(RetryStrategy retryStrategy)
@@ -74,7 +74,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        RetryPolicy internalRetryPolicy;
+        internal RetryPolicy internalRetryPolicy;
         
         public void SetRetryPolicy(IRetryPolicy retryPolicy)
         {

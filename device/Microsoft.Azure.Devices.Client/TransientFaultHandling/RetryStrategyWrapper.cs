@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
     /// </summary>
     internal class RetryStrategyWrapper : RetryStrategy
     {
-        readonly IRetryPolicy retryPolicy;
+        internal readonly IRetryPolicy retryPolicy;
 
         public RetryStrategyWrapper(IRetryPolicy retryPolicy) : base("RetryStrategy", true)
         {
