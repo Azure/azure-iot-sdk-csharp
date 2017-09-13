@@ -69,6 +69,7 @@
             this.showDevicePropertiesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tabData = new System.Windows.Forms.TabPage();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.enableOperationMonitoring = new System.Windows.Forms.CheckBox();
             this.enableSystemProperties = new System.Windows.Forms.CheckBox();
             this.consumerGroupCheckBox = new System.Windows.Forms.CheckBox();
             this.label6 = new System.Windows.Forms.Label();
@@ -121,7 +122,6 @@
             this.label14 = new System.Windows.Forms.Label();
             this.label13 = new System.Windows.Forms.Label();
             this.ehStringToolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.enableOperationMonitoring = new System.Windows.Forms.CheckBox();
             this.tabCallDeviceMethod.SuspendLayout();
             this.tabPage2.SuspendLayout();
             this.groupBox5.SuspendLayout();
@@ -607,6 +607,16 @@
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Monitoring";
             // 
+            // enableOperationMonitoring
+            // 
+            this.enableOperationMonitoring.AutoSize = true;
+            this.enableOperationMonitoring.Location = new System.Drawing.Point(529, 182);
+            this.enableOperationMonitoring.Name = "enableOperationMonitoring";
+            this.enableOperationMonitoring.Size = new System.Drawing.Size(192, 20);
+            this.enableOperationMonitoring.TabIndex = 29;
+            this.enableOperationMonitoring.Text = "Show operations monitoring";
+            this.enableOperationMonitoring.UseVisualStyleBackColor = true;
+            // 
             // enableSystemProperties
             // 
             this.enableSystemProperties.AutoSize = true;
@@ -729,7 +739,6 @@
             // 
             this.dateTimePicker.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.dateTimePicker.Checked = false;
             this.dateTimePicker.CustomFormat = "MM/dd/yyyy HH:mm:ss";
             this.dateTimePicker.Format = System.Windows.Forms.DateTimePickerFormat.Custom;
             this.dateTimePicker.Location = new System.Drawing.Point(101, 115);
@@ -1170,16 +1179,6 @@
             this.label13.Size = new System.Drawing.Size(143, 16);
             this.label13.TabIndex = 0;
             this.label13.Text = "Call Method on Device";
-            // 
-            // enableOperationMonitoring
-            // 
-            this.enableOperationMonitoring.AutoSize = true;
-            this.enableOperationMonitoring.Location = new System.Drawing.Point(529, 182);
-            this.enableOperationMonitoring.Name = "enableOperationMonitoring";
-            this.enableOperationMonitoring.Size = new System.Drawing.Size(192, 20);
-            this.enableOperationMonitoring.TabIndex = 29;
-            this.enableOperationMonitoring.Text = "Show operations monitoring";
-            this.enableOperationMonitoring.UseVisualStyleBackColor = true;
             // 
             // MainForm
             // 

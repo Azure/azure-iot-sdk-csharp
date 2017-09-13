@@ -76,11 +76,13 @@ namespace DeviceExplorer
 
                 dhConStringTextBox.Items.AddRange(PastConnectionStrings.ToArray());
                 dhConStringTextBox.Text = Properties.Settings.Default["Microsoft_IoTHub_ConnectionString"] as string;
+
             }
             catch
             {
                 dhConStringTextBox.Text = "";
             }
+
             try
             {
                 protocolGatewayHost.Text = (string)Properties.Settings.Default["Microsoft_Protocol_Gateway_Hostname"];
@@ -89,10 +91,20 @@ namespace DeviceExplorer
             {
                 protocolGatewayHost.Text = string.Empty;
             }
+
+            try
+            {
+                if (Properties.Settings.Default["Microsoft_IoTHub_ConsumerGroup"] is string consumerGroup)
+                    groupNameTextBox.Text = consumerGroup == "" ? DEFAULT_CONSUMER_GROUP : consumerGroup;
+            }
+            catch
+            {
+                groupNameTextBox.Text = DEFAULT_CONSUMER_GROUP;
+            }
+
             // Initialize fields
             activeIoTHubConnectionString = dhConStringTextBox.Text;
             dateTimePicker.Value = DateTime.Now;
-            groupNameTextBox.Text = DEFAULT_CONSUMER_GROUP;
 
             numericUpDownTTL.Maximum = MAX_TTL_VALUE;
             numericUpDownTTL.Value = MAX_TTL_VALUE;
@@ -600,6 +612,12 @@ namespace DeviceExplorer
             var showSystemProperties = enableSystemProperties.Checked;
             var showOperationsMonitoring = enableOperationMonitoring.Checked;
             var selectedDevice = deviceIDsComboBoxForEvent.SelectedItem.ToString();
+
+            if (consumerGroupCheckBox.Checked && groupNameTextBox.Text != DEFAULT_CONSUMER_GROUP)
+            {
+                Properties.Settings.Default["Microsoft_IoTHub_ConsumerGroup"] = groupNameTextBox.Text;
+                Properties.Settings.Default.Save();
+            }
 
             ThreadPool.QueueUserWorkItem((state) =>
                 MonitorEventHubAsync(dateValue, ctsForDataMonitoring.Token, 
