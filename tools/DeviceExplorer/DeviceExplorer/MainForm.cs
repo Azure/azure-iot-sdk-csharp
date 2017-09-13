@@ -461,6 +461,14 @@ namespace DeviceExplorer
 
         #region DataMonitorTab
 
+        private T InFormThread<T>(Func<T> action)
+        {
+            if (this.InvokeRequired)
+                return (T)this.Invoke(action);
+            else
+                return action();
+        }
+
         private void InFormThread(Action action)
         {
             if (this.InvokeRequired)
@@ -748,7 +756,7 @@ namespace DeviceExplorer
             if (checkBoxMonitorFeedbackEndpoint.Checked)
             {
                 StopMonitoringFeedback();
-                await StartMonitoringFeedback();
+                StartMonitoringFeedback();
             }
         }
         #endregion
@@ -919,7 +927,7 @@ namespace DeviceExplorer
             serviceClient = ServiceClient.CreateFromConnectionString(activeIoTHubConnectionString);
             var feedbackReceiver = serviceClient.GetFeedbackReceiver();
 
-            while ((checkBoxMonitorFeedbackEndpoint.CheckState == CheckState.Checked) && (!ct.IsCancellationRequested))
+            while (InFormThread(() => checkBoxMonitorFeedbackEndpoint.CheckState == CheckState.Checked) && (!ct.IsCancellationRequested))
             {
                 var feedbackBatch = await feedbackReceiver.ReceiveAsync(TimeSpan.FromSeconds(0.5));
                 if (feedbackBatch != null)
@@ -928,7 +936,8 @@ namespace DeviceExplorer
                     {
                         if (feedbackMessage != null)
                         {
-                            messagesTextBox.Text += $"Message Feedback status: \"{feedbackMessage.StatusCode}\", Description: \"{feedbackMessage.Description}\", Original Message Id: {feedbackMessage.OriginalMessageId}\n";
+                            InFormThread(() => 
+                                messagesTextBox.Text += $"Message Feedback status: \"{feedbackMessage.StatusCode}\", Description: \"{feedbackMessage.Description}\", Original Message Id: {feedbackMessage.OriginalMessageId}\n");
                         }
                     }
 
@@ -942,7 +951,7 @@ namespace DeviceExplorer
             }
         }
 
-        private async Task StartMonitoringFeedback()
+        private void StartMonitoringFeedback()
         {
             StopMonitoringFeedback();
 
@@ -950,7 +959,9 @@ namespace DeviceExplorer
 
             messagesTextBox.Text += $"Started monitoring feedback for device {deviceIDsComboBoxForCloudToDeviceMessage.SelectedItem.ToString()}.\r\n";
 
-            await MonitorFeedback(ctsForFeedbackMonitoring.Token, deviceIDsComboBoxForCloudToDeviceMessage.SelectedItem.ToString());
+            ThreadPool.QueueUserWorkItem(async (state) =>
+                await MonitorFeedback(ctsForFeedbackMonitoring.Token, deviceIDsComboBoxForCloudToDeviceMessage.SelectedItem.ToString())
+            );
         }
 
         void StopMonitoringFeedback()
@@ -968,7 +979,7 @@ namespace DeviceExplorer
         {
             if (checkBoxMonitorFeedbackEndpoint.CheckState == CheckState.Checked)
             {
-                await StartMonitoringFeedback();
+                StartMonitoringFeedback();
             }
             else
             {
