@@ -36,15 +36,15 @@ namespace DeviceExplorer
                     {
                         deviceEntity = new DeviceEntity()
                         {
-                            Id = device.Id,
-                            ConnectionState = device.ConnectionState.ToString(),
-                            ConnectionString = CreateDeviceConnectionString(device),
-                            LastActivityTime = device.LastActivityTime,
-                            LastConnectionStateUpdatedTime = device.ConnectionStateUpdatedTime,
-                            LastStateUpdatedTime = device.StatusUpdatedTime,
-                            MessageCount = device.CloudToDeviceMessageCount,
-                            State = device.Status.ToString(),
-                            SuspensionReason = device.StatusReason
+                            Id                             = device.Id,
+                            ConnectionState                = device.ConnectionState.ToString(),
+                            ConnectionString               = CreateDeviceConnectionString(device),
+                            LastActivityTime               = DateTime.SpecifyKind(device.LastActivityTime, DateTimeKind.Utc).ToLocalTime(),
+                            LastConnectionStateUpdatedTime = DateTime.SpecifyKind(device.ConnectionStateUpdatedTime, DateTimeKind.Utc).ToLocalTime(),
+                            LastStateUpdatedTime           = DateTime.SpecifyKind(device.StatusUpdatedTime, DateTimeKind.Utc).ToLocalTime(),
+                            MessageCount                   = device.CloudToDeviceMessageCount,
+                            State                          = device.Status.ToString(),
+                            SuspensionReason               = device.StatusReason
                         };
 
                         if (device.Authentication != null)
