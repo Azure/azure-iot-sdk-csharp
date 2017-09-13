@@ -457,17 +457,72 @@ namespace DeviceExplorer
                 action();
         }
 
-        private async void MonitorEventHubAsync(DateTime startTime, CancellationToken ct, string consumerGroupName)
+        private async void MonitorEventHubAsync(DateTime startTime, CancellationToken ct, string consumerGroupName,
+                                                string selectedDevice,
+                                                bool showSystemProperties, bool showOperationsMonitoring)
         {
             EventHubClient eventHubClient = null;
             EventHubReceiver eventHubReceiver = null;
 
+            /// Log the event to the eventhubdata textbox
+            void LogEvent(EventData eventData)
+            {
+                var data = Encoding.UTF8.GetString(eventData.GetBytes());
+                var enqueuedTime = eventData.EnqueuedTimeUtc.ToLocalTime();
+                var connectionDeviceId = showOperationsMonitoring
+                    ? data
+                    : eventData.SystemProperties["iothub-connection-device-id"].ToString();
+
+                if (connectionDeviceId.IndexOf(selectedDevice, StringComparison.OrdinalIgnoreCase) != -1)
+                {
+                    var addedText = new StringBuilder()
+                        .AppendLine($"{enqueuedTime}> Device: [{selectedDevice}]")
+                        .AppendLine("Data:").Append(data);
+
+                    if (eventData.Properties.Count > 0)
+                    {
+                        addedText.AppendLine();
+                        addedText.AppendLine("Properties:");
+                        foreach (var property in eventData.Properties)
+                        {
+                            addedText.AppendLine($"'{property.Key}': '{property.Value}'");
+                        }
+                    }
+                    if (showSystemProperties)
+                    {
+                        if (eventData.Properties.Count == 0)
+                        {
+                            addedText.AppendLine();
+                        }
+                        foreach (var item in eventData.SystemProperties)
+                        {
+                            addedText.AppendLine($"SYSTEM>{item.Key}={item.Value}");
+                        }
+                    }
+                    addedText.AppendLine();
+
+                    InFormThread(() =>
+                    {
+                        eventHubTextBox.Text += addedText.ToString();
+
+                        // scroll text box to last line by moving caret to the end of the text
+                        eventHubTextBox.SelectionStart = eventHubTextBox.Text.Length - 1;
+                        eventHubTextBox.SelectionLength = 0;
+
+                        eventHubTextBox.ScrollToCaret();
+                    });
+                }
+            }
+
             try
             {
                 InFormThread(() => eventHubTextBox.Text = "Receiving events...\r\n");
+                
+                if (showOperationsMonitoring)
+                    eventHubClient = EventHubClient.CreateFromConnectionString(activeIoTHubConnectionString, "messages/operationsMonitoringEvents");
+                else
+                    eventHubClient = EventHubClient.CreateFromConnectionString(activeIoTHubConnectionString, "messages/events");
 
-                string selectedDevice = deviceIDsComboBoxForEvent.SelectedItem.ToString();
-                eventHubClient = EventHubClient.CreateFromConnectionString(activeIoTHubConnectionString, "messages/events");
                 eventHubPartitionsCount = eventHubClient.GetRuntimeInformation().PartitionCount;
                 string partition = EventHubPartitionKeyResolver.ResolveToPartition(selectedDevice, eventHubPartitionsCount);
                 eventHubReceiver = eventHubClient.GetConsumerGroup(consumerGroupName).CreateReceiver(partition, startTime);
@@ -477,47 +532,7 @@ namespace DeviceExplorer
 
                 foreach (var eventData in events)
                 {
-                    var data = Encoding.UTF8.GetString(eventData.GetBytes());
-                    var enqueuedTime = eventData.EnqueuedTimeUtc.ToLocalTime();
-                    var connectionDeviceId = eventData.SystemProperties["iothub-connection-device-id"].ToString();
-
-                    if (string.CompareOrdinal(selectedDevice.ToUpper(), connectionDeviceId.ToUpper()) == 0)
-                    {
-                        var addedText = new StringBuilder();
-                        addedText.Append($"{enqueuedTime}> Device: [{connectionDeviceId}], Data:[{data}]");
-
-                        if (eventData.Properties.Count > 0)
-                        {
-                            addedText.AppendLine();
-                            addedText.AppendLine("Properties:");
-                            foreach (var property in eventData.Properties)
-                            {
-                                addedText.AppendLine($"'{property.Key}': '{property.Value}'");
-                            }
-                        }
-                        if(enableSystemProperties.Checked)
-                        {
-                            if (eventData.Properties.Count == 0)
-                            {
-                                addedText.AppendLine();
-                            }
-                            foreach (var item in eventData.SystemProperties)
-                            {
-                                addedText.AppendLine($"SYSTEM>{item.Key}={item.Value}");
-                            }
-                        }
-                        addedText.AppendLine();
-
-                        InFormThread(() =>
-                        {
-                            eventHubTextBox.Text += addedText.ToString();
-
-                            // scroll text box to last line by moving caret to the end of the text
-                            eventHubTextBox.SelectionStart = eventHubTextBox.Text.Length - 1;
-                            eventHubTextBox.SelectionLength = 0;
-                            eventHubTextBox.ScrollToCaret();
-                        });
-                    }
+                    LogEvent(eventData);
                 }
 
                 //having already received past events, monitor current events in a loop
@@ -528,69 +543,25 @@ namespace DeviceExplorer
                     var eventData = await eventHubReceiver.ReceiveAsync(TimeSpan.FromSeconds(1));
 
                     if (eventData != null)
-                    {
-                        var data = Encoding.UTF8.GetString(eventData.GetBytes());
-                        var enqueuedTime = eventData.EnqueuedTimeUtc.ToLocalTime();
-
-                        // Display only data from the selected device; otherwise, skip.
-                        var connectionDeviceId = eventData.SystemProperties["iothub-connection-device-id"].ToString();
-
-                        var addedText = new StringBuilder();
-
-                        if (string.CompareOrdinal(selectedDevice, connectionDeviceId) == 0)
-                        {
-                            addedText.Append($"{enqueuedTime}> Device: [{connectionDeviceId}], Data:[{data}]");
-
-                            if (eventData.Properties.Count > 0)
-                            {
-                                addedText.AppendLine();
-                                addedText.AppendLine("Properties:");
-                                foreach (var property in eventData.Properties)
-                                {
-                                    addedText.AppendLine($"'{property.Key}': '{property.Value}'");
-                                }
-                            }
-
-                            if (enableSystemProperties.Checked)
-                            {
-                                if (eventData.Properties.Count == 0)
-                                {
-                                    addedText.AppendLine();
-                                }
-                                foreach (var item in eventData.SystemProperties)
-                                {
-                                    addedText.AppendLine($"SYSTEM>{item.Key}={item.Value}");
-                                }
-                            }
-
-                            addedText.AppendLine();
-                        }
-
-                        InFormThread(() =>
-                        {
-                            eventHubTextBox.Text += addedText.ToString();
-
-                            // scroll text box to last line by moving caret to the end of the text
-                            eventHubTextBox.SelectionStart = eventHubTextBox.Text.Length - 1;
-                            eventHubTextBox.SelectionLength = 0;
-                            eventHubTextBox.ScrollToCaret();
-                        });
-                    }
+                        LogEvent(eventData);
                 }
             }
             catch (Exception ex)
             {
                 if (ct.IsCancellationRequested)
                 {
-                    eventHubTextBox.Text += $"Stopped Monitoring events. {ex.Message}\r\n";
+                    InFormThread(() => eventHubTextBox.Text += $"Stopped Monitoring events. {ex.Message}\r\n");
                 }
                 else
                 {
-                    using (new CenterDialog(this))
+                    InFormThread(() =>
                     {
-                        MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                    eventHubTextBox.Text += $"Stopped Monitoring events. {ex.Message}\r\n";
+                        using (new CenterDialog(this))
+                        {
+                            MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                        eventHubTextBox.Text += $"Stopped Monitoring events. {ex.Message}\r\n";
+                    });
                 }
                 if (eventHubReceiver != null)
                 {
@@ -600,9 +571,12 @@ namespace DeviceExplorer
                 {
                     eventHubClient.Close();
                 }
-                dataMonitorButton.Enabled = true;
-                deviceIDsComboBoxForEvent.Enabled = true;
-                cancelMonitoringButton.Enabled = false;
+                InFormThread(() =>
+                {
+                    dataMonitorButton.Enabled = true;
+                    deviceIDsComboBoxForEvent.Enabled = true;
+                    cancelMonitoringButton.Enabled = false;
+                });
             }
         }
 
@@ -621,8 +595,15 @@ namespace DeviceExplorer
                 dateTimePicker.Checked = false;
             }
 
+            var dateValue = dateTimePicker.Value;
+            var groupName = groupNameTextBox.Text;
+            var showSystemProperties = enableSystemProperties.Checked;
+            var showOperationsMonitoring = enableOperationMonitoring.Checked;
+            var selectedDevice = deviceIDsComboBoxForEvent.SelectedItem.ToString();
+
             ThreadPool.QueueUserWorkItem((state) =>
-                MonitorEventHubAsync(dateTimePicker.Value, ctsForDataMonitoring.Token, groupNameTextBox.Text), 
+                MonitorEventHubAsync(dateValue, ctsForDataMonitoring.Token, 
+                    groupName, selectedDevice, showSystemProperties, showOperationsMonitoring), 
                 null);
         }
 

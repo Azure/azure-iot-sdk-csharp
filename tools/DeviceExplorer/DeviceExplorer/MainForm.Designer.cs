@@ -121,6 +121,7 @@
             this.label14 = new System.Windows.Forms.Label();
             this.label13 = new System.Windows.Forms.Label();
             this.ehStringToolTip = new System.Windows.Forms.ToolTip(this.components);
+            this.enableOperationMonitoring = new System.Windows.Forms.CheckBox();
             this.tabCallDeviceMethod.SuspendLayout();
             this.tabPage2.SuspendLayout();
             this.groupBox5.SuspendLayout();
@@ -205,7 +206,7 @@
             this.targetTextBox.Location = new System.Drawing.Point(95, 80);
             this.targetTextBox.Margin = new System.Windows.Forms.Padding(2);
             this.targetTextBox.Name = "targetTextBox";
-            this.targetTextBox.Size = new System.Drawing.Size(641, 22);
+            this.targetTextBox.Size = new System.Drawing.Size(628, 22);
             this.targetTextBox.TabIndex = 2;
             // 
             // keyValueTextBox
@@ -216,7 +217,7 @@
             this.keyValueTextBox.Location = new System.Drawing.Point(95, 54);
             this.keyValueTextBox.Margin = new System.Windows.Forms.Padding(2);
             this.keyValueTextBox.Name = "keyValueTextBox";
-            this.keyValueTextBox.Size = new System.Drawing.Size(641, 22);
+            this.keyValueTextBox.Size = new System.Drawing.Size(628, 22);
             this.keyValueTextBox.TabIndex = 1;
             // 
             // keyNameTextBox
@@ -227,7 +228,7 @@
             this.keyNameTextBox.Location = new System.Drawing.Point(95, 28);
             this.keyNameTextBox.Margin = new System.Windows.Forms.Padding(2);
             this.keyNameTextBox.Name = "keyNameTextBox";
-            this.keyNameTextBox.Size = new System.Drawing.Size(641, 22);
+            this.keyNameTextBox.Size = new System.Drawing.Size(628, 22);
             this.keyNameTextBox.TabIndex = 0;
             // 
             // label9
@@ -335,7 +336,7 @@
             this.dhConStringTextBox.FormattingEnabled = true;
             this.dhConStringTextBox.Location = new System.Drawing.Point(11, 39);
             this.dhConStringTextBox.Name = "dhConStringTextBox";
-            this.dhConStringTextBox.Size = new System.Drawing.Size(725, 24);
+            this.dhConStringTextBox.Size = new System.Drawing.Size(712, 24);
             this.dhConStringTextBox.TabIndex = 0;
             // 
             // protocolGatewayHost
@@ -344,7 +345,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.protocolGatewayHost.Location = new System.Drawing.Point(11, 92);
             this.protocolGatewayHost.Name = "protocolGatewayHost";
-            this.protocolGatewayHost.Size = new System.Drawing.Size(725, 22);
+            this.protocolGatewayHost.Size = new System.Drawing.Size(712, 22);
             this.protocolGatewayHost.TabIndex = 1;
             // 
             // label16
@@ -585,6 +586,7 @@
             // 
             this.groupBox3.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox3.Controls.Add(this.enableOperationMonitoring);
             this.groupBox3.Controls.Add(this.enableSystemProperties);
             this.groupBox3.Controls.Add(this.consumerGroupCheckBox);
             this.groupBox3.Controls.Add(this.label6);
@@ -608,7 +610,7 @@
             // enableSystemProperties
             // 
             this.enableSystemProperties.AutoSize = true;
-            this.enableSystemProperties.Location = new System.Drawing.Point(563, 208);
+            this.enableSystemProperties.Location = new System.Drawing.Point(529, 208);
             this.enableSystemProperties.Name = "enableSystemProperties";
             this.enableSystemProperties.Size = new System.Drawing.Size(170, 20);
             this.enableSystemProperties.TabIndex = 8;
@@ -1169,6 +1171,16 @@
             this.label13.TabIndex = 0;
             this.label13.Text = "Call Method on Device";
             // 
+            // enableOperationMonitoring
+            // 
+            this.enableOperationMonitoring.AutoSize = true;
+            this.enableOperationMonitoring.Location = new System.Drawing.Point(529, 182);
+            this.enableOperationMonitoring.Name = "enableOperationMonitoring";
+            this.enableOperationMonitoring.Size = new System.Drawing.Size(192, 20);
+            this.enableOperationMonitoring.TabIndex = 29;
+            this.enableOperationMonitoring.Text = "Show operations monitoring";
+            this.enableOperationMonitoring.UseVisualStyleBackColor = true;
+            // 
             // MainForm
             // 
             this.AcceptButton = this.updateSettingsButton;
@@ -1303,6 +1315,7 @@
         private System.Windows.Forms.Button callDeviceMethodCancelButton;
         private System.Windows.Forms.CheckBox enableSystemProperties;
         private System.Windows.Forms.ComboBox dhConStringTextBox;
+        private System.Windows.Forms.CheckBox enableOperationMonitoring;
     }
 }
 
