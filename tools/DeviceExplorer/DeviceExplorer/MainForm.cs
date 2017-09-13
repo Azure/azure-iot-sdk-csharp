@@ -347,14 +347,14 @@ namespace DeviceExplorer
         #region ManagementTab
         private async Task updateDevicesGridView()
         {
-            var devicesProcessor = new DevicesProcessor(activeIoTHubConnectionString, MAX_COUNT_OF_DEVICES, protocolGatewayHost.Text);
-            var devicesList = await devicesProcessor.GetDevices();
-            devicesList.Sort();
-            var sortableDevicesBindingList = new SortableBindingList<DeviceEntity>(devicesList);
+            var devicesProcessor           = new DevicesProcessor(activeIoTHubConnectionString, MAX_COUNT_OF_DEVICES, protocolGatewayHost.Text);
+            var devicesList                = await devicesProcessor.GetDevices();
+            var sortableDevicesBindingList = new SortableBindingList<DeviceEntity>(devicesList.OrderByDescending(p => p.LastActivityTime));
 
             devicesGridView.DataSource = sortableDevicesBindingList;
             devicesGridView.ReadOnly = true;
             devicesGridView.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            devicesGridView.Sort(devicesGridView.Columns[nameof(DeviceEntity.LastActivityTime)], System.ComponentModel.ListSortDirection.Descending);
 
             if (devicesList.Count() > MAX_COUNT_OF_DEVICES)
             {
