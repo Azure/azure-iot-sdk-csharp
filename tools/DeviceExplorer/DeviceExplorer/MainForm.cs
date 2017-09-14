@@ -905,6 +905,15 @@ namespace DeviceExplorer
             }
         }
 
+        private void copyDeviceIdToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var rows = from DataGridViewRow row in devicesGridView.SelectedRows
+                       select row.DataBoundItem as DeviceEntity;
+
+            if (rows.FirstOrDefault() is DeviceEntity selected)
+                Clipboard.SetText(selected.Id);
+        }
+
         private void getDeviceConnectionStringToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (devicesGridView.SelectedRows.Count > 0)

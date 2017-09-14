@@ -122,6 +122,7 @@
             this.label14 = new System.Windows.Forms.Label();
             this.label13 = new System.Windows.Forms.Label();
             this.ehStringToolTip = new System.Windows.Forms.ToolTip(this.components);
+            this.copyDeviceIdToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tabCallDeviceMethod.SuspendLayout();
             this.tabPage2.SuspendLayout();
             this.groupBox5.SuspendLayout();
@@ -525,12 +526,13 @@
             this.devicesGridViewContextMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.copyAllToolStripMenuItem,
             this.copySelectedToolStripMenuItem,
+            this.copyDeviceIdToolStripMenuItem,
             this.toolStripSeparator1,
             this.getDeviceConnectionStringToolStripMenuItem,
             this.toolStripSeparator2,
             this.showDevicePropertiesToolStripMenuItem});
             this.devicesGridViewContextMenu.Name = "devicesGridViewContextMenu";
-            this.devicesGridViewContextMenu.Size = new System.Drawing.Size(300, 104);
+            this.devicesGridViewContextMenu.Size = new System.Drawing.Size(300, 148);
             // 
             // copyAllToolStripMenuItem
             // 
@@ -1180,6 +1182,13 @@
             this.label13.TabIndex = 0;
             this.label13.Text = "Call Method on Device";
             // 
+            // copyDeviceIdToolStripMenuItem
+            // 
+            this.copyDeviceIdToolStripMenuItem.Name = "copyDeviceIdToolStripMenuItem";
+            this.copyDeviceIdToolStripMenuItem.Size = new System.Drawing.Size(299, 22);
+            this.copyDeviceIdToolStripMenuItem.Text = "Copy device id";
+            this.copyDeviceIdToolStripMenuItem.Click += new System.EventHandler(this.copyDeviceIdToolStripMenuItem_Click);
+            // 
             // MainForm
             // 
             this.AcceptButton = this.updateSettingsButton;
@@ -1315,6 +1324,7 @@
         private System.Windows.Forms.CheckBox enableSystemProperties;
         private System.Windows.Forms.ComboBox dhConStringTextBox;
         private System.Windows.Forms.CheckBox enableOperationMonitoring;
+        private System.Windows.Forms.ToolStripMenuItem copyDeviceIdToolStripMenuItem;
     }
 }
 
