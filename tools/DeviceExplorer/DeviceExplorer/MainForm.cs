@@ -286,11 +286,6 @@ namespace DeviceExplorer
                 {
                     UpdateListOfDevices();
                 }
-
-                using (new CenterDialog(this))
-                {
-                    MessageBox.Show("Settings updated successfully", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
             }
             catch (Exception ex)
             {
