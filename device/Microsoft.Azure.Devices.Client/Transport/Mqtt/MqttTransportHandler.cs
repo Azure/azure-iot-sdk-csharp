@@ -963,12 +963,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             return async (address, port) =>
             {
-                var additionalQueryParams = "";
-#if WINDOWS_UWP
-                // UWP implementation doesn't set client certs, so we want to tell the IoT Hub to not ask for them
+                string additionalQueryParams = "";
+#if WINDOWS_UWP || NETSTANDARD1_3
+                // UWP and NETSTANDARD1_3 implementation doesn't set client certs, so we want to tell the IoT Hub to not ask for them
                 additionalQueryParams = "?iothub-no-client-cert=true";
 #endif
-
                 IEventLoopGroup eventLoopGroup = EventLoopGroupPool.TakeOrAdd(this.eventLoopGroupKey);
 
                 var websocketUri = new Uri(WebSocketConstants.Scheme + iotHubConnectionString.HostName + ":" + WebSocketConstants.SecurePort + WebSocketConstants.UriSuffix + additionalQueryParams);
@@ -978,7 +977,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 #if !WINDOWS_UWP // UWP does not support proxies
                 // Check if we're configured to use a proxy server
                 IWebProxy webProxy = WebRequest.DefaultWebProxy;
-                Uri proxyAddress = webProxy?.GetProxy(websocketUri);
+                Uri proxyAddress = null;
+#if !NETSTANDARD1_3
+                proxyAddress = webProxy?.GetProxy(websocketUri);
+#endif
                 if (!websocketUri.Equals(proxyAddress))
                 {
                     // Configure proxy server

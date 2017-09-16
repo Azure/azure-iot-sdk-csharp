@@ -335,7 +335,10 @@ namespace Microsoft.Azure.Devices.Client
 
             // Check if we're configured to use a proxy server
             IWebProxy webProxy = WebRequest.DefaultWebProxy;
-            Uri proxyAddress = webProxy != null ? webProxy.GetProxy(websocketUri) : null;
+            Uri proxyAddress = null;
+#if !NETSTANDARD1_3
+            proxyAddress = webProxy != null ? webProxy.GetProxy(websocketUri) : null;
+#endif
             if (!websocketUri.Equals(proxyAddress))
             {
                 // Configure proxy server
@@ -364,7 +367,12 @@ namespace Microsoft.Azure.Devices.Client
         async Task<TransportBase> CreateClientWebSocketTransportAsync(TimeSpan timeout)
         {
             var timeoutHelper = new TimeoutHelper(timeout);
-            Uri websocketUri = new Uri(WebSocketConstants.Scheme + this.hostName + ":" + WebSocketConstants.SecurePort + WebSocketConstants.UriSuffix);
+            string additionalQueryParams = "";
+#if NETSTANDARD1_3
+            // NETSTANDARD1_3 implementation doesn't set client certs, so we want to tell the IoT Hub to not ask for them
+            additionalQueryParams = "?iothub-no-client-cert=true";
+#endif
+            Uri websocketUri = new Uri(WebSocketConstants.Scheme + this.hostName + ":" + WebSocketConstants.SecurePort + WebSocketConstants.UriSuffix + additionalQueryParams);
             // Use Legacy WebSocket if it is running on Windows 7 or older. Windows 7/Windows 2008 R2 is version 6.1
 #if !NETSTANDARD1_3
             if (Environment.OSVersion.Version.Major < 6 || (Environment.OSVersion.Version.Major == 6 && Environment.OSVersion.Version.Minor <= 1))
