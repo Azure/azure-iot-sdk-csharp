@@ -9,25 +9,37 @@ for %%i in ("%build-root%") do set build-root=%%~fi
 
 REM -- C# Shared Assembly --
 cd %build-root%\shared\build
-call build.cmd
+call build.cmd --wip-provisioning
 if errorlevel 1 goto :eof
 cd %build-root%
 
 REM -- C# Device SDK --
 cd %build-root%\device\build
-call build.cmd --wip-use-c2d-amqp-methods
+call build.cmd --wip-provisioning
 if errorlevel 1 goto :eof
 cd %build-root%
 
 REM -- C# Service SDK --
 cd %build-root%\service\build
-call build.cmd
+call build.cmd --wip-provisioning
+if errorlevel 1 goto :eof
+cd %build-root%
+
+REM -- C# Provisioning Device SDK --
+cd %build-root%\provisioning\device\build
+call build.cmd --wip-provisioning
+if errorlevel 1 goto :eof
+cd %build-root%
+
+REM -- C# Provisioning Service SDK --
+cd %build-root%\provisioning\service\build
+call build.cmd --wip-provisioning
 if errorlevel 1 goto :eof
 cd %build-root%
 
 REM -- C# E2E Tests  --
 cd %build-root%\e2e\build
-call build.cmd  --wip-use-c2d-amqp-methods
+call build.cmd --wip-provisioning
 if errorlevel 1 goto :eof
 cd %build-root%
 

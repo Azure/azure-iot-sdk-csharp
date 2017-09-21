@@ -1,3 +1,6 @@
+@REM Copyright (c) Microsoft. All rights reserved.
+@REM Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 @setlocal EnableExtensions EnableDelayedExpansion
 @echo off
 
@@ -5,7 +8,7 @@ set current-path=%~dp0
 rem // remove trailing slash
 set current-path=%current-path:~0,-1%
 
-set build-root=%current-path%\..\..
+set build-root=%current-path%\..\..\..
 rem // resolve to fully qualified path
 for %%i in ("%build-root%") do set build-root=%%~fi
 
@@ -70,15 +73,15 @@ goto args-loop
 :args-done
 
 rem -----------------------------------------------------------------------------
-rem -- build csharp iot client
+rem -- build csharp provisioning client
 rem -----------------------------------------------------------------------------
 
-call nuget restore -config "%current-path%\NuGet.Config" "%build-root%\service\iothub_csharp_serviceclient.sln"
+call nuget restore -config "%current-path%\NuGet.Config" "%build-root%\provisioning\device\provisioning_deviceclient.sln"
 if %build-clean%==1 (
-    call :clean-a-solution "%build-root%\service\iothub_csharp_serviceclient.sln" %build-config% %build-platform%
+    call :clean-a-solution "%build-root%\provisioning\device\provisioning_deviceclient.sln" %build-config% %build-platform%
     if not !errorlevel!==0 exit /b !errorlevel!
 )
-call :build-a-solution "%build-root%\service\iothub_csharp_serviceclient.sln" %build-config% %build-platform%
+call :build-a-solution "%build-root%\provisioning\device\provisioning_deviceclient.sln" %build-config% %build-platform%
 if not !errorlevel!==0 exit /b !errorlevel!
 
 rem -----------------------------------------------------------------------------
@@ -126,6 +129,6 @@ if %wip-provisioning%==1 (
     set extra-defines="WIP_PROVISIONING"
 )
 
-msbuild /m %build-target% "/p:Configuration=%build-config%;Platform=%build-platform%" /p:DefineConstants2=%extra-defines% %2
+msbuild /m /t:Rebuild %build-target% "/p:Configuration=%build-config%;Platform=%build-platform%" /p:DefineConstants2=%extra-defines% %2
 if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 goto :eof
