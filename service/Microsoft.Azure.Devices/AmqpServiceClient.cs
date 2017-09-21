@@ -128,7 +128,7 @@ namespace Microsoft.Azure.Devices
                 throw new ArgumentNullException("message");
             }
             Outcome outcome;
-            message.Ack = DeliveryAcknowledgement.Full;
+
             using (AmqpMessage amqpMessage = message.ToAmqpMessage())
             {
                 amqpMessage.Properties.To = "/devices/" + WebUtility.UrlEncode(deviceId) + "/messages/deviceBound";
