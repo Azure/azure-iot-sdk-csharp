@@ -12,6 +12,7 @@
 *.suo
 *.user
 *.sln.docstates
+.vs/
 
 # Build results
 
@@ -199,7 +200,6 @@ Buildx86retail.dat
 
 */NuGet/*.exe
 */NuGet/*.nupkg
-*/.vs/*
 */nuget.exe
 
 # .NET Micro Framework Emulator files and folders
