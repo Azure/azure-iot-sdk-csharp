@@ -23,7 +23,7 @@ public sealed class AmqpServiceClient : ServiceClient
 public async override Task SendAsync(string deviceId, Message message, TimeSpan? timeout = null)
 ```
 
-**SRS_ServiceClient_36_1480581: [** Method should throw an error if timeout reached before response is recieved **]**
+**SRS_ServiceClient_36_1480581: [** Method should throw an error if the timeout is reached before response is recieved **]**
 
 ### Exceptions
 

@@ -158,7 +158,6 @@ namespace Microsoft.Azure.Devices
                     throw AmqpClientHelper.ToIotHubClientContract(exception);
                 }
             }
-
             if (outcome.DescriptorCode != Accepted.Code)
             {
                 throw AmqpErrorMapper.GetExceptionFromOutcome(outcome);

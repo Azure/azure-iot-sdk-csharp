@@ -568,30 +568,37 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         [TestCategory("Message-E2E")]
         [TestCategory("Timeout")]
+        [ExpectedException(typeof(TimeoutException))]
         public async Task Message_TimeOutReachedResponse()
         {
-            Exception error = null;
-            try
-            {
-                await SlowResponseToMessage();
-            }
-            catch (AggregateException e)
-            {
-                error = e.InnerException;
-            }
-
-            Assert.IsNotNull(error);
-            Assert.IsTrue(error.Message.Contains("The operation did not complete within the allocated time"));
+            await FastTimeout();
         }
 
-        private async Task SlowResponseToMessage()
+        [TestMethod]
+        [TestCategory("Message-E2E")]
+        [TestCategory("Timeout")]
+        // Should not have any exceptions thrown. 
+        public async Task Message_NoTimeoutPassed()
+        {
+            await DefaultTimeout();
+        }
+
+        private async Task DefaultTimeout()
         {
             Tuple<string, string> deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
             ServiceClient sender = ServiceClient.CreateFromConnectionString(hubConnectionString);
 
             var deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, Client.TransportType.Amqp);
-            sender.SendAsync(deviceInfo.Item1, new Message(Encoding.ASCII.GetBytes("Dummy Message")), TimeSpan.FromTicks(1)).Wait();
+            await sender.SendAsync(deviceInfo.Item1, new Message(Encoding.ASCII.GetBytes("Dummy Message")), null);
+        }
 
+        private async Task FastTimeout()
+        {
+            Tuple<string, string> deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
+            ServiceClient sender = ServiceClient.CreateFromConnectionString(hubConnectionString);
+
+            var deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, Client.TransportType.Amqp);
+            await sender.SendAsync(deviceInfo.Item1, new Message(Encoding.ASCII.GetBytes("Dummy Message")), TimeSpan.FromTicks(1));
         }
 
         private EventHubReceiver CreateEventHubReceiver(string deviceName, out EventHubClient eventHubClient)
