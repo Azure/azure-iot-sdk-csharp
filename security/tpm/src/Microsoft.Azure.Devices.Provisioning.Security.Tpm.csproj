@@ -5,6 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.TSS" Version="1.0.6" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\..\shared\Microsoft.Azure.Devices.Shared.NetStandard\Microsoft.Azure.Devices.Shared.NetStandard.csproj">
       <Project>{91dfb837-d8a3-4f54-ae0d-45c95acd0c2a}</Project>
       <Name>Microsoft.Azure.Devices.Shared.NetStandard</Name>

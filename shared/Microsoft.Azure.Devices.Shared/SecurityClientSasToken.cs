@@ -23,10 +23,10 @@ namespace Microsoft.Azure.Devices.Shared
         }
 
         /// <summary>
-        /// Gets the Base64 encoded EndorsmentKey.
+        /// Gets the Base64 encoded EndorsementKey.
         /// </summary>
         /// <returns>Base64 encoded EK.</returns>
-        public abstract string GetEndorsmentKey();
+        public abstract string GetEndorsementKey();
 
         /// <summary>
         /// Gets the Base64 encoded StorageRootKey.
