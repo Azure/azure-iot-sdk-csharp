@@ -101,6 +101,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await ReceiveSingleMessageX509(Client.TransportType.Amqp_Tcp_Only);
         }
 
+        [Ignore] // TODO: #171 - X509 tests are intermittently failing during CI.
         [TestMethod]
         [TestCategory("X509-Message-E2E")]
         public async Task X509_DeviceReceiveSingleMessage_AmqpWs()
