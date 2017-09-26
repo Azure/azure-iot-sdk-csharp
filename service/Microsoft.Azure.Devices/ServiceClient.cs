@@ -88,8 +88,9 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <param name="deviceId">The device identifier for the target device</param>
         /// <param name="message">The message containing the notification</param>
+        /// <param name="timeout">The operation timeout override. If not used uses OperationTimeout default</param>
         /// <returns></returns>
-        public abstract Task SendAsync(string deviceId, Message message);
+        public abstract Task SendAsync(string deviceId, Message message, TimeSpan? timeout = null);
 
         /// <summary>
         /// Removes all messages from a device's queue.

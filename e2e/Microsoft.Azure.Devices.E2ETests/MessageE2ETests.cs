@@ -1,18 +1,17 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text;
-using System.Threading.Tasks;
-
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Common;
 using Microsoft.ServiceBus.Messaging;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
@@ -564,6 +563,42 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.FaultType_GracefulShutdownMqtt,
                 TestUtil.FaultCloseReason_Bye,
                 TestUtil.DefaultDelayInSec);
+        }
+
+        [TestMethod]
+        [TestCategory("Message-E2E")]
+        [TestCategory("Timeout")]
+        [ExpectedException(typeof(TimeoutException))]
+        public async Task Message_TimeOutReachedResponse()
+        {
+            await FastTimeout();
+        }
+
+        [TestMethod]
+        [TestCategory("Message-E2E")]
+        [TestCategory("Timeout")]
+        // Should not have any exceptions thrown. 
+        public async Task Message_NoTimeoutPassed()
+        {
+            await DefaultTimeout();
+        }
+
+        private async Task DefaultTimeout()
+        {
+            Tuple<string, string> deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
+            ServiceClient sender = ServiceClient.CreateFromConnectionString(hubConnectionString);
+
+            var deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, Client.TransportType.Amqp);
+            await sender.SendAsync(deviceInfo.Item1, new Message(Encoding.ASCII.GetBytes("Dummy Message")), null);
+        }
+
+        private async Task FastTimeout()
+        {
+            Tuple<string, string> deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
+            ServiceClient sender = ServiceClient.CreateFromConnectionString(hubConnectionString);
+
+            var deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, Client.TransportType.Amqp);
+            await sender.SendAsync(deviceInfo.Item1, new Message(Encoding.ASCII.GetBytes("Dummy Message")), TimeSpan.FromTicks(1));
         }
 
         private EventHubReceiver CreateEventHubReceiver(string deviceName, out EventHubClient eventHubClient)
