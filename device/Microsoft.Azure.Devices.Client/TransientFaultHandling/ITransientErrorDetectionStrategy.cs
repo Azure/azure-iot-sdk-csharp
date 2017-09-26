@@ -14,14 +14,18 @@
 //implied. See the License for the specific language governing permissions
 //and limitations under the License.
 
-using System;
+// THIS FILE HAS BEEN MODIFIED FROM ITS ORIGINAL FORM.
+// Change Log:
+// 9/1/2017 jasminel Renamed namespace to Microsoft.Azure.Devices.Client.TransientFaultHandling and modified access modifier to internal.
 
-namespace Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling
+namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
 {
+    using System;
+
     /// <summary>
     /// Defines an interface that must be implemented by custom components responsible for detecting specific transient conditions.
     /// </summary>
-    public interface ITransientErrorDetectionStrategy
+    internal interface ITransientErrorDetectionStrategy
     {
         /// <summary>
         /// Determines whether the specified exception represents a transient failure that can be compensated by a retry.

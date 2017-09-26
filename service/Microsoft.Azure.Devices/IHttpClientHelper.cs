@@ -88,6 +88,14 @@ namespace Microsoft.Azure.Devices
         Task<T2> PostAsync<T, T2>(
             Uri requestUri,
             T entity,
+            TimeSpan operationTimeout,
+            IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> errorMappingOverrides,
+            IDictionary<string, string> customHeaders,
+            CancellationToken cancellationToken);
+
+        Task<T2> PostAsync<T, T2>(
+            Uri requestUri,
+            T entity,
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> errorMappingOverrides,
             IDictionary<string, string> customHeaders,
             MediaTypeHeaderValue customContentType,

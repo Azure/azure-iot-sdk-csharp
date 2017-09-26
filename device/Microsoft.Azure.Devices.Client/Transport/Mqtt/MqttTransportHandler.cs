@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
     using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Azure.Devices.Client.Extensions;
     using Microsoft.Azure.Devices.Shared;
-    using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
+    using Microsoft.Azure.Devices.Client.TransientFaultHandling;
     using Newtonsoft.Json;
     using TransportType = Microsoft.Azure.Devices.Client.TransportType;
 
@@ -153,7 +153,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         Regex twinResponseTopicRegex = new Regex(twinResponseTopicPattern, RegexOptions.None);
 
         Action<object, ConnectionEventArgs> connectionOpenedListener;
-        Action<object, ConnectionEventArgs> connectionClosedListener;
+        Func<object, ConnectionEventArgs, Task> connectionClosedListener;
         Func<MethodRequestInternal, Task> messageListener;
         Action<TwinCollection> onDesiredStatePatchListener;
         Action<Message> twinResponseEvent;
@@ -165,7 +165,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             IotHubConnectionString iotHubConnectionString, 
             MqttTransportSettings settings,
             Action<object, ConnectionEventArgs> onConnectionOpenedCallback,
-            Action<object, ConnectionEventArgs> onConnectionClosedCallback, 
+            Func<object, ConnectionEventArgs, Task> onConnectionClosedCallback, 
             Func<MethodRequestInternal, Task> onMethodCallback = null, 
             Action<TwinCollection> onDesiredStatePatchReceivedCallback = null)
             : this(context, iotHubConnectionString, settings, null, onConnectionOpenedCallback, onConnectionClosedCallback)
@@ -180,7 +180,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             MqttTransportSettings settings,
             Func<IPAddress, int, Task<IChannel>> channelFactory,
             Action<object, ConnectionEventArgs> onConnectionOpenedCallback,
-            Action<object, ConnectionEventArgs> onConnectionClosedCallback)
+            Func<object, ConnectionEventArgs, Task> onConnectionClosedCallback)
             : base(context, settings)
         {
             this.connectionOpenedListener = onConnectionOpenedCallback;
@@ -376,7 +376,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             if (this.TryStop())
             {
                 await this.closeRetryPolicy.ExecuteAsync(this.CleanupAsync);
-                this.connectionClosedListener(this.channel, new ConnectionEventArgs { ConnectionType = ConnectionType.MqttConnection, ConnectionStatus = ConnectionStatus.Disabled, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Client_Close });
+                await this.connectionClosedListener(
+                    this.channel, 
+                    new ConnectionEventArgs
+                    {
+                        ConnectionType = ConnectionType.MqttConnection,
+                        ConnectionStatus = ConnectionStatus.Disabled,
+                        ConnectionStatusChangeReason = ConnectionStatusChangeReason.Client_Close
+                    });
             }
             else
             {
@@ -395,11 +402,18 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             if (this.TryStateTransition(TransportState.Opening, TransportState.Open))
             {
                 this.connectCompletion.TryComplete();
-                this.connectionOpenedListener(this.channel, new ConnectionEventArgs { ConnectionType = ConnectionType.MqttConnection, ConnectionStatus = ConnectionStatus.Connected, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Connection_Ok});
+                Task.Run(() => this.connectionOpenedListener(
+                    this.channel, 
+                    new ConnectionEventArgs
+                    {
+                        ConnectionType = ConnectionType.MqttConnection,
+                        ConnectionStatus = ConnectionStatus.Connected,
+                        ConnectionStatusChangeReason = ConnectionStatusChangeReason.Connection_Ok
+                    }));
             }
         }
 
-        void HandleIncomingTwinPatch(Message message)
+        async Task HandleIncomingTwinPatch(Message message)
         {
             try
             {
@@ -409,7 +423,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     {
                         string patch = reader.ReadToEnd();
                         var props = JsonConvert.DeserializeObject<TwinCollection>(patch);
-                        this.onDesiredStatePatchListener(props);
+                        await Task.Run(() => this.onDesiredStatePatchListener(props));
                     }
                 }
             }
@@ -419,14 +433,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        void HandleIncomingMethodPost(Message message)
+        async Task HandleIncomingMethodPost(Message message)
         {
             try
             {
                 string[] tokens = System.Text.RegularExpressions.Regex.Split(message.MqttTopicName, "/");
 
                 var mr = new MethodRequestInternal(tokens[3], tokens[4].Substring(6), message.BodyStream);
-                this.messageListener(mr);
+                await Task.Run(() =>this.messageListener(mr));
             }
             finally
             {
@@ -434,7 +448,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        public void OnMessageReceived(Message message)
+        public async void OnMessageReceived(Message message)
         {
             if ((this.State & TransportState.Open) == TransportState.Open)
             {
@@ -444,11 +458,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 }
                 else if (message.MqttTopicName.StartsWith(twinPatchTopicPrefix))
                 {
-                    HandleIncomingTwinPatch(message);
+                    await HandleIncomingTwinPatch(message);
                 }
                 else if (message.MqttTopicName.StartsWith(methodPostTopicPrefix))
                 {
-                    HandleIncomingMethodPost(message);
+                    await HandleIncomingMethodPost(message);
                 }
                 else
                 {
@@ -495,9 +509,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 if ((previousState & TransportState.Open) == TransportState.Open)
                 {
-                    this.connectionClosedListener(this.channel, new ConnectionEventArgs { ConnectionType = ConnectionType.MqttConnection, ConnectionStatus = ConnectionStatus.Disconnected_Retrying, ConnectionStatusChangeReason = ConnectionStatusChangeReason.No_Network});
+                    await Task.Run(async () => await this.connectionClosedListener(
+                        this.channel, 
+                        new ConnectionEventArgs
+                        {
+                            ConnectionType = ConnectionType.MqttConnection,
+                            ConnectionStatus = ConnectionStatus.Disconnected_Retrying,
+                            ConnectionStatusChangeReason = ConnectionStatusChangeReason.No_Network
+                        }));
                 }
-
             }
             catch (Exception ex) when (!ex.IsFatal())
             {
@@ -943,12 +963,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             return async (address, port) =>
             {
-                var additionalQueryParams = "";
-#if WINDOWS_UWP
-                // UWP implementation doesn't set client certs, so we want to tell the IoT Hub to not ask for them
+                string additionalQueryParams = "";
+#if WINDOWS_UWP || NETSTANDARD1_3
+                // UWP and NETSTANDARD1_3 implementation doesn't set client certs, so we want to tell the IoT Hub to not ask for them
                 additionalQueryParams = "?iothub-no-client-cert=true";
 #endif
-
                 IEventLoopGroup eventLoopGroup = EventLoopGroupPool.TakeOrAdd(this.eventLoopGroupKey);
 
                 var websocketUri = new Uri(WebSocketConstants.Scheme + iotHubConnectionString.HostName + ":" + WebSocketConstants.SecurePort + WebSocketConstants.UriSuffix + additionalQueryParams);
@@ -958,7 +977,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 #if !WINDOWS_UWP // UWP does not support proxies
                 // Check if we're configured to use a proxy server
                 IWebProxy webProxy = WebRequest.DefaultWebProxy;
-                Uri proxyAddress = webProxy?.GetProxy(websocketUri);
+                Uri proxyAddress = null;
+#if !NETSTANDARD1_3
+                proxyAddress = webProxy?.GetProxy(websocketUri);
+#endif
                 if (!websocketUri.Equals(proxyAddress))
                 {
                     // Configure proxy server
@@ -1059,6 +1081,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         }
     }
 }
+
 
 
 

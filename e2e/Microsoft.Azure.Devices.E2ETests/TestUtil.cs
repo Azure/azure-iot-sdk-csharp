@@ -40,6 +40,8 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         public const int ShortRetryInMilliSec = 3000;
 
+        public static int EventHubEpoch = 0;
+
         public static string GetHostName(string connectionString)
         {
             Regex regex = new Regex("HostName=([^;]+)", RegexOptions.None);

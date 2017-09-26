@@ -18,6 +18,18 @@
     <Compile Include="$(DeviceClientDir)\AmqpTransportSettings.cs">
       <Link>AmqpTransportSettings.cs</Link>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\RetryPolicies\IRetryPolicy.cs">
+      <Link>IRetryPolicy.cs</Link>
+    </Compile>
+	<Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\RetryPolicies\NoRetry.cs">
+      <Link>NoRetry.cs</Link>
+    </Compile>
+	<Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\RetryPolicies\ExponentialBackoff.cs">
+      <Link>ExponentialBackoff.cs</Link>
+    </Compile>
+	<Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\TransientFaultHandling\RetryStrategyWrapper.cs">
+      <Link>RetryStrategyWrapper.cs</Link>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\AuthenticationMethodFactory.cs">
       <Link>AuthenticationMethodFactory.cs</Link>
     </Compile>
@@ -384,6 +396,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\Transport\TransportHandlerBase.cs">
       <Link>TransportHandlerBase.cs</Link>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\Transport\RetryDelegatingHandler.cs">
+      <Link>RetryDelegatingHandler.cs</Link>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\TransportType.cs">
       <Link>TransportType.cs</Link>
     </Compile>
@@ -402,5 +417,47 @@
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\Transport\FileUploadResponse.cs">
       <Link>FileUploadResponse.cs</Link>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\TransientFaultHandling\AsyncExecution.cs">
+      <Link>AsyncExecution.cs</Link>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\TransientFaultHandling\AsyncExecution[T].cs">
+      <Link>AsyncExecution[T].cs</Link>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\TransientFaultHandling\ExponentialBackoff.cs">
+      <Link>ExponentialBackoffInternal.cs</Link>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\TransientFaultHandling\FixedInterval.cs">
+      <Link>FixedInterval.cs</Link>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\TransientFaultHandling\Guard.cs">
+      <Link>Guard.cs</Link>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\TransientFaultHandling\Incremental.cs">
+      <Link>Incremental.cs</Link>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\TransientFaultHandling\ITransientErrorDetectionStrategy.cs">
+      <Link>ITransientErrorDetectionStrategy.cs</Link>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\TransientFaultHandling\RetryingEventArgs.cs">
+      <Link>RetryingEventArgs.cs</Link>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\TransientFaultHandling\RetryLimitExceededException.cs">
+      <Link>RetryLimitExceededException.cs</Link>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\TransientFaultHandling\RetryPolicy.cs">
+      <Link>RetryPolicy.cs</Link>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\TransientFaultHandling\RetryStrategy.cs">
+      <Link>RetryStrategy.cs</Link>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\TransientFaultHandling\ShouldRetry.cs">
+      <Link>ShouldRetry.cs</Link>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\TransientFaultHandling\Properties\TransientFaultHandlingResources.Designer.cs">
+      <Link>TransientFaultHandlingResources.Designer.cs</Link>
+    </Compile>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\TransientFaultHandling\Properties\TransientFaultHandlingResources.resx">
+      <Link>TransientFaultHandlingResources.resx</Link>
+    </EmbeddedResource>
   </ItemGroup>
 </Project>

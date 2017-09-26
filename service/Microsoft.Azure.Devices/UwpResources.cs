@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices
         {
         }
 
-        private static readonly ResourceManagerImpl ResourceManager = new ResourceManagerImpl("Microsoft.Azure.Devices.Uwp/ApiResources");
+        private static readonly ResourceManagerImpl ResourceManager = new ResourceManagerImpl("Microsoft.Azure.Devices/ApiResources");
 
         /// <summary>
         ///   Overrides the current thread's CurrentUICulture property for all

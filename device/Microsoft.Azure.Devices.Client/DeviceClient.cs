@@ -122,19 +122,65 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         SemaphoreSlim methodsDictionarySemaphore = new SemaphoreSlim(1, 1);
 
         DeviceClientConnectionStatusManager connectionStatusManager = new DeviceClientConnectionStatusManager();
-        
+
+        public const uint DefaultOperationTimeoutInMilliseconds = 4 * 60 * 1000;
+
         /// <summary>
         /// Stores the timeout used in the operation retries.
         /// </summary>
         // Codes_SRS_DEVICECLIENT_28_002: [This property shall be defaulted to 240000 (4 minutes).]
-        const uint DefaultOperationTimeoutInMilliseconds = 4 * 60 * 1000;
-
         public uint OperationTimeoutInMilliseconds { get; set; } = DefaultOperationTimeoutInMilliseconds;
 
         /// <summary>
         /// Stores the retry strategy used in the operation retries.
         /// </summary>
+        // Codes_SRS_DEVICECLIENT_28_001: [This property shall be defaulted to the exponential retry strategy with backoff 
+        // parameters for calculating delay in between retries.]
+        [Obsolete("This method has been deprecated.  Please use Microsoft.Azure.Devices.Client.SetRetryPolicy(IRetryPolicy retryPolicy) instead.")]
         public RetryPolicyType RetryPolicy { get; set; }
+
+        /// <summary>
+        /// Sets the retry policy used in the operation retries.
+        /// </summary>
+        // Codes_SRS_DEVICECLIENT_28_001: [This property shall be defaulted to the exponential retry strategy with backoff 
+        // parameters for calculating delay in between retries.]
+#if !WINDOWS_UWP && !PCL
+        public void SetRetryPolicy(IRetryPolicy retryPolicy)
+        {
+            var retryDelegatingHandler = GetDelegateHandler<RetryDelegatingHandler>();
+            if (retryDelegatingHandler == null)
+            {
+                throw new NotSupportedException();
+            }
+
+            retryDelegatingHandler.SetRetryPolicy(retryPolicy);
+        }
+#endif
+
+        private T GetDelegateHandler<T>() where T: DefaultDelegatingHandler
+        {
+            var handler = this.InnerHandler as DefaultDelegatingHandler;
+            bool isFound = false;
+
+            while (!isFound || handler == null)
+            {
+                if (handler is T)
+                {
+                    isFound = true;
+                }
+                else
+                {
+                    handler = handler.InnerHandler as DefaultDelegatingHandler;
+                }
+            }
+
+            if (!isFound)
+            {
+                return default(T);
+            }
+
+            return (T) handler;
+        }
 
         /// <summary>
         /// Stores Methods supported by the client device and their associated delegate.
@@ -147,7 +193,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
 
         internal delegate Task OnMethodCalledDelegate(MethodRequestInternal methodRequestInternal);
 
-        internal delegate void OnConnectionClosedDelegate(object sender, ConnectionEventArgs e);
+        internal delegate Task OnConnectionClosedDelegate(object sender, ConnectionEventArgs e);
 
         internal delegate void OnConnectionOpenedDelegate(object sender, ConnectionEventArgs e);
 
@@ -733,15 +779,18 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                     .WithTimeout(TimeSpan.MaxValue, () => Resources.OperationTimeoutExpired, cancellationTokenSource.Token);
             }
 
-            CancellationTokenSource operationTimeoutCancellationTokenSource = GetOperationTimeoutCancellationTokenSource();
+            CancellationTokenSource operationTimeoutCancellationTokenSource = new CancellationTokenSource();
 
             var result = operation(operationTimeoutCancellationTokenSource)
                 .WithTimeout(TimeSpan.FromMilliseconds(OperationTimeoutInMilliseconds), () => Resources.OperationTimeoutExpired, operationTimeoutCancellationTokenSource.Token);
-            result.ContinueWith(t =>
-            {
+
+            return result.ContinueWith(t => {
                 operationTimeoutCancellationTokenSource.Dispose();
+                if (t.IsFaulted)
+                {
+                    throw t.Exception.InnerException;
+                }
             });
-            return result;
         }
 
         Task ApplyTimeout(Func<CancellationToken, Task> operation)
@@ -752,15 +801,19 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                     .WithTimeout(TimeSpan.MaxValue, () => Resources.OperationTimeoutExpired, CancellationToken.None);
             }
 
-            CancellationTokenSource operationTimeoutCancellationTokenSource = GetOperationTimeoutCancellationTokenSource();
+            CancellationTokenSource operationTimeoutCancellationTokenSource = new CancellationTokenSource();
 
             var result = operation(operationTimeoutCancellationTokenSource.Token)
                 .WithTimeout(TimeSpan.FromMilliseconds(OperationTimeoutInMilliseconds), () => Resources.OperationTimeoutExpired, operationTimeoutCancellationTokenSource.Token);
-            result.ContinueWith(t =>
+
+            return result.ContinueWith(t =>
             {
                 operationTimeoutCancellationTokenSource.Dispose();
+                if (t.IsFaulted)
+                {
+                    throw t.Exception.InnerException;
+                }
             });
-            return result;
         }
 
         Task<Message> ApplyTimeoutMessage(Func<CancellationToken, Task<Message>> operation)
@@ -771,16 +824,20 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                     .WithTimeout(TimeSpan.MaxValue, () => Resources.OperationTimeoutExpired, CancellationToken.None);
             }
 
-            CancellationTokenSource operationTimeoutCancellationTokenSource = GetOperationTimeoutCancellationTokenSource();
+            CancellationTokenSource operationTimeoutCancellationTokenSource = new CancellationTokenSource();
 
             var result = operation(operationTimeoutCancellationTokenSource.Token)
                 .WithTimeout(TimeSpan.FromMilliseconds(OperationTimeoutInMilliseconds), () => Resources.OperationTimeoutExpired, operationTimeoutCancellationTokenSource.Token);
-            result.ContinueWith(t =>
+
+            return result.ContinueWith(t =>
             {
                 operationTimeoutCancellationTokenSource.Dispose();
+                if (t.IsFaulted)
+                {
+                    throw t.Exception.InnerException;
+                }
                 return t.Result;
             });
-            return result;
         }
 
         Task<Twin> ApplyTimeoutTwin(Func<CancellationToken, Task<Twin>> operation)
@@ -791,16 +848,20 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                     .WithTimeout(TimeSpan.MaxValue, () => Resources.OperationTimeoutExpired, CancellationToken.None);
             }
 
-            CancellationTokenSource operationTimeoutCancellationTokenSource = GetOperationTimeoutCancellationTokenSource();
+            CancellationTokenSource operationTimeoutCancellationTokenSource = new CancellationTokenSource();
 
             var result = operation(operationTimeoutCancellationTokenSource.Token)
                 .WithTimeout(TimeSpan.FromMilliseconds(OperationTimeoutInMilliseconds), () => Resources.OperationTimeoutExpired, operationTimeoutCancellationTokenSource.Token);
-            result.ContinueWith(t =>
+
+            return result.ContinueWith(t =>
             {
                 operationTimeoutCancellationTokenSource.Dispose();
+                if (t.IsFaulted)
+                {
+                    throw t.Exception.InnerException;
+                }
                 return t.Result;
             });
-            return result;
         }
 
 #if !PCL
@@ -1015,7 +1076,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// <summary>
         /// The delegate for handling disrupted connection/links in the transport layer.
         /// </summary>
-        internal async void OnConnectionClosed(object sender, ConnectionEventArgs e)
+        internal async Task OnConnectionClosed(object sender, ConnectionEventArgs e)
         {
             ConnectionStatusChangeResult result = null;
 
@@ -1025,7 +1086,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                 try
                 {
                     // codes_SRS_DEVICECLIENT_28_022: [** `OnConnectionClosed` shall invoke the RecoverConnections operation. **]**          
-                    await ApplyTimeout(operationTimeoutCancellationTokenSource =>
+                    await ApplyTimeout(async operationTimeoutCancellationTokenSource =>
                     {
                         result = this.connectionStatusManager.ChangeTo(e.ConnectionType, ConnectionStatus.Disconnected_Retrying, ConnectionStatus.Connected);
                         if (result.IsClientStatusChanged && (connectionStatusChangesHandler != null))
@@ -1034,7 +1095,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                         }
 
                         CancellationTokenSource linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(result.StatusChangeCancellationTokenSource.Token, operationTimeoutCancellationTokenSource.Token);
-                        return this.InnerHandler.RecoverConnections(sender, e.ConnectionType, linkedTokenSource.Token);
+                        await this.InnerHandler.RecoverConnections(sender, e.ConnectionType, linkedTokenSource.Token);
                     });
                 }
                 catch (Exception ex)

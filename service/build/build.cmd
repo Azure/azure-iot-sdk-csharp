@@ -32,6 +32,7 @@ rem // default build options
 set build-clean=0
 set build-config=Release
 set build-platform="Any CPU"
+set wip-provisioning=0
 
 :args-loop
 if "%1" equ "" goto args-done
@@ -39,6 +40,7 @@ if "%1" equ "-c" goto arg-build-clean
 if "%1" equ "--clean" goto arg-build-clean
 if "%1" equ "--config" goto arg-build-config
 if "%1" equ "--platform" goto arg-build-platform
+if "%1" equ "--wip-provisioning" goto arg-wip-provisioning
 call :usage && exit /b 1
 
 :arg-build-clean
@@ -55,6 +57,10 @@ goto args-continue
 shift
 if "%1" equ "" call :usage && exit /b 1
 set build-platform=%1
+goto args-continue
+
+:arg-wip-provisioning
+set wip-provisioning=1
 goto args-continue
 
 :args-continue
@@ -116,6 +122,10 @@ if "%~1" neq "Build" set "build-target=/t:%~1"
 if "%~3" neq "" set build-config=%~3
 if "%~4" neq "" set build-platform=%~4
 
-msbuild /m %build-target% "/p:Configuration=%build-config%;Platform=%build-platform%" %2
+if %wip-provisioning%==1 (
+    set extra-defines="WIP_PROVISIONING"
+)
+
+msbuild /m %build-target% "/p:Configuration=%build-config%;Platform=%build-platform%" /p:DefineConstants2=%extra-defines% %2
 if not !ERRORLEVEL!==0 exit /b !ERRORLEVEL!
 goto :eof

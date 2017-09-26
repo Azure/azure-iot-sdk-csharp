@@ -14,28 +14,32 @@
 //implied. See the License for the specific language governing permissions
 //and limitations under the License.
 
-using System;
+// THIS FILE HAS BEEN MODIFIED FROM ITS ORIGINAL FORM.
+// Change Log:
+// 9/1/2017 jasminel Renamed namespace to Microsoft.Azure.Devices.Client.TransientFaultHandling and modified access modifier to internal.
 
-namespace Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling
+namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
 {
+    using System;
+
     /// <summary>
     /// Represents a retry strategy with a specified number of retry attempts and a default, fixed time interval between retries.
     /// </summary>
-    public class FixedInterval : RetryStrategy
+    internal class FixedInterval : RetryStrategy
     {
         private readonly int retryCount;
 
         private readonly TimeSpan retryInterval;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.FixedInterval" /> class. 
+        /// Initializes a new instance of the <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.FixedInterval" /> class. 
         /// </summary>
         public FixedInterval() : this(RetryStrategy.DefaultClientRetryCount)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.FixedInterval" /> class with the specified number of retry attempts. 
+        /// Initializes a new instance of the <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.FixedInterval" /> class with the specified number of retry attempts. 
         /// </summary>
         /// <param name="retryCount">The number of retry attempts.</param>
         public FixedInterval(int retryCount) : this(retryCount, RetryStrategy.DefaultRetryInterval)
@@ -43,7 +47,7 @@ namespace Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.FixedInterval" /> class with the specified number of retry attempts and time interval. 
+        /// Initializes a new instance of the <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.FixedInterval" /> class with the specified number of retry attempts and time interval. 
         /// </summary>
         /// <param name="retryCount">The number of retry attempts.</param>
         /// <param name="retryInterval">The time interval between retries.</param>
@@ -52,7 +56,7 @@ namespace Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.FixedInterval" /> class with the specified number of retry attempts, time interval, and retry strategy. 
+        /// Initializes a new instance of the <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.FixedInterval" /> class with the specified number of retry attempts, time interval, and retry strategy. 
         /// </summary>
         /// <param name="name">The retry strategy name.</param>
         /// <param name="retryCount">The number of retry attempts.</param>
@@ -62,7 +66,7 @@ namespace Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.FixedInterval" /> class with the specified number of retry attempts, time interval, retry strategy, and fast start option. 
+        /// Initializes a new instance of the <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.FixedInterval" /> class with the specified number of retry attempts, time interval, retry strategy, and fast start option. 
         /// </summary>
         /// <param name="name">The retry strategy name.</param>
         /// <param name="retryCount">The number of retry attempts.</param>

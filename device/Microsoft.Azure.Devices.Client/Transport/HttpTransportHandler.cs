@@ -128,7 +128,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 {
                     tcs.SetResult(false);
                 }
-            }, CancellationToken.None);
+            });
 
             return tcs.Task;
         }

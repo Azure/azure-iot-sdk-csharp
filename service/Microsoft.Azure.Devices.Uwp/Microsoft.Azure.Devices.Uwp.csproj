@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Microsoft.Azure.Devices</RootNamespace>
-    <AssemblyName>Microsoft.Azure.Devices.Uwp</AssemblyName>
+    <AssemblyName>Microsoft.Azure.Devices</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
     <TargetPlatformVersion>10.0.10240.0</TargetPlatformVersion>
@@ -51,7 +51,7 @@
     <OutputPath>bin\Release_Delay_Sign\</OutputPath>
     <DefineConstants>WINDOWS_UWP;TRACE;RELEASE_DELAY_SIGN</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <DocumentationFile>bin\Release\Microsoft.Azure.Devices.Uwp.xml</DocumentationFile>
+    <DocumentationFile>bin\Release\Microsoft.Azure.Devices.xml</DocumentationFile>
     <Optimize>true</Optimize>
     <NoWarn>1591</NoWarn>
     <DebugType>pdbonly</DebugType>

@@ -14,9 +14,13 @@
 //implied. See the License for the specific language governing permissions
 //and limitations under the License.
 
+// THIS FILE HAS BEEN MODIFIED FROM ITS ORIGINAL FORM.
+// Change Log:
+// 9/1/2017 jasminel Renamed namespace to Microsoft.Azure.Devices.Client.TransientFaultHandling and modified access modifier to internal.
+
 using System;
 
-namespace Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling
+namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
 {
     /// <summary>
     /// Defines a callback delegate that will be invoked whenever a retry condition is encountered.
@@ -25,5 +29,5 @@ namespace Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling
     /// <param name="lastException">The exception that caused the retry conditions to occur.</param>
     /// <param name="delay">The delay that indicates how long the current thread will be suspended before the next iteration is invoked.</param>
     /// <returns><see langword="true" /> if a retry is allowed; otherwise, <see langword="false" />.</returns>
-    public delegate bool ShouldRetry(int retryCount, Exception lastException, out TimeSpan delay);
+    internal delegate bool ShouldRetry(int retryCount, Exception lastException, out TimeSpan delay);
 }

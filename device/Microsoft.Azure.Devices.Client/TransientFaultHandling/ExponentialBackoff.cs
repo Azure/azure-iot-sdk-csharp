@@ -14,14 +14,18 @@
 //implied. See the License for the specific language governing permissions
 //and limitations under the License.
 
-using System;
+// THIS FILE HAS BEEN MODIFIED FROM ITS ORIGINAL FORM.
+// Change Log:
+// 9/1/2017 jasminel Renamed namespace to Microsoft.Azure.Devices.Client.TransientFaultHandling and modified access modifier to internal.
 
-namespace Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling
+namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
 {
+    using System;
+
     /// <summary>
     /// A retry strategy with backoff parameters for calculating the exponential delay between retries.
     /// </summary>
-    public class ExponentialBackoff : RetryStrategy
+    internal class ExponentialBackoff : RetryStrategy
     {
         private readonly int retryCount;
 
@@ -32,14 +36,14 @@ namespace Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling
         private readonly TimeSpan deltaBackoff;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.ExponentialBackoff" /> class. 
+        /// Initializes a new instance of the <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.ExponentialBackoff" /> class. 
         /// </summary>
         public ExponentialBackoff() : this(RetryStrategy.DefaultClientRetryCount, RetryStrategy.DefaultMinBackoff, RetryStrategy.DefaultMaxBackoff, RetryStrategy.DefaultClientBackoff)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.ExponentialBackoff" /> class with the specified retry settings.
+        /// Initializes a new instance of the <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.ExponentialBackoff" /> class with the specified retry settings.
         /// </summary>
         /// <param name="retryCount">The maximum number of retry attempts.</param>
         /// <param name="minBackoff">The minimum backoff time</param>
@@ -50,7 +54,7 @@ namespace Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.ExponentialBackoff" /> class with the specified name and retry settings.
+        /// Initializes a new instance of the <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.ExponentialBackoff" /> class with the specified name and retry settings.
         /// </summary>
         /// <param name="name">The name of the retry strategy.</param>
         /// <param name="retryCount">The maximum number of retry attempts.</param>
@@ -62,7 +66,7 @@ namespace Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.ExponentialBackoff" /> class with the specified name, retry settings, and fast retry option.
+        /// Initializes a new instance of the <see cref="T:Microsoft.Azure.Devices.Client.TransientFaultHandling.ExponentialBackoff" /> class with the specified name, retry settings, and fast retry option.
         /// </summary>
         /// <param name="name">The name of the retry strategy.</param>
         /// <param name="retryCount">The maximum number of retry attempts.</param>

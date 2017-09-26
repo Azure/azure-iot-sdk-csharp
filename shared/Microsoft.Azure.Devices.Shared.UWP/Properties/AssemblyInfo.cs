@@ -4,11 +4,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Microsoft.Azure.Devices.Shared.UWP")]
+[assembly: AssemblyTitle("Microsoft.Azure.Devices.Shared")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Microsoft")]
-[assembly: AssemblyProduct("Microsoft.Azure.Devices.Shared.UWP")]
+[assembly: AssemblyProduct("Microsoft.Azure.Devices.Shared")]
 [assembly: AssemblyCopyright("Copyright ©  2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -33,4 +33,4 @@ using System.Runtime.InteropServices;
 
 // Version information for an assembly follows semantic versioning 1.0.0 (because
 // NuGet didn't support semver 2.0.0 before VS 2015). See semver.org for details.
-[assembly: AssemblyInformationalVersion("1.0.11")]
+[assembly: AssemblyInformationalVersion("1.1.0")]

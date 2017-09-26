@@ -34,7 +34,9 @@ namespace Microsoft.Azure.Devices
         readonly IAuthorizationHeaderProvider authenticationHeaderProvider;
         readonly IReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> defaultErrorMapping;
         HttpClient httpClientObj;
+        HttpClient httpClientObjWithPerRequestTimeout;
         bool isDisposed;
+        readonly TimeSpan defaultOperationTimeout;
 
         public HttpClientHelper(
             Uri baseAddress,
@@ -47,15 +49,24 @@ namespace Microsoft.Azure.Devices
             this.authenticationHeaderProvider = authenticationHeaderProvider;
             this.defaultErrorMapping =
                 new ReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>(defaultErrorMapping);
+            this.defaultOperationTimeout = timeout;
 
             this.httpClientObj = new HttpClient();
             this.httpClientObj.BaseAddress = this.baseAddress;
             this.httpClientObj.Timeout = timeout;
             this.httpClientObj.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(CommonConstants.MediaTypeForDeviceManagementApis));
             this.httpClientObj.DefaultRequestHeaders.ExpectContinue = false;
+
+            this.httpClientObjWithPerRequestTimeout = new HttpClient();
+            this.httpClientObjWithPerRequestTimeout.BaseAddress = this.baseAddress;
+            this.httpClientObjWithPerRequestTimeout.Timeout = Timeout.InfiniteTimeSpan;
+            this.httpClientObjWithPerRequestTimeout.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(CommonConstants.MediaTypeForDeviceManagementApis));
+            this.httpClientObjWithPerRequestTimeout.DefaultRequestHeaders.ExpectContinue = false;
+
             if (preRequestActionForAllRequests != null)
             {
                 preRequestActionForAllRequests(this.httpClientObj);
+                preRequestActionForAllRequests(this.httpClientObjWithPerRequestTimeout);
             }
         }
 
@@ -90,6 +101,7 @@ namespace Microsoft.Azure.Devices
             else
             {
                 await this.ExecuteAsync(
+                   this.httpClientObj,
                    HttpMethod.Get,
                    new Uri(this.baseAddress, requestUri),
                    (requestMsg, token) => AddCustomHeaders(requestMsg, customHeaders),
@@ -391,6 +403,7 @@ namespace Microsoft.Azure.Devices
             return this.PostAsyncHelper(
                 requestUri,
                 entity,
+                TimeSpan.Zero,
                 errorMappingOverrides,
                 customHeaders,
                 null,
@@ -410,6 +423,30 @@ namespace Microsoft.Azure.Devices
             await this.PostAsyncHelper(
                 requestUri,
                 entity,
+                TimeSpan.Zero,
+                errorMappingOverrides,
+                customHeaders,
+                null,
+                null,
+                async (message, token) => result = await ReadResponseMessageAsync<T2>(message, token),
+                cancellationToken);
+
+            return result;
+        }
+
+        public async Task<T2> PostAsync<T, T2>(
+            Uri requestUri,
+            T entity,
+            TimeSpan operationTimeout,
+            IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> errorMappingOverrides,
+            IDictionary<string, string> customHeaders,
+            CancellationToken cancellationToken)
+        {
+            T2 result = default(T2);
+            await this.PostAsyncHelper(
+                requestUri,
+                entity,
+                operationTimeout,
                 errorMappingOverrides,
                 customHeaders,
                 null,
@@ -433,6 +470,7 @@ namespace Microsoft.Azure.Devices
             await this.PostAsyncHelper(
                 requestUri,
                 entity,
+                TimeSpan.Zero,
                 errorMappingOverrides,
                 customHeaders,
                 customContentType,
@@ -455,6 +493,7 @@ namespace Microsoft.Azure.Devices
             await this.PostAsyncHelper(
                 requestUri,
                 entity,
+                TimeSpan.Zero,
                 errorMappingOverrides,
                 customHeaders,
                 customContentType,
@@ -468,6 +507,7 @@ namespace Microsoft.Azure.Devices
         Task PostAsyncHelper<T1>(
             Uri requestUri,
             T1 entity,
+            TimeSpan operationTimeout,
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> errorMappingOverrides,
             IDictionary<string, string> customHeaders,
             MediaTypeHeaderValue customContentType,
@@ -475,49 +515,65 @@ namespace Microsoft.Azure.Devices
             Func<HttpResponseMessage, CancellationToken, Task> processResponseMessageAsync,
             CancellationToken cancellationToken)
         {
-            return this.ExecuteAsync(
-                HttpMethod.Post,
-                new Uri(this.baseAddress, requestUri),
-                (requestMsg, token) =>
+            Func<HttpRequestMessage, CancellationToken, Task> modifyRequestMessageFunc = (requestMsg, token) =>
+            {
+                AddCustomHeaders(requestMsg, customHeaders);
+                if (entity != null)
                 {
-                    AddCustomHeaders(requestMsg, customHeaders);
-                    if (entity != null)
+                    if (typeof(T1) == typeof(byte[]))
                     {
-                        if (typeof(T1) == typeof(byte[]))
-                        {
-                            requestMsg.Content = new ByteArrayContent((byte[])(object)entity);
-                        }
-                        else if (typeof(T1) == typeof(string))
-                        {
-                            // only used to send batched messages on Http runtime
-                            requestMsg.Content = new StringContent((string)(object)entity);
-                            requestMsg.Content.Headers.ContentType = new MediaTypeHeaderValue(CommonConstants.BatchedMessageContentType);
-                        }
-                        else
-                        {
+                        requestMsg.Content = new ByteArrayContent((byte[])(object)entity);
+                    }
+                    else if (typeof(T1) == typeof(string))
+                    {
+                        // only used to send batched messages on Http runtime
+                        requestMsg.Content = new StringContent((string)(object)entity);
+                        requestMsg.Content.Headers.ContentType = new MediaTypeHeaderValue(CommonConstants.BatchedMessageContentType);
+                    }
+                    else
+                    {
                             var str = Newtonsoft.Json.JsonConvert.SerializeObject(entity);
                             requestMsg.Content = new StringContent(str, System.Text.Encoding.UTF8, "application/json");
-                        }
                     }
+                }
 
-                    if (customContentType != null)
+                if (customContentType != null)
+                {
+                    requestMsg.Content.Headers.ContentType = customContentType;
+                }
+
+                if (customContentEncoding != null && customContentEncoding.Count > 0)
+                {
+                    foreach (string contentEncoding in customContentEncoding)
                     {
-                        requestMsg.Content.Headers.ContentType = customContentType;
+                        requestMsg.Content.Headers.ContentEncoding.Add(contentEncoding);
                     }
+                }
 
-                    if (customContentEncoding != null && customContentEncoding.Count > 0)
-                    {
-                        foreach (string contentEncoding in customContentEncoding)
-                        {
-                            requestMsg.Content.Headers.ContentEncoding.Add(contentEncoding);
-                        }
-                    }
+                return Task.FromResult(0);
+            };
 
-                    return Task.FromResult(0);
-                },
-                processResponseMessageAsync,
-                errorMappingOverrides,
-                cancellationToken);
+            if (operationTimeout != this.defaultOperationTimeout && operationTimeout > TimeSpan.Zero)
+            {
+                return this.ExecuteWithOperationTimeoutAsync(
+                    HttpMethod.Post,
+                    new Uri(this.baseAddress, requestUri),
+                    operationTimeout,
+                    modifyRequestMessageFunc,
+                    processResponseMessageAsync,
+                    errorMappingOverrides,
+                    cancellationToken);
+            }
+            else
+            {
+                return this.ExecuteAsync(
+                    HttpMethod.Post,
+                    new Uri(this.baseAddress, requestUri),
+                    modifyRequestMessageFunc,
+                    processResponseMessageAsync,
+                    errorMappingOverrides,
+                    cancellationToken);
+            }
         }
 
         public Task DeleteAsync<T>(
@@ -573,6 +629,7 @@ namespace Microsoft.Azure.Devices
             CancellationToken cancellationToken)
         {
             return this.ExecuteAsync(
+                this.httpClientObj,
                 httpMethod,
                 requestUri,
                 modifyRequestMessageAsync,
@@ -580,6 +637,28 @@ namespace Microsoft.Azure.Devices
                 processResponseMessageAsync,
                 errorMappingOverrides,
                 cancellationToken);
+        }
+
+        Task ExecuteWithOperationTimeoutAsync(
+            HttpMethod httpMethod,
+            Uri requestUri,
+            TimeSpan operationTimeout,
+            Func<HttpRequestMessage, CancellationToken, Task> modifyRequestMessageAsync,
+            Func<HttpResponseMessage, CancellationToken, Task> processResponseMessageAsync,
+            IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> errorMappingOverrides,
+            CancellationToken cancellationToken)
+        {
+            var cts = new CancellationTokenSource(operationTimeout);
+            CancellationTokenSource linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, cts.Token);
+            return this.ExecuteAsync(
+                this.httpClientObjWithPerRequestTimeout,
+                httpMethod,
+                requestUri,
+                modifyRequestMessageAsync,
+                IsMappedToException,
+                processResponseMessageAsync,
+                errorMappingOverrides,
+                linkedCts.Token);
         }
 
         public static bool IsMappedToException(HttpResponseMessage message)
@@ -603,6 +682,7 @@ namespace Microsoft.Azure.Devices
         }
 
         async Task ExecuteAsync(
+            HttpClient httpClient,
             HttpMethod httpMethod,
             Uri requestUri,
             Func<HttpRequestMessage, CancellationToken, Task> modifyRequestMessageAsync,
@@ -625,7 +705,7 @@ namespace Microsoft.Azure.Devices
                 HttpResponseMessage responseMsg;
                 try
                 {
-                    responseMsg = await this.httpClientObj.SendAsync(msg, cancellationToken);
+                    responseMsg = await httpClient.SendAsync(msg, cancellationToken);
                     if (responseMsg == null)
                     {
                         throw new InvalidOperationException("The response message was null when executing operation {0}.".FormatInvariant(httpMethod));
@@ -712,10 +792,13 @@ namespace Microsoft.Azure.Devices
 
         public void Dispose()
         {
-            if (!this.isDisposed && this.httpClientObj != null)
+            if (!this.isDisposed)
             {
-                this.httpClientObj.Dispose();
+                this.httpClientObj?.Dispose();
+                this.httpClientObjWithPerRequestTimeout?.Dispose();
+
                 this.httpClientObj = null;
+                this.httpClientObjWithPerRequestTimeout = null;
             }
 
             this.isDisposed = true;

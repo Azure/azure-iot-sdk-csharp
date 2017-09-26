@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.Client.Common
         private readonly ResourceContext resourceContext;
         public ResourceManagerImpl()
         {
-            stringResourceMap = ResourceManager.Current.MainResourceMap.GetSubtree("Microsoft.Azure.Devices.Client.UWP/Resources");
+            stringResourceMap = ResourceManager.Current.MainResourceMap.GetSubtree("Microsoft.Azure.Devices.Client/Resources");
             resourceContext = ResourceContext.GetForViewIndependentUse();
         }
 

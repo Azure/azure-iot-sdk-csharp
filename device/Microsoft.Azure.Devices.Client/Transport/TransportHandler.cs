@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         protected Task HandleTimeoutCancellation(Func<Task> func, CancellationToken token)
         {
             CancellationTokenRegistration ctr = token.Register(() => this.CloseAsync());
-
+            
             var tcs = new TaskCompletionSource<bool>();
 
             func().ContinueWith(t =>
@@ -57,8 +57,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     tcs.SetResult(false);
                 }
                 ctr.Dispose();
-            }, CancellationToken.None);
-
+            });
+            
             return tcs.Task;
         }
     }

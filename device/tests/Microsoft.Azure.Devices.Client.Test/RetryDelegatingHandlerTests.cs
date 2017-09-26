@@ -272,14 +272,16 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task Retry_CancellationTokenCanceled_Open()
         {
             var innerHandlerMock = Substitute.For<IDelegatingHandler>();
+            var cancellationTokenSource = new CancellationTokenSource();
+
+            cancellationTokenSource.Cancel();
             innerHandlerMock.OpenAsync(Arg.Any<bool>(), Arg.Any<CancellationToken>()).Returns(TaskConstants.Completed);
 
             var contextMock = Substitute.For<IPipelineContext>();
             var sut = new RetryDelegatingHandler(contextMock);
             sut.ContinuationFactory = c => innerHandlerMock;
-            var cancellationTokenSource = new CancellationTokenSource();
-            cancellationTokenSource.Cancel();
-            await sut.OpenAsync(Arg.Any<bool>(), cancellationTokenSource.Token).ExpectedAsync<TaskCanceledException>();
+
+            await sut.OpenAsync(true, cancellationTokenSource.Token).ExpectedAsync<TaskCanceledException>();
         }
 
         [TestMethod]
@@ -337,17 +339,48 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("DelegatingHandlers")]
         [TestCategory("Owner [jasminel]")]
+        public void Retry_SetRetryPolicyVerifyInternals_Success ()
+        {
+            var innerHandlerMock = Substitute.For<IDelegatingHandler>();
+            var contextMock = Substitute.For<IPipelineContext>();
+            var sut = new RetryDelegatingHandler(contextMock);
+            sut.ContinuationFactory = c => innerHandlerMock;
+
+            var exponentialBackoff = new ExponentialBackoff(10, TimeSpan.FromSeconds(1), TimeSpan.FromMinutes(1), TimeSpan.FromMilliseconds(10));
+            sut.SetRetryPolicy(exponentialBackoff);
+
+            Assert.AreEqual(typeof(RetryDelegatingHandler.IotHubTransientErrorIgnoreStrategy), sut.internalRetryPolicy.ErrorDetectionStrategy.GetType());
+            Assert.AreEqual(typeof(RetryDelegatingHandler.IotHubRuntimeOperationRetryStrategy), sut.internalRetryPolicy.RetryStrategy.GetType());
+            var iotHubRuntimeOperationRetryStrategy = (RetryDelegatingHandler.IotHubRuntimeOperationRetryStrategy) sut.internalRetryPolicy.RetryStrategy;
+            Assert.AreEqual(typeof(TransientFaultHandling.RetryStrategyWrapper), iotHubRuntimeOperationRetryStrategy.retryStrategy.GetType());
+            Assert.AreSame(exponentialBackoff, ((TransientFaultHandling.RetryStrategyWrapper)iotHubRuntimeOperationRetryStrategy.retryStrategy).retryPolicy);
+
+            var noretry = new NoRetry();
+            sut.SetRetryPolicy(noretry);
+
+            Assert.AreEqual(typeof(RetryDelegatingHandler.IotHubTransientErrorIgnoreStrategy), sut.internalRetryPolicy.ErrorDetectionStrategy.GetType());
+            Assert.AreEqual(typeof(RetryDelegatingHandler.IotHubRuntimeOperationRetryStrategy), sut.internalRetryPolicy.RetryStrategy.GetType());
+            iotHubRuntimeOperationRetryStrategy = (RetryDelegatingHandler.IotHubRuntimeOperationRetryStrategy)sut.internalRetryPolicy.RetryStrategy;
+            Assert.AreEqual(typeof(TransientFaultHandling.RetryStrategyWrapper), iotHubRuntimeOperationRetryStrategy.retryStrategy.GetType());
+            Assert.AreSame(noretry, ((TransientFaultHandling.RetryStrategyWrapper)iotHubRuntimeOperationRetryStrategy.retryStrategy).retryPolicy);
+        }
+
+        [TestMethod]
+        [TestCategory("DelegatingHandlers")]
+        [TestCategory("Owner [jasminel]")]
         public async Task Retry_CancellationTokenCanceled_Complete()
         {
             var innerHandlerMock = Substitute.For<IDelegatingHandler>();
-            innerHandlerMock.CompleteAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(TaskConstants.Completed);
+            var cancellationTokenSource = new CancellationTokenSource();
+
+            cancellationTokenSource.Cancel();
+            innerHandlerMock.CompleteAsync(Arg.Any<string>(), cancellationTokenSource.Token).Returns(TaskConstants.Completed);
 
             var contextMock = Substitute.For<IPipelineContext>();
             var sut = new RetryDelegatingHandler(contextMock);
             sut.ContinuationFactory = c => innerHandlerMock;
-            var cancellationTokenSource = new CancellationTokenSource();
-            cancellationTokenSource.Cancel();
-            await sut.CompleteAsync(Arg.Any<string>(), cancellationTokenSource.Token).ExpectedAsync<TaskCanceledException>();
+
+            await sut.CompleteAsync("", cancellationTokenSource.Token).ExpectedAsync<TaskCanceledException>();
         }
 
         [TestMethod]

@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     return new AmqpTransportHandler(
                         context, connectionString, transportSetting as AmqpTransportSettings,
                         new Action<object, ConnectionEventArgs>(OnConnectionOpenedCallback),
-                        new Action<object, ConnectionEventArgs>(OnConnectionClosedCallback),
+                        new Func<object, ConnectionEventArgs, Task>(OnConnectionClosedCallback),
                         new Func<MethodRequestInternal, Task>(onMethodCallback), onDesiredStatePatchReceived);
                 case TransportType.Http1:
                     return new HttpTransportHandler(context, connectionString, transportSetting as Http1TransportSettings);
@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     return new MqttTransportHandler(
                         context, connectionString, transportSetting as MqttTransportSettings,
                         new Action<object, ConnectionEventArgs>(OnConnectionOpenedCallback),
-                        new Action<object, ConnectionEventArgs>(OnConnectionClosedCallback),
+                        new Func<object, ConnectionEventArgs, Task>(OnConnectionClosedCallback),
                         new Func<MethodRequestInternal, Task>(onMethodCallback), onDesiredStatePatchReceived);
 #endif
                 default:

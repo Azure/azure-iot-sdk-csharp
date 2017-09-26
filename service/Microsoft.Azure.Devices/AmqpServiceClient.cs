@@ -116,7 +116,7 @@ namespace Microsoft.Azure.Devices
             await this.iotHubConnection.CloseAsync();
         }
 
-        public async override Task SendAsync(string deviceId, Message message)
+        public async override Task SendAsync(string deviceId, Message message, TimeSpan? timeout = null)
         {
             if (string.IsNullOrWhiteSpace(deviceId))
             {
@@ -127,15 +127,26 @@ namespace Microsoft.Azure.Devices
             {
                 throw new ArgumentNullException("message");
             }
-
             Outcome outcome;
+
             using (AmqpMessage amqpMessage = message.ToAmqpMessage())
             {
                 amqpMessage.Properties.To = "/devices/" + WebUtility.UrlEncode(deviceId) + "/messages/deviceBound";
                 try
                 {
                     SendingAmqpLink sendingLink = await this.GetSendingLinkAsync();
-                    outcome = await sendingLink.SendMessageAsync(amqpMessage, IotHubConnection.GetNextDeliveryTag(ref this.sendingDeliveryTag), AmqpConstants.NullBinary, this.OperationTimeout);
+                    if (timeout != null)
+                    {
+                        outcome = await sendingLink.SendMessageAsync(amqpMessage, IotHubConnection.GetNextDeliveryTag(ref this.sendingDeliveryTag), AmqpConstants.NullBinary, (TimeSpan)timeout);                        
+                    }
+                    else
+                    {
+                        outcome = await sendingLink.SendMessageAsync(amqpMessage, IotHubConnection.GetNextDeliveryTag(ref this.sendingDeliveryTag), AmqpConstants.NullBinary, this.OperationTimeout);
+                    }
+                }
+                catch (TimeoutException exception)
+                {
+                    throw exception;
                 }
                 catch (Exception exception)
                 {
@@ -147,13 +158,12 @@ namespace Microsoft.Azure.Devices
                     throw AmqpClientHelper.ToIotHubClientContract(exception);
                 }
             }
-
             if (outcome.DescriptorCode != Accepted.Code)
             {
                 throw AmqpErrorMapper.GetExceptionFromOutcome(outcome);
             }
         }
-
+        
         public override Task<PurgeMessageQueueResult> PurgeMessageQueueAsync(string deviceId)
         {
             return this.PurgeMessageQueueAsync(deviceId, CancellationToken.None);
@@ -197,11 +207,11 @@ namespace Microsoft.Azure.Devices
             CloudToDeviceMethod cloudToDeviceMethod,
             CancellationToken cancellationToken)
         {
+            TimeSpan timeout = GetInvokeDeviceMethodOperationTimeout(cloudToDeviceMethod);
             return this.httpClientHelper.PostAsync<CloudToDeviceMethod, CloudToDeviceMethodResult>(
                 GetDeviceMethodUri(deviceId),
                 cloudToDeviceMethod,
-                null,
-                null,
+                timeout,
                 null,
                 null,
                 cancellationToken);
@@ -234,6 +244,17 @@ namespace Microsoft.Azure.Devices
                 this.iotHubConnection.Dispose();
                 this.httpClientHelper.Dispose();
             }
+        }
+
+        static TimeSpan GetInvokeDeviceMethodOperationTimeout(CloudToDeviceMethod cloudToDeviceMethod)
+        {
+            // For InvokeDeviceMethod, we need to take into account the timeouts specified
+            // for the Device to connect and send a response. We also need to take into account
+            // the transmission time for the request send/receive
+            TimeSpan timeout = TimeSpan.FromSeconds(15); // For wire time
+            timeout += TimeSpan.FromSeconds(cloudToDeviceMethod.ConnectionTimeoutInSeconds ?? 0);
+            timeout += TimeSpan.FromSeconds(cloudToDeviceMethod.ResponseTimeoutInSeconds ?? 0);
+            return timeout <= DefaultOperationTimeout ? DefaultOperationTimeout : timeout;
         }
 
         static Uri GetStatisticsUri()

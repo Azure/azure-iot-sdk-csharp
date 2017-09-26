@@ -22,7 +22,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -57,6 +57,14 @@
     <Compile Include="..\Microsoft.Azure.Devices.Shared\TwinJsonConverter.cs" />
     <Compile Include="..\Microsoft.Azure.Devices.Shared\TwinProperties.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(DefineConstants2)' == 'WIP_PROVISIONING'">
+    <!-- WIP: ProvisioningDeviceClient -->
+    <Compile Include="..\Microsoft.Azure.Devices.Shared\SecurityClient.cs" />
+    <Compile Include="..\Microsoft.Azure.Devices.Shared\SecurityClientSasToken.cs" />
+    <Compile Include="..\Microsoft.Azure.Devices.Shared\SecurityClientX509Certificate.cs" />
+    <Compile Include="..\Microsoft.Azure.Devices.Shared\TransportFallbackType.cs" />
+    <Compile Include="..\Microsoft.Azure.Devices.Shared\TransportHandler.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="project.json" />

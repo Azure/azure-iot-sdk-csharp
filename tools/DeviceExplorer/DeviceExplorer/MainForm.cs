@@ -43,6 +43,15 @@ namespace DeviceExplorer
         private static CancellationTokenSource ctsForDeviceMethod;
 
         private const string DEFAULT_CONSUMER_GROUP = "$Default";
+
+        private const string MESSAGE_SYSTEM_PROPERTY_MESSAGE_ID = "message-id";
+        private const string MESSAGE_SYSTEM_PROPERTY_CORRELATION_ID = "correlation-id";
+        private const string MESSAGE_SYSTEM_PROPERTY_CONTENT_TYPE = "content-type";
+        private const string MESSAGE_SYSTEM_PROPERTY_CONTENT_ENCODING = "content-encoding";
+        private static DataGridViewRow messageSysPropMessageId = new DataGridViewRow();
+        private static DataGridViewRow messageSysPropCorrelationId = new DataGridViewRow();
+        private static DataGridViewRow messageSysPropContentType = new DataGridViewRow();
+        private static DataGridViewRow messageSysPropContentEncoding = new DataGridViewRow();
         #endregion
 
         public MainForm()
@@ -657,6 +666,27 @@ namespace DeviceExplorer
                     serviceMessage.Properties.Add(row.Cells[0].Value?.ToString() ?? string.Empty, row.Cells[1].Value?.ToString() ?? string.Empty);
                 }
 
+
+                if (messageSysPropMessageId.Cells[1].Value != null)
+                {
+                    serviceMessage.MessageId = (string)messageSysPropMessageId.Cells[1].Value;
+                }
+
+                if (messageSysPropCorrelationId.Cells[1].Value != null)
+                {
+                    serviceMessage.CorrelationId = (string)messageSysPropCorrelationId.Cells[1].Value;
+                }
+
+                if (messageSysPropContentType.Cells[1].Value != null)
+                {
+                    serviceMessage.ContentType = (string)messageSysPropContentType.Cells[1].Value;
+                }
+
+                if (messageSysPropContentEncoding.Cells[1].Value != null)
+                {
+                    serviceMessage.ContentEncoding = (string)messageSysPropContentEncoding.Cells[1].Value;
+                }
+
                 await serviceClient.SendAsync(deviceIDsComboBoxForCloudToDeviceMessage.SelectedItem.ToString(), serviceMessage);
 
                 messagesTextBox.Text += $"Sent to Device ID: [{deviceIDsComboBoxForCloudToDeviceMessage.SelectedItem.ToString()}], Message:\"{cloudToDeviceMessage}\", message Id: {serviceMessage.MessageId}\n";
@@ -951,6 +981,19 @@ namespace DeviceExplorer
         private void deviceTwinPropertiesBtn_Click(object sender, EventArgs e)
         {
             showDevicePropertiesToolStripMenuItem_Click(this, null);
+        }
+
+        private void MainForm_Load(object sender, EventArgs e)
+        {
+            messageSysPropMessageId.CreateCells(messageSystemPropertiesGrid, MESSAGE_SYSTEM_PROPERTY_MESSAGE_ID, null);
+            messageSysPropCorrelationId.CreateCells(messageSystemPropertiesGrid, MESSAGE_SYSTEM_PROPERTY_CORRELATION_ID, null);
+            messageSysPropContentType.CreateCells(messageSystemPropertiesGrid, MESSAGE_SYSTEM_PROPERTY_CONTENT_TYPE, null);
+            messageSysPropContentEncoding.CreateCells(messageSystemPropertiesGrid, MESSAGE_SYSTEM_PROPERTY_CONTENT_ENCODING, null);
+
+            messageSystemPropertiesGrid.Rows.Add(messageSysPropMessageId);
+            messageSystemPropertiesGrid.Rows.Add(messageSysPropCorrelationId);
+            messageSystemPropertiesGrid.Rows.Add(messageSysPropContentType);
+            messageSystemPropertiesGrid.Rows.Add(messageSysPropContentEncoding);
         }
     }
 }

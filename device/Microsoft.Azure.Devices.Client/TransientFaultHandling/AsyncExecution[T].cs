@@ -14,14 +14,19 @@
 //implied. See the License for the specific language governing permissions
 //and limitations under the License.
 
-using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.Properties;
-using System;
-using System.Globalization;
-using System.Threading;
-using System.Threading.Tasks;
+// THIS FILE HAS BEEN MODIFIED FROM ITS ORIGINAL FORM.
+// Change Log:
+// 9/1/2017 jasminel Renamed namespace to Microsoft.Azure.Devices.Client.TransientFaultHandling.
 
-namespace Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling
+namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
 {
+    using Microsoft.Azure.Devices.Client.TransientFaultHandling.Properties;
+
+    using System;
+    using System.Globalization;
+    using System.Threading;
+    using System.Threading.Tasks;
+
     /// <summary>
     /// Handles the execution and retries of the user-initiated task.
     /// </summary>

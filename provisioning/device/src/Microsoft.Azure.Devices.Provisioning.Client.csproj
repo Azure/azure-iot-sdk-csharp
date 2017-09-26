@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Azure.Devices.Shared">
+      <HintPath>..\..\..\shared\Microsoft.Azure.Devices.Shared.NetStandard\bin\Debug\Microsoft.Azure.Devices.Shared.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

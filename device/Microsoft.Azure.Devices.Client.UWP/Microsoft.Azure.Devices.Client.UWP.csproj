@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Microsoft.Azure.Devices.Client</RootNamespace>
-    <AssemblyName>Microsoft.Azure.Devices.Client.UWP</AssemblyName>
+    <AssemblyName>Microsoft.Azure.Devices.Client</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
     <TargetPlatformVersion>10.0.14393.0</TargetPlatformVersion>
@@ -180,7 +180,7 @@
     <OutputPath>bin\Release_Delay_Sign\</OutputPath>
     <DefineConstants>TRACE;NETFX_CORE;WINDOWS_UWP;RELEASE_DELAY_SIGN</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <DocumentationFile>bin\Release\Microsoft.Azure.Devices.Client.Uwp.xml</DocumentationFile>
+    <DocumentationFile>bin\Release\Microsoft.Azure.Devices.Client.xml</DocumentationFile>
     <Optimize>true</Optimize>
     <NoStdLib>true</NoStdLib>
     <DebugType>pdbonly</DebugType>

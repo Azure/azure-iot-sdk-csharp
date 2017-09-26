@@ -15,14 +15,14 @@
     <language>en-US</language>
     <dependencies>
       <group targetFramework="net45" >
-        <dependency id="Microsoft.Azure.Devices.Shared" version="1.0.11" />
+        <dependency id="Microsoft.Azure.Devices.Shared" version="1.1.0" />
         <dependency id="Microsoft.AspNet.WebApi.Client" version="5.2.3" />
         <dependency id="Microsoft.AspNet.WebApi.Core" version="5.2.3" />
         <dependency id="Microsoft.Azure.Amqp" version="2.0.6" />
         <dependency id="PCLCrypto" version="2.0.147" />
       </group>
       <group targetFramework="uap10.0">
-        <dependency id="Microsoft.Azure.Devices.Shared" version="1.0.11" />
+        <dependency id="Microsoft.Azure.Devices.Shared" version="1.1.0" />
         <dependency id="Microsoft.AspNet.WebApi.Client" version="5.2.3" />
         <dependency id="Microsoft.Azure.Amqp" version="2.0.6" />
         <dependency id="PCLCrypto" version="2.0.147" />
@@ -37,7 +37,7 @@
         <dependency id="System.Reflection.Extensions" version="4.3.0" />
         <dependency id="System.Runtime.Serialization.Formatters" version="4.3.0" />
         <dependency id="System.Threading.Overlapped" version="4.3.0" />
-        <dependency id="Microsoft.Azure.Devices.Shared" version="1.0.11" />
+        <dependency id="Microsoft.Azure.Devices.Shared" version="1.1.0" />
     </group>
     </dependencies>
     <frameworkAssemblies>
@@ -51,9 +51,9 @@
     <file src="..\..\thirdpartynotice.txt" target="thirdpartynotice.txt" />
     <file src="..\Microsoft.Azure.Devices\bin\release_delay_sign\Microsoft.Azure.Devices.dll" target="lib\net451\Microsoft.Azure.Devices.dll" />
     <file src="..\Microsoft.Azure.Devices\bin\release_delay_sign\Microsoft.Azure.Devices.XML" target="lib\net451\Microsoft.Azure.Devices.XML" />
-    <file src="..\Microsoft.Azure.Devices.Uwp\bin\release_delay_sign\Microsoft.Azure.Devices.Uwp.dll" target="lib\uap10.0\Microsoft.Azure.Devices.Uwp.dll" />
-    <file src="..\Microsoft.Azure.Devices.Uwp\bin\release_delay_sign\Microsoft.Azure.Devices.Uwp.pri" target="lib\uap10.0\Microsoft.Azure.Devices.Uwp.pri" />
-    <file src="..\Microsoft.Azure.Devices.Uwp\bin\release_delay_sign\Microsoft.Azure.Devices.Uwp.XML" target="lib\uap10.0\Microsoft.Azure.Devices.Uwp.XML" />
+    <file src="..\Microsoft.Azure.Devices.Uwp\bin\release_delay_sign\Microsoft.Azure.Devices.dll" target="lib\uap10.0\Microsoft.Azure.Devices.dll" />
+    <file src="..\Microsoft.Azure.Devices.Uwp\bin\release_delay_sign\Microsoft.Azure.Devices.pri" target="lib\uap10.0\Microsoft.Azure.Devices.pri" />
+    <file src="..\Microsoft.Azure.Devices.Uwp\bin\release_delay_sign\Microsoft.Azure.Devices.XML" target="lib\uap10.0\Microsoft.Azure.Devices.XML" />
     <file src="..\Microsoft.Azure.Devices.NetStandard\bin\release_delay_sign\Microsoft.Azure.Devices.dll" target="lib\netstandard1.3\Microsoft.Azure.Devices.dll" />
     <file src="..\Microsoft.Azure.Devices.NetStandard\bin\release_delay_sign\Microsoft.Azure.Devices.XML" target="lib\netstandard1.3\Microsoft.Azure.Devices.XML" />
   </files>
