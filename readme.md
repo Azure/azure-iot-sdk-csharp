@@ -45,6 +45,7 @@ In the repository, you will find a set of simple samples that will help you get 
 * [Service SDK samples](./service/Samples)
 
 ## OS platforms and hardware compatibility
+[ATTN:CONTENT REQUIRED - this whole section is copied from the C SDK, please check requirements.]
 
 The IoT Hub device SDK for .NET can be used with a broad range of OS platforms and devices.
 [ATTN: CONTENT REQUIRED -- INCLUDE A LIST OF PLATFORMS SUPPORTED BY C# OUT OF BOX]
@@ -102,17 +103,11 @@ Here is what you can expect Microsoft Support to be able to help with:
 * [Get Started with IoT Hub using .NET](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-csharp-csharp-getstarted)
 
 ## SDK folder structure
-[ATTN:CONTENT REQUIRED - need a short description of what is in each folder. Bullets under device are not complete or necessarily accurate.] 
+[ATTN:CONTENT REQUIRED - need a short description of what is in each folder. Existing descriptions are copied from C sdk readme -- please check.] 
 
 ### /device
 
 Contains Azure IoT Hub client components that provide the raw messaging capabilities of the library. Refer to the API documentation and samples for information on how to use it.
-
-   * build: build scripts.
-   * doc: contains requirements, designs notes, manuals.
-   * Microsoft.Azure.Client.Devices.* : client libraries solutions and source files.
-   * samples: contains simple samples.
-   * tests: unit and end-to-end tests for source code.
 
 ### /doc
 
