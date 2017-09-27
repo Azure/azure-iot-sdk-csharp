@@ -47,7 +47,7 @@ In the repository, you will find a set of simple samples that will help you get 
 ## OS platforms and hardware compatibility
 
 The IoT Hub device SDK for .NET can be used with a broad range of OS platforms and devices.
-[INCLUDE A LIST OF PLATFORMS SUPPORTED BY C# OUT OF BOX]
+[ATTN: CONTENT REQUIRED -- INCLUDE A LIST OF PLATFORMS SUPPORTED BY C# OUT OF BOX]
 
 The minimum requirements are for the device platform to support the following:
 
@@ -102,6 +102,7 @@ Here is what you can expect Microsoft Support to be able to help with:
 * [Get Started with IoT Hub using .NET](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-csharp-csharp-getstarted)
 
 ## SDK folder structure
+[ATTN:CONTENT REQUIRED - need a short description of what is in each folder. Bullets under device are not complete or necessarily accurate.] 
 
 ### /device
 

@@ -1,15 +1,16 @@
-# Samples for Microsoft Azure IoT service SDK for C\# #
+# Samples for Microsoft Azure IoT service SDK for .NET
 
 This folder contains simple samples showing how to use the various features of the Microsoft Azure IoT Hub service from a back-end application running C# code.
 
 ## List of samples
+[ATTN:CONTENT REQUIRED - provide descriptions for the 3 samples listed below. Classify them under the bullet points below them -- if they don't adhere to those categories, create something else and delete the bullets that are empty.]
 
-* Samples
-    * **ConsoleJobsSample**:
-    * **ConsoleSample**: 
-    * **UWPSample**: 
+* **ConsoleJobsSample**:
+* **ConsoleSample**: 
+* **UWPSample**: 
 
 * Simple send of Cloud to Device messages:
+   * **Sample and description goes here**
 
 * Device Registry:
 
