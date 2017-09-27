@@ -15,7 +15,6 @@ namespace Microsoft.Azure.Devices.Common
 #if WINDOWS_UWP
     using PlatformSupport.System.Diagnostics;
 #endif
-    using Microsoft.Azure.Devices.Common.Interop;
     using Microsoft.Azure.Devices.Common.Tracing;
 
     class ExceptionTrace
@@ -214,13 +213,13 @@ namespace Microsoft.Azure.Devices.Common
                     {
                         Debugger.Launch();
                     }
-#elif !PCL && !NETSTANDARD1_3
+#elif !PCL && !NETSTANDARD1_3 && !NETSTANDARD2_0
                     if (breakType.IsAssignableFrom(exception.GetType()))
                     {
                         // This is intended to "crash" the process so that a debugger can be attached.  If a managed
                         // debugger is already attached, it will already be able to hook these exceptions.  We don't
                         // want to simulate an unmanaged crash (DebugBreak) in that case.
-                        if (!Debugger.IsAttached && !UnsafeNativeMethods.IsDebuggerPresent())
+                        if (!Debugger.IsAttached && !Interop.UnsafeNativeMethods.IsDebuggerPresent())
                         {
                             Debugger.Launch();
                         }

@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices
     {
         readonly IEnumerable<T> queryResults;
 
-        internal QueryResponse(IEnumerable<T> queryResults, string continuationToken)
+        public QueryResponse(IEnumerable<T> queryResults, string continuationToken)
         {
             this.queryResults = queryResults;
             this.ContinuationToken = continuationToken;
