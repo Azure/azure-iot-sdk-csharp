@@ -33,7 +33,7 @@ Visit [Azure IoT Dev Center][iot-dev-center] to learn more about developing appl
 
 ## How to use the Azure IoT SDKs for .NET
 
-* **Using packages and libraries**: the simplest way to use the Azure IoT SDKs is to use packages and libraries when available. Refer to [this document](./device/doc/devbox_setup.md) on how to get Azure IoT SDKs for .NET using Nuget and build applications.
+* **Using packages and libraries**: The simplest way to use the Azure IoT SDKs is to use packages and libraries when available. Refer to [this document](./device/doc/devbox_setup.md) on how to get Azure IoT SDKs for .NET using Nuget and build applications.
 * **Clone the repository**: The repository is using [GitHub Submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules) for its dependencies. In order to automatically clone these submodules, you need to use the --recursive option as described here:
 ```
 git clone --recursive https://github.com/Azure/azure-iot-sdk-csharp.git
@@ -47,6 +47,8 @@ In the repository, you will find a set of simple samples that will help you get 
 ## OS platforms and hardware compatibility
 
 The IoT Hub device SDK for .NET can be used with a broad range of OS platforms and devices.
+[INCLUDE A LIST OF PLATFORMS SUPPORTED BY C# OUT OF BOX]
+
 The minimum requirements are for the device platform to support the following:
 
 - **Being capable of establishing an IP connection**: only IP-capable devices can communicate directly with Azure IoT Hub.
