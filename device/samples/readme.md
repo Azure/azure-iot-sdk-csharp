@@ -1,4 +1,4 @@
- Samples for the Azure IoT device SDK for .NET
+# Samples for the Azure IoT device SDK for .NET
 
 This folder contains simple samples showing how to use the various features of the Microsoft Azure IoT Hub service from a device running .NET.
 
@@ -11,19 +11,19 @@ This folder contains simple samples showing how to use the various features of t
    * **NetMFDeviceCLientHttpSample_43**: send and receive messages from a single device running .NET Micro Framework 4.3.
    * **NetMFDeviceClientHttpSample_44**: send and receive messages from a single device running .NET Micro Framework 4.4.
    * **UWPSample**: send and receive messages from a single device running a C# [UWP](UWP) application
-   * Websocket examples?
+   * [ATTN:CONTENT REQUIRED - Websocket examples?]
 
 * Multiplexing send and receive of several devices over a single connection (useful in Gateway scenarios where multiplexing might be needed):
-   * Samples?
+   * [ATTN:CONTENT REQUIRED - Samples? if not, delete]
 
 * Device services samples (Device Twins, Methods, and Device Management):
    * **DeviceClientTwinSample**: Enable Twin and Direct Methods on AMQP
    * **DeviceClientMethodSample**: Enable Twin and Direct Methods on AMQP
 
 * Uploading blob to Azure:
-   * Samples?
+   * [ATTN:CONTENT REQUIRED - Samples?, if not, delete]
 
-Samples:
+[ATTN:CONTENT REQUIRED - Please add description and classify under a bullet point as above]
    * **DeviceClientFileUploadSample**:
    * **DeviceClientKeysRolloverSample**:
    * **DeviceClientSampleAndroid**: 
