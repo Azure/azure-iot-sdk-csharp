@@ -3,7 +3,7 @@
 This folder contains simple samples showing how to use the various features of the Microsoft Azure IoT Hub service from a back-end application running C# code.
 
 ## List of samples
-[ATTN:CONTENT REQUIRED - provide descriptions for the 3 samples listed below. Classify them under the bullet points below them -- if they don't adhere to those categories, create something else and delete the bullets that are empty.]
+[ATTN:CONTENT REQUIRED - provide descriptions for the 3 samples listed below. Classify them under the bullet points below them -- if they don't adhere to those categories, create something else and delete the bullets that are empty. Or just list the samples.]
 
 * **ConsoleJobsSample**:
 * **ConsoleSample**: 
