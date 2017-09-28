@@ -156,14 +156,8 @@
     <Compile Include="..\..\common\src\service\HttpClientHelper.cs">
       <Link>HttpClientHelper.cs</Link>
     </Compile>
-    <Compile Include="..\..\common\src\service\IAuthorizationHeaderProvider.cs">
-      <Link>IAuthorizationHeaderProvider.cs</Link>
-    </Compile>
     <Compile Include="..\..\common\src\service\IHttpClientHelper.cs">
       <Link>IHttpClientHelper.cs</Link>
-    </Compile>
-    <Compile Include="..\..\common\src\service\IotHubConnectionString.cs">
-      <Link>IotHubConnectionString.cs</Link>
     </Compile>
     <Compile Include="..\..\common\src\service\PutOperationType.cs">
       <Link>PutOperationType.cs</Link>
@@ -279,6 +273,8 @@
     <Compile Include="DeviceJobOutcome.cs" />
     <Compile Include="DeviceJobStatus.cs" />
     <Compile Include="DeviceJobType.cs" />
+    <Compile Include="IAuthorizationHeaderProvider.cs" />
+    <Compile Include="IotHubConnectionString.cs" />
     <Compile Include="QueryOptions.cs" />
     <Compile Include="QueryResponse.cs" />
     <Compile Include="QueryResultType.cs" />

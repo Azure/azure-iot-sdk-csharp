@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices
     using Microsoft.Azure.Devices.Common;
     using Microsoft.Azure.Devices.Common.Security;
 
-    sealed class IotHubConnectionString : IAuthorizationHeaderProvider, ICbsTokenProvider
+    public sealed class IotHubConnectionString : IAuthorizationHeaderProvider, ICbsTokenProvider
     {
         static readonly TimeSpan DefaultTokenTimeToLive = TimeSpan.FromHours(1);
         const string UserSeparator = "@";

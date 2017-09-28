@@ -3,7 +3,7 @@
 
 namespace Microsoft.Azure.Devices
 {
-    interface IAuthorizationHeaderProvider
+    public interface IAuthorizationHeaderProvider
     {
         string GetAuthorizationHeader();
     }
