@@ -2,16 +2,11 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.Azure.Devices.Common;
+using Microsoft.Azure.Devices.Common.Exceptions;
+using System;
 
-namespace Microsoft.Azure.Devices.Provisioning.Service.Exceptions
+namespace Microsoft.Azure.Devices.Provisioning.Service
 {
-    using System;
-    using System.Runtime.Serialization;
-    using Microsoft.Azure.Devices.Common.Exceptions;
-
-#if !WINDOWS_UWP
-    [Serializable]
-#endif
     public sealed class EnrollmentNotFoundException : IotHubException
     {
         public EnrollmentNotFoundException(string registrationId)
@@ -25,7 +20,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Exceptions
         }
 
         public EnrollmentNotFoundException(string registrationId, string drsName, string trackingId)
-            : base(!string.IsNullOrEmpty(drsName) ? "Enrollment {0} at DRS {1} not registered".FormatInvariant(registrationId, drsName) : "Enrollment {0} not found".FormatInvariant(registrationId), trackingId)
+            : base(!string.IsNullOrEmpty(drsName) ?
+                  ApiResources.EnrollmentNotFoundAtServiceName.FormatInvariant(registrationId, drsName) :
+                  ApiResources.EnrollmentNotFound.FormatInvariant(registrationId), trackingId)
         {
         }
 
@@ -33,12 +30,5 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Exceptions
             : base(message, innerException)
         {
         }
-
-#if !WINDOWS_UWP && !NETSTANDARD2_0
-        public EnrollmentNotFoundException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-        }
-#endif
     }
 }

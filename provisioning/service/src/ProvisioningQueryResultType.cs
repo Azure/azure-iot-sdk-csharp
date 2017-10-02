@@ -1,11 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Runtime.Serialization;
+
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
-    using System.Runtime.Serialization;
 
-    public enum DpsQueryResultType
+
+    public enum ProvisioningQueryResultType
     {
         [EnumMember(Value = "unknown")]
         Unknown = 0,

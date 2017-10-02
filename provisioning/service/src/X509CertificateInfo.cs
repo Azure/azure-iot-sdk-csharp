@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Newtonsoft.Json;
+using System;
+
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
-    using System;
-    using Newtonsoft.Json;
-
     /// <summary>
     /// Contains X509 certificate properties and their accessors.
     /// </summary>

@@ -1,16 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using Microsoft.Azure.Devices.Shared;
+using Newtonsoft.Json;
+
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using Microsoft.Azure.Devices.Shared;
-    using Newtonsoft.Json;
-
     /// <summary>
     /// Registration status.
     /// </summary>

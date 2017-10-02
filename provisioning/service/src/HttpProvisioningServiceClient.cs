@@ -1,46 +1,43 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Provisioning.Service.Exceptions;
+using Microsoft.Azure.Devices.Shared;
+using Microsoft.Azure.Devices.Common;
+using Microsoft.Azure.Devices.Common.Exceptions;
+using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Net;
-    using System.Net.Http;
-    using System.Net.Http.Headers;
-    using System.Text.RegularExpressions;
-    using System.Threading;
-    using System.Threading.Tasks;
 
-    using Microsoft.Azure.Devices;
-    using Microsoft.Azure.Devices.Shared;
-    using Microsoft.Azure.Devices.Common;
-    using Microsoft.Azure.Devices.Common.Exceptions;
-
-    class HttpDeviceRegistrationClient : DeviceRegistrationClient, IDisposable
+    internal class HttpProvisioningServiceClient : ProvisioningServiceClient, IDisposable
     {
         const string EnrollmentUriFormat = "enrollments/{0}?{1}";
         const string BulkEnrollmentUriFormat = "enrollments?{0}";
         const string EnrollmentGroupUriFormat = "enrollmentGroups/{0}?{1}";
         const string QueryEnrollmentUriFormat = "enrollments/query?{0}";
         const string QueryEnrollmentGroupUriFormat = "enrollmentGroups/query?{0}";
-        const string DeviceRegistrationUriFormat = "registrations/{0}?{1}";
-        const string DeviceRegistrationsUriFormat = "registrations/{0}/query?{1}";
+        const string DeviceProvisioningUriFormat = "registrations/{0}?{1}";
+        const string DeviceProvisioningsUriFormat = "registrations/{0}/query?{1}";
 
         const string ContinuationTokenHeader = "x-ms-continuation";
         const string PageSizeHeader = "x-ms-max-item-count";
 
         private const string ApiVersionQueryString = ClientApiVersionHelper.ApiVersionQueryString;
 
-        static readonly Regex DeviceIdRegex = new Regex(@"^[A-Za-z0-9\-:.+%_#*?!(),=@;$']{1,128}$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        static readonly Regex IDRegex = new Regex(@"^[A-Za-z0-9\-:.+%_#*?!(),=@;$']{1,128}$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         static readonly TimeSpan DefaultOperationTimeout = TimeSpan.FromSeconds(100);
 
         IHttpClientHelper httpClientHelper;
         readonly string drsName;
 
-        internal HttpDeviceRegistrationClient(IotHubConnectionString connectionString)
+        internal HttpProvisioningServiceClient(IotHubConnectionString connectionString)
         {
             this.drsName = connectionString.IotHubName;
             this.httpClientHelper = new HttpClientHelper(
@@ -52,7 +49,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         // internal test helper
-        internal HttpDeviceRegistrationClient(IHttpClientHelper httpClientHelper, string drsName)
+        internal HttpProvisioningServiceClient(IHttpClientHelper httpClientHelper, string drsName)
         {
             if (httpClientHelper == null)
             {
@@ -85,11 +82,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             }
         }
 
-        void EnsureInstanceNotClosed()
+        internal void ThrowIfClosed()
         {
             if (this.httpClientHelper == null)
             {
-                throw new ObjectDisposedException("DeviceRegistrationClient", ApiResources.DeviceRegistrationClientAlreadyClosed);
+                throw new ObjectDisposedException("DeviceRegistrationClient", ApiResources.ProvisioningServiceClientAlreadyClosed);
             }
         }
 
@@ -100,7 +97,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         public override Task<Enrollment> AddEnrollmentAsync(Enrollment enrollment, CancellationToken cancellationToken)
         {
-            this.EnsureInstanceNotClosed();
+            ThrowIfClosed();
             ValidateRegistrationAndDeviceId(enrollment);
 
             var errorMappingOverrides = new Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>
@@ -121,12 +118,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         public override Task<BulkOperationResult> AddEnrollmentsAsync(IEnumerable<Enrollment> enrollments, CancellationToken cancellationToken)
         {
-            this.EnsureInstanceNotClosed();
+            ThrowIfClosed();
 
-            foreach (Enrollment enrollment in enrollments)
-            {
-                ValidateRegistrationAndDeviceId(enrollment);
-            }
+            ValidateRegistrationAndDeviceIdForEnrollmentList(enrollments);
 
             var operation = new BulkOperation()
             {
@@ -134,8 +128,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 Enrollments = enrollments
             };
 
-            return this.httpClientHelper.PostAsync<BulkOperation, BulkOperationResult>(GetBulkEnrollmentUri(), operation,
-                new Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>(), null, cancellationToken);
+            return this.httpClientHelper.PostAsync<BulkOperation, BulkOperationResult>(
+                GetBulkEnrollmentUri(), 
+                operation,
+                new Dictionary<HttpStatusCode, 
+                Func<HttpResponseMessage, Task<Exception>>>(), 
+                null, 
+                cancellationToken);
         }
 
         public override Task<Enrollment> GetEnrollmentAsync(string registrationId)
@@ -145,7 +144,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         public override Task<Enrollment> GetEnrollmentAsync(string registrationId, CancellationToken cancellationToken)
         {
-            this.EnsureInstanceNotClosed();
+            ThrowIfClosed();
             var errorMappingOverrides = new Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>
             {
                 {
@@ -180,7 +179,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         Task RemoveEnrollmentAsync(string registrationId, IETagHolder eTagHolder, CancellationToken cancellationToken)
         {
-            this.EnsureInstanceNotClosed();
+            ThrowIfClosed();
 
             if (string.IsNullOrWhiteSpace(eTagHolder.ETag))
             {
@@ -205,7 +204,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         public override Task RemoveEnrollmentsAsync(IEnumerable<Enrollment> enrollments, CancellationToken cancellationToken)
         {
-            this.EnsureInstanceNotClosed();
+            ThrowIfClosed();
 
             foreach (Enrollment enrollment in enrollments)
             {
@@ -261,7 +260,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         public override Task<Enrollment> UpdateEnrollmentAsync(Enrollment enrollment, bool forceUpdate, CancellationToken cancellationToken)
         {
-            this.EnsureInstanceNotClosed();
+            ThrowIfClosed();
             ValidateRegistrationAndDeviceId(enrollment);
 
             if (string.IsNullOrWhiteSpace(enrollment.ETag) && !forceUpdate)
@@ -303,12 +302,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         public override Task<BulkOperationResult> UpdateEnrollmentsAsync(IEnumerable<Enrollment> enrollments, bool forceUpdate, CancellationToken cancellationToken)
         {
-            this.EnsureInstanceNotClosed();
+            ThrowIfClosed();
+
+            ValidateRegistrationAndDeviceIdForEnrollmentList(enrollments);
 
             foreach (Enrollment enrollment in enrollments)
             {
-                ValidateRegistrationAndDeviceId(enrollment);
-
                 if (string.IsNullOrWhiteSpace(enrollment.ETag) && !forceUpdate)
                 {
                     throw new ArgumentException(ApiResources.ETagNotSetWhileUpdatingEnrollment);
@@ -332,8 +331,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         public override Task<EnrollmentGroup> AddEnrollmentGroupAsync(EnrollmentGroup enrollmentGroup, CancellationToken cancellationToken)
         {
-            this.EnsureInstanceNotClosed();
-            Validate(enrollmentGroup);
+            ThrowIfClosed();
+            ValidateEnrollmentGroup(enrollmentGroup);
 
             var errorMappingOverrides = new Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>
             {
@@ -353,7 +352,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         public override Task<EnrollmentGroup> GetEnrollmentGroupAsync(string enrollmentGroupId, CancellationToken cancellationToken)
         {
-            this.EnsureInstanceNotClosed();
+            ThrowIfClosed();
             var errorMappingOverrides = new Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>
             {
                 {
@@ -365,24 +364,24 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return this.httpClientHelper.GetAsync<EnrollmentGroup>(GetEnrollmentGroupUri(enrollmentGroupId), errorMappingOverrides, null, false, cancellationToken);
         }
         
-        public override IDpsQuery CreateEnrollmentsQuery()
+        public override IProvisioningQuery CreateEnrollmentsQuery()
         {
             return this.CreateEnrollmentsQuery(null);
         }
 
-        public override IDpsQuery CreateEnrollmentsQuery(int? pageSize)
+        public override IProvisioningQuery CreateEnrollmentsQuery(int? pageSize)
         {
-            return new DpsQuery(token => this.ExecuteQueryAsync(GetQueryEnrollmentUri(), pageSize, token, CancellationToken.None));
+            return new ProvisioningQuery(token => this.ExecuteQueryAsync(GetQueryEnrollmentUri(), pageSize, token, CancellationToken.None));
         }
 
-        public override IDpsQuery CreateEnrollmentGroupsQuery()
+        public override IProvisioningQuery CreateEnrollmentGroupsQuery()
         {
             return this.CreateEnrollmentGroupsQuery(null);
         }
 
-        public override IDpsQuery CreateEnrollmentGroupsQuery(int? pageSize)
+        public override IProvisioningQuery CreateEnrollmentGroupsQuery(int? pageSize)
         {
-            return new DpsQuery(token => this.ExecuteQueryAsync(GetQueryEnrollmentGroupUri(), pageSize, token, CancellationToken.None));
+            return new ProvisioningQuery(token => this.ExecuteQueryAsync(GetQueryEnrollmentGroupUri(), pageSize, token, CancellationToken.None));
         }
 
         public override Task RemoveEnrollmentGroupAsync(EnrollmentGroup enrollmentGroup)
@@ -408,7 +407,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         Task RemoveEnrollmentGroupAsync(string enrollmentGroupId, IETagHolder eTagHolder, CancellationToken cancellationToken)
         {
-            this.EnsureInstanceNotClosed();
+            ThrowIfClosed();
 
             if (string.IsNullOrWhiteSpace(eTagHolder.ETag))
             {
@@ -443,8 +442,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         public override Task<EnrollmentGroup> UpdateEnrollmentGroupAsync(EnrollmentGroup enrollmentGroup, bool forceUpdate, CancellationToken cancellationToken)
         {
-            this.EnsureInstanceNotClosed();
-            Validate(enrollmentGroup);
+            ThrowIfClosed();
+            ValidateEnrollmentGroup(enrollmentGroup);
 
             if (string.IsNullOrWhiteSpace(enrollmentGroup.ETag) && !forceUpdate)
             {
@@ -475,7 +474,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         public override Task<RegistrationStatus> GetDeviceRegistrationAsync(string registrationId, CancellationToken cancellationToken)
         {
-            this.EnsureInstanceNotClosed();
+            ThrowIfClosed();
 
             if (string.IsNullOrWhiteSpace(registrationId))
             {
@@ -493,19 +492,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return this.httpClientHelper.GetAsync<RegistrationStatus>(GetDeviceRegistrationUri(registrationId), errorMappingOverrides, null, false, cancellationToken);
         }
 
-        public override IDpsQuery CreateDeviceRegistrationsQuery(string enrollmentGroupId)
+        public override IProvisioningQuery CreateDeviceRegistrationsQuery(string enrollmentGroupId)
         {
             return this.CreateDeviceRegistrationsQuery(enrollmentGroupId, null);
         }
 
-        public override IDpsQuery CreateDeviceRegistrationsQuery(string enrollmentGroupId, int? pageSize)
+        public override IProvisioningQuery CreateDeviceRegistrationsQuery(string enrollmentGroupId, int? pageSize)
         {
             if (string.IsNullOrWhiteSpace(enrollmentGroupId))
             {
                 throw new ArgumentException(ApiResources.EnrollmentGroupIdIsNull);
             }
 
-            return new DpsQuery(token => this.ExecuteQueryAsync(GetDeviceRegistrationsUri(enrollmentGroupId), pageSize, token, CancellationToken.None));
+            return new ProvisioningQuery(token => this.ExecuteQueryAsync(GetDeviceRegistrationsUri(enrollmentGroupId), pageSize, token, CancellationToken.None));
         }
 
         public override Task RemoveDeviceRegistrationAsync(RegistrationStatus registrationStatus)
@@ -531,7 +530,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         Task RemoveDeviceRegistrationAsync(string registrationId, IETagHolder eTagHolder, CancellationToken cancellationToken)
         {
-            this.EnsureInstanceNotClosed();
+            ThrowIfClosed();
 
             if (string.IsNullOrWhiteSpace(eTagHolder.ETag))
             {
@@ -542,7 +541,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             {
                 {
                     HttpStatusCode.NotFound,
-                    responseMessage => Task.FromResult((Exception) new DeviceRegistrationNotFoundException(registrationId))
+                    responseMessage => Task.FromResult((Exception) new RegistrationNotFoundException(registrationId))
                 }
             };
 
@@ -579,13 +578,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         private static Uri GetDeviceRegistrationUri(string registrationId)
         {
             registrationId = WebUtility.UrlEncode(registrationId);
-            return new Uri(DeviceRegistrationUriFormat.FormatInvariant(registrationId, ApiVersionQueryString), UriKind.Relative);
+            return new Uri(DeviceProvisioningUriFormat.FormatInvariant(registrationId, ApiVersionQueryString), UriKind.Relative);
         }
 
         private static Uri GetDeviceRegistrationsUri(string enrollmentGroupId)
         {
             enrollmentGroupId = WebUtility.UrlEncode(enrollmentGroupId);
-            return new Uri(DeviceRegistrationsUriFormat.FormatInvariant(enrollmentGroupId, ApiVersionQueryString), UriKind.Relative);
+            return new Uri(DeviceProvisioningsUriFormat.FormatInvariant(enrollmentGroupId, ApiVersionQueryString), UriKind.Relative);
         }
 
         static void ValidateRegistrationAndDeviceId(Enrollment enrollment)
@@ -600,19 +599,27 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 throw new ArgumentException("enrollment.RegistrationId");
             }
 
-            if (!DeviceIdRegex.IsMatch(enrollment.RegistrationId))
+            if (!IDRegex.IsMatch(enrollment.RegistrationId))
             {
                 throw new ArgumentException(ApiResources.EnrollmentIdNotValid.FormatInvariant(enrollment.RegistrationId));
             }
 
             if(!string.IsNullOrWhiteSpace(enrollment.DeviceId) &&
-               !DeviceIdRegex.IsMatch(enrollment.DeviceId))
+               !IDRegex.IsMatch(enrollment.DeviceId))
             {
                 throw new ArgumentException(ApiResources.EnrollmentIdNotValid.FormatInvariant(enrollment.DeviceId));
             }
         }
 
-        static void Validate(EnrollmentGroup enrollmentGroup)
+        static void ValidateRegistrationAndDeviceIdForEnrollmentList(IEnumerable<Enrollment> enrollments)
+        {
+            foreach (Enrollment enrollment in enrollments)
+            {
+                ValidateRegistrationAndDeviceId(enrollment);
+            }
+        }
+
+        internal static void ValidateEnrollmentGroup(EnrollmentGroup enrollmentGroup)
         {
             if (enrollmentGroup == null)
             {
@@ -625,11 +632,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             }
         }
 
-        async Task<DpsQueryResult> ExecuteQueryAsync(Uri queryUri, int? pageSize, string continuationToken, CancellationToken cancellationToken)
+        async Task<ProvisioningQueryResult> ExecuteQueryAsync(Uri queryUri, int? pageSize, string continuationToken, CancellationToken cancellationToken)
         {
-            this.EnsureInstanceNotClosed();
+            ThrowIfClosed();
 
-            //todo: support sqlQueryStrings
+            //TODO: support sqlQueryStrings
 
             var customHeaders = new Dictionary<string, string>();
             if (!string.IsNullOrWhiteSpace(continuationToken))
@@ -654,7 +661,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 null,
                 cancellationToken);
 
-            return await DpsQueryResult.FromHttpResponseAsync(response);
+            return await ProvisioningQueryResult.FromHttpResponseAsync(response);
         }
     }
 }

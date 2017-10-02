@@ -2,16 +2,11 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.Azure.Devices.Common;
+using Microsoft.Azure.Devices.Common.Exceptions;
+using System;
 
-namespace Microsoft.Azure.Devices.Provisioning.Service.Exceptions
+namespace Microsoft.Azure.Devices.Provisioning.Service
 {
-    using System;
-    using System.Runtime.Serialization;
-    using Microsoft.Azure.Devices.Common.Exceptions;
-
-#if !WINDOWS_UWP
-    [Serializable]
-#endif
     public sealed class EnrollmentAlreadyExistsException : IotHubException
     {
         public EnrollmentAlreadyExistsException(string registrationId)
@@ -21,7 +16,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Exceptions
         }
 
         public EnrollmentAlreadyExistsException(string registrationId, string trackingId)
-            : base("Enrollment {0} already exists".FormatInvariant(registrationId), trackingId)
+            : base(ApiResources.EnrollmentAlreadyExists.FormatInvariant(registrationId), trackingId)
         {
         }
 
@@ -29,12 +24,5 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Exceptions
             : base(message, innerException)
         {
         }
-
-#if !WINDOWS_UWP && !NETSTANDARD2_0
-        public EnrollmentAlreadyExistsException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-        }
-#endif
     }
 }

@@ -1,22 +1,22 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
-
     /// <summary>
     ///     This wraps underlying paged query result access logic.
     ///     Use pattern:
     /// 
-    ///     IDpsQuery q = await registryManager.CreateQuery(sql, pagesize);
+    ///     IProvisioningQuery q = await registryManager.CreateQuery(sql, pagesize);
     ///     while (q.HasMoreResults) {
     ///         IEnumerable\<Enrollment\> result = r.GetNextAsEnrollmentAsync();
     ///         // access individual enrollment records
     ///     }
     /// </summary>
-    public interface IDpsQuery
+    public interface IProvisioningQuery
     {
         /// <summary>
         ///     Indicate if more results can be fetched

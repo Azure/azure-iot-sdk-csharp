@@ -1,31 +1,28 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Net.Http.Headers;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Microsoft.Azure.Devices.Shared;
-    
     /// <summary>
     /// Contains methods that services can use to perform create, remove, update and delete operations on devices.
     /// </summary>
-    public abstract class DeviceRegistrationClient : IDisposable
+    public abstract class ProvisioningServiceClient : IDisposable
     {
         /// <summary>
         /// Creates a DeviceRegistrationClient from the DRS connection string.
         /// </summary>
         /// <param name="connectionString"> The DRS connection string.</param>
         /// <returns> A DeviceRegistrationClient instance. </returns>
-        public static DeviceRegistrationClient CreateFromConnectionString(string connectionString)
+        public static ProvisioningServiceClient CreateFromConnectionString(string connectionString)
         {
-            // todo: create DrsConnectionString and DrsConnectionStringBuilder classes
-            Microsoft.Azure.Devices.Common.ExceptionDispatcher dasdf = null;
-            IotHubConnectionString drsConnectionString = IotHubConnectionString.Parse(connectionString);
-            return new HttpDeviceRegistrationClient(drsConnectionString);
+            // TODO: create provisioningServiceConnectionString and provisioningServiceConnectionStringBuilder classes
+            IotHubConnectionString provisioningServiceConnectionString = IotHubConnectionString.Parse(connectionString);
+            return new HttpProvisioningServiceClient(provisioningServiceConnectionString);
         }
 
         /// <inheritdoc />
@@ -164,27 +161,27 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Creates the enrollments query.
         /// </summary>
         /// <returns>Query object</returns>
-        public abstract IDpsQuery CreateEnrollmentsQuery();
+        public abstract IProvisioningQuery CreateEnrollmentsQuery();
 
         /// <summary>
         /// Creates the enrollments query.
         /// </summary>
         /// <param name="pageSize">Size of the page.</param>
         /// <returns>Query object</returns>
-        public abstract IDpsQuery CreateEnrollmentsQuery(int? pageSize);
+        public abstract IProvisioningQuery CreateEnrollmentsQuery(int? pageSize);
 
         /// <summary>
         /// Creates the enrollment groups query.
         /// </summary>
         /// <returns>Query object</returns>
-        public abstract IDpsQuery CreateEnrollmentGroupsQuery();
+        public abstract IProvisioningQuery CreateEnrollmentGroupsQuery();
 
         /// <summary>
         /// Creates the enrollment groups query.
         /// </summary>
         /// <param name="pageSize">Size of the page.</param>
         /// <returns>Query object</returns>
-        public abstract IDpsQuery CreateEnrollmentGroupsQuery(int? pageSize);
+        public abstract IProvisioningQuery CreateEnrollmentGroupsQuery(int? pageSize);
 
         /// <summary>
         /// Removes a device enrollment.
@@ -347,7 +344,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </summary>
         /// <param name="enrollmentGroupId">enrollmentGroupId id</param>
         /// <returns>Query object</returns>
-        public abstract IDpsQuery CreateDeviceRegistrationsQuery(string enrollmentGroupId);
+        public abstract IProvisioningQuery CreateDeviceRegistrationsQuery(string enrollmentGroupId);
 
         /// <summary>
         /// Gets the registration information of devices using this enrollment group
@@ -355,7 +352,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="enrollmentGroupId">enrollmentGroupId id</param>
         /// <param name="pageSize">Size of the page.</param>
         /// <returns>Query object</returns>
-        public abstract IDpsQuery CreateDeviceRegistrationsQuery(string enrollmentGroupId, int? pageSize);
+        public abstract IProvisioningQuery CreateDeviceRegistrationsQuery(string enrollmentGroupId, int? pageSize);
 
         /// <summary>
         /// Removes a device registration.

@@ -1,19 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using System.ComponentModel;
+
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Converters;
-    using System.ComponentModel;
-
     /// <summary>
     /// Used to specify the attestation mechanism used by a device during enrollment.
     /// </summary>
     public sealed class AttestationMechanism
     {
-        private TpmAttestation tpm;
-        private X509Attestation x509;
+        private TpmAttestation _tpm;
+        private X509Attestation _x509;
 
         /// <summary>
         /// Creates a new instance of <see cref="AttestationMechanism"/>
@@ -36,10 +36,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         [JsonProperty(PropertyName = "tpm")]
         public TpmAttestation Tpm
         {
-            get { return this.tpm; }
+            get { return this._tpm; }
             set
             {
-                this.tpm = value;
+                this._tpm = value;
                 if (value != null)
                 {
                     this.Type = AttestationMechanismType.Tpm;
@@ -53,10 +53,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         [JsonProperty(PropertyName = "x509")]
         public X509Attestation X509
         {
-            get { return this.x509; }
+            get { return this._x509; }
             set
             {
-                this.x509 = value;
+                this._x509 = value;
                 if (value != null)
                 {
                     this.Type = AttestationMechanismType.X509;

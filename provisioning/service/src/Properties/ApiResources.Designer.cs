@@ -142,11 +142,20 @@ namespace Microsoft.Azure.Devices {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The DeviceRegistrationClient instance was already closed..
+        ///   Looks up a localized string similar to Enrollment {0} already exists..
         /// </summary>
-        internal static string DeviceRegistrationClientAlreadyClosed {
+        internal static string EnrollmentAlreadyExists {
             get {
-                return ResourceManager.GetString("DeviceRegistrationClientAlreadyClosed", resourceCulture);
+                return ResourceManager.GetString("EnrollmentAlreadyExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to EnrollmentGroup {0} already exists..
+        /// </summary>
+        internal static string EnrollmentGroupAlreadyExists {
+            get {
+                return ResourceManager.GetString("EnrollmentGroupAlreadyExists", resourceCulture);
             }
         }
         
@@ -160,11 +169,47 @@ namespace Microsoft.Azure.Devices {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Enrollment group {0} not found..
+        /// </summary>
+        internal static string EnrollmentGroupNotFound {
+            get {
+                return ResourceManager.GetString("EnrollmentGroupNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enrollment group {0} at Provisioning Service {1} not found..
+        /// </summary>
+        internal static string EnrollmentGroupNotFoundAtServiceName {
+            get {
+                return ResourceManager.GetString("EnrollmentGroupNotFoundAtServiceName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The enrollment identifier {0} is invalid..
         /// </summary>
         internal static string EnrollmentIdNotValid {
             get {
                 return ResourceManager.GetString("EnrollmentIdNotValid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enrollment {0} not found..
+        /// </summary>
+        internal static string EnrollmentNotFound {
+            get {
+                return ResourceManager.GetString("EnrollmentNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enrollment {0} at DRS {1} not registered..
+        /// </summary>
+        internal static string EnrollmentNotFoundAtServiceName {
+            get {
+                return ResourceManager.GetString("EnrollmentNotFoundAtServiceName", resourceCulture);
             }
         }
         
@@ -412,11 +457,38 @@ namespace Microsoft.Azure.Devices {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The DeviceRegistrationClient instance was already closed..
+        /// </summary>
+        internal static string ProvisioningServiceClientAlreadyClosed {
+            get {
+                return ResourceManager.GetString("ProvisioningServiceClientAlreadyClosed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The registration identifier is null..
         /// </summary>
         internal static string RegistrationIdIsNull {
             get {
                 return ResourceManager.GetString("RegistrationIdIsNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Registration {0} not found..
+        /// </summary>
+        internal static string RegistrationNotFound {
+            get {
+                return ResourceManager.GetString("RegistrationNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Registration {0} at DRS {1} not found..
+        /// </summary>
+        internal static string RegistrationNotFoundAtServiceName {
+            get {
+                return ResourceManager.GetString("RegistrationNotFoundAtServiceName", resourceCulture);
             }
         }
         

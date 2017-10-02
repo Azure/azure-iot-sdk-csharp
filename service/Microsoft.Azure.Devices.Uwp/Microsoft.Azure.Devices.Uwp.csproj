@@ -66,6 +66,57 @@
     <PRIResource Include="ApiResources.resw" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\..\common\src\service\AssertionFailedException.cs">
+      <Link>AssertionFailedException.cs</Link>
+    </Compile>
+    <Compile Include="..\..\common\src\service\AuthenticationMethodFactory.cs">
+      <Link>AuthenticationMethodFactory.cs</Link>
+    </Compile>
+    <Compile Include="..\..\common\src\service\CommonConstants.cs">
+      <Link>CommonConstants.cs</Link>
+    </Compile>
+    <Compile Include="..\..\common\src\service\CommonResources.cs">
+      <Link>CommonResources.cs</Link>
+    </Compile>
+    <Compile Include="..\..\common\src\service\EventTraceActivity.cs">
+      <Link>EventTraceActivity.cs</Link>
+    </Compile>
+    <Compile Include="..\..\common\src\service\ExceptionDispatcher.cs">
+      <Link>ExceptionDispatcher.cs</Link>
+    </Compile>
+    <Compile Include="..\..\common\src\service\ExceptionHandlingHelper.cs">
+      <Link>ExceptionHandlingHelper.cs</Link>
+    </Compile>
+    <Compile Include="..\..\common\src\service\ExceptionTrace.cs">
+      <Link>ExceptionTrace.cs</Link>
+    </Compile>
+    <Compile Include="..\..\common\src\service\FatalException.cs">
+      <Link>FatalException.cs</Link>
+    </Compile>
+    <Compile Include="..\..\common\src\service\Fx.cs">
+      <Link>Fx.cs</Link>
+    </Compile>
+    <Compile Include="..\..\common\src\service\FxCop.cs">
+      <Link>FxCop.cs</Link>
+    </Compile>
+    <Compile Include="..\..\common\src\service\HttpClientHelper.cs">
+      <Link>HttpClientHelper.cs</Link>
+    </Compile>
+    <Compile Include="..\..\common\src\service\IHttpClientHelper.cs">
+      <Link>IHttpClientHelper.cs</Link>
+    </Compile>
+    <Compile Include="..\..\common\src\service\PutOperationType.cs">
+      <Link>PutOperationType.cs</Link>
+    </Compile>
+    <Compile Include="..\..\common\src\service\QuerySpecification.cs">
+      <Link>QuerySpecification.cs</Link>
+    </Compile>
+    <Compile Include="..\..\common\src\service\TaskHelpers.cs">
+      <Link>TaskHelpers.cs</Link>
+    </Compile>
+    <Compile Include="..\..\common\src\service\Utils.cs">
+      <Link>Utils.cs</Link>
+    </Compile>
     <Compile Include="..\Microsoft.Azure.Devices\AmqpClientHelper.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\AmqpFeedbackReceiver.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\AmqpFileNotificationReceiver.cs" />
@@ -78,26 +129,20 @@
     <Compile Include="..\Microsoft.Azure.Devices\Common\PerfectHash.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\AuthenticationType.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\AuthenticationMechanism.cs" />
-    <Compile Include="..\Microsoft.Azure.Devices\AuthenticationMethodFactory.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\ClientApiVersionHelper.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\CloudToDeviceMethodResult.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\AmqpTrace.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\Client\IotHubAmqpProperty.cs" />
-    <Compile Include="..\Microsoft.Azure.Devices\Common\CommonConstants.cs" />
-    <Compile Include="..\Microsoft.Azure.Devices\Common\CommonResources.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\Data\AccessRights.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\Data\AmqpErrorMapper.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\Data\SharedAccessSignatureAuthorizationRule.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\EventHubPartitionKeyResolver.cs" />
-    <Compile Include="..\Microsoft.Azure.Devices\Common\ExceptionDispatcher.cs" />
-    <Compile Include="..\Microsoft.Azure.Devices\Common\Exceptions\AssertionFailedException.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\Exceptions\CallbackException.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\Exceptions\DeviceAlreadyExistsException.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\Exceptions\DeviceInvalidResultCountException.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\Exceptions\DeviceMaximumQueueDepthExceededException.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\Exceptions\DeviceMessageLockLostException.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\Exceptions\DeviceNotFoundException.cs" />
-    <Compile Include="..\Microsoft.Azure.Devices\Common\Exceptions\FatalException.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\Exceptions\InvalidProtocolVersionException.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\Exceptions\IotHubAmqpErrorCode.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\Exceptions\IotHubCommunicationException.cs" />
@@ -117,7 +162,6 @@
     <Compile Include="..\Microsoft.Azure.Devices\Common\Exceptions\ServerErrorException.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\Exceptions\ThrottlingException.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\Exceptions\UnauthorizedException.cs" />
-    <Compile Include="..\Microsoft.Azure.Devices\Common\ExceptionTrace.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\Extensions\CommonExtensions.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\Extensions\DictionaryExtensions.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\Extensions\EnumerableExtensions.cs" />
@@ -125,8 +169,6 @@
     <Compile Include="..\Microsoft.Azure.Devices\Common\Extensions\MemberInfoExtensions.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\Extensions\OtherExtensions.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\Extensions\StringFormattingExtensions.cs" />
-    <Compile Include="..\Microsoft.Azure.Devices\Common\Fx.cs" />
-    <Compile Include="..\Microsoft.Azure.Devices\Common\FxCop.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\FxTrace.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\HashCode.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\IAmqpTrace.cs" />
@@ -147,14 +189,11 @@
     <Compile Include="..\Microsoft.Azure.Devices\Common\SingletonDictionary.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\StringValidationHelper.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\SynchronizedPool.cs" />
-    <Compile Include="..\Microsoft.Azure.Devices\Common\TaskHelpers.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\Ticks.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\TimeoutHelper.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\Timestamp.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\TraceOperation.cs" />
-    <Compile Include="..\Microsoft.Azure.Devices\Common\Tracing\EventTraceActivity.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\TrackingHelper.cs" />
-    <Compile Include="..\Microsoft.Azure.Devices\Common\Utils.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\WaitCallbackActionItem.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\WebApi\CustomHeaderConstants.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\WebApi\ResourceRequest.cs" />
@@ -177,7 +216,6 @@
     <Compile Include="..\Microsoft.Azure.Devices\BulkRegistryOperationResult.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\DeviceStatus.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\EndpointKind.cs" />
-    <Compile Include="..\Microsoft.Azure.Devices\ExceptionHandlingHelper.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\ExportDevicesRequest.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\ExportImportDevice.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\ExportImportRequest.cs" />
@@ -187,11 +225,9 @@
     <Compile Include="..\Microsoft.Azure.Devices\FeedbackStatusCode.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\FileNotification.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\FileNotificationReceiver.cs" />
-    <Compile Include="..\Microsoft.Azure.Devices\HttpClientHelper.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\HttpRegistryManager.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\IAuthenticationMethod.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\IAuthorizationHeaderProvider.cs" />
-    <Compile Include="..\Microsoft.Azure.Devices\IHttpClientHelper.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\ImportDevicesRequest.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\DeviceRegistryOperationError.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\ImportMode.cs" />
@@ -208,13 +244,11 @@
     <Compile Include="..\Microsoft.Azure.Devices\Message.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\MessageConverter.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\MessageSystemPropertyNames.cs" />
-    <Compile Include="..\Microsoft.Azure.Devices\PutOperationType.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Query.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\QueryOptions.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\QueryResponse.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\QueryResult.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\QueryResultType.cs" />
-    <Compile Include="..\Microsoft.Azure.Devices\QuerySpecification.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Receiver.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\RegistryManager.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\RegistryStatistics.cs" />

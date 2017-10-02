@@ -259,7 +259,10 @@
     <Compile Include="..\Microsoft.Azure.Devices\X509Thumbprint.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\shared\Microsoft.Azure.Devices.Shared.NetStandard\Microsoft.Azure.Devices.Shared.NetStandard.csproj" />
+    <ProjectReference Include="..\..\shared\Microsoft.Azure.Devices.Shared.NetStandard\Microsoft.Azure.Devices.Shared.NetStandard.csproj">
+      <Project>{91dfb837-d8a3-4f54-ae0d-45c95acd0c2a}</Project>
+      <Name>Microsoft.Azure.Devices.Shared.NetStandard</Name>
+    </ProjectReference>
   </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

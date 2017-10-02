@@ -2,16 +2,11 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.Azure.Devices.Common;
+using Microsoft.Azure.Devices.Common.Exceptions;
+using System;
 
-namespace Microsoft.Azure.Devices.Provisioning.Service.Exceptions
+namespace Microsoft.Azure.Devices.Provisioning.Service
 {
-    using System;
-    using System.Runtime.Serialization;
-    using Microsoft.Azure.Devices.Common.Exceptions;
-    
-#if !WINDOWS_UWP
-    [Serializable]
-#endif
     public sealed class EnrollmentGroupAlreadyExistsException : IotHubException
     {
         public EnrollmentGroupAlreadyExistsException(string enrollmentGroupId)
@@ -20,7 +15,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Exceptions
         }
 
         public EnrollmentGroupAlreadyExistsException(string enrollmentGroupId, string trackingId)
-            : base("EnrollmentGroup {0} already exists".FormatInvariant(enrollmentGroupId), trackingId)
+            : base(ApiResources.EnrollmentGroupAlreadyExists.FormatInvariant(enrollmentGroupId), trackingId)
         {
         }
 
@@ -28,12 +23,5 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Exceptions
             : base(message, innerException)
         {
         }
-
-#if !WINDOWS_UWP && !NETSTANDARD2_0
-        public EnrollmentGroupAlreadyExistsException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-        }
-#endif
     }
 }

@@ -219,7 +219,7 @@
   <data name="ETagSetWhileCreatingDeployment" xml:space="preserve">
     <value>The ETag should not be set while creating a deployment.</value>
   </data>
-  <data name="DeviceRegistrationClientAlreadyClosed" xml:space="preserve">
+  <data name="ProvisioningServiceClientAlreadyClosed" xml:space="preserve">
     <value>The DeviceRegistrationClient instance was already closed.</value>
   </data>
   <data name="EnrollmentIdNotValid" xml:space="preserve">
@@ -245,5 +245,29 @@
   </data>
   <data name="ETagNotSetWhileDeletingDeviceRegistration" xml:space="preserve">
     <value>The ETag should be set while deleting the device registration.</value>
+  </data>
+  <data name="EnrollmentAlreadyExists" xml:space="preserve">
+    <value>Enrollment {0} already exists.</value>
+  </data>
+  <data name="EnrollmentGroupAlreadyExists" xml:space="preserve">
+    <value>EnrollmentGroup {0} already exists.</value>
+  </data>
+  <data name="EnrollmentGroupNotFound" xml:space="preserve">
+    <value>Enrollment group {0} not found.</value>
+  </data>
+  <data name="EnrollmentGroupNotFoundAtServiceName" xml:space="preserve">
+    <value>Enrollment group {0} at Provisioning Service {1} not found.</value>
+  </data>
+  <data name="EnrollmentNotFound" xml:space="preserve">
+    <value>Enrollment {0} not found.</value>
+  </data>
+  <data name="EnrollmentNotFoundAtServiceName" xml:space="preserve">
+    <value>Enrollment {0} at DRS {1} not registered.</value>
+  </data>
+  <data name="RegistrationNotFound" xml:space="preserve">
+    <value>Registration {0} not found.</value>
+  </data>
+  <data name="RegistrationNotFoundAtServiceName" xml:space="preserve">
+    <value>Registration {0} at DRS {1} not found.</value>
   </data>
 </root>

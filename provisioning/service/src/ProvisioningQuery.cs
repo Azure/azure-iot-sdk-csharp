@@ -1,29 +1,29 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using Newtonsoft.Json.Linq;
-
     /// <summary>
     ///     Query on enrollments, enrollmentGroups and registrations 
     /// </summary>
-    class DpsQuery : IDpsQuery
+    internal class ProvisioningQuery : IProvisioningQuery
     {
         private string continuationToken = string.Empty;
         private bool newQuery = true;
-        private readonly Func<string, Task<DpsQueryResult>> queryTaskFunc;
+        private readonly Func<string, Task<ProvisioningQueryResult>> queryTaskFunc;
 
         /// <summary>
         ///     internal ctor
         /// </summary>
         /// <param name="pageSize"></param>
         /// <param name="queryTaskFunc"></param>
-        internal DpsQuery(Func<string, Task<DpsQueryResult>> queryTaskFunc)
+        internal ProvisioningQuery(Func<string, Task<ProvisioningQueryResult>> queryTaskFunc)
         {
             this.queryTaskFunc = queryTaskFunc;
         }
@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             }
             else
             {
-                DpsQueryResult r = await this.GetNextAsync(options);
+                ProvisioningQueryResult r = await this.GetNextAsync(options);
                 response = r.Items.Select(o => o.ToString());
             }
 
@@ -66,7 +66,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         public async Task<QueryResponse<Enrollment>> GetNextAsEnrollmentAsync(QueryOptions options)
         {
             IEnumerable<Enrollment> results = this.HasMoreResults
-                ? await this.GetAndCastNextResultAsync<Enrollment>(DpsQueryResultType.Enrollment, options)
+                ? await this.GetAndCastNextResultAsync<Enrollment>(ProvisioningQueryResultType.Enrollment, options)
                 : new List<Enrollment>();
 
             return new QueryResponse<Enrollment>(results, this.continuationToken);
@@ -80,7 +80,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         public async Task<QueryResponse<EnrollmentGroup>> GetNextAsEnrollmentGroupAsync(QueryOptions options)
         {
             IEnumerable<EnrollmentGroup> results = this.HasMoreResults
-                ? await this.GetAndCastNextResultAsync<EnrollmentGroup>(DpsQueryResultType.EnrollmentGroup, options)
+                ? await this.GetAndCastNextResultAsync<EnrollmentGroup>(ProvisioningQueryResultType.EnrollmentGroup, options)
                 : new List<EnrollmentGroup>();
 
             return new QueryResponse<EnrollmentGroup>(results, this.continuationToken);
@@ -94,19 +94,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         public async Task<QueryResponse<RegistrationStatus>> GetNextAsRegistrationStatusAsync(QueryOptions options)
         {
             IEnumerable<RegistrationStatus> results = this.HasMoreResults
-                ? await this.GetAndCastNextResultAsync<RegistrationStatus>(DpsQueryResultType.DeviceRegistration, options)
+                ? await this.GetAndCastNextResultAsync<RegistrationStatus>(ProvisioningQueryResultType.DeviceRegistration, options)
                 : new List<RegistrationStatus>();
 
             return new QueryResponse<RegistrationStatus>(results, this.continuationToken);
         }
 
-        async Task<IEnumerable<T>> GetAndCastNextResultAsync<T>(DpsQueryResultType type, QueryOptions options)
+        async Task<IEnumerable<T>> GetAndCastNextResultAsync<T>(ProvisioningQueryResultType type, QueryOptions options)
         {
-            DpsQueryResult r = await this.GetNextAsync(options);
+            ProvisioningQueryResult r = await this.GetNextAsync(options);
             return CastResultContent<T>(r, type);
         }
 
-        static IEnumerable<T> CastResultContent<T>(DpsQueryResult result, DpsQueryResultType expected)
+        static IEnumerable<T> CastResultContent<T>(ProvisioningQueryResult result, ProvisioningQueryResultType expected)
         {
             if (result.Type != expected)
             {
@@ -117,12 +117,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return result.Items.Select(o => ((JObject) o).ToObject<T>());
         }
 
-        async Task<DpsQueryResult> GetNextAsync(QueryOptions options)
+        async Task<ProvisioningQueryResult> GetNextAsync(QueryOptions options)
         {
             this.newQuery = false;
-            DpsQueryResult result = await this.queryTaskFunc(!string.IsNullOrWhiteSpace(options?.ContinuationToken) ? options.ContinuationToken : this.continuationToken);
+            ProvisioningQueryResult result = await this.queryTaskFunc(!string.IsNullOrWhiteSpace(options?.ContinuationToken) ? options.ContinuationToken : this.continuationToken);
             this.continuationToken = result.ContinuationToken;
             return result;
         }
     }
 }
+
