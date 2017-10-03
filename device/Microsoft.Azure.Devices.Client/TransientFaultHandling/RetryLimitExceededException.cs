@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
     /// The special type of exception that provides managed exit from a retry loop. The user code can use this
     /// exception to notify the retry policy that no further retry attempts are required.
     /// </summary>
-    [Obsolete("You should use cancellation tokens or other means of stoping the retry loop.")]
+    [Obsolete("You should use cancellation tokens or other means of stopping the retry loop.")]
     internal sealed class RetryLimitExceededException : Exception
     {
         /// <summary>

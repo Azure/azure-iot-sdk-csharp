@@ -597,7 +597,7 @@ namespace Microsoft.Azure.Devices.Client
         [SecurityCritical]
         unsafe class ScheduledOverlapped
         {
-#if !WINDOWS_UWP && !PCL
+#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
             readonly NativeOverlapped* nativeOverlapped;
 #endif
             IOThreadScheduler scheduler;

@@ -123,7 +123,11 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
             }
             TimeSpan zero = TimeSpan.Zero;
             Exception innerException = runningTask.Exception.InnerException;
+
+// 'RetryLimitExceededException' is obsolete: 'You should use cancellation tokens or other means of stopping the retry loop.'               
+#pragma warning disable 0618 
             if (innerException is RetryLimitExceededException)
+#pragma warning restore 0618
             {
                 TaskCompletionSource<TResult> taskCompletionSource = new TaskCompletionSource<TResult>();
                 if (innerException.InnerException != null)

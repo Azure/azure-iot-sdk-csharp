@@ -233,7 +233,10 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
                     result = func();
                     break;
                 }
+// 'RetryLimitExceededException' is obsolete: 'You should use cancellation tokens or other means of stopping the retry loop.'
+#pragma warning disable 0618 
                 catch (RetryLimitExceededException ex2)
+#pragma warning restore 0618
                 {
                     if (ex2.InnerException != null)
                     {

@@ -39,7 +39,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
         Func<MethodRequestInternal, Task> messageListener;
 
         Action<TwinCollection> onDesiredStatePatchListener;
-        Action<Message> twinResponseEvent;
         Action<object, ConnectionEventArgs> linkOpenedListener;
         Func<object, ConnectionEventArgs, Task> linkClosedListener;
         Func<object, ConnectionEventArgs, Task> SafeAddClosedMethodReceivingLinkHandler;

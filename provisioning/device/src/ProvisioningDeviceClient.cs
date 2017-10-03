@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             string globalDeviceEndpoint, 
             string idScope, 
             SecurityClient securityClient, 
-            TransportHandler transport)
+            TransportClient transport)
         {
             throw new System.NotImplementedException();
         }
@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <param name="force">Forces the registration by ensuring that all information is rebuilt on the service 
         /// side.</param>
         /// <returns>The DPSRegistrationResult.</returns>
-        public async Task<ProvisioningRegistrationResult> RegisterAsync(bool force = false)
+        public Task<ProvisioningRegistrationResult> RegisterAsync(bool force = false)
         {
             throw new System.NotImplementedException();
         }
@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// side.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The DPSRegistrationResult.</returns>
-        public async Task<ProvisioningRegistrationResult> RegisterAsync(bool force, CancellationToken cancellationToken)
+        public Task<ProvisioningRegistrationResult> RegisterAsync(bool force, CancellationToken cancellationToken)
         {
             throw new System.NotImplementedException();
         }
@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <summary>
         /// Ensures that the communication channel between the device and the service is gracefully closed.
         /// </summary>
-        public async Task CloseAsync()
+        public Task CloseAsync()
         {
             // Needed at least for WebSocket close handshake.
             throw new System.NotImplementedException();

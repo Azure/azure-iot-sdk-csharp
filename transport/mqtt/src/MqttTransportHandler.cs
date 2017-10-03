@@ -5,14 +5,14 @@ using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
-    public class MqttTransportHandler : TransportHandler
+    public class MqttTransportClient : TransportClient
     {
-        public MqttTransportHandler() : base()
+        public MqttTransportClient() : base()
         {
 
         }
 
-        public MqttTransportHandler(TransportFallbackType transportFallback) : base(transportFallback)
+        public MqttTransportClient(TransportFallbackType transportFallback) : base(transportFallback)
         {
         }
 

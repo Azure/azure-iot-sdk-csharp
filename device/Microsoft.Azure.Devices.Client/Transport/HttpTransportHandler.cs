@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         }
 #endif
 
-        private Task HandleTimeoutCancellation(Func<Task> func, CancellationToken token)
+        private new Task HandleTimeoutCancellation(Func<Task> func, CancellationToken token)
         {
             var tcs = new TaskCompletionSource<bool>();
 
@@ -268,7 +268,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         }
 #endif
 
-        public override async Task<Twin> SendTwinGetAsync(CancellationToken cancellationToken)
+        public override Task<Twin> SendTwinGetAsync(CancellationToken cancellationToken)
         {
             throw new NotImplementedException("Device twins are only supported with Mqtt protocol.");
         }

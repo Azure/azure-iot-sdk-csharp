@@ -598,7 +598,9 @@ namespace Microsoft.Azure.Devices.Common
         [SecurityCritical]
         unsafe class ScheduledOverlapped
         {
+#if !NETSTANDARD1_3
             readonly NativeOverlapped* nativeOverlapped;
+#endif
             IOThreadScheduler scheduler;
 
             public ScheduledOverlapped()
