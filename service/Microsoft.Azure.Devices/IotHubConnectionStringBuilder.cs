@@ -88,7 +88,7 @@ namespace Microsoft.Azure.Devices
             get { return this.iotHubName; }
         }
 
-        public IotHubConnectionString ToIotHubConnectionString()
+        internal IotHubConnectionString ToIotHubConnectionString()
         {
             this.Validate();
             return new IotHubConnectionString(this);

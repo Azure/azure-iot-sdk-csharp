@@ -102,8 +102,14 @@
     <Compile Include="..\..\common\src\service\HttpClientHelper.cs">
       <Link>HttpClientHelper.cs</Link>
     </Compile>
+    <Compile Include="..\..\common\src\service\IAuthorizationHeaderProvider.cs">
+      <Link>IAuthorizationHeaderProvider.cs</Link>
+    </Compile>
     <Compile Include="..\..\common\src\service\IHttpClientHelper.cs">
       <Link>IHttpClientHelper.cs</Link>
+    </Compile>
+    <Compile Include="..\..\common\src\service\IotHubConnectionString.cs">
+      <Link>IotHubConnectionString.cs</Link>
     </Compile>
     <Compile Include="..\..\common\src\service\PutOperationType.cs">
       <Link>PutOperationType.cs</Link>
@@ -227,14 +233,12 @@
     <Compile Include="..\Microsoft.Azure.Devices\FileNotificationReceiver.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\HttpRegistryManager.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\IAuthenticationMethod.cs" />
-    <Compile Include="..\Microsoft.Azure.Devices\IAuthorizationHeaderProvider.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\ImportDevicesRequest.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\DeviceRegistryOperationError.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\ImportMode.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\PurgeMessageQueueResult.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\IotHubApiResources.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\IotHubConnection.cs" />
-    <Compile Include="..\Microsoft.Azure.Devices\IotHubConnectionString.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\IotHubConnectionStringBuilder.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\IQuery.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\JobProperties.cs" />

@@ -48,18 +48,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 client => { });
         }
 
-        // internal test helper
-        internal HttpProvisioningServiceClient(IHttpClientHelper httpClientHelper, string drsName)
-        {
-            if (httpClientHelper == null)
-            {
-                throw new ArgumentNullException(nameof(httpClientHelper));
-            }
-
-            this.drsName = drsName;
-            this.httpClientHelper = httpClientHelper;
-        }
-
         public override Task OpenAsync()
         {
             return TaskHelpers.CompletedTask;

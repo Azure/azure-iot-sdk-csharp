@@ -36,10 +36,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         [JsonProperty(PropertyName = "tpm")]
         public TpmAttestation Tpm
         {
-            get { return this._tpm; }
+            get { return _tpm; }
             set
             {
-                this._tpm = value;
+                _tpm = value;
                 if (value != null)
                 {
                     this.Type = AttestationMechanismType.Tpm;
@@ -53,10 +53,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         [JsonProperty(PropertyName = "x509")]
         public X509Attestation X509
         {
-            get { return this._x509; }
+            get { return _x509; }
             set
             {
-                this._x509 = value;
+                _x509 = value;
                 if (value != null)
                 {
                     this.Type = AttestationMechanismType.X509;

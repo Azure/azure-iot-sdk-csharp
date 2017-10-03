@@ -96,9 +96,11 @@
     <Compile Include="..\..\common\src\service\HttpClientHelper.cs">
       <Link>HttpClientHelper.cs</Link>
     </Compile>
+    <Compile Include="..\..\common\src\service\IAuthorizationHeaderProvider.cs" Link="IAuthorizationHeaderProvider.cs" />
     <Compile Include="..\..\common\src\service\IHttpClientHelper.cs">
       <Link>IHttpClientHelper.cs</Link>
     </Compile>
+    <Compile Include="..\..\common\src\service\IotHubConnectionString.cs" Link="IotHubConnectionString.cs" />
     <Compile Include="..\..\common\src\service\PutOperationType.cs">
       <Link>PutOperationType.cs</Link>
     </Compile>
@@ -205,8 +207,7 @@
     <Compile Include="..\Microsoft.Azure.Devices\DeviceJobOutcome.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\DeviceJobStatus.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\DeviceJobType.cs" />
-    <Compile Include="..\Microsoft.Azure.Devices\IAuthorizationHeaderProvider.cs" Link="IAuthorizationHeaderProvider.cs" />
-    <Compile Include="..\Microsoft.Azure.Devices\IotHubConnectionString.cs" Link="IotHubConnectionString.cs" />
+    <Compile Include="..\Microsoft.Azure.Devices\IotHubConnectionStringBuilder.cs"/>
     <Compile Include="..\Microsoft.Azure.Devices\QueryOptions.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\QueryResponse.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\QueryResultType.cs" />
@@ -240,7 +241,6 @@
     <Compile Include="..\Microsoft.Azure.Devices\PurgeMessageQueueResult.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\IotHubApiResources.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\IotHubConnection.cs" />
-    <Compile Include="..\Microsoft.Azure.Devices\IotHubConnectionStringBuilder.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\JobProperties.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\JobStatus.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\JobType.cs" />
