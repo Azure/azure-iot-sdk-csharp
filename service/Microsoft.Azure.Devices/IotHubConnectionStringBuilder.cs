@@ -83,7 +83,7 @@ namespace Microsoft.Azure.Devices
 
         public string SharedAccessSignature { get; internal set; }
 
-        internal string IotHubName
+        public string IotHubName
         {
             get { return this.iotHubName; }
         }

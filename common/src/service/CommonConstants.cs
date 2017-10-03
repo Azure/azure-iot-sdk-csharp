@@ -66,7 +66,7 @@ namespace Microsoft.Azure.Devices.Common
         public const string ProvisioningStateCanceled = "Canceled";
 
         // IotHub provisioning initial state
-        public const string ProvisioingStateAccepted = "Accepted";
+        public const string ProvisioningStateAccepted = "Accepted";
 
         public const string DeviceToCloudOperation = "d2c";
         public const string CloudToDeviceOperation = "c2d";

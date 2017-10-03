@@ -441,7 +441,7 @@ namespace Microsoft.Azure.Devices.Common
         static bool TryGetDebugSwitch(string name, out object value)
         {
             value = null;
-#if !WINDOWS_UWP && !NETSTANDARD1_3
+#if !WINDOWS_UWP && !NETSTANDARD1_3 && !NETSTANDARD2_0
             try
             {
                 RegistryKey key = Registry.LocalMachine.OpenSubKey(Fx.SBRegistryKey);

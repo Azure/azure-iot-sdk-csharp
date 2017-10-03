@@ -143,8 +143,8 @@ namespace Microsoft.Azure.Devices
 
         public static IotHubConnectionString Parse(string connectionString)
         {
-            var builder =  IotHubConnectionStringBuilder.Create(connectionString);
-            return builder.ToIotHubConnectionString();
+            var builder = IotHubConnectionStringBuilder.Create(connectionString);
+            return new IotHubConnectionString(builder);
         }
 
         string BuildToken(out TimeSpan ttl)
