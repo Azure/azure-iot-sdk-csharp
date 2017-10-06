@@ -52,6 +52,10 @@ namespace DeviceExplorer
         private static DataGridViewRow messageSysPropCorrelationId = new DataGridViewRow();
         private static DataGridViewRow messageSysPropContentType = new DataGridViewRow();
         private static DataGridViewRow messageSysPropContentEncoding = new DataGridViewRow();
+
+        private string deviceIDSearchPattern = String.Empty;
+        private DateTime deviceIDSearchPatternLastUpdateTime = DateTime.Now;
+        private const uint deviceIDSearchPatternMaxUpdateDelayInSecs = 1;
         #endregion
 
         public MainForm()
@@ -215,6 +219,35 @@ namespace DeviceExplorer
                 return false;
             }
         }
+
+        private void findAndSelectRowByDeviceID(string deviceId, bool exactMatch)
+        {
+            bool isMatch = false;
+
+            foreach (DataGridViewRow row in devicesGridView.Rows)
+            {
+                if (exactMatch)
+                {
+                    if (String.Compare((string)row.Cells[0].Value, deviceId, StringComparison.InvariantCultureIgnoreCase) == 0)
+                    {
+                        isMatch = true;
+                    }
+                }
+                else if (row.Cells[0].Value != null &&
+                        ((string)row.Cells[0].Value).StartsWith(deviceId, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    isMatch = true;
+                }
+
+                if (isMatch)
+                {
+                    devicesGridView.ClearSelection();
+                    row.Selected = true;
+                    devicesGridView.FirstDisplayedScrollingRowIndex = row.Index;
+                    break;
+                }
+            }
+        }
         #endregion
 
         #region ConfigurationsTab
@@ -309,6 +342,13 @@ namespace DeviceExplorer
             var devicesList = await devicesProcessor.GetDevices();
             devicesList.Sort();
             var sortableDevicesBindingList = new SortableBindingList<DeviceEntity>(devicesList);
+            string deviceCurrentlySelected = null;
+
+            // Save the device ID currently selected on the grid.
+            if (devicesGridView.SelectedRows.Count == 1)
+            {
+                deviceCurrentlySelected = (string)devicesGridView.SelectedRows[0].Cells[0].Value;
+            }
 
             devicesGridView.DataSource = sortableDevicesBindingList;
             devicesGridView.ReadOnly = true;
@@ -321,6 +361,13 @@ namespace DeviceExplorer
             else
             {
                 deviceCountLabel.Text = devicesList.Count().ToString();
+            }
+
+            // Re-select the device ID previously selected before the update.
+            // This avoids the super-annoying need to scroll down every time the management grid gets updated.
+            if (deviceCurrentlySelected != null)
+            {
+                findAndSelectRowByDeviceID(deviceCurrentlySelected, true);
             }
         }
 
@@ -994,6 +1041,20 @@ namespace DeviceExplorer
             messageSystemPropertiesGrid.Rows.Add(messageSysPropCorrelationId);
             messageSystemPropertiesGrid.Rows.Add(messageSysPropContentType);
             messageSystemPropertiesGrid.Rows.Add(messageSysPropContentEncoding);
+        }
+
+        private void devicesGridView_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (DateTime.Now.Subtract(deviceIDSearchPatternLastUpdateTime).Seconds > deviceIDSearchPatternMaxUpdateDelayInSecs)
+            {
+                deviceIDSearchPattern = String.Empty;
+            }
+
+            deviceIDSearchPattern += e.KeyChar;
+
+            findAndSelectRowByDeviceID(deviceIDSearchPattern, false);
+
+            deviceIDSearchPatternLastUpdateTime = DateTime.Now;
         }
     }
 }
