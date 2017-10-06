@@ -1,10 +1,11 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <TargetFramework>netstandard1.3</TargetFramework>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <ProjectGuid>{8988AB0E-0FDD-4BD4-A65F-6479BB2C5AF8}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
@@ -12,11 +13,9 @@
     <AssemblyName>Microsoft.Azure.Devices.Client</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <FileAlignment>512</FileAlignment>
-    <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <TargetFrameworkProfile>
-    </TargetFrameworkProfile>
-    <TargetFrameworkVersion>v5.0</TargetFrameworkVersion>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors> 
   </PropertyGroup>
+
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
@@ -48,10 +47,32 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <DocumentationFile>bin\Release\Microsoft.Azure.Devices.Client.XML</DocumentationFile>
   </PropertyGroup>
+
   <ItemGroup>
-    <!-- A reference to the entire .NET Framework is automatically included -->
-    <None Include="project.json" />
+    <PackageReference Include="DotNetty.Codecs.Mqtt" Version="0.4.6" />
+    <PackageReference Include="DotNetty.Handlers" Version="0.4.6" />
+    <PackageReference Include="Microsoft.Azure.Amqp" Version="2.0.6" />
+    <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
+    <PackageReference Include="System.AppContext" Version="4.3.0" />
+    <PackageReference Include="System.Collections.Specialized" Version="4.3.0" />
+    <PackageReference Include="System.Diagnostics.TraceSource" Version="4.3.0" />
+    <PackageReference Include="System.Net.Http" Version="4.3.1" />
+    <PackageReference Include="System.Net.NameResolution" Version="4.3.0" />
+    <PackageReference Include="System.Net.Requests" Version="4.3.0" />
+    <PackageReference Include="System.Net.Security" Version="4.3.0" />
+    <PackageReference Include="System.Net.WebHeaderCollection" Version="4.3.0" />
+    <PackageReference Include="System.Net.WebSockets.Client" Version="4.3.0" />
+    <PackageReference Include="System.Reflection.Extensions" Version="4.3.0" />
+    <PackageReference Include="System.Runtime.Extensions" Version="4.3.0" />
+    <PackageReference Include="System.Runtime.Serialization.Formatters" Version="4.3.0" />
+    <PackageReference Include="System.Security.Cryptography.Algorithms" Version="4.3.0" />
+    <PackageReference Include="System.Threading.Overlapped" Version="4.3.0" />
+    <PackageReference Include="Validation" Version="2.4.13" />
+    <PackageReference Include="WindowsAzure.Storage" Version="8.1.1" />
   </ItemGroup>
+
+  <Import Project="..\Microsoft.Azure.Devices.Client.Shared\Microsoft.Azure.Devices.Client.Shared.projitems" Label="Shared" />
+
   <ItemGroup>
     <Compile Include="..\Microsoft.Azure.Devices.Client\Common\ActionItem.cs">
       <Link>Common\ActionItem.cs</Link>
@@ -97,15 +118,6 @@
     </Compile>
     <Compile Include="..\Microsoft.Azure.Devices.Client\IotHubClientWebSocket.cs">
       <Link>IotHubClientWebSocket.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.Azure.Devices.Client\Transport\FileUploadNotificationResponse.cs">
-      <Link>Transport\FileUploadNotificationResponse.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.Azure.Devices.Client\Transport\FileUploadRequest.cs">
-      <Link>Transport\FileUploadRequest.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.Azure.Devices.Client\Transport\FileUploadResponse.cs">
-      <Link>Transport\FileUploadResponse.cs</Link>
     </Compile>
     <Compile Include="..\Microsoft.Azure.Devices.Client\Transport\Mqtt\ChannelMessageProcessingException.cs">
       <Link>Transport\Mqtt\ChannelMessageProcessingException.cs</Link>
@@ -176,9 +188,6 @@
     <Compile Include="..\Microsoft.Azure.Devices.Client\Transport\Mqtt\WillMessage.cs">
       <Link>Transport\Mqtt\WillMessage.cs</Link>
     </Compile>
-    <Compile Include="..\Microsoft.Azure.Devices.Client\Transport\TransportHandlerFactory.cs">
-      <Link>Transport\TransportHandlerFactory.cs</Link>
-    </Compile>
     <Compile Include="..\Microsoft.Azure.Devices.Client\Transport\WebSocketConstants.cs">
       <Link>Transport\WebSocketConstants.cs</Link>
     </Compile>
@@ -189,6 +198,7 @@
     <Compile Include="System.Web\Util\UriUtil.cs" />
     <Compile Include="System.Web\Util\Utf16StringValidator.cs" />
   </ItemGroup>
+
   <ItemGroup>
     <EmbeddedResource Include="..\Microsoft.Azure.Devices.Client\Common\Api\ApiResources.resx">
       <Link>Common\Api\ApiResources.resx</Link>
@@ -200,20 +210,13 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-  </ItemGroup>
+   </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\shared\Microsoft.Azure.Devices.Shared.NetStandard\Microsoft.Azure.Devices.Shared.NetStandard.csproj">
       <Project>{91dfb837-d8a3-4f54-ae0d-45c95acd0c2a}</Project>
       <Name>Microsoft.Azure.Devices.Shared.NetStandard</Name>
     </ProjectReference>
   </ItemGroup>
-  <Import Project="..\Microsoft.Azure.Devices.Client.Shared\Microsoft.Azure.Devices.Client.Shared.projitems" Label="Shared" />
-  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+
 </Project>

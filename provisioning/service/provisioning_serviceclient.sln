@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26730.12
+VisualStudioVersion = 15.0.26730.16
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{35292CF7-079E-482E-8B4E-4891DBD3434B}"
 EndProject
@@ -14,6 +14,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Shared.NetStandard", "..\..\shared\Microsoft.Azure.Devices.Shared.NetStandard\Microsoft.Azure.Devices.Shared.NetStandard.csproj", "{91DFB837-D8A3-4F54-AE0D-45C95ACD0C2A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.NetStandard", "..\..\service\Microsoft.Azure.Devices.NetStandard\Microsoft.Azure.Devices.NetStandard.csproj", "{3081D7CD-2F05-4431-9FEF-4F8A19591AD4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{2AA683E3-EF97-4059-8D08-5071BA21A636}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GroupCertificateVerificationSample", "samples\GroupCertificateVerificationSample\GroupCertificateVerificationSample.csproj", "{07212BAA-7CBD-4438-99CD-0D4AAC0E122B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

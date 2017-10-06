@@ -498,9 +498,8 @@ namespace Microsoft.Azure.Devices
                 customHeaders,
                 customContentType,
                 customContentEncoding,
-                async (message, token) =>  result = message,
+                (message, token) => {result = message; return Task.FromResult(result); },
                 cancellationToken);
-
             return result;
         }
 

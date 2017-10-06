@@ -14,6 +14,8 @@
     <TargetFramework>netstandard1.3</TargetFramework>
 	<EnableDefaultComplieItems>false</EnableDefaultComplieItems>
 	<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <!-- TODO #176: Enable warnings as errors. -->
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors> 
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -264,11 +266,4 @@
       <Name>Microsoft.Azure.Devices.Shared.NetStandard</Name>
     </ProjectReference>
   </ItemGroup>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>

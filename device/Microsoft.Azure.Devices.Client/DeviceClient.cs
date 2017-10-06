@@ -1063,7 +1063,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// <summary>
         /// The delgate for handling disrupted connection/links in the transport layer.
         /// </summary>
-        internal async void OnConnectionOpened(object sender, ConnectionEventArgs e)
+        internal void OnConnectionOpened(object sender, ConnectionEventArgs e)
         {
             ConnectionStatusChangeResult result = this.connectionStatusManager.ChangeTo(e.ConnectionType, ConnectionStatus.Connected);
             if (result.IsClientStatusChanged && (connectionStatusChangesHandler != null))
@@ -1098,7 +1098,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                         await this.InnerHandler.RecoverConnections(sender, e.ConnectionType, linkedTokenSource.Token);
                     });
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     // codes_SRS_DEVICECLIENT_28_027: [** `OnConnectionClosed` shall invoke the connectionStatusChangesHandler if RecoverConnections throw exception **]**
                     result = this.connectionStatusManager.ChangeTo(e.ConnectionType, ConnectionStatus.Disconnected);

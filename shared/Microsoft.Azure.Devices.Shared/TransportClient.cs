@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.Azure.Devices.Shared
 {
-    public abstract class TransportHandler : IDisposable
+    public abstract class TransportClient : IDisposable
     {
         public TransportFallbackType TransportFallback
         {
@@ -13,12 +13,12 @@ namespace Microsoft.Azure.Devices.Shared
             private set;
         }
 
-        public TransportHandler()
+        public TransportClient()
         {
 
         }
 
-        public TransportHandler(TransportFallbackType transportFallback)
+        public TransportClient(TransportFallbackType transportFallback)
         {
             TransportFallback = transportFallback;
         }

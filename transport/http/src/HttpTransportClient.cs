@@ -2,23 +2,25 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.Azure.Devices.Shared;
+using System;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
-    public class AmqpTransportHandler : TransportHandler
+    public class HttpTransportClient : TransportClient
     {
-        public AmqpTransportHandler() : base()
+        public HttpTransportClient() : base()
         {
 
         }
 
-        public AmqpTransportHandler(TransportFallbackType transportFallback) : base(transportFallback)
+        public HttpTransportClient(TransportFallbackType transportFallback)
         {
+            throw new NotSupportedException();
         }
 
         public override void Dispose()
         {
-            throw new System.NotImplementedException();
+            throw new NotSupportedException();
         }
     }
 }

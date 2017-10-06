@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Samples
 
             Console.WriteLine(
                 $"Verification certificate ({verificationCertificate.Subject}; {verificationCertificate.Thumbprint})" +
-                " was written to {VerificationCertificatePath}.");
+                $" was written to {VerificationCertificatePath}.");
 
             return 0;
         }
