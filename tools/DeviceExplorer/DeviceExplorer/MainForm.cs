@@ -241,17 +241,6 @@ namespace DeviceExplorer
 
                 if (isMatch)
                 {
-                    if (deviceId.Length > 1)
-                    {
-                        if (deviceId.Length > 2)
-                        {
-                            if (deviceId.Length > 3)
-                            {
-                                isMatch = true;
-                            }
-                        }
-                    }
-
                     devicesGridView.ClearSelection();
                     row.Selected = true;
                     devicesGridView.FirstDisplayedScrollingRowIndex = row.Index;
