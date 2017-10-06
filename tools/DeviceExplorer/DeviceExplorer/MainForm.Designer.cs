@@ -527,6 +527,7 @@
             this.devicesGridView.Size = new System.Drawing.Size(729, 458);
             this.devicesGridView.TabIndex = 9;
             this.devicesGridView.DataBindingComplete += new System.Windows.Forms.DataGridViewBindingCompleteEventHandler(this.devicesGridView_DataBindingComplete);
+            this.devicesGridView.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.devicesGridView_KeyPress);
             // 
             // devicesGridViewContextMenu
             // 
