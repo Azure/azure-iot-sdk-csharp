@@ -309,6 +309,13 @@ namespace DeviceExplorer
             var devicesList = await devicesProcessor.GetDevices();
             devicesList.Sort();
             var sortableDevicesBindingList = new SortableBindingList<DeviceEntity>(devicesList);
+            string deviceCurrentlySelected = null;
+
+            // Save the device ID currently selected on the grid.
+            if (devicesGridView.SelectedRows.Count == 1)
+            {
+                deviceCurrentlySelected = (string)devicesGridView.SelectedRows[0].Cells[0].Value;
+            }
 
             devicesGridView.DataSource = sortableDevicesBindingList;
             devicesGridView.ReadOnly = true;
@@ -321,6 +328,21 @@ namespace DeviceExplorer
             else
             {
                 deviceCountLabel.Text = devicesList.Count().ToString();
+            }
+
+            // Re-select the device ID previously selected before the update.
+            // This avoids the super-annoying need to scroll down every time the management grid gets updated.
+            if (deviceCurrentlySelected != null)
+            {
+                foreach (DataGridViewRow row in devicesGridView.Rows)
+                {
+                    if (String.Compare((string)row.Cells[0].Value, deviceCurrentlySelected, StringComparison.InvariantCultureIgnoreCase) == 0)
+                    {
+                        row.Selected = true;
+                        devicesGridView.FirstDisplayedScrollingRowIndex = row.Index;
+                        break;
+                    }
+                }
             }
         }
 
