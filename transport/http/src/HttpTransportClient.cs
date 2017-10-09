@@ -3,6 +3,7 @@
 
 using Microsoft.Azure.Devices.Shared;
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
@@ -13,6 +14,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         }
 
+        [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "context", Justification = "Work in progress")]
         public HttpTransportClient(TransportFallbackType transportFallback)
         {
             throw new NotSupportedException();

@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.Azure.Devices.Shared;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
@@ -12,6 +13,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         }
 
+        [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "context", Justification = "Work in progress")]
         public MqttTransportClient(TransportFallbackType transportFallback) : base(transportFallback)
         {
         }

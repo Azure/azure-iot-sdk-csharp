@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.Azure.Devices.Shared;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -20,6 +21,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <param name="securityClient">The security client instance.</param>
         /// <param name="transport">The type of transport (e.g. HTTP, AMQP, MQTT).</param>
         /// <returns>An instance of the DPSDeviceClient</returns>
+        [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "context", Justification = "Work in progress")]
         public static ProvisioningDeviceClient Create(
             string globalDeviceEndpoint, 
             string idScope, 
@@ -35,6 +37,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <param name="force">Forces the registration by ensuring that all information is rebuilt on the service 
         /// side.</param>
         /// <returns>The DPSRegistrationResult.</returns>
+        [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "context", Justification = "Work in progress")]
         public Task<ProvisioningRegistrationResult> RegisterAsync(bool force = false)
         {
             throw new System.NotImplementedException();
@@ -47,6 +50,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// side.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The DPSRegistrationResult.</returns>
+        [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "context", Justification = "Work in progress")]
         public Task<ProvisioningRegistrationResult> RegisterAsync(bool force, CancellationToken cancellationToken)
         {
             throw new System.NotImplementedException();
