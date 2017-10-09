@@ -34,14 +34,14 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// System generated.  Ignored at creation.
         /// </summary>
-        [JsonProperty(PropertyName = "startTimeUtc", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty(PropertyName = "startTime", NullValueHandling = NullValueHandling.Ignore)]
         public DateTime? StartTimeUtc { get; internal set; }
 
         /// <summary>
         /// System generated.  Ignored at creation.
         /// Represents the time the job stopped processing.
         /// </summary>
-        [JsonProperty(PropertyName = "endTimeUtc", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty(PropertyName = "endTime", NullValueHandling = NullValueHandling.Ignore)]
         public DateTime? EndTimeUtc { get; internal set; }
 
         /// <summary>

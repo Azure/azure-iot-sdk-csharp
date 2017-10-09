@@ -3,6 +3,7 @@
 
 namespace Microsoft.Azure.Devices.Api.Test
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
@@ -136,7 +137,9 @@ namespace Microsoft.Azure.Devices.Api.Test
                     DeviceId = "123456",
                     JobId = "789",
                     Type = JobType.ScheduleUpdateTwin,
-                    Status = JobStatus.Completed
+                    Status = JobStatus.Completed,
+                    StartTimeUtc = DateTime.MinValue,
+                    EndTimeUtc = DateTime.MinValue
                 }
             };
 
@@ -148,7 +151,7 @@ namespace Microsoft.Azure.Devices.Api.Test
 
             // serialize
             var jsonQueryResult = JsonConvert.SerializeObject(serverQueryResult);
-            Assert.AreEqual("{\"type\":\"jobResponse\",\"items\":[{\"jobId\":\"789\",\"type\":\"scheduleUpdateTwin\",\"status\":\"completed\",\"deviceId\":\"123456\"}],\"continuationToken\":null}", jsonQueryResult);
+            Assert.AreEqual("{\"type\":\"jobResponse\",\"items\":[{\"jobId\":\"789\",\"startTime\":\"0001-01-01T00:00:00\",\"endTime\":\"0001-01-01T00:00:00\",\"type\":\"scheduleUpdateTwin\",\"status\":\"completed\",\"deviceId\":\"123456\"}],\"continuationToken\":null}", jsonQueryResult);
 
             // deserialize
             var clientQueryResult = JsonConvert.DeserializeObject<QueryResult>(jsonQueryResult);
@@ -166,6 +169,8 @@ namespace Microsoft.Azure.Devices.Api.Test
             Assert.AreEqual("789", content.ElementAt(0).JobId);
             Assert.AreEqual(JobType.ScheduleUpdateTwin, content.ElementAt(0).Type);
             Assert.AreEqual(JobStatus.Completed, content.ElementAt(0).Status);
+            Assert.AreEqual(DateTime.MinValue, content.ElementAt(0).StartTimeUtc);
+            Assert.AreEqual(DateTime.MinValue, content.ElementAt(0).EndTimeUtc);
         }
 
         [TestMethod]
