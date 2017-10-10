@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26730.12
+VisualStudioVersion = 15.0.26730.16
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{3A8ED589-F608-4D3D-B0C8-AEAAE5319CE3}"
 EndProject
@@ -14,6 +14,10 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "inc_int", "inc_int", "{5F54A3CA-601D-4570-84C3-5CBD50AB5DB4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Shared.NetStandard", "..\..\shared\Microsoft.Azure.Devices.Shared.NetStandard\Microsoft.Azure.Devices.Shared.NetStandard.csproj", "{91DFB837-D8A3-4F54-AE0D-45C95ACD0C2A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{2A6DC52C-5EFC-41A9-89A1-0C4CBB93FF0A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SecurityClientTpmSimulator", "samples\SecurityClientTpmSimulator\SecurityClientTpmSimulator.csproj", "{5FECC46C-57EB-48E7-B688-FECA8F649C22}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -61,6 +65,18 @@ Global
 		{91DFB837-D8A3-4F54-AE0D-45C95ACD0C2A}.Release|x64.Build.0 = Release|Any CPU
 		{91DFB837-D8A3-4F54-AE0D-45C95ACD0C2A}.Release|x86.ActiveCfg = Release|Any CPU
 		{91DFB837-D8A3-4F54-AE0D-45C95ACD0C2A}.Release|x86.Build.0 = Release|Any CPU
+		{5FECC46C-57EB-48E7-B688-FECA8F649C22}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5FECC46C-57EB-48E7-B688-FECA8F649C22}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5FECC46C-57EB-48E7-B688-FECA8F649C22}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{5FECC46C-57EB-48E7-B688-FECA8F649C22}.Debug|x64.Build.0 = Debug|Any CPU
+		{5FECC46C-57EB-48E7-B688-FECA8F649C22}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5FECC46C-57EB-48E7-B688-FECA8F649C22}.Debug|x86.Build.0 = Debug|Any CPU
+		{5FECC46C-57EB-48E7-B688-FECA8F649C22}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5FECC46C-57EB-48E7-B688-FECA8F649C22}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5FECC46C-57EB-48E7-B688-FECA8F649C22}.Release|x64.ActiveCfg = Release|Any CPU
+		{5FECC46C-57EB-48E7-B688-FECA8F649C22}.Release|x64.Build.0 = Release|Any CPU
+		{5FECC46C-57EB-48E7-B688-FECA8F649C22}.Release|x86.ActiveCfg = Release|Any CPU
+		{5FECC46C-57EB-48E7-B688-FECA8F649C22}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -69,6 +85,7 @@ Global
 		{6D792A0F-FDC8-4B73-B92C-332C84320868} = {3A8ED589-F608-4D3D-B0C8-AEAAE5319CE3}
 		{AC755580-2C9A-47C6-BA0C-9B781CBE192A} = {27856D5C-7103-4782-A5AD-5A69A2A4EAAE}
 		{91DFB837-D8A3-4F54-AE0D-45C95ACD0C2A} = {5F54A3CA-601D-4570-84C3-5CBD50AB5DB4}
+		{5FECC46C-57EB-48E7-B688-FECA8F649C22} = {2A6DC52C-5EFC-41A9-89A1-0C4CBB93FF0A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D990B476-6322-459E-9DC8-F2F8704F3F3F}

@@ -123,13 +123,12 @@ try {
     if ($wip_provisioning) {
         BuildProject provisioning\device "Provisioning Device SDK"
         BuildProject provisioning\service "Provisioning Service SDK"
+        BuildProject provisioning\transport\amqp "Provisioning Transport for AMQP"
+        BuildProject provisioning\transport\http "Provisioning Transport for HTTP"
+        BuildProject provisioning\transport\mqtt "Provisioning Transport for MQTT"
 
         BuildProject security\dice "SecurityClient for DICE"
         BuildProject security\tpm "SecurityClient for TPM"
-
-        BuildProject transport\amqp "Transport for AMQP"
-        BuildProject transport\http "Transport for HTTP"
-        BuildProject transport\mqtt "Transport for MQTT"
     }
 
     if (-not $notests)
@@ -142,13 +141,12 @@ try {
         {
             RunTests provisioning\device\tests "Provisioning Device Tests"
             RunTests provisioning\service\tests "Provisioning Device Tests"
+            RunTests provisioning\transport\amqp\tests "Provisioning Transport for AMQP"
+            RunTests provisioning\transport\http\tests "Provisioning Transport for HTTP"
+            RunTests provisioning\transport\mqtt\tests "Provisioning Transport for MQTT"
             
             RunTests security\dice\tests "SecurityClient for DICE"
             RunTests security\tpm\tests "SecurityClient for TPM"
-
-            RunTests transport\amqp\tests "Transport for AMQP"
-            RunTests transport\http\tests "Transport for HTTP"
-            RunTests transport\mqtt\tests "Transport for MQTT"
         }
     }
 

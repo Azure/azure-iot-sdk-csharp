@@ -23,8 +23,8 @@ namespace Microsoft.Azure.Devices.Shared
         /// <param name="lastUpdatedVersion"></param>
         public Metadata(DateTimeT lastUpdated, long? lastUpdatedVersion)
         {
-            this.LastUpdated = lastUpdated;
-            this.LastUpdatedVersion = lastUpdatedVersion;
+            LastUpdated = lastUpdated;
+            LastUpdatedVersion = lastUpdatedVersion;
         }
 
         /// <summary>

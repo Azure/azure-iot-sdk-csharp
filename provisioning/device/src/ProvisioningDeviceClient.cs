@@ -13,6 +13,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     /// </summary>
     public class ProvisioningDeviceClient
     {
+        private readonly string _globalDeviceEndpoint;
+        private readonly string _idScope;
+        private readonly ProvisioningTransportClient _transport;
+        private readonly ProvisioningSecurityClient _security;
+
         /// <summary>
         /// Creates an instance of the Device Provisioning Client.
         /// </summary>
@@ -20,40 +25,45 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <param name="idScope">The IDScope for the Device Provisioning Service.</param>
         /// <param name="securityClient">The security client instance.</param>
         /// <param name="transport">The type of transport (e.g. HTTP, AMQP, MQTT).</param>
-        /// <returns>An instance of the DPSDeviceClient</returns>
-        [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "context", Justification = "Work in progress")]
+        /// <returns>An instance of the ProvisioningDeviceClient</returns>
         public static ProvisioningDeviceClient Create(
             string globalDeviceEndpoint, 
             string idScope, 
-            SecurityClient securityClient, 
-            TransportClient transport)
+            ProvisioningSecurityClient securityClient, 
+            ProvisioningTransportClient transport)
         {
-            throw new System.NotImplementedException();
+            return new ProvisioningDeviceClient(globalDeviceEndpoint, idScope, securityClient, transport);
+        }
+
+        private ProvisioningDeviceClient(
+            string globalDeviceEndpoint,
+            string idScope,
+            ProvisioningSecurityClient securityClient,
+            ProvisioningTransportClient transport)
+        {
+            _globalDeviceEndpoint = globalDeviceEndpoint;
+            _idScope = idScope;
+            _transport = transport;
+            _security = securityClient;
         }
 
         /// <summary>
         /// Registers the current device using the Device Provisioning Service and assigns it to a Hub.
         /// </summary>
-        /// <param name="force">Forces the registration by ensuring that all information is rebuilt on the service 
-        /// side.</param>
-        /// <returns>The DPSRegistrationResult.</returns>
-        [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "context", Justification = "Work in progress")]
-        public Task<ProvisioningRegistrationResult> RegisterAsync(bool force = false)
+        /// <returns>The registration result.</returns>
+        public Task<ProvisioningRegistrationResult> RegisterAsync()
         {
-            throw new System.NotImplementedException();
+            return RegisterAsync(CancellationToken.None);
         }
 
         /// <summary>
         /// Registers the current device using the Device Provisioning Service and assigns it to a Hub.
         /// </summary>
-        /// <param name="force">Forces the registration by ensuring that all information is rebuilt on the service 
-        /// side.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        /// <returns>The DPSRegistrationResult.</returns>
-        [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "context", Justification = "Work in progress")]
-        public Task<ProvisioningRegistrationResult> RegisterAsync(bool force, CancellationToken cancellationToken)
+        /// <returns>The registration result.</returns>
+        public Task<ProvisioningRegistrationResult> RegisterAsync(CancellationToken cancellationToken)
         {
-            throw new System.NotImplementedException();
+            return _transport.RegisterAsync(_globalDeviceEndpoint, _idScope, _security, cancellationToken);
         }
 
         /// <summary>
@@ -61,8 +71,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// </summary>
         public Task CloseAsync()
         {
-            // Needed at least for WebSocket close handshake.
-            throw new System.NotImplementedException();
+            return _transport.CloseAsync();
         }
     }
 }

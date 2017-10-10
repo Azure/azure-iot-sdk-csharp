@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <Features Condition=" '$(Configuration)' == 'Debug' ">IOperation</Features>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\shared\Microsoft.Azure.Devices.Shared.NetStandard\Microsoft.Azure.Devices.Shared.NetStandard.csproj" />
+    <ProjectReference Include="..\..\..\device\src\Microsoft.Azure.Devices.Provisioning.Client.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- FXCop -->
+    <PackageReference Condition=" '$(Configuration)' == 'Debug' " Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.3.0-beta1" />
+  </ItemGroup>
+
+</Project>

@@ -16,12 +16,12 @@ namespace Microsoft.Azure.Devices.Shared
         const string lastUpdatedName = "$lastUpdated";
         const string lastUpdatedVersionName = "$lastUpdatedVersion";
 
-        private readonly JObject metadata;
+        private readonly JObject _metadata;
 
         internal TwinCollectionValue(JValue jValue, JObject metadata)
             : base(jValue)
         {
-            this.metadata = metadata;
+            _metadata = metadata;
         }
 
         /// <summary>
@@ -35,17 +35,17 @@ namespace Microsoft.Azure.Devices.Shared
             {
                 if (propertyName == metadataName)
                 {
-                    return this.GetMetadata();
+                    return GetMetadata();
                 }
 
                 if (propertyName == lastUpdatedName)
                 {
-                    return this.GetLastUpdated();
+                    return GetLastUpdated();
                 }
 
                 if (propertyName == lastUpdatedVersionName)
                 {
-                    return this.GetLastUpdatedVersion();
+                    return GetLastUpdatedVersion();
                 }
 
                 throw new RuntimeBinderException($"'Newtonsoft.Linq.JValue' does not contain a definition for '{propertyName}'.");
@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices.Shared
         /// <returns>Metadata instance representing the metadata for this property</returns>
         public Metadata GetMetadata()
         {
-            return new Metadata(this.GetLastUpdated(), this.GetLastUpdatedVersion());
+            return new Metadata(GetLastUpdated(), GetLastUpdatedVersion());
         }
 
         /// <summary>
@@ -67,7 +67,7 @@ namespace Microsoft.Azure.Devices.Shared
         /// <returns>DateTime instance representing the LastUpdated time for this property</returns>
         public DateTime GetLastUpdated()
         {
-            return (DateTime)this.metadata[lastUpdatedName];
+            return (DateTime)_metadata[lastUpdatedName];
         }
 
         /// <summary>
@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices.Shared
         /// <returns>LastUpdatdVersion if present, null otherwise</returns>
         public long? GetLastUpdatedVersion()
         {
-            return (long?)this.metadata[lastUpdatedVersionName];
+            return (long?)_metadata[lastUpdatedVersionName];
         }
     }
 }

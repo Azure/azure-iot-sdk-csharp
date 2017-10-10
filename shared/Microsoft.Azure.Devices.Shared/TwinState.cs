@@ -16,8 +16,8 @@ namespace Microsoft.Azure.Devices.Shared
         /// </summary>
         public TwinState()
         {
-            this.Tags = new TwinCollection();
-            this.DesiredProperties = new TwinCollection();
+            Tags = new TwinCollection();
+            DesiredProperties = new TwinCollection();
         }
 
         /// <summary>

@@ -13,8 +13,8 @@ namespace Microsoft.Azure.Devices.Shared
         /// </summary>
         public TwinProperties()
         {
-            this.Desired = new TwinCollection();
-            this.Reported = new TwinCollection();
+            Desired = new TwinCollection();
+            Reported = new TwinCollection();
         }
 
         /// <summary>

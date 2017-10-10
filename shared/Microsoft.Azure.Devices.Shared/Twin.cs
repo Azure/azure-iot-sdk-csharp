@@ -16,8 +16,8 @@ namespace Microsoft.Azure.Devices.Shared
         /// </summary>
         public Twin()
         {
-            this.Tags = new TwinCollection();
-            this.Properties = new TwinProperties();
+            Tags = new TwinCollection();
+            Properties = new TwinProperties();
         }
 
         /// <summary>
@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.Shared
         /// <param name="deviceId">Device Id</param>
         public Twin(string deviceId) : this()
         {
-            this.DeviceId = deviceId;
+            DeviceId = deviceId;
         }
 
         /// <summary>

@@ -6,16 +6,16 @@ using System;
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
     /// <summary>
-    /// The ProvisioningRegistrationResult type returned when the X509 Certificate HSM mode is used.
+    /// The ProvisioningRegistrationResult type returned when the SAS Token HSM mode is used.
     /// </summary>
-    public class ProvisioningRegistrationResultX509Certificate : ProvisioningRegistrationResult
+    public class ProvisioningRegistrationResultTpm : ProvisioningRegistrationResult
     {
         /// <summary>
-        /// The Enrollment Group Id.
+        /// The AuthenticationKey required by the SAS Token HSM module.
         /// </summary>
-        public string EnrollmentGroupId { get; private set; }
+        public string AuthenticationKey { get; private set; }
 
-        public ProvisioningRegistrationResultX509Certificate(
+        public ProvisioningRegistrationResultTpm(
             string registrationId,
             DateTime? createdDateTimeUtc,
             string assignedHub,
@@ -26,8 +26,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             int errorCode,
             string errorMessage,
             string etag,
-            string enrollmentGroupId) : base(
-                registrationId,
+            string authenticationKey) : base(
+                registrationId, 
                 createdDateTimeUtc,
                 assignedHub,
                 deviceId,
@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
                 errorMessage,
                 etag)
         {
-            EnrollmentGroupId = enrollmentGroupId;
+            AuthenticationKey = authenticationKey;
         }
     }
 }

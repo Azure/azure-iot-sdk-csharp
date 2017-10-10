@@ -4,7 +4,7 @@
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
     /// <summary>
-    /// The DPSRegistrationResult status type.
+    /// The provisioning status type.
     /// </summary>
     public enum ProvisioningRegistrationStatusType
     {
