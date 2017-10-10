@@ -130,7 +130,7 @@ namespace DeviceExplorer
 
                     dynamic result = await serviceClient.InvokeDeviceMethodAsync(deviceName, cloudToDeviceMethodInstance, cancellationToken);
 
-                    deviceMethodReturnValue.Status = result.Status;
+                    deviceMethodReturnValue.Status = Convert.ToString(result.Status);
                     deviceMethodReturnValue.Payload = result.GetPayloadAsJson();
 
                     isOK = true;
