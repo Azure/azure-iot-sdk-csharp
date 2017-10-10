@@ -4,6 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors> 
+    <Features Condition=" '$(Configuration)' == 'Debug' ">IOperation</Features>
   </PropertyGroup>
 
   <ItemGroup>
@@ -32,6 +33,10 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.Amqp" Version="2.0.6" />
     <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
+
+    <!-- FXCop TODO: #176
+    <PackageReference Condition=" '$(Configuration)' == 'Debug' " Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.3.0-beta1" />
+    -->
   </ItemGroup>
 
   <ItemGroup>
