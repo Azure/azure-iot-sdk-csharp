@@ -11,6 +11,14 @@ To find SDKs in other languages for Azure IoT, please refer to the [azure-iot-sd
 ## Developing applications for Azure IoT
 Visit [Azure IoT Dev Center][iot-dev-center] to learn more about developing applications for Azure IoT.
 
+## How to use the Azure IoT SDKs for .NET
+
+* **Using packages and libraries**: The simplest way to use the Azure IoT SDKs is to use packages and libraries when available. Refer to [this document](./device/doc/devbox_setup.md) on how to get Azure IoT SDKs for .NET using Nuget and build applications.
+* **Clone the repository**: The repository is using [GitHub Submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules) for its dependencies. In order to automatically clone these submodules, you need to use the --recursive option as described here:
+```
+git clone --recursive https://github.com/Azure/azure-iot-sdk-csharp.git
+```
+
 ## Key features and roadmap
 
 ### Device client SDK
@@ -44,13 +52,6 @@ Visit [Azure IoT Dev Center][iot-dev-center] to learn more about developing appl
 | File Upload               | :white_check_mark:     | Set up your backend app to send file upload notification receiver.  Click [here](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-file-upload) for detailed information on the IoT Hub features.                                                        |
 | SDK Versioning            | :large_orange_diamond: | Use your backend app to get Service Client SDK Version.                                                                                                                                                                                                                |
 
-## How to use the Azure IoT SDKs for .NET
-
-* **Using packages and libraries**: The simplest way to use the Azure IoT SDKs is to use packages and libraries when available. Refer to [this document](./device/doc/devbox_setup.md) on how to get Azure IoT SDKs for .NET using Nuget and build applications.
-* **Clone the repository**: The repository is using [GitHub Submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules) for its dependencies. In order to automatically clone these submodules, you need to use the --recursive option as described here:
-```
-git clone --recursive https://github.com/Azure/azure-iot-sdk-csharp.git
-```
 
 ## Samples
 In the repository, you will find a set of simple samples that will help you get started:
