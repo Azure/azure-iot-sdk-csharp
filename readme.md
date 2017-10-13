@@ -31,7 +31,7 @@ Visit [Azure IoT Dev Center][iot-dev-center] to learn more about developing appl
 
 
 ### Service client SDK
-:white_check_mark: feature available  :large_blue_diamond: feature in-progress  :large_orange_diamond: feature planned  :x: no support planned
+:heavy_check_mark: feature available  :heavy_multiplication_x: feature planned but not supported  :heavy_minus_sign: no support planned
 
 | Feature                   | Statud                 | Description                                                                                                                                                                                                                                                            |
 |---------------------------|------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
