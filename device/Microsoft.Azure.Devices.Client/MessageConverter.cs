@@ -197,6 +197,8 @@ namespace Microsoft.Azure.Devices.Client
                     }
                 }
             }
+
+            IoTHubClientDiagnostic.CopyDiagnosticPropertiesToAmqpAnnotations(data, amqpMessage);
         }
 
         public static bool TryGetAmqpObjectFromNetObject(object netObject, MappingType mappingType, out object amqpObject)

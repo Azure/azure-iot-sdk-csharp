@@ -27,6 +27,35 @@
         }
 
         [TestMethod]
+        [TestCategory("IoTHubClientDiagnostic")]
+        public void DeviceClient_SetDiagnosticSamplingPercentage()
+        {
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            const int DefaultPercentage = 0;
+            const int ValidPercentage = 80;
+            const int InvalidPercentage = 200;
+
+            Assert.AreEqual(deviceClient.DiagnosticSamplingPercentage, DefaultPercentage);
+
+            deviceClient.DiagnosticSamplingPercentage = ValidPercentage;
+            Assert.AreEqual(deviceClient.DiagnosticSamplingPercentage, ValidPercentage);
+
+            try
+            {
+                deviceClient.DiagnosticSamplingPercentage = InvalidPercentage;
+                Assert.Fail();
+            }
+            catch (ArgumentOutOfRangeException e)
+            {
+                Assert.AreEqual(deviceClient.DiagnosticSamplingPercentage, ValidPercentage);
+            }
+            catch (Exception)
+            {
+                Assert.Fail();
+            }
+        }
+
+        [TestMethod]
         [TestCategory("DeviceClient")]
         public void DeviceClient_OperationTimeoutInMilliseconds_Property_GetSet()
         {

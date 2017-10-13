@@ -60,6 +60,7 @@
   <ItemGroup>
     <Compile Include="AmqpTransportHandlerTests.cs" />
     <Compile Include="CertificateHelper.cs" />
+    <Compile Include="IoTHubClientDiagnosticTest.cs" />
     <Compile Include="Mqtt\ChannelExtensions.cs" />
     <Compile Include="Mqtt\ClientWebSocketChannelTests.cs" />
     <Compile Include="ClientWebSocketTransportTests.cs" />
@@ -214,6 +215,7 @@
     </Reference>
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Web.Http, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>$(SolutionDir)\packages\Microsoft.AspNet.WebApi.Core.5.2.3\lib\net45\System.Web.Http.dll</HintPath>
       <Private>True</Private>

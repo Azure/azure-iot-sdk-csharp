@@ -459,6 +459,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\TransientFaultHandling\Properties\TransientFaultHandlingResources.Designer.cs">
       <Link>TransientFaultHandlingResources.Designer.cs</Link>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)IoTHubClientDiagnostic.cs" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\TransientFaultHandling\Properties\TransientFaultHandlingResources.resx">
       <Link>TransientFaultHandlingResources.resx</Link>
     </EmbeddedResource>

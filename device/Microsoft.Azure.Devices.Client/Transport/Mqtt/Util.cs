@@ -55,7 +55,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {IotHubWirePropertyNames.ContentType, MessageSystemPropertyNames.ContentType},
             {IotHubWirePropertyNames.ContentEncoding, MessageSystemPropertyNames.ContentEncoding},
             {MessageSystemPropertyNames.Operation, MessageSystemPropertyNames.Operation},
-            {MessageSystemPropertyNames.Ack, MessageSystemPropertyNames.Ack}
+            {MessageSystemPropertyNames.Ack, MessageSystemPropertyNames.Ack},
+            {IoTHubClientDiagnostic.MqttDiagIdKey, MessageSystemPropertyNames.DiagId},
+            {IoTHubClientDiagnostic.MqttDiagCorrelationContextKey, MessageSystemPropertyNames.DiagCorrelationContext}
         };
 
         static readonly Dictionary<string, string> FromSystemPropertiesMap = new Dictionary<string, string>
@@ -70,7 +72,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {MessageSystemPropertyNames.ContentType, IotHubWirePropertyNames.ContentType},
             {MessageSystemPropertyNames.ContentEncoding, IotHubWirePropertyNames.ContentEncoding},
             {MessageSystemPropertyNames.Operation, MessageSystemPropertyNames.Operation},
-            {MessageSystemPropertyNames.Ack, MessageSystemPropertyNames.Ack}
+            {MessageSystemPropertyNames.Ack, MessageSystemPropertyNames.Ack},
+            {MessageSystemPropertyNames.DiagId, IoTHubClientDiagnostic.MqttDiagIdKey},
+            {MessageSystemPropertyNames.DiagCorrelationContext, IoTHubClientDiagnostic.MqttDiagCorrelationContextKey}
         };
 
         const char SegmentSeparatorChar = '/';

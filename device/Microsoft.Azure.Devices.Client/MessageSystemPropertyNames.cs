@@ -34,5 +34,9 @@ namespace Microsoft.Azure.Devices.Client
         public const string ContentEncoding = "iothub-content-encoding";
 
         public const string ContentType = "iothub-content-type";
+
+        public const string DiagId = "iothub-diag-id";
+
+        public const string DiagCorrelationContext = "diag-correlation-context";
     }
 }
