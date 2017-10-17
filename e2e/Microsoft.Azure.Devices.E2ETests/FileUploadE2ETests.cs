@@ -48,11 +48,19 @@ namespace Microsoft.Azure.Devices.E2ETests
             TestUtil.UnInitializeEnvironment(registryManager);
         }
 
+#if NETSTANDARD1_3
         [TestInitialize]
-        public async void Initialize()
+        public async Task Initialize()
         {
             await sequentialTestSemaphore.WaitAsync();
         }
+#else
+        [TestInitialize]
+        public void Initialize()
+        {
+            sequentialTestSemaphore.Wait();
+        }
+#endif
 
         [TestCleanup]
         public void Cleanup()

@@ -8,7 +8,7 @@ rem // resolve to fully qualified path
 for %%i in ("%build-root%") do set build-root=%%~fi
 
 cd %build-root%
-call build.cmd -clean -configuration Release -wip_provisioning
+call build.cmd -clean -configuration Release -wip_provisioning -e2etests
 if errorlevel 1 goto :eof
 
 REM -- Run C# device SDK unit Tests  --

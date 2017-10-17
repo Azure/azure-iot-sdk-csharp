@@ -12,6 +12,7 @@ Builds Azure IoT SDK binaries.
 Parameters:
     -clean
     -notests
+    -e2etests
     -configuration {Debug|Release}
     -verbosity: Sets the verbosity level of the command. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].
 
@@ -32,6 +33,7 @@ https://github.com/azure/azure-iot-sdk-csharp
 Param(
     [switch] $clean,
     [switch] $notests,
+    [switch] $e2etests,
     [string] $configuration = "Debug",
     [string] $verbosity = "q",
 
@@ -66,7 +68,7 @@ Function RunTests($path, $message) {
     Write-Host -ForegroundColor Cyan "TEST: --- " $message " ---"
     cd (Join-Path $rootDir $path)
 
-    & dotnet test --verbosity $verbosity --configuration $configuration --logger "trx"
+    & dotnet test --verbosity normal --configuration $configuration --logger "trx"
 
     if ($LASTEXITCODE -ne 0) {
         throw "Build failed."
@@ -148,6 +150,15 @@ try {
             RunTests security\dice\tests "SecurityClient for DICE"
             RunTests security\tpm\tests "SecurityClient for TPM"
         }
+    }
+
+    if ($e2etests)
+    {
+        Write-Host
+        Write-Host -ForegroundColor Cyan "End-to-end Test execution"
+        Write-Host
+
+        RunTests e2e\Microsoft.Azure.Devices.E2ETests.NetStandard "End-to-end Tests"
     }
 
     $buildFailed = $false

@@ -460,6 +460,10 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             Tuple<string, string> deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
             var deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, transport);
+
+// TODO: #193
+// DeviceClient.SetDesiredPropertyUpdateCallback(DesiredPropertyUpdateCallback, object)' is obsolete: 'Please use SetDesiredPropertyUpdateCallbackAsync.            
+#pragma warning disable CS0618
             await deviceClient.SetDesiredPropertyUpdateCallback((patch, context) =>
             {
                 return Task.Run(() =>
@@ -479,6 +483,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 });
 
             }, null);
+#pragma warning restore CS0618
 
             var twinPatch = new Twin();
             twinPatch.Properties.Desired[propName] = propValue;

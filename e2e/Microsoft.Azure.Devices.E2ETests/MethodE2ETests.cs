@@ -42,11 +42,19 @@ namespace Microsoft.Azure.Devices.E2ETests
             TestUtil.UnInitializeEnvironment(registryManager);
         }
 
+#if NETSTANDARD1_3
         [TestInitialize]
-        public async void Initialize()
+        public async Task Initialize()
         {
             await sequentialTestSemaphore.WaitAsync();
         }
+#else
+        [TestInitialize]
+        public void Initialize()
+        {
+            sequentialTestSemaphore.Wait();
+        }
+#endif
 
         [TestCleanup]
         public void Cleanup()
@@ -330,6 +338,10 @@ namespace Microsoft.Azure.Devices.E2ETests
             Tuple<string, string> deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
             var assertResult = new TaskCompletionSource<Tuple<bool, bool>>();
             var deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, transport);
+
+// TODO: #193
+// DeviceClient.SetMethodHandler(string, MethodCallback, object)' is obsolete: 'Please use SetMethodHandlerAsync.
+#pragma warning disable CS0618
             deviceClient?.SetMethodHandler(MethodName,
                 (request, context) =>
                 {
@@ -337,6 +349,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(DeviceResponseJson), 200));
                 },
                 null);
+#pragma warning restore CS0618
 
             // sleep to ensure async tasks started in SetMethodHandler has completed
             Thread.Sleep(5000);
