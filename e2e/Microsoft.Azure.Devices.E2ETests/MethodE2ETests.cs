@@ -250,6 +250,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.DefaultDelayInSec);
         }
 
+        [Ignore] //TODO: #194 Test intermittently failing on Windows.
         [TestMethod]
         [TestCategory("Method-E2E")]
         [TestCategory("Recovery")]

@@ -59,6 +59,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             sequentialTestSemaphore.Release(1);
         }
 
+        [Ignore] // TODO: #171 - X509 tests are intermittently failing during CI.
         [TestMethod]
         [TestCategory("X509-Message-E2E")]
         public async Task X509_DeviceSendSingleMessage_Amqp()
@@ -66,6 +67,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await SendSingleMessageX509(Client.TransportType.Amqp_Tcp_Only);
         }
 
+        [Ignore] // TODO: #171 - X509 tests are intermittently failing during CI.
         [TestMethod]
         [TestCategory("X509-Message-E2E")]
         public async Task X509_DeviceSendSingleMessage_AmqpWs()
@@ -94,6 +96,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await SendSingleMessageX509(Client.TransportType.Http1);
         }
 
+        [Ignore] // TODO: #171 - X509 tests are intermittently failing during CI.
         [TestMethod]
         [TestCategory("X509-Message-E2E")]
         public async Task X509_DeviceReceiveSingleMessage_Amqp()
@@ -101,7 +104,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             await ReceiveSingleMessageX509(Client.TransportType.Amqp_Tcp_Only);
         }
 
-        [Ignore] // TODO: #171 - X509 tests are intermittently failing during CI.
         [TestMethod]
         [TestCategory("X509-Message-E2E")]
         public async Task X509_DeviceReceiveSingleMessage_AmqpWs()
