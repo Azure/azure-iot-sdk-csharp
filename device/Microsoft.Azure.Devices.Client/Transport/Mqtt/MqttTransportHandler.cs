@@ -159,7 +159,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         Action<Message> twinResponseEvent;
 
         public TimeSpan TwinTimeout = TimeSpan.FromSeconds(60);
-        
+
         internal MqttTransportHandler(
             IPipelineContext context, 
             IotHubConnectionString iotHubConnectionString, 
@@ -201,10 +201,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 switch (settings.GetTransportType())
                 {
                     case TransportType.Mqtt_Tcp_Only:
-                        this.channelFactory = this.CreateChannelFactory(iotHubConnectionString, settings);
+                        this.channelFactory = this.CreateChannelFactory(iotHubConnectionString, settings, context.Get<ProductInfo>());
                         break;
                     case TransportType.Mqtt_WebSocket_Only:
-                        this.channelFactory = this.CreateWebSocketChannelFactory(iotHubConnectionString, settings);
+                        this.channelFactory = this.CreateWebSocketChannelFactory(iotHubConnectionString, settings, context.Get<ProductInfo>());
                         break;
                     default:
                         throw new InvalidOperationException("Unsupported Transport Setting {0}".FormatInvariant(settings.GetTransportType()));
@@ -889,7 +889,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }, cancellationToken);
         }
 
-        Func<IPAddress, int, Task<IChannel>> CreateChannelFactory(IotHubConnectionString iotHubConnectionString, MqttTransportSettings settings)
+        Func<IPAddress, int, Task<IChannel>> CreateChannelFactory(IotHubConnectionString iotHubConnectionString, MqttTransportSettings settings, ProductInfo productInfo)
         {
 #if WINDOWS_UWP
             return async (address, port) =>
@@ -908,7 +908,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 streamSocketChannel.Pipeline.AddLast(
                     MqttEncoder.Instance, 
                     new MqttDecoder(false, MaxMessageSize),
-                    this.mqttIotHubAdapterFactory.Create(this, iotHubConnectionString, settings));
+                    this.mqttIotHubAdapterFactory.Create(this, iotHubConnectionString, settings, productInfo));
 
                 streamSocketChannel.Configuration.SetOption(ChannelOption.Allocator, UnpooledByteBufferAllocator.Default);
 
@@ -945,7 +945,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                                 tlsHandler,
                                 MqttEncoder.Instance, 
                                 new MqttDecoder(false, MaxMessageSize), 
-                                this.mqttIotHubAdapterFactory.Create(this, iotHubConnectionString, settings));
+                                this.mqttIotHubAdapterFactory.Create(this, iotHubConnectionString, settings, productInfo));
                     }));
 
                 this.ScheduleCleanup(() =>
@@ -959,7 +959,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 #endif
         }
 
-        Func<IPAddress, int, Task<IChannel>> CreateWebSocketChannelFactory(IotHubConnectionString iotHubConnectionString, MqttTransportSettings settings)
+        Func<IPAddress, int, Task<IChannel>> CreateWebSocketChannelFactory(IotHubConnectionString iotHubConnectionString, MqttTransportSettings settings, ProductInfo productInfo)
         {
             return async (address, port) =>
             {
@@ -1016,7 +1016,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     .Pipeline.AddLast(
                         MqttEncoder.Instance,
                         new MqttDecoder(false, MaxMessageSize),
-                        this.mqttIotHubAdapterFactory.Create(this, iotHubConnectionString, settings));
+                        this.mqttIotHubAdapterFactory.Create(this, iotHubConnectionString, settings, productInfo));
                 await eventLoopGroup.GetNext().RegisterAsync(clientChannel);
 
                 this.ScheduleCleanup(() =>

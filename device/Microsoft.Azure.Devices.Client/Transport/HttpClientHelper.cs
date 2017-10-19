@@ -40,16 +40,18 @@ namespace Microsoft.Azure.Devices.Client.Transport
         readonly bool usingX509ClientCert = false;
         HttpClient httpClientObj;
         bool isDisposed;
+        ProductInfo productInfo;
 
         public HttpClientHelper(
             Uri baseAddress,
             IAuthorizationHeaderProvider authenticationHeaderProvider,
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> defaultErrorMapping,
             TimeSpan timeout,
-            Action<HttpClient> preRequestActionForAllRequests
+            Action<HttpClient> preRequestActionForAllRequests,
 #if !WINDOWS_UWP && !PCL
-            , X509Certificate2 clientCert
+            X509Certificate2 clientCert,
 #endif
+            ProductInfo productInfo
             )
         {
             this.baseAddress = baseAddress;
@@ -79,6 +81,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 preRequestActionForAllRequests(this.httpClientObj);
             }
+            this.productInfo = productInfo;
         }
 
         public Task<T> GetAsync<T>(
@@ -413,9 +416,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 {
                     msg.Headers.Add(HttpRequestHeader.Authorization.ToString(), this.authenticationHeaderProvider.GetAuthorizationHeader());
                 }
-#if !WINDOWS_UWP && !PCL
-                msg.Headers.UserAgent.ParseAdd(Utils.GetClientVersion());
-#endif
+
+                msg.Headers.UserAgent.ParseAdd(this.productInfo.ToString());
+
                 if (modifyRequestMessageAsync != null) await modifyRequestMessageAsync(msg, cancellationToken);
 
                 // TODO: pradeepc - find out the list of exceptions that HttpClient can throw.

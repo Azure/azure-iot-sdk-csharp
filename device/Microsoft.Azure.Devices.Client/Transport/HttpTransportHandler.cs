@@ -45,33 +45,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
         readonly string deviceId;
 
 #if WINDOWS_UWP || PCL
-        internal HttpTransportHandler(IotHubConnectionString iotHubConnectionString)
-            : base(null, new Http1TransportSettings())
-        {
-            this.deviceId = iotHubConnectionString.DeviceId;
-            this.httpClientHelper = new HttpClientHelper(
-                iotHubConnectionString.HttpsEndpoint,
-                iotHubConnectionString,
-                ExceptionHandlingHelper.GetDefaultErrorMapping(),
-                DefaultOperationTimeout,
-                null);
-        }
-#else
-        internal HttpTransportHandler(IotHubConnectionString iotHubConnectionString)
-            : this(null, iotHubConnectionString)
-        {
-        }
-
-        internal HttpTransportHandler(IPipelineContext context, IotHubConnectionString iotHubConnectionString)
-            : this(context, iotHubConnectionString, new Http1TransportSettings())
-        {
-        }
-#endif
-
-#if WINDOWS_UWP || PCL
         internal HttpTransportHandler(IPipelineContext context, IotHubConnectionString iotHubConnectionString, Http1TransportSettings transportSettings)
             : base(context, transportSettings)
         {
+            ProductInfo productInfo = context.Get<ProductInfo>();
             this.TransportSettings = transportSettings;
             this.deviceId = iotHubConnectionString.DeviceId;
             this.httpClientHelper = new HttpClientHelper(
@@ -79,12 +56,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 iotHubConnectionString,
                 ExceptionHandlingHelper.GetDefaultErrorMapping(),
                 DefaultOperationTimeout,
-                null);
+                null,
+                productInfo);
         }
 #else
         internal HttpTransportHandler(IPipelineContext context, IotHubConnectionString iotHubConnectionString, Http1TransportSettings transportSettings)
             :base(context, transportSettings)
         {
+            ProductInfo productInfo = context.Get<ProductInfo>();
             this.deviceId = iotHubConnectionString.DeviceId;
             this.httpClientHelper = new HttpClientHelper(
                 iotHubConnectionString.HttpsEndpoint,
@@ -92,7 +71,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 ExceptionHandlingHelper.GetDefaultErrorMapping(),
                 DefaultOperationTimeout,
                 null,
-                transportSettings.ClientCertificate);
+                transportSettings.ClientCertificate,
+                productInfo);
         }
 #endif
 

@@ -61,19 +61,23 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         int InboundBacklogSize => this.deviceBoundOneWayProcessor.BacklogSize + this.deviceBoundTwoWayProcessor.BacklogSize;
 
+        ProductInfo productInfo;
+
         public MqttIotHubAdapter(
             string deviceId,
             string iotHubHostName,
             string password,
             MqttTransportSettings mqttTransportSettings,
             IWillMessage willMessage,
-            IMqttIotHubEventHandler mqttIotHubEventHandler)
+            IMqttIotHubEventHandler mqttIotHubEventHandler,
+            ProductInfo productInfo)
         {
             Contract.Requires(deviceId != null);
             Contract.Requires(iotHubHostName != null);
             Contract.Requires(password != null);
             Contract.Requires(mqttTransportSettings != null);
             Contract.Requires(!mqttTransportSettings.HasWill || willMessage != null);
+            Contract.Requires(productInfo != null);
 
             this.deviceId = deviceId;
             this.iotHubHostName = iotHubHostName;
@@ -82,6 +86,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             this.willMessage = willMessage;
             this.mqttIotHubEventHandler = mqttIotHubEventHandler;
             this.pingRequestInterval = this.mqttTransportSettings.KeepAliveInSeconds > 0 ? TimeSpan.FromSeconds(this.mqttTransportSettings.KeepAliveInSeconds / 4d) : TimeSpan.MaxValue;
+            this.productInfo = productInfo;
 
             this.deviceBoundOneWayProcessor = new SimpleWorkQueue<PublishPacket>(this.AcceptMessageAsync);
             this.deviceBoundTwoWayProcessor = new OrderedTwoPhaseWorkQueue<int, PublishPacket>(this.AcceptMessageAsync, p => p.PacketId, this.SendAckAsync);
@@ -225,7 +230,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 {
                     ClientId = this.deviceId,
                     HasUsername = true,
-                    Username = this.iotHubHostName + "/" + this.deviceId +"/api-version=" + ClientApiVersionHelper.ApiVersionString + "&DeviceClientType=" + Uri.EscapeDataString(Utils.GetClientVersion()),
+                    Username = $"{this.iotHubHostName}/{this.deviceId}/api-version={ClientApiVersionHelper.ApiVersionString}&DeviceClientType={Uri.EscapeDataString(this.productInfo.ToString())}",
                     HasPassword = !string.IsNullOrEmpty(this.password),
                     Password = this.password,
                     KeepAliveInSeconds = this.mqttTransportSettings.KeepAliveInSeconds,

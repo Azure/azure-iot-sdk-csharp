@@ -131,6 +131,19 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         // Codes_SRS_DEVICECLIENT_28_002: [This property shall be defaulted to 240000 (4 minutes).]
         public uint OperationTimeoutInMilliseconds { get; set; } = DefaultOperationTimeoutInMilliseconds;
 
+        private ProductInfo productInfo = new ProductInfo();
+
+        /// <summary>
+        /// Stores custom product information that will be appended to the user agent string that is sent to IoT Hub.
+        /// </summary>
+        public string ProductInfo {
+            // We store DeviceClient.ProductInfo as a string property of an object (rather than directly as a string)
+            // so that updates will propagate down to the transport layer throughout the lifetime of the DeviceClient
+            // object instance.
+            get => productInfo.Extra;
+            set => productInfo.Extra = value;
+        }
+
         /// <summary>
         /// Stores the retry strategy used in the operation retries.
         /// </summary>
@@ -223,6 +236,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             pipelineContext.Set<Action<TwinCollection>>(OnReportedStatePatchReceived);
             pipelineContext.Set<OnConnectionClosedDelegate>(OnConnectionClosed);
             pipelineContext.Set<OnConnectionOpenedDelegate>(OnConnectionOpened);
+            pipelineContext.Set(this.productInfo);
 
             IDelegatingHandler innerHandler = pipelineBuilder.Build(pipelineContext);
 
@@ -892,6 +906,8 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             }
 
             HttpTransportHandler httpTransport = null;
+            var context = new PipelineContext();
+            context.Set(this.productInfo);
 
 #if !WINDOWS_UWP
             //We need to add the certificate to the fileUpload httpTransport if DeviceAuthenticationWithX509Certificate
@@ -899,15 +915,15 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             {
                 Http1TransportSettings transportSettings = new Http1TransportSettings();
                 transportSettings.ClientCertificate = this.Certificate;
-                httpTransport = new HttpTransportHandler(null, iotHubConnectionString, transportSettings);
+                httpTransport = new HttpTransportHandler(context, iotHubConnectionString, transportSettings);
             }
             else
             {
-                httpTransport = new HttpTransportHandler(iotHubConnectionString);
+                httpTransport = new HttpTransportHandler(context, iotHubConnectionString, new Http1TransportSettings());
             }
 #else 
-            httpTransport = new HttpTransportHandler(iotHubConnectionString);
-            #endif
+            httpTransport = new HttpTransportHandler(context, iotHubConnectionString, new Http1TransportSettings());
+#endif
             return httpTransport.UploadToBlobAsync(blobName, source);
         }
 #endif

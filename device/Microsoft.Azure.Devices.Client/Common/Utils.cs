@@ -51,12 +51,6 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 #endif
-        public static string GetClientVersion()
-        {
-            // This string is picked up by the bump_version script (https://github.com/Azure/azure-iot-sdks/blob/develop/build/release/bump_version/inputs.js)
-            var CommonAssemblyVersion = "1.5.2";
-            return "Microsoft.Azure.Devices.Client/" + CommonAssemblyVersion;
-        }
 
         public static DeliveryAcknowledgement ConvertDeliveryAckTypeFromString(string value)
         {

@@ -73,7 +73,8 @@ namespace Microsoft.Azure.Devices.Client
             IotHubConnectionString connectionString,
             string corrId,
             SendingLinkType linkType,
-            TimeSpan timeout, 
+            TimeSpan timeout,
+            ProductInfo productInfo,
             CancellationToken cancellationToken)
         {
             this.OnCreateSendingLink(connectionString);
@@ -105,7 +106,7 @@ namespace Microsoft.Azure.Devices.Client
                     break;
             }
 
-            SetLinkSettingsCommonProperties(linkSettings, timeoutHelper.RemainingTime());
+            SetLinkSettingsCommonProperties(linkSettings, timeoutHelper.RemainingTime(), productInfo);
             if (linkType == SendingLinkType.Methods)
             {
                 SetLinkSettingsCommonPropertiesForMethod(linkSettings, corrId);
@@ -131,6 +132,7 @@ namespace Microsoft.Azure.Devices.Client
             ReceivingLinkType linkType,
             uint prefetchCount,
             TimeSpan timeout,
+            ProductInfo productInfo,
             CancellationToken cancellationToken)
         {
             this.OnCreateReceivingLink(connectionString);
@@ -163,7 +165,7 @@ namespace Microsoft.Azure.Devices.Client
                     break;
             }
 
-            SetLinkSettingsCommonProperties(linkSettings, timeoutHelper.RemainingTime());
+            SetLinkSettingsCommonProperties(linkSettings, timeoutHelper.RemainingTime(), productInfo);
             if (linkType == ReceivingLinkType.Methods)
             {
                 SetLinkSettingsCommonPropertiesForMethod(linkSettings, corrId);
@@ -416,20 +418,12 @@ namespace Microsoft.Azure.Devices.Client
             return amqpSettings;
         }
 
-        protected static AmqpLinkSettings SetLinkSettingsCommonProperties(AmqpLinkSettings linkSettings, TimeSpan timeSpan)
+        protected static AmqpLinkSettings SetLinkSettingsCommonProperties(AmqpLinkSettings linkSettings, TimeSpan timeSpan, ProductInfo productInfo)
         {
             linkSettings.AddProperty(IotHubAmqpProperty.TimeoutName, timeSpan.TotalMilliseconds);
-#if WINDOWS_UWP
-            // System.Reflection.Assembly.GetExecutingAssembly() does not exist for UWP, therefore use a hard-coded version name
-            // (This string is picked up by the bump_version script, so don't change the line below)
-            var UWPAssemblyVersion = "1.5.2";
-            linkSettings.AddProperty(IotHubAmqpProperty.ClientVersion, UWPAssemblyVersion);
-#elif PCL
-            string PCLAssemblyVersion = "Microsoft.Azure.Devices.Client/1.5.2";
-            linkSettings.AddProperty(IotHubAmqpProperty.ClientVersion, PCLAssemblyVersion);
-#else
-            linkSettings.AddProperty(IotHubAmqpProperty.ClientVersion, Utils.GetClientVersion());
-#endif
+
+            linkSettings.AddProperty(IotHubAmqpProperty.ClientVersion, productInfo.ToString());
+
             return linkSettings;
         }
 

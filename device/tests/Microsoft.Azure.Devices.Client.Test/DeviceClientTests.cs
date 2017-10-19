@@ -1147,5 +1147,15 @@
             Assert.AreEqual(ConnectionStatus.Disabled, status);
             Assert.AreEqual(ConnectionStatusChangeReason.Client_Close, statusChangeReason);
         }
+
+        [TestMethod]
+        [TestCategory("DeviceClient")]
+        public void ProductInfo_StoresProductInfo_Ok()
+        {
+            const string userAgent = "name/version (runtime; os; arch)";
+            DeviceClient client = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            client.ProductInfo = userAgent;
+            Assert.AreEqual(userAgent, client.ProductInfo);
+        }
     }
 }

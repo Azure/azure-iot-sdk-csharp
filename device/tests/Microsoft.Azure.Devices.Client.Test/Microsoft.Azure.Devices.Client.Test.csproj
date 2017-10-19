@@ -82,6 +82,7 @@
     <Compile Include="TransportSettingsTests.cs" />
     <Compile Include="DeviceClientTwinApiTests.cs" />
     <Compile Include="DeviceClientConnectionStateManagerTests.cs" />
+    <Compile Include="ProductInfoTests.cs" />
     <Compile Include="UtilsTests.cs" />
   </ItemGroup>
   <ItemGroup>

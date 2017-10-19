@@ -21,13 +21,13 @@
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\RetryPolicies\IRetryPolicy.cs">
       <Link>IRetryPolicy.cs</Link>
     </Compile>
-	<Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\RetryPolicies\NoRetry.cs">
+    <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\RetryPolicies\NoRetry.cs">
       <Link>NoRetry.cs</Link>
     </Compile>
-	<Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\RetryPolicies\ExponentialBackoff.cs">
+    <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\RetryPolicies\ExponentialBackoff.cs">
       <Link>ExponentialBackoff.cs</Link>
     </Compile>
-	<Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\TransientFaultHandling\RetryStrategyWrapper.cs">
+    <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\TransientFaultHandling\RetryStrategyWrapper.cs">
       <Link>RetryStrategyWrapper.cs</Link>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\AuthenticationMethodFactory.cs">
@@ -362,6 +362,9 @@
     </Compile>
     <Compile Include="$(DeviceClientDir)\DeviceClientConnectionStatusManager.cs">
       <Link>DeviceClientConnectionStatusManager.cs</Link>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\ProductInfo.cs">
+      <Link>ProductInfo.cs</Link>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\Transport\DefaultDelegatingHandler.cs">
       <Link>DefaultDelegatingHandler.cs</Link>
