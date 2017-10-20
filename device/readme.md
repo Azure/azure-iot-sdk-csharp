@@ -17,11 +17,6 @@ The library is available as a NuGet package for you include in your own developm
 
 For example,calling `DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(DeviceConnectionString, TransportType.Mqtt);` will result in "Mqtt protocol is not supported" exception.
 
-> Note : Currently, **Microsoft.Azure.Devices.Client.PCL** only supports **HTTPS** protocol.
-
-For example, calling `DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(DeviceConnectionString, TransportType.Amqp);` will result in "Amqp protocol is not supported" exception.
-
-
 ## Application development guidelines
 For more information on how to use this library refer to the documents below:
 - [Preparing your Windows development environment][devbox-setup]

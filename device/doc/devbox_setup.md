@@ -21,7 +21,7 @@ Be sure to include [NuGet Package Manager][NuGet-Package-Manager].
 
 Go to VS 2015 Solution Explorer and right click on the solution or project and click Manage NuGet Packages. There are **2** different **NuGet** packages to choose from
 
-### 1.) Microsoft.Azure.Devices.Client
+### Microsoft.Azure.Devices.Client
 
 For building classic desktop [.NET] [.NET] application, use NuGet Package Manager to install latest version of **Microsoft.Azure.Devices.Client** Device SDK for Azure IoT Devices NuGet package to your project.
 
@@ -29,15 +29,6 @@ Two versions of Microsoft.Azure.Devices.Client.dll are built -- one for the clas
 another for building [UWP] [UWP] applications.
 
 The package is located at [Azure IoT Device Client SDK NuGet Package] [lnk-NuGet-package]
-
-### 2.) Microsoft.Azure.Devices.Client.PCL
-
-[PCL] [PCL] (Portable Class Library) version of .NET library helps you to build cross-platform apps.
-For example, for bulding iOS and Android application in C# in VS 2015 using [Xamarin] [Xamarin], use NuGet Package Manager to install latest version of **Microsoft.Azure.Devices.Client.PCL** Device SDK for Azure IoT Devices NuGet package to your project.
-
-The package is located at [Azure IoT Device Client PCL SDK NuGet Package] [lnk-NuGet-package_pcl]
-
-> Currently, **Microsoft.Azure.Devices.Client.PCL** only supports HTTPS protocol.
 
 ### Building [UWP][UWP] Apps
 
@@ -61,7 +52,7 @@ where you would replace {My device connection string} with your own valid device
 
 ### Building iOS and Android apps using Xamarin
 
-For building iOS and Android app in C# , you will use PCL NuGet package  located at [Azure IoT Device Client PCL SDK NuGet Package] [lnk-NuGet-package_pcl]
+For building iOS and Android app in C# , you will use the NetStandard NuGet package.
 
 <a name="building_sdk"/>
 
@@ -93,9 +84,8 @@ You will be prompted to download and run nuget.exe for downloading packages that
 Once build completes, it will create
 
 1. Microsoft.Azure.Devices.Client.dll (Client SDK Assembly)
-2. Microsoft.Azure.Devices.Client.PCL.dll (PCL library)
-3. Microsoft.Azure.Devices.Client.dll (UWP version that you will need to UWP application)
-4. Sample executables 
+2. Microsoft.Azure.Devices.Client.dll (UWP version that you will need to UWP application)
+3. Sample executables 
 
 ### Option 2: Build using VS 2015 IDE
 
@@ -160,11 +150,9 @@ After this redeploy and re-run the application.
 [lnk-sdk-vs2012]: http://go.microsoft.com/fwlink/?LinkId=323511
 [lnk-visualstudio-xamarin]: https://msdn.microsoft.com/en-us/library/mt299001.aspx
 [lnk-NuGet-package]:https://www.nuget.org/packages/Microsoft.Azure.Devices.Client
-[lnk-NuGet-package_pcl]:https://www.nuget.org/packages/Microsoft.Azure.Devices.Client.PCL
 [lnk-azure-iot]:https://github.com/Azure/azure-iot-sdks
 [NuGet-Package-Manager]:https://visualstudiogallery.msdn.microsoft.com/5d345edc-2e2d-4a9c-b73b-d53956dc458d
 [NuGet]:https://www.nuget.org/
-[PCL]:https://msdn.microsoft.com/en-us/library/gg597391(v=vs.110).aspx
 [UWP]:https://msdn.microsoft.com/en-us/windows/uwp/get-started/universal-application-platform-guide
 [.NET]:https://www.microsoft.com/net
 [UWP]:https://msdn.microsoft.com/en-us/windows/uwp/winrt-components/index
