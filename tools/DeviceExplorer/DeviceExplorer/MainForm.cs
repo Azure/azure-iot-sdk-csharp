@@ -90,12 +90,12 @@ namespace DeviceExplorer
             cancelMonitoringButton.Enabled = false;
 
             // Set up the DataGridView.
-            devicesGridView.MultiSelect = false;
             devicesGridView.ScrollBars = ScrollBars.Both;
 
             updateDeviceButton.Enabled = false;
             deleteDeviceButton.Enabled = false;
             sasTokenButton.Enabled = false;
+            deviceTwinPropertiesBtn.Enabled = false;
         }
 
         /// <summary>
@@ -438,16 +438,27 @@ namespace DeviceExplorer
             try
             {
                 RegistryManager registryManager = RegistryManager.CreateFromConnectionString(activeIoTHubConnectionString);
-                string selectedDeviceId = devicesGridView.CurrentRow.Cells[0].Value.ToString();
+
+                List<string> selectedDeviceIds = new List<string>();
+
+                foreach (DataGridViewRow item in devicesGridView.SelectedRows)
+                {
+                    selectedDeviceIds.Add(item.Cells[0].Value.ToString());
+                }
+
                 using (new CenterDialog(this))
                 {
-                    var dialogResult = MessageBox.Show($"Are you sure you want to delete the following device?\n[{selectedDeviceId}]", "Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                    var dialogResult = MessageBox.Show($"Are you sure you want to delete the following device?\n{String.Join(Environment.NewLine, selectedDeviceIds)}", "Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
                     if (dialogResult == DialogResult.Yes)
                     {
-                        await registryManager.RemoveDeviceAsync(selectedDeviceId);
+                        foreach (string deviceId in selectedDeviceIds)
+                        {
+                            await registryManager.RemoveDeviceAsync(deviceId);
+                        }
+
                         using (new CenterDialog(this))
                         {
-                            MessageBox.Show("Device deleted successfully!", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            MessageBox.Show("Device(s) deleted successfully!", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         }
                         await updateDevicesGridView();
                         await registryManager.CloseAsync();
@@ -914,7 +925,14 @@ namespace DeviceExplorer
         {
             if (devicesGridView.SelectedRows.Count > 0)
             {
-                Clipboard.SetText(devicesGridView.Rows[devicesGridView.SelectedRows[0].Index].Cells[5].Value.ToString());
+                List<string> content = new List<string>();
+
+                for (int i = 0; i < devicesGridView.SelectedRows.Count; i++)
+                {
+                    content.Add(devicesGridView.SelectedRows[i].Cells[5].Value.ToString());
+                }
+
+                Clipboard.SetText(String.Join(Environment.NewLine, content));
             }
         }
 
@@ -1055,6 +1073,34 @@ namespace DeviceExplorer
             findAndSelectRowByDeviceID(deviceIDSearchPattern, false);
 
             deviceIDSearchPatternLastUpdateTime = DateTime.Now;
+        }
+
+        private void devicesGridView_SelectionChanged(object sender, EventArgs e)
+        {
+            if (devicesGridView.SelectedRows.Count == 1)
+            {
+                updateDeviceButton.Enabled = true;
+                sasTokenButton.Enabled = true;
+                deviceTwinPropertiesBtn.Enabled = true;
+            }
+            else
+            {
+                updateDeviceButton.Enabled = false;
+                sasTokenButton.Enabled = false;
+                deviceTwinPropertiesBtn.Enabled = false;
+            }
+        }
+
+        private void devicesGridViewContextMenu_Opened(object sender, EventArgs e)
+        {
+            if (devicesGridView.SelectedRows.Count == 1)
+            {
+                showDevicePropertiesToolStripMenuItem.Enabled = true;
+            }
+            else
+            {
+                showDevicePropertiesToolStripMenuItem.Enabled = false;
+            }
         }
     }
 }
