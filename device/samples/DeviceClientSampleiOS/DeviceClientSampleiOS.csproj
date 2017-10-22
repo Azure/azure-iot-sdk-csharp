@@ -109,9 +109,9 @@
     <Content Include="Entitlements.plist" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Microsoft.Azure.Devices.Client.PCL\Microsoft.Azure.Devices.Client.PCL.csproj">
-      <Project>{4151e5d7-1c3c-4ad9-9e9a-5fa50a1fa332}</Project>
-      <Name>Microsoft.Azure.Devices.Client.PCL</Name>
+    <ProjectReference Include="..\..\Microsoft.Azure.Devices.Client.NetStandard\Microsoft.Azure.Devices.Client.NetStandard.csproj">
+      <Project>{8988ab0e-0fdd-4bd4-a65f-6479bb2c5af8}</Project>
+      <Name>Microsoft.Azure.Devices.Client.NetStandard</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />

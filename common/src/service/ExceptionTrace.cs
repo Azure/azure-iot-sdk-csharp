@@ -213,7 +213,7 @@ namespace Microsoft.Azure.Devices.Common
                     {
                         Debugger.Launch();
                     }
-#elif !PCL && !NETSTANDARD1_3 && !NETSTANDARD2_0
+#elif !NETSTANDARD1_3 && !NETSTANDARD2_0
                     if (breakType.IsAssignableFrom(exception.GetType()))
                     {
                         // This is intended to "crash" the process so that a debugger can be attached.  If a managed
