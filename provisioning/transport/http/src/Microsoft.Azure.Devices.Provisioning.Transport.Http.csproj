@@ -7,6 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\..\..\common\src\device\provisioning\transport\ClientApiVersionHelper.cs" Link="ClientApiVersionHelper.cs" />
+    <Compile Include="..\..\..\..\common\src\device\provisioning\transport\DeviceRegistrationResult.cs" Link="Generated\Models\DeviceRegistrationResult.cs" />
+    <Compile Include="..\..\..\..\common\src\device\provisioning\transport\RegistrationOperationStatus.cs" Link="Generated\Models\RegistrationOperationStatus.cs" />
+    <Compile Include="..\..\..\..\common\src\device\provisioning\transport\TpmRegistrationResult.cs" Link="Generated\Models\TpmRegistrationResult.cs" />
+    <Compile Include="..\..\..\..\common\src\device\provisioning\transport\X509CertificateInfo.cs" Link="Generated\Models\X509CertificateInfo.cs" />
+    <Compile Include="..\..\..\..\common\src\device\provisioning\transport\X509RegistrationResult.cs" Link="Generated\Models\X509RegistrationResult.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- FXCop -->
     <PackageReference Condition=" '$(Configuration)' == 'Debug' " Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.3.0-beta1" />
     <PackageReference Include="Microsoft.Rest.ClientRuntime" Version="2.3.10" />
