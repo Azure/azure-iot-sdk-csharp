@@ -3,6 +3,7 @@
   <PropertyGroup>
     <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Configurations>Debug;Release;Release_Delay_Sign</Configurations>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{3081D7CD-2F05-4431-9FEF-4F8A19591AD4}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -47,7 +48,7 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <DocumentationFile>bin\Release\Microsoft.Azure.Devices.XML</DocumentationFile>
+    <DocumentationFile>bin\Release_Delay_Sign\Microsoft.Azure.Devices.XML</DocumentationFile>
   </PropertyGroup>
     
   <ItemGroup>
