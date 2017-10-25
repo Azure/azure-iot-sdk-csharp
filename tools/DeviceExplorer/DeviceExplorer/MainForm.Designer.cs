@@ -521,13 +521,14 @@
             this.devicesGridView.EditMode = System.Windows.Forms.DataGridViewEditMode.EditProgrammatically;
             this.devicesGridView.Location = new System.Drawing.Point(5, 49);
             this.devicesGridView.Margin = new System.Windows.Forms.Padding(2);
-            this.devicesGridView.MultiSelect = false;
+            this.devicesGridView.MultiSelect = true;
             this.devicesGridView.Name = "devicesGridView";
             this.devicesGridView.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.devicesGridView.Size = new System.Drawing.Size(729, 458);
             this.devicesGridView.TabIndex = 9;
             this.devicesGridView.DataBindingComplete += new System.Windows.Forms.DataGridViewBindingCompleteEventHandler(this.devicesGridView_DataBindingComplete);
             this.devicesGridView.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.devicesGridView_KeyPress);
+            this.devicesGridView.SelectionChanged += new System.EventHandler(this.devicesGridView_SelectionChanged);
             // 
             // devicesGridViewContextMenu
             // 
@@ -541,6 +542,7 @@
             this.showDevicePropertiesToolStripMenuItem});
             this.devicesGridViewContextMenu.Name = "devicesGridViewContextMenu";
             this.devicesGridViewContextMenu.Size = new System.Drawing.Size(300, 104);
+            this.devicesGridViewContextMenu.Opened += new System.EventHandler(this.devicesGridViewContextMenu_Opened);
             // 
             // copyAllToolStripMenuItem
             // 
@@ -553,7 +555,7 @@
             // 
             this.copySelectedToolStripMenuItem.Name = "copySelectedToolStripMenuItem";
             this.copySelectedToolStripMenuItem.Size = new System.Drawing.Size(299, 22);
-            this.copySelectedToolStripMenuItem.Text = "Copy data for selected device";
+            this.copySelectedToolStripMenuItem.Text = "Copy data for selected device(s)";
             this.copySelectedToolStripMenuItem.Click += new System.EventHandler(this.copySelectedToolStripMenuItem_Click);
             // 
             // toolStripSeparator1
@@ -565,7 +567,7 @@
             // 
             this.getDeviceConnectionStringToolStripMenuItem.Name = "getDeviceConnectionStringToolStripMenuItem";
             this.getDeviceConnectionStringToolStripMenuItem.Size = new System.Drawing.Size(299, 22);
-            this.getDeviceConnectionStringToolStripMenuItem.Text = "Copy connection string for selected device";
+            this.getDeviceConnectionStringToolStripMenuItem.Text = "Copy connection string for selected device(s)";
             this.getDeviceConnectionStringToolStripMenuItem.Click += new System.EventHandler(this.getDeviceConnectionStringToolStripMenuItem_Click);
             // 
             // toolStripSeparator2
