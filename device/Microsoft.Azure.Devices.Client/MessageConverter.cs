@@ -22,6 +22,9 @@ namespace Microsoft.Azure.Devices.Client
         public const string UriName = AmqpConstants.Vendor + ":uri";
         public const string DateTimeOffsetName = AmqpConstants.Vendor + ":datetime-offset";
 
+        private const string AmqpDiagIdKey = "Diagnostic-Id";
+        private const string AmqpDiagCorrelationContextKey = "Correlation-Context";
+
         /// <summary>
         /// Copies the properties from the amqp message to the Message instance.
         /// </summary>
@@ -198,7 +201,11 @@ namespace Microsoft.Azure.Devices.Client
                 }
             }
 
-            IoTHubClientDiagnostic.CopyDiagnosticPropertiesToAmqpAnnotations(data, amqpMessage);
+            if (IoTHubClientDiagnostic.HasDiagnosticProperties(data))
+            {
+                amqpMessage.MessageAnnotations.Map[AmqpDiagIdKey] = data.SystemProperties[MessageSystemPropertyNames.DiagId];
+                amqpMessage.MessageAnnotations.Map[AmqpDiagCorrelationContextKey] = data.SystemProperties[MessageSystemPropertyNames.DiagCorrelationContext];
+            }
         }
 
         public static bool TryGetAmqpObjectFromNetObject(object netObject, MappingType mappingType, out object amqpObject)

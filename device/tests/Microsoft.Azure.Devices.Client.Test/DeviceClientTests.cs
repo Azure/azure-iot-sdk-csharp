@@ -28,30 +28,50 @@
 
         [TestMethod]
         [TestCategory("IoTHubClientDiagnostic")]
-        public void DeviceClient_SetDiagnosticSamplingPercentage()
+        public void DeviceClient_DefaultDiagnosticSamplingPercentage_Ok()
         {
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
             const int DefaultPercentage = 0;
-            const int ValidPercentage = 80;
-            const int InvalidPercentage = 200;
-
             Assert.AreEqual(deviceClient.DiagnosticSamplingPercentage, DefaultPercentage);
+        }
 
+        [TestMethod]
+        [TestCategory("IoTHubClientDiagnostic")]
+        public void DeviceClient_SetDiagnosticSamplingPercentageInRange_Ok()
+        {
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            const int ValidPercentage = 80;
             deviceClient.DiagnosticSamplingPercentage = ValidPercentage;
             Assert.AreEqual(deviceClient.DiagnosticSamplingPercentage, ValidPercentage);
+        }
+
+        [TestMethod]
+        [TestCategory("IoTHubClientDiagnostic")]
+        public void DeviceClient_SetDiagnosticSamplingPercentageOutOfRange_Fail()
+        {
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            const int DefaultPercentage = 0;
+            const int InvalidPercentageExceedUpperLimit = 200;
+            const int InvalidPercentageExceedLowerLimit = -100;
 
             try
             {
-                deviceClient.DiagnosticSamplingPercentage = InvalidPercentage;
+                deviceClient.DiagnosticSamplingPercentage = InvalidPercentageExceedUpperLimit;
                 Assert.Fail();
             }
             catch (ArgumentOutOfRangeException e)
             {
-                Assert.AreEqual(deviceClient.DiagnosticSamplingPercentage, ValidPercentage);
+                Assert.AreEqual(deviceClient.DiagnosticSamplingPercentage, DefaultPercentage);
             }
-            catch (Exception)
+
+            try
             {
+                deviceClient.DiagnosticSamplingPercentage = InvalidPercentageExceedLowerLimit;
                 Assert.Fail();
+            }
+            catch (ArgumentOutOfRangeException e)
+            {
+                Assert.AreEqual(deviceClient.DiagnosticSamplingPercentage, DefaultPercentage);
             }
         }
 

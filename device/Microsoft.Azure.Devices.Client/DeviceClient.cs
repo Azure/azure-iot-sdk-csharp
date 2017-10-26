@@ -123,6 +123,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                     throw new ArgumentOutOfRangeException(nameof(DiagnosticSamplingPercentage), DiagnosticSamplingPercentage, 
                         "The range of diagnostic sampling percentage should between [0,100].");
                 }
+
                 _diagnosticSamplingPercentage = value;
             }
         }
@@ -245,7 +246,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// </summary>
         Object twinPatchCallbackContext = null;
 
-        internal int CurrentMessageCount = 0;
+        private int CurrentMessageCount = 0;
 
         DeviceClient(IotHubConnectionString iotHubConnectionString, ITransportSettings[] transportSettings, IDeviceClientPipelineBuilder pipelineBuilder)
         {

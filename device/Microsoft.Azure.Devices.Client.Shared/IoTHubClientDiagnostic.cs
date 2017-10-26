@@ -1,19 +1,16 @@
-﻿namespace Microsoft.Azure.Devices.Client
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+namespace Microsoft.Azure.Devices.Client
 {
     using System;
     using System.Globalization;
-    using Microsoft.Azure.Amqp;
 
-    class IoTHubClientDiagnostic
+    internal class IoTHubClientDiagnostic
     {
-        const string Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-        const string DiagnosticCreationTimeUtcKey = "creationtimeutc";
-
-        internal const string MqttDiagIdKey = "$.diagid";
-        internal const string MqttDiagCorrelationContextKey = "$.diagctx";
-
-        const string AmqpDiagIdKey = "Diagnostic-Id";
-        const string AmqpDiagCorrelationContextKey = "Correlation-Context";
+        private const string Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        private const string DiagnosticCreationTimeUtcKey = "creationtimeutc";
+        private static readonly DateTime Dt1970 = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         internal static bool AddDiagnosticInfoIfNecessary(Message message, int diagnosticSamplingPercentage, ref int currentMessageCount)
         {
@@ -30,21 +27,12 @@
             return result;
         }
 
-        internal static void CopyDiagnosticPropertiesToAmqpAnnotations(Message data, AmqpMessage amqpMessage)
-        {
-            if (HasDiagnosticProperties(data))
-            {
-                amqpMessage.MessageAnnotations.Map[AmqpDiagIdKey] = data.SystemProperties[MessageSystemPropertyNames.DiagId];
-                amqpMessage.MessageAnnotations.Map[AmqpDiagCorrelationContextKey] = data.SystemProperties[MessageSystemPropertyNames.DiagCorrelationContext];
-            }
-        }
-
         internal static bool HasDiagnosticProperties(Message message)
         {
             return message.SystemProperties.ContainsKey(MessageSystemPropertyNames.DiagId) && message.SystemProperties.ContainsKey(MessageSystemPropertyNames.DiagCorrelationContext);
         }
 
-        static string GenerateEightRandomCharacters()
+        private static string GenerateEightRandomCharacters()
         {
             var stringChars = new char[8];
             var random = new Random();
@@ -52,10 +40,11 @@
             {
                 stringChars[i] = Chars[random.Next(Chars.Length)];
             }
+
             return new string(stringChars);
         }
 
-        static bool ShouldAddDiagnosticInfo(int diagnosticSamplingPercentage, ref int currentMessageCount)
+        private static bool ShouldAddDiagnosticInfo(int diagnosticSamplingPercentage, ref int currentMessageCount)
         {
             bool result = false;
 
@@ -68,10 +57,9 @@
             return result;
         }
 
-        static double CurrentUtcTimeToSecond()
+        private static double CurrentUtcTimeToSecond()
         {
-            var dt1970 = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-            TimeSpan span = DateTime.UtcNow - dt1970;
+            TimeSpan span = DateTime.UtcNow - Dt1970;
             return span.TotalSeconds;
         }
     }

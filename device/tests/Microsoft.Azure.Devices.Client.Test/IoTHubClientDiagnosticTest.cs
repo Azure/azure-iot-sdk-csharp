@@ -17,7 +17,7 @@
         [TestCategory("IoTHubClientDiagnostic")]
         public void IoTHubClientDiagnostic_AddDiagnosticInfoIfNecessary_Test()
         {
-            Message message = this.CreateMessage();
+            Message message = CreateMessage();
             const int DiagPercentageWithoutDiagnostic = 0;
             const int DiagPercentageWithDiagnostic = 100;
 
@@ -27,7 +27,7 @@
             Assert.IsFalse(message.SystemProperties.ContainsKey(MessageSystemPropertyNames.DiagId));
             Assert.IsFalse(message.SystemProperties.ContainsKey(MessageSystemPropertyNames.DiagCorrelationContext));
 
-            message = this.CreateMessage();
+            message = CreateMessage();
             messageCount = 0;
             IoTHubClientDiagnostic.AddDiagnosticInfoIfNecessary(message, DiagPercentageWithDiagnostic, ref messageCount);
             Assert.IsTrue(message.SystemProperties.ContainsKey(MessageSystemPropertyNames.DiagId));
@@ -38,7 +38,7 @@
         [TestCategory("IoTHubClientDiagnostic")]
         public void IoTHubClientDiagnostic_CopyDiagnosticPropertiesToAmqpAnnotations_Test()
         {
-            Message message = this.CreateMessage();
+            Message message = CreateMessage();
             const int DiagPercentageWithDiagnostic = 100;
             int messageCount = 0;
             IoTHubClientDiagnostic.AddDiagnosticInfoIfNecessary(message, DiagPercentageWithDiagnostic, ref messageCount);
@@ -52,7 +52,7 @@
         [TestCategory("IoTHubClientDiagnostic")]
         public void IoTHubClientDiagnostic_DiagId_Test()
         {
-            Message message = this.CreateMessage();
+            Message message = CreateMessage();
             const int DiagPercentageWithDiagnostic = 100;
             int messageCount = 0;
             IoTHubClientDiagnostic.AddDiagnosticInfoIfNecessary(message, DiagPercentageWithDiagnostic, ref messageCount);
@@ -65,7 +65,7 @@
         [TestCategory("IoTHubClientDiagnostic")]
         public void IoTHubClientDiagnostic_CorrelationContext_Test()
         {
-            Message message = this.CreateMessage();
+            Message message = CreateMessage();
             const int DiagPercentageWithDiagnostic = 100;
             int messageCount = 0;
             IoTHubClientDiagnostic.AddDiagnosticInfoIfNecessary(message, DiagPercentageWithDiagnostic, ref messageCount);
@@ -92,7 +92,7 @@
             int messageCount = 0;
             for (int i = 1; i <= 100; i++)
             {
-                Message message = this.CreateMessage();
+                Message message = CreateMessage();
                 IoTHubClientDiagnostic.AddDiagnosticInfoIfNecessary(message, percentage, ref messageCount);
                 if (IoTHubClientDiagnostic.HasDiagnosticProperties(message))
                 {
@@ -106,7 +106,7 @@
             messageCount = 0;
             for (int i = 1; i <= 100; i++)
             {
-                Message message = this.CreateMessage();
+                Message message = CreateMessage();
                 IoTHubClientDiagnostic.AddDiagnosticInfoIfNecessary(message, percentage, ref messageCount);
                 if (IoTHubClientDiagnostic.HasDiagnosticProperties(message))
                 {
@@ -121,7 +121,7 @@
             messageCount = 0;
             for (int i = 1; i <= 100; i++)
             {
-                Message message = this.CreateMessage();
+                Message message = CreateMessage();
                 IoTHubClientDiagnostic.AddDiagnosticInfoIfNecessary(message, percentage, ref messageCount);
                 if (IoTHubClientDiagnostic.HasDiagnosticProperties(message))
                 {
@@ -137,7 +137,7 @@
             messageCount = 0;
             for (int i = 1; i <= 100; i++)
             {
-                Message message = this.CreateMessage();
+                Message message = CreateMessage();
                 IoTHubClientDiagnostic.AddDiagnosticInfoIfNecessary(message, percentage, ref messageCount);
                 if (IoTHubClientDiagnostic.HasDiagnosticProperties(message))
                 {
@@ -152,7 +152,7 @@
             messageCount = 0;
             for (int i = 1; i <= 100; i++)
             {
-                Message message = this.CreateMessage();
+                Message message = CreateMessage();
                 IoTHubClientDiagnostic.AddDiagnosticInfoIfNecessary(message, percentage, ref messageCount);
                 if (IoTHubClientDiagnostic.HasDiagnosticProperties(message))
                 {
@@ -166,7 +166,7 @@
             messageCount = 0;
             for (int i = 1; i <= 100; i++)
             {
-                Message message = this.CreateMessage();
+                Message message = CreateMessage();
                 IoTHubClientDiagnostic.AddDiagnosticInfoIfNecessary(message, percentage, ref messageCount);
                 if (IoTHubClientDiagnostic.HasDiagnosticProperties(message))
                 {
