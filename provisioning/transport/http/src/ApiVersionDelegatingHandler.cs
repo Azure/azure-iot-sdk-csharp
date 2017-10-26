@@ -11,13 +11,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Http
 {
     internal class ApiVersionDelegatingHandler : DelegatingHandler
     {
-        private const string ApiVersion = "2017-08-31-preview";
-        private const string ApiVersionHeaderName = "api-version";
-
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             var valueCollection = HttpUtility.ParseQueryString(request.RequestUri.Query);
-            valueCollection[ApiVersionHeaderName] = ApiVersion;
+            valueCollection[ClientApiVersionHelper.ApiVersionName] = ClientApiVersionHelper.ApiVersion;
 
             var builder = new UriBuilder(request.RequestUri)
             {
