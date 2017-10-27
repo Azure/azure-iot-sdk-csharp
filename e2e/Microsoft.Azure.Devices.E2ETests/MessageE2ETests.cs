@@ -610,7 +610,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             eventHubClient = EventHubClient.CreateFromConnectionString(hubConnectionString, "messages/events");
             var eventHubPartitionsCount = eventHubClient.GetRuntimeInformation().PartitionCount;
             string partition = EventHubPartitionKeyResolver.ResolveToPartition(deviceName, eventHubPartitionsCount);
-            string consumerGroupName = Environment.GetEnvironmentVariable("IOTHUB_EVENTHUB_CONSUMER_GROUP") ?? "$Default";
+            string consumerGroupName = Configuration.IoTHub.ConsumerGroup;
 
             while (eventHubReceiver == null && sw.Elapsed.Minutes < 1)
             {

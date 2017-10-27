@@ -2,14 +2,29 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Features Condition=" '$(Configuration)' == 'Debug' ">IOperation</Features>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <common>..\..\..\common\src</common>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(Common)\Logging.Common.cs">
+      <Link>Common\Logging.Common.cs</Link>
+    </Compile>
+    <Compile Include="$(Common)\device\provisioning\Logging.ProvisioningDeviceClient.cs">
+      <Link>Common\device\provisioning\Logging.ProvisioningDeviceClient.cs</Link>
+    </Compile>
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\..\shared\Microsoft.Azure.Devices.Shared.NetStandard\Microsoft.Azure.Devices.Shared.NetStandard.csproj">
       <Project>{91dfb837-d8a3-4f54-ae0d-45c95acd0c2a}</Project>
       <Name>Microsoft.Azure.Devices.Shared.NetStandard</Name>
     </ProjectReference>
   </ItemGroup>
+
   <ItemGroup>
     <!-- FXCop -->
     <PackageReference Condition=" '$(Configuration)' == 'Debug' " Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.3.0-beta1" />

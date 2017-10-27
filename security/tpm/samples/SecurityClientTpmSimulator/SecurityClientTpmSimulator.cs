@@ -6,121 +6,102 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Runtime.InteropServices;
 using Tpm2Lib;
 
 namespace Microsoft.Azure.Devices.Provisioning.Security.Samples
 {
-    public class SecurityClientTpmSimulator : ProvisioningSecurityClientSasToken
+    /// <summary>
+    /// Implements a TPMv2 Simulator based on the TSS.MSR Simulator.
+    /// This code is provides as a sample to enable provisioning on hardware without an actual hardware TPM device and
+    /// provides no real security.
+    /// </summary>
+    public class SecurityClientTpmSimulator : SecurityClientHsmTpm
     {
-        private const string EmulatorAddress = "127.0.0.1";
-        private const string EmulatorExeName = "Simulator.exe";
-        private const int EmulatorPort = 2321;
+        private const string SimulatorAddress = "127.0.0.1";
+        private const string SimulatorExeName = "Simulator.exe";
+        private const int SimulatorPort = 2321;
 
-        private Process _emulatorProcess;
-        private volatile SecurityClientTpm _innerClient;
-        private SemaphoreSlim _initSemaphore = new SemaphoreSlim(0);
+        private SecurityClientTpm _innerClient;
 
         public SecurityClientTpmSimulator(string registrationId) : base(registrationId)
         {
-        }
+            var tpmDevice = new TcpTpmDevice(SimulatorAddress, SimulatorPort);
+            tpmDevice.Connect();
+            tpmDevice.PowerCycle();
 
-        public async override Task ActivateSymmetricIdentityAsync(byte[] activation)
-        {
-            await EnsureInitializedAsync().ConfigureAwait(false);
-            await _innerClient.ActivateSymmetricIdentityAsync(activation).ConfigureAwait(false);
-        }
-
-        public async override Task<byte[]> GetEndorsementKeyAsync()
-        {
-            await EnsureInitializedAsync().ConfigureAwait(false);
-            return await _innerClient.GetEndorsementKeyAsync().ConfigureAwait(false);
-        }
-
-        public async override Task<byte[]> GetStorageRootKeyAsync()
-        {
-            await EnsureInitializedAsync().ConfigureAwait(false);
-            return await _innerClient.GetStorageRootKeyAsync().ConfigureAwait(false);
-        }
-
-        public async override Task<byte[]> SignAsync(byte[] data)
-        {
-            await EnsureInitializedAsync().ConfigureAwait(false);
-            return await _innerClient.SignAsync(data).ConfigureAwait(false);
-        }
-
-        private Task InitOnce()
-        {
-            return Task.Factory.StartNew(() =>
+            using (var tpm2 = new Tpm2(tpmDevice))
             {
-                StartEmulator();
-
-                var tpmDevice = new TcpTpmDevice(EmulatorAddress, EmulatorPort);
-                tpmDevice.Connect();
-                tpmDevice.PowerCycle();
-
-                using (var tpm2 = new Tpm2(tpmDevice))
-                {
-                    tpm2.Startup(Su.Clear);
-                }
-
-                _innerClient = new SecurityClientTpm(RegistrationID, tpmDevice);
-            }, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Current);
-        }
-
-        private async Task EnsureInitializedAsync()
-        {
-            if (_innerClient == null)
-            {
-                try
-                {
-                    await _initSemaphore.WaitAsync().ConfigureAwait(false);
-                    if (_innerClient == null)
-                    {
-                        await InitOnce().ConfigureAwait(false);
-                    }
-                }
-                finally
-                {
-                    // Allow another attempt at initializing TPM.
-                    _initSemaphore.Release();
-                }
+                tpm2.Startup(Su.Clear);
             }
+
+            _innerClient = new SecurityClientTpm(GetRegistrationID(), tpmDevice);
         }
 
-        private void StartEmulator()
+        public override void ActivateSymmetricIdentity(byte[] activation)
         {
-            foreach (var process in Process.GetProcessesByName(Path.GetFileNameWithoutExtension(EmulatorExeName)))
+            _innerClient.ActivateSymmetricIdentity(activation);
+        }
+
+        public override byte[] GetEndorsementKey()
+        {
+            return _innerClient.GetEndorsementKey();
+        }
+
+        public override byte[] GetStorageRootKey()
+        {
+            return _innerClient.GetStorageRootKey();
+        }
+
+        public override byte[] Sign(byte[] data)
+        {
+            return _innerClient.Sign(data);
+        }
+
+        public static void StopSimulatorProcess()
+        {
+            foreach (var process in Process.GetProcessesByName(Path.GetFileNameWithoutExtension(SimulatorExeName)))
             {
                 try
                 {
-                    _emulatorProcess?.Kill();
+                    process?.Kill();
                 }
                 catch (Exception)
                 {
                 }
             }
+        }
 
+        public static void StartSimulatorProcess()
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                throw new PlatformNotSupportedException(
+                    "TSS.MSR Simulator.exe is available only for Windows. On Linux, ensure that the simulator is " + 
+                    $"started and listening to TCP connections on {SimulatorAddress}:{SimulatorPort}.");
+            }
+
+            if (Process.GetProcessesByName(Path.GetFileNameWithoutExtension(SimulatorExeName)).Length > 0) return;
+            
             string[] files = Directory.GetFiles(
                 Directory.GetCurrentDirectory(), 
-                EmulatorExeName, 
+                SimulatorExeName, 
                 SearchOption.AllDirectories);
 
             if (files.Length == 0)
             {
                 files = Directory.GetFiles(
                     Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), 
-                    EmulatorExeName, 
+                    SimulatorExeName, 
                     SearchOption.AllDirectories);
             }
 
             if (files.Length == 0)
             {
-                throw new InvalidOperationException("Emulator not found");
+                throw new InvalidOperationException($"TPM Simulator not found : {SimulatorExeName}");
             }
 
-            _emulatorProcess = new Process
+            var simulatorProcess = new Process
             {
                 StartInfo =
                 {
@@ -130,7 +111,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Security.Samples
                 }
             };
 
-            _emulatorProcess.Start();
+            simulatorProcess.Start();
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _innerClient.Dispose();
+            }
         }
     }
 }

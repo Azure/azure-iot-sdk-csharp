@@ -9,7 +9,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 
-namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Http
+namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
     internal class CertificateChainCredentials : ServiceClientCredentials
     {

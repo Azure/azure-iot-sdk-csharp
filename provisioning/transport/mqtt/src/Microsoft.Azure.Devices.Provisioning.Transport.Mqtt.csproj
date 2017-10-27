@@ -4,7 +4,22 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <Features Condition=" '$(Configuration)' == 'Debug' ">IOperation</Features>
+    <RootNamespace>Microsoft.Azure.Devices.Provisioning.Client.Transport</RootNamespace>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <common>..\..\..\..\common\src</common>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(Common)\Logging.Common.cs">
+      <Link>Common\Logging.Common.cs</Link>
+    </Compile>
+    <Compile Include="$(Common)\device\provisioning\Logging.ProvisioningDeviceClient.cs">
+      <Link>Common\device\provisioning\Logging.ProvisioningDeviceClient.cs</Link>
+    </Compile>
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\shared\Microsoft.Azure.Devices.Shared.NetStandard\Microsoft.Azure.Devices.Shared.NetStandard.csproj" />

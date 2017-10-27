@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\device\Microsoft.Azure.Devices.Client.NetStandard\Microsoft.Azure.Devices.Client.NetStandard.csproj" />
+    <ProjectReference Include="..\..\..\..\security\tpm\samples\SecurityClientTpmSimulator\SecurityClientTpmSimulator.csproj" />
+    <ProjectReference Include="..\..\..\..\security\tpm\src\Microsoft.Azure.Devices.Provisioning.Security.Tpm.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.Azure.Devices.Provisioning.Client.csproj" />
+  </ItemGroup>
+
+</Project>

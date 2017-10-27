@@ -41,11 +41,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
         static void Main(string[] args)
         {
             TransportType transport = TransportType.Mqtt;
-            string environmentConnectionString = Environment.GetEnvironmentVariable("IOTHUB_DEVICE_CONN_STR");
-            if (!String.IsNullOrEmpty(environmentConnectionString))
-            {
-                DeviceConnectionString = environmentConnectionString;
-            }
 
             if (args.Length == 1 && args[0].ToLower().Equals("amqp"))
             {

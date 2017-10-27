@@ -4,10 +4,7 @@
 using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Tpm2Lib;
 
 namespace Microsoft.Azure.Devices.Provisioning.Security
@@ -15,7 +12,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
     /// <summary>
     /// The Provisioning Security Client implementation for TPM.
     /// </summary>
-    public class SecurityClientTpm : ProvisioningSecurityClientSasToken
+    public class SecurityClientTpm : SecurityClientHsmTpm
     {
         private bool disposed = false;
 
@@ -25,8 +22,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
         private const uint AIOTH_PERSISTED_KEY_HANDLE = ((uint)Ht.Persistent << 24) | 0x00000100;
 
         private Tpm2Device _tpmDevice = null;
-        private volatile Tpm2 _tpm2 = null;
-        private SemaphoreSlim _initSemaphore = new SemaphoreSlim(0);
+        private Tpm2 _tpm2;
 
         // TPM identity cache
         private TpmPublic _ekPub = null;
@@ -40,15 +36,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
         /// Constructor creating an instance using the system TPM.
         /// </summary>
         /// <param name="registrationId">The Device Provisioning Service Registration ID.</param>
-        public SecurityClientTpm(string registrationId) : base(registrationId)
-        {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                throw new PlatformNotSupportedException("TSS.NET does not support Linux/OSX.");
-            }
-
-            _tpmDevice = new TbsDevice();
-        }
+        public SecurityClientTpm(string registrationId) : this(registrationId, CreateDefaultTpm2Device()) { }
 
         /// <summary>
         /// Constructor creating an instance using the specified TPM module.
@@ -58,16 +46,24 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
         public SecurityClientTpm(string registrationId, Tpm2Device tpm) : base(registrationId)
         {
             _tpmDevice = tpm;
+
+            _tpmDevice.Connect();
+            _tpm2 = new Tpm2(_tpmDevice);
+            CacheEkAndSrk();
         }
-        
+
+        private static Tpm2Device CreateDefaultTpm2Device()
+        {
+            // TODO: Add LinuxTpmDevice support.
+            return new TbsDevice();
+        }
+
         /// <summary>
         /// Activates a symmetric identity within the Hardware Security Module.
         /// </summary>
         /// <param name="activation">The authentication challenge key supplied by the service.</param>
-        public override async Task ActivateSymmetricIdentityAsync(byte[] activation)
+        public override void ActivateSymmetricIdentity(byte[] activation)
         {
-            await EnsureInitializedAsync().ConfigureAwait(false);
-
             Destroy();
 
             // Take the pieces out of the container
@@ -148,9 +144,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
         /// Gets the Base64 encoded EndorsmentKey.
         /// </summary>
         /// <returns>Base64 encoded EK.</returns>
-        public override async Task<byte[]> GetEndorsementKeyAsync()
+        public override byte[] GetEndorsementKey()
         {
-            await EnsureInitializedAsync().ConfigureAwait(false);
             return _ekPub.GetTpm2BRepresentation();
         }
 
@@ -158,9 +153,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
         /// Gets the Base64 encoded StorageRootKey.
         /// </summary>
         /// <returns>Base64 encoded SRK.</returns>
-        public override async Task<byte[]> GetStorageRootKeyAsync()
+        public override byte[] GetStorageRootKey()
         {
-            await EnsureInitializedAsync().ConfigureAwait(false);
             return _srkPub.GetTpm2BRepresentation();
         }
 
@@ -169,10 +163,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
         /// </summary>
         /// <param name="data">The data to be signed.</param>
         /// <returns>The signed data.</returns>
-        public override async Task<byte[]> SignAsync(byte[] data)
+        public override byte[] Sign(byte[] data)
         {
-            await EnsureInitializedAsync().ConfigureAwait(false);
-
             byte[] result = Array.Empty<byte>();
             TpmHandle hmacKeyHandle = new TpmHandle(AIOTH_PERSISTED_KEY_HANDLE);
             int dataIndex = 0;
@@ -214,40 +206,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
             }
 
             disposed = true;
-
-            base.Dispose(disposing);
         }
-
-        private Task InitOnce()
-        {
-            _tpmDevice.Connect();
-            _tpm2 = new Tpm2(_tpmDevice);
-
-            CacheEkAndSrk();
-
-            return Task.CompletedTask;
-        }
-
-        private async Task EnsureInitializedAsync()
-        {
-            if (_tpm2 == null)
-            {
-                try
-                {
-                    await _initSemaphore.WaitAsync().ConfigureAwait(false);
-                    if (_tpm2 == null)
-                    {
-                        await InitOnce().ConfigureAwait(false);
-                    }
-                }
-                finally
-                {
-                    // Allow another attempt at initializing TPM.
-                    _initSemaphore.Release();
-                }
-            }
-        }
-
+        
         private void ProvisionUri(string hostName, string deviceId = "")
         {
             TpmHandle nvHandle = new TpmHandle(AIOTH_PERSISTED_URI_INDEX);
@@ -279,9 +239,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
                 // Destroy the URI
                 _tpm2.NvUndefineSpace(ownerHandle, nvHandle);
             }
-            catch (Exception ex)
+            catch
             {
-                Debug.Fail(ex.ToString());
+                // ignore 
             }
 
             try
@@ -289,9 +249,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
                 // Destroy the HMAC key
                 _tpm2.EvictControl(ownerHandle, hmacKeyHandle, hmacKeyHandle);
             }
-            catch (Exception ex)
-            {
-                Debug.Fail(ex.ToString());
+            catch
+            { 
+                // ignore 
             }
         }
 

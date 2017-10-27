@@ -8,10 +8,13 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
+    [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable",
+        Justification = "Uses custom scheme for cleanup")]
     public class MethodE2ETests
     {
         private const string DeviceResponseJson = "{\"name\":\"e2e_test\"}";

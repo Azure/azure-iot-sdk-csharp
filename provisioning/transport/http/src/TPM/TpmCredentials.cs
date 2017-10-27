@@ -8,7 +8,7 @@ using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Http
+namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
     internal class TpmCredentials : ServiceClientCredentials
     {

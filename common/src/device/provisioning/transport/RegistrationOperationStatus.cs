@@ -2,9 +2,10 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Newtonsoft.Json;
+using System;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Http.Models
+namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
 {
     /// <summary>
     /// Registration operation status.
@@ -12,6 +13,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Http.Models
     [SuppressMessage("Microsoft.Performance", "CA1812", Justification = "Used by the JSon parser.")]
     internal partial class RegistrationOperationStatus
     {
+        public const string OperationStatusAssigned = "assigned";
+        public const string OperationStatusAssigning = "assigning";
+        public const string OperationStatusUnassigned = "unassigned";
+
         /// <summary>
         /// Initializes a new instance of the RegistrationOperationStatus
         /// class.
@@ -66,5 +71,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Http.Models
         [JsonProperty(PropertyName = "registrationStatus")]
         public DeviceRegistrationResult RegistrationStatus { get; set; }
 
+        /// <summary>
+        /// Gets or sets the Retry-After header.
+        /// </summary>
+        public TimeSpan? RetryAfter { get; set; }
     }
 }

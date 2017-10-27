@@ -55,6 +55,7 @@ x64/
 *.pidb
 *.log
 *.scc
+*.bak
 
 # Visual C++ cache files
 ipch/
@@ -126,6 +127,7 @@ ClientBin/
 *.dbmdl
 *.[Pp]ublish.xml
 *.pfx
+*.cer
 *.publishsettings
 *.jar
 

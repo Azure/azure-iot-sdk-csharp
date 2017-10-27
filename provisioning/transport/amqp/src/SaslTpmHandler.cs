@@ -1,16 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
-using System.Diagnostics;
-using System.Text;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Sasl;
 using Microsoft.Azure.Devices.Shared;
+using System;
+using System.Diagnostics;
+using System.Text;
 
-namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Amqp
+namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
-    public class SaslTpmHandler : SaslHandler
+    internal class SaslTpmHandler : SaslHandler
     {
         static readonly byte[] EmptyByte = { 0 };
         private const string MechanismName = "TPM";
@@ -20,15 +20,20 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Amqp
         private readonly byte[] _endorsementKey;
 
         private readonly string _hostName;
-        private readonly ProvisioningSecurityClientSasToken _security;
+        private readonly SecurityClientHsmTpm _security;
         private readonly byte[] _storageRootKey;
         private byte _nextSequenceNumber;
 
-        public SaslTpmHandler(byte[] endorsementKey, byte[] storageRootKey, string hostName,
-            ProvisioningSecurityClientSasToken security)
-
+        public SaslTpmHandler(
+            byte[] endorsementKey, 
+            byte[] storageRootKey, 
+            string hostName,
+            SecurityClientHsmTpm security)
         {
-            //TODO: check inputs
+            Debug.Assert(endorsementKey != null);
+            Debug.Assert(storageRootKey != null);
+            Debug.Assert(!string.IsNullOrWhiteSpace(hostName));
+            Debug.Assert(security != null);
 
             Mechanism = MechanismName;
             _endorsementKey = endorsementKey;
@@ -110,11 +115,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Amqp
             Negotiator.WriteFrame(response, true);
         }
 
-        private async void SendLastResponse()
+        private void SendLastResponse()
         {
             //Notes: The _encodedNonce from service would soon change to non base64 string
-            var sasBytes = await _security.SignAsync(Convert.FromBase64String(_encodedNonceStringBuilder.ToString()))
-                .ConfigureAwait(false);
+            var sasBytes = _security.Sign(Convert.FromBase64String(_encodedNonceStringBuilder.ToString()));
             var sas = Convert.ToBase64String(sasBytes);
 
             var responseBuffer = new byte[sas.Length + 1];

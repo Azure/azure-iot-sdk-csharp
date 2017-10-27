@@ -1,17 +1,18 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
-using System.Globalization;
-using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Encoding;
 using Microsoft.Azure.Amqp.Framing;
+using System;
+using System.Globalization;
+using System.Threading.Tasks;
 
-namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Amqp
+namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
     internal class AmqpClientLink
     {
+        public const string ClientVersionName = "client-version";
         private readonly AmqpClientSession _amqpSession;
 
         public AmqpClientLink(AmqpClientSession amqpClientSession)
@@ -65,7 +66,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Amqp
 
         public void AddClientVersion(string clientVersion)
         {
-            AddProperty(AmqpConstants.Vendor + ":" + ClientApiVersionHelper.ClientVersionName, clientVersion);
+            AddProperty(AmqpConstants.Vendor + ":" + ClientVersionName, clientVersion);
         }
 
         public async Task<Outcome> SendMessageAsync(

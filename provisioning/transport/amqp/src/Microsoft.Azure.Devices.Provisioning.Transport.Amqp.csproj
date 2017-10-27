@@ -4,15 +4,39 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <Features Condition=" '$(Configuration)' == 'Debug' ">IOperation</Features>
+    <RootNamespace>Microsoft.Azure.Devices.Provisioning.Client.Transport</RootNamespace>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <common>..\..\..\..\common\src</common>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\..\..\common\src\device\provisioning\transport\ClientApiVersionHelper.cs" Link="ClientApiVersionHelper.cs" />
-    <Compile Include="..\..\..\..\common\src\device\provisioning\transport\DeviceRegistrationResult.cs" Link="DeviceRegistrationResult.cs" />
-    <Compile Include="..\..\..\..\common\src\device\provisioning\transport\RegistrationOperationStatus.cs" Link="RegistrationOperationStatus.cs" />
-    <Compile Include="..\..\..\..\common\src\device\provisioning\transport\TpmRegistrationResult.cs" Link="TpmRegistrationResult.cs" />
-    <Compile Include="..\..\..\..\common\src\device\provisioning\transport\X509CertificateInfo.cs" Link="X509CertificateInfo.cs" />
-    <Compile Include="..\..\..\..\common\src\device\provisioning\transport\X509RegistrationResult.cs" Link="X509RegistrationResult.cs" />
+    <Compile Include="$(Common)\Logging.Common.cs">
+      <Link>Common\Logging.Common.cs</Link>
+    </Compile>
+    <Compile Include="$(Common)\device\provisioning\Logging.ProvisioningDeviceClient.cs">
+      <Link>Common\device\provisioning\Logging.ProvisioningDeviceClient.cs</Link>
+    </Compile>
+    <Compile Include="$(Common)\device\provisioning\transport\ClientApiVersionHelper.cs"> 
+      <Link>Common\device\provisioning\transport\ClientApiVersionHelper.cs</Link>
+    </Compile>
+    <Compile Include="$(Common)\device\provisioning\transport\DeviceRegistrationResult.cs">
+      <Link>Common\device\provisioning\transport\DeviceRegistrationResult.cs</Link>
+    </Compile>
+    <Compile Include="$(Common)\device\provisioning\transport\RegistrationOperationStatus.cs">
+      <Link>Common\device\provisioning\transport\RegistrationOperationStatus.cs</Link>
+    </Compile>
+    <Compile Include="$(Common)\device\provisioning\transport\TpmRegistrationResult.cs">
+      <Link>Common\device\provisioning\transport\TpmRegistrationResult.cs</Link>
+    </Compile>
+    <Compile Include="$(Common)\device\provisioning\transport\X509CertificateInfo.cs">
+      <Link>Common\device\provisioning\transport\X509CertificateInfo.cs</Link>
+    </Compile>
+    <Compile Include="$(Common)\device\provisioning\transport\X509RegistrationResult.cs">
+      <Link>Common\device\provisioning\transport\X509RegistrationResult.cs</Link>
+    </Compile>
   </ItemGroup>
   
   <ItemGroup>

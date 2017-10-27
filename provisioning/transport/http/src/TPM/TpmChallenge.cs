@@ -4,7 +4,7 @@
 using Newtonsoft.Json;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Http
+namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
     /// <summary>
     /// TPM challenge.

@@ -3,7 +3,7 @@
 
 using Newtonsoft.Json;
 
-namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Http.Models
+namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
 {
     /// <summary>
     /// Device registration.

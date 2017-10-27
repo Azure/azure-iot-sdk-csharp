@@ -8,9 +8,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     /// <summary>
     /// The result of a registration operation.
     /// </summary>
-    public abstract class ProvisioningRegistrationResult
+    public class DeviceRegistrationResult
     {
-        protected ProvisioningRegistrationResult(
+        public DeviceRegistrationResult(
             string registrationId,
             DateTime? createdDateTimeUtc,
             string assignedHub,
@@ -70,17 +70,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         public DateTime? LastUpdatedDateTimeUtc { get; protected set; }
 
         /// <summary>
-        /// TODO: Error code.
+        /// Error code.
         /// </summary>
         public int? ErrorCode { get; protected set; }
 
         /// <summary>
-        /// TODO: Error message.
+        /// Error message.
         /// </summary>
         public string ErrorMessage { get; protected set; }
 
         /// <summary>
-        /// TODO: The Etag.
+        /// The Etag.
         /// </summary>
         public string Etag { get; protected set; }
     }

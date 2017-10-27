@@ -3,11 +3,11 @@
 
 using System;
 
-namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Amqp
+namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
-    public static class WebSocketConstants
+    internal static class WebSocketConstants
     {
-        public const string Scheme = "wss://";
+        public const string Scheme = "wss";
         public const string Version = "13";
         public const int Port = 443;
 

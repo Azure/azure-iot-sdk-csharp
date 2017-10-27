@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Provisioning.Client.Transport.Http.Models;
+using Microsoft.Azure.Devices.Provisioning.Client.Transport.Models;
 using Microsoft.Rest;
 using Microsoft.Rest.Serialization;
 using Newtonsoft.Json;
@@ -15,7 +15,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Http
+namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
     /// <summary>
     /// RuntimeRegistration operations.
@@ -262,7 +262,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Http
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<DeviceRegistrationResult>> DeviceRegistrationStatusLookupWithHttpMessagesAsync(
+        public async Task<HttpOperationResponse<Models.DeviceRegistrationResult>> DeviceRegistrationStatusLookupWithHttpMessagesAsync(
             string registrationId, 
             string idScope, 
             DeviceRegistration deviceRegistration = default(DeviceRegistration), 
@@ -368,7 +368,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Http
                 throw ex;
             }
             // Create Result
-            var _result = new HttpOperationResponse<DeviceRegistrationResult>
+            var _result = new HttpOperationResponse<Models.DeviceRegistrationResult>
             {
                 Request = _httpRequest,
                 Response = _httpResponse
@@ -379,7 +379,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Http
                 _responseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
                 try
                 {
-                    _result.Body = SafeJsonConvert.DeserializeObject<DeviceRegistrationResult>(_responseContent, Client.DeserializationSettings);
+                    _result.Body = SafeJsonConvert.DeserializeObject<Models.DeviceRegistrationResult>(_responseContent, Client.DeserializationSettings);
                 }
                 catch (JsonException ex)
                 {

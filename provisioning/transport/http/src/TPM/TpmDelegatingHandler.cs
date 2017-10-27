@@ -12,16 +12,16 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Http
+namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
     internal class TpmDelegatingHandler : DelegatingHandler
     {
         internal const string ProvisioningHeaderName = "drs-set-sas-token";
         private const string KeyName = "registration";
         private readonly TimeSpan _timeToLive = TimeSpan.FromDays(1);
-        private readonly ProvisioningSecurityClientSasToken _securityClient;
+        private readonly SecurityClientHsmTpm _securityClient;
 
-        public TpmDelegatingHandler(ProvisioningSecurityClientSasToken securityClient)
+        public TpmDelegatingHandler(SecurityClientHsmTpm securityClient)
         {
             _securityClient = securityClient;
         }
@@ -30,6 +30,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Http
             HttpRequestMessage request, 
             CancellationToken cancellationToken)
         {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{request.RequestUri}", nameof(SendAsync));
+
             HttpResponseMessage response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
             if(response.StatusCode == HttpStatusCode.Unauthorized)
@@ -42,14 +44,20 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Http
                         string responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                         TpmChallenge challenge = JsonConvert.DeserializeObject<TpmChallenge>(responseContent);
 
-                        string sasToken = 
-                            await ExtractServiceAuthKey(target, challenge.AuthenticationKey).ConfigureAwait(false);
+                        string sasToken = ExtractServiceAuthKey(target, challenge.AuthenticationKey);
 
                         setSasToken(sasToken);
+
+                        if (Logging.IsEnabled) Logging.Info(
+                            this, 
+                            $"Authorization challenge. Retrying with Token:{sasToken}");
+
                         response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
                     }
                 }
             }
+
+            if (Logging.IsEnabled) Logging.Exit(this, $"{request.RequestUri}", nameof(SendAsync));
 
             return response;
         }
@@ -66,20 +74,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Http
             return string.Concat(parameters[0], "/" , parameters[1], "/", parameters[2]);
         }
 
-        public async Task<string> ExtractServiceAuthKey(string hostName, string authenticationKey)
+        private string ExtractServiceAuthKey(string hostName, string authenticationKey)
         {
-            await _securityClient.ActivateSymmetricIdentityAsync(
-                Convert.FromBase64String(authenticationKey)).ConfigureAwait(false);
-
-            string sasToken = await BuildSasSignature(
-                KeyName,
-                hostName,
-                _timeToLive).ConfigureAwait(false);
-
-            return sasToken;
+            _securityClient.ActivateSymmetricIdentity(Convert.FromBase64String(authenticationKey));
+            return BuildSasSignature(KeyName, hostName, _timeToLive);
         }
 
-        private async Task<string> BuildSasSignature(string keyName, string target, TimeSpan timeToLive)
+        private string BuildSasSignature(string keyName, string target, TimeSpan timeToLive)
         {
             string expiresOn = BuildExpiresOn(timeToLive);
             string audience = WebUtility.UrlEncode(target);
@@ -93,9 +94,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Http
             // dh://myiothub.azure-devices.net/a/b/c?myvalue1=a
             // <Value for ExpiresOn>
 
-            byte[] signedBytes = 
-                await _securityClient.SignAsync(Encoding.UTF8.GetBytes(string.Join("\n", fields))).ConfigureAwait(false);
-
+            byte[] signedBytes = _securityClient.Sign(Encoding.UTF8.GetBytes(string.Join("\n", fields)));
             string signature = Convert.ToBase64String(signedBytes);
 
             // Example returned string:

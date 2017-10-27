@@ -5,7 +5,7 @@ using Microsoft.Rest;
 using Newtonsoft.Json;
 using System;
 
-namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Http
+namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
     /// <summary>
     /// API for using the IotHub Device Provisioning Service Runtime Features
