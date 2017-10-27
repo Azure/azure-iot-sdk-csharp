@@ -107,6 +107,27 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         const string DeviceId = "DeviceId";
         const string DeviceIdParameterPattern = @"(^\s*?|.*;\s*?)" + DeviceId + @"\s*?=.*";
         IotHubConnectionString iotHubConnectionString = null;
+
+        /// <summary> 
+        /// Diagnostic sampling percentage value, [0-100];  
+        /// 0 means no message will carry on diag info 
+        /// </summary>
+        int _diagnosticSamplingPercentage = 0;
+        public int DiagnosticSamplingPercentage
+        {
+            get { return _diagnosticSamplingPercentage; }
+            set
+            {
+                if (value > 100 || value < 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(DiagnosticSamplingPercentage), DiagnosticSamplingPercentage, 
+                        "The range of diagnostic sampling percentage should between [0,100].");
+                }
+
+                _diagnosticSamplingPercentage = value;
+            }
+        }
+
 #if !WINDOWS_UWP && !PCL
         internal X509Certificate2 Certificate { get; set; }
 #endif
@@ -224,6 +245,8 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// userContext passed when registering the twin patch callback
         /// </summary>
         Object twinPatchCallbackContext = null;
+
+        private int _currentMessageCount = 0;
 
         DeviceClient(IotHubConnectionString iotHubConnectionString, ITransportSettings[] transportSettings, IDeviceClientPipelineBuilder pipelineBuilder)
         {
@@ -766,6 +789,8 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             {
                 throw Fx.Exception.ArgumentNull("message");
             }
+
+            IoTHubClientDiagnostic.AddDiagnosticInfoIfNecessary(message, _diagnosticSamplingPercentage, ref _currentMessageCount);
             // Codes_SRS_DEVICECLIENT_28_019: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication or quota exceed) occurs.]
             return ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.SendEventAsync(message, operationTimeoutCancellationToken));
         }

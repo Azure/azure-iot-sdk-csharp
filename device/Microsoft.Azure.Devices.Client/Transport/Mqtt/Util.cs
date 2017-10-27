@@ -41,8 +41,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             public const string CreationTimeUtc = "$.ctime";
             public const string ContentType = "$.ct";
             public const string ContentEncoding = "$.ce";
+            public const string MqttDiagIdKey = "$.diagid";
+            public const string MqttDiagCorrelationContextKey = "$.diagctx";
         }
-        
+
         static readonly Dictionary<string, string> ToSystemPropertiesMap = new Dictionary<string, string>
         {
             {IotHubWirePropertyNames.AbsoluteExpiryTime, MessageSystemPropertyNames.ExpiryTimeUtc},
@@ -55,7 +57,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {IotHubWirePropertyNames.ContentType, MessageSystemPropertyNames.ContentType},
             {IotHubWirePropertyNames.ContentEncoding, MessageSystemPropertyNames.ContentEncoding},
             {MessageSystemPropertyNames.Operation, MessageSystemPropertyNames.Operation},
-            {MessageSystemPropertyNames.Ack, MessageSystemPropertyNames.Ack}
+            {MessageSystemPropertyNames.Ack, MessageSystemPropertyNames.Ack},
+            {IotHubWirePropertyNames.MqttDiagIdKey, MessageSystemPropertyNames.DiagId},
+            {IotHubWirePropertyNames.MqttDiagCorrelationContextKey, MessageSystemPropertyNames.DiagCorrelationContext}
         };
 
         static readonly Dictionary<string, string> FromSystemPropertiesMap = new Dictionary<string, string>
@@ -70,7 +74,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {MessageSystemPropertyNames.ContentType, IotHubWirePropertyNames.ContentType},
             {MessageSystemPropertyNames.ContentEncoding, IotHubWirePropertyNames.ContentEncoding},
             {MessageSystemPropertyNames.Operation, MessageSystemPropertyNames.Operation},
-            {MessageSystemPropertyNames.Ack, MessageSystemPropertyNames.Ack}
+            {MessageSystemPropertyNames.Ack, MessageSystemPropertyNames.Ack},
+            {MessageSystemPropertyNames.DiagId, IotHubWirePropertyNames.MqttDiagIdKey},
+            {MessageSystemPropertyNames.DiagCorrelationContext, IotHubWirePropertyNames.MqttDiagCorrelationContextKey}
         };
 
         const char SegmentSeparatorChar = '/';
