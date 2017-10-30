@@ -20,25 +20,29 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Amqp
         private static readonly TimeSpan TimeoutConstant = TimeSpan.FromMinutes(1);
 
         private static async Task<AmqpClientConnection> CreateConnection(Uri uri,
-            ProvisioningSecurityClientSasToken securityClient, string linkendpoint)
+            ProvisioningSecurityClient securityClient, string linkendpoint)
         {
             AmqpSettings settings = await CreateAmqpSettings(securityClient, linkendpoint).ConfigureAwait(false);
             return new AmqpClientConnection(uri, settings);
         }
 
-        private static async Task<AmqpSettings> CreateAmqpSettings(ProvisioningSecurityClientSasToken securityClient,
+        private static async Task<AmqpSettings> CreateAmqpSettings(ProvisioningSecurityClient securityClient,
             string linkendpoint)
         {
             var settings = new AmqpSettings();
-            byte[] ekBuffer = await securityClient.GetEndorsementKeyAsync().ConfigureAwait(false);
-            byte[] srkBuffer = await securityClient.GetStorageRootKeyAsync().ConfigureAwait(false);
 
             var saslProvider = new SaslTransportProvider();
             saslProvider.Versions.Add(AmqpConstants.DefaultProtocolVersion);
             settings.TransportProviders.Add(saslProvider);
 
-            SaslTpmHandler tpmHandler = new SaslTpmHandler(ekBuffer, srkBuffer, linkendpoint, securityClient);
-            saslProvider.AddHandler(tpmHandler);
+            if (securityClient is ProvisioningSecurityClientSasToken)
+            {
+                var tpmSecurityClient = (ProvisioningSecurityClientSasToken) securityClient;
+                byte[] ekBuffer = await tpmSecurityClient.GetEndorsementKeyAsync().ConfigureAwait(false);
+                byte[] srkBuffer = await tpmSecurityClient.GetStorageRootKeyAsync().ConfigureAwait(false);
+                SaslTpmHandler tpmHandler = new SaslTpmHandler(ekBuffer, srkBuffer, linkendpoint, tpmSecurityClient);
+                saslProvider.AddHandler(tpmHandler);
+            }
 
             var amqpProvider = new AmqpTransportProvider();
             amqpProvider.Versions.Add(AmqpConstants.DefaultProtocolVersion);
@@ -48,10 +52,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Amqp
 
         internal static async Task<AmqpClientConnection> CreateAmqpCloudConnectionAsync(
             string deviceEndpoint,
-            X509Certificate2 clientCert,
             string linkEndpoint,
             bool useWebSocket,
-            ProvisioningSecurityClientSasToken securityClient)
+            ProvisioningSecurityClient securityClient)
         {
             AmqpClientConnection amqpClientConnection;
             if (useWebSocket)
@@ -68,6 +71,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Amqp
                     new Uri("amqps://" + deviceEndpoint + ":" + AmqpConstants.DefaultSecurePort),
                     securityClient,
                     linkEndpoint).ConfigureAwait(false);
+            }
+
+            X509Certificate2 clientCert = null;
+            if (securityClient is ProvisioningSecurityClientX509Certificate)
+            {
+                clientCert = await ((ProvisioningSecurityClientX509Certificate) securityClient)
+                    .GetAuthenticationCertificate().ConfigureAwait(false);
             }
 
             await amqpClientConnection.OpenAsync(TimeoutConstant, useWebSocket, clientCert)

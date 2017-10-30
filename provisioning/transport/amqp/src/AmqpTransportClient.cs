@@ -29,25 +29,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Amqp
         {
             AmqpClientConnection client;
 
-            if (securityClient is ProvisioningSecurityClientSasToken)
+            if (securityClient is ProvisioningSecurityClientSasToken || securityClient is ProvisioningSecurityClientX509Certificate)
             {
                 client = await AmqpTransportHandler.CreateAmqpCloudConnectionAsync(
                     globalDeviceEndpoint,
-                    null,
                     idScope + $"/registrations/{securityClient.RegistrationID}",
                     false,
-                    (ProvisioningSecurityClientSasToken)securityClient).ConfigureAwait(false);
+                    securityClient).ConfigureAwait(false);
             }
-            //else if (securityClient is ProvisioningSecurityClientX509Certificate)
-            //{
-            //    //TODO: replace with ProvisioningSecurityClientX509Certificate
-            //    client = await AmqpRawClient.CreateAmqpCloudConnectionAsync(
-            //        globalDeviceEndpoint,
-            //        null,
-            //        idScope + $"/registrations/{securityClient.RegistrationID}",
-            //        false,
-            //        (ProvisioningSecurityClientX509Certificate)securityClient).ConfigureAwait(false);
-            //}
             else
             {
                 throw new NotSupportedException(
