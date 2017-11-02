@@ -20,13 +20,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Client certificates.
         /// </summary>
-        [JsonProperty(PropertyName = "clientCertificates")]
+        [JsonProperty(PropertyName = "clientCertificates", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public X509Certificates ClientCertificates { get; set; }
 
         /// <summary>
         /// Signing certificates.
         /// </summary>
-        [JsonProperty(PropertyName = "signingCertificates")]
+        [JsonProperty(PropertyName = "signingCertificates", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public X509Certificates SigningCertificates { get; set; }
+
+        /// <summary>
+        /// Certificates Authority references.
+        /// </summary>
+        [JsonProperty(PropertyName = "caReferences", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public X509CAReferences CAReferences { get; set; }
     }
 }
