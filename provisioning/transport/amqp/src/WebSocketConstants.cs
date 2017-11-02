@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Amqp
 {
-    public static class WebSocketConstants
+    internal static class WebSocketConstants
     {
         public const string Scheme = "wss://";
         public const string Version = "13";

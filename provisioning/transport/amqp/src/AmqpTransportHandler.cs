@@ -20,14 +20,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Amqp
         private static readonly TimeSpan TimeoutConstant = TimeSpan.FromMinutes(1);
 
         private static async Task<AmqpClientConnection> CreateConnection(Uri uri,
-            ProvisioningSecurityClient securityClient, string linkendpoint)
+            ProvisioningSecurityClient securityClient, string idScope)
         {
-            AmqpSettings settings = await CreateAmqpSettings(securityClient, linkendpoint).ConfigureAwait(false);
+            AmqpSettings settings = await CreateAmqpSettings(securityClient, idScope).ConfigureAwait(false);
             return new AmqpClientConnection(uri, settings);
         }
 
         private static async Task<AmqpSettings> CreateAmqpSettings(ProvisioningSecurityClient securityClient,
-            string linkendpoint)
+            string idScope)
         {
             var settings = new AmqpSettings();
 
@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Amqp
                 var tpmSecurityClient = (ProvisioningSecurityClientSasToken) securityClient;
                 byte[] ekBuffer = await tpmSecurityClient.GetEndorsementKeyAsync().ConfigureAwait(false);
                 byte[] srkBuffer = await tpmSecurityClient.GetStorageRootKeyAsync().ConfigureAwait(false);
-                SaslTpmHandler tpmHandler = new SaslTpmHandler(ekBuffer, srkBuffer, linkendpoint, tpmSecurityClient);
+                SaslTpmHandler tpmHandler = new SaslTpmHandler(ekBuffer, srkBuffer, idScope, tpmSecurityClient);
                 saslProvider.AddHandler(tpmHandler);
             }
 
@@ -52,25 +52,27 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Amqp
 
         internal static async Task<AmqpClientConnection> CreateAmqpCloudConnectionAsync(
             string deviceEndpoint,
-            string linkEndpoint,
+            string idScope,
             bool useWebSocket,
             ProvisioningSecurityClient securityClient)
         {
             AmqpClientConnection amqpClientConnection;
+            string linkEndpoint = idScope + $"/registrations/{securityClient.RegistrationID}";
+
             if (useWebSocket)
             {
                 // TODO: enable WS
                 amqpClientConnection = await CreateConnection(
                     new Uri(WebSocketConstants.Scheme + deviceEndpoint + ":" + WebSocketConstants.Port),
                     securityClient,
-                    linkEndpoint).ConfigureAwait(false);
+                    idScope).ConfigureAwait(false);
             }
             else
             {
                 amqpClientConnection = await CreateConnection(
                     new Uri("amqps://" + deviceEndpoint + ":" + AmqpConstants.DefaultSecurePort),
                     securityClient,
-                    linkEndpoint).ConfigureAwait(false);
+                    idScope).ConfigureAwait(false);
             }
 
             X509Certificate2 clientCert = null;

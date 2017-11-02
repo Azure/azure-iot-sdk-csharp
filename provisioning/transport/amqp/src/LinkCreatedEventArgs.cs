@@ -6,7 +6,7 @@ using Microsoft.Azure.Amqp;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Amqp
 {
-    public class LinkCreatedEventArgs : EventArgs
+    internal class LinkCreatedEventArgs : EventArgs
     {
         public LinkCreatedEventArgs(AmqpLink link)
         {

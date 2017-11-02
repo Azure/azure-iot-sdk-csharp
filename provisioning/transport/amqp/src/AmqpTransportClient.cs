@@ -33,8 +33,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Amqp
             {
                 client = await AmqpTransportHandler.CreateAmqpCloudConnectionAsync(
                     globalDeviceEndpoint,
-                    idScope + $"/registrations/{securityClient.RegistrationID}",
-                    false,
+                    idScope,
+                    FallbackType == TransportFallbackType.WebSocketOnly,
                     securityClient).ConfigureAwait(false);
             }
             else
