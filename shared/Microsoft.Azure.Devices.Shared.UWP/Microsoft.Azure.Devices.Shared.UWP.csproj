@@ -120,6 +120,11 @@
     <Compile Include="$(SharedCodeDir)\TwinCollectionValue.cs" />
     <Compile Include="$(SharedCodeDir)\TwinJsonConverter.cs" />
     <Compile Include="$(SharedCodeDir)\TwinProperties.cs" />
+    <Compile Include="$(SharedCodeDir)\DeviceConnectionState.cs" />
+    <Compile Include="$(SharedCodeDir)\DeviceStatus.cs" />
+    <Compile Include="$(SharedCodeDir)\AuthenticationType.cs" />
+    <Compile Include="$(SharedCodeDir)\X509Thumbprint.cs" />
+    <Compile Include="$(SharedCodeDir)\Common\Extensions\StringFormattingExtensions.cs" />
     <EmbeddedResource Include="Properties\Microsoft.Azure.Devices.Shared.UWP.rd.xml" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">

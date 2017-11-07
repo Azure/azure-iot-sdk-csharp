@@ -23,7 +23,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;NETSTANDARD1_3</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;NETSTANDARD1_3;ENABLE_MODULES_SDK</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -33,14 +33,14 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE;NETSTANDARD1_3</DefineConstants>
+    <DefineConstants>TRACE;NETSTANDARD1_3;ENABLE_MODULES_SDK</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release_Delay_Sign|AnyCPU'">
     <OutputPath>bin\Release_Delay_Sign\</OutputPath>
-    <DefineConstants>TRACE;NETSTANDARD1_3;RELEASE_DELAY_SIGN;</DefineConstants>
+    <DefineConstants>TRACE;NETSTANDARD1_3;RELEASE_DELAY_SIGN;ENABLE_MODULES_SDK</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Optimize>true</Optimize>
     <NoStdLib>true</NoStdLib>
@@ -124,12 +124,15 @@
       <DependentUpon>"..\Microsoft.Azure.Devices\ApiResources.resx"</DependentUpon>
     </Compile>
     <Compile Include="..\Microsoft.Azure.Devices\Common\Amqp\WebSocketConstants.cs" />
+    <Compile Include="..\Microsoft.Azure.Devices\Common\Exceptions\ConfigurationNotFoundException.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\Exceptions\ErrorCode.cs" />
+    <Compile Include="..\Microsoft.Azure.Devices\Common\Exceptions\ModuleAlreadyExistsException.cs" />
+    <Compile Include="..\Microsoft.Azure.Devices\Common\Exceptions\ModuleNotFoundException.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\Exceptions\TooManyDevicesException.cs" />
+    <Compile Include="..\Microsoft.Azure.Devices\Common\Exceptions\TooManyModulesOnDeviceException.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\Extensions\AmqpExtensions.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\PerfectHash.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\AuthenticationMechanism.cs" />
-    <Compile Include="..\Microsoft.Azure.Devices\AuthenticationType.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\ClientApiVersionHelper.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\AmqpTrace.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\AsyncResult.cs" />
@@ -171,7 +174,6 @@
     <Compile Include="..\Microsoft.Azure.Devices\Common\Extensions\ExceptionExtensions.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\Extensions\MemberInfoExtensions.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\Extensions\OtherExtensions.cs" />
-    <Compile Include="..\Microsoft.Azure.Devices\Common\Extensions\StringFormattingExtensions.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\FxTrace.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\HashCode.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\IAmqpTrace.cs" />
@@ -202,15 +204,19 @@
     <Compile Include="..\Microsoft.Azure.Devices\Common\WebApi\ResourceRequest.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\DeliveryAcknowledgement.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\DeliveryFailureReason.cs" />
+    <Compile Include="..\Microsoft.Azure.Devices\Configurations\Configuration.cs" />
+    <Compile Include="..\Microsoft.Azure.Devices\Configurations\ConfigurationContent.cs" />
+    <Compile Include="..\Microsoft.Azure.Devices\Configurations\TwinContent.cs" />
+    <Compile Include="..\Microsoft.Azure.Devices\Configurations\TwinContentJsonConverter.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Device.cs" />
-    <Compile Include="..\Microsoft.Azure.Devices\DeviceConnectionState.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\CloudToDeviceMethodResult.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\DeviceJob.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\DeviceJobError.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\DeviceJobOutcome.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\DeviceJobStatus.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\DeviceJobType.cs" />
-    <Compile Include="..\Microsoft.Azure.Devices\IotHubConnectionStringBuilder.cs"/>
+    <Compile Include="..\Microsoft.Azure.Devices\Module.cs" />
+    <Compile Include="..\Microsoft.Azure.Devices\IotHubConnectionStringBuilder.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\QueryOptions.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\QueryResponse.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\QueryResultType.cs" />
@@ -225,7 +231,6 @@
     <Compile Include="..\Microsoft.Azure.Devices\JobClient\JobRequest.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\JobClient\JobResponse.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\QueryResult.cs" />
-    <Compile Include="..\Microsoft.Azure.Devices\DeviceStatus.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\EndpointKind.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\ExportDevicesRequest.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\ExportImportDevice.cs" />
@@ -254,12 +259,13 @@
     <Compile Include="..\Microsoft.Azure.Devices\Receiver.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\RegistryManager.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\RegistryStatistics.cs" />
+    <Compile Include="..\Microsoft.Azure.Devices\ServiceAuthenticationWithDeviceCredentials.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\ServiceAuthenticationWithSharedAccessPolicyKey.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\ServiceAuthenticationWithSharedAccessPolicyToken.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\ServiceClient.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\ServiceStatistics.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\SymmetricKey.cs" />
-    <Compile Include="..\Microsoft.Azure.Devices\X509Thumbprint.cs" />
+    <Compile Include="..\Microsoft.Azure.Devices\X509ThumbprintExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\shared\Microsoft.Azure.Devices.Shared.NetStandard\Microsoft.Azure.Devices.Shared.NetStandard.csproj">

@@ -46,6 +46,17 @@ namespace Microsoft.Azure.Devices.Client
                 }
 
                 data.CorrelationId = amqpMessage.Properties.CorrelationId != null ? amqpMessage.Properties.CorrelationId.ToString() : null;
+                
+                if (!string.IsNullOrWhiteSpace(amqpMessage.Properties.ContentType.Value))
+                {
+                    data.ContentType = amqpMessage.Properties.ContentType.Value;
+                }
+
+                if (!string.IsNullOrWhiteSpace(amqpMessage.Properties.ContentEncoding.Value))
+                {
+                    data.ContentEncoding = amqpMessage.Properties.ContentEncoding.Value;
+                }
+
                 data.UserId = amqpMessage.Properties.UserId.Array != null ? Encoding.UTF8.GetString(amqpMessage.Properties.UserId.Array, 0 /*index*/, amqpMessage.Properties.UserId.Array.Length) : null;
                 
                 if (!string.IsNullOrWhiteSpace(amqpMessage.Properties.ContentType.Value))

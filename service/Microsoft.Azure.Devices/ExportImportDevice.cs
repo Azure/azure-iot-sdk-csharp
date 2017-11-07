@@ -1,6 +1,5 @@
-﻿// ---------------------------------------------------------------
-// Copyright (c) Microsoft Corporation. All rights reserved.
-// ---------------------------------------------------------------
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace Microsoft.Azure.Devices
 {
@@ -11,7 +10,7 @@ namespace Microsoft.Azure.Devices
     /// <summary>
     ///  contains device properties specified during export/import operation
     /// </summary>
-    public sealed class ExportImportDevice
+    public class ExportImportDevice
     {
         string eTag;
         string twinETag;
@@ -44,6 +43,13 @@ namespace Microsoft.Azure.Devices
         [JsonProperty(PropertyName = "id", Required = Required.Always)]
         public string Id { get; set; }
 
+#if ENABLE_MODULES_SDK
+        /// <summary>
+        /// Module Id for the object
+        /// </summary>
+        [JsonProperty(PropertyName = "moduleId", NullValueHandling = NullValueHandling.Ignore)]
+        public string ModuleId { get; set; }
+#endif
         /// <summary>
         /// ETag of the device
         /// </summary>

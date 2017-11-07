@@ -19,7 +19,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;ENABLE_MODULES_SDK</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -29,7 +29,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;ENABLE_MODULES_SDK</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -48,7 +48,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release_Delay_Sign|AnyCPU'">
     <OutputPath>bin\Release_Delay_Sign\</OutputPath>
-    <DefineConstants>TRACE;RELEASE_DELAY_SIGN</DefineConstants>
+    <DefineConstants>TRACE;RELEASE_DELAY_SIGN;ENABLE_MODULES_SDK</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DocumentationFile>bin\Release\Microsoft.Azure.Devices.xml</DocumentationFile>
     <Optimize>true</Optimize>
@@ -68,8 +68,8 @@
       <HintPath>$(SolutionDir)\packages\Microsoft.Owin.3.0.1\lib\net45\Microsoft.Owin.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>$(SolutionDir)\packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>$(SolutionDir)\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5, processorArchitecture=MSIL">
@@ -186,12 +186,15 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>ApiResources.resx</DependentUpon>
     </Compile>
-    <Compile Include="AuthenticationType.cs" />
     <Compile Include="Common\Amqp\ClientWebSocketTransport.cs" />
     <Compile Include="Common\Amqp\LegacyClientWebSocketTransport.cs" />
     <Compile Include="Common\Amqp\WebSocketConstants.cs" />
+    <Compile Include="Common\Exceptions\ConfigurationNotFoundException.cs" />
     <Compile Include="Common\Exceptions\ErrorCode.cs" />
+    <Compile Include="Common\Exceptions\ModuleAlreadyExistsException.cs" />
+    <Compile Include="Common\Exceptions\ModuleNotFoundException.cs" />
     <Compile Include="Common\Exceptions\TooManyDevicesException.cs" />
+    <Compile Include="Common\Exceptions\TooManyModulesOnDeviceException.cs" />
     <Compile Include="Common\Extensions\AmqpExtensions.cs" />
     <Compile Include="Common\PerfectHash.cs" />
     <Compile Include="AuthenticationMechanism.cs" />
@@ -237,7 +240,6 @@
     <Compile Include="Common\Extensions\ExceptionExtensions.cs" />
     <Compile Include="Common\Extensions\MemberInfoExtensions.cs" />
     <Compile Include="Common\Extensions\OtherExtensions.cs" />
-    <Compile Include="Common\Extensions\StringFormattingExtensions.cs" />
     <Compile Include="Common\FxTrace.cs" />
     <Compile Include="Common\HashCode.cs" />
     <Compile Include="Common\IAmqpTrace.cs" />
@@ -271,14 +273,18 @@
     <Compile Include="Common\WebApi\ResourceRequest.cs" />
     <Compile Include="DeliveryAcknowledgement.cs" />
     <Compile Include="DeliveryFailureReason.cs" />
+    <Compile Include="Configurations\Configuration.cs" />
+    <Compile Include="Configurations\ConfigurationContent.cs" />
+    <Compile Include="Configurations\TwinContent.cs" />
+    <Compile Include="Configurations\TwinContentJsonConverter.cs" />
     <Compile Include="Device.cs" />
-    <Compile Include="DeviceConnectionState.cs" />
     <Compile Include="CloudToDeviceMethodResult.cs" />
     <Compile Include="DeviceJob.cs" />
     <Compile Include="DeviceJobError.cs" />
     <Compile Include="DeviceJobOutcome.cs" />
     <Compile Include="DeviceJobStatus.cs" />
     <Compile Include="DeviceJobType.cs" />
+    <Compile Include="Module.cs" />
     <Compile Include="IotHubConnectionStringBuilder.cs" />
     <Compile Include="QueryOptions.cs" />
     <Compile Include="QueryResponse.cs" />
@@ -294,7 +300,6 @@
     <Compile Include="JobClient\JobRequest.cs" />
     <Compile Include="JobClient\JobResponse.cs" />
     <Compile Include="QueryResult.cs" />
-    <Compile Include="DeviceStatus.cs" />
     <Compile Include="EndpointKind.cs" />
     <Compile Include="ExportDevicesRequest.cs" />
     <Compile Include="ExportImportDevice.cs" />
@@ -325,12 +330,13 @@
     <Compile Include="Receiver.cs" />
     <Compile Include="RegistryManager.cs" />
     <Compile Include="RegistryStatistics.cs" />
+    <Compile Include="ServiceAuthenticationWithDeviceCredentials.cs" />
     <Compile Include="ServiceAuthenticationWithSharedAccessPolicyKey.cs" />
     <Compile Include="ServiceAuthenticationWithSharedAccessPolicyToken.cs" />
     <Compile Include="ServiceClient.cs" />
     <Compile Include="ServiceStatistics.cs" />
     <Compile Include="SymmetricKey.cs" />
-    <Compile Include="X509Thumbprint.cs" />
+    <Compile Include="X509ThumbprintExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

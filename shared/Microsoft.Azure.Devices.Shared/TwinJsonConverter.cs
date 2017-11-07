@@ -6,8 +6,11 @@ namespace Microsoft.Azure.Devices.Shared
     using System;
     using System.Collections.Generic;
     using System.Reflection;
+    using Microsoft.Azure.Devices.Common;
     using Newtonsoft.Json;
+    using Newtonsoft.Json.Converters;
     using Newtonsoft.Json.Linq;
+    using Newtonsoft.Json.Serialization;
 
     /// <summary>
     /// Converts <see cref="Twin"/> to Json
@@ -15,12 +18,26 @@ namespace Microsoft.Azure.Devices.Shared
     public sealed class TwinJsonConverter : JsonConverter
     {
         const string DeviceIdJsonTag = "deviceId";
+#if ENABLE_MODULES_SDK
+        const string ModuleIdJsonTag = "moduleId";
+        const string ConfigurationsJsonTag = "configurations";
+        const string CapabilitiesJsonTag = "capabilities";
+        const string IotEdgeName = "iotEdge";
+#endif
         const string ETagJsonTag = "etag";
         const string TagsJsonTag = "tags";
         const string PropertiesJsonTag = "properties";
         const string DesiredPropertiesJsonTag = "desired";
         const string ReportedPropertiesJsonTag = "reported";
         const string VersionTag = "version";
+        const string StatusTag = "status";
+        const string StatusReasonTag = "statusReason";
+        const string StatusUpdateTimeTag = "statusUpdateTime";
+        const string ConnectionStateTag = "connectionState";
+        const string LastActivityTimeTag = "lastActivityTime";
+        const string CloudToDeviceMessageCountTag = "cloudToDeviceMessageCount";
+        const string AuthenticationTypeTag = "authenticationType";
+        const string X509ThumbprintTag = "x509Thumbprint";
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
@@ -41,11 +58,67 @@ namespace Microsoft.Azure.Devices.Shared
             writer.WritePropertyName(DeviceIdJsonTag);
             writer.WriteValue(twin.DeviceId);
 
+#if ENABLE_MODULES_SDK
+            if (!string.IsNullOrEmpty(twin.ModuleId))
+            {
+                writer.WritePropertyName(ModuleIdJsonTag);
+                writer.WriteValue(twin.ModuleId);
+            }
+#endif
+
             writer.WritePropertyName(ETagJsonTag);
             writer.WriteValue(twin.ETag);
 
             writer.WritePropertyName(VersionTag);
             writer.WriteValue(twin.Version);
+
+            if (twin.Status != null)
+            {
+                writer.WritePropertyName(StatusTag);
+                writer.WriteRawValue(JsonConvert.SerializeObject(twin.Status));
+            }
+            
+            if (!string.IsNullOrEmpty(twin.StatusReason))
+            {
+                writer.WritePropertyName(StatusReasonTag);
+                writer.WriteValue(twin.StatusReason);
+            }
+
+            if (twin.StatusUpdatedTime != null)
+            {
+                writer.WritePropertyName(StatusUpdateTimeTag);
+                writer.WriteValue(twin.StatusUpdatedTime);
+            }
+
+            if (twin.ConnectionState != null)
+            {
+                writer.WritePropertyName(ConnectionStateTag);
+                writer.WriteRawValue(JsonConvert.SerializeObject(twin.ConnectionState, new StringEnumConverter()));
+            }
+
+            if (twin.LastActivityTime != null)
+            {
+                writer.WritePropertyName(LastActivityTimeTag);
+                writer.WriteValue(twin.LastActivityTime);
+            }
+
+            if (twin.CloudToDeviceMessageCount != null)
+            {
+                writer.WritePropertyName(CloudToDeviceMessageCountTag);
+                writer.WriteValue(twin.CloudToDeviceMessageCount);
+            }
+
+            if (twin.AuthenticationType != null)
+            {
+                writer.WritePropertyName(AuthenticationTypeTag);
+                writer.WriteRawValue(JsonConvert.SerializeObject(twin.AuthenticationType));
+            }
+
+            if (twin.X509Thumbprint != null)
+            {
+                writer.WritePropertyName(X509ThumbprintTag);
+                serializer.Serialize(writer, twin.X509Thumbprint);
+            }
 
             if (twin.Tags != null && twin.Tags.Count > 0)
             {
@@ -105,6 +178,21 @@ namespace Microsoft.Azure.Devices.Shared
                     case DeviceIdJsonTag:
                         twin.DeviceId = reader.Value as string;
                         break;
+#if ENABLE_MODULES_SDK
+                    case ModuleIdJsonTag:
+                        twin.ModuleId = reader.Value as string;
+                        break;
+                    case ConfigurationsJsonTag:
+                        twin.Configurations = serializer.Deserialize<Dictionary<string, ConfigurationInfo>>(reader);
+                        break;
+                    case CapabilitiesJsonTag:
+                        var capabilitiesDictionary = serializer.Deserialize<Dictionary<string, object>>(reader);
+                        twin.Capabilities = new DeviceCapabilities
+                        {
+                            IotEdge = capabilitiesDictionary.ContainsKey(IotEdgeName) && (bool)capabilitiesDictionary[IotEdgeName]
+                        };
+                        break;
+#endif
                     case ETagJsonTag:
                         twin.ETag = reader.Value as string;
                         break;
@@ -119,9 +207,38 @@ namespace Microsoft.Azure.Devices.Shared
                         PopulatePropertiesForTwin(twin, reader, serializer);
                         break;
                     case VersionTag:
-                        twin.Version = (long)reader.Value;
+                        twin.Version = (long?)reader.Value;
+                        break;
+                    case StatusTag:
+                        string status = reader.Value as string;
+                        twin.Status = status?[0] == '\"' ? JsonConvert.DeserializeObject<DeviceStatus>(status) : serializer.Deserialize<DeviceStatus>(reader);
+                        break;
+                    case StatusReasonTag:
+                        twin.StatusReason = reader.Value as string;
+                        break;
+                    case StatusUpdateTimeTag:
+                        twin.StatusUpdatedTime = (DateTime)reader.Value;
+                        break;
+                    case ConnectionStateTag:
+                        string connectionState = reader.Value as string;
+                        twin.ConnectionState = connectionState?[0] == '\"' ? JsonConvert.DeserializeObject<DeviceConnectionState>(connectionState) : serializer.Deserialize<DeviceConnectionState>(reader);
+                        break;
+                    case LastActivityTimeTag:
+                        twin.LastActivityTime = (DateTime)reader.Value;
+                        break;
+                    case CloudToDeviceMessageCountTag:
+                        twin.CloudToDeviceMessageCount = serializer.Deserialize<int>(reader);
+                        break;
+                    case AuthenticationTypeTag:
+                        string authenticationType = reader.Value as string;
+                        twin.AuthenticationType = authenticationType?[0] == '\"' ? JsonConvert.DeserializeObject<AuthenticationType>(authenticationType) : serializer.Deserialize<AuthenticationType>(reader);
+                        break;
+                    case X509ThumbprintTag:
+                        twin.X509Thumbprint = serializer.Deserialize<X509Thumbprint>(reader);
                         break;
                     default:
+                        // Ignore unknown fields
+                        reader.Skip();
                         break;
                 }
             }

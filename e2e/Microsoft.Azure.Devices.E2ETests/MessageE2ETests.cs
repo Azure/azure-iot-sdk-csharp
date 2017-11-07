@@ -335,6 +335,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.DefaultDelayInSec);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("Message-E2E")]
         [TestCategory("Recovery")]
@@ -358,6 +359,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.DefaultDurationInSec);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("Message-E2E")]
         [TestCategory("Recovery")]
@@ -372,6 +374,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.ShortRetryInMilliSec);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("Message-E2E")]
         [TestCategory("Recovery")]
@@ -395,6 +398,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await SendMessageThrottledForHttp();
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("Message-E2E")]
         [TestCategory("Recovery")]
@@ -408,6 +412,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.DefaultDurationInSec);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("Message-E2E")]
         [TestCategory("Recovery")]
@@ -421,6 +426,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.DefaultDurationInSec);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("Message-E2E")]
         [TestCategory("Recovery")]
@@ -610,7 +616,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             eventHubClient = EventHubClient.CreateFromConnectionString(hubConnectionString, "messages/events");
             var eventHubPartitionsCount = eventHubClient.GetRuntimeInformation().PartitionCount;
             string partition = EventHubPartitionKeyResolver.ResolveToPartition(deviceName, eventHubPartitionsCount);
-            string consumerGroupName = Environment.GetEnvironmentVariable("IOTHUB_EVENTHUB_CONSUMER_GROUP") ?? "$Default";
+            // TODO: Uncomment IOTHUB_EVENTHUB_CONSUMER_GROUP lookup for IoT Edge public preview
+            string consumerGroupName = /*Environment.GetEnvironmentVariable("IOTHUB_EVENTHUB_CONSUMER_GROUP") ??*/ "$Default";
 
             while (eventHubReceiver == null && sw.Elapsed.Minutes < 1)
             {

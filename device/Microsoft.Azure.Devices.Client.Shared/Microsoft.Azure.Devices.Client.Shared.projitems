@@ -420,6 +420,12 @@
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\Transport\FileUploadResponse.cs">
       <Link>FileUploadResponse.cs</Link>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\ModuleAuthenticationWithRegistrySymmetricKey.cs">
+      <Link>ModuleAuthenticationWithRegistrySymmetricKey.cs</Link>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\ModuleAuthenticationWithToken.cs">
+      <Link>ModuleAuthenticationWithToken.cs</Link>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\TransientFaultHandling\AsyncExecution.cs">
       <Link>AsyncExecution.cs</Link>
     </Compile>

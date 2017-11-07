@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
+    [Ignore] // TODO: Re-enable file upload tests for IoT Edge public preview
     [TestClass]
     public class FileUploadE2ETests
     {
@@ -86,7 +87,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("FileUpload-E2E")]
         public async Task FileUpload_X509_SmallFile_Http()
         {
-            await uploadFile(Client.TransportType.Http1, smallFile, true);
+           await uploadFile(Client.TransportType.Http1, smallFile, true);
         }
 
         [TestMethod]

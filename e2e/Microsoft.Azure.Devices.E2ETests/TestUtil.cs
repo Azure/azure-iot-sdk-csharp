@@ -59,7 +59,8 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         public static Tuple<string, RegistryManager> InitializeEnvironment(string devicePrefix)
         {
-            string iotHubConnectionString = Environment.GetEnvironmentVariable("IOTHUB_CONN_STRING_CSHARP");
+            // TODO: change env var name back to "IOTHUB_CONN_STRING_CSHARP" for IoT Edge public preview
+            string iotHubConnectionString = Environment.GetEnvironmentVariable("IOTHUB_CONN_STRING_CSHARP_WITH_MODULES");
 
             RegistryManager rm = RegistryManager.CreateFromConnectionString(iotHubConnectionString);
 

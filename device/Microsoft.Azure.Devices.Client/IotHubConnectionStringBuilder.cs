@@ -37,13 +37,14 @@ namespace Microsoft.Azure.Devices.Client
 #if !NETMF
         static readonly string HostNamePropertyName = nameof(HostName);
         static readonly string DeviceIdPropertyName = nameof(DeviceId);
+        static readonly string ModuleIdPropertyName = nameof(ModuleId);
         static readonly string SharedAccessKeyNamePropertyName = nameof(SharedAccessKeyName); 
         static readonly string SharedAccessKeyPropertyName = nameof(SharedAccessKey); 
         static readonly string SharedAccessSignaturePropertyName = nameof(SharedAccessSignature);
         static readonly string GatewayHostNamePropertyName = nameof(GatewayHostName);
         static readonly string X509CertPropertyName =  "X509Cert";
         static readonly Regex HostNameRegex = new Regex(@"[a-zA-Z0-9_\-\.]+$", regexOptions);
-        static readonly Regex DeviceIdRegex = new Regex(@"^[A-Za-z0-9\-:.+%_#*?!(),=@;$']{1,128}$", regexOptions);
+        static readonly Regex IdNameRegex = new Regex(@"^[A-Za-z0-9\-:.+%_#*?!(),=@;$']{1,128}$", regexOptions);
         static readonly Regex SharedAccessKeyNameRegex = new Regex(@"^[a-zA-Z0-9_\-@\.]+$", regexOptions);
         static readonly Regex SharedAccessKeyRegex = new Regex(@"^.+$", regexOptions);
         static readonly Regex SharedAccessSignatureRegex = new Regex(@"^.+$", regexOptions);
@@ -122,6 +123,11 @@ namespace Microsoft.Azure.Devices.Client
         public string DeviceId { get; internal set; }
 
         /// <summary>
+        /// Gets the module identifier of the module connecting to the service.
+        /// </summary>
+        public string ModuleId { get; internal set; }
+
+        /// <summary>
         /// Gets the shared acess key name used to connect the device to the IoT Hub service.
         /// </summary>
         public string SharedAccessKeyName { get; internal set; }
@@ -170,6 +176,7 @@ namespace Microsoft.Azure.Devices.Client
             StringBuilder stringBuilder = new StringBuilder();
             stringBuilder.AppendKeyValuePairIfNotEmpty(HostNamePropertyName, this.HostName);
             stringBuilder.AppendKeyValuePairIfNotEmpty(DeviceIdPropertyName, WebUtility.UrlEncode(this.DeviceId));
+            stringBuilder.AppendKeyValuePairIfNotEmpty(ModuleIdPropertyName, WebUtility.UrlEncode(this.ModuleId));
             stringBuilder.AppendKeyValuePairIfNotEmpty(SharedAccessKeyNamePropertyName, this.SharedAccessKeyName);
             stringBuilder.AppendKeyValuePairIfNotEmpty(SharedAccessKeyPropertyName, this.SharedAccessKey);
             stringBuilder.AppendKeyValuePairIfNotEmpty(SharedAccessSignaturePropertyName, this.SharedAccessSignature);
@@ -209,6 +216,13 @@ namespace Microsoft.Azure.Devices.Client
                     // DeviceId
                     this.DeviceId = WebUtility.UrlDecode(values[1]);
                 }
+#if ENABLE_MODULES_SDK
+                else if (part.IndexOf("ModuleId") > -1)
+                {
+                    // ModuleId
+                    this.ModuleId = WebUtility.UrlDecode(values[1]);
+                }
+#endif
                 else if (part.IndexOf("SharedAccessKeyName") > -1)
                 {
                     // Shared Access Key Name 
@@ -238,6 +252,9 @@ namespace Microsoft.Azure.Devices.Client
 
             this.HostName = GetConnectionStringValue(map, HostNamePropertyName);
             this.DeviceId = WebUtility.UrlDecode(GetConnectionStringOptionalValue(map, DeviceIdPropertyName));
+#if ENABLE_MODULES_SDK
+            this.ModuleId = WebUtility.UrlDecode(GetConnectionStringOptionalValue(map, ModuleIdPropertyName));
+#endif
             this.SharedAccessKeyName = GetConnectionStringOptionalValue(map, SharedAccessKeyNamePropertyName);
             this.SharedAccessKey = GetConnectionStringOptionalValue(map, SharedAccessKeyPropertyName);
             this.SharedAccessSignature = GetConnectionStringOptionalValue(map, SharedAccessSignaturePropertyName);
@@ -302,7 +319,13 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             ValidateFormat(this.HostName, HostNamePropertyName, HostNameRegex);
-            ValidateFormat(this.DeviceId, DeviceIdPropertyName, DeviceIdRegex);
+            ValidateFormat(this.DeviceId, DeviceIdPropertyName, IdNameRegex);
+#if ENABLE_MODULES_SDK
+            if (!string.IsNullOrEmpty(this.ModuleId))
+            {
+                ValidateFormat(this.ModuleId, DeviceIdPropertyName, IdNameRegex);
+            }
+#endif
             ValidateFormatIfSpecified(this.SharedAccessKeyName, SharedAccessKeyNamePropertyName, SharedAccessKeyNameRegex);
             ValidateFormatIfSpecified(this.SharedAccessKey, SharedAccessKeyPropertyName, SharedAccessKeyRegex);
             ValidateFormatIfSpecified(this.SharedAccessSignature, SharedAccessSignaturePropertyName, SharedAccessSignatureRegex);

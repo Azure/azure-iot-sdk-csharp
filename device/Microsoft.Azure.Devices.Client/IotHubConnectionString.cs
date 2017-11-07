@@ -42,6 +42,7 @@ namespace Microsoft.Azure.Devices.Client
             this.SharedAccessSignature = builder.SharedAccessSignature;
             this.IotHubName = builder.IotHubName;
             this.DeviceId = builder.DeviceId;
+            this.ModuleId = builder.ModuleId;
 
 #if WINDOWS_UWP || PCL || NETSTANDARD1_3
             this.HttpsEndpoint = new UriBuilder("https", this.HostName).Uri;
@@ -63,6 +64,12 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         public string DeviceId
+        {
+            get;
+            private set;
+        }
+
+        public string ModuleId
         {
             get;
             private set;
@@ -184,9 +191,23 @@ namespace Microsoft.Azure.Devices.Client
             if (this.SharedAccessKeyName == null)
             {
 #if NETMF
-                builder.Target = this.Audience + "/devices/" + WebUtility.UrlEncode(this.DeviceId);
+                if (this.ModuleId == null || this.ModuleId.Length == 0)
+                {
+                    builder.Target = this.Audience + "/devices/" + WebUtility.UrlEncode(this.DeviceId) + "/modules/" + WebUtility.UrlEncode(this.ModuleId);
+                }
+                else
+                {
+                    builder.Target = this.Audience + "/devices/" + WebUtility.UrlEncode(this.DeviceId);
+                }
 #else
-                builder.Target = "{0}/devices/{1}".FormatInvariant(this.Audience, WebUtility.UrlEncode(this.DeviceId));
+                if (!string.IsNullOrEmpty(this.ModuleId))
+                {
+                    builder.Target = "{0}/devices/{1}/modules/{2}".FormatInvariant(this.Audience, WebUtility.UrlEncode(this.DeviceId), WebUtility.UrlEncode(this.ModuleId));
+                }
+                else
+                {
+                    builder.Target = "{0}/devices/{1}".FormatInvariant(this.Audience, WebUtility.UrlEncode(this.DeviceId));
+                }
 #endif
             }
             else

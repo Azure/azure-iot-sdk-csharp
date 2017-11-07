@@ -186,7 +186,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             eventHubClient = EventHubClient.CreateFromConnectionString(hubConnectionString, "messages/events");
             var eventHubPartitionsCount = eventHubClient.GetRuntimeInformation().PartitionCount;
             string partition = EventHubPartitionKeyResolver.ResolveToPartition(deviceName, eventHubPartitionsCount);
-            string consumerGroupName = Environment.GetEnvironmentVariable("IOTHUB_EVENTHUB_CONSUMER_GROUP") ?? "$Default";
+            // TODO: Uncomment IOTHUB_EVENTHUB_CONSUMER_GROUP lookup for IoT Edge public preview
+            string consumerGroupName = /*Environment.GetEnvironmentVariable("IOTHUB_EVENTHUB_CONSUMER_GROUP") ??*/ "$Default";
             return eventHubClient.GetConsumerGroup(consumerGroupName).CreateReceiver(partition, DateTime.Now, TestUtil.EventHubEpoch++);
         }
 

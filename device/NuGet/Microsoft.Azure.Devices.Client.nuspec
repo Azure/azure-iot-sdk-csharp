@@ -16,8 +16,8 @@
         <dependencies>
 
             <group>
-                <dependency id="Microsoft.Azure.Devices.Shared" version="1.1.1" />
-                <dependency id="Newtonsoft.Json" version="6.0.8" />
+                <dependency id="Microsoft.Azure.Devices.Shared" version="1.2.0-preview-001" />
+                <dependency id="Newtonsoft.Json" version="10.0.3" />
                 <dependency id="PCLCrypto" version="2.0.147" />
             </group>
 
@@ -29,7 +29,7 @@
                 <dependency id="EnterpriseLibrary.TransientFaultHandling" version="6.0.1304" />
                 <dependency id="Microsoft.AspNet.WebApi.Client" version="5.2.3" />
                 <dependency id="WindowsAzure.Storage" version="7.0.0" />
-                <dependency id="Microsoft.Azure.Devices.Shared" version="1.1.1" />
+                <dependency id="Microsoft.Azure.Devices.Shared" version="1.2.0-preview-001" />
             </group>
 
             <group targetFramework="uap10.0">
@@ -37,7 +37,7 @@
                 <dependency id="PCLCrypto" version="2.0.147" />
                 <dependency id="Microsoft.Azure.Amqp" version="2.0.6" />
                 <dependency id="Microsoft.AspNet.WebApi.Client" version="5.2.3" />
-                <dependency id="Microsoft.Azure.Devices.Shared" version="1.1.1" />
+                <dependency id="Microsoft.Azure.Devices.Shared" version="1.2.0-preview-001" />
                 <dependency id="EnterpriseLibrary.TransientFaultHandling" version="6.0.1304" />
                 <dependency id="DotNetty.Buffers" version="0.4.6" />
                 <dependency id="DotNetty.Codecs" version="0.4.6" />
@@ -49,7 +49,6 @@
                 <dependency id="DotNetty.Codecs.Mqtt" version="0.4.6" />
                 <dependency id="DotNetty.Handlers" version="0.4.6" />
                 <dependency id="Microsoft.Azure.Amqp" version="2.0.6" />
-                <dependency id="Newtonsoft.Json" version="9.0.1" />
                 <dependency id="System.AppContext" version="4.3.0"/>
                 <dependency id="System.Collections.Specialized" version="4.3.0" />
                 <dependency id="System.Diagnostics.TraceSource" version="4.3.0"/>
@@ -66,7 +65,7 @@
                 <dependency id="System.Threading.Overlapped" version="4.3.0" />
                 <dependency id="Validation" version="2.4.13" />
                 <dependency id="WindowsAzure.Storage" version="8.1.1" />
-                <dependency id="Microsoft.Azure.Devices.Shared" version="1.1.1" />
+                <dependency id="Microsoft.Azure.Devices.Shared" version="1.2.0-preview-001" />
             </group>
 
             <group targetFramework="win8">
@@ -101,8 +100,8 @@
         <file src="..\thirdpartynotice.txt" target="thirdpartynotice.txt" />
         <file src="..\Microsoft.Azure.Devices.Client\bin\release_delay_sign\Microsoft.Azure.Devices.Client.dll" target="lib\net45\Microsoft.Azure.Devices.Client.dll" />
         <file src="..\Microsoft.Azure.Devices.Client\bin\release_delay_sign\Microsoft.Azure.Devices.Client.xml" target="lib\net45\Microsoft.Azure.Devices.Client.xml" />
-        <file src="..\Microsoft.Azure.Devices.Client.NetStandard\bin\release_delay_sign\Microsoft.Azure.Devices.Client.dll" target="lib\netstandard1.3\Microsoft.Azure.Devices.Client.dll" />
-        <file src="..\Microsoft.Azure.Devices.Client.NetStandard\bin\release_delay_sign\Microsoft.Azure.Devices.Client.XML" target="lib\netstandard1.3\Microsoft.Azure.Devices.Client.xml" />
+        <file src="..\Microsoft.Azure.Devices.Client.NetStandard\bin\release_delay_sign\netstandard1.3\Microsoft.Azure.Devices.Client.dll" target="lib\netstandard1.3\Microsoft.Azure.Devices.Client.dll" />
+        <file src="..\Microsoft.Azure.Devices.Client.NetStandard\bin\release_delay_sign\netstandard1.3\Microsoft.Azure.Devices.Client.XML" target="lib\netstandard1.3\Microsoft.Azure.Devices.Client.xml" />
         <file src="..\Microsoft.Azure.Devices.Client.UWP\bin\release_delay_sign\Microsoft.Azure.Devices.Client.dll" target="lib\uap10.0\Microsoft.Azure.Devices.Client.dll" />
         <file src="..\Microsoft.Azure.Devices.Client.UWP\bin\release_delay_sign\Microsoft.Azure.Devices.Client.pri" target="lib\uap10.0\Microsoft.Azure.Devices.Client.pri" />
         <file src="..\Microsoft.Azure.Devices.Client.UWP\bin\release_delay_sign\Microsoft.Azure.Devices.Client.XML" target="lib\uap10.0\Microsoft.Azure.Devices.Client.XML" />

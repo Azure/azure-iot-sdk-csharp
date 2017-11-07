@@ -211,7 +211,31 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 GetNormalizedIotHubException(ex).Throw();
             }
         }
-        
+
+        public override async Task EnableEventReceiveAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                await this.internalRetryPolicy.ExecuteAsync(() => base.EnableEventReceiveAsync(cancellationToken), cancellationToken);
+            }
+            catch (IotHubClientTransientException ex)
+            {
+                GetNormalizedIotHubException(ex).Throw();
+            }
+        }
+
+        public override async Task DisableEventReceiveAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                await this.internalRetryPolicy.ExecuteAsync(() => base.DisableEventReceiveAsync(cancellationToken), cancellationToken);
+            }
+            catch (IotHubClientTransientException ex)
+            {
+                GetNormalizedIotHubException(ex).Throw();
+            }
+        }
+
         public override async Task EnableTwinPatchAsync(CancellationToken cancellationToken)
         {
             try

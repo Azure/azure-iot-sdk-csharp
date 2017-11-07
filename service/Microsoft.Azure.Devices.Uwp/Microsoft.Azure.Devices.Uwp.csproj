@@ -11,8 +11,8 @@
     <AssemblyName>Microsoft.Azure.Devices</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
-    <TargetPlatformVersion>10.0.10240.0</TargetPlatformVersion>
-    <TargetPlatformMinVersion>10.0.10240.0</TargetPlatformMinVersion>
+    <TargetPlatformVersion>10.0.14393.0</TargetPlatformVersion>
+    <TargetPlatformMinVersion>10.0.14393.0</TargetPlatformMinVersion>
     <MinimumVisualStudioVersion>14</MinimumVisualStudioVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -133,7 +133,6 @@
     <Compile Include="..\Microsoft.Azure.Devices\Common\Exceptions\TooManyDevicesException.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\Extensions\AmqpExtensions.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\PerfectHash.cs" />
-    <Compile Include="..\Microsoft.Azure.Devices\AuthenticationType.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\AuthenticationMechanism.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\ClientApiVersionHelper.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\CloudToDeviceMethodResult.cs" />
@@ -174,7 +173,6 @@
     <Compile Include="..\Microsoft.Azure.Devices\Common\Extensions\ExceptionExtensions.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\Extensions\MemberInfoExtensions.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\Extensions\OtherExtensions.cs" />
-    <Compile Include="..\Microsoft.Azure.Devices\Common\Extensions\StringFormattingExtensions.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\FxTrace.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\HashCode.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\IAmqpTrace.cs" />
@@ -213,14 +211,12 @@
     <Compile Include="..\Microsoft.Azure.Devices\DeliveryAcknowledgement.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\DeliveryFailureReason.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Device.cs" />
-    <Compile Include="..\Microsoft.Azure.Devices\DeviceConnectionState.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\DeviceJob.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\DeviceJobError.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\DeviceJobOutcome.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\DeviceJobStatus.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\DeviceJobType.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\BulkRegistryOperationResult.cs" />
-    <Compile Include="..\Microsoft.Azure.Devices\DeviceStatus.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\EndpointKind.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\ExportDevicesRequest.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\ExportImportDevice.cs" />
@@ -256,14 +252,15 @@
     <Compile Include="..\Microsoft.Azure.Devices\Receiver.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\RegistryManager.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\RegistryStatistics.cs" />
+    <Compile Include="..\Microsoft.Azure.Devices\ServiceAuthenticationWithDeviceCredentials.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\ServiceAuthenticationWithSharedAccessPolicyKey.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\ServiceAuthenticationWithSharedAccessPolicyToken.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\ServiceClient.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\ServiceStatistics.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\SymmetricKey.cs" />
-    <Compile Include="..\Microsoft.Azure.Devices\X509Thumbprint.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\UWPSupport.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\IOThreadTimerSlim.cs" />
+    <Compile Include="..\Microsoft.Azure.Devices\X509ThumbprintExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Properties\Microsoft.Azure.Devices.Uwp.rd.xml" />
   </ItemGroup>

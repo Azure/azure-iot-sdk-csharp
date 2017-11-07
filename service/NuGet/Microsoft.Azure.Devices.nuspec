@@ -15,21 +15,21 @@
     <language>en-US</language>
     <dependencies>
       <group targetFramework="net45" >
-        <dependency id="Microsoft.Azure.Devices.Shared" version="1.1.1" />
+        <dependency id="Microsoft.Azure.Devices.Shared" version="1.2.0-preview-001" />
         <dependency id="Microsoft.AspNet.WebApi.Client" version="5.2.3" />
         <dependency id="Microsoft.AspNet.WebApi.Core" version="5.2.3" />
         <dependency id="Microsoft.Azure.Amqp" version="2.0.6" />
         <dependency id="PCLCrypto" version="2.0.147" />
       </group>
       <group targetFramework="uap10.0">
-        <dependency id="Microsoft.Azure.Devices.Shared" version="1.1.1" />
+        <dependency id="Microsoft.Azure.Devices.Shared" version="1.2.0-preview-001" />
         <dependency id="Microsoft.AspNet.WebApi.Client" version="5.2.3" />
         <dependency id="Microsoft.Azure.Amqp" version="2.0.6" />
         <dependency id="PCLCrypto" version="2.0.147" />
       </group>
-    <group targetFramework="netstandard1.3" >
+      <group targetFramework="netstandard1.3" >
         <dependency id="Microsoft.Azure.Amqp" version="2.0.6" />
-        <dependency id="Newtonsoft.Json" version="9.0.1" />
+        <dependency id="Newtonsoft.Json" version="10.0.3" />
         <dependency id="System.ComponentModel.TypeConverter" version="4.3.0" />
         <dependency id="System.Diagnostics.Contracts" version="4.3.0" />
         <dependency id="System.Diagnostics.TraceSource" version="4.3.0"/>
@@ -37,8 +37,8 @@
         <dependency id="System.Reflection.Extensions" version="4.3.0" />
         <dependency id="System.Runtime.Serialization.Formatters" version="4.3.0" />
         <dependency id="System.Threading.Overlapped" version="4.3.0" />
-        <dependency id="Microsoft.Azure.Devices.Shared" version="1.1.1" />
-    </group>
+        <dependency id="Microsoft.Azure.Devices.Shared" version="1.2.0-preview-001" />
+      </group>
     </dependencies>
     <frameworkAssemblies>
       <frameworkAssembly assemblyName="System.Core" targetFramework=".NETFramework4.5.1" />
@@ -54,7 +54,7 @@
     <file src="..\Microsoft.Azure.Devices.Uwp\bin\release_delay_sign\Microsoft.Azure.Devices.dll" target="lib\uap10.0\Microsoft.Azure.Devices.dll" />
     <file src="..\Microsoft.Azure.Devices.Uwp\bin\release_delay_sign\Microsoft.Azure.Devices.pri" target="lib\uap10.0\Microsoft.Azure.Devices.pri" />
     <file src="..\Microsoft.Azure.Devices.Uwp\bin\release_delay_sign\Microsoft.Azure.Devices.XML" target="lib\uap10.0\Microsoft.Azure.Devices.XML" />
-    <file src="..\Microsoft.Azure.Devices.NetStandard\bin\release_delay_sign\Microsoft.Azure.Devices.dll" target="lib\netstandard1.3\Microsoft.Azure.Devices.dll" />
-    <file src="..\Microsoft.Azure.Devices.NetStandard\bin\release_delay_sign\Microsoft.Azure.Devices.XML" target="lib\netstandard1.3\Microsoft.Azure.Devices.XML" />
+    <file src="..\Microsoft.Azure.Devices.NetStandard\bin\release_delay_sign\netstandard1.3\Microsoft.Azure.Devices.dll" target="lib\netstandard1.3\Microsoft.Azure.Devices.dll" />
+    <file src="..\Microsoft.Azure.Devices.NetStandard\bin\release_delay_sign\netstandard1.3\Microsoft.Azure.Devices.XML" target="lib\netstandard1.3\Microsoft.Azure.Devices.XML" />
   </files>
 </package>
