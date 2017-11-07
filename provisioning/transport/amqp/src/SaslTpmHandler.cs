@@ -14,26 +14,26 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Amqp
     {
         static readonly byte[] EmptyByte = { 0 };
         private const string MechanismName = "TPM";
-        private const int ChallengeKeySegmentSize = 400;
-        private readonly StringBuilder _encodedNonceStringBuilder = new StringBuilder(ChallengeKeySegmentSize * 3);
 
         private readonly byte[] _endorsementKey;
 
-        private readonly string _hostName;
+        private readonly string _idScope;
         private readonly ProvisioningSecurityClientSasToken _security;
         private readonly byte[] _storageRootKey;
+        private byte[] _nonceBuffer = Array.Empty<byte>();
         private byte _nextSequenceNumber;
 
-        public SaslTpmHandler(byte[] endorsementKey, byte[] storageRootKey, string hostName,
-            ProvisioningSecurityClientSasToken security)
+        private string _hostname => $"{this._idScope}/registrations/{_security.RegistrationID}";
 
+        public SaslTpmHandler(byte[] endorsementKey, byte[] storageRootKey, string idScope, 
+            ProvisioningSecurityClientSasToken security)
         {
             //TODO: check inputs
 
             Mechanism = MechanismName;
             _endorsementKey = endorsementKey;
             _storageRootKey = storageRootKey;
-            _hostName = hostName;
+            _idScope = idScope;
             _security = security;
         }
 
@@ -42,8 +42,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Amqp
             return
                 Equals(_endorsementKey, other._endorsementKey) &&
                 Equals(_storageRootKey, other._storageRootKey) &&
-                string.Equals(_hostName, other._hostName, StringComparison.InvariantCulture) &&
-                Equals(_encodedNonceStringBuilder, other._encodedNonceStringBuilder) &&
+                string.CompareOrdinal(_idScope, other._idScope) == 0 &&
                 Equals(_security, other._security);
         }
 
@@ -59,10 +58,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Amqp
         {
             unchecked
             {
-                var hashCode = _endorsementKey != null ? _endorsementKey.GetHashCode() : 0;
+                int hashCode = _endorsementKey != null ? _endorsementKey.GetHashCode() : 0;
                 hashCode = (hashCode * 397) ^ (_storageRootKey != null ? _storageRootKey.GetHashCode() : 0);
-                hashCode = (hashCode * 397) ^ (_hostName != null ? _hostName.GetHashCode() : 0);
-                hashCode = (hashCode * 397) ^ (_encodedNonceStringBuilder != null ? _encodedNonceStringBuilder.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (_idScope != null ? _idScope.GetHashCode() : 0);
                 hashCode = (hashCode * 397) ^ (_security != null ? _security.GetHashCode() : 0);
 
                 return hashCode;
@@ -81,7 +79,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Amqp
 
         public override SaslHandler Clone()
         {
-            return new SaslTpmHandler(_endorsementKey, _storageRootKey, _hostName, _security);
+            return new SaslTpmHandler(_endorsementKey, _storageRootKey, _idScope, _security);
         }
 
         public override void OnChallenge(SaslChallenge challenge)
@@ -112,9 +110,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Amqp
 
         private async void SendLastResponse()
         {
-            //Notes: The _encodedNonce from service would soon change to non base64 string
-            var sasBytes = await _security.SignAsync(Convert.FromBase64String(_encodedNonceStringBuilder.ToString()))
-                .ConfigureAwait(false);
+            var sasBytes = await _security.SignAsync(_nonceBuffer).ConfigureAwait(false);
             var sas = Convert.ToBase64String(sasBytes);
 
             var responseBuffer = new byte[sas.Length + 1];
@@ -132,9 +128,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Amqp
                 throw new AmqpException(AmqpErrorCode.InvalidField,
                     $"Invalid sequence number, expected: {_nextSequenceNumber}, actual: {sequenceNumber}.");
 
-            var nonceSegment = Encoding.UTF8.GetString(saslChallenge.Challenge.Array, 1,
+            byte[] tempNonce = new byte[_nonceBuffer.Length];
+            Buffer.BlockCopy(_nonceBuffer, 0, tempNonce, 0, _nonceBuffer.Length);
+
+            _nonceBuffer = new byte[_nonceBuffer.Length + saslChallenge.Challenge.Array.Length - 1];
+            Buffer.BlockCopy(tempNonce, 0, _nonceBuffer, 0, tempNonce.Length);
+            Buffer.BlockCopy(
+                saslChallenge.Challenge.Array, 
+                1, 
+                _nonceBuffer, 
+                tempNonce.Length, 
                 saslChallenge.Challenge.Array.Length - 1);
-            _encodedNonceStringBuilder.Append(nonceSegment);
             _nextSequenceNumber++;
         }
 
@@ -199,10 +203,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Amqp
 
         private byte[] CreateSaslInitMessage(SaslInit init)
         {
-            init.HostName = _hostName;
-            var responseBuffer = new byte[_endorsementKey.Length + 1];
+            init.HostName = _hostname;
+            
+            StringBuilder initContent = new StringBuilder();
+            initContent.Append(_idScope);
+            initContent.Append("\0");
+            initContent.Append(_security.RegistrationID);
+            initContent.Append("\0");
+
+            byte[] initContentInBytes = Encoding.UTF8.GetBytes(initContent.ToString());
+
+            var responseBuffer = new byte[initContentInBytes.Length + _endorsementKey.Length + 1];
             responseBuffer[0] = 0x0;
-            Buffer.BlockCopy(_endorsementKey, 0, responseBuffer, 1, _endorsementKey.Length);
+            Buffer.BlockCopy(initContentInBytes, 0, responseBuffer, 1, initContentInBytes.Length);
+            Buffer.BlockCopy(_endorsementKey, 0, responseBuffer, initContentInBytes.Length + 1, _endorsementKey.Length);
+
             return responseBuffer;
         }
 
