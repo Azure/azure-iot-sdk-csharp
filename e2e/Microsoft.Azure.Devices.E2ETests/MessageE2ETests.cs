@@ -693,7 +693,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await deviceClient.CloseAsync();
                 await eventHubReceiver.CloseAsync();
                 await eventHubClient.CloseAsync();
-                TestUtil.RemoveDevice(deviceInfo.Item1, registryManager);
+                await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager);
             }
         }
 
@@ -780,7 +780,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 await deviceClient.CloseAsync();
                 await serviceClient.CloseAsync();
-                TestUtil.RemoveDevice(deviceInfo.Item1, registryManager);
+                await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager);
             }
         }
 
@@ -868,7 +868,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await deviceClient.CloseAsync();
                 await eventHubReceiver.CloseAsync();
                 await eventHubClient.CloseAsync();
-                TestUtil.RemoveDevice(deviceInfo.Item1, registryManager);
+                await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager);
                 sequentialTestSemaphore.Release(1);
             }
         }
@@ -957,7 +957,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 await deviceClient.CloseAsync();
                 await serviceClient.CloseAsync();
-                TestUtil.RemoveDevice(deviceInfo.Item1, registryManager);
+                await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager);
                 sequentialTestSemaphore.Release(1);
             }      
         }

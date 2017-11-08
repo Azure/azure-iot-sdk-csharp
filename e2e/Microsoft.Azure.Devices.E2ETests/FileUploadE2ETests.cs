@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             serviceClient.CloseAsync().Wait();
             System.IO.File.Delete(smallFile);
             System.IO.File.Delete(bigFile);
-            TestUtil.UnInitializeEnvironment(registryManager);
+            TestUtil.UnInitializeEnvironment(registryManager).GetAwaiter().GetResult();
         }
 
 #if NETSTANDARD1_3
@@ -168,7 +168,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             Assert.IsFalse(string.IsNullOrEmpty(fileNotification.BlobUri), "File notification blob uri is null or empty");
 
             await deviceClient.CloseAsync();
-            TestUtil.RemoveDevice(deviceInfo.Item1, registryManager);
+            await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager);
         }
 
         private static async Task<FileNotification> VerifyFileNotification(Tuple<string, string> deviceInfo)
@@ -235,7 +235,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             Assert.IsFalse(string.IsNullOrEmpty(fileNotification.BlobUri), "File notification blob uri is null or empty");
 
             await deviceClient.CloseAsync();
-            TestUtil.RemoveDevice(deviceInfo.Item1, registryManager);
+            await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager);
         }
     }
 }

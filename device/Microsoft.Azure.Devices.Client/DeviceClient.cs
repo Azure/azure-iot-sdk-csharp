@@ -358,7 +358,8 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                 return dc;
             }
 #endif
-            return CreateFromConnectionString(connectionStringBuilder.ToString(), transportType);
+
+            return CreateFromConnectionString(connectionStringBuilder.ToString(), authenticationMethod, transportType, null);
         }
 
 #if !PCL
@@ -404,7 +405,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                 return dc;
             }
 #endif
-            return CreateFromConnectionString(connectionStringBuilder.ToString(), transportSettings);
+            return CreateFromConnectionString(connectionStringBuilder.ToString(), authenticationMethod, transportSettings, null);
         }
 #endif
 
@@ -447,66 +448,12 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// <returns>DeviceClient</returns>
         public static DeviceClient CreateFromConnectionString(string connectionString, TransportType transportType)
         {
-            return CreateFromConnectionString(connectionString, transportType, null);
-        }
-
-        /// <summary>
-        /// Create DeviceClient from the specified connection string using the specified transport type
-        /// (PCL) Only Http transport is allowed
-        /// </summary>
-        /// <param name="connectionString">Connection string for the IoT hub (including DeviceId)</param>
-        /// <param name="transportType">Specifies whether Amqp or Http transport is used</param>
-        /// <param name="pipelineBuilder">Device client pipeline builder</param>
-        /// <returns>DeviceClient</returns>
-        internal static DeviceClient CreateFromConnectionString(string connectionString, TransportType transportType, IDeviceClientPipelineBuilder pipelineBuilder)
-        {
-            if (connectionString == null)
+            if (string.IsNullOrEmpty(connectionString))
             {
                 throw new ArgumentNullException(nameof(connectionString));
             }
 
-            switch (transportType)
-            {
-                case TransportType.Amqp:
-                    return CreateFromConnectionString(connectionString, new ITransportSettings[]
-                        {
-                            new AmqpTransportSettings(TransportType.Amqp_Tcp_Only),
-                            new AmqpTransportSettings(TransportType.Amqp_WebSocket_Only)
-                        },
-                        pipelineBuilder);
-                case TransportType.Mqtt:
-#if PCL
-                    throw new NotImplementedException("Mqtt protocol is not supported");
-#else
-                    return CreateFromConnectionString(connectionString, new ITransportSettings[]
-                    {
-                        new MqttTransportSettings(TransportType.Mqtt_Tcp_Only),
-                        new MqttTransportSettings(TransportType.Mqtt_WebSocket_Only)
-                    }, pipelineBuilder);
-#endif
-                case TransportType.Amqp_WebSocket_Only:
-                case TransportType.Amqp_Tcp_Only:
-#if PCL
-                    throw new NotImplementedException("Amqp protocol is not supported");
-#else
-                    return CreateFromConnectionString(connectionString, new ITransportSettings[] { new AmqpTransportSettings(transportType) }, pipelineBuilder);
-#endif
-                case TransportType.Mqtt_WebSocket_Only:
-                case TransportType.Mqtt_Tcp_Only:
-#if PCL
-                    throw new NotImplementedException("Mqtt protocol is not supported");
-#else
-                    return CreateFromConnectionString(connectionString, new ITransportSettings[] { new MqttTransportSettings(transportType) }, pipelineBuilder);
-#endif
-                case TransportType.Http1:
-                    return CreateFromConnectionString(connectionString, new ITransportSettings[] { new Http1TransportSettings() }, pipelineBuilder);
-                default:
-#if !PCL
-                    throw new InvalidOperationException("Unsupported Transport Type {0}".FormatInvariant(transportType));
-#else
-                    throw new InvalidOperationException($"Unsupported Transport Type {transportType}");
-#endif
-            }
+            return CreateFromConnectionString(connectionString, null, transportType, null);
         }
 
         /// <summary>
@@ -548,22 +495,118 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
 #endif
             ITransportSettings[] transportSettings)
         {
-            return CreateFromConnectionString(connectionString, transportSettings, null);
+            return CreateFromConnectionString(connectionString, null, transportSettings, null);
         }
 
+
         /// <summary>
-        /// Create DeviceClient from the specified connection string using a prioritized list of transports
+        /// Create DeviceClient from the specified connection string using the prioritized list of transports
         /// </summary>
-        /// <param name="connectionString">Connection string for the IoT hub (with DeviceId)</param>
-        /// <param name="transportSettings">Prioritized list of transports and their settings</param>
-        /// <param name="pipelineBuilder">Device client pipeline builder</param>
+        /// <param name="connectionString">Connection string for the IoT hub (without DeviceId)</param>
+        /// <param name="deviceId">Id of the device</param>
+        /// <param name="transportSettings">Prioritized list of transportTypes and their settings</param>
         /// <returns>DeviceClient</returns>
-        internal static DeviceClient CreateFromConnectionString(string connectionString,
+        public static DeviceClient CreateFromConnectionString(string connectionString, string deviceId,
+#if !NETSTANDARD1_3
+            [System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArrayAttribute]
+#endif
+            ITransportSettings[] transportSettings)
+        {
+            if (connectionString == null)
+            {
+                throw new ArgumentNullException(nameof(connectionString));
+            }
+
+            if (deviceId == null)
+            {
+                throw new ArgumentNullException(nameof(deviceId));
+            }
+
+            if (DeviceIdParameterRegex.IsMatch(connectionString))
+            {
+                throw new ArgumentException("Connection string must not contain DeviceId keyvalue parameter", nameof(connectionString));
+            }
+
+            return CreateFromConnectionString(connectionString + ";" + DeviceId + "=" + deviceId, transportSettings);
+        }
+
+        internal static DeviceClient CreateFromConnectionString(
+            string connectionString,
+            IAuthenticationMethod authenticationMethod,
+            TransportType transportType, 
+            IDeviceClientPipelineBuilder pipelineBuilder)
+        {
+            switch (transportType)
+            {
+                case TransportType.Amqp:
+                    return CreateFromConnectionString(
+                        connectionString, 
+                        authenticationMethod,
+                        new ITransportSettings[]
+                        {
+                            new AmqpTransportSettings(TransportType.Amqp_Tcp_Only),
+                            new AmqpTransportSettings(TransportType.Amqp_WebSocket_Only)
+                        },
+                        pipelineBuilder);
+                case TransportType.Mqtt:
+#if PCL
+                    throw new NotImplementedException("Mqtt protocol is not supported");
+#else
+                    return CreateFromConnectionString(
+                        connectionString,
+                        authenticationMethod,
+                        new ITransportSettings[]
+                        {
+                            new MqttTransportSettings(TransportType.Mqtt_Tcp_Only),
+                            new MqttTransportSettings(TransportType.Mqtt_WebSocket_Only)
+                        }, 
+                        pipelineBuilder);
+#endif
+                case TransportType.Amqp_WebSocket_Only:
+                case TransportType.Amqp_Tcp_Only:
+#if PCL
+                    throw new NotImplementedException("Amqp protocol is not supported");
+#else
+                    return CreateFromConnectionString(
+                        connectionString,
+                        authenticationMethod,
+                        new ITransportSettings[] { new AmqpTransportSettings(transportType) }, 
+                        pipelineBuilder);
+#endif
+                case TransportType.Mqtt_WebSocket_Only:
+                case TransportType.Mqtt_Tcp_Only:
+#if PCL
+                    throw new NotImplementedException("Mqtt protocol is not supported");
+#else
+                    return CreateFromConnectionString(
+                        connectionString,
+                        authenticationMethod,
+                        new ITransportSettings[] { new MqttTransportSettings(transportType) }, 
+                        pipelineBuilder);
+#endif
+                case TransportType.Http1:
+                    return CreateFromConnectionString(
+                        connectionString,
+                        authenticationMethod,
+                        new ITransportSettings[] { new Http1TransportSettings() }, 
+                        pipelineBuilder);
+                default:
+#if !PCL
+                    throw new InvalidOperationException("Unsupported Transport Type {0}".FormatInvariant(transportType));
+#else
+                    throw new InvalidOperationException($"Unsupported Transport Type {transportType}");
+#endif
+            }
+        }
+
+        internal static DeviceClient CreateFromConnectionString(
+            string connectionString,
+            IAuthenticationMethod authenticationMethod,
 #if !NETSTANDARD1_3
             [System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArray]
 #endif
-            ITransportSettings[] transportSettings, IDeviceClientPipelineBuilder pipelineBuilder)
-
+            ITransportSettings[] transportSettings, 
+            IDeviceClientPipelineBuilder pipelineBuilder)
         {
             if (connectionString == null)
             {
@@ -580,7 +623,11 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                 throw new ArgumentOutOfRangeException(nameof(connectionString), "Must specify at least one TransportSettings instance");
             }
 
-            IotHubConnectionString iotHubConnectionString = IotHubConnectionString.Parse(connectionString);
+            var builder = IotHubConnectionStringBuilder.CreateWithIAuthenticationOverride(
+                connectionString, 
+                authenticationMethod);
+
+            IotHubConnectionString iotHubConnectionString = builder.ToIotHubConnectionString();
 
             foreach (ITransportSettings transportSetting in transportSettings)
             {
@@ -617,37 +664,6 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
 
             // Defer concrete DeviceClient creation to OpenAsync
             return new DeviceClient(iotHubConnectionString, transportSettings, pipelineBuilder);
-        }
-
-        /// <summary>
-        /// Create DeviceClient from the specified connection string using the prioritized list of transports
-        /// </summary>
-        /// <param name="connectionString">Connection string for the IoT hub (without DeviceId)</param>
-        /// <param name="deviceId">Id of the device</param>
-        /// <param name="transportSettings">Prioritized list of transportTypes and their settings</param>
-        /// <returns>DeviceClient</returns>
-        public static DeviceClient CreateFromConnectionString(string connectionString, string deviceId,
-#if !NETSTANDARD1_3
-            [System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArrayAttribute]
-#endif
-            ITransportSettings[] transportSettings)
-        {
-            if (connectionString == null)
-            {
-                throw new ArgumentNullException(nameof(connectionString));
-            }
-
-            if (deviceId == null)
-            {
-                throw new ArgumentNullException(nameof(deviceId));
-            }
-
-            if (DeviceIdParameterRegex.IsMatch(connectionString))
-            {
-                throw new ArgumentException("Connection string must not contain DeviceId keyvalue parameter", nameof(connectionString));
-            }
-
-            return CreateFromConnectionString(connectionString + ";" + DeviceId + "=" + deviceId, transportSettings);
         }
 
         CancellationTokenSource GetOperationTimeoutCancellationTokenSource()

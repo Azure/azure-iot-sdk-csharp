@@ -60,6 +60,8 @@
   <ItemGroup>
     <Compile Include="AmqpTransportHandlerTests.cs" />
     <Compile Include="CertificateHelper.cs" />
+    <Compile Include="ConnectionString\IotHubConnectionStringExtensions.cs" />
+    <Compile Include="DeviceAuthenticationWithTokenRefreshTests.cs" />
     <Compile Include="IoTHubClientDiagnosticTest.cs" />
     <Compile Include="Mqtt\ChannelExtensions.cs" />
     <Compile Include="Mqtt\ClientWebSocketChannelTests.cs" />

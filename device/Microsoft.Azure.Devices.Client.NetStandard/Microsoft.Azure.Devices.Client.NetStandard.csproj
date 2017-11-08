@@ -206,14 +206,9 @@
     <DefineConstants Condition="'$(WIP_PROVISIONING.ToUpper())' == 'TRUE'">$(DefineConstants);WIP_PROVISIONING</DefineConstants>
   </PropertyGroup>
   <ItemGroup Condition="'$(WIP_PROVISIONING.ToUpper())' == 'TRUE'">
-    <!-- WIP: ProvisioningDeviceClient -->
-    <Compile Include="..\Microsoft.Azure.Devices.Client\DeviceAuthenticationWithTokenRefresh.cs">
-      <Link>DeviceAuthenticationWithTokenRefresh.cs</Link>
-    </Compile>
     <Compile Include="..\Microsoft.Azure.Devices.Client\DeviceAuthenticationWithTpm.cs">
       <Link>DeviceAuthenticationWithTpm.cs</Link>
     </Compile>
-
   </ItemGroup>
 
   <ItemGroup>

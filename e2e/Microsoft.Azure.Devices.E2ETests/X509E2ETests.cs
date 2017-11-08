@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [ClassCleanup]
         public static void ClassCleanup()
         {
-            TestUtil.UnInitializeEnvironment(registryManager);
+            TestUtil.UnInitializeEnvironment(registryManager).GetAwaiter().GetResult();
         }
 
         [TestInitialize]
@@ -173,7 +173,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await deviceClient.CloseAsync();
                 await eventHubReceiver.CloseAsync();
                 await eventHubClient.CloseAsync();
-                TestUtil.RemoveDevice(deviceInfo.Item1, registryManager);
+                await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager);
             }
         }
 
@@ -307,7 +307,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 await deviceClient.CloseAsync();
                 await serviceClient.CloseAsync();
-                TestUtil.RemoveDevice(deviceInfo.Item1, registryManager);
+                await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager);
             }
         }
     }

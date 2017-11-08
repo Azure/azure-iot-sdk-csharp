@@ -8,24 +8,16 @@ namespace Microsoft.Azure.Devices.Client
 
 #if !NETMF
     using Microsoft.Azure.Amqp;
-#endif
-
-#if !NETMF
     using System.Threading.Tasks;
 #endif
 
     using Microsoft.Azure.Devices.Client.Extensions;
 
-    sealed class IotHubConnectionString : IAuthorizationHeaderProvider
+    internal sealed partial class IotHubConnectionString : IAuthorizationProvider
 #if !NETMF
         , ICbsTokenProvider
 #endif
     {
-#if NETMF
-        static readonly TimeSpan DefaultTokenTimeToLive = new TimeSpan(1, 0, 0);
-#else
-        static readonly TimeSpan DefaultTokenTimeToLive = TimeSpan.FromHours(1);
-#endif
         const string UserSeparator = "@";
 
         public IotHubConnectionString(IotHubConnectionStringBuilder builder)
@@ -53,6 +45,15 @@ namespace Microsoft.Azure.Devices.Client
 
 #if !NETMF
             this.AmqpEndpoint = new UriBuilder(CommonConstants.AmqpsScheme, this.HostName, AmqpConstants.DefaultSecurePort).Uri;
+
+            if (builder.AuthenticationMethod is DeviceAuthenticationWithTokenRefresh)
+            {
+                this.TokenRefresher = (DeviceAuthenticationWithTokenRefresh)builder.AuthenticationMethod;
+            }
+            else if (!string.IsNullOrEmpty(this.SharedAccessKey))
+            {
+                this.TokenRefresher = new DeviceAuthenticationWithSakRefresh(this.DeviceId, this);
+            }
 #endif
         }
 
@@ -110,94 +111,6 @@ namespace Microsoft.Azure.Devices.Client
         {
             get;
             private set;
-        }
-
-        public string GetPassword()
-        {
-            string password;
-            if (this.SharedAccessSignature.IsNullOrWhiteSpace())
-            {
-                TimeSpan timeToLive;
-                password = this.BuildToken(out timeToLive);
-            }
-            else
-            {
-                password = this.SharedAccessSignature;
-            }
-
-            return password;
-        }
-
-        public string GetAuthorizationHeader()
-        {
-            return this.GetPassword();
-        }
-
-#if !NETMF
-        Task<CbsToken> ICbsTokenProvider.GetTokenAsync(Uri namespaceAddress, string appliesTo, string[] requiredClaims)
-        {
-            string tokenValue;
-            CbsToken token;
-            if (string.IsNullOrWhiteSpace(this.SharedAccessSignature))
-            {
-                TimeSpan timeToLive;
-                tokenValue = this.BuildToken(out timeToLive);
-                token = new CbsToken(tokenValue, CbsConstants.IotHubSasTokenType, DateTime.UtcNow.Add(timeToLive));
-            }
-            else
-            {
-                tokenValue = this.SharedAccessSignature;
-                token = new CbsToken(tokenValue, CbsConstants.IotHubSasTokenType, DateTime.MaxValue);
-            }
-
-            return Task.FromResult(token);
-        }
-#endif
-        public Uri BuildLinkAddress(string path)
-        {
-#if NETMF
-            throw new NotImplementedException();
-#else
-            var builder = new UriBuilder(this.AmqpEndpoint)
-            {
-                Path = path,
-            };
-
-            return builder.Uri;
-#endif
-        }
-
-        public static IotHubConnectionString Parse(string connectionString)
-        {
-            var builder = IotHubConnectionStringBuilder.Create(connectionString);
-            return builder.ToIotHubConnectionString();
-        }
-
-        string BuildToken(out TimeSpan ttl)
-        {
-            var builder = new SharedAccessSignatureBuilder()
-            {
-                Key = this.SharedAccessKey,
-                TimeToLive = DefaultTokenTimeToLive,
-            };
-
-            if (this.SharedAccessKeyName == null)
-            {
-#if NETMF
-                builder.Target = this.Audience + "/devices/" + WebUtility.UrlEncode(this.DeviceId);
-#else
-                builder.Target = "{0}/devices/{1}".FormatInvariant(this.Audience, WebUtility.UrlEncode(this.DeviceId));
-#endif
-            }
-            else
-            {
-                builder.KeyName = this.SharedAccessKeyName;
-                builder.Target = this.Audience;
-            }
-
-            ttl = builder.TimeToLive;
-
-            return builder.ToSignature();
         }
     }
 }

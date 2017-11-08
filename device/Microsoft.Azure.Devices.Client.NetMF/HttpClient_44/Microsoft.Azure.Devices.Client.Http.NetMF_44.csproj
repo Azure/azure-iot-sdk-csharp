@@ -74,12 +74,15 @@
     <Compile Include="..\..\Microsoft.Azure.Devices.Client\IAuthenticationMethod.cs">
       <Link>IAuthenticationMethod.cs</Link>
     </Compile>
-    <Compile Include="..\..\Microsoft.Azure.Devices.Client\IAuthorizationHeaderProvider.cs">
-      <Link>IAuthorizationHeaderProvider.cs</Link>
+    <Compile Include="..\..\Microsoft.Azure.Devices.Client\IAuthorizationProvider.cs">
+      <Link>IAuthorizationProvider.cs</Link>
     </Compile>
     <Compile Include="..\..\Microsoft.Azure.Devices.Client\IotHubConnectionString.cs">
       <Link>IotHubConnectionString.cs</Link>
     </Compile>
+    <Compile Include="..\..\Microsoft.Azure.Devices.Client\IotHubConnectionString.NetMF.cs">
+      <Link>IotHubConnectionString.NetMF.cs</Link>
+    </Compile>   
     <Compile Include="..\..\Microsoft.Azure.Devices.Client\IotHubConnectionStringBuilder.cs">
       <Link>IotHubConnectionStringBuilder.cs</Link>
     </Compile>

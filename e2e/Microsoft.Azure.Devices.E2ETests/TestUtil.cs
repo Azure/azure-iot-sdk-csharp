@@ -2,6 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -59,28 +61,38 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         public static Tuple<string, RegistryManager> InitializeEnvironment(string devicePrefix)
         {
-            string iotHubConnectionString = Configuration.IoTHub.ConnectionString;
+            // TODO: #222 - E2E tests improper use of TPL.
+            RegistryManager rm = GetRegistryManagerAsync(devicePrefix).GetAwaiter().GetResult();
+            return new Tuple<string, RegistryManager>(Configuration.IoTHub.ConnectionString, rm);
+        }
 
-            RegistryManager rm = RegistryManager.CreateFromConnectionString(iotHubConnectionString);
+        public static async Task<RegistryManager> GetRegistryManagerAsync(string devicePrefix)
+        {
+            RegistryManager rm = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+            await RemoveDevicesAsync(devicePrefix, rm);
+
+            return rm;
+        }
+
+        private static async Task RemoveDevicesAsync(string devicePrefix, RegistryManager rm)
+        {
+            Debug.WriteLine($"{nameof(RemoveDeviceAsync)} Enumerating devices.");
+            IEnumerable<Device> devices = await rm.GetDevicesAsync(int.MaxValue).ConfigureAwait(false);
 
             // Ensure to remove all previous devices.
-            foreach (Device device in rm.GetDevicesAsync(int.MaxValue).Result)
+            foreach (Device device in devices)
             {
                 if (device.Id.StartsWith(devicePrefix))
                 {
-                    RemoveDevice(device.Id, rm);
+                    Debug.WriteLine($"{nameof(RemoveDeviceAsync)} Removing {device.Id}.");
+                    await RemoveDeviceAsync(device.Id, rm).ConfigureAwait(false);
                 }
             }
-
-            return new Tuple<string, RegistryManager>(iotHubConnectionString, rm);
         }
 
-        public static void UnInitializeEnvironment(RegistryManager rm)
+        public static Task UnInitializeEnvironment(RegistryManager rm)
         {
-            Task.Run(async () =>
-            {
-                await rm.CloseAsync();
-            }).Wait();
+            return rm.CloseAsync();
         }
 
         public static Tuple<string, string> CreateDevice(string devicePrefix, string hostName, RegistryManager registryManager)
@@ -128,14 +140,11 @@ namespace Microsoft.Azure.Devices.E2ETests
             return new Tuple<string, string>(deviceName, hostName);
         }
 
-        public static void RemoveDevice(string deviceName, RegistryManager registryManager)
+        public static async Task RemoveDeviceAsync(string deviceName, RegistryManager registryManager)
         {
-            Task.Run(async () =>
-            {
-                Debug.WriteLine("Removing device " + deviceName);
-                await registryManager.RemoveDeviceAsync(deviceName);
-                Debug.WriteLine("Device successfully removed");
-            }).Wait();
+            Debug.WriteLine("Removing device " + deviceName);
+            await registryManager.RemoveDeviceAsync(deviceName);
+            Debug.WriteLine("Device successfully removed");
         }
 
         public static Client.Message ComposeErrorInjectionProperties(string faultType, string reason, int delayInSecs, int durationInSecs = 0)

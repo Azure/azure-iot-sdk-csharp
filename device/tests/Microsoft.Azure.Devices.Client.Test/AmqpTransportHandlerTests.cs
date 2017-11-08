@@ -8,6 +8,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Client.Transport;
+    using Microsoft.Azure.Devices.Client.Test.ConnectionString;
 
     [TestClass]
     public class AmqpTransportHandlerTests
@@ -110,7 +111,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         {
             return new AmqpTransportHandler(
                 new PipelineContext(), 
-                IotHubConnectionString.Parse(DumpyConnectionString), 
+                IotHubConnectionStringExtensions.Parse(DumpyConnectionString), 
                 new AmqpTransportSettings(TransportType.Amqp_Tcp_Only), 
                 (o, ea) => { }, 
                 (o, ea) => { return TaskHelpers.CompletedTask; });
