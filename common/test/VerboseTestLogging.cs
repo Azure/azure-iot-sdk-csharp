@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
@@ -28,7 +29,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         public void WriteLine(string format, params object[] args)
         {
-            string message = string.Format(format, args);
+            string message = string.Format(CultureInfo.InvariantCulture, format, args);
             EventSourceTestLogging.Log.TestVerboseMessage(message);
             Debug.WriteLine(message);
             Console.WriteLine(message);

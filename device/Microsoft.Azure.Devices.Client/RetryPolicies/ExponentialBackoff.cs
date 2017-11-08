@@ -8,19 +8,30 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// Represents a retry policy that performs a specified number of retries, using a randomized exponential back off scheme to determine the interval between retries.
     /// </summary>
-    /// <param name="retryCount">The maximum number of retry attempts.</param>
-    /// <param name="minBackoff">The minimum backoff time</param>
-    /// <param name="maxBackoff">The maximum backoff time.</param>
-    /// <param name="deltaBackoff">The value that will be used to calculate a random delta in the exponential delay between retries.</param>
     public class ExponentialBackoff : IRetryPolicy
     {
         private readonly TransientFaultHandling.ExponentialBackoff exponentialBackoffRetryStrategy;
+
+        /// <summary>
+        /// Creates an instance of ExponentialBackoff.
+        /// </summary>
+        /// <param name="retryCount">The maximum number of retry attempts.</param>
+        /// <param name="minBackoff">The minimum back-off time</param>
+        /// <param name="maxBackoff">The maximum back-off time.</param>
+        /// <param name="deltaBackoff">The value that will be used to calculate a random delta in the exponential delay between retries.</param>
 
         public ExponentialBackoff(int retryCount, TimeSpan minBackoff, TimeSpan maxBackoff, TimeSpan deltaBackoff)
         {
             this.exponentialBackoffRetryStrategy = new TransientFaultHandling.ExponentialBackoff(retryCount, minBackoff, maxBackoff, deltaBackoff);
         }
 
+        /// <summary>
+        /// Returns true if, based on the parameters the operation should be retried.
+        /// </summary>
+        /// <param name="currentRetryCount">How many times the operation has been retried.</param>
+        /// <param name="lastException">Operation exception.</param>
+        /// <param name="retryInterval">Next retry should be performed after this time interval.</param>
+        /// <returns>True if the operation should be retried, false otherwise.</returns>
         public bool ShouldRetry(int currentRetryCount, Exception lastException, out TimeSpan retryInterval)
         {
             return this.exponentialBackoffRetryStrategy.GetShouldRetry()(currentRetryCount, lastException, out retryInterval);

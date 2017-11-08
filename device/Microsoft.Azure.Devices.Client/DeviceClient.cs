@@ -1089,11 +1089,10 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         }
 
         /// <summary>
-        /// Registers a new delgate for the connection status changed callback. If a delegate is already associated, 
+        /// Registers a new delegate for the connection status changed callback. If a delegate is already associated, 
         /// it will be replaced with the new delegate.
-        /// <param name="statusChangedCallback">The name of the method to associate with the delegate.</param>
+        /// <param name="statusChangesHandler">The name of the method to associate with the delegate.</param>
         /// </summary>
-
         public void SetConnectionStatusChangesHandler(ConnectionStatusChangesHandler statusChangesHandler)
         {
             // codes_SRS_DEVICECLIENT_28_025: [** `SetConnectionStatusChangesHandler` shall set connectionStatusChangesHandler **]**

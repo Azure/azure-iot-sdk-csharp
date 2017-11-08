@@ -620,6 +620,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
                 catch (QuotaExceededException ex)
                 {
+                    Debug.WriteLine(ex);
                 }
             }
 
