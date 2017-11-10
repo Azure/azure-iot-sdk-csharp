@@ -119,7 +119,14 @@ namespace Microsoft.Azure.Devices.Shared
                 writer.WritePropertyName(X509ThumbprintTag);
                 serializer.Serialize(writer, twin.X509Thumbprint);
             }
-
+ 
+#if ENABLE_MODULES_SDK
+            if (twin.Configurations != null)
+            {
+                writer.WritePropertyName(ConfigurationsJsonTag);
+                serializer.Serialize(writer, twin.Configurations, typeof(IDictionary<string, ConfigurationInfo>));
+            }
+#endif
             if (twin.Tags != null && twin.Tags.Count > 0)
             {
                 writer.WritePropertyName(TagsJsonTag);
