@@ -119,7 +119,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     nameof(RegisterAsync));
 
                 // TODO: Extract trackingId from the exception.
-                throw new ProvisioningTransportException($"HTTP transport exception", true, "", ex);
+                throw new ProvisioningTransportException($"HTTP transport exception", ex, true);
             }
             finally
             {

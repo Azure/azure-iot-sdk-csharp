@@ -118,7 +118,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     nameof(RegisterAsync));
 
                 // TODO: Extract trackingId from the exception.
-                throw new ProvisioningTransportException($"AMQP transport exception", true, "", ex);
+                throw new ProvisioningTransportException($"AMQP transport exception", ex, true);
             }
             finally
             {

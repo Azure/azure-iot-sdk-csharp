@@ -17,12 +17,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         public ProvisioningTransportException()
         {
         }
-        
-        public ProvisioningTransportException(string message, bool isTransient, string trackingId, Exception innerException)
-            : this(message, innerException, isTransient, trackingId)
-        {
-        }
-
+       
         public ProvisioningTransportException(Exception innerException)
             : base(string.Empty, innerException)
         {
@@ -39,12 +34,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         {
         }
 
-        protected ProvisioningTransportException(string message, Exception innerException, bool isTransient)
+        public ProvisioningTransportException(string message, Exception innerException, bool isTransient)
             : this(message, innerException, isTransient, trackingId: string.Empty)
         {
         }
 
-        protected ProvisioningTransportException(string message, Exception innerException, bool isTransient, string trackingId)
+        public ProvisioningTransportException(string message, Exception innerException, bool isTransient, string trackingId)
             : base(message, innerException)
         {
             this.IsTransient = isTransient;

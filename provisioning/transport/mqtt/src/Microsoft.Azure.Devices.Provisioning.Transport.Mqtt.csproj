@@ -19,6 +19,27 @@
     <Compile Include="$(Common)\device\provisioning\Logging.ProvisioningDeviceClient.cs">
       <Link>Common\device\provisioning\Logging.ProvisioningDeviceClient.cs</Link>
     </Compile>
+    <Compile Include="$(Common)\device\provisioning\transport\ClientApiVersionHelper.cs"> 
+      <Link>Common\device\provisioning\transport\ClientApiVersionHelper.cs</Link>
+    </Compile>
+    <Compile Include="$(Common)\device\provisioning\transport\DeviceRegistrationResult.cs">
+      <Link>Common\device\provisioning\transport\DeviceRegistrationResult.cs</Link>
+    </Compile>
+    <Compile Include="$(Common)\device\provisioning\transport\RegistrationOperationStatus.cs">
+      <Link>Common\device\provisioning\transport\RegistrationOperationStatus.cs</Link>
+    </Compile>
+    <Compile Include="$(Common)\device\provisioning\transport\TpmRegistrationResult.cs">
+      <Link>Common\device\provisioning\transport\TpmRegistrationResult.cs</Link>
+    </Compile>    
+    <Compile Include="$(Common)\device\provisioning\transport\X509CertificateInfo.cs">
+      <Link>Common\device\provisioning\transport\X509CertificateInfo.cs</Link>
+    </Compile>
+    <Compile Include="$(Common)\device\provisioning\transport\X509RegistrationResult.cs">
+      <Link>Common\device\provisioning\transport\X509RegistrationResult.cs</Link>
+    </Compile>
+    <Compile Include="$(Common)\device\transport\mqtt\ClientWebSocketChannel.cs">
+      <Link>Common\device\transport\mqtt\ClientWebSocketChannel.cs</Link>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
@@ -27,6 +48,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="DotNetty.Codecs.Mqtt" Version="0.4.7" />
+    <PackageReference Include="DotNetty.Handlers" Version="0.4.7" />
+
     <!-- FXCop -->
     <PackageReference Condition=" '$(Configuration)' == 'Debug' " Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.3.0-beta1" />
   </ItemGroup>

@@ -5,9 +5,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 {
     internal class ClientApiVersionHelper
     {
+        // TODO: Split ApiVersionName as it is only used by HTTP and AMQP.
         public const string ApiVersionName = "api-version";
-
-        // TODO: Change this to GA version when the service is ready.
         public const string ApiVersion = "2017-11-15";
     }
 }

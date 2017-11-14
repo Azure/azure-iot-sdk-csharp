@@ -52,9 +52,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
                 throw new ProvisioningTransportException(
                     "Authentication key not found.", 
+                    null,
                     false, 
-                    operation?.OperationId, 
-                    null);
+                    operation?.OperationId);
             }
 
             byte[] key = Convert.FromBase64String(operation.RegistrationState.Tpm.AuthenticationKey);
