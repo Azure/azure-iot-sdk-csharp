@@ -67,7 +67,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 string registrationId = message.Security.GetRegistrationID();
                 string linkEndpoint = $"{message.IdScope}/registrations/{registrationId}";
 
-                AmqpClientConnection connection = authStrategy.CreateConnection(builder.Uri, linkEndpoint);
+                AmqpClientConnection connection = authStrategy.CreateConnection(builder.Uri, message.IdScope);
                 await authStrategy.OpenConnectionAsync(connection, TimeoutConstant, useWebSocket).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
                 

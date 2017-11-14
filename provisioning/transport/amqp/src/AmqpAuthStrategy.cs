@@ -11,9 +11,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
     internal abstract class AmqpAuthStrategy
     {
-        public virtual AmqpClientConnection CreateConnection(Uri uri, string linkendpoint)
+        public virtual AmqpClientConnection CreateConnection(Uri uri, string idScope)
         {
-            AmqpSettings settings = CreateAmqpSettings(linkendpoint);
+            AmqpSettings settings = CreateAmqpSettings(idScope);
             var amqpProvider = new AmqpTransportProvider();
             amqpProvider.Versions.Add(AmqpConstants.DefaultProtocolVersion);
             settings.TransportProviders.Add(amqpProvider);
@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             return new AmqpClientConnection(uri, settings);
         }
 
-        public abstract AmqpSettings CreateAmqpSettings(string linkendpoint);
+        public abstract AmqpSettings CreateAmqpSettings(string idScope);
 
         public abstract Task OpenConnectionAsync(AmqpClientConnection connection, TimeSpan timeout, bool useWebSocket);
 

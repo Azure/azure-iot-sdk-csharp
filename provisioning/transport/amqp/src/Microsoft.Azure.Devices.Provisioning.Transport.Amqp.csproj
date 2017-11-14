@@ -37,6 +37,9 @@
     <Compile Include="$(Common)\device\provisioning\transport\X509RegistrationResult.cs">
       <Link>Common\device\provisioning\transport\X509RegistrationResult.cs</Link>
     </Compile>
+    <Compile Include="$(Common)\device\provisioning\transport\ProvisioingSasBuilder.cs">
+      <Link>Common\device\provisioning\transport\ProvisioingSasBuilder.cs</Link>
+    </Compile>
   </ItemGroup>
   
   <ItemGroup>
