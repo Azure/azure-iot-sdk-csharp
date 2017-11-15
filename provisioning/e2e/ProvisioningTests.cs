@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [DataRow(nameof(ProvisioningTransportHandlerHttp), nameof(SecurityClientTpm), null, null)]
         [DataRow(nameof(ProvisioningTransportHandlerHttp), nameof(SecurityClientX509), X509EnrollmentType.Individual, null)]
         [DataRow(nameof(ProvisioningTransportHandlerHttp), nameof(SecurityClientX509), X509EnrollmentType.Group, null)]
-//        [DataRow(nameof(ProvisioningTransportHandlerAmqp), nameof(SecurityClientTpm), null, TransportFallbackType.TcpOnly)]
+        [DataRow(nameof(ProvisioningTransportHandlerAmqp), nameof(SecurityClientTpm), null, TransportFallbackType.TcpOnly)]
         [DataRow(nameof(ProvisioningTransportHandlerAmqp), nameof(SecurityClientX509), X509EnrollmentType.Individual, TransportFallbackType.TcpOnly)]
         [DataRow(nameof(ProvisioningTransportHandlerAmqp), nameof(SecurityClientX509), X509EnrollmentType.Group, TransportFallbackType.TcpOnly)]
 //        [DataRow(nameof(ProvisioningTransportHandlerAmqp), nameof(SecurityClientTpm), null, TransportFallbackType.WebSocketOnly)]

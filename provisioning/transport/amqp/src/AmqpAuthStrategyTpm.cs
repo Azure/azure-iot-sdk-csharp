@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             _security = security;
         }
 
-        public override AmqpSettings CreateAmqpSettings(string linkendpoint)
+        public override AmqpSettings CreateAmqpSettings(string idScope)
         {
             var settings = new AmqpSettings();
 
@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
             byte[] ekBuffer = _security.GetEndorsementKey();
             byte[] srkBuffer = _security.GetStorageRootKey();
-            SaslTpmHandler tpmHandler = new SaslTpmHandler(ekBuffer, srkBuffer, linkendpoint, _security);
+            SaslTpmHandler tpmHandler = new SaslTpmHandler(ekBuffer, srkBuffer, idScope, _security);
             saslProvider.AddHandler(tpmHandler);
 
             return settings;

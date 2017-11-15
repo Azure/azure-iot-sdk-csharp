@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             _security = security;
         }
 
-        public override AmqpSettings CreateAmqpSettings(string linkendpoint)
+        public override AmqpSettings CreateAmqpSettings(string idScope)
         {
             return new AmqpSettings();
         }
