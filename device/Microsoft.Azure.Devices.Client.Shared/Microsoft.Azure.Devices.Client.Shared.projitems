@@ -243,11 +243,17 @@
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\DeviceAuthenticationWithRegistrySymmetricKey.cs">
       <Link>DeviceAuthenticationWithRegistrySymmetricKey.cs</Link>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\DeviceAuthenticationWithSakRefresh.cs">
+      <Link>DeviceAuthenticationWithSakRefresh.cs</Link>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\DeviceAuthenticationWithSharedAccessPolicyKey.cs">
       <Link>DeviceAuthenticationWithSharedAccessPolicyKey.cs</Link>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\DeviceAuthenticationWithToken.cs">
       <Link>DeviceAuthenticationWithToken.cs</Link>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\DeviceAuthenticationWithTokenRefresh.cs">
+      <Link>DeviceAuthenticationWithTokenRefresh.cs</Link>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\DeviceClient.cs">
       <Link>DeviceClient.cs</Link>
@@ -258,8 +264,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\IAuthenticationMethod.cs">
       <Link>IAuthenticationMethod.cs</Link>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\IAuthorizationHeaderProvider.cs">
-      <Link>IAuthorizationHeaderProvider.cs</Link>
+    <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\IAuthorizationProvider.cs">
+      <Link>IAuthorizationProvider.cs</Link>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\IDelegatingHandler.cs">
       <Link>IDelegatingHandler.cs</Link>
@@ -287,6 +293,9 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\IotHubConnectionString.cs">
       <Link>IotHubConnectionString.cs</Link>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\IotHubConnectionString.Core.cs">
+      <Link>IotHubConnectionString.Core.cs</Link>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\IotHubConnectionStringBuilder.cs">
       <Link>IotHubConnectionStringBuilder.cs</Link>

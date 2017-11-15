@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         static readonly JsonMediaTypeFormatter JsonFormatter = new JsonMediaTypeFormatter();
 #endif
         readonly Uri baseAddress;
-        readonly IAuthorizationHeaderProvider authenticationHeaderProvider;
+        readonly IAuthorizationProvider authenticationHeaderProvider;
         readonly IReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> defaultErrorMapping;
         readonly bool usingX509ClientCert = false;
         HttpClient httpClientObj;
@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public HttpClientHelper(
             Uri baseAddress,
-            IAuthorizationHeaderProvider authenticationHeaderProvider,
+            IAuthorizationProvider authenticationHeaderProvider,
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> defaultErrorMapping,
             TimeSpan timeout,
             Action<HttpClient> preRequestActionForAllRequests,
@@ -414,7 +414,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 if (!this.usingX509ClientCert)
                 {
-                    msg.Headers.Add(HttpRequestHeader.Authorization.ToString(), this.authenticationHeaderProvider.GetAuthorizationHeader());
+                    string authHeader = await this.authenticationHeaderProvider.GetPasswordAsync().ConfigureAwait(false);
+                    msg.Headers.Add(HttpRequestHeader.Authorization.ToString(), authHeader);
                 }
 
                 msg.Headers.UserAgent.ParseAdd(this.productInfo.ToString());

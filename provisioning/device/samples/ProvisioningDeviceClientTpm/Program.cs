@@ -53,8 +53,6 @@ namespace ProvisioningDeviceClientTpm
                 if (result.Status != ProvisioningRegistrationStatusType.Assigned) return;
 
                 var auth = new DeviceAuthenticationWithTpm(result.DeviceId, security);
-                // TODO: Temporary workaround until IoTHub DeviceClient gets Token refresh support.
-                await auth.GetTokenAsync(result.AssignedHub);
 
                 using (DeviceClient iotClient = DeviceClient.Create(result.AssignedHub, auth, TransportType.Mqtt))
                 {

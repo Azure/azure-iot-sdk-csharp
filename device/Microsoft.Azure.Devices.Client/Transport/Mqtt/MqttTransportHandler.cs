@@ -190,7 +190,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             this.messageQueue = new ConcurrentQueue<Message>();
             this.completionQueue = new Queue<string>();
 
-            this.serverAddress = null; // this will be resolved asynchrnously in OpenAsync
+            this.serverAddress = null; // this will be resolved asynchronously in OpenAsync
             this.hostName = iotHubConnectionString.HostName;
 
             this.qos = settings.PublishToServerQoS;
