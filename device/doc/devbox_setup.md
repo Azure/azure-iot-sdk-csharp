@@ -11,7 +11,7 @@ This document describes how to prepare your development environment to build and
 
 ## Setting up a Windows development environment
 
-- Install [Visual Studio 2015][visual-studio]. You can use the **Visual Studio Community** Free download if you meet the licensing requirements.
+- Install [Visual Studio 2017][visual-studio]. You can use the **Visual Studio Community** Free download if you meet the licensing requirements.
 
 Be sure to include [NuGet Package Manager][NuGet-Package-Manager].
 
@@ -80,6 +80,8 @@ To clone the **master** use following command or simply download the **.zip** fr
 There are ways you can build the C# SDK (along with samples). You can either build using command line or you can build using VS 2015 IDE
 
 ### Option 1:  Build using command line
+
+This requires Powershell script execution enabled on your system. See http://go.microsoft.com/fwlink/?LinkID=135170 for more information.
 
 1. Open a Developer Command Prompt for VS2015.
 2. Go to scripts folder located at **csharp\\device\\build**. Run the build script `build` which will build the SDK and the samples using default option.
