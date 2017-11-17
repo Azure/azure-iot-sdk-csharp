@@ -30,11 +30,11 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
     /// Provides a wrapper for a non-generic <see cref="T:System.Threading.Tasks.Task" /> and calls into the pipeline
     /// to retry only the generic version of the <see cref="T:System.Threading.Tasks.Task" />.
     /// </summary>
-    internal class AsyncExecution : AsyncExecution<bool>
+    internal class AsyncExecution : AsyncExecution<Task<bool>>
     {
         private static Task<bool> cachedBoolTask;
 
-        public AsyncExecution(Func<Task> taskAction, ShouldRetry shouldRetry, Func<Exception, bool> isTransient, Action<int, Exception, TimeSpan> onRetrying, bool fastFirstRetry, CancellationToken cancellationToken) : base(() => AsyncExecution.StartAsGenericTask(taskAction), shouldRetry, isTransient, onRetrying, fastFirstRetry, cancellationToken)
+        public AsyncExecution(Func<Task> taskAction, ShouldRetry shouldRetry, Func<Exception, bool> isTransient, Action<int, Exception, TimeSpan> onRetrying, bool fastFirstRetry, CancellationToken cancellationToken) : base(() => AsyncExecution.StartAsGenericTask(taskAction, cancellationToken), shouldRetry, isTransient, onRetrying, fastFirstRetry, cancellationToken)
         {
         }
 
@@ -43,8 +43,16 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         /// </summary>
         /// <param name="taskAction">The task to wrap.</param>
         /// <returns>A <see cref="T:System.Threading.Tasks.Task" /> that wraps the non-generic <see cref="T:System.Threading.Tasks.Task" />.</returns>
-        private static Task<bool> StartAsGenericTask(Func<Task> taskAction)
+        private async static Task<Task<bool>> StartAsGenericTask(Func<Task> taskAction, CancellationToken cancellationToken)
         {
+            if (cancellationToken.IsCancellationRequested)
+            {
+
+                TaskCompletionSource<bool> taskCompletionSource = new TaskCompletionSource<bool>();
+                taskCompletionSource.TrySetCanceled();
+                return taskCompletionSource.Task;
+
+            }
             Task task = taskAction();
             if (task == null)
             {
@@ -65,7 +73,7 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
                 }), "taskAction");
             }
             TaskCompletionSource<bool> tcs = new TaskCompletionSource<bool>();
-            task.ContinueWith(delegate (Task t)
+            await task.ContinueWith(delegate (Task t)
             {
                 if (t.IsFaulted)
                 {
