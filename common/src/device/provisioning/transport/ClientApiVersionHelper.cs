@@ -8,6 +8,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         public const string ApiVersionName = "api-version";
 
         // TODO: Change this to GA version when the service is ready.
-        public const string ApiVersion = "2017-08-31-preview";
+        public const string ApiVersion = "2017-11-15";
     }
 }

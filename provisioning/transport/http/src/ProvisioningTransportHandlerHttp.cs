@@ -108,7 +108,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     authStrategy.SaveCredentials(operation);
                 }
 
-                return ConvertToProvisioningRegistrationResult(operation.RegistrationStatus);
+                return ConvertToProvisioningRegistrationResult(operation.RegistrationState);
             }
             // TODO: Catch only expected exceptions from HTTP and REST.
             catch (Exception ex)

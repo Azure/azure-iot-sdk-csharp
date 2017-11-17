@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         public override void SaveCredentials(RegistrationOperationStatus operation)
         {
-            if (operation?.RegistrationStatus?.Tpm?.AuthenticationKey == null)
+            if (operation?.RegistrationState?.Tpm?.AuthenticationKey == null)
             {
                 if (Logging.IsEnabled) Logging.Error(
                     this,
@@ -57,8 +57,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     null);
             }
 
-            byte[] key = Convert.FromBase64String(operation.RegistrationStatus.Tpm.AuthenticationKey);
-            if (Logging.IsEnabled) Logging.DumpBuffer(this, key, nameof(operation.RegistrationStatus.Tpm.AuthenticationKey));
+            byte[] key = Convert.FromBase64String(operation.RegistrationState.Tpm.AuthenticationKey);
+            if (Logging.IsEnabled) Logging.DumpBuffer(this, key, nameof(operation.RegistrationState.Tpm.AuthenticationKey));
 
             _security.ActivateSymmetricIdentity(key);
         }

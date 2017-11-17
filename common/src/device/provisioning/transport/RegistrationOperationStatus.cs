@@ -34,16 +34,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
         /// <param name="status">Device enrollment status. Possible values
         /// include: 'unassigned', 'assigning', 'assigned', 'failed',
         /// 'disabled'</param>
-        /// <param name="registrationStatus">Device registration
+        /// <param name="registrationState">Device registration
         /// status.</param>
         public RegistrationOperationStatus(
             string operationId = default(string), 
             string status = default(string), 
-            DeviceRegistrationResult registrationStatus = default(DeviceRegistrationResult))
+            DeviceRegistrationResult registrationState = default(DeviceRegistrationResult))
         {
             OperationId = operationId;
             Status = status;
-            RegistrationStatus = registrationStatus;
+            RegistrationState = registrationState;
             CustomInit();
         }
 
@@ -68,8 +68,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
         /// <summary>
         /// Gets or sets device registration status.
         /// </summary>
-        [JsonProperty(PropertyName = "registrationStatus")]
-        public DeviceRegistrationResult RegistrationStatus { get; set; }
+        [JsonProperty(PropertyName = "registrationState")]
+        public DeviceRegistrationResult RegistrationState { get; set; }
 
         /// <summary>
         /// Gets or sets the Retry-After header.

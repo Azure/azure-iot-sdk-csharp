@@ -107,7 +107,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     authStrategy.SaveCredentials(operation);
                 }
 
-                return ConvertToProvisioningRegistrationResult(operation.RegistrationStatus);
+                return ConvertToProvisioningRegistrationResult(operation.RegistrationState);
             }
             // TODO: Catch only expected exceptions from Amqp.
             catch (Exception ex)
