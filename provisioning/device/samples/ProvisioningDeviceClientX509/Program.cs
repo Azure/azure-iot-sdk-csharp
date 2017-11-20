@@ -21,7 +21,7 @@ namespace ProvisioningDeviceClientX509
         //    You can generate a self-signed certificate by running the GenerateTestCertificate.ps1 powershell script.
         //    Select the public key 'certificate.cer' file. ('certificate.pfx' contains the private key and is password protected.)
         //    For production code, it is advised that you install the certificate in the CurrentUser (My) store.
-        // DeviceID: iothubx509device1 (must match the CN part of the certificate Subject)
+        // DeviceID: iothubx509device1
 
         private static string s_idScope;
         private static string s_certificateFileName = "certificate.pfx";
