@@ -281,6 +281,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.DefaultDelayInSec);
         }
 
+        [Ignore] // TODO: #239.
         [TestMethod]
         [TestCategory("Message-E2E")]
         [TestCategory("Recovery")]
