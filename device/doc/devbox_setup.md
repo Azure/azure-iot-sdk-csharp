@@ -67,11 +67,7 @@ For building iOS and Android app in C# , you will use PCL NuGet package  located
 
 ## Building the Azure IoT Device Client .NET SDK locally
 
-In some cases, you may want to build the .NET SDK libraries **locally** for development and testing purpose. For example, you may want to build the **latest** code available on the **develop** branch which follows the Continuous Integration (CI) approach and you may also want to step through the client library code while debugging.
-
-To pull latest code on **develop** branch you can use following command
-
-`git clone -b develop --recursive https://github.com/Azure/azure-iot-sdks.git azure-iot-develop`
+In some cases, you may want to build the .NET SDK libraries **locally** for development and testing purpose. For example, you may want to build the **latest** code available on the **master** branch which follows the Continuous Integration (CI) approach and you may also want to step through the client library code while debugging.
 
 To clone the **master** use following command or simply download the **.zip** from [Azure IoT SDK][lnk-azure-iot] 
 
