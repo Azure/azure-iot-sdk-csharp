@@ -212,3 +212,6 @@ DOTNETMF_FS_EMULATION*/
 
 # NuGet package restore lockfiles
 project.lock.json
+
+# TPM simulator NVRAM
+NVChip
