@@ -27,6 +27,14 @@ namespace Microsoft.Azure.Devices
             bool throwIfNotFound,
             CancellationToken cancellationToken);
 
+        Task<T> GetAsync<T>(
+            Uri requestUri,
+            TimeSpan operationTimeout,
+            IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> errorMappingOverrides,
+            IDictionary<string, string> customHeaders,
+            bool throwIfNotFound,
+            CancellationToken cancellationToken);
+
         Task<T> PutAsync<T>(
             Uri requestUri,
             T entity,
@@ -76,6 +84,14 @@ namespace Microsoft.Azure.Devices
             T entity, 
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> errorMappingOverrides, 
             IDictionary<string, string> customHeaders, 
+            CancellationToken cancellationToken);
+
+        Task PostAsync<T>(
+            Uri requestUri,
+            T entity,
+            IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> errorMappingOverrides,
+            IDictionary<string, string> customHeaders,
+            TimeSpan operationTimeout,
             CancellationToken cancellationToken);
 
         Task<T2> PostAsync<T, T2>(

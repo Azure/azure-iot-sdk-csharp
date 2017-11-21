@@ -10,7 +10,7 @@
     "Microsoft.Extensions.Logging": "1.1.1",
     "Microsoft.Extensions.Logging.Abstractions": "1.1.1",
     "Microsoft.NETCore.UniversalWindowsPlatform": "5.2.2",
-    "Newtonsoft.Json": "6.0.8",
+    "Newtonsoft.Json": "10.0.3",
     "PCLCrypto": "2.0.147",
     "System.AppContext": "4.3.0",
     "System.Net.WebSockets.Client": "4.3.0",

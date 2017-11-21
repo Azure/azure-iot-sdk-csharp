@@ -4,6 +4,7 @@
 namespace Microsoft.Azure.Devices
 {
     using System;
+    using System.Net;
     using System.Text;
     using System.Threading.Tasks;
     using Microsoft.Azure.Amqp;
@@ -23,13 +24,16 @@ namespace Microsoft.Azure.Devices
                 throw new ArgumentNullException("builder");
             }
 
-            this.HostName = builder.HostName;
+            this.Audience = builder.HostName;
+            this.HostName = string.IsNullOrEmpty(builder.GatewayHostName) ? builder.HostName : builder.GatewayHostName;
             this.SharedAccessKeyName = builder.SharedAccessKeyName;
             this.SharedAccessKey = builder.SharedAccessKey;
             this.SharedAccessSignature = builder.SharedAccessSignature;
             this.IotHubName = builder.IotHubName;
-            this.HttpsEndpoint = new UriBuilder("https", builder.HostName).Uri;
+            this.HttpsEndpoint = new UriBuilder("https", this.HostName).Uri;
             this.AmqpEndpoint = new UriBuilder(CommonConstants.AmqpsScheme, builder.HostName, AmqpConstants.DefaultSecurePort).Uri;
+            this.DeviceId = builder.DeviceId;
+            this.GatewayHostName = builder.GatewayHostName;
         }
 
         public string IotHubName
@@ -58,7 +62,8 @@ namespace Microsoft.Azure.Devices
 
         public string Audience
         {
-            get { return this.HostName; }
+            get;
+            private set;
         }
 
         public string SharedAccessKeyName
@@ -74,6 +79,18 @@ namespace Microsoft.Azure.Devices
         }
 
         public string SharedAccessSignature
+        {
+            get;
+            private set;
+        }
+
+        public string DeviceId
+        {
+            get;
+            private set;
+        }
+
+        public string GatewayHostName
         {
             get;
             private set;
@@ -156,6 +173,15 @@ namespace Microsoft.Azure.Devices
                 TimeToLive = DefaultTokenTimeToLive,
                 Target = this.Audience
             };
+
+            if (this.DeviceId != null)
+            {
+#if NETMF
+                builder.Target = this.Audience + "/devices/" + WebUtility.UrlEncode(this.DeviceId);
+#else
+                builder.Target = "{0}/devices/{1}".FormatInvariant(this.Audience, WebUtility.UrlEncode(this.DeviceId));
+#endif
+            }
 
             ttl = builder.TimeToLive;
 

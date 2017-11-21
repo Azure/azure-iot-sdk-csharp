@@ -21,7 +21,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -60,9 +60,14 @@
     <Compile Include="$(SharedCodeDir)\TwinCollectionValue.cs" />
     <Compile Include="$(SharedCodeDir)\TwinJsonConverter.cs" />
     <Compile Include="$(SharedCodeDir)\TwinProperties.cs" />
+    <Compile Include="$(SharedCodeDir)\DeviceConnectionState.cs" />
+    <Compile Include="$(SharedCodeDir)\DeviceStatus.cs" />
+    <Compile Include="$(SharedCodeDir)\AuthenticationType.cs" />
+    <Compile Include="$(SharedCodeDir)\X509Thumbprint.cs" />
+    <Compile Include="$(SharedCodeDir)\Common\Extensions\StringFormattingExtensions.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>
