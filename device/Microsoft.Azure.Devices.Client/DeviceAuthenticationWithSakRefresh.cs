@@ -30,19 +30,9 @@ namespace Microsoft.Azure.Devices.Client
 
             if (_connectionString.SharedAccessKeyName == null)
             {
-                if (string.IsNullOrEmpty(_connectionString.ModuleId))
-                {
-                    builder.Target = "{0}/devices/{1}".FormatInvariant(
-                        iotHub,
-                        WebUtility.UrlEncode(DeviceId));
-                }
-                else
-                {
-                    builder.Target = "{0}/devices/{1}/modules/{2}".FormatInvariant(
-                        iotHub,
-                        WebUtility.UrlEncode(DeviceId),
-                        WebUtility.UrlEncode(_connectionString.ModuleId));
-                }
+                builder.Target = "{0}/devices/{1}".FormatInvariant(
+                    iotHub, 
+                    WebUtility.UrlEncode(DeviceId));
             }
             else
             {
