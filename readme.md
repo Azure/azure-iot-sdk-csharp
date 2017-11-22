@@ -151,7 +151,7 @@ Below is a table showing the mapping of the LTS branches to the packages release
 
 | Nuget Package | Github Branch | LTS Status | LTS Start Date | Maintenance End Date | Removed Date |
 | :-----------: | :-----------: | :--------: | :------------: | :------------------: | :----------: |
-| 1.x.x         | lts_07_2017   | Active     | 2017-07-01     | 2017-12-31           | 2018-06-30   |
+| Microsoft.Azure.Devices.Client v1.5.1, Microsoft.Azure.Devices v1.4.0, Microsoft.Azure.Devices.Shared v1.1.1 | lts_07_2017   | Active     | 2017-07-01     | 2017-12-31           | 2018-06-30   |
 
 * <sup>1</sup> All scheduled dates are subject to change by the Azure IoT SDK team.
 

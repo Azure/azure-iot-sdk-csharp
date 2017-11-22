@@ -11,7 +11,7 @@ This document describes how to prepare your development environment to build and
 
 ## Setting up a Windows development environment
 
-- Install [Visual Studio 2015][visual-studio]. You can use the **Visual Studio Community** Free download if you meet the licensing requirements.
+- Install [Visual Studio 2017][visual-studio]. You can use the **Visual Studio Community** Free download if you meet the licensing requirements.
 
 Be sure to include [NuGet Package Manager][NuGet-Package-Manager].
 
@@ -67,11 +67,7 @@ For building iOS and Android app in C# , you will use PCL NuGet package  located
 
 ## Building the Azure IoT Device Client .NET SDK locally
 
-In some cases, you may want to build the .NET SDK libraries **locally** for development and testing purpose. For example, you may want to build the **latest** code available on the **develop** branch which follows the Continuous Integration (CI) approach and you may also want to step through the client library code while debugging.
-
-To pull latest code on **develop** branch you can use following command
-
-`git clone -b develop --recursive https://github.com/Azure/azure-iot-sdks.git azure-iot-develop`
+In some cases, you may want to build the .NET SDK libraries **locally** for development and testing purpose. For example, you may want to build the **latest** code available on the **master** branch which follows the Continuous Integration (CI) approach and you may also want to step through the client library code while debugging.
 
 To clone the **master** use following command or simply download the **.zip** from [Azure IoT SDK][lnk-azure-iot] 
 
@@ -80,6 +76,8 @@ To clone the **master** use following command or simply download the **.zip** fr
 There are ways you can build the C# SDK (along with samples). You can either build using command line or you can build using VS 2015 IDE
 
 ### Option 1:  Build using command line
+
+This requires Powershell script execution enabled on your system. See http://go.microsoft.com/fwlink/?LinkID=135170 for more information.
 
 1. Open a Developer Command Prompt for VS2015.
 2. Go to scripts folder located at **csharp\\device\\build**. Run the build script `build` which will build the SDK and the samples using default option.

@@ -21,6 +21,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
     using Microsoft.Azure.Devices.Client.Common;
     using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Azure.Devices.Client.Extensions;
+    using System.Diagnostics;
 
     sealed class MqttIotHubAdapter : ChannelHandlerAdapter
     {
@@ -50,7 +51,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         readonly string iotHubHostName;
         readonly MqttTransportSettings mqttTransportSettings;
         readonly TimeSpan pingRequestInterval;
-        readonly string password;
+        readonly IAuthorizationProvider passwordProvider;
         readonly SimpleWorkQueue<PublishWorkItem> serviceBoundOneWayProcessor;
         readonly OrderedTwoPhaseWorkQueue<int, PublishWorkItem> serviceBoundTwoWayProcessor;
         readonly IWillMessage willMessage;
@@ -69,7 +70,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             string deviceId,
             string moduleId,
             string iotHubHostName,
-            string password,
+            IAuthorizationProvider passwordProvider,
             MqttTransportSettings mqttTransportSettings,
             IWillMessage willMessage,
             IMqttIotHubEventHandler mqttIotHubEventHandler,
@@ -77,7 +78,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             Contract.Requires(deviceId != null);
             Contract.Requires(iotHubHostName != null);
-            Contract.Requires(password != null);
+            Contract.Requires(passwordProvider != null);
             Contract.Requires(mqttTransportSettings != null);
             Contract.Requires(!mqttTransportSettings.HasWill || willMessage != null);
             Contract.Requires(productInfo != null);
@@ -85,7 +86,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             this.deviceId = deviceId;
             this.moduleId = moduleId;
             this.iotHubHostName = iotHubHostName;
-            this.password = password;
+            this.passwordProvider = passwordProvider;
             this.mqttTransportSettings = mqttTransportSettings;
             this.willMessage = willMessage;
             this.mqttIotHubEventHandler = mqttIotHubEventHandler;
@@ -106,6 +107,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             this.stateFlags = StateFlags.NotConnected;
 
             this.Connect(context);
+
+            // TODO #223: this executes in parallel with the Connect(context).
 
             base.ChannelActive(context);
 
@@ -231,13 +234,23 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             try
             {
                 string id = string.IsNullOrWhiteSpace(this.moduleId) ? this.deviceId : $"{this.deviceId}/{this.moduleId}";
+                string password = null;
+                if (this.passwordProvider != null)
+                {
+                    password = await this.passwordProvider.GetPasswordAsync().ConfigureAwait(false);
+                }
+                else
+                {
+                    Debug.Assert(this.mqttTransportSettings.ClientCertificate != null);
+                }
+
                 var connectPacket = new ConnectPacket
                 {
                     ClientId = id,
                     HasUsername = true,
                     Username = $"{this.iotHubHostName}/{id}/api-version={ClientApiVersionHelper.ApiVersionString}&DeviceClientType={Uri.EscapeDataString(this.productInfo.ToString())}",
-                    HasPassword = !string.IsNullOrEmpty(this.password),
-                    Password = this.password,
+                    HasPassword = !string.IsNullOrEmpty(password),
+                    Password = password,
                     KeepAliveInSeconds = this.mqttTransportSettings.KeepAliveInSeconds,
                     CleanSession = this.mqttTransportSettings.CleanSession,
                     HasWill = this.mqttTransportSettings.HasWill

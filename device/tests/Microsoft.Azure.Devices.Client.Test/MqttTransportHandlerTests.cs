@@ -19,6 +19,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
     using Exceptions;
     using Client.Transport;
     using DotNetty.Common.Concurrency;
+    using Microsoft.Azure.Devices.Client.Test.ConnectionString;
 
     [TestClass]
     public class MqttTransportHandlerTests
@@ -108,7 +109,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
         {
             return new MqttTransportHandler(
                 new PipelineContext(),
-                IotHubConnectionString.Parse(DummyConnectionString),
+                IotHubConnectionStringExtensions.Parse(DummyConnectionString),
                 new MqttTransportSettings(Microsoft.Azure.Devices.Client.TransportType.Mqtt_Tcp_Only),
                 (o, ea) => { },
                 (o, ea) => { return TaskHelpers.CompletedTask; });
@@ -153,7 +154,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
                 return Task<IChannel>.FromResult<IChannel>(_channel);
             };
 
-            transport = new MqttTransportHandler(new PipelineContext(), IotHubConnectionString.Parse(connectionString), new MqttTransportSettings(Microsoft.Azure.Devices.Client.TransportType.Mqtt_Tcp_Only), factory, onConnectionOpenedCallback, onConnectionClosedCallback);
+            transport = new MqttTransportHandler(new PipelineContext(), IotHubConnectionStringExtensions.Parse(connectionString), new MqttTransportSettings(Microsoft.Azure.Devices.Client.TransportType.Mqtt_Tcp_Only), factory, onConnectionOpenedCallback, onConnectionClosedCallback);
             return transport;
         }
 

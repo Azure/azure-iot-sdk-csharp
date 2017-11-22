@@ -79,9 +79,11 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(WIP_PROVISIONING.ToUpper())' == 'TRUE'">
     <!-- WIP: ProvisioningDeviceClient -->
-    <Compile Include="..\Microsoft.Azure.Devices.Shared\ProvisioningSecurityClient.cs" />
-    <Compile Include="..\Microsoft.Azure.Devices.Shared\ProvisioningSecurityClientSasToken.cs" />
-    <Compile Include="..\Microsoft.Azure.Devices.Shared\ProvisioningSecurityClientX509Certificate.cs" />
+    <Compile Include="..\Microsoft.Azure.Devices.Shared\SecurityClient.cs" />
+    <Compile Include="..\Microsoft.Azure.Devices.Shared\SecurityClientHsmTpm.cs" />
+    <Compile Include="..\Microsoft.Azure.Devices.Shared\SecurityClientHsmX509.cs" />
+    <Compile Include="..\Microsoft.Azure.Devices.Shared\SecurityClientException.cs" />
+    <Compile Include="..\Microsoft.Azure.Devices.Shared\SecurityClientX509.cs" />
     <Compile Include="..\Microsoft.Azure.Devices.Shared\TransportFallbackType.cs" />
   </ItemGroup>
 

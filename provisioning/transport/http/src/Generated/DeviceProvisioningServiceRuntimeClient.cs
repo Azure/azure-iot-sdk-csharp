@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 
-namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Http
+namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
     /// <summary>
     /// API for using the IotHub Device Provisioning Service Runtime Features

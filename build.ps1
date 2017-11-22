@@ -129,7 +129,6 @@ try {
         BuildProject provisioning\transport\http "Provisioning Transport for HTTP"
         BuildProject provisioning\transport\mqtt "Provisioning Transport for MQTT"
 
-        BuildProject security\dice "SecurityClient for DICE"
         BuildProject security\tpm "SecurityClient for TPM"
     }
 
@@ -147,7 +146,6 @@ try {
             RunTests provisioning\transport\http\tests "Provisioning Transport for HTTP"
             RunTests provisioning\transport\mqtt\tests "Provisioning Transport for MQTT"
             
-            RunTests security\dice\tests "SecurityClient for DICE"
             RunTests security\tpm\tests "SecurityClient for TPM"
         }
     }

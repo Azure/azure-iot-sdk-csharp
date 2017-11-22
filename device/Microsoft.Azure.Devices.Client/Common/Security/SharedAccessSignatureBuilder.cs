@@ -25,16 +25,16 @@ namespace Microsoft.Azure.Devices.Client
 
     using System.Text;
 
-    sealed class SharedAccessSignatureBuilder
+    public class SharedAccessSignatureBuilder
     {
-        string key;
+        private string key;
 
         public SharedAccessSignatureBuilder()
         {
 #if NETMF
-            this.TimeToLive = new TimeSpan(0, 20, 0);
+            this.TimeToLive = new TimeSpan(0, 60, 0);
 #else
-            this.TimeToLive = TimeSpan.FromMinutes(20);
+            this.TimeToLive = TimeSpan.FromMinutes(60);
 #endif
         }
 
@@ -65,7 +65,7 @@ namespace Microsoft.Azure.Devices.Client
             return BuildSignature(this.KeyName, this.Key, this.Target, this.TimeToLive);
         }
 
-        static string BuildSignature(string keyName, string key, string target, TimeSpan timeToLive)
+        private string BuildSignature(string keyName, string key, string target, TimeSpan timeToLive)
         {
             string expiresOn = BuildExpiresOn(timeToLive);
             string audience = WebUtility.UrlEncode(target);
@@ -118,7 +118,7 @@ namespace Microsoft.Azure.Devices.Client
             return buffer.ToString();
         }
 
-        static string BuildExpiresOn(TimeSpan timeToLive)
+        private string BuildExpiresOn(TimeSpan timeToLive)
         {
 #if MF_FRAMEWORK_VERSION_V4_3
             // .NETMF < v4.4 had a know bug with DateTime.Kind: values were always created with DateTimeKind.Local 
@@ -140,14 +140,14 @@ namespace Microsoft.Azure.Devices.Client
 #endif
         }
 #if NETMF
-        static string Sign(string requestString, string key)
+        private string Sign(string requestString, string key)
         {
             // computing SHA256 signature using a managed code library
             var hmac = SHA.computeHMAC_SHA256(Convert.FromBase64String(key), Encoding.UTF8.GetBytes(requestString));
             return Convert.ToBase64String(hmac);
         }
 #else
-        static string Sign(string requestString, string key)
+        protected virtual string Sign(string requestString, string key)
         {
 #if !NETSTANDARD1_3
             var algorithm = WinRTCrypto.MacAlgorithmProvider.OpenAlgorithm(MacAlgorithm.HmacSha256);

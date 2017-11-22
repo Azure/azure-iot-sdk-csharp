@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [ClassCleanup]
         public static void ClassCleanup()
         {
-            TestUtil.UnInitializeEnvironment(registryManager);
+            TestUtil.UnInitializeEnvironment(registryManager).GetAwaiter().GetResult();
         }
 
         [TestInitialize]
@@ -142,11 +142,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             EventHubClient eventHubClient;
             EventHubReceiver eventHubReceiver = CreateEventHubReceiver(deviceInfo.Item1, out eventHubClient);
 
-            string certBase64 = Environment.GetEnvironmentVariable("IOTHUB_X509_PFX_CERTIFICATE");
-
-            Byte[] buff = Convert.FromBase64String(certBase64);
-
-            var cert = new X509Certificate2(buff);
+            X509Certificate2 cert = Configuration.IoTHub.GetCertificateWithPrivateKey();
 
             var auth = new DeviceAuthenticationWithX509Certificate(deviceInfo.Item1, cert);
             var deviceClient = DeviceClient.Create(deviceInfo.Item2, auth, transport);
@@ -177,7 +173,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await deviceClient.CloseAsync();
                 await eventHubReceiver.CloseAsync();
                 await eventHubClient.CloseAsync();
-                TestUtil.RemoveDevice(deviceInfo.Item1, registryManager);
+                await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager);
             }
         }
 
@@ -186,8 +182,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             eventHubClient = EventHubClient.CreateFromConnectionString(hubConnectionString, "messages/events");
             var eventHubPartitionsCount = eventHubClient.GetRuntimeInformation().PartitionCount;
             string partition = EventHubPartitionKeyResolver.ResolveToPartition(deviceName, eventHubPartitionsCount);
-            // TODO: Uncomment IOTHUB_EVENTHUB_CONSUMER_GROUP lookup for IoT Edge public preview
-            string consumerGroupName = /*Environment.GetEnvironmentVariable("IOTHUB_EVENTHUB_CONSUMER_GROUP") ??*/ "$Default";
+            string consumerGroupName = Configuration.IoTHub.ConsumerGroup;
             return eventHubClient.GetConsumerGroup(consumerGroupName).CreateReceiver(partition, DateTime.Now, TestUtil.EventHubEpoch++);
         }
 
@@ -285,10 +280,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             Tuple<string, string> deviceInfo = TestUtil.CreateDeviceWithX509(DevicePrefix, hostName, registryManager);
             ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(hubConnectionString);
 
-            string certBase64 = Environment.GetEnvironmentVariable("IOTHUB_X509_PFX_CERTIFICATE");
-            Byte[] buff = Convert.FromBase64String(certBase64);
-
-            var cert = new X509Certificate2(buff);
+            X509Certificate2 cert = Configuration.IoTHub.GetCertificateWithPrivateKey();
 
             var auth = new DeviceAuthenticationWithX509Certificate(deviceInfo.Item1, cert);
             var deviceClient = DeviceClient.Create(deviceInfo.Item2, auth, transport);
@@ -315,7 +307,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 await deviceClient.CloseAsync();
                 await serviceClient.CloseAsync();
-                TestUtil.RemoveDevice(deviceInfo.Item1, registryManager);
+                await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager);
             }
         }
     }

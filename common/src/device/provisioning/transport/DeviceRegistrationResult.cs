@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 using System;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Http.Models
+namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
 {
     /// <summary>
     /// Device registration result.

@@ -2,9 +2,10 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Newtonsoft.Json;
+using System;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Http.Models
+namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
 {
     /// <summary>
     /// Registration operation status.
@@ -12,6 +13,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Http.Models
     [SuppressMessage("Microsoft.Performance", "CA1812", Justification = "Used by the JSon parser.")]
     internal partial class RegistrationOperationStatus
     {
+        public const string OperationStatusAssigned = "assigned";
+        public const string OperationStatusAssigning = "assigning";
+        public const string OperationStatusUnassigned = "unassigned";
+
         /// <summary>
         /// Initializes a new instance of the RegistrationOperationStatus
         /// class.
@@ -29,16 +34,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Http.Models
         /// <param name="status">Device enrollment status. Possible values
         /// include: 'unassigned', 'assigning', 'assigned', 'failed',
         /// 'disabled'</param>
-        /// <param name="registrationStatus">Device registration
+        /// <param name="registrationState">Device registration
         /// status.</param>
         public RegistrationOperationStatus(
             string operationId = default(string), 
             string status = default(string), 
-            DeviceRegistrationResult registrationStatus = default(DeviceRegistrationResult))
+            DeviceRegistrationResult registrationState = default(DeviceRegistrationResult))
         {
             OperationId = operationId;
             Status = status;
-            RegistrationStatus = registrationStatus;
+            RegistrationState = registrationState;
             CustomInit();
         }
 
@@ -63,8 +68,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Http.Models
         /// <summary>
         /// Gets or sets device registration status.
         /// </summary>
-        [JsonProperty(PropertyName = "registrationStatus")]
-        public DeviceRegistrationResult RegistrationStatus { get; set; }
+        [JsonProperty(PropertyName = "registrationState")]
+        public DeviceRegistrationResult RegistrationState { get; set; }
 
+        /// <summary>
+        /// Gets or sets the Retry-After header.
+        /// </summary>
+        public TimeSpan? RetryAfter { get; set; }
     }
 }

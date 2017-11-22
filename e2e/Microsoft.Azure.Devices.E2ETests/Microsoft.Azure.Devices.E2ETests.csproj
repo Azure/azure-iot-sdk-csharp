@@ -80,7 +80,18 @@
       </ItemGroup>
     </Otherwise>
   </Choose>
+  <PropertyGroup>
+    <CommonSrc>..\..\common\src</CommonSrc>
+    <CommonTest>..\..\common\test</CommonTest>
+  </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(CommonTest)\Configuration.cs">
+      <Link>Common\Configuration.cs</Link>
+    </Compile>
+    <Compile Include="$(CommonTest)\Configuration.IoTHub.cs">
+      <Link>Common\Configuration.IoTHub.cs</Link>
+    </Compile>
+    <Compile Include="DeviceTokenRefreshE2ETests.cs" />
     <Compile Include="FileUploadE2ETests.cs" />
     <Compile Include="MessageE2ETests.cs" />
     <Compile Include="MethodE2ETests.cs" />

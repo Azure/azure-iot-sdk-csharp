@@ -5,7 +5,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Amqp
+namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
     internal static class TaskHelpers
     {

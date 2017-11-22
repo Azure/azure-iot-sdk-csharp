@@ -15,12 +15,12 @@ namespace Microsoft.Azure.Devices.Client
     sealed class HttpClientHelper : IDisposable
     {
         readonly Uri baseAddress;
-        readonly IAuthorizationHeaderProvider authenticationHeaderProvider;
+        readonly IAuthorizationProvider authenticationHeaderProvider;
         bool isDisposed;
         
         public HttpClientHelper(
             Uri baseAddress,
-            IAuthorizationHeaderProvider authenticationHeaderProvider,
+            IAuthorizationProvider authenticationHeaderProvider,
             TimeSpan timeout)
         {
             this.baseAddress = baseAddress;
@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.Client
                     webRequest.Method = "GET";
 
                     // add authorization header
-                    webRequest.Headers.Add("Authorization", this.authenticationHeaderProvider.GetAuthorizationHeader());
+                    webRequest.Headers.Add("Authorization", this.authenticationHeaderProvider.GetPassword());
 
                     // add custom headers
                     AddCustomHeaders(webRequest, customHeaders);
@@ -132,7 +132,7 @@ namespace Microsoft.Azure.Devices.Client
                 webRequest.Method = "POST";
 
                 // add authorization header
-                webRequest.Headers.Add("Authorization", this.authenticationHeaderProvider.GetAuthorizationHeader());
+                webRequest.Headers.Add("Authorization", this.authenticationHeaderProvider.GetPassword());
 
                 // add custom headers
                 AddCustomHeaders(webRequest, customHeaders);
@@ -225,7 +225,7 @@ namespace Microsoft.Azure.Devices.Client
                 webRequest.Method = "DELETE";
 
                 // add authorization header
-                webRequest.Headers.Add("Authorization", this.authenticationHeaderProvider.GetAuthorizationHeader());
+                webRequest.Headers.Add("Authorization", this.authenticationHeaderProvider.GetPassword());
 
                 // add custom headers
                 AddCustomHeaders(webRequest, customHeaders);

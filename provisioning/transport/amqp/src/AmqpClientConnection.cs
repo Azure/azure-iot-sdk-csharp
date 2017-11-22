@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Microsoft.Azure.Amqp;
+using Microsoft.Azure.Amqp.Transport;
 using System;
 using System.Diagnostics;
 using System.Net;
@@ -8,10 +10,8 @@ using System.Net.WebSockets;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Azure.Amqp;
-using Microsoft.Azure.Amqp.Transport;
 
-namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Amqp
+namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
     internal class AmqpClientConnection
     {

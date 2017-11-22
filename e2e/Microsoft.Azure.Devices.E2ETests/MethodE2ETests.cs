@@ -8,10 +8,13 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
+    [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable",
+        Justification = "Uses custom scheme for cleanup")]
     public class MethodE2ETests
     {
         private const string DeviceResponseJson = "{\"name\":\"e2e_test\"}";
@@ -39,7 +42,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [ClassCleanup]
         static public void ClassCleanup()
         {
-            TestUtil.UnInitializeEnvironment(registryManager);
+            TestUtil.UnInitializeEnvironment(registryManager).GetAwaiter().GetResult();
         }
 
 #if NETSTANDARD1_3
@@ -330,7 +333,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await ServiceSendMethodAndVerifyResponse(deviceInfo.Item1, MethodName, DeviceResponseJson, ServiceRequestJson, assertResult);
 
             await deviceClient.CloseAsync();
-            TestUtil.RemoveDevice(deviceInfo.Item1, registryManager);
+            await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager);
         }
 
         private async Task sendMethodAndRespondWithObseletedSetMethodHandler(Client.TransportType transport)
@@ -357,7 +360,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await ServiceSendMethodAndVerifyResponse(deviceInfo.Item1, MethodName, DeviceResponseJson, ServiceRequestJson, assertResult);
 
             await deviceClient.CloseAsync();
-            TestUtil.RemoveDevice(deviceInfo.Item1, registryManager);
+            await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager);
         }
 
         private async Task SendMethodAndRespondRecovery(Client.TransportType transport, string faultType, string reason, int delayInSec)
@@ -461,7 +464,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Assert.AreEqual(ConnectionStatusChangeReason.Client_Close, lastConnectionStatusChangeReason);
             }
 
-            TestUtil.RemoveDevice(deviceInfo.Item1, registryManager);
+            await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager);
         }
     }
 }

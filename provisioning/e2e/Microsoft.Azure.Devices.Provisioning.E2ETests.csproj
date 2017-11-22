@@ -1,0 +1,56 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <IsPackable>false</IsPackable>
+    <Features Condition=" '$(Configuration)' == 'Debug' ">IOperation</Features>
+    <RootNamespace>Microsoft.Azure.Devices.Provisioning.E2ETests</RootNamespace>
+    <AssemblyName>Microsoft.Azure.Devices.Provisioning.E2ETests</AssemblyName>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <CommonTest>..\..\common\test</CommonTest>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(CommonTest)\Configuration.cs">
+      <Link>Common\Configuration.cs</Link>
+    </Compile>
+    <Compile Include="$(CommonTest)\Configuration.Provisioning.cs">
+      <Link>Common\Configuration.Provisioning.cs</Link>
+    </Compile>
+    <Compile Include="$(CommonTest)\EventSourceTestLogging.cs">
+      <Link>Common\EventSourceTestLogging.cs</Link>
+    </Compile>
+    <Compile Include="$(CommonTest)\TestLogging.cs">
+      <Link>Common\TestLogging.cs</Link>
+    </Compile>
+    <Compile Include="$(CommonTest)\VerboseTestLogging.cs">
+      <Link>Common\VerboseTestLogging.cs</Link>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.3.0-preview-20170628-02" />
+    <PackageReference Include="MSTest.TestAdapter" Version="1.1.18" />
+    <PackageReference Include="MSTest.TestFramework" Version="1.1.18" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\device\Microsoft.Azure.Devices.Client.NetStandard\Microsoft.Azure.Devices.Client.NetStandard.csproj">
+      <Project>{8988AB0E-0FDD-4BD4-A65F-6479BB2C5AF8}</Project>
+      <Name>Microsoft.Azure.Devices.Client.NetStandard</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\shared\Microsoft.Azure.Devices.Shared.NetStandard\Microsoft.Azure.Devices.Shared.NetStandard.csproj">
+      <Project>{91DFB837-D8A3-4F54-AE0D-45C95ACD0C2A}</Project>
+      <Name>Microsoft.Azure.Devices.Shared.NetStandard</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\provisioning\device\src\Microsoft.Azure.Devices.Provisioning.Client.csproj" />
+    <ProjectReference Include="..\..\provisioning\transport\amqp\src\Microsoft.Azure.Devices.Provisioning.Transport.Amqp.csproj" />
+    <ProjectReference Include="..\..\provisioning\transport\http\src\Microsoft.Azure.Devices.Provisioning.Transport.Http.csproj" />
+    <ProjectReference Include="..\..\provisioning\transport\mqtt\src\Microsoft.Azure.Devices.Provisioning.Transport.Mqtt.csproj" />
+    <ProjectReference Include="..\..\security\tpm\src\Microsoft.Azure.Devices.Provisioning.Security.Tpm.csproj" />
+    <ProjectReference Include="..\..\security\tpm\samples\SecurityClientTpmSimulator\SecurityClientTpmSimulator.csproj" />
+  </ItemGroup>
+</Project>

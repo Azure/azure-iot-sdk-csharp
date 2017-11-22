@@ -5,7 +5,6 @@ using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Shared;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.E2ETests
@@ -33,7 +32,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [ClassCleanup]
         static public void ClassCleanup()
         {
-            TestUtil.UnInitializeEnvironment(registryManager);
+            TestUtil.UnInitializeEnvironment(registryManager).GetAwaiter().GetResult();
         }
 
         [TestMethod]
@@ -379,7 +378,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             Assert.AreEqual<String>(deviceTwin.Properties.Reported[propName].ToString(), propValue);
 
             await deviceClient.CloseAsync();
-            TestUtil.RemoveDevice(deviceInfo.Item1, registryManager);
+            await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager);
         }
 
         private async Task _Twin_DeviceReportedPropertiesRecovery(Client.TransportType transport, string faultType, string reason, int delayInSec)
@@ -410,7 +409,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             Assert.AreEqual<String>(deviceTwin.Properties.Reported[propName].ToString(), propValue2);
 
             await deviceClient.CloseAsync();
-            TestUtil.RemoveDevice(deviceInfo.Item1, registryManager);
+            await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager);
         }
 
 
@@ -449,7 +448,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             await tcs.Task;
             await deviceClient.CloseAsync();
-            TestUtil.RemoveDevice(deviceInfo.Item1, registryManager);
+            await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager);
         }
 
         private async Task _Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_WithObseleteCallbackSetter(Client.TransportType transport)
@@ -491,7 +490,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             
             await tcs.Task;
             await deviceClient.CloseAsync();
-            TestUtil.RemoveDevice(deviceInfo.Item1, registryManager);
+            await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager);
         }
 
         private async Task _Twin_DeviceDesiredPropertyUpdateRecovery(Client.TransportType transport, string faultType, string reason, int delayInSec)
@@ -599,7 +598,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await tcs.Task;
 
             await deviceClient.CloseAsync();
-            TestUtil.RemoveDevice(deviceInfo.Item1, registryManager);
+            await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager);
         }
 
         private async Task _Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet(Client.TransportType transport)
@@ -616,7 +615,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             var deviceTwin = await deviceClient.GetTwinAsync();
             Assert.AreEqual<string>(deviceTwin.Properties.Desired[propName].ToString(), propValue);
             await deviceClient.CloseAsync();
-            TestUtil.RemoveDevice(deviceInfo.Item1, registryManager);
+            await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager);
         }
 
         private async Task _Twin_DeviceSetsReportedPropertyAndServiceReceivesIt(Client.TransportType transport)
@@ -635,7 +634,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             Assert.AreEqual<string>(serviceTwin.Properties.Reported[propName].ToString(), propValue);
 
             TestContext.WriteLine("verified " + serviceTwin.Properties.Reported[propName].ToString() + "=" + propValue);
-            TestUtil.RemoveDevice(deviceInfo.Item1, registryManager);
+            await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager);
         }
     }
 }

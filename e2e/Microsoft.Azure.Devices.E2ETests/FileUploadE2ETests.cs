@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
@@ -6,11 +9,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
     [Ignore] // TODO: Re-enable file upload tests for IoT Edge public preview
     [TestClass]
+    [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable",
+        Justification = "Uses custom scheme for cleanup")]
     public class FileUploadE2ETests
     {
         private const string DevicePrefix = "E2E_FileUpload_CSharp_";
@@ -46,7 +52,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             serviceClient.CloseAsync().Wait();
             System.IO.File.Delete(smallFile);
             System.IO.File.Delete(bigFile);
-            TestUtil.UnInitializeEnvironment(registryManager);
+            TestUtil.UnInitializeEnvironment(registryManager).GetAwaiter().GetResult();
         }
 
 #if NETSTANDARD1_3
@@ -139,9 +145,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 deviceInfo = TestUtil.CreateDeviceWithX509(DevicePrefix, hostName, registryManager);
 
-                string certBase64 = Environment.GetEnvironmentVariable("IOTHUB_X509_PFX_CERTIFICATE");
-                Byte[] buff = Convert.FromBase64String(certBase64);
-                var cert = new X509Certificate2(buff);
+                X509Certificate2 cert = Configuration.IoTHub.GetCertificateWithPrivateKey();
 
                 var auth = new DeviceAuthenticationWithX509Certificate(deviceInfo.Item1, cert);
                 deviceClient = DeviceClient.Create(deviceInfo.Item2, auth, transport);
@@ -165,7 +169,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             Assert.IsFalse(string.IsNullOrEmpty(fileNotification.BlobUri), "File notification blob uri is null or empty");
 
             await deviceClient.CloseAsync();
-            TestUtil.RemoveDevice(deviceInfo.Item1, registryManager);
+            await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager);
         }
 
         private static async Task<FileNotification> VerifyFileNotification(Tuple<string, string> deviceInfo)
@@ -232,7 +236,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             Assert.IsFalse(string.IsNullOrEmpty(fileNotification.BlobUri), "File notification blob uri is null or empty");
 
             await deviceClient.CloseAsync();
-            TestUtil.RemoveDevice(deviceInfo.Item1, registryManager);
+            await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager);
         }
     }
 }
