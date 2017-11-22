@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             
             var tcs = new TaskCompletionSource<bool>();
 
-            func().ContinueWith(t =>
+           return  func().ContinueWith(t =>
             {
                 if (t.IsFaulted)
                 {
@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 ctr.Dispose();
             });
             
-            return tcs.Task;
+            // return tcs.Task;
         }
     }
 }
