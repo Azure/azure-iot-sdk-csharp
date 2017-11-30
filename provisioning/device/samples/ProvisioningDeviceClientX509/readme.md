@@ -34,7 +34,7 @@ The SDK requires an [X509Certificate2](https://msdn.microsoft.com/en-us/library/
 This can be achieved by changing the following line:
 
 ```C# 
-    using (var security = new SecurityClientX509(certificate))
+    using (var security = new SecurityProviderX509Certificate(certificate))
 ```
 
 to 
@@ -43,7 +43,7 @@ to
     var myCertificate = new X509Certificate2("myCertificate.pfx", "mypassword");
     var myChain = new X509Certificate2Collection();
     myChain.Import("myChain.p7b");
-    using (var security = new SecurityClientX509(myCertificate, myChain)) 
+    using (var security = new SecurityProviderX509Certificate(myCertificate, myChain)) 
 ```
 
 A tool for creating _test_ certificates is available at https://github.com/Azure/azure-iot-sdk-c/blob/master/tools/CACertificates/CACertificateOverview.md

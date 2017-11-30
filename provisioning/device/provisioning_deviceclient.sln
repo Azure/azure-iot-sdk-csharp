@@ -39,7 +39,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProvisioningDeviceClientTpm
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{C696003A-6C3A-4B86-BD27-2B6D9E917979}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SecurityClientTpmSimulator", "..\..\security\tpm\samples\SecurityClientTpmSimulator\SecurityClientTpmSimulator.csproj", "{EFDB1CD0-3B84-4575-9080-C3D12C59EDD0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SecurityProviderTpmSimulator", "..\..\security\tpm\samples\SecurityProviderTpmSimulator\SecurityProviderTpmSimulator.csproj", "{EFDB1CD0-3B84-4575-9080-C3D12C59EDD0}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "iothub", "iothub", "{D7A461AF-B44A-4701-9788-9C7D1B8AF9D2}"
 EndProject

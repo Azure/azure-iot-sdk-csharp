@@ -6,6 +6,8 @@
     <Features Condition=" '$(Configuration)' == 'Debug' ">IOperation</Features>
     <RootNamespace>Microsoft.Azure.Devices.Provisioning.Client.Transport</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <DocumentationFile>$(OutputPath)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup>

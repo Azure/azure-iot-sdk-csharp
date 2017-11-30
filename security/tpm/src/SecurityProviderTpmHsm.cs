@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
     /// <summary>
     /// The Provisioning Security Client implementation for TPM.
     /// </summary>
-    public class SecurityClientTpm : SecurityClientHsmTpm
+    public class SecurityProviderTpmHsm : SecurityProviderTpm
     {
         private bool disposed = false;
 
@@ -33,17 +33,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
         private byte[] _activationSecret = null;
 
         /// <summary>
-        /// Constructor creating an instance using the system TPM.
+        /// Initializes a new instance of the SecurityProviderTpmHsm class using the system TPM.
         /// </summary>
         /// <param name="registrationId">The Device Provisioning Service Registration ID.</param>
-        public SecurityClientTpm(string registrationId) : this(registrationId, CreateDefaultTpm2Device()) { }
+        public SecurityProviderTpmHsm(string registrationId) : this(registrationId, CreateDefaultTpm2Device()) { }
 
         /// <summary>
-        /// Constructor creating an instance using the specified TPM module.
+        /// Initializes a new instance of the SecurityProviderTpmHsm class using the specified TPM module.
         /// </summary>
         /// <param name="registrationId">The Device Provisioning Service Registration ID.</param>
         /// <param name="tpm">The TPM device.</param>
-        public SecurityClientTpm(string registrationId, Tpm2Device tpm) : base(registrationId)
+        public SecurityProviderTpmHsm(string registrationId, Tpm2Device tpm) : base(registrationId)
         {
             _tpmDevice = tpm;
 
@@ -57,17 +57,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
             // TODO: Add LinuxTpmDevice support.
             return new TbsDevice();
         }
-
+        
         /// <summary>
-        /// Activates a symmetric identity within the Hardware Security Module.
+        /// Activates an identity key within the TPM device.
         /// </summary>
-        /// <param name="activation">The authentication challenge key supplied by the service.</param>
-        public override void ActivateSymmetricIdentity(byte[] activation)
+        /// <param name="encryptedKey">The encrypted identity key.</param>
+        public override void ActivateIdentityKey(byte[] encryptedKey)
         {
             Destroy();
 
             // Take the pieces out of the container
-            var m = new Marshaller(activation, DataRepresentation.Tpm);
+            var m = new Marshaller(encryptedKey, DataRepresentation.Tpm);
             byte[] credentialBlob = new byte[m.Get<ushort>()];
             credentialBlob = m.GetArray<byte>(credentialBlob.Length, "credentialBlob");
             byte[] encryptedSecret = new byte[m.Get<ushort>()];
@@ -159,7 +159,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
         }
 
         /// <summary>
-        /// Signs the data using the Hardware Security Module.
+        /// Signs the data using the previously activated identity key.
         /// </summary>
         /// <param name="data">The data to be signed.</param>
         /// <returns>The signed data.</returns>
@@ -196,6 +196,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
             return result;
         }
 
+        /// <summary>
+        /// Releases the unmanaged resources used by the SecurityProviderTpmHsm and optionally disposes of the managed resources.
+        /// </summary>
+        /// <param name="disposing">true to release both managed and unmanaged resources; false to releases only unmanaged resources.</param>
         protected override void Dispose(bool disposing)
         {
             if (disposed) return;
@@ -255,7 +259,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
             }
         }
 
-        // Constructor helpers
         private void CacheEkAndSrk()
         {
             ObjectAttr ekObjectAttributes =

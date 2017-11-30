@@ -114,7 +114,7 @@ Contains the Azure IoT Provisioning client components.
 
 ### /security
 
-Contains the SecurityClient components.
+Contains the SecurityProvider components for Hardware Security Modules.
 
 ### /service
 

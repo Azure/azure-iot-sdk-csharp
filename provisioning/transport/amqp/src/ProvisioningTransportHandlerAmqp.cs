@@ -13,19 +13,35 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
+    /// <summary>
+    /// Represents the AMQP protocol implementation for the Provisioning Transport Handler.
+    /// </summary>
     public class ProvisioningTransportHandlerAmqp : ProvisioningTransportHandler
     {
         private static readonly TimeSpan DefaultOperationPoolingIntervalMilliseconds = TimeSpan.FromSeconds(2);
         private static readonly TimeSpan TimeoutConstant = TimeSpan.FromMinutes(1);
 
+        /// <summary>
+        /// The fallback type. This allows direct or WebSocket connections.
+        /// </summary>
         public TransportFallbackType FallbackType { get; private set; }
 
+        /// <summary>
+        /// Creates an instance of the ProvisioningTransportHandlerAmqp class using the specified fallback type.
+        /// </summary>
+        /// <param name="transportFallbackType">The fallback type allowing direct or WebSocket connections.</param>
         public ProvisioningTransportHandlerAmqp(
             TransportFallbackType transportFallbackType = TransportFallbackType.TcpWithWebSocketFallback)
         {
             FallbackType = transportFallbackType;
         }
 
+        /// <summary>
+        /// Registers a device described by the message.
+        /// </summary>
+        /// <param name="message">The provisioning message.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The registration result.</returns>
         public override async Task<DeviceRegistrationResult> RegisterAsync(
             ProvisioningTransportRegisterMessage message,
             CancellationToken cancellationToken)
@@ -38,19 +54,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             {
                 AmqpAuthStrategy authStrategy;
 
-                if (message.Security is SecurityClientHsmTpm)
+                if (message.Security is SecurityProviderTpm)
                 {
-                    authStrategy = new AmqpAuthStrategyTpm((SecurityClientHsmTpm)message.Security);
+                    authStrategy = new AmqpAuthStrategyTpm((SecurityProviderTpm)message.Security);
                 }
-                else if (message.Security is SecurityClientHsmX509)
+                else if (message.Security is SecurityProviderX509)
                 {
-                    authStrategy = new AmqpAuthStrategyX509((SecurityClientHsmX509)message.Security);
+                    authStrategy = new AmqpAuthStrategyX509((SecurityProviderX509)message.Security);
                 }
                 else
                 {
                     throw new NotSupportedException(
-                        $"{nameof(message.Security)} must be of type {nameof(SecurityClientHsmTpm)} " +
-                        $"or {nameof(SecurityClientHsmX509)}");
+                        $"{nameof(message.Security)} must be of type {nameof(SecurityProviderTpm)} " +
+                        $"or {nameof(SecurityProviderX509)}");
                 }
 
                 if (Logging.IsEnabled) Logging.Associate(authStrategy, this);

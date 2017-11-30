@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// 
     ///     IProvisioningQuery q = await registryManager.CreateQuery(sql, pagesize);
     ///     while (q.HasMoreResults) {
-    ///         IEnumerable\<Enrollment\> result = r.GetNextAsEnrollmentAsync();
+    ///         IEnumerable&lt;Enrollment&gt; result = r.GetNextAsEnrollmentAsync();
     ///         // access individual enrollment records
     ///     }
     /// </summary>

@@ -54,6 +54,6 @@
     <ProjectReference Include="..\..\provisioning\transport\http\src\Microsoft.Azure.Devices.Provisioning.Transport.Http.csproj" />
     <ProjectReference Include="..\..\provisioning\transport\mqtt\src\Microsoft.Azure.Devices.Provisioning.Transport.Mqtt.csproj" />
     <ProjectReference Include="..\..\security\tpm\src\Microsoft.Azure.Devices.Provisioning.Security.Tpm.csproj" />
-    <ProjectReference Include="..\..\security\tpm\samples\SecurityClientTpmSimulator\SecurityClientTpmSimulator.csproj" />
+    <ProjectReference Include="..\..\security\tpm\samples\SecurityProviderTpmSimulator\SecurityProviderTpmSimulator.csproj" />
   </ItemGroup>
 </Project>

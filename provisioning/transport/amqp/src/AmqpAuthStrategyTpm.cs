@@ -12,9 +12,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
     internal class AmqpAuthStrategyTpm : AmqpAuthStrategy
     {
-        private SecurityClientHsmTpm _security;
+        private SecurityProviderTpm _security;
 
-        public AmqpAuthStrategyTpm(SecurityClientHsmTpm security)
+        public AmqpAuthStrategyTpm(SecurityProviderTpm security)
         {
             _security = security;
         }
@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             byte[] key = Convert.FromBase64String(operation.RegistrationState.Tpm.AuthenticationKey);
             if (Logging.IsEnabled) Logging.DumpBuffer(this, key, nameof(operation.RegistrationState.Tpm.AuthenticationKey));
 
-            _security.ActivateSymmetricIdentity(key);
+            _security.ActivateIdentityKey(key);
         }
     }
 }

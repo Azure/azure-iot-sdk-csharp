@@ -16,27 +16,27 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public sealed class DeviceAuthenticationWithTpm : DeviceAuthenticationWithTokenRefresh
     {
-        private SecurityClientHsmTpm _securityClient;
+        private SecurityProviderTpm _securityProvider;
 
         public DeviceAuthenticationWithTpm(
             string deviceId, 
-            SecurityClientHsmTpm securityClient) : base(deviceId)
+            SecurityProviderTpm securityProvider) : base(deviceId)
         {
-            _securityClient = securityClient ?? throw new ArgumentNullException(nameof(securityClient));
+            _securityProvider = securityProvider ?? throw new ArgumentNullException(nameof(securityProvider));
         }
 
         public DeviceAuthenticationWithTpm(
             string deviceId,
-            SecurityClientHsmTpm securityClient,
+            SecurityProviderTpm securityProvider,
             int suggestedTimeToLiveSeconds,
             int timeBufferPercentage) : base(deviceId, suggestedTimeToLiveSeconds, timeBufferPercentage)
         {
-            _securityClient = securityClient ?? throw new ArgumentNullException(nameof(securityClient));
+            _securityProvider = securityProvider ?? throw new ArgumentNullException(nameof(securityProvider));
         }
 
         protected override Task<string> SafeCreateNewToken(string iotHub, int suggestedTimeToLiveSeconds)
         {
-            var builder = new TpmSharedAccessSignatureBuilder(_securityClient)
+            var builder = new TpmSharedAccessSignatureBuilder(_securityProvider)
             {
                 TimeToLive = TimeSpan.FromSeconds(suggestedTimeToLiveSeconds),
                 Target = "{0}/devices/{1}".FormatInvariant(
@@ -49,11 +49,11 @@ namespace Microsoft.Azure.Devices.Client
 
         private class TpmSharedAccessSignatureBuilder : SharedAccessSignatureBuilder
         {
-            private SecurityClientHsmTpm _securityClient;
+            private SecurityProviderTpm _securityProvider;
 
-            public TpmSharedAccessSignatureBuilder(SecurityClientHsmTpm securityClient)
+            public TpmSharedAccessSignatureBuilder(SecurityProviderTpm securityProvider)
             {
-                _securityClient = securityClient;
+                _securityProvider = securityProvider;
             }
 
             protected override string Sign(string requestString, string key)
@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices.Client
                 Debug.Assert(key == null);
 
                 byte[] encodedBytes = Encoding.UTF8.GetBytes(requestString);
-                byte[] hmac = _securityClient.Sign(encodedBytes);
+                byte[] hmac = _securityProvider.Sign(encodedBytes);
                 return Convert.ToBase64String(hmac);
             }
         }

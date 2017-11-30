@@ -16,15 +16,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Security.Samples
     /// This code is provides as a sample to enable provisioning on hardware without an actual hardware TPM device and
     /// provides no real security.
     /// </summary>
-    public class SecurityClientTpmSimulator : SecurityClientHsmTpm
+    public class SecurityProviderTpmSimulator : SecurityProviderTpm
     {
         private const string SimulatorAddress = "127.0.0.1";
         private const string SimulatorExeName = "Simulator.exe";
         private const int SimulatorPort = 2321;
 
-        private SecurityClientTpm _innerClient;
+        private SecurityProviderTpmHsm _innerClient;
 
-        public SecurityClientTpmSimulator(string registrationId) : base(registrationId)
+        public SecurityProviderTpmSimulator(string registrationId) : base(registrationId)
         {
             var tpmDevice = new TcpTpmDevice(SimulatorAddress, SimulatorPort);
             tpmDevice.Connect();
@@ -35,12 +35,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Security.Samples
                 tpm2.Startup(Su.Clear);
             }
 
-            _innerClient = new SecurityClientTpm(GetRegistrationID(), tpmDevice);
+            _innerClient = new SecurityProviderTpmHsm(GetRegistrationID(), tpmDevice);
         }
 
-        public override void ActivateSymmetricIdentity(byte[] activation)
+        public override void ActivateIdentityKey(byte[] encryptedKey)
         {
-            _innerClient.ActivateSymmetricIdentity(activation);
+            _innerClient.ActivateIdentityKey(encryptedKey);
         }
 
         public override byte[] GetEndorsementKey()

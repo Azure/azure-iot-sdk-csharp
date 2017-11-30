@@ -23,6 +23,9 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
+    /// <summary>
+    /// Represents the MQTT protocol implementation for the Provisioning Transport Handler.
+    /// </summary>
     public class ProvisioningTransportHandlerMqtt : ProvisioningTransportHandler
     {
         private static MultithreadEventLoopGroup s_eventLoopGroup = new MultithreadEventLoopGroup();
@@ -36,35 +39,48 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         private const string WsScheme = "wss";
         private const int WsPort = 443;
 
+        /// <summary>
+        /// The fallback type. This allows direct or WebSocket connections.
+        /// </summary>
         public TransportFallbackType FallbackType { get; private set; }
 
+        /// <summary>
+        /// Creates an instance of the ProvisioningTransportHandlerMqtt class using the specified fallback type.
+        /// </summary>
+        /// <param name="transportFallbackType">The fallback type allowing direct or WebSocket connections.</param>
         public ProvisioningTransportHandlerMqtt(
             TransportFallbackType transportFallbackType = TransportFallbackType.TcpWithWebSocketFallback)
         {
             FallbackType = transportFallbackType;
         }
 
+        /// <summary>
+        /// Registers a device described by the message.
+        /// </summary>
+        /// <param name="message">The provisioning message.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The registration result.</returns>
         public override async Task<DeviceRegistrationResult> RegisterAsync(
-            ProvisioningTransportRegisterMessage message,
+            ProvisioningTransportRegisterMessage message, 
             CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(ProvisioningTransportHandlerMqtt)}.{nameof(RegisterAsync)}");
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            SecurityClientHsmX509 security;
+            SecurityProviderX509 security;
 
             try
             {
-                if (message.Security is SecurityClientHsmX509)
+                if (message.Security is SecurityProviderX509)
                 {
-                    security = (SecurityClientHsmX509)message.Security;
+                    security = (SecurityProviderX509)message.Security;
                 }
                 else
                 {
-                    if (Logging.IsEnabled) Logging.Error(this, $"Invalid {nameof(SecurityClient)} type.");
+                    if (Logging.IsEnabled) Logging.Error(this, $"Invalid {nameof(SecurityProvider)} type.");
                     throw new NotSupportedException(
-                        $"{nameof(message.Security)} must be of type {nameof(SecurityClientHsmX509)}");
+                        $"{nameof(message.Security)} must be of type {nameof(SecurityProviderX509)}");
                 }
 
                 RegistrationOperationStatus operation = null;
@@ -123,11 +139,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             ProvisioningTransportRegisterMessage message,
             CancellationToken cancellationToken)
         {
-            Debug.Assert(message.Security is SecurityClientHsmX509);
+            Debug.Assert(message.Security is SecurityProviderX509);
             cancellationToken.ThrowIfCancellationRequested();
 
             X509Certificate2 clientCertificate = 
-                ((SecurityClientHsmX509)message.Security).GetAuthenticationCertificate();
+                ((SecurityProviderX509)message.Security).GetAuthenticationCertificate();
 
             var tlsSettings = new ClientTlsSettings(
                 message.GlobalDeviceEndpoint,
@@ -196,11 +212,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             ProvisioningTransportRegisterMessage message,
             CancellationToken cancellationToken)
         {
-            Debug.Assert(message.Security is SecurityClientHsmX509);
+            Debug.Assert(message.Security is SecurityProviderX509);
             cancellationToken.ThrowIfCancellationRequested();
 
             X509Certificate2 clientCertificate =
-                ((SecurityClientHsmX509)message.Security).GetAuthenticationCertificate();
+                ((SecurityProviderX509)message.Security).GetAuthenticationCertificate();
 
             var tcs = new TaskCompletionSource<RegistrationOperationStatus>();
 

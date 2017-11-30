@@ -12,7 +12,7 @@ _Preview only:_ The SDK currently supports two communication protocols: HTTP and
 
 ## Device provisioning in a nutshell
 
-Provisioning is achieved by using a single call to the `ProvisioningDeviceClient.RegisterAsync()` API specifying the IDScope (unique for each Provisioning Service deployment), a `SecurityClient` and a `ProvisioningTransportHandler`:
+Provisioning is achieved by using a single call to the `ProvisioningDeviceClient.RegisterAsync()` API specifying the IDScope (unique for each Provisioning Service deployment), a `SecurityProvider` and a `ProvisioningTransportHandler`:
 
 ```C#
     ProvisioningDeviceClient provClient = ProvisioningDeviceClient.Create(s_idScope, security, transport);
@@ -27,7 +27,7 @@ Provisioning is achieved by using a single call to the `ProvisioningDeviceClient
 
 Devices must have access to a single certificate with a private key. The private key can be hidden from the application using PKCS #11 Hardware Security Modules.
 
-When an X.509 certificate is used, both the _RegistrationID_ as well as the _DeviceID_ will be equal to the Common Name portion of the certificate Subject. (e.g. If the subject is `CN=mydevice O=Contoso C=US`, the RegistrationID and DeviceID will be `mydevice`.) The name must respect the [DeviceID naming constraints](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-identity-registry).
+When Group Enrollment is used, both the _RegistrationID_ as well as the _DeviceID_ will be equal to the Common Name portion of the certificate Subject. (e.g. If the subject is `CN=mydevice O=Contoso C=US`, the RegistrationID and DeviceID will be `mydevice`.) The name must respect the [DeviceID naming constraints](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-identity-registry).
 
 X.509 attestation comes in two flavors: 
 
@@ -47,15 +47,15 @@ An example of specifying the authentication X509Certificate using a PKCS12 PFX p
 
 ```C#
     using (var certificate = new X509Certificate2(s_certificateFileName, certificatePassword))
-    using (var security = new SecurityClientX509(certificate))
+    using (var security = new SecurityProviderX509Certificate(certificate))
     {
         // ... (see sample for details)
     }
 ```
 
-The SDK provides an extension model [SecurityClientHsmX509](https://github.com/Azure/azure-iot-sdk-csharp/blob/master/shared/Microsoft.Azure.Devices.Shared/SecurityClientHsmX509.cs) that allows hardware vendors to implement custom Hardware Security Modules that store the device certificates. On Windows, PKCS11 HSM devices are supported through the [Certificate Store](https://docs.microsoft.com/en-us/windows-hardware/drivers/install/certificate-stores).
+The SDK provides an extension model [SecurityProviderX509](https://github.com/Azure/azure-iot-sdk-csharp/blob/master/shared/Microsoft.Azure.Devices.Shared/SecurityProviderX509.cs) that allows hardware vendors to implement custom Hardware Security Modules that store the device certificates. On Windows, PKCS11 HSM devices are supported through the [Certificate Store](https://docs.microsoft.com/en-us/windows-hardware/drivers/install/certificate-stores).
 
-An example of implementation for this extension module is the [SecurityClientX509](https://github.com/Azure/azure-iot-sdk-csharp/blob/master/shared/Microsoft.Azure.Devices.Shared/SecurityClientX509.cs) class.
+An example of implementation for this extension module is the [SecurityProviderX509Certificate](https://github.com/Azure/azure-iot-sdk-csharp/blob/master/shared/Microsoft.Azure.Devices.Shared/SecurityProviderX509Certificate.cs) class.
 
 ### Provisioning devices using TPM based attestation
 
@@ -65,13 +65,13 @@ The TPM attestation supports only Individual Enrollments. The [Endorsement Key](
 
 
 ```C#
-    using (var security = new SecurityClientTpmSimulator(RegistrationId))
+    using (var security = new SecurityProviderTpmSimulator(RegistrationId))
     {
         // ... (see sample for details)
     }
 ```
 
-The SDK provides an extension model [SecurityClientHsmTpm](https://github.com/Azure/azure-iot-sdk-csharp/blob/master/shared/Microsoft.Azure.Devices.Shared/SecurityClientHsmTpm.cs) that allows hardware vendors to implement custom TPM v2.0 Hardware Security Modules.
+The SDK provides an extension model [SecurityProviderTpm](https://github.com/Azure/azure-iot-sdk-csharp/blob/master/shared/Microsoft.Azure.Devices.Shared/SecurityProviderTpm.cs) that allows hardware vendors to implement custom TPM v2.0 Hardware Security Modules.
 
 The samples use a TPMv2.0 simulator that uses a loopback TCP connection for communication. This is provided for demonstration purposes only and does not provide any security.
 

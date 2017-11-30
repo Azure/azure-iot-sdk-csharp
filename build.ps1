@@ -129,7 +129,7 @@ try {
         BuildProject provisioning\transport\http "Provisioning Transport for HTTP"
         BuildProject provisioning\transport\mqtt "Provisioning Transport for MQTT"
 
-        BuildProject security\tpm "SecurityClient for TPM"
+        BuildProject security\tpm "SecurityProvider for TPM"
     }
 
     if (-not $notests)
@@ -146,7 +146,7 @@ try {
             RunTests provisioning\transport\http\tests "Provisioning Transport for HTTP"
             RunTests provisioning\transport\mqtt\tests "Provisioning Transport for MQTT"
             
-            RunTests security\tpm\tests "SecurityClient for TPM"
+            RunTests security\tpm\tests "SecurityProvider for TPM"
         }
     }
 
