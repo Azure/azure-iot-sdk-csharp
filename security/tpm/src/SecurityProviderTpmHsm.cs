@@ -3,7 +3,7 @@
 
 using Microsoft.Azure.Devices.Shared;
 using System;
-using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Text;
 using Tpm2Lib;
 
@@ -27,7 +27,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
         // TPM identity cache
         private TpmPublic _ekPub = null;
         private TpmPublic _srkPub = null;
-        private byte[] _ekAuth = Array.Empty<Byte>();
         private TpmPublic _idKeyPub = null;
         private TpmHandle _idKeyHandle = TpmHandle.RhNull;
         private byte[] _activationSecret = null;
@@ -50,12 +49,41 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
             _tpmDevice.Connect();
             _tpm2 = new Tpm2(_tpmDevice);
             CacheEkAndSrk();
+
+            if (Logging.IsEnabled)
+            {
+                Logging.Associate(this, _tpm2);
+                Logging.Associate(_tpm2, _tpmDevice);
+
+                _tpm2._SetTraceCallback((byte[] inBuffer, byte[] outBuffer) =>
+                {
+                    if (Logging.IsEnabled)
+                    {
+                        Logging.Info(this, $"TPM data: {Logging.GetHashCode(_tpm2)}");
+                        Logging.DumpBuffer(_tpm2, inBuffer, nameof(inBuffer));
+                        Logging.DumpBuffer(_tpm2, outBuffer, nameof(outBuffer));
+                    }
+                });
+            }
         }
 
         private static Tpm2Device CreateDefaultTpm2Device()
         {
-            // TODO: Add LinuxTpmDevice support.
-            return new TbsDevice();
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                if (Logging.IsEnabled) Logging.Info(null, "Creating Windows TBS Device.");
+                return new TbsDevice();
+            }
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                if (Logging.IsEnabled) Logging.Info(null, "Creating Linux /dev/tpm0 Device.");
+                return new LinuxTpmDevice();
+            }
+            else
+            {
+                if (Logging.IsEnabled) Logging.Error(null, $"TPM not supported on {RuntimeInformation.OSDescription}");
+                throw new PlatformNotSupportedException("The library doesn't support the current OS platform.");
+            }
         }
         
         /// <summary>
@@ -64,12 +92,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
         /// <param name="encryptedKey">The encrypted identity key.</param>
         public override void ActivateIdentityKey(byte[] encryptedKey)
         {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{encryptedKey}", nameof(ActivateIdentityKey));
             Destroy();
 
             // Take the pieces out of the container
             var m = new Marshaller(encryptedKey, DataRepresentation.Tpm);
-            byte[] credentialBlob = new byte[m.Get<ushort>()];
-            credentialBlob = m.GetArray<byte>(credentialBlob.Length, "credentialBlob");
+            Tpm2bIdObject cred2b = m.Get<Tpm2bIdObject>();
             byte[] encryptedSecret = new byte[m.Get<ushort>()];
             encryptedSecret = m.GetArray<byte>(encryptedSecret.Length, "encryptedSecret");
             TpmPrivate dupBlob = m.Get<TpmPrivate>();
@@ -81,14 +109,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
             cipherText = m.GetArray<byte>(cipherText.Length, "uriInfo");
 
             // Setup the authorization session for the EK
-            var policyNode = new TpmPolicySecret(
-                TpmHandle.RhEndorsement, _ekAuth ?? Array.Empty<byte>(), 
-                new AuthValue(), 
-                false, 
-                0, 
-                Array.Empty<byte>(), 
-                Array.Empty<byte>());
-
+            var policyNode = new TpmPolicySecret(TpmHandle.RhEndorsement, false, 0, Array.Empty<byte>(), Array.Empty<byte>());
             var policy = new PolicyTree(_ekPub.nameAlg);
             policy.SetPolicyRoot(policyNode);
             AuthSession ekSession = _tpm2.StartAuthSessionEx(TpmSe.Policy, _ekPub.nameAlg);
@@ -99,7 +120,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
             _activationSecret = _tpm2[Array.Empty<byte>(), ekSession].ActivateCredential(
                 new TpmHandle(TPM_20_SRK_HANDLE), 
                 new TpmHandle(TPM_20_EK_HANDLE), 
-                credentialBlob, 
+                cred2b.credential, 
                 encryptedSecret);
 
             TpmPrivate importedKeyBlob = _tpm2.Import(
@@ -120,24 +141,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
             _tpm2.FlushContext(_idKeyHandle);
             _idKeyHandle = hmacKeyHandle;
 
-            // Unwrap the URI
-            byte[] clearText = SymmCipher.Decrypt(
-                new SymDefObject(TpmAlgId.Aes, 128, TpmAlgId.Cfb),
-                _activationSecret,
-                new byte[16], 
-                cipherText);
-
-            UnicodeEncoding unicode = new UnicodeEncoding();
-            string uriData = unicode.GetString(clearText);
-            int idx = uriData.IndexOf('/');
-            if (idx > 0)
-            {
-                string hostName = uriData.Substring(0, idx);
-                string deviceId = uriData.Substring(idx + 1);
-
-                // Persist the URI
-                ProvisionUri(hostName, deviceId);
-            }
+            if (Logging.IsEnabled) Logging.Exit(this, $"{encryptedKey}", nameof(ActivateIdentityKey));
         }
 
         /// <summary>
@@ -146,7 +150,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
         /// <returns>Base64 encoded EK.</returns>
         public override byte[] GetEndorsementKey()
         {
-            return _ekPub.GetTpm2BRepresentation();
+            byte [] ek = _ekPub.GetTpm2BRepresentation();
+            if (Logging.IsEnabled) Logging.Info(this, $"EK={Convert.ToBase64String(ek)}");
+            return ek;
         }
 
         /// <summary>
@@ -155,7 +161,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
         /// <returns>Base64 encoded SRK.</returns>
         public override byte[] GetStorageRootKey()
         {
-            return _srkPub.GetTpm2BRepresentation();
+            byte[] srk = _srkPub.GetTpm2BRepresentation();
+            if (Logging.IsEnabled) Logging.Info(this, $"SRK={Convert.ToBase64String(srk)}");
+            return srk;
         }
 
         /// <summary>
@@ -165,6 +173,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
         /// <returns>The signed data.</returns>
         public override byte[] Sign(byte[] data)
         {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{Convert.ToBase64String(data)}", nameof(Sign));
+
             byte[] result = Array.Empty<byte>();
             TpmHandle hmacKeyHandle = new TpmHandle(AIOTH_PERSISTED_KEY_HANDLE);
             int dataIndex = 0;
@@ -193,6 +203,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
                 result = _tpm2.SequenceComplete(hmacHandle, iterationBuffer, TpmHandle.RhNull, out TkHashcheck nullChk);
             }
 
+            if (Logging.IsEnabled) Logging.Exit(this, $"{Convert.ToBase64String(result)}", nameof(Sign));
             return result;
         }
 
@@ -204,34 +215,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
         {
             if (disposed) return;
 
+            if (Logging.IsEnabled) Logging.Info(this, "Disposing");
+
             if (disposing)
             {
-                _tpmDevice.Dispose();
+                _tpm2?.Dispose();
+                _tpm2 = null;
+                _tpmDevice = null;
             }
 
             disposed = true;
         }
         
-        private void ProvisionUri(string hostName, string deviceId = "")
-        {
-            TpmHandle nvHandle = new TpmHandle(AIOTH_PERSISTED_URI_INDEX);
-            TpmHandle ownerHandle = new TpmHandle(TpmRh.Owner);
-            UTF8Encoding utf8 = new UTF8Encoding();
-            byte[] nvData = utf8.GetBytes(hostName + "/" + deviceId);
-
-            // Define the store
-            _tpm2.NvDefineSpace(ownerHandle,
-                                  Array.Empty<byte>(),
-                                  new NvPublic(nvHandle,
-                                               TpmAlgId.Sha256,
-                                               NvAttr.Authwrite | NvAttr.Authread | NvAttr.NoDa,
-                                               Array.Empty<byte>(),
-                                               (ushort)nvData.Length));
-
-            // Write the store
-            _tpm2.NvWrite(nvHandle, nvHandle, nvData, 0);
-        }
-
         private void Destroy()
         {
             TpmHandle nvHandle = new TpmHandle(AIOTH_PERSISTED_URI_INDEX);
@@ -261,76 +256,69 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
 
         private void CacheEkAndSrk()
         {
-            ObjectAttr ekObjectAttributes =
-                ObjectAttr.FixedTPM | ObjectAttr.FixedParent | ObjectAttr.SensitiveDataOrigin |
-                ObjectAttr.AdminWithPolicy | ObjectAttr.Restricted | ObjectAttr.Decrypt;
+            if (Logging.IsEnabled) Logging.Enter(this, null, nameof(CacheEkAndSrk));
 
-            var ekAuthPolicy = new byte[] 
-            {
-                0x83, 0x71, 0x97, 0x67, 0x44, 0x84, 0xb3, 0xf8,
-                0x1a, 0x90, 0xcc, 0x8d, 0x46, 0xa5, 0xd7, 0x24,
-                0xfd, 0x52, 0xd7, 0x6e, 0x06, 0x52, 0x0b, 0x64,
-                0xf2, 0xa1, 0xda, 0x1b, 0x33, 0x14, 0x69, 0xaa
-            };
-
-            // Get the real EK ready
+            // Get the real EK ready.
             TpmPublic ekTemplate = new TpmPublic(
                 TpmAlgId.Sha256,
-                ekObjectAttributes,
-                ekAuthPolicy,
-                new RsaParms(new SymDefObject(TpmAlgId.Aes, 128, TpmAlgId.Cfb),
-                new NullAsymScheme(),
-                2048,
-                0),
+                ObjectAttr.FixedTPM | ObjectAttr.FixedParent | ObjectAttr.SensitiveDataOrigin | 
+                ObjectAttr.AdminWithPolicy | ObjectAttr.Restricted | ObjectAttr.Decrypt,
+                new byte[] {
+                    0x83, 0x71, 0x97, 0x67, 0x44, 0x84, 0xb3, 0xf8, 0x1a, 0x90, 0xcc, 0x8d, 0x46, 0xa5, 0xd7, 0x24,
+                    0xfd, 0x52, 0xd7, 0x6e, 0x06, 0x52, 0x0b, 0x64, 0xf2, 0xa1, 0xda, 0x1b, 0x33, 0x14, 0x69, 0xaa },
+                new RsaParms(
+                    new SymDefObject(TpmAlgId.Aes, 128, TpmAlgId.Cfb),
+                    new NullAsymScheme(),
+                    2048,
+                    0),
                 new Tpm2bPublicKeyRsa(new Byte[2048 / 8]));
 
-            _ekPub = ReadOrCreatePersistedKey(
-                new TpmHandle(TPM_20_EK_HANDLE),
-                new TpmHandle(TpmHandle.RhEndorsement),
-                ekTemplate);
+            _ekPub = ReadOrCreatePersistedKey(new TpmHandle(TPM_20_EK_HANDLE), new TpmHandle(TpmHandle.RhEndorsement), ekTemplate);
 
-            ObjectAttr srkObjectAttributes =
-                ObjectAttr.FixedTPM | ObjectAttr.FixedParent | ObjectAttr.SensitiveDataOrigin |
-                ObjectAttr.UserWithAuth | ObjectAttr.NoDA | ObjectAttr.Restricted | ObjectAttr.Decrypt;
-
-            // Get the real SRK ready
+            // Get the real SRK ready.
             TpmPublic srkTemplate = new TpmPublic(
                 TpmAlgId.Sha256,
-                srkObjectAttributes,
+                ObjectAttr.FixedTPM | ObjectAttr.FixedParent | ObjectAttr.SensitiveDataOrigin | 
+                ObjectAttr.UserWithAuth | ObjectAttr.NoDA | ObjectAttr.Restricted | ObjectAttr.Decrypt,
                 Array.Empty<byte>(),
-                new RsaParms(new SymDefObject(TpmAlgId.Aes, 128, TpmAlgId.Cfb),
-                new NullAsymScheme(),
-                2048,
-                0),
-                new Tpm2bPublicKeyRsa(new Byte[2048 / 8]));
+                new RsaParms(
+                    new SymDefObject(TpmAlgId.Aes, 128, TpmAlgId.Cfb),
+                    new NullAsymScheme(),
+                    2048,
+                    0),
+                    new Tpm2bPublicKeyRsa(new Byte[2048 / 8]));
 
-            _srkPub = ReadOrCreatePersistedKey(
-                new TpmHandle(TPM_20_SRK_HANDLE), 
-                new TpmHandle(TpmHandle.RhOwner), 
-                srkTemplate);
+            _srkPub = ReadOrCreatePersistedKey(new TpmHandle(TPM_20_SRK_HANDLE), new TpmHandle(TpmHandle.RhOwner), srkTemplate);
+
+            if (Logging.IsEnabled) Logging.Exit(this, null, nameof(CacheEkAndSrk));
         }
 
         private TpmPublic ReadOrCreatePersistedKey(TpmHandle persHandle, TpmHandle hierarchy, TpmPublic template)
         {
-            // Let's see if the key was already created and installed (aka. the TPM has been provisioned by Windows).
-            TpmPublic keyPub = _tpm2._AllowErrors().ReadPublic(persHandle, out byte[] name, out byte[] qualifiedName);
+            byte[] name;
+            byte[] qualifiedName;
 
-            // If not create and install it
+            // Let's see if the key was already created and installed.
+            TpmPublic keyPub = _tpm2._AllowErrors().ReadPublic(persHandle, out name, out qualifiedName);
+
+            // If not create and install it.
             if (!_tpm2._LastCommandSucceeded())
             {
+                CreationData creationData;
+                byte[] creationHash;
+                TkCreation creationTicket;
                 TpmHandle keyHandle = _tpm2.CreatePrimary(hierarchy,
                     new SensitiveCreate(),
                     template,
                     Array.Empty<byte>(),
                     Array.Empty<PcrSelection>(),
                     out keyPub,
-                    out CreationData creationData,
-                    out byte[] creationHash,
-                    out TkCreation creationTicket);
+                    out creationData,
+                    out creationHash,
+                    out creationTicket);
                 _tpm2.EvictControl(TpmHandle.RhOwner, keyHandle, persHandle);
                 _tpm2.FlushContext(keyHandle);
             }
-
             return keyPub;
         }
     }

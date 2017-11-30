@@ -83,9 +83,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Assert.IsNotNull(result.AssignedHub);
                 Assert.IsNotNull(result.DeviceId);
 
-                Client.IAuthenticationMethod auth = CreateAuthenticationMethodFromSecurityProvider(
-                    security, 
-                    result.DeviceId);
+                Client.IAuthenticationMethod auth = CreateAuthenticationMethodFromSecurityProvider(security, result.DeviceId);
 
                 using (DeviceClient iotClient = DeviceClient.Create(result.AssignedHub, auth, Client.TransportType.Mqtt_Tcp_Only))
                 {
