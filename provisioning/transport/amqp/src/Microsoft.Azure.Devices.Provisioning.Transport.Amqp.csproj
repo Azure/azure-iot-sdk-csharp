@@ -18,8 +18,8 @@
     <Compile Include="$(Common)\Logging.Common.cs">
       <Link>Common\Logging.Common.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\device\provisioning\Logging.ProvisioningDeviceClient.cs">
-      <Link>Common\device\provisioning\Logging.ProvisioningDeviceClient.cs</Link>
+    <Compile Include="$(Common)\Logging.ProvisioningTransport.Common.cs">
+      <Link>Common\Logging.ProvisioningTransport.Common.cs</Link>
     </Compile>
     <Compile Include="$(Common)\device\provisioning\transport\ClientApiVersionHelper.cs"> 
       <Link>Common\device\provisioning\transport\ClientApiVersionHelper.cs</Link>

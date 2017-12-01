@@ -36,10 +36,6 @@ namespace Microsoft.Azure.Devices.Shared
         private const int DumpArrayEventId = 7;
 
         // Provisioning event reservations: [10, 20)
-        private const int RegisterAsyncId = 11;
-        private const int RegisterDeviceId = 11;
-        private const int OperationStatusLookupId = 12;
-
         // IoT Hub event reservations: [20, 30)
 
         private const string MissingMember = "(?)";

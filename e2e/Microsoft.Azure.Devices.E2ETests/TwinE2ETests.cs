@@ -133,7 +133,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.DefaultDelayInSec);
         }
 
-        [Ignore] //TODO# 252: Intermittently failing.
         [TestMethod]
         [TestCategory("Twin-E2E")]
         [TestCategory("Recovery")]
@@ -145,7 +144,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.DefaultDelayInSec);
         }
 
-        [Ignore] //TODO# 252: Intermittently failing.
         [TestMethod]
         [TestCategory("Twin-E2E")]
         [TestCategory("Recovery")]
