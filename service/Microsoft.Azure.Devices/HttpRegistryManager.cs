@@ -12,10 +12,9 @@ namespace Microsoft.Azure.Devices
     using System.Text.RegularExpressions;
     using System.Threading;
     using System.Threading.Tasks;
-
-    using Microsoft.Azure.Devices.Shared;
     using Microsoft.Azure.Devices.Common;
     using Microsoft.Azure.Devices.Common.Exceptions;
+    using Microsoft.Azure.Devices.Shared;
     using Newtonsoft.Json;
 
     class HttpRegistryManager : RegistryManager
@@ -37,6 +36,7 @@ namespace Microsoft.Azure.Devices
 
         static readonly Regex DeviceIdRegex = new Regex(@"^[A-Za-z0-9\-:.+%_#*?!(),=@;$']{1,128}$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         static readonly TimeSpan DefaultOperationTimeout = TimeSpan.FromSeconds(100);
+        static readonly TimeSpan DefaultGetDevicesOperationTimeout = TimeSpan.FromSeconds(120);
 
         IHttpClientHelper httpClientHelper;
         readonly string iotHubName;
@@ -113,8 +113,8 @@ namespace Microsoft.Azure.Devices
         public override Task<string[]> AddDevicesAsync(IEnumerable<Device> devices, CancellationToken cancellationToken)
         {
             return this.BulkDeviceOperationsAsync<string[]>(
-                GenerateExportImportDeviceListForBulkOperations(devices, ImportMode.Create), 
-                ClientApiVersionHelper.ApiVersionQueryStringGA, 
+                GenerateExportImportDeviceListForBulkOperations(devices, ImportMode.Create),
+                ClientApiVersionHelper.ApiVersionQueryStringGA,
                 cancellationToken);
         }
 
@@ -127,7 +127,7 @@ namespace Microsoft.Azure.Devices
         {
             return this.BulkDeviceOperationsAsync<BulkRegistryOperationResult>(
                 GenerateExportImportDeviceListForBulkOperations(devices, ImportMode.Create),
-                ClientApiVersionHelper.ApiVersionQueryString, 
+                ClientApiVersionHelper.ApiVersionQueryString,
                 cancellationToken);
         }
 
@@ -164,11 +164,12 @@ namespace Microsoft.Azure.Devices
             var errorMappingOverrides = new Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>()
             {
                 { HttpStatusCode.PreconditionFailed, async (responseMessage) => new PreconditionFailedException(await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage)) },
-                { HttpStatusCode.NotFound, async responseMessage =>
-                                           {
-                                               string responseContent = await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage);
-                                               return (Exception) new DeviceNotFoundException(responseContent, (Exception) null);
-                                           }
+                {
+                    HttpStatusCode.NotFound, async responseMessage =>
+                    {
+                        string responseContent = await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage);
+                        return (Exception)new DeviceNotFoundException(responseContent, (Exception)null);
+                    }
                 }
 
             };
@@ -187,7 +188,7 @@ namespace Microsoft.Azure.Devices
         {
             return this.BulkDeviceOperationsAsync<string[]>(
                 GenerateExportImportDeviceListForBulkOperations(devices, forceUpdate ? ImportMode.Update : ImportMode.UpdateIfMatchETag),
-                ClientApiVersionHelper.ApiVersionQueryStringGA, 
+                ClientApiVersionHelper.ApiVersionQueryStringGA,
                 cancellationToken);
         }
 
@@ -199,8 +200,8 @@ namespace Microsoft.Azure.Devices
         public override Task<BulkRegistryOperationResult> UpdateDevices2Async(IEnumerable<Device> devices, bool forceUpdate, CancellationToken cancellationToken)
         {
             return this.BulkDeviceOperationsAsync<BulkRegistryOperationResult>(
-                GenerateExportImportDeviceListForBulkOperations(devices, forceUpdate ? ImportMode.Update : ImportMode.UpdateIfMatchETag), 
-                ClientApiVersionHelper.ApiVersionQueryString, 
+                GenerateExportImportDeviceListForBulkOperations(devices, forceUpdate ? ImportMode.Update : ImportMode.UpdateIfMatchETag),
+                ClientApiVersionHelper.ApiVersionQueryString,
                 cancellationToken);
         }
 
@@ -251,7 +252,7 @@ namespace Microsoft.Azure.Devices
         {
             return this.BulkDeviceOperationsAsync<string[]>(
                 GenerateExportImportDeviceListForBulkOperations(devices, forceRemove ? ImportMode.Delete : ImportMode.DeleteIfMatchETag),
-                ClientApiVersionHelper.ApiVersionQueryStringGA, 
+                ClientApiVersionHelper.ApiVersionQueryStringGA,
                 cancellationToken);
         }
 
@@ -264,7 +265,7 @@ namespace Microsoft.Azure.Devices
         {
             return this.BulkDeviceOperationsAsync<BulkRegistryOperationResult>(
                 GenerateExportImportDeviceListForBulkOperations(devices, forceRemove ? ImportMode.Delete : ImportMode.DeleteIfMatchETag),
-                ClientApiVersionHelper.ApiVersionQueryString, 
+                ClientApiVersionHelper.ApiVersionQueryString,
                 cancellationToken);
         }
 
@@ -316,8 +317,10 @@ namespace Microsoft.Azure.Devices
 
             return this.httpClientHelper.GetAsync<IEnumerable<Device>>(
                 GetDevicesRequestUri(maxCount),
+                DefaultGetDevicesOperationTimeout,
                 null,
                 null,
+                true,
                 cancellationToken);
         }
 
@@ -342,7 +345,7 @@ namespace Microsoft.Azure.Devices
                 this.httpClientHelper.Dispose();
                 this.httpClientHelper = null;
             }
-        }
+        } 
 
         static IEnumerable<ExportImportDevice> GenerateExportImportDeviceListForBulkOperations(IEnumerable<Device> devices, ImportMode importMode)
         {
@@ -464,7 +467,7 @@ namespace Microsoft.Azure.Devices
 
             return this.httpClientHelper.PostAsync<IEnumerable<ExportImportDevice>, T>(GetBulkRequestUri(version), devices, errorMappingOverrides, null, cancellationToken);
         }
-        
+
         void BulkDeviceOperationSetup(IEnumerable<ExportImportDevice> devices)
         {
             this.EnsureInstanceNotClosed();
@@ -832,7 +835,7 @@ namespace Microsoft.Azure.Devices
                 },
                 { HttpStatusCode.PreconditionFailed, async responseMessage => new PreconditionFailedException(await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage)) }
             };
-            
+
             return this.httpClientHelper.DeleteAsync(GetRequestUri(deviceId), eTagHolder, errorMappingOverrides, null, cancellationToken);
         }
 
@@ -846,7 +849,7 @@ namespace Microsoft.Azure.Devices
         {
             return new Uri(RequestUriFormat.FormatInvariant(string.Empty, apiVersionQueryString), UriKind.Relative);
         }
-        
+
         static Uri GetJobUri(string jobId)
         {
             return new Uri(JobsUriFormat.FormatInvariant(jobId, ClientApiVersionHelper.ApiVersionQueryString), UriKind.Relative);

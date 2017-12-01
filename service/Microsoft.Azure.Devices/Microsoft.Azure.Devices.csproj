@@ -68,8 +68,8 @@
       <HintPath>$(SolutionDir)\packages\Microsoft.Owin.3.0.1\lib\net45\Microsoft.Owin.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>$(SolutionDir)\packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>$(SolutionDir)\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5, processorArchitecture=MSIL">
@@ -186,7 +186,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>ApiResources.resx</DependentUpon>
     </Compile>
-    <Compile Include="AuthenticationType.cs" />
     <Compile Include="Common\Amqp\ClientWebSocketTransport.cs" />
     <Compile Include="Common\Amqp\LegacyClientWebSocketTransport.cs" />
     <Compile Include="Common\Amqp\WebSocketConstants.cs" />
@@ -237,7 +236,6 @@
     <Compile Include="Common\Extensions\ExceptionExtensions.cs" />
     <Compile Include="Common\Extensions\MemberInfoExtensions.cs" />
     <Compile Include="Common\Extensions\OtherExtensions.cs" />
-    <Compile Include="Common\Extensions\StringFormattingExtensions.cs" />
     <Compile Include="Common\FxTrace.cs" />
     <Compile Include="Common\HashCode.cs" />
     <Compile Include="Common\IAmqpTrace.cs" />
@@ -272,7 +270,6 @@
     <Compile Include="DeliveryAcknowledgement.cs" />
     <Compile Include="DeliveryFailureReason.cs" />
     <Compile Include="Device.cs" />
-    <Compile Include="DeviceConnectionState.cs" />
     <Compile Include="CloudToDeviceMethodResult.cs" />
     <Compile Include="DeviceJob.cs" />
     <Compile Include="DeviceJobError.cs" />
@@ -294,7 +291,6 @@
     <Compile Include="JobClient\JobRequest.cs" />
     <Compile Include="JobClient\JobResponse.cs" />
     <Compile Include="QueryResult.cs" />
-    <Compile Include="DeviceStatus.cs" />
     <Compile Include="EndpointKind.cs" />
     <Compile Include="ExportDevicesRequest.cs" />
     <Compile Include="ExportImportDevice.cs" />
@@ -325,12 +321,13 @@
     <Compile Include="Receiver.cs" />
     <Compile Include="RegistryManager.cs" />
     <Compile Include="RegistryStatistics.cs" />
+    <Compile Include="ServiceAuthenticationWithDeviceCredentials.cs" />
     <Compile Include="ServiceAuthenticationWithSharedAccessPolicyKey.cs" />
     <Compile Include="ServiceAuthenticationWithSharedAccessPolicyToken.cs" />
     <Compile Include="ServiceClient.cs" />
     <Compile Include="ServiceStatistics.cs" />
     <Compile Include="SymmetricKey.cs" />
-    <Compile Include="X509Thumbprint.cs" />
+    <Compile Include="X509ThumbprintExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -353,7 +350,7 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>
