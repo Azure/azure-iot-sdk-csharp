@@ -65,19 +65,12 @@
     <Compile Include="..\Microsoft.Azure.Devices.Shared\TwinState.cs">
       <Link>TwinState.cs</Link>
     </Compile>
-    <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-
-  <PropertyGroup>
-    <DefineConstants Condition="'$(WIP_PROVISIONING.ToUpper())' == 'TRUE'">$(DefineConstants);WIP_PROVISIONING</DefineConstants>
-  </PropertyGroup>
-  <ItemGroup Condition="'$(WIP_PROVISIONING.ToUpper())' == 'TRUE'">
-    <!-- WIP: ProvisioningDeviceClient -->
     <Compile Include="..\Microsoft.Azure.Devices.Shared\SecurityProvider.cs" />
     <Compile Include="..\Microsoft.Azure.Devices.Shared\SecurityProviderTpm.cs" />
     <Compile Include="..\Microsoft.Azure.Devices.Shared\SecurityProviderX509.cs" />
     <Compile Include="..\Microsoft.Azure.Devices.Shared\SecurityProviderX509Certificate.cs" />
     <Compile Include="..\Microsoft.Azure.Devices.Shared\TransportFallbackType.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
 
   <ItemGroup>

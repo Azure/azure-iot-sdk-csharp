@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Client
 
         Task<string> IAuthorizationProvider.GetPasswordAsync()
         {
-            if (!this.SharedAccessSignature.IsNullOrWhiteSpace())
+            if (!string.IsNullOrWhiteSpace(this.SharedAccessSignature))
             {
                 return Task.FromResult(this.SharedAccessSignature);
             }

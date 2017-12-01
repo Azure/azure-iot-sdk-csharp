@@ -22,6 +22,12 @@ namespace Microsoft.Azure.Devices.Shared
         const string ReportedPropertiesJsonTag = "reported";
         const string VersionTag = "version";
 
+        /// <summary>
+        /// Converts <see cref="Twin"/> to its equivalent Json representation.
+        /// </summary>
+        /// <param name="writer">the Json writer.</param>
+        /// <param name="value">the <see cref="Twin"/> to convert.</param>
+        /// <param name="serializer">the Json serializer.</param>
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
             if (value == null)
@@ -75,6 +81,13 @@ namespace Microsoft.Azure.Devices.Shared
             writer.WriteEndObject();
         }
 
+        /// <summary>
+        /// Converts Json to its equivalent <see cref="Twin"/> representation.
+        /// </summary>
+        /// <param name="reader">the Json reader.</param>
+        /// <param name="objectType">object type</param>
+        /// <param name="existingValue">exisiting value</param>
+        /// <param name="serializer">the Json serializer.</param>
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
             var twin = new Twin();
@@ -129,10 +142,19 @@ namespace Microsoft.Azure.Devices.Shared
             return twin;
         }
 
+        /// <summary>
+        /// Converter Can Read flag
+        /// </summary>
         public override bool CanRead => true;
 
+        /// <summary>
+        /// Value indicating whether this TwinJsonConverter can read JSON
+        /// </summary>
         public override bool CanWrite => true;
 
+        /// <summary>
+        /// Value indicating whether this TwinJsonConverter can write JSON
+        /// </summary>
         public override bool CanConvert(Type objectType) => typeof(Twin).GetTypeInfo().IsAssignableFrom(objectType.GetTypeInfo());
 
 
