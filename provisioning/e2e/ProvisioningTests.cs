@@ -9,6 +9,8 @@ using Microsoft.Azure.Devices.Provisioning.Security.Samples;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Tracing;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
@@ -27,6 +29,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         private readonly VerboseTestLogging _verboseLog = VerboseTestLogging.GetInstance();
         private readonly TestLogging _log = TestLogging.GetInstance();
 
+        [SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Justification = "This routes all logging to Console and Debug log.")]
+        private static ConsoleEventListener s_listener = new ConsoleEventListener();
+
         public enum X509EnrollmentType
         {
             Individual,
@@ -43,8 +48,8 @@ namespace Microsoft.Azure.Devices.E2ETests
 //        [DataRow(nameof(ProvisioningTransportHandlerAmqp), nameof(SecurityClientTpm), null, TransportFallbackType.WebSocketOnly)]
 //        [DataRow(nameof(ProvisioningTransportHandlerAmqp), nameof(SecurityClientX509), X509EnrollmentType.Individual, TransportFallbackType.WebSocketOnly)]
 //        [DataRow(nameof(ProvisioningTransportHandlerAmqp), nameof(SecurityClientX509), X509EnrollmentType.Group, TransportFallbackType.WebSocketOnly)]
-//        [DataRow(nameof(ProvisioningTransportHandlerMqtt), nameof(SecurityClientX509), X509EnrollmentType.Individual, TransportFallbackType.TcpOnly)]
-//        [DataRow(nameof(ProvisioningTransportHandlerMqtt), nameof(SecurityClientX509), X509EnrollmentType.Group, TransportFallbackType.TcpOnly)]
+        [DataRow(nameof(ProvisioningTransportHandlerMqtt), nameof(SecurityClientX509), X509EnrollmentType.Individual, TransportFallbackType.TcpOnly)]
+        [DataRow(nameof(ProvisioningTransportHandlerMqtt), nameof(SecurityClientX509), X509EnrollmentType.Group, TransportFallbackType.TcpOnly)]
 //        [DataRow(nameof(ProvisioningTransportHandlerMqtt), nameof(SecurityClientX509), X509EnrollmentType.Individual, TransportFallbackType.WebSocketOnly)]
 //        [DataRow(nameof(ProvisioningTransportHandlerMqtt), nameof(SecurityClientX509), X509EnrollmentType.Group, TransportFallbackType.WebSocketOnly)]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
@@ -68,6 +73,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 _log.WriteLine("ProvisioningClient RegisterAsync . . . ");
                 DeviceRegistrationResult result = await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
 
+                Assert.IsNotNull(result);
                 _log.WriteLine($"{result.Status} (Error Code: {result.ErrorCode}; Error Message: {result.ErrorMessage})");
                 _log.WriteLine($"ProvisioningClient AssignedHub: {result.AssignedHub}; DeviceID: {result.DeviceId}");
 
@@ -75,10 +81,9 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Assert.IsNotNull(result.AssignedHub);
                 Assert.IsNotNull(result.DeviceId);
 
-                Client.IAuthenticationMethod auth = await CreateAuthenticationMethodFromSecurityClient(
-                    security, 
-                    result.DeviceId, 
-                    result.AssignedHub).ConfigureAwait(false);
+                Client.IAuthenticationMethod auth = CreateAuthenticationMethodFromSecurityClient(
+                    security,
+                    result.DeviceId);
 
                 using (DeviceClient iotClient = DeviceClient.Create(result.AssignedHub, auth, Client.TransportType.Mqtt_Tcp_Only))
                 {
@@ -205,8 +210,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                     return new ProvisioningTransportHandlerAmqp(fallbackType ?? TransportFallbackType.TcpOnly);
 
                 case nameof(ProvisioningTransportHandlerMqtt):
-                    // TODO: Enable after Mqtt is implemented
-                    Assert.Inconclusive("MQTT is not implemented.");
                     return new ProvisioningTransportHandlerMqtt(fallbackType ?? TransportFallbackType.TcpOnly);
             }
 
@@ -252,10 +255,9 @@ namespace Microsoft.Azure.Devices.E2ETests
             throw new NotSupportedException($"Unknown security type: '{name}'.");
         }
 
-        private async Task<Client.IAuthenticationMethod> CreateAuthenticationMethodFromSecurityClient(
+        private Client.IAuthenticationMethod CreateAuthenticationMethodFromSecurityClient(
             SecurityClient provisioningSecurity,
-            string deviceId,
-            string iotHub)
+            string deviceId)
         {
             _verboseLog.WriteLine($"{nameof(CreateAuthenticationMethodFromSecurityClient)}({deviceId})");
 
@@ -263,10 +265,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 var security = (SecurityClientHsmTpm)provisioningSecurity;
                 var auth = new DeviceAuthenticationWithTpm(deviceId, security);
-                
-                // TODO: workaround to populate Token.
-                await auth.GetTokenAsync(iotHub).ConfigureAwait(false);
-
                 return auth;
             }
             else if (provisioningSecurity is SecurityClientHsmX509)

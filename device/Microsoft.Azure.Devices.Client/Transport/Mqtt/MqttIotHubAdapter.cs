@@ -378,7 +378,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (packetPassed == null || packetPassed.Requests == null)
             {
-                topicFilter = topicFilter = CommandTopicFilterFormat.FormatInvariant(this.deviceId);
+                topicFilter = CommandTopicFilterFormat.FormatInvariant(this.deviceId);
                 qos = mqttTransportSettings.ReceivingQoS;
             }
             else if (packetPassed.Requests.Count == 1)

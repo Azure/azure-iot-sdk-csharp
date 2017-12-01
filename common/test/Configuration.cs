@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             if (string.IsNullOrWhiteSpace(envValue))
             {
-                return defaultValue;
+                return defaultValue ?? throw new InvalidOperationException($"Configuration missing: {envName}");
             }
 
             return Environment.ExpandEnvironmentVariables(envValue);
@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             if (envValue == null)
             {
-                return defaultValue;
+                return defaultValue ?? throw new InvalidOperationException($"Configuration missing: {envName}");
             }
 
             return new Uri(envValue);
@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             if (certBase64 == null)
             {
-                certBase64 = defaultValue;
+                certBase64 = defaultValue ?? throw new InvalidOperationException($"Configuration missing: {envName}");
             }
                         
             Byte[] buff = Convert.FromBase64String(certBase64);

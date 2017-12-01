@@ -29,6 +29,9 @@
     <Compile Include="$(CommonTest)\VerboseTestLogging.cs">
       <Link>Common\VerboseTestLogging.cs</Link>
     </Compile>
+    <Compile Include="$(CommonTest)\ConsoleEventListener.cs">
+      <Link>Common\ConsoleEventListener.cs</Link>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
