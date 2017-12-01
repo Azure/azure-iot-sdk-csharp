@@ -76,10 +76,16 @@ Function RunTests($path, $message) {
 Function LegacyBuildProject($path, $message) {
 
     Write-Host
-    Write-Host -ForegroundColor Cyan "MSBUILD: --- " $message " ---"
+    Write-Host -ForegroundColor Cyan "MSBUILD: --- " $message $configuration" ---"
     cd (Join-Path $rootDir $path)
 
-    $commandLine = ".\build.cmd --config $configuration"
+    if ($configuration -eq "Release"){
+        $commandLine = ".\build.cmd --config Release_Delay_Sign"
+        Write-Host -ForegroundColor Cyan " --- Release_Delay_Sign ---"
+    }
+    else{
+        $commandLine = ".\build.cmd --config $configuration"
+    }
     
     if ($clean) {
         $commandLine += " -c"
@@ -109,7 +115,10 @@ try {
         LegacyBuildProject device\build "Iot Hub Device SDK"
         LegacyBuildProject service\build "Iot Hub Service SDK"
         LegacyBuildProject e2e\build "E2E Tests"
-        LegacyBuildProject tools\DeviceExplorer\build "DeviceExplorer"
+
+        if ($configuration -ne "Release"){
+            LegacyBuildProject tools\DeviceExplorer\build "DeviceExplorer"
+        }
     }
 
 	BuildProject provisioning\device\src "Provisioning Device SDK"
@@ -131,8 +140,8 @@ try {
 		RunTests provisioning\transport\amqp\tests "Provisioning Transport for AMQP"
 		RunTests provisioning\transport\http\tests "Provisioning Transport for HTTP"
 		RunTests provisioning\transport\mqtt\tests "Provisioning Transport for MQTT"
-		
-		RunTests security\tpm\tests "SecurityClient for TPM"
+		# TODO: enable building securityClient when TSS.Net is signed
+		#RunTests security\tpm\tests "SecurityClient for TPM"
     }
 
     if ($e2etests)

@@ -32,7 +32,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.Azure.Devices" />
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -51,15 +50,17 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\shared\Microsoft.Azure.Devices.Shared\Microsoft.Azure.Devices.Shared.csproj">
+      <Project>{835230fc-8d03-4cd1-8845-5a9d1b0b837d}</Project>
+      <Name>Microsoft.Azure.Devices.Shared</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Microsoft.Azure.Devices\Microsoft.Azure.Devices.csproj">
       <Project>{7fc2a03f-36fe-44c5-a1ef-5b1f11458350}</Project>
       <Name>Microsoft.Azure.Devices</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\shared\Microsoft.Azure.Devices.Shared\Microsoft.Azure.Devices.Shared.csproj">
-      <Project>{835230FC-8D03-4CD1-8845-5A9D1B0B837D}</Project>
-      <Name>Microsoft.Azure.Devices.Shared</Name>
+    <ProjectReference Include="..\..\Microsoft.Azure.Devices\Microsoft.Azure.Devices.csproj">
+      <Project>{7fc2a03f-36fe-44c5-a1ef-5b1f11458350}</Project>
+      <Name>Microsoft.Azure.Devices</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
