@@ -16,7 +16,6 @@ Parameters:
     -configuration {Debug|Release}
     -verbosity: Sets the verbosity level of the command. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].
 
-    -wip_provisioning: Builds the Device Provisioning Service SDK (work-in-progress)
     -nolegacy: Skips .Net Framework based builds. This is used to build on non-Windows OSs.
 
 .EXAMPLE
@@ -38,14 +37,13 @@ Param(
     [string] $verbosity = "q",
 
     # Work-in-progress switches:
-    [switch] $wip_provisioning = $false, #Work for the Device Provisioning Service.
     [switch] $nolegacy                   #Work to port existing projects to the .NET Core SDK. Must be set for Linux builds.
 )
 
 Function BuildProject($path, $message) {
 
     Write-Host
-    Write-Host -ForegroundColor Cyan "BUILD: --- " $message " ---"
+    Write-Host -ForegroundColor Cyan "BUILD: --- " $message $configuration" ---"
     cd (Join-Path $rootDir $path)
 
     if ($clean) {
@@ -65,7 +63,7 @@ Function BuildProject($path, $message) {
 Function RunTests($path, $message) {
 
     Write-Host
-    Write-Host -ForegroundColor Cyan "TEST: --- " $message " ---"
+    Write-Host -ForegroundColor Cyan "TEST: --- " $message $configuration" ---"
     cd (Join-Path $rootDir $path)
 
     & dotnet test --verbosity normal --configuration $configuration --logger "trx"
@@ -94,12 +92,6 @@ Function LegacyBuildProject($path, $message) {
     }
 }
 
-# Set WIP environment variables.
-if ($wip_provisioning -eq $true) {
-    Write-Host -ForegroundColor Magenta "!!! Building work in progress: Provisioning !!!"
-    $env:WIP_PROVISIONING = "true"
-}
-
 $rootDir = (Get-Item -Path ".\" -Verbose).FullName
 
 $startTime = Get-Date
@@ -120,17 +112,13 @@ try {
         LegacyBuildProject tools\DeviceExplorer\build "DeviceExplorer"
     }
 
-    # Work-in-progress build:
-
-    if ($wip_provisioning) {
-        BuildProject provisioning\device "Provisioning Device SDK"
-        BuildProject provisioning\service "Provisioning Service SDK"
-        BuildProject provisioning\transport\amqp "Provisioning Transport for AMQP"
-        BuildProject provisioning\transport\http "Provisioning Transport for HTTP"
-        BuildProject provisioning\transport\mqtt "Provisioning Transport for MQTT"
-
-        BuildProject security\tpm "SecurityProvider for TPM"
-    }
+	BuildProject provisioning\device\src "Provisioning Device SDK"
+	BuildProject provisioning\service\src "Provisioning Service SDK"
+	BuildProject provisioning\transport\amqp\src "Provisioning Transport for AMQP"
+	BuildProject provisioning\transport\http\src "Provisioning Transport for HTTP"
+	BuildProject provisioning\transport\mqtt\src "Provisioning Transport for MQTT"
+    # TODO: enable building securityClient when TSS.Net is signed
+	#BuildProject security\tpm\src "SecurityClient for TPM"
 
     if (-not $notests)
     {
@@ -138,16 +126,13 @@ try {
         Write-Host -ForegroundColor Cyan "Unit Test execution"
         Write-Host
 
-        if ($wip_provisioning)
-        {
-            RunTests provisioning\device\tests "Provisioning Device Tests"
-            RunTests provisioning\service\tests "Provisioning Device Tests"
-            RunTests provisioning\transport\amqp\tests "Provisioning Transport for AMQP"
-            RunTests provisioning\transport\http\tests "Provisioning Transport for HTTP"
-            RunTests provisioning\transport\mqtt\tests "Provisioning Transport for MQTT"
-            
-            RunTests security\tpm\tests "SecurityProvider for TPM"
-        }
+		RunTests provisioning\device\tests "Provisioning Device Tests"
+		RunTests provisioning\service\tests "Provisioning Device Tests"
+		RunTests provisioning\transport\amqp\tests "Provisioning Transport for AMQP"
+		RunTests provisioning\transport\http\tests "Provisioning Transport for HTTP"
+		RunTests provisioning\transport\mqtt\tests "Provisioning Transport for MQTT"
+		
+		RunTests security\tpm\tests "SecurityClient for TPM"
     }
 
     if ($e2etests)
