@@ -24,6 +24,7 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
     using System.Globalization;
     using System.Threading;
     using System.Threading.Tasks;
+    using System.Collections;
     using Microsoft.Azure.Devices.Client.TransientFaultHandling.Properties;
 
     /// <summary>
@@ -34,7 +35,7 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
     {
         private static Task<bool> cachedBoolTask;
 
-        public AsyncExecution(Func<Task> taskAction, ShouldRetry shouldRetry, Func<Exception, bool> isTransient, Action<int, Exception, TimeSpan> onRetrying, bool fastFirstRetry, CancellationToken cancellationToken) : base(() => AsyncExecution.StartAsGenericTask(taskAction), shouldRetry, isTransient, onRetrying, fastFirstRetry, cancellationToken)
+        public AsyncExecution(Func<Task> taskAction, ShouldRetry shouldRetry, Func<Exception, bool> isTransient, Action<int, Exception, TimeSpan> onRetrying, bool fastFirstRetry, CancellationToken cancellationToken) : base(() => AsyncExecution.StartAsGenericTask(taskAction, cancellationToken), shouldRetry, isTransient, onRetrying, fastFirstRetry, cancellationToken)
         {
         }
 
@@ -43,8 +44,23 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         /// </summary>
         /// <param name="taskAction">The task to wrap.</param>
         /// <returns>A <see cref="T:System.Threading.Tasks.Task" /> that wraps the non-generic <see cref="T:System.Threading.Tasks.Task" />.</returns>
-        private static Task<bool> StartAsGenericTask(Func<Task> taskAction)
+        private static async Task<bool> StartAsGenericTask(Func<Task> taskAction, CancellationToken cancellationToken)
         {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                if (cachedBoolTask != null)
+                {
+                    return await cachedBoolTask;
+                }
+                TaskCompletionSource<bool> taskCompletionSource = new TaskCompletionSource<bool>();
+                taskCompletionSource.TrySetCanceled();
+                return await taskCompletionSource.Task;
+            }
+
+            if (cachedBoolTask != null)
+            {
+                return await cachedBoolTask;
+            }
             Task task = taskAction();
             if (task == null)
             {
@@ -55,7 +71,7 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
             }
             if (task.Status == TaskStatus.RanToCompletion)
             {
-                return AsyncExecution.GetCachedTask();
+                return await AsyncExecution.GetCachedTask();
             }
             if (task.Status == TaskStatus.Created)
             {
@@ -65,7 +81,7 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
                 }), "taskAction");
             }
             TaskCompletionSource<bool> tcs = new TaskCompletionSource<bool>();
-            task.ContinueWith(delegate (Task t)
+            await task.ContinueWith(delegate (Task t)
             {
                 if (t.IsFaulted)
                 {
@@ -79,7 +95,7 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
                 }
                 tcs.TrySetResult(true);
             }, TaskContinuationOptions.ExecuteSynchronously);
-            return tcs.Task;
+            return await tcs.Task;
         }
 
         private static Task<bool> GetCachedTask()

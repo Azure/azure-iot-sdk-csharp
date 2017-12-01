@@ -256,7 +256,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             try
             {
-                await this.internalRetryPolicy.ExecuteAsync(() => base.RecoverConnections(o, connectionType, cancellationToken), cancellationToken);
+                await this.internalRetryPolicy.ExecuteAsync(() =>
+                {
+                    return base.RecoverConnections(o, connectionType, cancellationToken);
+                }, cancellationToken);
             }
             catch (IotHubClientTransientException ex)
             {
