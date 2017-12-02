@@ -83,10 +83,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Assert.IsNotNull(result.AssignedHub);
                 Assert.IsNotNull(result.DeviceId);
 
-                Client.IAuthenticationMethod auth = await CreateAuthenticationMethodFromSecurityProvider(
-                    security, 
-                    result.DeviceId, 
-                    result.AssignedHub).ConfigureAwait(false);
+                Client.IAuthenticationMethod auth = CreateAuthenticationMethodFromSecurityProvider(security, result.DeviceId);
 
                 using (DeviceClient iotClient = DeviceClient.Create(result.AssignedHub, auth, Client.TransportType.Mqtt_Tcp_Only))
                 {
@@ -257,10 +254,9 @@ namespace Microsoft.Azure.Devices.E2ETests
             throw new NotSupportedException($"Unknown security type: '{name}'.");
         }
 
-        private async Task<Client.IAuthenticationMethod> CreateAuthenticationMethodFromSecurityProvider(
+        private Client.IAuthenticationMethod CreateAuthenticationMethodFromSecurityProvider(
             SecurityProvider provisioningSecurity,
-            string deviceId,
-            string iotHub)
+            string deviceId)
         {
             _verboseLog.WriteLine($"{nameof(CreateAuthenticationMethodFromSecurityProvider)}({deviceId})");
 
