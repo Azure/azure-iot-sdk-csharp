@@ -6,10 +6,20 @@
     <Features Condition=" '$(Configuration)' == 'Debug' ">IOperation</Features>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <DocumentationFile>$(OutputPath)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <common>..\..\..\common\src</common>
+  </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.TSS" Version="1.0.6" />
+    <Compile Include="$(Common)\Logging.Common.cs">
+      <Link>Common\Logging.Common.cs</Link>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.TSS" Version="2.0.1" />
 
     <!-- FXCop -->
     <PackageReference Condition=" '$(Configuration)' == 'Debug' " Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.3.0-beta1" />

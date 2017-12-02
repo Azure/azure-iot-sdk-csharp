@@ -23,6 +23,13 @@ Provisioning is achieved by using a single call to the `ProvisioningDeviceClient
     }
 ```
 
+To change the transport between AMQP, HTTP and MQTT change the following line:
+```C#
+    using (var transport = new ProvisioningTransportHandlerHttp())
+    using (var transport = new ProvisioningTransportHandlerAmqp())
+    using (var transport = new ProvisioningTransportHandlerMqtt())
+```
+
 ### Provisioning devices using X.509 certificate-based attestation
 
 Devices must have access to a single certificate with a private key. The private key can be hidden from the application using PKCS #11 Hardware Security Modules.
