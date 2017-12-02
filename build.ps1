@@ -150,7 +150,8 @@ try {
         Write-Host -ForegroundColor Cyan "End-to-end Test execution"
         Write-Host
 
-        RunTests e2e\Microsoft.Azure.Devices.E2ETests.NetStandard "End-to-end Tests"
+        # TODO: enable running .NetCore version of E2E tests
+        #RunTests e2e\Microsoft.Azure.Devices.E2ETests.NetStandard "End-to-end Tests"
     }
 
     $buildFailed = $false

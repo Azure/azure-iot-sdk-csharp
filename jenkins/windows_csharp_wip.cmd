@@ -9,7 +9,6 @@ for %%i in ("%build-root%") do set build-root=%%~fi
 
 cd %build-root%
 call build.cmd -clean -configuration Release -wip_provisioning 
-
 rem TODO: Disabling E2E .Net Standard tests in Jenkins.
 rem -e2etests
 
