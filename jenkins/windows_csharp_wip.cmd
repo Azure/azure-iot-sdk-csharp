@@ -12,10 +12,10 @@ call build.cmd -clean -configuration Release -wip_provisioning -e2etests
 if errorlevel 1 goto :eof
 
 REM -- Run C# device SDK unit Tests  --
-cd %build-root%\device\tests\Microsoft.Azure.Devices.Client.Test\bin\Release
-mstest /TestContainer:Microsoft.Azure.Devices.Client.Test.dll
-if errorlevel 1 goto :eof
-cd %build-root%
+REM cd %build-root%\device\tests\Microsoft.Azure.Devices.Client.Test\bin\Release
+REM mstest /TestContainer:Microsoft.Azure.Devices.Client.Test.dll
+REM if errorlevel 1 goto :eof
+REM cd %build-root%
 
 REM -- Run C# E2E Tests  --
 cd %build-root%\e2e\Microsoft.Azure.Devices.E2ETests\bin\Release

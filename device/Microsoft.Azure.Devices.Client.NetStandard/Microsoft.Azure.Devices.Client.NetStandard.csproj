@@ -199,13 +199,6 @@
     <Compile Include="System.Web\Util\HttpEncoderUtility.cs" />
     <Compile Include="System.Web\Util\UriUtil.cs" />
     <Compile Include="System.Web\Util\Utf16StringValidator.cs" />
-  </ItemGroup>
-
-
-  <PropertyGroup>
-    <DefineConstants Condition="'$(WIP_PROVISIONING.ToUpper())' == 'TRUE'">$(DefineConstants);WIP_PROVISIONING</DefineConstants>
-  </PropertyGroup>
-  <ItemGroup Condition="'$(WIP_PROVISIONING.ToUpper())' == 'TRUE'">
     <Compile Include="..\Microsoft.Azure.Devices.Client\DeviceAuthenticationWithTpm.cs">
       <Link>DeviceAuthenticationWithTpm.cs</Link>
     </Compile>
