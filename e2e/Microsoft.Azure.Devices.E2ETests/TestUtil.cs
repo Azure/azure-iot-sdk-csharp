@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private static async Task RemoveDevicesAsync(string devicePrefix, RegistryManager rm)
         {
-            Debug.WriteLine($"{nameof(RemoveDeviceAsync)} Enumerating devices.");
+            Console.WriteLine($"{nameof(RemoveDeviceAsync)} Enumerating devices.");
             IEnumerable<Device> devices = await rm.GetDevicesAsync(int.MaxValue).ConfigureAwait(false);
 
             // Ensure to remove all previous devices.
@@ -84,7 +84,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 if (device.Id.StartsWith(devicePrefix))
                 {
-                    Debug.WriteLine($"{nameof(RemoveDeviceAsync)} Removing {device.Id}.");
+                    Console.WriteLine($"{nameof(RemoveDeviceAsync)} Removing {device.Id}.");
                     await RemoveDeviceAsync(device.Id, rm).ConfigureAwait(false);
                 }
             }
@@ -103,10 +103,10 @@ namespace Microsoft.Azure.Devices.E2ETests
             Task.Run(async () =>
             {
                 deviceName = devicePrefix + Guid.NewGuid();
-                Debug.WriteLine("Creating device " + deviceName);
+                Console.WriteLine($"Creating device {deviceName} on {hostName}");
                 var device = await registryManager.AddDeviceAsync(new Device(deviceName));
                 deviceConnectionString = TestUtil.GetDeviceConnectionString(device, hostName);
-                Debug.WriteLine("Device successfully created");
+                Console.WriteLine("Device successfully created");
             }).Wait();
 
             Thread.Sleep(1000);
@@ -120,7 +120,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             Task.Run(async () =>
             {
                 deviceName = devicePrefix + Guid.NewGuid();
-                Debug.WriteLine("Creating device " + deviceName);
+                Console.WriteLine($"Creating device X509 {deviceName} on {hostName}");
                 var device1 = new Device(deviceName)
                 {
                     Authentication = new AuthenticationMechanism()
@@ -133,7 +133,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 };
 
                 var device = await registryManager.AddDeviceAsync(device1);
-                Debug.WriteLine("Device successfully created");
+                Console.WriteLine("Device successfully created");
             }).Wait();
 
             Thread.Sleep(1000);
@@ -142,9 +142,9 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         public static async Task RemoveDeviceAsync(string deviceName, RegistryManager registryManager)
         {
-            Debug.WriteLine("Removing device " + deviceName);
+            Console.WriteLine("Removing device " + deviceName);
             await registryManager.RemoveDeviceAsync(deviceName);
-            Debug.WriteLine("Device successfully removed");
+            Console.WriteLine("Device successfully removed");
         }
 
         public static Client.Message ComposeErrorInjectionProperties(string faultType, string reason, int delayInSecs, int durationInSecs = 0)
