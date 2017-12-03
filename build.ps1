@@ -129,7 +129,8 @@ try {
         BuildProject provisioning\transport\http "Provisioning Transport for HTTP"
         BuildProject provisioning\transport\mqtt "Provisioning Transport for MQTT"
 
-        BuildProject security\tpm "SecurityProvider for TPM"
+        # TODO: This depends on the release of https://github.com/Microsoft/TSS.MSR/tree/master/NuGet/2.0.1
+        # BuildProject security\tpm "SecurityProvider for TPM"
     }
 
     if (-not $notests)
@@ -146,7 +147,8 @@ try {
             RunTests provisioning\transport\http\tests "Provisioning Transport for HTTP"
             RunTests provisioning\transport\mqtt\tests "Provisioning Transport for MQTT"
             
-            RunTests security\tpm\tests "SecurityProvider for TPM"
+            # TODO: This depends on the release of https://github.com/Microsoft/TSS.MSR/tree/master/NuGet/2.0.1
+            #RunTests security\tpm\tests "SecurityProvider for TPM"
         }
     }
 

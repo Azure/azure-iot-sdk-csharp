@@ -35,6 +35,7 @@ namespace ProvisioningDeviceClientX509
                 ProvisioningDeviceClient provClient = 
                     ProvisioningDeviceClient.Create(GlobalDeviceEndpoint, s_idScope, security, transport);
 
+                Console.WriteLine($"RegistrationID = {security.GetRegistrationID()}");
                 Console.Write("ProvisioningClient RegisterAsync . . . ");
                 DeviceRegistrationResult result = await provClient.RegisterAsync();
 
