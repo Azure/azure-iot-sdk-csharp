@@ -114,7 +114,7 @@ try {
         LegacyBuildProject shared\build "Shared Assembly"
         LegacyBuildProject device\build "Iot Hub Device SDK"
         LegacyBuildProject service\build "Iot Hub Service SDK"
-        LegacyBuildProject e2e\build "E2E Tests"
+        #LegacyBuildProject e2e\build "E2E Tests"
 
         if ($configuration -ne "Release"){
             LegacyBuildProject tools\DeviceExplorer\build "DeviceExplorer"
@@ -126,8 +126,7 @@ try {
     BuildProject provisioning\transport\amqp\src "Provisioning Transport for AMQP"
     BuildProject provisioning\transport\http\src "Provisioning Transport for HTTP"
     BuildProject provisioning\transport\mqtt\src "Provisioning Transport for MQTT"
-    # TODO: enable building securityClient when TSS.Net is signed
-    #BuildProject security\tpm\src "SecurityClient for TPM"
+    BuildProject security\tpm\src "SecurityClient for TPM"
 
     if (-not $notests)
     {
@@ -140,8 +139,7 @@ try {
         RunTests provisioning\transport\amqp\tests "Provisioning Transport for AMQP"
         RunTests provisioning\transport\http\tests "Provisioning Transport for HTTP"
         RunTests provisioning\transport\mqtt\tests "Provisioning Transport for MQTT"
-        # TODO: enable building securityClient when TSS.Net is signed
-        #RunTests security\tpm\tests "SecurityClient for TPM"
+        RunTests security\tpm\tests "SecurityClient for TPM"
     }
 
     if ($e2etests)

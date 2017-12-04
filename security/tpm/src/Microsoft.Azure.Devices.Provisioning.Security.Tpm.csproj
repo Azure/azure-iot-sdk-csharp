@@ -27,6 +27,15 @@
 
   <PropertyGroup>
     <VersionPrefix>1.0.0</VersionPrefix>
+    <Title>Microsoft Azure IoT Provisioning Device Security TPM Client</Title>
+    <Authors>Microsoft</Authors>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageLicenseUrl>https://github.com/Azure/azure-iot-sdk-csharp/blob/master/LICENSE</PackageLicenseUrl>
+    <Description>Provisioning Device Security TPM Client for Azure IoT Devices</Description>
+    <PackageIconUrl>http://go.microsoft.com/fwlink/?LinkID=288890</PackageIconUrl>
+    <PackageProjectUrl>https://github.com/Azure/azure-iot-sdk-csharp</PackageProjectUrl>
+    <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
+    <PackageTags>Microsoft Azure IoT Provisioning Device Security TPM Client .NET</PackageTags>    
   </PropertyGroup>
 
   <ItemGroup>
