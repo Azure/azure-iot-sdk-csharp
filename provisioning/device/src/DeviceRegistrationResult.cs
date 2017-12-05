@@ -10,6 +10,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     /// </summary>
     public class DeviceRegistrationResult
     {
+        /// <summary>
+        /// Used internally by the SDK to create a new instance of the DeviceRegistrationResult class.
+        /// This constructor is exposed to allow serialization and unit testing of applications using this SDK.
+        /// </summary>
         public DeviceRegistrationResult(
             string registrationId,
             DateTime? createdDateTimeUtc,

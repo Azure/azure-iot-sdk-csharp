@@ -17,7 +17,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Sha
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{2A6DC52C-5EFC-41A9-89A1-0C4CBB93FF0A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SecurityClientTpmSimulator", "samples\SecurityClientTpmSimulator\SecurityClientTpmSimulator.csproj", "{5FECC46C-57EB-48E7-B688-FECA8F649C22}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SecurityProviderTpmSimulator", "samples\SecurityProviderTpmSimulator\SecurityProviderTpmSimulator.csproj", "{5FECC46C-57EB-48E7-B688-FECA8F649C22}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

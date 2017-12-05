@@ -17,11 +17,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
     internal class TpmDelegatingHandler : DelegatingHandler
     {
         internal const string ProvisioningHeaderName = "drs-set-sas-token";
-        private readonly SecurityClientHsmTpm _securityClient;
+        private readonly SecurityProviderTpm _securityProvider;
 
-        public TpmDelegatingHandler(SecurityClientHsmTpm securityClient)
+        public TpmDelegatingHandler(SecurityProviderTpm securityProvider)
         {
-            _securityClient = securityClient;
+            _securityProvider = securityProvider;
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(
@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                         TpmChallenge challenge = JsonConvert.DeserializeObject<TpmChallenge>(responseContent);
 
                         string sasToken = ProvisioningSasBuilder.ExtractServiceAuthKey(
-                            _securityClient,
+                            _securityProvider,
                             target, 
                             Convert.FromBase64String(challenge.AuthenticationKey));
 

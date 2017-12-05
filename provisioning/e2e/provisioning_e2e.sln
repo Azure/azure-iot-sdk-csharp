@@ -21,7 +21,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Pro
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Shared.NetStandard", "..\..\shared\Microsoft.Azure.Devices.Shared.NetStandard\Microsoft.Azure.Devices.Shared.NetStandard.csproj", "{91DFB837-D8A3-4F54-AE0D-45C95ACD0C2A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SecurityClientTpmSimulator", "..\..\security\tpm\samples\SecurityClientTpmSimulator\SecurityClientTpmSimulator.csproj", "{75467DE7-0259-4F3C-8448-4CC3C592248A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SecurityProviderTpmSimulator", "..\..\security\tpm\samples\SecurityProviderTpmSimulator\SecurityProviderTpmSimulator.csproj", "{75467DE7-0259-4F3C-8448-4CC3C592248A}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Microsoft.Azure.Devices.Client.Shared", "..\..\device\Microsoft.Azure.Devices.Client.Shared\Microsoft.Azure.Devices.Client.Shared.shproj", "{26BBDF47-7559-4869-BD6F-A32FE21F3F25}"
 EndProject

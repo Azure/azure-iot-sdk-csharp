@@ -23,16 +23,19 @@ namespace ProvisioningDeviceClientX509
         //    For production code, it is advised that you install the certificate in the CurrentUser (My) store.
         // DeviceID: iothubx509device1
 
+        private const string GlobalDeviceEndpoint = "global.azure-devices-provisioning.net";
         private static string s_idScope;
         private static string s_certificateFileName = "certificate.pfx";
 
         public static async Task RunSample(X509Certificate2 certificate)
         {
-            using (var security = new SecurityClientX509(certificate))
+            using (var security = new SecurityProviderX509Certificate(certificate))
             using (var transport = new ProvisioningTransportHandlerAmqp(TransportFallbackType.TcpOnly))
             {
-                ProvisioningDeviceClient provClient = ProvisioningDeviceClient.Create(s_idScope, security, transport);
+                ProvisioningDeviceClient provClient = 
+                    ProvisioningDeviceClient.Create(GlobalDeviceEndpoint, s_idScope, security, transport);
 
+                Console.WriteLine($"RegistrationID = {security.GetRegistrationID()}");
                 Console.Write("ProvisioningClient RegisterAsync . . . ");
                 DeviceRegistrationResult result = await provClient.RegisterAsync();
 

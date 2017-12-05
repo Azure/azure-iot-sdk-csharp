@@ -6,40 +6,13 @@ using System.Diagnostics.Tracing;
 
 namespace Microsoft.Azure.Devices.Shared
 {
-	[EventSource(Name = "Microsoft-Azure-Devices-Provisioning-Client")]
     internal sealed partial class Logging : EventSource
     {
+        private const int RegisterDeviceId = 12;
+        private const int OperationStatusLookupId = 13;
+        
         [NonEvent]
-        public static void RegisterAsync(
-            object thisOrContextObject, 
-            string globalDeviceEndpoint, 
-            string idScope, 
-            object transport, 
-            object security)
-        {
-            DebugValidateArg(thisOrContextObject);
-            DebugValidateArg(security);
-            DebugValidateArg(transport);
-
-            if (IsEnabled) Log.RegisterAsync(
-                IdOf(thisOrContextObject), 
-                globalDeviceEndpoint, 
-                idScope,
-                IdOf(transport),
-                IdOf(security));
-        }
-
-        [Event(RegisterAsyncId, Keywords = Keywords.Default, Level = EventLevel.Informational)]
-        private void RegisterAsync(
-            string thisOrContextObject, 
-            string globalDeviceEndpoint, 
-            string idScope, 
-            string transport, 
-            string security) =>
-            WriteEvent(RegisterAsyncId, thisOrContextObject, globalDeviceEndpoint, idScope, transport, security);
-
-        [NonEvent]
-    	public static void RegisterDevice(
+        public static void RegisterDevice(
             object thisOrContextObject,
             string registrationId, 
             string idScope,
@@ -47,7 +20,7 @@ namespace Microsoft.Azure.Devices.Shared
             string operationId, 
             TimeSpan? retryAfter, 
             string status)
-    	{
+        {
             DebugValidateArg(thisOrContextObject);
             DebugValidateArg(attestationType);
             DebugValidateArg(retryAfter);
@@ -57,9 +30,9 @@ namespace Microsoft.Azure.Devices.Shared
                 idScope,
                 attestationType,
                 operationId,
-                (int)(retryAfter?.TotalSeconds),
+                (int)(retryAfter == null ? 0 : retryAfter?.TotalSeconds),
                 status);
-    	}
+        }
 
         [Event(RegisterDeviceId, Keywords = Keywords.Default, Level = EventLevel.Informational)]
         private void RegisterDevice(
@@ -96,7 +69,7 @@ namespace Microsoft.Azure.Devices.Shared
                 IdOf(thisOrContextObject),
                 registrationId,
                 operationId,
-                (int)(retryAfter?.TotalSeconds),
+                (int)(retryAfter == null ? 0 : retryAfter?.TotalSeconds),
                 status,
                 attempts);
         }
@@ -117,5 +90,5 @@ namespace Microsoft.Azure.Devices.Shared
                     retryAfterSeconds,
                     status,
                     attempts);
-	}
+    }
 }

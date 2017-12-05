@@ -9,10 +9,19 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
+    /// <summary>
+    /// Represents the HTTP protocol implementation for the Provisioning Transport Handler.
+    /// </summary>
     public class ProvisioningTransportHandlerHttp : ProvisioningTransportHandler
     {
         private static readonly TimeSpan s_defaultOperationPoolingIntervalMilliseconds = TimeSpan.FromSeconds(2);
 
+        /// <summary>
+        /// Registers a device described by the message.
+        /// </summary>
+        /// <param name="message">The provisioning message.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The registration result.</returns>
         public async override Task<DeviceRegistrationResult> RegisterAsync(
             ProvisioningTransportRegisterMessage message,
             CancellationToken cancellationToken)
@@ -25,20 +34,20 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             {
                 HttpAuthStrategy authStrategy;
 
-                if (message.Security is SecurityClientHsmTpm)
+                if (message.Security is SecurityProviderTpm)
                 {
-                    authStrategy = new HttpAuthStrategyTpm((SecurityClientHsmTpm)message.Security);
+                    authStrategy = new HttpAuthStrategyTpm((SecurityProviderTpm)message.Security);
                 }
-                else if (message.Security is SecurityClientHsmX509)
+                else if (message.Security is SecurityProviderX509)
                 {
-                    authStrategy = new HttpAuthStrategyX509((SecurityClientHsmX509)message.Security);
+                    authStrategy = new HttpAuthStrategyX509((SecurityProviderX509)message.Security);
                 }
                 else
                 {
-                    if (Logging.IsEnabled) Logging.Error(this, $"Invalid {nameof(SecurityClient)} type.");
+                    if (Logging.IsEnabled) Logging.Error(this, $"Invalid {nameof(SecurityProvider)} type.");
                     throw new NotSupportedException(
-                        $"{nameof(message.Security)} must be of type {nameof(SecurityClientHsmTpm)} " +
-                        $"or {nameof(SecurityClientHsmX509)}");
+                        $"{nameof(message.Security)} must be of type {nameof(SecurityProviderTpm)} " +
+                        $"or {nameof(SecurityProviderX509)}");
                 }
 
                 if (Logging.IsEnabled) Logging.Associate(authStrategy, this);
@@ -119,7 +128,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     nameof(RegisterAsync));
 
                 // TODO: Extract trackingId from the exception.
-                throw new ProvisioningTransportException($"HTTP transport exception", true, "", ex);
+                throw new ProvisioningTransportException($"HTTP transport exception", ex, true);
             }
             finally
             {

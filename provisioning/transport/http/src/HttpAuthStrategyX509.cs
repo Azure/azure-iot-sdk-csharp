@@ -12,10 +12,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
     internal class HttpAuthStrategyX509 : HttpAuthStrategy
     {
-        private SecurityClientHsmX509 _security;
+        private SecurityProviderX509 _security;
         private X509Certificate2 _certificate;
 
-        public HttpAuthStrategyX509(SecurityClientHsmX509 security)
+        public HttpAuthStrategyX509(SecurityProviderX509 security)
         {
             _security = security;
         }
