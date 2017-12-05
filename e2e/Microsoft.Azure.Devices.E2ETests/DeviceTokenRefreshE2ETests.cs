@@ -23,6 +23,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await DeviceClient_TokenIsRefreshed_Internal(Client.TransportType.Http1);
         }
 
+        [Ignore] // TODO: #263 Intermittently failing to refresh the token within 6 seconds.
         [TestMethod]
         public async Task DeviceClient_TokenIsRefreshed_Ok_Amqp()
         {

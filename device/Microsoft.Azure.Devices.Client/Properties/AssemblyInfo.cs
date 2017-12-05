@@ -22,9 +22,9 @@ using System.Runtime.InteropServices;
 
 [assembly: AssemblyVersion("1.0.0.0")]
 
-#if (RELEASE_DELAY_SIGN)
+#if (!DEBUG)
 [assembly: AssemblyDelaySignAttribute(true)]
-[assembly: AssemblyKeyFileAttribute("..\\..\\35MSSharedLib1024.snk")]
+[assembly: AssemblyKeyFileAttribute("../../35MSSharedLib1024.snk")]
 #else
 [assembly: InternalsVisibleTo("Microsoft.Azure.Devices.Client.Test")]
 [assembly: InternalsVisibleTo("Microsoft.Azure.Devices.Tests.LoadTest.Console")]

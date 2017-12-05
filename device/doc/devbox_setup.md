@@ -105,7 +105,7 @@ Just like command line option it will build Device Client SDK along with the sam
 
 In case, you want to build NuGet package **locally**, you can use following steps
 
-a.) Build Release_Delay_Sign build using VS 2015 IDE
+a.) Build the Release build.
 
 b.) Go to csharp\device\nuget folder in Windows PowerShell command prompt and run `./make_nuget_package.ps1` command. This will result is Microsoft.Azure.Devices.Client NuGet Package in \csharp\device\NuGet folder.You can then add this package locally in your build system by going though NuGet Package Manager.
 

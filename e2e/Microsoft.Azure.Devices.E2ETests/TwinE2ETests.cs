@@ -56,6 +56,10 @@ namespace Microsoft.Azure.Devices.E2ETests
             await _Twin_DeviceSetsReportedPropertyAndGetsItBack(Client.TransportType.Amqp_Tcp_Only);
         }
 
+#if NETCOREAPP2_0
+        // GitHub Issue #302
+        [Ignore]
+#endif
         [TestMethod]
         [TestCategory("Twin-E2E")]
         public async Task Twin_DeviceSetsReportedPropertyAndGetsItBack_AmqpWs()
@@ -98,6 +102,10 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.DefaultDelayInSec);
         }
 
+#if NETCOREAPP2_0
+        // GitHub Issue #302
+        [Ignore]
+#endif
         [TestMethod]
         [TestCategory("Twin-E2E")]
         [TestCategory("Recovery")]
@@ -144,6 +152,10 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.DefaultDelayInSec);
         }
 
+#if NETCOREAPP2_0
+        // GitHub Issue #302
+        [Ignore]
+#endif
         [TestMethod]
         [TestCategory("Twin-E2E")]
         [TestCategory("Recovery")]
@@ -176,6 +188,10 @@ namespace Microsoft.Azure.Devices.E2ETests
             await _Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent(Client.TransportType.Amqp_Tcp_Only);
         }
 
+#if NETCOREAPP2_0
+        // GitHub Issue #302
+        [Ignore]
+#endif
         [TestMethod]
         [TestCategory("Twin-E2E")]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_AmqpWs()
@@ -204,6 +220,10 @@ namespace Microsoft.Azure.Devices.E2ETests
             await _Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_WithObseleteCallbackSetter(Client.TransportType.Amqp_Tcp_Only);
         }
 
+#if NETCOREAPP2_0
+        // GitHub Issue #302
+        [Ignore]
+#endif
         [TestMethod]
         [TestCategory("Twin-E2E")]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_WithObseleteCallbackSetter_AmqpWs()
@@ -328,6 +348,10 @@ namespace Microsoft.Azure.Devices.E2ETests
             await _Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet(Client.TransportType.Amqp_Tcp_Only);
         }
 
+#if NETCOREAPP2_0
+        // GitHub Issue #302
+        [Ignore]
+#endif
         [TestMethod]
         [TestCategory("Twin-E2E")]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet_AmqpWs()
@@ -356,6 +380,10 @@ namespace Microsoft.Azure.Devices.E2ETests
             await _Twin_DeviceSetsReportedPropertyAndServiceReceivesIt(Client.TransportType.Amqp_Tcp_Only);
         }
 
+#if NETCOREAPP2_0
+        // GitHub Issue #302
+        [Ignore]
+#endif
         [TestMethod]
         [TestCategory("Twin-E2E")]
         public async Task Twin_DeviceSetsReportedPropertyAndServiceReceivesIt_AmqpWs()

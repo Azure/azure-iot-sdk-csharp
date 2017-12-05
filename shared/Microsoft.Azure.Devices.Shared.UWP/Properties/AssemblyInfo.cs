@@ -26,7 +26,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: ComVisible(false)]
 
-#if (RELEASE_DELAY_SIGN)
+#if (!DEBUG)
 [assembly: AssemblyDelaySignAttribute(true)]
 [assembly: AssemblyKeyFileAttribute("35MSSharedLib1024.snk")]
 #endif

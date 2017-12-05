@@ -88,8 +88,10 @@ namespace Microsoft.Azure.Devices.E2ETests
             await uploadFile(Client.TransportType.Http1, bigFile);
         }
 
+#if NETCOREAPP2_0
         // GitHub Issue #259
         [Ignore]
+#endif
         [TestMethod]
         [TestCategory("FileUpload-E2E")]
         public async Task FileUpload_X509_SmallFile_Http()

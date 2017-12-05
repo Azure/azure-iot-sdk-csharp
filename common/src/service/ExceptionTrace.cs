@@ -14,6 +14,8 @@ namespace Microsoft.Azure.Devices.Common
     using System.Threading;
 #if WINDOWS_UWP
     using PlatformSupport.System.Diagnostics;
+    using TraceEventType = Microsoft.Azure.Devices.PlatformSupport.System.Diagnostics.TraceEventType;
+    using Trace = Microsoft.Azure.Devices.PlatformSupport.System.Diagnostics.Trace;
 #endif
     using Microsoft.Azure.Devices.Common.Tracing;
 

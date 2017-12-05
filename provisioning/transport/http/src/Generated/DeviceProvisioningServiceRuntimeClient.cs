@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// </exception>
         protected DeviceProvisioningServiceRuntimeClient(Uri baseUri, params DelegatingHandler[] handlers) : this(handlers)
         {
-            BaseUri = baseUri ?? throw new ArgumentNullException("baseUri");
+            BaseUri = baseUri ?? throw new ArgumentNullException(nameof(baseUri));
         }
 
         /// <summary>
@@ -105,7 +105,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             HttpClientHandler rootHandler, 
             params DelegatingHandler[] handlers) : this(rootHandler, handlers)
         {
-            BaseUri = baseUri ?? throw new ArgumentNullException("baseUri");
+            BaseUri = baseUri ?? throw new ArgumentNullException(nameof(baseUri));
         }
 
         /// <summary>
@@ -124,7 +124,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             ServiceClientCredentials credentials, 
             params DelegatingHandler[] handlers) : this(handlers)
         {
-            Credentials = credentials ?? throw new ArgumentNullException("credentials");
+            Credentials = credentials ?? throw new ArgumentNullException(nameof(credentials));
             Credentials.InitializeServiceClient(this);
         }
 
@@ -148,7 +148,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             HttpClientHandler rootHandler, 
             params DelegatingHandler[] handlers) : this(rootHandler, handlers)
         {
-            Credentials = credentials ?? throw new ArgumentNullException("credentials");
+            Credentials = credentials ?? throw new ArgumentNullException(nameof(credentials));
             Credentials.InitializeServiceClient(this);
         }
 
@@ -172,8 +172,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             ServiceClientCredentials credentials, 
             params DelegatingHandler[] handlers) : this(handlers)
         {
-            BaseUri = baseUri ?? throw new ArgumentNullException("baseUri");
-            Credentials = credentials ?? throw new ArgumentNullException("credentials");
+            BaseUri = baseUri ?? throw new ArgumentNullException(nameof(baseUri));
+            Credentials = credentials ?? throw new ArgumentNullException(nameof(credentials));
             Credentials.InitializeServiceClient(this);
         }
 
@@ -201,8 +201,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             HttpClientHandler rootHandler, 
             params DelegatingHandler[] handlers) : this(rootHandler, handlers)
         {
-            BaseUri = baseUri ?? throw new ArgumentNullException("baseUri");
-            Credentials = credentials ?? throw new ArgumentNullException("credentials");
+            BaseUri = baseUri ?? throw new ArgumentNullException(nameof(baseUri));
+            Credentials = credentials ?? throw new ArgumentNullException(nameof(credentials));
             Credentials.InitializeServiceClient(this);
         }
 

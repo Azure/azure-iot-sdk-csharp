@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <CommonTest>..\..\common\test</CommonTest>
+    <CommonTest>..\..\..\common\test</CommonTest>
   </PropertyGroup>
 
   <ItemGroup>

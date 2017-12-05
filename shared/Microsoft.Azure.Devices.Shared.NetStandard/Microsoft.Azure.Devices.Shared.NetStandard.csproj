@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Configurations>Debug;Release;Release_Delay_Sign</Configurations>
+    <Configurations>Debug;Release</Configurations>
     <TargetFramework>netstandard1.3</TargetFramework>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -41,19 +41,10 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release_Delay_Sign|AnyCPU'">
-    <OutputPath>bin\Release_Delay_Sign\</OutputPath>
-    <DefineConstants>TRACE;RELEASE_DELAY_SIGN</DefineConstants>
-    <Optimize>true</Optimize>
-    <NoStdLib>true</NoStdLib>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <DocumentationFile>bin\Release_Delay_Sign\Microsoft.Azure.Devices.Shared.XML</DocumentationFile>
-    </PropertyGroup>
-
+    <DocumentationFile>bin\Release\Microsoft.Azure.Devices.Shared.XML</DocumentationFile>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\Microsoft.Azure.Devices.Shared\ETagHolder.cs" />
     <Compile Include="..\Microsoft.Azure.Devices.Shared\IETagHolder.cs" />

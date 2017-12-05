@@ -36,9 +36,9 @@ using Microsoft.Azure.Devices.Common;
 [assembly: TypeForwardedTo(typeof(StringFormattingExtensions))]
 [assembly: TypeForwardedTo(typeof(X509Thumbprint))]
 
-#if (RELEASE_DELAY_SIGN)
+#if (!DEBUG)
 [assembly: AssemblyDelaySignAttribute(true)]
-[assembly: AssemblyKeyFileAttribute("..\\..\\35MSSharedLib1024.snk")]
+[assembly: AssemblyKeyFileAttribute("../../35MSSharedLib1024.snk")]
 #else
 [assembly: InternalsVisibleTo("Microsoft.Azure.Devices.Api.Test")]
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]

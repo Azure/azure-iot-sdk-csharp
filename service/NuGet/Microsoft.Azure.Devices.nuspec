@@ -49,12 +49,12 @@
   </metadata>
   <files>
     <file src="..\..\thirdpartynotice.txt" target="thirdpartynotice.txt" />
-    <file src="..\Microsoft.Azure.Devices\bin\release_delay_sign\Microsoft.Azure.Devices.dll" target="lib\net451\Microsoft.Azure.Devices.dll" />
-    <file src="..\Microsoft.Azure.Devices\bin\release_delay_sign\Microsoft.Azure.Devices.XML" target="lib\net451\Microsoft.Azure.Devices.XML" />
-    <file src="..\Microsoft.Azure.Devices.Uwp\bin\release_delay_sign\Microsoft.Azure.Devices.dll" target="lib\uap10.0\Microsoft.Azure.Devices.dll" />
-    <file src="..\Microsoft.Azure.Devices.Uwp\bin\release_delay_sign\Microsoft.Azure.Devices.pri" target="lib\uap10.0\Microsoft.Azure.Devices.pri" />
-    <file src="..\Microsoft.Azure.Devices.Uwp\bin\release_delay_sign\Microsoft.Azure.Devices.XML" target="lib\uap10.0\Microsoft.Azure.Devices.XML" />
-    <file src="..\Microsoft.Azure.Devices.NetStandard\bin\release_delay_sign\Microsoft.Azure.Devices.dll" target="lib\netstandard1.3\Microsoft.Azure.Devices.dll" />
-    <file src="..\Microsoft.Azure.Devices.NetStandard\bin\release_delay_sign\Microsoft.Azure.Devices.XML" target="lib\netstandard1.3\Microsoft.Azure.Devices.XML" />
+    <file src="..\Microsoft.Azure.Devices\bin\release\Microsoft.Azure.Devices.dll" target="lib\net451\Microsoft.Azure.Devices.dll" />
+    <file src="..\Microsoft.Azure.Devices\bin\release\Microsoft.Azure.Devices.XML" target="lib\net451\Microsoft.Azure.Devices.XML" />
+    <file src="..\Microsoft.Azure.Devices.Uwp\bin\release\Microsoft.Azure.Devices.dll" target="lib\uap10.0\Microsoft.Azure.Devices.dll" />
+    <file src="..\Microsoft.Azure.Devices.Uwp\bin\release\Microsoft.Azure.Devices.pri" target="lib\uap10.0\Microsoft.Azure.Devices.pri" />
+    <file src="..\Microsoft.Azure.Devices.Uwp\bin\release\Microsoft.Azure.Devices.XML" target="lib\uap10.0\Microsoft.Azure.Devices.XML" />
+    <file src="..\Microsoft.Azure.Devices.NetStandard\bin\release\Microsoft.Azure.Devices.dll" target="lib\netstandard1.3\Microsoft.Azure.Devices.dll" />
+    <file src="..\Microsoft.Azure.Devices.NetStandard\bin\release\Microsoft.Azure.Devices.XML" target="lib\netstandard1.3\Microsoft.Azure.Devices.XML" />
   </files>
 </package>
