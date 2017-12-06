@@ -41,8 +41,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         /// <returns>The receive message or null if there was no message until the specified time has elapsed</returns>
         public override async Task<Message> ReceiveAsync(CancellationToken cancellationToken)
         {
-            await this.EnsureOpenedAsync(false, cancellationToken);
-            return await base.ReceiveAsync(cancellationToken);
+            await this.EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
+            return await base.ReceiveAsync(cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -52,38 +52,38 @@ namespace Microsoft.Azure.Devices.Client.Transport
         public override async Task<Message> ReceiveAsync(TimeSpan timeout, CancellationToken cancellationToken)
         {
             TimeoutHelper.ThrowIfNegativeArgument(timeout);
-            await this.EnsureOpenedAsync(false, cancellationToken);
-            return await base.ReceiveAsync(timeout, cancellationToken);
+            await this.EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
+            return await base.ReceiveAsync(timeout, cancellationToken).ConfigureAwait(false);
         }
 
         public override async Task EnableMethodsAsync(CancellationToken cancellationToken)
         {
-            await this.EnsureOpenedAsync(false, cancellationToken);
-            await base.EnableMethodsAsync(cancellationToken);
+            await this.EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
+            await base.EnableMethodsAsync(cancellationToken).ConfigureAwait(false);
         }
 
         public override async Task DisableMethodsAsync(CancellationToken cancellationToken)
         {
-            await this.EnsureOpenedAsync(false, cancellationToken);
-            await base.DisableMethodsAsync(cancellationToken);
+            await this.EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
+            await base.DisableMethodsAsync(cancellationToken).ConfigureAwait(false);
         }
 
         public override async Task EnableTwinPatchAsync(CancellationToken cancellationToken)
         {
-            await this.EnsureOpenedAsync(false, cancellationToken);
-            await base.EnableTwinPatchAsync(cancellationToken);
+            await this.EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
+            await base.EnableTwinPatchAsync(cancellationToken).ConfigureAwait(false);
         }
         
         public override async Task<Twin> SendTwinGetAsync(CancellationToken cancellationToken)
         {
-            await this.EnsureOpenedAsync(false, cancellationToken);
-            return await base.SendTwinGetAsync(cancellationToken);
+            await this.EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
+            return await base.SendTwinGetAsync(cancellationToken).ConfigureAwait(false);
         }
         
         public override async Task SendTwinPatchAsync(TwinCollection reportedProperties,  CancellationToken cancellationToken)
         {
-            await this.EnsureOpenedAsync(false, cancellationToken);
-            await base.SendTwinPatchAsync(reportedProperties, cancellationToken);
+            await this.EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
+            await base.SendTwinPatchAsync(reportedProperties, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -92,8 +92,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         /// <returns>The lock identifier for the previously received message</returns>
         public override async Task CompleteAsync(string lockToken, CancellationToken cancellationToken)
         {
-            await this.EnsureOpenedAsync(false, cancellationToken);
-            await base.CompleteAsync(lockToken, cancellationToken);
+            await this.EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
+            await base.CompleteAsync(lockToken, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -102,8 +102,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         /// <returns>The previously received message</returns>
         public override async Task AbandonAsync(string lockToken, CancellationToken cancellationToken)
         {
-            await this.EnsureOpenedAsync(false, cancellationToken);
-            await base.AbandonAsync(lockToken, cancellationToken);
+            await this.EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
+            await base.AbandonAsync(lockToken, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -112,8 +112,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         /// <returns>The previously received message</returns>
         public override async Task RejectAsync(string lockToken, CancellationToken cancellationToken)
         {
-            await this.EnsureOpenedAsync(false, cancellationToken);
-            await base.RejectAsync(lockToken, cancellationToken);
+            await this.EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
+            await base.RejectAsync(lockToken, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -122,14 +122,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
         /// <returns>The message containing the event</returns>
         public override async Task SendEventAsync(Message message, CancellationToken cancellationToken)
         {
-            await this.EnsureOpenedAsync(false, cancellationToken);
-            await base.SendEventAsync(message, cancellationToken);
+            await this.EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
+            await base.SendEventAsync(message, cancellationToken).ConfigureAwait(false);
         }
 
         public override async Task SendMethodResponseAsync(MethodResponseInternal methodResponse, CancellationToken cancellationToken)
         {
-            await this.EnsureOpenedAsync(false, cancellationToken);
-            await base.SendMethodResponseAsync(methodResponse, cancellationToken);
+            await this.EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
+            await base.SendMethodResponseAsync(methodResponse, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -138,8 +138,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         /// <returns>The task containing the event</returns>
         public override async Task SendEventAsync(IEnumerable<Message> messages, CancellationToken cancellationToken)
         {
-            await this.EnsureOpenedAsync(false, cancellationToken);
-            await base.SendEventAsync(messages, cancellationToken);
+            await this.EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
+            await base.SendEventAsync(messages, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -150,14 +150,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (this.TryCloseGate())
             {
-                await base.CloseAsync();
+                await base.CloseAsync().ConfigureAwait(false);
             }
         }
 
         public override async Task RecoverConnections(object o, ConnectionType connectionType, CancellationToken cancellationToken)
         {
-            await this.EnsureOpenedAsync(false, cancellationToken);
-            await base.RecoverConnections(o, connectionType, cancellationToken);
+            await this.EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
+            await base.RecoverConnections(o, connectionType, cancellationToken).ConfigureAwait(false);
         }
 
         protected override void Dispose(bool disposing)

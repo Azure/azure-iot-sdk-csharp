@@ -165,7 +165,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 // Connect without proxy
                 this.TcpClient = new TcpClient();
-                await this.TcpClient.ConnectAsync(host, port);
+                await this.TcpClient.ConnectAsync(host, port).ConfigureAwait(false);
 
                 if (string.Equals(WebSocketConstants.Scheme, scheme, StringComparison.OrdinalIgnoreCase))
                 {
@@ -178,7 +178,7 @@ namespace Microsoft.Azure.Devices.Client
                     }
 
                     // TODO: Do we need to make CheckCertificateRevocation user configurable?
-                    await sslStream.AuthenticateAsClientAsync(host, x509CertificateCollection, enabledSslProtocols: SslProtocols.Tls11 | SslProtocols.Tls12, checkCertificateRevocation:false);
+                    await sslStream.AuthenticateAsClientAsync(host, x509CertificateCollection, enabledSslProtocols: SslProtocols.Tls11 | SslProtocols.Tls12, checkCertificateRevocation:false).ConfigureAwait(false);
 
                     this.WebSocketStream = sslStream;
                 }
@@ -193,14 +193,14 @@ namespace Microsoft.Azure.Devices.Client
                 this.TcpClient.Client.SendTimeout = GetSocketTimeoutInMilliSeconds(timeout);
 
                 // Send WebSocket Upgrade request
-                await this.WebSocketStream.WriteAsync(upgradeRequestBytes, 0, upgradeRequestBytes.Length);
+                await this.WebSocketStream.WriteAsync(upgradeRequestBytes, 0, upgradeRequestBytes.Length).ConfigureAwait(false);
 
                 // receive WebSocket Upgrade response
                 var responseBuffer = new byte[8 * 1024];
 
                 var upgradeResponse = new HttpResponse(this.TcpClient, this.WebSocketStream, responseBuffer);
 
-                await upgradeResponse.ReadAsync(timeout);
+                await upgradeResponse.ReadAsync(timeout).ConfigureAwait(false);
 
                 if (upgradeResponse.StatusCode != HttpStatusCode.SwitchingProtocols)
                 {
@@ -269,7 +269,7 @@ namespace Microsoft.Azure.Devices.Client
                     totalBytesRead = 0;
                     do
                     {
-                        bytesRead = await this.WebSocketStream.ReadAsync(header, totalBytesRead, header.Length - totalBytesRead);
+                        bytesRead = await this.WebSocketStream.ReadAsync(header, totalBytesRead, header.Length - totalBytesRead).ConfigureAwait(false);
                         if (bytesRead == 0)
                         {
                             throw new IOException(FramingPrematureEOF, new InvalidDataException("IotHubClientWebSocket was expecting more bytes"));
@@ -284,7 +284,7 @@ namespace Microsoft.Azure.Devices.Client
                         // Encountered a close frame or error in parsing frame from server. Close connection
                         var closeHeader = PrepareWebSocketHeader(0, WebSocketMessageType.Close);
 
-                        await this.WebSocketStream.WriteAsync(closeHeader, 0, closeHeader.Length);
+                        await this.WebSocketStream.WriteAsync(closeHeader, 0, closeHeader.Length).ConfigureAwait(false);
 
                         this.State = WebSocketState.Closed;
 #if !NETSTANDARD1_3
@@ -303,7 +303,7 @@ namespace Microsoft.Azure.Devices.Client
                         var tempBuffer = new byte[payloadLength];
                         while (totalBytesRead < payloadLength)
                         {
-                            bytesRead = await this.WebSocketStream.ReadAsync(tempBuffer, totalBytesRead, payloadLength - totalBytesRead);
+                            bytesRead = await this.WebSocketStream.ReadAsync(tempBuffer, totalBytesRead, payloadLength - totalBytesRead).ConfigureAwait(false);
                             if (bytesRead == 0)
                             {
                                 throw new IOException(FramingPrematureEOF, new InvalidDataException("IotHubClientWebSocket was expecting more bytes"));
@@ -326,7 +326,7 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     while (totalBytesRead < payloadLength)
                     {
-                        bytesRead = await this.WebSocketStream.ReadAsync(buffer, offset + totalBytesRead, payloadLength - totalBytesRead);
+                        bytesRead = await this.WebSocketStream.ReadAsync(buffer, offset + totalBytesRead, payloadLength - totalBytesRead).ConfigureAwait(false);
 
                         if (bytesRead == 0)
                         {
@@ -344,7 +344,7 @@ namespace Microsoft.Azure.Devices.Client
                             // read payload length (< 64K)
                             do
                             {
-                                bytesRead = await this.WebSocketStream.ReadAsync(header, totalBytesRead, header.Length - totalBytesRead);
+                                bytesRead = await this.WebSocketStream.ReadAsync(header, totalBytesRead, header.Length - totalBytesRead).ConfigureAwait(false);
 
                                 if (bytesRead == 0)
                                 {
@@ -363,7 +363,7 @@ namespace Microsoft.Azure.Devices.Client
                             {
                                 while (totalBytesRead < extendedPayloadLength)
                                 {
-                                    bytesRead = await this.WebSocketStream.ReadAsync(buffer, offset + totalBytesRead, extendedPayloadLength - totalBytesRead);
+                                    bytesRead = await this.WebSocketStream.ReadAsync(buffer, offset + totalBytesRead, extendedPayloadLength - totalBytesRead).ConfigureAwait(false);
 
                                     if (bytesRead == 0)
                                     {
@@ -384,7 +384,7 @@ namespace Microsoft.Azure.Devices.Client
                             var payloadLengthBuffer = new byte[8];
                             do
                             {
-                                bytesRead = await this.WebSocketStream.ReadAsync(payloadLengthBuffer, totalBytesRead, payloadLengthBuffer.Length - totalBytesRead);
+                                bytesRead = await this.WebSocketStream.ReadAsync(payloadLengthBuffer, totalBytesRead, payloadLengthBuffer.Length - totalBytesRead).ConfigureAwait(false);
 
                                 if (bytesRead == 0)
                                 {
@@ -405,7 +405,7 @@ namespace Microsoft.Azure.Devices.Client
                             {
                                 while (totalBytesRead < superExtendedPayloadLength)
                                 {
-                                    bytesRead = await this.WebSocketStream.ReadAsync(buffer, offset + totalBytesRead, (int)(superExtendedPayloadLength - totalBytesRead));
+                                    bytesRead = await this.WebSocketStream.ReadAsync(buffer, offset + totalBytesRead, (int)(superExtendedPayloadLength - totalBytesRead)).ConfigureAwait(false);
 
                                     if (bytesRead == 0)
                                     {
@@ -444,9 +444,9 @@ namespace Microsoft.Azure.Devices.Client
             try
             {
                 var webSocketHeader = PrepareWebSocketHeader(size, webSocketMessageType);
-                await this.WebSocketStream.WriteAsync(webSocketHeader, 0, webSocketHeader.Length);
+                await this.WebSocketStream.WriteAsync(webSocketHeader, 0, webSocketHeader.Length).ConfigureAwait(false);
                 MaskWebSocketData(buffer, offset, size);
-                await this.WebSocketStream.WriteAsync(buffer, offset, size);
+                await this.WebSocketStream.WriteAsync(buffer, offset, size).ConfigureAwait(false);
                 succeeded = true;
             }
             finally
@@ -468,7 +468,7 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     var webSocketHeader = PrepareWebSocketHeader(0, WebSocketMessageType.Close);
 
-                    await this.WebSocketStream.WriteAsync(webSocketHeader, 0, webSocketHeader.Length);
+                    await this.WebSocketStream.WriteAsync(webSocketHeader, 0, webSocketHeader.Length).ConfigureAwait(false);
 
 #if !NETSTANDARD1_3
                     this.WebSocketStream?.Close();
@@ -885,7 +885,7 @@ namespace Microsoft.Azure.Devices.Client
                     this.TcpClient.Client.ReceiveTimeout = GetSocketTimeoutInMilliSeconds(timeoutHelper.RemainingTime());
                     this.bytesRead = 0;
 
-                    this.bytesRead = await this.Stream.ReadAsync(this.Buffer, this.TotalBytesRead, this.Buffer.Length - this.TotalBytesRead);
+                    this.bytesRead = await this.Stream.ReadAsync(this.Buffer, this.TotalBytesRead, this.Buffer.Length - this.TotalBytesRead).ConfigureAwait(false);
 
                     this.TotalBytesRead += this.bytesRead;
                     if (this.bytesRead == 0 || this.TryParseBuffer())

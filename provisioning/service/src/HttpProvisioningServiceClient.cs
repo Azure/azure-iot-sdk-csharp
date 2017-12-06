@@ -264,7 +264,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 },
                 {
                     HttpStatusCode.PreconditionFailed,
-                    async (responseMessage) => new PreconditionFailedException(await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage))
+                    async (responseMessage) => new PreconditionFailedException(await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage).ConfigureAwait(false))
                 }
             };
 
@@ -446,7 +446,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 },
                 {
                     HttpStatusCode.PreconditionFailed,
-                    async (responseMessage) => new PreconditionFailedException(await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage))
+                    async (responseMessage) => new PreconditionFailedException(await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage).ConfigureAwait(false))
                 }
             };
 
@@ -647,9 +647,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 customHeaders,
                 new MediaTypeHeaderValue("application/json") { CharSet = "utf-8" },
                 null,
-                cancellationToken);
+                cancellationToken).ConfigureAwait(false);
 
-            return await ProvisioningQueryResult.FromHttpResponseAsync(response);
+            return await ProvisioningQueryResult.FromHttpResponseAsync(response).ConfigureAwait(false);
         }
     }
 }

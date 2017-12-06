@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task OpenAsync(bool explicitOpen, CancellationToken cancellationToken)
         {
-            await this.TryOpenPrioritizedTransportsAsync(explicitOpen, cancellationToken);
+            await this.TryOpenPrioritizedTransportsAsync(explicitOpen, cancellationToken).ConfigureAwait(false);
         }
 
         async Task TryOpenPrioritizedTransportsAsync(bool explicitOpen, CancellationToken cancellationToken)
@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     this.InnerHandler = this.ContinuationFactory(this.Context);
 
                     // Try to open a connection with this transport
-                    await base.OpenAsync(explicitOpen, cancellationToken);
+                    await base.OpenAsync(explicitOpen, cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception exception)
                 {
@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     {
                         if (this.InnerHandler != null)
                         {
-                            await this.CloseAsync();
+                            await this.CloseAsync().ConfigureAwait(false);
                         }
                     }
                     catch (Exception ex) when (!ex.IsFatal())

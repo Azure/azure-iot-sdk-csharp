@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return new ProvisioningQueryResult
             {
 #if WINDOWS_UWP || NETSTANDARD1_3 || NETSTANDARD2_0
-                Items = Newtonsoft.Json.JsonConvert.DeserializeObject<IEnumerable<object>>(await response.Content.ReadAsStringAsync()),
+                Items = Newtonsoft.Json.JsonConvert.DeserializeObject<IEnumerable<object>>(await response.Content.ReadAsStringAsync().ConfigureAwait(false)),
 #else
                 Items = await response.Content.ReadAsAsync<IEnumerable<object>>(),
 #endif

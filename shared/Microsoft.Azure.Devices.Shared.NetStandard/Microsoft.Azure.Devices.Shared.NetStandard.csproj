@@ -12,7 +12,9 @@
     <AssemblyName>Microsoft.Azure.Devices.Shared</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <FileAlignment>512</FileAlignment>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- TODO #176: Enable warnings as errors. -->
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors> 
+    <Features Condition=" '$(Configuration)' == 'Debug' ">IOperation</Features>
   </PropertyGroup>
 
   <!-- delay sign the assembly for Release build -->
@@ -80,6 +82,11 @@
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- FXCop -->
+    <PackageReference Condition=" '$(Configuration)' == 'Debug' " Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.3.0-beta1" />
   </ItemGroup>
 
 </Project>

@@ -108,7 +108,7 @@ namespace Microsoft.Azure.Devices.Client
                 return _token;
             }
 
-            await _lock.WaitAsync();
+            await _lock.WaitAsync().ConfigureAwait(false);
 
             try
             {
@@ -117,7 +117,7 @@ namespace Microsoft.Azure.Devices.Client
                     return _token;
                 }
 
-                _token = await SafeCreateNewToken(iotHub, _suggestedTimeToLiveSeconds);
+                _token = await SafeCreateNewToken(iotHub, _suggestedTimeToLiveSeconds).ConfigureAwait(false);
 
                 SharedAccessSignature sas = SharedAccessSignature.Parse(".", _token);
                 _expiryTime = sas.ExpiresOn;

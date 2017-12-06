@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Devices.Client
 
             this.iotHubTokenRefresher?.Cancel();
 
-            AmqpSession amqpSession = await base.CreateSessionAsync(timeoutHelper.RemainingTime(), cancellationToken);
+            AmqpSession amqpSession = await base.CreateSessionAsync(timeoutHelper.RemainingTime(), cancellationToken).ConfigureAwait(false);
 
 #if !WINDOWS_UWP && !PCL
             if (this.AmqpTransportSettings.ClientCertificate == null)
@@ -67,7 +67,7 @@ namespace Microsoft.Azure.Devices.Client
                 // Send Cbs token for new connection first
                 try
                 {
-                   await this.iotHubTokenRefresher.SendCbsTokenAsync(timeoutHelper.RemainingTime());
+                   await this.iotHubTokenRefresher.SendCbsTokenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
                 }
                 catch (Exception exception) when (!exception.IsFatal())
                 {
@@ -98,7 +98,7 @@ namespace Microsoft.Azure.Devices.Client
             token.ThrowIfCancellationRequested();
             try
             {
-                await link.OpenAsync(timeout);
+                await link.OpenAsync(timeout).ConfigureAwait(false);
             }
             catch (Exception exception)
             {

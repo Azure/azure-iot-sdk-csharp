@@ -178,9 +178,9 @@ namespace Microsoft.Azure.Devices
 #endif
                         return Task.FromResult(0);
                     },
-                    async (httpClient, token) => result = await ReadResponseMessageAsync<T>(httpClient, token),
+                    async (httpClient, token) => result = await ReadResponseMessageAsync<T>(httpClient, token).ConfigureAwait(false),
                     errorMappingOverrides,
-                    cancellationToken);
+                    cancellationToken).ConfigureAwait(false);
 
             return result;
         }
@@ -206,9 +206,9 @@ namespace Microsoft.Azure.Devices
 #endif
                         return Task.FromResult(0);
                     },
-                    async (httpClient, token) => result = await ReadResponseMessageAsync<T2>(httpClient, token),
+                    async (httpClient, token) => result = await ReadResponseMessageAsync<T2>(httpClient, token).ConfigureAwait(false),
                     errorMappingOverrides,
-                    cancellationToken);
+                    cancellationToken).ConfigureAwait(false);
 
             return result;
         }
@@ -237,7 +237,7 @@ namespace Microsoft.Azure.Devices
                 },
                 null,
                 errorMappingOverrides,
-                cancellationToken);
+                cancellationToken).ConfigureAwait(false);
         }
 
         public async Task<T2> PutAsync<T, T2>(
@@ -265,9 +265,9 @@ namespace Microsoft.Azure.Devices
 #endif
                     return Task.FromResult(0);
                 },
-                async (httpClient, token) => result = await ReadResponseMessageAsync<T2>(httpClient, token),
+                async (httpClient, token) => result = await ReadResponseMessageAsync<T2>(httpClient, token).ConfigureAwait(false),
                 errorMappingOverrides,
-                cancellationToken);
+                cancellationToken).ConfigureAwait(false);
 
             return result;
         }
@@ -291,7 +291,7 @@ namespace Microsoft.Azure.Devices
                 },
                 null,
                 errorMappingOverrides,
-                cancellationToken);
+                cancellationToken).ConfigureAwait(false);
         }
 
         public async Task<T2> PatchAsync<T, T2>(Uri requestUri, T entity, string etag,
@@ -315,9 +315,9 @@ namespace Microsoft.Azure.Devices
 #endif
                     return Task.FromResult(0);
                 },
-                async (httpClient, token) => result = await ReadResponseMessageAsync<T2>(httpClient, token),
+                async (httpClient, token) => result = await ReadResponseMessageAsync<T2>(httpClient, token).ConfigureAwait(false),
                 errorMappingOverrides,
-                cancellationToken);
+                cancellationToken).ConfigureAwait(false);
 
             return result;
         }
@@ -330,7 +330,7 @@ namespace Microsoft.Azure.Devices
             }
 
 #if WINDOWS_UWP || NETSTANDARD1_3 || NETSTANDARD2_0
-            var str = await message.Content.ReadAsStringAsync();
+            var str = await message.Content.ReadAsStringAsync().ConfigureAwait(false);
             T entity = Newtonsoft.Json.JsonConvert.DeserializeObject<T>(str);
 #else
             T entity = await message.Content.ReadAsAsync<T>(token);
@@ -489,8 +489,8 @@ namespace Microsoft.Azure.Devices
                 customHeaders,
                 null,
                 null,
-                async (message, token) => result = await ReadResponseMessageAsync<T2>(message, token),
-                cancellationToken);
+                async (message, token) => result = await ReadResponseMessageAsync<T2>(message, token).ConfigureAwait(false),
+                cancellationToken).ConfigureAwait(false);
 
             return result;
         }
@@ -512,8 +512,8 @@ namespace Microsoft.Azure.Devices
                 customHeaders,
                 null,
                 null,
-                async (message, token) => result = await ReadResponseMessageAsync<T2>(message, token),
-                cancellationToken);
+                async (message, token) => result = await ReadResponseMessageAsync<T2>(message, token).ConfigureAwait(false),
+                cancellationToken).ConfigureAwait(false);
 
             return result;
         }
@@ -536,8 +536,8 @@ namespace Microsoft.Azure.Devices
                 customHeaders,
                 customContentType,
                 customContentEncoding,
-                async (message, token) => result = await ReadResponseMessageAsync<T2>(message, token),
-                cancellationToken);
+                async (message, token) => result = await ReadResponseMessageAsync<T2>(message, token).ConfigureAwait(false),
+                cancellationToken).ConfigureAwait(false);
 
             return result;
         }
@@ -560,7 +560,7 @@ namespace Microsoft.Azure.Devices
                 customContentType,
                 customContentEncoding,
                 async (message, token) => result = message,
-                cancellationToken);
+                cancellationToken).ConfigureAwait(false);
             return result;
         }
 
@@ -674,9 +674,9 @@ namespace Microsoft.Azure.Devices
                         AddCustomHeaders(requestMsg, customHeaders);
                         return TaskHelpers.CompletedTask;
                     },
-                    async (message, token) => result = await ReadResponseMessageAsync<T>(message, token),
+                    async (message, token) => result = await ReadResponseMessageAsync<T>(message, token).ConfigureAwait(false),
                     errorMappingOverrides,
-                    cancellationToken);
+                    cancellationToken).ConfigureAwait(false);
 
             return result;
         }
@@ -761,13 +761,13 @@ namespace Microsoft.Azure.Devices
                 msg.Headers.Add(HttpRequestHeader.Authorization.ToString(), this.authenticationHeaderProvider.GetAuthorizationHeader());
                 msg.Headers.Add(HttpRequestHeader.UserAgent.ToString(), Utils.GetClientVersion());
 
-                if (modifyRequestMessageAsync != null) await modifyRequestMessageAsync(msg, cancellationToken);
+                if (modifyRequestMessageAsync != null) await modifyRequestMessageAsync(msg, cancellationToken).ConfigureAwait(false);
 
                 // TODO: pradeepc - find out the list of exceptions that HttpClient can throw.
                 HttpResponseMessage responseMsg;
                 try
                 {
-                    responseMsg = await httpClient.SendAsync(msg, cancellationToken);
+                    responseMsg = await httpClient.SendAsync(msg, cancellationToken).ConfigureAwait(false);
                     if (responseMsg == null)
                     {
                         throw new InvalidOperationException("The response message was null when executing operation {0}.".FormatInvariant(httpMethod));
@@ -777,7 +777,7 @@ namespace Microsoft.Azure.Devices
                     {
                         if (processResponseMessageAsync != null)
                         {
-                            await processResponseMessageAsync(responseMsg, cancellationToken);
+                            await processResponseMessageAsync(responseMsg, cancellationToken).ConfigureAwait(false);
                         }
                     }
                 }
@@ -829,7 +829,7 @@ namespace Microsoft.Azure.Devices
 
                 if (isMappedToException(responseMsg))
                 {
-                    Exception mappedEx = await MapToExceptionAsync(responseMsg, mergedErrorMapping);
+                    Exception mappedEx = await MapToExceptionAsync(responseMsg, mergedErrorMapping).ConfigureAwait(false);
                     throw mappedEx;
                 }
             }
@@ -843,13 +843,13 @@ namespace Microsoft.Azure.Devices
             if (!errorMapping.TryGetValue(response.StatusCode, out func))
             {
                 return new IotHubException(
-                    await ExceptionHandlingHelper.GetExceptionMessageAsync(response),
+                    await ExceptionHandlingHelper.GetExceptionMessageAsync(response).ConfigureAwait(false),
                     isTransient: true);
             }
 
             var mapToExceptionFunc = errorMapping[response.StatusCode];
             var exception = mapToExceptionFunc(response);
-            return await exception;
+            return await exception.ConfigureAwait(false);
         }
 
         public void Dispose()

@@ -106,7 +106,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                     using (var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30)))
                     {
-                        await this.webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, cancellationTokenSource.Token);
+                        await this.webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, cancellationTokenSource.Token).ConfigureAwait(false);
                     }
                 }
             }
@@ -135,7 +135,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 do
                 {
                     byteBuffer = allocHandle.Allocate(allocator);
-                    allocHandle.LastBytesRead = await this.DoReadBytes(byteBuffer);
+                    allocHandle.LastBytesRead = await this.DoReadBytes(byteBuffer).ConfigureAwait(false);
                     if (allocHandle.LastBytesRead <= 0)
                     {
                         // nothing was read -> release the buffer.
@@ -169,7 +169,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 if (this.Active)
                 {
-                    await this.HandleCloseAsync();
+                    await this.HandleCloseAsync().ConfigureAwait(false);
                 }
             }
         }
@@ -197,7 +197,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         continue;
                     }
 
-                    await this.webSocket.SendAsync(byteBuffer.GetIoBuffer(), WebSocketMessageType.Binary, true, this.writeCancellationTokenSource.Token);
+                    await this.webSocket.SendAsync(byteBuffer.GetIoBuffer(), WebSocketMessageType.Binary, true, this.writeCancellationTokenSource.Token).ConfigureAwait(false);
                     channelOutboundBuffer.Remove();
                 }
 
@@ -209,13 +209,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 this.WriteInProgress = false;
                 this.Pipeline.FireExceptionCaught(e);
-                await this.HandleCloseAsync();
+                await this.HandleCloseAsync().ConfigureAwait(false);
             }
         }
 
         async Task<int> DoReadBytes(IByteBuffer byteBuffer)
         {
-            WebSocketReceiveResult receiveResult = await this.webSocket.ReceiveAsync(new ArraySegment<byte>(byteBuffer.Array, byteBuffer.ArrayOffset + byteBuffer.WriterIndex, byteBuffer.WritableBytes), CancellationToken.None);
+            WebSocketReceiveResult receiveResult = await this.webSocket.ReceiveAsync(new ArraySegment<byte>(byteBuffer.Array, byteBuffer.ArrayOffset + byteBuffer.WriterIndex, byteBuffer.WritableBytes), CancellationToken.None).ConfigureAwait(false);
             if (receiveResult.MessageType == WebSocketMessageType.Text)
             {
                 throw new ProtocolViolationException("Mqtt over WS message cannot be in text");
@@ -247,7 +247,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             try
             {
-                await this.CloseAsync();
+                await this.CloseAsync().ConfigureAwait(false);
             }
             catch (Exception ex) when (!ex.IsFatal())
             {

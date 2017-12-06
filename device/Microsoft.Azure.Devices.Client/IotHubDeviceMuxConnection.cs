@@ -110,12 +110,12 @@ namespace Microsoft.Azure.Devices.Client
 
                     // Send Cbs token for new link first
                     // This will throw an exception if the device is not valid or if the token is not valid
-                    await iotHubLinkTokenRefresher.SendCbsTokenAsync(timeoutHelper.RemainingTime());
+                    await iotHubLinkTokenRefresher.SendCbsTokenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
                 }
 
                 token.ThrowIfCancellationRequested();
                 // Open Amqp Link
-                await link.OpenAsync(timeoutHelper.RemainingTime());
+                await link.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
             }
             catch (Exception exception) when (!exception.IsFatal())
             {
