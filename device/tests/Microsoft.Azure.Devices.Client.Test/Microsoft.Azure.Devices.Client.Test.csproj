@@ -61,6 +61,7 @@
     <Compile Include="AmqpTransportHandlerTests.cs" />
     <Compile Include="CertificateHelper.cs" />
     <Compile Include="AuthenticationMethod\ModuleAuthenticationTests.cs" />
+    <Compile Include="ModuleAuthenticationWithTokenRefreshTests.cs" />
     <Compile Include="ModuleClientTests.cs" />
     <Compile Include="ConnectionString\IotHubConnectionStringExtensions.cs" />
     <Compile Include="DeviceAuthenticationWithTokenRefreshTests.cs" />

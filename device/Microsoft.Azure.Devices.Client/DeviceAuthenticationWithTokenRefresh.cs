@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// Authentication method that uses a shared access signature token and allows for token refresh. 
     /// </summary>
-    public abstract class DeviceAuthenticationWithTokenRefresh : IAuthenticationMethod
+    public abstract class DeviceAuthenticationWithTokenRefresh : IAuthenticationMethod, ITokenRefresher
     {
         private const int DefaultTimeToLiveSeconds = 1 * 60 * 60;
         private const int DefaultBufferPercentage = 15;
@@ -137,7 +137,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="iotHubConnectionStringBuilder">Instance to populate.</param>
         /// <returns>The populated <see cref="IotHubConnectionStringBuilder"/> instance.</returns>
-        public IotHubConnectionStringBuilder Populate(IotHubConnectionStringBuilder iotHubConnectionStringBuilder)
+        public virtual IotHubConnectionStringBuilder Populate(IotHubConnectionStringBuilder iotHubConnectionStringBuilder)
         {
             if (iotHubConnectionStringBuilder == null)
             {

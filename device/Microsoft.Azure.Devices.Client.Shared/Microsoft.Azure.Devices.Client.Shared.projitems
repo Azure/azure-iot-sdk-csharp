@@ -435,6 +435,12 @@
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\ModuleAuthenticationWithToken.cs">
       <Link>ModuleAuthenticationWithToken.cs</Link>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\ModuleAuthenticationWithTokenRefresh.cs">
+      <Link>ModuleAuthenticationWithTokenRefresh.cs</Link>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\ModuleAuthenticationWithSakRefresh.cs">
+      <Link>\ModuleAuthenticationWithSakRefresh.cs</Link>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\TransientFaultHandling\AsyncExecution.cs">
       <Link>AsyncExecution.cs</Link>
     </Compile>
@@ -475,6 +481,7 @@
       <Link>TransientFaultHandlingResources.Designer.cs</Link>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)IoTHubClientDiagnostic.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ITokenRefresher.cs" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)$(DeviceClientDir)\TransientFaultHandling\Properties\TransientFaultHandlingResources.resx">
       <Link>TransientFaultHandlingResources.resx</Link>
     </EmbeddedResource>
