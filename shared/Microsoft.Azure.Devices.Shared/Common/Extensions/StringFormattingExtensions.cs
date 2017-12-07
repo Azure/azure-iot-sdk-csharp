@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.Common
 
         public static string FormatErrorForUser(this string message, string activityId, int errorCode)
         {
-            return Resources.UserErrorFormat.FormatForUser(message, activityId, DateTime.UtcNow, errorCode);
+            return StringFormattingExtensions.FormatForUser(message, activityId, DateTime.UtcNow, errorCode);
         }
 
         public static string Truncate(this string message, int maximumSize)
