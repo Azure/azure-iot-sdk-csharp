@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\shared\Microsoft.Azure.Devices.Shared.NetStandard\Microsoft.Azure.Devices.Shared.NetStandard.csproj" />
+    <ProjectReference Include="..\..\Microsoft.Azure.Devices.Client.NetStandard\Microsoft.Azure.Devices.Client.NetStandard.csproj" />
+  </ItemGroup>
+
+</Project>
