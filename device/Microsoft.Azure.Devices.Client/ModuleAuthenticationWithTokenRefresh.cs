@@ -9,27 +9,29 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// Authentication method that uses a shared access signature token and allows for token refresh. 
     /// </summary>
-    public abstract class ModuleAuthenticationWithTokenRefresh : DeviceAuthenticationWithTokenRefresh
+    public abstract class ModuleAuthenticationWithTokenRefresh : AuthenticationWithTokenRefresh
     {
+        private const int DefaultTimeToLiveSeconds = 1 * 60 * 60;
+        private const int DefaultBufferPercentage = 15;
+
         /// <summary>
         /// Gets the ModuleId.
         /// </summary>
         public string ModuleId { get; }
 
         /// <summary>
+        /// Gets the DeviceId.
+        /// </summary>
+        public string DeviceId { get; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="ModuleAuthenticationWithTokenRefresh"/> class using default
         /// TTL and TTL buffer time settings.
         /// </summary>
         /// <param name="deviceId">Device Identifier.</param>
-        public ModuleAuthenticationWithTokenRefresh(string deviceId, string moduleId) 
-            : base(deviceId)
+        public ModuleAuthenticationWithTokenRefresh(string deviceId, string moduleId)
+            : this(deviceId, moduleId, DefaultTimeToLiveSeconds, DefaultBufferPercentage)
         {
-            if (moduleId.IsNullOrWhiteSpace())
-            {
-                throw new ArgumentNullException(nameof(moduleId));
-            }
-
-            this.ModuleId = moduleId;
         }
 
         /// <summary>
@@ -41,18 +43,24 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="timeBufferPercentage">Time buffer before expiry when the token should be renewed expressed as 
         /// a percentage of the time to live.</param>
         public ModuleAuthenticationWithTokenRefresh(
-            string deviceId, 
+            string deviceId,
             string moduleId,
-            int suggestedTimeToLiveSeconds, 
+            int suggestedTimeToLiveSeconds,
             int timeBufferPercentage)
-            : base(deviceId, suggestedTimeToLiveSeconds, timeBufferPercentage)
+            : base(suggestedTimeToLiveSeconds, timeBufferPercentage)
         {
             if (moduleId.IsNullOrWhiteSpace())
             {
                 throw new ArgumentNullException(nameof(moduleId));
             }
 
-            this.ModuleId = moduleId;
+            if (deviceId.IsNullOrWhiteSpace())
+            {
+                throw new ArgumentNullException(nameof(deviceId));
+            }
+
+            ModuleId = moduleId;
+            DeviceId = deviceId;
         }
 
         /// <summary>
@@ -66,6 +74,6 @@ namespace Microsoft.Azure.Devices.Client
             iotHubConnectionStringBuilder = base.Populate(iotHubConnectionStringBuilder);
             iotHubConnectionStringBuilder.ModuleId = ModuleId;
             return iotHubConnectionStringBuilder;
-        }        
+        }
     }
 }

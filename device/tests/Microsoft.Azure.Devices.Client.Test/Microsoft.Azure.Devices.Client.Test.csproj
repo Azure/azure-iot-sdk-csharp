@@ -59,6 +59,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="AmqpTransportHandlerTests.cs" />
+    <Compile Include="AuthenticationWithTokenRefreshTests.cs" />
     <Compile Include="CertificateHelper.cs" />
     <Compile Include="AuthenticationMethod\ModuleAuthenticationTests.cs" />
     <Compile Include="ModuleAuthenticationWithTokenRefreshTests.cs" />

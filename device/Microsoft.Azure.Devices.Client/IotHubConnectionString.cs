@@ -46,15 +46,15 @@ namespace Microsoft.Azure.Devices.Client
 #if !NETMF
             this.AmqpEndpoint = new UriBuilder(CommonConstants.AmqpsScheme, this.HostName, AmqpConstants.DefaultSecurePort).Uri;
 
-            if (builder.AuthenticationMethod is ITokenRefresher)
+            if (builder.AuthenticationMethod is AuthenticationWithTokenRefresh)
             {
-                this.TokenRefresher = (ITokenRefresher)builder.AuthenticationMethod;
+                this.TokenRefresher = (AuthenticationWithTokenRefresh)builder.AuthenticationMethod;
             }
             else if (!string.IsNullOrEmpty(this.SharedAccessKey))
             {
                 this.TokenRefresher = this.ModuleId.IsNullOrWhiteSpace()
                     ? new DeviceAuthenticationWithSakRefresh(this.DeviceId, this)
-                    : new ModuleAuthenticationWithSakRefresh(this.DeviceId, this.ModuleId, this) as ITokenRefresher;
+                    : new ModuleAuthenticationWithSakRefresh(this.DeviceId, this.ModuleId, this) as AuthenticationWithTokenRefresh;
             }
 #endif
         }
