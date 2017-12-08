@@ -104,7 +104,6 @@
     <Compile Include="TwinE2ETests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="X509E2ETests.cs" />
-    <Compile Include="MessageMemoryLeakTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\device\Microsoft.Azure.Devices.Client\Microsoft.Azure.Devices.Client.csproj">

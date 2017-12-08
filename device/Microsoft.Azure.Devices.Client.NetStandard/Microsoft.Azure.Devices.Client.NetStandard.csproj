@@ -50,6 +50,10 @@
     <DocumentationFile>bin\Release_Delay_Sign\Microsoft.Azure.Devices.Client.XML</DocumentationFile>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <common>..\..\common\src</common>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="DotNetty.Codecs.Mqtt" Version="0.4.7" />
     <PackageReference Include="DotNetty.Handlers" Version="0.4.7" />

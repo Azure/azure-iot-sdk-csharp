@@ -6,6 +6,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.IO;
     using System.Linq;
     using System.Net;
@@ -233,6 +234,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 return;
             }
 
+            Debug.WriteLine("MqttTransportHandler.OpenAsync(cancellationToken)");
             await this.HandleTimeoutCancellation(this.OpenAsync, cancellationToken).ConfigureAwait(false);
         }
 
@@ -373,6 +375,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public override async Task CloseAsync()
         {
+            Debug.WriteLine("MqttTransportHandler.CloseAsync()");
+
             if (this.TryStop())
             {
                 await this.closeRetryPolicy.ExecuteAsync(this.CleanupAsync).ConfigureAwait(false);
@@ -555,6 +559,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         async Task OpenAsync()
         {
+            Debug.WriteLine("MqttTransportHandler.OpenAsync()");
+
 #if WINDOWS_UWP
             HostName host = new HostName(this.hostName);
             var endpointPairs = await DatagramSocket.GetEndpointPairsAsync(host, "");

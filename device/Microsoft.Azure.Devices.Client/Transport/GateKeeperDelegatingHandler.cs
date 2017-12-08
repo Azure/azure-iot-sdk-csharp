@@ -9,6 +9,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Client.Extensions;
     using Microsoft.Azure.Devices.Shared;
+    using System.Diagnostics;
 
     /// <summary>
     /// Contains the implementation of methods that a device can use to send messages to and receive from the service.
@@ -138,6 +139,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         /// <returns>The task containing the event</returns>
         public override async Task SendEventAsync(IEnumerable<Message> messages, CancellationToken cancellationToken)
         {
+            Debug.WriteLine("GateKeeperDelegatingHandler.SendEventAsync()");
             await this.EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
             await base.SendEventAsync(messages, cancellationToken).ConfigureAwait(false);
         }
@@ -150,6 +152,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (this.TryCloseGate())
             {
+                Debug.WriteLine("GateKeeperDelegatingHandler.CloseAsync()");
                 await base.CloseAsync().ConfigureAwait(false);
             }
         }
@@ -193,6 +196,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     throw new ObjectDisposedException("The object has been closed and cannot be reopened.");
                 }
             }
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             bool needOpen = false;
             Task openTask;
@@ -245,7 +250,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                                 }
                                 else
                                 {
-                                    // OpenAsync was cancelled or threw an exception, next time retry.
+                                    // OpenAsync was canceled or threw an exception, next time retry.
                                     this.open = false;
                                     this.openTaskCompletionSource = new TaskCompletionSource<object>(this);
                                 }

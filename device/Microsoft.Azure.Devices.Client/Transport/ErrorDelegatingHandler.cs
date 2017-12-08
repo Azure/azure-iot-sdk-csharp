@@ -12,6 +12,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
     using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Azure.Devices.Client.Extensions;
     using Microsoft.Azure.Devices.Shared;
+    using System.Diagnostics;
 
     sealed class ErrorDelegatingHandler : DefaultDelegatingHandler
     {
@@ -50,6 +51,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task OpenAsync(bool explicitOpen, CancellationToken cancellationToken)
         {
+            Debug.WriteLine("ErrorDelegatingHandler.OpenAsync()");
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             TaskCompletionSource<int> openCompletionBeforeOperationStarted = Volatile.Read(ref this.openCompletion);
             if (openCompletionBeforeOperationStarted == null)
             {

@@ -821,6 +821,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             {
                 throw Fx.Exception.ArgumentNull("messages");
             }
+
             // Codes_SRS_DEVICECLIENT_28_019: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication or quota exceed) occurs.]
             return ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.SendEventAsync(messages, operationTimeoutCancellationToken));
         }

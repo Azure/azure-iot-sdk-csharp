@@ -17,12 +17,14 @@
 // THIS FILE HAS BEEN MODIFIED FROM ITS ORIGINAL FORM.
 // Change Log:
 // 9/1/2017 jasminel Renamed namespace to Microsoft.Azure.Devices.Client.TransientFaultHandling.
+// 12/13/2017 crispop Adding minimum time between retries.
 
 namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
 {
     using Microsoft.Azure.Devices.Client.TransientFaultHandling.Properties;
 
     using System;
+    using System.Diagnostics;
     using System.Globalization;
     using System.Threading;
     using System.Threading.Tasks;
@@ -33,6 +35,8 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
     /// <typeparam name="TResult">The result type of the user-initiated task.</typeparam>
     internal class AsyncExecution<TResult>
     {
+        internal const int MinimumTimeBetweenRetriesMiliseconds = 1000;
+
         private readonly Func<Task<TResult>> taskFunc;
 
         private readonly ShouldRetry shouldRetry;
@@ -44,6 +48,8 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         private readonly bool fastFirstRetry;
 
         private readonly CancellationToken cancellationToken;
+
+        private readonly Stopwatch stopwatch;
 
         private Task<TResult> previousTask;
 
@@ -57,6 +63,7 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
             this.onRetrying = onRetrying;
             this.fastFirstRetry = fastFirstRetry;
             this.cancellationToken = cancellationToken;
+            this.stopwatch = new Stopwatch();
         }
 
         internal Task<TResult> ExecuteAsync()
@@ -111,6 +118,9 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
                         "taskFunc"
                     }), "taskFunc");
                 }
+
+                stopwatch.Restart();
+
                 return task.ContinueWith<Task<TResult>>(new Func<Task<TResult>, Task<TResult>>(this.ExecuteAsyncContinueWith), CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default).Unwrap<TResult>();
             }
         }
@@ -123,6 +133,8 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
             }
             TimeSpan zero = TimeSpan.Zero;
             Exception innerException = runningTask.Exception.InnerException;
+
+            long executionTime = stopwatch.ElapsedMilliseconds;
 
 // 'RetryLimitExceededException' is obsolete: 'You should use cancellation tokens or other means of stopping the retry loop.'               
 #pragma warning disable 0618 
@@ -152,6 +164,15 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
             this.previousTask = runningTask;
             if (zero > TimeSpan.Zero && (this.retryCount > 1 || !this.fastFirstRetry))
             {
+                if (executionTime + zero.TotalMilliseconds < MinimumTimeBetweenRetriesMiliseconds)
+                {
+                    double newBackoffTimeMiliseconds = MinimumTimeBetweenRetriesMiliseconds - executionTime;
+                    Debug.WriteLine(
+                        "Last execution time was " + executionTime + ". Adjusting back-off time to " + 
+                        newBackoffTimeMiliseconds + " to avoid high CPU/Memory spikes.");
+                    zero = TimeSpan.FromMilliseconds(newBackoffTimeMiliseconds);
+                }
+
                 return Task.Delay(zero).ContinueWith<Task<TResult>>(new Func<Task, Task<TResult>>(this.ExecuteAsyncImpl), CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default).Unwrap<TResult>();
             }
             return this.ExecuteAsyncImpl(null);
