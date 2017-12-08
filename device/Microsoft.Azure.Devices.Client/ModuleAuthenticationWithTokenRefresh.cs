@@ -5,52 +5,61 @@ namespace Microsoft.Azure.Devices.Client
 {
     using System;
     using Microsoft.Azure.Devices.Client.Extensions;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using System.Diagnostics;
 
     /// <summary>
     /// Authentication method that uses a shared access signature token and allows for token refresh. 
     /// </summary>
-    public abstract class DeviceAuthenticationWithTokenRefresh : AuthenticationWithTokenRefresh
+    public abstract class ModuleAuthenticationWithTokenRefresh : AuthenticationWithTokenRefresh
     {
         private const int DefaultTimeToLiveSeconds = 1 * 60 * 60;
         private const int DefaultBufferPercentage = 15;
 
         /// <summary>
-        /// Gets the DeviceID.
+        /// Gets the ModuleId.
+        /// </summary>
+        public string ModuleId { get; }
+
+        /// <summary>
+        /// Gets the DeviceId.
         /// </summary>
         public string DeviceId { get; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DeviceAuthenticationWithTokenRefresh"/> class using default
+        /// Initializes a new instance of the <see cref="ModuleAuthenticationWithTokenRefresh"/> class using default
         /// TTL and TTL buffer time settings.
         /// </summary>
         /// <param name="deviceId">Device Identifier.</param>
-        public DeviceAuthenticationWithTokenRefresh(string deviceId) 
-            : this(deviceId, DefaultTimeToLiveSeconds, DefaultBufferPercentage)
+        public ModuleAuthenticationWithTokenRefresh(string deviceId, string moduleId)
+            : this(deviceId, moduleId, DefaultTimeToLiveSeconds, DefaultBufferPercentage)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DeviceAuthenticationWithTokenRefresh"/> class.
+        /// Initializes a new instance of the <see cref="ModuleAuthenticationWithTokenRefresh"/> class.
         /// </summary>
         /// <param name="deviceId">Device Identifier.</param>
         /// <param name="suggestedTimeToLiveSeconds">Token time to live suggested value. The implementations of this abstract
         /// may choose to ignore this value.</param>
         /// <param name="timeBufferPercentage">Time buffer before expiry when the token should be renewed expressed as 
         /// a percentage of the time to live.</param>
-        public DeviceAuthenticationWithTokenRefresh(
-            string deviceId, 
-            int suggestedTimeToLiveSeconds, 
+        public ModuleAuthenticationWithTokenRefresh(
+            string deviceId,
+            string moduleId,
+            int suggestedTimeToLiveSeconds,
             int timeBufferPercentage)
             : base(suggestedTimeToLiveSeconds, timeBufferPercentage)
         {
+            if (moduleId.IsNullOrWhiteSpace())
+            {
+                throw new ArgumentNullException(nameof(moduleId));
+            }
+
             if (deviceId.IsNullOrWhiteSpace())
             {
                 throw new ArgumentNullException(nameof(deviceId));
             }
 
+            ModuleId = moduleId;
             DeviceId = deviceId;
         }
 
@@ -63,7 +72,7 @@ namespace Microsoft.Azure.Devices.Client
         public override IotHubConnectionStringBuilder Populate(IotHubConnectionStringBuilder iotHubConnectionStringBuilder)
         {
             iotHubConnectionStringBuilder = base.Populate(iotHubConnectionStringBuilder);
-            iotHubConnectionStringBuilder.DeviceId = DeviceId;
+            iotHubConnectionStringBuilder.ModuleId = ModuleId;
             return iotHubConnectionStringBuilder;
         }
     }
