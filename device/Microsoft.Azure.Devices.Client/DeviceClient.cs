@@ -6,6 +6,7 @@ namespace Microsoft.Azure.Devices.Client
     using Common;
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Linq;
     using System.Text.RegularExpressions;
     using System.Threading;
@@ -821,6 +822,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             {
                 throw Fx.Exception.ArgumentNull("messages");
             }
+
             // Codes_SRS_DEVICECLIENT_28_019: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication or quota exceed) occurs.]
             return ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.SendEventAsync(messages, operationTimeoutCancellationToken));
         }
@@ -834,13 +836,20 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                     .WithTimeout(TimeSpan.MaxValue, () => Resources.OperationTimeoutExpired, cancellationTokenSource.Token);
             }
 
-            CancellationTokenSource operationTimeoutCancellationTokenSource = new CancellationTokenSource();
+            CancellationTokenSource operationTimeoutCancellationTokenSource = GetOperationTimeoutCancellationTokenSource();
 
             var result = operation(operationTimeoutCancellationTokenSource)
                 .WithTimeout(TimeSpan.FromMilliseconds(OperationTimeoutInMilliseconds), () => Resources.OperationTimeoutExpired, operationTimeoutCancellationTokenSource.Token);
-
+            
             return result.ContinueWith(t => {
-                operationTimeoutCancellationTokenSource.Dispose();
+                
+                // operationTimeoutCancellationTokenSource will be disposed by GC. 
+                // Cannot dispose here since we don't know if both tasks created by WithTimeout ran to completion.
+                if (t.IsCanceled)
+                {
+                    throw new TimeoutException(Resources.OperationTimeoutExpired);
+                }
+
                 if (t.IsFaulted)
                 {
                     throw t.Exception.InnerException;
@@ -856,19 +865,22 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                     .WithTimeout(TimeSpan.MaxValue, () => Resources.OperationTimeoutExpired, CancellationToken.None);
             }
 
-            CancellationTokenSource operationTimeoutCancellationTokenSource = new CancellationTokenSource();
+            CancellationTokenSource operationTimeoutCancellationTokenSource = GetOperationTimeoutCancellationTokenSource();
+
+            Debug.WriteLine(operationTimeoutCancellationTokenSource.Token.GetHashCode() + " DeviceClient.ApplyTimeout()");
 
             var result = operation(operationTimeoutCancellationTokenSource.Token)
                 .WithTimeout(TimeSpan.FromMilliseconds(OperationTimeoutInMilliseconds), () => Resources.OperationTimeoutExpired, operationTimeoutCancellationTokenSource.Token);
 
             return result.ContinueWith(t =>
             {
-                operationTimeoutCancellationTokenSource.Dispose();
+                // operationTimeoutCancellationTokenSource will be disposed by GC. 
+                // Cannot dispose here since we don't know if both tasks created by WithTimeout ran to completion.
                 if (t.IsFaulted)
                 {
                     throw t.Exception.InnerException;
                 }
-            });
+            }, TaskContinuationOptions.NotOnCanceled);
         }
 
         Task<Message> ApplyTimeoutMessage(Func<CancellationToken, Task<Message>> operation)
@@ -879,14 +891,15 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                     .WithTimeout(TimeSpan.MaxValue, () => Resources.OperationTimeoutExpired, CancellationToken.None);
             }
 
-            CancellationTokenSource operationTimeoutCancellationTokenSource = new CancellationTokenSource();
+            CancellationTokenSource operationTimeoutCancellationTokenSource = GetOperationTimeoutCancellationTokenSource();
 
             var result = operation(operationTimeoutCancellationTokenSource.Token)
                 .WithTimeout(TimeSpan.FromMilliseconds(OperationTimeoutInMilliseconds), () => Resources.OperationTimeoutExpired, operationTimeoutCancellationTokenSource.Token);
 
             return result.ContinueWith(t =>
             {
-                operationTimeoutCancellationTokenSource.Dispose();
+                // operationTimeoutCancellationTokenSource will be disposed by GC. 
+                // Cannot dispose here since we don't know if both tasks created by WithTimeout ran to completion.
                 if (t.IsFaulted)
                 {
                     throw t.Exception.InnerException;
@@ -903,14 +916,15 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                     .WithTimeout(TimeSpan.MaxValue, () => Resources.OperationTimeoutExpired, CancellationToken.None);
             }
 
-            CancellationTokenSource operationTimeoutCancellationTokenSource = new CancellationTokenSource();
+            CancellationTokenSource operationTimeoutCancellationTokenSource = GetOperationTimeoutCancellationTokenSource();
 
             var result = operation(operationTimeoutCancellationTokenSource.Token)
                 .WithTimeout(TimeSpan.FromMilliseconds(OperationTimeoutInMilliseconds), () => Resources.OperationTimeoutExpired, operationTimeoutCancellationTokenSource.Token);
 
             return result.ContinueWith(t =>
             {
-                operationTimeoutCancellationTokenSource.Dispose();
+                // operationTimeoutCancellationTokenSource will be disposed by GC. 
+                // Cannot dispose here since we don't know if both tasks created by WithTimeout ran to completion.
                 if (t.IsFaulted)
                 {
                     throw t.Exception.InnerException;
@@ -1150,8 +1164,11 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                             this.connectionStatusChangesHandler(e.ConnectionStatus, e.ConnectionStatusChangeReason);
                         }
 
-                        CancellationTokenSource linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(result.StatusChangeCancellationTokenSource.Token, operationTimeoutCancellationTokenSource.Token);
-                        await this.InnerHandler.RecoverConnections(sender, e.ConnectionType, linkedTokenSource.Token).ConfigureAwait(false);
+                        using (CancellationTokenSource linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(result.StatusChangeCancellationTokenSource.Token, operationTimeoutCancellationTokenSource.Token))
+                        {
+                            await this.InnerHandler.RecoverConnections(sender, e.ConnectionType, linkedTokenSource.Token).ConfigureAwait(false);
+                        }
+
                     }).ConfigureAwait(false);
                 }
                 catch (Exception)

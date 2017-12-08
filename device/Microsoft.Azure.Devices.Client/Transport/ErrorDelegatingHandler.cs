@@ -12,6 +12,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
     using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Azure.Devices.Client.Extensions;
     using Microsoft.Azure.Devices.Shared;
+    using System.Diagnostics;
 
     sealed class ErrorDelegatingHandler : DefaultDelegatingHandler
     {
@@ -50,6 +51,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task OpenAsync(bool explicitOpen, CancellationToken cancellationToken)
         {
+            Debug.WriteLine(cancellationToken.GetHashCode() + " ErrorDelegatingHandler.OpenAsync()");
+
             TaskCompletionSource<int> openCompletionBeforeOperationStarted = Volatile.Read(ref this.openCompletion);
             if (openCompletionBeforeOperationStarted == null)
             {
@@ -66,21 +69,25 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     }
                     catch (Exception ex) when (IsTransportHandlerStillUsable(ex))
                     {
+                        Debug.WriteLine(cancellationToken.GetHashCode() + " ErrorDelegatingHandler.OpenAsync() Reset " + ex.Message);
                         await this.Reset(openCompletionBeforeOperationStarted, handlerBeforeOperationStarted).ConfigureAwait(false);
                         throw;
                     }
                     catch (Exception ex) when (!ex.IsFatal())
                     {
+                        Debug.WriteLine(cancellationToken.GetHashCode() + " ErrorDelegatingHandler.OpenAsync() Exception " + ex.Message);
                         throw;
                     }
                 }
                 else
                 {
+                    Debug.WriteLine(cancellationToken.GetHashCode() + " ErrorDelegatingHandler.OpenAsync() Awaiting new Open task");
                     await currentOpenPromise.Task.ConfigureAwait(false);
                 }
             }
             else
             {
+                Debug.WriteLine(cancellationToken.GetHashCode() + " ErrorDelegatingHandler.OpenAsync() Awaiting existing Open task");
                 await openCompletionBeforeOperationStarted.Task.ConfigureAwait(false);
             }
         }
@@ -142,7 +149,15 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override Task SendEventAsync(IEnumerable<Message> messages, CancellationToken cancellationToken)
         {
-            return this.ExecuteWithErrorHandlingAsync(() => base.SendEventAsync(messages, cancellationToken), true, cancellationToken);
+            try
+            {
+                Debug.WriteLine(cancellationToken.GetHashCode() + " ErrorDelegatingHandler.SendEventAsync() ENTER");
+                return this.ExecuteWithErrorHandlingAsync(() => base.SendEventAsync(messages, cancellationToken), true, cancellationToken);
+            }
+            finally
+            {
+                Debug.WriteLine(cancellationToken.GetHashCode() + " ErrorDelegatingHandler.SendEventAsync() EXIT");
+            }
         }
 
         public override Task SendEventAsync(Message message, CancellationToken cancellationToken)
@@ -184,14 +199,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         {
                             throw;
                         }
-                        throw new IotHubClientTransientException("Transient error occured, please retry.", ex);
+                        throw new IotHubClientTransientException("Transient error occurred, please retry.", ex);
                     }
                     await this.Reset(openCompletionBeforeOperationStarted, handlerBeforeOperationStarted).ConfigureAwait(false);
                     if (ex is IotHubClientTransientException)
                     {
                         throw;
                     }
-                    throw new IotHubClientTransientException("Transient error occured, please retry.", ex);
+                    throw new IotHubClientTransientException("Transient error occurred, please retry.", ex);
                 }
                 else
                 {

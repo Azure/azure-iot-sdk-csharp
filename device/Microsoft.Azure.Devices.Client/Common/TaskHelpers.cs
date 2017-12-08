@@ -4,6 +4,7 @@
 namespace Microsoft.Azure.Devices.Client
 {
     using System;
+    using System.Diagnostics;
     using System.Runtime.InteropServices;
     using System.Threading;
     using System.Threading.Tasks;
@@ -70,80 +71,6 @@ namespace Microsoft.Azure.Devices.Client
             return retval;
         }
 
-#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
-        /// <summary>
-        /// Create a Task based on Begin/End IAsyncResult pattern.
-        /// </summary>
-        /// <param name="transaction">The transaction (optional) to use.  If not null a TransactionScope will be used when calling the begin Func.</param>
-        /// <param name="begin"></param>
-        /// <param name="end"></param>
-        /// <param name="state"> 
-        /// This parameter helps reduce allocations by passing state to the Funcs. e.g.:
-        ///  await TaskHelpers.CreateTask(
-        ///      (c, s) => ((Transaction)s).BeginCommit(c, s),
-        ///      (a) => ((Transaction)a.AsyncState).EndCommit(a),
-        ///      transaction);
-        /// </param>
-        public static Task CreateTransactionalTask(Transaction transaction, Func<AsyncCallback, object, IAsyncResult> begin, Action<IAsyncResult> end, object state = null)
-        {
-            Task retval;
-            TransactionScope scope = null;
-            try
-            {
-                scope = Fx.CreateTransactionScope(transaction);
-                retval = Task.Factory.FromAsync(begin, end, state);
-                Fx.CompleteTransactionScope(ref scope);
-            }
-            catch (Exception ex)
-            {
-                if (Fx.IsFatal(ex))
-                {
-                    throw;
-                }
-
-                if (scope != null)
-                {
-                    scope.Dispose();
-                }
-
-                var completionSource = new TaskCompletionSource<object>(state);
-                completionSource.SetException(ex);
-                retval = completionSource.Task;
-            }
-
-            return retval;
-        }
-
-        public static Task<TResult> CreateTransactionalTask<TResult>(Transaction transaction, Func<AsyncCallback, object, IAsyncResult> begin, Func<IAsyncResult, TResult> end)
-        {
-            Task<TResult> retval;
-            TransactionScope scope = null;
-            try
-            {
-                scope = Fx.CreateTransactionScope(transaction);
-                retval = Task.Factory.FromAsync(begin, end, null);
-                Fx.CompleteTransactionScope(ref scope);
-            }
-            catch (Exception ex)
-            {
-                if (Fx.IsFatal(ex))
-                {
-                    throw;
-                }
-
-                if (scope != null)
-                {
-                    scope.Dispose();
-                }
-
-                var completionSource = new TaskCompletionSource<TResult>();
-                completionSource.SetException(ex);
-                retval = completionSource.Task;
-            }
-
-            return retval;
-        }
-#endif
         public static Task ExecuteAndGetCompletedTask(Action action)
         {
             TaskCompletionSource<object> completedTcs = new TaskCompletionSource<object>();
@@ -360,12 +287,13 @@ namespace Microsoft.Azure.Devices.Client
                 return;
             }
 
-            using (var cts = CancellationTokenSource.CreateLinkedTokenSource(token))
+            using (var delayCts = CancellationTokenSource.CreateLinkedTokenSource(token))
             {
-                if (task == await Task.WhenAny(task, Task.Delay(timeout, cts.Token)).ConfigureAwait(false))
+                if (task == await Task.WhenAny(task, Task.Delay(timeout, delayCts.Token)).ConfigureAwait(false))
                 {
-                    cts.Cancel();
+                    delayCts.Cancel();
                     await task.ConfigureAwait(false);
+                    return;
                 }
             }
         }
@@ -382,21 +310,32 @@ namespace Microsoft.Azure.Devices.Client
                 timeout = Timeout.InfiniteTimeSpan;
             }
 
+            if (task.IsCanceled || token.IsCancellationRequested)
+            {
+                Debug.WriteLine(token.GetHashCode() + " WithTimeout: task canceled before adding delay task.");
+                throw new TimeoutException(errorMessage());
+            }
+
             if (task.IsCompleted || (timeout == Timeout.InfiniteTimeSpan && token == CancellationToken.None))
             {
+                Debug.WriteLine(token.GetHashCode() + " WithTimeout: task completed before adding delay task.");
                 await task.ConfigureAwait(false);
                 return;
             }
 
-            using (var cts = CancellationTokenSource.CreateLinkedTokenSource(token))
+            using (var delayCts = CancellationTokenSource.CreateLinkedTokenSource(token))
             {
-                if (task == await Task.WhenAny(task, Task.Delay(timeout, cts.Token)).ConfigureAwait(false))
+                if (task == await Task.WhenAny(task, Task.Delay(timeout, delayCts.Token)).ConfigureAwait(false))
                 {
-                    cts.Cancel();
+                    Debug.WriteLine(token.GetHashCode() + " WithTimeout: task completed.");
+
+                    delayCts.Cancel();
                     await task.ConfigureAwait(false);
                     return;
                 }
             }
+
+            Debug.WriteLine(token.GetHashCode() + " WithTimeout: task timed-out.");
 
             throw new TimeoutException(errorMessage());
         }
@@ -418,11 +357,11 @@ namespace Microsoft.Azure.Devices.Client
                 return await task.ConfigureAwait(false);
             }
 
-            using (var cts = CancellationTokenSource.CreateLinkedTokenSource(token))
+            using (var delayCts = CancellationTokenSource.CreateLinkedTokenSource(token))
             {
-                if (task == await Task.WhenAny(task, Task.Delay(timeout, cts.Token)).ConfigureAwait(false))
+                if (task == await Task.WhenAny(task, Task.Delay(timeout, delayCts.Token)).ConfigureAwait(false))
                 {
-                    cts.Cancel();
+                    delayCts.Cancel();
                     return await task.ConfigureAwait(false);
                 }
             }
