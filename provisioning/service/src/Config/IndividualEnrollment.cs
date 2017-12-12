@@ -93,15 +93,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// }
         /// </code>
         /// </example>
-        /// <param name="registrationId"></param>
-        /// <param name="attestation"></param>
-        /// <exception cref="ArgumentException">if one of the provided parameters is not correct</exception>
+        /// <param name="registrationId">the <code>string</code> that uniquely identify this enrollment in the provisioning 
+        ///     service. It cannot be <code>null</code> or empty.</param>
+        /// <param name="attestation">the <see cref="Attestation"/> object with the attestation mechanism. It cannot be <code>null</code>.</param>
+        /// <exception cref="ArgumentNullException">if one of the provided parameters is not correct</exception>
         public IndividualEnrollment(string registrationId, Attestation attestation)
         {
-            /* SRS_DEVICE_ENROLLMENT_21_001: [The constructor shall store the provided parameters.] */
-            /* SRS_DEVICE_ENROLLMENT_21_002: [The constructor shall throws ArgumentException if one of the provided parameters is null.] */
-            RegistrationId = registrationId ?? throw new ArgumentException("regitrationId cannot be null");
-            Attestation = attestation ?? throw new ArgumentException("attestation cannot be null");
+            /* SRS_INDIVIDUAL_ENROLLMENT_21_001: [The constructor shall store the provided parameters.] */
+            /* SRS_INDIVIDUAL_ENROLLMENT_21_002: [The constructor shall throws ArgumentNullException if one of the provided parameters is null.] */
+            RegistrationId = registrationId ?? throw new ArgumentNullException("regitrationId cannot be null");
+            Attestation = attestation ?? throw new ArgumentNullException("attestation cannot be null");
         }
 
         /// <summary>
@@ -131,10 +132,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// }
         /// </code>
         /// </example>
-        /// <param name="registrationId">the <code>string</code> with a unique ide for the individualEnrollment. It cannot be <code>null</code> or empty.</param>
-        /// <param name="attestation">the <see cref="AttestationMechanism"/> for the enrollment. It shall be `tpm` or `x509`.</param>
+        /// <param name="registrationId">the <code>string</code> with a unique id for the individualEnrollment. It cannot be <code>null</code> or empty.</param>
+        /// <param name="attestation">the <see cref="AttestationMechanism"/> for the enrollment. It shall be `TPM` or `X509`.</param>
         /// <param name="deviceId">the <code>string</code> with the device name. This is optional and can be <code>null</code> or empty.</param>
-        /// <param name="iotHubHostName">the <code>string</code> with the taget IoTHub name. This is optional and can be <code>null</code> or empty.</param>
+        /// <param name="iotHubHostName">the <code>string</code> with the target IoTHub name. This is optional and can be <code>null</code> or empty.</param>
         /// <param name="initialTwinState">the <see cref="TwinState"/> with the initial Twin condition. This is optional and can be <code>null</code>.</param>
         /// <param name="provisioningStatus">the <see cref="ProvisioningStatus"/> that determine the initial status of the device. This is optional and can be <code>null</code>.</param>
         /// <param name="createdDateTimeUtc">the <code>DateTime</code> with the date and time that the enrollment was created. This is optional and can be <code>null</code>.</param>
@@ -153,12 +154,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             DateTime lastUpdatedDateTimeUtc,
             string eTag)
         {
+            /* SRS_INDIVIDUAL_ENROLLMENT_21_003: [The constructor shall throws ProvisioningServiceClientException if one of the 
+                                                    provided parameters in JSON is not valid.] */
             if (string.IsNullOrWhiteSpace(eTag))
             {
                 throw new ProvisioningServiceClientException("Service respond an individualEnrollment without eTag.");
             }
+
+            if (attestation == null)
+            {
+                throw new ProvisioningServiceClientException("Service respond an individualEnrollment without attestation.");
+            }
+
             try
             {
+                /* SRS_INDIVIDUAL_ENROLLMENT_21_004: [The constructor shall store all parameters in the JSON.] */
                 RegistrationId = registrationId;
                 DeviceId = deviceId;
                 Attestation = attestation.GetAttestation();
@@ -193,7 +203,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             get
             {
-                return _RegistrationId;
+                return _registrationId;
             }
 
             /// <summary>
@@ -205,13 +215,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             /// <exception cref="ArgumentException">if the provided string do not fits the registration Id requirements</exception>
             private set
             {
-                /* SRS_DEVICE_ENROLLMENT_21_003: [The setRegistrationId shall throws ArgumentException if the provided 
-                                                    registrationId is null, empty, or invalid.] */
                 ParserUtils.EnsureRegistrationId(value);
-                _RegistrationId = value;
+                _registrationId = value;
             }
         }
-        private string _RegistrationId;
+        private string _registrationId;
 
         /// <summary>
         /// Desired IoT Hub device ID (optional).
@@ -221,24 +229,23 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             get
             {
-                return _DeviceId;
+                return _deviceId;
             }
+
             set
             {
-                /* SRS_DEVICE_ENROLLMENT_21_004: [The setDeviceId shall throws ArgumentException if the provided device 
-                                                    is empty, or invalid.] */
                 if (value == null)
                 {
-                    _DeviceId = null;
+                    _deviceId = null;
                 }
                 else
                 {
                     ParserUtils.EnsureValidId(value);
-                    _DeviceId = value;
+                    _deviceId = value;
                 }
             }
         }
-        private string _DeviceId;
+        private string _deviceId;
 
         /// <summary>
         /// Current registration state.
@@ -250,17 +257,27 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Attestation Mechanism
         /// </summary>
         [JsonProperty(PropertyName = "attestation")]
-        private AttestationMechanism _Attestation;
+        private AttestationMechanism _attestation;
         [JsonIgnore]
         public Attestation Attestation
         {
             get
             {
-                return _Attestation.GetAttestation();
+                return _attestation.GetAttestation();
             }
+
             set
             {
-                _Attestation = new AttestationMechanism(value ?? throw new ArgumentException("Attestation cannot be null."));
+                if (value is X509Attestation)
+                {
+                    if ((((X509Attestation)value ?? throw new ArgumentNullException("Attestation cannot be null.")).ClientCertificates == null) &&
+                        (((X509Attestation)value).CAReferences == null))
+                    {
+                        throw new ArgumentNullException("Attestation mechanism do not contains client certificate or CA reference.");
+                    }
+                }
+
+                _attestation = new AttestationMechanism(value);
             }
         }
 
