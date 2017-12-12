@@ -27,13 +27,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </remarks>
         /// <param name="attestation">the <see cref="Attestation"/> with the TPM keys or X509 certificates. It cannot 
         ///     be <code>null</code>.</param>
-        /// <exception cref="ArgumentException">If the provided attestation is <code>null</code>.</exception> 
+        /// <exception cref="ArgumentNullException">If the provided attestation is <code>null</code>.</exception> 
         internal AttestationMechanism(Attestation attestation)
         {
-            /* SRS_ATTESTATION_MECHANISM_21_001: [The constructor shall throw ArgumentException if the provided attestation is null.] */
+            /* SRS_ATTESTATION_MECHANISM_21_001: [The constructor shall throw ArgumentNullException if the provided attestation is null.] */
             if (attestation == null)
             {
-                throw new ArgumentException("Attestation cannot be null");
+                throw new ArgumentNullException("Attestation cannot be null");
             }
 
             if (attestation is TpmAttestation)
@@ -80,6 +80,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                                                         provided AttestationMechanismType is `TPM` but the TPM attestation is null.] */
                         throw new ProvisioningServiceClientException("Invalid TPM attestation mechanism.");
                     }
+
                     /* SRS_ATTESTATION_MECHANISM_21_014: [If the provided AttestationMechanismType is `TPM`, the constructor 
                                                         shall store the provided TPM attestation.] */
                     Tpm = tpm;
@@ -91,6 +92,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                                                     provided AttestationMechanismType is `X509` but the X509 attestation is null.] */
                         throw new ProvisioningServiceClientException("Invalid X509 attestation mechanism.");
                     }
+
                     /* SRS_ATTESTATION_MECHANISM_21_016: [If the provided AttestationMechanismType is `X509`, the constructor 
                                                     shall store the provided X509 attestation.] */
                     X509 = x509;
@@ -139,6 +141,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             {
                 return _tpm;
             }
+
             set
             {
                 _tpm = value;
@@ -162,6 +165,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             {
                 return _x509;
             }
+
             set
             {
                 _x509 = value;
