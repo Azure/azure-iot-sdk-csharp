@@ -35,24 +35,23 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         private HttpClient _httpClientObj;
         private HttpClient _httpClientObjWithPerRequestTimeout;
         private bool _isDisposed;
-        private readonly TimeSpan _defaultOperationTimeout;
+
+        private static readonly TimeSpan s_defaultOperationTimeout = TimeSpan.FromSeconds(100);
 
         public ContractApiHttp(
             Uri baseAddress,
             IAuthorizationHeaderProvider authenticationHeaderProvider,
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> defaultErrorMapping,
-            TimeSpan timeout,
             Action<HttpClient> preRequestActionForAllRequests)
         {
             _baseAddress = baseAddress;
             _authenticationHeaderProvider = authenticationHeaderProvider;
             _defaultErrorMapping =
                 new ReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>(defaultErrorMapping);
-            _defaultOperationTimeout = timeout;
 
             _httpClientObj = new HttpClient();
             _httpClientObj.BaseAddress = _baseAddress;
-            _httpClientObj.Timeout = timeout;
+            _httpClientObj.Timeout = s_defaultOperationTimeout;
             _httpClientObj.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(CommonConstants.MediaTypeForDeviceManagementApis));
             _httpClientObj.DefaultRequestHeaders.ExpectContinue = false;
 
@@ -85,7 +84,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 message => !(message.IsSuccessStatusCode || message.StatusCode == HttpStatusCode.NotFound),
                 async (message, token) => result = message.StatusCode == HttpStatusCode.NotFound ? (default(T)) : await ReadResponseMessageAsync<T>(message, token),
                 errorMappingOverrides,
-                cancellationToken);
+                cancellationToken).ConfigureAwait(false);
 
             return result;
         }
@@ -114,9 +113,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 #endif
                         return Task.FromResult(0);
                     },
-                    async (httpClient, token) => result = await ReadResponseMessageAsync<T>(httpClient, token),
+                    async (httpClient, token) => result = await ReadResponseMessageAsync<T>(httpClient, token).ConfigureAwait(false),
                     errorMappingOverrides,
-                    cancellationToken);
+                    cancellationToken).ConfigureAwait(false);
 
             return result;
         }
@@ -132,13 +131,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             try
             {
 #if WINDOWS_UWP || NETSTANDARD1_3 || NETSTANDARD2_0
-                var str = await message.Content.ReadAsStringAsync();
+                var str = await message.Content.ReadAsStringAsync().ConfigureAwait(false);
                 entity = JsonConvert.DeserializeObject<T>(str);
 #else
-                entity = await message.Content.ReadAsAsync<T>(token);
+                entity = await message.Content.ReadAsAsync<T>(token).ConfigureAwait(false);
 #endif
             }
-            catch(JsonSerializationException e)
+            catch (JsonSerializationException e)
             {
                 throw new ProvisioningServiceClientException(e);
             }
@@ -222,8 +221,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 customHeaders,
                 null,
                 null,
-                async (message, token) => result = await ReadResponseMessageAsync<T2>(message, token),
-                cancellationToken);
+                async (message, token) => result = await ReadResponseMessageAsync<T2>(message, token).ConfigureAwait(false),
+                cancellationToken).ConfigureAwait(false);
 
             return result;
         }
@@ -275,7 +274,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 return Task.FromResult(0);
             };
 
-            if (operationTimeout != _defaultOperationTimeout && operationTimeout > TimeSpan.Zero)
+            if (operationTimeout != s_defaultOperationTimeout && operationTimeout > TimeSpan.Zero)
             {
                 return ExecuteWithOperationTimeoutAsync(
                     HttpMethod.Post,
@@ -316,7 +315,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     },
                     null,
                     errorMappingOverrides,
-                    cancellationToken);
+                    cancellationToken).ConfigureAwait(false);
         }
 
         private struct VoidTaskResult
@@ -384,6 +383,123 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return isMappedToException;
         }
 
+        /// <summary>
+        /// Unified HTTP request API
+        /// </summary>
+        /// <param name="httpMethod"></param>
+        /// <param name="requestUri"></param>
+        /// <param name="customHeaders"></param>
+        /// <param name="body"></param>
+        /// <param name="ifMatch"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="ProvisioningServiceClientException">if the cancellation was requested.</exception>
+        /// <exception cref="ProvisioningServiceClientTransportException">if there is a error in the HTTP communication 
+        ///     between client and service.</exception>
+        /// <exception cref="ProvisioningServiceClientTransientException">if the service answer the request with status 
+        ///     code 500 or higher. It means that the client must retry.</exception>
+        /// <exception cref="ProvisioningServiceClientBadUsageException">if the service answer the request with status 
+        ///     code between 400 and 499.</exception>
+        /// <exception cref="ProvisioningServiceClientHttpException">if the service answer the request with status 
+        ///     code between 300 and 399.</exception>
+        public async Task<ContractApiResponse> RequestAsync(
+            HttpMethod httpMethod,
+            Uri requestUri,
+            IDictionary<string, string> customHeaders,
+            string body,
+            string ifMatch,
+            CancellationToken cancellationToken)
+        {
+            ContractApiResponse response;
+
+            using (HttpRequestMessage msg = new HttpRequestMessage(httpMethod, requestUri))
+            {
+                msg.Content = new StringContent(body, Encoding.UTF8, CommonConstants.MediaTypeForDeviceManagementApis);
+
+                msg.Headers.Add(HttpRequestHeader.Authorization.ToString(), _authenticationHeaderProvider.GetAuthorizationHeader());
+                msg.Headers.Add(HttpRequestHeader.UserAgent.ToString(), Utils.GetClientVersion());
+                if (customHeaders != null)
+                {
+                    foreach (var header in customHeaders)
+                    {
+                        msg.Headers.Add(header.Key, header.Value);
+                    }
+                }
+                InsertIfMatch(msg, ifMatch);
+
+                try
+                {
+                    using (HttpResponseMessage httpResponse = await _httpClientObj.SendAsync(msg, cancellationToken).ConfigureAwait(false))
+                    {
+                        if (httpResponse == null)
+                        {
+                            throw new ProvisioningServiceClientTransportException(
+                                $"The response message was null when executing operation {httpMethod}.");
+                        }
+
+                        response = new ContractApiResponse(
+                            await httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false),
+                            httpResponse.StatusCode,
+                            httpResponse.Headers.ToDictionary(x => x.Key, x => x.Value.FirstOrDefault()),
+                            httpResponse.ReasonPhrase);
+                    }
+                }
+                catch(AggregateException ex)
+                {
+                    var innerExceptions = ex.Flatten().InnerExceptions;
+                    if (innerExceptions.Any(e => e is TimeoutException))
+                    {
+                        throw new ProvisioningServiceClientTransportException(ex.Message, ex);
+                    }
+
+                    throw;
+                }
+                catch (TimeoutException ex)
+                {
+                    throw new ProvisioningServiceClientTransportException(ex.Message, ex);
+                }
+                catch (IOException ex)
+                {
+                    throw new ProvisioningServiceClientTransportException(ex.Message, ex);
+                }
+                catch (HttpRequestException ex)
+                {
+                    throw new ProvisioningServiceClientTransportException(ex.Message, ex);
+                }
+                catch (TaskCanceledException ex)
+                {
+                    // Unfortunately TaskCanceledException is thrown when HttpClient times out.
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        throw new ProvisioningServiceClientException(ex.Message, ex);
+                    }
+
+                    throw new ProvisioningServiceClientTransportException($"The {httpMethod} operation timed out.", ex);
+                }
+            }
+
+            ValidateHttpResponse(response);
+
+            return response;
+        }
+
+        private static void ValidateHttpResponse(ContractApiResponse response)
+        {
+            if (response.StatusCode >= HttpStatusCode.InternalServerError)
+            {
+                throw new ProvisioningServiceClientTransientException(response);
+            }
+            if (response.StatusCode >= HttpStatusCode.BadRequest)
+            {
+                throw new ProvisioningServiceClientBadUsageException(response);
+            }
+            if (response.StatusCode >= HttpStatusCode.Ambiguous)
+            {
+                throw new ProvisioningServiceClientHttpException(response);
+            }
+        }
+
+
         private async Task ExecuteAsync(
             HttpClient httpClient,
             HttpMethod httpMethod,
@@ -402,13 +518,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 msg.Headers.Add(HttpRequestHeader.Authorization.ToString(), _authenticationHeaderProvider.GetAuthorizationHeader());
                 msg.Headers.Add(HttpRequestHeader.UserAgent.ToString(), Utils.GetClientVersion());
 
-                if (modifyRequestMessageAsync != null) await modifyRequestMessageAsync(msg, cancellationToken);
+                if (modifyRequestMessageAsync != null) await modifyRequestMessageAsync(msg, cancellationToken).ConfigureAwait(false);
 
                 // TODO: pradeepc - find out the list of exceptions that HttpClient can throw.
                 HttpResponseMessage responseMsg;
                 try
                 {
-                    responseMsg = await httpClient.SendAsync(msg, cancellationToken);
+                    responseMsg = await httpClient.SendAsync(msg, cancellationToken).ConfigureAwait(false);
                     if (responseMsg == null)
                     {
                         throw new InvalidOperationException("The response message was null when executing operation {0}.".FormatInvariant(httpMethod));
@@ -418,7 +534,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     {
                         if (processResponseMessageAsync != null)
                         {
-                            await processResponseMessageAsync(responseMsg, cancellationToken);
+                            await processResponseMessageAsync(responseMsg, cancellationToken).ConfigureAwait(false);
                         }
                     }
                 }
@@ -470,7 +586,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
                 if (isMappedToException(responseMsg))
                 {
-                    Exception mappedEx = await MapToExceptionAsync(responseMsg, mergedErrorMapping);
+                    Exception mappedEx = await MapToExceptionAsync(responseMsg, mergedErrorMapping).ConfigureAwait(false);
                     throw mappedEx;
                 }
             }
@@ -484,13 +600,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             if (!errorMapping.TryGetValue(response.StatusCode, out func))
             {
                 return new ProvisioningServiceClientException(
-                    await ExceptionHandlingHelper.GetExceptionMessageAsync(response),
+                    await ExceptionHandlingHelper.GetExceptionMessageAsync(response).ConfigureAwait(false),
                     isTransient: true);
             }
 
             var mapToExceptionFunc = errorMapping[response.StatusCode];
             var exception = mapToExceptionFunc(response);
-            return await exception;
+            return await exception.ConfigureAwait(false);
         }
 
         /// <summary>

@@ -75,19 +75,17 @@ namespace ProvisioningServiceEnrollmentGroup
                 #endregion
 
                 #region Query info of enrollmentGroup doc
-                //Console.WriteLine("\nCreating a query for enrollments...");
-                //QuerySpecification querySpecification =
-                //        new QuerySpecificationBuilder("*", QuerySpecificationBuilder.FromType.ENROLLMENTS)
-                //                .createSqlQuery();
-                //Query query = provisioningServiceClient.CreateEnrollmentGroupQuery(querySpecification);
-
-                //while (query.hasNext())
-                //{
-                //    Console.WriteLine("\nQuerying the next enrollments...");
-                //    QueryResult queryResult = query.next();
-                //    Console.WriteLine(queryResult);
-                //    Console.WriteLine(queryResult);
-                //}
+                Console.WriteLine("\nCreating a query for enrollmentGroups...");
+                QuerySpecification querySpecification = new QuerySpecification("SELECT * FROM enrollmentGroups");
+                using (Query query = provisioningServiceClient.CreateEnrollmentGroupQuery(querySpecification))
+                {
+                    while (query.HasNext())
+                    {
+                        Console.WriteLine("\nQuerying the next enrollmentGroups...");
+                        QueryResult queryResult = await query.NextAsync();
+                        Console.WriteLine(queryResult);
+                    }
+                }
                 #endregion
 
                 #region Delete info of enrollmentGroup

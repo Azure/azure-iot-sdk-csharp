@@ -13,6 +13,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 {
     internal interface IContractApiHttp : IDisposable
     {
+        Task<ContractApiResponse> RequestAsync(
+            HttpMethod httpMethod,
+            Uri requestUri,
+            IDictionary<string, string> customHeaders,
+            string body,
+            string ifMatch,
+            CancellationToken cancellationToken);
+
         Task<T> GetAsync<T>(
             Uri requestUri,
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> errorMappingOverrides,

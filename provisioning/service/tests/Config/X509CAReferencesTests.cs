@@ -5,7 +5,7 @@ using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 
-namespace Microsoft.Azure.Devices.Provisioning.Service.Test.Config
+namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 {
     [TestClass]
     public class X509CAReferencesTests

@@ -2,18 +2,19 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
 using System.Net;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Common;
+using Microsoft.Azure.Devices.Common.Service.Auth;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
     internal static class RegistrationStatusManager
     {
-        private const string DeviceRegistrationStatusUriFormat = "registrations/{0}?{1}";
+        private const string ServiceName = "registrations";
+        private const string DeviceRegistrationStatusUriFormat = "{0}/{1}?{2}";
+        private const string DeviceRegistrationStatusFormat = "{0}/{1}";
 
         /// <summary>
         /// Get registration status information.
@@ -59,7 +60,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             /* SRS_REGISTRATION_STATUS_MANAGER_28_004: [The DeleteAsync shall throw ArgumentException if the provided deviceRegistrationState is null.] */
             if (deviceRegistrationState == null)
             {
-                throw new ArgumentException("deviceRegistrationState cannot be null.");
+                throw new ArgumentException(nameof(deviceRegistrationState));
             }
 
             /* SRS_REGISTRATION_STATUS_MANAGER_28_005: [The DeleteAsync shall sent the Delete HTTP request to remove the deviceRegistrationState.] */
@@ -111,21 +112,46 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="pageSize">the <code>int</code> with the maximum number of items per iteration. It can be 0 for default, but not negative.</param>
         /// <returns>A <see cref="Query"/> iterator.</returns>
         /// <exception cref="ArgumentException">if the provided parameter is not correct.</exception>
-        internal static Query CreateEnrollmentGroupQuery(QuerySpecification querySpecification, string enrollmentGroupId,  int pageSize = 0)
+        internal static Query CreateEnrollmentGroupQuery(
+            ServiceConnectionString provisioningConnectionString,
+            QuerySpecification querySpecification, 
+            CancellationToken cancellationToken,
+            string enrollmentGroupId,  
+            int pageSize = 0)
         {
-            //TODO: Implement.
-
             /* SRS_REGISTRATION_STATUS_MANAGER_28_008: [The CreateQuery shall throw ArgumentException if the provided querySpecification is null.] */
-            /* SRS_REGISTRATION_STATUS_MANAGER_28_009: [The CreateQuery shall throw ArgumentException if the provided enrollmentGroupId is not valid.]] */
-            /* SRS_REGISTRATION_STATUS_MANAGER_28_010: [The CreateQuery shall return a new Query for DeviceRegistrationState.] */
+            if (querySpecification == null)
+            {
+                throw new ArgumentNullException(nameof(querySpecification));
+            }
 
-            throw new NotSupportedException("Query is not supported yet");
+            if (pageSize < 0)
+            {
+                throw new ArgumentException($"{nameof(pageSize)} cannot be negative");
+            }
+
+            /* SRS_REGISTRATION_STATUS_MANAGER_28_009: [The CreateQuery shall throw ArgumentException if the provided enrollmentGroupId is not valid.]] */
+            ParserUtils.EnsureRegistrationId(enrollmentGroupId);
+
+            /* SRS_REGISTRATION_STATUS_MANAGER_28_010: [The CreateQuery shall return a new Query for DeviceRegistrationState.] */
+            return new Query(
+                provisioningConnectionString, 
+                GetGetDeviceRegistrationStatus(enrollmentGroupId), 
+                querySpecification, 
+                pageSize, 
+                cancellationToken);
         }
 
         private static Uri GetDeviceRegistrationStatusUri(string id)
         {
             id = WebUtility.UrlEncode(id);
-            return new Uri(DeviceRegistrationStatusUriFormat.FormatInvariant(id, SDKUtils.ApiVersionQueryString), UriKind.Relative);
+            return new Uri(DeviceRegistrationStatusUriFormat.FormatInvariant(
+                ServiceName, id, SDKUtils.ApiVersionQueryString), UriKind.Relative);
+        }
+
+        private static string GetGetDeviceRegistrationStatus(string id)
+        {
+            return DeviceRegistrationStatusFormat.FormatInvariant(ServiceName, id);
         }
     }
 }
