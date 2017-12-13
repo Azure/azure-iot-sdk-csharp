@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Text;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
@@ -106,8 +107,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                         InsertIfMatch(requestMsg, entity.ETag);
                         AddCustomHeaders(requestMsg, customHeaders);
 #if WINDOWS_UWP || NETSTANDARD1_3 || NETSTANDARD2_0
-                        var str = Newtonsoft.Json.JsonConvert.SerializeObject(entity);
-                        requestMsg.Content = new StringContent(str, System.Text.Encoding.UTF8, CommonConstants.MediaTypeForDeviceManagementApis);
+                        var str = JsonConvert.SerializeObject(entity);
+                        requestMsg.Content = new StringContent(str, Encoding.UTF8, CommonConstants.MediaTypeForDeviceManagementApis);
 #else
                         requestMsg.Content = new ObjectContent<T>(entity, _jsonFormatter);
 #endif
@@ -127,12 +128,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 return (T)(object)message;
             }
 
+            T entity;
+            try
+            {
 #if WINDOWS_UWP || NETSTANDARD1_3 || NETSTANDARD2_0
-            var str = await message.Content.ReadAsStringAsync();
-            T entity = Newtonsoft.Json.JsonConvert.DeserializeObject<T>(str);
+                var str = await message.Content.ReadAsStringAsync();
+                entity = JsonConvert.DeserializeObject<T>(str);
 #else
-            T entity = await message.Content.ReadAsAsync<T>(token);
+                entity = await message.Content.ReadAsAsync<T>(token);
 #endif
+            }
+            catch(JsonSerializationException e)
+            {
+                throw new ProvisioningServiceClientException(e);
+            }
+
             // Etag in the header is considered authoritative
             var eTagHolder = entity as IETagHolder;
             if (eTagHolder != null)
@@ -240,14 +250,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     }
                     else if (typeof(T1) == typeof(string))
                     {
-                        // only used to send batched messages on Http runtime
-                        requestMsg.Content = new StringContent((string)(object)entity);
-                        requestMsg.Content.Headers.ContentType = new MediaTypeHeaderValue(CommonConstants.BatchedMessageContentType);
+                        requestMsg.Content = new StringContent((string)(object)entity, Encoding.UTF8, CommonConstants.MediaTypeForDeviceManagementApis);
                     }
                     else
                     {
-                            var str = Newtonsoft.Json.JsonConvert.SerializeObject(entity);
-                            requestMsg.Content = new StringContent(str, System.Text.Encoding.UTF8, CommonConstants.MediaTypeForDeviceManagementApis);
+                        var str = JsonConvert.SerializeObject(entity);
+                        requestMsg.Content = new StringContent(str, Encoding.UTF8, CommonConstants.MediaTypeForDeviceManagementApis);
                     }
                 }
 

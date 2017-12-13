@@ -4,8 +4,9 @@
 using System;
 using Microsoft.Azure.Devices.Provisioning.Service;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
-namespace ProvisioningServiceEnrollment
+namespace ProvisioningServiceBulkOperation
 {
     class Program
     {
@@ -13,24 +14,22 @@ namespace ProvisioningServiceEnrollment
          * Details of the Provisioning.
          */
         private const string ProvisioningConnectionStringEnvVar = "PROVISIONING_CONNECTION_STRING";
-        private const string TpmEndorsementKeyEnvVar = "TPM_ENDORSEMENT_KEY";
-        private const string RegistrationIdEnvVar = "REGISTRATION_ID";
 
-        private const string SampleRegistrationId = "myvalid-registratioid-csharp";
-        private const string SampleTpmEndorsementKey = 
+        private const string SampleRegistrationId1 = "myvalid-registratioid-csharp-1";
+        private const string SampleRegistrationId2 = "myvalid-registratioid-csharp-2";
+        private const string SampleTpmEndorsementKey =
             "AToAAQALAAMAsgAgg3GXZ0SEs/gakMyNRqXXJP1S124GUgtk8qHaGzMUaaoABgCAAEMAEAgAAAAAAAEAxsj2gUS" +
             "cTk1UjuioeTlfGYZrrimExB+bScH75adUMRIi2UOMxG1kw4y+9RW/IVoMl4e620VxZad0ARX2gUqVjYO7KPVt3d" +
             "yKhZS3dkcvfBisBhP1XH9B33VqHG9SHnbnQXdBUaCgKAfxome8UmBKfe+naTsE5fkvjb/do3/dD6l4sGBwFCnKR" +
             "dln4XpM03zLpoHFao8zOwt8l/uP3qUIxmCYv9A7m69Ms+5/pCkTu/rK4mRDsfhZ0QLfbzVI6zQFOKF/rwsfBtFe" +
             "WlWtcuJMKlXdD8TXWElTzgh7JS4qhFzreL0c1mI0GCj+Aws0usZh7dLIVPnlgZcBhgy1SSDQMQ==";
 
-        // Optional parameters
-        private const string OptionalDeviceId = "myCSharpDevice";
-        private const ProvisioningStatus OptionalProvisioningStatus = ProvisioningStatus.Enabled;
-
         private static string _provisioningConnectionString;
-        private static string _registrationId;
-        private static string _tpmEndorsementKey;
+        private static IDictionary<string, string> _registrationIds = new Dictionary<string, string>
+        {
+            { SampleRegistrationId1, SampleTpmEndorsementKey },
+            { SampleRegistrationId2, SampleTpmEndorsementKey }
+        };
 
         public static void Main(string[] args)
         {
@@ -58,29 +57,31 @@ namespace ProvisioningServiceEnrollment
                     ProvisioningServiceClient.CreateFromConnectionString(_provisioningConnectionString))
             {
                 #region Create a new individualEnrollment config
-                Console.WriteLine("\nCreating a new individualEnrollment...");
-                Attestation attestation = new TpmAttestation(_tpmEndorsementKey);
-                IndividualEnrollment individualEnrollment =
-                        new IndividualEnrollment(
-                                SampleRegistrationId,
-                                attestation);
-
-                // The following parameters are optional. Remove it if you don't need.
-                individualEnrollment.DeviceId = OptionalDeviceId;
-                individualEnrollment.ProvisioningStatus = OptionalProvisioningStatus;
+                Console.WriteLine("\nCreating a new set of individualEnrollments...");
+                List<IndividualEnrollment> individualEnrollments = new List<IndividualEnrollment>();
+                foreach (var item in _registrationIds)
+                {
+                    Attestation attestation = new TpmAttestation(item.Value);
+                    individualEnrollments.Add(new IndividualEnrollment(item.Key, attestation));
+                }
                 #endregion
 
                 #region Create the individualEnrollment
-                Console.WriteLine("\nAdding new individualEnrollment...");
-                IndividualEnrollment individualEnrollmentResult = await provisioningServiceClient.CreateOrUpdateIndividualEnrollmentAsync(individualEnrollment);
-                Console.WriteLine("\nIndividualEnrollment created with success.");
-                Console.WriteLine(individualEnrollmentResult);
+                Console.WriteLine("\nRunning the bulk operation to create the individualEnrollments...");
+                BulkEnrollmentOperationResult bulkEnrollmentOperationResult =
+                    await provisioningServiceClient.RunBulkEnrollmentOperationAsync(BulkOperationMode.Create, individualEnrollments);
+                Console.WriteLine("\nResult of the Create bulk enrollment.");
+                Console.WriteLine(bulkEnrollmentOperationResult);
                 #endregion
 
                 #region Get info of individualEnrollment
-                Console.WriteLine("\nGetting the individualEnrollment information...");
-                IndividualEnrollment getResult = await provisioningServiceClient.GetIndividualEnrollmentAsync(SampleRegistrationId);
-                Console.WriteLine(getResult);
+                foreach (IndividualEnrollment individualEnrollment in individualEnrollments)
+                {
+                    String registrationId = individualEnrollment.RegistrationId;
+                    Console.WriteLine($"\nGetting the {nameof(individualEnrollment)} information for {registrationId}...");
+                    IndividualEnrollment getResult = await provisioningServiceClient.GetIndividualEnrollmentAsync(registrationId);
+                    Console.WriteLine(getResult);
+                }
                 #endregion
 
                 #region Query info of individualEnrollment
@@ -99,9 +100,12 @@ namespace ProvisioningServiceEnrollment
                 #endregion
 
                 #region Delete info of individualEnrollment
-                Console.WriteLine("\nDeleting the individualEnrollment...");
-                await provisioningServiceClient.DeleteIndividualEnrollmentAsync(getResult);
+                Console.WriteLine("\nDeleting the set of individualEnrollments...");
+                bulkEnrollmentOperationResult =
+                    await provisioningServiceClient.RunBulkEnrollmentOperationAsync(BulkOperationMode.Delete, individualEnrollments);
+                Console.WriteLine(bulkEnrollmentOperationResult);
                 #endregion
+
             }
         }
 
@@ -118,49 +122,16 @@ namespace ProvisioningServiceEnrollment
         {
             if (args.Length > 0)
             {
-                if (args.Length > 3)
+                if (args.Length > 1)
                 {
                     throw new ArgumentException("Too many arguments");
                 }
 
                 _provisioningConnectionString = args[0];
-                if(args.Length > 1)
-                {
-                    _registrationId = args[1];
-                }
-                else
-                {
-                    _registrationId = SampleRegistrationId;
-                }
-
-                if (args.Length > 2)
-                {
-                    _tpmEndorsementKey = args[2];
-                }
-                else
-                {
-                    _tpmEndorsementKey = SampleTpmEndorsementKey;
-                }
             }
             else
             {
                 _provisioningConnectionString = Environment.GetEnvironmentVariable(ProvisioningConnectionStringEnvVar);
-                try
-                {
-                    _registrationId = Environment.GetEnvironmentVariable(RegistrationIdEnvVar);
-                }
-                catch (ArgumentException)
-                {
-                    _registrationId = SampleRegistrationId;
-                }
-                try
-                {
-                    _tpmEndorsementKey = Environment.GetEnvironmentVariable(TpmEndorsementKeyEnvVar);
-                }
-                catch (ArgumentException)
-                {
-                    _tpmEndorsementKey = SampleTpmEndorsementKey;
-                }
             }
         }
     }

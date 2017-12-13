@@ -3,6 +3,7 @@
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using System.Runtime.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -15,26 +16,31 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Device has not yet come on-line
         /// </summary>
+        [EnumMember(Value = "unassigned")]
         Unassigned = 1,
 
         /// <summary>
         /// Device has connected to the DRS but IoT Hub ID has not yet been returned to the device
         /// </summary>
+        [EnumMember(Value = "assigning")]
         Assigning = 2,
 
         /// <summary>
         /// DRS successfully returned a device ID and connection string to the device
         /// </summary>
+        [EnumMember(Value = "assigned")]
         Assigned = 3,
 
         /// <summary>
         /// Device enrollment failed
         /// </summary>
+        [EnumMember(Value = "failed")]
         Failed = 4,
 
         /// <summary>
         /// Device is disabled
         /// </summary>
+        [EnumMember(Value = "disabled")]
         Disabled = 5
     }
 }
