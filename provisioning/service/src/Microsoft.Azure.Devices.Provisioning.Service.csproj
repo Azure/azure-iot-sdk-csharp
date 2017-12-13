@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -7,8 +7,30 @@
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors> 
     <!-- TODO #255: Multiple public APIs still missing documentation:
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <OutputPath>.\bin\$(Configuration)</OutputPath>
     <DocumentationFile>$(OutputPath)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile> -->
     <Features Condition=" '$(Configuration)' == 'Debug' ">IOperation</Features>
+  </PropertyGroup>
+
+  <!-- delay sign the assembly for Release build -->
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <AssemblyOriginatorKeyFile>..\..\..\35MSSharedLib1024.snk</AssemblyOriginatorKeyFile>
+    <DelaySign>true</DelaySign>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <VersionPrefix>1.0.0</VersionPrefix>
+    <VersionSuffix>preview-001</VersionSuffix>
+    <Title>Microsoft Azure IoT Provisioning Service Client SDK</Title>
+    <Authors>Microsoft</Authors>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageLicenseUrl>https://github.com/Azure/azure-iot-sdk-csharp/blob/master/LICENSE</PackageLicenseUrl>
+    <Description>Provisioning Service Client SDK for Azure IoT</Description>
+    <PackageIconUrl>http://go.microsoft.com/fwlink/?LinkID=288890</PackageIconUrl>
+    <PackageProjectUrl>https://github.com/Azure/azure-iot-sdk-csharp</PackageProjectUrl>
+    <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
+    <PackageTags>Microsoft Azure IoT Provisioning Service Client .NET HTTP</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
