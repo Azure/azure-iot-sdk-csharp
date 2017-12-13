@@ -156,11 +156,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             /* SRS_INDIVIDUAL_ENROLLMENT_21_003: [The constructor shall throws ProvisioningServiceClientException if one of the 
                                                     provided parameters in JSON is not valid.] */
-            if (string.IsNullOrWhiteSpace(eTag))
-            {
-                throw new ProvisioningServiceClientException("Service respond an individualEnrollment without eTag.");
-            }
-
             if (attestation == null)
             {
                 throw new ProvisioningServiceClientException("Service respond an individualEnrollment without attestation.");

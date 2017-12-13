@@ -84,18 +84,17 @@ namespace ProvisioningServiceEnrollment
                 #endregion
 
                 #region Query info of individualEnrollment
-                //Console.WriteLine("\nCreating a query for enrollments...");
-                //QuerySpecification querySpecification =
-                //        new QuerySpecificationBuilder("*", QuerySpecificationBuilder.FromType.ENROLLMENTS)
-                //                .createSqlQuery();
-                //Query query = provisioningServiceClient.createIndividualEnrollmentQuery(querySpecification);
-
-                //while (query.hasNext())
-                //{
-                //    Console.WriteLine("\nQuerying the next enrollments...");
-                //    QueryResult queryResult = query.next();
-                //    Console.WriteLine(queryResult);
-                //}
+                Console.WriteLine("\nCreating a query for enrollments...");
+                QuerySpecification querySpecification = new QuerySpecification("SELECT * FROM enrollments");
+                using (Query query = provisioningServiceClient.CreateIndividualEnrollmentQuery(querySpecification))
+                {
+                    while (query.HasNext())
+                    {
+                        Console.WriteLine("\nQuerying the next enrollments...");
+                        QueryResult queryResult = await query.NextAsync();
+                        Console.WriteLine(queryResult);
+                    }
+                }
                 #endregion
 
                 #region Delete info of individualEnrollment
@@ -148,6 +147,10 @@ namespace ProvisioningServiceEnrollment
                 try
                 {
                     _registrationId = Environment.GetEnvironmentVariable(RegistrationIdEnvVar);
+                    if(_registrationId == null)
+                    {
+                        _registrationId = SampleRegistrationId;
+                    }
                 }
                 catch (ArgumentException)
                 {
@@ -156,6 +159,10 @@ namespace ProvisioningServiceEnrollment
                 try
                 {
                     _tpmEndorsementKey = Environment.GetEnvironmentVariable(TpmEndorsementKeyEnvVar);
+                    if(_tpmEndorsementKey == null)
+                    {
+                        _tpmEndorsementKey = SampleTpmEndorsementKey;
+                    }
                 }
                 catch (ArgumentException)
                 {

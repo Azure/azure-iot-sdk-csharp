@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///    for that operation.
     /// HTTP status code 400 to 499.
     /// </remarks>
-    public class ProvisioningServiceClientBadUsageException : ProvisioningServiceClientServiceException
+    public class ProvisioningServiceClientBadUsageException : ProvisioningServiceClientHttpException
     {
         public ProvisioningServiceClientBadUsageException(string registrationId)
             : this(registrationId, string.Empty) { }
@@ -24,5 +24,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         public ProvisioningServiceClientBadUsageException(string message, Exception innerException)
             : base(message, innerException) { }
+
+        internal ProvisioningServiceClientBadUsageException(ContractApiResponse response)
+            : base(response) { }
     }
 }

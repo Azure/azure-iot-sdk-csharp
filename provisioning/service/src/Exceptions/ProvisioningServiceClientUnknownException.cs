@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// <remarks>
     /// <p> HTTP status code 300+, but not 4nn or 5nn.
     /// </remarks>
-    public class ProvisioningServiceClientUnknownException : ProvisioningServiceClientServiceException
+    public class ProvisioningServiceClientUnknownException : ProvisioningServiceClientHttpException
     {
         public ProvisioningServiceClientUnknownException(string registrationId)
             : base(registrationId, string.Empty) { }

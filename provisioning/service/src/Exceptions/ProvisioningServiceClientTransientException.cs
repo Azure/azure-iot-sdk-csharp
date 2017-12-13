@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///     time. These are the exceptions that a retry can help to fix the issue.
     /// HTTP status code 500 to 599.
     /// </remarks>
-    public class ProvisioningServiceClientTransientException : ProvisioningServiceClientServiceException
+    public class ProvisioningServiceClientTransientException : ProvisioningServiceClientHttpException
     {
         public ProvisioningServiceClientTransientException(string registrationId)
             : base(registrationId, string.Empty) { }
@@ -25,5 +25,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         public ProvisioningServiceClientTransientException(string message, Exception innerException)
             : base(message, innerException) { }
+
+        internal ProvisioningServiceClientTransientException(ContractApiResponse response)
+            : base(response) { }
+
     }
 }

@@ -24,6 +24,9 @@ namespace ProvisioningServiceBulkOperation
             "dln4XpM03zLpoHFao8zOwt8l/uP3qUIxmCYv9A7m69Ms+5/pCkTu/rK4mRDsfhZ0QLfbzVI6zQFOKF/rwsfBtFe" +
             "WlWtcuJMKlXdD8TXWElTzgh7JS4qhFzreL0c1mI0GCj+Aws0usZh7dLIVPnlgZcBhgy1SSDQMQ==";
 
+        // Maximum number of elements per query.
+        private const int QueryPageSize = 2;
+
         private static string _provisioningConnectionString;
         private static IDictionary<string, string> _registrationIds = new Dictionary<string, string>
         {
@@ -85,18 +88,17 @@ namespace ProvisioningServiceBulkOperation
                 #endregion
 
                 #region Query info of individualEnrollment
-                //Console.WriteLine("\nCreating a query for enrollments...");
-                //QuerySpecification querySpecification =
-                //        new QuerySpecificationBuilder("*", QuerySpecificationBuilder.FromType.ENROLLMENTS)
-                //                .createSqlQuery();
-                //Query query = provisioningServiceClient.createIndividualEnrollmentQuery(querySpecification);
-
-                //while (query.hasNext())
-                //{
-                //    Console.WriteLine("\nQuerying the next enrollments...");
-                //    QueryResult queryResult = query.next();
-                //    Console.WriteLine(queryResult);
-                //}
+                Console.WriteLine("\nCreating a query for enrollments...");
+                QuerySpecification querySpecification = new QuerySpecification("SELECT * FROM enrollments");
+                using (Query query = provisioningServiceClient.CreateIndividualEnrollmentQuery(querySpecification, QueryPageSize))
+                {
+                    while (query.HasNext())
+                    {
+                        Console.WriteLine("\nQuerying the next enrollments...");
+                        QueryResult queryResult = await query.NextAsync();
+                        Console.WriteLine(queryResult);
+                    }
+                }
                 #endregion
 
                 #region Delete info of individualEnrollment

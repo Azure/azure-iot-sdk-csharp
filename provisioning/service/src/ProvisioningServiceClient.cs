@@ -66,8 +66,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// <see cref="https://docs.microsoft.com/en-us/azure/iot-dps/about-iot-dps">Provisioning devices with Azure IoT Hub Device Provisioning Service</see>
     public class ProvisioningServiceClient : IDisposable
     {
+        private static ServiceConnectionString _provisioningConnectionString;
         private static IContractApiHttp _contractApiHttp;
-        static readonly TimeSpan DefaultOperationTimeout = TimeSpan.FromSeconds(100);
 
         /// <summary>
         /// Create a new instance of the <code>ProvisioningServiceClient</code> that exposes
@@ -96,19 +96,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         private ProvisioningServiceClient(string connectionString)
         {
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_002: [The constructor shall throw ArgumentException if the provided connectionString is null or empty.] */
-            if (string.IsNullOrWhiteSpace(connectionString))
+            if (string.IsNullOrWhiteSpace(connectionString ?? throw new ArgumentNullException(nameof(connectionString))))
             {
-                throw new ArgumentException("connectionString cannot be null or empty");
+                throw new ArgumentException(nameof(connectionString));
             }
 
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_003: [The constructor shall throw ArgumentException if the ProvisioningConnectionString or one of the inner Managers failed to create a new instance.] */
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_004: [The constructor shall create a new instance of the ContractApiHttp class using the provided connectionString.] */
-            ServiceConnectionString provisioningConnectionString = ServiceConnectionString.Parse(connectionString);
+            _provisioningConnectionString = ServiceConnectionString.Parse(connectionString);
             _contractApiHttp = new ContractApiHttp(
-                provisioningConnectionString.HttpsEndpoint,
-                provisioningConnectionString,
+                _provisioningConnectionString.HttpsEndpoint,
+                _provisioningConnectionString,
                 ExceptionHandlingHelper.GetDefaultErrorMapping(),
-                DefaultOperationTimeout,
                 client => { });
         }
 
@@ -392,8 +391,20 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <exception cref="ArgumentException">if the provided parameter is not correct.</exception>
         public Query CreateIndividualEnrollmentQuery(QuerySpecification querySpecification)
         {
-            /* SRS_PROVISIONING_SERVICE_CLIENT_21_014: [The CreateIndividualEnrollmentQuery shall create a new individual enrolment query by calling the CreateQuery in the IndividualEnrollmentManager.] */
-            return IndividualEnrollmentManager.CreateQuery(querySpecification);
+            /* SRS_PROVISIONING_SERVICE_CLIENT_21_014: [The CreateIndividualEnrollmentQuery shall create a new individual enrollment query by calling the CreateQuery in the IndividualEnrollmentManager.] */
+            return IndividualEnrollmentManager.CreateQuery(
+                _provisioningConnectionString, 
+                querySpecification, 
+                CancellationToken.None);
+        }
+
+        public Query CreateIndividualEnrollmentQuery(QuerySpecification querySpecification, CancellationToken cancellationToken)
+        {
+            /* SRS_PROVISIONING_SERVICE_CLIENT_21_014: [The CreateIndividualEnrollmentQuery shall create a new individual enrollment query by calling the CreateQuery in the IndividualEnrollmentManager.] */
+            return IndividualEnrollmentManager.CreateQuery(
+                _provisioningConnectionString,
+                querySpecification,
+                cancellationToken);
         }
 
         /// <summary>
@@ -416,8 +427,22 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <exception cref="ArgumentException">if the provided parameters are not correct.</exception>
         public Query CreateIndividualEnrollmentQuery(QuerySpecification querySpecification, int pageSize)
         {
-            /* SRS_PROVISIONING_SERVICE_CLIENT_21_015: [The CreateIndividualEnrollmentQuery shall create a new individual enrolment query by calling the CreateQuery in the IndividualEnrollmentManager.] */
-            return IndividualEnrollmentManager.CreateQuery(querySpecification, pageSize);
+            /* SRS_PROVISIONING_SERVICE_CLIENT_21_015: [The CreateIndividualEnrollmentQuery shall create a new individual enrollment query by calling the CreateQuery in the IndividualEnrollmentManager.] */
+            return IndividualEnrollmentManager.CreateQuery(
+                _provisioningConnectionString, 
+                querySpecification, 
+                CancellationToken.None, 
+                pageSize);
+        }
+
+        public Query CreateIndividualEnrollmentQuery(QuerySpecification querySpecification, int pageSize, CancellationToken cancellationToken)
+        {
+            /* SRS_PROVISIONING_SERVICE_CLIENT_21_015: [The CreateIndividualEnrollmentQuery shall create a new individual enrollment query by calling the CreateQuery in the IndividualEnrollmentManager.] */
+            return IndividualEnrollmentManager.CreateQuery(
+                _provisioningConnectionString,
+                querySpecification,
+                cancellationToken,
+                pageSize);
         }
 
         /// <summary>
@@ -553,7 +578,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         public Query CreateEnrollmentGroupQuery(QuerySpecification querySpecification)
         {
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_021: [The createEnrollmentGroupQuery shall create a new enrolmentGroup query by calling the createQuery in the EnrollmentGroupManager.] */
-            return EnrollmentGroupManager.CreateQuery(querySpecification);
+            return EnrollmentGroupManager.CreateQuery(
+                _provisioningConnectionString,
+                querySpecification,
+                CancellationToken.None);
+        }
+
+        public Query CreateEnrollmentGroupQuery(QuerySpecification querySpecification, CancellationToken cancellationToken)
+        {
+            /* SRS_PROVISIONING_SERVICE_CLIENT_21_021: [The createEnrollmentGroupQuery shall create a new enrolmentGroup query by calling the createQuery in the EnrollmentGroupManager.] */
+            return EnrollmentGroupManager.CreateQuery(
+                _provisioningConnectionString,
+                querySpecification,
+                cancellationToken);
         }
 
         /// <summary>
@@ -577,7 +614,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         public Query CreateEnrollmentGroupQuery(QuerySpecification querySpecification, int pageSize)
         {
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_022: [The createEnrollmentGroupQuery shall create a new enrolmentGroup query by calling the createQuery in the EnrollmentGroupManager.] */
-            return EnrollmentGroupManager.CreateQuery(querySpecification, pageSize);
+            return EnrollmentGroupManager.CreateQuery(
+                _provisioningConnectionString,
+                querySpecification,
+                CancellationToken.None,
+                pageSize);
+        }
+
+        public Query CreateEnrollmentGroupQuery(QuerySpecification querySpecification, int pageSize, CancellationToken cancellationToken)
+        {
+            /* SRS_PROVISIONING_SERVICE_CLIENT_21_022: [The createEnrollmentGroupQuery shall create a new enrolmentGroup query by calling the createQuery in the EnrollmentGroupManager.] */
+            return EnrollmentGroupManager.CreateQuery(
+                _provisioningConnectionString,
+                querySpecification,
+                cancellationToken,
+                pageSize);
         }
 
         /// <summary>
@@ -679,7 +730,24 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         public Query CreateEnrollmentGroupRegistrationStatusQuery(QuerySpecification querySpecification, string enrollmentGroupId)
         {
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_027: [The createEnrollmentGroupRegistrationStatusQuery shall create a new registrationStatus query by calling the createQuery in the registrationStatusManager.] */
-            return RegistrationStatusManager.CreateEnrollmentGroupQuery(querySpecification, enrollmentGroupId);
+            return RegistrationStatusManager.CreateEnrollmentGroupQuery(
+                _provisioningConnectionString,
+                querySpecification,
+                CancellationToken.None,
+                enrollmentGroupId);
+        }
+
+        public Query CreateEnrollmentGroupRegistrationStatusQuery(
+            QuerySpecification querySpecification, 
+            string enrollmentGroupId,
+            CancellationToken cancellationToken)
+        {
+            /* SRS_PROVISIONING_SERVICE_CLIENT_21_027: [The createEnrollmentGroupRegistrationStatusQuery shall create a new registrationStatus query by calling the createQuery in the registrationStatusManager.] */
+            return RegistrationStatusManager.CreateEnrollmentGroupQuery(
+                _provisioningConnectionString,
+                querySpecification,
+                cancellationToken,
+                enrollmentGroupId);
         }
 
         /// <summary>
@@ -704,7 +772,27 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         public Query CreateEnrollmentGroupRegistrationStatusQuery(QuerySpecification querySpecification, string enrollmentGroupId, int pageSize)
         {
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_028: [The createEnrollmentGroupRegistrationStatusQuery shall create a new registrationStatus query by calling the createQuery in the registrationStatusManager.] */
-            return RegistrationStatusManager.CreateEnrollmentGroupQuery(querySpecification, enrollmentGroupId, pageSize);
+            return RegistrationStatusManager.CreateEnrollmentGroupQuery(
+                _provisioningConnectionString,
+                querySpecification,
+                CancellationToken.None, 
+                enrollmentGroupId, 
+                pageSize);
+        }
+
+        public Query CreateEnrollmentGroupRegistrationStatusQuery(
+            QuerySpecification querySpecification, 
+            string enrollmentGroupId, 
+            int pageSize,
+            CancellationToken cancellationToken)
+        {
+            /* SRS_PROVISIONING_SERVICE_CLIENT_21_028: [The createEnrollmentGroupRegistrationStatusQuery shall create a new registrationStatus query by calling the createQuery in the registrationStatusManager.] */
+            return RegistrationStatusManager.CreateEnrollmentGroupQuery(
+                _provisioningConnectionString,
+                querySpecification,
+                cancellationToken,
+                enrollmentGroupId,
+                pageSize);
         }
     }
 }

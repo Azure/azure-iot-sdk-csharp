@@ -8,13 +8,14 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Common;
+using Microsoft.Azure.Devices.Common.Service.Auth;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
     internal static class EnrollmentGroupManager
     {
-        private const string EnrollmentIdUriFormat = "enrollmentGroups/{0}?{1}";
-        private const string EnrollmentUriFormat = "enrollmentGroups";
+        private const string ServiceName = "enrollmentGroups";
+        private const string EnrollmentIdUriFormat = "{0}/{1}?{2}";
 
         /// <summary>
         /// Create or update an enrollment group record.
@@ -34,7 +35,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             /* SRS_ENROLLMENT_GROUP_MANAGER_28_001: [The CreateOrUpdateAsync shall throw ArgumentException if the provided enrollmentGroup is null.] */
             if (enrollmentGroup == null)
             {
-                throw new ArgumentException("enrollmentGroup cannot be null.");
+                throw new ArgumentException(nameof(enrollmentGroup));
             }
 
             /* SRS_ENROLLMENT_GROUP_MANAGER_28_002: [The CreateOrUpdateAsync shall sent the Put HTTP request to create or update the enrollmentGroup.] */
@@ -91,7 +92,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             /* SRS_ENROLLMENT_GROUP_MANAGER_28_010: [The DeleteAsync shall throw ArgumentException if the provided enrollmentGroup is null.] */
             if (enrollmentGroup == null)
             {
-                throw new ArgumentException("enrollmentGroup cannot be null.");
+                throw new ArgumentException(nameof(enrollmentGroup));
             }
 
             /* SRS_ENROLLMENT_GROUP_MANAGER_28_011: [The DeleteAsync shall sent the Delete HTTP request to remove the enrollmentGroup.] */
@@ -142,20 +143,32 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="pageSize">the <code>int</code> with the maximum number of items per iteration. It can be 0 for default, but not negative.</param>
         /// <returns>A <see cref="Query"/> iterator.</returns>
         /// <exception cref="ArgumentException">if the provided parameter is not correct.</exception>
-        internal static Query CreateQuery(QuerySpecification querySpecification, int pageSize = 0)
+        internal static Query CreateQuery(
+            ServiceConnectionString provisioningConnectionString,
+            QuerySpecification querySpecification,
+            CancellationToken cancellationToken,
+            int pageSize = 0)
         {
-            //TODO: Implement.
-
             /* SRS_ENROLLMENT_GROUP_MANAGER_28_014: [The CreateQuery shall throw ArgumentException if the provided querySpecification is null.] */
+            if (querySpecification == null)
+            {
+                throw new ArgumentNullException(nameof(querySpecification));
+            }
+
+            if (pageSize < 0)
+            {
+                throw new ArgumentException($"{nameof(pageSize)} cannot be negative");
+            }
+
             /* SRS_ENROLLMENT_GROUP_MANAGER_28_015: [The CreateQuery shall return a new Query for EnrollmentGroup.] */
 
-            throw new NotSupportedException("Query is not supported yet");
+            return new Query(provisioningConnectionString, ServiceName, querySpecification, pageSize, cancellationToken);
         }
 
         private static Uri GetEnrollmentUri(string enrollmentGroupId)
         {
             enrollmentGroupId = WebUtility.UrlEncode(enrollmentGroupId);
-            return new Uri(EnrollmentIdUriFormat.FormatInvariant(enrollmentGroupId, SDKUtils.ApiVersionQueryString), UriKind.Relative);
+            return new Uri(EnrollmentIdUriFormat.FormatInvariant(ServiceName, enrollmentGroupId, SDKUtils.ApiVersionQueryString), UriKind.Relative);
         }
     }
 }

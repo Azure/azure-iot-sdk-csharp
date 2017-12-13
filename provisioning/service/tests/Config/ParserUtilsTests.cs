@@ -4,7 +4,7 @@
 using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.Provisioning.Service.Test.Config
+namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 {
     [TestClass]
     public class ParserUtilsTests

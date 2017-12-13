@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Common;
+using Microsoft.Azure.Devices.Common.Service.Auth;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -22,8 +23,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// <see cref="https://docs.microsoft.com/en-us/rest/api/iot-dps/deviceenrollment">Device Enrollment</see>
     internal static class IndividualEnrollmentManager
     {
-        private const string EnrollmentIdUriFormat = "enrollments/{0}?{1}";
-        private const string EnrollmentUriFormat = "enrollments?{0}";
+        private const string ServiceName = "enrollments";
+        private const string EnrollmentIdUriFormat = "{0}/{1}?{2}";
+        private const string EnrollmentUriFormat = "{0}?{1}";
 
         /// <summary>
         /// Create or update a device enrollment record.
@@ -43,7 +45,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             /* SRS_INDIVIDUAL_ENROLLMENT_MANAGER_21_001: [The CreateOrUpdateAsync shall throw ArgumentException if the provided individualEnrollment is null.] */
             if (individualEnrollment == null)
             {
-                throw new ArgumentException("individualEnrollment cannot be null.");
+                throw new ArgumentException(nameof(individualEnrollment));
             }
 
             /* SRS_INDIVIDUAL_ENROLLMENT_MANAGER_21_002: [The CreateOrUpdateAsync shall sent the Put HTTP request to create or update the individualEnrollment.] */
@@ -75,9 +77,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             /* SRS_INDIVIDUAL_ENROLLMENT_MANAGER_21_004: [The BulkOperationAsync shall throw ArgumentException if the provided 
                                                     individualEnrollments is null or empty.] */
-            if (!(individualEnrollments ?? throw new ArgumentNullException("individualEnrollments")).Any())
+            if (!(individualEnrollments ?? throw new ArgumentNullException(nameof(individualEnrollments))).Any())
             {
-                throw new ArgumentException("List of individualEnrollments cannot be empty.");
+                throw new ArgumentException(nameof(individualEnrollments));
             }
 
             /* SRS_INDIVIDUAL_ENROLLMENT_MANAGER_21_005: [The BulkOperationAsync shall sent the Put HTTP request to run the bulk operation to the collection of the individualEnrollment.] */
@@ -135,7 +137,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             /* SRS_INDIVIDUAL_ENROLLMENT_MANAGER_21_010: [The DeleteAsync shall throw ArgumentException if the provided individualEnrollment is null.] */
             if (individualEnrollment == null)
             {
-                throw new ArgumentException("individualEnrollment cannot be null.");
+                throw new ArgumentException(nameof(individualEnrollment));
             }
 
             /* SRS_INDIVIDUAL_ENROLLMENT_MANAGER_21_011: [The DeleteAsync shall sent the Delete HTTP request to remove the individualEnrollment.] */
@@ -186,24 +188,35 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="pageSize">the <code>int</code> with the maximum number of items per iteration. It can be 0 for default, but not negative.</param>
         /// <returns>A <see cref="Query"/> iterator.</returns>
         /// <exception cref="ArgumentException">if the provided parameter is not correct.</exception>
-        internal static Query CreateQuery(QuerySpecification querySpecification, int pageSize = 0)
+        internal static Query CreateQuery(
+            ServiceConnectionString provisioningConnectionString, 
+            QuerySpecification querySpecification, 
+            CancellationToken cancellationToken, 
+            int pageSize = 0)
         {
-            //TODO: Implement.
-
             /* SRS_INDIVIDUAL_ENROLLMENT_MANAGER_21_014: [The CreateQuery shall throw ArgumentException if the provided querySpecification is null.] */
-            /* SRS_INDIVIDUAL_ENROLLMENT_MANAGER_21_015: [The CreateQuery shall return a new Query for IndividualEnrollments.] */
+            if(querySpecification == null)
+            {
+                throw new ArgumentNullException(nameof(querySpecification));
+            }
 
-            throw new NotSupportedException("Query is not supported yet");
+            if(pageSize < 0)
+            {
+                throw new ArgumentException($"{nameof(pageSize)} cannot be negative");
+            }
+
+            /* SRS_INDIVIDUAL_ENROLLMENT_MANAGER_21_015: [The CreateQuery shall return a new Query for IndividualEnrollments.] */
+            return new Query(provisioningConnectionString, ServiceName, querySpecification, pageSize, cancellationToken);
         }
 
         private static Uri GetEnrollmentUri(string registrationId)
         {
             registrationId = WebUtility.UrlEncode(registrationId);
-            return new Uri(EnrollmentIdUriFormat.FormatInvariant(registrationId, SDKUtils.ApiVersionQueryString), UriKind.Relative);
+            return new Uri(EnrollmentIdUriFormat.FormatInvariant(ServiceName, registrationId, SDKUtils.ApiVersionQueryString), UriKind.Relative);
         }
         private static Uri GetEnrollmentUri()
         {
-            return new Uri(EnrollmentUriFormat.FormatInvariant(SDKUtils.ApiVersionQueryString), UriKind.Relative);
+            return new Uri(EnrollmentUriFormat.FormatInvariant(ServiceName, SDKUtils.ApiVersionQueryString), UriKind.Relative);
         }
     }
 }
