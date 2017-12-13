@@ -142,7 +142,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             string json = Newtonsoft.Json.JsonConvert.SerializeObject(tpmAttestation);
 
             // assert
-            TestAssert.assertJson(expectedJson, json);
+            TestAssert.AreEqualJson(expectedJson, json);
         }
 
         [TestMethod]
@@ -161,7 +161,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             string json = Newtonsoft.Json.JsonConvert.SerializeObject(tpmAttestation);
 
             // assert
-            TestAssert.assertJson(expectedJson, json);
+            TestAssert.AreEqualJson(expectedJson, json);
         }
 
         [TestMethod]

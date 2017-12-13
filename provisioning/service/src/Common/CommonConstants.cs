@@ -7,7 +7,8 @@ namespace Microsoft.Azure.Devices.Common
     {
         // TODO: move these to ConfigProvider
         public const string MediaTypeForDeviceManagementApis = "application/json";
-        public const string BatchedMessageContentType = "application/vnd.microsoft.iothub.json";
+        public const string ContentTypeCharset = "charset=utf8";
+        public const string ContentType = MediaTypeForDeviceManagementApis + "; " + ContentTypeCharset;
 
         // Custom HTTP headers
         public const string IotHubErrorCode = "IotHubErrorCode";
