@@ -38,32 +38,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             throw new AssertFailedException("{0}. Expected {1} exception but no exception is thrown".FormatInvariant(errorMessage, typeof(TException).ToString()));
         }
 
-        public static TException Throws<TException>(Func<Task> action, string errorMessage = null) where TException : Exception
-        {
-            return Throws<TException>(() => action().Wait(), errorMessage);
-        }
-
-        public static async Task<TException> ThrowsAsync<TException>(Func<Task> action, string errorMessage = null) where TException : Exception
-        {
-            errorMessage = errorMessage ?? "Failed";
-            try
-            {
-                await action();
-            }
-            catch (TException ex)
-            {
-                return ex;
-            }
-            catch (Exception ex)
-            {
-                throw new AssertFailedException(
-                    "{0}. Expected:<{1}> Actual<{2}>".FormatInvariant(errorMessage, typeof(TException).ToString(), ex.GetType().ToString()),
-                    ex);
-            }
-
-            throw new AssertFailedException("{0}. Expected {1} exception but no exception is thrown".FormatInvariant(errorMessage, typeof(TException).ToString()));
-        }
-
         private static string FormatInvariant(this string format, params object[] args)
         {
             return string.Format(CultureInfo.InvariantCulture, format, args);
@@ -74,7 +48,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             return FormatInvariant("Expected:<{0}>.Actual:<{1}>.", expected, actual);
         }
 
-        public static void assertJson(string expectedJson, string actualJson)
+        public static void AreEqualJson(string expectedJson, string actualJson)
         {
             if(expectedJson == null)
             {
@@ -89,10 +63,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             JObject expectedJObject = Newtonsoft.Json.JsonConvert.DeserializeObject<JObject>(expectedJson);
             JObject actualJObject = Newtonsoft.Json.JsonConvert.DeserializeObject<JObject>(actualJson);
 
-            assertJObject(expectedJObject, actualJObject);
+            AreEqual(expectedJObject, actualJObject);
         }
 
-        public static void assertJObject(JObject expectedJObject, JObject actualJObject)
+        public static void AreEqual(JObject expectedJObject, JObject actualJObject)
         {
             if(expectedJObject == null)
             {
@@ -104,14 +78,39 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 Assert.IsNotNull(acturalValue, FormatExpectedActual(expectedPair.Key + ":" + expectedPair.Value, "null"));
                 if (expectedPair.Value.Type == JTokenType.Object)
                 {
-                    Assert.IsTrue(acturalValue is JTokenType, 
-                        FormatExpectedActual(expectedPair.Value.ToString(), acturalValue.ToString()));
-                    assertJObject((JObject)expectedPair.Value, (JObject)acturalValue);
+                    AreEqual((JObject)expectedPair.Value, (JObject)acturalValue);
+                }
+                else if (expectedPair.Value.Type == JTokenType.Array)
+                {
+                    AreEqual((JArray)expectedPair.Value, (JArray)acturalValue);
                 }
                 else
                 {
                     Assert.AreEqual(expectedPair.Value, acturalValue, 
                         FormatExpectedActual(expectedPair.Key + ":" + expectedPair.Value, expectedPair.Key + ":" + acturalValue));
+                }
+            }
+        }
+
+        public static void AreEqual(JArray expectedJObject, JArray actualJObject)
+        {
+            Assert.AreEqual(expectedJObject.Count, actualJObject.Count);
+
+            for (int index = 0; index < expectedJObject.Count; index++)
+            {
+                var expectedItem = expectedJObject[index];
+                var actualItem = actualJObject[index];
+                if (expectedItem.Type == JTokenType.Object)
+                {
+                    AreEqual((JObject)expectedItem, (JObject)actualItem);
+                }
+                else if (expectedItem.Type == JTokenType.Array)
+                {
+                    AreEqual((JArray)expectedItem, (JArray)actualItem);
+                }
+                else
+                {
+                    Assert.AreEqual(expectedItem, actualItem);
                 }
             }
         }

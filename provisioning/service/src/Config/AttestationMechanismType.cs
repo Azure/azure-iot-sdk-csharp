@@ -3,6 +3,7 @@
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using System.Runtime.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -19,7 +20,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <remarks>
         /// There is no valid scenario for `none` Attestation Mechanism Type.
         /// </remarks>
-        [JsonProperty(PropertyName = "none")]
+        [EnumMember(Value = "none")]
         None,
 
         /// <summary>
@@ -28,7 +29,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <remarks>
         /// Identify the attestation mechanism as <see cref="TpmAttestation"/>.
         /// </remarks>
-        [JsonProperty(PropertyName = "tpm")]
+        [EnumMember(Value = "tpm")]
         Tpm = 1,
 
         /// <summary>
@@ -37,7 +38,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <remarks>
         /// Identify the attestation mechanism as <see cref="X509Attestation"/>.
         /// </remarks>
-        [JsonProperty(PropertyName = "x509")]
+        [EnumMember(Value = "x509")]
         X509 = 2
     }
 }

@@ -2,6 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using System.Runtime.Serialization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -9,15 +11,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// The Device Provisioning Service bulk operation modes.
     /// </summary>
     /// <seealso cref="https://docs.microsoft.com/en-us/rest/api/iot-dps/deviceenrollment">Device Enrollment</seealso>
+    [JsonConverter(typeof(StringEnumConverter))]
     public enum BulkOperationMode
     {
-        [JsonProperty(PropertyName = "create")]
+        [EnumMember(Value = "create")]
         Create,
-        [JsonProperty(PropertyName = "update")]
+        [EnumMember(Value = "update")]
         Update,
-        [JsonProperty(PropertyName = "updateIfMatchETag")]
+        [EnumMember(Value = "updateIfMatchETag")]
         UpdateIfMatchETag,
-        [JsonProperty(PropertyName = "delete")]
+        [EnumMember(Value = "delete")]
         Delete,
     }
 }

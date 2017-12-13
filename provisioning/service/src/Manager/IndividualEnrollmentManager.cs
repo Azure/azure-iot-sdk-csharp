@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Common;
@@ -21,7 +22,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// <see cref="https://docs.microsoft.com/en-us/rest/api/iot-dps/deviceenrollment">Device Enrollment</see>
     internal static class IndividualEnrollmentManager
     {
-        private const string EnrollmentUriFormat = "enrollments/{0}?{1}";
+        private const string EnrollmentIdUriFormat = "enrollments/{0}?{1}";
+        private const string EnrollmentUriFormat = "enrollments?{0}";
 
         /// <summary>
         /// Create or update a device enrollment record.
@@ -44,8 +46,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 throw new ArgumentException("individualEnrollment cannot be null.");
             }
 
-            /* SRS_INDIVIDUAL_ENROLLMENT_MANAGER_21_002: [The CreateOrUpdateAsync shall sent the Put Http request to create or update the individualEnrollment.] */
-            /* SRS_INDIVIDUAL_ENROLLMENT_MANAGER_21_003: [The CreateOrUpdateAsync shall return an IndividualEnrollment object created from the body of the Http response.] */
+            /* SRS_INDIVIDUAL_ENROLLMENT_MANAGER_21_002: [The CreateOrUpdateAsync shall sent the Put HTTP request to create or update the individualEnrollment.] */
+            /* SRS_INDIVIDUAL_ENROLLMENT_MANAGER_21_003: [The CreateOrUpdateAsync shall return an IndividualEnrollment object created from the body of the HTTP response.] */
             return contractApiHttp.PutAsync(
                 GetEnrollmentUri(individualEnrollment.RegistrationId), 
                 individualEnrollment, 
@@ -71,13 +73,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             IEnumerable<IndividualEnrollment> individualEnrollments,
             CancellationToken cancellationToken)
         {
-            //TODO: Implement.
+            /* SRS_INDIVIDUAL_ENROLLMENT_MANAGER_21_004: [The BulkOperationAsync shall throw ArgumentException if the provided 
+                                                    individualEnrollments is null or empty.] */
+            if (!(individualEnrollments ?? throw new ArgumentNullException("individualEnrollments")).Any())
+            {
+                throw new ArgumentException("List of individualEnrollments cannot be empty.");
+            }
 
-            /* SRS_INDIVIDUAL_ENROLLMENT_MANAGER_21_004: [The BulkOperationAsync shall throw ArgumentException if the provided individualEnrollments is null.] */
-            /* SRS_INDIVIDUAL_ENROLLMENT_MANAGER_21_005: [The BulkOperationAsync shall sent the Put Http request to run the bulk operation to the collection of the individualEnrollment.] */
-            /* SRS_INDIVIDUAL_ENROLLMENT_MANAGER_21_006: [The BulkOperationAsync shall return an BulkEnrollmentOperationResult object created from the body of the Http response.] */
-
-            throw new NotSupportedException("Bulk operation is not supported yet");
+            /* SRS_INDIVIDUAL_ENROLLMENT_MANAGER_21_005: [The BulkOperationAsync shall sent the Put HTTP request to run the bulk operation to the collection of the individualEnrollment.] */
+            /* SRS_INDIVIDUAL_ENROLLMENT_MANAGER_21_006: [The BulkOperationAsync shall return an BulkEnrollmentOperationResult object created from the body of the HTTP response.] */
+            return contractApiHttp.PostAsync<string, BulkEnrollmentOperationResult>(
+                GetEnrollmentUri(),
+                BulkEnrollmentOperation.ToJson(bulkOperationMode, individualEnrollments),
+                null,
+                null,
+                cancellationToken);
         }
 
         /// <summary>
@@ -98,8 +108,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             /* SRS_INDIVIDUAL_ENROLLMENT_MANAGER_21_007: [The GetAsync shall throw ArgumentException if the provided registrationId is null or empty.] */
             ParserUtils.EnsureRegistrationId(registrationId);
 
-            /* SRS_INDIVIDUAL_ENROLLMENT_MANAGER_21_008: [The GetAsync shall sent the Get Http request to get the individualEnrollment information.] */
-            /* SRS_INDIVIDUAL_ENROLLMENT_MANAGER_21_009: [The GetAsync shall return an IndividualEnrollment object created from the body of the Http response.] */
+            /* SRS_INDIVIDUAL_ENROLLMENT_MANAGER_21_008: [The GetAsync shall sent the Get HTTP request to get the individualEnrollment information.] */
+            /* SRS_INDIVIDUAL_ENROLLMENT_MANAGER_21_009: [The GetAsync shall return an IndividualEnrollment object created from the body of the HTTP response.] */
             return contractApiHttp.GetAsync<IndividualEnrollment>(
                 GetEnrollmentUri(registrationId),
                 null,
@@ -128,7 +138,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 throw new ArgumentException("individualEnrollment cannot be null.");
             }
 
-            /* SRS_INDIVIDUAL_ENROLLMENT_MANAGER_21_011: [The DeleteAsync shall sent the Delete Http request to remove the individualEnrollment.] */
+            /* SRS_INDIVIDUAL_ENROLLMENT_MANAGER_21_011: [The DeleteAsync shall sent the Delete HTTP request to remove the individualEnrollment.] */
             return contractApiHttp.DeleteAsync(
                 GetEnrollmentUri(individualEnrollment.RegistrationId),
                 individualEnrollment.ETag,
@@ -157,7 +167,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             /* SRS_INDIVIDUAL_ENROLLMENT_MANAGER_21_012: [The DeleteAsync shall throw ArgumentException if the provided registrationId is null or empty.] */
             ParserUtils.EnsureRegistrationId(registrationId);
 
-            /* SRS_INDIVIDUAL_ENROLLMENT_MANAGER_21_013: [The DeleteAsync shall sent the Delete Http request to remove the individualEnrollment.] */
+            /* SRS_INDIVIDUAL_ENROLLMENT_MANAGER_21_013: [The DeleteAsync shall sent the Delete HTTP request to remove the individualEnrollment.] */
             return contractApiHttp.DeleteAsync(
                 GetEnrollmentUri(registrationId),
                 eTag,
@@ -189,7 +199,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         private static Uri GetEnrollmentUri(string registrationId)
         {
             registrationId = WebUtility.UrlEncode(registrationId);
-            return new Uri(EnrollmentUriFormat.FormatInvariant(registrationId, SDKUtils.ApiVersionQueryString), UriKind.Relative);
+            return new Uri(EnrollmentIdUriFormat.FormatInvariant(registrationId, SDKUtils.ApiVersionQueryString), UriKind.Relative);
+        }
+        private static Uri GetEnrollmentUri()
+        {
+            return new Uri(EnrollmentUriFormat.FormatInvariant(SDKUtils.ApiVersionQueryString), UriKind.Relative);
         }
     }
 }
