@@ -67,7 +67,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             bool ShouldRetry(int retryCount, Exception lastException, out TimeSpan retryInterval)
             {
-                Debug.WriteLine("IotHubRuntimeOperationRetryStrategy.ShouldRetry()");
+                Debug.WriteLine(this.GetHashCode() + " IotHubRuntimeOperationRetryStrategy.ShouldRetry() " + retryCount);
 
                 if (lastException is IotHubThrottledException)
                 {
@@ -140,7 +140,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 await this.internalRetryPolicy.ExecuteAsync(() =>
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    return this.SendMessageWithRetryAsync(sendState, messageList, () => base.SendEventAsync(messageList, cancellationToken));
+
+                    // TODO #: We stop pass the cancellation token to handlers lower in the stack.
+                    return this.SendMessageWithRetryAsync(sendState, messageList, () => base.SendEventAsync(messageList, CancellationToken.None));
                 }, cancellationToken).ConfigureAwait(false);
             }
             catch (IotHubClientTransientException ex)

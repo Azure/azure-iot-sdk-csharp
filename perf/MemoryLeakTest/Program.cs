@@ -20,9 +20,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         // Assert constants. These need to be tuned to the CPU/Arch of the test machine and Release|Debug compilation flags.
         private const double MaximumAllowedMemoryMb = 30;
         private const double MaximumAllowedCpuDeltaMs = 5 * 1000;
-        private const long ExecutionTimeMilliseconds = 30 * 60 * 1000;
+        private const long ExecutionTimeMilliseconds = 10 * 60 * 1000;
 
-        public async Task<int> Method_LongRunningLeakTest_WrongEndpoint_Ok()
+        public async Task<int> Method_LongRunningLeakTest_WrongEndpoint_Ok(TransportType transportType)
         {
             var proc = Process.GetCurrentProcess();
 
@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 new DeviceAuthenticationWithRegistrySymmetricKey(
                     "fakedevice",
                     Convert.ToBase64String(new byte[] { 1, 2, 3 })),
-                TransportType.Mqtt);
+                    transportType);
 
             deviceClient.OperationTimeoutInMilliseconds = 5;
 
@@ -79,7 +79,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                         }
 
                         Console.WriteLine(
-                            "MemDeltaMB: {0:+00.000;-00.000} CpuDeltaMs: {1:0.000} [MemTotalMB: {2:00.000}, CpuTotalMs: {3:00.000} MemMaxMB: {4:00.000}, CpuDMaxMs: {5:0.000}]",
+                            "Transport: {0} MemDeltaMB: {1:+00.000;-00.000} CpuDeltaMs: {2:0.000} [MemTotalMB: {3:00.000}, CpuTotalMs: {4:00.000} MemMaxMB: {5:00.000}, CpuDMaxMs: {6:0.000}]",
+                            transportType,
                             deltaMemory / Megabyte,
                             deltaCpu,
                             currentMemoryUsed / Megabyte,
@@ -145,7 +146,25 @@ namespace Microsoft.Azure.Devices.E2ETests
         public static int Main(string[] args)
         {
             var messageMemoryLeakTest = new MessageMemoryLeakTest();
-            return messageMemoryLeakTest.Method_LongRunningLeakTest_WrongEndpoint_Ok().GetAwaiter().GetResult();
+            TransportType[] transportTests =
+            {
+                TransportType.Http1,
+                TransportType.Amqp_WebSocket_Only,
+                TransportType.Amqp_Tcp_Only,
+                TransportType.Mqtt_WebSocket_Only,
+                TransportType.Mqtt_Tcp_Only
+            };
+
+            foreach(TransportType t in transportTests)
+            {
+                int ret = messageMemoryLeakTest.Method_LongRunningLeakTest_WrongEndpoint_Ok(t).GetAwaiter().GetResult();
+                if (ret != 0)
+                {
+                    return ret;
+                }
+            }
+
+            return 0;
         }
     }
 }
