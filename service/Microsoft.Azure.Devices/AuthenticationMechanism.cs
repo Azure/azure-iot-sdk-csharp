@@ -11,6 +11,9 @@ namespace Microsoft.Azure.Devices
     /// </summary>
     public sealed class AuthenticationMechanism
     {
+        private SymmetricKey symmetricKey;
+        private X509Thumbprint x509Thumbprint;
+
         /// <summary>
         /// default ctor
         /// </summary>
@@ -25,18 +28,41 @@ namespace Microsoft.Azure.Devices
         /// Gets or sets the <see cref="SymmetricKey"/> used for Authentication
         /// </summary>
         [JsonProperty(PropertyName = "symmetricKey")]
-        public SymmetricKey SymmetricKey { get; set; }
+        public SymmetricKey SymmetricKey
+        {
+            get { return this.symmetricKey; }
+            set
+            {
+                this.symmetricKey = value;
+                if (value != null)
+                {
+                    this.Type = AuthenticationType.Sas;
+                }
+            }
+        }
 
         /// <summary>
         /// X509 client certificate thumbprints
         /// </summary>
         [JsonProperty(PropertyName = "x509Thumbprint")]
-        public X509Thumbprint X509Thumbprint { get; set; }
+        public X509Thumbprint X509Thumbprint
+        {
+            get { return this.x509Thumbprint; }
+            set
+            {
+                this.x509Thumbprint = value;
+                if (value != null)
+                {
+                    this.Type = AuthenticationType.SelfSigned;
+                }
+            }
+        }
 
         /// <summary>
         /// Gets or sets the authentication type
         /// </summary>
-        [JsonProperty(PropertyName = "type")]
+        [DefaultValue(AuthenticationType.Sas)]
+        [JsonProperty(PropertyName = "type", DefaultValueHandling = DefaultValueHandling.Populate)]
         public AuthenticationType Type { get; set; }
     }
 }

@@ -132,9 +132,9 @@ namespace Microsoft.Azure.Devices
 
         async Task<QueryResult> GetNextAsync(QueryOptions options)
         {
-            this.newQuery = false;
             QueryResult result = await this.queryTaskFunc(!string.IsNullOrWhiteSpace(options?.ContinuationToken) ? options.ContinuationToken : this.continuationToken);
             this.continuationToken = result.ContinuationToken;
+            this.newQuery = false;
             return result;
         }
     }

@@ -24,16 +24,39 @@ namespace Microsoft.Azure.Devices.Shared
         private JObject _metadata;
 
         /// <summary>
-        /// Creates instance of <see cref="TwinCollection"/>
+        /// Creates instance of <see cref="TwinCollection"/>.
         /// </summary>
         public TwinCollection()
-            : this(null)
+            : this((JObject)null)
         {
         }
 
-        internal TwinCollection(JObject jObject)
+        /// <summary>
+        /// Creates a <see cref="TwinCollection"/> using a JSON fragment as the body.
+        /// </summary>
+        /// <param name="twinJson">JSON fragment containing the twin data.</param>
+        public TwinCollection(string twinJson)
+            : this(JObject.Parse(twinJson))
         {
-            _jObject = jObject ?? new JObject();
+        }
+
+        /// <summary>
+        /// Creates a <see cref="TwinCollection"/> using the given JSON fragments for the body and metadata.
+        /// </summary>
+        /// <param name="twinJson">JSON fragment containing the twin data.</param>
+        /// <param name="metadataJson">JSON fragment containing the metadata.</param>
+        public TwinCollection(string twinJson, string metadataJson)
+            : this(JObject.Parse(twinJson), JObject.Parse(metadataJson))
+        {
+        }
+
+        /// <summary>
+        /// Creates a <see cref="TwinCollection"/> using a JSON fragment as the body.
+        /// </summary>
+        /// <param name="twinJson">JSON fragment containing the twin data.</param>
+        internal TwinCollection(JObject twinJson)
+        {
+            _jObject = twinJson ?? new JObject();
 
             JToken metadataJToken;
             if (_jObject.TryGetValue(MetadataName, out metadataJToken))
@@ -42,10 +65,15 @@ namespace Microsoft.Azure.Devices.Shared
             }
         }
 
-        private TwinCollection(JObject jObject, JObject metadata)
+        /// <summary>
+        /// Creates a <see cref="TwinCollection"/> using the given JSON fragments for the body and metadata.
+        /// </summary>
+        /// <param name="twinJson">JSON fragment containing the twin data.</param>
+        /// <param name="metadataJson">JSON fragment containing the metadata.</param>
+        public TwinCollection(JObject twinJson, JObject metadataJson)
         {
-            _jObject = jObject ?? new JObject();
-            _metadata = metadata;
+            _jObject = twinJson ?? new JObject();
+            _metadata = metadataJson;
         }
 
         /// <summary>
