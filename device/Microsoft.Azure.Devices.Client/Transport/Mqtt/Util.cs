@@ -188,7 +188,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             int length = (int)streamLength;
             IByteBuffer buffer = context.Channel.Allocator.Buffer(length, length);
-            await buffer.WriteBytesAsync(payloadStream, length);
+            await buffer.WriteBytesAsync(payloadStream, length).ConfigureAwait(false);
             Contract.Assert(buffer.ReadableBytes == length);
 
             packet.Payload = buffer;
@@ -199,7 +199,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             try
             {
-                await context.WriteAndFlushAsync(message);
+                await context.WriteAndFlushAsync(message).ConfigureAwait(false);
             }
             catch (Exception ex)
             {

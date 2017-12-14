@@ -821,6 +821,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             {
                 throw Fx.Exception.ArgumentNull("messages");
             }
+
             // Codes_SRS_DEVICECLIENT_28_019: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication or quota exceed) occurs.]
             return ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.SendEventAsync(messages, operationTimeoutCancellationToken));
         }
@@ -834,13 +835,19 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                     .WithTimeout(TimeSpan.MaxValue, () => Resources.OperationTimeoutExpired, cancellationTokenSource.Token);
             }
 
-            CancellationTokenSource operationTimeoutCancellationTokenSource = new CancellationTokenSource();
+            CancellationTokenSource operationTimeoutCancellationTokenSource = GetOperationTimeoutCancellationTokenSource();
 
             var result = operation(operationTimeoutCancellationTokenSource)
                 .WithTimeout(TimeSpan.FromMilliseconds(OperationTimeoutInMilliseconds), () => Resources.OperationTimeoutExpired, operationTimeoutCancellationTokenSource.Token);
-
+            
             return result.ContinueWith(t => {
                 operationTimeoutCancellationTokenSource.Dispose();
+
+                if (t.IsCanceled)
+                {
+                    throw new TimeoutException(Resources.OperationTimeoutExpired);
+                }
+
                 if (t.IsFaulted)
                 {
                     throw t.Exception.InnerException;
@@ -856,7 +863,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                     .WithTimeout(TimeSpan.MaxValue, () => Resources.OperationTimeoutExpired, CancellationToken.None);
             }
 
-            CancellationTokenSource operationTimeoutCancellationTokenSource = new CancellationTokenSource();
+            CancellationTokenSource operationTimeoutCancellationTokenSource = GetOperationTimeoutCancellationTokenSource();
 
             var result = operation(operationTimeoutCancellationTokenSource.Token)
                 .WithTimeout(TimeSpan.FromMilliseconds(OperationTimeoutInMilliseconds), () => Resources.OperationTimeoutExpired, operationTimeoutCancellationTokenSource.Token);
@@ -864,9 +871,18 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             return result.ContinueWith(t =>
             {
                 operationTimeoutCancellationTokenSource.Dispose();
-                if (t.IsFaulted)
+
+                if (t.IsCanceled)
+                {
+                    throw new TimeoutException(Resources.OperationTimeoutExpired);
+                }
+                else if (t.IsFaulted)
                 {
                     throw t.Exception.InnerException;
+                }
+                else
+                {
+
                 }
             });
         }
@@ -879,7 +895,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                     .WithTimeout(TimeSpan.MaxValue, () => Resources.OperationTimeoutExpired, CancellationToken.None);
             }
 
-            CancellationTokenSource operationTimeoutCancellationTokenSource = new CancellationTokenSource();
+            CancellationTokenSource operationTimeoutCancellationTokenSource = GetOperationTimeoutCancellationTokenSource();
 
             var result = operation(operationTimeoutCancellationTokenSource.Token)
                 .WithTimeout(TimeSpan.FromMilliseconds(OperationTimeoutInMilliseconds), () => Resources.OperationTimeoutExpired, operationTimeoutCancellationTokenSource.Token);
@@ -887,6 +903,12 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             return result.ContinueWith(t =>
             {
                 operationTimeoutCancellationTokenSource.Dispose();
+
+                if (t.IsCanceled)
+                {
+                    throw new TimeoutException(Resources.OperationTimeoutExpired);
+                }
+
                 if (t.IsFaulted)
                 {
                     throw t.Exception.InnerException;
@@ -903,7 +925,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                     .WithTimeout(TimeSpan.MaxValue, () => Resources.OperationTimeoutExpired, CancellationToken.None);
             }
 
-            CancellationTokenSource operationTimeoutCancellationTokenSource = new CancellationTokenSource();
+            CancellationTokenSource operationTimeoutCancellationTokenSource = GetOperationTimeoutCancellationTokenSource();
 
             var result = operation(operationTimeoutCancellationTokenSource.Token)
                 .WithTimeout(TimeSpan.FromMilliseconds(OperationTimeoutInMilliseconds), () => Resources.OperationTimeoutExpired, operationTimeoutCancellationTokenSource.Token);
@@ -911,6 +933,12 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             return result.ContinueWith(t =>
             {
                 operationTimeoutCancellationTokenSource.Dispose();
+
+                if (t.IsCanceled)
+                {
+                    throw new TimeoutException(Resources.OperationTimeoutExpired);
+                }
+
                 if (t.IsFaulted)
                 {
                     throw t.Exception.InnerException;
@@ -980,12 +1008,12 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         {
             try
             {
-                await methodsDictionarySemaphore.WaitAsync();
+                await methodsDictionarySemaphore.WaitAsync().ConfigureAwait(false);
 
                 if (methodHandler != null)
                 {
                     // codes_SRS_DEVICECLIENT_10_005: [ It shall EnableMethodsAsync when called for the first time. ]
-                    await this.EnableMethodAsync();
+                    await this.EnableMethodAsync().ConfigureAwait(false);
 
                     // codes_SRS_DEVICECLIENT_10_001: [ It shall lazy-initialize the deviceMethods property. ]
                     if (this.deviceMethods == null)
@@ -1009,7 +1037,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                         }
 
                         // codes_SRS_DEVICECLIENT_10_006: [ It shall DisableMethodsAsync when the last delegate has been removed. ]
-                        await this.DisableMethodAsync();
+                        await this.DisableMethodAsync().ConfigureAwait(false);
                     }
                 }
             }
@@ -1029,11 +1057,11 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         {
             try
             {
-                await methodsDictionarySemaphore.WaitAsync();
+                await methodsDictionarySemaphore.WaitAsync().ConfigureAwait(false);
                 if (methodHandler != null)
                 {
                     // codes_SRS_DEVICECLIENT_10_005: [ It shall EnableMethodsAsync when called for the first time. ]
-                    await this.EnableMethodAsync();
+                    await this.EnableMethodAsync().ConfigureAwait(false);
 
                     // codes_SRS_DEVICECLIENT_24_001: [ If the default callback has already been set, it is replaced with the new callback. ]
                     this.deviceDefaultMethodCallback = new Tuple<MethodCallback, object>(methodHandler, userContext);
@@ -1043,7 +1071,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                     this.deviceDefaultMethodCallback = null;
 
                     // codes_SRS_DEVICECLIENT_10_006: [ It shall DisableMethodsAsync when the last delegate has been removed. ]
-                    await this.DisableMethodAsync();
+                    await this.DisableMethodAsync().ConfigureAwait(false);
                 }
             }
             finally
@@ -1150,9 +1178,12 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                             this.connectionStatusChangesHandler(e.ConnectionStatus, e.ConnectionStatusChangeReason);
                         }
 
-                        CancellationTokenSource linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(result.StatusChangeCancellationTokenSource.Token, operationTimeoutCancellationTokenSource.Token);
-                        await this.InnerHandler.RecoverConnections(sender, e.ConnectionType, linkedTokenSource.Token);
-                    });
+                        using (CancellationTokenSource linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(result.StatusChangeCancellationTokenSource.Token, operationTimeoutCancellationTokenSource.Token))
+                        {
+                            await this.InnerHandler.RecoverConnections(sender, e.ConnectionType, linkedTokenSource.Token).ConfigureAwait(false);
+                        }
+
+                    }).ConfigureAwait(false);
                 }
                 catch (Exception)
                 {
@@ -1187,7 +1218,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                 MethodResponseInternal methodResponseInternal;
                 byte[] requestData = methodRequestInternal.GetBytes();
 
-                await methodsDictionarySemaphore.WaitAsync();
+                await methodsDictionarySemaphore.WaitAsync().ConfigureAwait(false);
                 try
                 {
                     Utils.ValidateDataIsEmptyOrJson(requestData);                    
@@ -1201,7 +1232,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                 {
                     // codes_SRS_DEVICECLIENT_28_020: [ If the given methodRequestInternal data is not valid json, respond with status code 400 (BAD REQUEST) ]
                     methodResponseInternal = new MethodResponseInternal(methodRequestInternal.RequestId, (int)MethodResposeStatusCode.BadRequest);
-                    await this.SendMethodResponseAsync(methodResponseInternal);
+                    await this.SendMethodResponseAsync(methodResponseInternal).ConfigureAwait(false);
                     return;
                 }
                 finally
@@ -1215,7 +1246,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                     {
                         // codes_SRS_DEVICECLIENT_10_011: [ The OnMethodCalled shall invoke the specified delegate. ]
                         // codes_SRS_DEVICECLIENT_24_002: [ The OnMethodCalled shall invoke the default delegate if there is no specified delegate for that method. ]
-                        MethodResponse rv = await m.Item1(new MethodRequest(methodRequestInternal.Name, requestData), m.Item2);
+                        MethodResponse rv = await m.Item1(new MethodRequest(methodRequestInternal.Name, requestData), m.Item2).ConfigureAwait(false);
 
                         // codes_SRS_DEVICECLIENT_03_012: [If the MethodResponse does not contain result, the MethodResponseInternal constructor shall be invoked with no results.]
                         if (rv.Result == null)
@@ -1239,7 +1270,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                     // codes_SRS_DEVICECLIENT_10_013: [ If the given method does not have an associated delegate and no default delegate was registered, respond with status code 501 (METHOD NOT IMPLEMENTED) ]
                     methodResponseInternal = new MethodResponseInternal(methodRequestInternal.RequestId, (int)MethodResposeStatusCode.MethodNotImplemented);
                 }
-                await this.SendMethodResponseAsync(methodResponseInternal);
+                await this.SendMethodResponseAsync(methodResponseInternal).ConfigureAwait(false);
             }
         }
 
@@ -1382,7 +1413,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                 // Codes_SRS_DEVICECLIENT_18_004: `SetDesiredPropertyUpdateCallbackAsync` shall not call the transport to register for PATCHes on subsequent calls
                 if (!this.patchSubscribedWithService)
                 {
-                    await this.InnerHandler.EnableTwinPatchAsync(operationTimeoutCancellationToken);
+                    await this.InnerHandler.EnableTwinPatchAsync(operationTimeoutCancellationToken).ConfigureAwait(false);
                     patchSubscribedWithService = true;
                 }
 
@@ -1400,7 +1431,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             return ApplyTimeoutTwin(async operationTimeoutCancellationToken =>
             {
                 // Codes_SRS_DEVICECLIENT_18_001: `GetTwinAsync` shall call `SendTwinGetAsync` on the transport to get the twin state
-                return await this.InnerHandler.SendTwinGetAsync(operationTimeoutCancellationToken);
+                return await this.InnerHandler.SendTwinGetAsync(operationTimeoutCancellationToken).ConfigureAwait(false);
             });
         }
 
@@ -1418,7 +1449,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             return ApplyTimeout(async operationTimeoutCancellationToken =>
             {
                 // Codes_SRS_DEVICECLIENT_18_002: `UpdateReportedPropertiesAsync` shall call `SendTwinPatchAsync` on the transport to update the reported properties
-                 await this.InnerHandler.SendTwinPatchAsync(reportedProperties, operationTimeoutCancellationToken);
+                 await this.InnerHandler.SendTwinPatchAsync(reportedProperties, operationTimeoutCancellationToken).ConfigureAwait(false);
             });
         }
 
@@ -1435,7 +1466,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         {
             if (this.deviceMethods == null && this.deviceDefaultMethodCallback == null)
             {
-                await ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.EnableMethodsAsync(operationTimeoutCancellationToken));
+                await ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.EnableMethodsAsync(operationTimeoutCancellationToken)).ConfigureAwait(false);
             }
         }
 
@@ -1443,7 +1474,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         {
             if (this.deviceMethods == null && this.deviceDefaultMethodCallback == null)
             {
-                await ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.DisableMethodsAsync(operationTimeoutCancellationToken));
+                await ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.DisableMethodsAsync(operationTimeoutCancellationToken)).ConfigureAwait(false);
             }
         }
     }

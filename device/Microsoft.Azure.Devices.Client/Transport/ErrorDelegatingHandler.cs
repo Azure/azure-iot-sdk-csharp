@@ -12,6 +12,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
     using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Azure.Devices.Client.Extensions;
     using Microsoft.Azure.Devices.Shared;
+    using System.Diagnostics;
 
     sealed class ErrorDelegatingHandler : DefaultDelegatingHandler
     {
@@ -50,6 +51,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task OpenAsync(bool explicitOpen, CancellationToken cancellationToken)
         {
+            Debug.WriteLine("ErrorDelegatingHandler.OpenAsync()");
+
+            cancellationToken.ThrowIfCancellationRequested();
+
             TaskCompletionSource<int> openCompletionBeforeOperationStarted = Volatile.Read(ref this.openCompletion);
             if (openCompletionBeforeOperationStarted == null)
             {
@@ -61,12 +66,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     this.InnerHandler = handlerBeforeOperationStarted;
                     try
                     {
-                        await this.ExecuteWithErrorHandlingAsync(() => base.OpenAsync(explicitOpen, cancellationToken), false, cancellationToken);
+                        await this.ExecuteWithErrorHandlingAsync(() => base.OpenAsync(explicitOpen, cancellationToken), false, cancellationToken).ConfigureAwait(false);
                         openCompletionBeforeOperationStarted.TrySetResult(0);
                     }
                     catch (Exception ex) when (IsTransportHandlerStillUsable(ex))
                     {
-                        await this.Reset(openCompletionBeforeOperationStarted, handlerBeforeOperationStarted);
+                        await this.Reset(openCompletionBeforeOperationStarted, handlerBeforeOperationStarted).ConfigureAwait(false);
                         throw;
                     }
                     catch (Exception ex) when (!ex.IsFatal())
@@ -76,12 +81,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 }
                 else
                 {
-                    await currentOpenPromise.Task;
+                    await currentOpenPromise.Task.ConfigureAwait(false);
                 }
             }
             else
             {
-                await openCompletionBeforeOperationStarted.Task;
+                await openCompletionBeforeOperationStarted.Task.ConfigureAwait(false);
             }
         }
 
@@ -157,22 +162,26 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         Task ExecuteWithErrorHandlingAsync(Func<Task> asyncOperation, bool ensureOpen, CancellationToken cancellationToken)
         {
-            return ExecuteWithErrorHandlingAsync(async () => { await asyncOperation(); return 0; }, ensureOpen, cancellationToken);
+            return ExecuteWithErrorHandlingAsync(async () => { await asyncOperation().ConfigureAwait(false); return 0; }, ensureOpen, cancellationToken);
         }
 
         async Task<T> ExecuteWithErrorHandlingAsync<T>(Func<Task<T>> asyncOperation, bool ensureOpen, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             if (ensureOpen)
             {
-                await this.EnsureOpenAsync(cancellationToken);
+                await this.EnsureOpenAsync(cancellationToken).ConfigureAwait(false);
             }
 
             TaskCompletionSource<int> openCompletionBeforeOperationStarted = Volatile.Read(ref this.openCompletion);
             IDelegatingHandler handlerBeforeOperationStarted = this.InnerHandler;
 
+            cancellationToken.ThrowIfCancellationRequested();
+
             try
             {
-                return await asyncOperation();
+                return await asyncOperation().ConfigureAwait(false);
             }
             catch (Exception ex) when (!ex.IsFatal())
             {
@@ -186,7 +195,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         }
                         throw new IotHubClientTransientException("Transient error occured, please retry.", ex);
                     }
-                    await this.Reset(openCompletionBeforeOperationStarted, handlerBeforeOperationStarted);
+                    await this.Reset(openCompletionBeforeOperationStarted, handlerBeforeOperationStarted).ConfigureAwait(false);
                     if (ex is IotHubClientTransientException)
                     {
                         throw;
@@ -195,7 +204,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 }
                 else
                 {
-                    await this.Reset(openCompletionBeforeOperationStarted, handlerBeforeOperationStarted);
+                    await this.Reset(openCompletionBeforeOperationStarted, handlerBeforeOperationStarted).ConfigureAwait(false);
                     throw;
                 }
             }
@@ -222,7 +231,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 if (Interlocked.CompareExchange(ref this.openCompletion, null, openCompletionBeforeOperationStarted) == openCompletionBeforeOperationStarted)
                 {
-                    await Cleanup(handlerBeforeOperationStarted);
+                    await Cleanup(handlerBeforeOperationStarted).ConfigureAwait(false);
                 }
             }
         }
@@ -233,7 +242,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 if (handler != null)
                 {
-                    await handler.CloseAsync();
+                    await handler.CloseAsync().ConfigureAwait(false);
                 }
             }
             catch (Exception ex) when (!ex.IsFatal())

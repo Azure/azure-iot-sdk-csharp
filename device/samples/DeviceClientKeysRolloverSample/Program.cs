@@ -42,8 +42,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
             {
                 deviceClient = DeviceClient.CreateFromConnectionString(DeviceConnectionString);
 
-                //await SendEvent(deviceClient);
-                await ReceiveCommands(deviceClient);
+                //await SendEvent(deviceClient).ConfigureAwait(false);
+                await ReceiveCommands(deviceClient).ConfigureAwait(false);
             }
             catch (UnauthorizedException ex)
             {
@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 {
                     isRollOverInvoked = true;
                     DeviceConnectionString = DeviceConnectionString2;
-                    await MainAsync();
+                    await MainAsync().ConfigureAwait(false);
                 }
                 else
                 {
@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     Message eventMessage = new Message(Encoding.UTF8.GetBytes(dataBuffer));
                     Console.WriteLine("\t{0}> Sending message: {1}, Data: [{2}]", DateTime.Now.ToLocalTime(), count, dataBuffer);
 
-                    await deviceClient.SendEventAsync(eventMessage);
+                    await deviceClient.SendEventAsync(eventMessage).ConfigureAwait(false);
                 }
 
             }
@@ -95,7 +95,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
                 while (true)
                 {
-                    receivedMessage = await deviceClient.ReceiveAsync(TimeSpan.FromSeconds(1));
+                    receivedMessage = await deviceClient.ReceiveAsync(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
 
                     if (receivedMessage != null)
                     {
@@ -108,7 +108,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                             Console.WriteLine("\t\tProperty[{0}> Key={1} : Value={2}", propCount++, prop.Key, prop.Value);
                         }
 
-                        await deviceClient.CompleteAsync(receivedMessage);
+                        await deviceClient.CompleteAsync(receivedMessage).ConfigureAwait(false);
                     }
                 }
             }

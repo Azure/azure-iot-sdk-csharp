@@ -108,9 +108,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     HttpMethod.Get,
                     new Uri(this.baseAddress, requestUri),
                     (requestMsg, token) => AddCustomHeaders(requestMsg, customHeaders),
-                    async (message, token) => result = await ReadResponseMessageAsync<T>(message, token),
+                    async (message, token) => result = await ReadResponseMessageAsync<T>(message, token).ConfigureAwait(false),
                     errorMappingOverrides,
-                    cancellationToken);
+                    cancellationToken).ConfigureAwait(false);
             }
             else
             {
@@ -119,9 +119,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
                    new Uri(this.baseAddress, requestUri),
                    (requestMsg, token) => AddCustomHeaders(requestMsg, customHeaders),
                    message => message.IsSuccessStatusCode || message.StatusCode == HttpStatusCode.NotFound,
-                   async (message, token) => result = message.StatusCode == HttpStatusCode.NotFound ? (default(T)) : await ReadResponseMessageAsync<T>(message, token),
+                   async (message, token) => result = message.StatusCode == HttpStatusCode.NotFound ? (default(T)) : await ReadResponseMessageAsync<T>(message, token).ConfigureAwait(false),
                    errorMappingOverrides,
-                   cancellationToken);
+                   cancellationToken).ConfigureAwait(false);
             }
 
             return result;
@@ -152,9 +152,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         requestMsg.Content = CreateContent(entity);
                         return Task.FromResult(0);
                     },
-                    async (httpClient, token) => result = await ReadResponseMessageAsync<T>(httpClient, token),
+                    async (httpClient, token) => result = await ReadResponseMessageAsync<T>(httpClient, token).ConfigureAwait(false),
                     errorMappingOverrides,
-                    cancellationToken);
+                    cancellationToken).ConfigureAwait(false);
 
             return result;
 #endif
@@ -169,10 +169,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
 #if PCL
             //Need to check if ReadAsAsync works for PCL.
-            await message.Content.ReadAsStreamAsync();
+            await message.Content.ReadAsStreamAsync().ConfigureAwait(false);
             throw new NotImplementedException();
 #else
-            T entity = await ReadAsAsync<T>(message.Content, token);
+            T entity = await ReadAsAsync<T>(message.Content, token).ConfigureAwait(false);
 
             // Etag in the header is considered authoritative
             var eTagHolder = entity as IETagHolder;
@@ -314,8 +314,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 entity,
                 errorMappingOverrides,
                 customHeaders,
-                async (message, token) => result = await ReadResponseMessageAsync<T2>(message, token),
-                cancellationToken);
+                async (message, token) => result = await ReadResponseMessageAsync<T2>(message, token).ConfigureAwait(false),
+                cancellationToken).ConfigureAwait(false);
 
             return result;
         }
@@ -420,13 +420,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                 msg.Headers.UserAgent.ParseAdd(this.productInfo.ToString());
 
-                if (modifyRequestMessageAsync != null) await modifyRequestMessageAsync(msg, cancellationToken);
+                if (modifyRequestMessageAsync != null) await modifyRequestMessageAsync(msg, cancellationToken).ConfigureAwait(false);
 
                 // TODO: pradeepc - find out the list of exceptions that HttpClient can throw.
                 HttpResponseMessage responseMsg;
                 try
                 {
-                    responseMsg = await this.httpClientObj.SendAsync(msg, cancellationToken);
+                    responseMsg = await this.httpClientObj.SendAsync(msg, cancellationToken).ConfigureAwait(false);
                     if (responseMsg == null)
                     {
                         throw new InvalidOperationException("The response message was null when executing operation {0}.".FormatInvariant(httpMethod));
@@ -436,7 +436,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     {
                         if (processResponseMessageAsync != null)
                         {
-                            await processResponseMessageAsync(responseMsg, cancellationToken);
+                            await processResponseMessageAsync(responseMsg, cancellationToken).ConfigureAwait(false);
                         }
                     }
                 }
@@ -488,7 +488,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                 if (!isSuccessful(responseMsg))
                 {
-                    Exception mappedEx = await MapToExceptionAsync(responseMsg, mergedErrorMapping);
+                    Exception mappedEx = await MapToExceptionAsync(responseMsg, mergedErrorMapping).ConfigureAwait(false);
                     throw mappedEx;
                 }
             }
@@ -502,13 +502,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (!errorMapping.TryGetValue(response.StatusCode, out func))
             {
                 return new IotHubException(
-                    await ExceptionHandlingHelper.GetExceptionMessageAsync(response),
+                    await ExceptionHandlingHelper.GetExceptionMessageAsync(response).ConfigureAwait(false),
                     isTransient: true);
             }
 
             var mapToExceptionFunc = errorMapping[response.StatusCode];
             var exception = mapToExceptionFunc(response);
-            return await exception;
+            return await exception.ConfigureAwait(false);
         }
 
         public void Dispose()

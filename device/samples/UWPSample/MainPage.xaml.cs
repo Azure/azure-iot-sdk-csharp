@@ -6,6 +6,7 @@ using Windows.ApplicationModel.Core;
 using Windows.UI.Core;
 using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
@@ -128,32 +129,32 @@ namespace Microsoft.Azure.Devices.Client.Samples
                     }
                 }
                 this.client = new IoTClient(protocol, CallMeLogger, GetDeviceNameLogger, ErrorHandler);
-                this.client.Start();
+                await this.client.Start();
             }
         }
 
         int callMeCounter = 0;
         int getDeviceNameCounter = 0;
 
-        private void CallMeLogger(object element)
+        private async void CallMeLogger(object element)
         {
-            AddItemToListBox(methodCallList, string.Format("[{0}] {1}", callMeCounter++, element));
+            await AddItemToListBox(methodCallList, string.Format("[{0}] {1}", callMeCounter++, element));
         }
 
-        private void GetDeviceNameLogger(object element)
+        private async void GetDeviceNameLogger(object element)
         {
-            AddItemToListBox(getDeviceNameList, string.Format("[{0}] {1}", getDeviceNameCounter++, element));
+            await AddItemToListBox(getDeviceNameList, string.Format("[{0}] {1}", getDeviceNameCounter++, element));
         }
 
-        private void ErrorHandler(object element)
+        private async void ErrorHandler(object element)
         {
-            AddItemToListBox(methodCallList, element.ToString());
-            AddItemToListBox(getDeviceNameList, element.ToString());
+            await AddItemToListBox(methodCallList, element.ToString());
+            await AddItemToListBox(getDeviceNameList, element.ToString());
         }
 
-        private void AddItemToListBox(ListBox list, string item)
+        private async Task AddItemToListBox(ListBox list, string item)
         {
-            CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
+            await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
                 () =>
                 {
                     list.Items.Add(item);

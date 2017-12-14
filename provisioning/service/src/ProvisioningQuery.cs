@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <returns></returns>
         public async Task<IEnumerable<string>> GetNextAsJsonAsync()
         {
-            return await this.GetNextAsJsonAsync(null);
+            return await this.GetNextAsJsonAsync(null).ConfigureAwait(false);
         }
 
         public async Task<QueryResponse<string>> GetNextAsJsonAsync(QueryOptions options)
@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             }
             else
             {
-                ProvisioningQueryResult r = await this.GetNextAsync(options);
+                ProvisioningQueryResult r = await this.GetNextAsync(options).ConfigureAwait(false);
                 response = r.Items.Select(o => o.ToString());
             }
 
@@ -60,13 +60,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         public async Task<IEnumerable<Enrollment>> GetNextAsEnrollmentAsync()
         {
-            return await this.GetNextAsEnrollmentAsync(null);
+            return await this.GetNextAsEnrollmentAsync(null).ConfigureAwait(false);
         }
 
         public async Task<QueryResponse<Enrollment>> GetNextAsEnrollmentAsync(QueryOptions options)
         {
             IEnumerable<Enrollment> results = this.HasMoreResults
-                ? await this.GetAndCastNextResultAsync<Enrollment>(ProvisioningQueryResultType.Enrollment, options)
+                ? await this.GetAndCastNextResultAsync<Enrollment>(ProvisioningQueryResultType.Enrollment, options).ConfigureAwait(false)
                 : new List<Enrollment>();
 
             return new QueryResponse<Enrollment>(results, this.continuationToken);
@@ -74,13 +74,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         public async Task<IEnumerable<EnrollmentGroup>> GetNextAsEnrollmentGroupAsync()
         {
-            return await this.GetNextAsEnrollmentGroupAsync(null);
+            return await this.GetNextAsEnrollmentGroupAsync(null).ConfigureAwait(false);
         }
 
         public async Task<QueryResponse<EnrollmentGroup>> GetNextAsEnrollmentGroupAsync(QueryOptions options)
         {
             IEnumerable<EnrollmentGroup> results = this.HasMoreResults
-                ? await this.GetAndCastNextResultAsync<EnrollmentGroup>(ProvisioningQueryResultType.EnrollmentGroup, options)
+                ? await this.GetAndCastNextResultAsync<EnrollmentGroup>(ProvisioningQueryResultType.EnrollmentGroup, options).ConfigureAwait(false)
                 : new List<EnrollmentGroup>();
 
             return new QueryResponse<EnrollmentGroup>(results, this.continuationToken);
@@ -88,13 +88,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         public async Task<IEnumerable<RegistrationStatus>> GetNextAsRegistrationStatusAsync()
         {
-            return await this.GetNextAsRegistrationStatusAsync(null);
+            return await this.GetNextAsRegistrationStatusAsync(null).ConfigureAwait(false);
         }
 
         public async Task<QueryResponse<RegistrationStatus>> GetNextAsRegistrationStatusAsync(QueryOptions options)
         {
             IEnumerable<RegistrationStatus> results = this.HasMoreResults
-                ? await this.GetAndCastNextResultAsync<RegistrationStatus>(ProvisioningQueryResultType.DeviceRegistration, options)
+                ? await this.GetAndCastNextResultAsync<RegistrationStatus>(ProvisioningQueryResultType.DeviceRegistration, options).ConfigureAwait(false)
                 : new List<RegistrationStatus>();
 
             return new QueryResponse<RegistrationStatus>(results, this.continuationToken);
@@ -102,7 +102,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         async Task<IEnumerable<T>> GetAndCastNextResultAsync<T>(ProvisioningQueryResultType type, QueryOptions options)
         {
-            ProvisioningQueryResult r = await this.GetNextAsync(options);
+            ProvisioningQueryResult r = await this.GetNextAsync(options).ConfigureAwait(false);
             return CastResultContent<T>(r, type);
         }
 
@@ -120,7 +120,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         async Task<ProvisioningQueryResult> GetNextAsync(QueryOptions options)
         {
             this.newQuery = false;
-            ProvisioningQueryResult result = await this.queryTaskFunc(!string.IsNullOrWhiteSpace(options?.ContinuationToken) ? options.ContinuationToken : this.continuationToken);
+            ProvisioningQueryResult result = await this.queryTaskFunc(!string.IsNullOrWhiteSpace(options?.ContinuationToken) ? options.ContinuationToken : this.continuationToken).ConfigureAwait(false);
             this.continuationToken = result.ContinuationToken;
             return result;
         }
