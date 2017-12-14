@@ -167,6 +167,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         async Task<T> ExecuteWithErrorHandlingAsync<T>(Func<Task<T>> asyncOperation, bool ensureOpen, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             if (ensureOpen)
             {
                 await this.EnsureOpenAsync(cancellationToken).ConfigureAwait(false);
@@ -174,6 +176,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             TaskCompletionSource<int> openCompletionBeforeOperationStarted = Volatile.Read(ref this.openCompletion);
             IDelegatingHandler handlerBeforeOperationStarted = this.InnerHandler;
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             try
             {

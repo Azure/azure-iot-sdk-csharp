@@ -360,7 +360,7 @@ namespace Microsoft.Azure.Devices.Client
                 return;
             }
 
-            using (var delayCts = new CancellationTokenSource())
+            using (var delayCts = CancellationTokenSource.CreateLinkedTokenSource(token))
             {
                 if (task == await Task.WhenAny(task, Task.Delay(timeout, delayCts.Token)).ConfigureAwait(false))
                 {
@@ -368,11 +368,6 @@ namespace Microsoft.Azure.Devices.Client
                     await task.ConfigureAwait(false);
                     return;
                 }
-            }
-
-            using (var operationCts = CancellationTokenSource.CreateLinkedTokenSource(token))
-            {
-                operationCts.Cancel();
             }
         }
 
@@ -394,7 +389,7 @@ namespace Microsoft.Azure.Devices.Client
                 return;
             }
 
-            using (var delayCts = new CancellationTokenSource())
+            using (var delayCts = CancellationTokenSource.CreateLinkedTokenSource(token))
             {
                 if (task == await Task.WhenAny(task, Task.Delay(timeout, delayCts.Token)).ConfigureAwait(false))
                 {
@@ -402,11 +397,6 @@ namespace Microsoft.Azure.Devices.Client
                     await task.ConfigureAwait(false);
                     return;
                 }
-            }
-
-            using (var operationCts = CancellationTokenSource.CreateLinkedTokenSource(token))
-            {
-                operationCts.Cancel();
             }
 
             throw new TimeoutException(errorMessage());
@@ -429,18 +419,13 @@ namespace Microsoft.Azure.Devices.Client
                 return await task.ConfigureAwait(false);
             }
 
-            using (var delayCts = new CancellationTokenSource())
+            using (var delayCts = CancellationTokenSource.CreateLinkedTokenSource(token))
             {
                 if (task == await Task.WhenAny(task, Task.Delay(timeout, delayCts.Token)).ConfigureAwait(false))
                 {
                     delayCts.Cancel();
                     return await task.ConfigureAwait(false);
                 }
-            }
-
-            using (var operationCts = CancellationTokenSource.CreateLinkedTokenSource(token))
-            {
-                operationCts.Cancel();
             }
 
             throw new TimeoutException(errorMessage());

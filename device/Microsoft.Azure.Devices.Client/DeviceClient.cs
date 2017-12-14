@@ -835,13 +835,19 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                     .WithTimeout(TimeSpan.MaxValue, () => Resources.OperationTimeoutExpired, cancellationTokenSource.Token);
             }
 
-            CancellationTokenSource operationTimeoutCancellationTokenSource = new CancellationTokenSource();
+            CancellationTokenSource operationTimeoutCancellationTokenSource = GetOperationTimeoutCancellationTokenSource();
 
             var result = operation(operationTimeoutCancellationTokenSource)
                 .WithTimeout(TimeSpan.FromMilliseconds(OperationTimeoutInMilliseconds), () => Resources.OperationTimeoutExpired, operationTimeoutCancellationTokenSource.Token);
-
+            
             return result.ContinueWith(t => {
                 operationTimeoutCancellationTokenSource.Dispose();
+
+                if (t.IsCanceled)
+                {
+                    throw new TimeoutException(Resources.OperationTimeoutExpired);
+                }
+
                 if (t.IsFaulted)
                 {
                     throw t.Exception.InnerException;
@@ -857,7 +863,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                     .WithTimeout(TimeSpan.MaxValue, () => Resources.OperationTimeoutExpired, CancellationToken.None);
             }
 
-            CancellationTokenSource operationTimeoutCancellationTokenSource = new CancellationTokenSource();
+            CancellationTokenSource operationTimeoutCancellationTokenSource = GetOperationTimeoutCancellationTokenSource();
 
             var result = operation(operationTimeoutCancellationTokenSource.Token)
                 .WithTimeout(TimeSpan.FromMilliseconds(OperationTimeoutInMilliseconds), () => Resources.OperationTimeoutExpired, operationTimeoutCancellationTokenSource.Token);
@@ -865,9 +871,18 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             return result.ContinueWith(t =>
             {
                 operationTimeoutCancellationTokenSource.Dispose();
-                if (t.IsFaulted)
+
+                if (t.IsCanceled)
+                {
+                    throw new TimeoutException(Resources.OperationTimeoutExpired);
+                }
+                else if (t.IsFaulted)
                 {
                     throw t.Exception.InnerException;
+                }
+                else
+                {
+
                 }
             });
         }
@@ -880,7 +895,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                     .WithTimeout(TimeSpan.MaxValue, () => Resources.OperationTimeoutExpired, CancellationToken.None);
             }
 
-            CancellationTokenSource operationTimeoutCancellationTokenSource = new CancellationTokenSource();
+            CancellationTokenSource operationTimeoutCancellationTokenSource = GetOperationTimeoutCancellationTokenSource();
 
             var result = operation(operationTimeoutCancellationTokenSource.Token)
                 .WithTimeout(TimeSpan.FromMilliseconds(OperationTimeoutInMilliseconds), () => Resources.OperationTimeoutExpired, operationTimeoutCancellationTokenSource.Token);
@@ -888,6 +903,12 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             return result.ContinueWith(t =>
             {
                 operationTimeoutCancellationTokenSource.Dispose();
+
+                if (t.IsCanceled)
+                {
+                    throw new TimeoutException(Resources.OperationTimeoutExpired);
+                }
+
                 if (t.IsFaulted)
                 {
                     throw t.Exception.InnerException;
@@ -904,7 +925,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                     .WithTimeout(TimeSpan.MaxValue, () => Resources.OperationTimeoutExpired, CancellationToken.None);
             }
 
-            CancellationTokenSource operationTimeoutCancellationTokenSource = new CancellationTokenSource();
+            CancellationTokenSource operationTimeoutCancellationTokenSource = GetOperationTimeoutCancellationTokenSource();
 
             var result = operation(operationTimeoutCancellationTokenSource.Token)
                 .WithTimeout(TimeSpan.FromMilliseconds(OperationTimeoutInMilliseconds), () => Resources.OperationTimeoutExpired, operationTimeoutCancellationTokenSource.Token);
@@ -912,6 +933,12 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             return result.ContinueWith(t =>
             {
                 operationTimeoutCancellationTokenSource.Dispose();
+
+                if (t.IsCanceled)
+                {
+                    throw new TimeoutException(Resources.OperationTimeoutExpired);
+                }
+
                 if (t.IsFaulted)
                 {
                     throw t.Exception.InnerException;
@@ -1151,8 +1178,11 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                             this.connectionStatusChangesHandler(e.ConnectionStatus, e.ConnectionStatusChangeReason);
                         }
 
-                        CancellationTokenSource linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(result.StatusChangeCancellationTokenSource.Token, operationTimeoutCancellationTokenSource.Token);
-                        await this.InnerHandler.RecoverConnections(sender, e.ConnectionType, linkedTokenSource.Token).ConfigureAwait(false);
+                        using (CancellationTokenSource linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(result.StatusChangeCancellationTokenSource.Token, operationTimeoutCancellationTokenSource.Token))
+                        {
+                            await this.InnerHandler.RecoverConnections(sender, e.ConnectionType, linkedTokenSource.Token).ConfigureAwait(false);
+                        }
+
                     }).ConfigureAwait(false);
                 }
                 catch (Exception)
