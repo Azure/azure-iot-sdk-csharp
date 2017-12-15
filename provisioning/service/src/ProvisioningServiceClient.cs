@@ -588,20 +588,20 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         ///     the correspondent registrationStatus from the Device Provisioning Service, and return it in the
         ///     <see cref="DeviceRegistrationState"/> object.
         ///
-        /// If the id do not exists, this method will throw <see cref="ProvisioningServiceClientNotFoundException"/>.
+        /// If the id does not exist, this method will throw <see cref="ProvisioningServiceClientNotFoundException"/>.
         ///     For more exceptions that this method can throw, please see <see cref="ExceptionHandlingHelper"/>
         /// </remarks>
         /// <param name="id">the <code>string</code> that identifies the registrationStatus. It cannot be <code>null</code> or empty.</param>
         /// <returns>The <see cref="DeviceRegistrationState"/> with the content of the registrationStatus in the Provisioning Device Service.</returns>
         /// <exception cref="ProvisioningServiceClientException">if the Provisioning Device Service was not able to retrieve the registrationStatus information for the provided registrationId.</exception>
-        //public DeviceRegistrationState GetDeviceRegistrationState(string id)
-        //{
-        //    /* SRS_PROVISIONING_SERVICE_CLIENT_21_023: [The getDeviceRegistrationState shall retrieve the registrationStatus information for the provided id by calling the get in the registrationStatusManager.] */
-        //    return RegistrationStatusManager.Get(id);
-        //}
+        public Task<DeviceRegistrationState> GetDeviceRegistrationStateAsync(string id)
+        {
+            /* SRS_PROVISIONING_SERVICE_CLIENT_21_023: [The getDeviceRegistrationState shall retrieve the registrationStatus information for the provided id by calling the get in the registrationStatusManager.] */
+            return RegistrationStatusManager.GetAsync(_contractApiHttp, id, CancellationToken.None);
+        }
 
         /// <summary>
-        /// Delete the Registration Status information.
+        /// Delete the registration status information.
         /// </summary>
         /// <remarks>
         /// This method will remove the registrationStatus from the Device Provisioning Service using the
@@ -615,11 +615,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </remarks>
         /// <param name="deviceRegistrationState">the <see cref="DeviceRegistrationState"/> that identifies the registrationStatus. It cannot be <code>null</code>.</param>
         /// <exception cref="ProvisioningServiceClientException">if the Provisioning Device Service was not able to delete the registration status information for the provided DeviceRegistrationState.</exception>
-        //public void DeleteDeviceRegistrationStatus(DeviceRegistrationState deviceRegistrationState)
-        //{
-        //    /* SRS_PROVISIONING_SERVICE_CLIENT_21_024: [The deleteDeviceRegistrationStatus shall delete the registrationStatus for the provided DeviceRegistrationState by calling the delete in the registrationStatusManager.] */
-        //    RegistrationStatusManager.Delete(deviceRegistrationState);
-        //}
+        public Task DeleteDeviceRegistrationStatusAsync(DeviceRegistrationState deviceRegistrationState)
+        {
+            /* SRS_PROVISIONING_SERVICE_CLIENT_21_024: [The deleteDeviceRegistrationStatus shall delete the registrationStatus for the provided DeviceRegistrationState by calling the delete in the registrationStatusManager.] */
+            return RegistrationStatusManager.DeleteAsync(_contractApiHttp, deviceRegistrationState, CancellationToken.None);
+        }
 
         /// <summary>
         /// Delete the registration status information.
@@ -634,11 +634,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </remarks>
         /// <param name="id">the <code>string</code> that identifies the registrationStatus. It cannot be <code>null</code> or empty.</param>
         /// <exception cref="ProvisioningServiceClientException">if the Provisioning Device Service was not able to delete the registrationStatus information for the provided registrationId.</exception>
-        //public void DeleteDeviceRegistrationStatus(string id)
-        //{
-        //    /* SRS_PROVISIONING_SERVICE_CLIENT_21_025: [The deleteDeviceRegistrationStatus shall delete the registrationStatus for the provided id by calling the delete in the registrationStatusManager.] */
-        //    RegistrationStatusManager.Delete(id);
-        //}
+        public Task DeleteDeviceRegistrationStatusAsync(string id)
+        {
+            /* SRS_PROVISIONING_SERVICE_CLIENT_21_025: [The deleteDeviceRegistrationStatus shall delete the registrationStatus for the provided id by calling the delete in the registrationStatusManager.] */
+            return RegistrationStatusManager.DeleteAsync(_contractApiHttp, id, CancellationToken.None);
+        }
 
         /// <summary>
         /// Delete the registration status information.
@@ -657,11 +657,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="eTag">the <code>string</code> with the registrationStatus eTag. It can be <code>null</code> or empty.
         ///             The Device Provisioning Service will ignore it in all of these cases.</param>
         /// <exception cref="ProvisioningServiceClientException">if the Provisioning Device Service was not able to delete the registrationStatus information for the provided registrationId and eTag.</exception>
-        //public void DeleteDeviceRegistrationStatus(string id, string eTag)
-        //{
-        //    /* SRS_PROVISIONING_SERVICE_CLIENT_21_026: [The deleteDeviceRegistrationStatus shall delete the registrationStatus for the provided id and eTag by calling the delete in the registrationStatusManager.] */
-        //    RegistrationStatusManager.Delete(id, eTag);
-        //}
+        public Task DeleteDeviceRegistrationStatusAsync(string id, string eTag)
+        {
+            /* SRS_PROVISIONING_SERVICE_CLIENT_21_026: [The deleteDeviceRegistrationStatus shall delete the registrationStatus for the provided id and eTag by calling the delete in the registrationStatusManager.] */
+            return RegistrationStatusManager.DeleteAsync(_contractApiHttp, id, CancellationToken.None, eTag);
+        }
 
         /// <summary>
         /// Factory to create a registration status query.
@@ -676,11 +676,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="querySpecification">the <see cref="QuerySpecification"/> with the SQL query. It cannot be <code>null</code>.</param>
         /// <param name="enrollmentGroupId">the <code>string</code> that identifies the enrollmentGroup. It cannot be <code>null</code> or empty.</param>
         /// <returns>The <see cref="Query"/> iterator.</returns>
-        //public Query CreateEnrollmentGroupRegistrationStatusQuery(QuerySpecification querySpecification, string enrollmentGroupId)
-        //{
-        //    /* SRS_PROVISIONING_SERVICE_CLIENT_21_027: [The createEnrollmentGroupRegistrationStatusQuery shall create a new registrationStatus query by calling the createQuery in the registrationStatusManager.] */
-        //    return RegistrationStatusManager.CreateEnrollmentGroupQuery(querySpecification, enrollmentGroupId);
-        //}
+        public Query CreateEnrollmentGroupRegistrationStatusQuery(QuerySpecification querySpecification, string enrollmentGroupId)
+        {
+            /* SRS_PROVISIONING_SERVICE_CLIENT_21_027: [The createEnrollmentGroupRegistrationStatusQuery shall create a new registrationStatus query by calling the createQuery in the registrationStatusManager.] */
+            return RegistrationStatusManager.CreateEnrollmentGroupQuery(querySpecification, enrollmentGroupId);
+        }
 
         /// <summary>
         /// Factory to create a registration status query.
@@ -701,10 +701,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="pageSize">the <code>int</code> with the maximum number of items per iteration. It can be 0 for default, but not negative.</param>
         /// <returns>The <see cref="Query"/> iterator.</returns>
         /// <exception cref="ArgumentException">if the provided parameters are not correct.</exception>
-        //public Query CreateEnrollmentGroupRegistrationStatusQuery(QuerySpecification querySpecification, string enrollmentGroupId, int pageSize)
-        //{
-        //    /* SRS_PROVISIONING_SERVICE_CLIENT_21_028: [The createEnrollmentGroupRegistrationStatusQuery shall create a new registrationStatus query by calling the createQuery in the registrationStatusManager.] */
-        //    return RegistrationStatusManager.CreateEnrollmentGroupQuery(querySpecification, enrollmentGroupId, pageSize);
-        //}
+        public Query CreateEnrollmentGroupRegistrationStatusQuery(QuerySpecification querySpecification, string enrollmentGroupId, int pageSize)
+        {
+            /* SRS_PROVISIONING_SERVICE_CLIENT_21_028: [The createEnrollmentGroupRegistrationStatusQuery shall create a new registrationStatus query by calling the createQuery in the registrationStatusManager.] */
+            return RegistrationStatusManager.CreateEnrollmentGroupQuery(querySpecification, enrollmentGroupId, pageSize);
+        }
     }
 }
