@@ -297,7 +297,7 @@ namespace Microsoft.Azure.Devices.Client
             if (!(this.SharedAccessKey.IsNullOrWhiteSpace() ^ this.SharedAccessSignature.IsNullOrWhiteSpace()))
             {
 #if !WINDOWS_UWP && !PCL && !NETMF
-                if (!(this.UsingX509Cert || (this.AuthenticationMethod is DeviceAuthenticationWithTokenRefresh)))
+                if (!(this.UsingX509Cert || (this.AuthenticationMethod is AuthenticationWithTokenRefresh)))
                 {
 #endif
                     throw new ArgumentException("Should specify either SharedAccessKey or SharedAccessSignature if X.509 certificate is not used");

@@ -72,6 +72,7 @@ namespace Microsoft.Azure.Devices.Client
         public override IotHubConnectionStringBuilder Populate(IotHubConnectionStringBuilder iotHubConnectionStringBuilder)
         {
             iotHubConnectionStringBuilder = base.Populate(iotHubConnectionStringBuilder);
+            iotHubConnectionStringBuilder.DeviceId = DeviceId;
             iotHubConnectionStringBuilder.ModuleId = ModuleId;
             return iotHubConnectionStringBuilder;
         }
