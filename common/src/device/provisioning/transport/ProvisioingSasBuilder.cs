@@ -16,13 +16,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         private const string KeyName = "registration";
         private static readonly TimeSpan TimeToLive = TimeSpan.FromDays(1);
 
-        internal static string ExtractServiceAuthKey(SecurityClientHsmTpm securityClient, string hostName, byte[] activation)
+        internal static string ExtractServiceAuthKey(SecurityProviderTpm securityProvider, string hostName, byte[] activation)
         {
-            securityClient.ActivateSymmetricIdentity(activation);
-            return BuildSasSignature(securityClient, KeyName, hostName, TimeToLive);
+            securityProvider.ActivateIdentityKey(activation);
+            return BuildSasSignature(securityProvider, KeyName, hostName, TimeToLive);
         }
 
-        private static string BuildSasSignature(SecurityClientHsmTpm securityClient, string keyName, string target, TimeSpan timeToLive)
+        private static string BuildSasSignature(SecurityProviderTpm securityProvider, string keyName, string target, TimeSpan timeToLive)
         {
             string expiresOn = BuildExpiresOn(timeToLive);
             string audience = WebUtility.UrlEncode(target);
@@ -36,7 +36,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             // dh://myiothub.azure-devices.net/a/b/c?myvalue1=a
             // <Value for ExpiresOn>
 
-            byte[] signedBytes = securityClient.Sign(Encoding.UTF8.GetBytes(string.Join("\n", fields)));
+            byte[] signedBytes = securityProvider.Sign(Encoding.UTF8.GetBytes(string.Join("\n", fields)));
             string signature = Convert.ToBase64String(signedBytes);
 
             // Example returned string:

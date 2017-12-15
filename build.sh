@@ -7,5 +7,5 @@ if [ "$1" == "-?" -o "$1" == "-h" -o "$1" == "-help" -o "$1" == "--help" ]; then
 	exit;
 fi
 
-powershell -command ".\build.ps1 -nolegacy $1 $2 $3; exit $LASTEXITCODE"
+powershell -command ".\build.ps1 -nolegacy "$@"; exit $LASTEXITCODE"
 exit $?

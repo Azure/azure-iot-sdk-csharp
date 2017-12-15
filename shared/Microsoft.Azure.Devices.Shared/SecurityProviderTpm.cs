@@ -4,21 +4,24 @@
 namespace Microsoft.Azure.Devices.Shared
 {
     /// <summary>
-    /// The Device Security Client for TPM authentication.
+    /// The Device Security Provider interface for TPM Hardware Security Modules.
     /// </summary>
-    public abstract class SecurityClientHsmTpm : SecurityClient
+    public abstract class SecurityProviderTpm : SecurityProvider
     {
-        private string _registrationId;
+        private readonly string _registrationId;
 
         /// <summary>
-        /// Initializes a new instance of the SecurityClientHsmTpm class.
+        /// Initializes a new instance of the SecurityProviderTpm class.
         /// </summary>
         /// <param name="registrationId">The Provisioning service Registration ID for this device.</param>
-        public SecurityClientHsmTpm(string registrationId)
+        public SecurityProviderTpm(string registrationId)
         {
             _registrationId = registrationId;
         }
 
+        /// <summary>
+        /// Gets the Registration ID used during device enrollment.
+        /// </summary>
         public override string GetRegistrationID()
         {
             return _registrationId;
@@ -37,13 +40,13 @@ namespace Microsoft.Azure.Devices.Shared
         public abstract byte[] GetStorageRootKey();
 
         /// <summary>
-        /// Activates a symmetric identity within the Hardware Security Module.
+        /// Activates an identity key within the TPM device.
         /// </summary>
-        /// <param name="activation">The authentication challenge key supplied by the service.</param>
-        public abstract void ActivateSymmetricIdentity(byte[] activation);
+        /// <param name="encryptedKey">The encrypted identity key.</param>
+        public abstract void ActivateIdentityKey(byte[] encryptedKey);
 
         /// <summary>
-        /// Signs the data using the Hardware Security Module.
+        /// Signs the data using the previously activated identity key.
         /// </summary>
         /// <param name="data">The data to be signed.</param>
         /// <returns>The signed data.</returns>

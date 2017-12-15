@@ -13,20 +13,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
     [SuppressMessage("Microsoft.Performance", "CA1812", Justification = "Used by the JSon parser.")]
     internal partial class DeviceRegistrationResult
     {
-        /// <summary>
-        /// Initializes a new instance of the DeviceRegistrationResult class.
-        /// </summary>
         public DeviceRegistrationResult()
         {
           CustomInit();
         }
 
-        /// <summary>
-        /// Initializes a new instance of the DeviceRegistrationResult class.
-        /// </summary>
-        /// <param name="status">Possible values include: 'unassigned',
-        /// 'assigning', 'assigned', 'failed', 'disabled'</param>
-        public DeviceRegistrationResult(
+        internal DeviceRegistrationResult(
             TpmRegistrationResult tpm = default(TpmRegistrationResult), 
             X509RegistrationResult x509 = default(X509RegistrationResult), 
             string registrationId = default(string), 

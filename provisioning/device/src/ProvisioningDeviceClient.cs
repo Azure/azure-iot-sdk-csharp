@@ -9,56 +9,53 @@ using System.Threading.Tasks;
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
     /// <summary>
-    /// Device Provisioning Client
+    /// Allows devices to use the Device Provisioning Service.
     /// </summary>
     public class ProvisioningDeviceClient
     {
-        private const string DefaultGlobalDeviceEndpoint = "global.azure-devices-provisioning.net";
+        private readonly string _globalDeviceEndpoint;
         private readonly string _idScope;
         private readonly ProvisioningTransportHandler _transport;
-        private readonly SecurityClient _security;
+        private readonly SecurityProvider _security;
 
         /// <summary>
-        /// Stores custom product information that will be appended to the user agent string that is sent to IoT Hub.
+        /// Stores product information that will be appended to the user agent string that is sent to IoT Hub.
         /// </summary>
         public string ProductInfo { get; set; }
 
         /// <summary>
-        /// The global device endpoint.
-        /// </summary>
-        public string GlobalDeviceEndpoint { get; set; }
-
-        /// <summary>
         /// Creates an instance of the Device Provisioning Client.
         /// </summary>
+        /// <param name="globalDeviceEndpoint">The GlobalDeviceEndpoint for the Device Provisioning Service.</param>
         /// <param name="idScope">The IDScope for the Device Provisioning Service.</param>
-        /// <param name="securityClient">The security client instance.</param>
+        /// <param name="securityProvider">The security provider instance.</param>
         /// <param name="transport">The type of transport (e.g. HTTP, AMQP, MQTT).</param>
         /// <returns>An instance of the ProvisioningDeviceClient</returns>
         public static ProvisioningDeviceClient Create(
+            string globalDeviceEndpoint,
             string idScope, 
-            SecurityClient securityClient, 
+            SecurityProvider securityProvider, 
             ProvisioningTransportHandler transport)
         {
-            if (securityClient is SecurityClientHsmX509)
+            if (securityProvider is SecurityProviderX509)
             {
                 CertificateInstaller.EnsureChainIsInstalled(
-                    ((SecurityClientHsmX509)securityClient).GetAuthenticationCertificateChain());
+                    ((SecurityProviderX509)securityProvider).GetAuthenticationCertificateChain());
             }
 
-            return new ProvisioningDeviceClient(DefaultGlobalDeviceEndpoint, idScope, securityClient, transport);
+            return new ProvisioningDeviceClient(globalDeviceEndpoint, idScope, securityProvider, transport);
         }
 
         private ProvisioningDeviceClient(
             string globalDeviceEndpoint,
             string idScope,
-            SecurityClient securityClient,
+            SecurityProvider securityProvider,
             ProvisioningTransportHandler transport)
         {
-            GlobalDeviceEndpoint = globalDeviceEndpoint;
+            _globalDeviceEndpoint = globalDeviceEndpoint;
             _idScope = idScope;
             _transport = transport;
-            _security = securityClient;
+            _security = securityProvider;
 
             if (Logging.IsEnabled)
             {
@@ -68,7 +65,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         /// <summary>
-        /// Registers the current device using the Device Provisioning Service and assigns it to a Hub.
+        /// Registers the current device using the Device Provisioning Service and assigns it to an IoT Hub.
         /// </summary>
         /// <returns>The registration result.</returns>
         public Task<DeviceRegistrationResult> RegisterAsync()
@@ -77,15 +74,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         }
 
         /// <summary>
-        /// Registers the current device using the Device Provisioning Service and assigns it to a Hub.
+        /// Registers the current device using the Device Provisioning Service and assigns it to an IoT Hub.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The registration result.</returns>
         public Task<DeviceRegistrationResult> RegisterAsync(CancellationToken cancellationToken)
         {
-            if (Logging.IsEnabled) Logging.RegisterAsync(this, GlobalDeviceEndpoint, _idScope, _transport, _security);
+            if (Logging.IsEnabled) Logging.RegisterAsync(this, _globalDeviceEndpoint, _idScope, _transport, _security);
 
-            var request = new ProvisioningTransportRegisterMessage(GlobalDeviceEndpoint, _idScope, _security);
+            var request = new ProvisioningTransportRegisterMessage(_globalDeviceEndpoint, _idScope, _security);
             request.ProductInfo = ProductInfo;
             return _transport.RegisterAsync(request, cancellationToken);
         }

@@ -13,16 +13,17 @@ namespace ProvisioningDeviceClientTpm
 {
     public static class Program
     {
+        private const string GlobalDeviceEndpoint = "global.azure-devices-provisioning.net";
         private static string s_idScope;
         private const string RegistrationId = "testtpmregistration1";
 
         public static async Task RunSample()
         {
-            // Replace the following type with SecurityClientTpm() to use a real TPM2.0 device.
+            // Replace the following type with SecurityProviderTpmHsm() to use a real TPM2.0 device.
             Console.WriteLine("Starting TPM simulator.");
-            SecurityClientTpmSimulator.StartSimulatorProcess();
+            SecurityProviderTpmSimulator.StartSimulatorProcess();
 
-            using (var security = new SecurityClientTpmSimulator(RegistrationId))
+            using (var security = new SecurityProviderTpmSimulator(RegistrationId))
             using (var transport = new ProvisioningTransportHandlerHttp())
             {
 
@@ -42,7 +43,8 @@ namespace ProvisioningDeviceClientTpm
                 Console.WriteLine("Press ENTER when ready.");
                 Console.ReadLine();
 
-                ProvisioningDeviceClient provClient = ProvisioningDeviceClient.Create(s_idScope, security, transport);
+                ProvisioningDeviceClient provClient = 
+                    ProvisioningDeviceClient.Create(GlobalDeviceEndpoint, s_idScope, security, transport);
 
                 Console.Write("ProvisioningClient RegisterAsync . . . ");
                 DeviceRegistrationResult result = await provClient.RegisterAsync();

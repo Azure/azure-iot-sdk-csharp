@@ -51,8 +51,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DotNetty.Codecs.Mqtt" Version="0.4.6" />
-    <PackageReference Include="DotNetty.Handlers" Version="0.4.6" />
+    <PackageReference Include="DotNetty.Codecs.Mqtt" Version="0.4.7" />
+    <PackageReference Include="DotNetty.Handlers" Version="0.4.7" />
     <PackageReference Include="Microsoft.Azure.Amqp" Version="2.0.6" />
     <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
     <PackageReference Include="System.AppContext" Version="4.3.0" />
@@ -199,13 +199,6 @@
     <Compile Include="System.Web\Util\HttpEncoderUtility.cs" />
     <Compile Include="System.Web\Util\UriUtil.cs" />
     <Compile Include="System.Web\Util\Utf16StringValidator.cs" />
-  </ItemGroup>
-
-
-  <PropertyGroup>
-    <DefineConstants Condition="'$(WIP_PROVISIONING.ToUpper())' == 'TRUE'">$(DefineConstants);WIP_PROVISIONING</DefineConstants>
-  </PropertyGroup>
-  <ItemGroup Condition="'$(WIP_PROVISIONING.ToUpper())' == 'TRUE'">
     <Compile Include="..\Microsoft.Azure.Devices.Client\DeviceAuthenticationWithTpm.cs">
       <Link>DeviceAuthenticationWithTpm.cs</Link>
     </Compile>

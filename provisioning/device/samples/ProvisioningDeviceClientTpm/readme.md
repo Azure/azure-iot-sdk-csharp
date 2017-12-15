@@ -15,4 +15,4 @@ replacing `IDScope` with the value found within the Device Provisioning Service 
 
 Continue by following the instructions presented by the sample.
 
-The sample is currently using `SecurityClientTpmSimulator` which is not supported on Linux. To run against a real TPM2.0 device, replace this with `SecurityCleintTpm`.
+The sample is currently using `SecurityProviderTpmSimulator` which is not supported on Linux. To run against a real TPM2.0 device, replace this with `SecurityProviderTpm`.

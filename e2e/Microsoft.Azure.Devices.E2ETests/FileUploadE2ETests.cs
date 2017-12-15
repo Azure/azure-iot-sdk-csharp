@@ -89,6 +89,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             await uploadFile(Client.TransportType.Http1, bigFile);
         }
 
+        // GitHub Issue #259
+        [Ignore]
         [TestMethod]
         [TestCategory("FileUpload-E2E")]
         public async Task FileUpload_X509_SmallFile_Http()

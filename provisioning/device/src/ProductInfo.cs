@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
 
             // TODO: Replace with Assembly information.
             // DO NOT EDIT the following line; it is updated by the bump_version script (https://github.com/Azure/iot-sdks-internals/blob/master/release/csharp/inputs.js)
-            const string Version = "1.5.2"; // CommonAssemblyVersion
+            const string Version = "1.0.0"; // CommonAssemblyVersion
 
             string runtime = RuntimeInformation.FrameworkDescription.Trim();
             string operatingSystem = RuntimeInformation.OSDescription.Trim();

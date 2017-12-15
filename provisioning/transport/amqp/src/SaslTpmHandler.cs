@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         private readonly byte[] _endorsementKey;
 
         private readonly string _idScope;
-        private readonly SecurityClientHsmTpm _security;
+        private readonly SecurityProviderTpm _security;
         private readonly byte[] _storageRootKey;
         private byte[] _nonceBuffer = Array.Empty<byte>();
         private byte _nextSequenceNumber;
@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             byte[] endorsementKey, 
             byte[] storageRootKey, 
             string idScope,
-            SecurityClientHsmTpm security)
+            SecurityProviderTpm security)
         {
             Debug.Assert(endorsementKey != null);
             Debug.Assert(storageRootKey != null);

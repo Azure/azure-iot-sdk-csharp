@@ -7,9 +7,14 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\device\Microsoft.Azure.Devices.Client.NetStandard\Microsoft.Azure.Devices.Client.NetStandard.csproj" />
-    <ProjectReference Include="..\..\..\..\security\tpm\samples\SecurityClientTpmSimulator\SecurityClientTpmSimulator.csproj" />
+    <ProjectReference Include="..\..\..\..\security\tpm\samples\SecurityProviderTpmSimulator\SecurityProviderTpmSimulator.csproj" />
     <ProjectReference Include="..\..\..\..\security\tpm\src\Microsoft.Azure.Devices.Provisioning.Security.Tpm.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Azure.Devices.Provisioning.Client.csproj" />
+
+    <!-- Note: Applications should not need to import all 3 protocols. This was done to simplify protocol selection within the sample.-->
+    <ProjectReference Include="..\..\..\transport\amqp\src\Microsoft.Azure.Devices.Provisioning.Transport.Amqp.csproj" />
+    <ProjectReference Include="..\..\..\transport\http\src\Microsoft.Azure.Devices.Provisioning.Transport.Http.csproj" />
+    <ProjectReference Include="..\..\..\transport\mqtt\src\Microsoft.Azure.Devices.Provisioning.Transport.Mqtt.csproj" />
   </ItemGroup>
 
 </Project>
