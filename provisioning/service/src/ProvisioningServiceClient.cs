@@ -441,11 +441,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="enrollmentGroup">the <see cref="EnrollmentGroup"/> object that describes the individualEnrollment that will be created of updated.</param>
         /// <returns>An <see cref="EnrollmentGroup"/> object with the result of the create or update requested.</returns>
         /// <exception cref="ProvisioningServiceClientException">if the Provisioning was not able to create or update the enrollment.</exception>
-        //public EnrollmentGroup CreateOrUpdateEnrollmentGroup(EnrollmentGroup enrollmentGroup)
-        //{
-        //    /* SRS_PROVISIONING_SERVICE_CLIENT_21_016: [The createOrUpdateEnrollmentGroup shall create a new Provisioning enrollmentGroup by calling the createOrUpdate in the EnrollmentGroupManager.] */
-        //    return EnrollmentGroupManager.CreateOrUpdate(enrollmentGroup);
-        //}
+        public Task<EnrollmentGroup> CreateOrUpdateEnrollmentGroupAsync(EnrollmentGroup enrollmentGroup)
+        {
+            /* SRS_PROVISIONING_SERVICE_CLIENT_21_016: [The createOrUpdateEnrollmentGroup shall create a new Provisioning enrollmentGroup by calling the createOrUpdate in the EnrollmentGroupManager.] */
+            return EnrollmentGroupManager.CreateOrUpdateAsync(_contractApiHttp, enrollmentGroup, CancellationToken.None);
+        }
 
         /// <summary>
         /// Retrieve the enrollmentGroup information.
@@ -461,11 +461,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="enrollmentGroupId">the <code>string</code> that identifies the enrollmentGroup. It cannot be <code>null</code> or empty.</param>
         /// <returns>The <see cref="EnrollmentGroup"/> with the content of the enrollmentGroup in the Provisioning Device Service.</returns>
         /// <exception cref="ProvisioningServiceClientException">if the Provisioning Device Service was not able to retrieve the enrollmentGroup information for the provided enrollmentGroupId.</exception>
-        //public EnrollmentGroup GetEnrollmentGroup(string enrollmentGroupId)
-        //{
-        //    /* SRS_PROVISIONING_SERVICE_CLIENT_21_017: [The getEnrollmentGroup shall retrieve the enrollmentGroup information for the provided enrollmentGroupId by calling the get in the EnrollmentGroupManager.] */
-        //    return EnrollmentGroupManager.Get(enrollmentGroupId);
-        //}
+        public Task<EnrollmentGroup> GetEnrollmentGroupAsync(string enrollmentGroupId)
+        {
+            /* SRS_PROVISIONING_SERVICE_CLIENT_21_017: [The getEnrollmentGroup shall retrieve the enrollmentGroup information for the provided enrollmentGroupId by calling the get in the EnrollmentGroupManager.] */
+            return EnrollmentGroupManager.GetAsync(_contractApiHttp, enrollmentGroupId, CancellationToken.None);
+        }
 
         /// <summary>
         /// Delete the enrollmentGroup information.
@@ -485,11 +485,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </remarks>
         /// <param name="enrollmentGroup">the <see cref="EnrollmentGroup"/> that identifies the enrollmentGroup. It cannot be <code>null</code>.</param>
         /// <exception cref="ProvisioningServiceClientException">if the Provisioning Device Service was not able to delete the enrollmentGroup information for the provided enrollmentGroup.</exception>
-        //public void DeleteEnrollmentGroup(EnrollmentGroup enrollmentGroup)
-        //{
-        //    /* SRS_PROVISIONING_SERVICE_CLIENT_21_018: [The deleteEnrollmentGroup shall delete the enrollmentGroup for the provided enrollmentGroup by calling the delete in the EnrollmentGroupManager.] */
-        //    EnrollmentGroupManager.Delete(enrollmentGroup);
-        //}
+        public Task DeleteEnrollmentGroupAsync(EnrollmentGroup enrollmentGroup)
+        {
+            /* SRS_PROVISIONING_SERVICE_CLIENT_21_018: [The deleteEnrollmentGroup shall delete the enrollmentGroup for the provided enrollmentGroup by calling the delete in the EnrollmentGroupManager.] */
+            return EnrollmentGroupManager.DeleteAsync(_contractApiHttp, enrollmentGroup, CancellationToken.None);
+        }
 
         /// <summary>
         /// Delete the enrollmentGroup information.
@@ -506,11 +506,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </remarks>
         /// <param name="enrollmentGroupId">the <code>string</code> that identifies the enrollmentGroup. It cannot be <code>null</code> or empty.</param>
         /// <exception cref="ProvisioningServiceClientException">if the Provisioning Device Service was not able to delete the enrollmentGroup information for the provided enrollmentGroupId.</exception>
-        //public void DeleteEnrollmentGroup(string enrollmentGroupId)
-        //{
-        //    /* SRS_PROVISIONING_SERVICE_CLIENT_21_019: [The deleteEnrollmentGroup shall delete the enrollmentGroup for the provided enrollmentGroupId by calling the delete in the EnrollmentGroupManager.] */
-        //    EnrollmentGroupManager.Delete(enrollmentGroupId);
-        //}
+        public Task DeleteEnrollmentGroupAsync(string enrollmentGroupId)
+        {
+            /* SRS_PROVISIONING_SERVICE_CLIENT_21_019: [The deleteEnrollmentGroup shall delete the enrollmentGroup for the provided enrollmentGroupId by calling the delete in the EnrollmentGroupManager.] */
+            return EnrollmentGroupManager.DeleteAsync(_contractApiHttp, enrollmentGroupId, CancellationToken.None);
+        }
 
         /// <summary>
         /// Delete the enrollmentGroup information.
@@ -531,11 +531,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="eTag">the <code>string</code> with the enrollmentGroup eTag. It can be <code>null</code> or empty.
         ///             The Device Provisioning Service will ignore it in all of these cases.</param>
         /// <exception cref="ProvisioningServiceClientException">if the Provisioning Device Service was not able to delete the enrollmentGroup information for the provided enrollmentGroupId and eTag.</exception>
-        //public void DeleteEnrollmentGroup(string enrollmentGroupId, string eTag)
-        //{
-        //    /* SRS_PROVISIONING_SERVICE_CLIENT_21_020: [The deleteEnrollmentGroup shall delete the enrollmentGroup for the provided enrollmentGroupId and eTag by calling the delete in the EnrollmentGroupManager.] */
-        //    EnrollmentGroupManager.Delete(enrollmentGroupId, eTag);
-        //}
+        public Task DeleteEnrollmentGroupAsync(string enrollmentGroupId, string eTag)
+        {
+            /* SRS_PROVISIONING_SERVICE_CLIENT_21_020: [The deleteEnrollmentGroup shall delete the enrollmentGroup for the provided enrollmentGroupId and eTag by calling the delete in the EnrollmentGroupManager.] */
+            return EnrollmentGroupManager.DeleteAsync(_contractApiHttp, enrollmentGroupId, CancellationToken.None, eTag);
+        }
 
         /// <summary>
         /// Factory to create an enrollmentGroup query.
@@ -550,11 +550,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="querySpecification">the <see cref="QuerySpecification"/> with the SQL query. It cannot be <code>null</code>.</param>
         /// <returns>The <see cref="Query"/> iterator.</returns>
         /// <exception cref="ArgumentException">if the provided parameter is not correct.</exception>
-        //public Query CreateEnrollmentGroupQuery(QuerySpecification querySpecification)
-        //{
-        //    /* SRS_PROVISIONING_SERVICE_CLIENT_21_021: [The createEnrollmentGroupQuery shall create a new enrolmentGroup query by calling the createQuery in the EnrollmentGroupManager.] */
-        //    return EnrollmentGroupManager.CreateQuery(querySpecification);
-        //}
+        public Query CreateEnrollmentGroupQuery(QuerySpecification querySpecification)
+        {
+            /* SRS_PROVISIONING_SERVICE_CLIENT_21_021: [The createEnrollmentGroupQuery shall create a new enrolmentGroup query by calling the createQuery in the EnrollmentGroupManager.] */
+            return EnrollmentGroupManager.CreateQuery(querySpecification);
+        }
 
         /// <summary>
         /// Factory to create an enrollmentGroup query.
@@ -574,11 +574,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="pageSize">the <code>int</code> with the maximum number of items per iteration. It can be 0 for default, but not negative.</param>
         /// <returns>The <see cref="Query"/> iterator.</returns>
         /// <exception cref="ArgumentException">if the provided parameters are not correct.</exception>
-        //public Query CreateEnrollmentGroupQuery(QuerySpecification querySpecification, int pageSize)
-        //{
-        //    /* SRS_PROVISIONING_SERVICE_CLIENT_21_022: [The createEnrollmentGroupQuery shall create a new enrolmentGroup query by calling the createQuery in the EnrollmentGroupManager.] */
-        //    return EnrollmentGroupManager.CreateQuery(querySpecification, pageSize);
-        //}
+        public Query CreateEnrollmentGroupQuery(QuerySpecification querySpecification, int pageSize)
+        {
+            /* SRS_PROVISIONING_SERVICE_CLIENT_21_022: [The createEnrollmentGroupQuery shall create a new enrolmentGroup query by calling the createQuery in the EnrollmentGroupManager.] */
+            return EnrollmentGroupManager.CreateQuery(querySpecification, pageSize);
+        }
 
         /// <summary>
         /// Retrieve the registration status information.

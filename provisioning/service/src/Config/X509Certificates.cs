@@ -177,7 +177,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Secondary certificate.
         /// </summary>
-        [JsonProperty(PropertyName = "secondary")]
+        [JsonProperty(PropertyName = "secondary", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public X509CertificateWithInfo Secondary { get; private set; }
     }
 }
