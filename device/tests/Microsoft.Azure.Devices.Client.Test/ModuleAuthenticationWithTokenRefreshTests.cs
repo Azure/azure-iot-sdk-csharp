@@ -57,13 +57,12 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task ModuleAuthenticationWithTokenRefresh_Populate_DefaultParameters_Ok()
         {
             var refresher = new TestImplementation(TestDeviceId, TestModuleId);
-            var csBuilder = IotHubConnectionStringBuilder.Create(
-                TestIoTHubName,
-                new ModuleAuthenticationWithRegistrySymmetricKey(TestDeviceId, TestModuleId, TestSharedAccessKey));
+            var csBuilder = IotHubConnectionStringBuilder.Create(TestIoTHubName, refresher);
 
             refresher.Populate(csBuilder);
 
             Assert.AreEqual(TestDeviceId, csBuilder.DeviceId);
+            Assert.AreEqual(TestModuleId, csBuilder.ModuleId);
             Assert.AreEqual(null, csBuilder.SharedAccessSignature);
             Assert.AreEqual(null, csBuilder.SharedAccessKey);
             Assert.AreEqual(null, csBuilder.SharedAccessKeyName);
@@ -73,6 +72,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             refresher.Populate(csBuilder);
 
             Assert.AreEqual(TestDeviceId, csBuilder.DeviceId);
+            Assert.AreEqual(TestModuleId, csBuilder.ModuleId);
             Assert.AreEqual(token, csBuilder.SharedAccessSignature);
             Assert.AreEqual(null, csBuilder.SharedAccessKey);
             Assert.AreEqual(null, csBuilder.SharedAccessKeyName);
@@ -81,8 +81,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         public async Task ModuleAuthenticationWithSakRefresh_SharedAccessKeyConnectionString_HasRefresher()
         {
-            var csBuilder = IotHubConnectionStringBuilder.Create(
-                TestIoTHubName,
+            var csBuilder = IotHubConnectionStringBuilder.Create(TestIoTHubName, 
                 new ModuleAuthenticationWithRegistrySymmetricKey(TestDeviceId, TestModuleId, TestSharedAccessKey));
 
             IotHubConnectionString cs = csBuilder.ToIotHubConnectionString();

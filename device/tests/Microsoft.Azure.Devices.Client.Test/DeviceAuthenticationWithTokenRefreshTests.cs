@@ -54,9 +54,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task DeviceAuthenticationWithTokenRefresh_Populate_DefaultParameters_Ok()
         {
             var refresher = new TestImplementation(TestDeviceId);
-            var csBuilder = IotHubConnectionStringBuilder.Create(
-                TestIoTHubName,
-                new DeviceAuthenticationWithRegistrySymmetricKey(TestDeviceId, TestSharedAccessKey));
+            var csBuilder = IotHubConnectionStringBuilder.Create(TestIoTHubName, refresher);
 
             refresher.Populate(csBuilder);
 
