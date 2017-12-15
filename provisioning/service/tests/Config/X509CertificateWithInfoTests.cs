@@ -23,8 +23,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         private const string SERIAL_NUMBER = "000000000000000000";
         private const int VERSION = 3;
         private const string PUBLIC_KEY_CERTIFICATE_STRING =
-            @"-----BEGIN CERTIFICATE-----" +
-            "MIIBiDCCAS2gAwIBAgIFWks8LR4wCgYIKoZIzj0EAwIwNjEUMBIGA1UEAwwLcmlv" +
+            @"MIIBiDCCAS2gAwIBAgIFWks8LR4wCgYIKoZIzj0EAwIwNjEUMBIGA1UEAwwLcmlv" +
             "dGNvcmVuZXcxETAPBgNVBAoMCE1TUl9URVNUMQswCQYDVQQGEwJVUzAgFw0xNzAx" +
             "MDEwMDAwMDBaGA8zNzAxMDEzMTIzNTk1OVowNjEUMBIGA1UEAwwLcmlvdGNvcmVu" +
             "ZXcxETAPBgNVBAoMCE1TUl9URVNUMQswCQYDVQQGEwJVUzBZMBMGByqGSM49AgEG" +
@@ -32,8 +31,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             "pvcQ/4YVrPp60oiYRxZbsPyBtHt2UCAC00vEXy+jJjAkMA4GA1UdDwEB/wQEAwIH" +
             "gDASBgNVHRMBAf8ECDAGAQH/AgECMAoGCCqGSM49BAMCA0kAMEYCIQDEjs2PoZEi" +
             "/yAQNj2Vji9RthQ33HG/QdL12b1ABU5UXgIhAPJujG/c/S+7vcREWI7bQcCb31JI" +
-            "BDhWZbt4eyCvXZtZ" +
-            "-----END CERTIFICATE-----";
+            "BDhWZbt4eyCvXZtZ";
 
         private string makeJson(
             string subjectName, string sha1Thumbprint, string sha256Thumbprint,

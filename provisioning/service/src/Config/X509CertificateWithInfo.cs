@@ -3,7 +3,6 @@
 
 using System;
 using Newtonsoft.Json;
-using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
@@ -73,10 +72,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             ValidateCertificate(certificate);
 
             /* SRS_X509_CERTIFICATE_WITH_INFO_21_002: [The public constructor shall store the provided certificate as Base64 string.] */
-            Certificate = 
-                @"-----BEGIN CERTIFICATE-----" +
-                Convert.ToBase64String(certificate.Export(X509ContentType.Cert)) +
-                "-----END CERTIFICATE-----";
+            Certificate = Convert.ToBase64String(certificate.Export(X509ContentType.Cert));
 
             /* SRS_X509_CERTIFICATE_WITH_INFO_21_003: [The public constructor shall set the Info to null.] */
             Info = null;
@@ -132,7 +128,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Certificate properties.
         /// </summary> 
-        [JsonProperty(PropertyName = "info")]
+        [JsonProperty(PropertyName = "info", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public X509CertificateInfo Info { get; private set; }
 
         private static void ValidateCertificate(X509Certificate2 certificate)
