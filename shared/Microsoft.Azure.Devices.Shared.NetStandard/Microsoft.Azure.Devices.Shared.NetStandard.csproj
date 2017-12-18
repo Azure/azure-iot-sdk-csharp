@@ -69,9 +69,6 @@
     <Compile Include="..\Microsoft.Azure.Devices.Shared\AuthenticationType.cs" />
     <Compile Include="..\Microsoft.Azure.Devices.Shared\X509Thumbprint.cs" />
     <Compile Include="..\Microsoft.Azure.Devices.Shared\Common\Extensions\StringFormattingExtensions.cs" />
-    <Compile Include="..\Microsoft.Azure.Devices.Shared\TwinState.cs">
-      <Link>TwinState.cs</Link>
-    </Compile>
     <Compile Include="..\Microsoft.Azure.Devices.Shared\SecurityProvider.cs" />
     <Compile Include="..\Microsoft.Azure.Devices.Shared\SecurityProviderTpm.cs" />
     <Compile Include="..\Microsoft.Azure.Devices.Shared\SecurityProviderX509.cs" />
