@@ -109,9 +109,9 @@ namespace Microsoft.Azure.Devices
                         operationTimeout,
                         (requestMsg, token) => AddCustomHeaders(requestMsg, customHeaders),
                         IsMappedToException,
-                        async (message, token) => result = await ReadResponseMessageAsync<T>(message, token),
+                        async (message, token) => result = await ReadResponseMessageAsync<T>(message, token).ConfigureAwait(false),
                         errorMappingOverrides,
-                        cancellationToken);
+                        cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
@@ -121,9 +121,9 @@ namespace Microsoft.Azure.Devices
                         operationTimeout,
                        (requestMsg, token) => AddCustomHeaders(requestMsg, customHeaders),
                        message => !(message.IsSuccessStatusCode || message.StatusCode == HttpStatusCode.NotFound),
-                       async (message, token) => result = message.StatusCode == HttpStatusCode.NotFound ? (default(T)) : await ReadResponseMessageAsync<T>(message, token),
+                       async (message, token) => result = message.StatusCode == HttpStatusCode.NotFound ? (default(T)) : await ReadResponseMessageAsync<T>(message, token).ConfigureAwait(false),
                        errorMappingOverrides,
-                       cancellationToken);
+                       cancellationToken).ConfigureAwait(false);
                 }
             }
             else
@@ -134,9 +134,9 @@ namespace Microsoft.Azure.Devices
                         HttpMethod.Get,
                         new Uri(this.baseAddress, requestUri),
                         (requestMsg, token) => AddCustomHeaders(requestMsg, customHeaders),
-                        async (message, token) => result = await ReadResponseMessageAsync<T>(message, token),
+                        async (message, token) => result = await ReadResponseMessageAsync<T>(message, token).ConfigureAwait(false),
                         errorMappingOverrides,
-                        cancellationToken);
+                        cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
@@ -146,9 +146,9 @@ namespace Microsoft.Azure.Devices
                        new Uri(this.baseAddress, requestUri),
                        (requestMsg, token) => AddCustomHeaders(requestMsg, customHeaders),
                        message => !(message.IsSuccessStatusCode || message.StatusCode == HttpStatusCode.NotFound),
-                       async (message, token) => result = message.StatusCode == HttpStatusCode.NotFound ? (default(T)) : await ReadResponseMessageAsync<T>(message, token),
+                       async (message, token) => result = message.StatusCode == HttpStatusCode.NotFound ? (default(T)) : await ReadResponseMessageAsync<T>(message, token).ConfigureAwait(false),
                        errorMappingOverrides,
-                       cancellationToken);
+                       cancellationToken).ConfigureAwait(false);
                 }
             }
 

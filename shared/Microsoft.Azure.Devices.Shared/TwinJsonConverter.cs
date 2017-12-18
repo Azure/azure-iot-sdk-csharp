@@ -133,6 +133,7 @@ namespace Microsoft.Azure.Devices.Shared
                 serializer.Serialize(writer, twin.Configurations, typeof(IDictionary<string, ConfigurationInfo>));
             }
 #endif
+
             if (twin.Tags != null && twin.Tags.Count > 0)
             {
                 writer.WritePropertyName(TagsJsonTag);

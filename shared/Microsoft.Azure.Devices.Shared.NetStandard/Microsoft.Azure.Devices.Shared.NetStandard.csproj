@@ -12,7 +12,7 @@
     <AssemblyName>Microsoft.Azure.Devices.Shared</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <FileAlignment>512</FileAlignment>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors> 
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <!-- delay sign the assembly for Release build -->

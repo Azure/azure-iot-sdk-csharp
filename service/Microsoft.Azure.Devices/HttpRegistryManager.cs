@@ -224,7 +224,7 @@ namespace Microsoft.Azure.Devices
                 {
                     HttpStatusCode.NotFound, async responseMessage =>
                     {
-                        string responseContent = await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage);
+                        string responseContent = await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage).ConfigureAwait(false);
                         return (Exception)new DeviceNotFoundException(responseContent, (Exception)null);
                     }
                 }
