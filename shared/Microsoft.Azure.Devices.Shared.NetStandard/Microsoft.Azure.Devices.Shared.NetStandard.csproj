@@ -62,9 +62,6 @@
     <Compile Include="..\Microsoft.Azure.Devices.Shared\TwinCollectionValue.cs" />
     <Compile Include="..\Microsoft.Azure.Devices.Shared\TwinJsonConverter.cs" />
     <Compile Include="..\Microsoft.Azure.Devices.Shared\TwinProperties.cs" />
-    <Compile Include="..\Microsoft.Azure.Devices.Shared\TwinState.cs">
-      <Link>TwinState.cs</Link>
-    </Compile>
     <Compile Include="..\Microsoft.Azure.Devices.Shared\SecurityProvider.cs" />
     <Compile Include="..\Microsoft.Azure.Devices.Shared\SecurityProviderTpm.cs" />
     <Compile Include="..\Microsoft.Azure.Devices.Shared\SecurityProviderX509.cs" />
