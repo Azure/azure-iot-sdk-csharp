@@ -57,6 +57,8 @@
             this.updateDeviceButton = new System.Windows.Forms.Button();
             this.deleteDeviceButton = new System.Windows.Forms.Button();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.filterDevicesTextBox = new System.Windows.Forms.TextBox();
+            this.filterDevicesLabel = new System.Windows.Forms.Label();
             this.deviceCountLabel = new System.Windows.Forms.Label();
             this.totalLabel = new System.Windows.Forms.Label();
             this.devicesGridView = new System.Windows.Forms.DataGridView();
@@ -482,6 +484,8 @@
             this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox2.Controls.Add(this.filterDevicesTextBox);
+            this.groupBox2.Controls.Add(this.filterDevicesLabel);
             this.groupBox2.Controls.Add(this.deviceCountLabel);
             this.groupBox2.Controls.Add(this.totalLabel);
             this.groupBox2.Controls.Add(this.devicesGridView);
@@ -491,6 +495,23 @@
             this.groupBox2.TabIndex = 6;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Devices";
+            // 
+            // filterDevicesTextBox
+            // 
+            this.filterDevicesTextBox.Location = new System.Drawing.Point(58, 49);
+            this.filterDevicesTextBox.Name = "filterDevicesTextBox";
+            this.filterDevicesTextBox.Size = new System.Drawing.Size(676, 22);
+            this.filterDevicesTextBox.TabIndex = 14;
+            this.filterDevicesTextBox.TextChanged += new System.EventHandler(this.filterDevicesTextBox_TextChanged);
+            // 
+            // filterDevicesLabel
+            // 
+            this.filterDevicesLabel.AutoSize = true;
+            this.filterDevicesLabel.Location = new System.Drawing.Point(7, 52);
+            this.filterDevicesLabel.Name = "filterDevicesLabel";
+            this.filterDevicesLabel.Size = new System.Drawing.Size(37, 16);
+            this.filterDevicesLabel.TabIndex = 13;
+            this.filterDevicesLabel.Text = "Filter:";
             // 
             // deviceCountLabel
             // 
@@ -519,12 +540,12 @@
             this.devicesGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.devicesGridView.ContextMenuStrip = this.devicesGridViewContextMenu;
             this.devicesGridView.EditMode = System.Windows.Forms.DataGridViewEditMode.EditProgrammatically;
-            this.devicesGridView.Location = new System.Drawing.Point(5, 49);
+            this.devicesGridView.Location = new System.Drawing.Point(5, 82);
             this.devicesGridView.Margin = new System.Windows.Forms.Padding(2);
             this.devicesGridView.MultiSelect = true;
             this.devicesGridView.Name = "devicesGridView";
             this.devicesGridView.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.devicesGridView.Size = new System.Drawing.Size(729, 458);
+            this.devicesGridView.Size = new System.Drawing.Size(729, 425);
             this.devicesGridView.TabIndex = 9;
             this.devicesGridView.DataBindingComplete += new System.Windows.Forms.DataGridViewBindingCompleteEventHandler(this.devicesGridView_DataBindingComplete);
             this.devicesGridView.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.devicesGridView_KeyPress);
@@ -541,44 +562,44 @@
             this.toolStripSeparator2,
             this.showDevicePropertiesToolStripMenuItem});
             this.devicesGridViewContextMenu.Name = "devicesGridViewContextMenu";
-            this.devicesGridViewContextMenu.Size = new System.Drawing.Size(300, 104);
+            this.devicesGridViewContextMenu.Size = new System.Drawing.Size(313, 104);
             this.devicesGridViewContextMenu.Opened += new System.EventHandler(this.devicesGridViewContextMenu_Opened);
             // 
             // copyAllToolStripMenuItem
             // 
             this.copyAllToolStripMenuItem.Name = "copyAllToolStripMenuItem";
-            this.copyAllToolStripMenuItem.Size = new System.Drawing.Size(299, 22);
+            this.copyAllToolStripMenuItem.Size = new System.Drawing.Size(312, 22);
             this.copyAllToolStripMenuItem.Text = "Copy data for all device";
             this.copyAllToolStripMenuItem.Click += new System.EventHandler(this.copyAllToolStripMenuItem_Click);
             // 
             // copySelectedToolStripMenuItem
             // 
             this.copySelectedToolStripMenuItem.Name = "copySelectedToolStripMenuItem";
-            this.copySelectedToolStripMenuItem.Size = new System.Drawing.Size(299, 22);
+            this.copySelectedToolStripMenuItem.Size = new System.Drawing.Size(312, 22);
             this.copySelectedToolStripMenuItem.Text = "Copy data for selected device(s)";
             this.copySelectedToolStripMenuItem.Click += new System.EventHandler(this.copySelectedToolStripMenuItem_Click);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(296, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(309, 6);
             // 
             // getDeviceConnectionStringToolStripMenuItem
             // 
             this.getDeviceConnectionStringToolStripMenuItem.Name = "getDeviceConnectionStringToolStripMenuItem";
-            this.getDeviceConnectionStringToolStripMenuItem.Size = new System.Drawing.Size(299, 22);
+            this.getDeviceConnectionStringToolStripMenuItem.Size = new System.Drawing.Size(312, 22);
             this.getDeviceConnectionStringToolStripMenuItem.Text = "Copy connection string for selected device(s)";
             this.getDeviceConnectionStringToolStripMenuItem.Click += new System.EventHandler(this.getDeviceConnectionStringToolStripMenuItem_Click);
             // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(296, 6);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(309, 6);
             // 
             // showDevicePropertiesToolStripMenuItem
             // 
             this.showDevicePropertiesToolStripMenuItem.Name = "showDevicePropertiesToolStripMenuItem";
-            this.showDevicePropertiesToolStripMenuItem.Size = new System.Drawing.Size(299, 22);
+            this.showDevicePropertiesToolStripMenuItem.Size = new System.Drawing.Size(312, 22);
             this.showDevicePropertiesToolStripMenuItem.Text = "Show device properties";
             this.showDevicePropertiesToolStripMenuItem.Click += new System.EventHandler(this.showDevicePropertiesToolStripMenuItem_Click);
             // 
@@ -1396,6 +1417,8 @@
         private System.Windows.Forms.DataGridView messageSystemPropertiesGrid;
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn1;
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn2;
+        private System.Windows.Forms.TextBox filterDevicesTextBox;
+        private System.Windows.Forms.Label filterDevicesLabel;
     }
 }
 
