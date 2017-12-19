@@ -63,14 +63,16 @@ namespace ProvisioningServiceEnrollmentGroup
 
                 #region Create the enrollmentGroup
                 Console.WriteLine("\nAdding new enrollmentGroup...");
-                EnrollmentGroup enrollmentGroupResult = await provisioningServiceClient.CreateOrUpdateEnrollmentGroupAsync(enrollmentGroup);
+                EnrollmentGroup enrollmentGroupResult = 
+                    await provisioningServiceClient.CreateOrUpdateEnrollmentGroupAsync(enrollmentGroup).ConfigureAwait(false);
                 Console.WriteLine("\nEnrollmentGroup created with success.");
                 Console.WriteLine(enrollmentGroupResult);
                 #endregion
 
                 #region Get info of enrollmentGroup
                 Console.WriteLine("\nGetting the enrollmentGroup information...");
-                EnrollmentGroup getResult = await provisioningServiceClient.GetEnrollmentGroupAsync(SampleEnrollmentGroupId);
+                EnrollmentGroup getResult = 
+                    await provisioningServiceClient.GetEnrollmentGroupAsync(SampleEnrollmentGroupId).ConfigureAwait(false);
                 Console.WriteLine(getResult);
                 #endregion
 
@@ -82,7 +84,7 @@ namespace ProvisioningServiceEnrollmentGroup
                     while (query.HasNext())
                     {
                         Console.WriteLine("\nQuerying the next enrollmentGroups...");
-                        QueryResult queryResult = await query.NextAsync();
+                        QueryResult queryResult = await query.NextAsync().ConfigureAwait(false);
                         Console.WriteLine(queryResult);
                     }
                 }
@@ -90,7 +92,7 @@ namespace ProvisioningServiceEnrollmentGroup
 
                 #region Delete info of enrollmentGroup
                 Console.WriteLine("\nDeleting the enrollmentGroup...");
-                await provisioningServiceClient.DeleteEnrollmentGroupAsync(getResult);
+                await provisioningServiceClient.DeleteEnrollmentGroupAsync(getResult).ConfigureAwait(false);
                 #endregion
             }
         }

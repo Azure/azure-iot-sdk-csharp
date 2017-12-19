@@ -2,13 +2,13 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
 using System.Net;
-using System.Text;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Devices.Common.Service.Auth;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -24,28 +24,36 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         ///
         /// <param name="enrollmentGroup">is an <see cref="EnrollmentGroup"/> that describes the enrollment that will be created of updated. It cannot be <code>null</code>.</param>
         /// <returns>An <see cref="EnrollmentGroup"/> with the result of the creation or update request.</returns>
-        /// <exception cref="ArgumentException">if the provided parameter is not correct.</exception>
+        /// <exception cref="ArgumentNullException">if the provided parameter is not correct.</exception>
         /// <exception cref="ProvisioningServiceClientTransportException">if the SDK failed to send the request to the Device Provisioning Service.</exception>
         /// <exception cref="ProvisioningServiceClientException">if the Device Provisioning Service was not able to create or update the enrollment.</exception>
-        internal static Task<EnrollmentGroup> CreateOrUpdateAsync(
+        internal static async Task<EnrollmentGroup> CreateOrUpdateAsync(
             IContractApiHttp contractApiHttp,
             EnrollmentGroup enrollmentGroup,
             CancellationToken cancellationToken)
         {
-            /* SRS_ENROLLMENT_GROUP_MANAGER_28_001: [The CreateOrUpdateAsync shall throw ArgumentException if the provided enrollmentGroup is null.] */
+            /* SRS_ENROLLMENT_GROUP_MANAGER_28_001: [The CreateOrUpdateAsync shall throw ArgumentNullException if the provided enrollmentGroup is null.] */
             if (enrollmentGroup == null)
             {
-                throw new ArgumentException(nameof(enrollmentGroup));
+                throw new ArgumentNullException(nameof(enrollmentGroup));
             }
 
             /* SRS_ENROLLMENT_GROUP_MANAGER_28_002: [The CreateOrUpdateAsync shall sent the Put HTTP request to create or update the enrollmentGroup.] */
-            /* SRS_ENROLLMENT_GROUP_MANAGER_28_003: [The CreateOrUpdateAsync shall return an enrollmentGroup object created from the body of the HTTP response.] */
-            return contractApiHttp.PutAsync(
+            ContractApiResponse contractApiResponse = await contractApiHttp.RequestAsync(
+                HttpMethod.Put,
                 GetEnrollmentUri(enrollmentGroup.EnrollmentGroupId),
-                enrollmentGroup,
                 null,
+                JsonConvert.SerializeObject(enrollmentGroup),
                 null,
-                cancellationToken);
+                cancellationToken).ConfigureAwait(false);
+
+            if(contractApiResponse.Body == null)
+            {
+                throw new ProvisioningServiceClientHttpException(contractApiResponse, true);
+            }
+
+            /* SRS_ENROLLMENT_GROUP_MANAGER_28_003: [The CreateOrUpdateAsync shall return an enrollmentGroup object created from the body of the HTTP response.] */
+            return JsonConvert.DeserializeObject<EnrollmentGroup>(contractApiResponse.Body);
         }
 
         /// <summary>
@@ -58,7 +66,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <exception cref="ArgumentException">if the provided parameter is not correct.</exception>
         /// <exception cref="ProvisioningServiceClientTransportException">if the SDK failed to send the request to the Device Provisioning Service.</exception>
         /// <exception cref="ProvisioningServiceClientException">if the Device Provisioning Service was not able to execute the get operation.</exception>
-        internal static Task<EnrollmentGroup> GetAsync(
+        internal static async Task<EnrollmentGroup> GetAsync(
             IContractApiHttp contractApiHttp,
             string enrollmentGroupId,
             CancellationToken cancellationToken)
@@ -67,12 +75,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             ParserUtils.EnsureValidId(enrollmentGroupId);
 
             /* SRS_ENROLLMENT_GROUP_MANAGER_28_008: [The GetAsync shall sent the Get HTTP request to get the enrollmentGroup information.] */
-            /* SRS_ENROLLMENT_GROUP_MANAGER_28_009: [The GetAsync shall return an EnrollmentGroup object created from the body of the HTTP response.] */
-            return contractApiHttp.GetAsync<EnrollmentGroup>(
+            ContractApiResponse contractApiResponse = await contractApiHttp.RequestAsync(
+                HttpMethod.Get,
                 GetEnrollmentUri(enrollmentGroupId),
                 null,
                 null,
-                cancellationToken);
+                null,
+                cancellationToken).ConfigureAwait(false);
+
+            if (contractApiResponse.Body == null)
+            {
+                throw new ProvisioningServiceClientHttpException(contractApiResponse, true);
+            }
+
+            /* SRS_ENROLLMENT_GROUP_MANAGER_28_009: [The GetAsync shall return an EnrollmentGroup object created from the body of the HTTP response.] */
+            return JsonConvert.DeserializeObject<EnrollmentGroup>(contractApiResponse.Body);
         }
 
         /// <summary>
@@ -81,27 +98,28 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <see cref="ProvisioningServiceClient.DeleteEnrollmentGroupAsync(EnrollmentGroup)"/>
         ///
         /// <param name="enrollmentGroup">is an <see cref="EnrollmentGroup"/> that describes the enrollment that will be deleted. It cannot be <code>null</code>.</param>
-        /// <exception cref="ArgumentException">if the provided parameter is not correct.</exception>
+        /// <exception cref="ArgumentNullException">if the provided parameter is not correct.</exception>
         /// <exception cref="ProvisioningServiceClientTransportException">if the SDK failed to send the request to the Device Provisioning Service.</exception>
         /// <exception cref="ProvisioningServiceClientException">if the Device Provisioning Service was not able to execute the delete operation.</exception>
-        internal static Task DeleteAsync(
+        internal static async Task DeleteAsync(
             IContractApiHttp contractApiHttp,
             EnrollmentGroup enrollmentGroup,
             CancellationToken cancellationToken)
         {
-            /* SRS_ENROLLMENT_GROUP_MANAGER_28_010: [The DeleteAsync shall throw ArgumentException if the provided enrollmentGroup is null.] */
+            /* SRS_ENROLLMENT_GROUP_MANAGER_28_010: [The DeleteAsync shall throw ArgumentNullException if the provided enrollmentGroup is null.] */
             if (enrollmentGroup == null)
             {
-                throw new ArgumentException(nameof(enrollmentGroup));
+                throw new ArgumentNullException(nameof(enrollmentGroup));
             }
 
             /* SRS_ENROLLMENT_GROUP_MANAGER_28_011: [The DeleteAsync shall sent the Delete HTTP request to remove the enrollmentGroup.] */
-            return contractApiHttp.DeleteAsync(
+            await contractApiHttp.RequestAsync(
+                HttpMethod.Delete,
                 GetEnrollmentUri(enrollmentGroup.EnrollmentGroupId),
-                enrollmentGroup.ETag,
                 null,
                 null,
-                cancellationToken);
+                null,
+                cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -115,7 +133,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <exception cref="ArgumentException">if the provided registrationId is not correct.</exception>
         /// <exception cref="ProvisioningServiceClientTransportException">if the SDK failed to send the request to the Device Provisioning Service.</exception>
         /// <exception cref="ProvisioningServiceClientException">if the Device Provisioning Service was not able to execute the delete operation.</exception>
-        internal static Task DeleteAsync(
+        internal static async Task DeleteAsync(
             IContractApiHttp contractApiHttp,
             string enrollmentGroupId,
             CancellationToken cancellationToken,
@@ -125,12 +143,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             ParserUtils.EnsureValidId(enrollmentGroupId);
 
             /* SRS_ENROLLMENT_GROUP_MANAGER_28_013: [The DeleteAsync shall sent the Delete HTTP request to remove the EnrollmentGroup.] */
-            return contractApiHttp.DeleteAsync(
+            await contractApiHttp.RequestAsync(
+                HttpMethod.Delete,
                 GetEnrollmentUri(enrollmentGroupId),
+                null,
+                null,
                 eTag,
-                null,
-                null,
-                cancellationToken);
+                cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>

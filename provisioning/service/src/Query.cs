@@ -121,7 +121,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             _contractApiHttp = new ContractApiHttp(
                 serviceConnectionString.HttpsEndpoint,
                 serviceConnectionString,
-                ExceptionHandlingHelper.GetDefaultErrorMapping(),
                 client => { });
 
             /* SRS_QUERY_21_006: [The constructor shall store the provided  `pageSize`, and `cancelationToken`.] */
@@ -185,7 +184,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             _hasNext = true;
 
             /* SRS_QUERY_21_013: [The next shall return the next page of results by calling the next().] */
-            return await NextAsync();
+            return await NextAsync().ConfigureAwait(false);
         }
 
         /// <summary>
@@ -220,7 +219,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 headerParameters,
                 _querySpecificationJson,
                 null,
-                _cancellationToken);
+                _cancellationToken).ConfigureAwait(false);
 
             /* SRS_QUERY_21_018: [The next shall create and return a new instance of the QueryResult using the `x-ms-item-type` as type, `x-ms-continuation` as the next continuationToken, and the message body.] */
             httpResponse.Fields.TryGetValue(ItemTypeHeaderKey, out string type);
@@ -240,7 +239,20 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </summary>
         public void Dispose()
         {
-            _contractApiHttp.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (_contractApiHttp != null)
+                { 
+                    _contractApiHttp.Dispose();
+                    _contractApiHttp = null;
+                }
+            }
         }
 
         private static Uri GetQueryUri(string path)

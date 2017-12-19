@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     public sealed class ProvisioningServiceClientTransportException : ProvisioningServiceClientException
     {
         public ProvisioningServiceClientTransportException(string message)
-            : this(message, null)
+            : this(message, innerException: null)
         {
         }
 
@@ -23,12 +23,5 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             : base(message, innerException, isTransient: true)
         {
         }
-
-//#if !WINDOWS_UWP && !NETSTANDARD1_3
-//        ProvisioningServiceClientTransportException(SerializationInfo info, StreamingContext context)
-//            : base(info, context)
-//        {
-//        }
-//#endif
     }
 }

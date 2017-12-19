@@ -72,7 +72,7 @@ namespace ProvisioningServiceBulkOperation
                 #region Create the individualEnrollment
                 Console.WriteLine("\nRunning the bulk operation to create the individualEnrollments...");
                 BulkEnrollmentOperationResult bulkEnrollmentOperationResult =
-                    await provisioningServiceClient.RunBulkEnrollmentOperationAsync(BulkOperationMode.Create, individualEnrollments);
+                    await provisioningServiceClient.RunBulkEnrollmentOperationAsync(BulkOperationMode.Create, individualEnrollments).ConfigureAwait(false);
                 Console.WriteLine("\nResult of the Create bulk enrollment.");
                 Console.WriteLine(bulkEnrollmentOperationResult);
                 #endregion
@@ -82,7 +82,8 @@ namespace ProvisioningServiceBulkOperation
                 {
                     String registrationId = individualEnrollment.RegistrationId;
                     Console.WriteLine($"\nGetting the {nameof(individualEnrollment)} information for {registrationId}...");
-                    IndividualEnrollment getResult = await provisioningServiceClient.GetIndividualEnrollmentAsync(registrationId);
+                    IndividualEnrollment getResult = 
+                        await provisioningServiceClient.GetIndividualEnrollmentAsync(registrationId).ConfigureAwait(false);
                     Console.WriteLine(getResult);
                 }
                 #endregion
@@ -95,7 +96,7 @@ namespace ProvisioningServiceBulkOperation
                     while (query.HasNext())
                     {
                         Console.WriteLine("\nQuerying the next enrollments...");
-                        QueryResult queryResult = await query.NextAsync();
+                        QueryResult queryResult = await query.NextAsync().ConfigureAwait(false);
                         Console.WriteLine(queryResult);
                     }
                 }
@@ -104,7 +105,7 @@ namespace ProvisioningServiceBulkOperation
                 #region Delete info of individualEnrollment
                 Console.WriteLine("\nDeleting the set of individualEnrollments...");
                 bulkEnrollmentOperationResult =
-                    await provisioningServiceClient.RunBulkEnrollmentOperationAsync(BulkOperationMode.Delete, individualEnrollments);
+                    await provisioningServiceClient.RunBulkEnrollmentOperationAsync(BulkOperationMode.Delete, individualEnrollments).ConfigureAwait(false);
                 Console.WriteLine(bulkEnrollmentOperationResult);
                 #endregion
 

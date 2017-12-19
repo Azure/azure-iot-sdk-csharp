@@ -9,6 +9,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Devices.Common.Service.Auth;
+using System.Net.Http;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -37,7 +39,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <exception cref="ArgumentException">if the provided parameter is not correct.</exception>
         /// <exception cref="ProvisioningServiceClientTransportException">if the SDK failed to send the request to the Device Provisioning Service.</exception>
         /// <exception cref="ProvisioningServiceClientException">if the Device Provisioning Service was not able to create or update the enrollment.</exception>
-        internal static Task<IndividualEnrollment> CreateOrUpdateAsync(
+        internal static async Task<IndividualEnrollment> CreateOrUpdateAsync(
             IContractApiHttp contractApiHttp, 
             IndividualEnrollment individualEnrollment,
             CancellationToken cancellationToken)
@@ -49,13 +51,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             }
 
             /* SRS_INDIVIDUAL_ENROLLMENT_MANAGER_21_002: [The CreateOrUpdateAsync shall sent the Put HTTP request to create or update the individualEnrollment.] */
+            ContractApiResponse contractApiResponse = await contractApiHttp.RequestAsync(
+                HttpMethod.Put,
+                GetEnrollmentUri(individualEnrollment.RegistrationId),
+                null,
+                JsonConvert.SerializeObject(individualEnrollment),
+                null,
+                cancellationToken).ConfigureAwait(false);
+
+            if (contractApiResponse.Body == null)
+            {
+                throw new ProvisioningServiceClientHttpException(contractApiResponse, true);
+            }
+
             /* SRS_INDIVIDUAL_ENROLLMENT_MANAGER_21_003: [The CreateOrUpdateAsync shall return an IndividualEnrollment object created from the body of the HTTP response.] */
-            return contractApiHttp.PutAsync(
-                GetEnrollmentUri(individualEnrollment.RegistrationId), 
-                individualEnrollment, 
-                null,
-                null,
-                cancellationToken);
+            return JsonConvert.DeserializeObject<IndividualEnrollment>(contractApiResponse.Body);
         }
 
         /// <summary>
@@ -69,7 +79,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <exception cref="ArgumentException">if the provided parameters are not correct.</exception>
         /// <exception cref="ProvisioningServiceClientTransportException">if the SDK failed to send the request to the Device Provisioning Service.</exception>
         /// <exception cref="ProvisioningServiceClientException">if the Device Provisioning Service was not able to execute the bulk operation.</exception>
-        internal static Task<BulkEnrollmentOperationResult> BulkOperationAsync(
+        internal static async Task<BulkEnrollmentOperationResult> BulkOperationAsync(
             IContractApiHttp contractApiHttp,
             BulkOperationMode bulkOperationMode, 
             IEnumerable<IndividualEnrollment> individualEnrollments,
@@ -83,13 +93,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             }
 
             /* SRS_INDIVIDUAL_ENROLLMENT_MANAGER_21_005: [The BulkOperationAsync shall sent the Put HTTP request to run the bulk operation to the collection of the individualEnrollment.] */
-            /* SRS_INDIVIDUAL_ENROLLMENT_MANAGER_21_006: [The BulkOperationAsync shall return an BulkEnrollmentOperationResult object created from the body of the HTTP response.] */
-            return contractApiHttp.PostAsync<string, BulkEnrollmentOperationResult>(
+            ContractApiResponse contractApiResponse = await contractApiHttp.RequestAsync(
+                HttpMethod.Post,
                 GetEnrollmentUri(),
+                null,
                 BulkEnrollmentOperation.ToJson(bulkOperationMode, individualEnrollments),
                 null,
-                null,
-                cancellationToken);
+                cancellationToken).ConfigureAwait(false);
+
+            if (contractApiResponse.Body == null)
+            {
+                throw new ProvisioningServiceClientHttpException(contractApiResponse, true);
+            }
+
+            /* SRS_INDIVIDUAL_ENROLLMENT_MANAGER_21_006: [The BulkOperationAsync shall return an BulkEnrollmentOperationResult object created from the body of the HTTP response.] */
+            return JsonConvert.DeserializeObject<BulkEnrollmentOperationResult>(contractApiResponse.Body);
         }
 
         /// <summary>
@@ -102,7 +120,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <exception cref="ArgumentException">if the provided parameter is not correct.</exception>
         /// <exception cref="ProvisioningServiceClientTransportException">if the SDK failed to send the request to the Device Provisioning Service.</exception>
         /// <exception cref="ProvisioningServiceClientException">if the Device Provisioning Service was not able to execute the get operation.</exception>
-        internal static Task<IndividualEnrollment> GetAsync(
+        internal static async Task<IndividualEnrollment> GetAsync(
             IContractApiHttp contractApiHttp,
             string registrationId,
             CancellationToken cancellationToken)
@@ -111,12 +129,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             ParserUtils.EnsureRegistrationId(registrationId);
 
             /* SRS_INDIVIDUAL_ENROLLMENT_MANAGER_21_008: [The GetAsync shall sent the Get HTTP request to get the individualEnrollment information.] */
-            /* SRS_INDIVIDUAL_ENROLLMENT_MANAGER_21_009: [The GetAsync shall return an IndividualEnrollment object created from the body of the HTTP response.] */
-            return contractApiHttp.GetAsync<IndividualEnrollment>(
+            ContractApiResponse contractApiResponse = await contractApiHttp.RequestAsync(
+                HttpMethod.Get,
                 GetEnrollmentUri(registrationId),
                 null,
                 null,
-                cancellationToken);
+                null,
+                cancellationToken).ConfigureAwait(false);
+
+            if (contractApiResponse.Body == null)
+            {
+                throw new ProvisioningServiceClientHttpException(contractApiResponse, true);
+            }
+
+            /* SRS_INDIVIDUAL_ENROLLMENT_MANAGER_21_009: [The GetAsync shall return an IndividualEnrollment object created from the body of the HTTP response.] */
+            return JsonConvert.DeserializeObject<IndividualEnrollment>(contractApiResponse.Body);
         }
 
 
@@ -129,7 +156,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <exception cref="ArgumentException">if the provided parameter is not correct.</exception>
         /// <exception cref="ProvisioningServiceClientTransportException">if the SDK failed to send the request to the Device Provisioning Service.</exception>
         /// <exception cref="ProvisioningServiceClientException">if the Device Provisioning Service was not able to execute the delete operation.</exception>
-        internal static Task DeleteAsync(
+        internal static async Task DeleteAsync(
             IContractApiHttp contractApiHttp,
             IndividualEnrollment individualEnrollment,
             CancellationToken cancellationToken)
@@ -141,12 +168,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             }
 
             /* SRS_INDIVIDUAL_ENROLLMENT_MANAGER_21_011: [The DeleteAsync shall sent the Delete HTTP request to remove the individualEnrollment.] */
-            return contractApiHttp.DeleteAsync(
+            await contractApiHttp.RequestAsync(
+                HttpMethod.Delete,
                 GetEnrollmentUri(individualEnrollment.RegistrationId),
-                individualEnrollment.ETag,
                 null,
                 null,
-                cancellationToken);
+                null,
+                cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -160,7 +188,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <exception cref="ArgumentException">if the provided registrationId is not correct.</exception>
         /// <exception cref="ProvisioningServiceClientTransportException">if the SDK failed to send the request to the Device Provisioning Service.</exception>
         /// <exception cref="ProvisioningServiceClientException">if the Device Provisioning Service was not able to execute the delete operation.</exception>
-        internal static Task DeleteAsync(
+        internal static async Task DeleteAsync(
             IContractApiHttp contractApiHttp,
             string registrationId,
             CancellationToken cancellationToken,
@@ -170,12 +198,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             ParserUtils.EnsureRegistrationId(registrationId);
 
             /* SRS_INDIVIDUAL_ENROLLMENT_MANAGER_21_013: [The DeleteAsync shall sent the Delete HTTP request to remove the individualEnrollment.] */
-            return contractApiHttp.DeleteAsync(
+            await contractApiHttp.RequestAsync(
+                HttpMethod.Delete,
                 GetEnrollmentUri(registrationId),
+                null,
+                null,
                 eTag,
-                null,
-                null,
-                cancellationToken);
+                cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -214,6 +243,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             registrationId = WebUtility.UrlEncode(registrationId);
             return new Uri(EnrollmentIdUriFormat.FormatInvariant(ServiceName, registrationId, SDKUtils.ApiVersionQueryString), UriKind.Relative);
         }
+
         private static Uri GetEnrollmentUri()
         {
             return new Uri(EnrollmentUriFormat.FormatInvariant(ServiceName, SDKUtils.ApiVersionQueryString), UriKind.Relative);

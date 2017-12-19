@@ -72,14 +72,16 @@ namespace ProvisioningServiceEnrollment
 
                 #region Create the individualEnrollment
                 Console.WriteLine("\nAdding new individualEnrollment...");
-                IndividualEnrollment individualEnrollmentResult = await provisioningServiceClient.CreateOrUpdateIndividualEnrollmentAsync(individualEnrollment);
+                IndividualEnrollment individualEnrollmentResult = 
+                    await provisioningServiceClient.CreateOrUpdateIndividualEnrollmentAsync(individualEnrollment).ConfigureAwait(false);
                 Console.WriteLine("\nIndividualEnrollment created with success.");
                 Console.WriteLine(individualEnrollmentResult);
                 #endregion
 
                 #region Get info of individualEnrollment
                 Console.WriteLine("\nGetting the individualEnrollment information...");
-                IndividualEnrollment getResult = await provisioningServiceClient.GetIndividualEnrollmentAsync(SampleRegistrationId);
+                IndividualEnrollment getResult = 
+                    await provisioningServiceClient.GetIndividualEnrollmentAsync(SampleRegistrationId).ConfigureAwait(false);
                 Console.WriteLine(getResult);
                 #endregion
 
@@ -91,7 +93,7 @@ namespace ProvisioningServiceEnrollment
                     while (query.HasNext())
                     {
                         Console.WriteLine("\nQuerying the next enrollments...");
-                        QueryResult queryResult = await query.NextAsync();
+                        QueryResult queryResult = await query.NextAsync().ConfigureAwait(false);
                         Console.WriteLine(queryResult);
                     }
                 }
@@ -99,7 +101,7 @@ namespace ProvisioningServiceEnrollment
 
                 #region Delete info of individualEnrollment
                 Console.WriteLine("\nDeleting the individualEnrollment...");
-                await provisioningServiceClient.DeleteIndividualEnrollmentAsync(getResult);
+                await provisioningServiceClient.DeleteIndividualEnrollmentAsync(getResult).ConfigureAwait(false);
                 #endregion
             }
         }
