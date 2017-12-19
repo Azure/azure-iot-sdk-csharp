@@ -17,17 +17,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         public IDictionary<string, string> Fields { get; private set; }
         public string ErrorMessage { get; private set; }
 
-        public ProvisioningServiceClientHttpException(string registrationId)
-            : base(registrationId, string.Empty) { }
-
-        public ProvisioningServiceClientHttpException(string registrationId, string trackingId)
-            : base("Device Provisioning Service error for " + registrationId, trackingId) { }
-
-        public ProvisioningServiceClientHttpException(string message, Exception innerException)
-            : base(message, innerException) { }
-
-        internal ProvisioningServiceClientHttpException(ContractApiResponse response) 
-            : base(response.ErrorMessage)
+        internal ProvisioningServiceClientHttpException(ContractApiResponse response, bool isTransient) 
+            : base($"{response.ErrorMessage}:{response.Body}", isTransient: isTransient)
         {
             Body = response.Body;
             StatusCode = response.StatusCode;

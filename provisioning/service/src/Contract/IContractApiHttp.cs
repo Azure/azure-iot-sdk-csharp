@@ -20,32 +20,5 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             string body,
             string ifMatch,
             CancellationToken cancellationToken);
-
-        Task<T> GetAsync<T>(
-            Uri requestUri,
-            IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> errorMappingOverrides,
-            IDictionary<string, string> customHeaders,
-            CancellationToken cancellationToken);
-
-        Task<T> PutAsync<T>(
-            Uri requestUri,
-            T entity,
-            IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> errorMappingOverrides,
-            IDictionary<string, string> customHeaders,
-            CancellationToken cancellationToken) where T: IETagHolder;
-
-        Task<T2> PostAsync<T, T2>(
-            Uri requestUri,
-            T entity,
-            IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> errorMappingOverrides,
-            IDictionary<string, string> customHeaders,
-            CancellationToken cancellationToken);
-
-        Task DeleteAsync(
-            Uri requestUri,
-            string ifMatch,
-            IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> errorMappingOverrides,
-            IDictionary<string, string> customHeaders,
-            CancellationToken cancellationToken);
     }
 }

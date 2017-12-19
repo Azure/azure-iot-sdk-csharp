@@ -53,12 +53,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///                   \      +----------------------------+------------------------------+------+         |         | o |
     ///                    \                         |                             |                          |         | n |
     ///  +--------+      +--+------------------------+-----------------------------+--------------------------+-----+   | s |
-    ///  |  auth  |----->|                                     ContractApiHttp                                      |   |   |
+    ///  |  auth  |----->|                                    IContractApiHttp                                      |   |   |
     ///  +--------+      +-------------------------------------------+----------------------------------------------+   +===+
     ///                                                              |
     ///                                                              |
     ///                        +-------------------------------------+------------------------------------------+
-    ///                        |                 com.microsoft.azure.sdk.iot.deps.transport.http                |
+    ///                        |                              System.Net.Http                                   |
     ///                        +--------------------------------------------------------------------------------+
     /// </code>
     /// </remarks>
@@ -107,7 +107,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             _contractApiHttp = new ContractApiHttp(
                 _provisioningConnectionString.HttpsEndpoint,
                 _provisioningConnectionString,
-                ExceptionHandlingHelper.GetDefaultErrorMapping(),
                 client => { });
         }
 
@@ -116,12 +115,20 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </summary>
         public void Dispose()
         {
-            if (_contractApiHttp != null)
-            {
-                _contractApiHttp.Dispose();
-                _contractApiHttp = null;
-            }
+            Dispose(true);
             GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (_contractApiHttp != null)
+                {
+                    _contractApiHttp.Dispose();
+                    _contractApiHttp = null;
+                }
+            }
         }
 
         /// <summary>
@@ -159,20 +166,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         ///
         /// public static async Task RunSample()
         /// {
-        ///     // *********************************** Create a Provisioning Service Client ************************************
-        ///     ProvisioningServiceClient provisioningServiceClient =
-        ///             ProvisioningServiceClient.CreateFromConnectionString(PROVISIONING_CONNECTION_STRING);
-        ///
-        ///     // ************************************ Create the individualEnrollment ****************************************
-        ///     Console.WriteLine("\nCreate a new individualEnrollment...");
-        ///     Attestation attestation = new TpmAttestation(TPM_ENDORSEMENT_KEY);
-        ///     IndividualEnrollment individualEnrollment =
-        ///         new IndividualEnrollment(
-        ///             REGISTRATION_ID,
-        ///             attestation);
-        ///     individualEnrollment.ProvisioningStatus = ProvisioningStatus.Disabled;
-        ///     IndividualEnrollment individualEnrollmentResult = await provisioningServiceClient.CreateOrUpdateIndividualEnrollmentAsync(individualEnrollment);
-        ///     Console.WriteLine("\nIndividualEnrollment created with success...");
+        ///     using(ProvisioningServiceClient provisioningServiceClient =
+        ///             ProvisioningServiceClient.CreateFromConnectionString(PROVISIONING_CONNECTION_STRING))
+        ///     {
+        ///         // ************************************ Create the individualEnrollment ****************************************
+        ///         Console.WriteLine("\nCreate a new individualEnrollment...");
+        ///         Attestation attestation = new TpmAttestation(TPM_ENDORSEMENT_KEY);
+        ///         IndividualEnrollment individualEnrollment =
+        ///             new IndividualEnrollment(
+        ///                 REGISTRATION_ID,
+        ///                 attestation);
+        ///         individualEnrollment.ProvisioningStatus = ProvisioningStatus.Disabled;
+        ///         IndividualEnrollment individualEnrollmentResult = 
+        ///             await provisioningServiceClient.CreateOrUpdateIndividualEnrollmentAsync(individualEnrollment).ConfigureAwait(false);
+        ///         Console.WriteLine("\nIndividualEnrollment created with success...");
+        ///     }
         /// }
         /// </code>
         ///
@@ -191,17 +199,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         ///
         /// public static async Task RunSample()
         /// {
-        ///     // *********************************** Create a Provisioning Service Client ************************************
-        ///     ProvisioningServiceClient provisioningServiceClient =
-        ///             ProvisioningServiceClient.CreateFromConnectionString(PROVISIONING_CONNECTION_STRING);
-        ///
-        ///     // ************************* Get the content of the previous individualEnrollment ******************************
-        ///     Console.WriteLine("\nGet the content of the previous individualEnrollment...");
-        ///     Attestation attestation = new TpmAttestation(TPM_ENDORSEMENT_KEY);
-        ///     IndividualEnrollment individualEnrollment = await deviceProvisioningServiceClient.GetIndividualEnrollmentAsync(REGISTRATION_ID);
-        ///     individualEnrollment.ProvisioningStatus = ProvisioningStatus.Enabled;
-        ///     IndividualEnrollment individualEnrollmentResult = await provisioningServiceClient.CreateOrUpdateIndividualEnrollmentAsync(individualEnrollment);
-        ///     Console.WriteLine("\nIndividualEnrollment updated with success...");
+        ///     using(ProvisioningServiceClient provisioningServiceClient =
+        ///             ProvisioningServiceClient.CreateFromConnectionString(PROVISIONING_CONNECTION_STRING))
+        ///     {
+        ///         // ************************* Get the content of the previous individualEnrollment ******************************
+        ///         Console.WriteLine("\nGet the content of the previous individualEnrollment...");
+        ///         Attestation attestation = new TpmAttestation(TPM_ENDORSEMENT_KEY);
+        ///         IndividualEnrollment individualEnrollment = 
+        ///             await deviceProvisioningServiceClient.GetIndividualEnrollmentAsync(REGISTRATION_ID).ConfigureAwait(false);
+        ///         individualEnrollment.ProvisioningStatus = ProvisioningStatus.Enabled;
+        ///         IndividualEnrollment individualEnrollmentResult = 
+        ///             await provisioningServiceClient.CreateOrUpdateIndividualEnrollmentAsync(individualEnrollment).ConfigureAwait(false);
+        ///         Console.WriteLine("\nIndividualEnrollment updated with success...");
+        ///     }
         /// }
         /// </code>
         /// </example>
@@ -472,6 +482,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return EnrollmentGroupManager.CreateOrUpdateAsync(_contractApiHttp, enrollmentGroup, CancellationToken.None);
         }
 
+        public Task<EnrollmentGroup> CreateOrUpdateEnrollmentGroupAsync(EnrollmentGroup enrollmentGroup, CancellationToken cancellationToken)
+        {
+            /* SRS_PROVISIONING_SERVICE_CLIENT_21_016: [The createOrUpdateEnrollmentGroup shall create a new Provisioning enrollmentGroup by calling the createOrUpdate in the EnrollmentGroupManager.] */
+            return EnrollmentGroupManager.CreateOrUpdateAsync(_contractApiHttp, enrollmentGroup, cancellationToken);
+        }
+
         /// <summary>
         /// Retrieve the enrollmentGroup information.
         /// </summary>
@@ -490,6 +506,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_017: [The getEnrollmentGroup shall retrieve the enrollmentGroup information for the provided enrollmentGroupId by calling the get in the EnrollmentGroupManager.] */
             return EnrollmentGroupManager.GetAsync(_contractApiHttp, enrollmentGroupId, CancellationToken.None);
+        }
+
+        public Task<EnrollmentGroup> GetEnrollmentGroupAsync(string enrollmentGroupId, CancellationToken cancellationToken)
+        {
+            /* SRS_PROVISIONING_SERVICE_CLIENT_21_017: [The getEnrollmentGroup shall retrieve the enrollmentGroup information for the provided enrollmentGroupId by calling the get in the EnrollmentGroupManager.] */
+            return EnrollmentGroupManager.GetAsync(_contractApiHttp, enrollmentGroupId, cancellationToken);
         }
 
         /// <summary>
@@ -516,6 +538,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return EnrollmentGroupManager.DeleteAsync(_contractApiHttp, enrollmentGroup, CancellationToken.None);
         }
 
+        public Task DeleteEnrollmentGroupAsync(EnrollmentGroup enrollmentGroup, CancellationToken cancellationToken)
+        {
+            /* SRS_PROVISIONING_SERVICE_CLIENT_21_018: [The deleteEnrollmentGroup shall delete the enrollmentGroup for the provided enrollmentGroup by calling the delete in the EnrollmentGroupManager.] */
+            return EnrollmentGroupManager.DeleteAsync(_contractApiHttp, enrollmentGroup, cancellationToken);
+        }
+
         /// <summary>
         /// Delete the enrollmentGroup information.
         /// </summary>
@@ -535,6 +563,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_019: [The deleteEnrollmentGroup shall delete the enrollmentGroup for the provided enrollmentGroupId by calling the delete in the EnrollmentGroupManager.] */
             return EnrollmentGroupManager.DeleteAsync(_contractApiHttp, enrollmentGroupId, CancellationToken.None);
+        }
+
+        public Task DeleteEnrollmentGroupAsync(string enrollmentGroupId, CancellationToken cancellationToken)
+        {
+            /* SRS_PROVISIONING_SERVICE_CLIENT_21_019: [The deleteEnrollmentGroup shall delete the enrollmentGroup for the provided enrollmentGroupId by calling the delete in the EnrollmentGroupManager.] */
+            return EnrollmentGroupManager.DeleteAsync(_contractApiHttp, enrollmentGroupId, cancellationToken);
         }
 
         /// <summary>
@@ -560,6 +594,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_020: [The deleteEnrollmentGroup shall delete the enrollmentGroup for the provided enrollmentGroupId and eTag by calling the delete in the EnrollmentGroupManager.] */
             return EnrollmentGroupManager.DeleteAsync(_contractApiHttp, enrollmentGroupId, CancellationToken.None, eTag);
+        }
+
+        public Task DeleteEnrollmentGroupAsync(string enrollmentGroupId, string eTag, CancellationToken cancellationToken)
+        {
+            /* SRS_PROVISIONING_SERVICE_CLIENT_21_020: [The deleteEnrollmentGroup shall delete the enrollmentGroup for the provided enrollmentGroupId and eTag by calling the delete in the EnrollmentGroupManager.] */
+            return EnrollmentGroupManager.DeleteAsync(_contractApiHttp, enrollmentGroupId, cancellationToken, eTag);
         }
 
         /// <summary>
@@ -651,6 +691,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return RegistrationStatusManager.GetAsync(_contractApiHttp, id, CancellationToken.None);
         }
 
+        public Task<DeviceRegistrationState> GetDeviceRegistrationStateAsync(string id, CancellationToken cancellationToken)
+        {
+            /* SRS_PROVISIONING_SERVICE_CLIENT_21_023: [The getDeviceRegistrationState shall retrieve the registrationStatus information for the provided id by calling the get in the registrationStatusManager.] */
+            return RegistrationStatusManager.GetAsync(_contractApiHttp, id, cancellationToken);
+        }
+
         /// <summary>
         /// Delete the registration status information.
         /// </summary>
@@ -672,6 +718,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return RegistrationStatusManager.DeleteAsync(_contractApiHttp, deviceRegistrationState, CancellationToken.None);
         }
 
+        public Task DeleteDeviceRegistrationStatusAsync(DeviceRegistrationState deviceRegistrationState, CancellationToken cancellationToken)
+        {
+            /* SRS_PROVISIONING_SERVICE_CLIENT_21_024: [The deleteDeviceRegistrationStatus shall delete the registrationStatus for the provided DeviceRegistrationState by calling the delete in the registrationStatusManager.] */
+            return RegistrationStatusManager.DeleteAsync(_contractApiHttp, deviceRegistrationState, cancellationToken);
+        }
+
         /// <summary>
         /// Delete the registration status information.
         /// </summary>
@@ -689,6 +741,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_025: [The deleteDeviceRegistrationStatus shall delete the registrationStatus for the provided id by calling the delete in the registrationStatusManager.] */
             return RegistrationStatusManager.DeleteAsync(_contractApiHttp, id, CancellationToken.None);
+        }
+
+        public Task DeleteDeviceRegistrationStatusAsync(string id, CancellationToken cancellationToken)
+        {
+            /* SRS_PROVISIONING_SERVICE_CLIENT_21_025: [The deleteDeviceRegistrationStatus shall delete the registrationStatus for the provided id by calling the delete in the registrationStatusManager.] */
+            return RegistrationStatusManager.DeleteAsync(_contractApiHttp, id, cancellationToken);
         }
 
         /// <summary>
@@ -712,6 +770,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_026: [The deleteDeviceRegistrationStatus shall delete the registrationStatus for the provided id and eTag by calling the delete in the registrationStatusManager.] */
             return RegistrationStatusManager.DeleteAsync(_contractApiHttp, id, CancellationToken.None, eTag);
+        }
+
+        public Task DeleteDeviceRegistrationStatusAsync(string id, string eTag, CancellationToken cancellationToken)
+        {
+            /* SRS_PROVISIONING_SERVICE_CLIENT_21_026: [The deleteDeviceRegistrationStatus shall delete the registrationStatus for the provided id and eTag by calling the delete in the registrationStatusManager.] */
+            return RegistrationStatusManager.DeleteAsync(_contractApiHttp, id, cancellationToken, eTag);
         }
 
         /// <summary>
