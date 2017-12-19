@@ -30,7 +30,9 @@ namespace ProvisioningDeviceClientX509
         public static async Task RunSample(X509Certificate2 certificate)
         {
             using (var security = new SecurityProviderX509Certificate(certificate))
+            // using (var transport = new ProvisioningTransportHandlerHttp())
             using (var transport = new ProvisioningTransportHandlerAmqp(TransportFallbackType.TcpOnly))
+            // using (var transport = new ProvisioningTransportHandlerMqtt(TransportFallbackType.TcpOnly))
             {
                 ProvisioningDeviceClient provClient = 
                     ProvisioningDeviceClient.Create(GlobalDeviceEndpoint, s_idScope, security, transport);
