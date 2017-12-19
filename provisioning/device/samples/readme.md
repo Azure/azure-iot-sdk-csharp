@@ -89,15 +89,9 @@ The samples use a TPMv2.0 simulator that uses a loopback TCP connection for comm
 
 ### How to run the samples
 
-_Preview only:_ Running the samples requires building from sources. This will not be necessary once NuGet packages are released.
-
 1. Prepare your development environment. Follow the instructions at https://github.com/Azure/azure-iot-sdk-csharp/blob/master/device/doc/devbox_setup.md
 
-2. Build the environment. In the root of your clone, type:
-
-```build -clean -wip_provisioning```
-
-3. While that's building, setup your IoT Hub Device Provisioning Service (preview) and associated IoT Hub. Follow the instructions at https://docs.microsoft.com/en-us/azure/iot-dps/quick-setup-auto-provision
+2. Setup your IoT Hub Device Provisioning Service and associated IoT Hub. Follow the instructions at https://docs.microsoft.com/en-us/azure/iot-dps/quick-setup-auto-provision
 
 4. Continue following specific instructions in each of the sample folders.
 

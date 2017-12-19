@@ -25,9 +25,10 @@ namespace ProvisioningDeviceClientTpm
 
             using (var security = new SecurityProviderTpmSimulator(RegistrationId))
             using (var transport = new ProvisioningTransportHandlerHttp())
+            // using (var transport = new ProvisioningTransportHandlerAmqp(TransportFallbackType.TcpOnly))
             {
 
-                // Note that the TPM simulator will create a NVChip file containing the simulated TPM state.
+                // Note that the TPM simulator will create an NVChip file containing the simulated TPM state.
                 Console.WriteLine("Extracting endorsement key.");
                 string base64EK = Convert.ToBase64String(security.GetEndorsementKey());
 
@@ -56,7 +57,7 @@ namespace ProvisioningDeviceClientTpm
 
                 var auth = new DeviceAuthenticationWithTpm(result.DeviceId, security);
 
-                using (DeviceClient iotClient = DeviceClient.Create(result.AssignedHub, auth, TransportType.Mqtt))
+                using (DeviceClient iotClient = DeviceClient.Create(result.AssignedHub, auth, TransportType.Http1))
                 {
                     Console.WriteLine("DeviceClient OpenAsync.");
                     await iotClient.OpenAsync();
