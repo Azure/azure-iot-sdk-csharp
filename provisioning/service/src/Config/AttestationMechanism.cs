@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///     the attestation mechanism, see the external API <see cref="Attestation"/>.
     /// </remarks>
     /// <seealso cref="https://docs.microsoft.com/en-us/rest/api/iot-dps/deviceenrollment">Device Enrollment</seealso>
-    public sealed class AttestationMechanism
+    internal sealed class AttestationMechanism
     {
         /// <summary>
         /// CONSTRUCTOR
@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             /* SRS_ATTESTATION_MECHANISM_21_001: [The constructor shall throw ArgumentNullException if the provided attestation is null.] */
             if (attestation == null)
             {
-                throw new ArgumentNullException("Attestation cannot be null");
+                throw new ArgumentNullException(nameof(attestation));
             }
 
             if (attestation is TpmAttestation)

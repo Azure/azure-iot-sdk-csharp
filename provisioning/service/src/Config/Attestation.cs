@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// For now, the provisioning service supports <see cref="TpmAttestation"/> or <see cref="X509Attestation"/>.
     /// </remarks>
     /// <see cref="https://docs.microsoft.com/en-us/rest/api/iot-dps/deviceenrollment">Device Enrollment</see>
-    public class Attestation
+    public abstract class Attestation
     {
         // Abstract class fully implemented by the child.
     }

@@ -51,13 +51,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Client certificates.
         /// </summary>
         [JsonProperty(PropertyName = "clientCertificates", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public X509Certificates ClientCertificates { get; private set; }
+        internal X509Certificates ClientCertificates { get; private set; }
 
         /// <summary>
         /// Signing certificates.
         /// </summary>
         [JsonProperty(PropertyName = "signingCertificates", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public X509Certificates RootCertificates { get; private set; }
+        internal X509Certificates RootCertificates { get; private set; }
 
         /// <summary>
         /// Certificates Authority references.

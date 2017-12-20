@@ -101,8 +101,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             /* SRS_INDIVIDUAL_ENROLLMENT_21_001: [The constructor shall store the provided parameters.] */
             /* SRS_INDIVIDUAL_ENROLLMENT_21_002: [The constructor shall throws ArgumentNullException if one of the provided parameters is null.] */
-            RegistrationId = registrationId ?? throw new ArgumentNullException("regitrationId cannot be null");
-            Attestation = attestation ?? throw new ArgumentNullException("attestation cannot be null");
+            RegistrationId = registrationId ?? throw new ArgumentNullException(nameof(registrationId));
+            Attestation = attestation ?? throw new ArgumentNullException(nameof(attestation));
         }
 
         /// <summary>
@@ -143,7 +143,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="eTag">the <code>string</code> with the eTag that identify the correct instance of the enrollment in the service. It cannot be <code>null</code> or empty.</param>
         /// <exception cref="ProvisioningServiceClientException">if the received JSON is invalid.</exception>
         [JsonConstructor]
-        public IndividualEnrollment(
+        internal IndividualEnrollment(
             string registrationId,
             AttestationMechanism attestation,
             string deviceId,
@@ -265,10 +265,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             {
                 if (value is X509Attestation)
                 {
-                    if ((((X509Attestation)value ?? throw new ArgumentNullException("Attestation cannot be null.")).ClientCertificates == null) &&
+                    if ((((X509Attestation)value ?? throw new ArgumentNullException(nameof(value))).ClientCertificates == null) &&
                         (((X509Attestation)value).CAReferences == null))
                     {
-                        throw new ArgumentNullException("Attestation mechanism do not contains client certificate or CA reference.");
+                        throw new ArgumentNullException($"{nameof(value)} do not contains client certificate or CA reference.");
                     }
                 }
 

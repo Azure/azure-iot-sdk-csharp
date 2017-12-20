@@ -115,8 +115,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             /* SRS_ENROLLMENT_GROUP_21_001: [The constructor shall store the provided parameters.] */
             /* SRS_ENROLLMENT_GROUP_21_002: [The constructor shall throws ArgumentNullException if one of the provided parameters is null.] */
-            EnrollmentGroupId = enrollmentGroupId ?? throw new ArgumentNullException("enrollmentGroupId cannot be null");
-            Attestation = attestation ?? throw new ArgumentNullException("attestation cannot be null");
+            EnrollmentGroupId = enrollmentGroupId ?? throw new ArgumentNullException(nameof(enrollmentGroupId));
+            Attestation = attestation ?? throw new ArgumentNullException(nameof(attestation));
         }
 
         /// <summary>
@@ -167,7 +167,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="eTag">the <code>string</code> with the eTag that identify the correct instance of the enrollment in the service. It cannot be <code>null</code> or empty.</param>
         /// <exception cref="ProvisioningServiceClientException">if the received JSON is invalid.</exception>
         [JsonConstructor]
-        public EnrollmentGroup(
+        internal EnrollmentGroup(
             string enrollmentGroupId,
             AttestationMechanism attestation,
             string iotHubHostName,
@@ -267,7 +267,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             }
             set
             {
-                if(!((value ?? throw new ArgumentNullException("Attestation cannot be null.")) is X509Attestation))
+                if(!((value ?? throw new ArgumentNullException(nameof(value))) is X509Attestation))
                 {
                     throw new ArgumentException("Attestation for enrollmentGroup shall be X509");
                 }

@@ -14,13 +14,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///    |        \__IsTransient [identify if retry is a valid scenario]
     ///    |
     ///    +-->ProvisioningServiceClientTransportException [any transport layer exception]
-    ///    |
-    ///    +-->ProvisioningServiceClientHttpException [any exception reported in the HTTP response]
+    ///         |
+    ///         +-->ProvisioningServiceClientHttpException [any exception reported in the HTTP response]
     /// </code>
     /// </remarks>
     public class ProvisioningServiceClientException : Exception
     {
         public bool IsTransient { get; private set; }
+
+        public ProvisioningServiceClientException()
+            : this(message: null, innerException: null, isTransient: false)
+        {
+        }
 
         public ProvisioningServiceClientException(string message)
             : this(message, innerException: null, isTransient: false)
