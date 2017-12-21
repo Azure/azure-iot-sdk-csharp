@@ -156,12 +156,7 @@ try {
         RunTests provisioning\transport\http\tests "Provisioning Transport for HTTP"
         RunTests provisioning\transport\mqtt\tests "Provisioning Transport for MQTT"
         RunTests security\tpm\tests "SecurityProvider for TPM"
-
-        if ([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([System.Runtime.InteropServices.OSPlatform]::Windows))
-        {
-            # TODO: #307 - DotNet fails to correctly parse the UT certificate on Linux.
-            RunTests provisioning\service\tests "Provisioning Service Client Tests"
-        }
+        RunTests provisioning\service\tests "Provisioning Service Client Tests"
         
         if (-not $nolegacy)
         {
