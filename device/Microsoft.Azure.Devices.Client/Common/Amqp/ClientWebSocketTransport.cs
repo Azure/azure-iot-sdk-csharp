@@ -33,14 +33,14 @@ namespace Microsoft.Azure.Amqp.Transport
             this.writeCancellationTokenSource = new CancellationTokenSource();
         }
 
-        public override EndPoint LocalEndPoint
+        public override string LocalEndPoint
         {
-            get { return this.localEndPoint; }
+            get { return this.localEndPoint.ToString(); }
         }
 
-        public override EndPoint RemoteEndPoint
+        public override string RemoteEndPoint
         {
-            get { return this.remoteEndPoint; }
+            get { return this.remoteEndPoint.ToString(); }
         }
 
         public override bool RequiresCompleteFrames
