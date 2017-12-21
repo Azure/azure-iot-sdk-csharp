@@ -68,7 +68,7 @@ Function RunTests($path, $message) {
     Write-Host -ForegroundColor Cyan "TEST: --- " $message $configuration" ---"
     cd (Join-Path $rootDir $path)
 
-    & dotnet test --verbosity normal --configuration $configuration --logger "trx"
+    & dotnet test --verbosity $verbosity --configuration $configuration --logger "trx"
 
     if ($LASTEXITCODE -ne 0) {
         throw "Tests failed."
@@ -118,6 +118,20 @@ try {
 
     if (-not $nobuild)
     {
+        if (-not $nolegacy) 
+        {
+            # Build legacy project formats (Pending switch to the .NET SDK tooling.)
+            LegacyBuildProject shared\build "Shared Assembly"
+            LegacyBuildProject device\build "IoT Hub Device Client SDK"
+            LegacyBuildProject service\build "IoT Hub Service Client SDK"
+
+            if ($configuration.ToLower() -eq "release")
+            {
+                # Package creation fails in debug.
+                LegacyBuildProject tools\DeviceExplorer\build "IoT Hub Device Explorer"
+            }
+        }
+
         BuildProject shared\Microsoft.Azure.Devices.Shared.NetStandard "Shared Assembly"
         BuildProject device\Microsoft.Azure.Devices.Client.NetStandard "IoT Hub DeviceClient SDK"
         BuildProject service\Microsoft.Azure.Devices.NetStandard "IoT Hub ServiceClient SDK"
@@ -127,21 +141,6 @@ try {
         BuildProject provisioning\transport\mqtt\src "Provisioning Transport for MQTT"
         BuildProject provisioning\device\src "Provisioning Device Client SDK"
         BuildProject provisioning\service\src "Provisioning Service Client SDK"
-
-        if (-not $nolegacy) 
-        {
-            # Build legacy project formats (Pending switch to the .NET SDK tooling.)
-            LegacyBuildProject shared\build "Shared Assembly"
-            LegacyBuildProject device\build "IoT Hub Device Client SDK"
-            LegacyBuildProject service\build "IoT Hub Service Client SDK"
-            LegacyBuildProject e2e\build "E2E Tests"
-
-            if ($configuration.ToLower() -eq "release")
-            {
-                # Package creation fails in debug.
-                LegacyBuildProject tools\DeviceExplorer\build "IoT Hub Device Explorer"
-            }
-        }
     }
 
     # Unit Tests require InternalsVisibleTo and can only run in Debug builds.
@@ -151,19 +150,20 @@ try {
         Write-Host -ForegroundColor Cyan "Unit Test execution"
         Write-Host
 
+        if (-not $nolegacy)
+        {
+            # Build legacy project formats (Pending switch to the .NET SDK tooling.)
+            LegacyRunTests device\tests\Microsoft.Azure.Devices.Client.Test "IoT Hub Device Client Unit Tests"
+            # TODO: Requires Admin/prerequisites:
+            # LegacyRunTests service\Microsoft.Azure.Devices\test\Microsoft.Azure.Devices.Api.Test "IoT Hub Service Client Unit Tests"
+        }
+
         RunTests provisioning\device\tests "Provisioning Device Client Tests"
         RunTests provisioning\transport\amqp\tests "Provisioning Transport for AMQP"
         RunTests provisioning\transport\http\tests "Provisioning Transport for HTTP"
         RunTests provisioning\transport\mqtt\tests "Provisioning Transport for MQTT"
         RunTests security\tpm\tests "SecurityProvider for TPM"
         RunTests provisioning\service\tests "Provisioning Service Client Tests"
-        
-        if (-not $nolegacy)
-        {
-            # Build legacy project formats (Pending switch to the .NET SDK tooling.)
-            LegacyRunTests device\tests\Microsoft.Azure.Devices.Client.Test "IoT Hub Device Client Unit Tests"
-            LegacyRunTests service\Microsoft.Azure.Devices\test\Microsoft.Azure.Devices.Api.Test "IoT Hub Service Client Unit Tests"
-        }
     }
 
     if ($e2etests)
@@ -172,17 +172,18 @@ try {
         Write-Host -ForegroundColor Cyan "End-to-end Test execution"
         Write-Host
 
+        if (-not $nolegacy)
+        {
+            # Build legacy project formats (Pending switch to the .NET SDK tooling.)
+            LegacyBuildProject e2e\build "E2E Tests"
+            LegacyRunTests e2e\Microsoft.Azure.Devices.E2ETests "IoT Hub End-to-end Tests"
+        }
+
         RunTests e2e\Microsoft.Azure.Devices.E2ETests.NetStandard "IoT Hub End-to-end Tests"
         
         if ($Env:DPS_IDSCOPE -ne $null)
         {
             RunTests provisioning\e2e "Provisioning End-to-end Tests"
-        }
-
-        if (-not $nolegacy)
-        {
-            # Build legacy project formats (Pending switch to the .NET SDK tooling.)
-            LegacyRunTests e2e\Microsoft.Azure.Devices.E2ETests "IoT Hub End-to-end Tests"
         }
     }
 

@@ -2,7 +2,6 @@
 # Copyright (c) Microsoft. All rights reserved.
 # Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-cd ..
 ./build.sh -clean -configuration Debug
 if [ "$?" -ne 0 ]; then
 	exit 1
