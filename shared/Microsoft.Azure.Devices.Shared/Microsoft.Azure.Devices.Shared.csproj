@@ -64,6 +64,11 @@
     <Compile Include="TwinJsonConverter.cs" />
     <Compile Include="TwinProperties.cs" />
     <Compile Include="X509Thumbprint.cs" />
+    <Compile Include="SecurityProvider.cs" />
+    <Compile Include="SecurityProviderTpm.cs" />
+    <Compile Include="SecurityProviderX509.cs" />
+    <Compile Include="SecurityProviderX509Certificate.cs" />
+    <Compile Include="TransportFallbackType.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
