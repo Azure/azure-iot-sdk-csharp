@@ -11,8 +11,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     public enum ProvisioningStatus
     {
         [EnumMember(Value = "enabled")]
-        Enabled = 1,
+        Enabled,
         [EnumMember(Value = "disabled")]
-        Disabled = 2
+        Disabled
     }
 }

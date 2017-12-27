@@ -149,7 +149,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             string deviceId,
             string iotHubHostName,
             TwinState initialTwinState,
-            ProvisioningStatus provisioningStatus,
+            ProvisioningStatus? provisioningStatus,
             DateTime createdDateTimeUtc,
             DateTime lastUpdatedDateTimeUtc,
             string eTag)
@@ -285,7 +285,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Initial twin state.
         /// </summary>
-        [JsonProperty(PropertyName = "initialTwinState", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonProperty(PropertyName = "initialTwin", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public TwinState InitialTwinState { get; set; }
 
         /// <summary>

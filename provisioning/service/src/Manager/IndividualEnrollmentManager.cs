@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 GetEnrollmentUri(individualEnrollment.RegistrationId),
                 null,
                 JsonConvert.SerializeObject(individualEnrollment),
-                null,
+                individualEnrollment.ETag,
                 cancellationToken).ConfigureAwait(false);
 
             if (contractApiResponse.Body == null)
@@ -173,7 +173,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 GetEnrollmentUri(individualEnrollment.RegistrationId),
                 null,
                 null,
-                null,
+                individualEnrollment.ETag,
                 cancellationToken).ConfigureAwait(false);
         }
 

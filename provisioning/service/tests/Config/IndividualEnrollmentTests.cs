@@ -66,7 +66,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             "   },\n" +
             "   \"iotHubHostName\":\"" + SampleIotHubHostName + "\",\n" +
             "   \"deviceId\":\"" + SampleDeviceId + "\",\n" +
-            "   \"initialTwinState\":{\n" +
+            "   \"initialTwin\":{\n" +
             "       \"tags\":{\n" +
             "           \"tag1\":\"val1\",\n" +
             "       },\n" +
@@ -157,7 +157,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             "   },\n" +
             "   \"iotHubHostName\":\"" + SampleIotHubHostName + "\",\n" +
             "   \"deviceId\":\"" + SampleDeviceId + "\",\n" +
-            "   \"initialTwinState\":{\n" +
+            "   \"initialTwin\":{\n" +
             "       \"tags\":{\n" +
             "           \"tag1\":\"val1\",\n" +
             "       },\n" +
@@ -182,7 +182,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             "   \"registrationId\":\"" + SampleRegistrationId + "\",\n" +
             "   \"iotHubHostName\":\"" + SampleIotHubHostName + "\",\n" +
             "   \"deviceId\":\"" + SampleDeviceId + "\",\n" +
-            "   \"initialTwinState\":{\n" +
+            "   \"initialTwin\":{\n" +
             "       \"tags\":{\n" +
             "           \"tag1\":\"val1\",\n" +
             "       },\n" +
@@ -226,7 +226,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             "   },\n" +
             "   \"iotHubHostName\":\"" + SampleIotHubHostName + "\",\n" +
             "   \"deviceId\":\"" + SampleDeviceId + "\",\n" +
-            "   \"initialTwinState\":{\n" +
+            "   \"initialTwin\":{\n" +
             "       \"tags\":{\n" +
             "           \"tag1\":\"val1\",\n" +
             "       },\n" +

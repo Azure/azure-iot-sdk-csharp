@@ -122,7 +122,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Certificate
         /// </summary>
-        [JsonProperty(PropertyName = "certificate")]
+        [JsonProperty(PropertyName = "certificate", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string Certificate { get; private set; }
 
         /// <summary>

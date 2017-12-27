@@ -111,7 +111,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                                                 TwinPropertyes.Desired and store it as _properties.] */
                     _properties = new TwinProperties()
                     {
-                        Desired = value
+                        Desired = value,
+                        Reported = null,
                     };
                 }
             }
@@ -153,6 +154,20 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             /* SRS_TWIN_STATE_21_001: [The constructor shall store the provided tags and desiredProperties.] */
             Tags = tags;
             DesiredProperties = desiredProperties;
+        }
+
+        [JsonConstructor]
+        private TwinState(TwinCollection tags, TwinProperties properties)
+        {
+            Tags = tags;
+            if(properties == null)
+            {
+                DesiredProperties = null;
+            }
+            else
+            {
+                DesiredProperties = properties.Desired;
+            }
         }
 
         /// <summary>

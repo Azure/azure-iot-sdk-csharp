@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             "       }\n" +
             "   },\n" +
             "   \"iotHubHostName\":\"" + SampleIotHubHostName + "\",\n" +
-            "   \"initialTwinState\":{\n" +
+            "   \"initialTwin\":{\n" +
             "       \"tags\":{\n" +
             "           \"tag1\":\"val1\",\n" +
             "       },\n" +
@@ -129,7 +129,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "       }\n" +
                 "   },\n" +
                 "   \"iotHubHostName\":\"" + SampleIotHubHostName + "\",\n" +
-                "   \"initialTwinState\":{\n" +
+                "   \"initialTwin\":{\n" +
                 "       \"tags\":{\n" +
                 "           \"tag1\":\"val1\",\n" +
                 "       },\n" +
@@ -153,7 +153,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "{\n" +
                 "   \"enrollmentGroupId\":\"" + SampleEnrollmentGroupId + "\",\n" +
                 "   \"iotHubHostName\":\"" + SampleIotHubHostName + "\",\n" +
-                "   \"initialTwinState\":{\n" +
+                "   \"initialTwin\":{\n" +
                 "       \"tags\":{\n" +
                 "           \"tag1\":\"val1\",\n" +
                 "       },\n" +
@@ -162,48 +162,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "   \"createdDateTimeUtc\": \"" + SampleCreateDateTimeUTCString + "\",\n" +
                 "   \"lastUpdatedDateTimeUtc\": \"" + SampleLastUpdatedDateTimeUTCString + "\",\n" +
                 "   \"etag\": \"" + SampleEtag + "\"\n" +
-                "}";
-
-            // act - assert
-            TestAssert.Throws<ProvisioningServiceClientException>(() => Newtonsoft.Json.JsonConvert.DeserializeObject<EnrollmentGroup>(invalidJson));
-        }
-
-        [TestMethod]
-        [TestCategory("DevService")]
-        public void EnrollmentGroup_ConstructorJSON_ThrowsOnNonEtag()
-        {
-            // arrange
-            string invalidJson =
-                "{\n" +
-                "   \"enrollmentGroupId\":\"" + SampleEnrollmentGroupId + "\",\n" +
-                "   \"attestation\":{\n" +
-                "       \"type\":\"x509\",\n" +
-                "       \"x509\":{\n" +
-                "           \"signingCertificates\":{\n" +
-                "               \"primary\":{\n" +
-                "                   \"info\": {\n" +
-                "                       \"subjectName\": \"CN=ROOT_00000000-0000-0000-0000-000000000000, OU=Azure IoT, O=MSFT, C=US\",\n" +
-                "                       \"sha1Thumbprint\": \"0000000000000000000000000000000000\",\n" +
-                "                       \"sha256Thumbprint\": \"" + SampleEnrollmentGroupId + "\",\n" +
-                "                       \"issuerName\": \"CN=ROOT_00000000-0000-0000-0000-000000000000, OU=Azure IoT, O=MSFT, C=US\",\n" +
-                "                       \"notBeforeUtc\": \"2017-11-14T12:34:18Z\",\n" +
-                "                       \"notAfterUtc\": \"2017-11-20T12:34:18Z\",\n" +
-                "                       \"serialNumber\": \"000000000000000000\",\n" +
-                "                       \"version\": 3\n" +
-                "                   }\n" +
-                "               }\n" +
-                "           }\n" +
-                "       }\n" +
-                "   },\n" +
-                "   \"iotHubHostName\":\"" + SampleIotHubHostName + "\",\n" +
-                "   \"initialTwinState\":{\n" +
-                "       \"tags\":{\n" +
-                "           \"tag1\":\"val1\",\n" +
-                "       },\n" +
-                "   },\n" +
-                "   \"provisioningStatus\":\"" + SampleProvisioningStatus + "\",\n" +
-                "   \"createdDateTimeUtc\": \"" + SampleCreateDateTimeUTCString + "\",\n" +
-                "   \"lastUpdatedDateTimeUtc\": \"" + SampleLastUpdatedDateTimeUTCString + "\"\n" +
                 "}";
 
             // act - assert

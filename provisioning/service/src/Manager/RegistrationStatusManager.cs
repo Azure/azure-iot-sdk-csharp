@@ -80,7 +80,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 GetDeviceRegistrationStatusUri(deviceRegistrationState.RegistrationId),
                 null,
                 null,
-                null,
+                deviceRegistrationState.ETag,
                 cancellationToken).ConfigureAwait(false);
         }
 

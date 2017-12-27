@@ -179,11 +179,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             /* SRS_ENROLLMENT_GROUP_21_003: [The constructor shall throws ProvisioningServiceClientException if one of the 
                                                     provided parameters in JSON is not valid.] */
-            if(string.IsNullOrWhiteSpace(eTag))
-            {
-                throw new ProvisioningServiceClientException("Service respond an enrollmentGroup without eTag.");
-            }
-
             if(attestation == null)
             {
                 throw new ProvisioningServiceClientException("Service respond an enrollmentGroup without attestation.");
@@ -290,7 +285,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <summary>
         /// Initial twin state.
         /// </summary>
-        [JsonProperty(PropertyName = "initialTwinState", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        [JsonProperty(PropertyName = "initialTwin", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public TwinState InitialTwinState { get; set; }
 
         /// <summary>
