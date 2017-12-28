@@ -106,8 +106,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             _provisioningConnectionString = ServiceConnectionString.Parse(connectionString);
             _contractApiHttp = new ContractApiHttp(
                 _provisioningConnectionString.HttpsEndpoint,
-                _provisioningConnectionString,
-                client => { });
+                _provisioningConnectionString);
         }
 
         /// <summary>

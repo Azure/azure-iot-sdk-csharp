@@ -33,6 +33,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\..\common\src\service\CommonResources.cs" Link="Common\CommonResources.cs" />
+    <Compile Include="..\..\..\common\src\service\EventTraceActivity.cs" Link="Common\EventTraceActivity.cs" />
+    <Compile Include="..\..\..\common\src\service\Resources.Designer.cs" Link="Common\Resources.Designer.cs" />
+    <Compile Include="..\..\..\common\src\service\StringValidationHelper.cs" Link="Common\StringValidationHelper.cs" />
+    <Compile Include="..\..\..\common\src\service\Utils.cs" Link="Common\Utils.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
 
     <!-- FXCop TODO: #176

@@ -71,7 +71,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             /* SRS_REGISTRATION_STATUS_MANAGER_28_004: [The DeleteAsync shall throw ArgumentException if the provided deviceRegistrationState is null.] */
             if (deviceRegistrationState == null)
             {
-                throw new ArgumentException(nameof(deviceRegistrationState));
+                throw new ArgumentNullException(nameof(deviceRegistrationState));
             }
 
             /* SRS_REGISTRATION_STATUS_MANAGER_28_005: [The DeleteAsync shall sent the Delete HTTP request to remove the deviceRegistrationState.] */

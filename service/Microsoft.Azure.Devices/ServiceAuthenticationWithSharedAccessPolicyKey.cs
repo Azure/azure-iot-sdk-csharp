@@ -4,7 +4,7 @@
 namespace Microsoft.Azure.Devices
 {
     using System;
-    using Microsoft.Azure.Devices.Common.Security;
+    using Microsoft.Azure.Devices.Common;
 
     /// <summary>
     /// Authentication method that uses a shared access policy key. 

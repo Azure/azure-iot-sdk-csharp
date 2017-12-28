@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
         {
             if (builder == null)
             {
-                throw new ArgumentNullException("builder");
+                throw new ArgumentNullException(nameof(builder));
             }
 
             HostName = builder.HostName;

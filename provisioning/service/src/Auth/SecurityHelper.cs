@@ -12,12 +12,12 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
         {
             if (string.IsNullOrWhiteSpace(serviceHostName))
             {
-                throw new ArgumentNullException("serviceHostName");
+                throw new ArgumentNullException(nameof(serviceHostName));
             }
 
             if (string.IsNullOrWhiteSpace(serviceName))
             {
-                throw new ArgumentNullException("serviceName");
+                throw new ArgumentNullException(nameof(serviceName));
             }
 
             if (!serviceHostName.StartsWith(string.Format(CultureInfo.InvariantCulture, "{0}.", serviceName), StringComparison.OrdinalIgnoreCase))
