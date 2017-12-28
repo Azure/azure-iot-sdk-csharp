@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
         {
             if (string.IsNullOrWhiteSpace(serviceConnectionString))
             {
-                throw new ArgumentNullException("serviceConnectionString");
+                throw new ArgumentNullException(nameof(serviceConnectionString));
             }
 
             var serviceConnectionStringBuilder = new ServiceConnectionStringBuilder();        
@@ -158,7 +158,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
         {
             if (string.IsNullOrWhiteSpace(hostname))
             {
-                throw new ArgumentNullException("hostname");
+                throw new ArgumentNullException(nameof(hostname));
             }
 
             ValidateFormat(hostname, HostNamePropertyName, HostNameRegex);
@@ -180,7 +180,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
         {
             if (authMethod == null)
             {
-                throw new ArgumentNullException("authMethod");
+                throw new ArgumentNullException(nameof(authMethod));
             }
 
             authMethod.Populate(this);

@@ -100,6 +100,9 @@
     <Compile Include="..\..\common\src\service\QuerySpecification.cs">
       <Link>QuerySpecification.cs</Link>
     </Compile>
+    <Compile Include="..\..\common\src\service\StringValidationHelper.cs">
+      <Link>StringValidationHelper.cs</Link>
+    </Compile>
     <Compile Include="..\..\common\src\service\TaskHelpers.cs">
       <Link>TaskHelpers.cs</Link>
     </Compile>
@@ -174,7 +177,6 @@
     <Compile Include="..\Microsoft.Azure.Devices\Common\SerializationUtilities.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\SignalGate.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\SingletonDictionary.cs" />
-    <Compile Include="..\Microsoft.Azure.Devices\Common\StringValidationHelper.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\SynchronizedPool.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\Ticks.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\TimeoutHelper.cs" />

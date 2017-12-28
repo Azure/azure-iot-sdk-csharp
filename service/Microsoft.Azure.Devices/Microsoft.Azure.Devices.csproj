@@ -147,6 +147,9 @@
     <Compile Include="..\..\common\src\service\QuerySpecification.cs">
       <Link>QuerySpecification.cs</Link>
     </Compile>
+    <Compile Include="..\..\common\src\service\StringValidationHelper.cs">
+      <Link>Common\StringValidationHelper.cs</Link>
+    </Compile>
     <Compile Include="..\..\common\src\service\TaskHelpers.cs">
       <Link>Common\TaskHelpers.cs</Link>
     </Compile>
@@ -233,7 +236,6 @@
     <Compile Include="Common\SerializationUtilities.cs" />
     <Compile Include="Common\SignalGate.cs" />
     <Compile Include="Common\SingletonDictionary.cs" />
-    <Compile Include="Common\StringValidationHelper.cs" />
     <Compile Include="Common\SynchronizedPool.cs" />
     <Compile Include="Common\Ticks.cs" />
     <Compile Include="Common\TimeoutHelper.cs" />

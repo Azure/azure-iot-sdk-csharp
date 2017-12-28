@@ -14,18 +14,16 @@ using System.Threading.Tasks;
 
 using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Devices.Common.Service.Auth;
-#if !WINDOWS_UWP && !NETSTANDARD1_3 && !NETSTANDARD2_0
-    using System.Net.Http.Formatting;
-#endif
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
     internal class ContractApiHttp : IContractApiHttp
     {
+        private const string MediaTypeForDeviceManagementApis = "application/json";
+
         private readonly Uri _baseAddress;
         private readonly IAuthorizationHeaderProvider _authenticationHeaderProvider;
         private HttpClient _httpClientObj;
-        private HttpClient _httpClientObjWithPerRequestTimeout;
 
         private static readonly TimeSpan s_defaultOperationTimeout = TimeSpan.FromSeconds(100);
 
@@ -38,8 +36,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="preRequestActionForAllRequests">the function with the HTTP pre-request actions.</param>
         public ContractApiHttp(
             Uri baseAddress,
-            IAuthorizationHeaderProvider authenticationHeaderProvider,
-            Action<HttpClient> preRequestActionForAllRequests)
+            IAuthorizationHeaderProvider authenticationHeaderProvider)
         {
             _baseAddress = baseAddress;
             _authenticationHeaderProvider = authenticationHeaderProvider;
@@ -48,21 +45,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             _httpClientObj.BaseAddress = _baseAddress;
             _httpClientObj.Timeout = s_defaultOperationTimeout;
             _httpClientObj.DefaultRequestHeaders.Accept.Add(
-                new MediaTypeWithQualityHeaderValue(CommonConstants.MediaTypeForDeviceManagementApis));
+                new MediaTypeWithQualityHeaderValue(MediaTypeForDeviceManagementApis));
             _httpClientObj.DefaultRequestHeaders.ExpectContinue = false;
-
-            _httpClientObjWithPerRequestTimeout = new HttpClient();
-            _httpClientObjWithPerRequestTimeout.BaseAddress = _baseAddress;
-            _httpClientObjWithPerRequestTimeout.Timeout = Timeout.InfiniteTimeSpan;
-            _httpClientObjWithPerRequestTimeout.DefaultRequestHeaders.Accept.Add(
-                new MediaTypeWithQualityHeaderValue(CommonConstants.MediaTypeForDeviceManagementApis));
-            _httpClientObjWithPerRequestTimeout.DefaultRequestHeaders.ExpectContinue = false;
-
-            if (preRequestActionForAllRequests != null)
-            {
-                preRequestActionForAllRequests(_httpClientObj);
-                preRequestActionForAllRequests(_httpClientObjWithPerRequestTimeout);
-            }
         }
 
         /// <summary>
@@ -93,7 +77,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             {
                 if (!string.IsNullOrEmpty(body))
                 {
-                    msg.Content = new StringContent(body, Encoding.UTF8, CommonConstants.MediaTypeForDeviceManagementApis);
+                    msg.Content = new StringContent(body, Encoding.UTF8, MediaTypeForDeviceManagementApis);
                 }
 
                 msg.Headers.Add(HttpRequestHeader.Authorization.ToString(), _authenticationHeaderProvider.GetAuthorizationHeader());
@@ -216,12 +200,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 {
                     _httpClientObj.Dispose();
                     _httpClientObj = null;
-                }
-
-                if(_httpClientObjWithPerRequestTimeout != null)
-                {
-                    _httpClientObjWithPerRequestTimeout.Dispose();
-                    _httpClientObjWithPerRequestTimeout = null;
                 }
             }
         }

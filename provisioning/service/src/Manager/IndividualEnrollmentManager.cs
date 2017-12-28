@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             /* SRS_INDIVIDUAL_ENROLLMENT_MANAGER_21_001: [The CreateOrUpdateAsync shall throw ArgumentException if the provided individualEnrollment is null.] */
             if (individualEnrollment == null)
             {
-                throw new ArgumentException(nameof(individualEnrollment));
+                throw new ArgumentNullException(nameof(individualEnrollment));
             }
 
             /* SRS_INDIVIDUAL_ENROLLMENT_MANAGER_21_002: [The CreateOrUpdateAsync shall sent the Put HTTP request to create or update the individualEnrollment.] */
@@ -89,7 +89,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                                                     individualEnrollments is null or empty.] */
             if (!(individualEnrollments ?? throw new ArgumentNullException(nameof(individualEnrollments))).Any())
             {
-                throw new ArgumentException(nameof(individualEnrollments));
+                throw new ArgumentException($"{nameof(individualEnrollments)} cannot be empty");
             }
 
             /* SRS_INDIVIDUAL_ENROLLMENT_MANAGER_21_005: [The BulkOperationAsync shall sent the Put HTTP request to run the bulk operation to the collection of the individualEnrollment.] */
@@ -164,7 +164,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             /* SRS_INDIVIDUAL_ENROLLMENT_MANAGER_21_010: [The DeleteAsync shall throw ArgumentException if the provided individualEnrollment is null.] */
             if (individualEnrollment == null)
             {
-                throw new ArgumentException(nameof(individualEnrollment));
+                throw new ArgumentNullException(nameof(individualEnrollment));
             }
 
             /* SRS_INDIVIDUAL_ENROLLMENT_MANAGER_21_011: [The DeleteAsync shall sent the Delete HTTP request to remove the individualEnrollment.] */

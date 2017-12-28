@@ -71,6 +71,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("API")]
+        [Ignore] //Issue #318
         public async Task GetDevicesAsyncTest()
         {
             List<Device> devicesToReturn = new List<Device>();

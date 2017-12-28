@@ -64,10 +64,6 @@
     <Compile Include="TestAssert.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\device\Microsoft.Azure.Devices.Client\Microsoft.Azure.Devices.Client.csproj">
-      <Project>{836b1fb6-70f0-4c7e-aa35-519c2f83aa81}</Project>
-      <Name>Microsoft.Azure.Devices.Client</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\..\..\shared\Microsoft.Azure.Devices.Shared\Microsoft.Azure.Devices.Shared.csproj">
       <Project>{835230fc-8d03-4cd1-8845-5a9d1b0b837d}</Project>
       <Name>Microsoft.Azure.Devices.Shared</Name>

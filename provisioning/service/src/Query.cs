@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Common;
 using Newtonsoft.Json;
 using Microsoft.Azure.Devices.Common.Service.Auth;
+using System.Globalization;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -99,10 +100,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 throw new ArgumentNullException(nameof(serviceConnectionString));
             }
 
-            /* SRS_QUERY_21_002: [The constructor shall throw ArgumentException if the provided targetPath is null or empty.] */
+            /* SRS_QUERY_21_002: [The constructor shall throw ArgumentException if the provided serviceName is null or empty.] */
             if (string.IsNullOrWhiteSpace(serviceName ?? throw new ArgumentNullException(nameof(serviceName))))
             {
-                throw new ArgumentException(nameof(serviceName));
+                throw new ArgumentException($"{nameof(serviceName)} cannot be an empty string");
             }
 
             /* SRS_QUERY_21_003: [The constructor shall throw ArgumentException if the provided querySpecification is null.] */
@@ -120,8 +121,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             /* SRS_QUERY_21_005: [The constructor shall create and store a `contractApiHttp` using the provided Service Connection String.] */
             _contractApiHttp = new ContractApiHttp(
                 serviceConnectionString.HttpsEndpoint,
-                serviceConnectionString,
-                client => { });
+                serviceConnectionString);
 
             /* SRS_QUERY_21_006: [The constructor shall store the provided  `pageSize`, and `cancelationToken`.] */
             PageSize = pageSize;
@@ -204,7 +204,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             IDictionary<string, string> headerParameters = new Dictionary<string, string>();
             if (PageSize != 0)
             {
-                headerParameters.Add(PageSizeHeaderKey, PageSize.ToString());
+                headerParameters.Add(PageSizeHeaderKey, PageSize.ToString(CultureInfo.InvariantCulture));
             }
             /* SRS_QUERY_21_016: [If the continuationToken is not null or empty, the next shall send the HTTP request with `x-ms-continuation=[continuationToken]` in the header.] */
             if (!string.IsNullOrWhiteSpace(ContinuationToken))

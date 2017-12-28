@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             };
             // serialize
             var jsonQueryResult = JsonConvert.SerializeObject(serverQueryResult);
-            Assert.AreEqual("{\"type\":\"twin\",\"items\":[{\"deviceId\":\"test\",\"etag\":null,\"properties\":{\"desired\":{},\"reported\":{}}}],\"continuationToken\":null}", jsonQueryResult);
+            Assert.AreEqual("{\"type\":\"twin\",\"items\":[{\"deviceId\":\"test\",\"etag\":null,\"version\":null,\"properties\":{\"desired\":{},\"reported\":{}}}],\"continuationToken\":null}", jsonQueryResult);
 
             // deserialize
             var clientQueryResult = JsonConvert.DeserializeObject<QueryResult>(jsonQueryResult);
@@ -67,7 +67,7 @@ namespace Microsoft.Azure.Devices.Api.Test
             };
             // serialize
             var jsonQueryResult = JsonConvert.SerializeObject(serverQueryResult);
-            Assert.AreEqual("{\"type\":\"twin\",\"items\":[{\"deviceId\":\"test\",\"etag\":null,\"properties\":{\"desired\":{},\"reported\":{}}}],\"continuationToken\":\"GYUVJDBJFKJ\"}", jsonQueryResult);
+            Assert.AreEqual("{\"type\":\"twin\",\"items\":[{\"deviceId\":\"test\",\"etag\":null,\"version\":null,\"properties\":{\"desired\":{},\"reported\":{}}}],\"continuationToken\":\"GYUVJDBJFKJ\"}", jsonQueryResult);
             // deserialize
             var clientQueryResult = JsonConvert.DeserializeObject<QueryResult>(jsonQueryResult);
 

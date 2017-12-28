@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
         {
             if (string.IsNullOrWhiteSpace(shareAccessSignatureName))
             {
-                throw new ArgumentNullException("shareAccessSignatureName");
+                throw new ArgumentNullException(nameof(shareAccessSignatureName));
             }
 
             ExpiresOn = expiresOn;
@@ -87,12 +87,12 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
         {
             if (string.IsNullOrWhiteSpace(shareAccessSignatureName))
             {
-                throw new ArgumentNullException("shareAccessSignatureName");
+                throw new ArgumentNullException(nameof(shareAccessSignatureName));
             }
 
             if (string.IsNullOrWhiteSpace(rawToken))
             {
-                throw new ArgumentNullException("rawToken");
+                throw new ArgumentNullException(nameof(rawToken));
             }
 
             IDictionary<string, string> parsedFields = ExtractFieldValues(rawToken);
@@ -186,7 +186,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
         {
             if (targetAddress == null)
             {
-                throw new ArgumentNullException("targetAddress");
+                throw new ArgumentNullException(nameof(targetAddress));
             }
             
             string target = targetAddress.Host + targetAddress.AbsolutePath;
