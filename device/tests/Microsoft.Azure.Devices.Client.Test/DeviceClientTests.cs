@@ -10,6 +10,7 @@
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using NSubstitute;
     using NSubstitute.ExceptionExtensions;
+    using Shared;
 
     [TestClass]
     public class DeviceClientTests
@@ -31,7 +32,7 @@
         public void DeviceClient_DefaultDiagnosticSamplingPercentage_Ok()
         {
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
-            const int DefaultPercentage = 0;
+            const int DefaultPercentage = -1;
             Assert.AreEqual(deviceClient.DiagnosticSamplingPercentage, DefaultPercentage);
         }
 
@@ -47,10 +48,11 @@
 
         [TestMethod]
         [TestCategory("IoTHubClientDiagnostic")]
+        // Tests_SRS_DEVICECLIENT_29_01: [ If DiagnosticSamplingPercentage is not between [0,100], then the ArgumentOutOfRangeException will be throw ]
         public void DeviceClient_SetDiagnosticSamplingPercentageOutOfRange_Fail()
         {
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
-            const int DefaultPercentage = 0;
+            const int DefaultPercentage = -1;
             const int InvalidPercentageExceedUpperLimit = 200;
             const int InvalidPercentageExceedLowerLimit = -100;
 
@@ -73,6 +75,132 @@
             {
                 Assert.AreEqual(deviceClient.DiagnosticSamplingPercentage, DefaultPercentage);
             }
+        }
+
+        [TestMethod]
+        [TestCategory("IoTHubClientDiagnostic")]
+        public void DeviceClient_SetDiagnosticEnable_Ok()
+        {
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            const int ValidPercentage = 80;
+            deviceClient.DiagnosticSamplingPercentage = ValidPercentage;
+            Assert.AreEqual(deviceClient.DiagnosticSamplingPercentage, ValidPercentage);
+        }
+
+        [TestMethod]
+        [TestCategory("IoTHubClientDiagnostic")]
+        public async Task DeviceClient_InitDiagSettings_OK()
+        {
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            var innerHandler = Substitute.For<IDelegatingHandler>();
+            deviceClient.InnerHandler = innerHandler;
+            await deviceClient.EnableE2EDiagnosticsWithCloudSetting();
+            Assert.IsNotNull(deviceClient.Diagnostic);
+        }
+
+        [TestMethod]
+        [TestCategory("IoTHubClientDiagnostic")]
+        // Tests_SRS_DEVICECLIENT_29_02: [ If transport type is not AMQP or MQTT, a `NotSupportedException` exception will throw when try to call EnableE2EDiagnosticsWithCloudSetting. ]
+        public async Task DeviceClient_StartDiagThatDoNotSupport_ThrowException()
+        {
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString, TransportType.Http1);
+            try
+            {
+                await deviceClient.EnableE2EDiagnosticsWithCloudSetting();
+                Assert.Fail();
+            }
+            catch (NotSupportedException e)
+            {
+                Assert.AreEqual(e.Message, $"{TransportType.Http1} protocal doesn't support E2E diagnostic feature");
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("IoTHubClientDiagnostic")]
+        // Tests_SRS_DEVICECLIENT_29_03: [ If try to start E2E diagnostic multiple times, the `InvalidOperationException` will be throw. ]
+        public async Task DeviceClient_StartDiagMutipleTimes_ThrowException()
+        {
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString, TransportType.Amqp);
+            var innerHandler = Substitute.For<IDelegatingHandler>();
+            deviceClient.InnerHandler = innerHandler;
+            try
+            {
+                await deviceClient.EnableE2EDiagnosticsWithCloudSetting();
+                await deviceClient.EnableE2EDiagnosticsWithCloudSetting();
+                Assert.Fail();
+            }
+            catch (InvalidOperationException e)
+            {
+                Assert.AreEqual(e.Message, "Cannot enable E2E Diagnostic feature multiple times through calling EnableE2EDiagnosticsWithCloudSetting");
+            }
+
+            DeviceClient deviceClient2 = DeviceClient.CreateFromConnectionString(fakeConnectionString, TransportType.Amqp);
+            deviceClient2.InnerHandler = innerHandler;
+
+            try
+            {
+                await deviceClient2.EnableE2EDiagnosticsWithCloudSetting();
+                deviceClient2.DiagnosticSamplingPercentage = 50;
+                Assert.Fail();
+            }
+            catch (InvalidOperationException e)
+            {
+                Assert.AreEqual(e.Message, "The call is not supported because the E2E diagnostic had been enabled by calling EnableE2EDiagnosticsWithCloudSetting");
+            }
+
+            DeviceClient deviceClient3 = DeviceClient.CreateFromConnectionString(fakeConnectionString, TransportType.Amqp);
+            deviceClient3.InnerHandler = innerHandler;
+
+            try
+            {
+                deviceClient3.DiagnosticSamplingPercentage = 50;
+                await deviceClient3.EnableE2EDiagnosticsWithCloudSetting();
+                Assert.Fail();
+            }
+            catch (InvalidOperationException e)
+            {
+                Assert.AreEqual(e.Message, "The call is not supported because the E2E diagnostic had been enabled by setting DiagnosticSamplingPercentage");
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("IoTHubClientDiagnostic")]
+        public async Task DeviceClient_GetDiagTwinSettingsWhenStart_OK()
+        {
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+
+            var innerHandler = Substitute.For<IDelegatingHandler>();
+            deviceClient.InnerHandler = innerHandler;
+
+            int samplingRate = 50;
+
+            var twin = new Twin();
+            var twinCollection = new TwinCollection();
+            twinCollection[IoTHubClientDiagnostic.TwinDiagSamplingRateKey] = samplingRate;
+            twin.Properties.Desired = twinCollection;
+
+            innerHandler.SendTwinGetAsync(Arg.Any<CancellationToken>()).Returns(twin);
+            await deviceClient.EnableE2EDiagnosticsWithCloudSetting();
+
+            Assert.AreEqual(deviceClient.Diagnostic.currentSamplingRate, samplingRate);
+        }
+
+        [TestMethod]
+        [TestCategory("IoTHubClientDiagnostic")]
+        public async Task DeviceClient_GetDiagTwinSettingsChangeFromServer_OK()
+        {
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+
+            var innerHandler = Substitute.For<IDelegatingHandler>();
+            deviceClient.InnerHandler = innerHandler;
+            await deviceClient.EnableE2EDiagnosticsWithCloudSetting();
+
+            int samplingRate = 50;
+            var twinCollection = new TwinCollection();
+            twinCollection[IoTHubClientDiagnostic.TwinDiagSamplingRateKey] = samplingRate;
+            Assert.AreEqual(deviceClient.DiagnosticSamplingPercentage, -1);
+            deviceClient.OnReportedStatePatchReceived(twinCollection);
+            Assert.AreEqual(deviceClient.DiagnosticSamplingPercentage, samplingRate);
         }
 
         [TestMethod]

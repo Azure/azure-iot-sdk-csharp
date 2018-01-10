@@ -6,13 +6,19 @@
     using System.IO;
     using System.Text;
     using System.Text.RegularExpressions;
+    using System.Threading;
+    using System.Threading.Tasks;
     using System.Web;
     using Microsoft.Azure.Amqp;
+    using Microsoft.Azure.Devices.Shared;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using NSubstitute;
 
     [TestClass]
     public class IoTHubClientDiagnosticTest
     {
+        static string fakeConnectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
+
         [TestMethod]
         [TestCategory("IoTHubClientDiagnostic")]
         public void IoTHubClientDiagnostic_AddDiagnosticInfoIfNecessary_Test()
@@ -131,7 +137,6 @@
             }
             Assert.AreEqual(count, 20);
 
-
             count = 0;
             percentage = 50;
             messageCount = 0;
@@ -176,7 +181,105 @@
             Assert.AreEqual(count, 100);
         }
 
-        private Message CreateMessage()
+        [TestMethod]
+        [TestCategory("IoTHubClientDiagnostic")]
+        public void IoTHubClientDiagnostic_InitialSuccess_Test()
+        {
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            var diag = new IoTHubClientDiagnostic(deviceClient);
+            Assert.IsNotNull(diag.deviceClient);
+            Assert.AreEqual(diag.currentSamplingRate, 0);
+        }
+
+        [TestMethod]
+        [TestCategory("IoTHubClientDiagnostic")]
+        public async Task IoTHubClientDiagnostic_GetDiagTwinSettingsWhenStart_Test()
+        {
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            var diag = new IoTHubClientDiagnostic(deviceClient);
+            var innerHandler = Substitute.For<IDelegatingHandler>();
+            diag.deviceClient.InnerHandler = innerHandler;
+            var twin = new Twin();
+            var twinCollection = new TwinCollection();
+            twinCollection[IoTHubClientDiagnostic.TwinDiagSamplingRateKey] = 50;
+            twin.Properties.Desired = twinCollection;
+
+            innerHandler.SendTwinGetAsync(Arg.Any<CancellationToken>()).Returns(twin);
+            await diag.StartListeningE2EDiagnosticSettingChanges();
+
+            Assert.AreEqual(diag.currentSamplingRate, 50);
+        }
+
+        [TestMethod]
+        [TestCategory("IoTHubClientDiagnostic")]
+        public async Task IoTHubClientDiagnostic_GetDiagTwinSettingsFromServer_Test()
+        {
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            var innerHandler = Substitute.For<IDelegatingHandler>();
+            deviceClient.InnerHandler = innerHandler;
+            await deviceClient.EnableE2EDiagnosticsWithCloudSetting();
+
+            int samplingRate1 = 50;
+            Twin twin = GenerateDiagTwin(samplingRate1);
+
+            deviceClient.OnReportedStatePatchReceived(twin.Properties.Desired);
+            Assert.AreEqual(deviceClient.Diagnostic.currentSamplingRate, samplingRate1);
+
+            int samplingRate2 = 30;
+            twin = GenerateDiagTwin(samplingRate2);
+            deviceClient.OnReportedStatePatchReceived(twin.Properties.Desired);
+            Assert.AreEqual(deviceClient.Diagnostic.currentSamplingRate, samplingRate2);
+
+            int samplingRate3 = 101;
+            twin = GenerateDiagTwin(samplingRate3);
+            deviceClient.OnReportedStatePatchReceived(twin.Properties.Desired);
+            Assert.AreEqual(deviceClient.Diagnostic.currentSamplingRate, samplingRate2);
+
+            int? samplingRate4 = null;
+            twin = GenerateDiagTwin(samplingRate4);
+            deviceClient.OnReportedStatePatchReceived(twin.Properties.Desired);
+            Assert.AreEqual(deviceClient.Diagnostic.currentSamplingRate, 0);
+
+            string samplingRate5 = "Not a valid twin settings";
+            twin = GenerateDiagTwin(samplingRate5);
+            deviceClient.OnReportedStatePatchReceived(twin.Properties.Desired);
+            Assert.AreEqual(deviceClient.Diagnostic.currentSamplingRate, 0);
+
+            twin = GenerateInvalidDiagTwin();
+            deviceClient.OnReportedStatePatchReceived(twin.Properties.Desired);
+            Assert.AreEqual(deviceClient.Diagnostic.currentSamplingRate, 0);
+        }
+
+        [TestMethod]
+        [TestCategory("IoTHubClientDiagnostic")]
+        // Tests_SRS_IoTHubClientDiagnostic_01_01: [ If diagnostic settings from server is not correct, the sampling percentage wiil be reset to 0. ]
+        public async Task IoTHubClientDiagnostic_GetWrongDiagTwinSettingsWhenStart_Test()
+        {
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            var diag = new IoTHubClientDiagnostic(deviceClient);
+            var innerHandler = Substitute.For<IDelegatingHandler>();
+            diag.deviceClient.InnerHandler = innerHandler;
+
+            Twin twin1 = GenerateDiagTwin(200);
+            innerHandler.SendTwinGetAsync(Arg.Any<CancellationToken>()).Returns(twin1);
+            await diag.StartListeningE2EDiagnosticSettingChanges();
+            await innerHandler.Received().SendTwinPatchAsync(Arg.Is<TwinCollection>(collection => collection.Contains(IoTHubClientDiagnostic.TwinDiagErrorKey)), Arg.Any<CancellationToken>());
+            Assert.AreEqual(diag.currentSamplingRate, 0);
+
+            Twin twin2 = GenerateDiagTwin(null);
+            innerHandler.SendTwinGetAsync(Arg.Any<CancellationToken>()).Returns(twin2);
+            await diag.StartListeningE2EDiagnosticSettingChanges();
+            await innerHandler.Received().SendTwinPatchAsync(Arg.Is<TwinCollection>(collection => collection.Contains(IoTHubClientDiagnostic.TwinDiagErrorKey)), Arg.Any<CancellationToken>());
+            Assert.AreEqual(diag.currentSamplingRate, 0);
+
+            Twin twin3 = GenerateInvalidDiagTwin();
+            innerHandler.SendTwinGetAsync(Arg.Any<CancellationToken>()).Returns(twin3);
+            await diag.StartListeningE2EDiagnosticSettingChanges();
+            await innerHandler.Received().SendTwinPatchAsync(Arg.Is<TwinCollection>(collection => collection.Contains(IoTHubClientDiagnostic.TwinDiagErrorKey)), Arg.Any<CancellationToken>());
+            Assert.AreEqual(diag.currentSamplingRate, 0);
+        }
+
+        private static Message CreateMessage()
         {
             const string MessageBody = "My Message";
             var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(MessageBody));
@@ -184,5 +287,22 @@
             return message;
         }
 
+        private static Twin GenerateDiagTwin(dynamic samplingRate)
+        {
+            var twin = new Twin();
+            var twinCollection = new TwinCollection();
+            twinCollection[IoTHubClientDiagnostic.TwinDiagSamplingRateKey] = samplingRate;
+            twin.Properties.Desired = twinCollection;
+            return twin;
+        }
+
+        private static Twin GenerateInvalidDiagTwin()
+        {
+            var twin = new Twin();
+            var twinCollection = new TwinCollection();
+            twinCollection["OtherProperty"] = "valude";
+            twin.Properties.Desired = twinCollection;
+            return twin;
+        }
     }
 }
