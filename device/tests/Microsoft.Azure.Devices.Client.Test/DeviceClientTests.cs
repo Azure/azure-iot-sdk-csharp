@@ -94,19 +94,19 @@
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
             var innerHandler = Substitute.For<IDelegatingHandler>();
             deviceClient.InnerHandler = innerHandler;
-            await deviceClient.EnableE2EDiagnosticsWithCloudSetting();
+            await deviceClient.EnableE2EDiagnosticWithCloudSetting();
             Assert.IsNotNull(deviceClient.Diagnostic);
         }
 
         [TestMethod]
         [TestCategory("IoTHubClientDiagnostic")]
-        // Tests_SRS_DEVICECLIENT_29_02: [ If transport type is not AMQP or MQTT, a `NotSupportedException` exception will throw when try to call EnableE2EDiagnosticsWithCloudSetting. ]
+        // Tests_SRS_DEVICECLIENT_29_02: [ If transport type is not AMQP or MQTT, a `NotSupportedException` exception will throw when try to call EnableE2EDiagnosticWithCloudSetting. ]
         public async Task DeviceClient_StartDiagThatDoNotSupport_ThrowException()
         {
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString, TransportType.Http1);
             try
             {
-                await deviceClient.EnableE2EDiagnosticsWithCloudSetting();
+                await deviceClient.EnableE2EDiagnosticWithCloudSetting();
                 Assert.Fail();
             }
             catch (NotSupportedException e)
@@ -117,7 +117,7 @@
 
         [TestMethod]
         [TestCategory("IoTHubClientDiagnostic")]
-        // Tests_SRS_DEVICECLIENT_29_03: [ If try to start E2E diagnostic multiple times, the `InvalidOperationException` will be throw. ]
+        // Tests_SRS_DEVICECLIENT_29_02: [ If try to start E2E diagnostic multiple times, the `InvalidOperationException` will be throw. ]
         public async Task DeviceClient_StartDiagMutipleTimes_ThrowException()
         {
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString, TransportType.Amqp);
@@ -125,13 +125,13 @@
             deviceClient.InnerHandler = innerHandler;
             try
             {
-                await deviceClient.EnableE2EDiagnosticsWithCloudSetting();
-                await deviceClient.EnableE2EDiagnosticsWithCloudSetting();
+                await deviceClient.EnableE2EDiagnosticWithCloudSetting();
+                await deviceClient.EnableE2EDiagnosticWithCloudSetting();
                 Assert.Fail();
             }
             catch (InvalidOperationException e)
             {
-                Assert.AreEqual(e.Message, "Cannot enable E2E Diagnostic feature multiple times through calling EnableE2EDiagnosticsWithCloudSetting");
+                Assert.AreEqual(e.Message, "Cannot enable E2E Diagnostic feature multiple times through calling EnableE2EDiagnosticWithCloudSetting");
             }
 
             DeviceClient deviceClient2 = DeviceClient.CreateFromConnectionString(fakeConnectionString, TransportType.Amqp);
@@ -139,13 +139,13 @@
 
             try
             {
-                await deviceClient2.EnableE2EDiagnosticsWithCloudSetting();
+                await deviceClient2.EnableE2EDiagnosticWithCloudSetting();
                 deviceClient2.DiagnosticSamplingPercentage = 50;
                 Assert.Fail();
             }
             catch (InvalidOperationException e)
             {
-                Assert.AreEqual(e.Message, "The call is not supported because the E2E diagnostic had been enabled by calling EnableE2EDiagnosticsWithCloudSetting");
+                Assert.AreEqual(e.Message, "The call is not supported because the E2E diagnostic had been enabled by calling EnableE2EDiagnosticWithCloudSetting");
             }
 
             DeviceClient deviceClient3 = DeviceClient.CreateFromConnectionString(fakeConnectionString, TransportType.Amqp);
@@ -154,7 +154,7 @@
             try
             {
                 deviceClient3.DiagnosticSamplingPercentage = 50;
-                await deviceClient3.EnableE2EDiagnosticsWithCloudSetting();
+                await deviceClient3.EnableE2EDiagnosticWithCloudSetting();
                 Assert.Fail();
             }
             catch (InvalidOperationException e)
@@ -180,7 +180,7 @@
             twin.Properties.Desired = twinCollection;
 
             innerHandler.SendTwinGetAsync(Arg.Any<CancellationToken>()).Returns(twin);
-            await deviceClient.EnableE2EDiagnosticsWithCloudSetting();
+            await deviceClient.EnableE2EDiagnosticWithCloudSetting();
 
             Assert.AreEqual(deviceClient.Diagnostic.currentSamplingRate, samplingRate);
         }
@@ -193,7 +193,7 @@
 
             var innerHandler = Substitute.For<IDelegatingHandler>();
             deviceClient.InnerHandler = innerHandler;
-            await deviceClient.EnableE2EDiagnosticsWithCloudSetting();
+            await deviceClient.EnableE2EDiagnosticWithCloudSetting();
 
             int samplingRate = 50;
             var twinCollection = new TwinCollection();

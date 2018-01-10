@@ -217,7 +217,7 @@
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
             var innerHandler = Substitute.For<IDelegatingHandler>();
             deviceClient.InnerHandler = innerHandler;
-            await deviceClient.EnableE2EDiagnosticsWithCloudSetting();
+            await deviceClient.EnableE2EDiagnosticWithCloudSetting();
 
             int samplingRate1 = 50;
             Twin twin = GenerateDiagTwin(samplingRate1);
