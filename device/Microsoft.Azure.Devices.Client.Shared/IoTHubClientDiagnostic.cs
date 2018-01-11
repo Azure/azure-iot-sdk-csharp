@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.Client
                 if (desiredProperties[TwinDiagSamplingRateKey] == null)
                 {
                     this.currentSamplingRate = 0;
-                    this.ReportDiagnosticSettings($"Property {TwinDiagSamplingRateKey} is set to null, so set it to 0.");
+                    this.ReportDiagnosticSettings($"Property {TwinDiagSamplingRateKey} is null, so disable E2E diagnostic by setting sampling percentage to 0.");
                 }
                 else
                 {
@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Devices.Client
                         var rate = (int)desiredProperties[TwinDiagSamplingRateKey].Value;
                         if (rate < 0 || rate > 100)
                         {
-                            this.ReportDiagnosticSettings($"Property {TwinDiagSamplingRateKey} = {desiredProperties[TwinDiagSamplingRateKey].ToString()} must between [0, 100].");
+                            this.ReportDiagnosticSettings($"Property {TwinDiagSamplingRateKey} = {desiredProperties[TwinDiagSamplingRateKey].ToString()} should be between [0, 100].");
                         }
                         else
                         {
@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Devices.Client
             else if (receivedFullTwinForTheFirstTime)
             {
                 this.currentSamplingRate = 0;
-                this.ReportDiagnosticSettings($"Property {TwinDiagSamplingRateKey} is not exist.");
+                this.ReportDiagnosticSettings($"Property {TwinDiagSamplingRateKey} is not exist, so disable E2E diagnostic by setting sampling percentage to 0.");
             }
 
             this.OnDiagnosticSettingsChanged(this.currentSamplingRate);

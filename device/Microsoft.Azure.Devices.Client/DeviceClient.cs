@@ -134,7 +134,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                 else
                 {
                     // codes_SRS_DEVICECLIENT_19_002: [ `DiagnosticSamplingPercentage` shall throw an `InvalidOperationException` exception if `EnableE2EDiagnosticWithCloudSetting` has already been called. ]
-                    throw new InvalidOperationException("The call is not supported because the E2E diagnostic had been enabled by calling EnableE2EDiagnosticWithCloudSetting");
+                    throw new InvalidOperationException("The call is not supported because the E2E diagnostic has been enabled by calling EnableE2EDiagnosticWithCloudSetting.");
                 }
             }
         }
@@ -1489,12 +1489,12 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             if (Diagnostic != null)
             {
                 // codes_SRS_DEVICECLIENT_19_003: [ `EnableE2EDiagnosticWithCloudSetting` shall throw an `InvalidOperationException` exception if it has been called multiple times. ]
-                throw new InvalidOperationException("Cannot enable E2E Diagnostic feature multiple times through calling EnableE2EDiagnosticWithCloudSetting");
+                throw new InvalidOperationException("Cannot enable E2E Diagnostic feature multiple times by calling EnableE2EDiagnosticWithCloudSetting.");
             }
             else if (diagnosticSamplingPercentage != -1)
             {
                 // codes_SRS_DEVICECLIENT_19_004: [ `EnableE2EDiagnosticWithCloudSetting` shall throw an `InvalidOperationException` exception if the DiagnosticSamplingPercentage has already been set. ]
-                throw new InvalidOperationException("The call is not supported because the E2E diagnostic had been enabled by setting DiagnosticSamplingPercentage");
+                throw new InvalidOperationException("The call is not supported because the E2E diagnostic has been enabled by setting DiagnosticSamplingPercentage.");
             }
 
             var transportSetting = this.transportSettings.FirstOrDefault();
@@ -1509,7 +1509,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             else
             {
                 // codes_SRS_DEVICECLIENT_19_005: [ `EnableE2EDiagnosticWithCloudSetting` shall throw a `NotSupportedException` exception if the transport protocal is not AMQP or MQTT. ]
-                throw new NotSupportedException($"{transportType} protocal doesn't support E2E diagnostic feature");
+                throw new NotSupportedException($"{transportType} protocal doesn't support E2E diagnostic.");
             }
         }
     }

@@ -111,7 +111,7 @@
             }
             catch (NotSupportedException e)
             {
-                Assert.AreEqual(e.Message, $"{TransportType.Http1} protocal doesn't support E2E diagnostic feature");
+                Assert.AreEqual(e.Message, $"{TransportType.Http1} protocal doesn't support E2E diagnostic.");
             }
         }
 
@@ -131,7 +131,7 @@
             }
             catch (InvalidOperationException e)
             {
-                Assert.AreEqual(e.Message, "Cannot enable E2E Diagnostic feature multiple times through calling EnableE2EDiagnosticWithCloudSetting");
+                Assert.AreEqual(e.Message, "Cannot enable E2E Diagnostic feature multiple times by calling EnableE2EDiagnosticWithCloudSetting.");
             }
 
             DeviceClient deviceClient2 = DeviceClient.CreateFromConnectionString(fakeConnectionString, TransportType.Amqp);
@@ -145,7 +145,7 @@
             }
             catch (InvalidOperationException e)
             {
-                Assert.AreEqual(e.Message, "The call is not supported because the E2E diagnostic had been enabled by calling EnableE2EDiagnosticWithCloudSetting");
+                Assert.AreEqual(e.Message, "The call is not supported because the E2E diagnostic has been enabled by calling EnableE2EDiagnosticWithCloudSetting.");
             }
 
             DeviceClient deviceClient3 = DeviceClient.CreateFromConnectionString(fakeConnectionString, TransportType.Amqp);
@@ -159,7 +159,7 @@
             }
             catch (InvalidOperationException e)
             {
-                Assert.AreEqual(e.Message, "The call is not supported because the E2E diagnostic had been enabled by setting DiagnosticSamplingPercentage");
+                Assert.AreEqual(e.Message, "The call is not supported because the E2E diagnostic has been enabled by setting DiagnosticSamplingPercentage.");
             }
         }
 
