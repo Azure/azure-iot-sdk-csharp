@@ -8,6 +8,7 @@ namespace Microsoft.Azure.Devices.Api.Test
     using System.Linq;
     using System.Net;
     using System.Net.Http;
+    using System.Net.Http.Headers;
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices;
@@ -71,14 +72,18 @@ namespace Microsoft.Azure.Devices.Api.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("API")]
-        [Ignore] //Issue #318
         public async Task GetDevicesAsyncTest()
         {
             List<Device> devicesToReturn = new List<Device>();
             devicesToReturn.Add(new Device("a") { ConnectionState = DeviceConnectionState.Connected });
-
+            
             var restOpMock = new Mock<IHttpClientHelper>();
-            restOpMock.Setup(restOp => restOp.GetAsync<IEnumerable<Device>>(It.IsAny<Uri>(), It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(), null, It.IsAny<CancellationToken>())).ReturnsAsync(devicesToReturn);
+            restOpMock.Setup(restOp => restOp.GetAsync<IEnumerable<Device>>(It.IsAny<Uri>(), 
+                It.IsAny<TimeSpan>(),
+                null,
+                null, 
+                true, 
+                It.IsAny<CancellationToken>())).ReturnsAsync(devicesToReturn);
 
             var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
 
