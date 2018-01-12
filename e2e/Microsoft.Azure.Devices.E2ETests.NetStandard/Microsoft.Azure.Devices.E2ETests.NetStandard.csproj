@@ -5,7 +5,6 @@
     <!-- TODO: #181 Enable treat warnings as errors. -->
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <IsPackable>false</IsPackable>
-    <Features Condition=" '$(Configuration)' == 'Debug' ">IOperation</Features>
     <RootNamespace>Microsoft.Azure.Devices.E2ETests</RootNamespace>
     <AssemblyName>Microsoft.Azure.Devices.E2ETests</AssemblyName>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>

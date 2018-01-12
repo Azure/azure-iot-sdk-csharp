@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
-    <Features Condition=" '$(Configuration)' == 'Debug' ">IOperation</Features> 
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors> 
     <IsPackable>false</IsPackable>
   </PropertyGroup>

@@ -5,7 +5,6 @@
     <!-- FXCop TODO: #176 re-enable warnings as errors. -->
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors> 
     <IsPackable>false</IsPackable>
-    <Features Condition=" '$(Configuration)' == 'Debug' ">IOperation</Features>
   </PropertyGroup>
 
   <!-- delay sign the assembly for Release build -->

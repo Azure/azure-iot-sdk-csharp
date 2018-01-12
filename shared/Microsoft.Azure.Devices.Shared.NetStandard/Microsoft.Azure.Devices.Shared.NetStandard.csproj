@@ -14,7 +14,6 @@
     <FileAlignment>512</FileAlignment>
     <!-- TODO #176: Enable warnings as errors. -->
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors> 
-    <Features Condition=" '$(Configuration)' == 'Debug' ">IOperation</Features>
   </PropertyGroup>
 
   <!-- delay sign the assembly for Release build -->
