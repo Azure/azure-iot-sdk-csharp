@@ -267,9 +267,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     throw new ArgumentException("Attestation for enrollmentGroup shall be X509");
                 }
 
-                if(((X509Attestation)value).RootCertificates == null)
+                if((((X509Attestation)value).RootCertificates == null) && (((X509Attestation)value).CAReferences == null))
                 {
-                    throw new ArgumentException("Attestation mechanism do not contains root certificate.");
+                    throw new ArgumentException("Attestation mechanism do not contains a valid certificate.");
                 }
 
                 _attestation = new AttestationMechanism(value);
