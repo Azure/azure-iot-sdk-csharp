@@ -109,25 +109,38 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         const string DeviceIdParameterPattern = @"(^\s*?|.*;\s*?)" + DeviceId + @"\s*?=.*";
         IotHubConnectionString iotHubConnectionString = null;
 
+        internal int diagnosticSamplingPercentage = -1;
+
         /// <summary> 
         /// Diagnostic sampling percentage value, [0-100];  
-        /// 0 means no message will carry on diag info 
+        /// 0 means no message will carry on diag info
         /// </summary>
-        int _diagnosticSamplingPercentage = 0;
         public int DiagnosticSamplingPercentage
         {
-            get { return _diagnosticSamplingPercentage; }
+            get { return diagnosticSamplingPercentage; }
+
             set
             {
-                if (value > 100 || value < 0)
+                if (Diagnostic == null)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(DiagnosticSamplingPercentage), DiagnosticSamplingPercentage, 
-                        "The range of diagnostic sampling percentage should between [0,100].");
+                    if (value > 100 || value < 0)
+                    {
+                        // codes_SRS_DEVICECLIENT_19_001: [ `DiagnosticSamplingPercentage` shall throw an `ArgumentOutOfRangeException` exception if sampling percentage is not between [0,100]. ]
+                        throw new ArgumentOutOfRangeException(nameof(DiagnosticSamplingPercentage), DiagnosticSamplingPercentage,
+                            "The range of diagnostic sampling percentage should between [0,100].");
+                    }
+                    diagnosticSamplingPercentage = value;
                 }
-
-                _diagnosticSamplingPercentage = value;
+                else
+                {
+                    // codes_SRS_DEVICECLIENT_19_002: [ `DiagnosticSamplingPercentage` shall throw an `InvalidOperationException` exception if `EnableE2EDiagnosticWithCloudSetting` has already been called. ]
+                    throw new InvalidOperationException("The call is not supported because the E2E diagnostic has been enabled by calling EnableE2EDiagnosticWithCloudSetting.");
+                }
             }
         }
+
+        ITransportSettings[] transportSettings;
+        internal IoTHubClientDiagnostic Diagnostic { get; private set; }
 
 #if !WINDOWS_UWP && !PCL
         internal X509Certificate2 Certificate { get; set; }
@@ -247,7 +260,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// </summary>
         Object twinPatchCallbackContext = null;
 
-        private int _currentMessageCount = 0;
+        private int currentMessageCount = 0;
 
         DeviceClient(IotHubConnectionString iotHubConnectionString, ITransportSettings[] transportSettings, IDeviceClientPipelineBuilder pipelineBuilder)
         {
@@ -265,6 +278,8 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             IDelegatingHandler innerHandler = pipelineBuilder.Build(pipelineContext);
 
             this.InnerHandler = innerHandler;
+
+            this.transportSettings = transportSettings;
         }
 
         DeviceClient(IotHubConnectionString iotHubConnectionString)
@@ -807,7 +822,8 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                 throw Fx.Exception.ArgumentNull("message");
             }
 
-            IoTHubClientDiagnostic.AddDiagnosticInfoIfNecessary(message, _diagnosticSamplingPercentage, ref _currentMessageCount);
+            IoTHubClientDiagnostic.AddDiagnosticInfoIfNecessary(message, diagnosticSamplingPercentage, ref currentMessageCount);
+
             // Codes_SRS_DEVICECLIENT_28_019: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication or quota exceed) occurs.]
             return ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.SendEventAsync(message, operationTimeoutCancellationToken));
         }
@@ -1442,6 +1458,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         //  Codes_SRS_DEVICECLIENT_18_005: When a patch is received from the service, the `callback` shall be called.
         internal void OnReportedStatePatchReceived(TwinCollection patch)
         {
+            Diagnostic?.ParseDiagnosticInfoFromTwin(patch);
             if (this.desiredPropertyUpdateCallback != null)
             {
                 this.desiredPropertyUpdateCallback(patch, this.twinPatchCallbackContext);
@@ -1461,6 +1478,38 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             if (this.deviceMethods == null && this.deviceDefaultMethodCallback == null)
             {
                 await ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.DisableMethodsAsync(operationTimeoutCancellationToken)).ConfigureAwait(false);
+            }
+        }
+
+        /// <summary>
+        /// Enable E2E diagnostic with cloud setting, the device will get diagnostic settings from server using device twin.
+        /// </summary>
+        public async Task EnableE2EDiagnosticWithCloudSetting()
+        {
+            if (Diagnostic != null)
+            {
+                // codes_SRS_DEVICECLIENT_19_003: [ `EnableE2EDiagnosticWithCloudSetting` shall throw an `InvalidOperationException` exception if it has been called multiple times. ]
+                throw new InvalidOperationException("Cannot enable E2E Diagnostic feature multiple times by calling EnableE2EDiagnosticWithCloudSetting.");
+            }
+            else if (diagnosticSamplingPercentage != -1)
+            {
+                // codes_SRS_DEVICECLIENT_19_004: [ `EnableE2EDiagnosticWithCloudSetting` shall throw an `InvalidOperationException` exception if the DiagnosticSamplingPercentage has already been set. ]
+                throw new InvalidOperationException("The call is not supported because the E2E diagnostic has been enabled by setting DiagnosticSamplingPercentage.");
+            }
+
+            var transportSetting = this.transportSettings.FirstOrDefault();
+            var transportType = transportSetting.GetTransportType();
+            if (transportType == TransportType.Amqp_WebSocket_Only || transportType == TransportType.Amqp_Tcp_Only
+                || transportType == TransportType.Mqtt_WebSocket_Only || transportType == TransportType.Mqtt_Tcp_Only)
+            {
+                Diagnostic = new IoTHubClientDiagnostic(this);
+                await this.InnerHandler.EnableTwinPatchAsync(CancellationToken.None);
+                await Diagnostic.StartListeningE2EDiagnosticSettingChanges();
+            }
+            else
+            {
+                // codes_SRS_DEVICECLIENT_19_005: [ `EnableE2EDiagnosticWithCloudSetting` shall throw a `NotSupportedException` exception if the transport protocal is not AMQP or MQTT. ]
+                throw new NotSupportedException($"{transportType} protocal doesn't support E2E diagnostic.");
             }
         }
     }
