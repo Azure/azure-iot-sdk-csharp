@@ -186,6 +186,6 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 [iot-hub-documentation]: https://docs.microsoft.com/en-us/azure/iot-hub/
 [iot-dev-center]: http://azure.com/iotdev
 [azure-iot-sdks]: https://github.com/azure/azure-iot-sdks
-[dotnet-api-reference]: https://docs.microsoft.com/en-us/dotnet/api/overview/azure/devices?view=azure-dotnet
+[dotnet-api-reference]: https://docs.microsoft.com/en-us/dotnet/api/overview/azure/iot?view=azure-dotnet
 [devbox-setup]: ./device/doc/devbox_setup.md
 [get-started-dotnet]: https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-csharp-csharp-getstarted
