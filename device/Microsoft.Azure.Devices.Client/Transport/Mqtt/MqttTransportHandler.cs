@@ -454,25 +454,34 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public async void OnMessageReceived(Message message)
         {
-            if ((this.State & TransportState.Open) == TransportState.Open)
+            // Added Try-Catch to avoid unknown thread exception
+            // after running for more than 24 hours
+            try
             {
-                if (message.MqttTopicName.StartsWith(twinResponseTopicPrefix))
+                if ((this.State & TransportState.Open) == TransportState.Open)
                 {
-                    twinResponseEvent(message);
+                    if (message.MqttTopicName.StartsWith(twinResponseTopicPrefix))
+                    {
+                        twinResponseEvent(message);
+                    }
+                    else if (message.MqttTopicName.StartsWith(twinPatchTopicPrefix))
+                    {
+                        await HandleIncomingTwinPatch(message).ConfigureAwait(false);
+                    }
+                    else if (message.MqttTopicName.StartsWith(methodPostTopicPrefix))
+                    {
+                        await HandleIncomingMethodPost(message).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        this.messageQueue.Enqueue(message);
+                        this.receivingSemaphore.Release();
+                    }
                 }
-                else if (message.MqttTopicName.StartsWith(twinPatchTopicPrefix))
-                {
-                    await HandleIncomingTwinPatch(message).ConfigureAwait(false);
-                }
-                else if (message.MqttTopicName.StartsWith(methodPostTopicPrefix))
-                {
-                    await HandleIncomingMethodPost(message).ConfigureAwait(false);
-                }
-                else
-                {
-                    this.messageQueue.Enqueue(message);
-                    this.receivingSemaphore.Release();
-                }
+            }
+            catch(Exception ex)
+            {
+                this.OnError(ex);
             }
         }
 
