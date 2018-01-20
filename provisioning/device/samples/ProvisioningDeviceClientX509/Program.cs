@@ -70,10 +70,36 @@ namespace ProvisioningDeviceClientX509
             s_idScope = args[0];
 
             string certificatePassword = ReadCertificatePassword();
-            using (var certificate = new X509Certificate2(s_certificateFileName, certificatePassword))
+
+            var certificateCollection = new X509Certificate2Collection();
+            certificateCollection.Import(s_certificateFileName, certificatePassword, X509KeyStorageFlags.UserKeySet);
+
+            X509Certificate2 certificate = null;
+
+            foreach (X509Certificate2 element in certificateCollection)
             {
-                RunSample(certificate).GetAwaiter().GetResult();
+                Console.WriteLine($"Found certificate: {element?.Thumbprint} {element?.Subject}; PrivateKey: {element?.HasPrivateKey}");
+                if (certificate == null && element.HasPrivateKey)
+                {
+                    certificate = element;
+                }
+                else
+                {
+                    element.Dispose();
+                }
             }
+
+            if (certificate == null)
+            {
+                Console.WriteLine($"ERROR: {s_certificateFileName} did not contain any certificate with a private key.");
+                return;
+            }
+            else
+            {
+                Console.WriteLine($"Using certificate {certificate.Thumbprint} {certificate.Subject}");
+            }
+
+            RunSample(certificate).GetAwaiter().GetResult();
         }
 
         private static string ReadCertificatePassword()
