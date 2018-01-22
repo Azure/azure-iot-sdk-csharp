@@ -306,11 +306,13 @@ namespace Microsoft.Azure.Devices
             return this.httpClientHelper.GetAsync<Device>(GetRequestUri(deviceId), errorMappingOverrides, null, false, cancellationToken);
         }
 
+        [Obsolete("Use CreateQuery(\"select * from devices\", pageSize);")]
         public override Task<IEnumerable<Device>> GetDevicesAsync(int maxCount)
         {
             return this.GetDevicesAsync(maxCount, CancellationToken.None);
         }
 
+        [Obsolete("Use CreateQuery(\"select * from devices\", pageSize);")]
         public override Task<IEnumerable<Device>> GetDevicesAsync(int maxCount, CancellationToken cancellationToken)
         {
             this.EnsureInstanceNotClosed();

@@ -343,6 +343,7 @@ namespace Microsoft.Azure.Devices
         /// <returns>
         /// The list of devices
         /// </returns>
+        [Obsolete("Use CreateQuery(\"select * from devices\", pageSize);")]
         public abstract Task<IEnumerable<Device>> GetDevicesAsync(int maxCount);
 
         /// <summary>
@@ -352,6 +353,7 @@ namespace Microsoft.Azure.Devices
         /// <returns>
         /// The list of devices
         /// </returns>
+        [Obsolete("Use CreateQuery(\"select * from devices\", pageSize);")]
         public abstract Task<IEnumerable<Device>> GetDevicesAsync(int maxCount, CancellationToken cancellationToken);
 
         /// <summary>
