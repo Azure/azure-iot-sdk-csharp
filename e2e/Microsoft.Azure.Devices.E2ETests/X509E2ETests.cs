@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestInitialize]
-        public async void Initialize()
+        public async Task Initialize()
         {
             await sequentialTestSemaphore.WaitAsync();
         }
@@ -75,6 +75,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await SendSingleMessageX509(Client.TransportType.Amqp_WebSocket_Only);
         }
 
+        [Ignore] // TODO: #171 - X509 tests are intermittently failing during CI.
         [TestMethod]
         [TestCategory("X509-Message-E2E")]
         public async Task X509_DeviceSendSingleMessage_Mqtt()
@@ -82,6 +83,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await SendSingleMessageX509(Client.TransportType.Mqtt_Tcp_Only);
         }
 
+        [Ignore] // TODO: #171 - X509 tests are intermittently failing during CI.
         [TestMethod]
         [TestCategory("X509-Message-E2E")]
         public async Task X509_DeviceSendSingleMessage_MqttWs()
@@ -89,6 +91,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await SendSingleMessageX509(Client.TransportType.Mqtt_WebSocket_Only);
         }
 
+        [Ignore] // TODO: #171 - X509 tests are intermittently failing during CI.
         [TestMethod]
         [TestCategory("X509-Message-E2E")]
         public async Task X509_DeviceSendSingleMessage_Http()
@@ -112,6 +115,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await ReceiveSingleMessageX509(Client.TransportType.Amqp_WebSocket_Only);
         }
 
+        [Ignore] // TODO: #171 - X509 tests are intermittently failing during CI.
         [TestMethod]
         [TestCategory("X509-Message-E2E")]
         public async Task X509_DeviceReceiveSingleMessage_Mqtt()
@@ -119,6 +123,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await ReceiveSingleMessageX509(Client.TransportType.Mqtt_Tcp_Only);
         }
 
+        [Ignore] // TODO: #171 - X509 tests are intermittently failing during CI.
         [TestMethod]
         [TestCategory("X509-Message-E2E")]
         public async Task X509_DeviceReceiveSingleMessage_MqttWs()
@@ -126,6 +131,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await ReceiveSingleMessageX509(Client.TransportType.Mqtt_WebSocket_Only);
         }
 
+        [Ignore] // TODO: #171 - X509 tests are intermittently failing during CI.
         [TestMethod]
         [TestCategory("X509-Message-E2E")]
         public async Task X509_DeviceReceiveSingleMessage_Http()

@@ -4,11 +4,7 @@
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Common;
-<<<<<<< HEAD
-=======
 using Microsoft.Azure.EventHubs;
-// using Microsoft.Azure.Management.ServiceBus;
->>>>>>> caf674f... Updated Message E2E tests to use new api surface
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
