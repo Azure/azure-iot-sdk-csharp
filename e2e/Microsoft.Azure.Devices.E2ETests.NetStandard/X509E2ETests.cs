@@ -4,18 +4,15 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Common;
-using Microsoft.ServiceBus.Messaging;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
-using System.Security.Cryptography;
 
 
 namespace Microsoft.Azure.Devices.E2ETests
@@ -48,9 +45,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestInitialize]
-        public async void Initialize()
+        public void Initialize()
         {
-            await sequentialTestSemaphore.WaitAsync();
+            sequentialTestSemaphore.WaitAsync();
         }
 
         [TestCleanup]
@@ -143,7 +140,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Properties = { ["property1"] = p1Value }
             };
         }
-
 
         private Message ComposeC2DTestMessage(out string payload, out string messageId, out string p1Value)
         {
