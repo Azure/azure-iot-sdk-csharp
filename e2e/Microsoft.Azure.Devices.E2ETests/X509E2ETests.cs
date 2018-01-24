@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Common;
-using Microsoft.ServiceBus.Messaging;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
