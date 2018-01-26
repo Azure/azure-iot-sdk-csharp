@@ -92,6 +92,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         // GitHub Issue #259
         [Ignore]
 #endif
+        // TODO: #171
+        [Ignore]
         [TestMethod]
         [TestCategory("FileUpload-E2E")]
         public async Task FileUpload_X509_SmallFile_Http()
