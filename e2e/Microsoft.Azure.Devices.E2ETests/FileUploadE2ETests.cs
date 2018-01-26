@@ -90,9 +90,9 @@ namespace Microsoft.Azure.Devices.E2ETests
 
 #if NETCOREAPP2_0
         // GitHub Issue #259
-        [Ignore]
+        // [Ignore]
 #endif
-        // TODO: #171
+        // TODO: #171 and #259
         [Ignore]
         [TestMethod]
         [TestCategory("FileUpload-E2E")]
