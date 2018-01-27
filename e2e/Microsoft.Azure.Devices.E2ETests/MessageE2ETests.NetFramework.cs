@@ -1,4 +1,7 @@
-﻿using Microsoft.Azure.Devices.Client;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Common;
 using Microsoft.ServiceBus.Messaging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -14,9 +17,8 @@ namespace Microsoft.Azure.Devices.E2ETests
 {
     public partial class MessageE2ETests
     {
-
-
-        private async Task SendMessageThrottledForHttp()
+        #region PAL
+        internal async Task SendMessageThrottledForHttp()
         {
             await sequentialTestSemaphore.WaitAsync();
 
@@ -60,7 +62,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        private async Task SendMessageRecovery(Client.TransportType transport,
+        internal async Task SendMessageRecovery(Client.TransportType transport,
             string faultType, string reason, int delayInSec, int durationInSec = 0, int retryDurationInMilliSec = 240000)
         {
             await sequentialTestSemaphore.WaitAsync();
@@ -148,7 +150,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        private async Task SendSingleMessage(Client.TransportType transport)
+        internal async Task SendSingleMessage(Client.TransportType transport)
         {
             Tuple<string, string> deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
             EventHubClient eventHubClient;
@@ -183,7 +185,9 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager);
             }
         }
+        #endregion
 
+        #region Helper Functions
         private bool VerifyTestMessage(IEnumerable<EventData> events, string deviceName, string payload, string p1Value)
         {
             foreach (var eventData in events)
@@ -231,5 +235,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             return eventHubReceiver;
         }
+        #endregion
     }
 }

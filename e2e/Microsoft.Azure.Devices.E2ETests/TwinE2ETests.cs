@@ -190,7 +190,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
 #if NETCOREAPP2_0
         // GitHub Issue #302
-        //[Ignore]
+        [Ignore]
 #endif
         [TestMethod]
         [TestCategory("Twin-E2E")]
@@ -478,7 +478,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await deviceClient.CloseAsync();
             await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager);
         }
-
+        
         private async Task _Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_WithObseleteCallbackSetter(Client.TransportType transport)
         {
             var tcs = new TaskCompletionSource<bool>();
@@ -487,9 +487,9 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             Tuple<string, string> deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
             var deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, transport);
-   
+
 #pragma warning disable CS0618
-            await deviceClient.SetDesiredPropertyUpdateCallbackAsync((patch, context) =>
+            await deviceClient.SetDesiredPropertyUpdateCallback((patch, context) =>
             {
                 return Task.Run(() =>
                 {

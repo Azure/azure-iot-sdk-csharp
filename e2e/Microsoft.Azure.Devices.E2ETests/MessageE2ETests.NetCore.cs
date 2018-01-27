@@ -1,4 +1,7 @@
-﻿using Microsoft.Azure.Devices.Client;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.EventHubs;
@@ -15,37 +18,63 @@ namespace Microsoft.Azure.Devices.E2ETests
 {
     public partial class MessageE2ETests        
     {
-        private async Task<PartitionReceiver> CreateEventHubReceiver(string deviceName)
+
+        #region PAL
+        internal async Task SendMessageThrottledForHttp()
         {
-            PartitionReceiver eventHubReceiver = null;
-            Stopwatch sw = new Stopwatch();
-            sw.Start();
-
-            EventHubClient eventHubClient = EventHubClient.CreateFromConnectionString("EVENT HUBS COMPATIBLE ENDPOINT");
-            var eventRuntimeInformation = await eventHubClient.GetRuntimeInformationAsync();
-            var eventHubPartitionsCount = eventRuntimeInformation.PartitionCount;
-            string partition = EventHubPartitionKeyResolver.ResolveToPartition(deviceName, eventHubPartitionsCount);
-            string consumerGroupName = Configuration.IoTHub.ConsumerGroup;
-
-            while (eventHubReceiver == null && sw.Elapsed.Minutes < 1)
+            // TODO: Update Jenkins Config
+            if (Configuration.IoTHub.EventHubString.IsNullOrWhiteSpace())
             {
-                try
-                {
-                    eventHubReceiver = eventHubClient.CreateReceiver(consumerGroupName, partition, DateTime.Now.AddMinutes(-5));
-                }
-                catch (QuotaExceededException ex)
-                {
-                    Debug.WriteLine(ex);
-                }
+                return;
             }
+            await sequentialTestSemaphore.WaitAsync();
 
-            sw.Stop();
+            Tuple<string, string> deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
 
-            return eventHubReceiver;
+            EventHubClient eventHubClient;
+            PartitionReceiver eventHubReceiver = await CreateEventHubReceiver(deviceInfo.Item1);
+
+            var deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, Client.TransportType.Http1);
+
+            try
+            {
+                deviceClient.OperationTimeoutInMilliseconds = (uint)TestUtil.ShortRetryInMilliSec;
+                await deviceClient.OpenAsync();
+
+                string payload, p1Value;
+                Client.Message testMessage = ComposeD2CTestMessage(out payload, out p1Value);
+                await deviceClient.SendEventAsync(testMessage);
+
+                bool isReceived = false;
+                Stopwatch sw = new Stopwatch();
+                sw.Start();
+                while (!isReceived && sw.Elapsed.Minutes < 1)
+                {
+                    var events = await eventHubReceiver.ReceiveAsync(int.MaxValue, TimeSpan.FromSeconds(5));
+                    isReceived = VerifyTestMessage(events, deviceInfo.Item1, payload, p1Value);
+                }
+                sw.Stop();
+
+                // Implementation of error injection of throttling on http is that it will throttle the
+                // fault injection message itself only.  The duration of fault has no effect on http throttle.
+                // Client is supposed to retry sending the throttling fault message until operation timeout.
+                await deviceClient.SendEventAsync(TestUtil.ComposeErrorInjectionProperties(TestUtil.FaultType_Throttle,
+                    TestUtil.FaultCloseReason_Boom, TestUtil.DefaultDelayInSec, TestUtil.DefaultDurationInSec));
+            }
+            finally
+            {
+                await deviceClient.CloseAsync();
+                await eventHubReceiver.CloseAsync();
+                sequentialTestSemaphore.Release(1);
+            }
         }
-
-        private async Task SendSingleMessage(Client.TransportType transport)
+        internal async Task SendSingleMessage(Client.TransportType transport)
         {
+            // TODO: Update Jenkins Config
+            if (Configuration.IoTHub.EventHubString.IsNullOrWhiteSpace())
+            {
+                return;
+            }
             Tuple<string, string> deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
             PartitionReceiver eventHubReceiver = await CreateEventHubReceiver(deviceInfo.Item1);
             var deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, transport);
@@ -64,7 +93,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 sw.Start();
                 while (!isReceived && sw.Elapsed.Minutes < 1)
                 {
-                    var events = await eventHubReceiver.ReceiveAsync(int.MaxValue, TimeSpan.FromSeconds(5));
+                    var events = await eventHubReceiver.ReceiveAsync(int.MaxValue, TimeSpan.FromSeconds(30));
                     isReceived = VerifyTestMessage(events, deviceInfo.Item1, payload, p1Value);
                 }
                 sw.Stop();
@@ -79,9 +108,15 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        private async Task SendMessageRecovery(Client.TransportType transport,
+        internal async Task SendMessageRecovery(Client.TransportType transport,
             string faultType, string reason, int delayInSec, int durationInSec = 0, int retryDurationInMilliSec = 240000)
         {
+            //ToDo: Update Config
+            if (Configuration.IoTHub.EventHubString.IsNullOrWhiteSpace())
+            {
+                return;
+            }
+
             await sequentialTestSemaphore.WaitAsync();
 
             Tuple<string, string> deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
@@ -165,50 +200,41 @@ namespace Microsoft.Azure.Devices.E2ETests
                 sequentialTestSemaphore.Release(1);
             }
         }
+        #endregion
 
-        private async Task SendMessageThrottledForHttp()
+        #region Helper Functions
+        private async Task<PartitionReceiver> CreateEventHubReceiver(string deviceName)
         {
-            await sequentialTestSemaphore.WaitAsync();
+            PartitionReceiver eventHubReceiver = null;
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
 
-            Tuple<string, string> deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
+            string endpoint = Configuration.IoTHub.EventHubString;
 
-            EventHubClient eventHubClient;
-            PartitionReceiver eventHubReceiver = await CreateEventHubReceiver(deviceInfo.Item1);
+            EventHubClient eventHubClient = EventHubClient.CreateFromConnectionString(endpoint);
+            var eventRuntimeInformation = await eventHubClient.GetRuntimeInformationAsync();
+            var eventHubPartitionsCount = eventRuntimeInformation.PartitionCount;
+            string partition = EventHubPartitionKeyResolver.ResolveToPartition(deviceName, eventHubPartitionsCount);
+            string consumerGroupName = Configuration.IoTHub.ConsumerGroup;
 
-            var deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, Client.TransportType.Http1);
-
-            try
+            while (eventHubReceiver == null && sw.Elapsed.Minutes < 1)
             {
-                deviceClient.OperationTimeoutInMilliseconds = (uint)TestUtil.ShortRetryInMilliSec;
-                await deviceClient.OpenAsync();
-
-                string payload, p1Value;
-                Client.Message testMessage = ComposeD2CTestMessage(out payload, out p1Value);
-                await deviceClient.SendEventAsync(testMessage);
-
-                bool isReceived = false;
-                Stopwatch sw = new Stopwatch();
-                sw.Start();
-                while (!isReceived && sw.Elapsed.Minutes < 1)
+                try
                 {
-                    var events = await eventHubReceiver.ReceiveAsync(int.MaxValue, TimeSpan.FromSeconds(5));
-                    isReceived = VerifyTestMessage(events, deviceInfo.Item1, payload, p1Value);
+                    eventHubReceiver = eventHubClient.CreateReceiver(consumerGroupName, partition, DateTime.Now.AddMinutes(-5));
                 }
-                sw.Stop();
+                catch (QuotaExceededException ex)
+                {
+                    Debug.WriteLine(ex);
+                }
+            }
 
-                // Implementation of error injection of throttling on http is that it will throttle the
-                // fault injection message itself only.  The duration of fault has no effect on http throttle.
-                // Client is supposed to retry sending the throttling fault message until operation timeout.
-                await deviceClient.SendEventAsync(TestUtil.ComposeErrorInjectionProperties(TestUtil.FaultType_Throttle,
-                    TestUtil.FaultCloseReason_Boom, TestUtil.DefaultDelayInSec, TestUtil.DefaultDurationInSec));
-            }
-            finally
-            {
-                await deviceClient.CloseAsync();
-                await eventHubReceiver.CloseAsync();
-                sequentialTestSemaphore.Release(1);
-            }
+            sw.Stop();
+
+            return eventHubReceiver;
         }
+
+        
 
         private bool VerifyTestMessage(IEnumerable<EventData> events, string deviceName, string payload, string p1Value)
         {
@@ -243,5 +269,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             return false;
         }
+
+        #endregion
     }
 }

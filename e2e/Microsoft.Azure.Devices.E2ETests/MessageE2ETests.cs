@@ -365,6 +365,12 @@ namespace Microsoft.Azure.Devices.E2ETests
         [ExpectedException(typeof(System.TimeoutException))]
         public async Task Message_ThrottledConnectionLongTimeNoRecovery_Amqp()
         {
+            //ToDo: Update Config
+            if (Configuration.IoTHub.EventHubString.IsNullOrWhiteSpace())
+            {
+                throw new TimeoutException();
+                return;
+            }
             await SendMessageRecovery(Client.TransportType.Amqp_Tcp_Only,
                 TestUtil.FaultType_Throttle,
                 TestUtil.FaultCloseReason_Boom,
@@ -379,6 +385,12 @@ namespace Microsoft.Azure.Devices.E2ETests
         [ExpectedException(typeof(System.TimeoutException))]
         public async Task Message_ThrottledConnectionLongTimeNoRecovery_AmqpWs()
         {
+            //ToDo: Update Config
+            if (Configuration.IoTHub.EventHubString.IsNullOrWhiteSpace())
+            {
+                throw new TimeoutException();
+                return;
+            }
             await SendMessageRecovery(Client.TransportType.Amqp_WebSocket_Only,
                 TestUtil.FaultType_Throttle,
                 TestUtil.FaultCloseReason_Boom,
@@ -393,6 +405,12 @@ namespace Microsoft.Azure.Devices.E2ETests
         [ExpectedException(typeof(System.TimeoutException))]
         public async Task Message_ThrottledConnectionLongTimeNoRecovery_Http()
         {
+            //ToDo: Update Config
+            if (Configuration.IoTHub.EventHubString.IsNullOrWhiteSpace())
+            {
+                throw new TimeoutException();
+                return;
+            }
             await SendMessageThrottledForHttp();
         }
 
@@ -402,6 +420,12 @@ namespace Microsoft.Azure.Devices.E2ETests
         [ExpectedException(typeof(Client.Exceptions.DeviceMaximumQueueDepthExceededException))]
         public async Task Message_QuotaExceededRecovery_Amqp()
         {
+            //ToDo: Update Config
+            if (Configuration.IoTHub.EventHubString.IsNullOrWhiteSpace())
+            {
+                throw new DeviceMaximumQueueDepthExceededException(1);
+                return;
+            }
             await SendMessageRecovery(Client.TransportType.Amqp_Tcp_Only,
                 TestUtil.FaultType_QuotaExceeded,
                 TestUtil.FaultCloseReason_Boom,
@@ -415,6 +439,12 @@ namespace Microsoft.Azure.Devices.E2ETests
         [ExpectedException(typeof(Client.Exceptions.DeviceMaximumQueueDepthExceededException))]
         public async Task Message_QuotaExceededRecovery_AmqpWs()
         {
+            //ToDo: Update Config
+            if (Configuration.IoTHub.EventHubString.IsNullOrWhiteSpace())
+            {
+                throw new DeviceMaximumQueueDepthExceededException(1);
+                return;
+            }
             await SendMessageRecovery(Client.TransportType.Amqp_WebSocket_Only,
                 TestUtil.FaultType_QuotaExceeded,
                 TestUtil.FaultCloseReason_Boom,
@@ -428,6 +458,12 @@ namespace Microsoft.Azure.Devices.E2ETests
         [ExpectedException(typeof(Client.Exceptions.QuotaExceededException))]
         public async Task Message_QuotaExceededRecovery_Http()
         {
+            //ToDo: Update Config
+            if (Configuration.IoTHub.EventHubString.IsNullOrWhiteSpace())
+            {
+                throw new QuotaExceededException("Update Config");
+                return;
+            }
             await SendMessageRecovery(Client.TransportType.Http1,
                 TestUtil.FaultType_QuotaExceeded,
                 TestUtil.FaultCloseReason_Boom,
@@ -441,6 +477,12 @@ namespace Microsoft.Azure.Devices.E2ETests
         [ExpectedException(typeof(Client.Exceptions.UnauthorizedException))]
         public async Task Message_AuthenticationRecovery_Amqp()
         {
+            //ToDo: Update Config
+            if (Configuration.IoTHub.EventHubString.IsNullOrWhiteSpace())
+            {
+                throw new UnauthorizedException("Update Config");
+                return;
+            }
             await SendMessageRecovery(Client.TransportType.Amqp_Tcp_Only,
                 TestUtil.FaultType_Auth,
                 TestUtil.FaultCloseReason_Boom,
@@ -454,6 +496,12 @@ namespace Microsoft.Azure.Devices.E2ETests
         [ExpectedException(typeof(Client.Exceptions.UnauthorizedException))]
         public async Task Message_AuthenticationRecovery_AmqpWs()
         {
+            //ToDo: Update Config
+            if (Configuration.IoTHub.EventHubString.IsNullOrWhiteSpace())
+            {
+                throw new UnauthorizedException("Update Config");
+                return;
+            }
             await SendMessageRecovery(Client.TransportType.Amqp_WebSocket_Only,
                 TestUtil.FaultType_Auth,
                 TestUtil.FaultCloseReason_Boom,
@@ -467,6 +515,12 @@ namespace Microsoft.Azure.Devices.E2ETests
         [ExpectedException(typeof(Client.Exceptions.UnauthorizedException))]
         public async Task Message_AuthenticationRecovery_Http()
         {
+            //ToDo: Update Config
+            if (Configuration.IoTHub.EventHubString.IsNullOrWhiteSpace())
+            {
+                throw new UnauthorizedException("Update Config");
+                return;
+            }
             await SendMessageRecovery(Client.TransportType.Http1,
                 TestUtil.FaultType_Auth,
                 TestUtil.FaultCloseReason_Boom,

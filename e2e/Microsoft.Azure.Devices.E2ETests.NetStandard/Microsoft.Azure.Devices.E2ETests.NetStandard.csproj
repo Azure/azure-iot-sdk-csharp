@@ -37,8 +37,7 @@
     <Compile Include="$(E2ECommon)\TestUtil.cs" />
     <Compile Include="$(E2ECommon)\TwinE2ETests.cs" />
     <Compile Include="$(E2ECommon)\DeviceTokenRefreshE2ETests.cs" />
-
-    <!-- TODO #193: Port to .Net Standard compatible new Azure EventHubs and ServiceBus NuGet packages:-->
+    
     <Compile Include="$(E2ECommon)\X509E2ETests.cs" /> 
     <Compile Include="$(E2ECommon)\X509E2ETests.NetCore.cs" /> 
     <Compile Include="$(E2ECommon)\MessageE2ETests.cs" />

@@ -1,4 +1,7 @@
-﻿using Microsoft.Azure.Devices.Client;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Common;
 using Microsoft.ServiceBus.Messaging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -14,7 +17,8 @@ namespace Microsoft.Azure.Devices.E2ETests
 {
     public partial class X509E2ETests
     {
-        private async Task SendSingleMessageX509(Client.TransportType transport)
+        #region PAL
+        internal async Task SendSingleMessageX509(Client.TransportType transport)
         {
             Tuple<string, string> deviceInfo = TestUtil.CreateDeviceWithX509(DevicePrefix, hostName, registryManager);
 
@@ -43,6 +47,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     var events = await eventHubReceiver.ReceiveAsync(int.MaxValue, TimeSpan.FromSeconds(5));
                     isReceived = VerifyTestMessage(events, deviceInfo.Item1, payload, p1Value);
                 }
+
                 sw.Stop();
 
                 Assert.IsTrue(isReceived, "Message is not received.");
@@ -54,9 +59,12 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager);
             }
         }
+        #endregion
+
+        #region Helper Functions
         private async Task<EventHubReceiver> CreateEventHubReceiver(string deviceName)
         {
-            EventHubClient eventHubClient = EventHubClient.CreateFromConnectionString(hubConnectionString);
+            EventHubClient eventHubClient = EventHubClient.CreateFromConnectionString(hubConnectionString, "messages/events");
             var eventHubPartitions = await eventHubClient.GetRuntimeInformationAsync();
             var eventHubPartitionsCount = eventHubPartitions.PartitionCount;
             string partition = EventHubPartitionKeyResolver.ResolveToPartition(deviceName, eventHubPartitionsCount);
@@ -81,7 +89,9 @@ namespace Microsoft.Azure.Devices.E2ETests
                     }
                 }
             }
+
             return false;
         }
+        #endregion
     }
 }

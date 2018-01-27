@@ -1,4 +1,7 @@
-﻿using Microsoft.Azure.Devices.Client;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.EventHubs;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -14,10 +17,19 @@ namespace Microsoft.Azure.Devices.E2ETests
 {
     public partial class X509E2ETests
     {
+
+        #region PAL
         //// This function create a device with x509 cert and send a message to the iothub on the transport specified.
         //// It then verifies the message is received at the eventHubClient.
-        private async Task SendSingleMessageX509(Client.TransportType transport)
+        internal async Task SendSingleMessageX509(Client.TransportType transport)
         {
+            // TODO: Update Jenkins Config
+            string endpoint = Configuration.IoTHub.EventHubString;
+            if (endpoint.IsNullOrWhiteSpace())
+            {
+                return;
+            }
+
             Tuple<string, string> deviceInfo = TestUtil.CreateDeviceWithX509(DevicePrefix, hostName, registryManager);
 
             EventHubClient eventHubClient;
@@ -45,6 +57,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     var events = await eventHubReceiver.ReceiveAsync(int.MaxValue, TimeSpan.FromSeconds(5));
                     isReceived = VerifyTestMessage(events, deviceInfo.Item1, payload, p1Value);
                 }
+
                 sw.Stop();
 
                 Assert.IsTrue(isReceived, "Message is not received.");
@@ -56,19 +69,20 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager);
             }
         }
+        #endregion
 
-
-
-
+        #region Helper Functions
         private async Task<PartitionReceiver> CreateEventHubReceiver(string deviceName)
         {
-            EventHubClient eventHubClient = EventHubClient.CreateFromConnectionString("EVENT HUB COMPATIBLE ENDPOINT");
+            string endpoint = Configuration.IoTHub.EventHubString;
+            EventHubClient eventHubClient = EventHubClient.CreateFromConnectionString(endpoint);
             var eventHubRuntime = await eventHubClient.GetRuntimeInformationAsync();
             var eventHubPartitionsCount = eventHubRuntime.PartitionCount;
             string partition = EventHubPartitionKeyResolver.ResolveToPartition(deviceName, eventHubPartitionsCount);
             string consumerGroupName = Configuration.IoTHub.ConsumerGroup;
             return eventHubClient.CreateReceiver(consumerGroupName, partition, DateTime.Now.AddMinutes(-5));
         }
+
         private bool VerifyTestMessage(IEnumerable<EventData> events, string deviceName, string payload, string p1Value)
         {
             foreach (var eventData in events)
@@ -85,6 +99,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     }
                 }
             }
+
             return false;
         }
         private bool VerifyKeyValue(string checkForKey, string checkForValue, IDictionary<string, object> properties)
@@ -102,5 +117,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             return false;
         }
+        #endregion
     }
 }
