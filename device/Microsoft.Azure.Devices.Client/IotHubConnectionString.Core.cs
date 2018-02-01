@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.Client
             else
             {
                 tokenValue = await this.TokenRefresher.GetTokenAsync(this.Audience).ConfigureAwait(false);
-                expiresOn = this.TokenRefresher.RefreshesOn;
+                expiresOn = this.TokenRefresher.ExpiresOn;
             }
 
             return new CbsToken(tokenValue, CbsConstants.IotHubSasTokenType, expiresOn);

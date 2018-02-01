@@ -15,6 +15,8 @@ namespace Microsoft.Azure.Devices.Client
         private static readonly string[] AccessRightsStringArray = 
             AccessRightsHelper.AccessRightsToStringArray(AccessRights.DeviceConnect);
 
+        static readonly TimeSpan BufferPeriod = TimeSpan.FromSeconds(120);
+
         private readonly AmqpSession amqpSession;
         private readonly IotHubConnectionString connectionString;
         private readonly string audience;
@@ -125,6 +127,7 @@ namespace Microsoft.Azure.Devices.Client
                 return false;
             }
 
+            waitTime = waitTime > BufferPeriod ? waitTime - BufferPeriod : TimeSpan.Zero;
             await Task.Delay(waitTime, cancellationToken).ConfigureAwait(false);
             return true;
         }
