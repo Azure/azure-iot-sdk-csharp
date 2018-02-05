@@ -4,11 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-#if WINDOWS_UWP
-    using PCLCrypto;
-#else
 using System.Security.Cryptography;
-#endif
 using System.Text;
 using System.Net;
 
@@ -199,17 +195,6 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
 
         public string ComputeSignature(byte[] key)
         {
-#if WINDOWS_UWP
-            var fields = new List<string>();
-            fields.Add(_encodedAudience);
-            fields.Add(_expiry);
-            string value = string.Join("\n", fields);
-            var algorithm = WinRTCrypto.MacAlgorithmProvider.OpenAlgorithm(MacAlgorithm.HmacSha256);
-            var hash = algorithm.CreateHash(key);
-            hash.Append(Encoding.UTF8.GetBytes(value));
-            var mac = hash.GetValueAndReset();
-            return Convert.ToBase64String(mac);
-#else
             List<string> fields = new List<string>();
             fields.Add(_encodedAudience);
             fields.Add(_expiry);
@@ -219,7 +204,6 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
                 string value = string.Join("\n", fields);
                 return Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(value)));
             }
-#endif
         }
 
         private static IDictionary<string, string> ExtractFieldValues(string sharedAccessSignature)

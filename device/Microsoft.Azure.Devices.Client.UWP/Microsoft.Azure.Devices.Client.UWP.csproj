@@ -204,9 +204,6 @@
     <PackageReference Include="Newtonsoft.Json">
       <Version>10.0.3</Version>
     </PackageReference>
-    <PackageReference Include="PCLCrypto">
-      <Version>2.0.147</Version>
-    </PackageReference>
     <PackageReference Include="System.AppContext">
       <Version>4.3.0</Version>
     </PackageReference>
@@ -215,9 +212,6 @@
     </PackageReference>
     <PackageReference Include="System.Security.Cryptography.X509Certificates">
       <Version>4.3.2</Version>
-    </PackageReference>
-    <PackageReference Include="Validation">
-      <Version>2.4.18</Version>
     </PackageReference>
     <PackageReference Include="WindowsAzure.Storage">
       <Version>8.7.0</Version>

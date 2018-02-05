@@ -3,19 +3,14 @@
 
 namespace Microsoft.Azure.Devices.Common.Security
 {
+    using Microsoft.Azure.Devices.Common.Data;
     using System;
     using System.Collections.Generic;
     using System.Globalization;
-#if WINDOWS_UWP
-    using PCLCrypto;
-#else
-    using System.Security.Cryptography;
-#endif
-    using System.Text;
     using System.Net;
+    using System.Security.Cryptography;
+    using System.Text;
 
-    using Microsoft.Azure.Devices.Common.Data;
-    
     public sealed class SharedAccessSignature : ISharedAccessSignatureCredential
     {
         readonly string iotHubName;
@@ -198,17 +193,6 @@ namespace Microsoft.Azure.Devices.Common.Security
 
         public string ComputeSignature(byte[] key)
         {
-#if WINDOWS_UWP
-            var fields = new List<string>();
-            fields.Add(this.encodedAudience);
-            fields.Add(this.expiry);
-            string value = string.Join("\n", fields);
-            var algorithm = WinRTCrypto.MacAlgorithmProvider.OpenAlgorithm(MacAlgorithm.HmacSha256);
-            var hash = algorithm.CreateHash(key);
-            hash.Append(Encoding.UTF8.GetBytes(value));
-            var mac = hash.GetValueAndReset();
-            return Convert.ToBase64String(mac);
-#else
             List<string> fields = new List<string>();
             fields.Add(this.encodedAudience);
             fields.Add(this.expiry);
@@ -218,7 +202,6 @@ namespace Microsoft.Azure.Devices.Common.Security
                 string value = string.Join("\n", fields);
                 return Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(value)));
             }
-#endif
         }
 
         static IDictionary<string, string> ExtractFieldValues(string sharedAccessSignature)
