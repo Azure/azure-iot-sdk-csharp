@@ -82,11 +82,13 @@
     <Compile Include="DeviceTokenRefreshE2ETests.cs" />
     <Compile Include="FileUploadE2ETests.cs" />
     <Compile Include="MessageE2ETests.cs" />
+    <Compile Include="MessageE2ETests.NetFramework.cs" />
     <Compile Include="MethodE2ETests.cs" />
     <Compile Include="TestUtil.cs" />
     <Compile Include="TwinE2ETests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="X509E2ETests.cs" />
+    <Compile Include="X509E2ETests.NetFramework.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\device\Microsoft.Azure.Devices.Client\Microsoft.Azure.Devices.Client.csproj">

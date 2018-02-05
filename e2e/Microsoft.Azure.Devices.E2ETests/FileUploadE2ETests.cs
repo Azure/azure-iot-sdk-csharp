@@ -89,7 +89,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
 #if NETCOREAPP2_0
-        // GitHub Issue #259
+        // TODO: #259
         [Ignore]
 #endif
         [TestMethod]

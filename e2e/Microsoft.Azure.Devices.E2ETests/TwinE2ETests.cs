@@ -478,7 +478,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await deviceClient.CloseAsync();
             await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager);
         }
-
+        
         private async Task _Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_WithObseleteCallbackSetter(Client.TransportType transport)
         {
             var tcs = new TaskCompletionSource<bool>();
@@ -488,8 +488,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             Tuple<string, string> deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
             var deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, transport);
 
-// TODO: #193
-// DeviceClient.SetDesiredPropertyUpdateCallback(DesiredPropertyUpdateCallback, object)' is obsolete: 'Please use SetDesiredPropertyUpdateCallbackAsync.            
 #pragma warning disable CS0618
             await deviceClient.SetDesiredPropertyUpdateCallback((patch, context) =>
             {
@@ -508,7 +506,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                         tcs.SetResult(true);
                     }
                 });
-
             }, null);
 #pragma warning restore CS0618
 

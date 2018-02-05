@@ -93,6 +93,20 @@ namespace Microsoft.Azure.Devices.E2ETests
             await sendMethodAndRespondWithObseletedSetMethodHandler(Client.TransportType.Mqtt_WebSocket_Only);
         }
 
+        [TestMethod]
+        [TestCategory("Method-E2E")]
+        public async Task Method_DeviceReceivesMethodAndResponseWithSetMethodHandler_Mqtt()
+        {
+            await sendMethodAndRespondWithSetMethodHandler(Client.TransportType.Mqtt_Tcp_Only);
+        }
+
+        [TestMethod]
+        [TestCategory("Method-E2E")]
+        public async Task Method_DeviceReceivesMethodAndResponseWithSetMethodHandler_MqttWs()
+        {
+            await sendMethodAndRespondWithSetMethodHandler(Client.TransportType.Mqtt_WebSocket_Only);
+        }
+
         [Ignore]
         [TestMethod]
         [TestCategory("Method-E2E")]
@@ -340,22 +354,38 @@ namespace Microsoft.Azure.Devices.E2ETests
             await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager);
         }
 
+        private async Task sendMethodAndRespondWithSetMethodHandler(Client.TransportType transport)
+        {
+            Tuple<string, string> deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
+            var assertResult = new TaskCompletionSource<Tuple<bool, bool>>();
+            var deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, transport);
+            
+
+            await deviceClient?.SetMethodHandlerAsync(MethodName, (request, context) => 
+            {
+                assertResult.TrySetResult(new Tuple<bool, bool>(request.Name.Equals(MethodName), request.DataAsJson.Equals(ServiceRequestJson)));
+                return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(DeviceResponseJson), 200));
+            }, null);
+
+            await ServiceSendMethodAndVerifyResponse(deviceInfo.Item1, MethodName, DeviceResponseJson, ServiceRequestJson, assertResult);
+
+            await deviceClient.CloseAsync();
+            await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager);
+        }
+
         private async Task sendMethodAndRespondWithObseletedSetMethodHandler(Client.TransportType transport)
         {
             Tuple<string, string> deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
             var assertResult = new TaskCompletionSource<Tuple<bool, bool>>();
             var deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, transport);
 
-// TODO: #193
-// DeviceClient.SetMethodHandler(string, MethodCallback, object)' is obsolete: 'Please use SetMethodHandlerAsync.
 #pragma warning disable CS0618
-            deviceClient?.SetMethodHandler(MethodName,
-                (request, context) =>
-                {
-                    assertResult.TrySetResult(new Tuple<bool, bool>(request.Name.Equals(MethodName), request.DataAsJson.Equals(ServiceRequestJson)));
-                    return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(DeviceResponseJson), 200));
-                },
-                null);
+
+            deviceClient?.SetMethodHandler(MethodName, (request, context) =>
+            {
+                assertResult.TrySetResult(new Tuple<bool, bool>(request.Name.Equals(MethodName), request.DataAsJson.Equals(ServiceRequestJson)));
+                return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(DeviceResponseJson), 200));
+            }, null);
 #pragma warning restore CS0618
 
             // sleep to ensure async tasks started in SetMethodHandler has completed

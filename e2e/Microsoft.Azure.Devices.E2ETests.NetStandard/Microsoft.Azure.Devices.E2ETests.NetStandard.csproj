@@ -37,19 +37,20 @@
     <Compile Include="$(E2ECommon)\TestUtil.cs" />
     <Compile Include="$(E2ECommon)\TwinE2ETests.cs" />
     <Compile Include="$(E2ECommon)\DeviceTokenRefreshE2ETests.cs" />
-
-    <!-- TODO #193: Port to .Net Standard compatible new Azure EventHubs and ServiceBus NuGet packages:
-    <Compile Include="$(E2ECommon)\X509E2ETests.cs" />
+    
+    <Compile Include="$(E2ECommon)\X509E2ETests.cs" /> 
+    <Compile Include="$(E2ECommon)\X509E2ETests.NetCore.cs" /> 
     <Compile Include="$(E2ECommon)\MessageE2ETests.cs" />
-    -->
+    <Compile Include="$(E2ECommon)\MessageE2ETests.NetCore.cs" />
+   
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Azure.Management.ServiceBus" Version="1.0.3" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.3.0-preview-20170628-02" />
     <PackageReference Include="MSTest.TestAdapter" Version="1.1.18" />
     <PackageReference Include="MSTest.TestFramework" Version="1.1.18" />
     <PackageReference Include="Microsoft.Azure.EventHubs" Version="1.0.3" />
-    <PackageReference Include="Microsoft.Azure.Management.ServiceBus" Version="1.0.2" />
   </ItemGroup>
 
   <ItemGroup>
