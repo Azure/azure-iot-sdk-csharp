@@ -171,9 +171,10 @@ LTS branches are named lts_*mm*_*yyyy*, where *mm* and *yyyy* are the month and 
 
 Below is a table showing the mapping of the LTS branches to the packages released
 
-| Nuget Package | Github Branch | LTS Status | LTS Start Date | Maintenance End Date | Removed Date |
+| Release | Github Branch | LTS Status | LTS Start Date | Maintenance End Date | Removed Date |
 | :-----------: | :-----------: | :--------: | :------------: | :------------------: | :----------: |
-| Microsoft.Azure.Devices.Client v1.5.1, Microsoft.Azure.Devices v1.4.0, Microsoft.Azure.Devices.Shared v1.1.1 | lts_07_2017   | Active     | 2017-07-01     | 2017-12-31           | 2018-06-30   |
+| [2018-1-23](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/2018-1-23) | lts_2018_01   | Active     | 2018-01-23     | 2018-06-30           | 2018-12-31   |
+| [2017-10-6](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/2017-10-6) | lts_07_2017   | Deprecated     | 2017-07-01     | 2018-12-31           | 2018-06-30   |
 
 * <sup>1</sup> All scheduled dates are subject to change by the Azure IoT SDK team.
 
