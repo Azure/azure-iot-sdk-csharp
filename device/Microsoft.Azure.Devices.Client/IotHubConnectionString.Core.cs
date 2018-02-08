@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Client
 
     internal sealed partial class IotHubConnectionString : IAuthorizationProvider, ICbsTokenProvider
     {
-        public AuthenticationWithTokenRefresh TokenRefresher
+        public DeviceAuthenticationWithTokenRefresh TokenRefresher
         {
             get;
             private set;

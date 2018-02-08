@@ -34,7 +34,6 @@ namespace Microsoft.Azure.Devices.Client
             this.SharedAccessSignature = builder.SharedAccessSignature;
             this.IotHubName = builder.IotHubName;
             this.DeviceId = builder.DeviceId;
-            this.ModuleId = builder.ModuleId;
 
 #if WINDOWS_UWP || PCL || NETSTANDARD1_3
             this.HttpsEndpoint = new UriBuilder("https", this.HostName).Uri;
@@ -47,15 +46,13 @@ namespace Microsoft.Azure.Devices.Client
 #if !NETMF
             this.AmqpEndpoint = new UriBuilder(CommonConstants.AmqpsScheme, this.HostName, AmqpConstants.DefaultSecurePort).Uri;
 
-            if (builder.AuthenticationMethod is AuthenticationWithTokenRefresh)
+            if (builder.AuthenticationMethod is DeviceAuthenticationWithTokenRefresh)
             {
-                this.TokenRefresher = (AuthenticationWithTokenRefresh)builder.AuthenticationMethod;
+                this.TokenRefresher = (DeviceAuthenticationWithTokenRefresh)builder.AuthenticationMethod;
             }
             else if (!string.IsNullOrEmpty(this.SharedAccessKey))
             {
-                this.TokenRefresher = this.ModuleId.IsNullOrWhiteSpace()
-                    ? new DeviceAuthenticationWithSakRefresh(this.DeviceId, this)
-                    : new ModuleAuthenticationWithSakRefresh(this.DeviceId, this.ModuleId, this) as AuthenticationWithTokenRefresh;
+                this.TokenRefresher = new DeviceAuthenticationWithSakRefresh(this.DeviceId, this);
             }
 #endif
         }
@@ -67,12 +64,6 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         public string DeviceId
-        {
-            get;
-            private set;
-        }
-
-        public string ModuleId
         {
             get;
             private set;

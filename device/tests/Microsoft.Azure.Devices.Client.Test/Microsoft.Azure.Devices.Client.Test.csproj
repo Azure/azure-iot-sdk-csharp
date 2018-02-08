@@ -52,11 +52,7 @@
   </Choose>
   <ItemGroup Condition="'$(Configuration)' == 'Debug'">
     <Compile Include="AmqpTransportHandlerTests.cs" />
-    <Compile Include="AuthenticationWithTokenRefreshTests.cs" />
     <Compile Include="CertificateHelper.cs" />
-    <Compile Include="AuthenticationMethod\ModuleAuthenticationTests.cs" />
-    <Compile Include="ModuleAuthenticationWithTokenRefreshTests.cs" />
-    <Compile Include="ModuleClientTests.cs" />
     <Compile Include="ConnectionString\IotHubConnectionStringExtensions.cs" />
     <Compile Include="DeviceAuthenticationWithTokenRefreshTests.cs" />
     <Compile Include="IoTHubClientDiagnosticTest.cs" />
@@ -84,7 +80,6 @@
     <Compile Include="DeviceClientConnectionStateManagerTests.cs" />
     <Compile Include="ProductInfoTests.cs" />
     <Compile Include="UtilsTests.cs" />
-    <Compile Include="Mqtt\UtilTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />

@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.Net;
-
 namespace Microsoft.Azure.Devices
 {
     using System;
@@ -25,17 +23,13 @@ namespace Microsoft.Azure.Devices
                 throw new ArgumentNullException("builder");
             }
 
-            this.Audience = builder.HostName;
-            this.HostName = string.IsNullOrEmpty(builder.GatewayHostName) ? builder.HostName : builder.GatewayHostName;
+            this.HostName = builder.HostName;
             this.SharedAccessKeyName = builder.SharedAccessKeyName;
             this.SharedAccessKey = builder.SharedAccessKey;
             this.SharedAccessSignature = builder.SharedAccessSignature;
             this.IotHubName = builder.IotHubName;
-            this.HttpsEndpoint = new UriBuilder("https", this.HostName).Uri;
+            this.HttpsEndpoint = new UriBuilder("https", builder.HostName).Uri;
             this.AmqpEndpoint = new UriBuilder(CommonConstants.AmqpsScheme, builder.HostName, AmqpConstants.DefaultSecurePort).Uri;
-            this.DeviceId = builder.DeviceId;
-            this.ModuleId = builder.ModuleId;
-            this.GatewayHostName = builder.GatewayHostName;
         }
 
         public string IotHubName
@@ -64,8 +58,7 @@ namespace Microsoft.Azure.Devices
 
         public string Audience
         {
-            get;
-            private set;
+            get { return this.HostName; }
         }
 
         public string SharedAccessKeyName
@@ -81,24 +74,6 @@ namespace Microsoft.Azure.Devices
         }
 
         public string SharedAccessSignature
-        {
-            get;
-            private set;
-        }
-
-        public string DeviceId
-        {
-            get;
-            private set;
-        }
-        
-        public string ModuleId
-        {
-            get;
-            private set;
-        }
-
-        public string GatewayHostName
         {
             get;
             private set;
@@ -181,29 +156,6 @@ namespace Microsoft.Azure.Devices
                 TimeToLive = DefaultTokenTimeToLive,
                 Target = this.Audience
             };
-
-            if (this.DeviceId != null)
-            {
-#if NETMF
-                if (this.ModuleId == null || this.ModuleId.Length == 0)
-                {
-                    builder.Target = this.Audience + "/devices/" + WebUtility.UrlEncode(this.DeviceId);
-                }
-                else 
-                {
-                    builder.Target = this.Audience + "/devices/" + WebUtility.UrlEncode(this.DeviceId) + "/modules/" + WebUtility.UrlEncode(this.ModuleId);
-                }
-#else
-                if (string.IsNullOrEmpty(this.ModuleId))
-                {
-                    builder.Target = "{0}/devices/{1}".FormatInvariant(this.Audience, WebUtility.UrlEncode(this.DeviceId));
-                }
-                else
-                {
-                    builder.Target = "{0}/devices/{1}/modules/{2}".FormatInvariant(this.Audience, WebUtility.UrlEncode(this.DeviceId), WebUtility.UrlEncode(this.ModuleId));
-                }
-#endif
-            }
 
             ttl = builder.TimeToLive;
 

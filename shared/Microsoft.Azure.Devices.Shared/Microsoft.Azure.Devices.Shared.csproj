@@ -19,7 +19,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;ENABLE_MODULES_SDK</DefineConstants>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -27,7 +27,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE;ENABLE_MODULES_SDK</DefineConstants>
+    <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -51,10 +51,7 @@
   <ItemGroup>
     <Compile Include="AuthenticationType.cs" />
     <Compile Include="Common\Extensions\StringFormattingExtensions.cs" />
-    <Compile Include="ConfigurationInfo.cs" />
-    <Compile Include="ConfigurationStatus.cs" />
     <Compile Include="DeviceConnectionState.cs" />
-    <Compile Include="DeviceCapabilities.cs" />
     <Compile Include="DeviceStatus.cs" />
     <Compile Include="ETagHolder.cs" />
     <Compile Include="IETagHolder.cs" />

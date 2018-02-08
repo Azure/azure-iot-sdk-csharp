@@ -1,6 +1,8 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-
+﻿// ------------------------------------------------------------------------------------------------
+// <copyright file="Fail.cs" company="Microsoft">
+//   Copyright (c) Microsoft Corporation. All rights reserved.
+// </copyright>
+// ------------------------------------------------------------------------------------------------
 namespace Microsoft.Azure.Devices.Client.Test
 {
     using System;

@@ -48,10 +48,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> defaultErrorMapping,
             TimeSpan timeout,
             Action<HttpClient> preRequestActionForAllRequests,
-#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
+#if !WINDOWS_UWP && !PCL
             X509Certificate2 clientCert,
-#elif NETSTANDARD1_3
-            HttpClientHandler httpClientHandler,
 #endif
             ProductInfo productInfo
             )
@@ -71,8 +69,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
 
             this.httpClientObj = handler != null ? new HttpClient(handler) : new HttpClient();
-#elif NETSTANDARD1_3
-            this.httpClientObj = httpClientHandler != null ? new HttpClient(httpClientHandler) : new HttpClient();
 #else
             this.httpClientObj = new HttpClient();
 #endif

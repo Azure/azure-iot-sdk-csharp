@@ -13,15 +13,11 @@ namespace Microsoft.Azure.Devices
     {
         static internal IAuthenticationMethod GetAuthenticationMethod(IotHubConnectionStringBuilder iotHubConnectionStringBuilder)
         {
-            if (!string.IsNullOrWhiteSpace(iotHubConnectionStringBuilder.DeviceId))
-            {
-                return new ServiceAuthenticationWithDeviceCredentials(iotHubConnectionStringBuilder.DeviceId, iotHubConnectionStringBuilder.SharedAccessKey);
-            }
             if (string.IsNullOrWhiteSpace(iotHubConnectionStringBuilder.SharedAccessKey))
             {
                 return new ServiceAuthenticationWithSharedAccessPolicyToken(iotHubConnectionStringBuilder.SharedAccessKeyName, iotHubConnectionStringBuilder.SharedAccessSignature);
             }
-            if (string.IsNullOrWhiteSpace(iotHubConnectionStringBuilder.SharedAccessSignature))
+            else if (string.IsNullOrWhiteSpace(iotHubConnectionStringBuilder.SharedAccessSignature))
             {
                 return new ServiceAuthenticationWithSharedAccessPolicyKey(iotHubConnectionStringBuilder.SharedAccessKeyName, iotHubConnectionStringBuilder.SharedAccessKey);
             }
