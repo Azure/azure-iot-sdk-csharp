@@ -44,41 +44,47 @@ Param(
 
 Function BuildProject($path, $message) {
 
+    $label = "BUILD: --- $message $configuration ---"
+
     Write-Host
-    Write-Host -ForegroundColor Cyan "BUILD: --- " $message $configuration" ---"
+    Write-Host -ForegroundColor Cyan $label
     cd (Join-Path $rootDir $path)
 
     if ($clean) {
         & dotnet clean --verbosity $verbosity --configuration $configuration
         if ($LASTEXITCODE -ne 0) {
-            throw "Clean failed."
+            throw "Clean failed: $label"
         }
     }
 
     & dotnet build --verbosity $verbosity --configuration $configuration
 
     if ($LASTEXITCODE -ne 0) {
-        throw "Build failed."
+        throw "Build failed: $label"
     }
 }
 
 Function RunTests($path, $message) {
 
+    $label = "TEST: --- $message $configuration ---"
+
     Write-Host
-    Write-Host -ForegroundColor Cyan "TEST: --- " $message $configuration" ---"
+    Write-Host -ForegroundColor Cyan $label
     cd (Join-Path $rootDir $path)
 
     & dotnet test --verbosity $verbosity --configuration $configuration --logger "trx"
 
     if ($LASTEXITCODE -ne 0) {
-        throw "Tests failed."
+        throw "Tests failed: $label"
     }
 }
 
 Function LegacyBuildProject($path, $message) {
 
+    $label = "MSBUILD: --- $message $configuration ---"
+
     Write-Host
-    Write-Host -ForegroundColor Cyan "MSBUILD: --- " $message $configuration" ---"
+    Write-Host -ForegroundColor Cyan $label
     cd (Join-Path $rootDir $path)
 
     $commandLine = ".\build.cmd --config $configuration"
@@ -90,14 +96,16 @@ Function LegacyBuildProject($path, $message) {
     cmd /c "$commandLine && exit /b !ERRORLEVEL!"
 
     if ($LASTEXITCODE -ne 0) {
-        throw "Build failed."
+        throw "Build failed: $label"
     }
 }
 
 Function LegacyRunTests($path, $message) {
 
+    $label = "MSTEST: --- $message $configuration ---"
+
     Write-Host
-    Write-Host -ForegroundColor Cyan "MSTEST: --- " $message $configuration" ---"
+    Write-Host -ForegroundColor Cyan $label
     
     $container = (Split-Path -leaf $path) + ".dll"
 
@@ -105,7 +113,7 @@ Function LegacyRunTests($path, $message) {
     & mstest /TestContainer:$container
 
     if ($LASTEXITCODE -ne 0) {
-        throw "Tests failed."
+        throw "Tests failed: $label"
     }
 }
 
@@ -113,6 +121,7 @@ $rootDir = (Get-Item -Path ".\" -Verbose).FullName
 
 $startTime = Get-Date
 $buildFailed = $true
+$errorMessage = ""
 
 try {
 
@@ -191,9 +200,7 @@ try {
 }
 catch [Exception]{
     $buildFailed = $true
-    if ($verbosity -ne "q") {
-        Write-Error $Error[0]
-    }
+    $errorMessage = $Error[0]
 }
 finally {
     cd $rootDir
@@ -206,7 +213,7 @@ Write-Host
 Write-Host ("Time Elapsed {0:c}" -f ($endTime - $startTime))
 
 if ($buildFailed) {
-    Write-Host -ForegroundColor Red "Build failed."
+    Write-Host -ForegroundColor Red "Build failed ($errorMessage)"
     exit 1
 }
 else {
