@@ -74,8 +74,6 @@ public sealed class DeviceClient
     internal async Task OnReceiveEventMessageCalled(EventMessageInternal eventMessageInternal);
 
     public async Task<Twin> GetTwinAsync();
-    public Task<MethodResult> InvokeMethodAsync(string id, Method method);
-    public Task<MethodResult> InvokeMethodAsync(string id, Method method, CancellationToken token);
     public async Task SetMethodHandlerAsync(string methodName, MethodCallback methodHandler, object userContext)
     public void SetConnectionStatusChangesHandler(ConnectionStatusChangesHandler statusChangesHandler)
 }
@@ -333,11 +331,3 @@ public async Task<Twin> GetTwinAsync()
 ```
 
 **SRS_DEVICECLIENT_13_031: [** `GetTwinAsync` shall return the module twin's desired properties and metadata. **]
-
-### InvokeMethodAsync
-```csharp
-public Task<MethodResult> InvokeMethodAsync(string id, Method method, CancellationToken token)
-```
-
-**SRS_DEVICECLIENT_33_010: [** `InvokeMethodAsync` shall throw if id is null or empty. **]
-**SRS_DEVICECLIENT_33_011: [** `InvokeMethodAsync` shall throw if method is null. **]
