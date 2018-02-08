@@ -18,6 +18,13 @@ namespace Microsoft.Azure.Devices
         [JsonProperty(PropertyName = "deviceId", NullValueHandling = NullValueHandling.Ignore)]
         public string DeviceId { get; set; }
 
+#if ENABLE_MODULES_SDK
+        /// <summary>
+        /// Module Id on the device that indicated the error.
+        /// </summary>
+        [JsonProperty(PropertyName = "moduleId", NullValueHandling = NullValueHandling.Ignore)]
+        public string ModuleId { get; set; }
+#endif
         /// <summary>
         /// ErrorCode associated with the error.
         /// </summary>

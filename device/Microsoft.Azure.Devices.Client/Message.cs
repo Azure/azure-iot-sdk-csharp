@@ -423,6 +423,51 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
+        /// Specifies the input name on which the message was sent, if there was one.
+        /// </summary>
+        public string InputName
+        {
+            get
+            {
+#if NETMF
+                return this.GetSystemProperty(MessageSystemPropertyNames.InputName) as string ?? string.Empty;
+#else
+                return this.GetSystemProperty<string>(MessageSystemPropertyNames.InputName);
+#endif
+            }
+        }
+
+        /// <summary>
+        /// Specifies the device Id from which this message was sent, if there is one. 
+        /// </summary>
+        public string ConnectionDeviceId
+        {
+            get
+            {
+#if NETMF
+                return this.GetSystemProperty(MessageSystemPropertyNames.ConnectionDeviceId) as string ?? string.Empty;
+#else
+                return this.GetSystemProperty<string>(MessageSystemPropertyNames.ConnectionDeviceId);
+#endif
+            }
+        }
+
+        /// <summary>
+        /// Specifies the module Id from which this message was sent, if there is one.
+        /// </summary>
+        public string ConnectionModuleId
+        {
+            get
+            {
+#if NETMF
+                return this.GetSystemProperty(MessageSystemPropertyNames.ConnectionModuleId) as string ?? string.Empty;
+#else
+                return this.GetSystemProperty<string>(MessageSystemPropertyNames.ConnectionModuleId);
+#endif
+            }
+        }
+
+        /// <summary>
         /// Used to specify the content encoding type of the message.
         /// </summary>
         public string ContentEncoding

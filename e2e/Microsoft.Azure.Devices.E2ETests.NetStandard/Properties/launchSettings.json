@@ -1,7 +1,0 @@
-{
-  "profiles": {
-    "Microsoft.Azure.Devices.E2ETests.NetStandard": {
-      "commandName": "Project"
-    }
-  }
-}

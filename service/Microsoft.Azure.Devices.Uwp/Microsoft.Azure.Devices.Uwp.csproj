@@ -237,6 +237,7 @@
     <Compile Include="..\Microsoft.Azure.Devices\Receiver.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\RegistryManager.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\RegistryStatistics.cs" />
+    <Compile Include="..\Microsoft.Azure.Devices\ServiceAuthenticationWithDeviceCredentials.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\ServiceAuthenticationWithSharedAccessPolicyKey.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\ServiceAuthenticationWithSharedAccessPolicyToken.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\ServiceClient.cs" />

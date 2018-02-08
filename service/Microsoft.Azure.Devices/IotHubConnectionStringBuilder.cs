@@ -23,12 +23,16 @@ namespace Microsoft.Azure.Devices
 
         static readonly string HostNamePropertyName = ((MemberExpression)((Expression<Func<IotHubConnectionStringBuilder, string>>)(_ => _.HostName)).Body).Member.Name; // todo: replace with nameof()
         static readonly string SharedAccessKeyNamePropertyName = ((MemberExpression)((Expression<Func<IotHubConnectionStringBuilder, string>>)(_ => _.SharedAccessKeyName)).Body).Member.Name; // todo: replace with nameof()
+        static readonly string DeviceIdPropertyName = ((MemberExpression)((Expression<Func<IotHubConnectionStringBuilder, string>>)(_ => _.DeviceId)).Body).Member.Name; // todo: replace with nameof()
+        static readonly string ModuleIdPropertyName = nameof(ModuleId);
+        static readonly string GatewayHostNamePropertyName = nameof(GatewayHostName);
         static readonly string SharedAccessKeyPropertyName = ((MemberExpression)((Expression<Func<IotHubConnectionStringBuilder, string>>)(_ => _.SharedAccessKey)).Body).Member.Name; // todo: replace with nameof()
         static readonly string SharedAccessSignaturePropertyName = ((MemberExpression)((Expression<Func<IotHubConnectionStringBuilder, string>>)(_ => _.SharedAccessSignature)).Body).Member.Name; // todo: replace with nameof();
         static readonly Regex HostNameRegex = new Regex(@"[a-zA-Z0-9_\-\.]+$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         static readonly Regex SharedAccessKeyNameRegex = new Regex(@"^[a-zA-Z0-9_\-@\.]+$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         static readonly Regex SharedAccessKeyRegex = new Regex(@"^.+$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         static readonly Regex SharedAccessSignatureRegex = new Regex(@"^.+$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        static readonly Regex IdRegex = new Regex(@"^[A-Za-z0-9\-:.+%_#*?!(),=@;$']{1,128}$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         string hostName;
         string iotHubName;
@@ -83,6 +87,12 @@ namespace Microsoft.Azure.Devices
 
         public string SharedAccessSignature { get; internal set; }
 
+        public string DeviceId { get; internal set; }
+
+        public string ModuleId { get; internal set; }
+
+        public string GatewayHostName { get; internal set; }
+
         public string IotHubName
         {
             get { return this.iotHubName; }
@@ -98,9 +108,23 @@ namespace Microsoft.Azure.Devices
         {
             this.Validate();
 
-            StringBuilder stringBuilder = new StringBuilder();
+            var stringBuilder = new StringBuilder();
             stringBuilder.AppendKeyValuePairIfNotEmpty(HostNamePropertyName, this.HostName);
-            stringBuilder.AppendKeyValuePairIfNotEmpty(SharedAccessKeyNamePropertyName, this.SharedAccessKeyName);
+            if (this.SharedAccessKeyName != null)
+            {
+                stringBuilder.AppendKeyValuePairIfNotEmpty(SharedAccessKeyNamePropertyName, this.SharedAccessKeyName);
+            }            
+            else
+            {
+                if (this.ModuleId != null)
+                {
+                    stringBuilder.AppendKeyValuePairIfNotEmpty(ModuleIdPropertyName, this.ModuleId);
+                }
+
+                stringBuilder.AppendKeyValuePairIfNotEmpty(DeviceIdPropertyName, this.DeviceId);
+                stringBuilder.AppendKeyValuePairIfNotEmpty(GatewayHostNamePropertyName, this.GatewayHostName);
+            }
+
             stringBuilder.AppendKeyValuePairIfNotEmpty(SharedAccessKeyPropertyName, this.SharedAccessKey);
             stringBuilder.AppendKeyValuePairIfNotEmpty(SharedAccessSignaturePropertyName, this.SharedAccessSignature);
             if (stringBuilder.Length > 0)
@@ -119,15 +143,18 @@ namespace Microsoft.Azure.Devices
             this.SharedAccessKeyName = GetConnectionStringOptionalValue(map, SharedAccessKeyNamePropertyName);
             this.SharedAccessKey = GetConnectionStringOptionalValue(map, SharedAccessKeyPropertyName);
             this.SharedAccessSignature = GetConnectionStringOptionalValue(map, SharedAccessSignaturePropertyName);
+            this.DeviceId = GetConnectionStringOptionalValue(map, DeviceIdPropertyName);
+            this.ModuleId = GetConnectionStringOptionalValue(map, ModuleIdPropertyName);
+            this.GatewayHostName = GetConnectionStringOptionalValue(map, GatewayHostNamePropertyName);
 
             this.Validate();
         }
 
         void Validate()
         {
-            if (this.SharedAccessKeyName.IsNullOrWhiteSpace())
+            if (this.SharedAccessKeyName.IsNullOrWhiteSpace() && this.DeviceId.IsNullOrWhiteSpace())
             {
-                throw new ArgumentException("Should specify SharedAccessKeyName");
+                throw new ArgumentException("Should specify either SharedAccessKeyName or DeviceId");
             }
 
             if (!(this.SharedAccessKey.IsNullOrWhiteSpace() ^ this.SharedAccessSignature.IsNullOrWhiteSpace()))
@@ -151,9 +178,21 @@ namespace Microsoft.Azure.Devices
             }
             
             ValidateFormat(this.HostName, HostNamePropertyName, HostNameRegex);
-            ValidateFormatIfSpecified(this.SharedAccessKeyName, SharedAccessKeyNamePropertyName, SharedAccessKeyNameRegex);
+            if (!this.SharedAccessKeyName.IsNullOrWhiteSpace())
+            {
+                ValidateFormatIfSpecified(this.SharedAccessKeyName, SharedAccessKeyNamePropertyName, SharedAccessKeyNameRegex);
+            }
+            if (!this.DeviceId.IsNullOrWhiteSpace())
+            {
+                ValidateFormatIfSpecified(this.DeviceId, DeviceIdPropertyName, IdRegex);
+            }
+            if (!this.ModuleId.IsNullOrWhiteSpace())
+            {
+                ValidateFormatIfSpecified(this.ModuleId, ModuleIdPropertyName, IdRegex);
+            }
             ValidateFormatIfSpecified(this.SharedAccessKey, SharedAccessKeyPropertyName, SharedAccessKeyRegex);
             ValidateFormatIfSpecified(this.SharedAccessSignature, SharedAccessSignaturePropertyName, SharedAccessSignatureRegex);
+            ValidateFormatIfSpecified(this.GatewayHostName, GatewayHostNamePropertyName, HostNameRegex);
         }
 
         void SetHostName(string hostname)

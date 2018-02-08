@@ -150,5 +150,35 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">Cancellation Token</param>
         /// <returns>Method result</returns>
         public abstract Task<CloudToDeviceMethodResult> InvokeDeviceMethodAsync(string deviceId, CloudToDeviceMethod cloudToDeviceMethod, CancellationToken cancellationToken);
+
+#if ENABLE_MODULES_SDK
+        /// <summary>
+        /// Interactively invokes a method on device
+        /// </summary>
+        /// <param name="deviceId">Device Id</param>
+        /// <param name="moduleId">Module Id</param>
+        /// <param name="cloudToDeviceMethod">Device method parameters (passthrough to device)</param>
+        /// <returns>Method result</returns>
+        public abstract Task<CloudToDeviceMethodResult> InvokeDeviceMethodAsync(string deviceId, string moduleId, CloudToDeviceMethod cloudToDeviceMethod);
+
+        /// <summary>
+        /// Interactively invokes a method on device
+        /// </summary>
+        /// <param name="deviceId">Device Id</param>
+        /// <param name="moduleId">Module Id</param>
+        /// <param name="cloudToDeviceMethod">Device method parameters (passthrough to device)</param>
+        /// <param name="cancellationToken">Cancellation Token</param>
+        /// <returns>Method result</returns>
+        public abstract Task<CloudToDeviceMethodResult> InvokeDeviceMethodAsync(string deviceId, string moduleId, CloudToDeviceMethod cloudToDeviceMethod, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Send a one-way notification to the specified device module
+        /// </summary>
+        /// <param name="deviceId">The device identifier for the target device</param>
+        /// <param name="moduleId">The module identifier for the target device module</param>
+        /// <param name="message">The message containing the notification</param>
+        /// <returns></returns>
+        public abstract Task SendAsync(string deviceId, string moduleId, Message message);
+#endif
     }
 }
