@@ -33,8 +33,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             Connected = 2,
             Closed = 16
         }
-        const string CommandTopicFilterFormat = "devices/{0}/messages/devicebound/#";
-        const string TelemetryTopicFormat = "devices/{0}/messages/events/";
+        const string DeviceCommandTopicFilterFormat = "devices/{0}/messages/devicebound/#";
+        const string DeviceTelemetryTopicFormat = "devices/{0}/messages/events/";
+        const string ModuleTelemetryTopicFormat = "devices/{0}/modules/{1}/messages/events/";
 
 
         static readonly Action<object> PingServerCallback = PingServer;
@@ -44,6 +45,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         readonly IMqttIotHubEventHandler mqttIotHubEventHandler;
 
         readonly string deviceId;
+        readonly string moduleId;
         readonly SimpleWorkQueue<PublishPacket> deviceBoundOneWayProcessor;
         readonly OrderedTwoPhaseWorkQueue<int, PublishPacket> deviceBoundTwoWayProcessor;
         readonly string iotHubHostName;
@@ -66,6 +68,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public MqttIotHubAdapter(
             string deviceId,
+            string moduleId,
             string iotHubHostName,
             IAuthorizationProvider passwordProvider,
             MqttTransportSettings mqttTransportSettings,
@@ -81,6 +84,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             Contract.Requires(productInfo != null);
 
             this.deviceId = deviceId;
+            this.moduleId = moduleId;
             this.iotHubHostName = iotHubHostName;
             this.passwordProvider = passwordProvider;
             this.mqttTransportSettings = mqttTransportSettings;
@@ -229,6 +233,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             try
             {
+                string id = string.IsNullOrWhiteSpace(this.moduleId) ? this.deviceId : $"{this.deviceId}/{this.moduleId}";
                 string password = null;
                 if (this.passwordProvider != null)
                 {
@@ -241,9 +246,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 var connectPacket = new ConnectPacket
                 {
-                    ClientId = this.deviceId,
+                    ClientId = id,
                     HasUsername = true,
-                    Username = $"{this.iotHubHostName}/{this.deviceId}/api-version={ClientApiVersionHelper.ApiVersionString}&DeviceClientType={Uri.EscapeDataString(this.productInfo.ToString())}",
+                    Username = $"{this.iotHubHostName}/{id}/api-version={ClientApiVersionHelper.ApiVersionString}&DeviceClientType={Uri.EscapeDataString(this.productInfo.ToString())}",
                     HasPassword = !string.IsNullOrEmpty(password),
                     Password = password,
                     KeepAliveInSeconds = this.mqttTransportSettings.KeepAliveInSeconds,
@@ -254,7 +259,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 {
                     Message message = this.willMessage.Message;
                     QualityOfService publishToServerQoS = this.mqttTransportSettings.PublishToServerQoS;
-                    string topicName = string.Format(TelemetryTopicFormat, this.deviceId);
+                    string topicName = this.GetTelemetryTopicName();
                     PublishPacket will = await Util.ComposePublishPacketAsync(context, message, publishToServerQoS, topicName).ConfigureAwait(false);
 
                     connectPacket.WillMessage = will.Payload;
@@ -378,7 +383,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (packetPassed == null || packetPassed.Requests == null)
             {
-                topicFilter = CommandTopicFilterFormat.FormatInvariant(this.deviceId);
+                topicFilter = this.GetCommandTopicFilter();
                 qos = mqttTransportSettings.ReceivingQoS;
             }
             else if (packetPassed.Requests.Count == 1)
@@ -391,15 +396,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 throw new ArgumentException("unexpected request count.  expected 1, got " + packetPassed.Requests.Count.ToString());
             }
 
+            if (!string.IsNullOrEmpty(topicFilter))
+            {
+                int packetId = Util.GetNextPacketId();
+                var subscribePacket = new SubscribePacket(packetId, new SubscriptionRequest(topicFilter, qos));
+                this.subscribeCompletions[packetId] = new TaskCompletionSource();
 
-            int packetId = Util.GetNextPacketId();
-            var subscribePacket = new SubscribePacket(packetId, new SubscriptionRequest(topicFilter, qos));
-            this.subscribeCompletions[packetId] = new TaskCompletionSource();
+                await Util.WriteMessageAsync(context, subscribePacket, ShutdownOnWriteErrorHandler).ConfigureAwait(false);
 
-            await Util.WriteMessageAsync(context, subscribePacket, ShutdownOnWriteErrorHandler).ConfigureAwait(false);
-
-            await this.subscribeCompletions[packetId].Task.ConfigureAwait(false);
-
+                await this.subscribeCompletions[packetId].Task.ConfigureAwait(false);
+            }
         }
 
         void ProcessSubAck(SubAckPacket packet)
@@ -540,10 +546,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             string topicName;
             QualityOfService qos;
-                
+
             if (string.IsNullOrEmpty(message.MqttTopicName))
             {
-                topicName = string.Format(TelemetryTopicFormat, this.deviceId);
+                topicName = this.GetTelemetryTopicName();
                 qos = this.mqttTransportSettings.PublishToServerQoS;
             }
             else
@@ -717,6 +723,22 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             bodyStream.Read(buffer, 0, buffer.Length);
             IByteBuffer copiedBuffer = Unpooled.CopiedBuffer(buffer);
             return copiedBuffer;
+        }
+
+        string GetTelemetryTopicName()
+        {
+            string topicName = string.IsNullOrWhiteSpace(this.moduleId)
+                ? DeviceTelemetryTopicFormat.FormatInvariant(this.deviceId)
+                : ModuleTelemetryTopicFormat.FormatInvariant(this.deviceId, this.moduleId);
+            return topicName;
+        }
+
+        string GetCommandTopicFilter()
+        {
+            string topicFilter = string.IsNullOrWhiteSpace(this.moduleId)
+                ? DeviceCommandTopicFilterFormat.FormatInvariant(this.deviceId)
+                : string.Empty;
+            return topicFilter;
         }
 #endregion
     }

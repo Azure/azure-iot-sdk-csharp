@@ -112,6 +112,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return this.ExecuteWithErrorHandlingAsync(() => base.DisableMethodsAsync(cancellationToken), true, cancellationToken);
         }
 
+        public override Task EnableEventReceiveAsync(CancellationToken cancellationToken)
+        {
+            return this.ExecuteWithErrorHandlingAsync(() => base.EnableEventReceiveAsync(cancellationToken), true, cancellationToken);
+        }
+
+        public override Task DisableEventReceiveAsync(CancellationToken cancellationToken)
+        {
+            return this.ExecuteWithErrorHandlingAsync(() => base.DisableEventReceiveAsync(cancellationToken), true, cancellationToken);
+        }
+
         public override Task RecoverConnections(object o, ConnectionType connectionType, CancellationToken cancellationToken)
         {
             return this.ExecuteWithErrorHandlingAsync(() => base.RecoverConnections(o, connectionType, cancellationToken), true, cancellationToken);

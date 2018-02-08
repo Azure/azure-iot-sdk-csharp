@@ -43,6 +43,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         readonly IHttpClientHelper httpClientHelper;
         readonly string deviceId;
+        readonly string moduleId;
 
 #if WINDOWS_UWP || PCL
         internal HttpTransportHandler(IPipelineContext context, IotHubConnectionString iotHubConnectionString, Http1TransportSettings transportSettings)
@@ -59,12 +60,29 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 null,
                 productInfo);
         }
+#elif NETSTANDARD1_3        
+        internal HttpTransportHandler(IPipelineContext context, IotHubConnectionString iotHubConnectionString, Http1TransportSettings transportSettings, HttpClientHandler httpClientHandler = null)
+            : base(context, transportSettings)
+        {
+            ProductInfo productInfo = context.Get<ProductInfo>();
+            this.deviceId = iotHubConnectionString.DeviceId;
+            this.moduleId = iotHubConnectionString.ModuleId;
+            this.httpClientHelper = new HttpClientHelper(
+                iotHubConnectionString.HttpsEndpoint,
+                iotHubConnectionString,
+                ExceptionHandlingHelper.GetDefaultErrorMapping(),
+                DefaultOperationTimeout,
+                null,
+                httpClientHandler,
+                productInfo);
+        }
 #else
         internal HttpTransportHandler(IPipelineContext context, IotHubConnectionString iotHubConnectionString, Http1TransportSettings transportSettings)
             :base(context, transportSettings)
         {
             ProductInfo productInfo = context.Get<ProductInfo>();
             this.deviceId = iotHubConnectionString.DeviceId;
+            this.moduleId = iotHubConnectionString.ModuleId;
             this.httpClientHelper = new HttpClientHelper(
                 iotHubConnectionString.HttpsEndpoint,
                 iotHubConnectionString,

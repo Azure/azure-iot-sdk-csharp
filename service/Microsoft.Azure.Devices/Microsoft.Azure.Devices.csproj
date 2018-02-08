@@ -19,7 +19,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;ENABLE_MODULES_SDK</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -29,7 +29,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;ENABLE_MODULES_SDK</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -149,8 +149,12 @@
     <Compile Include="Common\Amqp\ClientWebSocketTransport.cs" />
     <Compile Include="Common\Amqp\LegacyClientWebSocketTransport.cs" />
     <Compile Include="Common\Amqp\WebSocketConstants.cs" />
+    <Compile Include="Common\Exceptions\ConfigurationNotFoundException.cs" />
     <Compile Include="Common\Exceptions\ErrorCode.cs" />
+    <Compile Include="Common\Exceptions\ModuleAlreadyExistsException.cs" />
+    <Compile Include="Common\Exceptions\ModuleNotFoundException.cs" />
     <Compile Include="Common\Exceptions\TooManyDevicesException.cs" />
+    <Compile Include="Common\Exceptions\TooManyModulesOnDeviceException.cs" />
     <Compile Include="Common\Extensions\AmqpExtensions.cs" />
     <Compile Include="Common\PerfectHash.cs" />
     <Compile Include="AuthenticationMechanism.cs" />
@@ -228,6 +232,10 @@
     <Compile Include="Common\WebApi\ResourceRequest.cs" />
     <Compile Include="DeliveryAcknowledgement.cs" />
     <Compile Include="DeliveryFailureReason.cs" />
+    <Compile Include="Configurations\Configuration.cs" />
+    <Compile Include="Configurations\ConfigurationContent.cs" />
+    <Compile Include="Configurations\TwinContent.cs" />
+    <Compile Include="Configurations\TwinContentJsonConverter.cs" />
     <Compile Include="Device.cs" />
     <Compile Include="CloudToDeviceMethodResult.cs" />
     <Compile Include="DeviceJob.cs" />
@@ -235,6 +243,7 @@
     <Compile Include="DeviceJobOutcome.cs" />
     <Compile Include="DeviceJobStatus.cs" />
     <Compile Include="DeviceJobType.cs" />
+    <Compile Include="Module.cs" />
     <Compile Include="IotHubConnectionStringBuilder.cs" />
     <Compile Include="QueryOptions.cs" />
     <Compile Include="QueryResponse.cs" />
@@ -280,6 +289,7 @@
     <Compile Include="Receiver.cs" />
     <Compile Include="RegistryManager.cs" />
     <Compile Include="RegistryStatistics.cs" />
+    <Compile Include="ServiceAuthenticationWithDeviceCredentials.cs" />
     <Compile Include="ServiceAuthenticationWithSharedAccessPolicyKey.cs" />
     <Compile Include="ServiceAuthenticationWithSharedAccessPolicyToken.cs" />
     <Compile Include="ServiceClient.cs" />

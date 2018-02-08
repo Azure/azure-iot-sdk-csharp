@@ -15,6 +15,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
     using DotNetty.Codecs.Mqtt.Packets;
     using Newtonsoft.Json;
     using System.IO;
+    using System.Linq;
     using Exceptions;
     using Client.Transport;
     using DotNetty.Common.Concurrency;
@@ -23,7 +24,8 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
     [TestClass]
     public class MqttTransportHandlerTests
     {
-        const string DumpyConnectionString = "HostName=127.0.0.1;SharedAccessKeyName=AllAccessKey;DeviceId=FakeDevice;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
+        const string DummyConnectionString = "HostName=127.0.0.1;SharedAccessKeyName=AllAccessKey;DeviceId=FakeDevice;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
+        const string DummyModuleConnectionString = "HostName=127.0.0.1;SharedAccessKeyName=AllAccessKey;DeviceId=FakeDevice;ModuleId=FakeModule;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
         const string fakeMethodResponseBody = "{ \"foo\" : \"bar\" }";
         const string methodPostTopicFilter = "$iothub/methods/POST/#";
         const string twinPatchDesiredTopicFilter = "$iothub/twin/PATCH/properties/desired/#";
@@ -107,9 +109,9 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
         {
             return new MqttTransportHandler(
                 new PipelineContext(),
-                IotHubConnectionStringExtensions.Parse(DumpyConnectionString), 
-                new MqttTransportSettings(Microsoft.Azure.Devices.Client.TransportType.Mqtt_Tcp_Only), 
-                (o, ea) => { }, 
+                IotHubConnectionStringExtensions.Parse(DummyConnectionString),
+                new MqttTransportSettings(Microsoft.Azure.Devices.Client.TransportType.Mqtt_Tcp_Only),
+                (o, ea) => { },
                 (o, ea) => { return TaskHelpers.CompletedTask; });
         }
 
@@ -133,7 +135,12 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
             return CreateTransportHandlerWithMockChannel(out channel, (o, ea) => { }, (o, ea) => { return TaskHelpers.CompletedTask; });
         }
 
-        MqttTransportHandler CreateTransportHandlerWithMockChannel(out IChannel channel, Action<object, ConnectionEventArgs> onConnectionOpenedCallback, Func<object, ConnectionEventArgs, Task> onConnectionClosedCallback)
+        MqttTransportHandler CreateTransportHandlerWithMockChannel(string connectionString, out IChannel channel)
+        {
+            return CreateTransportHandlerWithMockChannel(out channel, (o, ea) => { }, (o, ea) => { return TaskHelpers.CompletedTask; }, connectionString);
+        }
+
+        MqttTransportHandler CreateTransportHandlerWithMockChannel(out IChannel channel, Action<object, ConnectionEventArgs> onConnectionOpenedCallback, Func<object, ConnectionEventArgs, Task> onConnectionClosedCallback, string connectionString = DummyConnectionString)
         {
             var _channel = Substitute.For<IChannel>();
             channel = _channel;
@@ -146,10 +153,11 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
                 transport.OnConnected();
                 return Task<IChannel>.FromResult<IChannel>(_channel);
             };
-            
-            transport = new MqttTransportHandler(new PipelineContext(), IotHubConnectionStringExtensions.Parse(DumpyConnectionString), new MqttTransportSettings(Microsoft.Azure.Devices.Client.TransportType.Mqtt_Tcp_Only), factory, onConnectionOpenedCallback, onConnectionClosedCallback);
+
+            transport = new MqttTransportHandler(new PipelineContext(), IotHubConnectionStringExtensions.Parse(connectionString), new MqttTransportSettings(Microsoft.Azure.Devices.Client.TransportType.Mqtt_Tcp_Only), factory, onConnectionOpenedCallback, onConnectionClosedCallback);
             return transport;
         }
+
 
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_031: `OpenAsync` shall subscribe using the '$iothub/twin/res/#' topic filter
         [TestMethod]
@@ -254,6 +262,94 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
             // act & assert
             transport.OnConnected();
             await transport.EnableMethodsAsync(CancellationToken.None);
+        }
+
+        // Tests_SRS_CSHARP_MQTT_TRANSPORT_33_021: `EnableMethodsAsync` shall subscribe using the 'devices/{0}/modules/{1}/#' topic filter.
+        // Tests_SRS_CSHARP_MQTT_TRANSPORT_33_020: `EnableMethodsAsync` shall open the transport if this method is called when the transport is not open.
+        // Tests_SRS_CSHARP_MQTT_TRANSPORT_33_022: `EnableMethodsAsync` shall wait for a SUBACK for the subscription request.
+        [TestMethod]
+        [TestCategory("TransportHandlers")]
+        [TestCategory("Methods")]
+        public async Task MqttTransportHandler_EnableEventReceiveAsync_SubscribesSuccessfully()
+        {
+            // arrange
+            IChannel channel;
+
+            var transport = CreateTransportHandlerWithMockChannel(DummyModuleConnectionString, out channel);
+
+            // act
+            transport.OnConnected();
+            await transport.EnableEventReceiveAsync(CancellationToken.None);
+
+            // assert
+            string expectedTopicFilter = "devices/FakeDevice/modules/FakeModule/#";
+            await channel
+                .Received()
+                .WriteAsync(Arg.Is<SubscribePacket>(msg => msg.Requests[0].TopicFilter.Equals(expectedTopicFilter)));
+        }
+
+
+        // Tests_SRS_CSHARP_MQTT_TRANSPORT_33_023: `EnableMethodsAsync` shall return failure if the subscription request fails.
+        [TestMethod]
+        [TestCategory("TransportHandlers")]
+        [TestCategory("Methods")]
+        [ExpectedException(typeof(TimeoutException))]
+        public async Task MqttTransportHandler_EnableEventReceiveAsync_SubscribeTimesOut()
+        {
+            // arrange
+            IChannel channel;
+            string expectedTopicFilter = "devices/FakeDevice/modules/FakeModule/#";
+            var transport = CreateTransportHandlerWithMockChannel(DummyModuleConnectionString, out channel);
+            channel
+                .WriteAsync(Arg.Is<SubscribePacket>(msg => msg.Requests[0].TopicFilter.Equals(expectedTopicFilter)))
+                .Returns(x => { throw new TimeoutException(); });
+
+            // act & assert
+            transport.OnConnected();
+            await transport.EnableEventReceiveAsync(CancellationToken.None);
+        }
+
+        // Tests_SRS_CSHARP_MQTT_TRANSPORT_33_021: `DisableEventReceiveAsync` shall unsubscribe using the 'devices/{0}/modules/{1}/#' topic filter.
+        // Tests_SRS_CSHARP_MQTT_TRANSPORT_33_022: `DisableEventReceiveAsync` shall wait for a UNSUBACK for the unsubscription.
+        [TestMethod]
+        [TestCategory("TransportHandlers")]
+        [TestCategory("Methods")]
+        public async Task MqttTransportHandler_DisableEventReceiveAsync_UnsubscribesSuccessfully()
+        {
+            // arrange
+            IChannel channel;
+            string expectedTopicFilter = "devices/FakeDevice/modules/FakeModule/#";
+            var transport = CreateTransportHandlerWithMockChannel(DummyModuleConnectionString, out channel);
+
+            // act
+            transport.OnConnected();
+            await transport.OpenAsync(true, CancellationToken.None);
+            await transport.DisableEventReceiveAsync(CancellationToken.None);
+
+            // assert
+            await channel
+                .Received()
+                .WriteAsync(Arg.Is<UnsubscribePacket>(msg => Enumerable.ElementAt(msg.TopicFilters, 0).Equals(expectedTopicFilter)));
+        }
+
+        // Tests_SRS_CSHARP_MQTT_TRANSPORT_33_023: `DisableEventReceiveAsync` shall return failure if the unsubscription fails.
+        [TestMethod]
+        [TestCategory("TransportHandlers")]
+        [TestCategory("Methods")]
+        [ExpectedException(typeof(TimeoutException))]
+        public async Task MqttTransportHandler_DisableEventReceiveAsync_UnsubscribeTimesOut()
+        {
+            // arrange
+            IChannel channel;
+            string expectedTopicFilter = "devices/FakeDevice/modules/FakeModule/#";
+            var transport = CreateTransportHandlerWithMockChannel(DummyModuleConnectionString, out channel);
+            channel.WriteAsync(Arg.Is<UnsubscribePacket>(msg => Enumerable.ElementAt(msg.TopicFilters, 0).Equals(expectedTopicFilter)))
+                .Returns(x => { throw new TimeoutException(); });
+
+            // act & assert
+            transport.OnConnected();
+            await transport.OpenAsync(true, CancellationToken.None);
+            await transport.DisableEventReceiveAsync(CancellationToken.None);
         }
 
         delegate bool MessageMatcher(Message msg);

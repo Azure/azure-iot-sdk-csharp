@@ -184,5 +184,10 @@ namespace Microsoft.Azure.Devices.Common.WebApi
         public const string RequestId = "x-ms-request-id";
 
         public const string HttpErrorCodeName = "iothub-errorcode";
+
+        /// <summary>
+        /// Used to supply module ID of invoking module when used by module to invoke method on other modules/devices.
+        /// </summary>
+        public const string ModuleId = "x-ms-edge-moduleId";
     }
 }

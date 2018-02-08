@@ -66,8 +66,15 @@ public sealed class DeviceClient
     public Task UpdateReportedPropertiesAsync(TwinCollection reportedProperties)
     public Task SetDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallback callback, object userContext)
     
-    public async Task SetMethodHandlerAsync(string methodName, MethodCallback methodHandler, object userContext)
+    public async Task SendEventAsync(string outputName, Message message);
+    public async Task SendEventBatchAsync(string outputName, IEnumerable<Message> messages);
+    public async Task SetEventHandlerAsync(string inputName, MessageHandler messageHandler, object userContext);
+    public async Task SetEventDefaultHandlerAsync(MessageHandler messageHandler, object userContext);
 
+    internal async Task OnReceiveEventMessageCalled(EventMessageInternal eventMessageInternal);
+
+    public async Task<Twin> GetTwinAsync();
+    public async Task SetMethodHandlerAsync(string methodName, MethodCallback methodHandler, object userContext)
     public void SetConnectionStatusChangesHandler(ConnectionStatusChangesHandler statusChangesHandler)
 }
 ```
@@ -275,6 +282,7 @@ internal async void OnConnectionClosed(object sender, ConnectionEventArgs e)
 **SRS_DEVICECLIENT_28_023: [** `OnConnectionClosed` shall invoke the connectionStatusChangesHandler if ConnectionStatus is changed. **]**
 
 **SRS_DEVICECLIENT_28_027: [** `OnConnectionClosed` shall invoke the connectionStatusChangesHandler if RecoverConnections throw exception **]**
+**SRS_DEVICECLIENT_28_023: [** If the invoked operations throw exception, the OnConnectionClosed shall failed silently **]**
 
 
 ### OnConnectionOpened
@@ -283,3 +291,43 @@ internal async void OnConnectionOpened(object sender, ConnectionEventArgs e)
 ```
 
 **SRS_DEVICECLIENT_28_024: [** `OnConnectionOpened` shall invoke the connectionStatusChangesHandler if ConnectionStatus is changed **]**
+
+
+### SendEventAsync
+```csharp
+public async Task SendEventAsync(string outputName, Message message)
+public AsyncTask SendEventBatchAsync(string outputName, IEnumerable<Message> messages)
+```
+
+**SRS_DEVICECLIENT_10_011: [** The `SendEventAsync` operation shall retry sending `message` until the `BaseClient::RetryStrategy` tiemspan expires or unrecoverable error (authentication or quota exceed) occurs. **]**
+**SRS_DEVICECLIENT_10_012: [** If `outputName` is `null` or empty, an `ArgumentNullException` shall be thrown. **]**
+**SRS_DEVICECLIENT_10_013: [** If `message` is `null` or empty, an `ArgumentNullException` shall be thrown. **]**
+**SRS_DEVICECLIENT_10_014: [** The `SendEventBatchAsync` operation shall retry sending `messages` until the `BaseClient::RetryStrategy` tiemspan expires or unrecoverable error (authentication or quota exceed) occurs. **]**
+**SRS_DEVICECLIENT_10_015: [** The `outputName` property of a given `message` shall be assigned the value `outputName` before submitting each request to the transport layer. **]**
+
+### OnReceiveEventMessageCalled
+```csharp
+internal async Task OnReceiveEventMessageCalled(EventMessageInternal eventMessageInternal)
+```
+
+**SRS_DEVICECLIENT_33_001: [** If the given eventMessageInternal argument is null, fail silently **]**
+**SRS_DEVICECLIENT_33_006: [** The OnReceiveEventMessageCalled shall get the default delegate if a delegate has not been assigned. **]**
+**SRS_DEVICECLIENT_33_002: [** The OnReceiveEventMessageCalled shall invoke the specified delegate. **]**
+
+
+### SetEventHandlerAsync
+```csharp
+public async Task SetEventHandlerAsync(string input, MessageHandler messageHandler, object userContext)
+public async Task SetEventDefaultHandlerAsync(MessageHandler messageHandler, object userContext)
+```
+
+**SRS_DEVICECLIENT_33_003: [** It shall EnableEventReceiveAsync when called for the first time. **]**
+**SRS_DEVICECLIENT_33_005: [** It shall lazy-initialize the receiveEventEndpoints property. **]**
+**SRS_DEVICECLIENT_33_004: [** It shall call DisableEventReceiveAsync when the last delegate has been removed. **]**
+
+### GetTwinAsync
+```csharp
+public async Task<Twin> GetTwinAsync()
+```
+
+**SRS_DEVICECLIENT_13_031: [** `GetTwinAsync` shall return the module twin's desired properties and metadata. **]

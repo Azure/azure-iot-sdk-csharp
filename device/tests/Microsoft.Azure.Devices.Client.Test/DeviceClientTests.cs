@@ -18,7 +18,7 @@
 
         /* Tests_SRS_DEVICECLIENT_28_002: [This property shall be defaulted to 240000 (4 minutes).] */
         [TestMethod]
-        [TestCategory("DevClient")]
+        [TestCategory("DeviceClient")]
         public void DeviceClient_OperationTimeoutInMilliseconds_Property_DefaultValue()
         {
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);

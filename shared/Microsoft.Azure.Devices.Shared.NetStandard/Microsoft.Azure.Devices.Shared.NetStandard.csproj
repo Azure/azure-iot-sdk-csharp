@@ -29,7 +29,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;ENABLE_MODULES_SDK</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -37,7 +37,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;ENABLE_MODULES_SDK</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
@@ -45,6 +45,8 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\Microsoft.Azure.Devices.Shared\ConfigurationInfo.cs" />
+    <Compile Include="..\Microsoft.Azure.Devices.Shared\ConfigurationStatus.cs" />
     <Compile Include="..\Microsoft.Azure.Devices.Shared\ETagHolder.cs" />
     <Compile Include="..\Microsoft.Azure.Devices.Shared\IETagHolder.cs" />
     <Compile Include="..\Microsoft.Azure.Devices.Shared\Metadata.cs" />
@@ -58,6 +60,7 @@
     <Compile Include="..\Microsoft.Azure.Devices.Shared\DeviceStatus.cs" />
     <Compile Include="..\Microsoft.Azure.Devices.Shared\AuthenticationType.cs" />
     <Compile Include="..\Microsoft.Azure.Devices.Shared\X509Thumbprint.cs" />
+    <Compile Include="..\Microsoft.Azure.Devices.Shared\DeviceCapabilities.cs" />
     <Compile Include="..\Microsoft.Azure.Devices.Shared\Common\Extensions\StringFormattingExtensions.cs" />
     <Compile Include="..\Microsoft.Azure.Devices.Shared\SecurityProvider.cs" />
     <Compile Include="..\Microsoft.Azure.Devices.Shared\SecurityProviderTpm.cs" />

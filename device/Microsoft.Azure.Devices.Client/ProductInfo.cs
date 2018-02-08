@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.Client
             string userAgent = $"{Name}/{Version} (PCL)";
 #else
             // DO NOT EDIT the following line; it is updated by the bump_version script (https://github.com/Azure/iot-sdks-internals/blob/master/release/csharp/inputs.js)
-            const string Version = "1.6.2"; // CommonAssemblyVersion
+            const string Version = "1.7.0-preview-001"; // CommonAssemblyVersion
 
             string runtime = RuntimeInformation.FrameworkDescription.Trim();
             string operatingSystem = RuntimeInformation.OSDescription.Trim();

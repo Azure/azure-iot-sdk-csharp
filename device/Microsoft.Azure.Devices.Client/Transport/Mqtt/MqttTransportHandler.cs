@@ -7,6 +7,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
     using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Globalization;
     using System.IO;
     using System.Linq;
     using System.Net;
@@ -135,7 +136,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         int state = (int)TransportState.NotInitialized;
         public TransportState State => (TransportState)Volatile.Read(ref this.state);
-        
+
         // incoming topic names
         const string methodPostTopicFilter = "$iothub/methods/POST/#";
         const string methodPostTopicPrefix = "$iothub/methods/POST/";
@@ -143,11 +144,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         const string twinResponseTopicPrefix = "$iothub/twin/res/";
         const string twinPatchTopicFilter = "$iothub/twin/PATCH/properties/desired/#";
         const string twinPatchTopicPrefix = "$iothub/twin/PATCH/properties/desired/";
+        const string receiveEventMessagePatternFilter = "devices/{0}/modules/{1}/#";
+        const string receiveEventMessagePrefixPattern = "devices/{0}/modules/{1}/";
 
         // outgoing topic names
         const string methodResponseTopic = "$iothub/methods/res/{0}/?$rid={1}";
         const string twinGetTopic = "$iothub/twin/GET/?$rid={0}";
-        const string twinPatchTopic = "$iothub/twin/PATCH/properties/reported/?$rid={0}";  
+        const string twinPatchTopic = "$iothub/twin/PATCH/properties/reported/?$rid={0}";
 
         // incoming topic regexp
         const string twinResponseTopicPattern = @"\$iothub/twin/res/(\d+)/(\?.+)";
@@ -158,26 +161,32 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         Func<MethodRequestInternal, Task> messageListener;
         Action<TwinCollection> onDesiredStatePatchListener;
         Action<Message> twinResponseEvent;
+        Func<string, Message, Task> messageReceivedListener;
+
+        string receiveEventMessageFilter;
+        string receiveEventMessagePrefix;
 
         public TimeSpan TwinTimeout = TimeSpan.FromSeconds(60);
 
         internal MqttTransportHandler(
-            IPipelineContext context, 
-            IotHubConnectionString iotHubConnectionString, 
+            IPipelineContext context,
+            IotHubConnectionString iotHubConnectionString,
             MqttTransportSettings settings,
             Action<object, ConnectionEventArgs> onConnectionOpenedCallback,
-            Func<object, ConnectionEventArgs, Task> onConnectionClosedCallback, 
-            Func<MethodRequestInternal, Task> onMethodCallback = null, 
-            Action<TwinCollection> onDesiredStatePatchReceivedCallback = null)
+            Func<object, ConnectionEventArgs, Task> onConnectionClosedCallback,
+            Func<MethodRequestInternal, Task> onMethodCallback = null,
+            Action<TwinCollection> onDesiredStatePatchReceivedCallback = null,
+            Func<string, Message, Task> onReceiveCallback = null)
             : this(context, iotHubConnectionString, settings, null, onConnectionOpenedCallback, onConnectionClosedCallback)
         {
             this.messageListener = onMethodCallback;
+            this.messageReceivedListener = onReceiveCallback;
             this.onDesiredStatePatchListener = onDesiredStatePatchReceivedCallback;
         }
 
         internal MqttTransportHandler(
-            IPipelineContext context, 
-            IotHubConnectionString iotHubConnectionString, 
+            IPipelineContext context,
+            IotHubConnectionString iotHubConnectionString,
             MqttTransportSettings settings,
             Func<IPAddress, int, Task<IChannel>> channelFactory,
             Action<object, ConnectionEventArgs> onConnectionOpenedCallback,
@@ -193,6 +202,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             this.serverAddress = null; // this will be resolved asynchronously in OpenAsync
             this.hostName = iotHubConnectionString.HostName;
+            this.receiveEventMessageFilter = string.Format(CultureInfo.InvariantCulture, receiveEventMessagePatternFilter, iotHubConnectionString.DeviceId, iotHubConnectionString.ModuleId);
+            this.receiveEventMessagePrefix = string.Format(CultureInfo.InvariantCulture, receiveEventMessagePrefixPattern, iotHubConnectionString.DeviceId, iotHubConnectionString.ModuleId);
 
             this.qos = settings.PublishToServerQoS;
             this.eventLoopGroupKey = iotHubConnectionString.IotHubName + "#" + iotHubConnectionString.DeviceId + "#" + iotHubConnectionString.Audience;
@@ -381,7 +392,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 await this.closeRetryPolicy.ExecuteAsync(this.CleanupAsync).ConfigureAwait(false);
                 await this.connectionClosedListener(
-                    this.channel, 
+                    this.channel,
                     new ConnectionEventArgs
                     {
                         ConnectionType = ConnectionType.MqttConnection,
@@ -407,7 +418,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 this.connectCompletion.TryComplete();
                 Task.Run(() => this.connectionOpenedListener(
-                    this.channel, 
+                    this.channel,
                     new ConnectionEventArgs
                     {
                         ConnectionType = ConnectionType.MqttConnection,
@@ -472,6 +483,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     {
                         await HandleIncomingMethodPost(message).ConfigureAwait(false);
                     }
+                    else if (message.MqttTopicName.StartsWith(this.receiveEventMessagePrefix, StringComparison.OrdinalIgnoreCase))
+                    {
+                        await this.HandleIncomingEventMessage(message);
+                    }
                     else
                     {
                         this.messageQueue.Enqueue(message);
@@ -482,6 +497,34 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             catch(Exception ex)
             {
                 this.OnError(ex);
+            }
+        }
+
+        async Task HandleIncomingEventMessage(Message message)
+        {
+            try
+            {
+                // The MqttTopic is in the format - devices/deviceId/modules/moduleId/inputs/inputName
+                // We try to get the endpoint from the topic, if the topic is in the above format.
+                string[] tokens = message.MqttTopicName.Split('/');
+                string inputName = tokens.Length >= 6 ? tokens[5] : null;
+
+                // Add the endpoint as a SystemProperty
+                message.SystemProperties.Add(MessageSystemPropertyNames.InputName, inputName);
+
+                if (this.qos == QualityOfService.AtLeastOnce)
+                {
+                    lock (this.syncRoot)
+                    {
+                        this.completionQueue.Enqueue(message.LockToken);
+                    }
+                }
+                message.LockToken = this.generationId + message.LockToken;
+                await (this.messageReceivedListener?.Invoke(inputName, message) ?? Task.FromResult(true));
+            }
+            finally
+            {
+                message.Dispose();
             }
         }
 
@@ -523,7 +566,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 if ((previousState & TransportState.Open) == TransportState.Open)
                 {
                     await Task.Run(async () => await this.connectionClosedListener(
-                        this.channel, 
+                        this.channel,
                         new ConnectionEventArgs
                         {
                             ConnectionType = ConnectionType.MqttConnection,
@@ -537,7 +580,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             }
         }
-        
+
         public override Task RecoverConnections(object link, ConnectionType connectionType, CancellationToken cancellationToken)
         {
             // Codes_SRS_CSHARP_MQTT_TRANSPORT_28_08: [** `RecoverConnections` shall throw IotHubClientException exception when in error state.
@@ -697,6 +740,38 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }, cancellationToken).ConfigureAwait(false);
         }
 
+        public override async Task EnableEventReceiveAsync(CancellationToken cancellationToken)
+        {
+            this.EnsureValidState();
+
+            await this.HandleTimeoutCancellation(async () =>
+            {
+                // Codes_SRS_CSHARP_MQTT_TRANSPORT_33_020: `EnableEventReceiveAsync` shall open the transport if this method is called when the transport is not open.
+                if (!this.TransportIsOpen())
+                {
+                    await this.OpenAsync();
+                }
+
+                // Codes_SRS_CSHARP_MQTT_TRANSPORT_33_021:  `EnableEventReceiveAsync` shall subscribe using the 'devices/{0}/modules/{1}/' topic filter. 
+                // Codes_SRS_CSHARP_MQTT_TRANSPORT_33_022:  `EnableEventReceiveAsync` shall wait for a SUBACK for the subscription request. 
+                // Codes_SRS_CSHARP_MQTT_TRANSPORT_33_023:  `EnableEventReceiveAsync` shall return failure if the subscription request fails. 
+                await this.channel.WriteAsync(new SubscribePacket(0, new SubscriptionRequest(this.receiveEventMessageFilter, this.qos)));
+            }, cancellationToken);
+        }
+
+        public override async Task DisableEventReceiveAsync(CancellationToken cancellationToken)
+        {
+            this.EnsureValidState();
+
+            await this.HandleTimeoutCancellation(async () =>
+            {
+                //SRS_CSHARP_MQTT_TRANSPORT_33_021: `DisableEventReceiveAsync` shall unsubscribe using the 'devices/{0}/modules/{1}/#' topic filter.
+                //SRS_CSHARP_MQTT_TRANSPORT_33_022: `DisableEventReceiveAsync` shall wait for a UNSUBACK for the unsubscription.
+                //SRS_CSHARP_MQTT_TRANSPORT_33_023: `DisableEventReceiveAsync` shall return failure if the unsubscription fails.
+                await this.channel.WriteAsync(new UnsubscribePacket(0, this.receiveEventMessageFilter));
+            }, cancellationToken);
+        }
+
         public override async Task SendMethodResponseAsync(MethodResponseInternal methodResponse, CancellationToken cancellationToken)
         {
             this.EnsureValidState();
@@ -838,7 +913,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 {
                     await this.OpenAsync().ConfigureAwait(false);
                 }
-                
+
                 // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_014:  `SendTwinGetAsync` shall allocate a `Message` object to hold the `GET` request 
                 var request = new Message();
 
@@ -881,7 +956,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 {
                     await this.OpenAsync().ConfigureAwait(false);
                 }
-                
+
                 // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_025:  `SendTwinPatchAsync` shall serialize the `reported` object into a JSON string 
                 var body = JsonConvert.SerializeObject(reportedProperties);
                 var bodyStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(body));
@@ -943,8 +1018,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 IEventLoopGroup eventLoopGroup = EventLoopGroupPool.TakeOrAdd(this.eventLoopGroupKey);
 
                 Func<Stream, SslStream> streamFactory = stream => new SslStream(stream, true, settings.RemoteCertificateValidationCallback);
-                var clientTlsSettings = settings.ClientCertificate != null ? 
-                    new ClientTlsSettings(iotHubConnectionString.HostName, new List<X509Certificate> { settings.ClientCertificate }) : 
+                var clientTlsSettings = settings.ClientCertificate != null ?
+                    new ClientTlsSettings(iotHubConnectionString.HostName, new List<X509Certificate> { settings.ClientCertificate }) :
                     new ClientTlsSettings(iotHubConnectionString.HostName);
                 Bootstrap bootstrap = new Bootstrap()
                     .Group(eventLoopGroup)
