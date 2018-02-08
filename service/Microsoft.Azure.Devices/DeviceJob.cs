@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Devices
         public DateTime LastUpdatedDateTimeUtc { get; set; }
 
         /// <summary>
-        /// Outcome for the device job continain job type specifics
+        /// Outcome for the device job containing job type specifics
         /// </summary>
         [JsonProperty(PropertyName = "outcome", NullValueHandling = NullValueHandling.Ignore)]
         public DeviceJobOutcome Outcome { get; set; }

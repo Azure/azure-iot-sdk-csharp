@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             TwinCollection reportedProperties = new TwinCollection();
             reportedProperties["DateTimeLastDesiredPropertyChangeReceived"] = DateTime.Now;
 
-            await Client.UpdateReportedPropertiesAsync(reportedProperties);
+            await Client.UpdateReportedPropertiesAsync(reportedProperties).ConfigureAwait(false);
         }
 
         static void Main(string[] args)

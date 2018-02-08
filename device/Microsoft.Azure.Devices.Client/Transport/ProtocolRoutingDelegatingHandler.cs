@@ -13,10 +13,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Azure.Devices.Client.Extensions;
+    using System.Diagnostics;
 
     /// <summary>
     /// Transport handler router. 
-    /// Tries to open open connection in the protocol order it was set. 
+    /// Tries to open the connection in the protocol order it was set. 
     /// If fails tries to open the next one, etc.
     /// </summary>
     class ProtocolRoutingDelegatingHandler : DefaultDelegatingHandler
@@ -31,7 +32,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task OpenAsync(bool explicitOpen, CancellationToken cancellationToken)
         {
-            await this.TryOpenPrioritizedTransportsAsync(explicitOpen, cancellationToken);
+            Debug.WriteLine(cancellationToken.GetHashCode() + " ProtocolRoutingDelegatingHandler.OpenAsync()");
+            await this.TryOpenPrioritizedTransportsAsync(explicitOpen, cancellationToken).ConfigureAwait(false);
         }
 
         async Task TryOpenPrioritizedTransportsAsync(bool explicitOpen, CancellationToken cancellationToken)
@@ -42,7 +44,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
-                    return;
+                    var tcs = new TaskCompletionSource<bool>();
+                    tcs.SetCanceled();
+                    await tcs.Task;
                 }
 
                 try
@@ -51,7 +55,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     this.InnerHandler = this.ContinuationFactory(this.Context);
 
                     // Try to open a connection with this transport
-                    await base.OpenAsync(explicitOpen, cancellationToken);
+                    await base.OpenAsync(explicitOpen, cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception exception)
                 {
@@ -59,7 +63,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     {
                         if (this.InnerHandler != null)
                         {
-                            await this.CloseAsync();
+                            await this.CloseAsync().ConfigureAwait(false);
                         }
                     }
                     catch (Exception ex) when (!ex.IsFatal())

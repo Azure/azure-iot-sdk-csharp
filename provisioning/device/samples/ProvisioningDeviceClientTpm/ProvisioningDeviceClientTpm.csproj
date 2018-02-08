@@ -6,15 +6,20 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\device\Microsoft.Azure.Devices.Client.NetStandard\Microsoft.Azure.Devices.Client.NetStandard.csproj" />
-    <ProjectReference Include="..\..\..\..\security\tpm\samples\SecurityProviderTpmSimulator\SecurityProviderTpmSimulator.csproj" />
-    <ProjectReference Include="..\..\..\..\security\tpm\src\Microsoft.Azure.Devices.Provisioning.Security.Tpm.csproj" />
-    <ProjectReference Include="..\..\src\Microsoft.Azure.Devices.Provisioning.Client.csproj" />
+    <!-- TODO #275: Workaround for unaligned Mqtt version. -->
+    <PackageReference Include="DotNetty.Codecs.Mqtt" Version="0.4.7" />
+    <PackageReference Include="Microsoft.Azure.Devices.Client" Version="1.6.0" />
+    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Client" Version="1.0.0" />
+    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Security.Tpm" Version="1.0.0" />
 
-    <!-- Note: Applications should not need to import all 3 protocols. This was done to simplify protocol selection within the sample.-->
-    <ProjectReference Include="..\..\..\transport\amqp\src\Microsoft.Azure.Devices.Provisioning.Transport.Amqp.csproj" />
-    <ProjectReference Include="..\..\..\transport\http\src\Microsoft.Azure.Devices.Provisioning.Transport.Http.csproj" />
-    <ProjectReference Include="..\..\..\transport\mqtt\src\Microsoft.Azure.Devices.Provisioning.Transport.Mqtt.csproj" />
+    <!-- Note: Applications should not need to import both protocols. This was done to simplify protocol selection within the sample.-->
+    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Transport.Amqp" Version="1.0.0" />
+    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Transport.Http" Version="1.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Note: Applications should never use the TPM simulator. -->
+    <ProjectReference Include="..\..\..\..\security\tpm\samples\SecurityProviderTpmSimulator\SecurityProviderTpmSimulator.csproj" />
   </ItemGroup>
 
 </Project>

@@ -11,10 +11,10 @@
         public string SecondaryThumbPrint { get; set; }
         public string ConnectionString { get; set; }
         public string ConnectionState { get; set; }
-        public DateTime LastActivityTime { get; set; }
-        public DateTime LastConnectionStateUpdatedTime { get; set; }
-        public DateTime LastStateUpdatedTime { get; set; }
-        public int MessageCount { get; set; }
+        public DateTime? LastActivityTime { get; set; }
+        public DateTime? LastConnectionStateUpdatedTime { get; set; }
+        public DateTime? LastStateUpdatedTime { get; set; }
+        public int? MessageCount { get; set; }
         public string State { get; set; }
         public string SuspensionReason { get; set; }
 

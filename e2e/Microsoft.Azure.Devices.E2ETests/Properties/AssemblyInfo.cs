@@ -34,8 +34,3 @@ using System.Runtime.InteropServices;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
-
-#if (RELEASE_DELAY_SIGN)
-[assembly: AssemblyDelaySignAttribute(true)]
-[assembly: AssemblyKeyFileAttribute("35MSSharedLib1024.snk")]
-#endif

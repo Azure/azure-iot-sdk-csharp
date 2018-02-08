@@ -24,6 +24,7 @@ x64/
 /build/release/Maven
 !/build/release/
 [Cc]make/
+BundleArtifacts/
 
 # Enable "build/" folder in the NuGet Packages folder since NuGet packages use it for MSBuild targets
 !packages/*/build/

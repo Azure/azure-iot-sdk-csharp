@@ -4,6 +4,7 @@
 namespace Microsoft.Azure.Devices.Client
 {
     using System;
+    using System.Net;
 
 #if !NETMF
     using Microsoft.Azure.Amqp;

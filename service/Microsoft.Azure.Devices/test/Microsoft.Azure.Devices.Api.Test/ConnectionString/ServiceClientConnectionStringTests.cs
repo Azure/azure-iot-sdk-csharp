@@ -119,7 +119,7 @@ namespace Microsoft.Azure.Devices.Api.Test.ConnectionString
             Assert.IsNotNull(iotHubConnectionStringBuilder.AuthenticationMethod);
             Assert.IsNull(iotHubConnectionStringBuilder.SharedAccessKey);
             Assert.IsNotNull(iotHubConnectionStringBuilder.SharedAccessKeyName);
-            Assert.IsNotNull(iotHubConnectionStringBuilder.SharedAccessSignature);            
+            Assert.IsNotNull(iotHubConnectionStringBuilder.SharedAccessSignature);
             Assert.IsTrue(iotHubConnectionStringBuilder.AuthenticationMethod is ServiceAuthenticationWithSharedAccessPolicyToken);
 
             try

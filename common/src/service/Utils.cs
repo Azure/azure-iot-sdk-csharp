@@ -4,9 +4,7 @@
 namespace Microsoft.Azure.Devices.Common
 {
     using System;
-    using System.Linq;
     using System.Reflection;
-    using System.Runtime.Serialization;
 
     static class Utils
     {

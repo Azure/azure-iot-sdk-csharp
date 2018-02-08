@@ -30,20 +30,13 @@
     <DefineConstants>TRACE;ENABLE_MODULES_SDK</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release_Delay_Sign|AnyCPU'">
-    <OutputPath>bin\Release_Delay_Sign\</OutputPath>
-    <DefineConstants>TRACE;RELEASE_DELAY_SIGN;ENABLE_MODULES_SDK</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <DocumentationFile>bin\Release\Microsoft.Azure.Devices.Shared.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>$(SolutionDir)\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
-      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -74,6 +67,11 @@
     <Compile Include="TwinJsonConverter.cs" />
     <Compile Include="TwinProperties.cs" />
     <Compile Include="X509Thumbprint.cs" />
+    <Compile Include="SecurityProvider.cs" />
+    <Compile Include="SecurityProviderTpm.cs" />
+    <Compile Include="SecurityProviderX509.cs" />
+    <Compile Include="SecurityProviderX509Certificate.cs" />
+    <Compile Include="TransportFallbackType.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

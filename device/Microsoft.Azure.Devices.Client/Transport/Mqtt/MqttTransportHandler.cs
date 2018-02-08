@@ -6,6 +6,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Globalization;
     using System.IO;
     using System.Linq;
@@ -244,7 +245,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 return;
             }
 
-            await this.HandleTimeoutCancellation(this.OpenAsync, cancellationToken);
+            Debug.WriteLine(cancellationToken.GetHashCode() + " MqttTransportHandler.OpenAsync()");
+            await this.HandleTimeoutCancellation(this.OpenAsync, cancellationToken).ConfigureAwait(false);
         }
 
         public override async Task SendEventAsync(Message message, CancellationToken cancellationToken)
@@ -259,7 +261,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 }
 
                 return this.channel.WriteAndFlushAsync(message);
-            }, cancellationToken);
+            }, cancellationToken).ConfigureAwait(false);
         }
 
         public override async Task SendEventAsync(IEnumerable<Message> messages, CancellationToken cancellationToken)
@@ -268,9 +270,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 foreach (Message message in messages)
                 {
-                    await this.SendEventAsync(message, cancellationToken);
+                    await this.SendEventAsync(message, cancellationToken).ConfigureAwait(false);
                 }
-            }, cancellationToken);
+            }, cancellationToken).ConfigureAwait(false);
         }
 
         public override async Task<Message> ReceiveAsync(TimeSpan timeout, CancellationToken cancellationToken)
@@ -283,10 +285,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 if (this.State != TransportState.Receiving)
                 {
-                    await this.SubscribeAsync();
+                    await this.SubscribeAsync().ConfigureAwait(false);
                 }
 
-                bool hasMessage = await this.ReceiveMessageArrivalAsync(timeout, cancellationToken);
+                bool hasMessage = await this.ReceiveMessageArrivalAsync(timeout, cancellationToken).ConfigureAwait(false);
 
                 if (hasMessage)
                 {
@@ -301,7 +303,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         message.LockToken = this.generationId + message.LockToken;
                     }
                 }
-            }, cancellationToken);
+            }, cancellationToken).ConfigureAwait(false);
 
             return message;
         }
@@ -311,7 +313,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             bool hasMessage = false;
             using (CancellationTokenSource linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, this.disconnectAwaitersCancellationSource.Token))
             {
-                hasMessage = await this.receivingSemaphore.WaitAsync(timeout, linkedCts.Token);
+                hasMessage = await this.receivingSemaphore.WaitAsync(timeout, linkedCts.Token).ConfigureAwait(false);
             }
             return hasMessage;
         }
@@ -350,8 +352,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     this.completionQueue.Dequeue();
                     completeOperationCompletion = this.channel.WriteAndFlushAsync(actualLockToken);
                 }
-                await completeOperationCompletion;
-            }, cancellationToken);
+                await completeOperationCompletion.ConfigureAwait(false);
+            }, cancellationToken).ConfigureAwait(false);
         }
 
         public override Task AbandonAsync(string lockToken, CancellationToken cancellationToken)
@@ -384,9 +386,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public override async Task CloseAsync()
         {
+            Debug.WriteLine("MqttTransportHandler.CloseAsync()");
+
             if (this.TryStop())
             {
-                await this.closeRetryPolicy.ExecuteAsync(this.CleanupAsync);
+                await this.closeRetryPolicy.ExecuteAsync(this.CleanupAsync).ConfigureAwait(false);
                 await this.connectionClosedListener(
                     this.channel,
                     new ConnectionEventArgs
@@ -394,7 +398,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         ConnectionType = ConnectionType.MqttConnection,
                         ConnectionStatus = ConnectionStatus.Disabled,
                         ConnectionStatusChangeReason = ConnectionStatusChangeReason.Client_Close
-                    });
+                    }).ConfigureAwait(false);
             }
             else
             {
@@ -434,7 +438,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     {
                         string patch = reader.ReadToEnd();
                         var props = JsonConvert.DeserializeObject<TwinCollection>(patch);
-                        await Task.Run(() => this.onDesiredStatePatchListener(props));
+                        await Task.Run(() => this.onDesiredStatePatchListener(props)).ConfigureAwait(false);
                     }
                 }
             }
@@ -451,7 +455,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 string[] tokens = System.Text.RegularExpressions.Regex.Split(message.MqttTopicName, "/");
 
                 var mr = new MethodRequestInternal(tokens[3], tokens[4].Substring(6), message.BodyStream);
-                await Task.Run(() => this.messageListener(mr));
+                await Task.Run(() =>this.messageListener(mr)).ConfigureAwait(false);
             }
             finally
             {
@@ -461,29 +465,38 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public async void OnMessageReceived(Message message)
         {
-            if ((this.State & TransportState.Open) == TransportState.Open)
+            // Added Try-Catch to avoid unknown thread exception
+            // after running for more than 24 hours
+            try
             {
-                if (message.MqttTopicName.StartsWith(twinResponseTopicPrefix))
+                if ((this.State & TransportState.Open) == TransportState.Open)
                 {
-                    this.twinResponseEvent(message);
+                    if (message.MqttTopicName.StartsWith(twinResponseTopicPrefix))
+                    {
+                        twinResponseEvent(message);
+                    }
+                    else if (message.MqttTopicName.StartsWith(twinPatchTopicPrefix))
+                    {
+                        await HandleIncomingTwinPatch(message).ConfigureAwait(false);
+                    }
+                    else if (message.MqttTopicName.StartsWith(methodPostTopicPrefix))
+                    {
+                        await HandleIncomingMethodPost(message).ConfigureAwait(false);
+                    }
+                    else if (message.MqttTopicName.StartsWith(this.receiveEventMessagePrefix, StringComparison.OrdinalIgnoreCase))
+                    {
+                        await this.HandleIncomingEventMessage(message);
+                    }
+                    else
+                    {
+                        this.messageQueue.Enqueue(message);
+                        this.receivingSemaphore.Release();
+                    }
                 }
-                else if (message.MqttTopicName.StartsWith(twinPatchTopicPrefix))
-                {
-                    await this.HandleIncomingTwinPatch(message);
-                }
-                else if (message.MqttTopicName.StartsWith(methodPostTopicPrefix))
-                {
-                    await this.HandleIncomingMethodPost(message);
-                }
-                else if (message.MqttTopicName.StartsWith(this.receiveEventMessagePrefix, StringComparison.OrdinalIgnoreCase))
-                {
-                    await this.HandleIncomingEventMessage(message);
-                }
-                else
-                {
-                    this.messageQueue.Enqueue(message);
-                    this.receivingSemaphore.Release();
-                }
+            }
+            catch(Exception ex)
+            {
+                this.OnError(ex);
             }
         }
 
@@ -543,7 +556,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
-                await this.closeRetryPolicy.ExecuteAsync(this.CleanupAsync);
+                await this.closeRetryPolicy.ExecuteAsync(this.CleanupAsync).ConfigureAwait(false);
 
                 // Codes_SRS_CSHARP_MQTT_TRANSPORT_28_04: If OnError is triggered after OpenAsync is called, onConnectionClosedCallback shall be invoked.
                 // Codes_SRS_CSHARP_MQTT_TRANSPORT_28_05: If OnError is triggered after ReceiveAsync is called, onConnectionClosedCallback shall be invoked.
@@ -559,7 +572,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                             ConnectionType = ConnectionType.MqttConnection,
                             ConnectionStatus = ConnectionStatus.Disconnected_Retrying,
                             ConnectionStatusChangeReason = ConnectionStatusChangeReason.No_Network
-                        }));
+                        })).ConfigureAwait(false);
                 }
             }
             catch (Exception ex) when (!ex.IsFatal())
@@ -598,6 +611,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         async Task OpenAsync()
         {
+            Debug.WriteLine("MqttTransportHandler.OpenAsync()");
+
 #if WINDOWS_UWP
             HostName host = new HostName(this.hostName);
             var endpointPairs = await DatagramSocket.GetEndpointPairsAsync(host, "");
@@ -607,14 +622,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 #if !NETSTANDARD1_3
             this.serverAddress = Dns.GetHostEntry(this.hostName).AddressList[0];
 #else
-            this.serverAddress = (await Dns.GetHostAddressesAsync(this.hostName))[0];
+            this.serverAddress = (await Dns.GetHostAddressesAsync(this.hostName).ConfigureAwait(false))[0];
 #endif
 #endif
             if (this.TryStateTransition(TransportState.NotInitialized, TransportState.Opening))
             {
                 try
                 {
-                    this.channel = await this.channelFactory(this.serverAddress, ProtocolGatewayPort);
+                    this.channel = await this.channelFactory(this.serverAddress, ProtocolGatewayPort).ConfigureAwait(false);
                 }
                 catch (Exception ex) when (!ex.IsFatal())
                 {
@@ -631,19 +646,19 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     }
                     if (this.channel.Active)
                     {
-                        await this.channel.WriteAsync(DisconnectPacket.Instance);
+                        await this.channel.WriteAsync(DisconnectPacket.Instance).ConfigureAwait(false);
                     }
                     if (this.channel.Open)
                     {
-                        await this.channel.CloseAsync();
+                        await this.channel.CloseAsync().ConfigureAwait(false);
                     }
                 });
             }
 
-            await this.connectCompletion.Task;
+            await this.connectCompletion.Task.ConfigureAwait(false);
 
             // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_031: `OpenAsync` shall subscribe using the '$iothub/twin/res/#' topic filter
-            await this.SubscribeTwinResponsesAsync();
+            await this.SubscribeTwinResponsesAsync().ConfigureAwait(false);
         }
 
         bool TryStop()
@@ -675,8 +690,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             if (this.TryStateTransition(TransportState.Open, TransportState.Subscribing))
             {
-                await this.channel.WriteAsync(new SubscribePacket());
-
+                await this.channel.WriteAsync(new SubscribePacket()).ConfigureAwait(false);
+                
                 if (this.TryStateTransition(TransportState.Subscribing, TransportState.Receiving))
                 {
                     if (this.subscribeCompletionSource.TryComplete())
@@ -685,12 +700,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     }
                 }
             }
-            await this.subscribeCompletionSource.Task;
+            await this.subscribeCompletionSource.Task.ConfigureAwait(false);
         }
 
         async Task SubscribeTwinResponsesAsync()
         {
-            await this.channel.WriteAsync(new SubscribePacket(0, new SubscriptionRequest(twinResponseTopicFilter, QualityOfService.AtMostOnce)));
+            await this.channel.WriteAsync(new SubscribePacket(0, new SubscriptionRequest(twinResponseTopicFilter, QualityOfService.AtMostOnce))).ConfigureAwait(false);
         }
 
         public override async Task EnableMethodsAsync(CancellationToken cancellationToken)
@@ -702,14 +717,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_032: `EnableMethodsAsync` shall open the transport if this method is called when the transport is not open.
                 if (!this.TransportIsOpen())
                 {
-                    await this.OpenAsync();
+                    await this.OpenAsync().ConfigureAwait(false);
                 }
 
                 // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_001:  `EnableMethodsAsync` shall subscribe using the '$iothub/methods/POST/' topic filter. 
                 // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_002:  `EnableMethodsAsync` shall wait for a SUBACK for the subscription request. 
                 // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_003:  `EnableMethodsAsync` shall return failure if the subscription request fails. 
-                await this.channel.WriteAsync(new SubscribePacket(0, new SubscriptionRequest(methodPostTopicFilter, QualityOfService.AtMostOnce)));
-            }, cancellationToken);
+                await this.channel.WriteAsync(new SubscribePacket(0, new SubscriptionRequest(methodPostTopicFilter, QualityOfService.AtMostOnce))).ConfigureAwait(false);
+            }, cancellationToken).ConfigureAwait(false);
         }
 
         public override async Task DisableMethodsAsync(CancellationToken cancellationToken)
@@ -721,8 +736,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 //SRS_CSHARP_MQTT_TRANSPORT_28_001: `DisableMethodsAsync` shall unsubscribe using the '$iothub/methods/POST/' topic filter.
                 //SRS_CSHARP_MQTT_TRANSPORT_28_002: `DisableMethodsAsync` shall wait for a UNSUBACK for the unsubscription.
                 //SRS_CSHARP_MQTT_TRANSPORT_28_003: `DisableMethodsAsync` shall return failure if the unsubscription fails.
-                await this.channel.WriteAsync(new UnsubscribePacket(0, methodPostTopicFilter));
-            }, cancellationToken);
+                await this.channel.WriteAsync(new UnsubscribePacket(0, methodPostTopicFilter)).ConfigureAwait(false);
+            }, cancellationToken).ConfigureAwait(false);
         }
 
         public override async Task EnableEventReceiveAsync(CancellationToken cancellationToken)
@@ -765,7 +780,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 if (!this.TransportIsOpen())
                 {
-                    await this.OpenAsync();
+                    await this.OpenAsync().ConfigureAwait(false);
                 }
                 // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_005:  `SendMethodResponseAsync` shall allocate a `Message` object containing the method response. 
                 // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_006:  `SendMethodResponseAsync` shall set the message topic to '$iothub/methods/res/<STATUS>/?$rid=<REQUEST_ID>' where STATUS is the return status for the method and REQUEST_ID is the request ID received from the service in the original method call. 
@@ -775,8 +790,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 message.MqttTopicName = methodResponseTopic.FormatInvariant(methodResponse.Status, methodResponse.RequestId);
 
-                await this.SendEventAsync(message, cancellationToken);
-            }, cancellationToken);
+                await this.SendEventAsync(message, cancellationToken).ConfigureAwait(false);
+            }, cancellationToken).ConfigureAwait(false);
         }
 
         public override async Task EnableTwinPatchAsync(CancellationToken cancellationToken)
@@ -788,14 +803,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_033: `EnableTwinPatchAsync` shall open the transport if this method is called when the transport is not open. 
                 if (!this.TransportIsOpen())
                 {
-                    await this.OpenAsync();
+                    await this.OpenAsync().ConfigureAwait(false);
                 }
 
                 // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_010: `EnableTwinPatchAsync` shall subscribe using the '$iothub/twin/PATCH/properties/desired/#' topic filter.
                 // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_011: `EnableTwinPatchAsync` shall wait for a SUBACK on the subscription request.
                 // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_012: `EnableTwinPatchAsync` shall return failure if the subscription request fails.
-                await this.channel.WriteAsync(new SubscribePacket(0, new SubscriptionRequest(twinPatchTopicFilter, QualityOfService.AtMostOnce)));
-            }, cancellationToken);
+                await this.channel.WriteAsync(new SubscribePacket(0, new SubscriptionRequest(twinPatchTopicFilter, QualityOfService.AtMostOnce))).ConfigureAwait(false);
+            }, cancellationToken).ConfigureAwait(false);
         }
 
         Boolean parseResponseTopic(string topicName, out string rid, out Int32 status)
@@ -862,9 +877,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 this.twinResponseEvent += onTwinResponse;
 
-                await this.SendEventAsync(request, cancellationToken);
+                await this.SendEventAsync(request, cancellationToken).ConfigureAwait(false);
 
-                await responseReceived.WaitAsync(this.TwinTimeout, cancellationToken);
+                await responseReceived.WaitAsync(this.TwinTimeout, cancellationToken).ConfigureAwait(false);
 
                 if (responseException != null)
                 {
@@ -896,7 +911,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_034: `SendTwinGetAsync` shall open the transport if this method is called when the transport is not open. 
                 if (!this.TransportIsOpen())
                 {
-                    await this.OpenAsync();
+                    await this.OpenAsync().ConfigureAwait(false);
                 }
 
                 // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_014:  `SendTwinGetAsync` shall allocate a `Message` object to hold the `GET` request 
@@ -910,7 +925,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_017:  `SendTwinGetAsync` shall wait for a response from the service with a matching $rid value 
                 // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_019:  If the response is failed, `SendTwinGetAsync` shall return that failure to the caller.
                 // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_020:  If the response doesn't arrive within `MqttTransportHandler.TwinTimeout`, `SendTwinGetAsync` shall fail with a timeout error 
-                using (var response = await SendTwinRequestAsync(request, rid, cancellationToken))
+                using (var response = await SendTwinRequestAsync(request, rid, cancellationToken).ConfigureAwait(false))
                 {
                     // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_021:  If the response contains a success code, `SendTwinGetAsync` shall return success to the caller  
                     // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_018:  When a response is received, `SendTwinGetAsync` shall return the Twin object to the caller
@@ -924,7 +939,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         twin.Properties = props;
                     }
                 }
-            }, cancellationToken);
+            }, cancellationToken).ConfigureAwait(false);
 
             return twin;
         }
@@ -939,7 +954,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_035: `SendTwinPatchAsync` shall shall open the transport if this method is called when the transport is not open. 
                 if (!this.TransportIsOpen())
                 {
-                    await this.OpenAsync();
+                    await this.OpenAsync().ConfigureAwait(false);
                 }
 
                 // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_025:  `SendTwinPatchAsync` shall serialize the `reported` object into a JSON string 
@@ -959,9 +974,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_028:  If the response is failed, `SendTwinPatchAsync` shall return that failure to the caller. 
                     // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_029:  If the response doesn't arrive within `MqttTransportHandler.TwinTimeout`, `SendTwinPatchAsync` shall fail with a timeout error.  
                     // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_030:  If the response contains a success code, `SendTwinPatchAsync` shall return success to the caller. 
-                    await SendTwinRequestAsync(request, rid, cancellationToken);
+                    await SendTwinRequestAsync(request, rid, cancellationToken).ConfigureAwait(false);
                 }
-            }, cancellationToken);
+            }, cancellationToken).ConfigureAwait(false);
         }
 
         Func<IPAddress, int, Task<IChannel>> CreateChannelFactory(IotHubConnectionString iotHubConnectionString, MqttTransportSettings settings, ProductInfo productInfo)
@@ -987,7 +1002,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 streamSocketChannel.Configuration.SetOption(ChannelOption.Allocator, UnpooledByteBufferAllocator.Default);
 
-                await eventLoopGroup.GetNext().RegisterAsync(streamSocketChannel);
+                await eventLoopGroup.GetNext().RegisterAsync(streamSocketChannel).ConfigureAwait(false);
 
                 this.ScheduleCleanup(() =>
                 {
@@ -1076,7 +1091,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 using (var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromMinutes(1)))
                 {
-                    await websocket.ConnectAsync(websocketUri, cancellationTokenSource.Token);
+                    await websocket.ConnectAsync(websocketUri, cancellationTokenSource.Token).ConfigureAwait(false);
                 }
 
 #if WINDOWS_UWP
@@ -1092,7 +1107,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         MqttEncoder.Instance,
                         new MqttDecoder(false, MaxMessageSize),
                         this.mqttIotHubAdapterFactory.Create(this, iotHubConnectionString, settings, productInfo));
-                await eventLoopGroup.GetNext().RegisterAsync(clientChannel);
+                await eventLoopGroup.GetNext().RegisterAsync(clientChannel).ConfigureAwait(false);
 
                 this.ScheduleCleanup(() =>
                 {
@@ -1109,11 +1124,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             Func<Task> currentCleanupFunc = this.cleanupFunc;
             this.cleanupFunc = async () =>
             {
-                await cleanupTask();
+                await cleanupTask().ConfigureAwait(false);
 
                 if (currentCleanupFunc != null)
                 {
-                    await currentCleanupFunc();
+                    await currentCleanupFunc().ConfigureAwait(false);
                 }
             };
         }
@@ -1122,7 +1137,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             try
             {
-                await this.closeRetryPolicy.ExecuteAsync(this.CleanupAsync);
+                await this.closeRetryPolicy.ExecuteAsync(this.CleanupAsync).ConfigureAwait(false);
             }
             catch (Exception ex) when (!ex.IsFatal())
             {

@@ -5,6 +5,7 @@ namespace Microsoft.Azure.Devices
 {
     using System;
     using System.Collections.Generic;
+    using System.Net.Http.Headers;
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Shared;
@@ -36,7 +37,7 @@ namespace Microsoft.Azure.Devices
         /// Releases unmanaged and - optionally - managed resources.
         /// </summary>
         /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool disposing) { }
+        protected virtual void Dispose(bool disposing) {}
 
         /// <summary>
         /// Explicitly open the RegistryManager instance.
@@ -508,6 +509,7 @@ namespace Microsoft.Azure.Devices
         /// <returns>
         /// The list of devices
         /// </returns>
+        [Obsolete("Use CreateQuery(\"select * from devices\", pageSize);")]
         public abstract Task<IEnumerable<Device>> GetDevicesAsync(int maxCount);
 
         /// <summary>
@@ -517,6 +519,7 @@ namespace Microsoft.Azure.Devices
         /// <returns>
         /// The list of devices
         /// </returns>
+        [Obsolete("Use CreateQuery(\"select * from devices\", pageSize);")]
         public abstract Task<IEnumerable<Device>> GetDevicesAsync(int maxCount, CancellationToken cancellationToken);
 
         /// <summary>
@@ -804,7 +807,6 @@ namespace Microsoft.Azure.Devices
         /// Update the mutable fields for a list of <see cref="Twin"/>s previously created within the system
         /// </summary>
         /// <param name="twins">List of <see cref="Twin"/>s with updated fields</param>
-
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Result of the bulk update operation</returns>
         public abstract Task<BulkRegistryOperationResult> UpdateTwins2Async(IEnumerable<Twin> twins, CancellationToken cancellationToken);

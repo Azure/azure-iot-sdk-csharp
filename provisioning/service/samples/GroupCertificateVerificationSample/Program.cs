@@ -30,6 +30,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Samples
                 certificatePassword, 
                 X509KeyStorageFlags.Exportable);
 
+            if (!certificate.HasPrivateKey)
+            {
+                Console.WriteLine("ERROR: The certificate does not have a private key.");
+                return 1;
+            }
+
             X509Certificate2 verificationCertificate = 
                 VerificationCertificateGenerator.GenerateSignedCertificate(certificate, verificationCode);
 

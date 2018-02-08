@@ -20,6 +20,8 @@ namespace ConsoleSample
             AddDeviceAsync().Wait();
             AddDeviceWithSelfSignedCertificateAsync().Wait();
             AddDeviceWithCertificateAuthorityAuthenticationAsync().Wait();
+
+            //CheckTwins();
             //SendMessage().Wait();
             //RemoveDevice().Wait();
         }

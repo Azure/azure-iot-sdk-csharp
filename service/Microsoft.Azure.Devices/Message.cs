@@ -573,9 +573,14 @@ namespace Microsoft.Azure.Devices
 
         static Stream CloneStream(Stream originalStream)
         {
+#if WINDOWS_UWP
+            // TODO: https://github.com/Azure/azure-amqp/issues/87
+            throw Fx.AssertAndThrow("Does not support cloning of Stream Type: " + originalStream.GetType());
+#else
             if (originalStream != null)
             {
                 MemoryStream memoryStream;
+
                 ICloneable cloneable;
 
                 if ((memoryStream = originalStream as MemoryStream) != null)
@@ -597,7 +602,7 @@ namespace Microsoft.Azure.Devices
 
                 throw Fx.AssertAndThrow("Does not support cloning of Stream Type: " + originalStream.GetType());
             }
-
+#endif
             return null;
         }
 

@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             Console.WriteLine("Uploading File: {0}", fileName);
 
             var watch = System.Diagnostics.Stopwatch.StartNew();
-            await deviceClient.UploadToBlobAsync(fileName, fileStreamSource);
+            await deviceClient.UploadToBlobAsync(fileName, fileStreamSource).ConfigureAwait(false);
             watch.Stop();
 
             Console.WriteLine("Time to upload file: {0}ms\n", watch.ElapsedMilliseconds);

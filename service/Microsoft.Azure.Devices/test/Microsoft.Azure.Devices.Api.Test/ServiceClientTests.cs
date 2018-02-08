@@ -3,9 +3,9 @@
 
 namespace Microsoft.Azure.Devices.Api.Test
 {
-    using Client.Exceptions;
     using Microsoft.Azure.Amqp;
     using Microsoft.Azure.Devices;
+    using Microsoft.Azure.Devices.Common.Exceptions;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Moq;
     using System;

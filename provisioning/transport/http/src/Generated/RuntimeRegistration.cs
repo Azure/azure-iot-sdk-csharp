@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// </exception>
         public RuntimeRegistration(DeviceProvisioningServiceRuntimeClient client)
         {
-            Client = client ?? throw new ArgumentNullException("client");
+            Client = client ?? throw new ArgumentNullException(nameof(client));
         }
 
         /// <summary>

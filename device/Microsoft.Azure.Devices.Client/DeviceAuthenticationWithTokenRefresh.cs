@@ -17,10 +17,17 @@ namespace Microsoft.Azure.Devices.Client
         private const int DefaultTimeToLiveSeconds = 1 * 60 * 60;
         private const int DefaultBufferPercentage = 15;
 
+        private readonly string _deviceId;
         /// <summary>
         /// Gets the DeviceID.
         /// </summary>
-        public string DeviceId { get; }
+        public string DeviceId 
+        {
+            get
+            {
+                return _deviceId;
+            }
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeviceAuthenticationWithTokenRefresh"/> class using default
@@ -51,7 +58,7 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentNullException(nameof(deviceId));
             }
 
-            DeviceId = deviceId;
+            _deviceId = deviceId;
         }
 
         /// <summary>
@@ -63,7 +70,7 @@ namespace Microsoft.Azure.Devices.Client
         public override IotHubConnectionStringBuilder Populate(IotHubConnectionStringBuilder iotHubConnectionStringBuilder)
         {
             iotHubConnectionStringBuilder = base.Populate(iotHubConnectionStringBuilder);
-            iotHubConnectionStringBuilder.DeviceId = DeviceId;
+            iotHubConnectionStringBuilder.DeviceId = _deviceId;
             return iotHubConnectionStringBuilder;
         }
     }

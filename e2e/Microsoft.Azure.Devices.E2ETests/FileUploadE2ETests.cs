@@ -13,7 +13,6 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
-    [Ignore] // TODO: Re-enable file upload tests for IoT Edge public preview
     [TestClass]
     [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable",
         Justification = "Uses custom scheme for cleanup")]
@@ -89,13 +88,15 @@ namespace Microsoft.Azure.Devices.E2ETests
             await uploadFile(Client.TransportType.Http1, bigFile);
         }
 
-        // GitHub Issue #259
+#if NETCOREAPP2_0
+        // TODO: #259
         [Ignore]
+#endif
         [TestMethod]
         [TestCategory("FileUpload-E2E")]
         public async Task FileUpload_X509_SmallFile_Http()
         {
-           await uploadFile(Client.TransportType.Http1, smallFile, true);
+            await uploadFile(Client.TransportType.Http1, smallFile, true);
         }
 
         [TestMethod]

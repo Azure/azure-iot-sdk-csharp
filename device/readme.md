@@ -7,20 +7,10 @@ This folder contains the following
 The library is available as a NuGet package for you include in your own development projects.
 
 ## Features
-
  * Sends event data to Azure IoT based services.
  * Maps server commands to device functions.
  * Batches messages to improve communication efficiency.
  * Supports pluggable transport protocols.
-
-> Note: Currently, **Microsoft.Azure.Devices.Client.UWP** doesn't support  **MQTT** protocol.
-
-For example,calling `DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(DeviceConnectionString, TransportType.Mqtt);` will result in "Mqtt protocol is not supported" exception.
-
-> Note : Currently, **Microsoft.Azure.Devices.Client.PCL** only supports **HTTPS** protocol.
-
-For example, calling `DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(DeviceConnectionString, TransportType.Amqp);` will result in "Amqp protocol is not supported" exception.
-
 
 ## Application development guidelines
 For more information on how to use this library refer to the documents below:

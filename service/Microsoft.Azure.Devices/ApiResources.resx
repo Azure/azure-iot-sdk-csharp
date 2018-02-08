@@ -189,6 +189,9 @@
   <data name="DeviceAuthenticationInvalid" xml:space="preserve">
     <value>Device {0} cannot specify both symmetric keys and thumbprints.</value>
   </data>
+  <data name="StringIsNotThumbprint" xml:space="preserve">
+    <value>'{0}' is not a valid X.509 thumbprint</value>
+  </data>
   <data name="ParameterCannotBeNullOrEmpty" xml:space="preserve">
     <value>The parameter {0} cannot be null or empty.</value>
   </data>
@@ -215,8 +218,5 @@
   </data>
   <data name="ETagSetWhileCreatingConfiguration" xml:space="preserve">
     <value>The ETag should not be set while creating a Configuration.</value>
-  </data>
-  <data name="StringIsNotThumbprint" xml:space="preserve">
-    <value>'{0}' is not a valid X.509 thumbprint</value>
   </data>
 </root>

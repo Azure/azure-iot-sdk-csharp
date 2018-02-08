@@ -26,40 +26,25 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             CancellationTokenRegistration ctr = token.Register(() => this.CloseAsync());
             
-            var tcs = new TaskCompletionSource<bool>();
-
-            func().ContinueWith(t =>
+            return func().ContinueWith(t =>
             {
+                if (token.IsCancellationRequested && (t.IsCanceled || t.IsFaulted))
+                {
+                    return;
+                }
+
                 if (t.IsFaulted)
                 {
-                    if (token.IsCancellationRequested)
-                    {
-                        tcs.SetResult(false);
-                    }
-                    else
-                    {
-                        tcs.TrySetException(t.Exception.InnerExceptions);
-                    }
+                    throw t.Exception.InnerException;
                 }
-                else if (t.IsCanceled)
+
+                if (t.IsCanceled)
                 {
-                    if (token.IsCancellationRequested)
-                    {
-                        tcs.SetResult(false);
-                    }
-                    else
-                    {
-                        tcs.TrySetCanceled();
-                    }
+                    throw new TaskCanceledException();
                 }
-                else
-                {
-                    tcs.SetResult(false);
-                }
+
                 ctr.Dispose();
             });
-            
-            return tcs.Task;
         }
     }
 }

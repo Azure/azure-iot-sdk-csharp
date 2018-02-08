@@ -9,7 +9,7 @@ if "%1" EQU "-help" goto get-help
 if "%1" EQU "--help" goto get-help
 
 powershell -command ".\build.ps1 %*; exit $LASTEXITCODE"
-goto :eof
+exit /b %ERRORLEVEL%
 
 :get-help
 powershell -command "Get-Help .\build.ps1"
