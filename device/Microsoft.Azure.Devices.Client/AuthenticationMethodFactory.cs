@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 return new DeviceAuthenticationWithToken(iotHubConnectionStringBuilder.DeviceId, iotHubConnectionStringBuilder.SharedAccessSignature);
             }
-#if !NETMF && !WINDOWS_UWP && !PCL
+#if !NETMF
             else if (iotHubConnectionStringBuilder.UsingX509Cert)
             {
                 return new DeviceAuthenticationWithX509Certificate(iotHubConnectionStringBuilder.DeviceId, iotHubConnectionStringBuilder.Certificate);

@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Common
     using System.Globalization;
     using System.Reflection;
     using System.Runtime.CompilerServices;
-#if !WINDOWS_UWP && !NETSTANDARD1_3
+#if NET451
     using System.Runtime.ConstrainedExecution;
     using System.Runtime.InteropServices;
     using System.Security;
@@ -158,7 +158,7 @@ namespace Microsoft.Azure.Devices.Common
         }
 
 
-#if !WINDOWS_UWP && !NETSTANDARD1_3
+#if NET451
         public static void AssertAndFailFastService(bool condition, string description)
         {
             if (!condition)
@@ -230,7 +230,7 @@ namespace Microsoft.Azure.Devices.Common
                 // FYI, CallbackException is-a FatalException
                 if (exception is FatalException || exception is OutOfMemoryException)
                 {
-#if WINDOWS_UWP || NETSTANDARD1_3
+#if !NET451
                     return true;
 #else
                     if (!(exception is InsufficientMemoryException))
@@ -240,7 +240,7 @@ namespace Microsoft.Azure.Devices.Common
 #endif
                 }
 
-#if !WINDOWS_UWP && !NETSTANDARD1_3
+#if NET451
                 if( exception is ThreadAbortException ||
                     exception is AccessViolationException ||
                     exception is SEHException)
@@ -287,7 +287,7 @@ namespace Microsoft.Azure.Devices.Common
             return false;
         }
 
-#if !WINDOWS_UWP && !NETSTANDARD1_3
+#if NET451
         // If the transaction has aborted then we switch over to a new transaction
         // which we will immediately abort after setting Transaction.Current
         public static TransactionScope CreateTransactionScope(Transaction transaction)
@@ -355,7 +355,7 @@ namespace Microsoft.Azure.Devices.Common
         }
 #endif
 
-#if !WINDOWS_UWP && !NETSTANDARD1_3
+#if NET451
         [Fx.Tag.SecurityNote(Critical = "Construct the unsafe object IOCompletionThunk")]
         [SecurityCritical]
         public static IOCompletionCallback ThunkCallback(IOCompletionCallback callback)
@@ -375,7 +375,7 @@ namespace Microsoft.Azure.Devices.Common
             {
                 object value;
                 return TryGetDebugSwitch(Fx.AssertsFailFastName, out value) &&
-#if NETSTANDARD1_3
+#if !NET451
                         typeof(int).GetTypeInfo().IsAssignableFrom(value.GetType().GetTypeInfo())
 #else
                         typeof(int).IsAssignableFrom(value.GetType()) 
@@ -422,7 +422,7 @@ namespace Microsoft.Azure.Devices.Common
                     object value;
                     if (TryGetDebugSwitch(Fx.FastDebugName, out value))
                     {
-#if NETSTANDARD1_3
+#if !NET451
                         Fx.fastDebugCache = typeof(int).GetTypeInfo().IsAssignableFrom(value.GetType().GetTypeInfo())
 #else
                         Fx.fastDebugCache = typeof(int).IsAssignableFrom(value.GetType())
@@ -441,7 +441,7 @@ namespace Microsoft.Azure.Devices.Common
         static bool TryGetDebugSwitch(string name, out object value)
         {
             value = null;
-#if !WINDOWS_UWP && !NETSTANDARD1_3 && !NETSTANDARD2_0
+#if NET451
             try
             {
                 RegistryKey key = Registry.LocalMachine.OpenSubKey(Fx.SBRegistryKey);
@@ -464,7 +464,7 @@ namespace Microsoft.Azure.Devices.Common
 
         [SuppressMessage(FxCop.Category.Design, FxCop.Rule.DoNotCatchGeneralExceptionTypes,
             Justification = "Don't want to hide the exception which is about to crash the process.")]
-#if !WINDOWS_UWP && !NETSTANDARD1_3
+#if NET451
         [Fx.Tag.SecurityNote(Miscellaneous = "Must not call into PT code as it is called within a CER.")]
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 #endif
@@ -488,7 +488,7 @@ namespace Microsoft.Azure.Devices.Common
         [SuppressMessage(FxCop.Category.ReliabilityBasic, FxCop.Rule.IsFatalRule,
             Justification = "Don't want to hide the exception which is about to crash the process.")]
         [Fx.Tag.SecurityNote(Miscellaneous = "Must not call into PT code as it is called within a CER.")]
-#if !WINDOWS_UWP && !NETSTANDARD1_3
+#if NET451
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 #endif
         static bool HandleAtThreadBase(Exception exception)
@@ -684,7 +684,7 @@ namespace Microsoft.Azure.Devices.Common
         }
 #endif // UNUSED
 
-#if !WINDOWS_UWP && !NETSTANDARD1_3
+#if NET451
         // This can't derive from Thunk since T would be unsafe.
         [Fx.Tag.SecurityNote(Critical = "unsafe object")]
         [SecurityCritical]
@@ -764,7 +764,7 @@ namespace Microsoft.Azure.Devices.Common
         }
 #endif // UNUSED
 
-#if !WINDOWS_UWP && !NETSTANDARD1_3
+#if NET451
         sealed class TransactionEventHandlerThunk
         {
             readonly TransactionCompletedEventHandler callback;

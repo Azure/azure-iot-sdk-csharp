@@ -41,11 +41,7 @@ namespace Microsoft.Azure.Devices.Common
             { typeof(DateTime), PropertyValueType.DateTime },
             { typeof(DateTimeOffset), PropertyValueType.DateTimeOffset },
             { typeof(TimeSpan), PropertyValueType.TimeSpan },
-#if !WINDOWS_UWP
             { typeof(BufferedInputStream), PropertyValueType.Stream },
-#endif
-            ////{ typeof(XName), PropertyValueType.XName},
-            ////{ typeof(XmlQualifiedName), PropertyValueType.XmlQualifiedName},
         };
 
         public static PropertyValueType GetTypeId(object value)

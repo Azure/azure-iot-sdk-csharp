@@ -6,7 +6,6 @@ namespace Microsoft.Azure.Devices.Common
     using System;
     using System.Reflection;
 
-#if !WINDOWS_UWP
     /// <summary>
     /// Extended reflection support
     /// </summary>
@@ -30,5 +29,4 @@ namespace Microsoft.Azure.Devices.Common
             return "{0}!{1}.{2}".FormatInvariant(assemblyName, type.FullName, member.Name);
         }
     }
-#endif
 }

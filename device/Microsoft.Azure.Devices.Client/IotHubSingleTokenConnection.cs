@@ -54,10 +54,8 @@ namespace Microsoft.Azure.Devices.Client
 
             AmqpSession amqpSession = await base.CreateSessionAsync(timeoutHelper.RemainingTime(), cancellationToken).ConfigureAwait(false);
 
-#if !WINDOWS_UWP && !PCL
             if (this.AmqpTransportSettings.ClientCertificate == null)
             {
-#endif
                 this.iotHubTokenRefresher = new IotHubTokenRefresher(
                    amqpSession,
                    this.ConnectionString,
@@ -76,9 +74,7 @@ namespace Microsoft.Azure.Devices.Client
                     throw;
                 }
 
-#if !WINDOWS_UWP && !PCL
             }
-#endif
 
             return amqpSession;
         }

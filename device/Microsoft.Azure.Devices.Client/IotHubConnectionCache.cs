@@ -29,10 +29,8 @@ namespace Microsoft.Azure.Devices.Client
             }
             else
             {
-#if !WINDOWS_UWP && !PCL
                 // Client certificate is per device and must be overriden
                 this.amqpTransportSettings.ClientCertificate = amqpTransportSetting.ClientCertificate;
-#endif               
             }
 
             // Uncomment when we rev the ApiVersion since this is a breaking change

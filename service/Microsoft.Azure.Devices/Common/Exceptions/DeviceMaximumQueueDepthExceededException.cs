@@ -5,9 +5,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
     using System;
     using System.Runtime.Serialization;
 
-#if !WINDOWS_UWP
     [Serializable]
-#endif
     public sealed class DeviceMaximumQueueDepthExceededException : IotHubException
     {
         public DeviceMaximumQueueDepthExceededException(int maximumQueueDepth)
@@ -31,7 +29,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         {
         }
 
-#if !WINDOWS_UWP && !NETSTANDARD1_3
+#if !NETSTANDARD1_3
         DeviceMaximumQueueDepthExceededException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
@@ -45,7 +43,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
             private set;
         }
 
-#if !WINDOWS_UWP && !NETSTANDARD1_3
+#if !NETSTANDARD1_3
         /// <inheritdoc />
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
         {

@@ -13,10 +13,7 @@ namespace Microsoft.Azure.Devices.Client
     using System.Text.RegularExpressions;
     using System.Net;
     using SharedAccessSignatureParser = Microsoft.Azure.Devices.Client.SharedAccessSignature;
-
-#if !WINDOWS_UWP && !PCL
     using System.Security.Cryptography.X509Certificates;
-#endif
 #endif
 
     /// <summary>
@@ -28,11 +25,7 @@ namespace Microsoft.Azure.Devices.Client
         const char ValuePairSeparator = '=';
         const string HostNameSeparator = ".";
 
-#if !NETMF && !PCL
         static readonly RegexOptions regexOptions = RegexOptions.Compiled | RegexOptions.IgnoreCase;
-#elif PCL
-        static readonly RegexOptions regexOptions = RegexOptions.IgnoreCase;
-#endif
 
 #if !NETMF
         const string HostNamePropertyName = nameof(HostName);
@@ -170,7 +163,7 @@ namespace Microsoft.Azure.Devices.Client
             get { return this.iotHubName; }
         }
 
-#if !NETMF && !WINDOWS_UWP && !PCL
+#if !NETMF
         internal X509Certificate2 Certificate { get; set; }
 #endif
 
@@ -279,17 +272,17 @@ namespace Microsoft.Azure.Devices.Client
 
             if (!(this.SharedAccessKey.IsNullOrWhiteSpace() ^ this.SharedAccessSignature.IsNullOrWhiteSpace()))
             {
-#if !WINDOWS_UWP && !PCL && !NETMF
+#if !NETMF
                 if (!(this.UsingX509Cert || (this.AuthenticationMethod is DeviceAuthenticationWithTokenRefresh)))
                 {
 #endif
                     throw new ArgumentException("Should specify either SharedAccessKey or SharedAccessSignature if X.509 certificate is not used");
-#if !WINDOWS_UWP && !PCL && !NETMF
+#if !NETMF
                 }
 #endif
             }
 
-#if !WINDOWS_UWP && !PCL && !NETMF
+#if !NETMF
             if ((this.UsingX509Cert || this.Certificate != null) &&
                 (!this.SharedAccessKey.IsNullOrWhiteSpace() || !this.SharedAccessSignature.IsNullOrWhiteSpace()))
             {

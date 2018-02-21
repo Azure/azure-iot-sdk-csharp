@@ -13,12 +13,6 @@ namespace Microsoft.Azure.Devices.Client
         public override string ToString()
         {
             const string Name = "Microsoft.Azure.Devices.Client";
-#if PCL
-            // DO NOT EDIT the following line; it is updated by the bump_version script (https://github.com/Azure/iot-sdks-internals/blob/master/release/csharp/inputs.js)
-            const string Version = "undefined"; // PCLAssemblyVersion
-
-            string userAgent = $"{Name}/{Version} (PCL)";
-#else
             // DO NOT EDIT the following line; it is updated by the bump_version script (https://github.com/Azure/iot-sdks-internals/blob/master/release/csharp/inputs.js)
             const string Version = "1.6.2"; // CommonAssemblyVersion
 
@@ -27,7 +21,6 @@ namespace Microsoft.Azure.Devices.Client
             string processorArchitecture = RuntimeInformation.ProcessArchitecture.ToString().Trim();
 
             string userAgent = $"{Name}/{Version} ({runtime}; {operatingSystem}; {processorArchitecture})";
-#endif
 
             if (!String.IsNullOrWhiteSpace(this.Extra))
             {
@@ -38,5 +31,3 @@ namespace Microsoft.Azure.Devices.Client
         }
     }
 }
-
-

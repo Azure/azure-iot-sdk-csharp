@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Client
         {
         }
 
-#if !PCL && !NETMF
+#if !NETMF
         public static void ValidateBufferBounds(byte[] buffer, int offset, int size)
         {
             if (buffer == null)

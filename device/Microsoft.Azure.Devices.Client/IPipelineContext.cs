@@ -11,9 +11,6 @@ namespace Microsoft.Azure.Devices.Client
 
         T Get<T>() where T : class;
 
-#if WINDOWS_UWP
-        [Windows.Foundation.Metadata.DefaultOverload]
-#endif
         T Get<T>(string key) where T : class;
 
         bool TryGet<T>(string key, out T value);

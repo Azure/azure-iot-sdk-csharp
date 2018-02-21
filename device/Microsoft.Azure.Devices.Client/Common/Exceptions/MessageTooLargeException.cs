@@ -11,13 +11,8 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
     /// <summary>
     /// The exception that is thrown when an attempt to send a message fails because the length of the message exceeds the maximum size allowed.
     /// </summary>
-#if !WINDOWS_UWP && !PCL
     [Serializable]
-#endif
-#if !PCL
-    public
-#endif
-    sealed class MessageTooLargeException : IotHubException
+    public sealed class MessageTooLargeException : IotHubException
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="MessageTooLargeException"/> class with the message string containing the maximum sized allowed for a message, in bytes.
@@ -48,7 +43,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         {
         }
 
-#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
+#if !NETSTANDARD1_3
         /// <summary>
         /// Initializes a new instance of the <see cref="MessageTooLargeException"/> class with the specified serialization and context information.
         /// </summary>

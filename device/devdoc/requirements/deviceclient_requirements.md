@@ -2,7 +2,7 @@
 
 ## Overview
 
-DeviceClient class allows devices to communicate with an Azure IoTHub.  It can send event messages and receive messages.  The client handles communication with IoTHub through a transport protocol specified.  It uses Amqp for PCL, Http or Amqp for UWP. 
+DeviceClient class allows devices to communicate with an Azure IoTHub.  It can send event messages and receive messages.  The client handles communication with IoTHub through a transport protocol specified.
  
 ## References
 

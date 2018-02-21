@@ -7,7 +7,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Client.Extensions;
     using Microsoft.Azure.Devices.Shared;
-#if !NETMF && !PCL
+#if !NETMF
     using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 #endif
     class TransportHandlerFactory : ITransportHandlerFactory
@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         new Func<MethodRequestInternal, Task>(onMethodCallback), onDesiredStatePatchReceived);
                 case TransportType.Http1:
                     return new HttpTransportHandler(context, connectionString, transportSetting[0] as Http1TransportSettings);
-#if !NETMF && !PCL
+#if !NETMF
                 case TransportType.Mqtt_Tcp_Only:
                 case TransportType.Mqtt_WebSocket_Only:
                     return new MqttTransportHandler(

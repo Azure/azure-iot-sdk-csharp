@@ -7,39 +7,25 @@ namespace Microsoft.Azure.Devices.Client
     using System.IO;
     using System.Threading;
     using Microsoft.Azure.Devices.Client.Extensions;
-#if WINDOWS_UWP || PCL
-    using Microsoft.Azure.Amqp;
-    using System.Collections.Generic;
-    using Microsoft.Azure.Devices.Client.Common.Api;
-#elif NETMF
+#if NETMF
     using System.Collections;
-#elif PCL
-    using System.Collections.Generic;
 #else
-    // Full .NET Framework
     using Microsoft.Azure.Devices.Client.Common.Api;
     using System.Collections.Generic;
     using Microsoft.Azure.Amqp;
 #endif
 
-#if WINDOWS_UWP || PCL
-    using DateTimeT = System.DateTimeOffset;
-#else
     using DateTimeT = System.DateTime;
-#endif
 
     /// <summary>
     /// The data structure represent the message that is used for interacting with IotHub.
     /// </summary>
     public sealed class Message :
         // TODO: this is a crazy mess, clean it up
-#if !PCL && !NETMF
-        IDisposable, IReadOnlyIndicator
-#elif NETMF
-        IDisposable
-#elif PCL
-        IReadOnlyIndicator
+#if !NETMF
+        IReadOnlyIndicator,
 #endif
+        IDisposable
     {
         readonly object messageLock = new object();
 #if NETMF
@@ -72,9 +58,7 @@ namespace Microsoft.Azure.Devices.Client
             this.Properties = new ReadOnlyDictionary45<string, string>(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase), this);
             this.SystemProperties = new ReadOnlyDictionary45<string, object>(new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase), this);
             this.InitializeWithStream(Stream.Null, true);
-#if !PCL
             this.serializedAmqpMessage = null;
-#endif
 #endif
         }
 
@@ -105,9 +89,6 @@ namespace Microsoft.Azure.Devices.Client
             : this(new MemoryStream(byteArray))
 #else
         public Message(
-#if WINDOWS_UWP
-            [System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArrayAttribute]
-#endif
             byte[] byteArray)
             : this(new MemoryStream(byteArray))
 #endif
@@ -478,7 +459,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-#if !PCL && !NETMF
+#if !NETMF
         internal AmqpMessage SerializedAmqpMessage
         {
             get
@@ -498,7 +479,6 @@ namespace Microsoft.Azure.Devices.Client
         internal ArraySegment<byte> DeliveryTag { get; set; }
 #endif
 
-#if !PCL
         /// <summary>
         /// Dispose the current event data instance
         /// </summary>
@@ -529,7 +509,6 @@ namespace Microsoft.Azure.Devices.Client
             return Stream.Null;
 #endif
         }
-#endif
 
         /// <summary>
         /// This methods return the body stream as a byte array
@@ -546,7 +525,7 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             byte[] result;
-#if !PCL && !NETMF
+#if !NETMF
             BufferListStream listStream;
             if ((listStream = this.bodyStream as BufferListStream) != null)
             {
@@ -637,7 +616,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (1 == Interlocked.Exchange(ref this.getBodyCalled, 1))
             {
-#if NETMF || PCL
+#if NETMF
                 throw new InvalidOperationException("The message body cannot be read multiple times. To reuse it store the value after reading.");
 #else
                 throw Fx.Exception.AsError(new InvalidOperationException(ApiResources.MessageBodyConsumed));
@@ -720,7 +699,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 if (disposing)
                 {
-#if !PCL && !NETMF
+#if !NETMF
                     if (this.serializedAmqpMessage != null)
                     {
                         // in the receive scenario, this.bodyStream is a reference
@@ -744,4 +723,3 @@ namespace Microsoft.Azure.Devices.Client
         }
     }
 }
-

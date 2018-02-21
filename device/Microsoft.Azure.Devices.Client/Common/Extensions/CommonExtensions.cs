@@ -8,12 +8,10 @@ namespace Microsoft.Azure.Devices.Client.Extensions
     using System.Linq;
     using System.Net;
     using System.Net.Http;
-#if !PCL 
     using System.Net.Sockets;
-#endif
     using System.Text;
 
-#if !WINDOWS_UWP && !PCL  && !NETSTANDARD1_3    // Owin NuGet package is not compatible with UAP
+#if NET451
     using Microsoft.Owin;
 #endif
 
@@ -28,11 +26,7 @@ namespace Microsoft.Azure.Devices.Client.Extensions
         {
             if (value == null)
             {
-#if !PCL
                 throw new ArgumentNullException(nameof(value));
-#else
-                throw new ArgumentNullException(value);
-#endif
             }
 
             if (value.Length == 0)
@@ -115,7 +109,7 @@ namespace Microsoft.Azure.Devices.Client.Extensions
             return iotHubName;
         }
 
-#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3 // Depends on Owin, not supported for UWP
+#if NET451 // Depends on Owin
         public static string GetMaskedClientIpAddress(this HttpRequestMessage requestMessage)
         {
             // note that this only works if we are hosted as an OWIN app
@@ -178,27 +172,15 @@ namespace Microsoft.Azure.Devices.Client.Extensions
         {
             if (str == null)
             {
-#if !PCL
                 throw new ArgumentNullException(nameof(str));
-#else
-                throw new ArgumentNullException(str);
-#endif
             }
             if (startIndex < 0 || startIndex >= str.Length)
             {
-#if !PCL
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
-#else
-                throw new ArgumentOutOfRangeException(startIndex.ToString());
-#endif
             }
             if (n <= 0)
             {
-#if !PCL
                 throw new ArgumentOutOfRangeException(nameof(n));
-#else
-                throw new ArgumentOutOfRangeException(n.ToString());
-#endif
             }
 
             int entryIndex = -1;

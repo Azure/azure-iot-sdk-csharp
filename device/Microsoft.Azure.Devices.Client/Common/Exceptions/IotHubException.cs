@@ -8,13 +8,8 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
     using System.Runtime.Serialization;
 #endif
 
-#if !WINDOWS_UWP && !PCL
     [Serializable]
-#endif
-#if !PCL
-    public
-#endif
-    class IotHubException : Exception
+    public class IotHubException : Exception
     {
         const string IsTransientValueSerializationStoreName = "IotHubException-IsTransient";
 
@@ -64,7 +59,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
             this.TrackingId = trackingId;
         }
 
-#if !WINDOWS_UWP && !PCL && !NETMF && !NETSTANDARD1_3
+#if !NETMF && !NETSTANDARD1_3
         protected IotHubException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {

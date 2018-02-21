@@ -10,16 +10,16 @@ namespace Microsoft.Azure.Devices.Client
     using System.Diagnostics.CodeAnalysis;
     using System.Reflection;
     using System.Runtime.CompilerServices;
-#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
+#if NET451
     using System.Runtime.ConstrainedExecution;
 #endif
     using System.Runtime.InteropServices;
     using System.Security;
     using System.Threading;
-#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
+#if NET451
     using System.Transactions;
 #endif
-#if !PCL && !NETSTANDARD1_3
+#if NET451
     using Microsoft.Win32;
 #endif
     using Microsoft.Azure.Devices.Client.Exceptions;
@@ -154,7 +154,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 // FYI, CallbackException is-a FatalException
                 if (exception is FatalException ||
-#if WINDOWS_UWP || PCL || NETSTANDARD1_3
+#if !NET451
                     exception is OutOfMemoryException ||
 #else
                     (exception is OutOfMemoryException && !(exception is InsufficientMemoryException)) ||
@@ -204,7 +204,7 @@ namespace Microsoft.Azure.Devices.Client
             return false;
         }
 
-#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
+#if NET451
         // If the transaction has aborted then we switch over to a new transaction
         // which we will immediately abort after setting Transaction.Current
         public static TransactionScope CreateTransactionScope(Transaction transaction)
@@ -272,7 +272,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 #endif
 
-#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
+#if !NETSTANDARD1_3
         [Fx.Tag.SecurityNote(Critical = "Construct the unsafe object IOCompletionThunk")]
         [SecurityCritical]
         public static IOCompletionCallback ThunkCallback(IOCompletionCallback callback)
@@ -313,7 +313,7 @@ namespace Microsoft.Azure.Devices.Client
 
         static bool TryGetDebugSwitch(string name, out object value)
         {
-#if WINDOWS_UWP || PCL || NETSTANDARD1_3
+#if !NET451
             // No registry access in UWP
             value = null;
             return false;
@@ -342,7 +342,7 @@ namespace Microsoft.Azure.Devices.Client
         [SuppressMessage(FxCop.Category.Design, FxCop.Rule.DoNotCatchGeneralExceptionTypes,
             Justification = "Don't want to hide the exception which is about to crash the process.")]
         [Fx.Tag.SecurityNote(Miscellaneous = "Must not call into PT code as it is called within a CER.")]
-#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
+#if NET451
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 #endif
         static void TraceExceptionNoThrow(Exception exception)
@@ -365,7 +365,7 @@ namespace Microsoft.Azure.Devices.Client
         [SuppressMessage(FxCop.Category.ReliabilityBasic, FxCop.Rule.IsFatalRule,
             Justification = "Don't want to hide the exception which is about to crash the process.")]
         [Fx.Tag.SecurityNote(Miscellaneous = "Must not call into PT code as it is called within a CER.")]
-#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
+#if NET451
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 #endif
         static bool HandleAtThreadBase(Exception exception)
@@ -561,7 +561,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 #endif // UNUSED
 
-#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
+#if !NETSTANDARD1_3
         // This can't derive from Thunk since T would be unsafe.
         [Fx.Tag.SecurityNote(Critical = "unsafe object")]
         [SecurityCritical]

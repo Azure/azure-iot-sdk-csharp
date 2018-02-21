@@ -10,13 +10,8 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
     /// <summary>
     /// The exception that is thrown when an attempt to create a device fails because it already exists.
     /// </summary>
-#if !WINDOWS_UWP && !PCL
     [Serializable]
-#endif
-#if !PCL
-    public
-#endif
-    sealed class DeviceAlreadyExistsException : IotHubException
+    public sealed class DeviceAlreadyExistsException : IotHubException
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="DeviceAlreadyExistsException"/> class with the message string containing the identifier of the already existing device.
@@ -37,7 +32,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         {
         }
 
-#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
+#if !NETSTANDARD1_3
         /// <summary>
         /// Initializes a new instance of the <see cref="DeviceAlreadyExistsException"/> class with the specified serialization and context information.
         /// </summary>

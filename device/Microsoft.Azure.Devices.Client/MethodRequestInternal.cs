@@ -7,24 +7,14 @@ namespace Microsoft.Azure.Devices.Client
     using System.IO;
     using System.Threading;
     using Microsoft.Azure.Amqp;
-#if WINDOWS_UWP
-    using System.Collections.Generic;
-    using Microsoft.Azure.Devices.Client.Common.Api;
-#elif NETMF
+#if NETMF
     using System.Collections;
-#elif PCL
-    using System.Collections.Generic;
 #else
-    // Full .NET Framework
     using Microsoft.Azure.Devices.Client.Common.Api;
     using System.Collections.Generic;
 #endif
 
-#if WINDOWS_UWP
-    using DateTimeT = System.DateTimeOffset;
-#else
     using DateTimeT = System.DateTime;
-#endif
 
     /// <summary>
     /// The data structure represent the method request coming from the IotHub.

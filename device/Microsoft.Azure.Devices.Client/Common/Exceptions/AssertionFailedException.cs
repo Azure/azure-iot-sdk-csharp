@@ -8,9 +8,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
     using System.Runtime.Serialization;
 
     [SuppressMessage(FxCop.Category.Design, FxCop.Rule.ExceptionsShouldBePublic, Justification = "Asserts should not be seen by users.", Scope = "Type", Target = "Microsoft.Azure.Devices.Common.AssertionFailedException")]
-#if !WINDOWS_UWP && !PCL
     [Serializable]
-#endif
     class AssertionFailedException : Exception
     {
         public AssertionFailedException(string description)
@@ -18,7 +16,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         {
         }
 
-#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
+#if !NETSTANDARD1_3
         protected AssertionFailedException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {

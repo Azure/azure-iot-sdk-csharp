@@ -12,13 +12,6 @@ namespace Microsoft.Azure.Devices.Client
     using System.Security.Cryptography;
 #endif
     using System.Globalization;
-#if WINDOWS_UWP
-    using Windows.Security.Cryptography;
-    using Windows.Security.Cryptography.Core;
-    using System.Runtime.InteropServices.WindowsRuntime;
-    using Windows.Storage.Streams;
-#endif
-
     using System.Text;
 
     public class SharedAccessSignatureBuilder

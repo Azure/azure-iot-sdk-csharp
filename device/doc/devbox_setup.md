@@ -21,7 +21,7 @@ Be sure to include [NuGet Package Manager][NuGet-Package-Manager].
 
 Go to VS 2015 Solution Explorer and right click on the solution or project and click Manage NuGet Packages. There are **2** different **NuGet** packages to choose from
 
-### 1.) Microsoft.Azure.Devices.Client
+### Microsoft.Azure.Devices.Client
 
 For building classic desktop [.NET] [.NET] application, use NuGet Package Manager to install latest version of **Microsoft.Azure.Devices.Client** Device SDK for Azure IoT Devices NuGet package to your project.
 
@@ -29,15 +29,6 @@ Two versions of Microsoft.Azure.Devices.Client.dll are built -- one for the clas
 another for building [UWP] [UWP] applications.
 
 The package is located at [Azure IoT Device Client SDK NuGet Package] [lnk-NuGet-package]
-
-### 2.) Microsoft.Azure.Devices.Client.PCL
-
-[PCL] [PCL] (Portable Class Library) version of .NET library helps you to build cross-platform apps.
-For example, for bulding iOS and Android application in C# in VS 2015 using [Xamarin] [Xamarin], use NuGet Package Manager to install latest version of **Microsoft.Azure.Devices.Client.PCL** Device SDK for Azure IoT Devices NuGet package to your project.
-
-The package is located at [Azure IoT Device Client PCL SDK NuGet Package] [lnk-NuGet-package_pcl]
-
-> Currently, **Microsoft.Azure.Devices.Client.PCL** only supports HTTPS protocol.
 
 ### Building [UWP][UWP] Apps
 

@@ -6,9 +6,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
     using System;
     using System.Runtime.Serialization;
 
-#if !WINDOWS_UWP
     [Serializable]
-#endif
     public sealed class DeviceAlreadyExistsException : IotHubException
     {
         public DeviceAlreadyExistsException(string deviceId)
@@ -26,7 +24,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         {
         }
 
-#if !WINDOWS_UWP && !NETSTANDARD1_3
+#if !NETSTANDARD1_3
         public DeviceAlreadyExistsException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {

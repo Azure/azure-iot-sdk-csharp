@@ -18,20 +18,17 @@ namespace Microsoft.Azure.Devices.Client.Transport
     using Microsoft.Azure.Devices.Client.Extensions;
     using Microsoft.Azure.Devices.Shared;
 
-#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
+#if !NETSTANDARD1_3 && !NETSTANDARD2_0
     using System.Net.Http.Formatting;
 #else
     using System.Text;
     using Newtonsoft.Json;
 #endif
-
-#if !WINDOWS_UWP && !PCL
     using System.Security.Cryptography.X509Certificates;
-#endif
 
     sealed class HttpClientHelper : IHttpClientHelper
     {
-#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
+#if !NETSTANDARD1_3 && !NETSTANDARD2_0
         static readonly JsonMediaTypeFormatter JsonFormatter = new JsonMediaTypeFormatter();
 #endif
         readonly Uri baseAddress;
@@ -48,9 +45,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> defaultErrorMapping,
             TimeSpan timeout,
             Action<HttpClient> preRequestActionForAllRequests,
-#if !WINDOWS_UWP && !PCL
             X509Certificate2 clientCert,
-#endif
             ProductInfo productInfo
             )
         {
@@ -59,7 +54,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             this.defaultErrorMapping =
                 new ReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>(defaultErrorMapping);
 
-#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
+#if !NETSTANDARD1_3 && !NETSTANDARD2_0
             WebRequestHandler handler = null;
             if (clientCert != null)
             {
@@ -127,20 +122,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return result;
         }
 
-#if WINDOWS_UWP || PCL
-        public Task<T> PutAsync<T>(
-#else
         public async Task<T> PutAsync<T>(
-#endif
             Uri requestUri,
             T entity,
             PutOperationType operationType,
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> errorMappingOverrides,
             CancellationToken cancellationToken) where T : IETagHolder
         {
-#if WINDOWS_UWP || PCL
-            throw new NotImplementedException();
-#else
             T result = default(T);
 
             await this.ExecuteAsync(
@@ -157,7 +145,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     cancellationToken).ConfigureAwait(false);
 
             return result;
-#endif
         }
 
         static async Task<T> ReadResponseMessageAsync<T>(HttpResponseMessage message, CancellationToken token)
@@ -167,11 +154,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 return (T)(object)message;
             }
 
-#if PCL
-            //Need to check if ReadAsAsync works for PCL.
-            await message.Content.ReadAsStreamAsync().ConfigureAwait(false);
-            throw new NotImplementedException();
-#else
             T entity = await ReadAsAsync<T>(message.Content, token).ConfigureAwait(false);
 
             // Etag in the header is considered authoritative
@@ -186,7 +168,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
 
             return entity;
-#endif
         }
 
         static Task AddCustomHeaders(HttpRequestMessage requestMessage, IDictionary<string, string> customHeaders)
@@ -285,12 +266,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         }
                         else
                         {
-#if PCL
-                            //Need to check if CreateContent works for PCL.
-                            throw new NotImplementedException();
-#else
                             requestMsg.Content = CreateContent(entity);
-#endif
                         }
                     }
 
@@ -525,7 +501,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
+#if !NETSTANDARD1_3 && !NETSTANDARD2_0
         private static ObjectContent<T> CreateContent<T>(T entity)
         {
             return new ObjectContent<T>(entity, JsonFormatter);

@@ -21,13 +21,13 @@ namespace Microsoft.Azure.Devices
     using Microsoft.Azure.Devices.Common.Extensions;
     using Microsoft.Azure.Devices.Shared;
     using Newtonsoft.Json;
-#if !WINDOWS_UWP && !NETSTANDARD1_3 && !NETSTANDARD2_0
+#if !NETSTANDARD1_3 && !NETSTANDARD2_0
     using System.Net.Http.Formatting;
 #endif
 
     sealed class HttpClientHelper : IHttpClientHelper
     {
-#if !WINDOWS_UWP && !NETSTANDARD1_3 && !NETSTANDARD2_0
+#if !NETSTANDARD1_3 && !NETSTANDARD2_0
         static readonly JsonMediaTypeFormatter JsonFormatter = new JsonMediaTypeFormatter();
 #endif
         readonly Uri baseAddress;
@@ -170,7 +170,7 @@ namespace Microsoft.Azure.Devices
                     (requestMsg, token) =>
                     {
                         InsertEtag(requestMsg, entity, operationType);
-#if WINDOWS_UWP || NETSTANDARD1_3 || NETSTANDARD2_0
+#if NETSTANDARD1_3 || NETSTANDARD2_0
                         var str = Newtonsoft.Json.JsonConvert.SerializeObject(entity);
                         requestMsg.Content = new StringContent(str, System.Text.Encoding.UTF8, "application/json");
 #else
@@ -198,7 +198,7 @@ namespace Microsoft.Azure.Devices
                     new Uri(this.baseAddress, requestUri),
                     (requestMsg, token) =>
                     {
-#if WINDOWS_UWP || NETSTANDARD1_3 || NETSTANDARD2_0
+#if NETSTANDARD1_3 || NETSTANDARD2_0
                         var str = Newtonsoft.Json.JsonConvert.SerializeObject(entity);
                         requestMsg.Content = new StringContent(str, System.Text.Encoding.UTF8, "application/json");
 #else
@@ -227,7 +227,7 @@ namespace Microsoft.Azure.Devices
                 (requestMsg, token) =>
                 {
                     InsertEtag(requestMsg, etag, operationType);
-#if WINDOWS_UWP || NETSTANDARD1_3 || NETSTANDARD2_0
+#if NETSTANDARD1_3 || NETSTANDARD2_0
                     var str = Newtonsoft.Json.JsonConvert.SerializeObject(entity);
                     requestMsg.Content = new StringContent(str, System.Text.Encoding.UTF8, "application/json");
 #else
@@ -257,7 +257,7 @@ namespace Microsoft.Azure.Devices
                 {
                     // TODO: skintali: Use string etag when service side changes are ready
                     InsertEtag(requestMsg, etag, operationType);
-#if WINDOWS_UWP || NETSTANDARD1_3 || NETSTANDARD2_0
+#if NETSTANDARD1_3 || NETSTANDARD2_0
                     var str = Newtonsoft.Json.JsonConvert.SerializeObject(entity);
                     requestMsg.Content = new StringContent(str, System.Text.Encoding.UTF8, "application/json");
 #else
@@ -281,7 +281,7 @@ namespace Microsoft.Azure.Devices
                 (requestMsg, token) =>
                 {
                     InsertEtag(requestMsg, etag, PutOperationType.UpdateEntity);
-#if WINDOWS_UWP || NETSTANDARD1_3 || NETSTANDARD2_0
+#if NETSTANDARD1_3 || NETSTANDARD2_0
                     var str = Newtonsoft.Json.JsonConvert.SerializeObject(entity);
                     requestMsg.Content = new StringContent(str, System.Text.Encoding.UTF8, "application/json");
 #else
@@ -307,7 +307,7 @@ namespace Microsoft.Azure.Devices
                 (requestMsg, token) =>
                 {
                     InsertEtag(requestMsg, etag, putOperationType);
-#if WINDOWS_UWP || NETSTANDARD1_3 || NETSTANDARD2_0
+#if NETSTANDARD1_3 || NETSTANDARD2_0
                     var str = Newtonsoft.Json.JsonConvert.SerializeObject(entity);
                     requestMsg.Content = new StringContent(str, System.Text.Encoding.UTF8, "application/json");
 #else
@@ -329,7 +329,7 @@ namespace Microsoft.Azure.Devices
                 return (T)(object)message;
             }
 
-#if WINDOWS_UWP || NETSTANDARD1_3 || NETSTANDARD2_0
+#if NETSTANDARD1_3 || NETSTANDARD2_0
             var str = await message.Content.ReadAsStringAsync().ConfigureAwait(false);
             T entity = Newtonsoft.Json.JsonConvert.DeserializeObject<T>(str);
 #else

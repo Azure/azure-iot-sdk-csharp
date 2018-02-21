@@ -14,12 +14,8 @@ namespace Microsoft.Azure.Devices.Client
     using Microsoft.Azure.Devices.Client.Extensions;
     using Microsoft.Azure.Devices.Client.Transport;
     using Microsoft.Azure.Devices.Shared;
-#if !PCL
     using Microsoft.Azure.Devices.Client.Transport.Mqtt;
-#if !WINDOWS_UWP
     using System.Security.Cryptography.X509Certificates;
-#endif
-#endif
 
     /// <summary>
     /// Delegate for desired property update callbacks.  This will be called
@@ -100,10 +96,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
     /// <summary>
     /// Contains methods that a device can use to send messages to and receive from the service.
     /// </summary>
-    public sealed class DeviceClient
-#if !PCL
-        : IDisposable
-#endif
+    public sealed class DeviceClient : IDisposable
     {
         const string DeviceId = "DeviceId";
         const string DeviceIdParameterPattern = @"(^\s*?|.*;\s*?)" + DeviceId + @"\s*?=.*";
@@ -134,14 +127,8 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
 
         ITransportSettings[] transportSettings;
 
-#if !WINDOWS_UWP && !PCL
         internal X509Certificate2 Certificate { get; set; }
-#endif
-#if !PCL
         const RegexOptions RegexOptions = System.Text.RegularExpressions.RegexOptions.Compiled | System.Text.RegularExpressions.RegexOptions.IgnoreCase;
-#else
-        const RegexOptions RegexOptions = System.Text.RegularExpressions.RegexOptions.IgnoreCase;
-#endif
         static readonly Regex DeviceIdParameterRegex = new Regex(DeviceIdParameterPattern, RegexOptions);
 
         internal IDelegatingHandler InnerHandler { get; set; }
@@ -184,7 +171,6 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// </summary>
         // Codes_SRS_DEVICECLIENT_28_001: [This property shall be defaulted to the exponential retry strategy with backoff 
         // parameters for calculating delay in between retries.]
-#if !WINDOWS_UWP && !PCL
         public void SetRetryPolicy(IRetryPolicy retryPolicy)
         {
             var retryDelegatingHandler = GetDelegateHandler<RetryDelegatingHandler>();
@@ -195,7 +181,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
 
             retryDelegatingHandler.SetRetryPolicy(retryPolicy);
         }
-#endif
+
 
         private T GetDelegateHandler<T>() where T: DefaultDelegatingHandler
         {
@@ -294,9 +280,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             var transporthandlerFactory = new TransportHandlerFactory();
             IDeviceClientPipelineBuilder pipelineBuilder = new DeviceClientPipelineBuilder()
                 .With(ctx => new GateKeeperDelegatingHandler(ctx))
-#if !WINDOWS_UWP && !PCL
                 .With(ctx => new RetryDelegatingHandler(ctx))
-#endif
                 .With(ctx => new ErrorDelegatingHandler(ctx))
                 .With(ctx => new ProtocolRoutingDelegatingHandler(ctx))
                 .With(ctx => transporthandlerFactory.Create(ctx));
@@ -319,11 +303,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// <returns>DeviceClient</returns>
         public static DeviceClient Create(string hostname, IAuthenticationMethod authenticationMethod)
         {
-#if WINDOWS_UWP || PCL
-            return Create(hostname, authenticationMethod, TransportType.Http1);
-#else
             return Create(hostname, authenticationMethod, TransportType.Amqp);
-#endif
         }
 
         /// <summary>
@@ -347,7 +327,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
 
             IotHubConnectionStringBuilder connectionStringBuilder = IotHubConnectionStringBuilder.Create(hostname, authenticationMethod);
 
-#if !WINDOWS_UWP && !PCL && !NETMF
+#if !NETMF
             if (authenticationMethod is DeviceAuthenticationWithX509Certificate)
             {
                 if (connectionStringBuilder.Certificate == null)
@@ -369,7 +349,6 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             return CreateFromConnectionString(connectionStringBuilder.ToString(), authenticationMethod, transportType, null);
         }
 
-#if !PCL
         /// <summary>
         /// Create a DeviceClient from individual parameters
         /// </summary>
@@ -378,9 +357,6 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// <param name="transportSettings">Prioritized list of transportTypes and their settings</param>
         /// <returns>DeviceClient</returns>
         public static DeviceClient Create(string hostname, IAuthenticationMethod authenticationMethod,
-#if !NETSTANDARD1_3
-            [System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArrayAttribute]
-#endif
             ITransportSettings[] transportSettings)
         {
             if (hostname == null)
@@ -394,7 +370,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             }
 
             var connectionStringBuilder = IotHubConnectionStringBuilder.Create(hostname, authenticationMethod);
-#if !WINDOWS_UWP && !PCL && !NETMF
+#if !NETMF
             if (authenticationMethod is DeviceAuthenticationWithX509Certificate)
             {
                 if (connectionStringBuilder.Certificate == null)
@@ -414,7 +390,6 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
 #endif
             return CreateFromConnectionString(connectionStringBuilder.ToString(), authenticationMethod, transportSettings, null);
         }
-#endif
 
         /// <summary>
         /// Create a DeviceClient using Amqp transport from the specified connection string
@@ -423,32 +398,22 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// <returns>DeviceClient</returns>
         public static DeviceClient CreateFromConnectionString(string connectionString)
         {
-#if WINDOWS_UWP || PCL
-            return CreateFromConnectionString(connectionString, TransportType.Http1);
-#else
             return CreateFromConnectionString(connectionString, TransportType.Amqp);
-#endif
         }
 
         /// <summary>
         /// Create a DeviceClient using Amqp transport from the specified connection string
-        /// (WinRT) Create a DeviceClient using Http transport from the specified connection string
         /// </summary>
         /// <param name="connectionString">IoT Hub-Scope Connection string for the IoT hub (without DeviceId)</param>
         /// <param name="deviceId">Id of the Device</param>
         /// <returns>DeviceClient</returns>
         public static DeviceClient CreateFromConnectionString(string connectionString, string deviceId)
         {
-#if WINDOWS_UWP || PCL
-            return CreateFromConnectionString(connectionString, deviceId, TransportType.Http1);    
-#else
             return CreateFromConnectionString(connectionString, deviceId, TransportType.Amqp);
-#endif
         }
 
         /// <summary>
         /// Create DeviceClient from the specified connection string using the specified transport type
-        /// (PCL) Only Http transport is allowed
         /// </summary>
         /// <param name="connectionString">Connection string for the IoT hub (including DeviceId)</param>
         /// <param name="transportType">Specifies whether Amqp or Http transport is used</param>
@@ -497,9 +462,6 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// <param name="transportSettings">Prioritized list of transports and their settings</param>
         /// <returns>DeviceClient</returns>
         public static DeviceClient CreateFromConnectionString(string connectionString,
-#if !NETSTANDARD1_3
-            [System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArray]
-#endif
             ITransportSettings[] transportSettings)
         {
             return CreateFromConnectionString(connectionString, null, transportSettings, null);
@@ -514,9 +476,6 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// <param name="transportSettings">Prioritized list of transportTypes and their settings</param>
         /// <returns>DeviceClient</returns>
         public static DeviceClient CreateFromConnectionString(string connectionString, string deviceId,
-#if !NETSTANDARD1_3
-            [System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArrayAttribute]
-#endif
             ITransportSettings[] transportSettings)
         {
             if (connectionString == null)
@@ -556,9 +515,6 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                         },
                         pipelineBuilder);
                 case TransportType.Mqtt:
-#if PCL
-                    throw new NotImplementedException("Mqtt protocol is not supported");
-#else
                     return CreateFromConnectionString(
                         connectionString,
                         authenticationMethod,
@@ -568,29 +524,20 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                             new MqttTransportSettings(TransportType.Mqtt_WebSocket_Only)
                         }, 
                         pipelineBuilder);
-#endif
                 case TransportType.Amqp_WebSocket_Only:
                 case TransportType.Amqp_Tcp_Only:
-#if PCL
-                    throw new NotImplementedException("Amqp protocol is not supported");
-#else
                     return CreateFromConnectionString(
                         connectionString,
                         authenticationMethod,
                         new ITransportSettings[] { new AmqpTransportSettings(transportType) }, 
                         pipelineBuilder);
-#endif
                 case TransportType.Mqtt_WebSocket_Only:
                 case TransportType.Mqtt_Tcp_Only:
-#if PCL
-                    throw new NotImplementedException("Mqtt protocol is not supported");
-#else
                     return CreateFromConnectionString(
                         connectionString,
                         authenticationMethod,
                         new ITransportSettings[] { new MqttTransportSettings(transportType) }, 
                         pipelineBuilder);
-#endif
                 case TransportType.Http1:
                     return CreateFromConnectionString(
                         connectionString,
@@ -598,20 +545,13 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                         new ITransportSettings[] { new Http1TransportSettings() }, 
                         pipelineBuilder);
                 default:
-#if !PCL
                     throw new InvalidOperationException("Unsupported Transport Type {0}".FormatInvariant(transportType));
-#else
-                    throw new InvalidOperationException($"Unsupported Transport Type {transportType}");
-#endif
             }
         }
 
         internal static DeviceClient CreateFromConnectionString(
             string connectionString,
             IAuthenticationMethod authenticationMethod,
-#if !NETSTANDARD1_3
-            [System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArray]
-#endif
             ITransportSettings[] transportSettings, 
             IDeviceClientPipelineBuilder pipelineBuilder)
         {
@@ -653,7 +593,6 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                             throw new InvalidOperationException("Unknown implementation of ITransportSettings type");
                         }
                         break;
-#if !PCL
                     case TransportType.Mqtt_WebSocket_Only:
                     case TransportType.Mqtt_Tcp_Only:
                         if (!(transportSetting is MqttTransportSettings))
@@ -661,7 +600,6 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                             throw new InvalidOperationException("Unknown implementation of ITransportSettings type");
                         }
                         break;
-#endif
                     default:
                         throw new InvalidOperationException("Unsupported Transport Type {0}".FormatInvariant(transportSetting.GetTransportType()));
                 }
@@ -939,7 +877,6 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             });
         }
 
-#if !PCL
         /// <summary>
         /// Uploads a stream to a block blob in a storage account associated with the IoTHub for that device.
         /// If the blob already exists, it will be overwritten.
@@ -970,7 +907,6 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             var context = new PipelineContext();
             context.Set(this.productInfo);
 
-#if !WINDOWS_UWP
             //We need to add the certificate to the fileUpload httpTransport if DeviceAuthenticationWithX509Certificate
             if (this.Certificate != null)
             {
@@ -982,12 +918,8 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             {
                 httpTransport = new HttpTransportHandler(context, iotHubConnectionString, new Http1TransportSettings());
             }
-#else 
-            httpTransport = new HttpTransportHandler(context, iotHubConnectionString, new Http1TransportSettings());
-#endif
             return httpTransport.UploadToBlobAsync(blobName, source);
         }
-#endif
 
         /// <summary>
         /// Registers a new delgate for the named method. If a delegate is already associated with
@@ -1271,7 +1203,6 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             this.InnerHandler?.Dispose();
         }
 
-#if !WINDOWS_UWP && !PCL
         static ITransportSettings[] PopulateCertificateInTransportSettings(IotHubConnectionStringBuilder connectionStringBuilder, TransportType transportType)
         {
             switch (transportType)
@@ -1369,7 +1300,6 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
 
             return transportSettings;
         }
-#endif
 
         /// <summary>
         /// Set a callback that will be called whenever the client receives a state update 

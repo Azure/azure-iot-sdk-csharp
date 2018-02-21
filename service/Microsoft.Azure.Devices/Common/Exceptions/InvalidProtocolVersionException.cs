@@ -6,9 +6,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
     using System;
     using System.Runtime.Serialization;
 
-#if !WINDOWS_UWP
     [Serializable]
-#endif
     public class InvalidProtocolVersionException : IotHubException
     {
         public InvalidProtocolVersionException(string version)
@@ -17,7 +15,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
             this.RequestedVersion = version;
         }
 
-#if !WINDOWS_UWP && !NETSTANDARD1_3
+#if !NETSTANDARD1_3
         public InvalidProtocolVersionException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {

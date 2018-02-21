@@ -385,7 +385,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             // If the AppDomain is shutting down, we may still have pending ops.  The AppDomain shutdown will clean
             // everything up.
-#if WINDOWS_UWP || NETSTANDARD1_3
+#if NETSTANDARD1_3
             // TODO: Review if we need to do anything here for UWP
             throw new NotImplementedException();
 #else
@@ -597,14 +597,14 @@ namespace Microsoft.Azure.Devices.Client
         [SecurityCritical]
         unsafe class ScheduledOverlapped
         {
-#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
+#if !NETSTANDARD1_3
             readonly NativeOverlapped* nativeOverlapped;
 #endif
             IOThreadScheduler scheduler;
 
             public ScheduledOverlapped()
             {
-#if WINDOWS_UWP || PCL || NETSTANDARD1_3
+#if NETSTANDARD1_3
                 throw new NotImplementedException();
 #else
                 this.nativeOverlapped = (new Overlapped()).UnsafePack(
@@ -612,7 +612,6 @@ namespace Microsoft.Azure.Devices.Client
 #endif
             }
 
-#if !WINDOWS_UWP
             [Fx.Tag.SecurityNote(Miscellaneous = "note that in some hosts this runs without any user context on the stack")]
             void IOCallback(uint errorCode, uint numBytes, NativeOverlapped* nativeOverlappedCallback)
             {
@@ -646,14 +645,14 @@ namespace Microsoft.Azure.Devices.Client
                     }
                 }
             }
-#endif
+
             public void Post(IOThreadScheduler iots)
             {
                 Fx.Assert(this.scheduler == null, "Post called on an overlapped that is already posted.");
                 Fx.Assert(iots != null, "Post called with a null scheduler.");
 
                 this.scheduler = iots;
-#if WINDOWS_UWP || NETSTANDARD1_3
+#if NETSTANDARD1_3
                 throw new NotImplementedException();
 #else
                 ThreadPool.UnsafeQueueNativeOverlapped(this.nativeOverlapped);
@@ -667,7 +666,7 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     throw Fx.AssertAndThrowFatal("Cleanup called on an overlapped that is in-flight.");
                 }
-#if WINDOWS_UWP || NETSTANDARD1_3
+#if NETSTANDARD1_3
                 throw new NotImplementedException();
 #else
                 Overlapped.Free(this.nativeOverlapped);

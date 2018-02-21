@@ -8,7 +8,7 @@ namespace Microsoft.Azure.Devices.Client
     sealed class IotHubScopeConnectionPool
     {
         readonly IotHubConnectionCache cache;
-#if WINDOWS_UWP || PCL || NETSTANDARD1_3
+#if !NET451
         readonly IOThreadTimerSlim idleTimer;
 #else
         readonly IOThreadTimer idleTimer;
@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.Client
             this.ConnectionString = connectionString;
             this.Connection = new IotHubSingleTokenConnection(this, connectionString,  amqpTransportSettings);
             this.thisLock = new object();
-#if WINDOWS_UWP || PCL || NETSTANDARD1_3
+#if !NET451
             this.idleTimer = new IOThreadTimerSlim(s => ((IotHubScopeConnectionPool)s).IdleTimerCallback(), this, false);
 #else
             this.idleTimer = new IOThreadTimer(s => ((IotHubScopeConnectionPool)s).IdleTimerCallback(), this, false);

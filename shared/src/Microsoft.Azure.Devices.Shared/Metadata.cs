@@ -4,12 +4,7 @@
 namespace Microsoft.Azure.Devices.Shared
 {
 
-#if WINDOWS_UWP || PCL
-    using DateTimeT = System.DateTimeOffset;
-#else
     using DateTimeT = System.DateTime;
-#endif
-
 
     /// <summary>
     /// <see cref="Metadata"/> for properties in <see cref="TwinCollection"/>

@@ -10,13 +10,8 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
     /// <summary>
     /// The exception that is thrown when the service requires exponential back-off because it has exceeded the maximum number of allowed active requests.
     /// </summary>
-#if !WINDOWS_UWP && !PCL
     [Serializable]
-#endif
-#if !PCL
-    public
-#endif
-    sealed class IotHubThrottledException : IotHubException
+    public sealed class IotHubThrottledException : IotHubException
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="IotHubThrottledException"/> class with the message string containing the maximum count of active requests.
@@ -37,7 +32,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         {
         }
 
-#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
+#if !NETSTANDARD1_3
         /// <summary>
         /// Initializes a new instance of the <see cref="IotHubThrottledException"/> class with the specified serialization and context information.
         /// </summary>

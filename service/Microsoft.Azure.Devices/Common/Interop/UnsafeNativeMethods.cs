@@ -4,7 +4,6 @@
 
 namespace Microsoft.Azure.Devices.Common.Interop
 {
-#if !WINDOWS_UWP
     using System;
     using System.Diagnostics.CodeAnalysis;
     using System.Diagnostics.Eventing;
@@ -259,5 +258,4 @@ namespace Microsoft.Azure.Devices.Common.Interop
             public IntPtr buffer;
         }
     }
-#endif
 }

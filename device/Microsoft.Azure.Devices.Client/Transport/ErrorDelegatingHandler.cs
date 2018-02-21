@@ -28,9 +28,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             typeof(OperationCanceledException),
             typeof(TaskCanceledException),
             typeof(IotHubThrottledException),
-#if !PCL && !WINDOWS_UWP
             typeof(System.Net.Sockets.SocketException),
-#endif
         };
 
         internal static readonly HashSet<Type> TransportTransientExceptions = new HashSet<Type>

@@ -83,7 +83,7 @@ The IoT Hub device SDK for .NET can be used with a broad range of OS platforms a
 
 Minimum requirements:
 - .NET platform support (see https://dot.net for supported platforms)
-- Device SDK: .NET Framework 4.5; .NET Standard 1.3; PCL
+- Device SDK: .NET Framework 4.5.1; .NET Standard 1.3
 
 ## Contribution, feedback and issues
 

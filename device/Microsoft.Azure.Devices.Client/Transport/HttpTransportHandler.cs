@@ -18,10 +18,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
     using Microsoft.Azure.Devices.Client.Extensions;
     using Microsoft.Azure.Devices.Shared;
     using Newtonsoft.Json;
-
-#if !PCL
     using Microsoft.WindowsAzure.Storage.Blob;
-#endif
 
     sealed class HttpTransportHandler : TransportHandler
     {
@@ -44,22 +41,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
         readonly IHttpClientHelper httpClientHelper;
         readonly string deviceId;
 
-#if WINDOWS_UWP || PCL
-        internal HttpTransportHandler(IPipelineContext context, IotHubConnectionString iotHubConnectionString, Http1TransportSettings transportSettings)
-            : base(context, transportSettings)
-        {
-            ProductInfo productInfo = context.Get<ProductInfo>();
-            this.TransportSettings = transportSettings;
-            this.deviceId = iotHubConnectionString.DeviceId;
-            this.httpClientHelper = new HttpClientHelper(
-                iotHubConnectionString.HttpsEndpoint,
-                iotHubConnectionString,
-                ExceptionHandlingHelper.GetDefaultErrorMapping(),
-                DefaultOperationTimeout,
-                null,
-                productInfo);
-        }
-#else
         internal HttpTransportHandler(IPipelineContext context, IotHubConnectionString iotHubConnectionString, Http1TransportSettings transportSettings)
             :base(context, transportSettings)
         {
@@ -74,7 +55,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 transportSettings.ClientCertificate,
                 productInfo);
         }
-#endif
 
         private new Task HandleTimeoutCancellation(Func<Task> func, CancellationToken token)
         {
@@ -186,7 +166,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-#if !PCL
         internal async Task UploadToBlobAsync(String blobName, System.IO.Stream source)
         {
             var fileUploadRequest = new FileUploadRequest()
@@ -246,7 +225,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 throw ex;
             }
         }
-#endif
 
         public override Task<Twin> SendTwinGetAsync(CancellationToken cancellationToken)
         {
@@ -290,11 +268,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             responseMessage.Headers.TryGetValues(CustomHeaderConstants.MessageId, out messageId);
 
             IEnumerable<string> lockToken;
-#if !PCL
             responseMessage.Headers.TryGetValues(HttpResponseHeader.ETag.ToString(), out lockToken);
-#else
-            responseMessage.Headers.TryGetValues("ETag", out lockToken);
-#endif
 
             IEnumerable<string> enqueuedTime;
             responseMessage.Headers.TryGetValues(CustomHeaderConstants.EnqueuedTime, out enqueuedTime);

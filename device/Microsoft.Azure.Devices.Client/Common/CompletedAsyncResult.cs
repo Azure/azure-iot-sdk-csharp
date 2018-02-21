@@ -6,9 +6,7 @@ namespace Microsoft.Azure.Devices.Client
     using System;
 
     // An AsyncResult that completes as soon as it is instantiated.
-#if !WINDOWS_UWP && !PCL
     [Serializable]
-#endif
     class CompletedAsyncResult : AsyncResult
     {
         public CompletedAsyncResult(AsyncCallback callback, object state)
@@ -31,9 +29,7 @@ namespace Microsoft.Azure.Devices.Client
         }
     }
 
-#if !WINDOWS_UWP && !PCL
     [Serializable]
-#endif
     class CompletedAsyncResultT<T> : AsyncResult
     {
         T data;
@@ -54,9 +50,7 @@ namespace Microsoft.Azure.Devices.Client
         }
     }
 
-#if !WINDOWS_UWP && !PCL
     [Serializable]
-#endif
     class CompletedAsyncResultT2<TResult, TParameter> : AsyncResult
     {
         TResult resultData;

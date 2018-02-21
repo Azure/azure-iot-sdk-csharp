@@ -6,9 +6,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
     using System;
     using System.Runtime.Serialization;
 
-#if !WINDOWS_UWP
     [Serializable]
-#endif
     public sealed class IotHubCommunicationException : IotHubException
     {
         public IotHubCommunicationException(string message)
@@ -21,7 +19,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         {
         }
 
-#if !WINDOWS_UWP && !NETSTANDARD1_3
+#if !NETSTANDARD1_3
         IotHubCommunicationException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {

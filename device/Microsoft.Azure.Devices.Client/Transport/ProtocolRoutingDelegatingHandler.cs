@@ -6,9 +6,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
     using System;
     using System.Collections.ObjectModel;
     using System.Linq;
-#if !PCL
     using System.Net.Sockets;
-#endif
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Client.Exceptions;
@@ -73,9 +71,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                     if (!(exception is IotHubCommunicationException ||
                           exception is TimeoutException ||
-#if !PCL
                           exception is SocketException ||
-#endif
                           exception is AggregateException))
                     {
                         throw;
@@ -86,9 +82,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     {
                         ReadOnlyCollection<Exception> innerExceptions = aggregateException.Flatten().InnerExceptions;
                         if (!innerExceptions.Any(x => x is IotHubCommunicationException ||
-#if !PCL
                             x is SocketException ||
-#endif
                             x is TimeoutException))
                         {
                             throw;

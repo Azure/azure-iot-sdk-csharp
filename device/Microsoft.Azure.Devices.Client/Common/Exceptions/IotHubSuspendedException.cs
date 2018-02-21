@@ -7,11 +7,8 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
     using System.Runtime.Serialization;
     using Microsoft.Azure.Devices.Client.Extensions;
 
-#if !WINDOWS_UWP && !PCL
     [Serializable]
-    public
-#endif
-    class IotHubSuspendedException : IotHubException
+    public class IotHubSuspendedException : IotHubException
     {
         public IotHubSuspendedException(string iotHubName)
             : base("Iothub {0} is suspended".FormatInvariant(iotHubName))
@@ -23,7 +20,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         {
         }
 
-#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
+#if !NETSTANDARD1_3
         IotHubSuspendedException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {

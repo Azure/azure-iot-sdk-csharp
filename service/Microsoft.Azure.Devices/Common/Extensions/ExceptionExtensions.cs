@@ -57,7 +57,7 @@ namespace Microsoft.Azure.Devices.Common
                 return exception;
             }
 
-#if !WINDOWS_UWP && !NETSTANDARD1_3
+#if !NETSTANDARD1_3
             if (PartialTrustHelpers.UnsafeIsInFullTrust())
             {
                 // Racing here is harmless
@@ -79,13 +79,11 @@ namespace Microsoft.Azure.Devices.Common
             return exception;
         }
 
-#if !WINDOWS_UWP
         public static Exception DisablePrepareForRethrow(this Exception exception)
         {
             exception.Data[AsyncResult.DisablePrepareForRethrow] = string.Empty;
             return exception;
         }
-#endif
 
         public static string ToStringSlim(this Exception exception)
         {
@@ -129,12 +127,10 @@ namespace Microsoft.Azure.Devices.Common
         {
             while (exception != null)
             {
-#if !WINDOWS_UWP
                 if (exception.Data != null && exception.Data.Contains(AsyncResult.DisablePrepareForRethrow))
                 {
                     return false;
                 }
-#endif
                 exception = exception.InnerException;
             }
 

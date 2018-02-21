@@ -7,7 +7,7 @@ namespace Microsoft.Azure.Devices.Common
     using System.Runtime.InteropServices;
     using System.Threading;
     using System.Threading.Tasks;
-#if !WINDOWS_UWP && !NETSTANDARD1_3
+#if !NETSTANDARD1_3 && !NETSTANDARD2_0
     using System.Transactions;
 #endif
     static class TaskHelpers
@@ -70,7 +70,7 @@ namespace Microsoft.Azure.Devices.Common
             return retval;
         }
 
-#if !WINDOWS_UWP && !NETSTANDARD1_3
+#if !NETSTANDARD1_3 && !NETSTANDARD2_0
         /// <summary>
         /// Create a Task based on Begin/End IAsyncResult pattern.
         /// </summary>

@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Common
     using System.Text;
 
     using Microsoft.Azure.Devices.Common.WebApi;
-#if !WINDOWS_UWP && !NETSTANDARD1_3
+#if NET451
     using Microsoft.Owin;
 #endif
 
@@ -135,7 +135,7 @@ namespace Microsoft.Azure.Devices.Common
             return iotHubName;
         }
 
-#if !WINDOWS_UWP && !NETSTANDARD1_3
+#if NET451
         public static string GetMaskedClientIpAddress(this HttpRequestMessage requestMessage)
         {
             // note that this only works if we are hosted as an OWIN app

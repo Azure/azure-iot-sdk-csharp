@@ -7,9 +7,7 @@ namespace Microsoft.Azure.Devices.Common
 {
     using System;
     using System.Text;
-#if WINDOWS_UWP
-    using Windows.Security.Cryptography;
-#elif NETSTANDARD1_3
+#if NETSTANDARD1_3
     using System.Security.Cryptography;
 #else
     using System.Web.Security;
@@ -27,11 +25,10 @@ namespace Microsoft.Azure.Devices.Common
 
         public static byte[] GenerateKeyBytes(int keySize)
         {
-#if WINDOWS_UWP
             Windows.Storage.Streams.IBuffer keyBytesBuffer = CryptographicBuffer.GenerateRandom((uint)keySize);
             byte[] keyBytes;
             CryptographicBuffer.CopyToByteArray(keyBytesBuffer, out keyBytes);
-#elif NETSTANDARD1_3
+#if NETSTANDARD1_3
             var keyBytes = new byte[keySize];
             using (var cyptoProvider = System.Security.Cryptography.RandomNumberGenerator.Create())
             {
@@ -55,7 +52,7 @@ namespace Microsoft.Azure.Devices.Common
             return Convert.ToBase64String(GenerateKeyBytes(keySize));
         }
 
-#if !WINDOWS_UWP && !NETSTANDARD1_3
+#if !NETSTANDARD1_3
         public static string GenerateKeyInHex(int keySize)
         {
             var keyBytes = new byte[keySize];

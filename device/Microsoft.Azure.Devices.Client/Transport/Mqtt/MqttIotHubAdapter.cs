@@ -13,9 +13,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
     using DotNetty.Buffers;
     using DotNetty.Codecs.Mqtt.Packets;
     using DotNetty.Common.Concurrency;
-#if !WINDOWS_UWP
     using DotNetty.Handlers.Tls;
-#endif
     using DotNetty.Transport.Channels;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Client.Common;
@@ -211,15 +209,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public override void UserEventTriggered(IChannelHandlerContext context, object @event)
         {
-#if WINDOWS_UWP
-            throw new NotImplementedException("Not supported in UWP");
-#else
             var handshakeCompletionEvent = @event as TlsHandshakeCompletionEvent;
             if (handshakeCompletionEvent != null && !handshakeCompletionEvent.IsSuccessful)
             {
                 ShutdownOnError(context, handshakeCompletionEvent.Exception);
             }
-#endif
         }
 
 #endregion

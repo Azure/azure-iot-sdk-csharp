@@ -7,11 +7,7 @@ namespace Microsoft.Azure.Devices.Client
 
     public sealed class MethodRequest
     {
-#if NETMF || NETSTANDARD1_3
         public MethodRequest(string name, byte[] data)
-#else
-        public MethodRequest(string name, [System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArrayAttribute]byte[] data)
-#endif
         {
             this.Name = name;
             this.Data = data;
@@ -21,11 +17,9 @@ namespace Microsoft.Azure.Devices.Client
 
         public byte[] Data { get; private set; }
 
-#if !PCL
         public string DataAsJson
         {
             get { return (Data == null || Data.Length == 0) ? null : Encoding.UTF8.GetString(Data); }
         }
-#endif
     }
 }

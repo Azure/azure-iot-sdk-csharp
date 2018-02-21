@@ -9,13 +9,8 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
     /// <summary>
     /// The exception that is thrown when an attempt to add a device fails because the maximum number of registered devices has been reached.
     /// </summary>
-#if !WINDOWS_UWP && !PCL
     [Serializable]
-#endif
-#if !PCL
-    public
-#endif
-    sealed class QuotaExceededException : IotHubException
+    public sealed class QuotaExceededException : IotHubException
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="QuotaExceededException"/> class with the message string set to the message parameter.
@@ -36,7 +31,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         {
         }
 
-#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
+#if !NETSTANDARD1_3
         /// <summary>
         /// Initializes a new instance of the <see cref="QuotaExceededException"/> class with the specified serialization and context information.
         /// </summary>

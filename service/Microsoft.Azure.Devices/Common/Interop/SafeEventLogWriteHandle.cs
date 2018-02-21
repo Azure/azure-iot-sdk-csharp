@@ -4,7 +4,7 @@
 
 namespace Microsoft.Azure.Devices.Common.Interop
 {
-#if !WINDOWS_UWP  && !NETSTANDARD1_3
+#if !NETSTANDARD1_3
     using System;
     using System.Diagnostics;
     using System.Globalization;

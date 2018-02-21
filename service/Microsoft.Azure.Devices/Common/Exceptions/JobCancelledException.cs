@@ -5,9 +5,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
 {
     using System;
 
-#if !WINDOWS_UWP
     [Serializable]
-#endif
     public sealed class JobCancelledException : IotHubException
     {
         public JobCancelledException()

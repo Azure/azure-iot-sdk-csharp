@@ -28,71 +28,75 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <DeviceClientPath>..\..\Microsoft.Azure.Devices.Client</DeviceClientPath>
+    <SharedPath>..\..\..\shared\Microsoft.Azure.Devices.Shared</SharedPath>
+  </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\..\Microsoft.Azure.Devices.Client\AuthenticationMethodFactory.cs">
-      <Link>AuthenticationMethodFactory.cs</Link>
-    </Compile>
-    <Compile Include="..\..\Microsoft.Azure.Devices.Client\Common\Api\ClientApiVersionHelper.cs">
-      <Link>Common\Api\ClientApiVersionHelper.cs</Link>
-    </Compile>
-    <Compile Include="..\..\Microsoft.Azure.Devices.Client\Common\CommonConstants.cs">
-      <Link>Common\CommonConstants.cs</Link>
-    </Compile>
-    <Compile Include="..\..\..\shared\Microsoft.Azure.Devices.Shared\\ETagHolder.cs">
+    <Compile Include="$(SharedPath)\ETagHolder.cs">
       <Link>Common\ETagHolder.cs</Link>
     </Compile>
-    <Compile Include="..\..\Microsoft.Azure.Devices.Client\Common\Exceptions\IotHubException.cs">
-      <Link>Common\Exceptions\IotHubException.cs</Link>
-    </Compile>
-    <Compile Include="..\..\..\shared\Microsoft.Azure.Devices.Shared\IETagHolder.cs">
+    <Compile Include="$(SharedPath)\IETagHolder.cs">
       <Link>Common\IETagHolder.cs</Link>
     </Compile>
-    <Compile Include="..\..\Microsoft.Azure.Devices.Client\Common\Security\SharedAccessSignatureBuilder.cs">
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="$(DeviceClientPath)\AuthenticationMethodFactory.cs">
+      <Link>AuthenticationMethodFactory.cs</Link>
+    </Compile>
+    <Compile Include="$(DeviceClientPath)\Common\Api\ClientApiVersionHelper.cs">
+      <Link>Common\Api\ClientApiVersionHelper.cs</Link>
+    </Compile>
+    <Compile Include="$(DeviceClientPath)\Common\CommonConstants.cs">
+      <Link>Common\CommonConstants.cs</Link>
+    </Compile>
+    <Compile Include="$(DeviceClientPath)\Common\Exceptions\IotHubException.cs">
+      <Link>Common\Exceptions\IotHubException.cs</Link>
+    </Compile>
+    <Compile Include="$(DeviceClientPath)\Common\Security\SharedAccessSignatureBuilder.cs">
       <Link>Common\Security\SharedAccessSignatureBuilder.cs</Link>
     </Compile>
-    <Compile Include="..\..\Microsoft.Azure.Devices.Client\Common\Security\SharedAccessSignatureConstants.cs">
+    <Compile Include="$(DeviceClientPath)\Common\Security\SharedAccessSignatureConstants.cs">
       <Link>Common\Security\SharedAccessSignatureConstants.cs</Link>
     </Compile>
-    <Compile Include="..\..\Microsoft.Azure.Devices.Client\Common\Utils.cs">
+    <Compile Include="$(DeviceClientPath)\Common\Utils.cs">
       <Link>Common\Utils.cs</Link>
     </Compile>
-    <Compile Include="..\..\Microsoft.Azure.Devices.Client\Common\WebApi\CustomHeaderConstants.cs">
+    <Compile Include="$(DeviceClientPath)\Common\WebApi\CustomHeaderConstants.cs">
       <Link>Common\WebApi\CustomHeaderConstants.cs</Link>
     </Compile>
-    <Compile Include="..\..\Microsoft.Azure.Devices.Client\DeliveryAcknowledgement.cs">
+    <Compile Include="$(DeviceClientPath)\DeliveryAcknowledgement.cs">
       <Link>DeliveryAcknowledgement.cs</Link>
     </Compile>
-    <Compile Include="..\..\Microsoft.Azure.Devices.Client\DeviceAuthenticationWithRegistrySymmetricKey.cs">
+    <Compile Include="$(DeviceClientPath)\DeviceAuthenticationWithRegistrySymmetricKey.cs">
       <Link>DeviceAuthenticationWithRegistrySymmetricKey.cs</Link>
     </Compile>
-    <Compile Include="..\..\Microsoft.Azure.Devices.Client\DeviceAuthenticationWithSharedAccessPolicyKey.cs">
+    <Compile Include="$(DeviceClientPath)\DeviceAuthenticationWithSharedAccessPolicyKey.cs">
       <Link>DeviceAuthenticationWithSharedAccessPolicyKey.cs</Link>
     </Compile>
-    <Compile Include="..\..\Microsoft.Azure.Devices.Client\DeviceAuthenticationWithToken.cs">
+    <Compile Include="$(DeviceClientPath)\DeviceAuthenticationWithToken.cs">
       <Link>DeviceAuthenticationWithToken.cs</Link>
     </Compile>
-    <Compile Include="..\..\Microsoft.Azure.Devices.Client\IAuthenticationMethod.cs">
+    <Compile Include="$(DeviceClientPath)\IAuthenticationMethod.cs">
       <Link>IAuthenticationMethod.cs</Link>
     </Compile>
-    <Compile Include="..\..\Microsoft.Azure.Devices.Client\IAuthorizationProvider.cs">
+    <Compile Include="$(DeviceClientPath)\IAuthorizationProvider.cs">
       <Link>IAuthorizationProvider.cs</Link>
     </Compile>
-    <Compile Include="..\..\Microsoft.Azure.Devices.Client\IotHubConnectionString.cs">
+    <Compile Include="$(DeviceClientPath)\IotHubConnectionString.cs">
       <Link>IotHubConnectionString.cs</Link>
     </Compile>
-    <Compile Include="..\..\Microsoft.Azure.Devices.Client\IotHubConnectionString.NetMF.cs">
-      <Link>IotHubConnectionString.NetMF.cs</Link>
-    </Compile>
-    <Compile Include="..\..\Microsoft.Azure.Devices.Client\IotHubConnectionStringBuilder.cs">
+    <Compile Include="IotHubConnectionString.NetMF.cs" />
+    <Compile Include="$(DeviceClientPath)\IotHubConnectionStringBuilder.cs">
       <Link>IotHubConnectionStringBuilder.cs</Link>
     </Compile>
-    <Compile Include="..\..\Microsoft.Azure.Devices.Client\Message.cs">
+    <Compile Include="$(DeviceClientPath)\Message.cs">
       <Link>Message.cs</Link>
     </Compile>
-    <Compile Include="..\..\Microsoft.Azure.Devices.Client\MessageSystemPropertyNames.cs">
+    <Compile Include="$(DeviceClientPath)\MessageSystemPropertyNames.cs">
       <Link>MessageSystemPropertyNames.cs</Link>
     </Compile>
-    <Compile Include="..\..\Microsoft.Azure.Devices.Client\PutOperationType.cs">
+    <Compile Include="$(DeviceClientPath)\PutOperationType.cs">
       <Link>PutOperationType.cs</Link>
     </Compile>
     <Compile Include="Common\Extensions\NetMFStringExtensions.cs" />

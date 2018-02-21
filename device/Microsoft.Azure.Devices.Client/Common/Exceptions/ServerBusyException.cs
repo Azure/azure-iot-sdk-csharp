@@ -6,13 +6,8 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
     using System;
     using System.Runtime.Serialization;
 
-#if !WINDOWS_UWP && !PCL
     [Serializable]
-#endif
-#if !PCL
-    public
-#endif
-    sealed class ServerBusyException : IotHubException
+    public sealed class ServerBusyException : IotHubException
     {
         public ServerBusyException(string message)
             : this(message, null)
@@ -24,7 +19,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         {
         }
 
-#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
+#if !NETSTANDARD1_3
         ServerBusyException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {

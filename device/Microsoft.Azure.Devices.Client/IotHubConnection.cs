@@ -4,19 +4,15 @@
 namespace Microsoft.Azure.Devices.Client
 {
     using System;
-#if !PCL
     using System.Net.Security;
-#endif
     using System.Threading;
     using System.Threading.Tasks;
 
-#if !WINDOWS_UWP && !PCL
 #if !NETSTANDARD1_3
     using System.Configuration;
 #endif
     using System.Net.WebSockets;
     using System.Security.Cryptography.X509Certificates;
-#endif
     using System.Net;
     using Microsoft.Azure.Amqp;
     using Microsoft.Azure.Amqp.Framing;
@@ -226,10 +222,7 @@ namespace Microsoft.Azure.Devices.Client
 
         protected static bool InitializeDisableServerCertificateValidation()
         {
-#if PCL
-            return false;
-#else
-#if WINDOWS_UWP || NETSTANDARD1_3 // No System.Configuration.ConfigurationManager in UWP/PCL, NetStandard
+#if NETSTANDARD1_3 // No System.Configuration.ConfigurationManager in NetStandard1.3
             bool flag;
             if (!AppContext.TryGetSwitch("DisableServerCertificateValidationKeyName", out flag))
             {
@@ -243,7 +236,6 @@ namespace Microsoft.Azure.Devices.Client
                 return bool.Parse(value);
             }
             return false;
-#endif
 #endif
         }
 
@@ -270,11 +262,9 @@ namespace Microsoft.Azure.Devices.Client
 
             switch (this.AmqpTransportSettings.GetTransportType())
             {
-#if !WINDOWS_UWP && !PCL
                 case TransportType.Amqp_WebSocket_Only:
                     transport = await this.CreateClientWebSocketTransportAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
                     break;
-#endif
                 case TransportType.Amqp_Tcp_Only:
                     TlsTransportSettings tlsTransportSettings = this.CreateTlsTransportSettings();
                     var amqpTransportInitiator = new AmqpTransportInitiator(amqpSettings, tlsTransportSettings);
@@ -327,7 +317,6 @@ namespace Microsoft.Azure.Devices.Client
             // do nothing. Override in derived classes if necessary
         }
 
-#if !WINDOWS_UWP && !PCL
         async Task<ClientWebSocket> CreateClientWebSocketAsync(Uri websocketUri, TimeSpan timeout)
         {
             var websocket = new ClientWebSocket();
@@ -338,7 +327,7 @@ namespace Microsoft.Azure.Devices.Client
             // Check if we're configured to use a proxy server
             IWebProxy webProxy = WebRequest.DefaultWebProxy;
             Uri proxyAddress = null;
-#if !NETSTANDARD1_3
+#if !NETSTANDARD1_3 && !NETSTANDARD2_0
             proxyAddress = webProxy != null ? webProxy.GetProxy(websocketUri) : null;
 #endif
             if (!websocketUri.Equals(proxyAddress))
@@ -351,7 +340,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 websocket.Options.ClientCertificates.Add(this.AmqpTransportSettings.ClientCertificate);
             }
-#if !NETSTANDARD1_3
+#if !NETSTANDARD1_3 && !NETSTANDARD2_0
             else
             {
                 websocket.Options.UseDefaultCredentials = true;
@@ -370,8 +359,8 @@ namespace Microsoft.Azure.Devices.Client
         {
             var timeoutHelper = new TimeoutHelper(timeout);
             string additionalQueryParams = "";
-#if NETSTANDARD1_3
-            // NETSTANDARD1_3 implementation doesn't set client certs, so we want to tell the IoT Hub to not ask for them
+#if NETSTANDARD1_3 || NETSTANDARD2_0
+            // NETSTANDARD1_3 or NETSTANDARD2_0 implementation doesn't set client certs, so we want to tell the IoT Hub to not ask for them
             additionalQueryParams = "?iothub-no-client-cert=true";
 #endif
             Uri websocketUri = new Uri(WebSocketConstants.Scheme + this.hostName + ":" + WebSocketConstants.SecurePort + WebSocketConstants.UriSuffix + additionalQueryParams);
@@ -405,7 +394,6 @@ namespace Microsoft.Azure.Devices.Client
             await websocket.ConnectAsync(webSocketUri.Host, webSocketUri.Port, WebSocketConstants.Scheme, clientCertificate, timeout).ConfigureAwait(false);
             return websocket;
         }
-#endif
 
         static AmqpSettings CreateAmqpSettings()
         {
@@ -452,23 +440,18 @@ namespace Microsoft.Azure.Devices.Client
             var tlsTransportSettings = new TlsTransportSettings(tcpTransportSettings)
             {
                 TargetHost = this.hostName,
-#if !WINDOWS_UWP && !PCL // Not supported in UWP/PCL
                 Certificate = null,
                 CertificateValidationCallback = OnRemoteCertificateValidation
-#endif
             };
 
-#if !WINDOWS_UWP && !PCL
             if (this.AmqpTransportSettings.ClientCertificate != null)
             {
                 tlsTransportSettings.Certificate = this.AmqpTransportSettings.ClientCertificate;
             }
-#endif
 
             return tlsTransportSettings;
         }
 
-#if !WINDOWS_UWP && !PCL // Not supported in UWP/PCL
         public static bool OnRemoteCertificateValidation(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
         {
             if (sslPolicyErrors == SslPolicyErrors.None)
@@ -483,7 +466,6 @@ namespace Microsoft.Azure.Devices.Client
 
             return false;
         }
-#endif
 
         public static ArraySegment<byte> GetNextDeliveryTag(ref int deliveryTag)
         {

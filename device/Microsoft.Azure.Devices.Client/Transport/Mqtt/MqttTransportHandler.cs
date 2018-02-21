@@ -20,20 +20,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
     using DotNetty.Codecs.Mqtt;
     using DotNetty.Codecs.Mqtt.Packets;
     using DotNetty.Common.Concurrency;
-#if !WINDOWS_UWP
     using DotNetty.Handlers.Tls;
-#endif
-#if WINDOWS_UWP
-    using DotNetty.Codecs;
-    using DotNetty.Common.Internal;
-    using Windows.Networking;
-    using Windows.Networking.Sockets;
-    using Windows.Security.Cryptography.Certificates;
-    using Windows.Storage.Streams;
-    using Windows.System.Diagnostics;
-    using Windows.System.Profile;
-#endif
-
     using DotNetty.Transport.Bootstrapping;
     using DotNetty.Transport.Channels;
     using DotNetty.Transport.Channels.Sockets;
@@ -44,57 +31,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
     using Microsoft.Azure.Devices.Client.TransientFaultHandling;
     using Newtonsoft.Json;
     using TransportType = Microsoft.Azure.Devices.Client.TransportType;
-
-#if !WINDOWS_UWP
     using System.Web;
-#endif
-
-#if WINDOWS_UWP
-    //
-    // Implementation of the UWP platform used to provide UWP-specific functionality for DotNetty
-    //
-    class UWPPlatform : IPlatform
-    {
-        int IPlatform.GetCurrentProcessId() => (int)ProcessDiagnosticInfo.GetForCurrentProcess().ProcessId;
-
-        byte[] IPlatform.GetDefaultDeviceId()
-        {
-            var signature = new byte[8];
-            int index = 0;
-            HardwareToken hardwareToken = HardwareIdentification.GetPackageSpecificToken(null);
-            using (DataReader dataReader = DataReader.FromBuffer(hardwareToken.Id))
-            {
-                int offset = 0;
-                while (offset < hardwareToken.Id.Length && index < 7)
-                {
-                    var hardwareEntry = new byte[4];
-                    dataReader.ReadBytes(hardwareEntry);
-                    byte componentID = hardwareEntry[0];
-                    byte componentIDReserved = hardwareEntry[1];
-
-                    if (componentIDReserved == 0)
-                    {
-                        switch (componentID)
-                        {
-                            // Per guidance in http://msdn.microsoft.com/en-us/library/windows/apps/jj553431
-                            case 1: // CPU
-                            case 2: // Memory
-                            case 4: // Network Adapter
-                            case 9: // Bios
-                                signature[index++] = hardwareEntry[2];
-                                signature[index++] = hardwareEntry[3];
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-                    offset += 4;
-                }
-            }
-            return signature;
-        }
-    }
-#endif
 
     sealed class MqttTransportHandler : TransportHandler, IMqttIotHubEventHandler
     {
@@ -570,17 +507,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             Debug.WriteLine("MqttTransportHandler.OpenAsync()");
 
-#if WINDOWS_UWP
-            HostName host = new HostName(this.hostName);
-            var endpointPairs = await DatagramSocket.GetEndpointPairsAsync(host, "");
-            var ep = endpointPairs.First();
-            this.serverAddress = IPAddress.Parse(ep.RemoteHostName.RawName);
-#else
-#if !NETSTANDARD1_3
+#if NET451
             this.serverAddress = Dns.GetHostEntry(this.hostName).AddressList[0];
 #else
             this.serverAddress = (await Dns.GetHostAddressesAsync(this.hostName).ConfigureAwait(false))[0];
-#endif
 #endif
             if (this.TryStateTransition(TransportState.NotInitialized, TransportState.Opening))
             {
@@ -744,13 +674,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             if (match.Success)
             {
                 status = Convert.ToInt32(match.Groups[1].Value);
-#if WINDOWS_UWP
-                // TODO: verify that WwwFormUrlDecoder does the same as ParseQueryString
-                var decoder = new Windows.Foundation.WwwFormUrlDecoder(match.Groups[2].Value);
-                rid = decoder.GetFirstValueByName("$rid");
-#else
                 rid = HttpUtility.ParseQueryString(match.Groups[2].Value).Get("$rid");
-#endif
                 return true;
             }
             else
@@ -906,38 +830,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         Func<IPAddress, int, Task<IChannel>> CreateChannelFactory(IotHubConnectionString iotHubConnectionString, MqttTransportSettings settings, ProductInfo productInfo)
         {
-#if WINDOWS_UWP
-            return async (address, port) =>
-            {
-                PlatformProvider.Platform = new UWPPlatform();
-
-                var eventLoopGroup = new MultithreadEventLoopGroup();
-
-                var streamSocket = new StreamSocket();
-                await streamSocket.ConnectAsync(new HostName(iotHubConnectionString.HostName), port.ToString(), SocketProtectionLevel.PlainSocket);
-                streamSocket.Control.IgnorableServerCertificateErrors.Add(ChainValidationResult.Untrusted);
-                await streamSocket.UpgradeToSslAsync(SocketProtectionLevel.Tls12, new HostName(iotHubConnectionString.HostName));
-
-                var streamSocketChannel = new StreamSocketChannel(streamSocket);
-
-                streamSocketChannel.Pipeline.AddLast(
-                    MqttEncoder.Instance, 
-                    new MqttDecoder(false, MaxMessageSize),
-                    this.mqttIotHubAdapterFactory.Create(this, iotHubConnectionString, settings, productInfo));
-
-                streamSocketChannel.Configuration.SetOption(ChannelOption.Allocator, UnpooledByteBufferAllocator.Default);
-
-                await eventLoopGroup.GetNext().RegisterAsync(streamSocketChannel).ConfigureAwait(false);
-
-                this.ScheduleCleanup(() =>
-                {
-                    EventLoopGroupPool.Release(this.eventLoopGroupKey);
-                    return TaskConstants.Completed;
-                });
-
-                return streamSocketChannel;
-            };
-#else
             return (address, port) =>
             {
                 IEventLoopGroup eventLoopGroup = EventLoopGroupPool.TakeOrAdd(this.eventLoopGroupKey);
@@ -971,7 +863,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 return bootstrap.ConnectAsync(address, port);
             };
-#endif
         }
 
         Func<IPAddress, int, Task<IChannel>> CreateWebSocketChannelFactory(IotHubConnectionString iotHubConnectionString, MqttTransportSettings settings, ProductInfo productInfo)
@@ -979,7 +870,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             return async (address, port) =>
             {
                 string additionalQueryParams = "";
-#if WINDOWS_UWP || NETSTANDARD1_3
+#if NETSTANDARD1_3 || NETSTANDARD2_0
                 // UWP and NETSTANDARD1_3 implementation doesn't set client certs, so we want to tell the IoT Hub to not ask for them
                 additionalQueryParams = "?iothub-no-client-cert=true";
 #endif
@@ -989,7 +880,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 var websocket = new ClientWebSocket();
                 websocket.Options.AddSubProtocol(WebSocketConstants.SubProtocols.Mqtt);
 
-#if !WINDOWS_UWP // UWP does not support proxies
                 // Check if we're configured to use a proxy server
                 IWebProxy webProxy = WebRequest.DefaultWebProxy;
                 Uri proxyAddress = null;
@@ -1001,13 +891,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     // Configure proxy server
                     websocket.Options.Proxy = webProxy;
                 }
-#endif
 
                 if (settings.ClientCertificate != null)
                 {
                     websocket.Options.ClientCertificates.Add(settings.ClientCertificate);
                 }
-#if !WINDOWS_UWP && !NETSTANDARD1_3 // UseDefaultCredentials is not in UWP and NetStandard
+#if !NETSTANDARD1_3 // UseDefaultCredentials is not in UWP and NetStandard
                 else
                 {
                     websocket.Options.UseDefaultCredentials = true;
@@ -1019,9 +908,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     await websocket.ConnectAsync(websocketUri, cancellationTokenSource.Token).ConfigureAwait(false);
                 }
 
-#if WINDOWS_UWP
-                PlatformProvider.Platform = new UWPPlatform();
-#endif
                 var clientChannel = new ClientWebSocketChannel(null, websocket);
                 clientChannel
                     .Option(ChannelOption.Allocator, UnpooledByteBufferAllocator.Default)
@@ -1096,7 +982,3 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         }
     }
 }
-
-
-
-

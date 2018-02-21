@@ -11,13 +11,8 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
     /// <summary>
     /// The exception that is thrown when the IoT hub instance is not found.
     /// </summary>
-#if !WINDOWS_UWP && !PCL
     [Serializable]
-#endif
-#if !PCL
-    public
-#endif
-    class IotHubNotFoundException : IotHubException
+    public class IotHubNotFoundException : IotHubException
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="IotHubNotFoundException"/> class with the message string containing the name of the IoT hub instance that couldn't be found.
@@ -38,7 +33,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         {
         }
 
-#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
+#if !NETSTANDARD1_3
         /// <summary>
         /// Initializes a new instance of the <see cref="IotHubNotFoundException"/> class with the specified serialization and context information.
         /// </summary>

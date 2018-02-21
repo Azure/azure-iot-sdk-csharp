@@ -3,7 +3,6 @@
 
 namespace Microsoft.Azure.Devices.Common
 {
-#if !WINDOWS_UWP
     using System.Threading;
     using System.Security;
     using System;
@@ -677,5 +676,4 @@ namespace Microsoft.Azure.Devices.Common
             }
         }
     }
-#endif
-        }
+}

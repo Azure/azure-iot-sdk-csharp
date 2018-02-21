@@ -6,24 +6,13 @@ namespace Microsoft.Azure.Devices.Client
     using System.IO;
     using System.Threading;
     using Microsoft.Azure.Amqp;
-#if WINDOWS_UWP
-    using System.Collections.Generic;
-    using Microsoft.Azure.Devices.Client.Common.Api;
-#elif NETMF
+#if NETMF
     using System.Collections;
-#elif PCL
-    using System.Collections.Generic;
 #else
-    // Full .NET Framework
     using Microsoft.Azure.Devices.Client.Common.Api;
     using System.Collections.Generic;
 #endif
-
-#if WINDOWS_UWP || PCL
-    using DateTimeT = System.DateTimeOffset;
-#else
     using DateTimeT = System.DateTime;
-#endif
 
     /// <summary>
     /// The data structure represent the method response that is used for interacting with IotHub.
@@ -99,9 +88,6 @@ namespace Microsoft.Azure.Devices.Client
             : this(new MemoryStream(byteArray))
 #else
         internal MethodResponseInternal(
-#if !NETSTANDARD1_3
-            [System.Runtime.InteropServices.WindowsRuntime.ReadOnlyArrayAttribute]
-#endif
         byte[] byteArray, string requestId, int status)
             : this(new MemoryStream(byteArray))
 #endif
@@ -282,7 +268,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (1 == Interlocked.Exchange(ref this.getBodyCalled, 1))
             {
-#if NETMF || PCL
+#if NETMF
                 throw new InvalidOperationException("The message body cannot be read multiple times. To reuse it store the value after reading.");
 #else
                 throw Fx.Exception.AsError(new InvalidOperationException(ApiResources.MessageBodyConsumed));
@@ -333,7 +319,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (this.disposed)
             {
-#if NETMF || PCL
+#if NETMF
                 throw new Exception("Message disposed");
 #else
                 throw Fx.Exception.ObjectDisposed(ApiResources.MessageDisposed);

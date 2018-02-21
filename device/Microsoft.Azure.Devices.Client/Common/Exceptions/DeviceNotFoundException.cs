@@ -10,13 +10,8 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
     /// <summary>
     /// The exception that is thrown when an attempt to communicate with a device fails because the given device identifier cannot be found.
     /// </summary>
-#if !WINDOWS_UWP && !PCL
     [Serializable]
-#endif
-#if !PCL
-    public
-#endif
-    sealed class DeviceNotFoundException : IotHubException
+    public sealed class DeviceNotFoundException : IotHubException
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="DeviceNotFoundException"/> class with the message string containing the device identifier that could not be found.
@@ -57,7 +52,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         {
         }
 
-#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
+#if !NETSTANDARD1_3
         /// <summary>
         /// Initializes a new instance of the <see cref="DeviceNotFoundException"/> class with the specified serialization and context information.
         /// </summary>

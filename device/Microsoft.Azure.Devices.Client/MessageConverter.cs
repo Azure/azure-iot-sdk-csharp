@@ -137,17 +137,11 @@ namespace Microsoft.Azure.Devices.Client
             }
 
 
-#if WINDOWS_UWP || PCL
-            if (!data.ExpiryTimeUtc.Equals(default(DateTimeOffset)))
-            {
-                amqpMessage.Properties.AbsoluteExpiryTime = data.ExpiryTimeUtc.DateTime;
-            }
-#else
             if (!data.ExpiryTimeUtc.Equals(default(DateTime)))
             {
                 amqpMessage.Properties.AbsoluteExpiryTime = data.ExpiryTimeUtc;
             }
-#endif
+
             if (data.CorrelationId != null)
             {
                 amqpMessage.Properties.CorrelationId = data.CorrelationId;
@@ -388,7 +382,7 @@ namespace Microsoft.Azure.Devices.Client
                 memoryStream.Write(readBuffer, 0, bytesRead);
             }
 
-#if WINDOWS_UWP || PCL || NETSTANDARD1_3
+#if NETSTANDARD1_3
             // UWP doesn't have GetBuffer. ToArray creates a copy -- make sure perf impact is acceptable
             return new ArraySegment<byte>(memoryStream.ToArray(), 0, (int)memoryStream.Length);
 #else

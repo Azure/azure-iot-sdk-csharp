@@ -7,13 +7,8 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
     using System.Runtime.Serialization;
     using Microsoft.Azure.Devices.Client.Extensions;
 
-#if !WINDOWS_UWP && !PCL
     [Serializable]
-#endif
-#if !PCL
-    public
-#endif
-    sealed class DeviceDisabledException : IotHubException
+    public sealed class DeviceDisabledException : IotHubException
     {
         public DeviceDisabledException(string deviceId)
             : base("Device {0} is disabled".FormatInvariant(deviceId))
@@ -35,7 +30,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         {
         }
 
-#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
+#if !NETSTANDARD1_3
         public DeviceDisabledException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {

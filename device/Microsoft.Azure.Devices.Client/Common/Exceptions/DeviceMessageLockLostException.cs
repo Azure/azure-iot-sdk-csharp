@@ -13,13 +13,8 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
     /// <remarks>
     /// An abandoned message will be re-enqueued in the per-device queue, and the <see cref="DeviceClient"/> instance will receive it again. A rejected message will be deleted from the queue and not received again by the device.
     /// </remarks>
-#if !WINDOWS_UWP && !PCL
     [Serializable]
-#endif
-#if !PCL
-    public
-#endif
-    class DeviceMessageLockLostException : IotHubException
+    public class DeviceMessageLockLostException : IotHubException
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="DeviceMessageLockLostException"/> class with the message string containing the device identifier that could not be found.
@@ -40,7 +35,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         {
         }
 
-#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
+#if !NETSTANDARD1_3
         /// <summary>
         /// Initializes a new instance of the <see cref="DeviceMessageLockLostException"/> class with the specified serialization and context information.
         /// </summary>

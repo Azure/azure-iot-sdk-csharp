@@ -7,9 +7,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
     using System.Diagnostics.CodeAnalysis;
     using System.Runtime.Serialization;
 
-#if !WINDOWS_UWP && !PCL
     [Serializable]
-#endif
     [SuppressMessage(FxCop.Category.Design, "CA1064:ExceptionsShouldBePublic", Justification = "CSDMain Bug 43142")]
     class FatalException : Exception
     {
@@ -30,7 +28,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
             Fx.Assert(innerException == null || !Fx.IsFatal(innerException), "FatalException can't be used to wrap fatal exceptions.");
         }
 
-#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
+#if !NETSTANDARD1_3
         protected FatalException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {

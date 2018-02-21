@@ -5,10 +5,8 @@ namespace Microsoft.Azure.Devices.Client
 {
     using System;
     using System.Linq;
-#if !PCL
     using Microsoft.Azure.Amqp;
     using Microsoft.Azure.Amqp.Framing;
-#endif
     using Microsoft.Azure.Devices.Client.Extensions;
 
     internal static class TrackingHelper
@@ -53,7 +51,6 @@ namespace Microsoft.Azure.Devices.Client
             return trackingId;
         }
 
-#if !PCL
         public static string GenerateTrackingId(this AmqpException exception)
         {
             return exception.GenerateTrackingId(TrackingHelper.GatewayId, string.Empty, string.Empty);
@@ -78,8 +75,8 @@ namespace Microsoft.Azure.Devices.Client
                 exception.Error.Info.Add(IotHubAmqpProperty.TrackingId, trackingId);
             }
             return trackingId;
-        }       
-#endif
+        }
+        
         public static string CheckAndAddGatewayIdToTrackingId(string gatewayId, string trackingId)
         {
 
@@ -93,7 +90,6 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-#if !PCL
         public static string GetTrackingId(this AmqpException amqpException)
         {
             Error errorObj = amqpException.Error;
@@ -114,7 +110,5 @@ namespace Microsoft.Azure.Devices.Client
             } 
             return gatewayId;
         }
-#endif
     }
-
 }

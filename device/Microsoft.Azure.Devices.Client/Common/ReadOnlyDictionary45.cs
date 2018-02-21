@@ -15,31 +15,22 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     /// <typeparam name="TKey">Type to be used for keys.</typeparam>
     /// <typeparam name="TValue">Type to be used for values</typeparam>
-#if !WINDOWS_UWP && !PCL
     [Serializable]
-#endif
     [DebuggerDisplay("Count = {Count}")]
-#if !PCL
-    public
-#endif
-    class ReadOnlyDictionary45<TKey, TValue> : IDictionary<TKey, TValue>, IDictionary //, IReadOnlyDictionary<TKey, TValue>
+    public class ReadOnlyDictionary45<TKey, TValue> : IDictionary<TKey, TValue>, IDictionary //, IReadOnlyDictionary<TKey, TValue>
     {
         readonly IDictionary<TKey, TValue> m_dictionary;
-#if !WINDOWS_UWP && !PCL
+
         [NonSerialized]
-#endif
-        Object m_syncRoot;
-#if !WINDOWS_UWP && !PCL
+        object m_syncRoot;
+
         [NonSerialized]
-#endif
         KeyCollection m_keys;
-#if !WINDOWS_UWP && !PCL
+
         [NonSerialized]
-#endif
         ValueCollection m_values;
-#if !WINDOWS_UWP && !PCL
+
         [NonSerialized]
-#endif
         IReadOnlyIndicator m_readOnlyIndicator;
 
         public ReadOnlyDictionary45(IDictionary<TKey, TValue> dictionary)
@@ -423,9 +414,8 @@ namespace Microsoft.Azure.Devices.Client
                 return m_syncRoot;
             }
         }
-#if !WINDOWS_UWP && !PCL
+
         [Serializable]
-#endif
         private struct DictionaryEnumerator : IDictionaryEnumerator
         {
             private readonly IDictionary<TKey, TValue> m_dictionary;
@@ -471,19 +461,15 @@ namespace Microsoft.Azure.Devices.Client
         #endregion
 
         [DebuggerDisplay("Count = {Count}")]
-#if !WINDOWS_UWP && !PCL
         [Serializable]
-#endif
         public sealed class KeyCollection : ICollection<TKey>, ICollection
         {
             private readonly ICollection<TKey> m_collection;
-#if !WINDOWS_UWP && !PCL
+            
             [NonSerialized]
-#endif
-            private Object m_syncRoot;
-#if !WINDOWS_UWP && !PCL
+            private object m_syncRoot;
+
             [NonSerialized]
-#endif
             private readonly IReadOnlyIndicator m_readOnlyIndicator;
 
             internal KeyCollection(ICollection<TKey> collection, IReadOnlyIndicator readOnlyIndicator)
@@ -604,19 +590,15 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         [DebuggerDisplay("Count = {Count}")]
-#if !WINDOWS_UWP && !PCL
         [Serializable]
-#endif
         public sealed class ValueCollection : ICollection<TValue>, ICollection
         {
             private readonly ICollection<TValue> m_collection;
-#if !WINDOWS_UWP && !PCL
+
             [NonSerialized]
-#endif
-            private Object m_syncRoot;
-#if !WINDOWS_UWP && !PCL
+            private object m_syncRoot;
+
             [NonSerialized]
-#endif
             private readonly IReadOnlyIndicator m_readOnlyIndicator;
 
             internal ValueCollection(ICollection<TValue> collection, IReadOnlyIndicator readOnlyIndicator)

@@ -92,9 +92,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public TimeSpan DefaultReceiveTimeout { get; set; }
 
-#if !WINDOWS_UWP
         public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; }
-#endif
 
         public X509Certificate ClientCertificate { get; set; }
     }
