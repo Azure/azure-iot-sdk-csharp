@@ -1,0 +1,158 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard1.3;netstandard2.0;net451</TargetFrameworks>
+    <!-- TODO #176: Enable warnings as errors. -->
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors> 
+    <RootNamespace>Microsoft.Azure.Devices</RootNamespace>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <OutputPath>.\bin\$(Configuration)</OutputPath>
+    <DocumentationFile>$(OutputPath)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
+    <!-- Don't auto-compile platform specific files: -->
+    <DefaultItemExcludes>netstandard13/**;netstandard20/**;net451/**;$(DefaultItemExcludes)</DefaultItemExcludes>
+    <RootDir>..\..\..\</RootDir>
+  </PropertyGroup>
+
+  <!-- delay sign the assembly for Release build -->
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <AssemblyOriginatorKeyFile>$(RootDir)\35MSSharedLib1024.snk</AssemblyOriginatorKeyFile>
+    <DelaySign>true</DelaySign>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <VersionPrefix>1.5.1</VersionPrefix>
+    <Title>Microsoft Azure IoT Service Client SDK</Title>
+    <Authors>Microsoft</Authors>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageLicenseUrl>https://github.com/Azure/azure-iot-sdk-csharp/blob/master/LICENSE</PackageLicenseUrl>
+    <Description>Service SDK for Azure IoT Hub</Description>
+    <PackageIconUrl>http://go.microsoft.com/fwlink/?LinkID=288890</PackageIconUrl>
+    <PackageProjectUrl>https://github.com/Azure/azure-iot-sdk-csharp</PackageProjectUrl>
+    <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
+    <PackageTags>IoT Microsoft Azure IoTHub Service Client SDK Manage Devices .NET</PackageTags>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <common>$(RootDir)\common\src</common>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(Common)\service\AssertionFailedException.cs">
+      <Link>Common\Exceptions\AssertionFailedException.cs</Link>
+    </Compile>
+    <Compile Include="$(Common)\service\AuthenticationMethodFactory.cs">
+      <Link>AuthenticationMethodFactory.cs</Link>
+    </Compile>
+    <Compile Include="$(Common)\service\CommonConstants.cs">
+      <Link>Common\CommonConstants.cs</Link>
+    </Compile>
+    <Compile Include="$(Common)\service\CommonResources.cs">
+      <Link>Common\CommonResources.cs</Link>
+    </Compile>
+    <Compile Include="$(Common)\service\EventTraceActivity.cs">
+      <Link>Common\Tracing\EventTraceActivity.cs</Link>
+    </Compile>
+    <Compile Include="$(Common)\service\ExceptionDispatcher.cs">
+      <Link>Common\ExceptionDispatcher.cs</Link>
+    </Compile>
+    <Compile Include="$(Common)\service\ExceptionHandlingHelper.cs">
+      <Link>ExceptionHandlingHelper.cs</Link>
+    </Compile>
+    <Compile Include="$(Common)\service\ExceptionTrace.cs">
+      <Link>Common\ExceptionTrace.cs</Link>
+    </Compile>
+    <Compile Include="$(Common)\service\FatalException.cs">
+      <Link>Common\Exceptions\FatalException.cs</Link>
+    </Compile>
+    <Compile Include="$(Common)\service\Fx.cs">
+      <Link>Common\Fx.cs</Link>
+    </Compile>
+    <Compile Include="$(Common)\service\FxCop.cs">
+      <Link>Common\FxCop.cs</Link>
+    </Compile>
+    <Compile Include="$(Common)\service\HttpClientHelper.cs">
+      <Link>HttpClientHelper.cs</Link>
+    </Compile>
+    <Compile Include="$(Common)\service\IAuthorizationHeaderProvider.cs">
+      <Link>IAuthorizationHeaderProvider.cs</Link>
+    </Compile>
+    <Compile Include="$(Common)\service\IHttpClientHelper.cs">
+      <Link>IHttpClientHelper.cs</Link>
+    </Compile>
+    <Compile Include="$(Common)\service\IotHubConnectionString.cs">
+      <Link>IotHubConnectionString.cs</Link>
+    </Compile>
+    <Compile Include="$(Common)\service\PutOperationType.cs">
+      <Link>PutOperationType.cs</Link>
+    </Compile>
+    <Compile Include="$(Common)\service\QuerySpecification.cs">
+      <Link>QuerySpecification.cs</Link>
+    </Compile>
+    <Compile Include="$(Common)\service\StringValidationHelper.cs">
+      <Link>Common\StringValidationHelper.cs</Link>
+    </Compile>
+    <Compile Include="$(Common)\service\TaskHelpers.cs">
+      <Link>Common\TaskHelpers.cs</Link>
+    </Compile>
+    <Compile Include="$(Common)\service\Utils.cs">
+      <Link>Common\Utils.cs</Link>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
+    <PackageReference Include="Microsoft.Azure.Amqp" Version="2.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(RootDir)\shared\src\Microsoft.Azure.Devices.Shared.csproj" />
+  </ItemGroup>
+
+  <!-- Net451 -->
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
+    <Compile Include="net451\IotHubClientWebSocket.cs" />
+    <Compile Include="net451\Common\ActionItem.cs" />
+    <Compile Include="net451\Common\IOThreadTimer.cs" />
+    <Compile Include="net451\Common\SynchronizedPool.cs" />
+    <Compile Include="net451\Common\Amqp\ClientWebSocketTransport.cs" />
+    <Compile Include="net451\Common\Amqp\LegacyClientWebSocketTransport.cs" />
+    <Compile Include="net451\Common\Interop\UnsafeNativeMethods.cs" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Transactions" />
+    <Reference Include="System.Web" />
+    <PackageReference Include="System.Net.Http" Version="4.3.3" />
+    <PackageReference Include="System.Net.Http.Formatting.Extension" Version="5.2.3" />
+    <PackageReference Include="Microsoft.Owin" Version="4.0.0" />
+  </ItemGroup>
+
+  <!-- NetStandard 1.3 -->
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
+    <Compile Include="netstandard13\Common\IOThreadTimerSlim.cs" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
+    <PackageReference Include="System.Diagnostics.TraceSource" Version="4.3.0" />
+    <PackageReference Include="System.Diagnostics.Contracts" Version="4.3.0" />
+    <PackageReference Include="System.Net.Requests" Version="4.3.0" />
+  </ItemGroup>
+
+  <!-- NetStandard 2.0 -->
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+    <Compile Include="netstandard13\Common\IOThreadTimerSlim.cs" />
+    <Compile Include="net451\IotHubClientWebSocket.cs" />
+    <Compile Include="net451\Common\Amqp\ClientWebSocketTransport.cs" />
+    <Compile Include="net451\Common\Amqp\LegacyClientWebSocketTransport.cs" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+    
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- FXCop -->
+    <PackageReference Condition=" '$(Configuration)' == 'Debug' " Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.6.0-beta2" />
+  </ItemGroup>
+
+</Project>

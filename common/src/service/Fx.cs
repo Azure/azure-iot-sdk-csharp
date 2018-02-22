@@ -13,9 +13,11 @@ namespace Microsoft.Azure.Devices.Common
     using System.Runtime.CompilerServices;
 #if NET451
     using System.Runtime.ConstrainedExecution;
+#endif
     using System.Runtime.InteropServices;
     using System.Security;
     using System.Threading;
+#if NET451
     using System.Transactions;
     using Microsoft.Win32;
 #endif
@@ -355,14 +357,16 @@ namespace Microsoft.Azure.Devices.Common
         }
 #endif
 
-#if NET451
+#if !NETSTANDARD1_3
         [Fx.Tag.SecurityNote(Critical = "Construct the unsafe object IOCompletionThunk")]
         [SecurityCritical]
         public static IOCompletionCallback ThunkCallback(IOCompletionCallback callback)
         {
             return (new IOCompletionThunk(callback)).ThunkFrame;
         }
+#endif
 
+#if NET451
         public static TransactionCompletedEventHandler ThunkTransactionEventHandler(TransactionCompletedEventHandler handler)
         {
             return (new TransactionEventHandlerThunk(handler)).ThunkFrame;
@@ -684,7 +688,7 @@ namespace Microsoft.Azure.Devices.Common
         }
 #endif // UNUSED
 
-#if NET451
+#if !NETSTANDARD1_3
         // This can't derive from Thunk since T would be unsafe.
         [Fx.Tag.SecurityNote(Critical = "unsafe object")]
         [SecurityCritical]

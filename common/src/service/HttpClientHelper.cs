@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices
     using Microsoft.Azure.Devices.Common.Extensions;
     using Microsoft.Azure.Devices.Shared;
     using Newtonsoft.Json;
-#if !NETSTANDARD1_3 && !NETSTANDARD2_0
+#if NET451
     using System.Net.Http.Formatting;
 #endif
 
