@@ -8,8 +8,8 @@ namespace Microsoft.Azure.Devices.Client.Test
     using System;
     using System.Linq;
     using System.Net;
+    using System.Net.Http;
     using System.Threading.Tasks;
-    using System.Web.Http;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     public static class ExceptionAssertions
@@ -124,27 +124,6 @@ namespace Microsoft.Azure.Devices.Client.Test
                 Assert.AreEqual(errorCode, e.Result.ErrorCode);
                 return e.Result;
             });
-        }
-
-        public static Task<HttpResponseException> WithStatusCode(this Task<HttpResponseException> exception, HttpStatusCode statusCode)
-        {
-            return exception.ContinueWith(e =>
-            {
-                Assert.AreEqual(statusCode, e.Result.Response.StatusCode);
-                return e.Result;
-            });
-        }
-
-        public static HttpResponseException WithStatusCode(this HttpResponseException exception, HttpStatusCode statusCode)
-        {
-            Assert.AreEqual(statusCode, exception.Response.StatusCode);
-            return exception;
-        }
-
-        public static TException WithSingleInnerException<TException>(this AggregateException exception)
-            where TException : Exception
-        {
-            return exception.Flatten().InnerExceptions.Cast<TException>().Single();
         }
     }
 }

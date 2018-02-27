@@ -8,11 +8,12 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <OutputPath>.\bin\$(Configuration)</OutputPath>
     <DocumentationFile>$(OutputPath)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
+    <RootDir>..\..\..\..</RootDir>
   </PropertyGroup>
 
   <!-- delay sign the assembly for Release build -->
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-    <AssemblyOriginatorKeyFile>..\..\..\..\35MSSharedLib1024.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>$(RootDir)\35MSSharedLib1024.snk</AssemblyOriginatorKeyFile>
     <DelaySign>true</DelaySign>
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
@@ -31,7 +32,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <common>..\..\..\..\common\src</common>
+    <common>$(RootDir)\common\src</common>
   </PropertyGroup>
 
   <ItemGroup>
@@ -71,8 +72,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\shared\Microsoft.Azure.Devices.Shared.NetStandard\Microsoft.Azure.Devices.Shared.NetStandard.csproj" />
-    <ProjectReference Include="..\..\..\device\src\Microsoft.Azure.Devices.Provisioning.Client.csproj" />
+    <ProjectReference Include="$(RootDir)\shared\src\Microsoft.Azure.Devices.Shared.csproj" />
+    <ProjectReference Include="$(RootDir)\provisioning\device\src\Microsoft.Azure.Devices.Provisioning.Client.csproj" />
   </ItemGroup>
 
   <ItemGroup>

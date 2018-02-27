@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.0</TargetFrameworks>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
 
     <IsPackable>false</IsPackable>
   </PropertyGroup>
@@ -13,16 +13,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\Microsoft.Azure.Devices.Client.csproj" />
+    <ProjectReference Include="..\src\Microsoft.Azure.Devices.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NSubstitute" Version="3.1.0" />
-    <PackageReference Include="Moq" Version="4.8.2" />
-    <PackageReference Include="DotNetty.Codecs.Mqtt" Version="0.4.7" />
-    <PackageReference Include="DotNetty.Handlers" Version="0.4.7" />
     <PackageReference Include="Microsoft.Azure.Amqp" Version="2.2.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
+    <PackageReference Include="Moq" Version="4.8.2" />
   </ItemGroup>
 
 </Project>

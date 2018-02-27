@@ -6,15 +6,12 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <OutputPath>.\bin\$(Configuration)</OutputPath>
     <DocumentationFile>$(OutputPath)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <common>..\..\..\common\src</common>
+    <RootDir>..\..\..</RootDir>
   </PropertyGroup>
 
   <!-- delay sign the assembly for Release build -->
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-    <AssemblyOriginatorKeyFile>..\..\..\35MSSharedLib1024.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>$(RootDir)\35MSSharedLib1024.snk</AssemblyOriginatorKeyFile>
     <DelaySign>true</DelaySign>
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
@@ -31,7 +28,11 @@
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
     <PackageTags>Microsoft Azure IoT Provisioning Device Client .NET AMQP MQTT HTTP</PackageTags>
   </PropertyGroup>
-
+  
+  <PropertyGroup>
+    <common>$(RootDir)\common\src</common>
+  </PropertyGroup>
+  
   <ItemGroup>
     <Compile Include="$(Common)\Logging.Common.cs">
       <Link>Common\Logging.Common.cs</Link>
@@ -39,10 +40,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\shared\Microsoft.Azure.Devices.Shared.NetStandard\Microsoft.Azure.Devices.Shared.NetStandard.csproj">
-      <Project>{91dfb837-d8a3-4f54-ae0d-45c95acd0c2a}</Project>
-      <Name>Microsoft.Azure.Devices.Shared.NetStandard</Name>
-    </ProjectReference>
+    <ProjectReference Include="$(RootDir)\shared\src\Microsoft.Azure.Devices.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -11,7 +11,7 @@
     <DocumentationFile>$(OutputPath)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
     <!-- Don't auto-compile platform specific files: -->
     <DefaultItemExcludes>netstandard13/**;netstandard20/**;net451/**;$(DefaultItemExcludes)</DefaultItemExcludes>
-    <RootDir>..\..\..\</RootDir>
+    <RootDir>..\..\..</RootDir>
   </PropertyGroup>
 
   <!-- delay sign the assembly for Release build -->
@@ -145,9 +145,6 @@
     <Compile Include="net451\IotHubClientWebSocket.cs" />
     <Compile Include="net451\Common\Amqp\ClientWebSocketTransport.cs" />
     <Compile Include="net451\Common\Amqp\LegacyClientWebSocketTransport.cs" />
-  </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-    
   </ItemGroup>
 
   <ItemGroup>
