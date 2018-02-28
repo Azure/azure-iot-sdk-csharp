@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>netcoreapp2.0;net46</TargetFrameworks>
+    <RootDir>..\..</RootDir>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
+    <ProjectReference Include="$(RootDir)\device\Microsoft.Azure.Devices.Client\Microsoft.Azure.Devices.Client.csproj" />
+    <ProjectReference Include="$(RootDir)\shared\Microsoft.Azure.Devices.Shared\Microsoft.Azure.Devices.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">
+    <ProjectReference Include="$(RootDir)\device\Microsoft.Azure.Devices.Client.NetStandard\Microsoft.Azure.Devices.Client.NetStandard.csproj" />
+    <ProjectReference Include="$(RootDir)\shared\Microsoft.Azure.Devices.Shared.NetStandard\Microsoft.Azure.Devices.Shared.NetStandard.csproj" />
+  </ItemGroup>
+
+</Project>
