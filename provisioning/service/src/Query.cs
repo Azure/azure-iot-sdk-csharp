@@ -257,7 +257,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         private static Uri GetQueryUri(string path)
         {
-            path = WebUtility.UrlEncode(path);
             return new Uri(QueryUriFormat.FormatInvariant(path, SDKUtils.ApiVersionQueryString), UriKind.Relative);
         }
     }
