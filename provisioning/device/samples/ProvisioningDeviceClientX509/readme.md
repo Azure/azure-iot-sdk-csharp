@@ -42,10 +42,16 @@ to
 ```C# 
     var myCertificate = new X509Certificate2("myCertificate.pfx", "mypassword");
     var myChain = new X509Certificate2Collection();
-    var security = new SecurityProviderX509Certificate(myCertificate, myChain);
+    
+    // Comment out the below line if you do not have a .p7b file (e.g. if you generated certificates using the tool below)
+    myChain.Import("myChain.p7b");
+    
+    using (var security = new SecurityProviderX509Certificate(myCertificate, myChain))
 ```
 
 A tool for creating _test_ certificates is available at https://github.com/Azure/azure-iot-sdk-c/blob/master/tools/CACertificates/CACertificateOverview.md
+
+If you generate _test_ certificates as an administrator using the above tool, please note you must run the sample as administrator as well.
 
 If a Windows compatible Hardware Security Module is used, the certificate must be obtained by opening it from the Certificate Store using [X509Store](https://msdn.microsoft.com/en-us/library/system.security.cryptography.x509certificates.x509store(v=vs.110).aspx).
 
