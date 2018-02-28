@@ -9,11 +9,15 @@ namespace ConsoleSample
 {
     class Program
     {
-        const string connectionString = "<replace_with_iothub_connection_string>";
+        // Either set the IOTHUB_DEVICE_CONN_STRING environment variable or within launchSettings.json:
+        private static string connectionString = Environment.GetEnvironmentVariable("IOTHUB_CONN_STRING_CSHARP");
+
         const string deviceID = "new_device";
 
-        const string primaryThumbprint = "<replace_with_certificate_thumbprint>";
-        const string secondaryThumbprint = "<replace_with_certificate_thumbprint>";
+        // Either set the IOTHUB_PFX_X509_THUMBPRINT and IOTHUB_PFX_X509_THUMBPRINT2 environment variables 
+        // or within launchSettings.json:
+        private static string primaryThumbprint = Environment.GetEnvironmentVariable("IOTHUB_PFX_X509_THUMBPRINT");
+        private static string secondaryThumbprint = Environment.GetEnvironmentVariable("IOTHUB_PFX_X509_THUMBPRINT2");
 
         static void Main(string[] args)
         {

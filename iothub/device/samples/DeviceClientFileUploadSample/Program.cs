@@ -7,31 +7,21 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
-    class Program
+    public class Program
     {
         // String containing Hostname, Device Id & Device Key in one of the following formats:
         //  "HostName=<iothub_host_name>;DeviceId=<device_id>;SharedAccessKey=<device_key>"
         //  "HostName=<iothub_host_name>;CredentialType=SharedAccessSignature;DeviceId=<device_id>;SharedAccessSignature=SharedAccessSignature sr=<iot_host>/devices/<device_id>&sig=<token>&se=<expiry_time>";
-        private const string DeviceConnectionString = "<replace>";
-        private const string FilePath = "<replace>";
+        // Either set the IOTHUB_DEVICE_CONN_STRING environment variable or within launchSettings.json:
+        private static string DeviceConnectionString = Environment.GetEnvironmentVariable("IOTHUB_DEVICE_CONN_STRING");
+        private const string FilePath = "TestPayload.txt";
 
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
-            try
-            {
-                SendToBlobSample().Wait();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("{0}\n", ex.Message);
-                if (ex.InnerException != null)
-                {
-                    Console.WriteLine(ex.InnerException.Message + "\n");
-                }
-            }
+            SendToBlobSample().Wait();
         }
 
-        static async Task SendToBlobSample()
+        public static async Task SendToBlobSample()
         {
             var deviceClient = DeviceClient.CreateFromConnectionString(DeviceConnectionString, TransportType.Http1);
             var fileStreamSource = new FileStream(FilePath, FileMode.Open);

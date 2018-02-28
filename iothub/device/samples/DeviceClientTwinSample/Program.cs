@@ -14,7 +14,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
         // String containing Hostname, Device Id & Device Key in one of the following formats:
         //  "HostName=<iothub_host_name>;DeviceId=<device_id>;SharedAccessKey=<device_key>"
         //  "HostName=<iothub_host_name>;CredentialType=SharedAccessSignature;DeviceId=<device_id>;SharedAccessSignature=SharedAccessSignature sr=<iot_host>/devices/<device_id>&sig=<token>&se=<expiry_time>";
-        private static string DeviceConnectionString = "<replace>";
+        // Either set the IOTHUB_DEVICE_CONN_STRING environment variable or within launchSettings.json:
+        private static string DeviceConnectionString = Environment.GetEnvironmentVariable("IOTHUB_DEVICE_CONN_STRING");
 
         private static DeviceClient Client = null;
 

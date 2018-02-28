@@ -14,8 +14,9 @@ namespace Microsoft.Azure.Devices.Client.Samples
         //  "HostName=<iothub_host_name>;DeviceId=<device_id>;SharedAccessKey=<device_key>"
         //  "HostName=<iothub_host_name>;CredentialType=SharedAccessSignature;DeviceId=<device_id>;SharedAccessSignature=SharedAccessSignature sr=<iot_host>/devices/<device_id>&sig=<token>&se=<expiry_time>";
         //private const string DeviceConnectionString1 = "HostName=iot-sdks-test.azure-devices.net;DeviceId=TamerRolling;SharedAccessKey=IKbDlm5v1k8DsZL4wej2gcc0hU52qiP6Rg3QPtUV9EY=";
-        private const string DeviceConnectionString1 = "<replace_with_connection_string_based_on_primary_key>";
-        private const string DeviceConnectionString2 = "<replace_with_connection_string_based_on_secondary_key>";
+        // Either set the IOTHUB_DEVICE_CONN_STRING and IOTHUB_DEVICE_CONN_STRING2 environment variables or within launchSettings.json:
+        private static string DeviceConnectionString1 = Environment.GetEnvironmentVariable("IOTHUB_DEVICE_CONN_STRING");
+        private static string DeviceConnectionString2 = Environment.GetEnvironmentVariable("IOTHUB_DEVICE_CONN_STRING2");
 
         private static string DeviceConnectionString = DeviceConnectionString1;
 
@@ -26,14 +27,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         static void Main(string[] args)
         {
-            try
-            {
-                MainAsync().Wait();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error in sample: {0}", ex.Message);
-            }
+            MainAsync().GetAwaiter().GetResult();
         }
 
         static async Task MainAsync()

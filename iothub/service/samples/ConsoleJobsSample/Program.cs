@@ -13,7 +13,8 @@ namespace ConsoleJobsSample
 {
     class Program
     {
-        const string connectionString = "<replace_with_iothub_connection_string>";
+        // Either set the IOTHUB_DEVICE_CONN_STRING environment variable or within launchSettings.json:
+        private static string connectionString = Environment.GetEnvironmentVariable("IOTHUB_CONN_STRING_CSHARP");
 
         const string deviceId = "new_device";
         const string TestTagName = "Tag1";
