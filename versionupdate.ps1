@@ -29,6 +29,8 @@ Param(
 )
 
 Function GetVersion($path) {
+    $extension = Split-Path -leaf $path
+    
     $x = [xml](Get-Content $path)
     $versionNode = Select-Xml "//VersionPrefix" $x
     return $versionNode

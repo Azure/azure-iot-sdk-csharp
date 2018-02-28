@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 namespace Microsoft.Azure.Devices.Client
@@ -13,14 +14,12 @@ namespace Microsoft.Azure.Devices.Client
         public override string ToString()
         {
             const string Name = "Microsoft.Azure.Devices.Client";
-            // DO NOT EDIT the following line; it is updated by the bump_version script (https://github.com/Azure/iot-sdks-internals/blob/master/release/csharp/inputs.js)
-            const string Version = "1.6.2"; // CommonAssemblyVersion
-
+            string version = typeof(DeviceClient).GetTypeInfo().Assembly.GetName().Version.ToString(3);
             string runtime = RuntimeInformation.FrameworkDescription.Trim();
             string operatingSystem = RuntimeInformation.OSDescription.Trim();
             string processorArchitecture = RuntimeInformation.ProcessArchitecture.ToString().Trim();
 
-            string userAgent = $"{Name}/{Version} ({runtime}; {operatingSystem}; {processorArchitecture})";
+            string userAgent = $"{Name}/{version} ({runtime}; {operatingSystem}; {processorArchitecture})";
 
             if (!String.IsNullOrWhiteSpace(this.Extra))
             {
