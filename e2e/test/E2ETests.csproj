@@ -18,6 +18,9 @@
 
   <!-- All Platforms -->
   <ItemGroup>
+    <Compile Include="$(CommonTest)\CodeAnalysisOverrides.cs">
+      <Link>Common\CodeAnalysisOverrides.cs</Link>
+    </Compile>
     <Compile Include="$(CommonTest)\Configuration.cs">
       <Link>Common\Configuration.cs</Link>
     </Compile>

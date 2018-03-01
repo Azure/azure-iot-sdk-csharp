@@ -10,21 +10,33 @@ Microsoft Azure IoT SDK .NET build script.
 Builds Azure IoT SDK binaries.
 
 Parameters:
-    -clean
-    -nobuild
-    -notests
-    -e2etests
+    -clean: Runs dotnet clean. Use `git clean -xdf` if this is not sufficient.
+    -nobuild: Skips build step (use if re-running tests after a successful build).
+    -nounittests: Skips Unit Tests
+    -e2etests: Runs E2E tests. Requires prerequisites and environment variables.
+    -stresstests: Runs Stress tests.
+    -xamarintests: Runs Xamarin tests. Requires additional SDKs and prerequisite configuration.
     -configuration {Debug|Release}
     -verbosity: Sets the verbosity level of the command. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].
-
-    -nolegacy: Skips .Net Framework based builds. This is used to build on non-Windows OSs.
-
-.EXAMPLE
-.\build.ps1
-
 .NOTES
-This is work-in-progress. We are currently migrating to the new .NET Core SDK toolset for builds.
+Build will automatically detect if the machine is Windows vs Unix. On Windows development boxes, additional testing on .NET Framework will be performed.
 
+.EXAMPLE 
+.\build
+
+Builds a Debug version of the SDK.
+.EXAMPLE
+.\build -config Release
+
+Builds a Release version of the SDK.
+.EXAMPLE
+.\build -clean -e2etests -xamarintests
+
+Builds and runs all tests (requires prerequisites).
+.EXAMPLE
+.\build -nobuild -nounittests -nopackage -stresstests
+
+Builds stress tests after a successful build.
 .LINK
 https://github.com/azure/azure-iot-sdk-csharp
 
@@ -33,13 +45,13 @@ https://github.com/azure/azure-iot-sdk-csharp
 Param(
     [switch] $clean,
     [switch] $nobuild,
-    [switch] $notests,
+    [switch] $nounittests,
+    [switch] $nopackage,
     [switch] $e2etests,
+    [switch] $stresstests,
+    [switch] $xamarintests,
     [string] $configuration = "Debug",
-    [string] $verbosity = "q",
-
-    # Work-in-progress switches:
-    [switch] $nolegacy                   #Work to port existing projects to the .NET Core SDK. Must be set for Linux builds.
+    [string] $verbosity = "q"
 )
 
 Function BuildProject($path, $message) {
@@ -64,7 +76,21 @@ Function BuildProject($path, $message) {
     }
 }
 
-Function RunTests($path, $message) {
+Function BuildPackage($path, $message) {
+    $label = "PACK: --- $message $configuration ---"
+
+    Write-Host
+    Write-Host -ForegroundColor Cyan $label
+    cd (Join-Path $rootDir $path)
+
+    & dotnet pack --verbosity $verbosity --configuration $configuration --no-build --include-symbols --include-source --output $localPackages
+
+    if ($LASTEXITCODE -ne 0) {
+        throw "Build failed: $label"
+    }
+}
+
+Function RunTests($path, $message, $framework="netcoreapp2.0") {
 
     $label = "TEST: --- $message $configuration ---"
 
@@ -72,107 +98,95 @@ Function RunTests($path, $message) {
     Write-Host -ForegroundColor Cyan $label
     cd (Join-Path $rootDir $path)
 
-    & dotnet test --verbosity $verbosity --configuration $configuration --logger "trx"
+    & dotnet test --framework $framework --verbosity $verbosity --configuration $configuration --logger "trx"
 
     if ($LASTEXITCODE -ne 0) {
         throw "Tests failed: $label"
     }
 }
 
-Function LegacyBuildProject($path, $message) {
+Function RunApp($path, $message, $framework="netcoreapp2.0") {
 
-    $label = "MSBUILD: --- $message $configuration ---"
+    $label = "RUN: --- $message $configuration ---"
 
     Write-Host
     Write-Host -ForegroundColor Cyan $label
     cd (Join-Path $rootDir $path)
 
-    $commandLine = ".\build.cmd --config $configuration"
-    
-    if ($clean) {
-        $commandLine += " -c"
-    }
-
-    cmd /c "$commandLine && exit /b !ERRORLEVEL!"
-
-    if ($LASTEXITCODE -ne 0) {
-        throw "Build failed: $label"
-    }
-}
-
-Function LegacyRunTests($path, $message) {
-
-    $label = "MSTEST: --- $message $configuration ---"
-
-    Write-Host
-    Write-Host -ForegroundColor Cyan $label
-    
-    $container = (Split-Path -leaf $path) + ".dll"
-
-    cd (Join-Path $rootDir (Join-Path $path "bin\$configuration"))
-    & mstest /TestContainer:$container
+    & dotnet run --framework $framework --verbosity $verbosity --configuration $configuration --logger "trx"
 
     if ($LASTEXITCODE -ne 0) {
         throw "Tests failed: $label"
     }
 }
 
-$rootDir = (Get-Item -Path ".\" -Verbose).FullName
+Function IsWindowsDevelopmentBox()
+{  
+    return ([Environment]::OSVersion.Platform -eq [System.PlatformID]::Win32NT)    
+}
 
+$rootDir = (Get-Item -Path ".\" -Verbose).FullName
+$localPackages = Join-Path $rootDir "bin\pkg"
 $startTime = Get-Date
 $buildFailed = $true
 $errorMessage = ""
 
 try {
-
     if (-not $nobuild)
     {
-        if (-not $nolegacy) 
-        {
-            # Build legacy project formats (Pending switch to the .NET SDK tooling.)
-            LegacyBuildProject shared\build "Shared Assembly"
-            LegacyBuildProject device\build "IoT Hub Device Client SDK"
-            LegacyBuildProject service\build "IoT Hub Service Client SDK"
-
-            if ($configuration.ToLower() -eq "release")
-            {
-                # Package creation fails in debug.
-                LegacyBuildProject tools\DeviceExplorer\build "IoT Hub Device Explorer"
-            }
-        }
-
-        BuildProject shared\Microsoft.Azure.Devices.Shared.NetStandard "Shared Assembly"
-        BuildProject device\Microsoft.Azure.Devices.Client.NetStandard "IoT Hub DeviceClient SDK"
-        BuildProject service\Microsoft.Azure.Devices.NetStandard "IoT Hub ServiceClient SDK"
+        # SDK binaries
+        BuildProject shared\src "Shared Assembly"
+        BuildProject iothub\device\src "IoT Hub DeviceClient SDK"
+        BuildProject iothub\service\src "IoT Hub ServiceClient SDK"      
         BuildProject security\tpm\src "SecurityProvider for TPM"
+        BuildProject provisioning\device\src "Provisioning Device Client SDK"
         BuildProject provisioning\transport\amqp\src "Provisioning Transport for AMQP"
         BuildProject provisioning\transport\http\src "Provisioning Transport for HTTP"
         BuildProject provisioning\transport\mqtt\src "Provisioning Transport for MQTT"
-        BuildProject provisioning\device\src "Provisioning Device Client SDK"
         BuildProject provisioning\service\src "Provisioning Service Client SDK"
+
+        # Samples
+        BuildProject iothub\device\samples "IoT Hub DeviceClient Samples"
+        BuildProject iothub\service\samples "IoT Hub ServiceClient Samples"
+        BuildProject provisioning\device\samples "Provisioning Device Client Samples"
+        BuildProject provisioning\service\samples "Provisioning Service Client Samples"
+        BuildProject security\tpm\samples "SecurityProvider for TPM Samples"
+
+        # Xamarin samples (require Android, iOS and UWP SDKs and configured iOS remote)
+        if ($xamarintests)
+        {
+            # TODO #335 - create new Xamarin automated samples/tests
+        }
     }
 
     # Unit Tests require InternalsVisibleTo and can only run in Debug builds.
-    if ((-not $notests) -and ($configuration.ToLower() -eq "debug"))
+    if ((-not $nounittests) -and ($configuration.ToLower() -eq "debug"))
     {
         Write-Host
         Write-Host -ForegroundColor Cyan "Unit Test execution"
         Write-Host
 
-        if (-not $nolegacy)
-        {
-            # Build legacy project formats (Pending switch to the .NET SDK tooling.)
-            LegacyRunTests device\tests\Microsoft.Azure.Devices.Client.Test "IoT Hub Device Client Unit Tests"
-            # TODO: Requires Admin/prerequisites:
-            # LegacyRunTests service\Microsoft.Azure.Devices\test\Microsoft.Azure.Devices.Api.Test "IoT Hub Service Client Unit Tests"
-        }
-
+        RunTests iothub\device\tests "IoT Hub DeviceClient Tests"
+        RunTests iothub\service\tests "IoT Hub ServiceClient Tests"
         RunTests provisioning\device\tests "Provisioning Device Client Tests"
-        RunTests provisioning\transport\amqp\tests "Provisioning Transport for AMQP"
-        RunTests provisioning\transport\http\tests "Provisioning Transport for HTTP"
-        RunTests provisioning\transport\mqtt\tests "Provisioning Transport for MQTT"
-        RunTests security\tpm\tests "SecurityProvider for TPM"
+        RunTests provisioning\transport\amqp\tests "Provisioning Transport for AMQP Tests"
+        RunTests provisioning\transport\http\tests "Provisioning Transport for HTTP Tests"
+        RunTests provisioning\transport\mqtt\tests "Provisioning Transport for MQTT Tests"
+        RunTests security\tpm\tests "SecurityProvider for TPM Tests"
         RunTests provisioning\service\tests "Provisioning Service Client Tests"
+    }
+  
+    if ((-not $nopackage))
+    {
+        BuildPackage shared\src "Shared Assembly"
+        BuildPackage iothub\device\src "IoT Hub DeviceClient SDK"
+        BuildPackage iothub\service\src "IoT Hub ServiceClient SDK"
+        BuildPackage security\tpm\src "SecurityProvider for TPM"
+        BuildPackage provisioning\device\src "Provisioning Device Client SDK"
+        BuildPackage provisioning\transport\amqp\src "Provisioning Transport for AMQP"
+        BuildPackage provisioning\transport\http\src "Provisioning Transport for HTTP"
+        BuildPackage provisioning\transport\mqtt\src "Provisioning Transport for MQTT"
+        BuildPackage provisioning\service\src "Provisioning Service Client SDK"
     }
 
     if ($e2etests)
@@ -181,19 +195,27 @@ try {
         Write-Host -ForegroundColor Cyan "End-to-end Test execution"
         Write-Host
 
-        if (-not $nolegacy)
+        RunTests e2e\tests "End-to-end tests (NetCoreApp)"
+        if (IsWindowsDevelopmentBox)
         {
-            # Build legacy project formats (Pending switch to the .NET SDK tooling.)
-            LegacyBuildProject e2e\build "E2E Tests"
-            LegacyRunTests e2e\Microsoft.Azure.Devices.E2ETests "IoT Hub End-to-end Tests"
+            RunTests e2e\tests "End-to-end tests (NET451)" "net451"
+            RunTests e2e\tests "End-to-end tests (NET47)" "net47"
         }
+    }
 
-        RunTests e2e\Microsoft.Azure.Devices.E2ETests.NetStandard "IoT Hub End-to-end Tests"
-        
-        if ($Env:DPS_IDSCOPE -ne $null)
-        {
-            RunTests provisioning\e2e "Provisioning End-to-end Tests"
-        }
+    if ($stresstests)
+    {
+        Write-Host
+        Write-Host -ForegroundColor Cyan "Stress Test execution"
+        Write-Host
+
+        RunApp e2e\stress\MemoryLeakTest "MemoryLeakTest test"
+    }
+
+    # Xamarin samples (require Android, iOS and UWP SDKs and configured iOS remote)
+    if ($xamarintests)
+    {
+        # TODO #335 - create new Xamarin automated samples/tests
     }
 
     $buildFailed = $false

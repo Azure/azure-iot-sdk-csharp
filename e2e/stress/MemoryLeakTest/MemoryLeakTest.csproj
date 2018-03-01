@@ -3,17 +3,22 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFrameworks>netcoreapp2.0;net46</TargetFrameworks>
-    <RootDir>..\..</RootDir>
+    <RootDir>..\..\..</RootDir>
   </PropertyGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
-    <ProjectReference Include="$(RootDir)\device\Microsoft.Azure.Devices.Client\Microsoft.Azure.Devices.Client.csproj" />
-    <ProjectReference Include="$(RootDir)\shared\Microsoft.Azure.Devices.Shared\Microsoft.Azure.Devices.Shared.csproj" />
+  <PropertyGroup>
+    <CommonTest>$(RootDir)\common\test</CommonTest>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(CommonTest)\CodeAnalysisOverrides.cs">
+      <Link>Common\CodeAnalysisOverrides.cs</Link>
+    </Compile>
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">
-    <ProjectReference Include="$(RootDir)\device\Microsoft.Azure.Devices.Client.NetStandard\Microsoft.Azure.Devices.Client.NetStandard.csproj" />
-    <ProjectReference Include="$(RootDir)\shared\Microsoft.Azure.Devices.Shared.NetStandard\Microsoft.Azure.Devices.Shared.NetStandard.csproj" />
+  <ItemGroup>
+    <ProjectReference Include="$(RootDir)\iothub\device\src\Microsoft.Azure.Devices.Client.csproj" />
+    <ProjectReference Include="$(RootDir)\shared\src\Microsoft.Azure.Devices.Shared.csproj" />
   </ItemGroup>
 
 </Project>
