@@ -76,6 +76,22 @@
         }
 
         [TestMethod]
+        [TestCategory("IoTHubClientDiagnostic")]
+        public void DeviceClient_StartDiagLocallyThatDoNotSupport_ThrowException()
+        {
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString, TransportType.Http1);
+            try
+            {
+                deviceClient.DiagnosticSamplingPercentage = 100;
+                Assert.Fail();
+            }
+            catch (NotSupportedException e)
+            {
+                Assert.AreEqual(e.Message, $"{TransportType.Http1} protocal doesn't support E2E diagnostic.");
+            }
+        }
+
+        [TestMethod]
         [TestCategory("DeviceClient")]
         public void DeviceClient_OperationTimeoutInMilliseconds_Property_GetSet()
         {
