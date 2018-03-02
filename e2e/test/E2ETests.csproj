@@ -1,18 +1,17 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <PropertyGroup>
-    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">netcoreapp2.0;net47;net451</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.0;net47;net451</TargetFrameworks>
     <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">netcoreapp2.0</TargetFrameworks>
     <!-- TODO #176: Enable warnings as errors. -->
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors> 
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <IsPackable>false</IsPackable>
     <RootNamespace>Microsoft.Azure.Devices.E2ETests</RootNamespace>
     <AssemblyName>Microsoft.Azure.Devices.E2ETests</AssemblyName>
     <!-- Don't auto-compile platform specific files: -->
     <DefaultItemExcludes>netstandard13/**;netstandard20/**;net451/**;$(DefaultItemExcludes)</DefaultItemExcludes>
-    <RootDir>..\..</RootDir>
+    <RootDir>$(MSBuildProjectDirectory)\..\..</RootDir>
   </PropertyGroup>
-
+  
   <PropertyGroup>
     <CommonTest>$(RootDir)\common\test</CommonTest>
   </PropertyGroup>
@@ -77,12 +76,14 @@
     For Debug runs, reference the local SDK build. 
     Note: To run in Visual Studio, a SLN referencing all projects below is required.
   -->
-  <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
+  <!-- TODO: <ItemGroup Condition=" '$(Configuration)' == 'Debug' "> -->
+  <ItemGroup>
     <ProjectReference Include="$(RootDir)\iothub\device\src\Microsoft.Azure.Devices.Client.csproj" />
     <ProjectReference Include="$(RootDir)\iothub\service\src\Microsoft.Azure.Devices.csproj" />
     <ProjectReference Include="$(RootDir)\shared\src\Microsoft.Azure.Devices.Shared.csproj" />
   </ItemGroup>
-  <ItemGroup Condition=" ('$(Configuration)' == 'Debug') And ( '$(TargetFramework)' != 'net451' ) ">
+  <!-- TODO: <ItemGroup Condition=" ('$(Configuration)' == 'Debug') And ( '$(TargetFramework)' != 'net451' ) "> -->
+  <ItemGroup Condition=" '$(TargetFramework)' != 'net451' ">
     <ProjectReference Include="$(RootDir)\provisioning\device\src\Microsoft.Azure.Devices.Provisioning.Client.csproj" />
     <ProjectReference Include="$(RootDir)\provisioning\transport\amqp\src\Microsoft.Azure.Devices.Provisioning.Transport.Amqp.csproj" />
     <ProjectReference Include="$(RootDir)\provisioning\transport\http\src\Microsoft.Azure.Devices.Provisioning.Transport.Http.csproj" />
@@ -91,17 +92,20 @@
     <Compile Include="$(RootDir)\security\tpm\samples\SecurityProviderTpmSimulator\SecurityProviderTpmSimulator.cs" />
   </ItemGroup>
 
-  <!-- For Release runs, reference the latest NuGet packages. -->
+  <!-- TODO: For Release runs, reference the latest NuGet packages. 
   <ItemGroup Condition=" '$(Configuration)' == 'Release' ">
-      <PackageReference Include="Microsoft.Azure.Devices.Client" Version="1.*" />
+    <PackageReference Include="Microsoft.Azure.Devices" Version="1.*" />
+    <PackageReference Include="Microsoft.Azure.Devices.Shared" Version="1.*" />
+    <PackageReference Include="Microsoft.Azure.Devices.Client" Version="1.*" />
   </ItemGroup>
   <ItemGroup Condition=" ('$(Configuration)' == 'Release') And ( '$(TargetFramework)' != 'net451' ) ">
-      <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Client" Version="1.*" />
-      <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Transport.Amqp" Version="1.*" />
-      <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Transport.Http" Version="1.*" />
-      <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Transport.Mqtt" Version="1.*" />
-      <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Security.Tpm" Version="1.*" />
-      <ProjectReference Include="$(RootDir)\security\tpm\samples\SecurityProviderTpmSimulator\SecurityProviderTpmSimulator.csproj" />
+    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Client" Version="1.*" />
+    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Transport.Amqp" Version="1.*" />
+    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Transport.Http" Version="1.*" />
+    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Transport.Mqtt" Version="1.*" />
+    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Security.Tpm" Version="1.*" />
+    <ProjectReference Include="$(RootDir)\security\tpm\samples\SecurityProviderTpmSimulator\SecurityProviderTpmSimulator.csproj" />
   </ItemGroup>
-  
+  --> 
+
 </Project>

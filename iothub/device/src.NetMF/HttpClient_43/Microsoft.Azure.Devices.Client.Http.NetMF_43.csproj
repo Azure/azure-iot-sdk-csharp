@@ -29,8 +29,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <DeviceClientPath>..\..\Microsoft.Azure.Devices.Client</DeviceClientPath>
-    <SharedPath>..\..\..\shared\Microsoft.Azure.Devices.Shared</SharedPath>
+    <DeviceClientPath>..\..\src</DeviceClientPath>
+    <SharedPath>..\..\..\..\shared\src</SharedPath>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(SharedPath)\ETagHolder.cs">

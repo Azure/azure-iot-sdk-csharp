@@ -43,7 +43,7 @@
     <Reference Include="System.IO" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Microsoft.Azure.Devices.Client.NetMF\HttpClient_44\Microsoft.Azure.Devices.Client.Http.NetMF_44.csproj">
+    <ProjectReference Include="..\..\src.NetMF\HttpClient_44\Microsoft.Azure.Devices.Client.Http.NetMF_44.csproj">
       <Project>{1B0C95B7-D1C7-4283-A495-044803FD034A}</Project>
       <Name>Microsoft.Azure.Devices.Client.Http.NetMF_44</Name>
     </ProjectReference>

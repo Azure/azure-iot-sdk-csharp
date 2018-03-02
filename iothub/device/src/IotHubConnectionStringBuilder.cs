@@ -25,9 +25,8 @@ namespace Microsoft.Azure.Devices.Client
         const char ValuePairSeparator = '=';
         const string HostNameSeparator = ".";
 
-        static readonly RegexOptions regexOptions = RegexOptions.Compiled | RegexOptions.IgnoreCase;
-
 #if !NETMF
+        static readonly RegexOptions regexOptions = RegexOptions.Compiled | RegexOptions.IgnoreCase;
         const string HostNamePropertyName = nameof(HostName);
         const string DeviceIdPropertyName = nameof(DeviceId);
         const string SharedAccessKeyNamePropertyName = nameof(SharedAccessKeyName);

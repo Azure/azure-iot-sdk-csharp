@@ -49,10 +49,10 @@ rem -- build Micro Framework csharp iot client
 rem -----------------------------------------------------------------------------
 
 if %build-clean%==1 (
-    call :clean-a-solution "%build-root%\device\Microsoft.Azure.Devices.Client.NetMF\iothub_csharp_netmf_client.sln" %build-config%
+    call :clean-a-solution "%build-root%\src.NetMF\iothub_csharp_netmf_client.sln" %build-config%
     if not !errorlevel!==0 exit /b !errorlevel!
 )
-call :build-a-solution "%build-root%\device\Microsoft.Azure.Devices.Client.NetMF\iothub_csharp_netmf_client.sln" %build-config%
+call :build-a-solution "%build-root%\src.NetMF\iothub_csharp_netmf_client.sln" %build-config%
 if not !errorlevel!==0 exit /b !errorlevel!
 
 rem -----------------------------------------------------------------------------
