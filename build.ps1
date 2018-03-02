@@ -83,6 +83,8 @@ Function BuildPackage($path, $message) {
     Write-Host -ForegroundColor Cyan $label
     cd (Join-Path $rootDir $path)
 
+    $frameworkArgs = ""
+
     & dotnet pack --verbosity $verbosity --configuration $configuration --no-build --include-symbols --include-source --output $localPackages
 
     if ($LASTEXITCODE -ne 0) {

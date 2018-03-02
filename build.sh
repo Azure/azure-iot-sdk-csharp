@@ -7,6 +7,6 @@ if [ "$1" == "-?" -o "$1" == "-h" -o "$1" == "-help" -o "$1" == "--help" ]; then
 	exit;
 fi
 
-pwsh -command ".\build.ps1"$@"; exit \$LASTEXITCODE"
+pwsh -command ".\build.ps1" $@ "; exit \$LASTEXITCODE"
 
 exit $?

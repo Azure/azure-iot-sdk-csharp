@@ -19,7 +19,7 @@ rem (As Administrator:)  sn -Vr *,31bf3856ad364e35
 rem Re-enable strong name validation for this key using:
 rem (As Administrator:)  sn -Vx
 
-call build.cmd -clean -configuration Release -e2etests
+call build.cmd -clean -configuration Release -e2etests -xamarintests
 if errorlevel 1 goto :eof
 
 echo.
