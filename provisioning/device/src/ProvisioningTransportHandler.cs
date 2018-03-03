@@ -14,18 +14,27 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
     public abstract class ProvisioningTransportHandler : IDisposable
     {
         private ProvisioningTransportHandler _innerHandler;
+        
+        /// <summary>
+        /// Customizable port to be used by the deriving transports
+        /// </summary>
+        protected int? Port;
 
         /// <summary>
-        /// Creates an instance of the ProvisioningTransportHandler class.
+        /// Creates an instance of the ProvisioningTransportHandler class with an optional port
         /// </summary>
-        public ProvisioningTransportHandler() {}
+        public ProvisioningTransportHandler(int? port = null)
+        {
+            this.Port = port;
+        }
 
         /// <summary>
         /// Creates an instance of the ProvisioningTransportHandler class specifying an innerHandler.
         /// </summary>
-        public ProvisioningTransportHandler(ProvisioningTransportHandler innerHandler)
+        public ProvisioningTransportHandler(ProvisioningTransportHandler innerHandler, int? port = null)
         {
             _innerHandler = innerHandler;
+            this.Port = port;
         }
 
         /// <summary>

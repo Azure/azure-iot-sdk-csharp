@@ -67,9 +67,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             }
 
             AmqpConnection = new AmqpConnection(transport, _amqpSettings, AmqpConnectionSettings);
+            AmqpConnection.Closed += OnConnectionClosed;
             await AmqpConnection.OpenAsync(timeout).ConfigureAwait(false);
             _isConnectionClosed = false;
-            AmqpConnection.Closed += OnConnectionClosed;
         }
 
         public async Task CloseAsync(TimeSpan timeout)
@@ -104,8 +104,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         async Task<TransportBase> CreateClientWebSocketTransportAsync(TimeSpan timeout)
         {
-            Uri websocketUri = new Uri(WebSocketConstants.Scheme + _uri.Host + ":" + _uri.Port);
-            var websocket = await CreateClientWebSocketAsync(websocketUri, timeout).ConfigureAwait(false);
+            UriBuilder webSocketUriBuilder = new UriBuilder
+            {
+                Scheme = WebSocketConstants.Scheme,
+                Host = _uri.Host,
+                Port = _uri.Port
+            };
+            var websocket = await CreateClientWebSocketAsync(webSocketUriBuilder.Uri, timeout).ConfigureAwait(false);
             return new ClientWebSocketTransport(
                 websocket,
                 null,

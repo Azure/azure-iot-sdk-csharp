@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         public AmqpClientLink CreateSendingLink(Address address)
         {
             SendingLink = CreateLink();
-            SendingLink.AmqpLinkSettings.SettleType = SettleMode.SettleOnSend;
+            SendingLink.AmqpLinkSettings.SettleType = SettleMode.SettleOnDispose;
             SendingLink.AmqpLinkSettings.Role = false;  // sending link
             SendingLink.AmqpLinkSettings.Target = new Target
             {
@@ -67,7 +67,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         public AmqpClientLink CreateReceivingLink(Address address)
         {
             ReceivingLink = CreateLink();
-            ReceivingLink.AmqpLinkSettings.SettleType = SettleMode.SettleOnDispose;
+            ReceivingLink.AmqpLinkSettings.SettleType = SettleMode.SettleOnReceive;
             ReceivingLink.AmqpLinkSettings.Role = true; // receiving link
             ReceivingLink.AmqpLinkSettings.Source = new Source
             {

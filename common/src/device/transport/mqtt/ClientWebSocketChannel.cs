@@ -31,13 +31,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             _webSocket = webSocket;
             _active = true;
             Metadata = new ChannelMetadata(false, 16);
-            Configuration = new DefaultChannelConfiguration(parent);
+            Configuration = new ClientWebSocketChannelConfig();
             _writeCancellationTokenSource = new CancellationTokenSource();
         }
 
         public override IChannelConfiguration Configuration { get; }
 
-        public override bool Open => _webSocket.State == WebSocketState.Open;
+        public override bool Open => (this._webSocket.State == WebSocketState.Open && this.Active);
 
         public override bool Active => _active;
 
@@ -109,8 +109,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     using (var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30)))
                     {
                         await _webSocket.CloseAsync(
-                            WebSocketCloseStatus.NormalClosure, 
-                            string.Empty, 
+                            WebSocketCloseStatus.NormalClosure,
+                            string.Empty,
                             cancellationTokenSource.Token).ConfigureAwait(false);
                     }
                 }
@@ -203,9 +203,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     }
 
                     await _webSocket.SendAsync(
-                        byteBuffer.GetIoBuffer(), 
-                        WebSocketMessageType.Binary, 
-                        true, 
+                        byteBuffer.GetIoBuffer(),
+                        WebSocketMessageType.Binary,
+                        true,
                         _writeCancellationTokenSource.Token).ConfigureAwait(false);
 
                     channelOutboundBuffer.Remove();
@@ -226,7 +226,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private async Task<int> DoReadBytes(IByteBuffer byteBuffer)
         {
             WebSocketReceiveResult receiveResult = await _webSocket.ReceiveAsync(
-                new ArraySegment<byte>(byteBuffer.Array, byteBuffer.ArrayOffset + byteBuffer.WriterIndex, byteBuffer.WritableBytes), 
+                new ArraySegment<byte>(byteBuffer.Array, byteBuffer.ArrayOffset + byteBuffer.WriterIndex, byteBuffer.WritableBytes),
                 CancellationToken.None).ConfigureAwait(false);
 
             if (receiveResult.MessageType == WebSocketMessageType.Text)
@@ -330,6 +330,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             return ReferenceEquals(left, null) ? ReferenceEquals(right, null) : left.CompareTo(right) >= 0;
         }
 
+#pragma warning disable CA1822
         public int CompareTo(ClientWebSocketChannel other)
         {
             if (ReferenceEquals(other, null))
@@ -339,5 +340,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             throw new NotImplementedException();
         }
+#pragma warning restore CA1822
     }
 }

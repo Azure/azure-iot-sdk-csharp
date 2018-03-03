@@ -105,6 +105,34 @@ namespace Microsoft.Azure.Devices
             return this.httpClientHelper.PutAsync(GetRequestUri(device.Id), device, PutOperationType.CreateEntity, errorMappingOverrides, cancellationToken);
         }
 
+
+        public override Task<BulkRegistryOperationResult> AddDeviceWithTwinAsync(Device device, Twin twin)
+        {
+            return AddDeviceWithTwinAsync(device, twin, CancellationToken.None);
+        }
+
+       public override Task<BulkRegistryOperationResult> AddDeviceWithTwinAsync(Device device, Twin twin, CancellationToken cancellationToken)
+        {
+            ValidateDeviceId(device);
+            if (!string.IsNullOrWhiteSpace(device.ETag))
+            {
+                throw new ArgumentException(ApiResources.ETagSetWhileRegisteringDevice);
+            }
+            var exportImportDeviceList = new List<ExportImportDevice>(1);
+
+            var exportImportDevice = new ExportImportDevice(device, ImportMode.Create);
+            exportImportDevice.Tags = twin?.Tags;
+            exportImportDevice.Properties =  new ExportImportDevice.PropertyContainer();
+            exportImportDevice.Properties.DesiredProperties = twin?.Properties.Desired;
+            exportImportDevice.Properties.ReportedProperties = twin?.Properties.Reported;
+            
+            exportImportDeviceList.Add(exportImportDevice);
+
+            return this.BulkDeviceOperationsAsync<BulkRegistryOperationResult>(
+               exportImportDeviceList,
+               ClientApiVersionHelper.ApiVersionQueryString,
+               cancellationToken);
+        }
         public override Task<string[]> AddDevicesAsync(IEnumerable<Device> devices)
         {
             return this.AddDevicesAsync(devices, CancellationToken.None);
@@ -488,12 +516,12 @@ namespace Microsoft.Azure.Devices
 
         }
 
-        internal override Task ExportRegistryAsync(string storageAccountConnectionString, string containerName)
+        public override Task ExportRegistryAsync(string storageAccountConnectionString, string containerName)
         {
             return this.ExportRegistryAsync(storageAccountConnectionString, containerName, CancellationToken.None);
         }
 
-        internal override Task ExportRegistryAsync(string storageAccountConnectionString, string containerName, CancellationToken cancellationToken)
+        public override Task ExportRegistryAsync(string storageAccountConnectionString, string containerName, CancellationToken cancellationToken)
         {
             this.EnsureInstanceNotClosed();
 
@@ -514,12 +542,12 @@ namespace Microsoft.Azure.Devices
                 cancellationToken);
         }
 
-        internal override Task ImportRegistryAsync(string storageAccountConnectionString, string containerName)
+        public override Task ImportRegistryAsync(string storageAccountConnectionString, string containerName)
         {
             return this.ImportRegistryAsync(storageAccountConnectionString, containerName, CancellationToken.None);
         }
 
-        internal override Task ImportRegistryAsync(string storageAccountConnectionString, string containerName, CancellationToken cancellationToken)
+        public override Task ImportRegistryAsync(string storageAccountConnectionString, string containerName, CancellationToken cancellationToken)
         {
             this.EnsureInstanceNotClosed();
 

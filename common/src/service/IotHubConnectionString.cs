@@ -15,6 +15,7 @@ namespace Microsoft.Azure.Devices
     {
         static readonly TimeSpan DefaultTokenTimeToLive = TimeSpan.FromHours(1);
         const string UserSeparator = "@";
+        const int DefaultHttpsPort = 443;
 
         public IotHubConnectionString(IotHubConnectionStringBuilder builder)
         {
@@ -28,7 +29,7 @@ namespace Microsoft.Azure.Devices
             this.SharedAccessKey = builder.SharedAccessKey;
             this.SharedAccessSignature = builder.SharedAccessSignature;
             this.IotHubName = builder.IotHubName;
-            this.HttpsEndpoint = new UriBuilder("https", builder.HostName).Uri;
+            this.HttpsEndpoint = new UriBuilder("https", builder.HostName, builder.Port ?? DefaultHttpsPort).Uri;
             this.AmqpEndpoint = new UriBuilder(CommonConstants.AmqpsScheme, builder.HostName, AmqpConstants.DefaultSecurePort).Uri;
         }
 

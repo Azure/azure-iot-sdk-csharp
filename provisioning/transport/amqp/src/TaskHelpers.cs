@@ -9,7 +9,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
     internal static class TaskHelpers
     {
-        public static IAsyncResult ToAsyncResult(this Task task, AsyncCallback callback, object state)
+        public static IAsyncResult ToAsyncResult<T>(this Task<T> task, AsyncCallback callback, object state)
         {
             if (task.AsyncState == state)
             {
@@ -26,14 +26,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 return task;
             }
 
-            var tcs = new TaskCompletionSource<object>(state);
+            var tcs = new TaskCompletionSource<T>(state);
             task.ContinueWith(
                 t =>
                 {
                     switch (t.Status)
                     {
                         case TaskStatus.RanToCompletion:
-                            tcs.TrySetResult(null);
+                            tcs.TrySetResult(t.Result);
                             break;
                         case TaskStatus.Canceled:
                             tcs.TrySetCanceled();

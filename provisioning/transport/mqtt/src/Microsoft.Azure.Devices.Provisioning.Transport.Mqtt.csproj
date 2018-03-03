@@ -62,6 +62,9 @@
     <Compile Include="$(Common)\device\transport\mqtt\ClientWebSocketChannel.cs">
       <Link>Common\device\transport\mqtt\ClientWebSocketChannel.cs</Link>
     </Compile>
+    <Compile Include="$(Common)\device\transport\mqtt\ClientWebSocketChannelConfig.cs">
+      <Link>Common\device\transport\mqtt\ClientWebSocketChannelConfig.cs</Link>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>

@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public override IChannelConfiguration Configuration { get; }
 
-        public override bool Open => this.webSocket.State == WebSocketState.Open;
+        public override bool Open => (this.webSocket.State == WebSocketState.Open && this.Active);
 
         public override bool Active => this.active;
 

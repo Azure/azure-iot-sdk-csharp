@@ -3,7 +3,10 @@
 
 using Microsoft.Azure.Devices.Provisioning.Client.Transport.Models;
 using Microsoft.Azure.Devices.Shared;
+using Microsoft.Rest;
+using Newtonsoft.Json;
 using System;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,6 +18,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
     public class ProvisioningTransportHandlerHttp : ProvisioningTransportHandler
     {
         private static readonly TimeSpan s_defaultOperationPoolingIntervalMilliseconds = TimeSpan.FromSeconds(2);
+        private const int DefaultHttpsPort = 443;
+
+        /// <summary>
+        /// Creates an instance of the ProvisioningTransportHandlerHttp class with an optional port
+        /// </summary>
+        /// <param name="port">Port for the connection</param>
+        public ProvisioningTransportHandlerHttp(int? port = null): base(port)
+        {
+        }
 
         /// <summary>
         /// Registers a device described by the message.
@@ -55,7 +67,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 var builder = new UriBuilder()
                 {
                     Scheme = Uri.UriSchemeHttps,
-                    Host = message.GlobalDeviceEndpoint
+                    Host = message.GlobalDeviceEndpoint,
+                    Port = this.Port ?? DefaultHttpsPort,
                 };
 
                 DeviceProvisioningServiceRuntimeClient client = authStrategy.CreateClient(builder.Uri);
@@ -119,12 +132,24 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
                 return ConvertToProvisioningRegistrationResult(operation.RegistrationState);
             }
-            // TODO: Catch only expected exceptions from HTTP and REST.
+            // TODO: Catch only expected exceptions from HTTP
+            catch (HttpOperationException oe)
+            {
+                if (Logging.IsEnabled) Logging.Error(
+                    this,
+                    $"{nameof(ProvisioningTransportHandlerHttp)} threw exception {oe}",
+                    nameof(RegisterAsync));
+
+                bool isTransient = oe.Response.StatusCode >= HttpStatusCode.InternalServerError || (int)oe.Response.StatusCode == 429;
+
+                var errorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetails>(oe.Response.Content);
+                throw new ProvisioningTransportException(oe.Response.Content, oe, isTransient, errorDetails);
+            }
             catch (Exception ex)
             {
                 if (Logging.IsEnabled) Logging.Error(
-                    this, 
-                    $"{nameof(ProvisioningTransportHandlerHttp)} threw exception {ex}", 
+                    this,
+                    $"{nameof(ProvisioningTransportHandlerHttp)} threw exception {ex}",
                     nameof(RegisterAsync));
 
                 // TODO: Extract trackingId from the exception.
@@ -136,7 +161,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             }
         }
 
-        private DeviceRegistrationResult ConvertToProvisioningRegistrationResult(Models.DeviceRegistrationResult result)
+        private static DeviceRegistrationResult ConvertToProvisioningRegistrationResult(Models.DeviceRegistrationResult result)
         {
             var status = ProvisioningRegistrationStatusType.Failed;
             Enum.TryParse(result.Status, true, out status);

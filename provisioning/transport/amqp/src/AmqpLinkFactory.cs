@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             LinkCreated?.Invoke(o, new LinkCreatedEventArgs(o));
         }
 
-        public Task OpenLinkAsync(AmqpLink link, TimeSpan timeout)
+        public static Task<bool> OpenLinkAsync(AmqpLink link, TimeSpan timeout)
         {
             if (link == null)
             {
@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 throw new ArgumentOutOfRangeException(nameof(timeout));
             }
 
-            return Task.CompletedTask;
+            return Task.FromResult(true);
         }
     }
 }

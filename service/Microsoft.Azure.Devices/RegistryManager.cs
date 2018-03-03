@@ -70,6 +70,23 @@ namespace Microsoft.Azure.Devices
         /// <returns>echoes back the Device object with the generated keys and etags</returns>
         public abstract Task<Device> AddDeviceAsync(Device device, CancellationToken cancellationToken);
 
+
+        /// <summary>
+        /// Adds a Device with Twin information
+        /// </summary>
+        /// <param name="device"></param>
+        /// <param name="twin"></param>
+        /// <returns></returns>
+        public abstract Task<BulkRegistryOperationResult> AddDeviceWithTwinAsync(Device device, Twin twin);
+
+        /// <summary>
+        /// Adds a Device with Twin information
+        /// </summary>
+        /// <param name="device"></param>
+        /// <param name="twin"></param>
+        /// <returns></returns>
+        public abstract Task<BulkRegistryOperationResult> AddDeviceWithTwinAsync(Device device, Twin twin, CancellationToken cancellationToken);
+
         /// <summary>
         /// Register a list of new devices with the system
         /// </summary>
@@ -376,7 +393,7 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         /// <param name="storageAccountConnectionString">ConnectionString to the destination StorageAccount</param>
         /// <param name="containerName">Destination blob container name</param>
-        internal abstract Task ExportRegistryAsync(string storageAccountConnectionString, string containerName);
+        public abstract Task ExportRegistryAsync(string storageAccountConnectionString, string containerName);
 
         /// <summary>
         /// Copies registered device data to a set of blobs in a specific container in a storage account. 
@@ -384,14 +401,14 @@ namespace Microsoft.Azure.Devices
         /// <param name="storageAccountConnectionString">ConnectionString to the destination StorageAccount</param>
         /// <param name="containerName">Destination blob container name</param>
         /// <param name="cancellationToken">Task cancellation token</param>
-        internal abstract Task ExportRegistryAsync(string storageAccountConnectionString, string containerName, CancellationToken cancellationToken);
+        public abstract Task ExportRegistryAsync(string storageAccountConnectionString, string containerName, CancellationToken cancellationToken);
 
         /// <summary>
         /// Imports registered device data from a set of blobs in a specific container in a storage account. 
         /// </summary>
         /// <param name="storageAccountConnectionString">ConnectionString to the source StorageAccount</param>
         /// <param name="containerName">Source blob container name</param>
-        internal abstract Task ImportRegistryAsync(string storageAccountConnectionString, string containerName);
+        public abstract Task ImportRegistryAsync(string storageAccountConnectionString, string containerName);
 
         /// <summary>
         /// Imports registered device data from a set of blobs in a specific container in a storage account. 
@@ -399,7 +416,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="storageAccountConnectionString">ConnectionString to the source StorageAccount</param>
         /// <param name="containerName">Source blob container name</param>
         /// <param name="cancellationToken">Task cancellation token</param>
-        internal abstract Task ImportRegistryAsync(string storageAccountConnectionString, string containerName, CancellationToken cancellationToken);
+        public abstract Task ImportRegistryAsync(string storageAccountConnectionString, string containerName, CancellationToken cancellationToken);
 
         /// <summary>
         /// Creates a new bulk job to export device registrations to the container specified by the provided URI.
