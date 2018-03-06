@@ -1472,17 +1472,16 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
 
         private bool IsE2EDiagnosticSupportedProtocol()
         {
-            var transportSetting = this.transportSettings.FirstOrDefault();
-            var transportType = transportSetting.GetTransportType();
-            if (transportType == TransportType.Amqp_WebSocket_Only || transportType == TransportType.Amqp_Tcp_Only
-                || transportType == TransportType.Mqtt_WebSocket_Only || transportType == TransportType.Mqtt_Tcp_Only)
+            foreach (ITransportSettings transportSetting in this.transportSettings)
             {
-                return true;
+                var transportType = transportSetting.GetTransportType();
+                if (!(transportType == TransportType.Amqp_WebSocket_Only || transportType == TransportType.Amqp_Tcp_Only
+                    || transportType == TransportType.Mqtt_WebSocket_Only || transportType == TransportType.Mqtt_Tcp_Only))
+                {
+                    throw new NotSupportedException($"{transportType} protocal doesn't support E2E diagnostic.");
+                }
             }
-            else
-            {
-                throw new NotSupportedException($"{transportType} protocal doesn't support E2E diagnostic.");
-            }
+            return true;
         }
     }
 }

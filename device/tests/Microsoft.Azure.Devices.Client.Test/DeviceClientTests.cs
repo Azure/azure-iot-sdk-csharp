@@ -7,6 +7,7 @@
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Client.Common;
     using Microsoft.Azure.Devices.Client.Transport;
+    using Microsoft.Azure.Devices.Client.Transport.Mqtt;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using NSubstitute;
     using NSubstitute.ExceptionExtensions;
@@ -80,6 +81,29 @@
         public void DeviceClient_StartDiagLocallyThatDoNotSupport_ThrowException()
         {
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString, TransportType.Http1);
+            try
+            {
+                deviceClient.DiagnosticSamplingPercentage = 100;
+                Assert.Fail();
+            }
+            catch (NotSupportedException e)
+            {
+                Assert.AreEqual(e.Message, $"{TransportType.Http1} protocal doesn't support E2E diagnostic.");
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("IoTHubClientDiagnostic")]
+        public void DeviceClient_StartDiagLocallyWithMutipleProtocolThatDoNotSupport_ThrowException()
+        {
+            var transportSettings = new ITransportSettings[]
+            {
+                new AmqpTransportSettings(TransportType.Amqp_Tcp_Only),
+                new MqttTransportSettings(TransportType.Mqtt_WebSocket_Only),
+                new Http1TransportSettings()
+            };
+
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString, transportSettings);
             try
             {
                 deviceClient.DiagnosticSamplingPercentage = 100;
