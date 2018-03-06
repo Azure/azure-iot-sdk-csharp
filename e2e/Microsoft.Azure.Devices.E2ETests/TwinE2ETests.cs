@@ -391,6 +391,74 @@ namespace Microsoft.Azure.Devices.E2ETests
             await _Twin_DeviceSetsReportedPropertyAndServiceReceivesIt(Client.TransportType.Amqp_WebSocket_Only);
         }
 
+        [TestMethod]
+        [TestCategory("Twin-E2E")]
+        public async Task Twin_ServiceDoesNotCreateNullPropertyInCollection_Mqtt()
+        {
+            // GitHub Issue #243
+            await _Twin_ServiceDoesNotCreateNullPropertyInCollection(Client.TransportType.Mqtt_Tcp_Only);
+        }
+
+        [TestMethod]
+        [TestCategory("Twin-E2E")]
+        public async Task Twin_ServiceDoesNotCreateNullPropertyInCollection_MqttWs()
+        {
+            // GitHub Issue #243
+            await _Twin_ServiceDoesNotCreateNullPropertyInCollection(Client.TransportType.Mqtt_WebSocket_Only);
+        }
+
+        [TestMethod]
+        [TestCategory("Twin-E2E")]
+        public async Task Twin_ServiceDoesNotCreateNullPropertyInCollection_Amqp()
+        {
+            // GitHub Issue #243
+            await _Twin_ServiceDoesNotCreateNullPropertyInCollection(Client.TransportType.Amqp_Tcp_Only);
+        }
+
+#if NETCOREAPP2_0
+        // GitHub Issue #302
+        [Ignore]
+#endif
+        [TestMethod]
+        [TestCategory("Twin-E2E")]
+        public async Task Twin_ServiceDoesNotCreateNullPropertyInCollection_AmqpWs()
+        {
+            // GitHub Issue #243
+            await _Twin_ServiceDoesNotCreateNullPropertyInCollection(Client.TransportType.Amqp_WebSocket_Only);
+        }
+
+        [TestMethod]
+        [TestCategory("Twin-E2E")]
+        public async Task Twin_ClientHandlesRejectionInvalidPropertyName_Mqtt()
+        {
+            // GitHub Issue #340
+            await _Twin_ClientHandlesRejectionInvalidPropertyName(Client.TransportType.Mqtt_Tcp_Only);
+        }
+
+        [TestMethod]
+        [TestCategory("Twin-E2E")]
+        public async Task Twin_ClientHandlesRejectionInvalidPropertyName_MqttWs()
+        {
+            // GitHub Issue #340
+            await _Twin_ClientHandlesRejectionInvalidPropertyName(Client.TransportType.Mqtt_WebSocket_Only);
+        }
+
+        [TestMethod]
+        [TestCategory("Twin-E2E")]
+        public async Task Twin_ClientHandlesRejectionInvalidPropertyName_Amqp()
+        {
+            // GitHub Issue #340
+            await _Twin_ClientHandlesRejectionInvalidPropertyName(Client.TransportType.Amqp_Tcp_Only);
+        }
+
+        [TestMethod]
+        [TestCategory("Twin-E2E")]
+        public async Task Twin_ClientHandlesRejectionInvalidPropertyName_AmqpWs()
+        {
+            // GitHub Issue #340
+            await _Twin_ClientHandlesRejectionInvalidPropertyName(Client.TransportType.Amqp_WebSocket_Only);
+        }
+
         private async Task _Twin_DeviceSetsReportedPropertyAndGetsItBack(Client.TransportType transport)
         {
             var propName = Guid.NewGuid().ToString();
@@ -439,7 +507,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             await deviceClient.CloseAsync();
             await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager);
         }
-
 
         private async Task _Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent(Client.TransportType transport)
         {
@@ -659,6 +726,85 @@ namespace Microsoft.Azure.Devices.E2ETests
             Assert.AreEqual<string>(serviceTwin.Properties.Reported[propName].ToString(), propValue);
 
             TestContext.WriteLine("verified " + serviceTwin.Properties.Reported[propName].ToString() + "=" + propValue);
+            await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager);
+        }
+
+        private async Task _Twin_ServiceDoesNotCreateNullPropertyInCollection(Client.TransportType transport)
+        {
+            var propName1 = Guid.NewGuid().ToString();
+            var propName2 = Guid.NewGuid().ToString();
+            var propEmptyValue = "{}";
+
+            Tuple<string, string> deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
+            var deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, transport);
+
+            await deviceClient.UpdateReportedPropertiesAsync(new TwinCollection
+            {
+                [propName1] = null
+            });
+            var serviceTwin = await registryManager.GetTwinAsync(deviceInfo.Item1);
+            Assert.IsFalse(serviceTwin.Properties.Reported.Contains(propName1));
+
+            await deviceClient.UpdateReportedPropertiesAsync(new TwinCollection
+            {
+                [propName1] = new TwinCollection
+                {
+                    [propName2] = null
+                }
+            });
+            serviceTwin = await registryManager.GetTwinAsync(deviceInfo.Item1);
+            Assert.IsTrue(serviceTwin.Properties.Reported.Contains(propName1));
+            String value1 = serviceTwin.Properties.Reported[propName1].ToString();
+
+            // If service team fixed the Issue #243 the following Assert.AreNotEqual should fail 
+            // and need to be changed to Assert.AreEqual
+            Assert.AreNotEqual(value1, propEmptyValue);
+
+            await deviceClient.UpdateReportedPropertiesAsync(new TwinCollection
+            {
+                [propName1] = new TwinCollection
+                {
+                    [propName2] = null
+                }
+            });
+            serviceTwin = await registryManager.GetTwinAsync(deviceInfo.Item1);
+            Assert.IsTrue(serviceTwin.Properties.Reported.Contains(propName1));
+            String value2 = serviceTwin.Properties.Reported[propName1].ToString();
+            Assert.AreEqual(value2, propEmptyValue);
+
+            await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager);
+        }
+
+        private async Task _Twin_ClientHandlesRejectionInvalidPropertyName(Client.TransportType transport)
+        {
+            var propName1 = "$" + Guid.NewGuid().ToString();
+            var propName2 = Guid.NewGuid().ToString();
+
+            Tuple<string, string> deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
+            var deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, transport);
+
+            var exceptionThrown = false;
+            try
+            {
+                await deviceClient.UpdateReportedPropertiesAsync(new TwinCollection
+                {
+                    [propName1] = 123,
+                    [propName2] = "abcd"
+                });
+            }
+            catch (Exception e)
+            {
+                exceptionThrown = true;
+            }
+
+            if (!exceptionThrown)
+            {
+                throw new AssertFailedException("Exception was expected, but not thrown.");
+            }
+
+            var serviceTwin = await registryManager.GetTwinAsync(deviceInfo.Item1);
+            Assert.IsFalse(serviceTwin.Properties.Reported.Contains(propName1));
+
             await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager);
         }
     }

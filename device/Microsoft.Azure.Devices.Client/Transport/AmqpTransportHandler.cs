@@ -21,6 +21,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
     sealed class AmqpTransportHandler : TransportHandler
     {
+        public const string ResponseStatusName = "status";
+
         static readonly IotHubConnectionCache TcpConnectionCache = new IotHubConnectionCache();
         static readonly IotHubConnectionCache WsConnectionCache = new IotHubConnectionCache();
         readonly string deviceId;
@@ -625,7 +627,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 amqpMessage.MessageAnnotations.Map["resource"] = "/properties/reported";
                 amqpMessage.MessageAnnotations.Map["version"] = null;
 
-                await RoundTripTwinMessage(amqpMessage, cancellationToken).ConfigureAwait(false);
+                var response = await RoundTripTwinMessage(amqpMessage, cancellationToken).ConfigureAwait(false);
+
+                verifyResponseMessage(response);
             }
             catch (Exception exception)
             {
@@ -635,6 +639,25 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 }
 
                 throw AmqpClientHelper.ToIotHubClientContract(exception);
+            }
+        }
+
+        private void verifyResponseMessage(AmqpMessage response)
+        {
+            if (response != null)
+            {
+                int status;
+                if (response.MessageAnnotations.Map.TryGetValue(ResponseStatusName, out status))
+                {
+                    if (status >= 400)
+                    {
+                        throw new InvalidOperationException("Service rejected the message with status: "+ status);
+                    }
+                }
+            }
+            else
+            {
+                throw new InvalidOperationException("Service response is null.");
             }
         }
 
@@ -674,8 +697,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 string body = reader.ReadToEnd();
                 var props = JsonConvert.DeserializeObject<Microsoft.Azure.Devices.Shared.TwinProperties>(body);
-                var twin = new Twin();
-                twin.Properties = props;
+                var twin = new Twin(props);
                 return twin;
             }
         }

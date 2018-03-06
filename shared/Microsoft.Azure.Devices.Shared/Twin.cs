@@ -33,6 +33,16 @@ namespace Microsoft.Azure.Devices.Shared
         }
 
         /// <summary>
+        /// Creates an instance of <see cref="Twin"/>
+        /// </summary>
+        /// <param name="twinProperties"></param>
+        public Twin(TwinProperties twinProperties)
+        {
+            Tags = new TwinCollection();
+            Properties = twinProperties;
+        }
+
+        /// <summary>
         /// Gets and sets the <see cref="Twin"/> Id.
         /// </summary>
         public string DeviceId { get; set; }
