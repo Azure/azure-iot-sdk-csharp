@@ -197,12 +197,18 @@ try {
         Write-Host -ForegroundColor Cyan "End-to-end Test execution"
         Write-Host
 
-        RunTests e2e\tests "End-to-end tests (NetCoreApp)"
+        # Override verbosity to display individual test execution.
+        $oldVerbosity = $verbosity
+        $verbosity = "normal"
+        
+        RunTests e2e\test "End-to-end tests (NetCoreApp)"
         if (IsWindowsDevelopmentBox)
         {
-            RunTests e2e\tests "End-to-end tests (NET451)" "net451"
-            RunTests e2e\tests "End-to-end tests (NET47)" "net47"
+            RunTests e2e\test "End-to-end tests (NET451)" "net451"
+            RunTests e2e\test "End-to-end tests (NET47)" "net47"
         }
+
+        $verbosity = $oldVerbosity
     }
 
     if ($stresstests)
