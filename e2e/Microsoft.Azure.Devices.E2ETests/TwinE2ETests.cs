@@ -39,32 +39,32 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Twin-E2E")]
         public async Task Twin_DeviceSetsReportedPropertyAndGetsItBack_Mqtt()
         {
-            await _Twin_DeviceSetsReportedPropertyAndGetsItBack(Client.TransportType.Mqtt_Tcp_Only);
+            await Twin_DeviceSetsReportedPropertyAndGetsItBack(Client.TransportType.Mqtt_Tcp_Only);
         }
 
         [TestMethod]
         [TestCategory("Twin-E2E")]
         public async Task Twin_DeviceSetsReportedPropertyAndGetsItBack_MqttWs()
         {
-            await _Twin_DeviceSetsReportedPropertyAndGetsItBack(Client.TransportType.Mqtt_WebSocket_Only);
+            await Twin_DeviceSetsReportedPropertyAndGetsItBack(Client.TransportType.Mqtt_WebSocket_Only);
         }
 
         [TestMethod]
         [TestCategory("Twin-E2E")]
         public async Task Twin_DeviceSetsReportedPropertyAndGetsItBack_Amqp()
         {
-            await _Twin_DeviceSetsReportedPropertyAndGetsItBack(Client.TransportType.Amqp_Tcp_Only);
+            await Twin_DeviceSetsReportedPropertyAndGetsItBack(Client.TransportType.Amqp_Tcp_Only);
         }
 
 #if NETCOREAPP2_0
-        // GitHub Issue #302
+        // TODO: #302 In NetCoreApp2.0 the test is failing with TimeoutException.
         [Ignore]
 #endif
         [TestMethod]
         [TestCategory("Twin-E2E")]
         public async Task Twin_DeviceSetsReportedPropertyAndGetsItBack_AmqpWs()
         {
-            await _Twin_DeviceSetsReportedPropertyAndGetsItBack(Client.TransportType.Amqp_WebSocket_Only);
+            await Twin_DeviceSetsReportedPropertyAndGetsItBack(Client.TransportType.Amqp_WebSocket_Only);
         }
         
         [Ignore]
@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Recovery")]
         public async Task Twin_DeviceReportedPropertiesTcpConnRecovery_Mqtt()
         {
-            await _Twin_DeviceReportedPropertiesRecovery(Client.TransportType.Mqtt_Tcp_Only, 
+            await Twin_DeviceReportedPropertiesRecovery(Client.TransportType.Mqtt_Tcp_Only, 
                 TestUtil.FaultType_Tcp,
                 TestUtil.FaultCloseReason_Boom,
                 TestUtil.DefaultDelayInSec);
@@ -85,7 +85,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Recovery")]
         public async Task Twin_DeviceReportedPropertiesTcpConnRecovery_MqttWs()
         {
-            await _Twin_DeviceReportedPropertiesRecovery(Client.TransportType.Mqtt_WebSocket_Only, 
+            await Twin_DeviceReportedPropertiesRecovery(Client.TransportType.Mqtt_WebSocket_Only, 
                 TestUtil.FaultType_Tcp,
                 TestUtil.FaultCloseReason_Boom,
                 TestUtil.DefaultDelayInSec);
@@ -96,14 +96,14 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Recovery")]
         public async Task Twin_DeviceReportedPropertiesTcpConnRecovery_Amqp()
         {
-            await _Twin_DeviceReportedPropertiesRecovery(Client.TransportType.Amqp_Tcp_Only, 
+            await Twin_DeviceReportedPropertiesRecovery(Client.TransportType.Amqp_Tcp_Only, 
                 TestUtil.FaultType_Tcp,
                 TestUtil.FaultCloseReason_Boom,
                 TestUtil.DefaultDelayInSec);
         }
 
 #if NETCOREAPP2_0
-        // GitHub Issue #302
+        // TODO: #302 In NetCoreApp2.0 the test is failing with TimeoutException.
         [Ignore]
 #endif
         [TestMethod]
@@ -111,7 +111,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Recovery")]
         public async Task Twin_DeviceReportedPropertiesTcpConnRecovery_AmqpWs()
         {
-            await _Twin_DeviceReportedPropertiesRecovery(Client.TransportType.Amqp_WebSocket_Only, 
+            await Twin_DeviceReportedPropertiesRecovery(Client.TransportType.Amqp_WebSocket_Only, 
                 TestUtil.FaultType_Tcp,
                 TestUtil.FaultCloseReason_Boom,
                 TestUtil.DefaultDelayInSec);
@@ -123,7 +123,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Recovery")]
         public async Task Twin_DeviceReportedPropertiesGracefulShutdownRecovery_Mqtt()
         {
-            await _Twin_DeviceReportedPropertiesRecovery(Client.TransportType.Mqtt_Tcp_Only,
+            await Twin_DeviceReportedPropertiesRecovery(Client.TransportType.Mqtt_Tcp_Only,
                 TestUtil.FaultType_GracefulShutdownMqtt,
                 TestUtil.FaultCloseReason_Bye,
                 TestUtil.DefaultDelayInSec);
@@ -135,7 +135,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Recovery")]
         public async Task Twin_DeviceReportedPropertiesGracefulShutdownRecovery_MqttWs()
         {
-            await _Twin_DeviceReportedPropertiesRecovery(Client.TransportType.Mqtt_WebSocket_Only,
+            await Twin_DeviceReportedPropertiesRecovery(Client.TransportType.Mqtt_WebSocket_Only,
                 TestUtil.FaultType_GracefulShutdownMqtt,
                 TestUtil.FaultCloseReason_Bye,
                 TestUtil.DefaultDelayInSec);
@@ -146,14 +146,14 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Recovery")]
         public async Task Twin_DeviceReportedPropertiesGracefulShutdownRecovery_Amqp()
         {
-            await _Twin_DeviceReportedPropertiesRecovery(Client.TransportType.Amqp_Tcp_Only,
+            await Twin_DeviceReportedPropertiesRecovery(Client.TransportType.Amqp_Tcp_Only,
                 TestUtil.FaultType_GracefulShutdownAmqp,
                 TestUtil.FaultCloseReason_Bye,
                 TestUtil.DefaultDelayInSec);
         }
 
 #if NETCOREAPP2_0
-        // GitHub Issue #302
+        // TODO: #302 In NetCoreApp2.0 the test is failing with TimeoutException.
         [Ignore]
 #endif
         [TestMethod]
@@ -161,7 +161,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Recovery")]
         public async Task Twin_DeviceReportedPropertiesGracefulShutdownRecovery_AmqpWs()
         {
-            await _Twin_DeviceReportedPropertiesRecovery(Client.TransportType.Amqp_WebSocket_Only,
+            await Twin_DeviceReportedPropertiesRecovery(Client.TransportType.Amqp_WebSocket_Only,
                 TestUtil.FaultType_GracefulShutdownAmqp,
                 TestUtil.FaultCloseReason_Bye,
                 TestUtil.DefaultDelayInSec);
@@ -171,64 +171,64 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Twin-E2E")]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_Mqtt()
         {
-            await _Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent(Client.TransportType.Mqtt_Tcp_Only);
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent(Client.TransportType.Mqtt_Tcp_Only);
         }
 
         [TestMethod]
         [TestCategory("Twin-E2E")]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_MqttWs()
         {
-            await _Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent(Client.TransportType.Mqtt_WebSocket_Only);
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent(Client.TransportType.Mqtt_WebSocket_Only);
         }
         
         [TestMethod]
         [TestCategory("Twin-E2E")]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_Amqp()
         {
-            await _Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent(Client.TransportType.Amqp_Tcp_Only);
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent(Client.TransportType.Amqp_Tcp_Only);
         }
 
 #if NETCOREAPP2_0
-        // GitHub Issue #302
+        // TODO: #302 In NetCoreApp2.0 the test is failing with TimeoutException.
         [Ignore]
 #endif
         [TestMethod]
         [TestCategory("Twin-E2E")]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_AmqpWs()
         {
-            await _Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent(Client.TransportType.Amqp_WebSocket_Only);
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent(Client.TransportType.Amqp_WebSocket_Only);
         }
 
         [TestMethod]
         [TestCategory("Twin-E2E")]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_WithObseleteCallbackSetter_Mqtt()
         {
-            await _Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_WithObseleteCallbackSetter(Client.TransportType.Mqtt_Tcp_Only);
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_WithObseleteCallbackSetter(Client.TransportType.Mqtt_Tcp_Only);
         }
 
         [TestMethod]
         [TestCategory("Twin-E2E")]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_WithObseleteCallbackSetter_MqttWs()
         {
-            await _Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_WithObseleteCallbackSetter(Client.TransportType.Mqtt_WebSocket_Only);
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_WithObseleteCallbackSetter(Client.TransportType.Mqtt_WebSocket_Only);
         }
 
         [TestMethod]
         [TestCategory("Twin-E2E")]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_WithObseleteCallbackSetter_Amqp()
         {
-            await _Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_WithObseleteCallbackSetter(Client.TransportType.Amqp_Tcp_Only);
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_WithObseleteCallbackSetter(Client.TransportType.Amqp_Tcp_Only);
         }
 
 #if NETCOREAPP2_0
-        // GitHub Issue #302
+        // TODO: #302 In NetCoreApp2.0 the test is failing with TimeoutException.
         [Ignore]
 #endif
         [TestMethod]
         [TestCategory("Twin-E2E")]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_WithObseleteCallbackSetter_AmqpWs()
         {
-            await _Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_WithObseleteCallbackSetter(Client.TransportType.Amqp_WebSocket_Only);
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_WithObseleteCallbackSetter(Client.TransportType.Amqp_WebSocket_Only);
         }
 
         [Ignore]
@@ -237,7 +237,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Recovery")]
         public async Task Twin_DeviceDesiredPropertyUpdateTcpConnRecovery_Mqtt()
         {
-            await _Twin_DeviceDesiredPropertyUpdateRecovery(Client.TransportType.Mqtt_Tcp_Only, 
+            await Twin_DeviceDesiredPropertyUpdateRecovery(Client.TransportType.Mqtt_Tcp_Only, 
                 TestUtil.FaultType_Tcp,
                 TestUtil.FaultCloseReason_Boom,
                 TestUtil.DefaultDelayInSec);
@@ -249,7 +249,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Recovery")]
         public async Task Twin_DeviceDesiredPropertyUpdateTcpConnRecovery_MqttWs()
         {
-            await _Twin_DeviceDesiredPropertyUpdateRecovery(Client.TransportType.Mqtt_WebSocket_Only,
+            await Twin_DeviceDesiredPropertyUpdateRecovery(Client.TransportType.Mqtt_WebSocket_Only,
                 TestUtil.FaultType_Tcp,
                 TestUtil.FaultCloseReason_Boom,
                 TestUtil.DefaultDelayInSec);
@@ -261,7 +261,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Recovery")]
         public async Task Twin_DeviceDesiredPropertyUpdateTcpConnRecovery_Amqp()
         {
-            await _Twin_DeviceDesiredPropertyUpdateRecovery(Client.TransportType.Amqp_Tcp_Only, 
+            await Twin_DeviceDesiredPropertyUpdateRecovery(Client.TransportType.Amqp_Tcp_Only, 
                 TestUtil.FaultType_Tcp,
                 TestUtil.FaultCloseReason_Boom,
                 TestUtil.DefaultDelayInSec);
@@ -273,7 +273,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Recovery")]
         public async Task Twin_DeviceDesiredPropertyUpdateTcpConnRecovery_AmqpWs()
         {
-            await _Twin_DeviceDesiredPropertyUpdateRecovery(Client.TransportType.Amqp_WebSocket_Only,
+            await Twin_DeviceDesiredPropertyUpdateRecovery(Client.TransportType.Amqp_WebSocket_Only,
                 TestUtil.FaultType_Tcp,
                 TestUtil.FaultCloseReason_Boom,
                 TestUtil.DefaultDelayInSec);
@@ -285,7 +285,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Recovery")]
         public async Task Twin_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_Mqtt()
         {
-            await _Twin_DeviceDesiredPropertyUpdateRecovery(Client.TransportType.Mqtt_Tcp_Only,
+            await Twin_DeviceDesiredPropertyUpdateRecovery(Client.TransportType.Mqtt_Tcp_Only,
                 TestUtil.FaultType_GracefulShutdownMqtt,
                 TestUtil.FaultCloseReason_Bye,
                 TestUtil.DefaultDelayInSec);
@@ -297,7 +297,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Recovery")]
         public async Task Twin_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_MqttWs()
         {
-            await _Twin_DeviceDesiredPropertyUpdateRecovery(Client.TransportType.Mqtt_WebSocket_Only,
+            await Twin_DeviceDesiredPropertyUpdateRecovery(Client.TransportType.Mqtt_WebSocket_Only,
                 TestUtil.FaultType_GracefulShutdownMqtt,
                 TestUtil.FaultCloseReason_Bye,
                 TestUtil.DefaultDelayInSec);
@@ -309,7 +309,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Recovery")]
         public async Task Twin_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_Amqp()
         {
-            await _Twin_DeviceDesiredPropertyUpdateRecovery(Client.TransportType.Amqp_Tcp_Only,
+            await Twin_DeviceDesiredPropertyUpdateRecovery(Client.TransportType.Amqp_Tcp_Only,
                 TestUtil.FaultType_GracefulShutdownAmqp,
                 TestUtil.FaultCloseReason_Bye,
                 TestUtil.DefaultDelayInSec);
@@ -321,7 +321,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Recovery")]
         public async Task Twin_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_AmqpWs()
         {
-            await _Twin_DeviceDesiredPropertyUpdateRecovery(Client.TransportType.Amqp_WebSocket_Only,
+            await Twin_DeviceDesiredPropertyUpdateRecovery(Client.TransportType.Amqp_WebSocket_Only,
                 TestUtil.FaultType_GracefulShutdownAmqp,
                 TestUtil.FaultCloseReason_Bye,
                 TestUtil.DefaultDelayInSec);
@@ -331,135 +331,127 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Twin-E2E")]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet_Mqtt()
         {
-            await _Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet(Client.TransportType.Mqtt_Tcp_Only);
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet(Client.TransportType.Mqtt_Tcp_Only);
         }
 
         [TestMethod]
         [TestCategory("Twin-E2E")]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet_MqttWs()
         {
-            await _Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet(Client.TransportType.Mqtt_WebSocket_Only);
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet(Client.TransportType.Mqtt_WebSocket_Only);
         }
 
         [TestMethod]
         [TestCategory("Twin-E2E")]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet_Amqp()
         {
-            await _Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet(Client.TransportType.Amqp_Tcp_Only);
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet(Client.TransportType.Amqp_Tcp_Only);
         }
 
 #if NETCOREAPP2_0
-        // GitHub Issue #302
+        // TODO: #302 In NetCoreApp2.0 the test is failing with TimeoutException.
         [Ignore]
 #endif
         [TestMethod]
         [TestCategory("Twin-E2E")]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet_AmqpWs()
         {
-            await _Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet(Client.TransportType.Amqp_WebSocket_Only);
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet(Client.TransportType.Amqp_WebSocket_Only);
         }
 
         [TestMethod]
         [TestCategory("Twin-E2E")]
         public async Task Twin_DeviceSetsReportedPropertyAndServiceReceivesIt_Mqtt()
         {
-            await _Twin_DeviceSetsReportedPropertyAndServiceReceivesIt(Client.TransportType.Mqtt_Tcp_Only);
+            await Twin_DeviceSetsReportedPropertyAndServiceReceivesIt(Client.TransportType.Mqtt_Tcp_Only);
         }
 
         [TestMethod]
         [TestCategory("Twin-E2E")]
         public async Task Twin_DeviceSetsReportedPropertyAndServiceReceivesIt_MqttWs()
         {
-            await _Twin_DeviceSetsReportedPropertyAndServiceReceivesIt(Client.TransportType.Mqtt_WebSocket_Only);
+            await Twin_DeviceSetsReportedPropertyAndServiceReceivesIt(Client.TransportType.Mqtt_WebSocket_Only);
         }
 
         [TestMethod]
         [TestCategory("Twin-E2E")]
         public async Task Twin_DeviceSetsReportedPropertyAndServiceReceivesIt_Amqp()
         {
-            await _Twin_DeviceSetsReportedPropertyAndServiceReceivesIt(Client.TransportType.Amqp_Tcp_Only);
+            await Twin_DeviceSetsReportedPropertyAndServiceReceivesIt(Client.TransportType.Amqp_Tcp_Only);
         }
 
 #if NETCOREAPP2_0
-        // GitHub Issue #302
+        // TODO: #302 In NetCoreApp2.0 the test is failing with TimeoutException.
         [Ignore]
 #endif
         [TestMethod]
         [TestCategory("Twin-E2E")]
         public async Task Twin_DeviceSetsReportedPropertyAndServiceReceivesIt_AmqpWs()
         {
-            await _Twin_DeviceSetsReportedPropertyAndServiceReceivesIt(Client.TransportType.Amqp_WebSocket_Only);
+            await Twin_DeviceSetsReportedPropertyAndServiceReceivesIt(Client.TransportType.Amqp_WebSocket_Only);
         }
 
         [TestMethod]
         [TestCategory("Twin-E2E")]
         public async Task Twin_ServiceDoesNotCreateNullPropertyInCollection_Mqtt()
         {
-            // GitHub Issue #243
-            await _Twin_ServiceDoesNotCreateNullPropertyInCollection(Client.TransportType.Mqtt_Tcp_Only);
+            await Twin_ServiceDoesNotCreateNullPropertyInCollection(Client.TransportType.Mqtt_Tcp_Only);
         }
 
         [TestMethod]
         [TestCategory("Twin-E2E")]
         public async Task Twin_ServiceDoesNotCreateNullPropertyInCollection_MqttWs()
         {
-            // GitHub Issue #243
-            await _Twin_ServiceDoesNotCreateNullPropertyInCollection(Client.TransportType.Mqtt_WebSocket_Only);
+            await Twin_ServiceDoesNotCreateNullPropertyInCollection(Client.TransportType.Mqtt_WebSocket_Only);
         }
 
         [TestMethod]
         [TestCategory("Twin-E2E")]
         public async Task Twin_ServiceDoesNotCreateNullPropertyInCollection_Amqp()
         {
-            // GitHub Issue #243
-            await _Twin_ServiceDoesNotCreateNullPropertyInCollection(Client.TransportType.Amqp_Tcp_Only);
+            await Twin_ServiceDoesNotCreateNullPropertyInCollection(Client.TransportType.Amqp_Tcp_Only);
         }
 
 #if NETCOREAPP2_0
-        // GitHub Issue #302
+        // TODO: #302 In NetCoreApp2.0 the test is failing with TimeoutException.
         [Ignore]
 #endif
         [TestMethod]
         [TestCategory("Twin-E2E")]
         public async Task Twin_ServiceDoesNotCreateNullPropertyInCollection_AmqpWs()
         {
-            // GitHub Issue #243
-            await _Twin_ServiceDoesNotCreateNullPropertyInCollection(Client.TransportType.Amqp_WebSocket_Only);
+            await Twin_ServiceDoesNotCreateNullPropertyInCollection(Client.TransportType.Amqp_WebSocket_Only);
         }
 
         [TestMethod]
         [TestCategory("Twin-E2E")]
         public async Task Twin_ClientHandlesRejectionInvalidPropertyName_Mqtt()
         {
-            // GitHub Issue #340
-            await _Twin_ClientHandlesRejectionInvalidPropertyName(Client.TransportType.Mqtt_Tcp_Only);
+            await Twin_ClientHandlesRejectionInvalidPropertyName(Client.TransportType.Mqtt_Tcp_Only);
         }
 
         [TestMethod]
         [TestCategory("Twin-E2E")]
         public async Task Twin_ClientHandlesRejectionInvalidPropertyName_MqttWs()
         {
-            // GitHub Issue #340
-            await _Twin_ClientHandlesRejectionInvalidPropertyName(Client.TransportType.Mqtt_WebSocket_Only);
+            await Twin_ClientHandlesRejectionInvalidPropertyName(Client.TransportType.Mqtt_WebSocket_Only);
         }
 
         [TestMethod]
         [TestCategory("Twin-E2E")]
         public async Task Twin_ClientHandlesRejectionInvalidPropertyName_Amqp()
         {
-            // GitHub Issue #340
-            await _Twin_ClientHandlesRejectionInvalidPropertyName(Client.TransportType.Amqp_Tcp_Only);
+            await Twin_ClientHandlesRejectionInvalidPropertyName(Client.TransportType.Amqp_Tcp_Only);
         }
 
         [TestMethod]
         [TestCategory("Twin-E2E")]
         public async Task Twin_ClientHandlesRejectionInvalidPropertyName_AmqpWs()
         {
-            // GitHub Issue #340
-            await _Twin_ClientHandlesRejectionInvalidPropertyName(Client.TransportType.Amqp_WebSocket_Only);
+            await Twin_ClientHandlesRejectionInvalidPropertyName(Client.TransportType.Amqp_WebSocket_Only);
         }
 
-        private async Task _Twin_DeviceSetsReportedPropertyAndGetsItBack(Client.TransportType transport)
+        private async Task Twin_DeviceSetsReportedPropertyAndGetsItBack(Client.TransportType transport)
         {
             var propName = Guid.NewGuid().ToString();
             var propValue = Guid.NewGuid().ToString();
@@ -477,7 +469,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager);
         }
 
-        private async Task _Twin_DeviceReportedPropertiesRecovery(Client.TransportType transport, string faultType, string reason, int delayInSec)
+        private async Task Twin_DeviceReportedPropertiesRecovery(Client.TransportType transport, string faultType, string reason, int delayInSec)
         {
             var propName = Guid.NewGuid().ToString();
             var propValue1 = Guid.NewGuid().ToString();
@@ -508,7 +500,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager);
         }
 
-        private async Task _Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent(Client.TransportType transport)
+        private async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent(Client.TransportType transport)
         {
             var tcs = new TaskCompletionSource<bool>();
             var propName = Guid.NewGuid().ToString();
@@ -546,7 +538,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager);
         }
         
-        private async Task _Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_WithObseleteCallbackSetter(Client.TransportType transport)
+        private async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_WithObseleteCallbackSetter(Client.TransportType transport)
         {
             var tcs = new TaskCompletionSource<bool>();
             var propName = Guid.NewGuid().ToString();
@@ -585,7 +577,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager);
         }
 
-        private async Task _Twin_DeviceDesiredPropertyUpdateRecovery(Client.TransportType transport, string faultType, string reason, int delayInSec)
+        private async Task Twin_DeviceDesiredPropertyUpdateRecovery(Client.TransportType transport, string faultType, string reason, int delayInSec)
         {
             var tcs = new TaskCompletionSource<bool>();
             var propName = Guid.NewGuid().ToString();
@@ -693,7 +685,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager);
         }
 
-        private async Task _Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet(Client.TransportType transport)
+        private async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet(Client.TransportType transport)
         {
             var propName = Guid.NewGuid().ToString();
             var propValue = Guid.NewGuid().ToString();
@@ -710,7 +702,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager);
         }
 
-        private async Task _Twin_DeviceSetsReportedPropertyAndServiceReceivesIt(Client.TransportType transport)
+        private async Task Twin_DeviceSetsReportedPropertyAndServiceReceivesIt(Client.TransportType transport)
         {
             var propName = Guid.NewGuid().ToString();
             var propValue = Guid.NewGuid().ToString();
@@ -729,81 +721,87 @@ namespace Microsoft.Azure.Devices.E2ETests
             await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager);
         }
 
-        private async Task _Twin_ServiceDoesNotCreateNullPropertyInCollection(Client.TransportType transport)
+        private async Task Twin_ServiceDoesNotCreateNullPropertyInCollection(Client.TransportType transport)
         {
             var propName1 = Guid.NewGuid().ToString();
             var propName2 = Guid.NewGuid().ToString();
             var propEmptyValue = "{}";
 
             Tuple<string, string> deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
-            var deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, transport);
 
-            await deviceClient.UpdateReportedPropertiesAsync(new TwinCollection
+            using (var deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, transport))
             {
-                [propName1] = null
-            });
-            var serviceTwin = await registryManager.GetTwinAsync(deviceInfo.Item1);
-            Assert.IsFalse(serviceTwin.Properties.Reported.Contains(propName1));
 
-            await deviceClient.UpdateReportedPropertiesAsync(new TwinCollection
-            {
-                [propName1] = new TwinCollection
+                await deviceClient.UpdateReportedPropertiesAsync(new TwinCollection
                 {
-                    [propName2] = null
-                }
-            });
-            serviceTwin = await registryManager.GetTwinAsync(deviceInfo.Item1);
-            Assert.IsTrue(serviceTwin.Properties.Reported.Contains(propName1));
-            String value1 = serviceTwin.Properties.Reported[propName1].ToString();
+                    [propName1] = null
+                });
+                var serviceTwin = await registryManager.GetTwinAsync(deviceInfo.Item1);
+                Assert.IsFalse(serviceTwin.Properties.Reported.Contains(propName1));
 
-            // If service team fixed the Issue #243 the following Assert.AreNotEqual should fail 
-            // and need to be changed to Assert.AreEqual
-            Assert.AreNotEqual(value1, propEmptyValue);
-
-            await deviceClient.UpdateReportedPropertiesAsync(new TwinCollection
-            {
-                [propName1] = new TwinCollection
+                await deviceClient.UpdateReportedPropertiesAsync(new TwinCollection
                 {
-                    [propName2] = null
-                }
-            });
-            serviceTwin = await registryManager.GetTwinAsync(deviceInfo.Item1);
-            Assert.IsTrue(serviceTwin.Properties.Reported.Contains(propName1));
-            String value2 = serviceTwin.Properties.Reported[propName1].ToString();
-            Assert.AreEqual(value2, propEmptyValue);
+                    [propName1] = new TwinCollection
+                    {
+                        [propName2] = null
+                    }
+                });
+                serviceTwin = await registryManager.GetTwinAsync(deviceInfo.Item1);
+                Assert.IsTrue(serviceTwin.Properties.Reported.Contains(propName1));
+                String value1 = serviceTwin.Properties.Reported[propName1].ToString();
+
+                // TODO: #243 
+                // If service team fixed the Issue #243 the following Assert.AreNotEqual should fail 
+                // and need to be changed to Assert.AreEqual
+                Assert.AreNotEqual(value1, propEmptyValue);
+
+                await deviceClient.UpdateReportedPropertiesAsync(new TwinCollection
+                {
+                    [propName1] = new TwinCollection
+                    {
+                        [propName2] = null
+                    }
+                });
+                serviceTwin = await registryManager.GetTwinAsync(deviceInfo.Item1);
+                Assert.IsTrue(serviceTwin.Properties.Reported.Contains(propName1));
+                String value2 = serviceTwin.Properties.Reported[propName1].ToString();
+                Assert.AreEqual(value2, propEmptyValue);
+            }
 
             await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager);
         }
 
-        private async Task _Twin_ClientHandlesRejectionInvalidPropertyName(Client.TransportType transport)
+        private async Task Twin_ClientHandlesRejectionInvalidPropertyName(Client.TransportType transport)
         {
             var propName1 = "$" + Guid.NewGuid().ToString();
             var propName2 = Guid.NewGuid().ToString();
 
             Tuple<string, string> deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
-            var deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, transport);
 
-            var exceptionThrown = false;
-            try
+            using (var deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, transport))
             {
-                await deviceClient.UpdateReportedPropertiesAsync(new TwinCollection
+                var exceptionThrown = false;
+                try
                 {
-                    [propName1] = 123,
-                    [propName2] = "abcd"
-                });
-            }
-            catch (Exception e)
-            {
-                exceptionThrown = true;
-            }
+                    await deviceClient.UpdateReportedPropertiesAsync(new TwinCollection
+                    {
+                        [propName1] = 123,
+                        [propName2] = "abcd"
+                    });
+                }
+                catch (Exception e)
+                {
+                    exceptionThrown = true;
+                }
 
-            if (!exceptionThrown)
-            {
-                throw new AssertFailedException("Exception was expected, but not thrown.");
-            }
+                if (!exceptionThrown)
+                {
+                    throw new AssertFailedException("Exception was expected, but not thrown.");
+                }
 
-            var serviceTwin = await registryManager.GetTwinAsync(deviceInfo.Item1);
-            Assert.IsFalse(serviceTwin.Properties.Reported.Contains(propName1));
+                var serviceTwin = await registryManager.GetTwinAsync(deviceInfo.Item1);
+                Assert.IsFalse(serviceTwin.Properties.Reported.Contains(propName1));
+            }
 
             await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager);
         }

@@ -629,7 +629,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                 var response = await RoundTripTwinMessage(amqpMessage, cancellationToken).ConfigureAwait(false);
 
-                verifyResponseMessage(response);
+                VerifyResponseMessage(response);
             }
             catch (Exception exception)
             {
@@ -642,7 +642,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        private void verifyResponseMessage(AmqpMessage response)
+        private void VerifyResponseMessage(AmqpMessage response)
         {
             if (response != null)
             {
@@ -697,8 +697,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 string body = reader.ReadToEnd();
                 var props = JsonConvert.DeserializeObject<Microsoft.Azure.Devices.Shared.TwinProperties>(body);
-                var twin = new Twin(props);
-                return twin;
+                return new Twin(props);
             }
         }
 
