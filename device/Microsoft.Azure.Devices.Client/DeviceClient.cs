@@ -125,9 +125,14 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                         "The range of diagnostic sampling percentage should between [0,100].");
                 }
 
-                _diagnosticSamplingPercentage = value;
+                if (IsE2EDiagnosticSupportedProtocol())
+                {
+                    _diagnosticSamplingPercentage = value;
+                }
             }
         }
+
+        ITransportSettings[] transportSettings;
 
 #if !WINDOWS_UWP && !PCL
         internal X509Certificate2 Certificate { get; set; }
@@ -265,6 +270,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             IDelegatingHandler innerHandler = pipelineBuilder.Build(pipelineContext);
 
             this.InnerHandler = innerHandler;
+            this.transportSettings = transportSettings;
         }
 
         DeviceClient(IotHubConnectionString iotHubConnectionString)
@@ -1462,6 +1468,20 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             {
                 await ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.DisableMethodsAsync(operationTimeoutCancellationToken)).ConfigureAwait(false);
             }
+        }
+
+        private bool IsE2EDiagnosticSupportedProtocol()
+        {
+            foreach (ITransportSettings transportSetting in this.transportSettings)
+            {
+                var transportType = transportSetting.GetTransportType();
+                if (!(transportType == TransportType.Amqp_WebSocket_Only || transportType == TransportType.Amqp_Tcp_Only
+                    || transportType == TransportType.Mqtt_WebSocket_Only || transportType == TransportType.Mqtt_Tcp_Only))
+                {
+                    throw new NotSupportedException($"{transportType} protocal doesn't support E2E diagnostic.");
+                }
+            }
+            return true;
         }
     }
 }
