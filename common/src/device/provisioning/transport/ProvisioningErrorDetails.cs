@@ -1,16 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Diagnostics.CodeAnalysis;
+using System.Text;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
 {
     /// <summary>
     /// Provisioning error details.
     /// </summary>
-    public class ProvisioningErrorDetails
+    [SuppressMessage("Microsoft.Performance", "CA1812", Justification = "Used by the JSon parser.")]
+    internal class ProvisioningErrorDetails
     {
         /// <summary>
         /// Error code.
@@ -41,6 +44,23 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <summary>
         /// Time stamp (in UTC).
         /// </summary>
-        public DateTime TimestampUtc { get; set; }
+        public string TimestampUtc { get; set; }
+
+        public string CreateMessage(string message)
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine(message);
+            sb.AppendLine($"Service Error: {ErrorCode} - {Message} (TrackingID: {TrackingId} Time: {TimestampUtc})");
+
+            if (Info != null)
+            {
+                foreach (string key in Info.Keys)
+                {
+                    sb.AppendLine($"\t{key}: {Info[key]}");
+                }
+            }
+
+            return sb.ToString();
+        }
     }
 }

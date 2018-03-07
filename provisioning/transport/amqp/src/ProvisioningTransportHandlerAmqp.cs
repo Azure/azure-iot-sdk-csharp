@@ -30,13 +30,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// <summary>
         /// Creates an instance of the ProvisioningTransportHandlerAmqp class using the specified fallback type.
         /// </summary>
-        /// <param name="port">The port for the connection</param>
         /// <param name="transportFallbackType">The fallback type allowing direct or WebSocket connections.</param>
         public ProvisioningTransportHandlerAmqp(
-            int? port = null,
-            TransportFallbackType transportFallbackType = TransportFallbackType.TcpWithWebSocketFallback) : base(port)
+            TransportFallbackType transportFallbackType = TransportFallbackType.TcpWithWebSocketFallback)
         {
             FallbackType = transportFallbackType;
+            bool useWebSocket = (FallbackType == TransportFallbackType.WebSocketOnly);
+            Port = useWebSocket ? WebSocketConstants.Port : AmqpConstants.DefaultSecurePort;
         }
 
         /// <summary>
@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 {
                     Scheme = useWebSocket ? WebSocketConstants.Scheme : AmqpConstants.SchemeAmqps,
                     Host = message.GlobalDeviceEndpoint,
-                    Port = useWebSocket ? this.Port ?? WebSocketConstants.Port : this.Port ?? AmqpConstants.DefaultSecurePort
+                    Port = Port,
                 };
 
                 string registrationId = message.Security.GetRegistrationID();
@@ -234,18 +234,34 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 result.Etag);
         }
 
-        private static void ValidateOutcome(Outcome outcome)
+        private void ValidateOutcome(Outcome outcome)
         {
             if (outcome is Rejected rejected)
             {
-                var errorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetails>(rejected.Error.Description);
-                int statusCode = errorDetails.ErrorCode / 1000;
-                bool isTransient = statusCode >= (int)HttpStatusCode.InternalServerError || statusCode == 429;
-                throw new ProvisioningTransportException(
-                    rejected.Error.Description,
-                    null,
-                    isTransient,
-                    errorDetails);
+                try
+                {
+                    var errorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetails>(rejected.Error.Description);
+                    int statusCode = errorDetails.ErrorCode / 1000;
+                    bool isTransient = statusCode >= (int)HttpStatusCode.InternalServerError || statusCode == 429;
+                    throw new ProvisioningTransportException(
+                        errorDetails.CreateMessage("AMQP transport exception: service error."),
+                        null,
+                        isTransient,
+                        errorDetails.TrackingId);
+                }
+                catch (JsonException ex)
+                {
+                    if (Logging.IsEnabled) Logging.Error(
+                        this,
+                        $"{nameof(ProvisioningTransportHandlerAmqp)} server returned malformed error response." +
+                        $"Parsing error: {ex}. Server response: {rejected.Error.Description}",
+                        nameof(RegisterAsync));
+
+                    throw new ProvisioningTransportException(
+                        $"AMQP transport exception: malformed server error message: '{rejected.Error.Description}'",
+                        ex,
+                        false);
+                }
             }
         }
     }

@@ -21,11 +21,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         private const int DefaultHttpsPort = 443;
 
         /// <summary>
-        /// Creates an instance of the ProvisioningTransportHandlerHttp class with an optional port
+        /// Creates an instance of the ProvisioningTransportHandlerHttp class.
         /// </summary>
-        /// <param name="port">Port for the connection</param>
-        public ProvisioningTransportHandlerHttp(int? port = null): base(port)
+        public ProvisioningTransportHandlerHttp()
         {
+            Port = DefaultHttpsPort;
         }
 
         /// <summary>
@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 {
                     Scheme = Uri.UriSchemeHttps,
                     Host = message.GlobalDeviceEndpoint,
-                    Port = this.Port ?? DefaultHttpsPort,
+                    Port = Port,
                 };
 
                 DeviceProvisioningServiceRuntimeClient client = authStrategy.CreateClient(builder.Uri);
@@ -132,7 +132,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
                 return ConvertToProvisioningRegistrationResult(operation.RegistrationState);
             }
-            // TODO: Catch only expected exceptions from HTTP
             catch (HttpOperationException oe)
             {
                 if (Logging.IsEnabled) Logging.Error(
@@ -142,8 +141,28 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
                 bool isTransient = oe.Response.StatusCode >= HttpStatusCode.InternalServerError || (int)oe.Response.StatusCode == 429;
 
-                var errorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetails>(oe.Response.Content);
-                throw new ProvisioningTransportException(oe.Response.Content, oe, isTransient, errorDetails);
+                try
+                {
+                    var errorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetails>(oe.Response.Content);
+                    throw new ProvisioningTransportException(
+                        errorDetails.CreateMessage("HTTP transport exception: service error."),
+                        oe,
+                        isTransient,
+                        errorDetails.TrackingId);
+                }
+                catch (JsonException ex)
+                {
+                    if (Logging.IsEnabled) Logging.Error(
+                        this,
+                        $"{nameof(ProvisioningTransportHandlerHttp)} server returned malformed error response." +
+                        $"Parsing error: {ex}. Server response: {oe.Response.Content}",
+                        nameof(RegisterAsync));
+
+                    throw new ProvisioningTransportException(
+                        $"HTTP transport exception: malformed server error message: '{oe.Response.Content}'",
+                        ex,
+                        false);
+                }
             }
             catch (Exception ex)
             {

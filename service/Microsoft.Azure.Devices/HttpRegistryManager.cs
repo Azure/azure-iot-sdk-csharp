@@ -105,13 +105,12 @@ namespace Microsoft.Azure.Devices
             return this.httpClientHelper.PutAsync(GetRequestUri(device.Id), device, PutOperationType.CreateEntity, errorMappingOverrides, cancellationToken);
         }
 
-
         public override Task<BulkRegistryOperationResult> AddDeviceWithTwinAsync(Device device, Twin twin)
         {
             return AddDeviceWithTwinAsync(device, twin, CancellationToken.None);
         }
 
-       public override Task<BulkRegistryOperationResult> AddDeviceWithTwinAsync(Device device, Twin twin, CancellationToken cancellationToken)
+        public override Task<BulkRegistryOperationResult> AddDeviceWithTwinAsync(Device device, Twin twin, CancellationToken cancellationToken)
         {
             ValidateDeviceId(device);
             if (!string.IsNullOrWhiteSpace(device.ETag))
@@ -125,7 +124,7 @@ namespace Microsoft.Azure.Devices
             exportImportDevice.Properties =  new ExportImportDevice.PropertyContainer();
             exportImportDevice.Properties.DesiredProperties = twin?.Properties.Desired;
             exportImportDevice.Properties.ReportedProperties = twin?.Properties.Reported;
-            
+
             exportImportDeviceList.Add(exportImportDevice);
 
             return this.BulkDeviceOperationsAsync<BulkRegistryOperationResult>(
@@ -133,6 +132,7 @@ namespace Microsoft.Azure.Devices
                ClientApiVersionHelper.ApiVersionQueryString,
                cancellationToken);
         }
+
         public override Task<string[]> AddDevicesAsync(IEnumerable<Device> devices)
         {
             return this.AddDevicesAsync(devices, CancellationToken.None);

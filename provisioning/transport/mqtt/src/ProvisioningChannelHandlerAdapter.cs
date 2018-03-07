@@ -26,9 +26,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         private const string SubscribeFilter = "$dps/registrations/res/#";
         private const string RegisterTopic = "$dps/registrations/PUT/iotdps-register/?$rid={0}";
         private const string GetOperationsTopic = "$dps/registrations/GET/iotdps-get-operationstatus/?$rid={0}&operationId={1}";
-        private static readonly Regex RegistrationStatusTopicRegex = new Regex("^\\$dps/registrations/res/(.*?)/\\?\\$rid=(.*?)$", RegexOptions.Compiled);
 
-        private static readonly TimeSpan DefaultOperationPoolingIntervalMilliseconds = TimeSpan.FromSeconds(2);
+        private static readonly TimeSpan s_defaultOperationPoolingIntervalMilliseconds = TimeSpan.FromSeconds(2);
+        private static readonly TimeSpan s_regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
+
+        private static readonly Regex s_registrationStatusTopicRegex =
+            new Regex("^\\$dps/registrations/res/(.*?)/\\?\\$rid=(.*?)$", RegexOptions.Compiled, s_regexTimeoutMilliseconds);
 
         private ProvisioningTransportRegisterMessage _message;
         private TaskCompletionSource<RegistrationOperationStatus> _taskCompletionSource;
@@ -281,25 +284,60 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         private async Task VerifyPublishPacketTopicAsync(IChannelHandlerContext context, string topicName, string jsonData)
         {
-            Match match = RegistrationStatusTopicRegex.Match(topicName);
-            if(match.Groups.Count >= 2)
+            try
             {
-                if(Enum.TryParse(match.Groups[1].Value, out HttpStatusCode statusCode))
-                {
-                    if (statusCode >= HttpStatusCode.BadRequest)
-                    {
-                        var errorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetails>(jsonData);
+                Match match = s_registrationStatusTopicRegex.Match(topicName);
 
-                        bool isTransient = statusCode >= HttpStatusCode.InternalServerError || (int)statusCode == 429;
-                        await FailWithExceptionAsync(
-                             context,
-                             new ProvisioningTransportException(
-                                 jsonData,
-                                 null,
-                                 isTransient,
-                                 errorDetails)).ConfigureAwait(false);
+                if(match.Groups.Count >= 2)
+                {
+                    if(Enum.TryParse(match.Groups[1].Value, out HttpStatusCode statusCode))
+                    {
+                        if (statusCode >= HttpStatusCode.BadRequest)
+                        {
+                            try
+                            {
+                                var errorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetails>(jsonData);
+
+                                bool isTransient = statusCode >= HttpStatusCode.InternalServerError || (int)statusCode == 429;
+                                await FailWithExceptionAsync(
+                                     context,
+                                     new ProvisioningTransportException(
+                                         errorDetails.CreateMessage($"{ExceptionPrefix} Server Error: {match.Groups[1].Value}"),
+                                         null,
+                                         isTransient,
+                                         errorDetails.TrackingId)).ConfigureAwait(false);
+                            }
+                            catch (JsonException ex)
+                            {
+                                if (Logging.IsEnabled) Logging.Error(
+                                    this,
+                                    $"{nameof(ProvisioningTransportHandlerMqtt)} server returned malformed error response." +
+                                    $"Parsing error: {ex}. Server response: {jsonData}",
+                                    nameof(VerifyPublishPacketTopicAsync));
+
+                                await FailWithExceptionAsync(
+                                    context,
+                                    new ProvisioningTransportException(
+                                        $"{ExceptionPrefix} Malformed server error message: '{jsonData}'",
+                                        ex,
+                                        false)).ConfigureAwait(false);
+                            }
+                        }
                     }
                 }
+                else
+                {
+                    await FailWithExceptionAsync(
+                                 context,
+                                 new ProvisioningTransportException(
+                                     $"{ExceptionPrefix} Unexpected server response. TopicName invalid: '{topicName}'",
+                                     null,
+                                     false)).ConfigureAwait(false);
+                }
+            }
+            catch (RegexMatchTimeoutException e)
+            {
+                await FailWithExceptionAsync(context, e).ConfigureAwait(false);
             }
         }
 
@@ -325,7 +363,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 if (string.CompareOrdinal(operation.Status, RegistrationOperationStatus.OperationStatusAssigning) == 0 ||
                     string.CompareOrdinal(operation.Status, RegistrationOperationStatus.OperationStatusUnassigned) == 0)
                 {
-                    await Task.Delay(DefaultOperationPoolingIntervalMilliseconds).ConfigureAwait(false);
+                    await Task.Delay(s_defaultOperationPoolingIntervalMilliseconds).ConfigureAwait(false);
                     ChangeState(State.WaitForStatus, State.WaitForPubAck);
                     await PublishGetOperationAsync(context, operationId).ConfigureAwait(false);
                 }
@@ -440,7 +478,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         private async Task DoneAsync(IChannelHandlerContext context)
         {
-            if (Logging.IsEnabled) Logging.Info(this, $"{nameof(DoneAsync)}");
+            if (Logging.IsEnabled) Logging.Enter(this, context.Name, $"{nameof(DoneAsync)}");
+
             try
             {
                 await context.Channel.WriteAndFlushAsync(DisconnectPacket.Instance).ConfigureAwait(false);
@@ -448,10 +487,26 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             catch (Exception e)
             {
                 if (Logging.IsEnabled) Logging.Info(this, $"Exception trying to send disconnect packet: {e.ToString()}");
+                await FailWithExceptionAsync(context, e).ConfigureAwait(false);
             }
 
+            // This delay is required to work-around a .NET Framework CloseAsync bug.
+            if (Logging.IsEnabled) Logging.Info(this, $"{nameof(DoneAsync)}: Applying close channel delay.");
             await Task.Delay(TimeSpan.FromMilliseconds(400)).ConfigureAwait(false);
-            await context.Channel.CloseAsync().ConfigureAwait(false);
+
+            if (Logging.IsEnabled) Logging.Info(this, $"{nameof(DoneAsync)}: Closing channel.");
+
+            try
+            {
+                await context.Channel.CloseAsync().ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                if (Logging.IsEnabled) Logging.Info(this, $"Exception trying to close channel: {e.ToString()}");
+                await FailWithExceptionAsync(context, e).ConfigureAwait(false);
+            }
+
+            if (Logging.IsEnabled) Logging.Exit(this, context.Name, $"{nameof(DoneAsync)}");
         }
 
         private ushort GetNextPacketId()

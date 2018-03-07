@@ -19,9 +19,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         public bool IsTransient { get; private set; }
 
         /// <summary>
-        /// Service reported Error details. Use this when reporting a Service issue.
+        /// Service reported Tracking ID. Use this when reporting a Service issue.
         /// </summary>
-        public ProvisioningErrorDetails ErrorDetails { get; private set; }
+        public string TrackingId { get; set; }
 
         /// <summary>
         /// Creates a new instance of the ProvisioningTransportException class.
@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// </summary>
         /// <param name="message">The exception message.</param>
         public ProvisioningTransportException(string message)
-            : this(message, null, false)
+            :this(message, null, false)
         {
         }
 
@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <param name="message">The exception message.</param>
         /// <param name="innerException">The inner exception.</param>
         public ProvisioningTransportException(string message, Exception innerException)
-            : this(message, innerException, false, null)
+            : this(message, innerException, false, string.Empty)
         {
         }
 
@@ -65,7 +65,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <param name="isTransient">True if the error is transient.</param>
         /// <param name="innerException">The inner exception.</param>
         public ProvisioningTransportException(string message, Exception innerException, bool isTransient)
-            : this(message, innerException, isTransient, null)
+            : this(message, innerException, isTransient, trackingId: string.Empty)
         {
         }
 
@@ -74,13 +74,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// </summary>
         /// <param name="message">The exception message.</param>
         /// <param name="isTransient">True if the error is transient.</param>
-        /// <param name="errorDetails">The service error details.</param>
+        /// <param name="trackingId">The service tracking ID.</param>
         /// <param name="innerException">The inner exception.</param>
-        public ProvisioningTransportException(string message, Exception innerException, bool isTransient, ProvisioningErrorDetails errorDetails)
+        public ProvisioningTransportException(string message, Exception innerException, bool isTransient, string trackingId)
             : base(message, innerException)
         {
-            this.IsTransient = isTransient;
-            this.ErrorDetails = errorDetails;
+            IsTransient = isTransient;
+            TrackingId = trackingId;
         }
 
         /// <summary>
@@ -93,8 +93,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         {
             if (info != null)
             {
-                this.IsTransient = info.GetBoolean(IsTransientValueSerializationStoreName);
-                // todo: Serialize ErrorDetails 
+                IsTransient = info.GetBoolean(IsTransientValueSerializationStoreName);
+                TrackingId = info.GetString(IsTransientValueSerializationStoreName);
             }
         }
 
@@ -107,7 +107,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         {
             base.GetObjectData(info, context);
             info.AddValue(IsTransientValueSerializationStoreName, this.IsTransient);
-            // todo: Deserialize ErrorDetails
         }
     }
 }

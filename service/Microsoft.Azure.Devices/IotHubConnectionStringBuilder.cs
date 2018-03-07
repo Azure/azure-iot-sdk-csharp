@@ -25,7 +25,6 @@ namespace Microsoft.Azure.Devices
         static readonly string SharedAccessKeyNamePropertyName = ((MemberExpression)((Expression<Func<IotHubConnectionStringBuilder, string>>)(_ => _.SharedAccessKeyName)).Body).Member.Name; // todo: replace with nameof()
         static readonly string SharedAccessKeyPropertyName = ((MemberExpression)((Expression<Func<IotHubConnectionStringBuilder, string>>)(_ => _.SharedAccessKey)).Body).Member.Name; // todo: replace with nameof()
         static readonly string SharedAccessSignaturePropertyName = ((MemberExpression)((Expression<Func<IotHubConnectionStringBuilder, string>>)(_ => _.SharedAccessSignature)).Body).Member.Name; // todo: replace with nameof();
-        static readonly string PortPropertyName = ((MemberExpression)((Expression<Func<IotHubConnectionStringBuilder, int?>>)(_ => _.Port)).Body).Member.Name; // todo: replace with nameof();
         static readonly Regex HostNameRegex = new Regex(@"[a-zA-Z0-9_\-\.]+$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         static readonly Regex SharedAccessKeyNameRegex = new Regex(@"^[a-zA-Z0-9_\-@\.]+$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         static readonly Regex SharedAccessKeyRegex = new Regex(@"^.+$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
@@ -41,16 +40,10 @@ namespace Microsoft.Azure.Devices
 
         public static IotHubConnectionStringBuilder Create(string hostname, IAuthenticationMethod authenticationMethod)
         {
-            return Create(hostname, authenticationMethod, null);
-        }
-
-        public static IotHubConnectionStringBuilder Create(string hostname, IAuthenticationMethod authenticationMethod, int? port)
-        {
             var iotHubConnectionStringBuilder = new IotHubConnectionStringBuilder
             {
                 HostName = hostname,
-                AuthenticationMethod = authenticationMethod,
-                Port = port
+                AuthenticationMethod = authenticationMethod
             };
 
             iotHubConnectionStringBuilder.Validate();
@@ -90,8 +83,6 @@ namespace Microsoft.Azure.Devices
 
         public string SharedAccessSignature { get; internal set; }
 
-        public int? Port { get; internal set; }
-
         public string IotHubName
         {
             get { return this.iotHubName; }
@@ -112,7 +103,6 @@ namespace Microsoft.Azure.Devices
             stringBuilder.AppendKeyValuePairIfNotEmpty(SharedAccessKeyNamePropertyName, this.SharedAccessKeyName);
             stringBuilder.AppendKeyValuePairIfNotEmpty(SharedAccessKeyPropertyName, this.SharedAccessKey);
             stringBuilder.AppendKeyValuePairIfNotEmpty(SharedAccessSignaturePropertyName, this.SharedAccessSignature);
-            stringBuilder.AppendKeyValuePairIfNotEmpty(PortPropertyName, this.Port);
             if (stringBuilder.Length > 0)
             {
                 stringBuilder.Remove(stringBuilder.Length - 1, 1);
@@ -129,18 +119,6 @@ namespace Microsoft.Azure.Devices
             this.SharedAccessKeyName = GetConnectionStringOptionalValue(map, SharedAccessKeyNamePropertyName);
             this.SharedAccessKey = GetConnectionStringOptionalValue(map, SharedAccessKeyPropertyName);
             this.SharedAccessSignature = GetConnectionStringOptionalValue(map, SharedAccessSignaturePropertyName);
-
-            string portValue = GetConnectionStringOptionalValue(map, PortPropertyName);
-            if (!string.IsNullOrEmpty(portValue))
-            {
-                int port;
-                if (!Int32.TryParse(portValue, out port))
-
-                {
-                    throw new ArgumentException("Port should be a valid integer value");
-                }
-                this.Port = port;
-            }
 
             this.Validate();
         }
@@ -160,11 +138,6 @@ namespace Microsoft.Azure.Devices
             if (string.IsNullOrWhiteSpace(this.IotHubName))
             {
                 throw new FormatException("Missing IOT hub name");
-            }
-
-            if (this.Port.HasValue && this.Port.Value <= 0)
-            {
-                throw new ArgumentException("Port should be a valid positive integer");
             }
 
             if (!this.SharedAccessKey.IsNullOrWhiteSpace())

@@ -49,13 +49,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// <summary>
         /// Creates an instance of the ProvisioningTransportHandlerMqtt class using the specified fallback type.
         /// </summary>
-        /// <param name="port">The port for the connection</param>
         /// <param name="transportFallbackType">The fallback type allowing direct or WebSocket connections.</param>
         public ProvisioningTransportHandlerMqtt(
-            int? port = null,
-            TransportFallbackType transportFallbackType = TransportFallbackType.TcpWithWebSocketFallback): base(port)
+            TransportFallbackType transportFallbackType = TransportFallbackType.TcpWithWebSocketFallback)
         {
             FallbackType = transportFallbackType;
+            if (FallbackType == TransportFallbackType.WebSocketOnly) 
+            {
+                Port = WsPort;
+            }
+            else
+            {
+                Port = MqttTcpPort;
+            }
         }
 
         /// <summary>
@@ -164,7 +170,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 {
                     ch.Pipeline.AddLast(
                         new ReadTimeoutHandler(ReadTimeoutSeconds),
-                        new TlsHandler(stream => new SslStream(stream, true, (sender, certificate, chain, errors) => true), tlsSettings), //TODO: Ensure SystemDefault is used.
+                        new TlsHandler(tlsSettings), //TODO: Ensure SystemDefault is used.
                         MqttEncoder.Instance,
                         new MqttDecoder(isServer: false, maxMessageSize: MaxMessageSize),
                         new ProvisioningChannelHandlerAdapter(message, tcs, cancellationToken));
@@ -184,7 +190,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 try
                 {
                     if (Logging.IsEnabled) Logging.Info(this, $"Connecting to {address.ToString()}.");
-                    channel = await bootstrap.ConnectAsync(address, this.Port ?? MqttTcpPort).ConfigureAwait(false);
+                    channel = await bootstrap.ConnectAsync(address, Port).ConfigureAwait(false);
                 }
                 catch (TimeoutException ex)
                 {
@@ -224,7 +230,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
             var tcs = new TaskCompletionSource<RegistrationOperationStatus>();
 
-            UriBuilder uriBuilder = new UriBuilder(WsScheme, message.GlobalDeviceEndpoint, this.Port ?? WsPort);
+            UriBuilder uriBuilder = new UriBuilder(WsScheme, message.GlobalDeviceEndpoint, Port);
             Uri websocketUri = uriBuilder.Uri;
 
             // TODO properly dispose of the ws.
