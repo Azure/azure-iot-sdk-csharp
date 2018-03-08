@@ -883,13 +883,21 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 // Check if we're configured to use a proxy server
                 IWebProxy webProxy = WebRequest.DefaultWebProxy;
                 Uri proxyAddress = null;
-#if !NETSTANDARD1_3
-                proxyAddress = webProxy?.GetProxy(websocketUri);
-#endif
-                if (!websocketUri.Equals(proxyAddress))
+
+                try
                 {
-                    // Configure proxy server
-                    websocket.Options.Proxy = webProxy;
+#if !NETSTANDARD1_3
+                    proxyAddress = webProxy?.GetProxy(websocketUri);
+#endif
+                    if (!websocketUri.Equals(proxyAddress))
+                    {
+                        // Configure proxy server
+                        websocket.Options.Proxy = webProxy;
+                    }
+                }
+                catch (PlatformNotSupportedException)
+                {
+                    // .NET Core 2.0 doesn't support proxy. Ignore this setting.
                 }
 
                 if (settings.ClientCertificate != null)
