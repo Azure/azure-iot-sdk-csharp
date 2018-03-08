@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27004.2009
+VisualStudioVersion = 15.0.27130.2027
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "inc_int", "inc_int", "{9F57FD3C-6D1E-4F43-91BC-3133900BA196}"
 EndProject
@@ -19,11 +19,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Pro
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Shared.NetStandard", "..\..\shared\Microsoft.Azure.Devices.Shared.NetStandard\Microsoft.Azure.Devices.Shared.NetStandard.csproj", "{91DFB837-D8A3-4F54-AE0D-45C95ACD0C2A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SecurityProviderTpmSimulator", "..\..\security\tpm\samples\SecurityProviderTpmSimulator\SecurityProviderTpmSimulator.csproj", "{75467DE7-0259-4F3C-8448-4CC3C592248A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Provisioning.E2ETests", "src\Microsoft.Azure.Devices.Provisioning.E2ETests.csproj", "{0C6F402A-6E9F-41CE-861D-A13B74D2CEF9}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Microsoft.Azure.Devices.Client.Shared", "..\..\device\Microsoft.Azure.Devices.Client.Shared\Microsoft.Azure.Devices.Client.Shared.shproj", "{26BBDF47-7559-4869-BD6F-A32FE21F3F25}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Provisioning.E2ETests", "src\Microsoft.Azure.Devices.Provisioning.E2ETests.csproj", "{0C6F402A-6E9F-41CE-861D-A13B74D2CEF9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Provisioning.Service", "..\service\src\Microsoft.Azure.Devices.Provisioning.Service.csproj", "{26CC7837-CA6A-4D80-9D75-093AA55EB52D}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -62,14 +62,14 @@ Global
 		{91DFB837-D8A3-4F54-AE0D-45C95ACD0C2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{91DFB837-D8A3-4F54-AE0D-45C95ACD0C2A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{91DFB837-D8A3-4F54-AE0D-45C95ACD0C2A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{75467DE7-0259-4F3C-8448-4CC3C592248A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{75467DE7-0259-4F3C-8448-4CC3C592248A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{75467DE7-0259-4F3C-8448-4CC3C592248A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{75467DE7-0259-4F3C-8448-4CC3C592248A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0C6F402A-6E9F-41CE-861D-A13B74D2CEF9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0C6F402A-6E9F-41CE-861D-A13B74D2CEF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0C6F402A-6E9F-41CE-861D-A13B74D2CEF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0C6F402A-6E9F-41CE-861D-A13B74D2CEF9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{26CC7837-CA6A-4D80-9D75-093AA55EB52D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{26CC7837-CA6A-4D80-9D75-093AA55EB52D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{26CC7837-CA6A-4D80-9D75-093AA55EB52D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{26CC7837-CA6A-4D80-9D75-093AA55EB52D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -82,8 +82,8 @@ Global
 		{1C031017-8DA8-4F1F-9EA0-4570093B863F} = {9F57FD3C-6D1E-4F43-91BC-3133900BA196}
 		{CB13F7BD-8509-47B7-BEFA-0DB93749F177} = {9F57FD3C-6D1E-4F43-91BC-3133900BA196}
 		{91DFB837-D8A3-4F54-AE0D-45C95ACD0C2A} = {9F57FD3C-6D1E-4F43-91BC-3133900BA196}
-		{75467DE7-0259-4F3C-8448-4CC3C592248A} = {9F57FD3C-6D1E-4F43-91BC-3133900BA196}
 		{26BBDF47-7559-4869-BD6F-A32FE21F3F25} = {9F57FD3C-6D1E-4F43-91BC-3133900BA196}
+		{26CC7837-CA6A-4D80-9D75-093AA55EB52D} = {9F57FD3C-6D1E-4F43-91BC-3133900BA196}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {EA18D975-889C-4C34-9F4D-BCCF3391E4E0}

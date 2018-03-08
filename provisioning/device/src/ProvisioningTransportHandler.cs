@@ -14,19 +14,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
     public abstract class ProvisioningTransportHandler : IDisposable
     {
         private ProvisioningTransportHandler _innerHandler;
+        private int _port;
 
         /// <summary>
         /// Creates an instance of the ProvisioningTransportHandler class.
         /// </summary>
         public ProvisioningTransportHandler() {}
-
-        /// <summary>
-        /// Creates an instance of the ProvisioningTransportHandler class specifying an innerHandler.
-        /// </summary>
-        public ProvisioningTransportHandler(ProvisioningTransportHandler innerHandler)
-        {
-            _innerHandler = innerHandler;
-        }
 
         /// <summary>
         /// Gets or sets the inner handler.
@@ -46,6 +39,27 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
                 if (Logging.IsEnabled) Logging.Associate(this, value);
                 _innerHandler = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the port number.
+        /// </summary>
+        public int Port
+        {
+            get
+            {
+                return _port;
+            }
+            set
+            {
+                if (value < 1 || value > 65535)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value));
+                }
+
+                if (Logging.IsEnabled) Logging.Info(this, $"{nameof(Port)} set to {value}");
+                _port = value;
             }
         }
 

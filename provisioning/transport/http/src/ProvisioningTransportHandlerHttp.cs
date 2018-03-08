@@ -3,7 +3,10 @@
 
 using Microsoft.Azure.Devices.Provisioning.Client.Transport.Models;
 using Microsoft.Azure.Devices.Shared;
+using Microsoft.Rest;
+using Newtonsoft.Json;
 using System;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,6 +18,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
     public class ProvisioningTransportHandlerHttp : ProvisioningTransportHandler
     {
         private static readonly TimeSpan s_defaultOperationPoolingIntervalMilliseconds = TimeSpan.FromSeconds(2);
+        private const int DefaultHttpsPort = 443;
+
+        /// <summary>
+        /// Creates an instance of the ProvisioningTransportHandlerHttp class.
+        /// </summary>
+        public ProvisioningTransportHandlerHttp()
+        {
+            Port = DefaultHttpsPort;
+        }
 
         /// <summary>
         /// Registers a device described by the message.
@@ -55,7 +67,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 var builder = new UriBuilder()
                 {
                     Scheme = Uri.UriSchemeHttps,
-                    Host = message.GlobalDeviceEndpoint
+                    Host = message.GlobalDeviceEndpoint,
+                    Port = Port,
                 };
 
                 DeviceProvisioningServiceRuntimeClient client = authStrategy.CreateClient(builder.Uri);
@@ -119,12 +132,43 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
                 return ConvertToProvisioningRegistrationResult(operation.RegistrationState);
             }
-            // TODO: Catch only expected exceptions from HTTP and REST.
+            catch (HttpOperationException oe)
+            {
+                if (Logging.IsEnabled) Logging.Error(
+                    this,
+                    $"{nameof(ProvisioningTransportHandlerHttp)} threw exception {oe}",
+                    nameof(RegisterAsync));
+
+                bool isTransient = oe.Response.StatusCode >= HttpStatusCode.InternalServerError || (int)oe.Response.StatusCode == 429;
+
+                try
+                {
+                    var errorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetails>(oe.Response.Content);
+                    throw new ProvisioningTransportException(
+                        errorDetails.CreateMessage("HTTP transport exception: service error."),
+                        oe,
+                        isTransient,
+                        errorDetails.TrackingId);
+                }
+                catch (JsonException ex)
+                {
+                    if (Logging.IsEnabled) Logging.Error(
+                        this,
+                        $"{nameof(ProvisioningTransportHandlerHttp)} server returned malformed error response." +
+                        $"Parsing error: {ex}. Server response: {oe.Response.Content}",
+                        nameof(RegisterAsync));
+
+                    throw new ProvisioningTransportException(
+                        $"HTTP transport exception: malformed server error message: '{oe.Response.Content}'",
+                        ex,
+                        false);
+                }
+            }
             catch (Exception ex)
             {
                 if (Logging.IsEnabled) Logging.Error(
-                    this, 
-                    $"{nameof(ProvisioningTransportHandlerHttp)} threw exception {ex}", 
+                    this,
+                    $"{nameof(ProvisioningTransportHandlerHttp)} threw exception {ex}",
                     nameof(RegisterAsync));
 
                 // TODO: Extract trackingId from the exception.
@@ -136,7 +180,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             }
         }
 
-        private DeviceRegistrationResult ConvertToProvisioningRegistrationResult(Models.DeviceRegistrationResult result)
+        private static DeviceRegistrationResult ConvertToProvisioningRegistrationResult(Models.DeviceRegistrationResult result)
         {
             var status = ProvisioningRegistrationStatusType.Failed;
             Enum.TryParse(result.Status, true, out status);

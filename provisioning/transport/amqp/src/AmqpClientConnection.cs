@@ -67,9 +67,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             }
 
             AmqpConnection = new AmqpConnection(transport, _amqpSettings, AmqpConnectionSettings);
+            AmqpConnection.Closed += OnConnectionClosed;
             await AmqpConnection.OpenAsync(timeout).ConfigureAwait(false);
             _isConnectionClosed = false;
-            AmqpConnection.Closed += OnConnectionClosed;
         }
 
         public async Task CloseAsync(TimeSpan timeout)
@@ -104,8 +104,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         async Task<TransportBase> CreateClientWebSocketTransportAsync(TimeSpan timeout)
         {
-            Uri websocketUri = new Uri(WebSocketConstants.Scheme + _uri.Host + ":" + _uri.Port);
-            var websocket = await CreateClientWebSocketAsync(websocketUri, timeout).ConfigureAwait(false);
+            UriBuilder webSocketUriBuilder = new UriBuilder
+            {
+                Scheme = WebSocketConstants.Scheme,
+                Host = _uri.Host,
+                Port = _uri.Port
+            };
+            var websocket = await CreateClientWebSocketAsync(webSocketUriBuilder.Uri, timeout).ConfigureAwait(false);
             return new ClientWebSocketTransport(
                 websocket,
                 null,
@@ -122,12 +127,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
             // TODO: expose the Proxy setting as public API on the transport layer
             //Check if we're configured to use a proxy server
-            IWebProxy webProxy = WebRequest.DefaultWebProxy;
-            Uri proxyAddress = webProxy != null ? webProxy.GetProxy(websocketUri) : null;
-            if (!websocketUri.Equals(proxyAddress))
+            try
             {
-                // Configure proxy server
-                websocket.Options.Proxy = webProxy;
+                IWebProxy webProxy = WebRequest.DefaultWebProxy;
+                Uri proxyAddress = webProxy != null ? webProxy.GetProxy(websocketUri) : null;
+                if (!websocketUri.Equals(proxyAddress))
+                {
+                    // Configure proxy server
+                    websocket.Options.Proxy = webProxy;
+                }
+            }
+            catch (PlatformNotSupportedException)
+            {
+                // .NET Core doesn't support WebProxy configuration - ignore this setting.
             }
 
             if (TransportSettings.Certificate != null)
@@ -137,14 +149,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
             using (var cancellationTokenSource = new CancellationTokenSource(timeout))
             {
-                try
-                {
-                    await websocket.ConnectAsync(websocketUri, cancellationTokenSource.Token).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine(ex.Message);
-                }
+                await websocket.ConnectAsync(websocketUri, cancellationTokenSource.Token).ConfigureAwait(false);
             }
 
             return websocket;

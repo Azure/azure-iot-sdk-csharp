@@ -66,8 +66,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// <see cref="https://docs.microsoft.com/en-us/azure/iot-dps/about-iot-dps">Provisioning devices with Azure IoT Hub Device Provisioning Service</see>
     public class ProvisioningServiceClient : IDisposable
     {
-        private static ServiceConnectionString _provisioningConnectionString;
-        private static IContractApiHttp _contractApiHttp;
+        private readonly ServiceConnectionString _provisioningConnectionString;
+        private readonly IContractApiHttp _contractApiHttp;
 
         /// <summary>
         /// Create a new instance of the <code>ProvisioningServiceClient</code> that exposes
@@ -125,7 +125,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 if (_contractApiHttp != null)
                 {
                     _contractApiHttp.Dispose();
-                    _contractApiHttp = null;
                 }
             }
         }

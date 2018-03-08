@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <CommonTest>..\..\..\common\test</CommonTest>
+    <CommonTest>$(MSBuildProjectDirectory)\..\..\..\common\test</CommonTest>
   </PropertyGroup>
 
   <ItemGroup>
@@ -31,6 +31,9 @@
     <Compile Include="$(CommonTest)\ConsoleEventListener.cs">
       <Link>Common\ConsoleEventListener.cs</Link>
     </Compile>
+    <Compile Include="$(MSBuildProjectDirectory)\..\..\..\security\tpm\samples\SecurityProviderTpmSimulator\SecurityProviderTpmSimulator.cs">
+      <Link>SecurityProviderTpmSimulator\SecurityProviderTpmSimulator.cs</Link>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
@@ -40,19 +43,20 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\device\Microsoft.Azure.Devices.Client.NetStandard\Microsoft.Azure.Devices.Client.NetStandard.csproj">
+    <ProjectReference Include="$(MSBuildProjectDirectory)\..\..\..\device\Microsoft.Azure.Devices.Client.NetStandard\Microsoft.Azure.Devices.Client.NetStandard.csproj">
       <Project>{8988AB0E-0FDD-4BD4-A65F-6479BB2C5AF8}</Project>
       <Name>Microsoft.Azure.Devices.Client.NetStandard</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\shared\Microsoft.Azure.Devices.Shared.NetStandard\Microsoft.Azure.Devices.Shared.NetStandard.csproj">
+    <ProjectReference Include="$(MSBuildProjectDirectory)\..\..\..\shared\Microsoft.Azure.Devices.Shared.NetStandard\Microsoft.Azure.Devices.Shared.NetStandard.csproj">
       <Project>{91DFB837-D8A3-4F54-AE0D-45C95ACD0C2A}</Project>
       <Name>Microsoft.Azure.Devices.Shared.NetStandard</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\provisioning\device\src\Microsoft.Azure.Devices.Provisioning.Client.csproj" />
-    <ProjectReference Include="..\..\provisioning\transport\amqp\src\Microsoft.Azure.Devices.Provisioning.Transport.Amqp.csproj" />
-    <ProjectReference Include="..\..\provisioning\transport\http\src\Microsoft.Azure.Devices.Provisioning.Transport.Http.csproj" />
-    <ProjectReference Include="..\..\provisioning\transport\mqtt\src\Microsoft.Azure.Devices.Provisioning.Transport.Mqtt.csproj" />
-    <ProjectReference Include="..\..\security\tpm\src\Microsoft.Azure.Devices.Provisioning.Security.Tpm.csproj" />
-    <ProjectReference Include="..\..\security\tpm\samples\SecurityProviderTpmSimulator\SecurityProviderTpmSimulator.csproj" />
+    <ProjectReference Include="$(MSBuildProjectDirectory)\..\..\device\src\Microsoft.Azure.Devices.Provisioning.Client.csproj" />
+    <ProjectReference Include="$(MSBuildProjectDirectory)\..\..\transport\amqp\src\Microsoft.Azure.Devices.Provisioning.Transport.Amqp.csproj" />
+    <ProjectReference Include="$(MSBuildProjectDirectory)\..\..\transport\http\src\Microsoft.Azure.Devices.Provisioning.Transport.Http.csproj" />
+    <ProjectReference Include="$(MSBuildProjectDirectory)\..\..\transport\mqtt\src\Microsoft.Azure.Devices.Provisioning.Transport.Mqtt.csproj" />
+    <ProjectReference Include="$(MSBuildProjectDirectory)\..\..\..\security\tpm\src\Microsoft.Azure.Devices.Provisioning.Security.Tpm.csproj" />
+    <ProjectReference Include="..\..\service\src\Microsoft.Azure.Devices.Provisioning.Service.csproj" />
   </ItemGroup>
+
 </Project>

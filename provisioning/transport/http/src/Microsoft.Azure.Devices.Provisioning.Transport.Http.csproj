@@ -61,6 +61,9 @@
     <Compile Include="$(Common)\device\provisioning\transport\ProvisioingSasBuilder.cs">
       <Link>Common\device\provisioning\transport\ProvisioingSasBuilder.cs</Link>
     </Compile>
+    <Compile Include="$(Common)\device\provisioning\transport\ProvisioningErrorDetails.cs">
+      <Link>Common\device\provisioning\transport\ProvisioningErrorDetails.cs</Link>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>

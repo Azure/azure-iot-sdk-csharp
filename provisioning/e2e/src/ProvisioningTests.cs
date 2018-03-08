@@ -100,7 +100,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         [TestMethod]
         [DataRow(nameof(ProvisioningTransportHandlerHttp))]
-        // TODO: throws UnauthorizedAccessException [DataRow(nameof(ProvisioningTransportHandlerAmqp))]
+        [DataRow(nameof(ProvisioningTransportHandlerAmqp))]
         public async Task ProvisioningDeviceClient_InvalidRegistrationId_TpmRegister_Fail(string transportType)
         {
             using (ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportType, TransportFallbackType.TcpOnly))

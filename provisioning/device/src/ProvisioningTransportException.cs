@@ -79,8 +79,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         public ProvisioningTransportException(string message, Exception innerException, bool isTransient, string trackingId)
             : base(message, innerException)
         {
-            this.IsTransient = isTransient;
-            this.TrackingId = trackingId;
+            IsTransient = isTransient;
+            TrackingId = trackingId;
         }
 
         /// <summary>
@@ -93,8 +93,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         {
             if (info != null)
             {
-                this.IsTransient = info.GetBoolean(IsTransientValueSerializationStoreName);
-                this.TrackingId = info.GetString(IsTransientValueSerializationStoreName);
+                IsTransient = info.GetBoolean(IsTransientValueSerializationStoreName);
+                TrackingId = info.GetString(IsTransientValueSerializationStoreName);
             }
         }
 

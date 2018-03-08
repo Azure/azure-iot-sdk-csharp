@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices
                 throw new ArgumentNullException("iotHubConnectionString");
             }
 
-            var iotHubConnectionStringBuilder = new IotHubConnectionStringBuilder();        
+            var iotHubConnectionStringBuilder = new IotHubConnectionStringBuilder();
             iotHubConnectionStringBuilder.Parse(iotHubConnectionString);
             iotHubConnectionStringBuilder.AuthenticationMethod = AuthenticationMethodFactory.GetAuthenticationMethod(iotHubConnectionStringBuilder);
 
@@ -149,7 +149,7 @@ namespace Microsoft.Azure.Devices
             {
                 SharedAccessSignatureParser.Parse(this.IotHubName, this.SharedAccessSignature);
             }
-            
+
             ValidateFormat(this.HostName, HostNamePropertyName, HostNameRegex);
             ValidateFormatIfSpecified(this.SharedAccessKeyName, SharedAccessKeyNamePropertyName, SharedAccessKeyNameRegex);
             ValidateFormatIfSpecified(this.SharedAccessKey, SharedAccessKeyPropertyName, SharedAccessKeyRegex);
@@ -227,7 +227,7 @@ namespace Microsoft.Azure.Devices
         static string GetIotHubName(string hostName)
         {
             int index = hostName.IndexOf(HostNameSeparator, StringComparison.OrdinalIgnoreCase);
-            string iotHubName = index >= 0 ? hostName.Substring(0, index) : null;
+            string iotHubName = index >= 0 ? hostName.Substring(0, index) : hostName;
             return iotHubName;
         }
     }

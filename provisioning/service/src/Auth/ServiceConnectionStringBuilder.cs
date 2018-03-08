@@ -225,7 +225,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
         private static string GetServiceName(string hostName)
         {
             int index = hostName.IndexOf(HostNameSeparator, StringComparison.OrdinalIgnoreCase);
-            string serviceName = index >= 0 ? hostName.Substring(0, index) : null;
+            string serviceName = index >= 0 ? hostName.Substring(0, index) : hostName;
             return serviceName;
         }
     }
