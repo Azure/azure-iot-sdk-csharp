@@ -120,15 +120,9 @@ namespace Microsoft.Azure.Devices.Api.Test.ConnectionString
             Assert.IsNotNull(iotHubConnectionStringBuilder.SharedAccessSignature);
             Assert.IsTrue(iotHubConnectionStringBuilder.AuthenticationMethod is ServiceAuthenticationWithSharedAccessPolicyToken);
 
-            try
-            {
-                iotHubConnectionStringBuilder.HostName = "adshgfvyregferuehfiuehr";
-                Assert.Fail("Expected FormatException");
-            }
-            catch (FormatException)
-            {
-            }
-
+            // Hostname without DNS is acceptable for localhost testing.
+            iotHubConnectionStringBuilder.HostName = "adshgfvyregferuehfiuehr";
+            
             try
             {
                 iotHubConnectionStringBuilder.HostName = "acme.azure-devices.net";
