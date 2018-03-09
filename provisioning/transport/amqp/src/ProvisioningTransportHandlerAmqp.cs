@@ -128,9 +128,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     authStrategy.SaveCredentials(operation);
                 }
 
+                await connection.CloseAsync(TimeoutConstant).ConfigureAwait(false);
+
                 return ConvertToProvisioningRegistrationResult(operation.RegistrationState);
             }
-            // TODO: Catch only expected exceptions from Amqp.
             catch (Exception ex) when (!(ex is ProvisioningTransportException))
             {
                 if (Logging.IsEnabled) Logging.Error(
@@ -138,16 +139,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     $"{nameof(ProvisioningTransportHandlerAmqp)} threw exception {ex}",
                     nameof(RegisterAsync));
 
-                // TODO: Extract trackingId from the exception.
                 throw new ProvisioningTransportException($"AMQP transport exception", ex, true);
             }
             finally
             {
-                if (connection != null)
-                {
-                    await connection.CloseAsync(TimeoutConstant).ConfigureAwait(false);
-                }
-
                 if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(ProvisioningTransportHandlerAmqp)}.{nameof(RegisterAsync)}");
             }
         }

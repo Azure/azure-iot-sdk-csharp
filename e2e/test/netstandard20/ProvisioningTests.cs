@@ -46,19 +46,29 @@ namespace Microsoft.Azure.Devices.E2ETests
         [DataRow(nameof(ProvisioningTransportHandlerAmqp), nameof(SecurityProviderTpmHsm), null, TransportFallbackType.TcpOnly)]
         [DataRow(nameof(ProvisioningTransportHandlerAmqp), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Individual, TransportFallbackType.TcpOnly)]
         [DataRow(nameof(ProvisioningTransportHandlerAmqp), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Group, TransportFallbackType.TcpOnly)]
-//        [DataRow(nameof(ProvisioningTransportHandlerAmqp), nameof(SecurityProviderTpmHsm), null, TransportFallbackType.WebSocketOnly)]
-//        [DataRow(nameof(ProvisioningTransportHandlerAmqp), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Individual, TransportFallbackType.WebSocketOnly)]
-//        [DataRow(nameof(ProvisioningTransportHandlerAmqp), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Group, TransportFallbackType.WebSocketOnly)]
+#if NET47 // .NET Core 2.0 doesn't support WebSockets.
+        [DataRow(nameof(ProvisioningTransportHandlerAmqp), nameof(SecurityProviderTpmHsm), null, TransportFallbackType.WebSocketOnly)]
+        [DataRow(nameof(ProvisioningTransportHandlerAmqp), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Individual, TransportFallbackType.WebSocketOnly)]
+        [DataRow(nameof(ProvisioningTransportHandlerAmqp), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Group, TransportFallbackType.WebSocketOnly)]
+#endif
         [DataRow(nameof(ProvisioningTransportHandlerMqtt), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Individual, TransportFallbackType.TcpOnly)]
         [DataRow(nameof(ProvisioningTransportHandlerMqtt), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Group, TransportFallbackType.TcpOnly)]
-//        [DataRow(nameof(ProvisioningTransportHandlerMqtt), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Individual, TransportFallbackType.WebSocketOnly)]
-//        [DataRow(nameof(ProvisioningTransportHandlerMqtt), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Group, TransportFallbackType.WebSocketOnly)]
+#if NET47 // .NET Core 2.0 doesn't support WebSockets.
+        [DataRow(nameof(ProvisioningTransportHandlerMqtt), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Individual, TransportFallbackType.WebSocketOnly)]
+        [DataRow(nameof(ProvisioningTransportHandlerMqtt), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Group, TransportFallbackType.WebSocketOnly)]
+#endif
         public async Task ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
             string transportType, 
             string securityType,
             X509EnrollmentType? x509EnrollmentType,
             TransportFallbackType? transportFallback)
         {
+            if (!ConfigurationFound())
+            {
+                _log.WriteLine("Provisioning test configuration not found. Result inconclusive.");
+                return;
+            }
+
             using (ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportType, transportFallback))
             using (SecurityProvider security = CreateSecurityProviderFromName(securityType, x509EnrollmentType))
             {
@@ -103,6 +113,12 @@ namespace Microsoft.Azure.Devices.E2ETests
         [DataRow(nameof(ProvisioningTransportHandlerAmqp))]
         public async Task ProvisioningDeviceClient_InvalidRegistrationId_TpmRegister_Fail(string transportType)
         {
+            if (!ConfigurationFound())
+            {
+                _log.WriteLine("Provisioning test configuration not found. Result inconclusive.");
+                return;
+            }
+
             using (ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportType, TransportFallbackType.TcpOnly))
             using (SecurityProvider security = new SecurityProviderTpmSimulator("invalidregistrationid"))
             {
@@ -139,14 +155,22 @@ namespace Microsoft.Azure.Devices.E2ETests
         [DataRow(nameof(ProvisioningTransportHandlerAmqp), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Group, TransportFallbackType.WebSocketOnly)]
         [DataRow(nameof(ProvisioningTransportHandlerMqtt), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Individual, TransportFallbackType.TcpOnly)]
         [DataRow(nameof(ProvisioningTransportHandlerMqtt), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Group, TransportFallbackType.TcpOnly)]
-//        [DataRow(nameof(ProvisioningTransportHandlerMqtt), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Individual, TransportFallbackType.WebSocketOnly)]
-//        [DataRow(nameof(ProvisioningTransportHandlerMqtt), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Group, TransportFallbackType.WebSocketOnly)]
+#if NET47 // .NET Core 2.0 doesn't support WebSockets.
+        [DataRow(nameof(ProvisioningTransportHandlerMqtt), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Individual, TransportFallbackType.WebSocketOnly)]
+        [DataRow(nameof(ProvisioningTransportHandlerMqtt), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Group, TransportFallbackType.WebSocketOnly)]
+#endif
         public async Task ProvisioningDeviceClient_InvalidIdScope_Register_Fail(
             string transportType,
             string securityType,
             X509EnrollmentType? x509EnrollmentType,
             TransportFallbackType? transportFallback)
         {
+            if (!ConfigurationFound())
+            {
+                _log.WriteLine("Provisioning test configuration not found. Result inconclusive.");
+                return;
+            }
+
             using (ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportType, transportFallback))
             using (SecurityProvider security = CreateSecurityProviderFromName(securityType, x509EnrollmentType))
             {
@@ -170,13 +194,21 @@ namespace Microsoft.Azure.Devices.E2ETests
         [DataRow(nameof(ProvisioningTransportHandlerAmqp), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Individual, TransportFallbackType.TcpOnly)]
         [DataRow(nameof(ProvisioningTransportHandlerAmqp), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Individual, TransportFallbackType.WebSocketOnly)]
         [DataRow(nameof(ProvisioningTransportHandlerMqtt), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Individual, TransportFallbackType.TcpOnly)]
-//        [DataRow(nameof(ProvisioningTransportHandlerMqtt), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Individual, TransportFallbackType.WebSocketOnly)]
+#if NET47 // .NET Core 2.0 doesn't support WebSockets.
+        [DataRow(nameof(ProvisioningTransportHandlerMqtt), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Individual, TransportFallbackType.WebSocketOnly)]
+#endif
         public async Task ProvisioningDeviceClient_InvalidGlobalAddress_Register_Fail(
             string transportType,
             string securityType,
             X509EnrollmentType? x509EnrollmentType,
             TransportFallbackType? transportFallback)
         {
+            if (!ConfigurationFound())
+            {
+                _log.WriteLine("Provisioning test configuration not found. Result inconclusive.");
+                return;
+            }
+
             using (ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportType, transportFallback))
             using (SecurityProvider security = CreateSecurityProviderFromName(securityType, x509EnrollmentType))
             {
@@ -275,6 +307,22 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
 
             throw new NotSupportedException($"Unknown provisioningSecurity type.");
+        }
+
+        private bool ConfigurationFound()
+        {
+            string idScope = null;
+
+            try
+            {
+                idScope = Configuration.Provisioning.IdScope;
+            }
+            catch (InvalidOperationException)
+            {
+                // Config not found.
+            }
+
+            return !string.IsNullOrEmpty(idScope);
         }
     }
 }

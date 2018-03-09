@@ -164,14 +164,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                         false);
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex) when (!(ex is ProvisioningTransportException))
             {
                 if (Logging.IsEnabled) Logging.Error(
                     this,
                     $"{nameof(ProvisioningTransportHandlerHttp)} threw exception {ex}",
                     nameof(RegisterAsync));
 
-                // TODO: Extract trackingId from the exception.
                 throw new ProvisioningTransportException($"HTTP transport exception", ex, true);
             }
             finally
