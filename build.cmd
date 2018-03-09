@@ -8,8 +8,8 @@ if "%1" EQU "-h" goto get-help
 if "%1" EQU "-help" goto get-help
 if "%1" EQU "--help" goto get-help
 
-powershell -command ".\build.ps1 %*; exit $LASTEXITCODE"
+powershell -noprofile -command ".\build.ps1 %*; exit $LASTEXITCODE"
 exit /b %ERRORLEVEL%
 
 :get-help
-powershell -command "Get-Help .\build.ps1"
+powershell -noprofile -command "Get-Help .\build.ps1"
