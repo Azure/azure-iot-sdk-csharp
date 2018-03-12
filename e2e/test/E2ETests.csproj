@@ -72,18 +72,12 @@
     <PackageReference Include="Microsoft.Azure.EventHubs" Version="1.0.3" />
   </ItemGroup>
 
-  <!-- 
-    For Debug runs, reference the local SDK build. 
-    Note: To run in Visual Studio, a SLN referencing all projects below is required.
-  -->
-  <!-- TODO: <ItemGroup Condition=" '$(Configuration)' == 'Debug' "> -->
-  <ItemGroup>
+  <ItemGroup Condition=" '$(AZURE_IOT_LOCALPACKAGES)' == '' ">
     <ProjectReference Include="$(RootDir)\iothub\device\src\Microsoft.Azure.Devices.Client.csproj" />
     <ProjectReference Include="$(RootDir)\iothub\service\src\Microsoft.Azure.Devices.csproj" />
     <ProjectReference Include="$(RootDir)\shared\src\Microsoft.Azure.Devices.Shared.csproj" />
   </ItemGroup>
-  <!-- TODO: <ItemGroup Condition=" ('$(Configuration)' == 'Debug') And ( '$(TargetFramework)' != 'net451' ) "> -->
-  <ItemGroup Condition=" '$(TargetFramework)' != 'net451' ">
+  <ItemGroup Condition=" ('$(AZURE_IOT_LOCALPACKAGES)' == '') And ( '$(TargetFramework)' != 'net451' ) ">
     <ProjectReference Include="$(RootDir)\provisioning\device\src\Microsoft.Azure.Devices.Provisioning.Client.csproj" />
     <ProjectReference Include="$(RootDir)\provisioning\transport\amqp\src\Microsoft.Azure.Devices.Provisioning.Transport.Amqp.csproj" />
     <ProjectReference Include="$(RootDir)\provisioning\transport\http\src\Microsoft.Azure.Devices.Provisioning.Transport.Http.csproj" />
@@ -92,13 +86,12 @@
     <Compile Include="$(RootDir)\security\tpm\samples\SecurityProviderTpmSimulator\SecurityProviderTpmSimulator.cs" />
   </ItemGroup>
 
-  <!-- TODO: For Release runs, reference the latest NuGet packages. 
-  <ItemGroup Condition=" '$(Configuration)' == 'Release' ">
+  <ItemGroup Condition=" '$(AZURE_IOT_LOCALPACKAGES)' != '' ">
     <PackageReference Include="Microsoft.Azure.Devices" Version="1.*" />
     <PackageReference Include="Microsoft.Azure.Devices.Shared" Version="1.*" />
     <PackageReference Include="Microsoft.Azure.Devices.Client" Version="1.*" />
   </ItemGroup>
-  <ItemGroup Condition=" ('$(Configuration)' == 'Release') And ( '$(TargetFramework)' != 'net451' ) ">
+  <ItemGroup Condition=" ('$(AZURE_IOT_LOCALPACKAGES.ToUpper())' != '') And ( '$(TargetFramework)' != 'net451' ) ">
     <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Client" Version="1.*" />
     <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Transport.Amqp" Version="1.*" />
     <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Transport.Http" Version="1.*" />
@@ -106,6 +99,5 @@
     <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Security.Tpm" Version="1.*" />
     <ProjectReference Include="$(RootDir)\security\tpm\samples\SecurityProviderTpmSimulator\SecurityProviderTpmSimulator.csproj" />
   </ItemGroup>
-  --> 
 
 </Project>

@@ -18,10 +18,16 @@ Parameters:
     -xamarintests: Runs Xamarin tests. Requires additional SDKs and prerequisite configuration.
     -configuration {Debug|Release}
     -verbosity: Sets the verbosity level of the command. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].
-.NOTES
+
 Build will automatically detect if the machine is Windows vs Unix. On Windows development boxes, additional testing on .NET Framework will be performed.
 
-.EXAMPLE 
+The following environment variables can tune the build behavior:
+    - AZURE_IOT_DONOTSIGN: disables delay-signing if set to 'TRUE'
+    - AZURE_IOT_LOCALPACKAGES: the path to the local nuget source. 
+        Add a new source using: `nuget sources add -name MySource -Source <path>`
+        Remove a source using: `nuget sources remove -name MySource`
+
+.EXAMPLE
 .\build
 
 Builds a Debug version of the SDK.
@@ -50,9 +56,29 @@ Param(
     [switch] $e2etests,
     [switch] $stresstests,
     [switch] $xamarintests,
+    [switch] $sign,
     [string] $configuration = "Debug",
     [string] $verbosity = "q"
 )
+
+Function IsWindowsDevelopmentBox()
+{
+    return ([Environment]::OSVersion.Platform -eq [System.PlatformID]::Win32NT)
+}
+
+Function CheckSignTools()
+{
+    $commands = $("SignDotNetBinary", "SignBinary", "SignNuGetPackage", "SignMSIPackage")
+
+    foreach($command in $commands)
+    {
+        $info = Get-Command $command -ErrorAction SilentlyContinue
+        if ($info -eq $null)
+        {
+            throw "Sign toolset not found: '$command' is missing."
+        }
+    }
+}
 
 Function BuildProject($path, $message) {
 
@@ -81,14 +107,30 @@ Function BuildPackage($path, $message) {
 
     Write-Host
     Write-Host -ForegroundColor Cyan $label
-    cd (Join-Path $rootDir $path)
 
-    $frameworkArgs = ""
+    $projectPath = Join-Path $rootDir $path
+    cd $projectPath
+
+    $projectName = (dir (Join-Path $projectPath *.csproj))[0].BaseName
+
+    if ($sign)
+    {
+        Write-Host -ForegroundColor Magenta "`tSigning binaries: $projectName"
+        $filesToSign = dir -Recurse .\bin\Release\$projectName.dll
+        SignDotNetBinary $filesToSign
+    }
 
     & dotnet pack --verbosity $verbosity --configuration $configuration --no-build --include-symbols --include-source --output $localPackages
-
+    
     if ($LASTEXITCODE -ne 0) {
-        throw "Build failed: $label"
+        throw "Package failed: $label"
+    }
+
+    if ($sign)
+    {
+        Write-Host -ForegroundColor Magenta "`tSigning package: $projectName"
+        $filesToSign = dir (Join-Path $localPackages "$projectName.nupkg")
+        SignNuGetPackage $filesToSign
     }
 }
 
@@ -122,11 +164,6 @@ Function RunApp($path, $message, $framework="netcoreapp2.0") {
     }
 }
 
-Function IsWindowsDevelopmentBox()
-{  
-    return ([Environment]::OSVersion.Platform -eq [System.PlatformID]::Win32NT)    
-}
-
 $rootDir = (Get-Item -Path ".\" -Verbose).FullName
 $localPackages = Join-Path $rootDir "bin\pkg"
 $startTime = Get-Date
@@ -134,35 +171,27 @@ $buildFailed = $true
 $errorMessage = ""
 
 try {
+    if ($sign)
+    {
+        CheckSignTools
+    }
+    
     if (-not $nobuild)
     {
         # SDK binaries
         BuildProject shared\src "Shared Assembly"
         BuildProject iothub\device\src "IoT Hub DeviceClient SDK"
-        BuildProject iothub\service\src "IoT Hub ServiceClient SDK"      
+        BuildProject iothub\service\src "IoT Hub ServiceClient SDK"
         BuildProject security\tpm\src "SecurityProvider for TPM"
         BuildProject provisioning\device\src "Provisioning Device Client SDK"
         BuildProject provisioning\transport\amqp\src "Provisioning Transport for AMQP"
         BuildProject provisioning\transport\http\src "Provisioning Transport for HTTP"
         BuildProject provisioning\transport\mqtt\src "Provisioning Transport for MQTT"
         BuildProject provisioning\service\src "Provisioning Service Client SDK"
-
-        # Samples
-        BuildProject iothub\device\samples "IoT Hub DeviceClient Samples"
-        BuildProject iothub\service\samples "IoT Hub ServiceClient Samples"
-        BuildProject provisioning\device\samples "Provisioning Device Client Samples"
-        BuildProject provisioning\service\samples "Provisioning Service Client Samples"
-        BuildProject security\tpm\samples "SecurityProvider for TPM Samples"
-
-        # Xamarin samples (require Android, iOS and UWP SDKs and configured iOS remote)
-        if ($xamarintests)
-        {
-            # TODO #335 - create new Xamarin automated samples/tests
-        }
     }
 
     # Unit Tests require InternalsVisibleTo and can only run in Debug builds.
-    if ((-not $nounittests) -and ($configuration.ToLower() -eq "debug"))
+    if ((-not $nounittests) -and ($configuration.ToUpperInvariant() -eq "DEBUG"))
     {
         Write-Host
         Write-Host -ForegroundColor Cyan "Unit Test execution"
@@ -177,7 +206,7 @@ try {
         RunTests security\tpm\tests "SecurityProvider for TPM Tests"
         RunTests provisioning\service\tests "Provisioning Service Client Tests"
     }
-  
+
     if ((-not $nopackage))
     {
         BuildPackage shared\src "Shared Assembly"
@@ -191,6 +220,25 @@ try {
         BuildPackage provisioning\service\src "Provisioning Service Client SDK"
     }
 
+    if (-not [string]::IsNullOrWhiteSpace($env:AZURE_IOT_LOCALPACKAGES))
+    {
+        Write-Host
+        Write-Host -ForegroundColor Cyan "Preparing local package source"
+        Write-Host
+
+        if (-not (Test-Path $env:AZURE_IOT_LOCALPACKAGES))
+        {
+            throw "Local NuGet package source path invalid: $($env:AZURE_IOT_LOCALPACKAGES)"
+        }
+        
+        # Clear the NuGet cache and the old packages.
+        dotnet nuget locals --clear all
+        Remove-Item $env:AZURE_IOT_LOCALPACKAGES\*.*
+
+        # Copy new packages.
+        copy (Join-Path $rootDir "bin\pkg\*.*") $env:AZURE_IOT_LOCALPACKAGES
+    }
+
     if ($e2etests)
     {
         Write-Host
@@ -200,7 +248,7 @@ try {
         # Override verbosity to display individual test execution.
         $oldVerbosity = $verbosity
         $verbosity = "normal"
-        
+
         RunTests e2e\test "End-to-end tests (NetCoreApp)"
         if (IsWindowsDevelopmentBox)
         {
@@ -209,6 +257,19 @@ try {
         }
 
         $verbosity = $oldVerbosity
+
+        # Samples
+        BuildProject iothub\device\samples "IoT Hub DeviceClient Samples"
+        BuildProject iothub\service\samples "IoT Hub ServiceClient Samples"
+        BuildProject provisioning\device\samples "Provisioning Device Client Samples"
+        BuildProject provisioning\service\samples "Provisioning Service Client Samples"
+        BuildProject security\tpm\samples "SecurityProvider for TPM Samples"
+
+        # Xamarin samples (require Android, iOS and UWP SDKs and configured iOS remote)
+        if ($xamarintests)
+        {
+            # TODO #335 - create new Xamarin automated samples/tests
+        }
     }
 
     if ($stresstests)
