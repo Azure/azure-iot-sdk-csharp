@@ -237,7 +237,6 @@
     <Compile Include="..\Microsoft.Azure.Devices\Receiver.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\RegistryManager.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\RegistryStatistics.cs" />
-    <Compile Include="..\Microsoft.Azure.Devices\ServiceAuthenticationWithDeviceCredentials.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\ServiceAuthenticationWithSharedAccessPolicyKey.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\ServiceAuthenticationWithSharedAccessPolicyToken.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\ServiceClient.cs" />
@@ -247,6 +246,8 @@
     <Compile Include="..\Microsoft.Azure.Devices\Common\IOThreadTimerSlim.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\X509ThumbprintExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ServiceAuthenticationWithDeviceSharedAccessPolicyKey.cs" />
+    <Compile Include="ServiceAuthenticationWithDeviceSharedAccessPolicyToken.cs" />
     <EmbeddedResource Include="Properties\Microsoft.Azure.Devices.Uwp.rd.xml" />
   </ItemGroup>
   <ItemGroup>

@@ -15,7 +15,14 @@ namespace Microsoft.Azure.Devices
         {
             if (!string.IsNullOrWhiteSpace(iotHubConnectionStringBuilder.DeviceId))
             {
-                return new ServiceAuthenticationWithDeviceCredentials(iotHubConnectionStringBuilder.DeviceId, iotHubConnectionStringBuilder.SharedAccessKey);
+                if (!string.IsNullOrWhiteSpace(iotHubConnectionStringBuilder.SharedAccessKey))
+                {
+                    return new ServiceAuthenticationWithDeviceSharedAccessPolicyKey(iotHubConnectionStringBuilder.DeviceId, iotHubConnectionStringBuilder.SharedAccessKey);
+                }
+                if (!string.IsNullOrWhiteSpace(iotHubConnectionStringBuilder.SharedAccessSignature))
+                {
+                    return new ServiceAuthenticationWithDeviceSharedAccessPolicyToken(iotHubConnectionStringBuilder.DeviceId, iotHubConnectionStringBuilder.SharedAccessSignature);
+                }
             }
             if (string.IsNullOrWhiteSpace(iotHubConnectionStringBuilder.SharedAccessKey))
             {
