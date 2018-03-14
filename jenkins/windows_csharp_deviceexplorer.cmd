@@ -9,9 +9,13 @@ for %%i in ("%build-root%") do set build-root=%%~fi
 
 cd %build-root%
 
-call tools\DeviceExplorer\build\build.cmd --clean --config Release
-if errorlevel 1 goto :eof
+pushd tools\DeviceExplorer
+call build.cmd -clean -configuration Release
+if errorlevel 1 goto :err
 
 echo.
 echo C# build completed successfully
 echo.
+
+:err
+popd
