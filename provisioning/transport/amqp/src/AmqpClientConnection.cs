@@ -50,7 +50,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             TransportSettings = new TlsTransportSettings(tcpSettings)
             {
                 TargetHost = hostName,
-                CertificateValidationCallback = (sender, cert, chain, errors) => true,
                 Certificate = clientCert
             };
 
