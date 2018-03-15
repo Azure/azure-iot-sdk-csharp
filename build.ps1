@@ -16,6 +16,8 @@ Parameters:
     -e2etests: Runs E2E tests. Requires prerequisites and environment variables.
     -stresstests: Runs Stress tests.
     -xamarintests: Runs Xamarin tests. Requires additional SDKs and prerequisite configuration.
+    -sign: (Internal use, requires signing toolset) Signs the binaries before release.
+    -publish: (Internal use, requires nuget toolset) Publishes the nuget packages.
     -configuration {Debug|Release}
     -verbosity: Sets the verbosity level of the command. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].
 
@@ -57,6 +59,7 @@ Param(
     [switch] $stresstests,
     [switch] $xamarintests,
     [switch] $sign,
+    [switch] $publish,
     [string] $configuration = "Debug",
     [string] $verbosity = "q"
 )
@@ -69,13 +72,23 @@ Function IsWindowsDevelopmentBox()
 Function CheckSignTools()
 {
     $commands = $("SignDotNetBinary", "SignBinary", "SignNuGetPackage", "SignMSIPackage")
+    CheckTools $commands
+}
 
+Function CheckPublishTools()
+{
+    $commands = $("PushNuGet")
+    CheckTools $commands
+}
+
+Function CheckTools($commands)
+{
     foreach($command in $commands)
     {
         $info = Get-Command $command -ErrorAction SilentlyContinue
         if ($info -eq $null)
         {
-            throw "Sign toolset not found: '$command' is missing."
+            throw "Toolset not found: '$command' is missing."
         }
     }
 }
@@ -121,7 +134,7 @@ Function BuildPackage($path, $message) {
     }
 
     & dotnet pack --verbosity $verbosity --configuration $configuration --no-build --include-symbols --include-source --output $localPackages
-    
+
     if ($LASTEXITCODE -ne 0) {
         throw "Package failed: $label"
     }
@@ -129,7 +142,7 @@ Function BuildPackage($path, $message) {
     if ($sign)
     {
         Write-Host -ForegroundColor Magenta "`tSigning package: $projectName"
-        $filesToSign = dir (Join-Path $localPackages "$projectName.nupkg")
+        $filesToSign = dir (Join-Path $localPackages "$projectName.*.nupkg")
         SignNuGetPackage $filesToSign
     }
 }
@@ -174,6 +187,11 @@ try {
     if ($sign)
     {
         CheckSignTools
+    }
+
+    if ($publish)
+    {
+        CheckPublishTools
     }
     
     if (-not $nobuild)
@@ -285,6 +303,12 @@ try {
     if ($xamarintests)
     {
         # TODO #335 - create new Xamarin automated samples/tests
+    }
+
+    if ($publish)
+    {
+        $files = dir $rootDir\bin\pkg\*.nupkg | where {-not ($_.Name -match "symbols")}
+        PushNuGet $files
     }
 
     $buildFailed = $false
