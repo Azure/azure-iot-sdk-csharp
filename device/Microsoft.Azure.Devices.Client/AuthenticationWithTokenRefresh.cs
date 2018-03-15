@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.Client
         public bool IsExpiring => (_expiryTime - DateTime.UtcNow).TotalSeconds <= _bufferSeconds;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DeviceAuthenticationWithTokenRefresh"/> class.
+        /// Initializes a new instance of the <see cref="AuthenticationWithTokenRefresh"/> class.
         /// </summary>
         /// <param name="suggestedTimeToLiveSeconds">Token time to live suggested value. The implementations of this abstract
         /// may choose to ignore this value.</param>

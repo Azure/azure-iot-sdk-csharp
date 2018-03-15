@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <Features Condition=" '$(Configuration)' == 'Debug' ">IOperation</Features>
     <RootNamespace>Microsoft.Azure.Devices.Provisioning.Client.Transport</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -19,7 +18,7 @@
   </PropertyGroup>
   
   <PropertyGroup>
-    <VersionPrefix>1.0.0</VersionPrefix>
+    <VersionPrefix>1.0.2</VersionPrefix>
     <Title>Microsoft Azure IoT Provisioning Device Client MQTT Transport</Title>
     <Authors>Microsoft</Authors>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
@@ -75,7 +74,7 @@
     <PackageReference Include="DotNetty.Handlers" Version="0.4.7" />
 
     <!-- FXCop -->
-    <PackageReference Condition=" '$(Configuration)' == 'Debug' " Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.3.0-beta1" />
+    <PackageReference Condition=" '$(Configuration)' == 'Debug' " Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.6.0-beta2" />
   </ItemGroup>
 
 </Project>

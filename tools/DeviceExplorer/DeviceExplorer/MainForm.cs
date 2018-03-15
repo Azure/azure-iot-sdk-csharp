@@ -10,6 +10,7 @@ using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Devices.Common.Security;
 using Microsoft.ServiceBus.Messaging;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -52,6 +53,8 @@ namespace DeviceExplorer
         private static DataGridViewRow messageSysPropCorrelationId = new DataGridViewRow();
         private static DataGridViewRow messageSysPropContentType = new DataGridViewRow();
         private static DataGridViewRow messageSysPropContentEncoding = new DataGridViewRow();
+
+        private SortableBindingList<DeviceEntity> allDevices;
 
         private string deviceIDSearchPattern = String.Empty;
         private DateTime deviceIDSearchPatternLastUpdateTime = DateTime.Now;
@@ -341,7 +344,8 @@ namespace DeviceExplorer
             var devicesProcessor = new DevicesProcessor(activeIoTHubConnectionString, MAX_COUNT_OF_DEVICES, protocolGatewayHost.Text);
             var devicesList = await devicesProcessor.GetDevices();
             devicesList.Sort();
-            var sortableDevicesBindingList = new SortableBindingList<DeviceEntity>(devicesList);
+            allDevices = new SortableBindingList<DeviceEntity>(devicesList);
+
             string deviceCurrentlySelected = null;
 
             // Save the device ID currently selected on the grid.
@@ -350,18 +354,12 @@ namespace DeviceExplorer
                 deviceCurrentlySelected = (string)devicesGridView.SelectedRows[0].Cells[0].Value;
             }
 
-            devicesGridView.DataSource = sortableDevicesBindingList;
             devicesGridView.ReadOnly = true;
             devicesGridView.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
 
-            if (devicesList.Count() > MAX_COUNT_OF_DEVICES)
-            {
-                deviceCountLabel.Text = MAX_COUNT_OF_DEVICES + "+";
-            }
-            else
-            {
-                deviceCountLabel.Text = devicesList.Count().ToString();
-            }
+            deviceCountLabel.Text = devicesList.Count > MAX_COUNT_OF_DEVICES
+                ? MAX_COUNT_OF_DEVICES + "+"
+                : devicesList.Count.ToString();
 
             // Re-select the device ID previously selected before the update.
             // This avoids the super-annoying need to scroll down every time the management grid gets updated.
@@ -369,6 +367,8 @@ namespace DeviceExplorer
             {
                 findAndSelectRowByDeviceID(deviceCurrentlySelected, true);
             }
+
+            FilterDevices();
         }
 
         private void createButton_Click(object sender, EventArgs e)
@@ -1093,14 +1093,69 @@ namespace DeviceExplorer
 
         private void devicesGridViewContextMenu_Opened(object sender, EventArgs e)
         {
-            if (devicesGridView.SelectedRows.Count == 1)
-            {
-                showDevicePropertiesToolStripMenuItem.Enabled = true;
-            }
-            else
-            {
-                showDevicePropertiesToolStripMenuItem.Enabled = false;
-            }
+            showDevicePropertiesToolStripMenuItem.Enabled = (devicesGridView.SelectedRows.Count == 1);
         }
+
+        #region Device Filtering
+        private void filterDevicesTextBox_TextChanged(object sender, EventArgs e)
+        {
+            FilterDevices();
+        }
+
+        private void FilterDevices() { FilterDevices(filterDevicesTextBox.Text); }
+        private void FilterDevices(string filterText)
+        {
+            if (!IsValidRegex(filterText))
+            {
+                devicesGridView.DataSource = allDevices;
+                return;
+            }
+
+            IEnumerable<DeviceEntity> filteredDevices = 
+                from device in allDevices
+                where DeviceMatchesFilterText(device, filterText)
+                select device;
+
+            devicesGridView.DataSource = new SortableBindingList<DeviceEntity>(filteredDevices);
+        }
+
+        private static bool DeviceMatchesFilterText(DeviceEntity device, string filterText)
+        {
+            return new[]
+            {
+                device.Id,
+                device.PrimaryKey,
+                device.SecondaryKey,
+                device.ConnectionState,
+                device.State,
+
+            }.Any(s => StringMatchesFilterText(s, filterText));
+        }
+
+        private static bool StringMatchesFilterText(string s, string filterText)
+        {
+            if (string.IsNullOrWhiteSpace(s))          return false;
+            if (string.IsNullOrWhiteSpace(filterText)) return true;
+
+            var r = new Regex(filterText, RegexOptions.IgnoreCase);
+            return r.Match(s).Success;
+        }
+
+        private static bool IsValidRegex(string pattern)
+        {
+            if (string.IsNullOrWhiteSpace(pattern)) return false;
+
+            try
+            {
+                Regex.Match("", pattern);
+            }
+            catch (ArgumentException)
+            {
+                return false;
+            }
+
+            return true;
+        }
+        #endregion
     }
 }

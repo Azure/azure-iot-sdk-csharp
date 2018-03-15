@@ -3,7 +3,7 @@
   <PropertyGroup>
     <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Configurations>Debug;Release;Release_Delay_Sign</Configurations>
+    <Configurations>Debug;Release</Configurations>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{3081D7CD-2F05-4431-9FEF-4F8A19591AD4}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -37,23 +37,13 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release_Delay_Sign|AnyCPU'">
-    <OutputPath>bin\Release_Delay_Sign\</OutputPath>
-    <DefineConstants>TRACE;NETSTANDARD1_3;RELEASE_DELAY_SIGN;ENABLE_MODULES_SDK</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Optimize>true</Optimize>
-    <NoStdLib>true</NoStdLib>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <DocumentationFile>bin\Release_Delay_Sign\Microsoft.Azure.Devices.XML</DocumentationFile>
+    <DocumentationFile>bin\Release\Microsoft.Azure.Devices.XML</DocumentationFile>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
-
   <ItemGroup>
-    <PackageReference Include="Microsoft.Azure.Amqp" Version="2.0.6" />
-    <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
+    <PackageReference Include="Microsoft.Azure.Amqp" Version="2.1.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
     <PackageReference Include="System.ComponentModel.TypeConverter" Version="4.3.0" />
     <PackageReference Include="System.Diagnostics.Contracts" Version="4.3.0" />
     <PackageReference Include="System.Diagnostics.TraceSource" Version="4.3.0" />
@@ -109,6 +99,9 @@
     </Compile>
     <Compile Include="..\..\common\src\service\QuerySpecification.cs">
       <Link>QuerySpecification.cs</Link>
+    </Compile>
+    <Compile Include="..\..\common\src\service\StringValidationHelper.cs">
+      <Link>Common\StringValidationHelper.cs</Link>
     </Compile>
     <Compile Include="..\..\common\src\service\TaskHelpers.cs">
       <Link>TaskHelpers.cs</Link>
@@ -193,7 +186,6 @@
     <Compile Include="..\Microsoft.Azure.Devices\Common\SerializationUtilities.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\SignalGate.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\SingletonDictionary.cs" />
-    <Compile Include="..\Microsoft.Azure.Devices\Common\StringValidationHelper.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\Ticks.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\TimeoutHelper.cs" />
     <Compile Include="..\Microsoft.Azure.Devices\Common\Timestamp.cs" />
@@ -273,4 +265,10 @@
       <Name>Microsoft.Azure.Devices.Shared.NetStandard</Name>
     </ProjectReference>
   </ItemGroup>
+
+  <ItemGroup>
+    <!-- FXCop -->
+    <PackageReference Condition=" '$(Configuration)' == 'Debug' " Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.6.0-beta2" />
+  </ItemGroup>
+
 </Project>

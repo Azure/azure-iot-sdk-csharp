@@ -14,98 +14,80 @@
         <tags>Microsoft Azure IoT IoTHub Device Client .net AMQP MQTT HTTP</tags>
         <language>en-US</language>
         <dependencies>
-
-            <group>
-                <dependency id="Microsoft.Azure.Devices.Shared" version="1.4.0-preview-002" />
+            <group targetFramework="net451" >
+                <dependency id="Microsoft.Azure.Devices.Shared" version="1.15.0-preview-001" />
+                <dependency id="DotNetty.Codecs.Mqtt" version="0.4.7" />
+                <dependency id="DotNetty.Handlers" version="0.4.7" />
+                <dependency id="Microsoft.Azure.Amqp" version="2.1.3" />
                 <dependency id="Newtonsoft.Json" version="10.0.3" />
-                <dependency id="PCLCrypto" version="2.0.147" />
-            </group>
+                <dependency id="WindowsAzure.Storage" version="8.7.0" />
 
-            <group targetFramework="net45" >
-                <dependency id="PCLCrypto" version="2.0.147" />
-                <dependency id="Microsoft.Azure.Amqp" version="2.0.6" />
-                <dependency id="DotNetty.Codecs.Mqtt" version="0.4.6" />
-                <dependency id="DotNetty.Handlers" version="0.4.6" />
                 <dependency id="EnterpriseLibrary.TransientFaultHandling" version="6.0.1304" />
                 <dependency id="Microsoft.AspNet.WebApi.Client" version="5.2.3" />
-                <dependency id="WindowsAzure.Storage" version="7.0.0" />
-                <dependency id="Microsoft.Azure.Devices.Shared" version="1.4.0-preview-002" />
+                <dependency id="Microsoft.Azure.KeyVault.Core" version="2.0.4" />
+                <dependency id="Microsoft.Data.OData" version="5.8.3" />
+                <dependency id="Microsoft.Data.Services.Client" version="5.8.3" />
+                <dependency id="Microsoft.NETCore.Platforms" version="2.0.1" />
+                <dependency id="Microsoft.Owin" version="3.1.0" />
+                <dependency id="Mono.Security" version="5.4.0.201" />
+                <dependency id="NETStandard.Library" version="2.0.1" />
+                <dependency id="System.Net.Http" version="4.3.3" />
+                <dependency id="System.Runtime" version="4.3.0" />
+                <dependency id="System.Spatial" version="5.8.3" />
+                <dependency id="System.Threading.Tasks" version="4.3.0" />
             </group>
 
             <group targetFramework="uap10.0">
-                <dependency id="Microsoft.NETCore.UniversalWindowsPlatform" version="[5.2.2,)"/>
-                <dependency id="PCLCrypto" version="2.0.147" />
-                <dependency id="Microsoft.Azure.Amqp" version="2.0.6" />
-                <dependency id="Microsoft.AspNet.WebApi.Client" version="5.2.3" />
-                <dependency id="Microsoft.Azure.Devices.Shared" version="1.4.0-preview-002" />
+                <dependency id="Microsoft.Azure.Devices.Shared" version="1.15.0-preview-001" />
+                <dependency id="DotNetty.Codecs.Mqtt" version="0.4.7" />
+                <dependency id="DotNetty.Handlers" version="0.4.7" />
+                <dependency id="Microsoft.Azure.Amqp" version="2.1.3" />
+                <dependency id="Newtonsoft.Json" version="10.0.3" />
+                <dependency id="WindowsAzure.Storage" version="8.7.0" />
+
                 <dependency id="EnterpriseLibrary.TransientFaultHandling" version="6.0.1304" />
-                <dependency id="DotNetty.Buffers" version="0.4.6" />
-                <dependency id="DotNetty.Codecs" version="0.4.6" />
-                <dependency id="DotNetty.Codecs.Mqtt" version="0.4.6" />
-                <dependency id="DotNetty.Common" version="0.4.6" />
-                <dependency id="DotNetty.Transport" version="0.4.6" />
+                <dependency id="System.AppContext" version="4.3.0" />
+                <dependency id="System.Net.WebSockets.Client" version="4.3.2" />
+                <dependency id="System.Security.Cryptography.X509Certificates" version="4.3.2" />
             </group>
+
             <group targetFramework="netstandard1.3" >
-                <dependency id="DotNetty.Codecs.Mqtt" version="0.4.6" />
-                <dependency id="DotNetty.Handlers" version="0.4.6" />
-                <dependency id="Microsoft.Azure.Amqp" version="2.0.6" />
-                <dependency id="System.AppContext" version="4.3.0"/>
-                <dependency id="System.Collections.Specialized" version="4.3.0" />
-                <dependency id="System.Diagnostics.TraceSource" version="4.3.0"/>
-                <dependency id="System.Net.Http" version="4.3.1" />
-                <dependency id="System.Net.NameResolution" version="4.3.0" />
-                <dependency id="System.Net.Requests" version="4.3.0" />
-                <dependency id="System.Net.Security" version="4.3.0" />
-                <dependency id="System.Net.WebHeaderCollection" version="4.3.0" />
-                <dependency id="System.Net.WebSockets.Client" version="4.3.0" />
-                <dependency id="System.Reflection.Extensions" version="4.3.0" />
-                <dependency id="System.Runtime.Extensions" version="4.3.0" />
-                <dependency id="System.Runtime.Serialization.Formatters" version="4.3.0" />
-                <dependency id="System.Security.Cryptography.Algorithms" version="4.3.0" />
-                <dependency id="System.Threading.Overlapped" version="4.3.0" />
-                <dependency id="Validation" version="2.4.13" />
-                <dependency id="WindowsAzure.Storage" version="8.1.1" />
-                <dependency id="Microsoft.Azure.Devices.Shared" version="1.4.0-preview-002" />
-            </group>
+                <dependency id="Microsoft.Azure.Devices.Shared" version="1.15.0-preview-001" />
+                <dependency id="DotNetty.Codecs.Mqtt" version="0.4.7" />
+                <dependency id="DotNetty.Handlers" version="0.4.7" />
+                <dependency id="Microsoft.Azure.Amqp" version="2.1.3" />
+                <dependency id="Newtonsoft.Json" version="10.0.3" />
+                <dependency id="WindowsAzure.Storage" version="8.7.0" />
 
-            <group targetFramework="win8">
-                <dependency id="PCLCrypto" version="2.0.147" />
+                <dependency id="NETStandard.Library" version="1.6.1" exclude="Build,Analyzers" />
+                <dependency id="System.AppContext" version="4.3.0" exclude="Build,Analyzers" />
+                <dependency id="System.Collections.Specialized" version="4.3.0" exclude="Build,Analyzers" />
+                <dependency id="System.Diagnostics.TraceSource" version="4.3.0" exclude="Build,Analyzers" />
+                <dependency id="System.Net.Http" version="4.3.3" exclude="Build,Analyzers" />
+                <dependency id="System.Net.NameResolution" version="4.3.0" exclude="Build,Analyzers" />
+                <dependency id="System.Net.Requests" version="4.3.0" exclude="Build,Analyzers" />
+                <dependency id="System.Net.Security" version="4.3.2" exclude="Build,Analyzers" />
+                <dependency id="System.Net.WebHeaderCollection" version="4.3.0" exclude="Build,Analyzers" />
+                <dependency id="System.Net.WebSockets.Client" version="4.3.2" exclude="Build,Analyzers" />
+                <dependency id="System.Reflection.Extensions" version="4.3.0" exclude="Build,Analyzers" />
+                <dependency id="System.Runtime.Extensions" version="4.3.0" exclude="Build,Analyzers" />
+                <dependency id="System.Runtime.Serialization.Formatters" version="4.3.0" exclude="Build,Analyzers" />
+                <dependency id="System.Security.Cryptography.Algorithms" version="4.3.1" exclude="Build,Analyzers" />
+                <dependency id="System.Threading.Overlapped" version="4.3.0" exclude="Build,Analyzers" />
             </group>
-
-            <group targetFramework="wp8">
-                <dependency id="PCLCrypto" version="2.0.147" />
-            </group>
-
-            <group targetFramework="wpa81">
-                <dependency id="PCLCrypto" version="2.0.147" />
-            </group>
-
-            <group targetFramework="monoandroid">
-                <dependency id="Microsoft.Azure.Amqp" version="2.0.4" />
-                <dependency id="PCLCrypto" version="2.0.147" />
-            </group>
-
-            <group targetFramework="monotouch">
-                <dependency id="Microsoft.Azure.Amqp" version="2.0.4" />
-                <dependency id="PCLCrypto" version="2.0.147" />
-            </group>
-
-            <group targetFramework="Xamarin.iOS">
-                <dependency id="PCLCrypto" version="2.0.147" />
-            </group>
-
         </dependencies>
     </metadata>
     <files>
         <file src="..\thirdpartynotice.txt" target="thirdpartynotice.txt" />
-        <file src="..\Microsoft.Azure.Devices.Client\bin\release_delay_sign\Microsoft.Azure.Devices.Client.dll" target="lib\net45\Microsoft.Azure.Devices.Client.dll" />
-        <file src="..\Microsoft.Azure.Devices.Client\bin\release_delay_sign\Microsoft.Azure.Devices.Client.xml" target="lib\net45\Microsoft.Azure.Devices.Client.xml" />
-        <file src="..\Microsoft.Azure.Devices.Client.NetStandard\bin\release_delay_sign\netstandard1.3\Microsoft.Azure.Devices.Client.dll" target="lib\netstandard1.3\Microsoft.Azure.Devices.Client.dll" />
-        <file src="..\Microsoft.Azure.Devices.Client.NetStandard\bin\release_delay_sign\netstandard1.3\Microsoft.Azure.Devices.Client.XML" target="lib\netstandard1.3\Microsoft.Azure.Devices.Client.xml" />
-        <file src="..\Microsoft.Azure.Devices.Client.UWP\bin\release_delay_sign\Microsoft.Azure.Devices.Client.dll" target="lib\uap10.0\Microsoft.Azure.Devices.Client.dll" />
-        <file src="..\Microsoft.Azure.Devices.Client.UWP\bin\release_delay_sign\Microsoft.Azure.Devices.Client.pri" target="lib\uap10.0\Microsoft.Azure.Devices.Client.pri" />
-        <file src="..\Microsoft.Azure.Devices.Client.UWP\bin\release_delay_sign\Microsoft.Azure.Devices.Client.XML" target="lib\uap10.0\Microsoft.Azure.Devices.Client.XML" />
-        <file src="..\Microsoft.Azure.Devices.Client.PCL\bin\release_delay_sign\Microsoft.Azure.Devices.Client.PCL.dll" target="lib\portable-net45+wp8+wpa81+win8+MonoAndroid10+MonoTouch10+Xamarin.iOS10+UAP10\Microsoft.Azure.Devices.Client.PCL.dll" />
+        <file src="..\Microsoft.Azure.Devices.Client\bin\release\Microsoft.Azure.Devices.Client.dll" target="lib\net451\Microsoft.Azure.Devices.Client.dll" />
+        <file src="..\Microsoft.Azure.Devices.Client\bin\release\Microsoft.Azure.Devices.Client.xml" target="lib\net451\Microsoft.Azure.Devices.Client.xml" />
+
+        <file src="..\Microsoft.Azure.Devices.Client.NetStandard\bin\release\netstandard1.3\Microsoft.Azure.Devices.Client.dll" target="lib\netstandard1.3\Microsoft.Azure.Devices.Client.dll" />
+        <file src="..\Microsoft.Azure.Devices.Client.NetStandard\bin\release\netstandard1.3\Microsoft.Azure.Devices.Client.XML" target="lib\netstandard1.3\Microsoft.Azure.Devices.Client.xml" />
+
+        <file src="..\Microsoft.Azure.Devices.Client.UWP\bin\release\Microsoft.Azure.Devices.Client.dll" target="lib\uap10.0\Microsoft.Azure.Devices.Client.dll" />
+        <file src="..\Microsoft.Azure.Devices.Client.UWP\bin\release\Microsoft.Azure.Devices.Client.pri" target="lib\uap10.0\Microsoft.Azure.Devices.Client.pri" />
+        <file src="..\Microsoft.Azure.Devices.Client.UWP\bin\release\Microsoft.Azure.Devices.Client.XML" target="lib\uap10.0\Microsoft.Azure.Devices.Client.XML" />
 
         <!-- don't forget about the .targets file containing the reference -->
         <file src="Microsoft.Azure.Devices.Client.targets" target="build\native\" />

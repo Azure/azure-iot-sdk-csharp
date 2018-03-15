@@ -20,7 +20,7 @@ if not !errorlevel! == 0 (
 choice /C yn /M "Do you want to download and run nuget.exe"
 if not !errorlevel!==1 goto :eof
 rem if nuget.exe is not found, then ask user
-Powershell.exe wget -outf nuget.exe https://nuget.org/nuget.exe
+Powershell.exe wget -outf nuget.exe https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
 	if not exist .\nuget.exe (
 		echo nuget does not exist
 		exit /b 1

@@ -6,14 +6,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\device\Microsoft.Azure.Devices.Client.NetStandard\Microsoft.Azure.Devices.Client.NetStandard.csproj" />
-    <ProjectReference Include="..\..\..\..\shared\Microsoft.Azure.Devices.Shared.NetStandard\Microsoft.Azure.Devices.Shared.NetStandard.csproj" />
-    <ProjectReference Include="..\..\src\Microsoft.Azure.Devices.Provisioning.Client.csproj" />
+    <PackageReference Include="Microsoft.Azure.Devices.Client" Version="1.6.0" />
+    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Client" Version="1.0.0" />
 
     <!-- Note: Applications should not need to import all 3 protocols. This was done to simplify protocol selection within the sample.-->
-    <ProjectReference Include="..\..\..\transport\amqp\src\Microsoft.Azure.Devices.Provisioning.Transport.Amqp.csproj" />
-    <ProjectReference Include="..\..\..\transport\http\src\Microsoft.Azure.Devices.Provisioning.Transport.Http.csproj" />
-    <ProjectReference Include="..\..\..\transport\mqtt\src\Microsoft.Azure.Devices.Provisioning.Transport.Mqtt.csproj" />
+    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Transport.Amqp" Version="1.0.0" />
+    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Transport.Http" Version="1.0.0" />
+    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Transport.Mqtt" Version="1.0.0" />
   </ItemGroup>
 
 </Project>

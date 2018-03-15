@@ -27,7 +27,7 @@ using Microsoft.Azure.Devices.Common;
 
 // Version information for an assembly follows semantic versioning 1.0.0 (because
 // NuGet didn't support semver 2.0.0 before VS 2015). See semver.org for details.
-[assembly: AssemblyInformationalVersion("1.5.0-preview-001")]
+[assembly: AssemblyInformationalVersion("1.16.0-preview-001")]
 
 // Type forwarding
 [assembly: TypeForwardedTo(typeof(AuthenticationType))]
@@ -36,9 +36,9 @@ using Microsoft.Azure.Devices.Common;
 [assembly: TypeForwardedTo(typeof(StringFormattingExtensions))]
 [assembly: TypeForwardedTo(typeof(X509Thumbprint))]
 
-#if (RELEASE_DELAY_SIGN)
+#if (!DEBUG)
 [assembly: AssemblyDelaySignAttribute(true)]
-[assembly: AssemblyKeyFileAttribute("..\\..\\35MSSharedLib1024.snk")]
+[assembly: AssemblyKeyFileAttribute("../../35MSSharedLib1024.snk")]
 #else
 [assembly: InternalsVisibleTo("Microsoft.Azure.Devices.Api.Test")]
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Azure.Devices;
+using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -28,50 +29,33 @@ namespace DeviceExplorer
             try
             {
                 DeviceEntity deviceEntity;
-                var devices = await registryManager.GetDevicesAsync(maxCountOfDevices);
+                IQuery query = registryManager.CreateQuery("select * from devices", null); ;
 
-                if (devices != null)
+                while (query.HasMoreResults)
                 {
-                    foreach (var device in devices)
+                    IEnumerable<Twin> page = await query.GetNextAsTwinAsync();
+                    foreach (Twin twin in page)
                     {
+                        Device device = await registryManager.GetDeviceAsync(twin.DeviceId);
                         deviceEntity = new DeviceEntity()
                         {
-                            Id = device.Id,
-                            ConnectionState = device.ConnectionState.ToString(),
+                            Id = twin.DeviceId,
+                            ConnectionState = twin.ConnectionState.ToString(),
+                            LastActivityTime = twin.LastActivityTime,
+                            LastStateUpdatedTime = twin.StatusUpdatedTime,
+                            MessageCount = twin.CloudToDeviceMessageCount,
+                            State = twin.Status.ToString(),
+                            SuspensionReason = twin.StatusReason,
+
                             ConnectionString = CreateDeviceConnectionString(device),
-                            LastActivityTime = device.LastActivityTime,
-                            LastConnectionStateUpdatedTime = device.ConnectionStateUpdatedTime,
-                            LastStateUpdatedTime = device.StatusUpdatedTime,
-                            MessageCount = device.CloudToDeviceMessageCount,
-                            State = device.Status.ToString(),
-                            SuspensionReason = device.StatusReason
+                            LastConnectionStateUpdatedTime = device.ConnectionStateUpdatedTime
                         };
 
-                        if (device.Authentication != null)
-                        {
+                        deviceEntity.PrimaryThumbPrint = twin.X509Thumbprint?.PrimaryThumbprint;
+                        deviceEntity.SecondaryThumbPrint = twin.X509Thumbprint?.SecondaryThumbprint;
 
-                            deviceEntity.PrimaryKey = device.Authentication.SymmetricKey?.PrimaryKey;
-                            deviceEntity.SecondaryKey = device.Authentication.SymmetricKey?.SecondaryKey;
-                            deviceEntity.PrimaryThumbPrint = device.Authentication.X509Thumbprint?.PrimaryThumbprint;
-                            deviceEntity.SecondaryThumbPrint = device.Authentication.X509Thumbprint?.SecondaryThumbprint;
-
-                            //if ((device.Authentication.SymmetricKey != null) &&
-                            //    !((device.Authentication.SymmetricKey.PrimaryKey == null) ||
-                            //      (device.Authentication.SymmetricKey.SecondaryKey == null)))
-                            //{
-                            //    deviceEntity.PrimaryKey = device.Authentication.SymmetricKey.PrimaryKey;
-                            //    deviceEntity.SecondaryKey = device.Authentication.SymmetricKey.SecondaryKey;
-                            //    deviceEntity.PrimaryThumbPrint = "";
-                            //    deviceEntity.SecondaryThumbPrint = "";
-                            //}
-                            //else
-                            //{
-                            //    deviceEntity.PrimaryKey = "";
-                            //    deviceEntity.SecondaryKey = "";
-                            //    deviceEntity.PrimaryThumbPrint = device.Authentication.X509Thumbprint.PrimaryThumbprint;
-                            //    deviceEntity.SecondaryThumbPrint = device.Authentication.X509Thumbprint.SecondaryThumbprint;
-                            //}
-                        }
+                        deviceEntity.PrimaryKey = device.Authentication?.SymmetricKey?.PrimaryKey;
+                        deviceEntity.SecondaryKey = device.Authentication?.SymmetricKey?.SecondaryKey;
 
                         listOfDevices.Add(deviceEntity);
                     }

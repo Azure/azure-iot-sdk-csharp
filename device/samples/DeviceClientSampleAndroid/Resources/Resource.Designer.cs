@@ -27,8 +27,6 @@ namespace DeviceClientSampleAndroid
 		public static void UpdateIdValues()
 		{
 			global::Microsoft.Azure.Amqp.Amqp.Resource.String.ApplicationName = global::DeviceClientSampleAndroid.Resource.String.ApplicationName;
-			global::PCLCrypto.Resource.String.ApplicationName = global::DeviceClientSampleAndroid.Resource.String.ApplicationName;
-			global::PCLCrypto.Resource.String.Hello = global::DeviceClientSampleAndroid.Resource.String.Hello;
 		}
 		
 		public partial class Attribute

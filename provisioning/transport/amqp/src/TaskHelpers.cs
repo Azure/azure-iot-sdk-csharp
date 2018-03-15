@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                             tcs.TrySetException(t.Exception.InnerExceptions);
                             break;
                         default:
-                            throw new ArgumentOutOfRangeException("task", "t.Status not defined");
+                            throw new ArgumentOutOfRangeException(nameof(task), "t.Status not defined");
                     }
 
                     callback?.Invoke(tcs.Task);

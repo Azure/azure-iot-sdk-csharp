@@ -66,7 +66,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 eventMessage.Properties.Add("temperatureAlert", (temperature > TEMPERATURE_THRESHOLD) ? "true" : "false");
                 Console.WriteLine("\t{0}> Sending message: {1}, Data: [{2}]", DateTime.Now.ToLocalTime(), count, dataBuffer);
 
-                await deviceClient.SendEventAsync(eventMessage);
+                await deviceClient.SendEventAsync(eventMessage).ConfigureAwait(false);
             }
         }
 
@@ -79,7 +79,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             {
                 try
                 {
-                    receivedMessage = await deviceClient.ReceiveAsync(TimeSpan.FromSeconds(1));
+                    receivedMessage = await deviceClient.ReceiveAsync(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
 
                     if (receivedMessage != null)
                     {
@@ -92,7 +92,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                             Console.WriteLine("\t\tProperty[{0}> Key={1} : Value={2}", propCount++, prop.Key, prop.Value);
                         }
 
-                        await deviceClient.CompleteAsync(receivedMessage);
+                        await deviceClient.CompleteAsync(receivedMessage).ConfigureAwait(false);
                     }
                 }
                 finally

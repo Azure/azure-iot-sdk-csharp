@@ -15,7 +15,9 @@ namespace Microsoft.Azure.Devices.E2ETests
             public static string ConsumerGroup => GetValue("IOTHUB_EVENTHUB_CONSUMER_GROUP", "$Default");
 
             public static X509Certificate2 GetCertificateWithPrivateKey() 
-                => GetBase64EncodedCertificate("IOTHUB_X509_PFX_CERTIFICATE");
+                => GetBase64EncodedCertificate("IOTHUB_X509_PFX_CERTIFICATE", defaultValue:string.Empty);
+
+            public static string EventHubString => GetValue("EVENTHUB_CONN_STRING_CSHARP", string.Empty);
         }
     }
 }

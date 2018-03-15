@@ -79,6 +79,12 @@ namespace Microsoft.Azure.Devices.E2ETests
             Console.WriteLine($"{nameof(RemoveDeviceAsync)} Enumerating devices.");
             IEnumerable<Device> devices = await rm.GetDevicesAsync(int.MaxValue).ConfigureAwait(false);
 
+            if (devices == null) 
+            {
+                Console.WriteLine("GetDevicesAsync returned null");
+                return;
+            }
+
             // Ensure to remove all previous devices.
             foreach (Device device in devices)
             {

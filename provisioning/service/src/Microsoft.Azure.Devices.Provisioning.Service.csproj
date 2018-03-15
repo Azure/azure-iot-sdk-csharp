@@ -1,44 +1,49 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors> 
+    <!-- TODO #176: Enable warnings as errors. -->
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors> 
     <!-- TODO #255: Multiple public APIs still missing documentation:
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <OutputPath>.\bin\$(Configuration)</OutputPath>
     <DocumentationFile>$(OutputPath)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile> -->
-    <Features Condition=" '$(Configuration)' == 'Debug' ">IOperation</Features>
+  </PropertyGroup>
+
+  <!-- delay sign the assembly for Release build -->
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <AssemblyOriginatorKeyFile>..\..\..\35MSSharedLib1024.snk</AssemblyOriginatorKeyFile>
+    <DelaySign>true</DelaySign>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <VersionPrefix>1.0.1</VersionPrefix>
+    <Title>Microsoft Azure IoT Provisioning Service Client SDK</Title>
+    <Authors>Microsoft</Authors>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageLicenseUrl>https://github.com/Azure/azure-iot-sdk-csharp/blob/master/LICENSE</PackageLicenseUrl>
+    <Description>Provisioning Service Client SDK for Azure IoT</Description>
+    <PackageIconUrl>http://go.microsoft.com/fwlink/?LinkID=288890</PackageIconUrl>
+    <PackageProjectUrl>https://github.com/Azure/azure-iot-sdk-csharp</PackageProjectUrl>
+    <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
+    <PackageTags>Microsoft Azure IoT Provisioning Service Client .NET HTTP</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\..\common\src\service\AssertionFailedException.cs" Link="common\AssertionFailedException.cs" />
-    <Compile Include="..\..\..\common\src\service\AuthenticationMethodFactory.cs" Link="common\AuthenticationMethodFactory.cs" />
-    <Compile Include="..\..\..\common\src\service\CommonConstants.cs" Link="common\CommonConstants.cs" />
-    <Compile Include="..\..\..\common\src\service\CommonResources.cs" Link="common\CommonResources.cs" />
-    <Compile Include="..\..\..\common\src\service\EventTraceActivity.cs" Link="common\EventTraceActivity.cs" />
-    <Compile Include="..\..\..\common\src\service\ExceptionDispatcher.cs" Link="common\ExceptionDispatcher.cs" />
-    <Compile Include="..\..\..\common\src\service\ExceptionHandlingHelper.cs" Link="common\ExceptionHandlingHelper.cs" />
-    <Compile Include="..\..\..\common\src\service\ExceptionTrace.cs" Link="common\ExceptionTrace.cs" />
-    <Compile Include="..\..\..\common\src\service\FatalException.cs" Link="common\FatalException.cs" />
-    <Compile Include="..\..\..\common\src\service\Fx.cs" Link="common\Fx.cs" />
-    <Compile Include="..\..\..\common\src\service\FxCop.cs" Link="common\FxCop.cs" />
-    <Compile Include="..\..\..\common\src\service\HttpClientHelper.cs" Link="common\HttpClientHelper.cs" />
-    <Compile Include="..\..\..\common\src\service\IAuthorizationHeaderProvider.cs" Link="common\IAuthorizationHeaderProvider.cs" />
-    <Compile Include="..\..\..\common\src\service\IHttpClientHelper.cs" Link="common\IHttpClientHelper.cs" />
-    <Compile Include="..\..\..\common\src\service\IotHubConnectionString.cs" Link="common\IotHubConnectionString.cs" />
-    <Compile Include="..\..\..\common\src\service\PutOperationType.cs" Link="common\PutOperationType.cs" />
-    <Compile Include="..\..\..\common\src\service\QuerySpecification.cs" Link="common\QuerySpecification.cs" />
-    <Compile Include="..\..\..\common\src\service\Resources.Designer.cs" Link="common\Resources.Designer.cs" />
-    <Compile Include="..\..\..\common\src\service\TaskHelpers.cs" Link="common\TaskHelpers.cs" />
-    <Compile Include="..\..\..\common\src\service\Utils.cs" Link="common\Utils.cs" />
+    <Compile Include="..\..\..\common\src\service\CommonResources.cs" Link="Common\CommonResources.cs" />
+    <Compile Include="..\..\..\common\src\service\EventTraceActivity.cs" Link="Common\EventTraceActivity.cs" />
+    <Compile Include="..\..\..\common\src\service\Resources.Designer.cs" Link="Common\Resources.Designer.cs" />
+    <Compile Include="..\..\..\common\src\service\StringValidationHelper.cs" Link="Common\StringValidationHelper.cs" />
+    <Compile Include="..\..\..\common\src\service\Utils.cs" Link="Common\Utils.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Azure.Amqp" Version="2.0.6" />
-    <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
 
     <!-- FXCop TODO: #176
-    <PackageReference Condition=" '$(Configuration)' == 'Debug' " Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.3.0-beta1" />
+    <PackageReference Condition=" '$(Configuration)' == 'Debug' " Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.6.0-beta2" />
     -->
   </ItemGroup>
 
@@ -47,7 +52,6 @@
       <Project>{91dfb837-d8a3-4f54-ae0d-45c95acd0c2a}</Project>
       <Name>Microsoft.Azure.Devices.Shared.NetStandard</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\service\Microsoft.Azure.Devices.NetStandard\Microsoft.Azure.Devices.NetStandard.csproj" />
   </ItemGroup>
 
   <ItemGroup>

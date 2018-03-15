@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await DeviceClient_TokenIsRefreshed_Internal(Client.TransportType.Http1);
         }
-
+        
         [TestMethod]
         public async Task DeviceClient_TokenIsRefreshed_Ok_Amqp()
         {

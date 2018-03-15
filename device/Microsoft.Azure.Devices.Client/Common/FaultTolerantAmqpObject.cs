@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Devices.Client
 
         protected override async Task<T> OnCreateAsync(TimeSpan timeout, CancellationToken cancellationToken)
         {
-            T amqpObject = await this.createObjectAsync(timeout, cancellationToken);
+            T amqpObject = await this.createObjectAsync(timeout, cancellationToken).ConfigureAwait(false);
             amqpObject.SafeAddClosed((s, e) => this.Invalidate(amqpObject));
 
             return amqpObject;

@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private static X509Certificate2 GetBase64EncodedCertificate(string envName, string password=null, string defaultValue=null)
         {
-            string certBase64 = GetValue(envName, null);
+            string certBase64 = GetValue(envName, defaultValue);
 
             if (certBase64 == null)
             {

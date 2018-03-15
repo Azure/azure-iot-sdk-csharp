@@ -30,8 +30,7 @@ $dotNetStandardFile = "..\Microsoft.Azure.Devices.Client.NetStandard\Properties\
 
 $v1 = GetAssemblyVersionFromFile($dotNetFile)
 $v2 = GetAssemblyVersionFromFile($uwpNetFile)
-$v3 = GetAssemblyVersionFromFile($dotNetPCLFile)
-$v4 = GetAssemblyVersionFromFile($dotNetStandardFile)
+$v3 = GetAssemblyVersionFromFile($dotNetStandardFile)
 
 if($v1 -ne $v2) {
     Write-Host "Error: Mismatching assembly versions in files $dotNetFile and $uwpNetFile. Check AssemblyInformationalVersion attribute in each file." -foregroundcolor "red"
@@ -39,11 +38,6 @@ if($v1 -ne $v2) {
 }
 
 if($v1 -ne $v3) {
-    Write-Host "Error: Mismatching assembly versions in files $dotNetFile and $dotNetPCLFile. Check AssemblyInformationalVersion attribute in each file." -foregroundcolor "red"
-    return
-}
-
-if($v1 -ne $v4) {
     Write-Host "Error: Mismatching assembly versions in files $dotNetFile and $dotNetStandardFile. Check AssemblyInformationalVersion attribute in each file." -foregroundcolor "red"
     return
 }

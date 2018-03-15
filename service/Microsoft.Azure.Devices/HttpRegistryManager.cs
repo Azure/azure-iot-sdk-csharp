@@ -666,11 +666,13 @@ namespace Microsoft.Azure.Devices
         }
 #endif
 
+        [Obsolete("Use CreateQuery(\"select * from devices\", pageSize);")]
         public override Task<IEnumerable<Device>> GetDevicesAsync(int maxCount)
         {
             return this.GetDevicesAsync(maxCount, CancellationToken.None);
         }
 
+        [Obsolete("Use CreateQuery(\"select * from devices\", pageSize);")]
         public override Task<IEnumerable<Device>> GetDevicesAsync(int maxCount, CancellationToken cancellationToken)
         {
             this.EnsureInstanceNotClosed();

@@ -21,13 +21,15 @@
     </metadata>
     <files>
         <file src="..\..\thirdpartynotice.txt" target="thirdpartynotice.txt" />
-        <file src="..\Microsoft.Azure.Devices.Shared\bin\release_delay_sign\Microsoft.Azure.Devices.Shared.dll" target="lib\net45\Microsoft.Azure.Devices.Shared.dll" />
         
-        <file src="..\Microsoft.Azure.Devices.Shared.UWP\bin\release_delay_sign\Microsoft.Azure.Devices.Shared.dll" target="lib\uap10.0\Microsoft.Azure.Devices.Shared.dll" />
-        <file src="..\Microsoft.Azure.Devices.Shared.UWP\bin\release_delay_sign\Microsoft.Azure.Devices.Shared.pri" target="lib\uap10.0\Microsoft.Azure.Devices.Shared.pri" />
+        <file src="..\Microsoft.Azure.Devices.Shared\bin\release\Microsoft.Azure.Devices.Shared.dll" target="lib\net451\Microsoft.Azure.Devices.Shared.dll" />
+        <file src="..\Microsoft.Azure.Devices.Shared\bin\release\Microsoft.Azure.Devices.Shared.xml" target="lib\net451\Microsoft.Azure.Devices.Shared.xml" />
 
-        <file src="..\Microsoft.Azure.Devices.Shared.PCL\bin\release_delay_sign\Microsoft.Azure.Devices.Shared.PCL.dll" target="lib\portable-net45+wp8+wpa81+win8+MonoAndroid10+MonoTouch10+Xamarin.iOS10+UAP10\Microsoft.Azure.Devices.Shared.PCL.dll" />
-
-        <file src="..\Microsoft.Azure.Devices.Shared.NetStandard\bin\release_delay_sign\netstandard1.3\Microsoft.Azure.Devices.Shared.dll" target="lib\netstandard1.3\Microsoft.Azure.Devices.Shared.dll" />
+        <file src="..\Microsoft.Azure.Devices.Shared.UWP\bin\release\Microsoft.Azure.Devices.Shared.dll" target="lib\uap10.0\Microsoft.Azure.Devices.Shared.dll" />
+        <file src="..\Microsoft.Azure.Devices.Shared.UWP\bin\release\Microsoft.Azure.Devices.Shared.pri" target="lib\uap10.0\Microsoft.Azure.Devices.Shared.pri" />
+        <file src="..\Microsoft.Azure.Devices.Shared.UWP\bin\release\Microsoft.Azure.Devices.Shared.xml" target="lib\uap10.0\Microsoft.Azure.Devices.Shared.xml" />
+        
+        <file src="..\Microsoft.Azure.Devices.Shared.NetStandard\bin\release\netstandard1.3\Microsoft.Azure.Devices.Shared.dll" target="lib\netstandard1.3\Microsoft.Azure.Devices.Shared.dll" />
+        <file src="..\Microsoft.Azure.Devices.Shared.NetStandard\bin\release\Microsoft.Azure.Devices.Shared.xml" target="lib\Microsoft.Azure.Devices.Shared.xml" />
     </files>
 </package>

@@ -105,7 +105,7 @@ Just like command line option it will build Device Client SDK along with the sam
 
 In case, you want to build NuGet package **locally**, you can use following steps
 
-a.) Build Release_Delay_Sign build using VS 2015 IDE
+a.) Build the Release build.
 
 b.) Go to csharp\device\nuget folder in Windows PowerShell command prompt and run `./make_nuget_package.ps1` command. This will result is Microsoft.Azure.Devices.Client NuGet Package in \csharp\device\NuGet folder.You can then add this package locally in your build system by going though NuGet Package Manager.
 
@@ -127,28 +127,6 @@ For building iOS sample, open **csharp\device\samples\DeviceClientSampleiOS** pr
 For building Android sample open **csharp\device\samples\DeviceClientSampleAndroid** VS project file in VS 2015. You will be prompted to install Xamarin to build native Android apps in C# if tool is not installed. Install the tool. You can test the sample on Android emulator running on you host PC.
 
 To check for any latest Xamarin update for Visual Studio check Tools->Options->Xamarin->Other.
-
-### Building and running CppUWPSample (Universal Windows) C++ sample application
-
-Select CppUWPSample as as StartUp Project. Replace the connection string with a valid connection string in `MainPage.xaml.cpp` file
-On running the applciation, you will see "Could not load file or assembly Microsoft.Azure.Amqp.Uwp" error.
-
-> To workaround this error copy 3 assemblies that application has dependencies on. Copy **Microsoft.Azure.Amqp.Uwp.dll**, PCLCrypto.dll and Validation.dll into **CppUWPSample AppX** folder from **UWPSample** folder.
-
-For example for building debug version for x64 copy these 3 files from device\samples\UWPSample\bin\x64\Debug into device\x64\Debug\CppUWPSample\AppX folder.
-
-After this redeploy and re-run the application.
-
-### Building and running JSSample (Universal Windows) JavaScript sample application
-
-Open **JSSample.sln** file from samples\JSSample in VS 2015 IDE. Replace the connecting string with a valid connection string in `default.js` file. Deploy and run the application. The application will throw System.IO.FileNotFoundException : "Could not load file or assembly Microsoft.Azure.Amqp.Uwp".
-
-> To workaround this error copy assemblies that application has dependencies on. Copy **Microsoft.Azure.Amqp.Uwp.dll**, PCLCrypto.dll and Validation.dll into **JSSample AppX** folder from **UWPSample** folder.
-
-For example for building debug version for x64 copy these 3 files from device\samples\UWPSample\bin\x64\Debug into JSSample\bin\x64\Debug\AppX folder.
-
-After this redeploy and re-run the application.
-
 
 
 [visual-studio]: https://www.visualstudio.com/

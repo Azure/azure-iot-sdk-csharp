@@ -126,7 +126,7 @@ namespace Microsoft.Azure.Devices.Shared
         /// Property Indexer
         /// </summary>
         /// <param name="propertyName">Name of the property to get</param>
-        /// <returns>Value for the given proprety name</returns>
+        /// <returns>Value for the given property name</returns>
         public dynamic this[string propertyName]
         {
             get
