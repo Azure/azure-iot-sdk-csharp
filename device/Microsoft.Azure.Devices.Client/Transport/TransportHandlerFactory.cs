@@ -31,7 +31,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         context, connectionString, transportSetting[0] as AmqpTransportSettings,
                         new Action<object, ConnectionEventArgs>(OnConnectionOpenedCallback),
                         new Func<object, ConnectionEventArgs, Task>(OnConnectionClosedCallback),
-                        new Func<MethodRequestInternal, Task>(onMethodCallback), onDesiredStatePatchReceived);
+                        new Func<MethodRequestInternal, Task>(onMethodCallback), onDesiredStatePatchReceived,
+                        new Func<string, Message, Task>(onReceiveCallback));
                 case TransportType.Http1:
                     return new HttpTransportHandler(context, connectionString, transportSetting[0] as Http1TransportSettings);
 #if !NETMF && !PCL

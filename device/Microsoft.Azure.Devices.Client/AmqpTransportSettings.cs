@@ -5,6 +5,7 @@ namespace Microsoft.Azure.Devices.Client
 {
     using System;
 #if !WINDOWS_UWP && !PCL
+    using System.Net.Security;
     using System.Security.Cryptography.X509Certificates;
 #endif
 
@@ -79,6 +80,8 @@ namespace Microsoft.Azure.Devices.Client
 
 #if !WINDOWS_UWP && !PCL
         public X509Certificate2 ClientCertificate { get; set; }
+
+        public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; }
 #endif
 
         public AmqpConnectionPoolSettings AmqpConnectionPoolSettings { get; set; }
