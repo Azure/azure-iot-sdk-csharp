@@ -9,7 +9,7 @@ Need support?
 -->
 
 # Checklist
-- [ ] I have read the [contribution guidelines] (https://github.com/Azure/azure-iot-sdk-c/blob/master/.github/CONTRIBUTING.md).
+- [ ] I have read the [contribution guidelines](https://github.com/Azure/azure-iot-sdk-c/blob/master/.github/CONTRIBUTING.md).
 - [ ] I added or modified the existing tests to cover the change (we do not allow our test coverage to go down).
 - [ ] This pull-request is submitted against the `master` branch.
 <!-- If not against master, please add the reason. -->

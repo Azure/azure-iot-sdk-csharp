@@ -37,7 +37,16 @@ A pre-built version of the Device Explorer application for Windows can be downlo
 
 ### Build the Device Explorer application
 
-To build Device Explorer yourself, open the **tools\\DeviceExplorer\\DeviceExplorer.sln** file in your local copy of this repository ([azure-iot-sdks](https://github.com/Azure/azure-iot-sdks)) in Visual Studio 2015. Then build and run the solution.
+To build Device Explorer yourself and generate the MSI, the following 2 components need to be added to Visual Studio:
+  1. [Microsoft Visual Studio 2017 Installer Projects][lnk-VS-Installer]
+    You will need to add the highlighted key: Computer\HKEY_CURRENT_USER\Software\Microsoft\VisualStudio\15.0\_**cbfbe12c**\_Config\MSBuild
+    ![](./VS_installer_key.png)
+      1. Add the node 15.0\_**[User ID]**\_Config like as shown below 15.0\_**cbfbe12c**\_Config.
+      2. Add MSBuild folder (key) in it.
+      3. In MSBuild, create new DWORD Value “EnableOutOfProcBuild” and set its value as 0.
+  2. [Windows IoT Core Project Templates for VS 2017][lnk-Win-IoT-SDK]
+
+Once installed, open the **tools\\DeviceExplorer\\DeviceExplorer.sln** file in your local copy of this repository ([azure-iot-sdks](https://github.com/Azure/azure-iot-sdks)) in Visual Studio 2017. Then build and run the solution.
 
 <a name="configure"/>
 
@@ -166,3 +175,5 @@ Run your sample application. Device Explorer should now show that the IoT hub ha
 [what-is-iot-hub]: https://azure.microsoft.com/documentation/articles/iot-hub-what-is-iot-hub/
 [iothub-explorer]: https://github.com/Azure/iothub-explorer#iothub-explorer
 [sample-application-tutorial]: ../../doc/get_started/arduinoide-arduino-wifi101-c.md
+[lnk-VS-Installer]:https://marketplace.visualstudio.com/items?itemName=VisualStudioProductTeam.MicrosoftVisualStudio2017InstallerProjects
+[lnk-Win-IoT-SDK]:https://marketplace.visualstudio.com/items?itemName=MicrosoftIoT.WindowsIoTCoreProjectTemplatesforVS15

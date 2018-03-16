@@ -19,7 +19,7 @@ Visit [Azure IoT Dev Center][iot-dev-center] to learn more about developing appl
 
 ## How to use the Azure IoT SDKs for .NET
 
-* **Using packages and libraries**: The simplest way to use the Azure IoT SDKs is to use packages and libraries when available. Refer to [this document](./iothub/device/doc/devbox_setup.md) on how to get Azure IoT SDKs for .NET using Nuget and build applications.
+* **Using packages and libraries**: The simplest way to use the Azure IoT SDKs is to use packages and libraries when available. Refer to [this document](./devbox_setup.md) on how to get Azure IoT SDKs for .NET using Nuget and build applications.
 * **Clone the repository**: The repository is using [GitHub Submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules) for its dependencies. In order to automatically clone these submodules, you need to use the --recursive option as described here:
 ```
 git clone --recursive https://github.com/Azure/azure-iot-sdk-csharp.git
@@ -81,8 +81,8 @@ This repository contains [provisioning service client SDK](./provisioning/servic
 
 ## Samples
 In the repository, you will find a set of simple samples that will help you get started:
-* [Device SDK samples](./device/samples)
-* [Service SDK samples](./service/Samples)
+* [Device SDK samples](./iothub/device/samples)
+* [Service SDK samples](./iothub/service/samples)
 
 ## OS platforms and hardware compatibility
 The IoT Hub device SDK for .NET can be used with a broad range of OS platforms and devices.
@@ -103,15 +103,15 @@ For suggestions regarding the Azure IoT Services, please use https://feedback.az
 * [Manage IoT Hub](doc/manage_iot_hub.md) describes how to provision devices in your Azure IoT Hub service.
 * [FAQ](doc/faq.md) contains frequently asked questions about the SDKs and libraries.
 * [Azure Certified for IoT device catalog](https://catalog.azureiotsuite.com/)
-* [Set up your development environment](./iothub/device/doc/devbox_setup.md) to prepare your development environment as well as how to run the samples on Linux, Windows or other platforms.
+* [Set up your development environment](./devbox_setup.md) to prepare your development environment as well as how to run the samples on Linux, Windows or other platforms.
 * [API reference documentation for .NET](https://docs.microsoft.com/en-us/dotnet/api/overview/azure/devices?view=azure-dotnet)
 * [Get Started with IoT Hub using .NET](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-csharp-csharp-getstarted)
 
 ## SDK folder structure
 
-### /device
+### /common
 
-Contains Azure IoT Hub client components that provide the raw messaging capabilities of the library. Refer to the API documentation and samples for information on how to use it.
+Contains common code like the TransportClient components.
 
 ### /doc
 
@@ -120,6 +120,10 @@ Contains application development guides and device setup instructions.
 ### /e2e
 
 Contains end-to-end tests.
+
+### /iothub
+
+Contains 2 folders: Device and Service. Device contains Azure IoT Hub client components that provide the raw messaging capabilities of the library. Service contains libraries that enable interactions with the IoT Hub service to perform operations such as sending messages to devices and managing the device identity registry. Refer to the API documentation and samples for information on how to use them.
 
 ### /jenkins
 
@@ -133,21 +137,13 @@ Contains the Azure IoT Provisioning client components.
 
 Contains the SecurityProvider components for Hardware Security Modules.
 
-### /service
-
-Contains libraries that enable interactions with the IoT Hub service to perform operations such as sending messages to devices and managing the device identity registry.
-
 ### /shared
 
 Contains source code for the Microsoft.Azure.Devices.Shared component. This component contains public API shared across the SDK.
 
-### /tools/DeviceExplorer
+### /tools
 
-Contains the source code for the Azure IoT Device Explorer tool.
-
-### /transport
-
-Contains the TransportClient components.
+Contains the source code for the Azure IoT Device Explorer tool and support for capturing log traces
 
 # Long Term Support
 
@@ -183,5 +179,5 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 [iot-dev-center]: http://azure.com/iotdev
 [azure-iot-sdks]: https://github.com/azure/azure-iot-sdks
 [dotnet-api-reference]: https://docs.microsoft.com/en-us/dotnet/api/overview/azure/iot?view=azure-dotnet
-[devbox-setup]: ./iothub/device/doc/devbox_setup.md
+[devbox-setup]: ./devbox_setup.md
 [get-started-dotnet]: https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-csharp-csharp-getstarted

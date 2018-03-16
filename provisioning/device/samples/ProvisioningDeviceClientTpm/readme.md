@@ -6,7 +6,7 @@ This is a quick tutorial with the steps to register a device in the Microsoft Az
 
 ## How to run the sample
 
-Ensure that all prerequisite steps presented in [samples](..\) have been performed.
+Ensure that all prerequisite steps presented in [samples](../) have been performed.
 To run the sample, in a developer command prompt enter:
 
 `dotnet run <IDScope>`
