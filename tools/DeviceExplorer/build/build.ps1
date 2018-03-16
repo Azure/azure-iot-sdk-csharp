@@ -83,7 +83,7 @@ Function BuildMSI() {
 
     Write-Host
     Write-Host -ForegroundColor Cyan "MSI: --- DeviceExplorer MSI ---"
-    cd (Join-Path $rootDir $path)
+    cd $rootDir
 
     $commandLine = "devenv .\DeviceExplorerWithInstaller.sln /project SetupDeviceExplorer /build `"$configuration|Any CPU`""
     
@@ -115,7 +115,7 @@ try {
     
     if ($sign)
     {
-        $files = dir .\DeviceExplorer\bin\Debug\DeviceExplorer.exe
+        $files = dir $rootDir\DeviceExplorer\obj\$configuration\DeviceExplorer.exe
         SignBinary $files
     }
 
@@ -123,7 +123,8 @@ try {
 
     if ($sign)
     {
-        
+        $files = dir $rootDir\SetupDeviceExplorer\$configuration\SetupDeviceExplorer.msi
+        SignMSIPackage $files
     }
         
     $buildFailed = $false
