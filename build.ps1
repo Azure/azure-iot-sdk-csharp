@@ -13,6 +13,7 @@ Parameters:
     -clean: Runs dotnet clean. Use `git clean -xdf` if this is not sufficient.
     -nobuild: Skips build step (use if re-running tests after a successful build).
     -nounittests: Skips Unit Tests
+    -nopackage: Skips NuGet packaging
     -e2etests: Runs E2E tests. Requires prerequisites and environment variables.
     -stresstests: Runs Stress tests.
     -xamarintests: Runs Xamarin tests. Requires additional SDKs and prerequisite configuration.

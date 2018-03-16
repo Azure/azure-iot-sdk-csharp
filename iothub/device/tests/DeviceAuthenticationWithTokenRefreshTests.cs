@@ -89,13 +89,11 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task DeviceAuthenticationWithTokenRefresh_NonExpiredToken_GetTokenCached_Ok()
         {
             var refresher = new TestImplementation(TestDeviceId);
-            string expectedToken = CreateToken(DefaultTimeToLiveSeconds);
 
             string token1 = await refresher.GetTokenAsync(TestIoTHubName);
             string token2 = await refresher.GetTokenAsync(TestIoTHubName);
 
             Assert.AreEqual(1, refresher.SafeCreateNewTokenCallCount); // Cached.
-            Assert.AreEqual(expectedToken, token1);
             Assert.AreEqual(token1, token2);
         }
 
