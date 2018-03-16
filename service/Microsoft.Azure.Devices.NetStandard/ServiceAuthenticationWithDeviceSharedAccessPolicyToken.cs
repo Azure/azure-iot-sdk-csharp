@@ -5,12 +5,15 @@ using System;
 
 namespace Microsoft.Azure.Devices
 {
-    public class ServiceAuthenticationWithDeviceCredentials : IAuthenticationMethod
+    /// <summary>
+    /// Authentication method that uses a device's shared access signature to authenticate with service. 
+    /// </summary>
+    public class ServiceAuthenticationWithDeviceSharedAccessPolicyToken : IAuthenticationMethod
     {
-        public ServiceAuthenticationWithDeviceCredentials(string deviceId, string sharedAccessKey)
+        public ServiceAuthenticationWithDeviceSharedAccessPolicyToken(string deviceId, string sharedAccessSignature)
         {
             DeviceId = deviceId;
-            Key = sharedAccessKey;
+            Token = sharedAccessSignature;
         }
 
         public IotHubConnectionStringBuilder Populate(IotHubConnectionStringBuilder iotHubConnectionStringBuilder)
@@ -20,21 +23,21 @@ namespace Microsoft.Azure.Devices
                 throw new ArgumentNullException(nameof(iotHubConnectionStringBuilder));
             }
 
-            iotHubConnectionStringBuilder.SharedAccessKey = this.Key;
+            iotHubConnectionStringBuilder.SharedAccessKey = null;
             iotHubConnectionStringBuilder.DeviceId = this.DeviceId;
-            iotHubConnectionStringBuilder.SharedAccessSignature = null;
+            iotHubConnectionStringBuilder.SharedAccessSignature = this.Token;
 
             return iotHubConnectionStringBuilder;
         }
 
         /// <summary>
-        /// 
-        /// </summary>
-        public string Key { get; set; }
-
-        /// <summary>
-        /// 
+        /// Name of device
         /// </summary>
         public string DeviceId { get; set; }
+
+        /// <summary>
+        /// Shared access signature generated using device's shared access key
+        /// </summary>
+        public string Token { get; set; }
     }
 }
