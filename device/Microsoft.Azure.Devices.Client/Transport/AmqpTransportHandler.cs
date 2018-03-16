@@ -16,11 +16,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
     using Microsoft.Azure.Devices.Client.Extensions;
     using Microsoft.Azure.Devices.Shared;
     using System.Collections.Concurrent;
-    using System.Linq.Expressions;
     using Newtonsoft.Json;
 
     sealed class AmqpTransportHandler : TransportHandler
     {
+        const string InputNameKey = "x-opt-input-name";
         static readonly IotHubConnectionCache TcpConnectionCache = new IotHubConnectionCache();
         static readonly IotHubConnectionCache WsConnectionCache = new IotHubConnectionCache();
         readonly string deviceId;
@@ -991,7 +991,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private async void ProcessReceivedEventMessage(AmqpMessage amqpMessage)
         {
-            amqpMessage.MessageAnnotations.Map.TryGetValue("InputName", out string inputName);
+            amqpMessage.MessageAnnotations.Map.TryGetValue(InputNameKey, out string inputName);
             Message message = new Message(amqpMessage)
             {
                 LockToken = new Guid(amqpMessage.DeliveryTag.Array).ToString()
