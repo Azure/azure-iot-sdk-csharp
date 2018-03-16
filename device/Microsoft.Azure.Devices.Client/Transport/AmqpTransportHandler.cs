@@ -967,7 +967,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             string path = this.BuildPath(CommonConstants.DeviceEventPathTemplate, CommonConstants.ModuleEventPathTemplate);
 
-            ReceivingAmqpLink messageReceivingLink = await this.IotHubConnection.CreateReceivingLinkAsync(path, this.iotHubConnectionString, this.deviceId, IotHubConnection.ReceivingLinkType.Messages, this.prefetchCount, timeout, this.productInfo, cancellationToken);
+            ReceivingAmqpLink messageReceivingLink = await this.IotHubConnection.CreateReceivingLinkAsync(path, this.iotHubConnectionString, this.deviceId, IotHubConnection.ReceivingLinkType.Events, this.prefetchCount, timeout, this.productInfo, cancellationToken);
             messageReceivingLink.RegisterMessageListener(amqpMessage => this.ProcessReceivedEventMessage(amqpMessage));
 
             MyStringCopy(messageReceivingLink.Name, out eventReceivingLinkName);

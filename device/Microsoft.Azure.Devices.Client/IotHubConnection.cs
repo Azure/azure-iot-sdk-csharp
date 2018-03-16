@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices.Client
             C2DMessages,
             Methods,
             Twin,
-            Messages
+            Events
         };
 
         protected IotHubConnection(string hostName, int port, AmqpTransportSettings amqpTransportSettings)
@@ -156,7 +156,7 @@ namespace Microsoft.Azure.Devices.Client
             switch (linkType)
             {
                 case ReceivingLinkType.C2DMessages:
-                case ReceivingLinkType.Messages:
+                case ReceivingLinkType.Events:
                     linkSettings.SndSettleMode = null; // SenderSettleMode.Unsettled (null as it is the default and to avoid bytes on the wire)
                     linkSettings.RcvSettleMode = (byte)ReceiverSettleMode.Second;
                     break;
