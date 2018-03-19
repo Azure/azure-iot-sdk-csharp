@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     {
         private const int PassingTimeoutMiliseconds = 30 * 1000;
         private const int FailingTimeoutMiliseconds = 10 * 1000;
-        private const string s_globalDeviceEndpoint = "global.azure-devices-provisioning.net";
+        private static string s_globalDeviceEndpoint = Configuration.Provisioning.GlobalDeviceEndpoint;
         private const string InvalidIDScope = "0neFFFFFFFF";
         private const string InvalidGlobalAddress = "httpbin.org";
 

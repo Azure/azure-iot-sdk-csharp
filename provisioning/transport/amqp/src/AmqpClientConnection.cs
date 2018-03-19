@@ -2,9 +2,10 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.Azure.Amqp;
+using Microsoft.Azure.Amqp.Framing;
+using Microsoft.Azure.Amqp.Sasl;
 using Microsoft.Azure.Amqp.Transport;
 using System;
-using System.Diagnostics;
 using System.Net;
 using System.Net.WebSockets;
 using System.Security.Cryptography.X509Certificates;
@@ -42,6 +43,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         private bool _isConnectionClosed;
 
+        private TaskCompletionSource<TransportBase> _tcs;
+
+        private ProtocolHeader _sentHeader;
+
         public async Task OpenAsync(TimeSpan timeout, bool useWebSocket, X509Certificate2 clientCert)
         {
             var hostName = _uri.Host;
@@ -58,6 +63,23 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             if (useWebSocket)
             {
                 transport = await CreateClientWebSocketTransportAsync(timeout).ConfigureAwait(false);
+                SaslTransportProvider provider = _amqpSettings.GetTransportProvider<SaslTransportProvider>();
+                if (provider != null)
+                {
+                    _sentHeader = new ProtocolHeader(provider.ProtocolId, provider.DefaultVersion);
+                    ByteBuffer buffer = new ByteBuffer(new byte[AmqpConstants.ProtocolHeaderSize]);
+                    _sentHeader.Encode(buffer);
+
+                    var args = new TransportAsyncCallbackArgs();
+                    args.SetBuffer(buffer.Buffer, buffer.Offset, buffer.Length);
+                    args.CompletedCallback = OnWriteHeaderComplete;
+                    args.Transport = transport;
+                    transport.WriteAsync(args);
+
+                    _tcs = new TaskCompletionSource<TransportBase>();
+                    transport = await _tcs.Task.ConfigureAwait(false);
+                    await transport.OpenAsync(timeout).ConfigureAwait(false);
+                }
             }
             else
             {
@@ -152,6 +174,58 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             }
 
             return websocket;
+        }
+
+        private void OnWriteHeaderComplete(TransportAsyncCallbackArgs args)
+        {
+            if (args.Exception != null)
+            {
+                CompleteOnException(args);
+                return;
+            }
+
+            byte[] headerBuffer = new byte[AmqpConstants.ProtocolHeaderSize];
+            args.SetBuffer(headerBuffer, 0, headerBuffer.Length);
+            args.CompletedCallback = OnReadHeaderComplete;
+            args.Transport.ReadAsync(args);
+        }
+
+        private void OnReadHeaderComplete(TransportAsyncCallbackArgs args)
+        {
+            if (args.Exception != null)
+            {
+                CompleteOnException(args);
+                return;
+            }
+
+            try
+            {
+                ProtocolHeader receivedHeader = new ProtocolHeader();
+                receivedHeader.Decode(new ByteBuffer(args.Buffer, args.Offset, args.Count));
+                if (!receivedHeader.Equals(_sentHeader))
+                {
+                    throw new AmqpException(AmqpErrorCode.NotImplemented, $"The requested protocol version {_sentHeader} is not supported. The supported version is {receivedHeader}");
+                }
+
+                SaslTransportProvider provider = _amqpSettings.GetTransportProvider<SaslTransportProvider>();
+                var transport = provider.CreateTransport(args.Transport, true);
+                _tcs.TrySetResult(transport);
+            }
+            catch (Exception ex)
+            {
+                args.Exception = ex;
+                CompleteOnException(args);
+            }
+        }
+
+        private void CompleteOnException(TransportAsyncCallbackArgs args)
+        {
+            if (args.Exception != null && args.Transport != null)
+            {
+                args.Transport.SafeClose(args.Exception);
+                args.Transport = null;
+                _tcs.TrySetException(args.Exception);
+            }
         }
     }
 }
