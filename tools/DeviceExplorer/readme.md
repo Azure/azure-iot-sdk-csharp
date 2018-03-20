@@ -37,16 +37,17 @@ A pre-built version of the Device Explorer application for Windows can be downlo
 
 ### Build the Device Explorer application
 
-To build Device Explorer yourself and generate the MSI, the following 2 components need to be added to Visual Studio:
-  1. [Microsoft Visual Studio 2017 Installer Projects][lnk-VS-Installer]
+To build Device Explorer yourself and generate the MSI, the following component needs to be added to Visual Studio:
+[Microsoft Visual Studio 2017 Installer Projects][lnk-VS-Installer]
     You will need to add the highlighted key: Computer\HKEY_CURRENT_USER\Software\Microsoft\VisualStudio\15.0\_**cbfbe12c**\_Config\MSBuild
     ![](./VS_installer_key.png)
       1. Add the node 15.0\_**[User ID]**\_Config like as shown below 15.0\_**cbfbe12c**\_Config.
       2. Add MSBuild folder (key) in it.
       3. In MSBuild, create new DWORD Value “EnableOutOfProcBuild” and set its value as 0.
-  2. [Windows IoT Core Project Templates for VS 2017][lnk-Win-IoT-SDK]
 
-Once installed, open the **tools\\DeviceExplorer\\DeviceExplorer.sln** file in your local copy of this repository ([azure-iot-sdks](https://github.com/Azure/azure-iot-sdks)) in Visual Studio 2017. Then build and run the solution.
+Once installed, open the **tools\\DeviceExplorer\\DeviceExplorerWithInstaller.sln** file in your local copy of this repository in Visual Studio 2017. Then build and run the solution.
+
+Alternatively run the following in the root of the repository: `jenkins\windows_csharp_deviceexplorer.cmd`
 
 <a name="configure"/>
 

@@ -3,31 +3,58 @@
 This repository contains the following:
 * **Microsoft Azure IoT Hub device SDK for C#** to connect client devices to Azure IoT Hub with .NET
 * **Microsoft Azure IoT Hub service SDK for C#** to manage your IoT Hub service instance from a back-end .NET application
+* **Microsoft Azure Provisioning device SDK for C#** to provision devices to Azure IoT Hub with .NET
+* **Microsoft Azure Provisioning service SDK for C#** to manage your Provisioning service instance from a back-end .NET application
 
-The API reference documentation for .NET SDK is [here](dotnet-api-reference).
+The API reference documentation for .NET SDK is [here][dotnet-api-reference].
 
 To find SDKs in other languages for Azure IoT, please refer to the [azure-iot-sdks][azure-iot-sdks] repository.
 
 ## Need Support?
 * Have a feature request for SDKs? Please post it on [User Voice](https://feedback.azure.com/forums/321918-azure-iot) to help us prioritize.
 * Have a technical question? Ask on [Stack Overflow](https://stackoverflow.com/questions/tagged/azure-iot-hub) with tag “azure-iot-hub”
-* Need Support? Every customer with an active Azure subscription has access to support with guaranteed response time.  Consider submitting a ticket and get assistance from Microsoft support team
+* Need Support? Every customer with an active Azure subscription has access to [support](https://docs.microsoft.com/en-us/azure/azure-supportability/how-to-create-azure-support-request) with guaranteed response time.  Consider submitting a ticket and get assistance from Microsoft support team.
 * Found a bug? Please help us fix it by thoroughly documenting it and filing an issue on GitHub (C, Java, .NET, Node.js, Python).
 
 ## Developing applications for Azure IoT
 Visit [Azure IoT Dev Center][iot-dev-center] to learn more about developing applications for Azure IoT.
 
+## Samples
+In the repository, you will find a set of samples that will help you get started:
+* [IoT Hub Device SDK samples](./iothub/device/samples)
+* [IoT Hub Service SDK samples](./iothub/service/samples)
+* [Provisioning Device SDK samples](./provisioning/device/samples)
+* [Provisioning Service SDK samples](./provisioning/service/samples)
+
+The samples require certain frameworks and SDKs to be installed on your dev machine. Please see [devbox-setup][devbox-setup] for details.
+
+## Contribute to the Azure IoT C# SDK
+If you would like to build or change the SDK source code, please follow the [devguide](doc/devguide.md).
+
 ## How to use the Azure IoT SDKs for .NET
 
-* **Using packages and libraries**: The simplest way to use the Azure IoT SDKs is to use packages and libraries when available. Refer to [this document](./devbox_setup.md) on how to get Azure IoT SDKs for .NET using Nuget and build applications.
-* **Clone the repository**: The repository is using [GitHub Submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules) for its dependencies. In order to automatically clone these submodules, you need to use the --recursive option as described here:
-```
-git clone --recursive https://github.com/Azure/azure-iot-sdk-csharp.git
-```
+* **Using packages and libraries**: The simplest way to use the Azure IoT SDKs is to use NuGet packages. See https://github.com/Azure/azure-iot-sdk-csharp/releases for a list released packages.
+
+* **Build from sources**: This is for advanced users that will build and maintain their own sources. See [devbox-setup][devbox-setup] for details on how to set up your machine to build the Azure IoT SDK C#. See the End-to-end tests and azureiot.sln file for an example on how to reference the source code SDK (as opposed to NuGet packages) into your application.
+
+## OS platforms and hardware compatibility
+The IoT Hub device SDK for .NET can be used with a broad range of OS platforms and devices.
+
+The NuGet packages provide support for the following .NET flavors:
+- .NET Standard 2.0
+- .NET Standard 1.3 (IoT Hub SDKs only)
+- .NET Framework 4.5.1 (IoT Hub SDKs only)
+- .NET MicroFramework (IoT Hub SDKs only)
+
+For details on .NET support see the [.NET Standard documentation](https://docs.microsoft.com/en-us/dotnet/standard/net-standard).
+For details on OS support see the following resources:
+- [.NET Core Runtime ID Catalog](https://docs.microsoft.com/en-us/dotnet/core/rid-catalog)
+- [.NET MicroFramework](http://netmf.github.io)
+- [.NET Framework System Requirements](https://docs.microsoft.com/en-us/dotnet/framework/get-started/system-requirements)
 
 ## Key features and roadmap
 
-### Device client SDK
+### IoT Hub Device SDK
 :heavy_check_mark: feature available  :heavy_multiplication_x: feature planned but not supported  :heavy_minus_sign: no support planned
 
 | Features                                                                                                         | mqtt                | mqtt-ws             | amqp                | amqp-ws             | https               | Description                                                                                                                                                                                                                                                            |
@@ -44,7 +71,7 @@ git clone --recursive https://github.com/Azure/azure-iot-sdk-csharp.git
 | Connection Pooling - Specifying number of connections                                                            | :heavy_minus_sign:  | :heavy_minus_sign:  | :heavy_check_mark:  | :heavy_check_mark:  | :heavy_check_mark:  |                                                                                                                                                                                                                                                                        |
 
 
-### Service client SDK
+### IoT Hub Service SDK
 :heavy_check_mark: feature available  :heavy_multiplication_x: feature planned but not supported  :heavy_minus_sign: no support planned
 
 | Features                                                                                                      | C# .Net             | Description                                                                                                              |
@@ -57,7 +84,7 @@ git clone --recursive https://github.com/Azure/azure-iot-sdk-csharp.git
 | [Jobs](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-jobs)                                  | :heavy_check_mark:  | Use your backend app to perform job operation.                                                                           |
 | [File Upload](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-file-upload)                    | :heavy_check_mark:  | Set up your backend app to send file upload notification receiver.                                                       |
 
-### Provisioning client SDK
+### Provisioning Device SDK
 This repository contains [provisioning device client SDK](./provisioning/device) for the [Device Provisioning Service](https://docs.microsoft.com/en-us/azure/iot-dps/).
 
 :heavy_check_mark: feature available  :heavy_multiplication_x: feature planned but not supported  :heavy_minus_sign: no support planned
@@ -65,10 +92,12 @@ This repository contains [provisioning device client SDK](./provisioning/device)
 | Features                    | mqtt               | mqtt-ws            | amqp               | amqp-ws            | https              | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 |-----------------------------|--------------------|--------------------|--------------------|--------------------|--------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | TPM Individual Enrollment   | :heavy_minus_sign: | :heavy_minus_sign: | :heavy_check_mark: | :heavy_multiplication_x: | :heavy_check_mark: | This SDK supports connecting your device to the Device Provisioning Service via [individual enrollment](https://docs.microsoft.com/en-us/azure/iot-dps/concepts-service#enrollment) using [Trusted Platform Module](https://docs.microsoft.com/en-us/azure/iot-dps/concepts-security#trusted-platform-module-tpm).  Please review the [samples](./provisioning/device/samples/) folder and this [quickstart](https://docs.microsoft.com/en-us/azure/iot-dps/quick-create-simulated-device-tpm-csharp) on how to create a device client.  TPM over MQTT is currently not supported by the Device Provisioning Service.                                                                                                                                                                                                     |
-| X.509 Individual Enrollment | :heavy_check_mark: |:heavy_multiplication_x: | :heavy_check_mark: | :heavy_multiplication_x: | :heavy_check_mark: | This SDK supports connecting your device to the Device Provisioning Service via [individual enrollment](https://docs.microsoft.com/en-us/azure/iot-dps/concepts-service#enrollment) using [X.509 root certificate](https://docs.microsoft.com/en-us/azure/iot-dps/concepts-security#root-certificate).  Please review the [samples](./provisioning/device/samples/) and this [quickstart](https://docs.microsoft.com/en-us/azure/iot-dps/quick-create-simulated-device-x509-csharp) folder on how to create a device client.   |
-| X.509 Enrollment Group      | :heavy_check_mark: | :heavy_multiplication_x: | :heavy_check_mark: | :heavy_multiplication_x: | :heavy_check_mark: | This SDK supports connecting your device to the Device Provisioning Service via [individual enrollment](https://docs.microsoft.com/en-us/azure/iot-dps/concepts-service#enrollment) using [X.509 leaf certificate](https://docs.microsoft.com/en-us/azure/iot-dps/concepts-security#leaf-certificate).  Please review the [samples](./provisioning/device/samples/) folder on how to create a device client.                                                                                                                                                                                            |
+| X.509 Individual Enrollment | :heavy_check_mark: |:heavy_check_mark:* | :heavy_check_mark: | :heavy_check_mark:* | :heavy_check_mark: | This SDK supports connecting your device to the Device Provisioning Service via [individual enrollment](https://docs.microsoft.com/en-us/azure/iot-dps/concepts-service#enrollment) using [X.509 root certificate](https://docs.microsoft.com/en-us/azure/iot-dps/concepts-security#root-certificate).  Please review the [samples](./provisioning/device/samples/) and this [quickstart](https://docs.microsoft.com/en-us/azure/iot-dps/quick-create-simulated-device-x509-csharp) folder on how to create a device client.   |
+| X.509 Enrollment Group      | :heavy_check_mark: | :heavy_check_mark:* | :heavy_check_mark: | :heavy_check_mark:* | :heavy_check_mark: | This SDK supports connecting your device to the Device Provisioning Service via [individual enrollment](https://docs.microsoft.com/en-us/azure/iot-dps/concepts-service#enrollment) using [X.509 leaf certificate](https://docs.microsoft.com/en-us/azure/iot-dps/concepts-security#leaf-certificate).  Please review the [samples](./provisioning/device/samples/) folder on how to create a device client.                                                                                                                                                                                            |
 
-### Provisioniong service client SDK
+_Note *_ WebSocket support for MQTT/AMQP is limited to .NET Framework 4.x.
+
+### Provisioniong Service SDK
 This repository contains [provisioning service client SDK](./provisioning/service/) for the Device Provisioning Service to [programmatically enroll devices](https://docs.microsoft.com/en-us/azure/iot-dps/how-to-manage-enrollments-sdks).
 
 | Feature                                            | Support            | Description                                                                                                                                                                                                                                            |
@@ -79,71 +108,15 @@ This repository contains [provisioning service client SDK](./provisioning/servic
 | CRUD Operation with X.509 Group Enrollment         | :heavy_check_mark: | Programmatically manage device enrollment using X.509 group enrollment with the service SDK.  Please visit the [samples folder](./provisioning/service/samples/) to learn more about this feature. |
 | Query enrollments                                  | :heavy_check_mark: | Programmatically query registration states with the service SDK.  Please visit the [samples folder](./provisioning/service/samples/) to learn more about this feature.                                                                            |
 
-## Samples
-In the repository, you will find a set of simple samples that will help you get started:
-* [Device SDK samples](./iothub/device/samples)
-* [Service SDK samples](./iothub/service/samples)
-
-## OS platforms and hardware compatibility
-The IoT Hub device SDK for .NET can be used with a broad range of OS platforms and devices.
-
-Minimum requirements:
-- .NET platform support (see https://dot.net for supported platforms)
-- Device SDK: .NET Framework 4.5.1; .NET Standard 1.3
-
-## Contribution, feedback and issues
-
-If you encounter any bugs, have suggestions for new features or if you would like to become an active contributor to this project please follow the instructions provided in the [contribution guidelines](.github/CONTRIBUTING.md).
-
-For suggestions regarding the Azure IoT Services, please use https://feedback.azure.com/forums/321918-azure-iot
-
 ## Read more
 * [Azure IoT Hub documentation][iot-hub-documentation]
 * [Set up IoT Hub](doc/setup_iothub.md) describes how to configure your Azure IoT Hub service.
 * [Manage IoT Hub](doc/manage_iot_hub.md) describes how to provision devices in your Azure IoT Hub service.
 * [FAQ](doc/faq.md) contains frequently asked questions about the SDKs and libraries.
 * [Azure Certified for IoT device catalog](https://catalog.azureiotsuite.com/)
-* [Set up your development environment](./devbox_setup.md) to prepare your development environment as well as how to run the samples on Linux, Windows or other platforms.
+* [Set up your development environment](./doc/devbox_setup.md) to prepare your development environment as well as how to run the samples on Linux, Windows or other platforms.
 * [API reference documentation for .NET](https://docs.microsoft.com/en-us/dotnet/api/overview/azure/devices?view=azure-dotnet)
 * [Get Started with IoT Hub using .NET](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-csharp-csharp-getstarted)
-
-## SDK folder structure
-
-### /common
-
-Contains common code like the TransportClient components.
-
-### /doc
-
-Contains application development guides and device setup instructions.
-
-### /e2e
-
-Contains end-to-end tests.
-
-### /iothub
-
-Contains 2 folders: Device and Service. Device contains Azure IoT Hub client components that provide the raw messaging capabilities of the library. Service contains libraries that enable interactions with the IoT Hub service to perform operations such as sending messages to devices and managing the device identity registry. Refer to the API documentation and samples for information on how to use them.
-
-### /jenkins
-
-Contains scripts used by the Continuous Integration system (Jenkins).
-
-### /provisioning
-
-Contains the Azure IoT Provisioning client components.
-
-### /security
-
-Contains the SecurityProvider components for Hardware Security Modules.
-
-### /shared
-
-Contains source code for the Microsoft.Azure.Devices.Shared component. This component contains public API shared across the SDK.
-
-### /tools
-
-Contains the source code for the Azure IoT Device Explorer tool and support for capturing log traces
 
 # Long Term Support
 
@@ -156,7 +129,7 @@ A new LTS version will be created every 6 months. The lifetime of an LTS branch 
 
 No new features or improvements will be picked up in an LTS branch.
 
-LTS branches are named lts_*mm*_*yyyy*, where *mm* and *yyyy* are the month and year when the branch was created. An example of such a branch is *lts_07_2017*.
+LTS branches are named lts_*yyyy*_*mm*, where *mm* and *yyyy* are the month and year when the branch was created. An example of such a branch is *lts_2018_01*.
 
 ## Schedule<sup>1</sup>
 
@@ -178,6 +151,6 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 [iot-hub-documentation]: https://docs.microsoft.com/en-us/azure/iot-hub/
 [iot-dev-center]: http://azure.com/iotdev
 [azure-iot-sdks]: https://github.com/azure/azure-iot-sdks
-[dotnet-api-reference]: https://docs.microsoft.com/en-us/dotnet/api/overview/azure/iot?view=azure-dotnet
-[devbox-setup]: ./devbox_setup.md
+[dotnet-api-reference]: https://docs.microsoft.com/en-us/dotnet/api/overview/azure/iot/client?view=azure-dotnet
+[devbox-setup]: ./doc/devbox_setup.md
 [get-started-dotnet]: https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-csharp-csharp-getstarted

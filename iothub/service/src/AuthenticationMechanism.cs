@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// X509 client certificate thumbprints
+        /// Gets or sets the X509 client certificate thumbprint.
         /// </summary>
         [JsonProperty(PropertyName = "x509Thumbprint")]
         public X509Thumbprint X509Thumbprint
@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices
         }
 
         /// <summary>
-        /// Gets or sets the authentication type
+        /// Gets or sets the authentication type.
         /// </summary>
         [DefaultValue(AuthenticationType.Sas)]
         [JsonProperty(PropertyName = "type", DefaultValueHandling = DefaultValueHandling.Populate)]

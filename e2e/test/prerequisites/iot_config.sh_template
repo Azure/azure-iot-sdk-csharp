@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+
+# To configure your environment, dot-source this before running the E2E tests.
+# . iot_config.sh
+
+# ---------- IoT Hub Configuration ----------
+# See Configuration.IoTHub.cs for usage details.
+
+# IoT Hub Owner connection string:
+export IOTHUB_CONN_STRING_CSHARP=
+
+# Device1 and Device2 connection string:
+export IOTHUB_DEVICE_CONN_STRING=
+export IOTHUB_DEVICE_CONN_STRING2=
+
+# EventHub consumer group:
+export IOTHUB_EVENTHUB_CONSUMER_GROUP=e2e-tests
+
+# Use the following Powershell command to retrieve the Base64 encoding of a file:
+# Use Powershell: [Convert]::ToBase64String((Get-Content myFileName -Encoding Byte)) to generate.
+
+# X509 Certificate 1 thumbprint:
+export IOTHUB_PFX_X509_THUMBPRINT=
+# X509 PFX Base64 encoded Certificate 1 (empty password):
+export IOTHUB_X509_PFX_CERTIFICATE=
+
+# X509 Certificate 2 thumbprint:
+set IOTHUB_PFX_X509_THUMBPRINT2=
+
+# ---------- Device Provisioning Service Configuration ----------
+# See Configuration.Provisioning.cs for usage details.
+
+# DPS ID Scope 
+export DPS_IDSCOPE=
+
+# X509 PFX Base64 encoded Device Certificate with recommended RegistrationID: iothubx509device1 (recommended IOTHub DeviceID: provisionedx509device1)
+# This certificate should have CN=<RegistrationID>.
+export DPS_INDIVIDUALX509_PFX_CERTIFICATE=
+
+# X509 PFX Group certificate.
+# RegistrationID/DeviceID is xdevice1.
+# This certificate should have CN=xdevice1
+export DPS_GROUPX509_PFX_CERTIFICATE=
+
+# X509 P7B Certificate chain.
+# This is the chain ending up in the root that has been verified by the Provisioning service.
+# The CN=xdevice1 certificate should be signed by an issuer within this chain.
+export DPS_GROUPX509_CERTIFICATE_CHAIN===
+
+# TPM device registration ID.
+export DPS_TPM_REGISTRATIONID=indtpmdevice1
+
+# TPM device device ID:
+export DPS_TPM_DEVICEID=provisionedtpm1
+
+# Provisioning service owner connection string.
+set PROVISIONING_CONNECTION_STRING=
