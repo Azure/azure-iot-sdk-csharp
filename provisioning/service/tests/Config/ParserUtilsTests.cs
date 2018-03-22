@@ -31,29 +31,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             TestAssert.Throws<ArgumentException>(() => ParserUtils.EnsureUTF8String("this is not a valid UTF8 \u1234"));
         }
 
-        /* Codes_SRS_PARSER_UTILITY_21_004: [The IsValidBase64 shall do nothing if the string is valid.] */
-        [TestMethod]
-        [TestCategory("DevService")]
-        public void ParserUtils_IsValidBase64_SucceedOnBase64()
-        {
-            // arrange - act - assert
-            ParserUtils.EnsureBase64String("thisisavalidbase64==");
-        }
-
-        /* Codes_SRS_PARSER_UTILITY_21_005: [The IsValidBase64 shall throw ArgumentException if the provided string is null or empty.] */
-        /* Codes_SRS_PARSER_UTILITY_21_006: [The IsValidBase64 shall throw ArgumentException if the provided string contains a non Base64 content.] */
-        [TestMethod]
-        [TestCategory("DevService")]
-        public void ParserUtils_IsValidBase64_ThrowsOnInvalidBase64()
-        {
-            // arrange - act - assert
-            TestAssert.Throws<ArgumentException>(() => ParserUtils.EnsureBase64String(null));
-            TestAssert.Throws<ArgumentException>(() => ParserUtils.EnsureBase64String(""));
-            TestAssert.Throws<ArgumentException>(() => ParserUtils.EnsureBase64String("  "));
-            TestAssert.Throws<ArgumentException>(() => ParserUtils.EnsureBase64String("thisisnotavalidbase64="));
-            TestAssert.Throws<ArgumentException>(() => ParserUtils.EnsureBase64String("this is not a valid UTF8 \u1234"));
-        }
-
         /* Codes_SRS_PARSER_UTILITY_21_007: [The IsValidRegistrationId shall do nothing if the string is a valid ID.] */
         [TestMethod]
         [TestCategory("DevService")]
