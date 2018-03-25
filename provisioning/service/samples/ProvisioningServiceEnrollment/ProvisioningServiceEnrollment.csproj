@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.Azure.Devices.Provisioning.Service.csproj" />
+    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Service" Version="1.*" />
   </ItemGroup>
 
 </Project>

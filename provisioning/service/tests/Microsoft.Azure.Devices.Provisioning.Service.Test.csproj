@@ -7,13 +7,6 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
-  <!-- delay sign the assembly for Release build -->
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-    <AssemblyOriginatorKeyFile>..\..\..\35MSSharedLib1024.snk</AssemblyOriginatorKeyFile>
-    <DelaySign>true</DelaySign>
-    <SignAssembly>true</SignAssembly>
-  </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.5.0" />
     <PackageReference Include="MSTest.TestAdapter" Version="1.2.0" />

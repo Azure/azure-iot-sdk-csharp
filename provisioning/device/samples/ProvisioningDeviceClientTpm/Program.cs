@@ -48,7 +48,7 @@ namespace ProvisioningDeviceClientTpm
                     ProvisioningDeviceClient.Create(GlobalDeviceEndpoint, s_idScope, security, transport);
 
                 Console.Write("ProvisioningClient RegisterAsync . . . ");
-                DeviceRegistrationResult result = await provClient.RegisterAsync();
+                DeviceRegistrationResult result = await provClient.RegisterAsync().ConfigureAwait(false);
 
                 Console.WriteLine($"{result.Status}");
                 Console.WriteLine($"ProvisioningClient AssignedHub: {result.AssignedHub}; DeviceID: {result.DeviceId}");
@@ -60,11 +60,11 @@ namespace ProvisioningDeviceClientTpm
                 using (DeviceClient iotClient = DeviceClient.Create(result.AssignedHub, auth, TransportType.Http1))
                 {
                     Console.WriteLine("DeviceClient OpenAsync.");
-                    await iotClient.OpenAsync();
+                    await iotClient.OpenAsync().ConfigureAwait(false);
                     Console.WriteLine("DeviceClient SendEventAsync.");
-                    await iotClient.SendEventAsync(new Message(Encoding.UTF8.GetBytes("TestMessage")));
+                    await iotClient.SendEventAsync(new Message(Encoding.UTF8.GetBytes("TestMessage"))).ConfigureAwait(false);
                     Console.WriteLine("DeviceClient CloseAsync.");
-                    await iotClient.CloseAsync();
+                    await iotClient.CloseAsync().ConfigureAwait(false);
                 }
             }
         }

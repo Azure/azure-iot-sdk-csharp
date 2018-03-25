@@ -10,13 +10,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
     [TestClass]
     public class TpmAttestationTests
     {
-        private const string KEY = "AToAAQALAAMAsgAgg3GXZ0SEs/gakMyNRqXXJP1S124GUgtk8qHaGzMUaaoABgCAAEMAEAgAAAAAAAEAxsj" +
+        private const string Key = "AToAAQALAAMAsgAgg3GXZ0SEs/gakMyNRqXXJP1S124GUgtk8qHaGzMUaaoABgCAAEMAEAgAAAAAAAEAxsj" +
            "2gUScTk1UjuioeTlfGYZrrimExB+bScH75adUMRIi2UOMxG1kw4y+9RW/IVoMl4e620VxZad0ARX2gUqVjYO7KPVt3dyKhZS3dkcvfBisB" +
            "hP1XH9B33VqHG9SHnbnQXdBUaCgKAfxome8UmBKfe+naTsE5fkvjb/do3/dD6l4sGBwFCnKRdln4XpM03zLpoHFao8zOwt8l/uP3qUIxmC" +
            "Yv9A7m69Ms+5/pCkTu/rK4mRDsfhZ0QLfbzVI6zQFOKF/rwsfBtFeWlWtcuJMKlXdD8TXWElTzgh7JS4qhFzreL0c1mI0GCj+Aws0usZh7" +
            "dLIVPnlgZcBhgy1SSDQMQ==";
 
-        /* SRS_TPM_ATTESTATION_21_001: [The EndorsementKey setter shall throws ArgumentException if the provided endorsementKey is null or invalid.] */
+        /* SRS_TPM_ATTESTATION_21_001: [The EndorsementKey setter shall throws ArgumentNullException if the provided 
+         *                              endorsementKey is null or white space.] */
         [TestMethod]
         [TestCategory("DevService")]
         public void TpmAttestation_ThrowsOnNullEndorsementKey()
@@ -30,7 +31,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         [TestMethod]
         [TestCategory("DevService")]
-        public void TpmAttestation_ThrowsOnEnptyEndorsementKey()
+        public void TpmAttestation_ThrowsOnEmptyEndorsementKey()
         {
             // arrange
             string endorsementKey = "";
@@ -39,24 +40,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             TestAssert.Throws<ProvisioningServiceClientException>(() => new TpmAttestation(endorsementKey));
         }
 
-        [TestMethod]
-        [TestCategory("DevService")]
-        public void TpmAttestation_ThrowsOnNonBase64EndorsementKey()
-        {
-            // arrange
-            string endorsementKey = "This is not base64";
-
-            // act - assert
-            TestAssert.Throws<ProvisioningServiceClientException>(() => new TpmAttestation(endorsementKey));
-        }
-
-        /* SRS_TPM_ATTESTATION_21_002: [The StorageRootKey setter shall throws ArgumentException if the provided storageRootKey is not null but invalid.] */
+        /* SRS_TPM_ATTESTATION_21_002: [The StorageRootKey setter shall store the storageRootKey passed.] */
         [TestMethod]
         [TestCategory("DevService")]
         public void TpmAttestation_SucceedOnNullStorageRootKey()
         {
             // arrange
-            string endorsementKey = KEY;
+            string endorsementKey = Key;
             string storageRootKey = null;
 
             // act - assert
@@ -69,26 +59,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         [TestMethod]
         [TestCategory("DevService")]
-        public void TpmAttestation_ThrowsOnEnptyStorageRootKey()
+        public void TpmAttestation_SucceedOnEmptyStorageRootKey()
         {
             // arrange
-            string endorsementKey = KEY;
+            string endorsementKey = Key;
             string storageRootKey = "";
 
             // act - assert
-            TestAssert.Throws<ProvisioningServiceClientException>(() => new TpmAttestation(endorsementKey, storageRootKey));
-        }
+            TpmAttestation tpmAttestation = new TpmAttestation(endorsementKey, storageRootKey);
 
-        [TestMethod]
-        [TestCategory("DevService")]
-        public void TpmAttestation_ThrowsOnNonBase64StorageRootKey()
-        {
-            // arrange
-            string endorsementKey = KEY;
-            string storageRootKey = "This is not base64";
-
-            // act - assert
-            TestAssert.Throws<ProvisioningServiceClientException>(() => new TpmAttestation(endorsementKey, storageRootKey));
+            // assert
+            Assert.AreEqual(endorsementKey, tpmAttestation.EndorsementKey);
+            Assert.AreEqual(storageRootKey, tpmAttestation.StorageRootKey);
         }
 
         /* SRS_TPM_ATTESTATION_21_003: [The constructor shall store the provided endorsementKey and storageRootKey.] */
@@ -97,7 +79,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void TpmAttestation_SucceedOnValidEndorsementKey()
         {
             // arrange
-            string endorsementKey = KEY;
+            string endorsementKey = Key;
 
             // act
             TpmAttestation tpmAttestation = new TpmAttestation(endorsementKey);
@@ -112,8 +94,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void TpmAttestation_SucceedOnValidEndorsementKeyAndStorageRootKey()
         {
             // arrange
-            string endorsementKey = KEY;
-            string storageRootKey = KEY;
+            string endorsementKey = Key;
+            string storageRootKey = Key;
 
             // act
             TpmAttestation tpmAttestation = new TpmAttestation(endorsementKey, storageRootKey);
@@ -129,8 +111,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void TpmAttestation_SucceedOnSerialization()
         {
             // arrange
-            string endorsementKey = KEY;
-            string storageRootKey = KEY;
+            string endorsementKey = Key;
+            string storageRootKey = Key;
             string expectedJson = 
                 "{" +
                 "  \"endorsementKey\":\""+endorsementKey+"\"," +
@@ -150,7 +132,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void TpmAttestation_SucceedOnSerializationWithoutStorageRootKey()
         {
             // arrange
-            string endorsementKey = KEY;
+            string endorsementKey = Key;
             string expectedJson =
                 "{" +
                 "  \"endorsementKey\":\"" + endorsementKey + "\"" +
@@ -166,11 +148,32 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         [TestMethod]
         [TestCategory("DevService")]
+        public void TpmAttestation_SucceedOnSerializationWithEmptyStorageRootKey()
+        {
+            // arrange
+            string endorsementKey = Key;
+            string storageRootKey = "";
+            string expectedJson =
+                "{" +
+                "  \"endorsementKey\":\"" + endorsementKey + "\"," +
+                "  \"storageRootKey\":\"" + storageRootKey + "\"" +
+                "}";
+            TpmAttestation tpmAttestation = new TpmAttestation(endorsementKey, storageRootKey);
+
+            // act
+            string json = Newtonsoft.Json.JsonConvert.SerializeObject(tpmAttestation);
+
+            // assert
+            TestAssert.AreEqualJson(expectedJson, json);
+        }
+
+        [TestMethod]
+        [TestCategory("DevService")]
         public void TpmAttestation_SucceedOnDeserialization()
         {
             // arrange
-            string endorsementKey = KEY;
-            string storageRootKey = KEY;
+            string endorsementKey = Key;
+            string storageRootKey = Key;
             string json =
                 "{" +
                 "  \"endorsementKey\":\"" + endorsementKey + "\"," +
@@ -190,7 +193,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void TpmAttestation_ThrowsOnDeserializationWithoutEndorsementKey()
         {
             // arrange
-            string storageRootKey = KEY;
+            string storageRootKey = Key;
             string json =
                 "{" +
                 "  \"storageRootKey\":\"" + storageRootKey + "\"" +
@@ -205,7 +208,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void TpmAttestation_ThrowsOnDeserializationWithEmptyEndorsementKey()
         {
             // arrange
-            string storageRootKey = KEY;
+            string storageRootKey = Key;
             string json =
                 "{" +
                 "  \"endorsementKey\":\"\"," +
@@ -214,6 +217,45 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
             // act - assert
             TestAssert.Throws<ProvisioningServiceClientException>(() => Newtonsoft.Json.JsonConvert.DeserializeObject<TpmAttestation>(json));
+        }
+
+        [TestMethod]
+        [TestCategory("DevService")]
+        public void TpmAttestation_SucceedOnDeserializationWithoutStorageRootKey()
+        {
+            // arrange
+            string endorsementKey = Key;
+            string json =
+                "{" +
+                "  \"endorsementKey\":\"" + endorsementKey + "\"," +
+                "}";
+
+            // act
+            TpmAttestation tpmAttestation = Newtonsoft.Json.JsonConvert.DeserializeObject<TpmAttestation>(json);
+
+            // assert
+            Assert.AreEqual(endorsementKey, tpmAttestation.EndorsementKey);
+        }
+
+        [TestMethod]
+        [TestCategory("DevService")]
+        public void TpmAttestation_SucceedOnDeserializationWithEmptyStorageRootKey()
+        {
+            // arrange
+            string endorsementKey = Key;
+            string storageRootKey = "";
+            string json =
+                "{" +
+                "  \"endorsementKey\":\"" + endorsementKey + "\"," +
+                "  \"storageRootKey\":\"" + storageRootKey + "\"" +
+                "}";
+
+            // act
+            TpmAttestation tpmAttestation = Newtonsoft.Json.JsonConvert.DeserializeObject<TpmAttestation>(json);
+
+            // assert
+            Assert.AreEqual(endorsementKey, tpmAttestation.EndorsementKey);
+            Assert.AreEqual(storageRootKey, tpmAttestation.StorageRootKey);
         }
     }
 }

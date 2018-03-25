@@ -45,34 +45,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// Helper to validate if the provided string is not null, empty, and Base64.
-        /// </summary>
-        /// <param name="input">the <code>string</code> to be validated</param>
-        /// <exception cref="ArgumentException">if the provided <code>string</code> do not fits the criteria</exception>
-        public static void EnsureBase64String(string input)
-        {
-            if (string.IsNullOrWhiteSpace(input))
-            {
-                /* Codes_SRS_PARSER_UTILITY_21_005: [The IsValidBase64 shall throw ArgumentException if the provided string 
-                                                    is null or empty.] */
-                throw new ArgumentException("parameter cannot be null or whiteSpace");
-            }
-
-            /* Codes_SRS_PARSER_UTILITY_21_006: [The IsValidBase64 shall throw ArgumentException if the provided string 
-                                                    contains a non Base64 content.] */
-            try
-            {
-                Convert.FromBase64String(input);
-            }
-            catch (FormatException e)
-            {
-                throw new ArgumentException("parameter is not a valid Base64 string", e);
-            }
-
-            /* Codes_SRS_PARSER_UTILITY_21_004: [The IsValidBase64 shall do nothing if the string is valid.] */
-        }
-
-        /// <summary>
         /// Helper to validate RegistrationId.
         /// </summary>
         /// <remarks>

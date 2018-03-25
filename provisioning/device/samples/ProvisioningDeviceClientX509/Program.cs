@@ -63,7 +63,7 @@ namespace ProvisioningDeviceClientX509
         {
             if (string.IsNullOrWhiteSpace(s_idScope) && (args.Length < 1))
             {
-                Console.WriteLine("ProvisioningDeviceClientTpm <IDScope>");
+                Console.WriteLine("ProvisioningDeviceClientX509 sample requires your Azure Device Provisioning Service <IDScope>");
                 return;
             }
 

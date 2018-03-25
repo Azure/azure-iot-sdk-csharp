@@ -12,11 +12,6 @@ namespace Microsoft.Azure.Devices.Common
     using System.Runtime.CompilerServices;
     using System.Runtime.Versioning;
     using System.Threading;
-#if WINDOWS_UWP
-    using PlatformSupport.System.Diagnostics;
-    using TraceEventType = Microsoft.Azure.Devices.PlatformSupport.System.Diagnostics.TraceEventType;
-    using Trace = Microsoft.Azure.Devices.PlatformSupport.System.Diagnostics.Trace;
-#endif
     using Microsoft.Azure.Devices.Common.Tracing;
 
     class ExceptionTrace
@@ -91,7 +86,7 @@ namespace Microsoft.Azure.Devices.Common
 
         public void TraceHandled(Exception exception, string catchLocation, EventTraceActivity activity = null)
         {
-#if !WINDOWS_UWP && !NETSTANDARD1_3
+#if NET451
 #if DEBUG
             Trace.WriteLine(string.Format(
                 CultureInfo.InvariantCulture,
@@ -114,7 +109,7 @@ namespace Microsoft.Azure.Devices.Common
             ////MessagingClientEtwProvider.Provider.EventWriteUnhandledException(this.eventSourceName + ": " + exception.ToStringSlim());
         }
 
-#if !WINDOWS_UWP && !NETSTANDARD1_3
+#if NET451
         [ResourceConsumption(ResourceScope.Process)]
 #endif
         [Fx.Tag.SecurityNote(Critical = "Calls 'System.Runtime.Interop.UnsafeNativeMethods.IsDebuggerPresent()' which is a P/Invoke method",
@@ -176,7 +171,7 @@ namespace Microsoft.Azure.Devices.Common
         {
             string details = e.GetType().ToString();
 
-#if !WINDOWS_UWP && !NETSTANDARD1_3
+#if NET451
             const int MaxStackFrames = 10;
 
             // Include the current callstack (this ensures we see the Stack in case exception is not output when caught)
@@ -197,10 +192,8 @@ namespace Microsoft.Azure.Devices.Common
         }
 
         [SuppressMessage(FxCop.Category.Performance, FxCop.Rule.MarkMembersAsStatic, Justification = "CSDMain #183668")]
-#if !WINDOWS_UWP
         [Fx.Tag.SecurityNote(Critical = "Calls into critical method UnsafeNativeMethods.IsDebuggerPresent and UnsafeNativeMethods.DebugBreak",
             Safe = "Safe because it's a no-op in retail builds.")]
-#endif
         internal void BreakOnException(Exception exception)
         {
 #if DEBUG
@@ -209,12 +202,7 @@ namespace Microsoft.Azure.Devices.Common
             {
                 foreach (Type breakType in Fx.BreakOnExceptionTypes)
                 {
-#if WINDOWS_UWP
-                    if (breakType.GetTypeInfo().IsAssignableFrom(exception.GetType().GetTypeInfo()))
-                    {
-                        Debugger.Launch();
-                    }
-#elif !PCL && !NETSTANDARD1_3 && !NETSTANDARD2_0
+#if NET451
                     if (breakType.IsAssignableFrom(exception.GetType()))
                     {
                         // This is intended to "crash" the process so that a debugger can be attached.  If a managed

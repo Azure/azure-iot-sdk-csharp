@@ -8,6 +8,7 @@ using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
 using System;
 using System.IO;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -34,6 +35,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             TransportFallbackType transportFallbackType = TransportFallbackType.TcpWithWebSocketFallback)
         {
             FallbackType = transportFallbackType;
+            bool useWebSocket = (FallbackType == TransportFallbackType.WebSocketOnly);
+            Port = useWebSocket ? WebSocketConstants.Port : AmqpConstants.DefaultSecurePort;
         }
 
         /// <summary>
@@ -49,6 +52,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(ProvisioningTransportHandlerAmqp)}.{nameof(RegisterAsync)}");
 
             cancellationToken.ThrowIfCancellationRequested();
+
+            AmqpClientConnection connection = null;
 
             try
             {
@@ -77,23 +82,23 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 {
                     Scheme = useWebSocket ? WebSocketConstants.Scheme : AmqpConstants.SchemeAmqps,
                     Host = message.GlobalDeviceEndpoint,
-                    Port = useWebSocket ? WebSocketConstants.Port : AmqpConstants.DefaultSecurePort
+                    Port = Port,
                 };
 
                 string registrationId = message.Security.GetRegistrationID();
                 string linkEndpoint = $"{message.IdScope}/registrations/{registrationId}";
 
-                AmqpClientConnection connection = authStrategy.CreateConnection(builder.Uri, message.IdScope);
+                connection = authStrategy.CreateConnection(builder.Uri, message.IdScope);
                 await authStrategy.OpenConnectionAsync(connection, TimeoutConstant, useWebSocket).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
-                
+
                 await CreateLinksAsync(connection, linkEndpoint, message.ProductInfo).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
-                
-                string correlationId = new Guid().ToString();
+
+                string correlationId = Guid.NewGuid().ToString();
                 RegistrationOperationStatus operation =
                     await RegisterDeviceAsync(connection, correlationId).ConfigureAwait(false);
-                
+
                 // Poll with operationId until registration complete.
                 int attempts = 0;
                 string operationId = operation.OperationId;
@@ -123,17 +128,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     authStrategy.SaveCredentials(operation);
                 }
 
+                await connection.CloseAsync(TimeoutConstant).ConfigureAwait(false);
+
                 return ConvertToProvisioningRegistrationResult(operation.RegistrationState);
             }
-            // TODO: Catch only expected exceptions from Amqp.
-            catch (Exception ex)
+            catch (Exception ex) when (!(ex is ProvisioningTransportException))
             {
                 if (Logging.IsEnabled) Logging.Error(
                     this,
                     $"{nameof(ProvisioningTransportHandlerAmqp)} threw exception {ex}",
                     nameof(RegisterAsync));
 
-                // TODO: Extract trackingId from the exception.
                 throw new ProvisioningTransportException($"AMQP transport exception", ex, true);
             }
             finally
@@ -142,7 +147,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             }
         }
 
-        private async Task CreateLinksAsync(AmqpClientConnection connection, string linkEndpoint, string productInfo)
+        private static async Task CreateLinksAsync(AmqpClientConnection connection, string linkEndpoint, string productInfo)
         {
             var amqpDeviceSession = connection.CreateSession();
             await amqpDeviceSession.OpenAsync(TimeoutConstant).ConfigureAwait(false);
@@ -163,7 +168,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         }
 
         private async Task<RegistrationOperationStatus> RegisterDeviceAsync(
-            AmqpClientConnection client, 
+            AmqpClientConnection client,
             string correlationId)
         {
             var amqpMessage = AmqpMessage.Create(new AmqpValue() { Value = DeviceOperations.Register });
@@ -174,6 +179,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             var outcome = await client.AmqpSession.SendingLink
                 .SendMessageAsync(amqpMessage, new ArraySegment<byte>(Guid.NewGuid().ToByteArray()),
                     TimeoutConstant).ConfigureAwait(false);
+            ValidateOutcome(outcome);
             var amqpResponse = await client.AmqpSession.ReceivingLink.ReceiveMessageAsync(TimeoutConstant)
                 .ConfigureAwait(false);
             client.AmqpSession.ReceivingLink.AcceptMessage(amqpResponse);
@@ -184,7 +190,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         private async Task<RegistrationOperationStatus> OperationStatusLookupAsync(
             AmqpClientConnection client,
-            string operationId, 
+            string operationId,
             string correlationId)
         {
             var amqpMessage = AmqpMessage.Create(new AmqpValue() { Value = DeviceOperations.GetOperationStatus });
@@ -195,6 +201,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             var outcome = await client.AmqpSession.SendingLink
                 .SendMessageAsync(amqpMessage, new ArraySegment<byte>(Guid.NewGuid().ToByteArray()),
                     TimeoutConstant).ConfigureAwait(false);
+            ValidateOutcome(outcome);
             var amqpResponse = await client.AmqpSession.ReceivingLink.ReceiveMessageAsync(TimeoutConstant)
                 .ConfigureAwait(false);
             client.AmqpSession.ReceivingLink.AcceptMessage(amqpResponse);
@@ -203,7 +210,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             return JsonConvert.DeserializeObject<RegistrationOperationStatus>(jsonResponse);
         }
 
-        private DeviceRegistrationResult ConvertToProvisioningRegistrationResult(
+        private static DeviceRegistrationResult ConvertToProvisioningRegistrationResult(
             Models.DeviceRegistrationResult result)
         {
             var status = ProvisioningRegistrationStatusType.Failed;
@@ -220,6 +227,37 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 result.ErrorCode == null ? 0 : (int)result.ErrorCode,
                 result.ErrorMessage,
                 result.Etag);
+        }
+
+        private void ValidateOutcome(Outcome outcome)
+        {
+            if (outcome is Rejected rejected)
+            {
+                try
+                {
+                    var errorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetails>(rejected.Error.Description);
+                    int statusCode = errorDetails.ErrorCode / 1000;
+                    bool isTransient = statusCode >= (int)HttpStatusCode.InternalServerError || statusCode == 429;
+                    throw new ProvisioningTransportException(
+                        errorDetails.CreateMessage("AMQP transport exception: service error."),
+                        null,
+                        isTransient,
+                        errorDetails.TrackingId);
+                }
+                catch (JsonException ex)
+                {
+                    if (Logging.IsEnabled) Logging.Error(
+                        this,
+                        $"{nameof(ProvisioningTransportHandlerAmqp)} server returned malformed error response." +
+                        $"Parsing error: {ex}. Server response: {rejected.Error.Description}",
+                        nameof(RegisterAsync));
+
+                    throw new ProvisioningTransportException(
+                        $"AMQP transport exception: malformed server error message: '{rejected.Error.Description}'",
+                        ex,
+                        false);
+                }
+            }
         }
     }
 }

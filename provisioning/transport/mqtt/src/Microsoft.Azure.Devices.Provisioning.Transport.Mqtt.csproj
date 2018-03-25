@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -8,17 +8,18 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <OutputPath>.\bin\$(Configuration)</OutputPath>
     <DocumentationFile>$(OutputPath)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
+    <RootDir>$(MSBuildProjectDirectory)\..\..\..\..</RootDir>
   </PropertyGroup>
 
   <!-- delay sign the assembly for Release build -->
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-    <AssemblyOriginatorKeyFile>..\..\..\..\35MSSharedLib1024.snk</AssemblyOriginatorKeyFile>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' AND '$(AZURE_IOT_DONOTSIGN.ToUpper())' != 'TRUE' ">
+    <AssemblyOriginatorKeyFile>$(RootDir)\35MSSharedLib1024.snk</AssemblyOriginatorKeyFile>
     <DelaySign>true</DelaySign>
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
   
   <PropertyGroup>
-    <VersionPrefix>1.0.2</VersionPrefix>
+    <VersionPrefix>1.1.0</VersionPrefix>
     <Title>Microsoft Azure IoT Provisioning Device Client MQTT Transport</Title>
     <Authors>Microsoft</Authors>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
@@ -26,12 +27,12 @@
     <Description>Provisioning Device Client MQTT Transport for Azure IoT Devices</Description>
     <PackageIconUrl>http://go.microsoft.com/fwlink/?LinkID=288890</PackageIconUrl>
     <PackageProjectUrl>https://github.com/Azure/azure-iot-sdk-csharp</PackageProjectUrl>
-    <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
+    <Copyright>Â© Microsoft Corporation. All rights reserved.</Copyright>
     <PackageTags>Microsoft Azure IoT Provisioning Device Client .NET MQTT</PackageTags>
   </PropertyGroup>
 
   <PropertyGroup>
-    <common>..\..\..\..\common\src</common>
+    <common>$(RootDir)\common\src</common>
   </PropertyGroup>
 
   <ItemGroup>
@@ -62,11 +63,17 @@
     <Compile Include="$(Common)\device\transport\mqtt\ClientWebSocketChannel.cs">
       <Link>Common\device\transport\mqtt\ClientWebSocketChannel.cs</Link>
     </Compile>
+    <Compile Include="$(Common)\device\transport\mqtt\ClientWebSocketChannelConfig.cs">
+      <Link>Common\device\transport\mqtt\ClientWebSocketChannelConfig.cs</Link>
+    </Compile>
+    <Compile Include="$(Common)\device\provisioning\transport\ProvisioningErrorDetails.cs">
+      <Link>Common\device\provisioning\transport\ProvisioningErrorDetails.cs</Link>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\shared\Microsoft.Azure.Devices.Shared.NetStandard\Microsoft.Azure.Devices.Shared.NetStandard.csproj" />
-    <ProjectReference Include="..\..\..\device\src\Microsoft.Azure.Devices.Provisioning.Client.csproj" />
+    <ProjectReference Include="$(RootDir)\shared\src\Microsoft.Azure.Devices.Shared.csproj" />
+    <ProjectReference Include="$(RootDir)\provisioning\device\src\Microsoft.Azure.Devices.Provisioning.Client.csproj" />
   </ItemGroup>
 
   <ItemGroup>

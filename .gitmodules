@@ -1,4 +1,0 @@
-[submodule "device/external_modules/dotnetty"]
-	path = device/external_modules/dotnetty
-	url = https://github.com/Azure/DotNetty.git
-	branch = dev

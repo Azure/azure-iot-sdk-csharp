@@ -2,9 +2,10 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.Azure.Amqp;
+using Microsoft.Azure.Amqp.Framing;
+using Microsoft.Azure.Amqp.Sasl;
 using Microsoft.Azure.Amqp.Transport;
 using System;
-using System.Diagnostics;
 using System.Net;
 using System.Net.WebSockets;
 using System.Security.Cryptography.X509Certificates;
@@ -42,6 +43,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         private bool _isConnectionClosed;
 
+        private TaskCompletionSource<TransportBase> _tcs;
+
+        private ProtocolHeader _sentHeader;
+
         public async Task OpenAsync(TimeSpan timeout, bool useWebSocket, X509Certificate2 clientCert)
         {
             var hostName = _uri.Host;
@@ -50,7 +55,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             TransportSettings = new TlsTransportSettings(tcpSettings)
             {
                 TargetHost = hostName,
-                CertificateValidationCallback = (sender, cert, chain, errors) => true,
                 Certificate = clientCert
             };
 
@@ -59,6 +63,23 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             if (useWebSocket)
             {
                 transport = await CreateClientWebSocketTransportAsync(timeout).ConfigureAwait(false);
+                SaslTransportProvider provider = _amqpSettings.GetTransportProvider<SaslTransportProvider>();
+                if (provider != null)
+                {
+                    _sentHeader = new ProtocolHeader(provider.ProtocolId, provider.DefaultVersion);
+                    ByteBuffer buffer = new ByteBuffer(new byte[AmqpConstants.ProtocolHeaderSize]);
+                    _sentHeader.Encode(buffer);
+
+                    var args = new TransportAsyncCallbackArgs();
+                    args.SetBuffer(buffer.Buffer, buffer.Offset, buffer.Length);
+                    args.CompletedCallback = OnWriteHeaderComplete;
+                    args.Transport = transport;
+                    transport.WriteAsync(args);
+
+                    _tcs = new TaskCompletionSource<TransportBase>();
+                    transport = await _tcs.Task.ConfigureAwait(false);
+                    await transport.OpenAsync(timeout).ConfigureAwait(false);
+                }
             }
             else
             {
@@ -67,9 +88,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             }
 
             AmqpConnection = new AmqpConnection(transport, _amqpSettings, AmqpConnectionSettings);
+            AmqpConnection.Closed += OnConnectionClosed;
             await AmqpConnection.OpenAsync(timeout).ConfigureAwait(false);
             _isConnectionClosed = false;
-            AmqpConnection.Closed += OnConnectionClosed;
         }
 
         public async Task CloseAsync(TimeSpan timeout)
@@ -104,8 +125,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         async Task<TransportBase> CreateClientWebSocketTransportAsync(TimeSpan timeout)
         {
-            Uri websocketUri = new Uri(WebSocketConstants.Scheme + _uri.Host + ":" + _uri.Port);
-            var websocket = await CreateClientWebSocketAsync(websocketUri, timeout).ConfigureAwait(false);
+            UriBuilder webSocketUriBuilder = new UriBuilder
+            {
+                Scheme = WebSocketConstants.Scheme,
+                Host = _uri.Host,
+                Port = _uri.Port
+            };
+            var websocket = await CreateClientWebSocketAsync(webSocketUriBuilder.Uri, timeout).ConfigureAwait(false);
             return new ClientWebSocketTransport(
                 websocket,
                 null,
@@ -122,12 +148,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
             // TODO: expose the Proxy setting as public API on the transport layer
             //Check if we're configured to use a proxy server
-            IWebProxy webProxy = WebRequest.DefaultWebProxy;
-            Uri proxyAddress = webProxy != null ? webProxy.GetProxy(websocketUri) : null;
-            if (!websocketUri.Equals(proxyAddress))
+            try
             {
-                // Configure proxy server
-                websocket.Options.Proxy = webProxy;
+                IWebProxy webProxy = WebRequest.DefaultWebProxy;
+                Uri proxyAddress = webProxy != null ? webProxy.GetProxy(websocketUri) : null;
+                if (!websocketUri.Equals(proxyAddress))
+                {
+                    // Configure proxy server
+                    websocket.Options.Proxy = webProxy;
+                }
+            }
+            catch (PlatformNotSupportedException)
+            {
+                // .NET Core doesn't support WebProxy configuration - ignore this setting.
             }
 
             if (TransportSettings.Certificate != null)
@@ -137,17 +170,62 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
             using (var cancellationTokenSource = new CancellationTokenSource(timeout))
             {
-                try
-                {
-                    await websocket.ConnectAsync(websocketUri, cancellationTokenSource.Token).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine(ex.Message);
-                }
+                await websocket.ConnectAsync(websocketUri, cancellationTokenSource.Token).ConfigureAwait(false);
             }
 
             return websocket;
+        }
+
+        private void OnWriteHeaderComplete(TransportAsyncCallbackArgs args)
+        {
+            if (args.Exception != null)
+            {
+                CompleteOnException(args);
+                return;
+            }
+
+            byte[] headerBuffer = new byte[AmqpConstants.ProtocolHeaderSize];
+            args.SetBuffer(headerBuffer, 0, headerBuffer.Length);
+            args.CompletedCallback = OnReadHeaderComplete;
+            args.Transport.ReadAsync(args);
+        }
+
+        private void OnReadHeaderComplete(TransportAsyncCallbackArgs args)
+        {
+            if (args.Exception != null)
+            {
+                CompleteOnException(args);
+                return;
+            }
+
+            try
+            {
+                ProtocolHeader receivedHeader = new ProtocolHeader();
+                receivedHeader.Decode(new ByteBuffer(args.Buffer, args.Offset, args.Count));
+                if (!receivedHeader.Equals(_sentHeader))
+                {
+                    throw new AmqpException(AmqpErrorCode.NotImplemented, $"The requested protocol version {_sentHeader} is not supported. The supported version is {receivedHeader}");
+                }
+
+                SaslTransportProvider provider = _amqpSettings.GetTransportProvider<SaslTransportProvider>();
+                var transport = provider.CreateTransport(args.Transport, true);
+                _tcs.TrySetResult(transport);
+            }
+            catch (Exception ex)
+            {
+                args.Exception = ex;
+                CompleteOnException(args);
+            }
+        }
+
+        private void CompleteOnException(TransportAsyncCallbackArgs args)
+        {
+            if (args.Exception != null && args.Transport != null)
+            {
+                args.Transport.SafeClose(args.Exception);
+                args.Transport = null;
+                _tcs.TrySetException(args.Exception);
+            }
         }
     }
 }

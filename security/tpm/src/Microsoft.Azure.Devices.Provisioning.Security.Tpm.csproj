@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -7,10 +7,18 @@
     <OutputPath>.\bin\$(Configuration)</OutputPath>
     <DocumentationFile>$(OutputPath)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <RootDir>$(MSBuildProjectDirectory)\..\..\..</RootDir>
+  </PropertyGroup>
+
+  <!-- delay sign the assembly for Release build -->
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' AND '$(AZURE_IOT_DONOTSIGN.ToUpper())' != 'TRUE' ">
+    <AssemblyOriginatorKeyFile>$(RootDir)\35MSSharedLib1024.snk</AssemblyOriginatorKeyFile>
+    <DelaySign>true</DelaySign>
+    <SignAssembly>true</SignAssembly>
   </PropertyGroup>
 
   <PropertyGroup>
-    <common>..\..\..\common\src</common>
+    <common>$(RootDir)\common\src</common>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(Common)\Logging.Common.cs">
@@ -18,15 +26,8 @@
     </Compile>
   </ItemGroup>
 
-  <!-- delay sign the assembly for Release build -->
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-    <AssemblyOriginatorKeyFile>..\..\..\35MSSharedLib1024.snk</AssemblyOriginatorKeyFile>
-    <DelaySign>true</DelaySign>
-    <SignAssembly>true</SignAssembly>
-  </PropertyGroup>
-
   <PropertyGroup>
-    <VersionPrefix>1.0.2</VersionPrefix>
+    <VersionPrefix>1.1.0</VersionPrefix>
     <Title>Microsoft Azure IoT Provisioning Device Security TPM Client</Title>
     <Authors>Microsoft</Authors>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
@@ -34,7 +35,7 @@
     <Description>Provisioning Device Security TPM Client for Azure IoT Devices</Description>
     <PackageIconUrl>http://go.microsoft.com/fwlink/?LinkID=288890</PackageIconUrl>
     <PackageProjectUrl>https://github.com/Azure/azure-iot-sdk-csharp</PackageProjectUrl>
-    <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
+    <Copyright>Â© Microsoft Corporation. All rights reserved.</Copyright>
     <PackageTags>Microsoft Azure IoT Provisioning Device Security TPM Client .NET</PackageTags>    
   </PropertyGroup>
 
@@ -46,7 +47,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\shared\Microsoft.Azure.Devices.Shared.NetStandard\Microsoft.Azure.Devices.Shared.NetStandard.csproj">
+    <ProjectReference Include="$(RootDir)\shared\src\Microsoft.Azure.Devices.Shared.csproj">
       <Project>{91dfb837-d8a3-4f54-ae0d-45c95acd0c2a}</Project>
       <Name>Microsoft.Azure.Devices.Shared.NetStandard</Name>
     </ProjectReference>

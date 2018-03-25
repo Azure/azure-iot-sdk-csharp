@@ -6,7 +6,7 @@ This is a quick tutorial with the steps to register a device in the Microsoft Az
 
 ## How to run the sample
 
-Ensure that all prerequisite steps presented in [samples](..\) have been performed.
+Ensure that all prerequisite steps presented in [samples](../) have been performed.
 
 The sample code is set up to use X.509 certificates stored within a password-protected PKCS12 formatted file (certificate.pfx). To generate a self-signed certificate run the following command:
 

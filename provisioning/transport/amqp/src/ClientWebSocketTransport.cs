@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Amqp.Transport
 
             args.Exception = null; // null out any exceptions
 
-            Task taskResult = WriteAsyncCore(args);
+            Task<bool> taskResult = WriteAsyncCore(args);
             if (WriteTaskDone(taskResult, args))
             {
                 return false;
@@ -74,7 +74,7 @@ namespace Microsoft.Azure.Amqp.Transport
             return true;
         }
 
-        async Task WriteAsyncCore(TransportAsyncCallbackArgs args)
+        async Task<bool> WriteAsyncCore(TransportAsyncCallbackArgs args)
         {
             bool succeeded = false;
             try
@@ -116,6 +116,8 @@ namespace Microsoft.Azure.Amqp.Transport
                     Abort();
                 }
             }
+
+            return succeeded;
         }
 
         public override bool ReadAsync(TransportAsyncCallbackArgs args)

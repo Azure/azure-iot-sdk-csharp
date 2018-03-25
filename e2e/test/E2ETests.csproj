@@ -1,0 +1,103 @@
+<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp2.0;net47;net451</TargetFrameworks>
+    <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">netcoreapp2.0</TargetFrameworks>
+    <!-- TODO #176: Enable warnings as errors. -->
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>Microsoft.Azure.Devices.E2ETests</RootNamespace>
+    <AssemblyName>Microsoft.Azure.Devices.E2ETests</AssemblyName>
+    <!-- Don't auto-compile platform specific files: -->
+    <DefaultItemExcludes>netstandard13/**;netstandard20/**;net451/**;$(DefaultItemExcludes)</DefaultItemExcludes>
+    <RootDir>$(MSBuildProjectDirectory)\..\..</RootDir>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+    <CommonTest>$(RootDir)\common\test</CommonTest>
+  </PropertyGroup>
+
+  <!-- All Platforms -->
+  <ItemGroup>
+    <Compile Include="$(CommonTest)\CodeAnalysisOverrides.cs">
+      <Link>Common\CodeAnalysisOverrides.cs</Link>
+    </Compile>
+    <Compile Include="$(CommonTest)\Configuration.cs">
+      <Link>Common\Configuration.cs</Link>
+    </Compile>
+    <Compile Include="$(CommonTest)\Configuration.IoTHub.cs">
+      <Link>Common\Configuration.IoTHub.cs</Link>
+    </Compile>
+    <Compile Include="$(CommonTest)\EventSourceTestLogging.cs">
+      <Link>Common\EventSourceTestLogging.cs</Link>
+    </Compile>
+    <Compile Include="$(CommonTest)\TestLogging.cs">
+      <Link>Common\TestLogging.cs</Link>
+    </Compile>
+    <Compile Include="$(CommonTest)\VerboseTestLogging.cs">
+      <Link>Common\VerboseTestLogging.cs</Link>
+    </Compile>
+  </ItemGroup>
+  <!-- Legacy .NET 4.5.1 -->
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
+    <Compile Include="net451\MessageE2ETests.NetFramework.cs" />
+    <Compile Include="net451\X509E2ETests.NetFramework.cs" />
+  </ItemGroup>
+  <!-- NetCore and .NET 4.7 -->
+  <ItemGroup Condition=" '$(TargetFramework)' != 'net451' ">
+    <Compile Include="$(CommonTest)\ConsoleEventListener.cs">
+      <Link>Common\ConsoleEventListener.cs</Link>
+    </Compile>
+    <Compile Include="$(CommonTest)\Configuration.Provisioning.cs">
+      <Link>Common\Configuration.Provisioning.cs</Link>
+    </Compile>
+    <Compile Include="netstandard13\MessageE2ETests.NetCore.cs" />
+    <Compile Include="netstandard13\X509E2ETests.NetCore.cs" />
+    <Compile Include="netstandard20\ProvisioningTests.cs" />
+  </ItemGroup>
+
+  <!-- All Platforms -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.3.0-preview-20170628-02" />
+    <PackageReference Include="MSTest.TestAdapter" Version="1.1.18" />
+    <PackageReference Include="MSTest.TestFramework" Version="1.1.18" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+  <!-- Legacy .NET 4.5.1 -->
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
+    <!-- Note: 4.1.3 is the last ServiceBus release supporting net451. -->
+    <PackageReference Include="WindowsAzure.ServiceBus" Version="4.1.3" />
+  </ItemGroup>
+  <!-- NetCore and .NET 4.7 -->
+  <ItemGroup Condition=" '$(TargetFramework)' != 'net451' ">
+    <PackageReference Include="Microsoft.Azure.EventHubs" Version="1.0.3" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(AZURE_IOT_LOCALPACKAGES)' == '' ">
+    <ProjectReference Include="$(RootDir)\iothub\device\src\Microsoft.Azure.Devices.Client.csproj" />
+    <ProjectReference Include="$(RootDir)\iothub\service\src\Microsoft.Azure.Devices.csproj" />
+    <ProjectReference Include="$(RootDir)\shared\src\Microsoft.Azure.Devices.Shared.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition=" ('$(AZURE_IOT_LOCALPACKAGES)' == '') And ( '$(TargetFramework)' != 'net451' ) ">
+    <ProjectReference Include="$(RootDir)\provisioning\device\src\Microsoft.Azure.Devices.Provisioning.Client.csproj" />
+    <ProjectReference Include="$(RootDir)\provisioning\transport\amqp\src\Microsoft.Azure.Devices.Provisioning.Transport.Amqp.csproj" />
+    <ProjectReference Include="$(RootDir)\provisioning\transport\http\src\Microsoft.Azure.Devices.Provisioning.Transport.Http.csproj" />
+    <ProjectReference Include="$(RootDir)\provisioning\transport\mqtt\src\Microsoft.Azure.Devices.Provisioning.Transport.Mqtt.csproj" />
+    <ProjectReference Include="$(RootDir)\security\tpm\src\Microsoft.Azure.Devices.Provisioning.Security.Tpm.csproj" />
+    <Compile Include="$(RootDir)\security\tpm\samples\SecurityProviderTpmSimulator\SecurityProviderTpmSimulator.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(AZURE_IOT_LOCALPACKAGES)' != '' ">
+    <PackageReference Include="Microsoft.Azure.Devices" Version="1.*" />
+    <PackageReference Include="Microsoft.Azure.Devices.Shared" Version="1.*" />
+    <PackageReference Include="Microsoft.Azure.Devices.Client" Version="1.*" />
+  </ItemGroup>
+  <ItemGroup Condition=" ('$(AZURE_IOT_LOCALPACKAGES.ToUpper())' != '') And ( '$(TargetFramework)' != 'net451' ) ">
+    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Client" Version="1.*" />
+    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Transport.Amqp" Version="1.*" />
+    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Transport.Http" Version="1.*" />
+    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Transport.Mqtt" Version="1.*" />
+    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Security.Tpm" Version="1.*" />
+    <ProjectReference Include="$(RootDir)\security\tpm\samples\SecurityProviderTpmSimulator\SecurityProviderTpmSimulator.csproj" />
+  </ItemGroup>
+
+</Project>

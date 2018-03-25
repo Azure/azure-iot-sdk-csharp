@@ -9,17 +9,18 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <OutputPath>.\bin\$(Configuration)</OutputPath>
     <DocumentationFile>$(OutputPath)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile> -->
+    <RootDir>$(MSBuildProjectDirectory)\..\..\..</RootDir>
   </PropertyGroup>
 
   <!-- delay sign the assembly for Release build -->
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-    <AssemblyOriginatorKeyFile>..\..\..\35MSSharedLib1024.snk</AssemblyOriginatorKeyFile>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' AND '$(AZURE_IOT_DONOTSIGN.ToUpper())' != 'TRUE' ">
+    <AssemblyOriginatorKeyFile>$(RootDir)\35MSSharedLib1024.snk</AssemblyOriginatorKeyFile>
     <DelaySign>true</DelaySign>
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
 
   <PropertyGroup>
-    <VersionPrefix>1.0.1</VersionPrefix>
+    <VersionPrefix>1.1.0</VersionPrefix>
     <Title>Microsoft Azure IoT Provisioning Service Client SDK</Title>
     <Authors>Microsoft</Authors>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
@@ -31,12 +32,16 @@
     <PackageTags>Microsoft Azure IoT Provisioning Service Client .NET HTTP</PackageTags>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <common>$(RootDir)\common\src</common>
+  </PropertyGroup>
+
   <ItemGroup>
-    <Compile Include="..\..\..\common\src\service\CommonResources.cs" Link="Common\CommonResources.cs" />
-    <Compile Include="..\..\..\common\src\service\EventTraceActivity.cs" Link="Common\EventTraceActivity.cs" />
-    <Compile Include="..\..\..\common\src\service\Resources.Designer.cs" Link="Common\Resources.Designer.cs" />
-    <Compile Include="..\..\..\common\src\service\StringValidationHelper.cs" Link="Common\StringValidationHelper.cs" />
-    <Compile Include="..\..\..\common\src\service\Utils.cs" Link="Common\Utils.cs" />
+    <Compile Include="$(common)\service\CommonResources.cs" Link="Common\CommonResources.cs" />
+    <Compile Include="$(common)\service\EventTraceActivity.cs" Link="Common\EventTraceActivity.cs" />
+    <Compile Include="$(common)\service\Resources.Designer.cs" Link="Common\Resources.Designer.cs" />
+    <Compile Include="$(common)\service\StringValidationHelper.cs" Link="Common\StringValidationHelper.cs" />
+    <Compile Include="$(common)\service\Utils.cs" Link="Common\Utils.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -48,10 +53,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\shared\Microsoft.Azure.Devices.Shared.NetStandard\Microsoft.Azure.Devices.Shared.NetStandard.csproj">
-      <Project>{91dfb837-d8a3-4f54-ae0d-45c95acd0c2a}</Project>
-      <Name>Microsoft.Azure.Devices.Shared.NetStandard</Name>
-    </ProjectReference>
+    <ProjectReference Include="$(RootDir)\shared\src\Microsoft.Azure.Devices.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>

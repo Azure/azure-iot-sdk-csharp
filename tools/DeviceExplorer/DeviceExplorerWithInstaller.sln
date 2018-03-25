@@ -1,15 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27130.2024
+VisualStudioVersion = 15.0.27130.2027
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeviceExplorer", "DeviceExplorer\DeviceExplorer.csproj", "{6EC48194-96D3-4B82-976D-F7957AF58AC4}"
 EndProject
 Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "SetupDeviceExplorer", "SetupDeviceExplorer\SetupDeviceExplorer.vdproj", "{C63E6313-F3B0-4942-96C3-A7120B68CB75}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Azure.Devices", "..\..\service\Microsoft.Azure.Devices\Microsoft.Azure.Devices.csproj", "{7FC2A03F-36FE-44C5-A1EF-5B1F11458350}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Azure.Devices.Shared", "..\..\shared\Microsoft.Azure.Devices.Shared\Microsoft.Azure.Devices.Shared.csproj", "{835230FC-8D03-4CD1-8845-5A9D1B0B837D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,30 +41,6 @@ Global
 		{C63E6313-F3B0-4942-96C3-A7120B68CB75}.Release|x64.Build.0 = Release
 		{C63E6313-F3B0-4942-96C3-A7120B68CB75}.Release|x86.ActiveCfg = Release
 		{C63E6313-F3B0-4942-96C3-A7120B68CB75}.Release|x86.Build.0 = Release
-		{7FC2A03F-36FE-44C5-A1EF-5B1F11458350}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7FC2A03F-36FE-44C5-A1EF-5B1F11458350}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7FC2A03F-36FE-44C5-A1EF-5B1F11458350}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{7FC2A03F-36FE-44C5-A1EF-5B1F11458350}.Debug|x64.Build.0 = Debug|Any CPU
-		{7FC2A03F-36FE-44C5-A1EF-5B1F11458350}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{7FC2A03F-36FE-44C5-A1EF-5B1F11458350}.Debug|x86.Build.0 = Debug|Any CPU
-		{7FC2A03F-36FE-44C5-A1EF-5B1F11458350}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7FC2A03F-36FE-44C5-A1EF-5B1F11458350}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7FC2A03F-36FE-44C5-A1EF-5B1F11458350}.Release|x64.ActiveCfg = Release|Any CPU
-		{7FC2A03F-36FE-44C5-A1EF-5B1F11458350}.Release|x64.Build.0 = Release|Any CPU
-		{7FC2A03F-36FE-44C5-A1EF-5B1F11458350}.Release|x86.ActiveCfg = Release|Any CPU
-		{7FC2A03F-36FE-44C5-A1EF-5B1F11458350}.Release|x86.Build.0 = Release|Any CPU
-		{835230FC-8D03-4CD1-8845-5A9D1B0B837D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{835230FC-8D03-4CD1-8845-5A9D1B0B837D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{835230FC-8D03-4CD1-8845-5A9D1B0B837D}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{835230FC-8D03-4CD1-8845-5A9D1B0B837D}.Debug|x64.Build.0 = Debug|Any CPU
-		{835230FC-8D03-4CD1-8845-5A9D1B0B837D}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{835230FC-8D03-4CD1-8845-5A9D1B0B837D}.Debug|x86.Build.0 = Debug|Any CPU
-		{835230FC-8D03-4CD1-8845-5A9D1B0B837D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{835230FC-8D03-4CD1-8845-5A9D1B0B837D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{835230FC-8D03-4CD1-8845-5A9D1B0B837D}.Release|x64.ActiveCfg = Release|Any CPU
-		{835230FC-8D03-4CD1-8845-5A9D1B0B837D}.Release|x64.Build.0 = Release|Any CPU
-		{835230FC-8D03-4CD1-8845-5A9D1B0B837D}.Release|x86.ActiveCfg = Release|Any CPU
-		{835230FC-8D03-4CD1-8845-5A9D1B0B837D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

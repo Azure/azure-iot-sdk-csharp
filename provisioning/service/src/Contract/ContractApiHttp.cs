@@ -149,7 +149,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         private static void ValidateHttpResponse(ContractApiResponse response)
         {
-            if (response.StatusCode >= HttpStatusCode.InternalServerError)
+            if (response.StatusCode >= HttpStatusCode.InternalServerError ||
+                (int)response.StatusCode == 429)
             {
                 throw new ProvisioningServiceClientHttpException(response, isTransient: true);
             }

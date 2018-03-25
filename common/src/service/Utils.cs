@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices.Common
 
         public static string GetClientVersion()
         {
-#if WINDOWS_UWP || NETSTANDARD1_3
+#if NETSTANDARD1_3
             // System.Reflection.Assembly.GetExecutingAssembly() does not exist for UWP, therefore use a hard-coded version name
             // (This string is picked up by the bump_version script, so don't change the line below)
             var UWPAssemblyVersion = "1.16.0-preview-002";

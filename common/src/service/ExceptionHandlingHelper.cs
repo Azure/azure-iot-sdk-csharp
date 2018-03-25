@@ -27,6 +27,7 @@ namespace Microsoft.Azure.Devices
             mappings.Add(HttpStatusCode.RequestEntityTooLarge, async (response) => new MessageTooLargeException(await GetExceptionMessageAsync(response).ConfigureAwait(false))); ;
             mappings.Add(HttpStatusCode.InternalServerError, async (response) => new ServerErrorException(await GetExceptionMessageAsync(response).ConfigureAwait(false)));
             mappings.Add(HttpStatusCode.ServiceUnavailable, async (response) => new ServerBusyException(await GetExceptionMessageAsync(response).ConfigureAwait(false)));
+            mappings.Add((HttpStatusCode)429, async (response) => new ThrottlingException(await GetExceptionMessageAsync(response).ConfigureAwait(false)));
 
             return mappings;
         }

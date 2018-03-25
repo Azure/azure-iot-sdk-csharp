@@ -2,8 +2,6 @@
 
 ## Overview
 
-_This documentation is preliminary and subject to change._
-
 This folder contains samples demonstrating the steps required to dynamically associate devices with IoT hubs using the Microsoft Azure IoT Device Provisioning Service.
 
 To ensure that only authorized devices can be provisioned, two device attestation mechanisms are supported by the service: one based on X.509 certificates and another based on Trusted Platform Module (TPM) devices. In both cases, public/private key authentication will be performed during provisioning.
@@ -12,10 +10,10 @@ _Preview only:_ The SDK currently supports two communication protocols: HTTP and
 
 ## Device provisioning in a nutshell
 
-Provisioning is achieved by using a single call to the `ProvisioningDeviceClient.RegisterAsync()` API specifying the IDScope (unique for each Provisioning Service deployment), a `SecurityProvider` and a `ProvisioningTransportHandler`:
+Provisioning is achieved by using a single call to the `ProvisioningDeviceClient.RegisterAsync()` API specifying the `GlobalDeviceEndpoint`, the IDScope (unique for each Provisioning Service deployment), a `SecurityProvider` and a `ProvisioningTransportHandler`:
 
 ```C#
-    ProvisioningDeviceClient provClient = ProvisioningDeviceClient.Create(s_idScope, security, transport);
+    ProvisioningDeviceClient provClient = ProvisioningDeviceClient.Create(globalDeviceEndpoint, s_idScope, security, transport);
     DeviceRegistrationResult result = await provClient.RegisterAsync();
     if (result.Status != ProvisioningRegistrationStatusType.Assigned) 
     {
@@ -89,7 +87,7 @@ The samples use a TPMv2.0 simulator that uses a loopback TCP connection for comm
 
 ### How to run the samples
 
-1. Prepare your development environment. Follow the instructions at https://github.com/Azure/azure-iot-sdk-csharp/blob/master/device/doc/devbox_setup.md
+1. Prepare your development environment. Follow the instructions at ./doc/devbox_setup.md
 
 2. Setup your IoT Hub Device Provisioning Service and associated IoT Hub. Follow the instructions at https://docs.microsoft.com/en-us/azure/iot-dps/quick-setup-auto-provision
 
