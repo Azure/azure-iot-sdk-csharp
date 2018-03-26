@@ -88,7 +88,7 @@ namespace ProvisioningServiceEnrollmentGroup
 
                         foreach (EnrollmentGroup group in queryResult.Items)
                         {
-                            await EnumerateDevicesInGroup(provisioningServiceClient, querySpecification, group).ConfigureAwait(false);
+                            await EnumerateRegistrationsInGroup(provisioningServiceClient, querySpecification, group).ConfigureAwait(false);
                         }
                     }
                 }
@@ -108,7 +108,7 @@ namespace ProvisioningServiceEnrollmentGroup
         /// <param name="querySpecification">The query specification.</param>
         /// <param name="group">The EnrollmentGroup object.</param>
         /// <returns></returns>
-        private static async Task EnumerateDevicesInGroup(ProvisioningServiceClient provisioningServiceClient, QuerySpecification querySpecification, EnrollmentGroup group)
+        private static async Task EnumerateRegistrationsInGroup(ProvisioningServiceClient provisioningServiceClient, QuerySpecification querySpecification, EnrollmentGroup group)
         {
             Console.WriteLine($"\nCreating a query for registrations within group '{group.EnrollmentGroupId}'...");
             using (Query registrationQuery = provisioningServiceClient.CreateEnrollmentGroupRegistrationStateQuery(querySpecification, group.EnrollmentGroupId))
