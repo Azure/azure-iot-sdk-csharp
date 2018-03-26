@@ -112,7 +112,6 @@ This repository contains [provisioning service client SDK](./provisioning/servic
 * [Azure IoT Hub documentation][iot-hub-documentation]
 * [Set up IoT Hub](doc/setup_iothub.md) describes how to configure your Azure IoT Hub service.
 * [Manage IoT Hub](doc/manage_iot_hub.md) describes how to provision devices in your Azure IoT Hub service.
-* [FAQ](doc/faq.md) contains frequently asked questions about the SDKs and libraries.
 * [Azure Certified for IoT device catalog](https://catalog.azureiotsuite.com/)
 * [Set up your development environment](./doc/devbox_setup.md) to prepare your development environment as well as how to run the samples on Linux, Windows or other platforms.
 * [API reference documentation for .NET](https://docs.microsoft.com/en-us/dotnet/api/overview/azure/devices?view=azure-dotnet)
