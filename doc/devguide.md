@@ -38,7 +38,7 @@ Instructions are available here: https://github.com/dotnet/core/blob/master/samp
 
 ### Xamarin, UWP, Windows IoT
 
-Please follow the [devbox-setup][devbox_setup.md] "Optional Setup" for Xamarin before trying to build. To build and test, run the following Jenkins script from the root of the repository:
+Please follow the [devbox-setup](devbox_setup.md) "Optional Setup" for Xamarin before trying to build. To build and test, run the following Jenkins script from the root of the repository:
 
 `jenkins\windows_csharp_xamarin.cmd`
 
