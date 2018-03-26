@@ -16,6 +16,7 @@ Use either of these tools to generate a device-specific connection string that y
 You can also use both of these tools to monitor the messages that your device sends to an IoT hub and send commands to you your devices from IoT Hub.
 
 <a name="iothub-explorer"/>
+
 ## Use the iothub-explorer tool to provision a device
 
 The iothub-explorer tool is a cross-platform, command-line tool (written in Node.js) for managing your devices in IoT hub. You will need to pre-install Node.js for your platform including npm package manager from [nodejs.org](https://nodejs.org)
@@ -63,6 +64,7 @@ For further information about using the iothub-explorer tool to perform tasks su
 - [Working with devices][lnk-iothub-explorer-devices]
 
 <a name="device-explorer"/>
+
 ## Use the Device Explorer tool to provision a device
 
 The Device Explorer tool is a Windows-only graphical tool for managing your devices in IoT Hub. 
