@@ -18,6 +18,10 @@ namespace Microsoft.Azure.Devices.E2ETests
                 => GetBase64EncodedCertificate("IOTHUB_X509_PFX_CERTIFICATE", defaultValue:string.Empty);
 
             public static string EventHubString => GetValue("EVENTHUB_CONN_STRING_CSHARP", string.Empty);
+
+            public static string ConnectionStringInvalidServiceCertificate => GetValue("IOTHUB_CONN_STRING_INVALIDCERT", string.Empty);
+
+            public static string DeviceConnectionStringInvalidServiceCertificate => GetValue("IOTHUB_DEVICE_CONN_STRING_INVALIDCERT", string.Empty);
         }
     }
 }

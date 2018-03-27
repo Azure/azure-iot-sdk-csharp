@@ -55,7 +55,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("DelegatingHandlers")]
-        [TestCategory("Owner [mtuchkov]")]
         public async Task ErrorHandler_NoErrors_Success()
         {
             var contextMock = Substitute.For<IPipelineContext>();
@@ -77,7 +76,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("DelegatingHandlers")]
-        [TestCategory("Owner [mtuchkov]")]
         public async Task ErrorHandler_TransientErrorOccuredChannelIsAlive_ChannelIsTheSame()
         {
             foreach (Type exceptionType in ErrorDelegatingHandler.TransportTransientExceptions)
@@ -89,7 +87,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("DelegatingHandlers")]
-        [TestCategory("Owner [mtuchkov]")]
         public async Task ErrorHandler_TransientErrorOccured_ChannelIsRecreated()
         {
             foreach (Type exceptionType in ErrorDelegatingHandler.TransientExceptions)
@@ -104,7 +101,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("DelegatingHandlers")]
-        [TestCategory("Owner [mtuchkov]")]
         public async Task ErrorHandler_NonTransientErrorOccured_ChannelIsRecreated()
         {
             foreach (Type exceptionType in NonTransientExceptions)

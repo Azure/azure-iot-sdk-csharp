@@ -27,7 +27,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("DelegatingHandlers")]
-        [TestCategory("Owner [mtuchkov]")]
         public async Task Retry_TransientErrorOccured_Retried()
         {
             int callCounter = 0;
@@ -57,7 +56,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("DelegatingHandlers")]
-        [TestCategory("Owner [mtuchkov]")]
         public async Task Retry_MessageHasBeenTouchedTransientExceptionOccured_Success()
         {
             int callCounter = 0;
@@ -92,7 +90,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("DelegatingHandlers")]
-        [TestCategory("Owner [mtuchkov]")]
         public async Task Retry_MessageHasBeenReadTransientExceptionOccured_Throws()
         {
             int callCounter = 0;
@@ -123,7 +120,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("DelegatingHandlers")]
-        [TestCategory("Owner [mtuchkov]")]
         public async Task Retry_OneMessageHasBeenTouchedTransientExceptionOccured_Success()
         {
             int callCounter = 0;
@@ -158,7 +154,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("DelegatingHandlers")]
-        [TestCategory("Owner [mtuchkov]")]
         public async Task Retry_OneMessageHasBeenReadTransientExceptionOccured_Throws()
         {
             int callCounter = 0;
@@ -189,7 +184,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("DelegatingHandlers")]
-        [TestCategory("Owner [mtuchkov]")]
         public async Task Retry_MessageWithSeekableStreamHasBeenReadTransientExceptionOccured_Throws()
         {
             int callCounter = 0;
@@ -222,7 +216,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("DelegatingHandlers")]
-        [TestCategory("Owner [mtuchkov]")]
         public async Task Retry_NonTransientErrorThrown_Throws()
         {
             int callCounter = 0;
@@ -250,7 +243,6 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         [TestMethod]
         [TestCategory("DelegatingHandlers")]
-        [TestCategory("Owner [mtuchkov]")]
         public async Task Retry_TransientErrorThrownAfterNumberOfRetries_Throws()
         {
             var contextMock = Substitute.For<IPipelineContext>();
@@ -268,7 +260,6 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         [TestMethod]
         [TestCategory("DelegatingHandlers")]
-        [TestCategory("Owner [jasminel]")]
         public async Task Retry_CancellationTokenCanceled_Open()
         {
             var innerHandlerMock = Substitute.For<IDelegatingHandler>();
@@ -286,7 +277,6 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         [TestMethod]
         [TestCategory("DelegatingHandlers")]
-        [TestCategory("Owner [jasminel]")]
         public async Task Retry_CancellationTokenCanceled_SendEvent()
         {
             var innerHandlerMock = Substitute.For<IDelegatingHandler>();
@@ -302,7 +292,6 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         [TestMethod]
         [TestCategory("DelegatingHandlers")]
-        [TestCategory("Owner [jasminel]")]
         public async Task Retry_CancellationTokenCanceled_SendEventWithIEnumMessage()
         {
             var innerHandlerMock = Substitute.For<IDelegatingHandler>();
@@ -321,7 +310,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("DelegatingHandlers")]
-        [TestCategory("Owner [jasminel]")]
         public async Task Retry_CancellationTokenCanceled_Receive()
         {
             var innerHandlerMock = Substitute.For<IDelegatingHandler>();
@@ -338,7 +326,6 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         [TestMethod]
         [TestCategory("DelegatingHandlers")]
-        [TestCategory("Owner [jasminel]")]
         public void Retry_SetRetryPolicyVerifyInternals_Success ()
         {
             var innerHandlerMock = Substitute.For<IDelegatingHandler>();
@@ -367,7 +354,6 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         [TestMethod]
         [TestCategory("DelegatingHandlers")]
-        [TestCategory("Owner [jasminel]")]
         public async Task Retry_CancellationTokenCanceled_Complete()
         {
             var innerHandlerMock = Substitute.For<IDelegatingHandler>();
@@ -385,7 +371,6 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         [TestMethod]
         [TestCategory("DelegatingHandlers")]
-        [TestCategory("Owner [jasminel]")]
         public async Task Retry_CancellationTokenCanceled_Abandon()
         {
             var innerHandlerMock = Substitute.For<IDelegatingHandler>();
@@ -401,7 +386,6 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         [TestMethod]
         [TestCategory("DelegatingHandlers")]
-        [TestCategory("Owner [jasminel]")]
         public async Task Retry_CancellationTokenCanceled_Reject()
         {
             var innerHandlerMock = Substitute.For<IDelegatingHandler>();

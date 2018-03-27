@@ -21,7 +21,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("DelegatingHandlers")]
-        [TestCategory("Owner [mtuchkov]")]
         public async Task OpenAsync_InnerCompleted_SutIsOpen()
         {
             var contextMock = Substitute.For<IPipelineContext>();
@@ -37,7 +36,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("DelegatingHandlers")]
-        [TestCategory("Owner [mtuchkov]")]
         public async Task ImplicitOpen_SubjWasNotOpen_SubjIsOpen()
         {
             var contextMock = Substitute.For<IPipelineContext>();
@@ -76,7 +74,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("DelegatingHandlers")]
-        [TestCategory("Owner [mtuchkov]")]
         public async Task OpenAsync_ClosedCannotBeReopened_Throws()
         {
             var contextMock = Substitute.For<IPipelineContext>();
@@ -94,7 +91,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("DelegatingHandlers")]
-        [TestCategory("Owner [mtuchkov]")]
         public async Task OpenAsync_TwoCallers_OnlyOneOpenCalled()
         {
             var contextMock = Substitute.For<IPipelineContext>();
@@ -121,7 +117,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("DelegatingHandlers")]
-        [TestCategory("Owner [mtuchkov]")]
         public async Task OpenAsync_InnerFailed_SutIsOpenAndCanBeReopen()
         {
             var contextMock = Substitute.For<IPipelineContext>();
@@ -143,7 +138,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("DelegatingHandlers")]
-        [TestCategory("Owner [mtuchkov]")]
         public async Task OpenAsync_InnerCancelled_SutIsOpenAndCanBeReopen()
         {
             var contextMock = Substitute.For<IPipelineContext>();

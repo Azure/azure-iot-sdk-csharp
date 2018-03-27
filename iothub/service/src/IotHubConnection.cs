@@ -11,6 +11,7 @@ namespace Microsoft.Azure.Devices
     using System.Net.Security;
 #if !NETSTANDARD1_3
     using System.Net.WebSockets;
+    using System.Security.Authentication;
     using System.Security.Cryptography.X509Certificates;
 #endif
 
@@ -186,6 +187,12 @@ namespace Microsoft.Azure.Devices
                 {
                     transport = await amqpTransportInitiator.ConnectTaskAsync(timeoutHelper.RemainingTime());
                 }
+#if !NETSTANDARD1_3
+                catch (AuthenticationException)
+                {
+                    throw;
+                }
+#endif
                 catch (Exception e)
                 {
                     if (Fx.IsFatal(e))
@@ -258,11 +265,20 @@ namespace Microsoft.Azure.Devices
 
             // Check if we're configured to use a proxy server
             IWebProxy webProxy = WebRequest.DefaultWebProxy;
-            Uri proxyAddress = webProxy != null ? webProxy.GetProxy(websocketUri) : null;
-            if (!websocketUri.Equals(proxyAddress))
+            Uri proxyAddress = null;
+
+            try
             {
-                // Configure proxy server
-                websocket.Options.Proxy = webProxy;
+                proxyAddress = webProxy?.GetProxy(websocketUri);
+                if (!websocketUri.Equals(proxyAddress))
+                {
+                    // Configure proxy server
+                    websocket.Options.Proxy = webProxy;
+                }
+            }
+            catch (PlatformNotSupportedException)
+            {
+                // .NET Core 2.0 doesn't support proxy. Ignore this setting.
             }
 
             websocket.Options.UseDefaultCredentials = true;
