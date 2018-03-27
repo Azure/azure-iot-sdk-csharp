@@ -22,7 +22,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <VersionPrefix>1.7.0</VersionPrefix>
+    <Version>1.7.0</Version>
     <Title>Microsoft Azure IoT Device Client SDK</Title>
     <Authors>Microsoft</Authors>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
