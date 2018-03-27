@@ -10,9 +10,8 @@ namespace ProvisioningServiceEnrollmentGroup
 {
     class Program
     {
-        /*
-            * Details of the Provisioning.
-            */
+        
+        // Details of the Provisioning Service.
         private const string ProvisioningConnectionStringEnvVar = "PROVISIONING_CONNECTION_STRING";
         private const string X509RootCertPathVar = "X509_ROOT_CERT_PATH";
         private const string EnrollmentGroupIdEnvVar = "ENROLLMENTGROUP_ID";
@@ -86,6 +85,11 @@ namespace ProvisioningServiceEnrollmentGroup
                         Console.WriteLine("\nQuerying the next enrollmentGroups...");
                         QueryResult queryResult = await query.NextAsync().ConfigureAwait(false);
                         Console.WriteLine(queryResult);
+
+                        foreach (EnrollmentGroup group in queryResult.Items)
+                        {
+                            await EnumerateRegistrationsInGroup(provisioningServiceClient, querySpecification, group).ConfigureAwait(false);
+                        }
                     }
                 }
                 #endregion
@@ -97,6 +101,24 @@ namespace ProvisioningServiceEnrollmentGroup
             }
         }
 
+        /// <summary>
+        /// Enumerates all registrations within an enrollment group.
+        /// </summary>
+        /// <param name="provisioningServiceClient">The ProvisioningServiceClient object.</param>
+        /// <param name="querySpecification">The query specification.</param>
+        /// <param name="group">The EnrollmentGroup object.</param>
+        /// <returns></returns>
+        private static async Task EnumerateRegistrationsInGroup(ProvisioningServiceClient provisioningServiceClient, QuerySpecification querySpecification, EnrollmentGroup group)
+        {
+            Console.WriteLine($"\nCreating a query for registrations within group '{group.EnrollmentGroupId}'...");
+            using (Query registrationQuery = provisioningServiceClient.CreateEnrollmentGroupRegistrationStateQuery(querySpecification, group.EnrollmentGroupId))
+            {
+                Console.WriteLine($"\nQuerying the next registrations within group '{group.EnrollmentGroupId}'...");
+                QueryResult registrationQueryResult = await registrationQuery.NextAsync().ConfigureAwait(false);
+                Console.WriteLine(registrationQueryResult);
+            }
+        }
+        
         /// <summary>
         /// Read configurations for arguments or environment variables.
         /// </summary>
