@@ -32,13 +32,13 @@ Function GetVersion($path) {
     $extension = Split-Path -leaf $path
     
     $x = [xml](Get-Content $path)
-    $versionNode = Select-Xml "//VersionPrefix" $x
+    $versionNode = Select-Xml "//Version" $x
     return $versionNode
 }
 
 Function UpdateVersion($path, $currentVersion, $desiredVersion) {
-    $actual = "<VersionPrefix>$currentVersion</VersionPrefix>"
-    $desired = "<VersionPrefix>$desiredVersion</VersionPrefix>"
+    $actual = "<Version>$currentVersion</Version>"
+    $desired = "<Version>$desiredVersion</Version>"
     (Get-Content $path) -replace $actual, $desired | Set-Content -Encoding UTF8 $path
 }
 
