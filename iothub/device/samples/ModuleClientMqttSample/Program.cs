@@ -13,7 +13,6 @@ namespace Microsoft.Azure.Devices.Client.Samples
     {
         private static int MESSAGE_COUNT = 5;
         private const int TEMPERATURE_THRESHOLD = 30;
-        private static readonly string moduleID = "MyAzureIoTEdgeModule";
         private static float temperature;
         private static float humidity;
         private static readonly Random rnd = new Random();
@@ -21,7 +20,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
         // String containing Hostname, Device Id & Device Key in one of the following formats:
         //  "HostName=<iothub_host_name>;GatewayHostName=<edge_host>;ModuleId=<module_id>;DeviceId=<device_id>;SharedAccessKey=<device_key>"
         //  "HostName=<iothub_host_name>;CredentialType=SharedAccessSignature;GatewayHostName=<edge_host>;ModuleId=<module_id>;DeviceId=<device_id>;SharedAccessSignature=SharedAccessSignature sr=<iot_host>/devices/<device_id>&sig=<token>&se=<expiry_time>";
-        private const string ConnectionString = "<replace>";
+        // Either set the IOTHUB_MODULE_CONN_STRING environment variable or within launchSettings.json:
+        private static string ModuleConnectionString = Environment.GetEnvironmentVariable("IOTHUB_MODULE_CONN_STRING");
 
         static void Main(string[] args)
         {
@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             {
                 try
                 {
-                    DeviceClient moduleClient = DeviceClient.CreateFromConnectionString(ConnectionString);
+                    DeviceClient moduleClient = DeviceClient.CreateFromConnectionString(ModuleConnectionString);
                     moduleClient.OpenAsync().Wait();
                     SendMessages(moduleClient).Wait();
                     Twin twin = moduleClient.GetTwinAsync().Result;
@@ -51,13 +51,15 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         static async Task SendMessages(DeviceClient moduleClient)
         {
-            Console.WriteLine("Device sending {0} messages to IoTHub...\n", MESSAGE_COUNT);
+            string moduleId = IotHubConnectionStringBuilder.Create(ModuleConnectionString).ModuleId;
+
+            Console.WriteLine("Device sending {0} messages to IoT Hub...\n", MESSAGE_COUNT);
 
             for (int count = 0; count < MESSAGE_COUNT; count++)
             {
                 temperature = rnd.Next(20, 35);
                 humidity = rnd.Next(60, 80);
-                string dataBuffer = string.Format("{{\"deviceId\":\"{0}\",\"messageId\":{1},\"temperature\":{2},\"humidity\":{3}}}", moduleID, count, temperature, humidity);
+                string dataBuffer = string.Format("{{\"deviceId\":\"{0}\",\"messageId\":{1},\"temperature\":{2},\"humidity\":{3}}}", moduleId, count, temperature, humidity);
                 var eventMessage = new Message(Encoding.UTF8.GetBytes(dataBuffer));
                 eventMessage.Properties.Add("temperatureAlert", (temperature > TEMPERATURE_THRESHOLD) ? "true" : "false");
                 Console.WriteLine("\t{0}> Sending message: {1}, Data: [{2}]", DateTime.Now.ToLocalTime(), count, dataBuffer);
