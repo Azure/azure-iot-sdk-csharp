@@ -391,6 +391,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             await Twin_DeviceSetsReportedPropertyAndServiceReceivesIt(Client.TransportType.Amqp_WebSocket_Only);
         }
 
+        // TODO: #243 : Once the service team deploys the fix for Issue #243, the test can be executed
+        [Ignore]
         [TestMethod]
         [TestCategory("Twin-E2E")]
         public async Task Twin_ServiceDoesNotCreateNullPropertyInCollection_Mqtt()
@@ -398,6 +400,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             await Twin_ServiceDoesNotCreateNullPropertyInCollection(Client.TransportType.Mqtt_Tcp_Only);
         }
 
+        // TODO: #243 : Once the service team deploys the fix for Issue #243, the test can be executed
+        [Ignore]
         [TestMethod]
         [TestCategory("Twin-E2E")]
         public async Task Twin_ServiceDoesNotCreateNullPropertyInCollection_MqttWs()
@@ -405,6 +409,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             await Twin_ServiceDoesNotCreateNullPropertyInCollection(Client.TransportType.Mqtt_WebSocket_Only);
         }
 
+        // TODO: #243 : Once the service team deploys the fix for Issue #243, the test can be executed
+        [Ignore]
         [TestMethod]
         [TestCategory("Twin-E2E")]
         public async Task Twin_ServiceDoesNotCreateNullPropertyInCollection_Amqp()
@@ -414,6 +420,9 @@ namespace Microsoft.Azure.Devices.E2ETests
 
 #if NETCOREAPP2_0
         // TODO: #302 In NetCoreApp2.0 the test is failing with TimeoutException.
+        [Ignore]
+#else
+        // TODO: #243 : Once the service team deploys the fix for Issue #243, the test can be executed
         [Ignore]
 #endif
         [TestMethod]
@@ -750,10 +759,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Assert.IsTrue(serviceTwin.Properties.Reported.Contains(propName1));
                 String value1 = serviceTwin.Properties.Reported[propName1].ToString();
 
-                // TODO: #243 
-                // If service team fixed the Issue #243 the following Assert.AreNotEqual should fail 
-                // and need to be changed to Assert.AreEqual
-                Assert.AreNotEqual(value1, propEmptyValue);
+                Assert.AreEqual(value1, propEmptyValue);
 
                 await deviceClient.UpdateReportedPropertiesAsync(new TwinCollection
                 {
