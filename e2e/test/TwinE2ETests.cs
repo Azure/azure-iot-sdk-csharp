@@ -750,10 +750,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Assert.IsTrue(serviceTwin.Properties.Reported.Contains(propName1));
                 String value1 = serviceTwin.Properties.Reported[propName1].ToString();
 
-                // TODO: #243 
-                // If service team fixed the Issue #243 the following Assert.AreNotEqual should fail 
-                // and need to be changed to Assert.AreEqual
-                Assert.AreNotEqual(value1, propEmptyValue);
+                Assert.AreEqual(value1, propEmptyValue);
 
                 await deviceClient.UpdateReportedPropertiesAsync(new TwinCollection
                 {
