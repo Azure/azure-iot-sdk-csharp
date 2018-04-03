@@ -13,6 +13,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Diagnostics;
 
 namespace DeviceExplorer
 {
@@ -477,6 +478,8 @@ namespace DeviceExplorer
 
         #region DataMonitorTab
 
+        delegate void OutputProcessor(EventHubReceiver eventHubReceiver);
+
         private async void MonitorEventHubAsync(DateTime startTime, CancellationToken ct, string consumerGroupName)
         {
             EventHubClient eventHubClient = null;
@@ -512,7 +515,7 @@ namespace DeviceExplorer
                                 eventHubTextBox.Text += $"'{property.Key}': '{property.Value}'\r\n";
                             }
                         }
-                        if(enableSystemProperties.Checked)
+                        if (enableSystemProperties.Checked)
                         {
                             if (eventData.Properties.Count == 0)
                             {
@@ -532,55 +535,9 @@ namespace DeviceExplorer
                     }
                 }
 
-                //having already received past events, monitor current events in a loop
-                while (true)
-                {
-                    ct.ThrowIfCancellationRequested();
+                Func<bool> processor = new Func<bool>(()=>ProcessOutput(eventHubReceiver, selectedDevice, ct));
+                await Task.Run(processor, ct);
 
-                    var eventData = await eventHubReceiver.ReceiveAsync(TimeSpan.FromSeconds(1));
-
-                    if (eventData != null)
-                    {
-                        var data = Encoding.UTF8.GetString(eventData.GetBytes());
-                        var enqueuedTime = eventData.EnqueuedTimeUtc.ToLocalTime();
-
-                        // Display only data from the selected device; otherwise, skip.
-                        var connectionDeviceId = eventData.SystemProperties["iothub-connection-device-id"].ToString();
-
-                        if (string.CompareOrdinal(selectedDevice, connectionDeviceId) == 0)
-                        {
-                            eventHubTextBox.Text += $"{enqueuedTime}> Device: [{connectionDeviceId}], Data:[{data}]";
-
-                            if (eventData.Properties.Count > 0)
-                            {
-                                eventHubTextBox.Text += "Properties:\r\n";
-                                foreach (var property in eventData.Properties)
-                                {
-                                    eventHubTextBox.Text += $"'{property.Key}': '{property.Value}'\r\n";
-                                }
-                            }
-
-                            if (enableSystemProperties.Checked)
-                            {
-                                if (eventData.Properties.Count == 0)
-                                {
-                                    eventHubTextBox.Text += "\r\n";
-                                }
-                                foreach (var item in eventData.SystemProperties)
-                                {
-                                    eventHubTextBox.Text += $"SYSTEM>{item.Key}={item.Value}\r\n";
-                                }
-                            }
-
-                            eventHubTextBox.Text += "\r\n";
-                        }
-
-                        // scroll text box to last line by moving caret to the end of the text
-                        eventHubTextBox.SelectionStart = eventHubTextBox.Text.Length - 1;
-                        eventHubTextBox.SelectionLength = 0;
-                        eventHubTextBox.ScrollToCaret();
-                    }
-                }
             }
             catch (Exception ex)
             {
@@ -607,6 +564,73 @@ namespace DeviceExplorer
                 dataMonitorButton.Enabled = true;
                 deviceIDsComboBoxForEvent.Enabled = true;
                 cancelMonitoringButton.Enabled = false;
+            }
+        }
+
+        public bool ProcessOutput(EventHubReceiver eventHubReceiver, string selectedDevice, CancellationToken ct)
+        {
+            //having already received past events, monitor current events in a loop
+            while (true)
+            {
+                ct.ThrowIfCancellationRequested();
+
+                var eventData = eventHubReceiver.ReceiveAsync(TimeSpan.FromSeconds(1)).Result;
+
+                if (eventData != null)
+                {
+                    var data = Encoding.UTF8.GetString(eventData.GetBytes());
+                    var enqueuedTime = eventData.EnqueuedTimeUtc.ToLocalTime();
+                    var connectionDeviceId = eventData.SystemProperties["iothub-connection-device-id"].ToString();
+
+                    if (string.CompareOrdinal(selectedDevice, connectionDeviceId) == 0)
+                    {
+                        DumpData($"{enqueuedTime}> Device: [{connectionDeviceId}], Data:[{data}]");
+
+                        if (eventData.Properties.Count > 0)
+                        {
+                            DumpData("Properties:\r\n");
+                            foreach (var property in eventData.Properties)
+                            {
+                                DumpData($"'{property.Key}': '{property.Value}'\r\n");
+                            }
+                        }
+
+                        if (enableSystemProperties.Checked)
+                        {
+                            if (eventData.Properties.Count == 0)
+                            {
+                                DumpData("\r\n");
+                            }
+                            foreach (var item in eventData.SystemProperties)
+                            {
+                                DumpData($"SYSTEM>{item.Key}={item.Value}\r\n");
+                            }
+                        }
+                        DumpData("\r\n");
+                    }
+                }
+            }
+            return true;
+        }
+
+        public delegate void DataToTextBox(string text);
+
+        void DumpData(string output)
+        {
+            Debug.WriteLine(output);
+
+            if (eventHubTextBox.InvokeRequired)
+            {
+                eventHubTextBox.Invoke(new DataToTextBox(DumpData), new object[] { output });
+            }
+            else
+            {
+                eventHubTextBox.Text += output;
+
+                // scroll text box to last line by moving caret to the end of the text
+                eventHubTextBox.SelectionStart = eventHubTextBox.Text.Length - 1;
+                eventHubTextBox.SelectionLength = 0;
+                eventHubTextBox.ScrollToCaret();
             }
         }
 
@@ -1111,7 +1135,7 @@ namespace DeviceExplorer
                 return;
             }
 
-            IEnumerable<DeviceEntity> filteredDevices = 
+            IEnumerable<DeviceEntity> filteredDevices =
                 from device in allDevices
                 where DeviceMatchesFilterText(device, filterText)
                 select device;
@@ -1134,7 +1158,7 @@ namespace DeviceExplorer
 
         private static bool StringMatchesFilterText(string s, string filterText)
         {
-            if (string.IsNullOrWhiteSpace(s))          return false;
+            if (string.IsNullOrWhiteSpace(s)) return false;
             if (string.IsNullOrWhiteSpace(filterText)) return true;
 
             var r = new Regex(filterText, RegexOptions.IgnoreCase);
