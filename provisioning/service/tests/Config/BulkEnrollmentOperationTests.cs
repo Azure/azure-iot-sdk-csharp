@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                                         individualEnrollments is null or empty.] */
         [TestMethod]
         [TestCategory("DevService")]
-        public void BulkEnrollmentOperation_ToJson_ThrowsOnInvalidParameters()
+        public void BulkEnrollmentOperationToJsonThrowsOnInvalidParameters()
         {
             // arrange - act - assert
             TestAssert.Throws<ArgumentException>(() => BulkEnrollmentOperation.ToJson(BulkOperationMode.Create, null));
@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                                         using a JSON format.] */
         [TestMethod]
         [TestCategory("DevService")]
-        public void BulkEnrollmentOperation_Constructor_Succeed()
+        public void BulkEnrollmentOperationConstructorSucceed()
         {
             // arrange
             string expectedJson =

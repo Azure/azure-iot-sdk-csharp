@@ -760,7 +760,7 @@ namespace Microsoft.Azure.Devices.Client
 
                     if (elementType == null)
                     {
-                        throw Fx.Exception.ArgumentNull("elementType");
+                        throw Fx.Exception.ArgumentNull(nameof(elementType));
                     }
 
                     this.elementType = elementType;
@@ -801,7 +801,7 @@ namespace Microsoft.Azure.Devices.Client
 
                     if (elementType == null)
                     {
-                        throw Fx.Exception.ArgumentNull("elementType");
+                        throw Fx.Exception.ArgumentNull(nameof(elementType));
                     }
 
                     this.elementType = elementType;

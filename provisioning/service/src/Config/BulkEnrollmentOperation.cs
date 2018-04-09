@@ -87,9 +87,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             /* SRS_BULK_OPERATION_21_001: [The toJsonElement shall throw ArgumentException if the provided collection of 
                                             individualEnrollments is null or empty.] */
-            if (!(individualEnrollments ?? throw new ArgumentNullException("individualEnrollments")).Any())
+            if (!(individualEnrollments ?? throw new ArgumentNullException(nameof(individualEnrollments))).Any())
             {
-                throw new ArgumentException("individualEnrollments");
+                throw new ArgumentException(nameof(individualEnrollments));
             }
 
             /* SRS_BULK_OPERATION_21_002: [The toJson shall return a String with the mode and the collection of individualEnrollments 

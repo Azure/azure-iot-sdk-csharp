@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             try
             {
-                await action;
+                await action.ConfigureAwait(false);
             }
             catch (Exception e)
             {
@@ -89,7 +89,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         public static async Task<TException> ExpectedAsync<TException>(this Func<Task> action) where TException : Exception
         {
-            return (TException)await ExpectedAsync(action, typeof(TException));
+            return (TException)await ExpectedAsync(action, typeof(TException)).ConfigureAwait(false);
         }
 
         public static async Task<Exception> ExpectedAsync(this Func<Task> action, Type exceptionType)
@@ -97,7 +97,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             await Task.Yield();
             try
             {
-                await action();
+                await action().ConfigureAwait(false);
             }
             catch (Exception e)
             {

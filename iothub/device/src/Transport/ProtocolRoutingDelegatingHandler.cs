@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 {
                     var tcs = new TaskCompletionSource<bool>();
                     tcs.SetCanceled();
-                    await tcs.Task;
+                    await tcs.Task.ConfigureAwait(false);
                 }
 
                 try

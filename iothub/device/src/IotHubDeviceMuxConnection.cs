@@ -66,7 +66,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (connectionString.SharedAccessKeyName != null)
             {
-                throw new ArgumentException("Must provide a device-scope connection string", "connectionString");
+                throw new ArgumentException("Must provide a device-scope connection string", nameof(connectionString));
             }
         }
 
@@ -74,7 +74,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (connectionString.SharedAccessKeyName != null)
             {
-                throw new ArgumentException("Must provide a device-scope connection string", "connectionString");
+                throw new ArgumentException("Must provide a device-scope connection string", nameof(connectionString));
             }
         }
 

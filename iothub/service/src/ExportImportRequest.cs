@@ -8,8 +8,11 @@ namespace Microsoft.Azure.Devices
     /// </summary>
     public sealed class ExportImportRequest
     {
-        public string StorageConnectionString;
+        private string storageConnectionString;
 
-        public string ContainerName;
+        private string containerName;
+
+        public string StorageConnectionString { get => storageConnectionString; set => storageConnectionString = value; }
+        public string ContainerName { get => containerName; set => containerName = value; }
     }
 }

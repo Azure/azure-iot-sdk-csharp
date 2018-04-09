@@ -823,7 +823,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             string path = string.Format(CultureInfo.InvariantCulture, CommonConstants.DeviceMethodPathTemplate, System.Net.WebUtility.UrlEncode(this.deviceId));
 
-            ReceivingAmqpLink methodReceivingLink = await this.IotHubConnection.CreateReceivingLinkAsync(path, this.iotHubConnectionString, this.methodConnectionCorrelationId, IotHubConnection.ReceivingLinkType.Methods, this.prefetchCount, timeout, this.productInfo, cancellationToken);
+            ReceivingAmqpLink methodReceivingLink = await IotHubConnection.CreateReceivingLinkAsync(path, iotHubConnectionString, methodConnectionCorrelationId, IotHubConnection.ReceivingLinkType.Methods, prefetchCount, timeout, productInfo, cancellationToken).ConfigureAwait(false);
             methodReceivingLink.RegisterMessageListener(amqpMessage => 
                 {
                     MethodRequestInternal methodRequestInternal = MethodConverter.ConstructMethodRequestFromAmqpMessage(amqpMessage);

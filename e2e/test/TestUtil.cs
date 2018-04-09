@@ -69,7 +69,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public static async Task<RegistryManager> GetRegistryManagerAsync(string devicePrefix)
         {
             RegistryManager rm = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
-            await RemoveDevicesAsync(devicePrefix, rm);
+            await RemoveDevicesAsync(devicePrefix, rm).ConfigureAwait(false);
 
             return rm;
         }
@@ -110,7 +110,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 deviceName = devicePrefix + Guid.NewGuid();
                 Console.WriteLine($"Creating device {deviceName} on {hostName}");
-                var device = await registryManager.AddDeviceAsync(new Device(deviceName));
+                var device = await registryManager.AddDeviceAsync(new Device(deviceName)).ConfigureAwait(false);
                 deviceConnectionString = TestUtil.GetDeviceConnectionString(device, hostName);
                 Console.WriteLine("Device successfully created");
             }).Wait();
@@ -138,7 +138,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     }
                 };
 
-                var device = await registryManager.AddDeviceAsync(device1);
+                var device = await registryManager.AddDeviceAsync(device1).ConfigureAwait(false);
                 Console.WriteLine("Device successfully created");
             }).Wait();
 
@@ -149,7 +149,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public static async Task RemoveDeviceAsync(string deviceName, RegistryManager registryManager)
         {
             Console.WriteLine("Removing device " + deviceName);
-            await registryManager.RemoveDeviceAsync(deviceName);
+            await registryManager.RemoveDeviceAsync(deviceName).ConfigureAwait(false);
             Console.WriteLine("Device successfully removed");
         }
 

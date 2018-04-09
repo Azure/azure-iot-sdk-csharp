@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.Common
         {
             if (dictionary == null)
             {
-                throw new ArgumentNullException("dictionary");
+                throw new ArgumentNullException(nameof(dictionary));
             }
             Contract.EndContractBlock();
             m_dictionary = dictionary;
@@ -235,7 +235,7 @@ namespace Microsoft.Azure.Devices.Common
         {
             if (key == null)
             {
-                throw Fx.Exception.ArgumentNull("key");
+                throw Fx.Exception.ArgumentNull(nameof(key));
             }
             return key is TKey;
         }
@@ -336,22 +336,22 @@ namespace Microsoft.Azure.Devices.Common
         {
             if (array == null)
             {
-                Fx.Exception.ArgumentNull("array");
+                Fx.Exception.ArgumentNull(nameof(array));
             }
 
             if (array.Rank != 1 || array.GetLowerBound(0) != 0)
             {
-                throw Fx.Exception.Argument("array", Resources.InvalidBufferSize);
+                throw Fx.Exception.Argument(nameof(array), Resources.InvalidBufferSize);
             }
 
             if (index < 0 || index > array.Length)
             {
-                throw Fx.Exception.ArgumentOutOfRange("index", index, Resources.ValueMustBeNonNegative);
+                throw Fx.Exception.ArgumentOutOfRange(nameof(index), index, Resources.ValueMustBeNonNegative);
             }
 
             if (array.Length - index < Count)
             {
-                throw Fx.Exception.Argument("array", Resources.InvalidBufferSize);
+                throw Fx.Exception.Argument(nameof(array), Resources.InvalidBufferSize);
             }
 
             KeyValuePair<TKey, TValue>[] pairs = array as KeyValuePair<TKey, TValue>[];
@@ -374,7 +374,7 @@ namespace Microsoft.Azure.Devices.Common
                     object[] objects = array as object[];
                     if (objects == null)
                     {
-                        throw Fx.Exception.Argument("array", Resources.InvalidBufferSize);
+                        throw Fx.Exception.Argument(nameof(array), Resources.InvalidBufferSize);
                     }
 
                     try
@@ -386,7 +386,7 @@ namespace Microsoft.Azure.Devices.Common
                     }
                     catch (ArrayTypeMismatchException)
                     {
-                        throw Fx.Exception.Argument("array", Resources.InvalidBufferSize);
+                        throw Fx.Exception.Argument(nameof(array), Resources.InvalidBufferSize);
                     }
                 }
             }
@@ -478,7 +478,7 @@ namespace Microsoft.Azure.Devices.Common
             {
                 if (collection == null)
                 {
-                    throw Fx.Exception.ArgumentNull("collection");
+                    throw Fx.Exception.ArgumentNull(nameof(collection));
                 }
                 m_collection = collection;
                 m_readOnlyIndicator = readOnlyIndicator;
@@ -607,7 +607,7 @@ namespace Microsoft.Azure.Devices.Common
             {
                 if (collection == null)
                 {
-                    throw Fx.Exception.ArgumentNull("collection");
+                    throw Fx.Exception.ArgumentNull(nameof(collection));
                 }
 
                 m_collection = collection;

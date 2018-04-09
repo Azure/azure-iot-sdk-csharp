@@ -417,14 +417,14 @@ namespace Microsoft.Azure.Devices.Common
         {
             if (result == null)
             {
-                throw Fx.Exception.ArgumentNull("result");
+                throw Fx.Exception.ArgumentNull(nameof(result));
             }
 
             TAsyncResult asyncResult = result as TAsyncResult;
 
             if (asyncResult == null)
             {
-                throw Fx.Exception.Argument("result", CommonResources.InvalidAsyncResult);
+                throw Fx.Exception.Argument(nameof(result), CommonResources.InvalidAsyncResult);
             }
 
             if (asyncResult.endCalled)

@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (amqpMessage == null)
             {
-                throw Fx.Exception.ArgumentNull("amqpMessage");
+                throw Fx.Exception.ArgumentNull(nameof(amqpMessage));
             }
 
             string methodRequestId = string.Empty;

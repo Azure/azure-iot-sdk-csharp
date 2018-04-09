@@ -91,7 +91,7 @@ namespace Microsoft.Azure.Devices
             AmqpSession session;
             if (!this.faultTolerantSession.TryGetOpenedObject(out session))
             {
-                session = await this.faultTolerantSession.GetOrCreateAsync(timeoutHelper.RemainingTime());
+                session = await faultTolerantSession.GetOrCreateAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
             }
 
             var linkAddress = this.connectionString.BuildLinkAddress(path);
@@ -111,7 +111,7 @@ namespace Microsoft.Azure.Devices
             var link = new SendingAmqpLink(linkSettings);
             link.AttachTo(session);
 
-            await OpenLinkAsync(link, timeoutHelper.RemainingTime());
+            await OpenLinkAsync(link, timeoutHelper.RemainingTime()).ConfigureAwait(false);
 
             return link;
         }
@@ -123,7 +123,7 @@ namespace Microsoft.Azure.Devices
             AmqpSession session;
             if (!this.faultTolerantSession.TryGetOpenedObject(out session))
             {
-                session = await this.faultTolerantSession.GetOrCreateAsync(timeoutHelper.RemainingTime());
+                session = await faultTolerantSession.GetOrCreateAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
             }
 
             var linkAddress = this.connectionString.BuildLinkAddress(path);
@@ -144,7 +144,7 @@ namespace Microsoft.Azure.Devices
             var link = new ReceivingAmqpLink(linkSettings);
             link.AttachTo(session);
 
-            await OpenLinkAsync(link, timeoutHelper.RemainingTime());
+            await OpenLinkAsync(link, timeoutHelper.RemainingTime()).ConfigureAwait(false);
 
             return link;
         }
@@ -176,7 +176,7 @@ namespace Microsoft.Azure.Devices
             if (this.useWebSocketOnly)
             {
                 // Try only Amqp transport over WebSocket
-                transport = await this.CreateClientWebSocketTransport(timeoutHelper.RemainingTime());
+                transport = await CreateClientWebSocketTransport(timeoutHelper.RemainingTime()).ConfigureAwait(false);
             }
             else
             {             
@@ -184,7 +184,7 @@ namespace Microsoft.Azure.Devices
                 var amqpTransportInitiator = new AmqpTransportInitiator(amqpSettings, tlsTransportSettings);
                 try
                 {
-                    transport = await amqpTransportInitiator.ConnectTaskAsync(timeoutHelper.RemainingTime());
+                    transport = await amqpTransportInitiator.ConnectTaskAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
                 }
                 catch (Exception e)
                 {
@@ -196,7 +196,7 @@ namespace Microsoft.Azure.Devices
                     // Amqp transport over TCP failed. Retry Amqp transport over WebSocket
                     if (timeoutHelper.RemainingTime() != TimeSpan.Zero)
                     {
-                        transport = await this.CreateClientWebSocketTransport(timeoutHelper.RemainingTime());
+                        transport = await CreateClientWebSocketTransport(timeoutHelper.RemainingTime()).ConfigureAwait(false);
                     }
                     else
                     {
@@ -213,7 +213,7 @@ namespace Microsoft.Azure.Devices
             };
 
             var amqpConnection = new AmqpConnection(transport, amqpSettings, amqpConnectionSettings);
-            await amqpConnection.OpenAsync(timeoutHelper.RemainingTime());
+            await amqpConnection.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
 
             var sessionSettings = new AmqpSessionSettings()
             {
@@ -223,11 +223,11 @@ namespace Microsoft.Azure.Devices
             try
             {
                 var amqpSession = amqpConnection.CreateSession(sessionSettings);
-                await amqpSession.OpenAsync(timeoutHelper.RemainingTime());
+                await amqpSession.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
 
                 // This adds itself to amqpConnection.Extensions
                 var cbsLink = new AmqpCbsLink(amqpConnection);
-                await this.SendCbsTokenAsync(cbsLink, timeoutHelper.RemainingTime());
+                await SendCbsTokenAsync(cbsLink, timeoutHelper.RemainingTime()).ConfigureAwait(false);
                 return amqpSession;
             }
             catch (Exception ex) when (!ex.IsFatal())
@@ -269,7 +269,7 @@ namespace Microsoft.Azure.Devices
 
             using (var cancellationTokenSource = new CancellationTokenSource(timeout))
             {
-                await websocket.ConnectAsync(websocketUri, cancellationTokenSource.Token);
+                await websocket.ConnectAsync(websocketUri, cancellationTokenSource.Token).ConfigureAwait(false);
             }
 
             return websocket;
@@ -278,7 +278,7 @@ namespace Microsoft.Azure.Devices
         static async Task<IotHubClientWebSocket> CreateLegacyClientWebSocketAsync(Uri webSocketUri, TimeSpan timeout)
         {
             var websocket = new IotHubClientWebSocket(WebSocketConstants.SubProtocols.Amqpwsb10);
-            await websocket.ConnectAsync(webSocketUri.Host, webSocketUri.Port, WebSocketConstants.Scheme, timeout);
+            await websocket.ConnectAsync(webSocketUri.Host, webSocketUri.Port, WebSocketConstants.Scheme, timeout).ConfigureAwait(false);
             return websocket;
         }
 #endif
@@ -293,7 +293,7 @@ namespace Microsoft.Azure.Devices
             // Use Legacy WebSocket if it is running on Windows 7 or older. Windows 7/Windows 2008 R2 is version 6.1
             if (Environment.OSVersion.Version.Major < 6 || (Environment.OSVersion.Version.Major == 6 && Environment.OSVersion.Version.Minor <= 1))
             {
-                var websocket = await CreateLegacyClientWebSocketAsync(websocketUri, timeoutHelper.RemainingTime());
+                var websocket = await CreateLegacyClientWebSocketAsync(websocketUri, timeoutHelper.RemainingTime()).ConfigureAwait(false);
                 return new LegacyClientWebSocketTransport(
                     websocket,
                     DefaultOperationTimeout,
@@ -302,7 +302,7 @@ namespace Microsoft.Azure.Devices
             }
             else
             {
-                var websocket = await CreateClientWebSocketAsync(websocketUri, timeoutHelper.RemainingTime());
+                var websocket = await CreateClientWebSocketAsync(websocketUri, timeoutHelper.RemainingTime()).ConfigureAwait(false);
                 return new ClientWebSocketTransport(
                     websocket,
                     null,
@@ -355,7 +355,7 @@ namespace Microsoft.Azure.Devices
             var timeoutHelper = new TimeoutHelper(timeout);
             try
             {
-                await link.OpenAsync(timeoutHelper.RemainingTime());
+                await link.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
             }
             catch (Exception exception)
             {
@@ -375,12 +375,12 @@ namespace Microsoft.Azure.Devices
             string audience = this.ConnectionString.AmqpEndpoint.AbsoluteUri;
             string resource = this.ConnectionString.AmqpEndpoint.AbsoluteUri;
             var expiresAtUtc = await cbsLink.SendTokenAsync(
-                this.ConnectionString,
-                this.ConnectionString.AmqpEndpoint,
+                ConnectionString,
+                ConnectionString.AmqpEndpoint,
                 audience,
                 resource,
-                AccessRightsHelper.AccessRightsToStringArray(this.accessRights),
-                timeout);
+                AccessRightsHelper.AccessRightsToStringArray(accessRights),
+                timeout).ConfigureAwait(false);
             this.ScheduleTokenRefresh(expiresAtUtc);
         }
 
@@ -394,7 +394,7 @@ namespace Microsoft.Azure.Devices
                 {
                     try
                     {
-                        await this.SendCbsTokenAsync(cbsLink, DefaultOperationTimeout);
+                        await SendCbsTokenAsync(cbsLink, DefaultOperationTimeout).ConfigureAwait(false);
                     }
                     catch (Exception exception)
                     {
@@ -436,13 +436,13 @@ namespace Microsoft.Azure.Devices
         {
             if (lockToken == null)
             {
-                throw new ArgumentNullException("lockToken");
+                throw new ArgumentNullException(nameof(lockToken));
             }
 
             Guid lockTokenGuid;
             if (!Guid.TryParse(lockToken, out lockTokenGuid))
             {
-                throw new ArgumentException("Should be a valid Guid", "lockToken");
+                throw new ArgumentException("Should be a valid Guid", nameof(lockToken));
             }
 
             var deliveryTag = new ArraySegment<byte>(lockTokenGuid.ToByteArray());

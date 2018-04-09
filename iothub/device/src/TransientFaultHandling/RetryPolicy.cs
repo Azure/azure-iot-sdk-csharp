@@ -294,7 +294,7 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         {
             if (taskAction == null)
             {
-                throw new ArgumentNullException("taskAction");
+                throw new ArgumentNullException(nameof(taskAction));
             }
             return new AsyncExecution(taskAction, this.RetryStrategy.GetShouldRetry(), new Func<Exception, bool>(this.ErrorDetectionStrategy.IsTransient), new Action<int, Exception, TimeSpan>(this.OnRetrying), this.RetryStrategy.FastFirstRetry, cancellationToken).ExecuteAsync();
         }
@@ -327,7 +327,7 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
         {
             if (taskFunc == null)
             {
-                throw new ArgumentNullException("taskFunc");
+                throw new ArgumentNullException(nameof(taskFunc));
             }
             return new AsyncExecution<TResult>(taskFunc, this.RetryStrategy.GetShouldRetry(), new Func<Exception, bool>(this.ErrorDetectionStrategy.IsTransient), new Action<int, Exception, TimeSpan>(this.OnRetrying), this.RetryStrategy.FastFirstRetry, cancellationToken).ExecuteAsync();
         }

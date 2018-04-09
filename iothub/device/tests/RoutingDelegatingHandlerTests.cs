@@ -31,9 +31,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             var sut = new ProtocolRoutingDelegatingHandler(contextMock);
             sut.ContinuationFactory = c => innerHandler;
             var cancellationToken = new CancellationToken();
-            await sut.OpenAsync(false, cancellationToken);
+            await sut.OpenAsync(false, cancellationToken).ConfigureAwait(false);
             
-            await innerHandler.Received(1).OpenAsync(Arg.Is(false), Arg.Any<CancellationToken>());
+            await innerHandler.Received(1).OpenAsync(Arg.Is(false), Arg.Any<CancellationToken>()).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -58,9 +58,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             var sut = new ProtocolRoutingDelegatingHandler(contextMock);
             sut.ContinuationFactory = c => innerHandler;
             var cancellationToken = new CancellationToken();
-            await sut.OpenAsync(Arg.Is(false), cancellationToken).ExpectedAsync<InvalidOperationException>();
+            await sut.OpenAsync(Arg.Is(false), cancellationToken).ExpectedAsync<InvalidOperationException>().ConfigureAwait(false);
 
-            await innerHandler.Received(1).CloseAsync();
+            await innerHandler.Received(1).CloseAsync().ConfigureAwait(false);
 
             Assert.AreEqual(1, openCallCounter);
         }
@@ -87,9 +87,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             var sut = new ProtocolRoutingDelegatingHandler(contextMock);
             sut.ContinuationFactory = c => innerHandler;
             var cancellationToken = new CancellationToken();
-            await sut.OpenAsync(Arg.Is(false), cancellationToken).ExpectedAsync<IotHubCommunicationException>();
+            await sut.OpenAsync(Arg.Is(false), cancellationToken).ExpectedAsync<IotHubCommunicationException>().ConfigureAwait(false);
 
-            await innerHandler.Received(2).CloseAsync();
+            await innerHandler.Received(2).CloseAsync().ConfigureAwait(false);
 
             Assert.AreEqual(2, openCallCounter);
         }
@@ -100,12 +100,12 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestCategory("Owner [mtuchkov]")]
         public async Task TransportRouting_TryOpenFailedWithSupportedExceptionFirstTimes_SuccessOnSecondTry()
         {
-            await TransportRouting_TryOpenFailedWithSupportedExceptionFirstTimes_SuccessOnSecondTry(() => new TimeoutException());
-            await TransportRouting_TryOpenFailedWithSupportedExceptionFirstTimes_SuccessOnSecondTry(() => new SocketException(1));
-            await TransportRouting_TryOpenFailedWithSupportedExceptionFirstTimes_SuccessOnSecondTry(() => new IotHubCommunicationException(string.Empty));
-            await TransportRouting_TryOpenFailedWithSupportedExceptionFirstTimes_SuccessOnSecondTry(() => new AggregateException(new TimeoutException()));
-            await TransportRouting_TryOpenFailedWithSupportedExceptionFirstTimes_SuccessOnSecondTry(() => new AggregateException(new SocketException(1)));
-            await TransportRouting_TryOpenFailedWithSupportedExceptionFirstTimes_SuccessOnSecondTry(() => new AggregateException(new IotHubCommunicationException(string.Empty)));
+            await TransportRouting_TryOpenFailedWithSupportedExceptionFirstTimes_SuccessOnSecondTry(() => new TimeoutException()).ConfigureAwait(false);
+            await TransportRouting_TryOpenFailedWithSupportedExceptionFirstTimes_SuccessOnSecondTry(() => new SocketException(1)).ConfigureAwait(false);
+            await TransportRouting_TryOpenFailedWithSupportedExceptionFirstTimes_SuccessOnSecondTry(() => new IotHubCommunicationException(string.Empty)).ConfigureAwait(false);
+            await TransportRouting_TryOpenFailedWithSupportedExceptionFirstTimes_SuccessOnSecondTry(() => new AggregateException(new TimeoutException())).ConfigureAwait(false);
+            await TransportRouting_TryOpenFailedWithSupportedExceptionFirstTimes_SuccessOnSecondTry(() => new AggregateException(new SocketException(1))).ConfigureAwait(false);
+            await TransportRouting_TryOpenFailedWithSupportedExceptionFirstTimes_SuccessOnSecondTry(() => new AggregateException(new IotHubCommunicationException(string.Empty))).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -122,9 +122,9 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             var userDefinedTimeoutCancellationTokenSource = new CancellationTokenSource();
             userDefinedTimeoutCancellationTokenSource.Cancel();
-            await sut.OpenAsync(false, userDefinedTimeoutCancellationTokenSource.Token);
+            await sut.OpenAsync(false, userDefinedTimeoutCancellationTokenSource.Token).ConfigureAwait(false);
 
-            await innerHandler.Received(0).OpenAsync(Arg.Any<bool>(), userDefinedTimeoutCancellationTokenSource.Token);
+            await innerHandler.Received(0).OpenAsync(Arg.Any<bool>(), userDefinedTimeoutCancellationTokenSource.Token).ConfigureAwait(false);
         }
         
         static async Task TransportRouting_TryOpenFailedWithSupportedExceptionFirstTimes_SuccessOnSecondTry(Func<Exception> exceptionFactory)
@@ -148,9 +148,9 @@ namespace Microsoft.Azure.Devices.Client.Test
             var sut = new ProtocolRoutingDelegatingHandler(contextMock);
             sut.ContinuationFactory = c => innerHandler;
             var cancellationToken = new CancellationToken();
-            await sut.OpenAsync(Arg.Is(false), cancellationToken);
+            await sut.OpenAsync(Arg.Is(false), cancellationToken).ConfigureAwait(false);
 
-            await innerHandler.Received(1).CloseAsync();
+            await innerHandler.Received(1).CloseAsync().ConfigureAwait(false);
 
             Assert.AreEqual(2, openCallCounter);
         }

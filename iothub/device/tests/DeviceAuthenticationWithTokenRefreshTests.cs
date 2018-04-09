@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             int buffer = 20;  // Token should refresh after 4 seconds.
 
             var refresher = new TestImplementation(TestDeviceId, ttl, buffer);
-            await refresher.GetTokenAsync(TestIoTHubName);
+            await refresher.GetTokenAsync(TestIoTHubName).ConfigureAwait(false);
 
             DateTime currentTime = DateTime.UtcNow;
             DateTime expectedExpiryTime = currentTime.AddSeconds(ttl);
@@ -78,7 +78,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             // Wait for the expiration time given the time buffer.
             if (delayTime.TotalSeconds > 0)
             {
-                await Task.Delay(delayTime);
+                await Task.Delay(delayTime).ConfigureAwait(false);
             }
 
             Debug.Assert(refresher.IsExpiring, $"Current time = {DateTime.UtcNow}");
@@ -90,8 +90,8 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             var refresher = new TestImplementation(TestDeviceId);
 
-            string token1 = await refresher.GetTokenAsync(TestIoTHubName);
-            string token2 = await refresher.GetTokenAsync(TestIoTHubName);
+            string token1 = await refresher.GetTokenAsync(TestIoTHubName).ConfigureAwait(false);
+            string token2 = await refresher.GetTokenAsync(TestIoTHubName).ConfigureAwait(false);
 
             Assert.AreEqual(1, refresher.SafeCreateNewTokenCallCount); // Cached.
             Assert.AreEqual(token1, token2);
@@ -112,7 +112,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             Assert.AreEqual(null, csBuilder.SharedAccessKey);
             Assert.AreEqual(null, csBuilder.SharedAccessKeyName);
 
-            string token = await refresher.GetTokenAsync(TestIoTHubName);
+            string token = await refresher.GetTokenAsync(TestIoTHubName).ConfigureAwait(false);
 
             refresher.Populate(csBuilder);
 
@@ -140,7 +140,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 tasks[i] = refresher.GetTokenAsync(TestIoTHubName);
             }
 
-            await Task.WhenAll(tasks);
+            await Task.WhenAll(tasks).ConfigureAwait(false);
 
             Assert.AreEqual(1, refresher.SafeCreateNewTokenCallCount);
         }
@@ -151,7 +151,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             int ttl = 1;
 
             var refresher = new TestImplementation(TestDeviceId, ttl, 90);
-            await refresher.GetTokenAsync(TestIoTHubName);
+            await refresher.GetTokenAsync(TestIoTHubName).ConfigureAwait(false);
 
             DateTime expectedExpiryTime = DateTime.UtcNow.AddSeconds(ttl);
             int timeDelta = (int)((refresher.ExpiresOn - expectedExpiryTime).TotalSeconds);
@@ -160,14 +160,14 @@ namespace Microsoft.Azure.Devices.Client.Test
             // Wait for the token to expire;
             while (!refresher.IsExpiring)
             {
-                await Task.Delay(100);
+                await Task.Delay(100).ConfigureAwait(false);
             }
 
             // Configure the test token refresher to ignore the suggested TTL.
             ttl = 10;
             refresher.ActualTimeToLive = ttl;
 
-            await refresher.GetTokenAsync(TestIoTHubName);
+            await refresher.GetTokenAsync(TestIoTHubName).ConfigureAwait(false);
 
             expectedExpiryTime = DateTime.UtcNow.AddSeconds(ttl);
             timeDelta = (int)((refresher.ExpiresOn - expectedExpiryTime).TotalSeconds);
@@ -189,8 +189,8 @@ namespace Microsoft.Azure.Devices.Client.Test
             var auth = (IAuthorizationProvider)cs;
             var cbsAuth = (ICbsTokenProvider)cs;
 
-            string token1 = await auth.GetPasswordAsync();
-            CbsToken token2 = await cbsAuth.GetTokenAsync(new Uri("amqp://" + TestIoTHubName), "testAppliesTo", null);
+            string token1 = await auth.GetPasswordAsync().ConfigureAwait(false);
+            CbsToken token2 = await cbsAuth.GetTokenAsync(new Uri("amqp://" + TestIoTHubName), "testAppliesTo", null).ConfigureAwait(false);
 
             Assert.IsNull(cs.SharedAccessSignature);
             Assert.AreEqual(TestDeviceId, cs.DeviceId);

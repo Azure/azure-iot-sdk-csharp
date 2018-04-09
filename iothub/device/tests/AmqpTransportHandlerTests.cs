@@ -17,51 +17,51 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
         [TestMethod]
         [TestCategory("TransportHandlers")]
-        public async Task AmqpTransportHandler_OpenAsync_TokenCancellationRequested()
+        public async Task AmqpTransportHandlerOpenAsyncTokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => CreateFromConnectionString().OpenAsync(true, token));
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().OpenAsync(true, token)).ConfigureAwait(false);
         }
 
         [TestMethod]
         [TestCategory("TransportHandlers")]
-        public async Task AmqpTransportHandler_SendEventAsync_TokenCancellationRequested()
+        public async Task AmqpTransportHandlerSendEventAsyncTokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => CreateFromConnectionString().SendEventAsync(new Message(), token));
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().SendEventAsync(new Message(), token)).ConfigureAwait(false);
         }
 
         [TestMethod]
         [TestCategory("TransportHandlers")]
-        public async Task AmqpTransportHandler_SendEventAsync_MultipleMessages_TokenCancellationRequested()
+        public async Task AmqpTransportHandlerSendEventAsyncMultipleMessagesTokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => CreateFromConnectionString().SendEventAsync(new List<Message>(), token));
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().SendEventAsync(new List<Message>(), token)).ConfigureAwait(false);
         }
 
         [TestMethod]
         [TestCategory("TransportHandlers")]
-        public async Task AmqpTransportHandler_ReceiveAsync_TokenCancellationRequested()
+        public async Task AmqpTransportHandlerReceiveAsyncTokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => CreateFromConnectionString().ReceiveAsync(new TimeSpan(0, 10, 0), token));
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().ReceiveAsync(new TimeSpan(0, 10, 0), token)).ConfigureAwait(false);
         }
 
         [TestMethod]
         [TestCategory("TransportHandlers")]
-        public async Task AmqpTransportHandler_CompleteAsync_TokenCancellationRequested()
+        public async Task AmqpTransportHandlerCompleteAsyncTokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => CreateFromConnectionString().CompleteAsync(Guid.NewGuid().ToString(), token));
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().CompleteAsync(Guid.NewGuid().ToString(), token)).ConfigureAwait(false);
         }
 
         [TestMethod]
         [TestCategory("TransportHandlers")]
-        public async Task AmqpTransportHandler_AbandonAsync_TokenCancellationRequested()
+        public async Task AmqpTransportHandlerAbandonAsyncTokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => CreateFromConnectionString().AbandonAsync(Guid.NewGuid().ToString(), token));
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().AbandonAsync(Guid.NewGuid().ToString(), token)).ConfigureAwait(false);
         }
 
         [TestMethod]
         [TestCategory("TransportHandlers")]
-        public async Task AmqpTransportHandler_RejectAsync_TokenCancellationRequested()
+        public async Task AmqpTransportHandlerRejectAsyncTokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => CreateFromConnectionString().RejectAsync(Guid.NewGuid().ToString(), token));
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().RejectAsync(Guid.NewGuid().ToString(), token)).ConfigureAwait(false);
         }
 
         // Uncomment later once we support throwing exceptions on TransportSettingsChange
@@ -99,7 +99,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
             try
             {
-                await asyncMethod(tokenSource.Token);
+                await asyncMethod(tokenSource.Token).ConfigureAwait(false);
             }
             catch (SocketException)
             {

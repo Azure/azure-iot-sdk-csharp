@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                                             provided registrationId is null, empty, or invalid.] */
         [TestMethod]
         [TestCategory("DevService")]
-        public void BulkEnrollmentOperationError_Constructor_ThrowsOnInvalidParameters()
+        public void BulkEnrollmentOperationErrorConstructoThrowsOnInvalidParameters()
         {
             // arrange
             string nonRegistrationId = 
@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         /* SRS_BULK_ENROLLMENT_OPERATION_ERRO_21_002: [The BulkEnrollmentOperationError shall store the provided information.] */
         [TestMethod]
         [TestCategory("DevService")]
-        public void BulkEnrollmentOperationError_Constructor_Succeed()
+        public void BulkEnrollmentOperationErrorConstructorSucceed()
         {
             // arrange
             string erroJson = 
@@ -65,7 +65,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         [TestMethod]
         [TestCategory("DevService")]
-        public void BulkEnrollmentOperationError_Constructor_SucceedOnOnlyRegistrationId()
+        public void BulkEnrollmentOperationErrorConstructorSucceedOnOnlyRegistrationId()
         {
             // arrange
             string erroJson =

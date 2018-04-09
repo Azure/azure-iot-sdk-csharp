@@ -329,7 +329,7 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     if (buffer.Length != bufferPool.BufferSize)
                     {
-                        throw Fx.Exception.Argument("buffer", CommonResources.BufferIsNotRightSizeForBufferManager);
+                        throw Fx.Exception.Argument(nameof(buffer), CommonResources.BufferIsNotRightSizeForBufferManager);
                     }
 
                     if (bufferPool.Return(buffer))

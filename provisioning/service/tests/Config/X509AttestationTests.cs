@@ -81,7 +81,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         /* SRS_X509_ATTESTATION_21_001: [The factory shall throws ArgumentException if the primary certificate is null or empty.] */
         [TestMethod]
         [TestCategory("DevService")]
-        public void X509Attestation_CreateFromClientCertificates_ThrowsOnNullPrimaryCertificate()
+        public void X509AttestationCreateFromClientCertificatesThrowsOnNullPrimaryCertificate()
         {
             // arrange
             X509Certificate2 primaryCert = null;
@@ -98,7 +98,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         [TestMethod]
         [TestCategory("DevService")]
-        public void X509Attestation_CreateFromRootCertificates_ThrowsOnNullPrimaryCertificate()
+        public void X509AttestationCreateFromRootCertificatesThrowsOnNullPrimaryCertificate()
         {
             // arrange
             X509Certificate2 primaryCert = null;
@@ -117,7 +117,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         /* SRS_X509_ATTESTATION_21_003: [The factory shall create a new instance of the X509Attestation with the created X509Certificates as the ClientCertificates.] */
         [TestMethod]
         [TestCategory("DevService")]
-        public void X509Attestation_CreateFromClientCertificates_SucceedOnPrimaryCertificate()
+        public void X509AttestationCreateFromClientCertificatesSucceedOnPrimaryCertificate()
         {
             // arrange
             X509Certificate2 primary = new X509Certificate2(Encoding.ASCII.GetBytes(PUBLIC_KEY_CERTIFICATE_STRING));
@@ -135,7 +135,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         [TestMethod]
         [TestCategory("DevService")]
-        public void X509Attestation_CreateFromClientCertificates_SucceedOnPrimaryAndSecondaryCertificates()
+        public void X509AttestationCreateFromClientCertificatesSucceedOnPrimaryAndSecondaryCertificates()
         {
             // arrange
             X509Certificate2 primary = new X509Certificate2(Encoding.ASCII.GetBytes(PUBLIC_KEY_CERTIFICATE_STRING));
@@ -155,7 +155,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         [TestMethod]
         [TestCategory("DevService")]
-        public void X509Attestation_CreateFromClientCertificates_SucceedOnPrimaryAndSecondaryNullCertificates()
+        public void X509AttestationCreateFromClientCertificatesSucceedOnPrimaryAndSecondaryNullCertificates()
         {
             // arrange
             X509Certificate2 primary = new X509Certificate2(Encoding.ASCII.GetBytes(PUBLIC_KEY_CERTIFICATE_STRING));
@@ -174,7 +174,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         [TestMethod]
         [TestCategory("DevService")]
-        public void X509Attestation_CreateFromClientCertificates_SucceedOnPrimaryString()
+        public void X509AttestationCreateFromClientCertificatesSucceedOnPrimaryString()
         {
             // arrange
             string primary = PUBLIC_KEY_CERTIFICATE_STRING;
@@ -191,7 +191,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         [TestMethod]
         [TestCategory("DevService")]
-        public void X509Attestation_CreateFromClientCertificates_SucceedOnPrimaryAndSecondaryString()
+        public void X509AttestationCreateFromClientCertificatesSucceedOnPrimaryAndSecondaryString()
         {
             // arrange
             string primary = PUBLIC_KEY_CERTIFICATE_STRING;
@@ -209,7 +209,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         [TestMethod]
         [TestCategory("DevService")]
-        public void X509Attestation_CreateFromClientCertificates_SucceedOnPrimaryAndSecondaryNullString()
+        public void X509AttestationCreateFromClientCertificatesSucceedOnPrimaryAndSecondaryNullString()
         {
             // arrange
             string primary = PUBLIC_KEY_CERTIFICATE_STRING;
@@ -228,7 +228,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         /* SRS_X509_ATTESTATION_21_004: [The factory shall create a new instance of the X509Attestation with the created X509Certificates as the RootCertificates.] */
         [TestMethod]
         [TestCategory("DevService")]
-        public void X509Attestation_CreateFromRootCertificates_SucceedOnPrimaryCertificate()
+        public void X509AttestationCreateFromRootCertificatesSucceedOnPrimaryCertificate()
         {
             // arrange
             X509Certificate2 primary = new X509Certificate2(Encoding.ASCII.GetBytes(PUBLIC_KEY_CERTIFICATE_STRING));
@@ -246,7 +246,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         [TestMethod]
         [TestCategory("DevService")]
-        public void X509Attestation_CreateFromRootCertificates_SucceedOnPrimaryAndSecondaryCertificates()
+        public void X509AttestationCreateFromRootCertificatesSucceedOnPrimaryAndSecondaryCertificates()
         {
             // arrange
             X509Certificate2 primary = new X509Certificate2(Encoding.ASCII.GetBytes(PUBLIC_KEY_CERTIFICATE_STRING));
@@ -266,7 +266,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         [TestMethod]
         [TestCategory("DevService")]
-        public void X509Attestation_CreateFromRootCertificates_SucceedOnPrimaryAndSecondaryNullCertificates()
+        public void X509AttestationCreateFromRootCertificatesSucceedOnPrimaryAndSecondaryNullCertificates()
         {
             // arrange
             X509Certificate2 primary = new X509Certificate2(Encoding.ASCII.GetBytes(PUBLIC_KEY_CERTIFICATE_STRING));
@@ -285,7 +285,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         [TestMethod]
         [TestCategory("DevService")]
-        public void X509Attestation_CreateFromRootCertificates_SucceedOnPrimaryString()
+        public void X509AttestationCreateFromRootCertificatesSucceedOnPrimaryString()
         {
             // arrange
             string primary = PUBLIC_KEY_CERTIFICATE_STRING;
@@ -302,7 +302,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         [TestMethod]
         [TestCategory("DevService")]
-        public void X509Attestation_CreateFromRootCertificates_SucceedOnPrimaryAndSecondaryString()
+        public void X509AttestationCreateFromRootCertificatesSucceedOnPrimaryAndSecondaryString()
         {
             // arrange
             string primary = PUBLIC_KEY_CERTIFICATE_STRING;
@@ -320,7 +320,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         [TestMethod]
         [TestCategory("DevService")]
-        public void X509Attestation_CreateFromRootCertificates_SucceedOnPrimaryAndSecondaryNullString()
+        public void X509AttestationCreateFromRootCertificatesSucceedOnPrimaryAndSecondaryNullString()
         {
             // arrange
             string primary = PUBLIC_KEY_CERTIFICATE_STRING;
@@ -339,7 +339,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         /* SRS_X509_ATTESTATION_21_005: [The factory shall throws ArgumentException if the primary CA reference is null or empty.] */
         [TestMethod]
         [TestCategory("DevService")]
-        public void X509Attestation_CreateFromCAReferences_ThrowsOnNullPrimaryCertificate()
+        public void X509AttestationCreateFromCAReferencesThrowsOnNullPrimaryCertificate()
         {
             // arrange
             string primaryStr = null;
@@ -354,7 +354,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         /* SRS_X509_ATTESTATION_21_007: [The factory shall create a new instance of the X509Attestation with the created X509Certificates as the caReference.] */
         [TestMethod]
         [TestCategory("DevService")]
-        public void X509Attestation_CreateFromCAReferences_SucceedOnPrimaryString()
+        public void X509AttestationCreateFromCAReferencesSucceedOnPrimaryString()
         {
             // arrange
             string primary = CA_REFERENCE_STRING;
@@ -371,7 +371,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         [TestMethod]
         [TestCategory("DevService")]
-        public void X509Attestation_CreateFromCAReferences_SucceedOnPrimaryAndSecondaryString()
+        public void X509AttestationCreateFromCAReferencesSucceedOnPrimaryAndSecondaryString()
         {
             // arrange
             string primary = CA_REFERENCE_STRING;
@@ -389,7 +389,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         [TestMethod]
         [TestCategory("DevService")]
-        public void X509Attestation_CreateFromCAReferences_SucceedOnPrimaryAndSecondaryNullString()
+        public void X509AttestationCreateFromCAReferencesSucceedOnPrimaryAndSecondaryNullString()
         {
             // arrange
             string primary = CA_REFERENCE_STRING;
@@ -410,7 +410,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         /* SRS_X509_ATTESTATION_21_016: [The constructor shall store the provided `clientCertificates`, `rootCertificates`, and `caReferences`.] */
         [TestMethod]
         [TestCategory("DevService")]
-        public void X509Attestation_GetX509CertificateInfo_SucceedOnPrimaryAndSecondaryClientCertificates()
+        public void X509AttestationGetX509CertificateInfoSucceedOnPrimaryAndSecondaryClientCertificates()
         {
             // arrange
             string json = MakeX509AttestationJson("clientCertificates");
@@ -423,7 +423,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         [TestMethod]
         [TestCategory("DevService")]
-        public void X509Attestation_GetX509CertificateInfo_SucceedOnPrimaryOnlyClientCertificates()
+        public void X509AttestationGetX509CertificateInfoSucceedOnPrimaryOnlyClientCertificates()
         {
             // arrange
             string json = MakeX509AttestationJson("clientCertificates", true);
@@ -438,7 +438,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         /* SRS_X509_ATTESTATION_21_013: [If the RootCertificates is not null, and it contains Secondary key, the GetSecondaryX509CertificateInfo shall return the info in the Secondary key of the RootCertificates.] */
         [TestMethod]
         [TestCategory("DevService")]
-        public void X509Attestation_GetX509CertificateInfo_SucceedOnPrimaryAndSecondaryRoottCertificates()
+        public void X509AttestationGetX509CertificateInfoSucceedOnPrimaryAndSecondaryRoottCertificates()
         {
             // arrange
             string json = MakeX509AttestationJson("signingCertificates");
@@ -452,7 +452,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         /* SRS_X509_ATTESTATION_21_010: [If the CAReferences is not null, the GetPrimaryX509CertificateInfo shall return null.] */
         [TestMethod]
         [TestCategory("DevService")]
-        public void X509Attestation_GetX509CertificateInfo_SucceedOnPrimaryAndSecondaryCAReferences()
+        public void X509AttestationGetX509CertificateInfoSucceedOnPrimaryAndSecondaryCAReferences()
         {
             // arrange
             string json =
@@ -477,7 +477,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         /* SRS_X509_ATTESTATION_21_014: [The constructor shall throws ArgumentException if `clientCertificates`, `rootCertificates`, and `caReferences` are null.] */
         [TestMethod]
         [TestCategory("DevService")]
-        public void X509Attestation_JsonConstructor_TrowsOnNoCert()
+        public void X509AttestationJsonConstructorTrowsOnNoCert()
         {
             // arrange
             string json = "{}";
@@ -489,7 +489,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         /* SRS_X509_ATTESTATION_21_015: [The constructor shall throws ArgumentException if more than one certificate type are not null.] */
         [TestMethod]
         [TestCategory("DevService")]
-        public void X509Attestation_JsonConstructor_TrowsOnClientAndRootCertificates()
+        public void X509AttestationJsonConstructorTrowsOnClientAndRootCertificates()
         {
             // arrange
             string json =
@@ -510,7 +510,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         [TestMethod]
         [TestCategory("DevService")]
-        public void X509Attestation_JsonConstructor_TrowsOnClientCertificatesAndCAReferences()
+        public void X509AttestationJsonConstructorTrowsOnClientCertificatesAndCAReferences()
         {
             // arrange
             string json =
@@ -530,7 +530,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         [TestMethod]
         [TestCategory("DevService")]
-        public void X509Attestation_JsonConstructor_TrowsOnRootCertificatesAndCAReferences()
+        public void X509AttestationJsonConstructorTrowsOnRootCertificatesAndCAReferences()
         {
             // arrange
             string json =

@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         /* SRS_X509_CAREFERENCE_21_001: [The constructor shall throw ArgumentException if the primary CA reference is null or empty.] */
         [TestMethod]
         [TestCategory("DevService")]
-        public void X509CAReferences_ThrowsOnInvalidPrimaryReferences()
+        public void X509CAReferencesThrowsOnInvalidPrimaryReferences()
         {
             // arrange
             // act - assert
@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         /* SRS_X509_CAREFERENCE_21_002: [The constructor shall store the primary and secondary CA references.] */
         [TestMethod]
         [TestCategory("DevService")]
-        public void X509CAReferences_SucceedOnValidPrimaryReferences()
+        public void X509CAReferencesSucceedOnValidPrimaryReferences()
         {
             // arrange
             string primary = "valid-ca-reference-1";
@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         [TestMethod]
         [TestCategory("DevService")]
-        public void X509CAReferences_SucceedOnValidPrimaryAndSecondaryReferences()
+        public void X509CAReferencesSucceedOnValidPrimaryAndSecondaryReferences()
         {
             // arrange
             string primary = "valid-ca-reference-1";

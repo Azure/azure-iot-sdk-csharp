@@ -20,32 +20,32 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         public async Task DeviceClient_TokenIsRefreshed_Ok_Http()
         {
-            await DeviceClient_TokenIsRefreshed_Internal(Client.TransportType.Http1);
+            await DeviceClient_TokenIsRefreshed_Internal(Client.TransportType.Http1).ConfigureAwait(false);
         }
         
         [TestMethod]
         public async Task DeviceClient_TokenIsRefreshed_Ok_Amqp()
         {
-            await DeviceClient_TokenIsRefreshed_Internal(Client.TransportType.Amqp);
+            await DeviceClient_TokenIsRefreshed_Internal(Client.TransportType.Amqp).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task DeviceClient_TokenIsRefreshed_Fails_Mqtt()
         {
-            await DeviceClient_TokenIsRefreshed_Internal(Client.TransportType.Mqtt);
+            await DeviceClient_TokenIsRefreshed_Internal(Client.TransportType.Mqtt).ConfigureAwait(false);
         }
 
         private async Task DeviceClient_TokenIsRefreshed_Internal(Client.TransportType transport)
         {
             var builder = IotHubConnectionStringBuilder.Create(Configuration.IoTHub.ConnectionString);
 
-            RegistryManager rm = await TestUtil.GetRegistryManagerAsync(DevicePrefix);
+            RegistryManager rm = await TestUtil.GetRegistryManagerAsync(DevicePrefix).ConfigureAwait(false);
             int ttl = 6;
             int buffer = 50;
 
             try
             {
-                Device device = await CreateDeviceClientAsync(rm);
+                Device device = await CreateDeviceClientAsync(rm).ConfigureAwait(false);
                                 
                 var refresher = new TestTokenRefresher(
                     device.Id, 
@@ -60,9 +60,9 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 // Create the first Token.
                 Console.WriteLine($"[{DateTime.UtcNow}] OpenAsync");
-                await deviceClient.OpenAsync();
+                await deviceClient.OpenAsync().ConfigureAwait(false);
                 Console.WriteLine($"[{DateTime.UtcNow}] SendEventAsync (1)");
-                await deviceClient.SendEventAsync(message);
+                await deviceClient.SendEventAsync(message).ConfigureAwait(false);
 
                 int countAfterOpenAndFirstSend = refresher.SafeCreateNewTokenCallCount;
                 Assert.IsTrue(countAfterOpenAndFirstSend >= 1, $"[{DateTime.UtcNow}] Token should have been refreshed at least once.");
@@ -70,10 +70,10 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Console.WriteLine($"[{DateTime.UtcNow}] Waiting {ttl} seconds.");
 
                 // Wait for the Token to expire.
-                await Task.Delay(ttl * 1000);
+                await Task.Delay(ttl * 1000).ConfigureAwait(false);
 
                 Console.WriteLine($"[{DateTime.UtcNow}] SendEventAsync (2)");
-                await deviceClient.SendEventAsync(message);
+                await deviceClient.SendEventAsync(message).ConfigureAwait(false);
 
                 // Ensure that the token was refreshed.
                 if (transport == Client.TransportType.Mqtt)
@@ -91,11 +91,11 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
 
                 Console.WriteLine($"[{DateTime.UtcNow}] CloseAsync");
-                await deviceClient.CloseAsync();
+                await deviceClient.CloseAsync().ConfigureAwait(false);
             }
             finally
             {
-                await TestUtil.UnInitializeEnvironment(rm);
+                await TestUtil.UnInitializeEnvironment(rm).ConfigureAwait(false);
             }
         }
 

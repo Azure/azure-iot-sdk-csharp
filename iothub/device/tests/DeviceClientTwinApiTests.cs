@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         // Tests_SRS_DEVICECLIENT_18_003: `SetDesiredPropertyUpdateCallback` shall call the transport to register for PATCHes on it's first call.
         [TestMethod]
         [TestCategory("Twin")]
-        public async Task DeviceClient_SetDesiredPropertyUpdateCallback_RegistersForPatchesOnFirstCall()
+        public async Task DeviceClientSetDesiredPropertyUpdateCallbackRegistersForPatchesOnFirstCall()
         {
             // arrange
             var innerHandler = Substitute.For<IDelegatingHandler>();
@@ -25,19 +25,19 @@ namespace Microsoft.Azure.Devices.Client.Test
             var context = new object();
 
             // act
-            await client.SetDesiredPropertyUpdateCallback(myCallback, context);
+            await client.SetDesiredPropertyUpdateCallback(myCallback, context).ConfigureAwait(false);
 
             // assert
             await innerHandler.
                 Received(1).
-                EnableTwinPatchAsync(Arg.Any<CancellationToken>());
+                EnableTwinPatchAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.AreEqual(client.desiredPropertyUpdateCallback, myCallback);
         }
 
         // Tests_SRS_DEVICECLIENT_18_003: `SetDesiredPropertyUpdateCallbackAsync` shall call the transport to register for PATCHes on it's first call.
         [TestMethod]
         [TestCategory("Twin")]
-        public async Task DeviceClient_SetDesiredPropertyUpdateCallbackAsync_RegistersForPatchesOnFirstCall()
+        public async Task DeviceClientSetDesiredPropertyUpdateCallbackAsyncRegistersForPatchesOnFirstCall()
         {
             // arrange
             var innerHandler = Substitute.For<IDelegatingHandler>();
@@ -47,19 +47,19 @@ namespace Microsoft.Azure.Devices.Client.Test
             var context = new object();
 
             // act
-            await client.SetDesiredPropertyUpdateCallbackAsync(myCallback, context);
+            await client.SetDesiredPropertyUpdateCallbackAsync(myCallback, context).ConfigureAwait(false);
 
             // assert
             await innerHandler.
                 Received(1).
-                EnableTwinPatchAsync(Arg.Any<CancellationToken>());
+                EnableTwinPatchAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.AreEqual(client.desiredPropertyUpdateCallback, myCallback);
         }
 
         // Tests_SRS_DEVICECLIENT_18_004: `SetDesiredPropertyUpdateCallback` shall not call the transport to register for PATCHes on subsequent calls
         [TestMethod]
         [TestCategory("Twin")]
-        public async Task DeviceClient_SetDesiredPropertyUpdateCallback_DoesNotRegisterForPatchesAfterFirstCall()
+        public async Task DeviceClientSetDesiredPropertyUpdateCallbackDoesNotRegisterForPatchesAfterFirstCall()
         {
             // arrange
             var innerHandler = Substitute.For<IDelegatingHandler>();
@@ -68,20 +68,20 @@ namespace Microsoft.Azure.Devices.Client.Test
             DesiredPropertyUpdateCallback myCallback = (p, c) => { return TaskHelpers.CompletedTask; };
 
             // act
-            await client.SetDesiredPropertyUpdateCallback(myCallback, null);
-            await client.SetDesiredPropertyUpdateCallback(myCallback, null);
-            await client.SetDesiredPropertyUpdateCallback(myCallback, null);
+            await client.SetDesiredPropertyUpdateCallback(myCallback, null).ConfigureAwait(false);
+            await client.SetDesiredPropertyUpdateCallback(myCallback, null).ConfigureAwait(false);
+            await client.SetDesiredPropertyUpdateCallback(myCallback, null).ConfigureAwait(false);
 
             // assert
             await innerHandler.
                 Received(1).
-                EnableTwinPatchAsync(Arg.Any<CancellationToken>());
+                EnableTwinPatchAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
         }
 
         // Tests_SRS_DEVICECLIENT_18_004: `SetDesiredPropertyUpdateCallbackAsync` shall not call the transport to register for PATCHes on subsequent calls
         [TestMethod]
         [TestCategory("Twin")]
-        public async Task DeviceClient_SetDesiredPropertyUpdateCallbackAsync_DoesNotRegisterForPatchesAfterFirstCall()
+        public async Task DeviceClientSetDesiredPropertyUpdateCallbackAsyncDoesNotRegisterForPatchesAfterFirstCall()
         {
             // arrange
             var innerHandler = Substitute.For<IDelegatingHandler>();
@@ -90,20 +90,20 @@ namespace Microsoft.Azure.Devices.Client.Test
             DesiredPropertyUpdateCallback myCallback = (p, c) => { return TaskHelpers.CompletedTask; };
 
             // act
-            await client.SetDesiredPropertyUpdateCallbackAsync(myCallback, null);
-            await client.SetDesiredPropertyUpdateCallbackAsync(myCallback, null);
-            await client.SetDesiredPropertyUpdateCallbackAsync(myCallback, null);
+            await client.SetDesiredPropertyUpdateCallbackAsync(myCallback, null).ConfigureAwait(false);
+            await client.SetDesiredPropertyUpdateCallbackAsync(myCallback, null).ConfigureAwait(false);
+            await client.SetDesiredPropertyUpdateCallbackAsync(myCallback, null).ConfigureAwait(false);
 
             // assert
             await innerHandler.
                 Received(1).
-                EnableTwinPatchAsync(Arg.Any<CancellationToken>());
+                EnableTwinPatchAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
         }
 
         // Tests_SRS_DEVICECLIENT_18_001: `GetTwinAsync` shall call `SendTwinGetAsync` on the transport to get the twin state
         [TestMethod]
         [TestCategory("Twin")]
-        public async Task DeviceClient_GetTwinAsync_CallsSendTwinGetAsync()
+        public async Task DeviceClientGetTwinAsyncCallsSendTwinGetAsync()
         {
             // arrange
             var innerHandler = Substitute.For<IDelegatingHandler>();
@@ -111,18 +111,18 @@ namespace Microsoft.Azure.Devices.Client.Test
             client.InnerHandler = innerHandler;
 
             // act
-            await client.GetTwinAsync();
+            await client.GetTwinAsync().ConfigureAwait(false);
 
             // assert
             await innerHandler.
                 Received(1).
-                SendTwinGetAsync(Arg.Any<CancellationToken>());
+                SendTwinGetAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
         }
 
         // Tests_SRS_DEVICECLIENT_18_002: `UpdateReportedPropertiesAsync` shall call `SendTwinPatchAsync` on the transport to update the reported properties
         [TestMethod]
         [TestCategory("Twin")]
-        public async Task DeviceClient_UpdateReportedPropertiesAsync_CallsSendTwinPatchAsync()
+        public async Task DeviceClientUpdateReportedPropertiesAsyncCallsSendTwinPatchAsync()
         {
             // arrange
             var innerHandler = Substitute.For<IDelegatingHandler>();
@@ -131,19 +131,19 @@ namespace Microsoft.Azure.Devices.Client.Test
             var props = new TwinCollection();
 
             // act
-            await client.UpdateReportedPropertiesAsync(props);
+            await client.UpdateReportedPropertiesAsync(props).ConfigureAwait(false);
 
             // assert
             await innerHandler.
                 Received(1).
-                SendTwinPatchAsync(Arg.Is<TwinCollection>(props), Arg.Any<CancellationToken>());
+                SendTwinPatchAsync(Arg.Is(props), Arg.Any<CancellationToken>()).ConfigureAwait(false);
         }
 
         // Tests_SRS_DEVICECLIENT_18_006: `UpdateReportedPropertiesAsync` shall throw an `ArgumentNull` exception if `reportedProperties` is null
         [TestMethod]
         [TestCategory("Twin")]
         [ExpectedException(typeof(ArgumentNullException))]
-        public async Task DeviceClient_UpdateReportedPropertiesAsync_ThrowsIfPatchIsNull()
+        public async Task DeviceClientUpdateReportedPropertiesAsyncThrowsIfPatchIsNull()
         {
             // arrange
             var innerHandler = Substitute.For<IDelegatingHandler>();
@@ -151,14 +151,14 @@ namespace Microsoft.Azure.Devices.Client.Test
             client.InnerHandler = innerHandler;
 
             // act and assert
-            await client.UpdateReportedPropertiesAsync(null);
+            await client.UpdateReportedPropertiesAsync(null).ConfigureAwait(false);
         }
 
         // Tests_SRS_DEVICECLIENT_18_007: `SetDesiredPropertyUpdateCallback` shall throw an `ArgumentNull` exception if `callback` is null
         [TestMethod]
         [TestCategory("Twin")]
         [ExpectedException(typeof(ArgumentNullException))]
-        public async Task DeviceClient_SetDesiredPropertyUpdateCallback_ThrowsIfCallbackIsNull()
+        public async Task DeviceClientSetDesiredPropertyUpdateCallbackThrowsIfCallbackIsNull()
         {
             // arrange
             var innerHandler = Substitute.For<IDelegatingHandler>();
@@ -166,14 +166,14 @@ namespace Microsoft.Azure.Devices.Client.Test
             client.InnerHandler = innerHandler;
 
             // act and assert
-            await client.SetDesiredPropertyUpdateCallback(null, null);
+            await client.SetDesiredPropertyUpdateCallback(null, null).ConfigureAwait(false);
         }
 
         // Tests_SRS_DEVICECLIENT_18_007: `SetDesiredPropertyUpdateCallbackAsync` shall throw an `ArgumentNull` exception if `callback` is null
         [TestMethod]
         [TestCategory("Twin")]
         [ExpectedException(typeof(ArgumentNullException))]
-        public async Task DeviceClient_SetDesiredPropertyUpdateCallbackAsync_ThrowsIfCallbackIsNull()
+        public async Task DeviceClientSetDesiredPropertyUpdateCallbackAsyncThrowsIfCallbackIsNull()
         {
             // arrange
             var innerHandler = Substitute.For<IDelegatingHandler>();
@@ -181,13 +181,13 @@ namespace Microsoft.Azure.Devices.Client.Test
             client.InnerHandler = innerHandler;
 
             // act and assert
-            await client.SetDesiredPropertyUpdateCallbackAsync(null, null);
+            await client.SetDesiredPropertyUpdateCallbackAsync(null, null).ConfigureAwait(false);
         }
 
         //  Tests_SRS_DEVICECLIENT_18_005: When a patch is received from the service, the `callback` shall be called.
         [TestMethod]
         [TestCategory("Twin")]
-        public async Task DeviceClient_callbackIsCalledWhenPatchIsReceived()
+        public async Task DeviceClientCallbackIsCalledWhenPatchIsReceived()
         {
             // arrange
             var innerHandler = Substitute.For<IDelegatingHandler>();
@@ -202,7 +202,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 receivedPatch = p;
                 return TaskHelpers.CompletedTask;
             };
-            await client.SetDesiredPropertyUpdateCallback(myCallback, null);
+            await client.SetDesiredPropertyUpdateCallback(myCallback, null).ConfigureAwait(false);
 
             // act
             client.OnReportedStatePatchReceived(myPatch);
@@ -215,7 +215,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         //  Tests_SRS_DEVICECLIENT_18_005: When a patch is received from the service, the `callback` shall be called.
         [TestMethod]
         [TestCategory("Twin")]
-        public async Task DeviceClient_callbackAsyncIsCalledWhenPatchIsReceived()
+        public async Task DeviceClientCallbackAsyncIsCalledWhenPatchIsReceived()
         {
             // arrange
             var innerHandler = Substitute.For<IDelegatingHandler>();
@@ -230,7 +230,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 receivedPatch = p;
                 return TaskHelpers.CompletedTask;
             };
-            await client.SetDesiredPropertyUpdateCallbackAsync(myCallback, null);
+            await client.SetDesiredPropertyUpdateCallbackAsync(myCallback, null).ConfigureAwait(false);
 
             // act
             client.OnReportedStatePatchReceived(myPatch);

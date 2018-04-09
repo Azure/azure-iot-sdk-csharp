@@ -27,7 +27,6 @@ namespace Microsoft.Azure.Devices
         readonly TimeSpan operationTimeout;
         readonly FaultTolerantAmqpObject<SendingAmqpLink> faultTolerantSendingLink;
         readonly string sendingPath;
-        readonly string receivingPath;
         readonly AmqpFeedbackReceiver feedbackReceiver;
         readonly AmqpFileNotificationReceiver fileNotificationReceiver;
         readonly IHttpClientHelper httpClientHelper;
@@ -104,28 +103,28 @@ namespace Microsoft.Azure.Devices
 
         public override async Task OpenAsync()
         {
-            await this.GetSendingLinkAsync();
-            await this.feedbackReceiver.OpenAsync();
+            await GetSendingLinkAsync().ConfigureAwait(false);
+            await feedbackReceiver.OpenAsync().ConfigureAwait(false);
         }
 
         public async override Task CloseAsync()
         {
-            await this.faultTolerantSendingLink.CloseAsync();
-            await this.feedbackReceiver.CloseAsync();
-            await this.fileNotificationReceiver.CloseAsync();
-            await this.iotHubConnection.CloseAsync();
+            await faultTolerantSendingLink.CloseAsync().ConfigureAwait(false);
+            await feedbackReceiver.CloseAsync().ConfigureAwait(false);
+            await fileNotificationReceiver.CloseAsync().ConfigureAwait(false);
+            await iotHubConnection.CloseAsync().ConfigureAwait(false);
         }
 
         public async override Task SendAsync(string deviceId, Message message, TimeSpan? timeout = null)
         {
             if (string.IsNullOrWhiteSpace(deviceId))
             {
-                throw new ArgumentException("Value should be non null and non empty", "deviceId");
+                throw new ArgumentException("Value should be non null and non empty", nameof(deviceId));
             }
 
             if (message == null)
             {
-                throw new ArgumentNullException("message");
+                throw new ArgumentNullException(nameof(message));
             }
             Outcome outcome;
 
@@ -134,14 +133,14 @@ namespace Microsoft.Azure.Devices
                 amqpMessage.Properties.To = "/devices/" + WebUtility.UrlEncode(deviceId) + "/messages/deviceBound";
                 try
                 {
-                    SendingAmqpLink sendingLink = await this.GetSendingLinkAsync();
+                    SendingAmqpLink sendingLink = await GetSendingLinkAsync().ConfigureAwait(false);
                     if (timeout != null)
                     {
-                        outcome = await sendingLink.SendMessageAsync(amqpMessage, IotHubConnection.GetNextDeliveryTag(ref this.sendingDeliveryTag), AmqpConstants.NullBinary, (TimeSpan)timeout);                        
+                        outcome = await sendingLink.SendMessageAsync(amqpMessage, IotHubConnection.GetNextDeliveryTag(ref sendingDeliveryTag), AmqpConstants.NullBinary, (TimeSpan)timeout).ConfigureAwait(false);                        
                     }
                     else
                     {
-                        outcome = await sendingLink.SendMessageAsync(amqpMessage, IotHubConnection.GetNextDeliveryTag(ref this.sendingDeliveryTag), AmqpConstants.NullBinary, this.OperationTimeout);
+                        outcome = await sendingLink.SendMessageAsync(amqpMessage, IotHubConnection.GetNextDeliveryTag(ref sendingDeliveryTag), AmqpConstants.NullBinary, OperationTimeout).ConfigureAwait(false);
                     }
                 }
                 catch (TimeoutException exception)
@@ -222,7 +221,7 @@ namespace Microsoft.Azure.Devices
             SendingAmqpLink sendingLink;
             if (!this.faultTolerantSendingLink.TryGetOpenedObject(out sendingLink))
             {
-                sendingLink = await this.faultTolerantSendingLink.GetOrCreateAsync(this.OpenTimeout);
+                sendingLink = await faultTolerantSendingLink.GetOrCreateAsync(OpenTimeout).ConfigureAwait(false);
             }
 
             return sendingLink;

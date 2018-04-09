@@ -12,12 +12,12 @@ namespace Microsoft.Azure.Devices.Common.Security
         {
             if (string.IsNullOrWhiteSpace(iotHubHostName))
             {
-                throw new ArgumentNullException("iotHubHostName");
+                throw new ArgumentNullException(nameof(iotHubHostName));
             }
 
             if (string.IsNullOrWhiteSpace(iotHubName))
             {
-                throw new ArgumentNullException("iotHubName");
+                throw new ArgumentNullException(nameof(iotHubName));
             }
 
             if (!iotHubHostName.StartsWith(string.Format(CultureInfo.InvariantCulture, "{0}.", iotHubName), StringComparison.OrdinalIgnoreCase))

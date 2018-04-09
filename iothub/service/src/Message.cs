@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Devices
         {
             if (amqpMessage == null)
             {
-                throw Fx.Exception.ArgumentNull("amqpMessage");
+                throw Fx.Exception.ArgumentNull(nameof(amqpMessage));
             }
 
             MessageConverter.UpdateMessageHeaderAndProperties(amqpMessage, this);

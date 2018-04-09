@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.Common.Security
         {
             if (string.IsNullOrWhiteSpace(iotHubName))
             {
-                throw new ArgumentNullException("iotHubName");
+                throw new ArgumentNullException(nameof(iotHubName));
             }
 
             this.ExpiresOn = expiresOn;
@@ -84,12 +84,12 @@ namespace Microsoft.Azure.Devices.Common.Security
         {
             if (string.IsNullOrWhiteSpace(iotHubName))
             {
-                throw new ArgumentNullException("iotHubName");
+                throw new ArgumentNullException(nameof(iotHubName));
             }
 
             if (string.IsNullOrWhiteSpace(rawToken))
             {
-                throw new ArgumentNullException("rawToken");
+                throw new ArgumentNullException(nameof(rawToken));
             }
 
             IDictionary<string, string> parsedFields = ExtractFieldValues(rawToken);
@@ -180,7 +180,7 @@ namespace Microsoft.Azure.Devices.Common.Security
         {
             if (targetAddress == null)
             {
-                throw new ArgumentNullException("targetAddress");
+                throw new ArgumentNullException(nameof(targetAddress));
             }
             
             string target = targetAddress.Host + targetAddress.AbsolutePath;

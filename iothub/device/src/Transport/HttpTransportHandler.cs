@@ -108,7 +108,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (message == null)
             {
-                throw Fx.Exception.ArgumentNull("message");
+                throw Fx.Exception.ArgumentNull(nameof(message));
             }
 
             var customHeaders = new Dictionary<string, string>(message.SystemProperties.Count + message.Properties.Count);
@@ -136,7 +136,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (messages == null)
             {
-                throw Fx.Exception.ArgumentNull("messages");
+                throw Fx.Exception.ArgumentNull(nameof(messages));
             }
 
             var customHeaders = PrepareCustomHeaders(CommonConstants.DeviceEventPathTemplate.FormatInvariant(this.deviceId), string.Empty, CommonConstants.DeviceToCloudOperation);

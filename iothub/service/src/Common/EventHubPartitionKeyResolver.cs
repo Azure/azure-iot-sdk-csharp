@@ -14,12 +14,12 @@ namespace Microsoft.Azure.Devices.Common
         {
             if (string.IsNullOrWhiteSpace(partitionKey))
             {
-                throw new ArgumentNullException("partitionKey");
+                throw new ArgumentNullException(nameof(partitionKey));
             }
 
             if (partitionCount < 1 || partitionCount > DefaultLogicalPartitionCount)
             {
-                throw new ArgumentOutOfRangeException("partitionCount", partitionCount, string.Format(CultureInfo.InvariantCulture, "Should be between {0} and {1}", 1, DefaultLogicalPartitionCount));
+                throw new ArgumentOutOfRangeException(nameof(partitionCount), partitionCount, string.Format(CultureInfo.InvariantCulture, "Should be between {0} and {1}", 1, DefaultLogicalPartitionCount));
             }
 
             short logicalPartition = Math.Abs((short)(PerfectHash.HashToShort(partitionKey) % DefaultLogicalPartitionCount));

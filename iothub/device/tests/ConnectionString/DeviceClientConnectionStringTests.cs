@@ -83,7 +83,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         [TestMethod]
         [TestCategory("CIT")]
         [Ignore]
-        public void DeviceClient_ConnectionString_X509Certificate_DefaultTest()
+        public void DeviceClientConnectionStringX509CertificateDefaultTest()
         {
             string hostName = "acme.azure-devices.net";
             var cert = CertificateHelper.InstallCertificateFromFile(LocalCertFilename, LocalCertPasswordFile);
@@ -94,7 +94,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
 
         [TestMethod]
         [TestCategory("CIT")]
-        public void DeviceClient_ConnectionString_X509Cert_Test()
+        public void DeviceClientConnectionStringX509CertTest()
         {
             string connectionString = "HostName=acme.azure-devices.net;X509Cert=true;DeviceId=device";
             var deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
@@ -103,7 +103,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         [TestMethod]
         [TestCategory("CIT")]
         [Ignore]
-        public void DeviceClient_ConnectionString_X509Certificate_AmqpTest()
+        public void DeviceClientConnectionStringX509CertificateAmqpTest()
         {
             string hostName = "acme.azure-devices.net";
             var cert = CertificateHelper.InstallCertificateFromFile(LocalCertFilename, LocalCertPasswordFile);
@@ -115,7 +115,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         [TestMethod]
         [TestCategory("CIT")]
         [Ignore]
-        public void DeviceClient_ConnectionString_X509Certificate_AmqpWsTest()
+        public void DeviceClientConnectionStringX509CertificateAmqpWsTest()
         {
             string hostName = "acme.azure-devices.net";
             var cert = CertificateHelper.InstallCertificateFromFile(LocalCertFilename, LocalCertPasswordFile);
@@ -127,7 +127,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         [TestMethod]
         [TestCategory("CIT")]
         [Ignore]
-        public void DeviceClient_ConnectionString_X509Certificate_AmqpTcpTest()
+        public void DeviceClientConnectionStringX509CertificateAmqpTcpTest()
         {
             string hostName = "acme.azure-devices.net";
             var cert = CertificateHelper.InstallCertificateFromFile(LocalCertFilename, LocalCertPasswordFile);
@@ -139,7 +139,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         [TestMethod]
         [TestCategory("CIT")]
         [Ignore]
-        public void DeviceClient_ConnectionString_X509Certificate_HttpTest()
+        public void DeviceClientConnectionStringX509CertificateHttpTest()
         {
             string hostName = "acme.azure-devices.net";
             var cert = CertificateHelper.InstallCertificateFromFile(LocalCertFilename, LocalCertPasswordFile);
@@ -151,7 +151,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         [TestMethod]
         [TestCategory("CIT")]
         [Ignore]
-        public void DeviceClient_ConnectionString_X509Certificate_MqttTest()
+        public void DeviceClientConnectionStringX509CertificateMqttTest()
         {
             string hostName = "acme.azure-devices.net";
             var cert = CertificateHelper.InstallCertificateFromFile(LocalCertFilename, LocalCertPasswordFile);
@@ -163,7 +163,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         [TestMethod]
         [TestCategory("CIT")]
         [ExpectedException(typeof(ArgumentException))]
-        public void DeviceClient_ConnectionString_X509Certificate_NullCertificateTest()
+        public void DeviceClientConnectionStringX509CertificateNullCertificateTest()
         {
             string hostName = "acme.azure-devices.net";
             var authMethod = new DeviceAuthenticationWithX509Certificate("device1", null);
@@ -173,7 +173,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
 
         [TestMethod]
         [TestCategory("CIT")]
-        public void DeviceClient_IotHubConnectionStringBuilder_Test()
+        public void DeviceClientIotHubConnectionStringBuilderTest()
         {
             string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=device1;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
             var iotHubConnectionStringBuilder = IotHubConnectionStringBuilder.Create(connectionString);

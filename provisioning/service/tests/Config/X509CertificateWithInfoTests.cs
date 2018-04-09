@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         /* SRS_X509_CERTIFICATE_WITH_INFO_21_001: [The public constructor shall throws ArgumentException if the provided certificate is null or InvalidOperationException if it is invalid.] */
         [TestMethod]
         [TestCategory("DevService")]
-        public void X509CertificateWithInfo_Constructor_ThrowsOnNullX509Certificate()
+        public void X509CertificateWithInfoConstructorThrowsOnNullX509Certificate()
         {
             // arrange
             X509Certificate2 certificateNull = null;
@@ -105,7 +105,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         /* SRS_X509_CERTIFICATE_WITH_INFO_21_003: [The public constructor shall set the Info to null.] */
         [TestMethod]
         [TestCategory("DevService")]
-        public void X509CertificateWithInfo_Constructor_SucceedOnValidX509Certificate()
+        public void X509CertificateWithInfoConstructorSucceedOnValidX509Certificate()
         {
             // arrange
             X509Certificate2 certificate = new X509Certificate2(System.Text.Encoding.ASCII.GetBytes(PUBLIC_KEY_CERTIFICATE));
@@ -120,7 +120,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         [TestMethod]
         [TestCategory("DevService")]
-        public void X509CertificateWithInfo_Constructor_SucceedOnValidX509CertificateString()
+        public void X509CertificateWithInfoConstructorSucceedOnValidX509CertificateString()
         {
             // arrange
             string certificate = PUBLIC_KEY_CERTIFICATE;
@@ -137,7 +137,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         /* SRS_X509_CERTIFICATE_WITH_INFO_21_006: [The constructor for JSON shall store the provided certificate as X509Certificate2.] */
         [TestMethod]
         [TestCategory("DevService")]
-        public void X509CertificateWithInfo_SucceedOnJsonWithInfo()
+        public void X509CertificateWithInfoSucceedOnJsonWithInfo()
         {
             // arrange
             string json = makeJson(SUBJECT_NAME, SHA1THUMBPRINT, SHA256THUMBPRINT, ISSUER_NAME, NOT_BEFORE_UTC_STRING, NOT_AFTER_UTC_STRING, SERIAL_NUMBER, VERSION);

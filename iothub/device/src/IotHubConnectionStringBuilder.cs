@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (iotHubConnectionString.IsNullOrWhiteSpace())
             {
-                throw new ArgumentNullException("iotHubConnectionString");
+                throw new ArgumentNullException(nameof(iotHubConnectionString));
             }
 
             return CreateWithIAuthenticationOverride(iotHubConnectionString, null);
@@ -330,7 +330,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (hostname.IsNullOrWhiteSpace())
             {
-                throw new ArgumentNullException("hostname");
+                throw new ArgumentNullException(nameof(hostname));
             }
 #if !NETMF
             ValidateFormat(hostname, HostNamePropertyName, HostNameRegex);
@@ -358,7 +358,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (authMethod == null)
             {
-                throw new ArgumentNullException("authMethod");
+                throw new ArgumentNullException(nameof(authMethod));
             }
 
             authMethod.Populate(this);

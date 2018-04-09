@@ -333,7 +333,7 @@ namespace Microsoft.Azure.Devices
             var str = await message.Content.ReadAsStringAsync().ConfigureAwait(false);
             T entity = Newtonsoft.Json.JsonConvert.DeserializeObject<T>(str);
 #else
-            T entity = await message.Content.ReadAsAsync<T>(token);
+            T entity = await message.Content.ReadAsAsync<T>(token).ConfigureAwait(false);
 #endif
             // Etag in the header is considered authoritative
             var eTagHolder = entity as IETagHolder;

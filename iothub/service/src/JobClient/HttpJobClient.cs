@@ -210,12 +210,12 @@ namespace Microsoft.Azure.Devices
                     HttpStatusCode.PreconditionFailed,
                     async (responseMessage) =>
                         new PreconditionFailedException(
-                            await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage))
+                            await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage).ConfigureAwait(false))
                 },
                 {
                     HttpStatusCode.NotFound, async responseMessage =>
                     {
-                        var responseContent = await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage);
+                        var responseContent = await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage).ConfigureAwait(false);
                         return (Exception) new DeviceNotFoundException(responseContent, (Exception) null);
                     }
                 }
@@ -251,13 +251,13 @@ namespace Microsoft.Azure.Devices
                 customHeaders.Add(PageSizeHeader, pageSize.ToString());
             }
 
-            HttpResponseMessage response = await this.httpClientHelper.GetAsync<HttpResponseMessage>(
+            HttpResponseMessage response = await httpClientHelper.GetAsync<HttpResponseMessage>(
                 BuildQueryJobUri(jobType, jobStatus),
                 null,
                 customHeaders,
-                cancellationToken);
+                cancellationToken).ConfigureAwait(false);
 
-            return await QueryResult.FromHttpResponseAsync(response);
+            return await QueryResult.FromHttpResponseAsync(response).ConfigureAwait(false);
         }
 
         Uri BuildQueryJobUri(JobType? jobType, JobStatus? jobStatus)

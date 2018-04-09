@@ -90,7 +90,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (string.IsNullOrEmpty(lockToken))
             {
-                throw Fx.Exception.ArgumentNull("lockToken");
+                throw Fx.Exception.ArgumentNull(nameof(lockToken));
             }
 
             await this.EnsureOpenedAsync(false).ConfigureAwait(false);
@@ -105,7 +105,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (message == null)
             {
-                throw Fx.Exception.ArgumentNull("message");
+                throw Fx.Exception.ArgumentNull(nameof(message));
             }
 
             await this.EnsureOpenedAsync(false).ConfigureAwait(false);
@@ -120,7 +120,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (string.IsNullOrEmpty(lockToken))
             {
-                throw Fx.Exception.ArgumentNull("lockToken");
+                throw Fx.Exception.ArgumentNull(nameof(lockToken));
             }
 
             await this.EnsureOpenedAsync(false).ConfigureAwait(false);
@@ -135,7 +135,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (message == null)
             {
-                throw Fx.Exception.ArgumentNull("message");
+                throw Fx.Exception.ArgumentNull(nameof(message));
             }
 
             await this.EnsureOpenedAsync(false).ConfigureAwait(false);
@@ -150,7 +150,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (string.IsNullOrEmpty(lockToken))
             {
-                throw Fx.Exception.ArgumentNull("lockToken");
+                throw Fx.Exception.ArgumentNull(nameof(lockToken));
             }
 
             await this.EnsureOpenedAsync(false).ConfigureAwait(false);
@@ -165,7 +165,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (message == null)
             {
-                throw Fx.Exception.ArgumentNull("message");
+                throw Fx.Exception.ArgumentNull(nameof(message));
             }
 
             await this.EnsureOpenedAsync(false).ConfigureAwait(false);
@@ -180,7 +180,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (message == null)
             {
-                throw Fx.Exception.ArgumentNull("message");
+                throw Fx.Exception.ArgumentNull(nameof(message));
             }
 
             await this.EnsureOpenedAsync(false).ConfigureAwait(false);
@@ -195,7 +195,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (messages == null)
             {
-                throw Fx.Exception.ArgumentNull("messages");
+                throw Fx.Exception.ArgumentNull(nameof(messages));
             }
 
             await this.EnsureOpenedAsync(false).ConfigureAwait(false);

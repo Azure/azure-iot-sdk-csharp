@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         /* SRS_ENROLLMENT_GROUP_21_001: [The constructor shall store the provided parameters.] */
         [TestMethod]
         [TestCategory("DevService")]
-        public void EnrollmentGroup_Constructor_Succeed()
+        public void EnrollmentGroupConstructorSucceed()
         {
             // arrange - act
             EnrollmentGroup individualEnrollment = new EnrollmentGroup(SampleEnrollmentGroupId, SampleX509RootAttestation);
@@ -89,7 +89,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         /* SRS_ENROLLMENT_GROUP_21_002: [The constructor shall throws ArgumentException if one of the provided parameters is null.] */
         [TestMethod]
         [TestCategory("DevService")]
-        public void EnrollmentGroup_Constructor_ThrowsOnInvalidParameters()
+        public void EnrollmentGroupConstructorThrowsOnInvalidParameters()
         {
             // arrange - act - assert
             TestAssert.Throws<ArgumentException>(() => new EnrollmentGroup(null, SampleX509RootAttestation));
@@ -104,7 +104,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                                                 provided parameters in JSON is not valid.] */
         [TestMethod]
         [TestCategory("DevService")]
-        public void EnrollmentGroup_ConstructorJSON_ThrowsOnNonEnrollmentGroupID()
+        public void EnrollmentGroupConstructorJSONThrowsOnNonEnrollmentGroupID()
         {
             // arrange
             string invalidJson =
@@ -146,7 +146,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         [TestMethod]
         [TestCategory("DevService")]
-        public void EnrollmentGroup_ConstructorJSON_ThrowsOnNonAttestation()
+        public void EnrollmentGroupConstructorJSONThrowsOnNonAttestation()
         {
             // arrange
             string invalidJson =
@@ -171,7 +171,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         /* SRS_ENROLLMENT_GROUP_21_004: [The constructor shall store all parameters in the JSON.] */
         [TestMethod]
         [TestCategory("DevService")]
-        public void EnrollmentGroup_ConstructorJSON_Succeed()
+        public void EnrollmentGroupConstructorJSONSucceed()
         {
             // arrange
             EnrollmentGroup enrollmentGroup = Newtonsoft.Json.JsonConvert.DeserializeObject<EnrollmentGroup>(SampleEnrollmentGroupJson);
@@ -190,7 +190,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         [TestMethod]
         [TestCategory("DevService")]
-        public void EnrollmentGroup_ConstructorJSON_SucceedOnMinimumJSON()
+        public void EnrollmentGroupConstructorJSONSucceedOnMinimumJSON()
         {
             // arrange
             string minJson =

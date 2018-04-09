@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestInitialize]
         public async Task Initialize()
         {
-            await sequentialTestSemaphore.WaitAsync();
+            await sequentialTestSemaphore.WaitAsync().ConfigureAwait(false);
         }
 #else
         [TestInitialize]
@@ -72,42 +72,42 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("X509-Message-E2E")]
         public async Task X509_DeviceSendSingleMessage_Amqp()
         {
-            await SendSingleMessageX509(Client.TransportType.Amqp_Tcp_Only);
+            await SendSingleMessageX509(Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
         }
 
         [TestMethod]
         [TestCategory("X509-Message-E2E")]
         public async Task X509_DeviceSendSingleMessage_AmqpWs()
         {
-            await SendSingleMessageX509(Client.TransportType.Amqp_WebSocket_Only);
+            await SendSingleMessageX509(Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
         }
 
         [TestMethod]
         [TestCategory("X509-Message-E2E")]
         public async Task X509_DeviceSendSingleMessage_Mqtt()
         {
-            await SendSingleMessageX509(Client.TransportType.Mqtt_Tcp_Only);
+            await SendSingleMessageX509(Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
         }
 
         [TestMethod]
         [TestCategory("X509-Message-E2E")]
         public async Task X509_DeviceSendSingleMessage_MqttWs()
         {
-            await SendSingleMessageX509(Client.TransportType.Mqtt_WebSocket_Only);
+            await SendSingleMessageX509(Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
         }
 
         [TestMethod]
         [TestCategory("X509-Message-E2E")]
         public async Task X509_DeviceSendSingleMessage_Http()
         {
-            await SendSingleMessageX509(Client.TransportType.Http1);
+            await SendSingleMessageX509(Client.TransportType.Http1).ConfigureAwait(false);
         }
 
         [TestMethod]
         [TestCategory("X509-Message-E2E")]
         public async Task X509_DeviceReceiveSingleMessage_Amqp()
         {
-            await ReceiveSingleMessageX509(Client.TransportType.Amqp_Tcp_Only);
+            await ReceiveSingleMessageX509(Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
         }
 
         [Ignore] // TODO: #171 - X509 tests are intermittently failing during CI.
@@ -115,14 +115,14 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("X509-Message-E2E")]
         public async Task X509_DeviceReceiveSingleMessage_AmqpWs()
         {
-            await ReceiveSingleMessageX509(Client.TransportType.Amqp_WebSocket_Only);
+            await ReceiveSingleMessageX509(Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
         }
 
         [TestMethod]
         [TestCategory("X509-Message-E2E")]
         public async Task X509_DeviceReceiveSingleMessage_Mqtt()
         {
-            await ReceiveSingleMessageX509(Client.TransportType.Mqtt_Tcp_Only);
+            await ReceiveSingleMessageX509(Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
         }
 
 
@@ -131,7 +131,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("X509-Message-E2E")]
         public async Task X509_DeviceReceiveSingleMessage_MqttWs()
         {
-            await ReceiveSingleMessageX509(Client.TransportType.Mqtt_WebSocket_Only);
+            await ReceiveSingleMessageX509(Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
         }
 
 
@@ -140,7 +140,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("X509-Message-E2E")]
         public async Task X509_DeviceReceiveSingleMessage_Http()
         {
-            await ReceiveSingleMessageX509(Client.TransportType.Http1);
+            await ReceiveSingleMessageX509(Client.TransportType.Http1).ConfigureAwait(false);
         }
 
         private Client.Message ComposeD2CTestMessage(out string payload, out string p1Value)
@@ -181,11 +181,11 @@ namespace Microsoft.Azure.Devices.E2ETests
                 if (transport == Client.TransportType.Http1)
                 {
                     // Long-polling is not supported in http
-                    receivedMessage = await deviceClient.ReceiveAsync();
+                    receivedMessage = await deviceClient.ReceiveAsync().ConfigureAwait(false);
                 }
                 else
                 {
-                    receivedMessage = await deviceClient.ReceiveAsync(TimeSpan.FromSeconds(1));
+                    receivedMessage = await deviceClient.ReceiveAsync(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
                 }
 
                 if (receivedMessage != null)
@@ -198,7 +198,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     Assert.AreEqual(prop.Key, "property1");
                     Assert.AreEqual(prop.Value, p1Value);
 
-                    await deviceClient.CompleteAsync(receivedMessage);
+                    await deviceClient.CompleteAsync(receivedMessage).ConfigureAwait(false);
                     wait = false;
                 }
 
@@ -225,27 +225,27 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             try
             {
-                await deviceClient.OpenAsync();
+                await deviceClient.OpenAsync().ConfigureAwait(false);
 
                 if (transport == Client.TransportType.Mqtt_Tcp_Only ||
                     transport == Client.TransportType.Mqtt_WebSocket_Only)
                 {
                     // Dummy ReceiveAsync to ensure mqtt subscription registration before SendAsync() is called on service client.
-                    await deviceClient.ReceiveAsync(TimeSpan.FromSeconds(2));
+                    await deviceClient.ReceiveAsync(TimeSpan.FromSeconds(2)).ConfigureAwait(false);
                 }
 
                 string payload, messageId, p1Value;
-                await serviceClient.OpenAsync();
+                await serviceClient.OpenAsync().ConfigureAwait(false);
                 await serviceClient.SendAsync(deviceInfo.Item1,
-                    ComposeC2DTestMessage(out payload, out messageId, out p1Value));
+                    ComposeC2DTestMessage(out payload, out messageId, out p1Value)).ConfigureAwait(false);
 
-                await VerifyReceivedC2DMessage(transport, deviceClient, payload, p1Value);
+                await VerifyReceivedC2DMessage(transport, deviceClient, payload, p1Value).ConfigureAwait(false);
             }
             finally
             {
-                await deviceClient.CloseAsync();
-                await serviceClient.CloseAsync();
-                await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager);
+                await deviceClient.CloseAsync().ConfigureAwait(false);
+                await serviceClient.CloseAsync().ConfigureAwait(false);
+                await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager).ConfigureAwait(false);
             }
         }
     }

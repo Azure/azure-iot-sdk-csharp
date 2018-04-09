@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Common
         {
             if (value == null)
             {
-                throw new ArgumentNullException("value");
+                throw new ArgumentNullException(nameof(value));
             }
 
             var length = value.Length;
@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.Common
         {
             if (value == null)
             {
-                throw new ArgumentNullException("value");
+                throw new ArgumentNullException(nameof(value));
             }
 
             if (value.Length == 0)
