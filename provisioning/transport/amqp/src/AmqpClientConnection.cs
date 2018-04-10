@@ -84,7 +84,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                         args.CompletedCallback(args);
                     }
 
-                    _tcs = new TaskCompletionSource<TransportBase>();
                     transport = await _tcs.Task.ConfigureAwait(false);
                     await transport.OpenAsync(timeout).ConfigureAwait(false);
                 }
