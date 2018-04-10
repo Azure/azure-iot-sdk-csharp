@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (iotHubConnectionStringBuilder == null)
             {
-                throw new ArgumentNullException(nameof(iotHubConnectionStringBuilder));
+                throw new ArgumentNullException("iotHubConnectionStringBuilder");
             }
 
             iotHubConnectionStringBuilder.DeviceId = this.DeviceId;
@@ -65,7 +65,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (deviceId.IsNullOrWhiteSpace())
             {
-                throw new ArgumentNullException(nameof(deviceId));
+                throw new ArgumentNullException("deviceId");
             }
 
             this.deviceId = deviceId;

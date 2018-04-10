@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
                 throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, Resources.TaskCannotBeNull, new object[]
                 {
                     "taskAction"
-                }), nameof(taskAction));
+                }), "taskAction");
             }
             if (task.Status == TaskStatus.RanToCompletion)
             {
@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
                 throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, Resources.TaskMustBeScheduled, new object[]
                 {
                     "taskAction"
-                }), nameof(taskAction));
+                }), "taskAction");
             }
             TaskCompletionSource<bool> tcs = new TaskCompletionSource<bool>();
             task.ContinueWith(delegate (Task t)

@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (iotHubConnectionStringBuilder == null)
             {
-                throw new ArgumentNullException(nameof(iotHubConnectionStringBuilder));
+                throw new ArgumentNullException("iotHubConnectionStringBuilder");
             }
 
             iotHubConnectionStringBuilder.DeviceId = this.DeviceId;
@@ -67,7 +67,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (deviceId.IsNullOrWhiteSpace())
             {
-                throw new ArgumentNullException(nameof(deviceId));
+                throw new ArgumentNullException("deviceId");
             }
 
             this.deviceId = deviceId;
@@ -77,7 +77,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (token.IsNullOrWhiteSpace())
             {
-                throw new ArgumentNullException(nameof(token));
+                throw new ArgumentNullException("token");
             }
 
 #if NETMF

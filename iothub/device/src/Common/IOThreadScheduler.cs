@@ -108,7 +108,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (callback == null)
             {
-                throw Fx.Exception.ArgumentNull(nameof(callback));
+                throw Fx.Exception.ArgumentNull("callback");
             }
 
             bool queued = false;
@@ -128,7 +128,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (callback == null)
             {
-                throw Fx.Exception.ArgumentNull(nameof(callback));
+                throw Fx.Exception.ArgumentNull("callback");
             }
 
             bool queued = false;

@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices
         {
             if (builder == null)
             {
-                throw new ArgumentNullException(nameof(builder));
+                throw new ArgumentNullException("builder");
             }
 
             this.HostName = builder.HostName;

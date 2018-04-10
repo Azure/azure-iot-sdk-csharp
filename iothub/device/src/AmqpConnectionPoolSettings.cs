@@ -58,7 +58,7 @@ namespace Microsoft.Azure.Devices.Client
                 }
                 else
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value));
+                    throw new ArgumentOutOfRangeException("value");
                 }
             }
         }

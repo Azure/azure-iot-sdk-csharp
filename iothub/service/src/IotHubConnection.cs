@@ -436,13 +436,13 @@ namespace Microsoft.Azure.Devices
         {
             if (lockToken == null)
             {
-                throw new ArgumentNullException(nameof(lockToken));
+                throw new ArgumentNullException("lockToken");
             }
 
             Guid lockTokenGuid;
             if (!Guid.TryParse(lockToken, out lockTokenGuid))
             {
-                throw new ArgumentException("Should be a valid Guid", nameof(lockToken));
+                throw new ArgumentException("Should be a valid Guid", "lockToken");
             }
 
             var deliveryTag = new ArraySegment<byte>(lockTokenGuid.ToByteArray());

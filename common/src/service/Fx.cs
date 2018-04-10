@@ -919,7 +919,7 @@ namespace Microsoft.Azure.Devices.Common
 
                     if (elementType == null)
                     {
-                        throw Fx.Exception.ArgumentNull(nameof(elementType));
+                        throw Fx.Exception.ArgumentNull("elementType");
                     }
 
                     this.elementType = elementType;
@@ -960,7 +960,7 @@ namespace Microsoft.Azure.Devices.Common
 
                     if (elementType == null)
                     {
-                        throw Fx.Exception.ArgumentNull(nameof(elementType));
+                        throw Fx.Exception.ArgumentNull("elementType");
                     }
 
                     this.elementType = elementType;
@@ -1109,11 +1109,11 @@ namespace Microsoft.Azure.Devices.Common
                 {
                     if (exceptionType == null)
                     {
-                        throw Fx.Exception.ArgumentNull(nameof(exceptionType));
+                        throw Fx.Exception.ArgumentNull("exceptionType");
                     }
                     if (string.IsNullOrEmpty(diagnosis))
                     {
-                        throw Fx.Exception.ArgumentNullOrEmpty(nameof(diagnosis));
+                        throw Fx.Exception.ArgumentNullOrEmpty("diagnosis");
                     }
 
                     this.exceptionType = exceptionType;

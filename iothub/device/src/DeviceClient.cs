@@ -362,12 +362,12 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         {
             if (hostname == null)
             {
-                throw new ArgumentNullException(nameof(hostname));
+                throw new ArgumentNullException("hostname");
             }
 
             if (authenticationMethod == null)
             {
-                throw new ArgumentNullException(nameof(authenticationMethod));
+                throw new ArgumentNullException("authenticationMethod");
             }
 
             var connectionStringBuilder = IotHubConnectionStringBuilder.Create(hostname, authenticationMethod);
@@ -664,7 +664,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         {
             if (string.IsNullOrEmpty(lockToken))
             {
-                throw Fx.Exception.ArgumentNull(nameof(lockToken));
+                throw Fx.Exception.ArgumentNull("lockToken");
             }
 
             // Codes_SRS_DEVICECLIENT_28_013: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.]
@@ -679,7 +679,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         {
             if (message == null)
             {
-                throw Fx.Exception.ArgumentNull(nameof(message));
+                throw Fx.Exception.ArgumentNull("message");
             }
             // Codes_SRS_DEVICECLIENT_28_015: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.]
             return this.CompleteAsync(message.LockToken);
@@ -693,7 +693,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         {
             if (string.IsNullOrEmpty(lockToken))
             {
-                throw Fx.Exception.ArgumentNull(nameof(lockToken));
+                throw Fx.Exception.ArgumentNull("lockToken");
             }
             // Codes_SRS_DEVICECLIENT_28_015: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.]
             return ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.AbandonAsync(lockToken, operationTimeoutCancellationToken));
@@ -707,7 +707,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         {
             if (message == null)
             {
-                throw Fx.Exception.ArgumentNull(nameof(message));
+                throw Fx.Exception.ArgumentNull("message");
             }
 
             return this.AbandonAsync(message.LockToken);
@@ -721,7 +721,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         {
             if (string.IsNullOrEmpty(lockToken))
             {
-                throw Fx.Exception.ArgumentNull(nameof(lockToken));
+                throw Fx.Exception.ArgumentNull("lockToken");
             }
 
             return ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.RejectAsync(lockToken, operationTimeoutCancellationToken));
@@ -735,7 +735,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         {
             if (message == null)
             {
-                throw Fx.Exception.ArgumentNull(nameof(message));
+                throw Fx.Exception.ArgumentNull("message");
             }
             // Codes_SRS_DEVICECLIENT_28_017: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.]
             return ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.RejectAsync(message.LockToken, operationTimeoutCancellationToken));
@@ -749,7 +749,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         {
             if (message == null)
             {
-                throw Fx.Exception.ArgumentNull(nameof(message));
+                throw Fx.Exception.ArgumentNull("message");
             }
 
             IoTHubClientDiagnostic.AddDiagnosticInfoIfNecessary(message, _diagnosticSamplingPercentage, ref _currentMessageCount);
@@ -765,7 +765,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         {
             if (messages == null)
             {
-                throw Fx.Exception.ArgumentNull(nameof(messages));
+                throw Fx.Exception.ArgumentNull("messages");
             }
 
             // Codes_SRS_DEVICECLIENT_28_019: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication or quota exceed) occurs.]
@@ -889,19 +889,19 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         {
             if (String.IsNullOrEmpty(blobName))
             {
-                throw Fx.Exception.ArgumentNull(nameof(blobName));
+                throw Fx.Exception.ArgumentNull("blobName");
             }
             if (source == null)
             {
-                throw Fx.Exception.ArgumentNull(nameof(source));
+                throw Fx.Exception.ArgumentNull("source");
             }
             if (blobName.Length > 1024)
             {
-                throw Fx.Exception.Argument(nameof(blobName), "Length cannot exceed 1024 characters");
+                throw Fx.Exception.Argument("blobName", "Length cannot exceed 1024 characters");
             }
             if (blobName.Split('/').Count() > 254)
             {
-                throw Fx.Exception.Argument(nameof(blobName), "Path segment count cannot exceed 254");
+                throw Fx.Exception.Argument("blobName", "Path segment count cannot exceed 254");
             }
 
             HttpTransportHandler httpTransport = null;
@@ -1327,7 +1327,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             // Codes_SRS_DEVICECLIENT_18_007: `SetDesiredPropertyUpdateCallbackAsync` shall throw an `ArgumentNull` exception if `callback` is null
             if (callback == null)
             {
-                throw Fx.Exception.ArgumentNull(nameof(callback));
+                throw Fx.Exception.ArgumentNull("callback");
             }
 
             return ApplyTimeout(async operationTimeoutCancellationToken =>
@@ -1367,7 +1367,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             // Codes_SRS_DEVICECLIENT_18_006: `UpdateReportedPropertiesAsync` shall throw an `ArgumentNull` exception if `reportedProperties` is null
             if (reportedProperties == null)
             {
-                throw Fx.Exception.ArgumentNull(nameof(reportedProperties));
+                throw Fx.Exception.ArgumentNull("reportedProperties");
             }
             return ApplyTimeout(async operationTimeoutCancellationToken =>
             {

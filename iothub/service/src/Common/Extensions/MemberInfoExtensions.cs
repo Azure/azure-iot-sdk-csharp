@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.Common
         {
             if (member == null)
             {
-                throw new ArgumentNullException(nameof(member));
+                throw new ArgumentNullException("member");
             }
 
             Type type = member.DeclaringType;

@@ -119,12 +119,12 @@ namespace Microsoft.Azure.Devices
         {
             if (string.IsNullOrWhiteSpace(deviceId))
             {
-                throw new ArgumentException("Value should be non null and non empty", nameof(deviceId));
+                throw new ArgumentException("Value should be non null and non empty", "deviceId");
             }
 
             if (message == null)
             {
-                throw new ArgumentNullException(nameof(message));
+                throw new ArgumentNullException("message");
             }
             Outcome outcome;
 

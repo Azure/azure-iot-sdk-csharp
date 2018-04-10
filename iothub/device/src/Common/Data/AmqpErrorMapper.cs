@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (exception == null)
             {
-                throw new ArgumentNullException(nameof(exception));
+                throw new ArgumentNullException("exception");
             }
 
             Error error = new Error();

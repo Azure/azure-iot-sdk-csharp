@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices
                     break;
 
                 default:
-                    throw new ArgumentException("Invalid endpoint kind to receive messages from Service endpoints", nameof(endpointKind));
+                    throw new ArgumentException("Invalid endpoint kind to receive messages from Service endpoints", "endpointKind");
             }
 
             return path;

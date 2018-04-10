@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.Client
 
         public IotHubTokenRefresher(AmqpSession amqpSession, IotHubConnectionString connectionString, string audience)
         {
-            this.amqpSession = amqpSession ?? throw new ArgumentNullException(nameof(amqpSession));
+            this.amqpSession = amqpSession ?? throw new ArgumentNullException("amqpSession");
             this.connectionString = connectionString;
             this.audience = audience;
             this.cancellationTokenSource = new CancellationTokenSource();

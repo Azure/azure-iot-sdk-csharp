@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices
         {
             if (iotHubConnectionStringBuilder == null)
             {
-                throw new ArgumentNullException(nameof(iotHubConnectionStringBuilder));
+                throw new ArgumentNullException("iotHubConnectionStringBuilder");
             }
 
             iotHubConnectionStringBuilder.SharedAccessKeyName = this.PolicyName;
@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices
         {
             if (string.IsNullOrWhiteSpace(policyName))
             {
-                throw new ArgumentNullException(nameof(policyName));
+                throw new ArgumentNullException("policyName");
             }
 
             this.policyName = policyName;
@@ -65,7 +65,7 @@ namespace Microsoft.Azure.Devices
         {
             if (string.IsNullOrWhiteSpace(token))
             {
-                throw new ArgumentNullException(nameof(token));
+                throw new ArgumentNullException("token");
             }
 
             if (!token.StartsWith(SharedAccessSignatureConstants.SharedAccessSignature, StringComparison.OrdinalIgnoreCase))

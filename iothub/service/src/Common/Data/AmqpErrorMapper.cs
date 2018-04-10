@@ -93,7 +93,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         {
             if (exception == null)
             {
-                throw new ArgumentNullException(nameof(exception));
+                throw new ArgumentNullException("exception");
             }
 
             Error error = new Error();

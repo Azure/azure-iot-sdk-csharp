@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (builder == null)
             {
-                throw new ArgumentNullException(nameof(builder));
+                throw new ArgumentNullException("builder");
             }
 
             this.Audience = builder.HostName;

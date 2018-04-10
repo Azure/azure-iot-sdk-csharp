@@ -101,7 +101,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (timeFromNow == TimeSpan.MaxValue)
             {
-                throw Fx.Exception.Argument(nameof(timeFromNow), CommonResources.IOThreadTimerCannotAcceptMaxTimeSpan);
+                throw Fx.Exception.Argument("timeFromNow", CommonResources.IOThreadTimerCannotAcceptMaxTimeSpan);
             }
 
             SetAt(Ticks.Add(Ticks.Now, Ticks.FromTimeSpan(timeFromNow)));
