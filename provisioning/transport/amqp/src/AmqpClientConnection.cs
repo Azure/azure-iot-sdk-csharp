@@ -75,7 +75,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     args.SetBuffer(buffer.Buffer, buffer.Offset, buffer.Length);
                     args.CompletedCallback = OnWriteHeaderComplete;
                     args.Transport = transport;
-                    transport.WriteAsync(args);
+                    bool writeAsyncResult = transport.WriteAsync(args);
+
+                    if (Logging.IsEnabled) Logging.Info(this, $"{nameof(AmqpClientConnection)}.{nameof(OpenAsync)}: Sent Protocol Header: {_sentHeader.ToString()} writeAsyncResult: {writeAsyncResult} completedSynchronously: {args.CompletedSynchronously}");
+
+                    if (args.CompletedSynchronously)
+                    {
+                        args.CompletedCallback(args);
+                    }
 
                     _tcs = new TaskCompletionSource<TransportBase>();
                     transport = await _tcs.Task.ConfigureAwait(false);
