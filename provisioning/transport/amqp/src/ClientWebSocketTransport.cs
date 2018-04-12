@@ -301,6 +301,7 @@ namespace Microsoft.Azure.Amqp.Transport
             args.BytesTransfered = 0; // reset bytes transferred
             if (taskResult.IsFaulted)
             {
+                args.CompletedSynchronously = result.CompletedSynchronously;
                 args.Exception = taskResult.Exception;
                 return true;
             }
@@ -312,6 +313,7 @@ namespace Microsoft.Azure.Amqp.Transport
             }
             else if (taskResult.IsCanceled)  // This should not happen since TaskCanceledException is handled in WriteAsyncCore.
             {
+                args.CompletedSynchronously = result.CompletedSynchronously;
                 return true;
             }
 
