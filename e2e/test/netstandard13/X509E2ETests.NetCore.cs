@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             Tuple<string, string> deviceInfo = TestUtil.CreateDeviceWithX509(DevicePrefix, hostName, registryManager);
 
             EventHubClient eventHubClient;
-            PartitionReceiver eventHubReceiver = await CreateEventHubReceiver(deviceInfo.Item1);
+            PartitionReceiver eventHubReceiver = await CreateEventHubReceiver(deviceInfo.Item1).ConfigureAwait(false);
 
             X509Certificate2 cert = Configuration.IoTHub.GetCertificateWithPrivateKey();
 
@@ -42,19 +42,19 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             try
             {
-                await deviceClient.OpenAsync();
+                await deviceClient.OpenAsync().ConfigureAwait(false);
 
                 string payload;
                 string p1Value;
                 Client.Message testMessage = ComposeD2CTestMessage(out payload, out p1Value);
-                await deviceClient.SendEventAsync(testMessage);
+                await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
 
                 bool isReceived = false;
                 Stopwatch sw = new Stopwatch();
                 sw.Start();
                 while (!isReceived && sw.Elapsed.Minutes < 1)
                 {
-                    var events = await eventHubReceiver.ReceiveAsync(int.MaxValue, TimeSpan.FromSeconds(5));
+                    var events = await eventHubReceiver.ReceiveAsync(int.MaxValue, TimeSpan.FromSeconds(5)).ConfigureAwait(false);
                     isReceived = VerifyTestMessage(events, deviceInfo.Item1, payload, p1Value);
                 }
 
@@ -64,9 +64,9 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
             finally
             {
-                await deviceClient.CloseAsync();
-                await eventHubReceiver.CloseAsync();
-                await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager);
+                await deviceClient.CloseAsync().ConfigureAwait(false);
+                await eventHubReceiver.CloseAsync().ConfigureAwait(false);
+                await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager).ConfigureAwait(false);
             }
         }
         #endregion
@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             string endpoint = Configuration.IoTHub.EventHubString;
             EventHubClient eventHubClient = EventHubClient.CreateFromConnectionString(endpoint);
-            var eventHubRuntime = await eventHubClient.GetRuntimeInformationAsync();
+            var eventHubRuntime = await eventHubClient.GetRuntimeInformationAsync().ConfigureAwait(false);
             var eventHubPartitionsCount = eventHubRuntime.PartitionCount;
             string partition = EventHubPartitionKeyResolver.ResolveToPartition(deviceName, eventHubPartitionsCount);
             string consumerGroupName = Configuration.IoTHub.ConsumerGroup;

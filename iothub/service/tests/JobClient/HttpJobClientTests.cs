@@ -18,8 +18,6 @@ namespace Microsoft.Azure.Devices.Api.Test.JobClient
     public class HttpJobClientTests
     {
         private readonly string jobId = "testJobId";
-        private readonly string deviceId = "testDeviceId";
-        private readonly List<string> deviceIds = new List<string>() { "testDeviceId", "testDeviceId2", "testDeviceId3", "testDeviceId4" };
         private readonly JobResponse expectedJobResponse = new JobResponse();
         private readonly TimeSpan timeout = TimeSpan.FromMinutes(1);
 
@@ -81,7 +79,7 @@ namespace Microsoft.Azure.Devices.Api.Test.JobClient
         public async Task CloseAsyncTest()
         {
             httpClientHelperMock.Setup(restOp => restOp.Dispose());
-            await jobClient.CloseAsync();
+            await jobClient.CloseAsync().ConfigureAwait(false);
             httpClientHelperMock.Verify(restOp => restOp.Dispose(), Times.Never());
         }
     }

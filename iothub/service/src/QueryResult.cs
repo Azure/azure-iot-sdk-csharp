@@ -34,9 +34,9 @@ namespace Microsoft.Azure.Devices
             return new QueryResult
             {
 #if !NET451
-                Items = Newtonsoft.Json.JsonConvert.DeserializeObject<IEnumerable<object>>(await response.Content.ReadAsStringAsync()),
+                Items = Newtonsoft.Json.JsonConvert.DeserializeObject<IEnumerable<object>>(await response.Content.ReadAsStringAsync().ConfigureAwait(false)),
 #else // Requires System.Net.Http.Formatting.Extension
-                Items = await response.Content.ReadAsAsync<IEnumerable<object>>(),
+                Items = await response.Content.ReadAsAsync<IEnumerable<object>>().ConfigureAwait(false),
 #endif
                 Type = (QueryResultType)Enum.Parse(typeof(QueryResultType), response.Headers.GetFirstValueOrNull(QueryResultTypeHeader) ?? "unknown"),
                 ContinuationToken = response.Headers.GetFirstValueOrNull(ContinuationTokenHeader)

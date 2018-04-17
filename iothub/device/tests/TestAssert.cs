@@ -41,8 +41,8 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             errorMessage = errorMessage ?? "Failed";
             try
-            {   
-                await action();
+            {
+                await action().ConfigureAwait(false);
             }
             catch (TException ex)
             {

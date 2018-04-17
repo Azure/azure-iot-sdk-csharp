@@ -80,7 +80,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         /* SRS_DEVICE_ENROLLMENT_21_001: [The constructor shall store the provided parameters.] */
         [TestMethod]
         [TestCategory("DevService")]
-        public void IndividualEnrollment_Constructor_SucceedOnTPM()
+        public void IndividualEnrollmentConstructorSucceedOnTPM()
         {
             // arrange - act
             IndividualEnrollment individualEnrollment = new IndividualEnrollment(SampleRegistrationId, SampleTpmAttestation);
@@ -92,7 +92,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         [TestMethod]
         [TestCategory("DevService")]
-        public void IndividualEnrollment_Constructor_SucceedOnX509Client()
+        public void IndividualEnrollmentConstructorSucceedOnX509Client()
         {
             // arrange - act
             IndividualEnrollment individualEnrollment = new IndividualEnrollment(SampleRegistrationId, SampleX509ClientAttestation);
@@ -104,7 +104,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         [TestMethod]
         [TestCategory("DevService")]
-        public void IndividualEnrollment_Constructor_SucceedOnX509CAReference()
+        public void IndividualEnrollmentConstructorSucceedOnX509CAReference()
         {
             // arrange - act
             IndividualEnrollment individualEnrollment = new IndividualEnrollment(SampleRegistrationId, SampleX509CAReferenceAttestation);
@@ -117,7 +117,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         /* SRS_DEVICE_ENROLLMENT_21_002: [The constructor shall throws ArgumentException if one of the provided parameters is null.] */
         [TestMethod]
         [TestCategory("DevService")]
-        public void IndividualEnrollment_Constructor_ThrowsOnInvalidParameters()
+        public void IndividualEnrollmentConstructorThrowsOnInvalidParameters()
         {
             // arrange - act - assert
             TestAssert.Throws<ArgumentException>(() => new IndividualEnrollment(null, SampleTpmAttestation));
@@ -131,7 +131,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                                                 provided parameters in JSON is not valid.] */
         [TestMethod]
         [TestCategory("DevService")]
-        public void IndividualEnrollment_ConstructorJSON_ThrowsOnNonRegistrationID()
+        public void IndividualEnrollmentConstructorJSONThrowsOnNonRegistrationID()
         {
             // arrange
             string invalidJson =
@@ -174,7 +174,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         [TestMethod]
         [TestCategory("DevService")]
-        public void IndividualEnrollment_ConstructorJSON_ThrowsOnNonAttestation()
+        public void IndividualEnrollmentConstructorJSONThrowsOnNonAttestation()
         {
             // arrange
             string invalidJson =
@@ -199,7 +199,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         [TestMethod]
         [TestCategory("DevService")]
-        public void IndividualEnrollment_ConstructorJSON_ThrowsOnNonEtag()
+        public void IndividualEnrollmentConstructorJSONThrowsOnNonEtag()
         {
             // arrange
             string invalidJson =
@@ -243,7 +243,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         /* SRS_INDIVIDUAL_ENROLLMENT_21_004: [The constructor shall store all parameters in the JSON.] */
         [TestMethod]
         [TestCategory("DevService")]
-        public void IndividualEnrollment_ConstructorJSON_Succeed()
+        public void IndividualEnrollmentConstructorJSONSucceed()
         {
             // arrange
             IndividualEnrollment individualEnrollment = Newtonsoft.Json.JsonConvert.DeserializeObject<IndividualEnrollment>(SampleIndividualEnrollmentJson);
@@ -263,7 +263,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         [TestMethod]
         [TestCategory("DevService")]
-        public void IndividualEnrollment_ConstructorJSON_SucceedOnMinumum()
+        public void IndividualEnrollmentConstructorJSONSucceedOnMinumum()
         {
             // arrange
             string minJson =

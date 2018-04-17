@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             if (timeout > TimeSpan.Zero)
             {
-                Task task = await Task.WhenAny(promise.Task, Task.Delay(timeout));
+                Task task = await Task.WhenAny(promise.Task, Task.Delay(timeout)).ConfigureAwait(false);
                 if (task != promise.Task)
                 {
                     throw new TimeoutException("ReceiveAsync timed out");
@@ -71,7 +71,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 return promise.Task.Result;
             }
 
-            return await promise.Task;
+            return await promise.Task.ConfigureAwait(false);
         }
     }
 }

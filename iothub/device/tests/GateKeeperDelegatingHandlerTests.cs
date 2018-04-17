@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestCategory("CIT")]
         [TestCategory("DelegatingHandlers")]
         [TestCategory("Owner [mtuchkov]")]
-        public async Task OpenAsync_InnerCompleted_SutIsOpen()
+        public async Task OpenAsyncInnerCompletedSubjIsOpen()
         {
             var contextMock = Substitute.For<IPipelineContext>();
             var innerHandlerMock = Substitute.For<IDelegatingHandler>();
@@ -31,14 +31,14 @@ namespace Microsoft.Azure.Devices.Client.Test
             var cancellationToken = new CancellationToken();
             var sut = new GateKeeperDelegatingHandler(contextMock);
             sut.ContinuationFactory = c => innerHandlerMock;
-            await sut.OpenAsync(cancellationToken);
+            await sut.OpenAsync(cancellationToken).ConfigureAwait(false);
         }
 
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("DelegatingHandlers")]
         [TestCategory("Owner [mtuchkov]")]
-        public async Task ImplicitOpen_SubjWasNotOpen_SubjIsOpen()
+        public async Task ImplicitOpenSubjWasNotOpenSubjIsOpen()
         {
             var contextMock = Substitute.For<IPipelineContext>();
             var innerHandlerMock = Substitute.For<IDelegatingHandler>();
@@ -67,17 +67,17 @@ namespace Microsoft.Azure.Devices.Client.Test
             {
                 var sut = new GateKeeperDelegatingHandler(contextMock);
                 sut.ContinuationFactory = c => innerHandlerMock;
-                await action(sut);
+                await action(sut).ConfigureAwait(false);
             }
 
-            await innerHandlerMock.Received(actions.Length).OpenAsync(false, Arg.Any<CancellationToken>());
+            await innerHandlerMock.Received(actions.Length).OpenAsync(false, Arg.Any<CancellationToken>()).ConfigureAwait(false);
         }
 
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("DelegatingHandlers")]
         [TestCategory("Owner [mtuchkov]")]
-        public async Task OpenAsync_ClosedCannotBeReopened_Throws()
+        public async Task OpenAsyncClosedCannotBeReopenedThrows()
         {
             var contextMock = Substitute.For<IPipelineContext>();
             var innerHandlerMock = Substitute.For<IDelegatingHandler>();
@@ -85,17 +85,17 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             var sut = new GateKeeperDelegatingHandler(contextMock);
             sut.ContinuationFactory = c => innerHandlerMock;
-            await sut.CloseAsync();
+            await sut.CloseAsync().ConfigureAwait(false);
 
             var cancellationToken = new CancellationToken();
-            await ((Func<Task>)(() => sut.OpenAsync(cancellationToken))).ExpectedAsync<ObjectDisposedException>();
+            await ((Func<Task>)(() => sut.OpenAsync(cancellationToken))).ExpectedAsync<ObjectDisposedException>().ConfigureAwait(false);
         }
 
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("DelegatingHandlers")]
         [TestCategory("Owner [mtuchkov]")]
-        public async Task OpenAsync_TwoCallers_OnlyOneOpenCalled()
+        public async Task OpenAsyncTwoCallersOnlyOneOpenCalled()
         {
             var contextMock = Substitute.For<IPipelineContext>();
             var tcs = new TaskCompletionSource();
@@ -113,7 +113,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             Task firstOpen = sut.OpenAsync(cancellationToken);
             Task secondOpen = sut.OpenAsync(cancellationToken);
             tcs.Complete();
-            await Task.WhenAll(firstOpen, secondOpen);
+            await Task.WhenAll(firstOpen, secondOpen).ConfigureAwait(false);
 
             Assert.AreEqual(1, callCounter);
         }
@@ -122,7 +122,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestCategory("CIT")]
         [TestCategory("DelegatingHandlers")]
         [TestCategory("Owner [mtuchkov]")]
-        public async Task OpenAsync_InnerFailed_SutIsOpenAndCanBeReopen()
+        public async Task OpenAsyncInnerFailedSutIsOpenAndCanBeReopen()
         {
             var contextMock = Substitute.For<IPipelineContext>();
             var innerHandlerMock = Substitute.For<IDelegatingHandler>();
@@ -133,18 +133,18 @@ namespace Microsoft.Azure.Devices.Client.Test
             var sut = new GateKeeperDelegatingHandler(contextMock);
             sut.ContinuationFactory = c => innerHandlerMock;
             var cancellationToken = new CancellationToken();
-            await ((Func<Task>)(() => sut.OpenAsync(cancellationToken))).ExpectedAsync<IOException>();
+            await ((Func<Task>)(() => sut.OpenAsync(cancellationToken))).ExpectedAsync<IOException>().ConfigureAwait(false);
 
             innerHandlerMock.OpenAsync(Arg.Is(true), Arg.Any<CancellationToken>()).Returns(t => TaskConstants.Completed);
 
-            await sut.OpenAsync(cancellationToken);
+            await sut.OpenAsync(cancellationToken).ConfigureAwait(false);
         }
 
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("DelegatingHandlers")]
         [TestCategory("Owner [mtuchkov]")]
-        public async Task OpenAsync_InnerCancelled_SutIsOpenAndCanBeReopen()
+        public async Task OpenAsyncInnerCancelledSutIsOpenAndCanBeReopen()
         {
             var contextMock = Substitute.For<IPipelineContext>();
             var tcs = new TaskCompletionSource();
@@ -154,11 +154,11 @@ namespace Microsoft.Azure.Devices.Client.Test
             var sut = new GateKeeperDelegatingHandler(contextMock);
             sut.ContinuationFactory = c => innerHandlerMock;
             var cancellationToken = new CancellationToken();
-            await sut.OpenAsync(cancellationToken).ExpectedAsync<TaskCanceledException>();
+            await sut.OpenAsync(cancellationToken).ExpectedAsync<TaskCanceledException>().ConfigureAwait(false);
 
             innerHandlerMock.OpenAsync(true, Arg.Any<CancellationToken>()).Returns(t => TaskConstants.Completed);
 
-            await sut.OpenAsync(cancellationToken);
+            await sut.OpenAsync(cancellationToken).ConfigureAwait(false);
         }
     }
 }

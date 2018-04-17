@@ -109,7 +109,7 @@ namespace Microsoft.Azure.Devices
             {
                 {
                     HttpStatusCode.PreconditionFailed,
-                    async responseMessage => new PreconditionFailedException(await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage))
+                    async responseMessage => new PreconditionFailedException(await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage).ConfigureAwait(false))
                 }
             };
 
@@ -248,7 +248,7 @@ namespace Microsoft.Azure.Devices
 
             var errorMappingOverrides = new Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>()
             {
-                { HttpStatusCode.PreconditionFailed, async (responseMessage) => new PreconditionFailedException(await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage)) },
+                { HttpStatusCode.PreconditionFailed, async (responseMessage) => new PreconditionFailedException(await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage).ConfigureAwait(false)) },
                 {
                     HttpStatusCode.NotFound, async responseMessage =>
                     {
@@ -644,7 +644,7 @@ namespace Microsoft.Azure.Devices
             this.EnsureInstanceNotClosed();
             var errorMappingOverrides = new Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>()
             {
-                { HttpStatusCode.NotFound, async responseMessage => new DeviceNotFoundException(await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage)) }
+                { HttpStatusCode.NotFound, async responseMessage => new DeviceNotFoundException(await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage).ConfigureAwait(false)) }
             };
 
             return this.httpClientHelper.GetAsync<Device>(GetRequestUri(deviceId), errorMappingOverrides, null, false, cancellationToken);
@@ -850,9 +850,9 @@ namespace Microsoft.Azure.Devices
 
             var errorMappingOverrides = new Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>
             {
-                { HttpStatusCode.PreconditionFailed, async responseMessage => new PreconditionFailedException(await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage)) },
-                { HttpStatusCode.RequestEntityTooLarge, async responseMessage => new TooManyDevicesException(await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage)) },
-                { HttpStatusCode.BadRequest, async responseMessage => new ArgumentException(await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage)) }
+                { HttpStatusCode.PreconditionFailed, async responseMessage => new PreconditionFailedException(await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage).ConfigureAwait(false)) },
+                { HttpStatusCode.RequestEntityTooLarge, async responseMessage => new TooManyDevicesException(await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage).ConfigureAwait(false)) },
+                { HttpStatusCode.BadRequest, async responseMessage => new ArgumentException(await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage).ConfigureAwait(false)) }
             };
 
             return this.httpClientHelper.PostAsync<IEnumerable<ExportImportDevice>, T>(GetBulkRequestUri(version), devices, errorMappingOverrides, null, cancellationToken);
@@ -1080,7 +1080,7 @@ namespace Microsoft.Azure.Devices
             this.EnsureInstanceNotClosed();
             var errorMappingOverrides = new Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>()
             {
-                { HttpStatusCode.NotFound, async responseMessage => new DeviceNotFoundException(await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage)) }
+                { HttpStatusCode.NotFound, async responseMessage => new DeviceNotFoundException(await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage).ConfigureAwait(false)) }
             };
 
             return this.httpClientHelper.GetAsync<Twin>(GetTwinUri(deviceId), errorMappingOverrides, null, false, cancellationToken);
@@ -1246,11 +1246,11 @@ namespace Microsoft.Azure.Devices
             {
                 {
                     HttpStatusCode.PreconditionFailed,
-                    async responseMessage => new PreconditionFailedException(await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage))
+                    async responseMessage => new PreconditionFailedException(await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage).ConfigureAwait(false))
                 },
                 {
                     HttpStatusCode.NotFound,
-                    async responseMessage => new DeviceNotFoundException(await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage), (Exception)null)
+                    async responseMessage => new DeviceNotFoundException(await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage).ConfigureAwait(false), (Exception)null)
                 }
             };
 
@@ -1358,11 +1358,11 @@ namespace Microsoft.Azure.Devices
             {
                 { HttpStatusCode.NotFound, async responseMessage =>
                                            {
-                                               string responseContent = await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage);
+                                               string responseContent = await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage).ConfigureAwait(false);
                                                return new DeviceNotFoundException(responseContent, (Exception) null);
                                            }
                 },
-                { HttpStatusCode.PreconditionFailed, async responseMessage => new PreconditionFailedException(await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage)) }
+                { HttpStatusCode.PreconditionFailed, async responseMessage => new PreconditionFailedException(await ExceptionHandlingHelper.GetExceptionMessageAsync(responseMessage).ConfigureAwait(false)) }
             };
 
             return this.httpClientHelper.DeleteAsync(GetRequestUri(deviceId), eTagHolder, errorMappingOverrides, null, cancellationToken);
@@ -1597,7 +1597,7 @@ namespace Microsoft.Azure.Devices
                 customHeaders.Add(PageSizeHeader, pageSize.ToString());
             }
 
-            HttpResponseMessage response = await this.httpClientHelper.PostAsync<QuerySpecification>(
+            HttpResponseMessage response = await httpClientHelper.PostAsync(
                 QueryDevicesRequestUri(),
                 new QuerySpecification()
                 {
@@ -1607,9 +1607,9 @@ namespace Microsoft.Azure.Devices
                 customHeaders,
                 new MediaTypeHeaderValue("application/json") { CharSet = "utf-8" },
                 null,
-                cancellationToken);
+                cancellationToken).ConfigureAwait(false);
 
-            return await QueryResult.FromHttpResponseAsync(response);
+            return await QueryResult.FromHttpResponseAsync(response).ConfigureAwait(false);
         }
 
         static void NormalizeExportImportDevice(ExportImportDevice device)

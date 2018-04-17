@@ -11,26 +11,26 @@ namespace Microsoft.Azure.Devices.Client.Test
     public class UtilsTests
     {
         [TestMethod]
-        public void ConvertDeliveryAckTypeFromString_ValidString_Pass()
+        public void ConvertDeliveryAckTypeFromStringValidStringPass()
         {
             Assert.AreEqual(DeliveryAcknowledgement.PositiveOnly, Utils.ConvertDeliveryAckTypeFromString("positive"));
         }
 
         [TestMethod]
-        public void ConvertDeliveryAckTypeFromString_InvalidString_Fail()
+        public void ConvertDeliveryAckTypeFromStringInvalidStringFail()
         {
             Action action = () => Utils.ConvertDeliveryAckTypeFromString("unknown");
             TestAssert.Throws<NotSupportedException>(action);
         }
 
         [TestMethod]
-        public void ConvertDeliveryAckTypeToString_ValidValue_Pass()
+        public void ConvertDeliveryAckTypeToStringValidValuePass()
         {
             Assert.AreEqual("negative", Utils.ConvertDeliveryAckTypeToString(DeliveryAcknowledgement.NegativeOnly));
         }
 
         [TestMethod]
-        public void ConvertDeliveryAckTypeToString_InvalidValue_Fail()
+        public void ConvertDeliveryAckTypeToStringInvalidValueFail()
         {
             Action action = () => Utils.ConvertDeliveryAckTypeToString((DeliveryAcknowledgement)100500);
             TestAssert.Throws<NotSupportedException>(action);

@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("TransportSettings")]
-        public void TransportSettingsTest_TransportType_Amqp()
+        public void TransportSettingsTestTransportTypeAmqp()
         {
             var transportSetting = new AmqpTransportSettings(TransportType.Amqp);
         }
@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("TransportSettings")]
-        public void TransportSettingsTest_TransportType_Amqp_Http()
+        public void TransportSettingsTestTransportTypeAmqpHttp()
         {
             var transportSetting = new AmqpTransportSettings(TransportType.Http1);
         }
@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("TransportSettings")]
-        public void TransportSettingsTest_TransportType_AmqpTcp_Prefetch_0()
+        public void TransportSettingsTestTransportTypeAmqpTcpPrefetch0()
         {
             var amqpConnectionPoolSettings = new AmqpConnectionPoolSettings();
             var transportSetting = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only, 0, amqpConnectionPoolSettings);
@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("TransportSettings")]
-        public void TransportSettingsTest_TransportType_Amqp_WebSocket()
+        public void TransportSettingsTestTransportTypeAmqpWebSocket()
         {
             var transportSetting = new AmqpTransportSettings(TransportType.Amqp_WebSocket_Only);
             Assert.IsTrue(transportSetting.GetTransportType() == TransportType.Amqp_WebSocket_Only, "Should be TransportType.Amqp_WebSocket_Only");
@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("TransportSettings")]
-        public void TransportSettingsTest_TransportType_Amqp_WebSocket_Tcp()
+        public void TransportSettingsTestTransportTypeAmqpWebSocketTcp()
         {
             var amqpConnectionPoolSettings = new AmqpConnectionPoolSettings();
             var transportSetting = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only, 200, amqpConnectionPoolSettings);
@@ -67,7 +67,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("TransportSettings")]
-        public void TransportSettingsTest_TransportType_Http()
+        public void TransportSettingsTestTransportTypeHttp()
         {
             var transportSetting = new Http1TransportSettings();
             Assert.IsTrue(transportSetting.GetTransportType() == TransportType.Http1, "Should be TransportType.Http1");
@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("TransportSettings")]
-        public void TransportSettingsTest_TransportType_Mqtt_Tcp_Only()
+        public void TransportSettingsTestTransportTypeMqttTcpOnly()
         {
             var transportSetting = new MqttTransportSettings(TransportType.Mqtt_Tcp_Only);
             Assert.IsTrue(transportSetting.GetTransportType() == TransportType.Mqtt_Tcp_Only, "Should be TransportType.Mqtt_Tcp_Only");
@@ -85,7 +85,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("TransportSettings")]
-        public void TransportSettingsTest_TransportType_Mqtt_WebSocket_Only()
+        public void TransportSettingsTestTransportTypeMqttWebSocketOnly()
         {
             var transportSetting = new MqttTransportSettings(TransportType.Mqtt_WebSocket_Only);
             Assert.IsTrue(transportSetting.GetTransportType() == TransportType.Mqtt_WebSocket_Only, "Should be TransportType.Mqtt_WebSocket_Only");
@@ -95,7 +95,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestCategory("CIT")]
         [TestCategory("TransportSettings")]
         [ExpectedException(typeof(ArgumentOutOfRangeException))]
-        public void TransportSettingsTest_TransportType_Mqtt()
+        public void TransportSettingsTestTransportTypeMqtt()
         {
             new MqttTransportSettings(TransportType.Mqtt);
         }
@@ -104,7 +104,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestCategory("CIT")]
         [TestCategory("TransportSettings")]
         [ExpectedException(typeof(ArgumentOutOfRangeException))]
-        public void TransportSettingsTest_ZeroOperationTimeout()
+        public void TransportSettingsTestZeroOperationTimeout()
         {
             var amqpConnectionPoolSettings = new AmqpConnectionPoolSettings();
             var transportSetting = new AmqpTransportSettings(TransportType.Amqp, 200, amqpConnectionPoolSettings);
@@ -115,7 +115,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestCategory("CIT")]
         [TestCategory("TransportSettings")]
         [ExpectedException(typeof(ArgumentOutOfRangeException))]
-        public void TransportSettingsTest_ZeroOpenTimeout()
+        public void TransportSettingsTestZeroOpenTimeout()
         {
             var amqpConnectionPoolSettings = new AmqpConnectionPoolSettings();
             var transportSetting = new AmqpTransportSettings(TransportType.Amqp, 200, amqpConnectionPoolSettings);
@@ -125,7 +125,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("TransportSettings")]
-        public void TransportSettingsTest_Timeouts()
+        public void TransportSettingsTestTimeouts()
         {
             var amqpConnectionPoolSettings = new AmqpConnectionPoolSettings();
             var transportSetting = new AmqpTransportSettings(TransportType.Amqp_WebSocket_Only, 200, amqpConnectionPoolSettings);
@@ -138,7 +138,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("TransportSettings")]
-        public void TransportSettingsTest_DefaultTimeouts()
+        public void TransportSettingsTestDefaultTimeouts()
         {
             var amqpConnectionPoolSettings = new AmqpConnectionPoolSettings();
             var transportSetting = new AmqpTransportSettings(TransportType.Amqp_WebSocket_Only, 200, amqpConnectionPoolSettings);
@@ -154,7 +154,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestCategory("CIT")]
         [TestCategory("TransportSettings")]
         [ExpectedException(typeof(ArgumentOutOfRangeException))]
-        public void ConnectionPoolSettingsTest_ZeroPoolSize()
+        public void ConnectionPoolSettingsTestZeroPoolSize()
         {
             var connectionPoolSettings = new AmqpConnectionPoolSettings();
             connectionPoolSettings.MaxPoolSize = 0;
@@ -165,7 +165,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestCategory("CIT")]
         [TestCategory("TransportSettings")]
         [ExpectedException(typeof(ArgumentOutOfRangeException))]
-        public void ConnectionPoolSettingsTest_4SecsIdleTimeout()
+        public void ConnectionPoolSettingsTest4SecsIdleTimeout()
         {
             var connectionPoolSettings = new AmqpConnectionPoolSettings();
             connectionPoolSettings.ConnectionIdleTimeout = TimeSpan.FromSeconds(4);
@@ -175,7 +175,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("TransportSettings")]
-        public void ConnectionPoolSettingsTest_MaxPoolSizeTest()
+        public void ConnectionPoolSettingsTestMaxPoolSizeTest()
         {
             var connectionPoolSettings = new AmqpConnectionPoolSettings();
             connectionPoolSettings.MaxPoolSize = ushort.MaxValue;
@@ -186,7 +186,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("TransportSettings")]
-        public void ConnectionPoolSettingsTest_PoolingOff()
+        public void ConnectionPoolSettingsTestPoolingOff()
         {
             var connectionPoolSettings = new AmqpConnectionPoolSettings();
             connectionPoolSettings.Pooling = false;
@@ -198,7 +198,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestCategory("CIT")]
         [TestCategory("TransportSettings")]
         [Ignore]
-        public void X509Certificate_AmqpTransportSettingsTest()
+        public void X509CertificateAmqpTransportSettingsTest()
         {
             string hostName = "acme.azure-devices.net";
             var cert = CertificateHelper.InstallCertificateFromFile(LocalCertFilename, LocalCertPasswordFile);
@@ -211,7 +211,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestCategory("CIT")]
         [TestCategory("TransportSettings")]
         [Ignore]
-        public void X509Certificate_Http1TransportSettingsTest()
+        public void X509CertificateHttp1TransportSettingsTest()
         {
             string hostName = "acme.azure-devices.net";
             var cert = CertificateHelper.InstallCertificateFromFile(LocalCertFilename, LocalCertPasswordFile);
@@ -224,7 +224,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestCategory("CIT")]
         [TestCategory("TransportSettings")]
         [Ignore]
-        public void X509Certificate_MqttTransportSettingsTest()
+        public void X509CertificateMqttTransportSettingsTest()
         {
             string hostName = "acme.azure-devices.net";
             var cert = CertificateHelper.InstallCertificateFromFile(LocalCertFilename, LocalCertPasswordFile);
@@ -249,7 +249,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestCategory("CIT")]
         [TestCategory("TransportSettings")]
         [ExpectedException(typeof(ArgumentException))]
-        public void NullX509Certificate_AmqpTransportSettingsTest()
+        public void NullX509CertificateAmqpTransportSettingsTest()
         {
             string hostName = "acme.azure-devices.net";
             var authMethod = new DeviceAuthenticationWithX509Certificate("device1", null);
@@ -261,7 +261,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestCategory("CIT")]
         [TestCategory("TransportSettings")]
         [Ignore]
-        public void X509Certificate_MutipleClientAuthMechanism()
+        public void X509CertificateMutipleClientAuthMechanism()
         {
             string hostName = "acme.azure-devices.net";
             var amqpConnectionPoolSettings = new AmqpConnectionPoolSettings();

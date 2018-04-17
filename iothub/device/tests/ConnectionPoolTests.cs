@@ -164,7 +164,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 connectionPool.RemoveDeviceFromConnection(connections[j], j.ToString());
             }
 
-            await Task.Delay(TimeSpan.FromSeconds(6));
+            await Task.Delay(TimeSpan.FromSeconds(6)).ConfigureAwait(false);
 
             // Assert
             Assert.IsTrue(connectionPool.GetCount() == 0, "Did not cleanup all Connection objects");
@@ -203,11 +203,11 @@ namespace Microsoft.Azure.Devices.Client.Test
             // Assert
             Assert.IsTrue(hubscopeConnectionPool.GetCount() == 0, "Reference count should be zero");
 
-            await Task.Delay(TimeSpan.FromSeconds(6));
+            await Task.Delay(TimeSpan.FromSeconds(6)).ConfigureAwait(false);
 
             // Hacky way to verify that the SingleTokenConnection object has been closed.
             var singleConnection = (IotHubSingleTokenConnection)hubscopeConnectionPool.Connection;
-            await singleConnection.CreateSendingLinkAsync("test", iotHubConnectionString, "device", IotHubConnection.SendingLinkType.TelemetryEvents, TimeSpan.FromMinutes(2), new ProductInfo(), CancellationToken.None);
+            await singleConnection.CreateSendingLinkAsync("test", iotHubConnectionString, "device", IotHubConnection.SendingLinkType.TelemetryEvents, TimeSpan.FromMinutes(2), new ProductInfo(), CancellationToken.None).ConfigureAwait(false);
         }
 
 

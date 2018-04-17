@@ -75,14 +75,14 @@ namespace Microsoft.Azure.Devices.Api.Test
         [TestMethod]
         public void ConstructorTakingEmptyByteArrayTest()
         {
-            var msg = new Message(new byte[0]);
+            var msg = new Message(Array.Empty<byte>());
             var stream = msg.GetBodyStream();
             Assert.IsNotNull(stream);
             var ms = new MemoryStream();
             stream.CopyTo(ms);
             Assert.IsTrue(ms.GetBuffer().Length == 0);
 
-            msg = new Message(new byte[0]);
+            msg = new Message(Array.Empty<byte>());
             var bytes = msg.GetBytes();
             Assert.AreEqual(0, bytes.Length);
         }
@@ -92,7 +92,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         [TestMethod]
         public void RetrievingMessageBytesAfterGetBodyStreamTest()
         {
-            var msg = new Message(new byte[0]);
+            var msg = new Message(Array.Empty<byte>());
             msg.GetBodyStream();
 
             TestAssert.Throws<InvalidOperationException>(() => msg.GetBytes());
@@ -103,7 +103,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         [TestMethod]
         public void RetrievingMessageBodyStreamAfterGetBytesTest()
         {
-            var msg = new Message(new byte[0]);
+            var msg = new Message(Array.Empty<byte>());
             msg.GetBytes();
 
             TestAssert.Throws<InvalidOperationException>(() => msg.GetBodyStream());
@@ -114,7 +114,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         [TestMethod]
         public void CallingGetBytesTwiceTest()
         {
-            var msg = new Message(new byte[0]);
+            var msg = new Message(Array.Empty<byte>());
             msg.GetBytes();
 
             TestAssert.Throws<InvalidOperationException>(() => msg.GetBytes());
@@ -125,7 +125,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         [TestMethod]
         public void CallingGetBodyStreamTwiceTest()
         {
-            var msg = new Message(new byte[0]);
+            var msg = new Message(Array.Empty<byte>());
             msg.GetBodyStream();
 
             TestAssert.Throws<InvalidOperationException>(() => msg.GetBodyStream());

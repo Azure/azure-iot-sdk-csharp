@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.Api.Test.ConnectionString
         [TestMethod]
         [TestCategory("CIT")]
         [ExpectedException(typeof(ArgumentException))]
-        public void ServiceClient_ConnectionString_DefaultScope_DefaultCredentialType_MissingEndpoint_ExceptionTest()
+        public void ServiceClientConnectionStringDefaultScopeDefaultCredentialTypeMissingEndpointExceptionTest()
         {
             string connectionString = "SharedAccessKeyName=AllAccessKey;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
             var serviceClient = ServiceClient.CreateFromConnectionString(connectionString);
@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.Api.Test.ConnectionString
         [TestMethod]
         [TestCategory("CIT")]
         [ExpectedException(typeof(ArgumentException))]
-        public void ServiceClient_ConnectionString_DefaultScope_DefaultCredentialType_MissingSharedAccessKeyName_ExceptionTest()
+        public void ServiceClientConnectionStringDefaultScopeDefaultCredentialTypeMissingSharedAccessKeyNameExceptionTest()
         {
             string connectionString = "HostName=acme.azure-devices.net;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
             var serviceClient = ServiceClient.CreateFromConnectionString(connectionString);
@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.Api.Test.ConnectionString
         [TestMethod]
         [TestCategory("CIT")]
         [ExpectedException(typeof(ArgumentException))]
-        public void ServiceClient_ConnectionString_DefaultScope_DefaultCredentialType_MissingSharedAccessKey_ExceptionTest()
+        public void ServiceClientConnectionStringDefaultScopeDefaultCredentialTypeMissingSharedAccessKeyExceptionTest()
         {
             string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey"; 
             var serviceClient = ServiceClient.CreateFromConnectionString(connectionString);
@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.Api.Test.ConnectionString
         [TestMethod]
         [TestCategory("CIT")]
         [ExpectedException(typeof(ArgumentException))]
-        public void ServiceClient_ConnectionString_DefaultScope_DefaultCredentialType_MissingSharedAccessKeyNameAndKey_ExceptionTest()
+        public void ServiceClientConnectionStringDefaultScopeDefaultCredentialTypeMissingSharedAccessKeyNameAndKeyExceptionTest()
         {
             string connectionString = "HostName=acme.azure-devices.net";
             var serviceClient = ServiceClient.CreateFromConnectionString(connectionString);
@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Devices.Api.Test.ConnectionString
         [TestMethod]
         [TestCategory("CIT")]
         [ExpectedException(typeof(ArgumentException))]
-        public void ServiceClient_ConnectionString_IotHubScope_SharedAccessSignatureCredentialType_MissingSharedAccessKeyName_ExceptionTest()
+        public void ServiceClientConnectionStringIotHubScopeSharedAccessSignatureCredentialTypeMissingSharedAccessKeyNameExceptionTest()
         {
             string connectionString = "HostName=acme.azure-devices.net;CredentialScope=IotHub;CredentialType=SharedAccessSignature;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
             var serviceClient = ServiceClient.CreateFromConnectionString(connectionString);
@@ -59,7 +59,7 @@ namespace Microsoft.Azure.Devices.Api.Test.ConnectionString
         [TestMethod]
         [TestCategory("CIT")]
         [ExpectedException(typeof(ArgumentException))]
-        public void ServiceClient_ConnectionString_IotHubScope_SharedAccessSignatureCredentialType_MissingSharedAccessKey_ExceptionTest()
+        public void ServiceClientConnectionStringIotHubScopeSharedAccessSignatureCredentialTypeMissingSharedAccessKeyExceptionTest()
         {
             string connectionString = "HostName=acme.azure-devices.net;CredentialScope=IotHub;CredentialType=SharedAccessSignature;SharedAccessKeyName=AllAccessKey";
             var serviceClient = ServiceClient.CreateFromConnectionString(connectionString);
@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Devices.Api.Test.ConnectionString
         [TestMethod]
         [TestCategory("CIT")]
         [ExpectedException(typeof(ArgumentException))]
-        public void ServiceClient_ConnectionString_IotHubScope_SharedAccessKeyCredentialType_MissingSharedAccessKeyNameAndKey_ExceptionTest()
+        public void ServiceClientConnectionStringIotHubScopeSharedAccessKeyCredentialTypeMissingSharedAccessKeyNameAndKeyExceptionTest()
         {
             string connectionString = "HostName=acme.azure-devices.net;CredentialScope=IotHub;CredentialType=SharedAccessKey";
             var serviceClient = ServiceClient.CreateFromConnectionString(connectionString);
@@ -77,7 +77,7 @@ namespace Microsoft.Azure.Devices.Api.Test.ConnectionString
         [TestMethod]
         [TestCategory("CIT")]
         [ExpectedException(typeof(ArgumentException))]
-        public void ServiceClient_ConnectionString_DeviceScope_SharedAccessKeyCredentialType_MissingSharedAccessKey_ExceptionTest()
+        public void ServiceClientConnectionStringDeviceScopeSharedAccessKeyCredentialTypeMissingSharedAccessKeyExceptionTest()
         {
             string connectionString = "HostName=acme.azure-devices.net;CredentialScope=IotHub;CredentialType=SharedAccessKey";
             var serviceClient = ServiceClient.CreateFromConnectionString(connectionString);
@@ -86,7 +86,7 @@ namespace Microsoft.Azure.Devices.Api.Test.ConnectionString
         [TestMethod]
         [TestCategory("CIT")]
         [ExpectedException(typeof(ArgumentException))]
-        public void ServiceClient_ConnectionString_DeviceScope_SharedAccessKeyCredentialType_NotAllowedSharedAccessKeyName_ExceptionTest()
+        public void ServiceClientConnectionStringDeviceScopeSharedAccessKeyCredentialTypeNotAllowedSharedAccessKeyNameExceptionTest()
         {
             string connectionString = "HostName=acme.azure-devices.net;CredentialScope=IotHub;CredentialType=SharedAccessKey;SharedAccessKeyName=AllAccessKey";
             var serviceClient = ServiceClient.CreateFromConnectionString(connectionString);
@@ -95,7 +95,7 @@ namespace Microsoft.Azure.Devices.Api.Test.ConnectionString
         [TestMethod]
         [TestCategory("CIT")]
         [ExpectedException(typeof(FormatException))]
-        public void ServiceClient_ConnectionString_DeviceScope_SharedAccessKeyCredentialType_InvalidSharedAccessKey_ExceptionTest()
+        public void ServiceClientConnectionStringDeviceScopeSharedAccessKeyCredentialTypeInvalidSharedAccessKeyExceptionTest()
         {
             string connectionString = "HostName=acme.azure-devices.net;CredentialScope=IotHub;CredentialType=SharedAccessKey;SharedAccessKeyName=blah;SharedAccessKey=INVALID";
             var serviceClient = ServiceClient.CreateFromConnectionString(connectionString);
@@ -104,7 +104,7 @@ namespace Microsoft.Azure.Devices.Api.Test.ConnectionString
         [TestMethod]
         [TestCategory("CIT")]
         [ExpectedException(typeof(FormatException))]
-        public void ServiceClient_ConnectionString_DeviceScope_ImplicitSharedAccessKeyCredentialType_InvalidSharedAccessSignature_ExceptionTest()
+        public void ServiceClientConnectionStringDeviceScopeImplicitSharedAccessKeyCredentialTypeInvalidSharedAccessSignatureExceptionTest()
         {
             string connectionString = "HostName=acme.azure-devices.net;CredentialScope=IotHub;CredentialType=SharedAccessKey;SharedAccessKeyName=blah;SharedAccessSignature=INVALID";
             var serviceClient = ServiceClient.CreateFromConnectionString(connectionString);
@@ -113,7 +113,7 @@ namespace Microsoft.Azure.Devices.Api.Test.ConnectionString
         [TestMethod]
         [TestCategory("CIT")]
         [ExpectedException(typeof(ArgumentNullException))]
-        public void ServiceClient_ConnectionString_EmptyConnectionString_ExceptionTest()
+        public void ServiceClientConnectionStringEmptyConnectionStringExceptionTest()
         {
             string connectionString = "";
             var serviceClient = ServiceClient.CreateFromConnectionString(connectionString);
@@ -122,7 +122,7 @@ namespace Microsoft.Azure.Devices.Api.Test.ConnectionString
         [TestMethod]
         [TestCategory("CIT")]
         [ExpectedException(typeof(ArgumentNullException))]
-        public void ServiceClient_ConnectionString_NullConnectionString_ExceptionTest()
+        public void ServiceClientConnectionStringNullConnectionStringExceptionTest()
         {
             string connectionString = null;
             var serviceClient = ServiceClient.CreateFromConnectionString(connectionString);

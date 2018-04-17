@@ -69,42 +69,42 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Method-E2E")]
         public async Task Method_DeviceReceivesMethodAndResponse_Mqtt()
         {
-            await SendMethodAndRespond(Client.TransportType.Mqtt_Tcp_Only);
+            await SendMethodAndRespond(Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
         }
 
         [TestMethod]
         [TestCategory("Method-E2E")]
         public async Task Method_DeviceReceivesMethodAndResponse_MqttWs()
         {
-            await SendMethodAndRespond(Client.TransportType.Mqtt_WebSocket_Only);
+            await SendMethodAndRespond(Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
         }
 
         [TestMethod]
         [TestCategory("Method-E2E")]
         public async Task Method_DeviceReceivesMethodAndResponseWithObseletedSetMethodHandler_Mqtt()
         {
-            await sendMethodAndRespondWithObseletedSetMethodHandler(Client.TransportType.Mqtt_Tcp_Only);
+            await sendMethodAndRespondWithObseletedSetMethodHandler(Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
         }
 
         [TestMethod]
         [TestCategory("Method-E2E")]
         public async Task Method_DeviceReceivesMethodAndResponseWithObseletedSetMethodHandler_MqttWs()
         {
-            await sendMethodAndRespondWithObseletedSetMethodHandler(Client.TransportType.Mqtt_WebSocket_Only);
+            await sendMethodAndRespondWithObseletedSetMethodHandler(Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
         }
 
         [TestMethod]
         [TestCategory("Method-E2E")]
         public async Task Method_DeviceReceivesMethodAndResponseWithSetMethodHandler_Mqtt()
         {
-            await sendMethodAndRespondWithSetMethodHandler(Client.TransportType.Mqtt_Tcp_Only);
+            await sendMethodAndRespondWithSetMethodHandler(Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
         }
 
         [TestMethod]
         [TestCategory("Method-E2E")]
         public async Task Method_DeviceReceivesMethodAndResponseWithSetMethodHandler_MqttWs()
         {
-            await sendMethodAndRespondWithSetMethodHandler(Client.TransportType.Mqtt_WebSocket_Only);
+            await sendMethodAndRespondWithSetMethodHandler(Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
         }
 
         [Ignore]
@@ -116,7 +116,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await SendMethodAndRespondRecovery(Client.TransportType.Mqtt_Tcp_Only, 
                 TestUtil.FaultType_Tcp,
                 TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec);
+                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
         }
 
         [Ignore]
@@ -128,7 +128,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await SendMethodAndRespondRecovery(Client.TransportType.Mqtt_WebSocket_Only, 
                 TestUtil.FaultType_Tcp,
                 TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec);
+                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
         }
 
         [Ignore]
@@ -140,7 +140,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await SendMethodAndRespondRecovery(Client.TransportType.Mqtt_Tcp_Only,
                 TestUtil.FaultType_GracefulShutdownMqtt,
                 TestUtil.FaultCloseReason_Bye,
-                TestUtil.DefaultDelayInSec);
+                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
         }
 
         [Ignore]
@@ -152,14 +152,14 @@ namespace Microsoft.Azure.Devices.E2ETests
             await SendMethodAndRespondRecovery(Client.TransportType.Mqtt_WebSocket_Only,
                 TestUtil.FaultType_GracefulShutdownMqtt,
                 TestUtil.FaultCloseReason_Bye,
-                TestUtil.DefaultDelayInSec);
+                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
         }
 
         [TestMethod]
         [TestCategory("Method-E2E")]
         public async Task Method_DeviceReceivesMethodAndResponse_Amqp()
         {
-            await SendMethodAndRespond(Client.TransportType.Amqp_Tcp_Only);
+            await SendMethodAndRespond(Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
         }
 
 #if NETCOREAPP2_0
@@ -170,7 +170,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("Method-E2E")]
         public async Task Method_DeviceReceivesMethodAndResponse_AmqpWs()
         {
-            await SendMethodAndRespond(Client.TransportType.Amqp_WebSocket_Only);
+            await SendMethodAndRespond(Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
         }
 
         [Ignore]
@@ -182,7 +182,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await SendMethodAndRespondRecovery(Client.TransportType.Amqp_Tcp_Only,
                 TestUtil.FaultType_Tcp,
                 TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec);
+                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
         }
 
         [Ignore]
@@ -194,7 +194,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await SendMethodAndRespondRecovery(Client.TransportType.Amqp_WebSocket_Only,
                 TestUtil.FaultType_Tcp,
                 TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec)
+                TestUtil.DefaultDelayInSec).ConfigureAwait(false)
             ;
         }
 
@@ -207,7 +207,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await SendMethodAndRespondRecovery(Client.TransportType.Amqp_Tcp_Only,
                 TestUtil.FaultType_AmqpConn,
                 TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec);
+                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
         }
 
         [Ignore]
@@ -219,7 +219,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await SendMethodAndRespondRecovery(Client.TransportType.Amqp_WebSocket_Only, 
                 TestUtil.FaultType_AmqpConn,
                 TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec);
+                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
         }
 
         [Ignore]
@@ -231,7 +231,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await SendMethodAndRespondRecovery(Client.TransportType.Amqp_Tcp_Only,
                 TestUtil.FaultType_AmqpSess,
                 TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec);
+                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
         }
 
         [Ignore]
@@ -243,7 +243,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await SendMethodAndRespondRecovery(Client.TransportType.Amqp_WebSocket_Only,
                 TestUtil.FaultType_AmqpSess,
                 TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec);
+                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
         }
 
         [Ignore] //TODO: #194 Test intermittently failing on Windows.
@@ -255,7 +255,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await SendMethodAndRespondRecovery(Client.TransportType.Amqp_Tcp_Only,
                 TestUtil.FaultType_AmqpMethodReq,
                 TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec);
+                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
         }
 
         [Ignore] //TODO: #194 Test intermittently failing on Windows.
@@ -267,7 +267,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await SendMethodAndRespondRecovery(Client.TransportType.Amqp_WebSocket_Only,
                 TestUtil.FaultType_AmqpMethodReq,
                 TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec);
+                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
         }
 
         [Ignore] //TODO: #194 Test intermittently failing on Windows.
@@ -279,7 +279,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await SendMethodAndRespondRecovery(Client.TransportType.Amqp_Tcp_Only,
                 TestUtil.FaultType_AmqpMethodResp,
                 TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec);
+                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
         }
 
         [Ignore] //TODO: #194 Test intermittently failing on Windows.
@@ -291,7 +291,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await SendMethodAndRespondRecovery(Client.TransportType.Amqp_WebSocket_Only,
                 TestUtil.FaultType_AmqpMethodResp,
                 TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec);
+                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
         }
 
         [Ignore]
@@ -303,7 +303,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await SendMethodAndRespondRecovery(Client.TransportType.Amqp_Tcp_Only,
                 TestUtil.FaultType_GracefulShutdownAmqp,
                 TestUtil.FaultCloseReason_Bye,
-                TestUtil.DefaultDelayInSec);
+                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
         }
 
         [Ignore]
@@ -315,7 +315,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await SendMethodAndRespondRecovery(Client.TransportType.Amqp_WebSocket_Only,
                 TestUtil.FaultType_GracefulShutdownAmqp,
                 TestUtil.FaultCloseReason_Bye,
-                TestUtil.DefaultDelayInSec);
+                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
         }
 
         private async Task ServiceSendMethodAndVerifyResponse(string deviceName, string methodName, string respJson, string reqJson, TaskCompletionSource<Tuple<bool, bool>> rel)
@@ -325,13 +325,13 @@ namespace Microsoft.Azure.Devices.E2ETests
                 deviceName,
                 new CloudToDeviceMethod(methodName, TimeSpan.FromMinutes(5)).SetPayloadJson(reqJson)
             );
-            CloudToDeviceMethodResult response = await directResponseFuture;
+            CloudToDeviceMethodResult response = await directResponseFuture.ConfigureAwait(false);
             Assert.AreEqual(200, response.Status);
             Assert.AreEqual(respJson, response.GetPayloadAsJson());
             Assert.IsTrue(rel.Task.Result.Item1, "Method name is not matching with the send data");
             Assert.IsTrue(rel.Task.Result.Item2, "Json data is not matching with the send data");
 
-            await serviceClient.CloseAsync();
+            await serviceClient.CloseAsync().ConfigureAwait(false);
         }
 
         private async Task SendMethodAndRespond(Client.TransportType transport)
@@ -346,12 +346,12 @@ namespace Microsoft.Azure.Devices.E2ETests
                     assertResult.TrySetResult(new Tuple<bool, bool>(request.Name.Equals(MethodName), request.DataAsJson.Equals(ServiceRequestJson)));
                     return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(DeviceResponseJson), 200));
                 },
-                null);
+                null).ConfigureAwait(false);
 
-            await ServiceSendMethodAndVerifyResponse(deviceInfo.Item1, MethodName, DeviceResponseJson, ServiceRequestJson, assertResult);
+            await ServiceSendMethodAndVerifyResponse(deviceInfo.Item1, MethodName, DeviceResponseJson, ServiceRequestJson, assertResult).ConfigureAwait(false);
 
-            await deviceClient.CloseAsync();
-            await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager);
+            await deviceClient.CloseAsync().ConfigureAwait(false);
+            await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager).ConfigureAwait(false);
         }
 
         private async Task sendMethodAndRespondWithSetMethodHandler(Client.TransportType transport)
@@ -361,16 +361,16 @@ namespace Microsoft.Azure.Devices.E2ETests
             var deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, transport);
             
 
-            await deviceClient?.SetMethodHandlerAsync(MethodName, (request, context) => 
+            await (deviceClient?.SetMethodHandlerAsync(MethodName, (request, context) => 
             {
                 assertResult.TrySetResult(new Tuple<bool, bool>(request.Name.Equals(MethodName), request.DataAsJson.Equals(ServiceRequestJson)));
                 return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(DeviceResponseJson), 200));
-            }, null);
+            }, null)).ConfigureAwait(false);
 
-            await ServiceSendMethodAndVerifyResponse(deviceInfo.Item1, MethodName, DeviceResponseJson, ServiceRequestJson, assertResult);
+            await ServiceSendMethodAndVerifyResponse(deviceInfo.Item1, MethodName, DeviceResponseJson, ServiceRequestJson, assertResult).ConfigureAwait(false);
 
-            await deviceClient.CloseAsync();
-            await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager);
+            await deviceClient.CloseAsync().ConfigureAwait(false);
+            await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager).ConfigureAwait(false);
         }
 
         private async Task sendMethodAndRespondWithObseletedSetMethodHandler(Client.TransportType transport)
@@ -391,10 +391,10 @@ namespace Microsoft.Azure.Devices.E2ETests
             // sleep to ensure async tasks started in SetMethodHandler has completed
             Thread.Sleep(5000);
 
-            await ServiceSendMethodAndVerifyResponse(deviceInfo.Item1, MethodName, DeviceResponseJson, ServiceRequestJson, assertResult);
+            await ServiceSendMethodAndVerifyResponse(deviceInfo.Item1, MethodName, DeviceResponseJson, ServiceRequestJson, assertResult).ConfigureAwait(false);
 
-            await deviceClient.CloseAsync();
-            await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager);
+            await deviceClient.CloseAsync().ConfigureAwait(false);
+            await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager).ConfigureAwait(false);
         }
 
         private async Task SendMethodAndRespondRecovery(Client.TransportType transport, string faultType, string reason, int delayInSec)
@@ -435,14 +435,14 @@ namespace Microsoft.Azure.Devices.E2ETests
                         request.DataAsJson.Equals(ServiceRequestJson)));
                     return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(DeviceResponseJson), 200));
                 },
-                null);
+                null).ConfigureAwait(false);
 
             // assert on successfuly connection
             await Task.WhenAny(
                 Task.Run(async () =>
                 {
-                    await Task.Delay(1000);
-                }), tcsConnected.Task);
+                    await Task.Delay(1000).ConfigureAwait(false);
+                }), tcsConnected.Task).ConfigureAwait(false);
             Assert.IsTrue(tcsConnected.Task.IsCompleted, "Initial connection failed");
             if (transport != Client.TransportType.Http1)
             {
@@ -454,7 +454,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             // check on normal operation
             await
                 ServiceSendMethodAndVerifyResponse(deviceInfo.Item1, MethodName, DeviceResponseJson,
-                    ServiceRequestJson, assertResult);
+                    ServiceRequestJson, assertResult).ConfigureAwait(false);
 
             // reset ConnectionStatusChangesHandler data
             setConnectionStatusChangesHandlerCount = 0;
@@ -462,14 +462,14 @@ namespace Microsoft.Azure.Devices.E2ETests
             tcsDisconnected = new TaskCompletionSource<bool>();
 
             // send error command
-            await deviceClient.SendEventAsync(TestUtil.ComposeErrorInjectionProperties(faultType, reason, delayInSec));
+            await deviceClient.SendEventAsync(TestUtil.ComposeErrorInjectionProperties(faultType, reason, delayInSec)).ConfigureAwait(false);
 
             // wait for disconnection
             await Task.WhenAny(
                 Task.Run(async () =>
                 {
-                    await Task.Delay(TimeSpan.FromSeconds(10));
-                }), tcsDisconnected.Task);
+                    await Task.Delay(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
+                }), tcsDisconnected.Task).ConfigureAwait(false);
             Assert.IsTrue(tcsDisconnected.Task.IsCompleted, "Error injection did not interrupt the device");
 
             // allow max 3 minutes for connection recovery
@@ -477,19 +477,19 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Task.Run(async () =>
                 {
                     ////////////////////////change it to 30
-                    await Task.Delay(TimeSpan.FromSeconds(10));
+                    await Task.Delay(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
                     return Task.FromResult(true);
-                }), tcsConnected.Task);
+                }), tcsConnected.Task).ConfigureAwait(false);
             Assert.IsTrue(tcsConnected.Task.IsCompleted, "Recovery connection failed");
 
             assertResult = new TaskCompletionSource<Tuple<bool, bool>>();
             await
                 ServiceSendMethodAndVerifyResponse(deviceInfo.Item1, MethodName, DeviceResponseJson,
-                    ServiceRequestJson, assertResult);
+                    ServiceRequestJson, assertResult).ConfigureAwait(false);
             setConnectionStatusChangesHandlerCount = 0;
 
             //remove and CloseAsync
-            await deviceClient.SetMethodHandlerAsync(MethodName, null, null);
+            await deviceClient.SetMethodHandlerAsync(MethodName, null, null).ConfigureAwait(false);
 
             if (transport != Client.TransportType.Http1)
             {
@@ -498,7 +498,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Assert.AreEqual(ConnectionStatusChangeReason.Client_Close, lastConnectionStatusChangeReason);
             }
 
-            await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager);
+            await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager).ConfigureAwait(false);
         }
     }
 }

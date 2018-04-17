@@ -40,13 +40,13 @@ namespace Microsoft.Azure.Devices
         /// <returns></returns>
         public async Task<IEnumerable<Twin>> GetNextAsTwinAsync()
         {
-            return await this.GetNextAsTwinAsync(null);
+            return await GetNextAsTwinAsync(null).ConfigureAwait(false);
         }
 
         public async Task<QueryResponse<Twin>> GetNextAsTwinAsync(QueryOptions options)
         {
             IEnumerable<Twin> result = this.HasMoreResults
-                ? await this.GetAndCastNextResultAsync<Twin>(QueryResultType.Twin, options)
+                ? await GetAndCastNextResultAsync<Twin>(QueryResultType.Twin, options).ConfigureAwait(false)
                 : new List<Twin>();
 
             return new QueryResponse<Twin>(result, this.continuationToken);
@@ -58,13 +58,13 @@ namespace Microsoft.Azure.Devices
         /// <returns></returns>
         public async Task<IEnumerable<DeviceJob>> GetNextAsDeviceJobAsync()
         {
-            return await this.GetNextAsDeviceJobAsync(null);
+            return await GetNextAsDeviceJobAsync(null).ConfigureAwait(false);
         }
 
         public async Task<QueryResponse<DeviceJob>> GetNextAsDeviceJobAsync(QueryOptions options)
         {
             IEnumerable<DeviceJob> result = this.HasMoreResults
-                ? await this.GetAndCastNextResultAsync<DeviceJob>(QueryResultType.DeviceJob, options)
+                ? await GetAndCastNextResultAsync<DeviceJob>(QueryResultType.DeviceJob, options).ConfigureAwait(false)
                 : new List<DeviceJob>();
 
             return new QueryResponse<DeviceJob>(result, this.continuationToken);
@@ -76,13 +76,13 @@ namespace Microsoft.Azure.Devices
         /// <returns></returns>
         public async Task<IEnumerable<JobResponse>> GetNextAsJobResponseAsync()
         {
-            return await this.GetNextAsJobResponseAsync(null);
+            return await GetNextAsJobResponseAsync(null).ConfigureAwait(false);
         }
 
         public async Task<QueryResponse<JobResponse>> GetNextAsJobResponseAsync(QueryOptions options)
         {
             IEnumerable<JobResponse> result = this.HasMoreResults
-                ? await this.GetAndCastNextResultAsync<JobResponse>(QueryResultType.JobResponse, options)
+                ? await GetAndCastNextResultAsync<JobResponse>(QueryResultType.JobResponse, options).ConfigureAwait(false)
                 : new List<JobResponse>();
 
             return new QueryResponse<JobResponse>(result, this.continuationToken);
@@ -94,7 +94,7 @@ namespace Microsoft.Azure.Devices
         /// <returns></returns>
         public async Task<IEnumerable<string>> GetNextAsJsonAsync()
         {
-            return await this.GetNextAsJsonAsync(null);
+            return await GetNextAsJsonAsync(null).ConfigureAwait(false);
         }
 
         public async Task<QueryResponse<string>> GetNextAsJsonAsync(QueryOptions options)
@@ -106,7 +106,7 @@ namespace Microsoft.Azure.Devices
             }
             else
             {
-                QueryResult r = await this.GetNextAsync(options);
+                QueryResult r = await GetNextAsync(options).ConfigureAwait(false);
                 response = r.Items.Select(o => o.ToString());
             }
 
@@ -115,7 +115,7 @@ namespace Microsoft.Azure.Devices
 
         async Task<IEnumerable<T>> GetAndCastNextResultAsync<T>(QueryResultType type, QueryOptions options)
         {
-            QueryResult r = await this.GetNextAsync(options);
+            QueryResult r = await GetNextAsync(options).ConfigureAwait(false);
             return CastResultContent<T>(r, type);
         }
 
@@ -132,7 +132,7 @@ namespace Microsoft.Azure.Devices
 
         async Task<QueryResult> GetNextAsync(QueryOptions options)
         {
-            QueryResult result = await this.queryTaskFunc(!string.IsNullOrWhiteSpace(options?.ContinuationToken) ? options.ContinuationToken : this.continuationToken);
+            QueryResult result = await queryTaskFunc(!string.IsNullOrWhiteSpace(options?.ContinuationToken) ? options.ContinuationToken : continuationToken).ConfigureAwait(false);
             this.continuationToken = result.ContinuationToken;
             this.newQuery = false;
             return result;

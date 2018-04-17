@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.Api.Test.ConnectionString
 
         [TestMethod]
         [TestCategory("CIT")]
-        public void ServiceClient_ConnectionString_DefaultScope_DefaultCredentialType_Test()
+        public void ServiceClientConnectionStringDefaultScopeDefaultCredentialTypeTest()
         {
             string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
             var serviceClient = (AmqpServiceClient)ServiceClient.CreateFromConnectionString(connectionString);
@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.Api.Test.ConnectionString
 
         [TestMethod]
         [TestCategory("CIT")]
-        public void ServiceClient_ConnectionString_IotHubScope_ImplicitSharedAccessSignatureCredentialType_Test()
+        public void ServiceClientConnectionStringIotHubScopeImplicitSharedAccessSignatureCredentialTypeTest()
         {
             string connectionString = "HostName=acme.azure-devices.net;CredentialScope=IotHub;CredentialType=SharedAccessSignature;SharedAccessKeyName=AllAccessKey;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
             var serviceClient = (AmqpServiceClient)ServiceClient.CreateFromConnectionString(connectionString);
@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices.Api.Test.ConnectionString
 
         [TestMethod]
         [TestCategory("CIT")]
-        public void ServiceClient_ConnectionString_IotHubScope_ExplicitSharedAccessSignatureCredentialType_Test()
+        public void ServiceClientConnectionStringIotHubScopeExplicitSharedAccessSignatureCredentialTypeTest()
         {
             string connectionString = "HostName=acme.azure-devices.net;CredentialScope=IotHub;CredentialType=SharedAccessSignature;SharedAccessKeyName=AllAccessKey;SharedAccessSignature=SharedAccessSignature sr=dh%3a%2f%2facme.azure-devices.net&sig=poifbMLdBGtCJknubF2FW6FLn5vND5k1IKoeQ%2bONgkE%3d&se=87824124985&skn=AllAccessKey";
             var serviceClient = (AmqpServiceClient)ServiceClient.CreateFromConnectionString(connectionString);
@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices.Api.Test.ConnectionString
 
         [TestMethod]
         [TestCategory("CIT")]
-        public void ServiceClient_ConnectionString_IotHubScope_SharedAccessKeyCredentialType_Test()
+        public void ServiceClientConnectionStringIotHubScopeSharedAccessKeyCredentialTypeTest()
         {
             string connectionString = "HostName=acme.azure-devices.net;CredentialScope=IotHub;CredentialType=SharedAccessKey;SharedAccessKeyName=AllAccessKey;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
             var serviceClient = (AmqpServiceClient)ServiceClient.CreateFromConnectionString(connectionString);
@@ -67,7 +67,7 @@ namespace Microsoft.Azure.Devices.Api.Test.ConnectionString
 
         [TestMethod]
         [TestCategory("CIT")]
-        public void ServiceClient_ConnectionString_DeviceScope_ImplicitSharedAccessSignatureCredentialType_Test()
+        public void ServiceClientConnectionStringDeviceScopeImplicitSharedAccessSignatureCredentialTypeTest()
         {
             string connectionString = "HostName=acme.azure-devices.net;CredentialScope=IotHub;CredentialType=SharedAccessSignature;SharedAccessKeyName=blah;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
             var serviceClient = (AmqpServiceClient)ServiceClient.CreateFromConnectionString(connectionString);
@@ -78,7 +78,7 @@ namespace Microsoft.Azure.Devices.Api.Test.ConnectionString
 
         [TestMethod]
         [TestCategory("CIT")]
-        public void ServiceClient_ConnectionString_DeviceScope_ExplicitSharedAccessSignatureCredentialType_Test()
+        public void ServiceClientConnectionStringDeviceScopeExplicitSharedAccessSignatureCredentialTypeTest()
         {
             string connectionString = "HostName=acme.azure-devices.net;CredentialScope=IotHub;CredentialType=SharedAccessSignature;SharedAccessKeyName=blah;SharedAccessSignature=SharedAccessSignature sr=dh%3a%2f%2facme.azure-devices.net&sig=poifbMLdBGtCJknubF2FW6FLn5vND5k1IKoeQ%2bONgkE%3d&se=87824124985&skn=AllAccessKey";
             var serviceClient = (AmqpServiceClient)ServiceClient.CreateFromConnectionString(connectionString);
@@ -89,7 +89,7 @@ namespace Microsoft.Azure.Devices.Api.Test.ConnectionString
 
         [TestMethod]
         [TestCategory("CIT")]
-        public void ServiceClient_ConnectionString_DeviceScope_SharedAccessKeyCredentialType_Test()
+        public void ServiceClientConnectionStringDeviceScopeSharedAccessKeyCredentialTypeTest()
         {
             string connectionString = "HostName=acme.azure-devices.net;CredentialScope=IotHub;CredentialType=SharedAccessKey;SharedAccessKeyName=blah;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
             var serviceClient = (AmqpServiceClient)ServiceClient.CreateFromConnectionString(connectionString);
@@ -100,7 +100,7 @@ namespace Microsoft.Azure.Devices.Api.Test.ConnectionString
 
         [TestMethod]
         [TestCategory("CIT")]
-        public void ServiceClient_IotHubConnectionStringBuilder_Test()
+        public void ServiceClientIotHubConnectionStringBuilderTest()
         {
             string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
             var iotHubConnectionStringBuilder = IotHubConnectionStringBuilder.Create(connectionString);

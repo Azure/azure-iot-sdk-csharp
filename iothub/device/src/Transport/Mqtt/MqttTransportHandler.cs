@@ -502,14 +502,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 if ((previousState & TransportState.Open) == TransportState.Open)
                 {
-                    await Task.Run(async () => await this.connectionClosedListener(
-                        this.channel,
+                    await Task.Run(async () => await connectionClosedListener(
+                        channel, 
                         new ConnectionEventArgs
                         {
                             ConnectionType = ConnectionType.MqttConnection,
                             ConnectionStatus = ConnectionStatus.Disconnected_Retrying,
                             ConnectionStatusChangeReason = ConnectionStatusChangeReason.No_Network
-                        })).ConfigureAwait(false);
+                        }).ConfigureAwait(false)).ConfigureAwait(false);
                 }
             }
             catch (Exception ex) when (!ex.IsFatal())

@@ -187,6 +187,11 @@ $errorMessage = ""
 try {
     if ($sign)
     {
+        if ([string]::IsNullOrWhiteSpace($env:AZURE_IOT_LOCALPACKAGES))
+        {
+            throw "Local NuGet package source path is not set, required when signing packages."
+        }
+
         CheckSignTools
     }
 
@@ -309,7 +314,19 @@ try {
     if ($publish)
     {
         $files = dir $rootDir\bin\pkg\*.nupkg | where {-not ($_.Name -match "symbols")}
-        PushNuGet $files
+        $publishResult = PushNuGet $files
+
+        foreach( $result in $publishResult)
+        {
+            if($result.success)
+            {
+                Write-Host -ForegroundColor Green "OK    : $($result.file.FullName)"
+            } 
+            else 
+            {
+                Write-Host -ForegroundColor Red "FAILED: $($result.file.FullName)"
+            }
+        }
     }
 
     $buildFailed = $false

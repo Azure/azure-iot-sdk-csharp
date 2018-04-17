@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Api.Test
     public class QueryTests
     {
         [TestMethod]
-        public void QueryResult_CastContentToTwin_NoContinuation_Test()
+        public void QueryResultCastContentToTwinNoContinuationTest()
         {
             // simulate json serialize/deserialize
             var serverQueryResult = new QueryResult()
@@ -50,7 +50,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        public void QueryResult_CastContentToTwin_Continuation_Test()
+        public void QueryResultCastContentToTwinContinuationTest()
         {
             // simulate json serialize/deserialize
             var serverQueryResult = new QueryResult()
@@ -85,7 +85,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        public void QueryResult_CastContentToDeviceJob_Test()
+        public void QueryResultCastContentToDeviceJobTest()
         {
             // simulate json serialize/deserialize
             IEnumerable<DeviceJob> jobs = new List<DeviceJob>()
@@ -127,7 +127,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        public void QueryResult_CastContentToJobResponse_Test()
+        public void QueryResultCastContentToJobResponseTest()
         {
             // simulate json serialize/deserialize
             IEnumerable<JobResponse> jobs = new List<JobResponse>()
@@ -174,7 +174,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        public void QueryResult_CastContentToJson_Test()
+        public void QueryResultCastContentToJsonTest()
         {
             // simulate json serialize/deserialize
             IEnumerable<DeviceJob> jobs = new List<DeviceJob>()
@@ -215,7 +215,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        public void QueryResult_CallNextOutsideWhile_Test()
+        public void QueryResultCallNextOutsideWhileTest()
         {
             // simulate json serialize/deserialize
             IEnumerable<DeviceJob> jobs = new List<DeviceJob>()
@@ -253,7 +253,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        public void QueryResult_UserSuppliedContinuation_Test()
+        public void QueryResultUserSuppliedContinuationTest()
         {
             // simulate json serialize/deserialize
             var serverQueryResult = new QueryResult()

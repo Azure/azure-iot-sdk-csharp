@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         #region PAL
         internal async Task SendMessageThrottledForHttp()
         {
-            await sequentialTestSemaphore.WaitAsync();
+            await sequentialTestSemaphore.WaitAsync().ConfigureAwait(false);
 
             Tuple<string, string> deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
 
@@ -32,18 +32,18 @@ namespace Microsoft.Azure.Devices.E2ETests
             try
             {
                 deviceClient.OperationTimeoutInMilliseconds = (uint)TestUtil.ShortRetryInMilliSec;
-                await deviceClient.OpenAsync();
+                await deviceClient.OpenAsync().ConfigureAwait(false);
 
                 string payload, p1Value;
                 Client.Message testMessage = ComposeD2CTestMessage(out payload, out p1Value);
-                await deviceClient.SendEventAsync(testMessage);
+                await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
 
                 bool isReceived = false;
                 Stopwatch sw = new Stopwatch();
                 sw.Start();
                 while (!isReceived && sw.Elapsed.Minutes < 1)
                 {
-                    var events = await eventHubReceiver.ReceiveAsync(int.MaxValue, TimeSpan.FromSeconds(5));
+                    var events = await eventHubReceiver.ReceiveAsync(int.MaxValue, TimeSpan.FromSeconds(5)).ConfigureAwait(false);
                     isReceived = VerifyTestMessage(events, deviceInfo.Item1, payload, p1Value);
                 }
                 sw.Stop();
@@ -52,12 +52,12 @@ namespace Microsoft.Azure.Devices.E2ETests
                 // fault injection message itself only.  The duration of fault has no effect on http throttle.
                 // Client is supposed to retry sending the throttling fault message until operation timeout.
                 await deviceClient.SendEventAsync(TestUtil.ComposeErrorInjectionProperties(TestUtil.FaultType_Throttle,
-                    TestUtil.FaultCloseReason_Boom, TestUtil.DefaultDelayInSec, TestUtil.DefaultDurationInSec));
+                    TestUtil.FaultCloseReason_Boom, TestUtil.DefaultDelayInSec, TestUtil.DefaultDurationInSec)).ConfigureAwait(false);
             }
             finally
             {
-                await deviceClient.CloseAsync();
-                await eventHubReceiver.CloseAsync();
+                await deviceClient.CloseAsync().ConfigureAwait(false);
+                await eventHubReceiver.CloseAsync().ConfigureAwait(false);
                 sequentialTestSemaphore.Release(1);
             }
         }
@@ -65,7 +65,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         internal async Task SendMessageRecovery(Client.TransportType transport,
             string faultType, string reason, int delayInSec, int durationInSec = 0, int retryDurationInMilliSec = 240000)
         {
-            await sequentialTestSemaphore.WaitAsync();
+            await sequentialTestSemaphore.WaitAsync().ConfigureAwait(false);
 
             Tuple<string, string> deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
             var deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, transport);
@@ -87,7 +87,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     setConnectionStatusChangesHandlerCount++;
                 });
 
-                await deviceClient.OpenAsync();
+                await deviceClient.OpenAsync().ConfigureAwait(false);
 
                 if (transport != Client.TransportType.Http1)
                 {
@@ -98,7 +98,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 string payload, p1Value;
                 Client.Message testMessage = ComposeD2CTestMessage(out payload, out p1Value);
-                await deviceClient.SendEventAsync(testMessage);
+                await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
 
 
                 bool isReceived = false;
@@ -106,7 +106,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 sw.Start();
                 while (!isReceived && sw.Elapsed.Minutes < 1)
                 {
-                    var events = await eventHubReceiver.ReceiveAsync(int.MaxValue, TimeSpan.FromSeconds(5));
+                    var events = await eventHubReceiver.ReceiveAsync(int.MaxValue, TimeSpan.FromSeconds(5)).ConfigureAwait(false);
                     isReceived = VerifyTestMessage(events, deviceInfo.Item1, payload, p1Value);
                 }
                 sw.Stop();
@@ -114,25 +114,25 @@ namespace Microsoft.Azure.Devices.E2ETests
                 // send error command and clear eventHubReceiver of the fault injection message
                 await deviceClient.SendEventAsync(TestUtil.ComposeErrorInjectionProperties(faultType, reason,
                     delayInSec,
-                    durationInSec));
+                    durationInSec)).ConfigureAwait(false);
 
-                await eventHubReceiver.ReceiveAsync(int.MaxValue, TimeSpan.FromSeconds(5));
+                await eventHubReceiver.ReceiveAsync(int.MaxValue, TimeSpan.FromSeconds(5)).ConfigureAwait(false);
 
                 Thread.Sleep(1000);
 
                 testMessage = ComposeD2CTestMessage(out payload, out p1Value);
-                await deviceClient.SendEventAsync(testMessage);
+                await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
 
                 sw.Reset();
                 sw.Start();
                 while (!isReceived && sw.Elapsed.Minutes < 1)
                 {
-                    var events = await eventHubReceiver.ReceiveAsync(int.MaxValue, TimeSpan.FromSeconds(5));
+                    var events = await eventHubReceiver.ReceiveAsync(int.MaxValue, TimeSpan.FromSeconds(5)).ConfigureAwait(false);
                     isReceived = VerifyTestMessage(events, deviceInfo.Item1, payload, p1Value);
                 }
                 sw.Stop();
 
-                await deviceClient.CloseAsync();
+                await deviceClient.CloseAsync().ConfigureAwait(false);
 
                 if (transport != Client.TransportType.Http1)
                 {
@@ -143,9 +143,9 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
             finally
             {
-                await deviceClient.CloseAsync();
-                await eventHubReceiver.CloseAsync();
-                await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager);
+                await deviceClient.CloseAsync().ConfigureAwait(false);
+                await eventHubReceiver.CloseAsync().ConfigureAwait(false);
+                await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager).ConfigureAwait(false);
                 sequentialTestSemaphore.Release(1);
             }
         }
@@ -159,19 +159,19 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             try
             {
-                await deviceClient.OpenAsync();
+                await deviceClient.OpenAsync().ConfigureAwait(false);
 
                 string payload;
                 string p1Value;
                 Client.Message testMessage = ComposeD2CTestMessage(out payload, out p1Value);
-                await deviceClient.SendEventAsync(testMessage);
+                await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
 
                 bool isReceived = false;
                 Stopwatch sw = new Stopwatch();
                 sw.Start();
                 while (!isReceived && sw.Elapsed.Minutes < 1)
                 {
-                    var events = await eventHubReceiver.ReceiveAsync(int.MaxValue, TimeSpan.FromSeconds(5));
+                    var events = await eventHubReceiver.ReceiveAsync(int.MaxValue, TimeSpan.FromSeconds(5)).ConfigureAwait(false);
                     isReceived = VerifyTestMessage(events, deviceInfo.Item1, payload, p1Value);
                 }
                 sw.Stop();
@@ -180,9 +180,9 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
             finally
             {
-                await deviceClient.CloseAsync();
-                await eventHubReceiver.CloseAsync();
-                await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager);
+                await deviceClient.CloseAsync().ConfigureAwait(false);
+                await eventHubReceiver.CloseAsync().ConfigureAwait(false);
+                await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager).ConfigureAwait(false);
             }
         }
         #endregion

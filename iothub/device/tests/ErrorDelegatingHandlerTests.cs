@@ -67,11 +67,11 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             //emulate Gatekeeper behaviour: it opens the channel for us
             var cancellationToken = new CancellationToken();
-            await sut.OpenAsync(false, cancellationToken);
-            await sut.SendEventAsync(new Message(new byte[0]), cancellationToken);
+            await sut.OpenAsync(false, cancellationToken).ConfigureAwait(false);
+            await sut.SendEventAsync(new Message(new byte[0]), cancellationToken).ConfigureAwait(false);
 
-            await innerHandler.Received(1).OpenAsync(Arg.Is(false), cancellationToken);
-            await innerHandler.Received(1).SendEventAsync(Arg.Any<Message>(), cancellationToken);
+            await innerHandler.Received(1).OpenAsync(Arg.Is(false), cancellationToken).ConfigureAwait(false);
+            await innerHandler.Received(1).SendEventAsync(Arg.Any<Message>(), cancellationToken).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             foreach (Type exceptionType in ErrorDelegatingHandler.TransportTransientExceptions)
             {
-                await TestExceptionThrown(exceptionType, typeof(IotHubClientTransientException), false);
+                await TestExceptionThrown(exceptionType, typeof(IotHubClientTransientException), false).ConfigureAwait(false);
             }
         }
 
@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             {
                 if (!ErrorDelegatingHandler.TransportTransientExceptions.Contains(exceptionType))
                 {
-                    await TestExceptionThrown(exceptionType, typeof(IotHubClientTransientException), true);
+                    await TestExceptionThrown(exceptionType, typeof(IotHubClientTransientException), true).ConfigureAwait(false);
                 }
             }
         }
@@ -109,7 +109,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         {
             foreach (Type exceptionType in NonTransientExceptions)
             {
-                await TestExceptionThrown(exceptionType, exceptionType, true);
+                await TestExceptionThrown(exceptionType, exceptionType, true).ConfigureAwait(false);
             }
         }
 
@@ -122,7 +122,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 di => di.SendEventAsync(Arg.Is(message), Arg.Any<CancellationToken>()), 
                 di => di.SendEventAsync(message, cancellationToken), 
                 di => di.Received(2).SendEventAsync(Arg.Is(message), Arg.Any<CancellationToken>()), 
-                thrownExceptionType, expectedExceptionType, reopenExpected);
+                thrownExceptionType, expectedExceptionType, reopenExpected).ConfigureAwait(false);
 
             IEnumerable<Message> messages = new[] { new Message(new byte[0])};
 
@@ -130,13 +130,13 @@ namespace Microsoft.Azure.Devices.Client.Test
                 di => di.SendEventAsync(Arg.Is(message), Arg.Any<CancellationToken>()),
                 di => di.SendEventAsync(message, cancellationToken),
                 di => di.Received(2).SendEventAsync(Arg.Is(message), Arg.Any<CancellationToken>()),
-                thrownExceptionType, expectedExceptionType, reopenExpected);
+                thrownExceptionType, expectedExceptionType, reopenExpected).ConfigureAwait(false);
 
             await OpenAsync_ExceptionThrownAndThenSucceed_SuccessfullyOpened(
                 di => di.OpenAsync(Arg.Is(false), Arg.Any<CancellationToken>()),
                 di => di.OpenAsync(false, cancellationToken),
                 di => di.Received(2).OpenAsync(Arg.Is(false), Arg.Any<CancellationToken>()),
-                thrownExceptionType, expectedExceptionType);
+                thrownExceptionType, expectedExceptionType).ConfigureAwait(false);
 
             string lockToken = "lockToken";
 
@@ -144,32 +144,32 @@ namespace Microsoft.Azure.Devices.Client.Test
                 di => di.CompleteAsync(Arg.Is(lockToken), Arg.Any<CancellationToken>()),
                 di => di.CompleteAsync(lockToken, cancellationToken),
                 di => di.Received(2).CompleteAsync(Arg.Is(lockToken), Arg.Any<CancellationToken>()),
-                thrownExceptionType, expectedExceptionType, reopenExpected);
+                thrownExceptionType, expectedExceptionType, reopenExpected).ConfigureAwait(false);
 
             await OperationAsync_ExceptionThrownAndThenSucceed_OperationSuccessfullyCompleted(
                 di => di.AbandonAsync(Arg.Is(lockToken), Arg.Any<CancellationToken>()),
                 di => di.AbandonAsync(lockToken, cancellationToken),
                 di => di.Received(2).AbandonAsync(Arg.Is(lockToken), Arg.Any<CancellationToken>()),
-                thrownExceptionType, expectedExceptionType, reopenExpected);
+                thrownExceptionType, expectedExceptionType, reopenExpected).ConfigureAwait(false);
 
             await OperationAsync_ExceptionThrownAndThenSucceed_OperationSuccessfullyCompleted(
                 di => di.RejectAsync(Arg.Is(lockToken), Arg.Any<CancellationToken>()),
                 di => di.RejectAsync(lockToken, cancellationToken),
                 di => di.Received(2).RejectAsync(Arg.Is(lockToken), Arg.Any<CancellationToken>()),
-                thrownExceptionType, expectedExceptionType, reopenExpected);
+                thrownExceptionType, expectedExceptionType, reopenExpected).ConfigureAwait(false);
 
             TimeSpan timeout = TimeSpan.FromSeconds(1);
             await OperationAsync_ExceptionThrownAndThenSucceed_OperationSuccessfullyCompleted(
                 di => di.ReceiveAsync(Arg.Is(timeout), Arg.Any<CancellationToken>()),
                 di => di.ReceiveAsync(timeout, cancellationToken),
                 di => di.Received(2).ReceiveAsync(Arg.Is(timeout), Arg.Any<CancellationToken>()),
-                thrownExceptionType, expectedExceptionType, reopenExpected);
+                thrownExceptionType, expectedExceptionType, reopenExpected).ConfigureAwait(false);
 
             await OperationAsync_ExceptionThrownAndThenSucceed_OperationSuccessfullyCompleted(
                 di => di.ReceiveAsync(Arg.Any<CancellationToken>()),
                 di => di.ReceiveAsync(cancellationToken),
                 di => di.Received(2).ReceiveAsync(Arg.Any<CancellationToken>()),
-                thrownExceptionType, expectedExceptionType, reopenExpected);
+                thrownExceptionType, expectedExceptionType, reopenExpected).ConfigureAwait(false);
         }
 
         static async Task OperationAsync_ExceptionThrownAndThenSucceed_OperationSuccessfullyCompleted(Func<IDelegatingHandler, Task<Message>> mockSetup, Func<IDelegatingHandler, Task<Message>> act, Func<IDelegatingHandler, Task<Message>> assert, Type thrownExceptionType, Type expectedExceptionType, bool reopenExpected)
@@ -186,7 +186,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             //initial OpenAsync to emulate Gatekeeper behaviour
             var cancellationToken = new CancellationToken();
             innerHandler.OpenAsync(Arg.Is(false), Arg.Any<CancellationToken>()).Returns(TaskConstants.Completed);
-            await sut.OpenAsync(false, cancellationToken);
+            await sut.OpenAsync(false, cancellationToken).ConfigureAwait(false);
 
             //set initial operation result that throws
 
@@ -201,18 +201,18 @@ namespace Microsoft.Azure.Devices.Client.Test
             });
 
             //act
-            await ((Func<Task>)(() => act(sut))).ExpectedAsync(expectedExceptionType);
+            await ((Func<Task>)(() => act(sut))).ExpectedAsync(expectedExceptionType).ConfigureAwait(false);
 
             //override outcome
             setup[0] = true;//otherwise previosly setup call will happen and throw;
             mockSetup(innerHandler).Returns(new Message());
 
             //act
-            await act(sut);
+            await act(sut).ConfigureAwait(false);
 
             //assert
-            await innerHandler.Received(reopenExpected ? 2 : 1).OpenAsync(Arg.Is(false), Arg.Any<CancellationToken>());
-            await assert(innerHandler);
+            await innerHandler.Received(reopenExpected ? 2 : 1).OpenAsync(Arg.Is(false), Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await assert(innerHandler).ConfigureAwait(false);
             Assert.AreEqual(reopenExpected ? 2 : 1, ctorCallCounter);
         }
 
@@ -230,7 +230,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             //initial OpenAsync to emulate Gatekeeper behaviour
             var cancellationToken = new CancellationToken();
-            await sut.OpenAsync(false, cancellationToken);
+            await sut.OpenAsync(false, cancellationToken).ConfigureAwait(false);
 
             //set initial operation result that throws
 
@@ -245,18 +245,18 @@ namespace Microsoft.Azure.Devices.Client.Test
             });
 
             //act
-            await ((Func<Task>)(() => act(sut))).ExpectedAsync(expectedExceptionType);
+            await ((Func<Task>)(() => act(sut))).ExpectedAsync(expectedExceptionType).ConfigureAwait(false);
 
             //override outcome
             setup[0] = true;//otherwise previosly setup call will happen and throw;
             mockSetup(innerHandler).Returns(TaskConstants.Completed);
 
             //act
-            await act(sut);
+            await act(sut).ConfigureAwait(false);
 
             //assert
-            await innerHandler.Received(reopenExpected ? 2 : 1).OpenAsync(Arg.Is(false), Arg.Any<CancellationToken>());
-            await assert(innerHandler);
+            await innerHandler.Received(reopenExpected ? 2 : 1).OpenAsync(Arg.Is(false), Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await assert(innerHandler).ConfigureAwait(false);
             Assert.AreEqual(reopenExpected ? 2 : 1, ctorCallCounter);
         }
 
@@ -284,17 +284,17 @@ namespace Microsoft.Azure.Devices.Client.Test
             });
 
             //act
-            await ((Func<Task>)(() => act(sut))).ExpectedAsync(expectedExceptionType);
+            await ((Func<Task>)(() => act(sut))).ExpectedAsync(expectedExceptionType).ConfigureAwait(false);
 
             //override outcome
             setup[0] = true;//otherwise previosly setup call will happen and throw;
             mockSetup(innerHandler).Returns(TaskConstants.Completed);
 
             //act
-            await act(sut);
+            await act(sut).ConfigureAwait(false);
 
             //assert
-            await assert(innerHandler);
+            await assert(innerHandler).ConfigureAwait(false);
             Assert.AreEqual(2, ctorCallCounter);
         }
     }

@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         /* Codes_SRS_PARSER_UTILITY_21_001: [The IsValidUTF8 shall do nothing if the string is valid.] */
         [TestMethod]
         [TestCategory("DevService")]
-        public void ParserUtils_IsValidUTF8_SucceedOnUTF8()
+        public void ParserUtilsIsValidUTF8SucceedOnUTF8()
         {
             // arrange - act - assert
             ParserUtils.EnsureUTF8String("this-is-a-valid-UTF8");
@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         /* Codes_SRS_PARSER_UTILITY_21_003: [The IsValidUTF8 shall throw ArgumentException if the provided string contains at least one not UTF-8 character.] */
         [TestMethod]
         [TestCategory("DevService")]
-        public void ParserUtils_IsValidUTF8_ThrowsOnInvalidUTF8()
+        public void ParserUtilsIsValidUTF8ThrowsOnInvalidUTF8()
         {
             // arrange - act - assert
             TestAssert.Throws<ArgumentException>(() => ParserUtils.EnsureUTF8String(null));
@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         /* Codes_SRS_PARSER_UTILITY_21_007: [The IsValidRegistrationId shall do nothing if the string is a valid ID.] */
         [TestMethod]
         [TestCategory("DevService")]
-        public void ParserUtils_IsValidRegistrationId_SucceedOnValidId()
+        public void ParserUtilsIsValidRegistrationIdSucceedOnValidId()
         {
             // arrange - act - assert
             ParserUtils.EnsureRegistrationId("this-is-a-valid-registration-id");
@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         [TestMethod]
         [TestCategory("DevService")]
-        public void ParserUtils_IsValidRegistrationId_SucceedSizeLimitedTo128Chars()
+        public void ParserUtilsIsValidRegistrationIdSucceedSizeLimitedTo128Chars()
         {
             // arrange - act - assert
             ParserUtils.EnsureRegistrationId(
@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         /* Codes_SRS_PARSER_UTILITY_21_010: [The IsValidRegistrationId shall throw ArgumentException if the provided string contains an illegal character.] */
         [TestMethod]
         [TestCategory("DevService")]
-        public void ParserUtils_IsValidRegistrationId_ThrowsOnInvalidId()
+        public void ParserUtilsIsValidRegistrationIdThrowsOnInvalidId()
         {
             // arrange - act - assert
             TestAssert.Throws<ArgumentException>(() => ParserUtils.EnsureRegistrationId(null));
@@ -74,7 +74,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         /* Codes_SRS_PARSER_UTILITY_21_011: [The IsValidId shall do nothing if the string is a valid ID.] */
         [TestMethod]
         [TestCategory("DevService")]
-        public void ParserUtils_IsValidId_SucceedOnValidId()
+        public void ParserUtilsIsValidIdSucceedOnValidId()
         {
             // arrange - act - assert
             ParserUtils.EnsureValidId("This-is:A.valid+Id%_#*?!(),=@;$\'");
@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         [TestMethod]
         [TestCategory("DevService")]
-        public void ParserUtils_IsValidId_SucceedSizeLimitedTo128Chars()
+        public void ParserUtilsIsValidIdSucceedSizeLimitedTo128Chars()
         {
             // arrange - act - assert
             ParserUtils.EnsureValidId(
@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         /* Codes_SRS_PARSER_UTILITY_21_014: [The IsValidId shall throw ArgumentException if the provided string contains an illegal character.] */
         [TestMethod]
         [TestCategory("DevService")]
-        public void ParserUtils_IsValidId_ThrowsOnInvalidId()
+        public void ParserUtilsIsValidIdThrowsOnInvalidId()
         {
             // arrange - act - assert
             TestAssert.Throws<ArgumentException>(() => ParserUtils.EnsureValidId(null));
