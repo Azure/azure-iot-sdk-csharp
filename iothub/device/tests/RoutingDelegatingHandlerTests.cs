@@ -19,7 +19,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("DelegatingHandlers")]
-        [TestCategory("Owner [mtuchkov]")]
         public async Task TransportRouting_FirstTrySucceed_Open()
         {
             var contextMock = Substitute.For<IPipelineContext>();
@@ -39,7 +38,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("DelegatingHandlers")]
-        [TestCategory("Owner [mtuchkov]")]
         public async Task TransportRouting_TryOpenFailedWithUnsupportedException_FailOnFirstTry()
         {
             var contextMock = Substitute.For<IPipelineContext>();
@@ -68,7 +66,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("DelegatingHandlers")]
-        [TestCategory("Owner [mtuchkov]")]
         public async Task TransportRouting_TryOpenFailedWithSupportedExceptionTwoTimes_Fail()
         {
             var contextMock = Substitute.For<IPipelineContext>();
@@ -97,7 +94,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("DelegatingHandlers")]
-        [TestCategory("Owner [mtuchkov]")]
         public async Task TransportRouting_TryOpenFailedWithSupportedExceptionFirstTimes_SuccessOnSecondTry()
         {
             await TransportRouting_TryOpenFailedWithSupportedExceptionFirstTimes_SuccessOnSecondTry(() => new TimeoutException()).ConfigureAwait(false);
@@ -111,7 +107,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("DelegatingHandlers")]
-        [TestCategory("Owner [jasminel]")]
         public async Task TransportRouting_CancellationTokenCanceled_Open()
         {
             var transportSettings = Substitute.For<ITransportSettings>();

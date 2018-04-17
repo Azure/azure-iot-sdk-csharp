@@ -76,6 +76,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             }
             catch (Exception ex)
             {
+                if (ex is AggregateException) ex = ex.InnerException;
                 await FailWithExceptionAsync(context, ex).ConfigureAwait(false);
             }
 
@@ -120,11 +121,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         public override async void ExceptionCaught(IChannelHandlerContext context, Exception exception)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(ExceptionCaught)}({exception.ToString()}");
+            if (Logging.IsEnabled) Logging.Enter(this, context.Name, nameof(ExceptionCaught));
             base.ExceptionCaught(context, exception);
 
             await FailWithExceptionAsync(context, exception).ConfigureAwait(false);
-            if (Logging.IsEnabled) Logging.Exit(this, "", nameof(ExceptionCaught));
+            if (Logging.IsEnabled) Logging.Exit(this, context.Name, nameof(ExceptionCaught));
         }
 
         #endregion
@@ -213,6 +214,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     }
                     catch (Exception ex)
                     {
+                        if (ex is AggregateException) ex = ex.InnerException;
                         await FailWithExceptionAsync(context, ex).ConfigureAwait(false);
                     }
 
@@ -263,6 +265,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 }
                 catch (Exception ex)
                 {
+                    if (ex is AggregateException) ex = ex.InnerException;
                     await FailWithExceptionAsync(context, ex).ConfigureAwait(false);
                 }
             }
@@ -400,7 +403,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             return context.WriteAndFlushAsync(message);
         }
 
-
         private Task PublishGetOperationAsync(IChannelHandlerContext context, string operationId)
         {
             int packetId = GetNextPacketId();
@@ -430,10 +432,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         {
             if (Volatile.Read(ref _state) != (int)State.Failed)
             {
+                if (Logging.IsEnabled) Logging.Fail(this, $"Failing with Exception: {ex.ToString()}", nameof(FailWithExceptionAsync));
                 ForceState(State.Failed);
                 _taskCompletionSource.TrySetException(ex);
 
                 await context.CloseAsync().ConfigureAwait(false);
+            }
+            else
+            {
+                if (Logging.IsEnabled) Logging.Fail(this, $"Ignoring Exception: {ex.ToString()}", nameof(FailWithExceptionAsync));
             }
         }
 
@@ -442,6 +449,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             if (_cancellationToken.IsCancellationRequested &&
                 (Volatile.Read(ref _state) != (int)State.Failed))
             {
+                if (Logging.IsEnabled) Logging.Fail(this, "CancellationRequested", nameof(VerifyCancellationAsync));
+
                 ForceState(State.Failed);
                 _taskCompletionSource.TrySetCanceled(_cancellationToken);
 
@@ -451,7 +460,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         private void ChangeState(State expectedCurrentState, State newState)
         {
-            if (Logging.IsEnabled) Logging.Info(this, $"{nameof(ChangeState)}: {expectedCurrentState} -> {newState}");
+            if (Logging.IsEnabled) Logging.Info(this, $"{expectedCurrentState} -> {newState}", nameof(ChangeState));
 
             int currentState = Interlocked.CompareExchange(ref _state, (int)newState, (int)expectedCurrentState);
 
@@ -472,13 +481,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         private void ForceState(State newState)
         {
-            if (Logging.IsEnabled) Logging.Info(this, $"{nameof(ForceState)}: {(State)_state} -> {newState}");
+            if (Logging.IsEnabled) Logging.Info(this, $"{(State)_state} -> {newState}", nameof(ForceState));
             Volatile.Write(ref _state, (int)newState);
         }
 
         private async Task DoneAsync(IChannelHandlerContext context)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, context.Name, $"{nameof(DoneAsync)}");
+            if (Logging.IsEnabled) Logging.Enter(this, context.Name, nameof(DoneAsync));
 
             try
             {
@@ -486,15 +495,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             }
             catch (Exception e)
             {
-                if (Logging.IsEnabled) Logging.Info(this, $"Exception trying to send disconnect packet: {e.ToString()}");
+                if (Logging.IsEnabled) Logging.Info(this, $"Exception trying to send disconnect packet: {e.ToString()}", nameof(DoneAsync));
                 await FailWithExceptionAsync(context, e).ConfigureAwait(false);
             }
 
             // This delay is required to work-around a .NET Framework CloseAsync bug.
-            if (Logging.IsEnabled) Logging.Info(this, $"{nameof(DoneAsync)}: Applying close channel delay.");
+            if (Logging.IsEnabled) Logging.Info(this, "Applying close channel delay.", nameof(DoneAsync));
             await Task.Delay(TimeSpan.FromMilliseconds(400)).ConfigureAwait(false);
 
-            if (Logging.IsEnabled) Logging.Info(this, $"{nameof(DoneAsync)}: Closing channel.");
+            if (Logging.IsEnabled) Logging.Info(this, "Closing channel.", nameof(DoneAsync));
 
             try
             {
@@ -502,11 +511,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             }
             catch (Exception e)
             {
-                if (Logging.IsEnabled) Logging.Info(this, $"Exception trying to close channel: {e.ToString()}");
+                if (Logging.IsEnabled) Logging.Info(this, $"Exception trying to close channel: {e.ToString()}", nameof(DoneAsync));
                 await FailWithExceptionAsync(context, e).ConfigureAwait(false);
             }
 
-            if (Logging.IsEnabled) Logging.Exit(this, context.Name, $"{nameof(DoneAsync)}");
+            if (Logging.IsEnabled) Logging.Exit(this, context.Name, nameof(DoneAsync));
         }
 
         private ushort GetNextPacketId()

@@ -13,6 +13,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
     using Microsoft.Azure.Devices.Client.Extensions;
     using Microsoft.Azure.Devices.Shared;
     using System.Diagnostics;
+    using System.Security.Authentication;
+    using System.Runtime.InteropServices;
 
     sealed class ErrorDelegatingHandler : DefaultDelegatingHandler
     {
@@ -226,9 +228,24 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         static bool IsTransient(Exception exception)
         {
-            return exception.Unwind(true).Any(e => TransientExceptions.Contains(e.GetType()));
+            return exception.Unwind(true).Any(e => TransientExceptions.Contains(e.GetType())) && 
+                   exception.Unwind(true).All(e => !IsSecurity(e));
         }
 
+        static bool IsSecurity(Exception exception)
+        {
+            if (// WinHttpException (0x80072F8F): A security error occurred.
+                (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && (exception.HResult == unchecked((int)0x80072F8F))) ||
+                // CURLE_SSL_CACERT (60): Peer certificate cannot be authenticated with known CA certificates.
+                (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && (exception.HResult == 60)) ||
+                exception is AuthenticationException)
+            {
+                return true;
+            }
+
+            return false;
+        }
+        
         async Task Reset(TaskCompletionSource<int> openCompletionBeforeOperationStarted, IDelegatingHandler handlerBeforeOperationStarted)
         {
             if (openCompletionBeforeOperationStarted == Volatile.Read(ref this.openCompletion))

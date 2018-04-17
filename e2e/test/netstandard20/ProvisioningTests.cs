@@ -19,7 +19,7 @@ using System.Threading.Tasks;
 namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
-    public class ProvisioningTests
+    public class ProvisioningTests : IDisposable
     {
         private const int PassingTimeoutMiliseconds = 30 * 1000;
         private const int FailingTimeoutMiliseconds = 10 * 1000;
@@ -29,9 +29,12 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private readonly VerboseTestLogging _verboseLog = VerboseTestLogging.GetInstance();
         private readonly TestLogging _log = TestLogging.GetInstance();
+        private readonly ConsoleEventListener _listener;
 
-        [SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Justification = "This routes all logging to Console and Debug log.")]
-        private static ConsoleEventListener s_listener = new ConsoleEventListener();
+        public ProvisioningTests()
+        {
+            _listener = new ConsoleEventListener("Microsoft-Azure-");
+        }
 
         public enum X509EnrollmentType
         {
@@ -82,12 +85,12 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 var cts = new CancellationTokenSource(PassingTimeoutMiliseconds);
 
-                _log.WriteLine("ProvisioningClient RegisterAsync . . . ");
+                _log.WriteLine("ProvisioningDeviceClient RegisterAsync . . . ");
                 DeviceRegistrationResult result = await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
 
                 Assert.IsNotNull(result);
                 _log.WriteLine($"{result.Status} (Error Code: {result.ErrorCode}; Error Message: {result.ErrorMessage})");
-                _log.WriteLine($"ProvisioningClient AssignedHub: {result.AssignedHub}; DeviceID: {result.DeviceId}");
+                _log.WriteLine($"ProvisioningDeviceClient AssignedHub: {result.AssignedHub}; DeviceID: {result.DeviceId}");
 
                 Assert.AreEqual(ProvisioningRegistrationStatusType.Assigned, result.Status);
                 Assert.IsNotNull(result.AssignedHub);
@@ -130,7 +133,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 var cts = new CancellationTokenSource(FailingTimeoutMiliseconds);
 
-                _log.WriteLine("ProvisioningClient RegisterAsync . . . ");
+                _log.WriteLine("ProvisioningDeviceClient RegisterAsync . . . ");
                 DeviceRegistrationResult result = await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
 
                 _log.WriteLine($"{result.Status}");
@@ -220,7 +223,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 var cts = new CancellationTokenSource(FailingTimeoutMiliseconds);
 
-                _log.WriteLine("ProvisioningClient RegisterAsync . . . ");
+                _log.WriteLine("ProvisioningDeviceClient RegisterAsync . . . ");
                 var exception = await Assert.ThrowsExceptionAsync<ProvisioningTransportException>(
                     () => provClient.RegisterAsync(cts.Token)).ConfigureAwait(false);
 
@@ -323,6 +326,20 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
 
             return !string.IsNullOrEmpty(idScope);
+        }
+        
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _listener.Dispose();
+            }
         }
     }
 }
