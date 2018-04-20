@@ -21,6 +21,7 @@ namespace Microsoft.Azure.Devices.Client
         public const string TimeSpanName = AmqpConstants.Vendor + ":timespan";
         public const string UriName = AmqpConstants.Vendor + ":uri";
         public const string DateTimeOffsetName = AmqpConstants.Vendor + ":datetime-offset";
+        public const string InputName = "x-opt-input-name";
 
         private const string AmqpDiagIdKey = "Diagnostic-Id";
         private const string AmqpDiagCorrelationContextKey = "Correlation-Context";
@@ -46,7 +47,7 @@ namespace Microsoft.Azure.Devices.Client
                 }
 
                 data.CorrelationId = amqpMessage.Properties.CorrelationId != null ? amqpMessage.Properties.CorrelationId.ToString() : null;
-                
+
                 if (!string.IsNullOrWhiteSpace(amqpMessage.Properties.ContentType.Value))
                 {
                     data.ContentType = amqpMessage.Properties.ContentType.Value;
@@ -58,7 +59,7 @@ namespace Microsoft.Azure.Devices.Client
                 }
 
                 data.UserId = amqpMessage.Properties.UserId.Array != null ? Encoding.UTF8.GetString(amqpMessage.Properties.UserId.Array, 0 /*index*/, amqpMessage.Properties.UserId.Array.Length) : null;
-                
+
                 if (!string.IsNullOrWhiteSpace(amqpMessage.Properties.ContentType.Value))
                 {
                     data.ContentType = amqpMessage.Properties.ContentType.Value;
@@ -94,6 +95,11 @@ namespace Microsoft.Azure.Devices.Client
                 if (amqpMessage.MessageAnnotations.Map.TryGetValue(MessageSystemPropertyNames.DeliveryCount, out deliveryCount))
                 {
                     data.DeliveryCount = deliveryCount;
+                }
+
+                if (amqpMessage.MessageAnnotations.Map.TryGetValue(InputName, out string inputName))
+                {
+                    data.InputName = inputName;
                 }
             }
 
@@ -147,7 +153,6 @@ namespace Microsoft.Azure.Devices.Client
                 amqpMessage.Properties.To = data.To;
             }
 
-
             if (!data.ExpiryTimeUtc.Equals(default(DateTime)))
             {
                 amqpMessage.Properties.AbsoluteExpiryTime = data.ExpiryTimeUtc;
@@ -192,6 +197,11 @@ namespace Microsoft.Azure.Devices.Client
             if (data.SystemProperties.TryGetValue(MessageSystemPropertyNames.ContentEncoding, out propertyValue))
             {
                 amqpMessage.Properties.ContentEncoding = (string)propertyValue;
+            }
+
+            if (data.SystemProperties.TryGetValue(MessageSystemPropertyNames.OutputName, out propertyValue))
+            {
+                amqpMessage.ApplicationProperties.Map[MessageSystemPropertyNames.OutputName] = (string)propertyValue;
             }
 
             if (copyUserProperties && data.Properties.Count > 0)

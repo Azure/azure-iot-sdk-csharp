@@ -27,9 +27,9 @@ namespace Microsoft.Azure.Devices.Client
 
         public const string Ack = "iothub-ack";
 
-        public const string OutputName = "outputName";
+        public const string OutputName = "iothub-outputname";
 
-        public const string InputName = "inputName";
+        public const string InputName = "iothub-inputname";
 
         public const string MessageSchema = "iothub-message-schema";
 

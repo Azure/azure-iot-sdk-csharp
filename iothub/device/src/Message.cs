@@ -416,6 +416,11 @@ namespace Microsoft.Azure.Devices.Client
                 return this.GetSystemProperty<string>(MessageSystemPropertyNames.InputName);
 #endif
             }
+
+            internal set
+            {
+                this.SystemProperties[MessageSystemPropertyNames.InputName] = value;
+            }
         }
 
         /// <summary>
