@@ -347,6 +347,18 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         }
 
         /// <summary>
+        /// Create an Amqp DeviceClient from individual parameters
+        /// </summary>
+        /// <param name="hostname">The fully-qualified DNS hostname of IoT Hub</param>
+        /// <param name="authenticationMethod">The authentication method that is used</param>
+        /// <param name="gatewayHostname">The fully-qualified DNS hostname of Gateway</param>
+        /// <returns>DeviceClient</returns>
+        public static DeviceClient Create(string hostname, string gatewayHostname, IAuthenticationMethod authenticationMethod)
+        {
+            return Create(hostname, gatewayHostname, authenticationMethod, TransportType.Amqp);
+        }
+
+        /// <summary>
         /// Create a DeviceClient from individual parameters
         /// </summary>
         /// <param name="hostname">The fully-qualified DNS hostname of IoT Hub</param>
@@ -354,6 +366,19 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// <param name="transportType">The transportType used (Http1 or Amqp)</param>
         /// <returns>DeviceClient</returns>
         public static DeviceClient Create(string hostname, IAuthenticationMethod authenticationMethod, TransportType transportType)
+        {
+            return Create(hostname, null, authenticationMethod, transportType);
+        }
+
+        /// <summary>
+        /// Create a DeviceClient from individual parameters
+        /// </summary>
+        /// <param name="hostname">The fully-qualified DNS hostname of IoT Hub</param>
+        /// <param name="gatewayHostname">The fully-qualified DNS hostname of Gateway</param>
+        /// <param name="authenticationMethod">The authentication method that is used</param>
+        /// <param name="transportType">The transportType used (Http1 or Amqp)</param>
+        /// <returns>DeviceClient</returns>
+        public static DeviceClient Create(string hostname, string gatewayHostname, IAuthenticationMethod authenticationMethod, TransportType transportType)
         {
             if (hostname == null)
             {
@@ -365,7 +390,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                 throw new ArgumentNullException(nameof(authenticationMethod));
             }
 
-            IotHubConnectionStringBuilder connectionStringBuilder = IotHubConnectionStringBuilder.Create(hostname, authenticationMethod);
+            IotHubConnectionStringBuilder connectionStringBuilder = IotHubConnectionStringBuilder.Create(hostname, gatewayHostname, authenticationMethod);
 
 #if !NETMF
             if (authenticationMethod is DeviceAuthenticationWithX509Certificate)
@@ -399,6 +424,20 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         public static DeviceClient Create(string hostname, IAuthenticationMethod authenticationMethod,
             ITransportSettings[] transportSettings)
         {
+            return Create(hostname, null, authenticationMethod, transportSettings);
+        }
+
+        /// <summary>
+        /// Create a DeviceClient from individual parameters
+        /// </summary>
+        /// <param name="hostname">The fully-qualified DNS hostname of IoT Hub</param>
+        /// <param name="gatewayHostname">The fully-qualified DNS hostname of Gateway</param>
+        /// <param name="authenticationMethod">The authentication method that is used</param>
+        /// <param name="transportSettings">Prioritized list of transportTypes and their settings</param>
+        /// <returns>DeviceClient</returns>
+        public static DeviceClient Create(string hostname, string gatewayHostname, IAuthenticationMethod authenticationMethod,
+            ITransportSettings[] transportSettings)
+        {
             if (hostname == null)
             {
                 throw new ArgumentNullException("hostname");
@@ -409,7 +448,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                 throw new ArgumentNullException("authenticationMethod");
             }
 
-            var connectionStringBuilder = IotHubConnectionStringBuilder.Create(hostname, authenticationMethod);
+            var connectionStringBuilder = IotHubConnectionStringBuilder.Create(hostname, gatewayHostname, authenticationMethod);
 #if !NETMF
             if (authenticationMethod is DeviceAuthenticationWithX509Certificate)
             {
