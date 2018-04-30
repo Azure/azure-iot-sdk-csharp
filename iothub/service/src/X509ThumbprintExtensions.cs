@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace Microsoft.Azure.Devices
@@ -12,8 +12,9 @@ namespace Microsoft.Azure.Devices
     /// </summary>
     public static class X509ThumbprintExtensions
     {
-        static readonly Regex ThumbprintRegex = new Regex(@"^([A-Fa-f0-9]{2}){20}$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-
+        static readonly Regex SHA1ThumbprintRegex = new Regex(@"^([a-f0-9]{2}){20}$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        static readonly Regex SHA256ThumbprintRegex = new Regex(@"^([a-f0-9]{2}){32}$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        
         /// <summary>
         /// Checks if contents are valid
         /// </summary>
@@ -23,6 +24,17 @@ namespace Microsoft.Azure.Devices
         {
             if (!x509Thumbprint.IsEmpty())
             {
+                int primaryThumbprintLength = this.PrimaryThumbprint?.Length ?? 0;
+                int secondaryThumbprintLength = this.SecondaryThumbprint?.Length ?? 0;
+
+                if (primaryThumbprintLength != secondaryThumbprintLength)
+                {
+                    if (primaryThumbprintLength != 0 && secondaryThumbprintLength != 0)
+                    {
+                        throw new ArgumentException(ApiResources.StringIsNotThumbprint.FormatInvariant(x509Thumbprint.PrimaryThumbprint), "Primary Thumbprint"));
+                    }
+                }
+                
                 bool primaryThumbprintIsValid = X509ThumbprintExtensions.IsValidThumbprint(x509Thumbprint.PrimaryThumbprint);
                 bool secondaryThumbprintIsValid = X509ThumbprintExtensions.IsValidThumbprint(x509Thumbprint.SecondaryThumbprint);
 
@@ -90,7 +102,8 @@ namespace Microsoft.Azure.Devices
 
         public static bool IsValidThumbprint(string thumbprint)
         {
-            return thumbprint != null && ThumbprintRegex.IsMatch(thumbprint);
+            return thumbprint != null &&
+                ( SHA1ThumbprintRegex.IsMatch(thumbprint) || (SHA256ThumbprintRegex.IsMatch(thumbprint)));
         }
     }
 }
