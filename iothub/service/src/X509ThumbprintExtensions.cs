@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices
                 {
                     if (primaryThumbprintLength != 0 && secondaryThumbprintLength != 0)
                     {
-                        throw new ArgumentException(ApiResources.StringIsNotThumbprint.FormatInvariant(x509Thumbprint.PrimaryThumbprint), "Primary Thumbprint"));
+                        throw new ArgumentException(ApiResources.ThumbprintSizesMustMatch);
                     }
                 }
                 
