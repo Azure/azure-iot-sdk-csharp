@@ -339,6 +339,16 @@ namespace Microsoft.Azure.Devices {
             get {
                 return ResourceManager.GetString("StringIsNotThumbprint", resourceCulture);
             }
+  
+        /// <summary>
+        ///   Looks up a localized string similar to The size of the X.509 primary thumbprint must match that of the secondary thumbprint..
+        /// </summary>
+        internal static string ThumbprintSizesMustMatch
+        {
+            get
+            {
+                return ResourceManager.GetString("ThumbprintSizesMustMatch", resourceCulture);
+            }
         }
     }
 }
