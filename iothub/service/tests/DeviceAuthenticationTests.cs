@@ -197,6 +197,35 @@ namespace Microsoft.Azure.Devices.Api.Test
         [TestMethod]
         [TestCategory("CIT")]
         [TestCategory("Auth")]
+        public async Task DeviceAuthenticationGoodAuthSHA256()
+        {
+            var deviceBadAuthConfig = new Device("123")
+            {
+                ConnectionState = DeviceConnectionState.Connected,
+                Authentication = new AuthenticationMechanism()
+                {
+                    SymmetricKey = null,
+                    X509Thumbprint = new X509Thumbprint()
+                    {
+                        PrimaryThumbprint = "921BC9694ADEB8929D4F7FE4B9A3A6DE58B0790B7FE4B9A3A6DE58B0790B790B",
+                        SecondaryThumbprint = "781BC9694ADEB8929D4F7FE4B9A3A6DE58B079527FE4B9A3A6DE58B079527952"
+                    }
+                }
+            };
+
+            var restOpMock = new Mock<IHttpClientHelper>();
+            restOpMock.Setup(
+                restOp =>
+                    restOp.PutAsync(It.IsAny<Uri>(), It.IsAny<Device>(), It.IsAny<PutOperationType>(),
+                        It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(),
+                        It.IsAny<CancellationToken>())).ReturnsAsync(deviceBadAuthConfig);
+            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            await registryManager.AddDeviceAsync(deviceBadAuthConfig).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("CIT")]
+        [TestCategory("Auth")]
         [ExpectedException(typeof (ArgumentException))]
         public async Task DeviceAuthenticationBadAuthConfigTest1()
         {
@@ -632,6 +661,36 @@ namespace Microsoft.Azure.Devices.Api.Test
                         It.IsAny<CancellationToken>())).ReturnsAsync(deviceBadThumbprint);
             var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
             await registryManager.AddDeviceAsync(deviceBadThumbprint).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("CIT")]
+        [TestCategory("Auth")]
+        [ExpectedException(typeof(ArgumentException))]
+        public async Task DeviceAuthenticationBadThumbprintSHA256Test()
+        {
+            var deviceBadAuthConfig = new Device("123")
+            {
+                ConnectionState = DeviceConnectionState.Connected,
+                Authentication = new AuthenticationMechanism()
+                {
+                    SymmetricKey = null,
+                    X509Thumbprint = new X509Thumbprint()
+                    {
+                        PrimaryThumbprint = "921BC9694ADEB8929D4F7FE4B9A3A6DE58B0790B7FE4B9A3A6DE58B0790B790B",
+                        SecondaryThumbprint = "781BC9694ADEB8929D4F7FE4B9A3A6DE58B07952"
+                    }
+                }
+            };
+
+            var restOpMock = new Mock<IHttpClientHelper>();
+            restOpMock.Setup(
+                restOp =>
+                    restOp.PutAsync(It.IsAny<Uri>(), It.IsAny<Device>(), It.IsAny<PutOperationType>(),
+                        It.IsAny<IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>>(),
+                        It.IsAny<CancellationToken>())).ReturnsAsync(deviceBadAuthConfig);
+            var registryManager = new HttpRegistryManager(restOpMock.Object, IotHubName);
+            await registryManager.AddDeviceAsync(deviceBadAuthConfig).ConfigureAwait(false);
         }
 
         [TestMethod]

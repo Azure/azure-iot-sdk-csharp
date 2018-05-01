@@ -24,8 +24,8 @@ namespace Microsoft.Azure.Devices
         {
             if (!x509Thumbprint.IsEmpty())
             {
-                int primaryThumbprintLength = this.PrimaryThumbprint?.Length ?? 0;
-                int secondaryThumbprintLength = this.SecondaryThumbprint?.Length ?? 0;
+                int primaryThumbprintLength = x509Thumbprint.PrimaryThumbprint?.Length ?? 0;
+                int secondaryThumbprintLength = x509Thumbprint.SecondaryThumbprint?.Length ?? 0;
 
                 if (primaryThumbprintLength != secondaryThumbprintLength)
                 {
