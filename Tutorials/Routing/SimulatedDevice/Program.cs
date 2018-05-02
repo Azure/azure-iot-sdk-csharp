@@ -18,9 +18,8 @@ namespace SimulatedDevice
         {
             Console.WriteLine("Simulated device\n"); 
             deviceClient = DeviceClient.Create(iotHubUri, new DeviceAuthenticationWithRegistrySymmetricKey(myDeviceId, deviceKey), TransportType.Mqtt);
-            deviceClient.ProductInfo = "Contoso_Simulated-CSharp";
             SendDeviceToCloudMessagesAsync();
-            Console.WriteLine("Press any key to stop.");
+            Console.WriteLine("Press the Enter key to stop.");
             Console.ReadLine();
         }
         private static async void SendDeviceToCloudMessagesAsync()
