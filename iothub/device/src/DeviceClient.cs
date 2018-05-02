@@ -85,23 +85,6 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
     /// </summary>
     public sealed class DeviceClient : BaseClient
     {
-        /// <summary>
-        /// Callback to call whenever the twin's desired state is updated by the service
-        /// </summary>
-        internal DesiredPropertyUpdateCallback desiredPropertyUpdateCallback;
-
-        /// <summary>
-        /// Has twin funcitonality been enabled with the service?
-        /// </summary>
-        Boolean patchSubscribedWithService = false;
-
-        /// <summary>
-        /// userContext passed when registering the twin patch callback
-        /// </summary>
-        Object twinPatchCallbackContext = null;
-
-        private int _currentMessageCount = 0;
-
         private ProductInfo productInfo = new ProductInfo();
 
         /// <summary>

@@ -221,6 +221,6 @@
             await moduleClient.OnReceiveEventMessageCalled("endpoint2", testMessage);
             Assert.IsFalse(isDefaultCallbackCalled);
             Assert.IsTrue(isSpecificCallbackCalled);
-        }        
+        }
     }
 }
