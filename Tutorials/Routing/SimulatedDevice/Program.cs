@@ -8,16 +8,16 @@ namespace SimulatedDevice
 {
     class Program
     {
-        static DeviceClient deviceClient;
-        static string myDeviceId = "Contoso-Test-Device";
-        static string iotHubUri = "{your hub name}.azure-devices.net";
+        private static DeviceClient s_deviceClient;
+        private readonly static string s_myDeviceId = "Contoso-Test-Device";
+        private readonly static string s_iotHubUri = "{your hub name}.azure-devices.net";
         // This is the primary key for the device. This is in the portal. 
         // Find your IoT hub in the portal > IoT devices > select your device > copy the key. 
-        static string deviceKey = "{your device key}";
-        static void Main(string[] args)
+        private readonly static string s_deviceKey = "{your device key}";
+        private static void Main(string[] args)
         {
-            Console.WriteLine("Simulated device\n"); 
-            deviceClient = DeviceClient.Create(iotHubUri, new DeviceAuthenticationWithRegistrySymmetricKey(myDeviceId, deviceKey), TransportType.Mqtt);
+            Console.WriteLine("Routing Tutorial: Simulated device\n"); 
+            s_deviceClient = DeviceClient.Create(s_iotHubUri, new DeviceAuthenticationWithRegistrySymmetricKey(s_myDeviceId, s_deviceKey), TransportType.Mqtt);
             SendDeviceToCloudMessagesAsync();
             Console.WriteLine("Press the Enter key to stop.");
             Console.ReadLine();
@@ -57,7 +57,7 @@ namespace SimulatedDevice
 
                 var telemetryDataPoint = new
                 {
-                    deviceId = myDeviceId,
+                    deviceId = s_myDeviceId,
                     temperature = currentTemperature,
                     humidity = currentHumidity,
                     pointInfo = infoString
@@ -68,7 +68,7 @@ namespace SimulatedDevice
                 var message = new Message(Encoding.ASCII.GetBytes(telemetryDataString));
                 message.Properties.Add("level", levelValue);
 
-                await deviceClient.SendEventAsync(message);
+                await s_deviceClient.SendEventAsync(message);
                 Console.WriteLine("{0} > Sent message: {1}", DateTime.Now, telemetryDataString);
 
                 await Task.Delay(1000);
