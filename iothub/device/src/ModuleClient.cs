@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Microsoft.Azure.Devices.Client.Edge;
+
 namespace Microsoft.Azure.Devices.Client
 {
     using Common;
@@ -282,6 +284,38 @@ namespace Microsoft.Azure.Devices.Client
             return new ModuleClient(iotHubConnectionString, transportSettings, pipelineBuilder);
         }
 
+        /// <summary>
+        /// Creates a ModuleClient instance in an IoT Edge deployment
+        /// based on environment variables.
+        /// </summary>
+        /// <returns>ModuleClient instance</returns>
+        public static ModuleClient Create()
+        {
+            return Create(TransportType.Amqp);
+        }
+
+
+        /// <summary>
+        /// Creates a ModuleClient instance in an IoT Edge deployment
+        /// based on environment variables.
+        /// </summary>
+        /// <param name="transportType">Specifies whether Amqp or Http transport is used</param>
+        /// <returns>ModuleClient instance</returns>
+        public static ModuleClient Create(TransportType transportType)
+        {
+            return Create(GetTransportSettings(transportType));
+        }
+
+        /// <summary>
+        /// Creates a ModuleClient instance in an IoT Edge deployment
+        /// based on environment variables.
+        /// </summary>
+        /// <param name="transportSettings">Prioritized list of transports and their settings</param>
+        /// <returns>ModuleClient instance</returns>
+        public static ModuleClient Create(ITransportSettings[] transportSettings)
+        {
+            return new EdgeModuleClientFactory(transportSettings).Create();
+        }
 
         #region Module Specific API
         /// <summary>

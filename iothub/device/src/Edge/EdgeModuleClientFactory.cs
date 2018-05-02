@@ -8,9 +8,9 @@ using Microsoft.Azure.Devices.Client.HsmAuthentication;
 namespace Microsoft.Azure.Devices.Client.Edge
 {
     /// <summary>
-    /// Factory that creates DeviceClient based on the IoT Edge environment.
+    /// Factory that creates ModuleClient based on the IoT Edge environment.
     /// </summary>
-    public class DeviceClientFactory
+    internal class EdgeModuleClientFactory
     {
         const string IotEdgedUriVariableName = "IOTEDGE_IOTEDGEDURI";
         const string IotEdgedApiVersionVariableName = "IOTEDGE_IOTEDGEDVERSION";
@@ -23,44 +23,27 @@ namespace Microsoft.Azure.Devices.Client.Edge
         const string EdgehubConnectionstringVariableName = "EdgeHubConnectionString";
         const string IothubConnectionstringVariableName = "IotHubConnectionString";
 
-        readonly TransportType? transportType;
         readonly ITransportSettings[] transportSettings;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DeviceClientFactory"/> class.
-        /// </summary>
-        public DeviceClientFactory()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DeviceClientFactory"/> class with transport type.
-        /// </summary>
-        /// <param name="transportType">Specifies whether AMQP, MQTT or HTTP transport is used.</param>
-        public DeviceClientFactory(TransportType transportType)
-        {
-            this.transportType = transportType;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DeviceClientFactory"/> class with transport settings.
+        /// Initializes a new instance of the <see cref="EdgeModuleClientFactory"/> class with transport settings.
         /// </summary>
         /// <param name="transportSettings">Prioritized list of transportTypes and their settings.</param>
-        public DeviceClientFactory(ITransportSettings[] transportSettings)
+        public EdgeModuleClientFactory(ITransportSettings[] transportSettings)
         {
-            this.transportSettings = transportSettings;
+            this.transportSettings = transportSettings ?? throw new ArgumentNullException(nameof(transportSettings));
         }
 
         /// <summary>
-        /// Creates a DeviceClient instance based on environment.
+        /// Creates a ModuleClient instance based on environment.
         /// </summary>
         /// <returns></returns>
-        public DeviceClient Create()
+        public ModuleClient Create()
         {
             return this.CreateDeviceClientFromEnvironment();
         }
 
-        DeviceClient CreateDeviceClientFromEnvironment()
+        ModuleClient CreateDeviceClientFromEnvironment()
         {
             IDictionary envVariables = Environment.GetEnvironmentVariables();
 
@@ -95,34 +78,14 @@ namespace Microsoft.Azure.Devices.Client.Edge
             }
         }
 
-        DeviceClient CreateDeviceClientFromConnectionString(string connectionString)
+        ModuleClient CreateDeviceClientFromConnectionString(string connectionString)
         {
-            if (this.transportSettings != null)
-            {
-                return DeviceClient.CreateFromConnectionString(connectionString, this.transportSettings);
-            }
-
-            if (this.transportType.HasValue)
-            {
-                return DeviceClient.CreateFromConnectionString(connectionString, this.transportType.Value);
-            }
-
-            return DeviceClient.CreateFromConnectionString(connectionString);
+            return ModuleClient.CreateFromConnectionString(connectionString, this.transportSettings);
         }
 
-        DeviceClient CreateDeviceClientFromAuthenticationMethod(string hostname, string gateway, IAuthenticationMethod authMethod)
+        ModuleClient CreateDeviceClientFromAuthenticationMethod(string hostname, string gateway, IAuthenticationMethod authMethod)
         {
-            if (this.transportSettings != null)
-            {
-                return DeviceClient.Create(hostname, gateway, authMethod, this.transportSettings);
-            }
-
-            if (this.transportType.HasValue)
-            {
-                return DeviceClient.Create(hostname, gateway, authMethod, this.transportType.Value);
-            }
-
-            return DeviceClient.Create(hostname, gateway, authMethod);
+            return ModuleClient.Create(hostname, gateway, authMethod, this.transportSettings);
         }
 
         string GetValueFromEnvironment(IDictionary envVariables, string variableName)
