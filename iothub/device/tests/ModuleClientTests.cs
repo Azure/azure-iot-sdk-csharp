@@ -50,28 +50,28 @@
         static string fakeConnectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;ModuleId=dummyModuleId;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
 
         [TestMethod]
-        [TestCategory("DeviceClient")]
+        [TestCategory("ModuleClient")]
         [ExpectedException(typeof(ArgumentNullException))]
         // Tests_SRS_DEVICECLIENT_10_001: [** if `connectionString` is null, an `ArgumentNullException` shall be thrown. **]**
         public void ModuleClient_CreateFromConnectionString_NullConnectionString()
         {
-            DeviceClient moduleClient = DeviceClient.CreateFromConnectionString(null);
+            ModuleClient moduleClient = ModuleClient.CreateFromConnectionString(null);
         }
 
         [TestMethod]
-        [TestCategory("DeviceClient")]
+        [TestCategory("ModuleClient")]
         public void ModuleClient_CreateFromConnectionString_NoTransportSettings()
         {
-            DeviceClient moduleClient = DeviceClient.CreateFromConnectionString(fakeConnectionString, TransportType.Mqtt_Tcp_Only);
+            ModuleClient moduleClient = ModuleClient.CreateFromConnectionString(fakeConnectionString, TransportType.Mqtt_Tcp_Only);
             Assert.IsNotNull(moduleClient);
         }
 
         [TestMethod]
-        [TestCategory("DeviceClient")]
+        [TestCategory("ModuleClient")]
         // Tests_SRS_DEVICECLIENT_33_003: [** It shall EnableEventReceiveAsync when called for the first time. **]**
         public async Task ModuleClient_SetReceiveCallbackAsync_SetCallback()
         {
-            DeviceClient moduleClient = DeviceClient.CreateFromConnectionString(fakeConnectionString, TransportType.Mqtt_Tcp_Only);
+            ModuleClient moduleClient = ModuleClient.CreateFromConnectionString(fakeConnectionString, TransportType.Mqtt_Tcp_Only);
             var innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
@@ -82,11 +82,11 @@
         }
 
         [TestMethod]
-        [TestCategory("DeviceClient")]
+        [TestCategory("ModuleClient")]
         // Tests_SRS_DEVICECLIENT_33_004: [** It shall call DisableEventReceiveAsync when the last delegate has been removed. **]**
         public async Task ModuleClient_SetReceiveCallbackAsync_RemoveCallback()
         {
-            DeviceClient moduleClient = DeviceClient.CreateFromConnectionString(fakeConnectionString, TransportType.Mqtt_Tcp_Only);
+            ModuleClient moduleClient = ModuleClient.CreateFromConnectionString(fakeConnectionString, TransportType.Mqtt_Tcp_Only);
             var innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
@@ -106,11 +106,11 @@
         }
 
         [TestMethod]
-        [TestCategory("DeviceClient")]
+        [TestCategory("ModuleClient")]
         // Tests_SRS_DEVICECLIENT_33_003: [** It shall EnableEventReceiveAsync when called for the first time. **]**
         public async Task ModuleClient_SetDefaultReceiveCallbackAsync_SetCallback()
         {
-            DeviceClient moduleClient = DeviceClient.CreateFromConnectionString(fakeConnectionString, TransportType.Mqtt_Tcp_Only);
+            ModuleClient moduleClient = ModuleClient.CreateFromConnectionString(fakeConnectionString, TransportType.Mqtt_Tcp_Only);
             var innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
@@ -121,11 +121,11 @@
         }
 
         [TestMethod]
-        [TestCategory("DeviceClient")]
+        [TestCategory("ModuleClient")]
         // Tests_SRS_DEVICECLIENT_33_004: [** It shall call DisableEventReceiveAsync when the last delegate has been removed. **]**
         public async Task ModuleClient_SetDefaultReceiveCallbackAsync_RemoveCallback()
         {
-            DeviceClient moduleClient = DeviceClient.CreateFromConnectionString(fakeConnectionString, TransportType.Mqtt_Tcp_Only);
+            ModuleClient moduleClient = ModuleClient.CreateFromConnectionString(fakeConnectionString, TransportType.Mqtt_Tcp_Only);
             var innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
@@ -141,11 +141,11 @@
 
 
         [TestMethod]
-        [TestCategory("DeviceClient")]
+        [TestCategory("ModuleClient")]
         // Tests_SRS_DEVICECLIENT_33_001: [** If the given eventMessageInternal argument is null, fail silently **]**
         public async Task ModuleClient_OnReceiveEventMessageCalled_NullMessageRequest()
         {
-            DeviceClient moduleClient = DeviceClient.CreateFromConnectionString(fakeConnectionString, TransportType.Mqtt_Tcp_Only);
+            ModuleClient moduleClient = ModuleClient.CreateFromConnectionString(fakeConnectionString, TransportType.Mqtt_Tcp_Only);
             var innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
@@ -161,12 +161,12 @@
         }
 
         [TestMethod]
-        [TestCategory("DeviceClient")]
+        [TestCategory("ModuleClient")]
         // Tests_SRS_DEVICECLIENT_33_006: [** The OnReceiveEventMessageCalled shall get the default delegate if a delegate has not been assigned. **]**
         // Tests_SRS_DEVICECLIENT_33_005: [** It shall lazy-initialize the receiveEventEndpoints property. **]**
         public async Task ModuleClient_OnReceiveEventMessageCalled_DefaultCallbackCalled()
         {
-            DeviceClient moduleClient = DeviceClient.CreateFromConnectionString(fakeConnectionString, TransportType.Mqtt_Tcp_Only);
+            ModuleClient moduleClient = ModuleClient.CreateFromConnectionString(fakeConnectionString, TransportType.Mqtt_Tcp_Only);
             var innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
@@ -193,11 +193,11 @@
         }
 
         [TestMethod]
-        [TestCategory("DeviceClient")]
+        [TestCategory("ModuleClient")]
         // Tests_SRS_DEVICECLIENT_33_002: [** The OnReceiveEventMessageCalled shall invoke the specified delegate. **]**
         public async Task ModuleClient_OnReceiveEventMessageCalled_SpecifiedCallbackCalled()
         {
-            DeviceClient moduleClient = DeviceClient.CreateFromConnectionString(fakeConnectionString, TransportType.Mqtt_Tcp_Only);
+            ModuleClient moduleClient = ModuleClient.CreateFromConnectionString(fakeConnectionString, TransportType.Mqtt_Tcp_Only);
             var innerHandler = Substitute.For<IDelegatingHandler>();
             moduleClient.InnerHandler = innerHandler;
 
