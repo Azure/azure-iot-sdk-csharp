@@ -8,11 +8,11 @@ namespace back_end_application
 {
     class BackEndApplication
     {
-        static ServiceClient serviceClient;
+        private static ServiceClient s_serviceClient;
         
         // Connection string for your IoT Hub
         // az iot hub show-connection-string --hub-name {your iot hub name}
-        static string connectionString = "{Your service connection string here}";
+        private readonly static string s_connectionString = "{Your service connection string here}";
 
         // Invoke the direct method on the device, passing the payload
         private static async Task InvokeMethod()
@@ -21,18 +21,18 @@ namespace back_end_application
             methodInvocation.SetPayloadJson("10");
 
             // Invoke the direct method asynchronously and get the response from the simulated device.
-            var response = await serviceClient.InvokeDeviceMethodAsync("MyDotnetDevice", methodInvocation);
+            var response = await s_serviceClient.InvokeDeviceMethodAsync("MyDotnetDevice", methodInvocation);
 
             Console.WriteLine("Response status: {0}, payload:", response.Status);
             Console.WriteLine(response.GetPayloadAsJson());
         }
 
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             Console.WriteLine("IoT Hub Quickstarts #2 - Back-end application.\n");
 
             // Create a ServiceClient to communicate with service-facing endpoint on your hub.
-            serviceClient = ServiceClient.CreateFromConnectionString(connectionString);
+            s_serviceClient = ServiceClient.CreateFromConnectionString(s_connectionString);
             InvokeMethod().Wait();
             Console.WriteLine("Press Enter to exit.");
             Console.ReadLine();
