@@ -1,27 +1,18 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Client.Edge;
-
 namespace Microsoft.Azure.Devices.Client
 {
-    using Common;
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Linq;
 #if NETSTANDARD1_3
     using System.Net.Http;
 #endif
-    using System.Text.RegularExpressions;
     using System.Threading;
     using System.Threading.Tasks;
-    using Microsoft.Azure.Devices.Client.Extensions;
-    using Microsoft.Azure.Devices.Client.Transport;
     using Microsoft.Azure.Devices.Shared;
-    using Newtonsoft.Json.Linq;
-    using Microsoft.Azure.Devices.Client.Transport.Mqtt;
-    using System.Security.Cryptography.X509Certificates;
+    using Microsoft.Azure.Devices.Client.Edge;
 
     /// <summary>
     ///    Status of handling a message. 
@@ -504,10 +495,10 @@ namespace Microsoft.Azure.Devices.Client
                 switch (response)
                 {
                     case MessageResponse.Completed:
-                        await this.CompleteInternalAsync(message.LockToken);
+                        await this.CompleteAsync(message);
                         break;
                     case MessageResponse.Abandoned:
-                        await this.AbandonInternalAsync(message.LockToken);
+                        await this.AbandonAsync(message);
                         break;
                     default:
                         break;

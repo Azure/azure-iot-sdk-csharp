@@ -3,23 +3,14 @@
 
 namespace Microsoft.Azure.Devices.Client
 {
-    using Common;
     using System;
-    using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Linq;
 #if NETSTANDARD1_3
     using System.Net.Http;
 #endif
-    using System.Text.RegularExpressions;
-    using System.Threading;
     using System.Threading.Tasks;
-    using Microsoft.Azure.Devices.Client.Extensions;
     using Microsoft.Azure.Devices.Client.Transport;
     using Microsoft.Azure.Devices.Shared;
-    using Newtonsoft.Json.Linq;
-    using Microsoft.Azure.Devices.Client.Transport.Mqtt;
-    using System.Security.Cryptography.X509Certificates;
 
     /*
      * Class Diagram and Chain of Responsibility in Device Client 
@@ -430,66 +421,6 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         {
             // Codes_SRS_DEVICECLIENT_28_011: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable(authentication, quota exceed) error occurs.]
             return ApplyTimeoutMessage(operationTimeoutCancellationToken => this.InnerHandler.ReceiveAsync(timeout, operationTimeoutCancellationToken));
-        }
-
-        /// <summary>
-        /// Deletes a received message from the device queue
-        /// </summary>
-        /// <returns>The lock identifier for the previously received message</returns>
-        public Task CompleteAsync(string lockToken) => this.CompleteInternalAsync(lockToken);
-
-        /// <summary>
-        /// Deletes a received message from the device queue
-        /// </summary>
-        /// <returns>The previously received message</returns>
-        public Task CompleteAsync(Message message)
-        {
-            if (message == null)
-            {
-                throw Fx.Exception.ArgumentNull("message");
-            }
-            // Codes_SRS_DEVICECLIENT_28_015: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.]
-            return this.CompleteAsync(message.LockToken);
-        }
-
-        /// <summary>
-        /// Puts a received message back onto the device queue
-        /// </summary>
-        /// <returns>The previously received message</returns>
-        public Task AbandonAsync(string lockToken) => this.AbandonInternalAsync(lockToken);
-
-        /// <summary>
-        /// Puts a received message back onto the device queue
-        /// </summary>
-        /// <returns>The lock identifier for the previously received message</returns>
-        public Task AbandonAsync(Message message)
-        {
-            if (message == null)
-            {
-                throw Fx.Exception.ArgumentNull("message");
-            }
-
-            return this.AbandonAsync(message.LockToken);
-        }
-
-        /// <summary>
-        /// Deletes a received message from the device queue and indicates to the server that the message could not be processed.
-        /// </summary>
-        /// <returns>The previously received message</returns>
-        public Task RejectAsync(string lockToken) => this.RejectInternalAsync(lockToken);
-
-        /// <summary>
-        /// Deletes a received message from the device queue and indicates to the server that the message could not be processed.
-        /// </summary>
-        /// <returns>The lock identifier for the previously received message</returns>
-        public Task RejectAsync(Message message)
-        {
-            if (message == null)
-            {
-                throw Fx.Exception.ArgumentNull("message");
-            }
-            // Codes_SRS_DEVICECLIENT_28_017: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.]
-            return this.RejectAsync(message.LockToken);
         }
 
         /// <summary>
