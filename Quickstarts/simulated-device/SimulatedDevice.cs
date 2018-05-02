@@ -11,12 +11,12 @@ namespace simulated_device
 {
     class SimulatedDevice
     {
-        static DeviceClient deviceClient;
+        private static DeviceClient s_deviceClient;
 
         // The device connection string to authenticate the device with your IoT hub.
         // Using the Azure CLI:
         // az iot hub device-identity show-connection-string --hub-name {YourIoTHubName} --device-id MyDotnetDevice --output table
-        static string connectionString = "{Your device connection string here}";
+        private readonly static string s_connectionString = "{Your device connection string here}";
 
         // Async method to send simulated telemetry
         private static async void SendDeviceToCloudMessagesAsync()
@@ -45,18 +45,18 @@ namespace simulated_device
                 message.Properties.Add("temperatureAlert", (currentTemperature > 30) ? "true" : "false");
 
                 // Send the tlemetry message
-                await deviceClient.SendEventAsync(message);
+                await s_deviceClient.SendEventAsync(message);
                 Console.WriteLine("{0} > Sending message: {1}", DateTime.Now, messageString);
 
                 await Task.Delay(1000);
             }
         }
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             Console.WriteLine("IoT Hub Quickstarts #1 - Simulated device. Ctrl-C to exit.\n");
 
             // Connect to the IoT hub using the MQTT protocol
-            deviceClient = DeviceClient.CreateFromConnectionString(connectionString, TransportType.Mqtt);
+            s_deviceClient = DeviceClient.CreateFromConnectionString(s_connectionString, TransportType.Mqtt);
             SendDeviceToCloudMessagesAsync();
             Console.ReadLine();
         }
