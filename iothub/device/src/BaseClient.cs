@@ -106,7 +106,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
     /// <summary>
     /// Contains methods that a device can use to send messages to and receive from the service.
     /// </summary>
-    public abstract class BaseClient : IDisposable
+    public class BaseClient : IDisposable
     {
         internal const string DeviceId = "DeviceId";
         internal const string DeviceIdParameterPattern = @"(^\s*?|.*;\s*?)" + DeviceId + @"\s*?=.*";
