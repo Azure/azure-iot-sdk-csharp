@@ -14,17 +14,17 @@ namespace read_d2c_messages
     {
         // Event Hub-compatible endpoint
         // az iot hub show --query properties.eventHubEndpoints.events.endpoint --name {your IoT Hub name}
-        static string eventHubsCompatibleEndpoint = "{your Event Hubs compatible endpoint}";
+        private readonly static string s_eventHubsCompatibleEndpoint = "{your Event Hubs compatible endpoint}";
 
         // Event Hub-compatible name
         // az iot hub show --query properties.eventHubEndpoints.events.path --name {your IoT Hub name}
-        static string eventHubsCompatiblePath = "{your Event Hubs compatible name}";
+        private readonly static string s_eventHubsCompatiblePath = "{your Event Hubs compatible name}";
 
         
         // az iot hub policy show --name iothubowner --query primaryKey --hub-name {your IoT Hub name}
-        static string iotHubSasKey = "{your iothubowner primary key}";
-        private static string iotHubSasKeyName = "iothubowner";
-        static EventHubClient eventHubClient;
+        private readonly static string s_iotHubSasKey = "{your iothubowner primary key}";
+        private readonly static string s_iotHubSasKeyName = "iothubowner";
+        private static EventHubClient s_eventHubClient;
 
         // Asynchronously create a PartitionReceiver for a partition and then start 
         // reading any messages sent from the simulated client.
@@ -33,7 +33,7 @@ namespace read_d2c_messages
             // Create the receiver using the default consumer group.
             // For the purposes of this sample, read only messages sent since 
             // the time the receiver is created. Typically, you don't want to skip any messages.
-            var eventHubReceiver = eventHubClient.CreateReceiver("$Default", partition, EventPosition.FromEnqueuedTime(DateTime.Now));
+            var eventHubReceiver = s_eventHubClient.CreateReceiver("$Default", partition, EventPosition.FromEnqueuedTime(DateTime.Now));
             Console.WriteLine("Create receiver on partition: " + partition);
             while (true)
             {
@@ -64,17 +64,17 @@ namespace read_d2c_messages
             }
         }
 
-        static async Task Main(string[] args)
+        private static async Task Main(string[] args)
         {
             Console.WriteLine("IoT Hub Quickstarts - Read device to cloud messages. Ctrl-C to exit.\n");
 
             // Create an EventHubClient instance to connect to the
             // IoT Hub Event Hubs-compatible endpoint.
-            var connectionString = new EventHubsConnectionStringBuilder(new Uri(eventHubsCompatibleEndpoint), eventHubsCompatiblePath, iotHubSasKeyName, iotHubSasKey);
-            eventHubClient = EventHubClient.CreateFromConnectionString(connectionString.ToString());
+            var connectionString = new EventHubsConnectionStringBuilder(new Uri(s_eventHubsCompatibleEndpoint), s_eventHubsCompatiblePath, s_iotHubSasKeyName, s_iotHubSasKey);
+            s_eventHubClient = EventHubClient.CreateFromConnectionString(connectionString.ToString());
 
             // Create a PartitionReciever for each partition on the hub.
-            var runtimeInfo = await eventHubClient.GetRuntimeInformationAsync();
+            var runtimeInfo = await s_eventHubClient.GetRuntimeInformationAsync();
             var d2cPartitions = runtimeInfo.PartitionIds;
 
             CancellationTokenSource cts = new CancellationTokenSource();
