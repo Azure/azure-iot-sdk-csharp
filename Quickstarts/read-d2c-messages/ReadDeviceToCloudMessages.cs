@@ -1,4 +1,7 @@
-﻿// This application uses the Microsoft Azure Event Hubs Client for .NET
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+// This application uses the Microsoft Azure Event Hubs Client for .NET
 // For samples see: https://github.com/Azure/azure-event-hubs/tree/master/samples/DotNet
 // For documenation see: https://docs.microsoft.com/azure/event-hubs/
 using System;
