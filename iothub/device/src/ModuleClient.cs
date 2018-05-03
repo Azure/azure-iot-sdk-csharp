@@ -24,8 +24,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             this.internalClient = internalClient ?? throw new ArgumentNullException(nameof(internalClient));
 
-            if (this.internalClient.IotHubConnectionString == null ||
-                string.IsNullOrWhiteSpace(this.internalClient.IotHubConnectionString.ModuleId))
+            if (string.IsNullOrWhiteSpace(this.internalClient.IotHubConnectionString?.ModuleId))
             {
                 throw new ArgumentException("A valid module ID should be specified to create a ModuleClient");
             }
@@ -144,9 +143,9 @@ namespace Microsoft.Azure.Devices.Client
         /// based on environment variables.
         /// </summary>
         /// <returns>ModuleClient instance</returns>
-        public static ModuleClient Create()
+        public static ModuleClient CreateFromEnvironment()
         {
-            return Create(TransportType.Amqp);
+            return CreateFromEnvironment(TransportType.Amqp);
         }
 
         /// <summary>
@@ -155,9 +154,9 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="transportType">Specifies whether Amqp or Http transport is used</param>
         /// <returns>ModuleClient instance</returns>
-        public static ModuleClient Create(TransportType transportType)
+        public static ModuleClient CreateFromEnvironment(TransportType transportType)
         {
-            return Create(ClientFactory.GetTransportSettings(transportType));
+            return CreateFromEnvironment(ClientFactory.GetTransportSettings(transportType));
         }
 
         /// <summary>
@@ -166,7 +165,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="transportSettings">Prioritized list of transports and their settings</param>
         /// <returns>ModuleClient instance</returns>
-        public static ModuleClient Create(ITransportSettings[] transportSettings)
+        public static ModuleClient CreateFromEnvironment(ITransportSettings[] transportSettings)
         {
             return new EdgeModuleClientFactory(transportSettings).Create();
         }

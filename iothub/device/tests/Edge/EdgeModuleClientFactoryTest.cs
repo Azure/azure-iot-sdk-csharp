@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         public void TestCreate_FromConnectionStringEnvironment_ShouldCreateClient()
         {
             Environment.SetEnvironmentVariable(EdgehubConnectionstringVariableName, this.iotHubConnectionString);
-            ModuleClient dc = ModuleClient.Create();
+            ModuleClient dc = ModuleClient.CreateFromEnvironment();
 
             Assert.IsNotNull(dc);
 
@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         public void TestCreate_FromConnectionStringEnvironment_SetTransportType_ShouldCreateClient()
         {
             Environment.SetEnvironmentVariable(EdgehubConnectionstringVariableName, this.iotHubConnectionString);
-            ModuleClient dc = ModuleClient.Create(TransportType.Mqtt_Tcp_Only);
+            ModuleClient dc = ModuleClient.CreateFromEnvironment(TransportType.Mqtt_Tcp_Only);
 
             Assert.IsNotNull(dc);
 
@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         public void TestCreate_FromConnectionStringEnvironment_SetTransportSettings_ShouldCreateClient()
         {
             Environment.SetEnvironmentVariable(EdgehubConnectionstringVariableName, this.iotHubConnectionString);
-            ModuleClient dc = ModuleClient.Create(new ITransportSettings[] { new MqttTransportSettings(TransportType.Mqtt_Tcp_Only) });
+            ModuleClient dc = ModuleClient.CreateFromEnvironment(new ITransportSettings[] { new MqttTransportSettings(TransportType.Mqtt_Tcp_Only) });
 
             Assert.IsNotNull(dc);
 
@@ -66,22 +66,22 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         [TestMethod]
         public void TestCreate_FromEnvironment_MissingVariable_ShouldThrow()
         {
-            TestAssert.Throws<InvalidOperationException>(() => ModuleClient.Create());
+            TestAssert.Throws<InvalidOperationException>(() => ModuleClient.CreateFromEnvironment());
 
             Environment.SetEnvironmentVariable(IotEdgedUriVariableName, this.serverUrl);
-            TestAssert.Throws<InvalidOperationException>(() => ModuleClient.Create());
+            TestAssert.Throws<InvalidOperationException>(() => ModuleClient.CreateFromEnvironment());
 
             Environment.SetEnvironmentVariable(IotHubHostnameVariableName, "iothub.test");
-            TestAssert.Throws<InvalidOperationException>(() => ModuleClient.Create());
+            TestAssert.Throws<InvalidOperationException>(() => ModuleClient.CreateFromEnvironment());
 
             Environment.SetEnvironmentVariable(GatewayHostnameVariableName, "localhost");
-            TestAssert.Throws<InvalidOperationException>(() => ModuleClient.Create());
+            TestAssert.Throws<InvalidOperationException>(() => ModuleClient.CreateFromEnvironment());
 
             Environment.SetEnvironmentVariable(DeviceIdVariableName, "device1");
-            TestAssert.Throws<InvalidOperationException>(() => ModuleClient.Create());
+            TestAssert.Throws<InvalidOperationException>(() => ModuleClient.CreateFromEnvironment());
 
             Environment.SetEnvironmentVariable(ModuleIdVariableName, "module1");
-            TestAssert.Throws<InvalidOperationException>(() => ModuleClient.Create());
+            TestAssert.Throws<InvalidOperationException>(() => ModuleClient.CreateFromEnvironment());
 
             Environment.SetEnvironmentVariable(IotEdgedUriVariableName, null);
             Environment.SetEnvironmentVariable(IotHubHostnameVariableName, null);
@@ -100,7 +100,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
             Environment.SetEnvironmentVariable(ModuleIdVariableName, "module1");
 
             Environment.SetEnvironmentVariable(AuthSchemeVariableName, "x509Cert");
-            TestAssert.Throws<InvalidOperationException>(() => ModuleClient.Create());
+            TestAssert.Throws<InvalidOperationException>(() => ModuleClient.CreateFromEnvironment());
 
             Environment.SetEnvironmentVariable(IotEdgedUriVariableName, null);
             Environment.SetEnvironmentVariable(IotHubHostnameVariableName, null);
@@ -119,7 +119,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
             Environment.SetEnvironmentVariable(ModuleIdVariableName, "module1");
             Environment.SetEnvironmentVariable(AuthSchemeVariableName, "sasToken");
 
-            ModuleClient dc = ModuleClient.Create();
+            ModuleClient dc = ModuleClient.CreateFromEnvironment();
 
             Assert.IsNotNull(dc);
 
@@ -141,7 +141,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
             Environment.SetEnvironmentVariable(ModuleIdVariableName, "module1");
             Environment.SetEnvironmentVariable(AuthSchemeVariableName, "sasToken");
 
-            ModuleClient dc = ModuleClient.Create(TransportType.Mqtt_Tcp_Only);
+            ModuleClient dc = ModuleClient.CreateFromEnvironment(TransportType.Mqtt_Tcp_Only);
 
             Assert.IsNotNull(dc);
 

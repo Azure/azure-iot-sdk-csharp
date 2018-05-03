@@ -15,7 +15,16 @@
     [TestClass]
     public class DeviceClientTests
     {
-        static string fakeConnectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
+        const string fakeConnectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
+        const string fakeConnectionStringWithModuleId = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=;ModuleId=mod1";
+
+        [TestMethod]
+        [TestCategory("ModuleClient")]
+        [ExpectedException(typeof(ArgumentException))]
+        public void DeviceClient_CreateFromConnectionString_WithModuleIdThrows()
+        {
+            DeviceClient.CreateFromConnectionString(fakeConnectionStringWithModuleId);
+        }
 
         /* Tests_SRS_DEVICECLIENT_28_002: [This property shall be defaulted to 240000 (4 minutes).] */
         [TestMethod]

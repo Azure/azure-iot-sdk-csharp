@@ -69,9 +69,9 @@
         [TestMethod]
         [TestCategory("ModuleClient")]
         [ExpectedException(typeof(ArgumentException))]
-        public void ModuleClient_CreateFromConnectionString_WithNoModuleId()
+        public void ModuleClient_CreateFromConnectionString_WithNoModuleIdThrows()
         {
-            ModuleClient moduleClient = ModuleClient.CreateFromConnectionString(ConnectionStringWithoutModuleId);
+            ModuleClient.CreateFromConnectionString(ConnectionStringWithoutModuleId);
         }
 
         [TestMethod]
