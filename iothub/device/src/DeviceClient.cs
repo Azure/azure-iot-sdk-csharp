@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.Client
 
         DeviceClient(InternalClient internalClient)
         {
-            this.internalClient = internalClient;
+            this.internalClient = internalClient ?? throw new ArgumentNullException(nameof(internalClient));
         }
 
         /// <summary>

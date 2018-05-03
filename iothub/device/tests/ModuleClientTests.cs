@@ -60,6 +60,22 @@
 
         [TestMethod]
         [TestCategory("ModuleClient")]
+        public void ModuleClient_CreateFromConnectionString_WithModuleId()
+        {
+            ModuleClient moduleClient = ModuleClient.CreateFromConnectionString(ConnectionStringWithModuleId);
+            Assert.IsNotNull(moduleClient);
+        }
+
+        [TestMethod]
+        [TestCategory("ModuleClient")]
+        [ExpectedException(typeof(ArgumentException))]
+        public void ModuleClient_CreateFromConnectionString_WithNoModuleId()
+        {
+            ModuleClient moduleClient = ModuleClient.CreateFromConnectionString(ConnectionStringWithoutModuleId);
+        }
+
+        [TestMethod]
+        [TestCategory("ModuleClient")]
         public void ModuleClient_CreateFromConnectionString_NoTransportSettings()
         {
             ModuleClient moduleClient = ModuleClient.CreateFromConnectionString(fakeConnectionString, TransportType.Mqtt_Tcp_Only);

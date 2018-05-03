@@ -230,6 +230,8 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             });
         }
 
+        internal IotHubConnectionString IotHubConnectionString => this.iotHubConnectionString;
+
         /// <summary>
         /// Stores custom product information that will be appended to the user agent string that is sent to IoT Hub.
         /// </summary>

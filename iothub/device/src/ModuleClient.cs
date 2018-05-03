@@ -22,7 +22,13 @@ namespace Microsoft.Azure.Devices.Client
 
         internal ModuleClient(InternalClient internalClient)
         {
-            this.internalClient = internalClient;
+            this.internalClient = internalClient ?? throw new ArgumentNullException(nameof(internalClient));
+
+            if (this.internalClient.IotHubConnectionString == null ||
+                string.IsNullOrWhiteSpace(this.internalClient.IotHubConnectionString.ModuleId))
+            {
+                throw new ArgumentException("A valid module ID should be specified to create a ModuleClient");
+            }
         }
 
         /// <summary>
