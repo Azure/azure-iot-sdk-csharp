@@ -1,80 +1,28 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Microsoft.Azure.Devices.Client.Edge;
+
 namespace Microsoft.Azure.Devices.Client
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
 #if NETSTANDARD1_3
     using System.Net.Http;
 #endif
-    using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Shared;
-    using Microsoft.Azure.Devices.Client.Edge;
-
-    /// <summary>
-    ///    Status of handling a message. 
-    ///    None - Means Device SDK won't send an ackowledge of receipt.
-    ///    Completed - Means Device SDK will Complete the event. Removing from the queue.
-    ///    Abandoned - Event will be Abandoned. 
-    /// </summary>
-    public enum MessageResponse { None, Completed, Abandoned };
-
-    /// <summary>
-    /// Delegate that gets called when a message is received on a particular input.
-    /// </summary>
-    /// <param name="message">The message received</param>
-    /// <param name="userContext">The context object passed in</param>
-    /// <returns>MessageResponse</returns>
-    public delegate Task<MessageResponse> MessageHandler(Message message, object userContext);
 
     /// <summary>
     /// Contains methods that a device can use to send messages to and receive from the service.
     /// </summary>
-    public sealed class ModuleClient : BaseClient
+    public sealed class ModuleClient : IDisposable
     {
-        volatile Dictionary<string, Tuple<MessageHandler, object>> receiveEventEndpoints;
+        private readonly InternalClient internalClient;
 
-        readonly SemaphoreSlim receiveSemaphore = new SemaphoreSlim(1, 1);
-
-        volatile Tuple<MessageHandler, object> defaultEventCallback;
-
-        private ProductInfo productInfo = new ProductInfo();
-
-        /// <summary>
-        /// Stores custom product information that will be appended to the user agent string that is sent to IoT Hub.
-        /// </summary>
-        public string ProductInfo
+        internal ModuleClient(InternalClient internalClient)
         {
-            // We store DeviceClient.ProductInfo as a string property of an object (rather than directly as a string)
-            // so that updates will propagate down to the transport layer throughout the lifetime of the DeviceClient
-            // object instance.
-            get => productInfo.Extra;
-            set => productInfo.Extra = value;
-        }
-
-        ModuleClient(IotHubConnectionString iotHubConnectionString, ITransportSettings[] transportSettings, IDeviceClientPipelineBuilder pipelineBuilder)
-            : base(iotHubConnectionString, transportSettings)
-        {
-            if (string.IsNullOrWhiteSpace(iotHubConnectionString.ModuleId))
-            {
-                throw new ArgumentException("ModuleId not present - ModuleClient can be used only with modules");
-            }
-
-            var pipelineContext = new PipelineContext();
-            pipelineContext.Set(transportSettings);
-            pipelineContext.Set(iotHubConnectionString);
-            pipelineContext.Set<OnMethodCalledDelegate>(OnMethodCalled);
-            pipelineContext.Set<Action<TwinCollection>>(OnReportedStatePatchReceived);
-            pipelineContext.Set<OnConnectionClosedDelegate>(OnConnectionClosed);
-            pipelineContext.Set<OnConnectionOpenedDelegate>(OnConnectionOpened);
-            pipelineContext.Set<OnReceiveEventMessageCalledDelegate>(OnReceiveEventMessageCalled);
-            pipelineContext.Set(this.productInfo);
-
-            IDelegatingHandler innerHandler = pipelineBuilder.Build(pipelineContext);
-            this.InnerHandler = innerHandler;
+            this.internalClient = internalClient;
         }
 
         /// <summary>
@@ -85,7 +33,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>ModuleClient</returns>
         public static ModuleClient Create(string hostname, IAuthenticationMethod authenticationMethod)
         {
-            return Create(hostname, authenticationMethod, TransportType.Amqp);
+            return Create(() => ClientFactory.Create(hostname, authenticationMethod));
         }
 
         /// <summary>
@@ -97,7 +45,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>ModuleClient</returns>
         public static ModuleClient Create(string hostname, string gatewayHostname, IAuthenticationMethod authenticationMethod)
         {
-            return Create(hostname, gatewayHostname, authenticationMethod, TransportType.Amqp);
+            return Create(() => ClientFactory.Create(hostname, gatewayHostname, authenticationMethod));
         }
 
         /// <summary>
@@ -109,7 +57,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>ModuleClient</returns>
         public static ModuleClient Create(string hostname, IAuthenticationMethod authenticationMethod, TransportType transportType)
         {
-            return Create(hostname, null, authenticationMethod, transportType);
+            return Create(() => ClientFactory.Create(hostname, authenticationMethod, transportType));
         }
 
         /// <summary>
@@ -122,26 +70,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>ModuleClient</returns>
         public static ModuleClient Create(string hostname, string gatewayHostname, IAuthenticationMethod authenticationMethod, TransportType transportType)
         {
-            if (hostname == null)
-            {
-                throw new ArgumentNullException(nameof(hostname));
-            }
-
-            if (authenticationMethod == null)
-            {
-                throw new ArgumentNullException(nameof(authenticationMethod));
-            }
-
-            IotHubConnectionStringBuilder connectionStringBuilder = IotHubConnectionStringBuilder.Create(hostname, gatewayHostname, authenticationMethod);
-
-#if !NETMF
-            if (authenticationMethod is DeviceAuthenticationWithX509Certificate)
-            {
-                throw new ArgumentException("Certificate authentication is not supported for modules");
-            }
-#endif
-
-            return CreateFromConnectionString(connectionStringBuilder.ToString(), authenticationMethod, transportType, null);
+            return Create(() => ClientFactory.Create(hostname, gatewayHostname, authenticationMethod, transportType));
         }
 
         /// <summary>
@@ -154,7 +83,7 @@ namespace Microsoft.Azure.Devices.Client
         public static ModuleClient Create(string hostname, IAuthenticationMethod authenticationMethod,
             ITransportSettings[] transportSettings)
         {
-            return Create(hostname, null, authenticationMethod, transportSettings);
+            return Create(() => ClientFactory.Create(hostname, authenticationMethod, transportSettings));
         }
 
         /// <summary>
@@ -168,24 +97,7 @@ namespace Microsoft.Azure.Devices.Client
         public static ModuleClient Create(string hostname, string gatewayHostname, IAuthenticationMethod authenticationMethod,
             ITransportSettings[] transportSettings)
         {
-            if (hostname == null)
-            {
-                throw new ArgumentNullException("hostname");
-            }
-
-            if (authenticationMethod == null)
-            {
-                throw new ArgumentNullException("authenticationMethod");
-            }
-
-            var connectionStringBuilder = IotHubConnectionStringBuilder.Create(hostname, gatewayHostname, authenticationMethod);
-#if !NETMF
-            if (authenticationMethod is DeviceAuthenticationWithX509Certificate)
-            {
-                throw new ArgumentException("Certificate authentication is not supported for modules");
-            }
-#endif
-            return CreateFromConnectionString(connectionStringBuilder.ToString(), authenticationMethod, transportSettings, null);
+            return Create(() => ClientFactory.Create(hostname, gatewayHostname, authenticationMethod, transportSettings));
         }
 
         /// <summary>
@@ -195,7 +107,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>ModuleClient</returns>
         public static ModuleClient CreateFromConnectionString(string connectionString)
         {
-            return CreateFromConnectionString(connectionString, TransportType.Amqp);
+            return Create(() => ClientFactory.CreateFromConnectionString(connectionString));
         }
 
         /// <summary>
@@ -206,12 +118,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>ModuleClient</returns>
         public static ModuleClient CreateFromConnectionString(string connectionString, TransportType transportType)
         {
-            if (string.IsNullOrEmpty(connectionString))
-            {
-                throw new ArgumentNullException(nameof(connectionString));
-            }
-
-            return CreateFromConnectionString(connectionString, null, transportType, null);
+            return Create(() => ClientFactory.CreateFromConnectionString(connectionString, transportType));
         }
 
         /// <summary>
@@ -223,56 +130,7 @@ namespace Microsoft.Azure.Devices.Client
         public static ModuleClient CreateFromConnectionString(string connectionString,
             ITransportSettings[] transportSettings)
         {
-            return CreateFromConnectionString(connectionString, null, transportSettings, null);
-        }
-
-        internal static ModuleClient CreateFromConnectionString(
-            string connectionString,
-            IAuthenticationMethod authenticationMethod,
-            TransportType transportType,
-            IDeviceClientPipelineBuilder pipelineBuilder)
-        {
-            ITransportSettings[] transportSettings = GetTransportSettings(transportType);
-            return CreateFromConnectionString(
-                connectionString,
-                authenticationMethod,
-                transportSettings,
-                pipelineBuilder);
-        }
-
-        internal static ModuleClient CreateFromConnectionString(
-            string connectionString,
-            IAuthenticationMethod authenticationMethod,
-            ITransportSettings[] transportSettings,
-            IDeviceClientPipelineBuilder pipelineBuilder)
-        {
-            if (connectionString == null)
-            {
-                throw new ArgumentNullException(nameof(connectionString));
-            }
-
-            if (transportSettings == null)
-            {
-                throw new ArgumentNullException(nameof(transportSettings));
-            }
-
-            if (transportSettings.Length == 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(connectionString), "Must specify at least one TransportSettings instance");
-            }
-
-            var builder = IotHubConnectionStringBuilder.CreateWithIAuthenticationOverride(
-                connectionString,
-                authenticationMethod);
-
-            IotHubConnectionString iotHubConnectionString = builder.ToIotHubConnectionString();
-
-            ValidateTransportSettings(transportSettings);
-
-            pipelineBuilder = pipelineBuilder ?? BuildPipeline();
-
-            // Defer concrete ModuleClient creation to OpenAsync
-            return new ModuleClient(iotHubConnectionString, transportSettings, pipelineBuilder);
+            return Create(() => ClientFactory.CreateFromConnectionString(connectionString, transportSettings));
         }
 
         /// <summary>
@@ -285,7 +143,6 @@ namespace Microsoft.Azure.Devices.Client
             return Create(TransportType.Amqp);
         }
 
-
         /// <summary>
         /// Creates a ModuleClient instance in an IoT Edge deployment
         /// based on environment variables.
@@ -294,7 +151,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>ModuleClient instance</returns>
         public static ModuleClient Create(TransportType transportType)
         {
-            return Create(GetTransportSettings(transportType));
+            return Create(ClientFactory.GetTransportSettings(transportType));
         }
 
         /// <summary>
@@ -308,31 +165,162 @@ namespace Microsoft.Azure.Devices.Client
             return new EdgeModuleClientFactory(transportSettings).Create();
         }
 
+        private static ModuleClient Create(Func<InternalClient> internalClientCreator)
+        {
+            return new ModuleClient(internalClientCreator());
+        }
+
+        internal IDelegatingHandler InnerHandler
+        {
+            get => this.internalClient.InnerHandler;
+            set => this.internalClient.InnerHandler = value;
+        }
+
+        internal InternalClient InternalClient => this.internalClient;
+
+        public int DiagnosticSamplingPercentage
+        {
+            get => this.internalClient.DiagnosticSamplingPercentage;
+            set => this.internalClient.DiagnosticSamplingPercentage = value;
+        }
+
+        /// <summary>
+        /// Stores the timeout used in the operation retries.
+        /// </summary>
+        // Codes_SRS_DEVICECLIENT_28_002: [This property shall be defaulted to 240000 (4 minutes).]
+        public uint OperationTimeoutInMilliseconds
+        {
+            get => this.internalClient.OperationTimeoutInMilliseconds;
+            set => this.internalClient.OperationTimeoutInMilliseconds = value;
+        }
+
+        /// <summary>
+        /// Stores custom product information that will be appended to the user agent string that is sent to IoT Hub.
+        /// </summary>
+        public string ProductInfo
+        {
+            get => this.internalClient.ProductInfo;
+            set => this.internalClient.ProductInfo = value;
+        }
+
+        /// <summary>
+        /// Sets the retry policy used in the operation retries.
+        /// </summary>
+        /// <param name="retryPolicy">The retry policy. The default is new ExponentialBackoff(int.MaxValue, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100));</param>
+        // Codes_SRS_DEVICECLIENT_28_001: [This property shall be defaulted to the exponential retry strategy with backoff 
+        // parameters for calculating delay in between retries.]
+        public void SetRetryPolicy(IRetryPolicy retryPolicy)
+        {
+            this.internalClient.SetRetryPolicy(retryPolicy);
+        }
+
+        /// <summary>
+        /// Explicitly open the DeviceClient instance.
+        /// </summary>
+        public Task OpenAsync() => this.internalClient.OpenAsync();
+
+        /// <summary>
+        /// Close the DeviceClient instance
+        /// </summary>
+        /// <returns></returns>
+        public Task CloseAsync() => this.internalClient.CloseAsync();
+
+        /// <summary>
+        /// Deletes a received message from the device queue
+        /// </summary>
+        /// <returns>The lock identifier for the previously received message</returns>
+        public Task CompleteAsync(string lockToken) => this.internalClient.CompleteAsync(lockToken);
+
+        /// <summary>
+        /// Deletes a received message from the device queue
+        /// </summary>
+        /// <returns>The previously received message</returns>
+        public Task CompleteAsync(Message message) => this.internalClient.CompleteAsync(message);
+
+        /// <summary>
+        /// Puts a received message back onto the device queue
+        /// </summary>
+        /// <returns>The previously received message</returns>
+        public Task AbandonAsync(string lockToken) => this.internalClient.AbandonAsync(lockToken);
+
+        /// <summary>
+        /// Puts a received message back onto the device queue
+        /// </summary>
+        /// <returns>The lock identifier for the previously received message</returns>
+        public Task AbandonAsync(Message message) => this.internalClient.AbandonAsync(message);
+
+        /// <summary>
+        /// Sends an event to device hub
+        /// </summary>
+        /// <returns>The message containing the event</returns>
+        public Task SendEventAsync(Message message) => this.internalClient.SendEventAsync(message);
+
+        /// <summary>
+        /// Sends a batch of events to device hub
+        /// </summary>
+        /// <returns>The task containing the event</returns>
+        public Task SendEventBatchAsync(IEnumerable<Message> messages) => this.internalClient.SendEventBatchAsync(messages);
+
+        /// <summary>
+        /// Registers a new delegate for the named method. If a delegate is already associated with
+        /// the named method, it will be replaced with the new delegate.
+        /// <param name="methodName">The name of the method to associate with the delegate.</param>
+        /// <param name="methodHandler">The delegate to be used when a method with the given name is called by the cloud service.</param>
+        /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
+        /// </summary>
+        public async Task SetMethodHandlerAsync(string methodName, MethodCallback methodHandler, object userContext) =>
+            this.internalClient.SetMethodHandlerAsync(methodName, methodHandler, userContext);
+
+        /// <summary>
+        /// Registers a new delegate that is called for a method that doesn't have a delegate registered for its name. 
+        /// If a default delegate is already registered it will replace with the new delegate.
+        /// </summary>
+        /// <param name="methodHandler">The delegate to be used when a method is called by the cloud service and there is no delegate registered for that method name.</param>
+        /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
+        public async Task SetMethodDefaultHandlerAsync(MethodCallback methodHandler, object userContext) =>
+            this.internalClient.SetMethodDefaultHandlerAsync(methodHandler, userContext);
+
+        /// <summary>
+        /// Registers a new delegate for the connection status changed callback. If a delegate is already associated, 
+        /// it will be replaced with the new delegate.
+        /// <param name="statusChangesHandler">The name of the method to associate with the delegate.</param>
+        /// </summary>
+        public void SetConnectionStatusChangesHandler(ConnectionStatusChangesHandler statusChangesHandler) =>
+            this.internalClient.SetConnectionStatusChangesHandler(statusChangesHandler);
+
+        public void Dispose() => this.internalClient?.Dispose();
+
+        /// <summary>
+        /// Set a callback that will be called whenever the client receives a state update 
+        /// (desired or reported) from the service.  This has the side-effect of subscribing
+        /// to the PATCH topic on the service.
+        /// </summary>
+        /// <param name="callback">Callback to call after the state update has been received and applied</param>
+        /// <param name="userContext">Context object that will be passed into callback</param>
+        public Task SetDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallback callback, object userContext) =>
+            this.internalClient.SetDesiredPropertyUpdateCallbackAsync(callback, userContext);
+
+        /// <summary>
+        /// Retrieve a device twin object for the current device.
+        /// </summary>
+        /// <returns>The device twin object for the current device</returns>
+        public Task<Twin> GetTwinAsync() => this.internalClient.GetTwinAsync();
+
+        /// <summary>
+        /// Push reported property changes up to the service.
+        /// </summary>
+        /// <param name="reportedProperties">Reported properties to push</param>
+        public Task UpdateReportedPropertiesAsync(TwinCollection reportedProperties) =>
+            this.internalClient.UpdateReportedPropertiesAsync(reportedProperties);
+
         #region Module Specific API
+
         /// <summary>
         /// <param name="outputName">The output target for sending the given message</param>
         /// <param name="message">The message to send</param>
         /// <returns>The message containing the event</returns>
-        public Task SendEventAsync(string outputName, Message message)
-        {
-            // Codes_SRS_DEVICECLIENT_10_012: [If `outputName` is `null` or empty, an `ArgumentNullException` shall be thrown.]
-            if (string.IsNullOrWhiteSpace(outputName))
-            {
-                throw new ArgumentException(nameof(outputName));
-            }
-
-            // Codes_SRS_DEVICECLIENT_10_013: [If `message` is `null` or empty, an `ArgumentNullException` shall be thrown.]
-            if (message == null)
-            {
-                throw new ArgumentNullException(nameof(message));
-            }
-
-            // Codes_SRS_DEVICECLIENT_10_015: [The `output` property of a given `message` shall be assigned the value `outputName` before submitting each request to the transport layer.]
-            message.SystemProperties.Add(MessageSystemPropertyNames.OutputName, outputName);
-
-            // Codes_SRS_DEVICECLIENT_10_011: [The `SendEventAsync` operation shall retry sending `message` until the `BaseClient::RetryStrategy` tiemspan expires or unrecoverable error(authentication or quota exceed) occurs.]
-            return ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.SendEventAsync(message, operationTimeoutCancellationToken));
-        }
+        public Task SendEventAsync(string outputName, Message message) =>
+            this.internalClient.SendEventAsync(outputName, message);
 
         /// <summary>
         /// Sends a batch of events to device hub
@@ -340,34 +328,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="messages">A list of one or more messages to send</param>
         /// </summary>
         /// <returns>The task containing the event</returns>
-        public Task SendEventBatchAsync(string outputName, IEnumerable<Message> messages)
-        {
-            // Codes_SRS_DEVICECLIENT_10_012: [If `outputName` is `null` or empty, an `ArgumentNullException` shall be thrown.]
-            if (string.IsNullOrWhiteSpace(outputName))
-            {
-                throw new ArgumentException(nameof(outputName));
-            }
-
-            List<Message> messagesList = messages?.ToList();
-            // Codes_SRS_DEVICECLIENT_10_013: [If `message` is `null` or empty, an `ArgumentNullException` shall be thrown]
-            if (messagesList == null || messagesList.Count == 0)
-            {
-                throw new ArgumentNullException(nameof(messages));
-            }
-
-#if PCL
-            foreach(var m in messagesList)
-            {
-                m.SystemProperties.Add(MessageSystemPropertyNames.OutputName, outputName);
-            }
-#else
-            // Codes_SRS_DEVICECLIENT_10_015: [The `module-output` property of a given `message` shall be assigned the value `outputName` before submitting each request to the transport layer.]
-            messagesList.ForEach(m => m.SystemProperties.Add(MessageSystemPropertyNames.OutputName, outputName));
-#endif
-
-            // Codes_SRS_DEVICECLIENT_10_014: [The `SendEventBachAsync` operation shall retry sending `messages` until the `BaseClient::RetryStrategy` tiemspan expires or unrecoverable error(authentication or quota exceed) occurs.]
-            return ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.SendEventAsync(messagesList, operationTimeoutCancellationToken));
-        }
+        public Task SendEventBatchAsync(string outputName, IEnumerable<Message> messages) =>
+            this.internalClient.SendEventBatchAsync(outputName, messages);
 
         /// <summary>
         /// Registers a new delgate for the particular input. If a delegate is already associated with
@@ -377,42 +339,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
         /// </summary>
         /// <returns>The task containing the event</returns>
-        public async Task SetInputMessageHandlerAsync(string inputName, MessageHandler messageHandler, object userContext)
-        {
-            try
-            {
-                await this.receiveSemaphore.WaitAsync();
-
-                if (messageHandler != null)
-                {
-                    // codes_SRS_DEVICECLIENT_33_003: [ It shall EnableEventReceiveAsync when called for the first time. ]
-                    await this.EnableEventReceiveAsync();
-                    // codes_SRS_DEVICECLIENT_33_005: [ It shall lazy-initialize the receiveEventEndpoints property. ]
-                    if (this.receiveEventEndpoints == null)
-                    {
-                        this.receiveEventEndpoints = new Dictionary<string, Tuple<MessageHandler, object>>();
-                    }
-                    this.receiveEventEndpoints[inputName] = new Tuple<MessageHandler, object>(messageHandler, userContext);
-                }
-                else
-                {
-                    if (this.receiveEventEndpoints != null)
-                    {
-                        this.receiveEventEndpoints.Remove(inputName);
-                        if (this.receiveEventEndpoints.Count == 0)
-                        {
-                            this.receiveEventEndpoints = null;
-                        }
-                    }
-                    // codes_SRS_DEVICECLIENT_33_004: [ It shall call DisableEventReceiveAsync when the last delegate has been removed. ]
-                    await this.DisableEventReceiveAsync();
-                }
-            }
-            finally
-            {
-                this.receiveSemaphore.Release();
-            }
-        }
+        public Task SetInputMessageHandlerAsync(string inputName, MessageHandler messageHandler, object userContext) =>
+            this.internalClient.SetInputMessageHandlerAsync(inputName, messageHandler, userContext);
 
         /// <summary>
         /// Registers a new default delegate which applies to all endpoints. If a delegate is already associated with
@@ -422,89 +350,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
         /// </summary>
         /// <returns>The task containing the event</returns>
-        public async Task SetMessageHandlerAsync(MessageHandler messageHandler, object userContext)
-        {
-            try
-            {
-                await this.receiveSemaphore.WaitAsync();
-                if (messageHandler != null)
-                {
-                    // codes_SRS_DEVICECLIENT_33_003: [ It shall EnableEventReceiveAsync when called for the first time. ]
-                    await this.EnableEventReceiveAsync();
-                    this.defaultEventCallback = new Tuple<MessageHandler, object>(messageHandler, userContext);
-                }
-                else
-                {
-                    this.defaultEventCallback = null;
-                    // codes_SRS_DEVICECLIENT_33_004: [ It shall DisableEventReceiveAsync when the last delegate has been removed. ]
-                    await this.DisableEventReceiveAsync();
-                }
-            }
-            finally
-            {
-                this.receiveSemaphore.Release();
-            }
-        }
-
-        private async Task EnableEventReceiveAsync()
-        {
-            if (this.receiveEventEndpoints == null && this.defaultEventCallback == null)
-            {
-                await ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.EnableEventReceiveAsync(operationTimeoutCancellationToken));
-            }
-        }
-
-        private async Task DisableEventReceiveAsync()
-        {
-            if (this.receiveEventEndpoints == null && this.defaultEventCallback == null)
-            {
-                await ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.DisableEventReceiveAsync(operationTimeoutCancellationToken));
-            }
-        }
-
-        /// <summary>
-        /// The delegate for handling event messages received
-        /// <param name="input">The input on which a message is received</param>
-        /// <param name="message">The message received</param>
-        /// </summary>
-        internal async Task OnReceiveEventMessageCalled(string input, Message message)
-        {
-            // codes_SRS_DEVICECLIENT_33_001: [ If the given eventMessageInternal argument is null, fail silently ]
-            if (message != null)
-            {
-                Tuple<MessageHandler, object> callback = null;
-                await this.receiveSemaphore.WaitAsync();
-                try
-                {
-                    // codes_SRS_DEVICECLIENT_33_006: [ The OnReceiveEventMessageCalled shall get the default delegate if a delegate has not been assigned. ]
-                    if (this.receiveEventEndpoints == null ||
-                        string.IsNullOrWhiteSpace(input) ||
-                        !this.receiveEventEndpoints.TryGetValue(input, out callback))
-                    {
-                        callback = this.defaultEventCallback;
-                    }
-                }
-                finally
-                {
-                    this.receiveSemaphore.Release();
-                }
-
-                // codes_SRS_DEVICECLIENT_33_002: [ The OnReceiveEventMessageCalled shall invoke the specified delegate. ]
-                MessageResponse response = await (callback?.Item1?.Invoke(message, callback.Item2) ?? Task.FromResult(MessageResponse.None));
-
-                switch (response)
-                {
-                    case MessageResponse.Completed:
-                        await this.CompleteAsync(message);
-                        break;
-                    case MessageResponse.Abandoned:
-                        await this.AbandonAsync(message);
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
+        public Task SetMessageHandlerAsync(MessageHandler messageHandler, object userContext) =>
+            this.internalClient.SetMessageHandlerAsync(messageHandler, userContext);
 
         #endregion Module Specific API
     }

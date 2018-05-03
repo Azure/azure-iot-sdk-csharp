@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
-using System.Collections;
-using Microsoft.Azure.Devices.Client.HsmAuthentication;
-
 namespace Microsoft.Azure.Devices.Client.Edge
 {
+    using System;
+    using System.Collections;
+    using Microsoft.Azure.Devices.Client.HsmAuthentication;
+
     /// <summary>
     /// Factory that creates ModuleClient based on the IoT Edge environment.
     /// </summary>
@@ -40,10 +40,10 @@ namespace Microsoft.Azure.Devices.Client.Edge
         /// <returns></returns>
         public ModuleClient Create()
         {
-            return this.CreateDeviceClientFromEnvironment();
+            return new ModuleClient(this.CreateInternalClientFromEnvironment());
         }
 
-        ModuleClient CreateDeviceClientFromEnvironment()
+        InternalClient CreateInternalClientFromEnvironment()
         {
             IDictionary envVariables = Environment.GetEnvironmentVariables();
 
@@ -52,15 +52,15 @@ namespace Microsoft.Azure.Devices.Client.Edge
             // First try to create from connection string and if env variable for connection string is not found try to create from edgedUri
             if (!string.IsNullOrWhiteSpace(connectionString))
             {
-                return this.CreateDeviceClientFromConnectionString(connectionString);
+                return this.CreateInternalClientFromConnectionString(connectionString);
             }
             else
             {
-                string edgedUri = this.GetValueFromEnvironment(envVariables, IotEdgedUriVariableName) ?? throw new InvalidOperationException($"Environement variable {IotEdgedUriVariableName} is required.");
-                string deviceId = this.GetValueFromEnvironment(envVariables, DeviceIdVariableName) ?? throw new InvalidOperationException($"Environement variable {DeviceIdVariableName} is required.");
-                string moduleId = this.GetValueFromEnvironment(envVariables, ModuleIdVariableName) ?? throw new InvalidOperationException($"Environement variable {ModuleIdVariableName} is required.");
-                string hostname = this.GetValueFromEnvironment(envVariables, IotHubHostnameVariableName) ?? throw new InvalidOperationException($"Environement variable {IotHubHostnameVariableName} is required.");
-                string authScheme = this.GetValueFromEnvironment(envVariables, AuthSchemeVariableName) ?? throw new InvalidOperationException($"Environement variable {AuthSchemeVariableName} is required.");
+                string edgedUri = this.GetValueFromEnvironment(envVariables, IotEdgedUriVariableName) ?? throw new InvalidOperationException($"Environment variable {IotEdgedUriVariableName} is required.");
+                string deviceId = this.GetValueFromEnvironment(envVariables, DeviceIdVariableName) ?? throw new InvalidOperationException($"Environment variable {DeviceIdVariableName} is required.");
+                string moduleId = this.GetValueFromEnvironment(envVariables, ModuleIdVariableName) ?? throw new InvalidOperationException($"Environment variable {ModuleIdVariableName} is required.");
+                string hostname = this.GetValueFromEnvironment(envVariables, IotHubHostnameVariableName) ?? throw new InvalidOperationException($"Environment variable {IotHubHostnameVariableName} is required.");
+                string authScheme = this.GetValueFromEnvironment(envVariables, AuthSchemeVariableName) ?? throw new InvalidOperationException($"Environment variable {AuthSchemeVariableName} is required.");
                 string gateway = this.GetValueFromEnvironment(envVariables, GatewayHostnameVariableName);
                 string apiVersion = this.GetValueFromEnvironment(envVariables, IotEdgedApiVersionVariableName);
 
@@ -74,18 +74,18 @@ namespace Microsoft.Azure.Devices.Client.Edge
                     : new HttpHsmSignatureProvider(edgedUri, apiVersion);
                 var authMethod = new ModuleAuthenticationWithHsm(signatureProvider, deviceId, moduleId);
 
-                return this.CreateDeviceClientFromAuthenticationMethod(hostname, gateway, authMethod);
+                return this.CreateInternalClientFromAuthenticationMethod(hostname, gateway, authMethod);
             }
         }
 
-        ModuleClient CreateDeviceClientFromConnectionString(string connectionString)
+        InternalClient CreateInternalClientFromConnectionString(string connectionString)
         {
-            return ModuleClient.CreateFromConnectionString(connectionString, this.transportSettings);
+            return ClientFactory.CreateFromConnectionString(connectionString, this.transportSettings);
         }
 
-        ModuleClient CreateDeviceClientFromAuthenticationMethod(string hostname, string gateway, IAuthenticationMethod authMethod)
+        InternalClient CreateInternalClientFromAuthenticationMethod(string hostname, string gateway, IAuthenticationMethod authMethod)
         {
-            return ModuleClient.Create(hostname, gateway, authMethod, this.transportSettings);
+            return ClientFactory.Create(hostname, gateway, authMethod, this.transportSettings);
         }
 
         string GetValueFromEnvironment(IDictionary envVariables, string variableName)

@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             await innerHandler.
                 Received(1).
                 EnableTwinPatchAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            Assert.AreEqual(client.desiredPropertyUpdateCallback, myCallback);
+            Assert.AreEqual(client.InternalClient.desiredPropertyUpdateCallback, myCallback);
         }
 
         // Tests_SRS_DEVICECLIENT_18_003: `SetDesiredPropertyUpdateCallbackAsync` shall call the transport to register for PATCHes on it's first call.
@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             await innerHandler.
                 Received(1).
                 EnableTwinPatchAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
-            Assert.AreEqual(client.desiredPropertyUpdateCallback, myCallback);
+            Assert.AreEqual(client.InternalClient.desiredPropertyUpdateCallback, myCallback);
         }
 
         // Tests_SRS_DEVICECLIENT_18_004: `SetDesiredPropertyUpdateCallback` shall not call the transport to register for PATCHes on subsequent calls
@@ -197,7 +197,8 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             int callCount = 0;
             TwinCollection receivedPatch = null;
-            DesiredPropertyUpdateCallback myCallback = (p, c) => {
+            DesiredPropertyUpdateCallback myCallback = (p, c) =>
+            {
                 callCount++;
                 receivedPatch = p;
                 return TaskHelpers.CompletedTask;
@@ -205,7 +206,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             await client.SetDesiredPropertyUpdateCallback(myCallback, null).ConfigureAwait(false);
 
             // act
-            client.OnReportedStatePatchReceived(myPatch);
+            client.InternalClient.OnReportedStatePatchReceived(myPatch);
 
             //assert
             Assert.AreEqual(callCount, 1);
@@ -225,7 +226,8 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             int callCount = 0;
             TwinCollection receivedPatch = null;
-            DesiredPropertyUpdateCallback myCallback = (p, c) => {
+            DesiredPropertyUpdateCallback myCallback = (p, c) =>
+            {
                 callCount++;
                 receivedPatch = p;
                 return TaskHelpers.CompletedTask;
@@ -233,7 +235,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             await client.SetDesiredPropertyUpdateCallbackAsync(myCallback, null).ConfigureAwait(false);
 
             // act
-            client.OnReportedStatePatchReceived(myPatch);
+            client.InternalClient.OnReportedStatePatchReceived(myPatch);
 
             //assert
             Assert.AreEqual(callCount, 1);

@@ -4,114 +4,27 @@
 namespace Microsoft.Azure.Devices.Client
 {
     using System;
-    using System.Linq;
+    using System.Collections.Generic;
 #if NETSTANDARD1_3
     using System.Net.Http;
 #endif
     using System.Threading.Tasks;
-    using Microsoft.Azure.Devices.Client.Transport;
     using Microsoft.Azure.Devices.Shared;
-
-    /*
-     * Class Diagram and Chain of Responsibility in Device Client 
-                                     +--------------------+
-                                     | <<interface>>      |
-                                     | IDelegatingHandler |
-                                     |  * Open            |
-                                     |  * Close           |
-                                     |  * SendEvent       |
-                                     |  * SendEvents      |
-                                     |  * Receive         |
-                                     |  * Complete        |
-                                     |  * Abandon         |
-                                     |  * Reject          |
-                                     +-------+------------+
-                                             |
-                                             |implements
-                                             |
-                                             |
-                                     +-------+-------+
-                                     |  <<abstract>> |     
-                                     |  Default      |
-             +---+inherits----------->  Delegating   <------inherits-----------------+
-             |                       |  Handler      |                               |
-             |           +--inherits->               <--inherits----+                |
-             |           |           +-------^-------+              |                |
-             |           |                   |inherits              |                |
-             |           |                   |                      |                |
-+------------+       +---+---------+      +--+----------+       +---+--------+       +--------------+
-|            |       |             |      |             |       |            |       | <<abstract>> |
-| GateKeeper |  use  | Retry       | use  |  Error      |  use  | Routing    |  use  | Transport    |
-| Delegating +-------> Delegating  +------>  Delegating +-------> Delegating +-------> Delegating   |
-| Handler    |       | Handler     |      |  Handler    |       | Handler    |       | Handler      |
-|            |       |             |      |             |       |            |       |              |
-| overrides: |       | overrides:  |      |  overrides  |       | overrides: |       | overrides:   |
-|  Open      |       |  Open       |      |   Open      |       |  Open      |       |  Receive     |
-|  Close     |       |  SendEvent  |      |   SendEvent |       |            |       |              |
-|            |       |  SendEvents |      |   SendEvents|       +------------+       +--^--^---^----+
-+------------+       |  Receive    |      |   Receive   |                               |  |   |
-                     |  Reject     |      |   Reject    |                               |  |   |
-                     |  Abandon    |      |   Abandon   |                               |  |   |
-                     |  Complete   |      |   Complete  |                               |  |   |
-                     |             |      |             |                               |  |   |
-                     +-------------+      +-------------+     +-------------+-+inherits-+  |   +---inherits-+-------------+
-                                                              |             |              |                |             |
-                                                              | AMQP        |              inherits         | HTTP        |
-                                                              | Transport   |              |                | Transport   |
-                                                              | Handler     |          +---+---------+      | Handler     |
-                                                              |             |          |             |      |             |
-                                                              | overrides:  |          | MQTT        |      | overrides:  |
-                                                              |  everything |          | Transport   |      |  everything |
-                                                              |             |          | Handler     |      |             |
-                                                              +-------------+          |             |      +-------------+
-                                                                                       | overrides:  |
-                                                                                       |  everything |
-                                                                                       |             |
-                                                                                       +-------------+
-TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have to many overloads in most of the classes.
-*/
 
     /// <summary>
     /// Contains methods that a device can use to send messages to and receive from the service.
     /// </summary>
-    public sealed class DeviceClient : BaseClient
+    public sealed class DeviceClient : IDisposable
     {
-        private ProductInfo productInfo = new ProductInfo();
+        public const string ModuleTwinsPropertyName = "moduleTwins";
+        public const string MetadataName = "$metadata";
+        public const uint DefaultOperationTimeoutInMilliseconds = 4 * 60 * 1000;
 
-        /// <summary>
-        /// Stores custom product information that will be appended to the user agent string that is sent to IoT Hub.
-        /// </summary>
-        public string ProductInfo
+        private readonly InternalClient internalClient;
+
+        DeviceClient(InternalClient internalClient)
         {
-            // We store DeviceClient.ProductInfo as a string property of an object (rather than directly as a string)
-            // so that updates will propagate down to the transport layer throughout the lifetime of the DeviceClient
-            // object instance.
-            get => productInfo.Extra;
-            set => productInfo.Extra = value;
-        }
-
-        DeviceClient(IotHubConnectionString iotHubConnectionString, ITransportSettings[] transportSettings, IDeviceClientPipelineBuilder pipelineBuilder)
-            : base(iotHubConnectionString, transportSettings)
-        {
-            var pipelineContext = new PipelineContext();
-            pipelineContext.Set(transportSettings);
-            pipelineContext.Set(iotHubConnectionString);
-            pipelineContext.Set<OnMethodCalledDelegate>(OnMethodCalled);
-            pipelineContext.Set<Action<TwinCollection>>(OnReportedStatePatchReceived);
-            pipelineContext.Set<OnConnectionClosedDelegate>(OnConnectionClosed);
-            pipelineContext.Set<OnConnectionOpenedDelegate>(OnConnectionOpened);
-            pipelineContext.Set(this.productInfo);
-
-            IDelegatingHandler innerHandler = pipelineBuilder.Build(pipelineContext);
-            this.InnerHandler = innerHandler;
-        }
-
-        internal Task SendMethodResponseAsync(MethodResponseInternal methodResponse)
-        {
-            return ApplyTimeout(operationTimeoutCancellationToken =>
-            {
-                return this.InnerHandler.SendMethodResponseAsync(methodResponse, operationTimeoutCancellationToken);
-            });
+            this.internalClient = internalClient;
         }
 
         /// <summary>
@@ -122,7 +35,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// <returns>DeviceClient</returns>
         public static DeviceClient Create(string hostname, IAuthenticationMethod authenticationMethod)
         {
-            return Create(hostname, authenticationMethod, TransportType.Amqp);
+            return Create(() => ClientFactory.Create(hostname, authenticationMethod));
         }
 
         /// <summary>
@@ -134,7 +47,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// <returns>DeviceClient</returns>
         public static DeviceClient Create(string hostname, string gatewayHostname, IAuthenticationMethod authenticationMethod)
         {
-            return Create(hostname, gatewayHostname, authenticationMethod, TransportType.Amqp);
+            return Create(() => ClientFactory.Create(hostname, gatewayHostname, authenticationMethod));
         }
 
         /// <summary>
@@ -146,7 +59,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// <returns>DeviceClient</returns>
         public static DeviceClient Create(string hostname, IAuthenticationMethod authenticationMethod, TransportType transportType)
         {
-            return Create(hostname, null, authenticationMethod, transportType);
+            return Create(() => ClientFactory.Create(hostname, authenticationMethod, transportType));
         }
 
         /// <summary>
@@ -159,38 +72,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// <returns>DeviceClient</returns>
         public static DeviceClient Create(string hostname, string gatewayHostname, IAuthenticationMethod authenticationMethod, TransportType transportType)
         {
-            if (hostname == null)
-            {
-                throw new ArgumentNullException(nameof(hostname));
-            }
-
-            if (authenticationMethod == null)
-            {
-                throw new ArgumentNullException(nameof(authenticationMethod));
-            }
-
-            IotHubConnectionStringBuilder connectionStringBuilder = IotHubConnectionStringBuilder.Create(hostname, gatewayHostname, authenticationMethod);
-
-#if !NETMF
-            if (authenticationMethod is DeviceAuthenticationWithX509Certificate)
-            {
-                if (connectionStringBuilder.Certificate == null)
-                {
-                    throw new ArgumentException("certificate must be present in DeviceAuthenticationWithX509Certificate");
-                }
-
-                if (!connectionStringBuilder.Certificate.HasPrivateKey)
-                {
-                    throw new ArgumentException("certificate in DeviceAuthenticationWithX509Certificate must have a private key");
-                }
-
-                DeviceClient dc = CreateFromConnectionString(connectionStringBuilder.ToString(), PopulateCertificateInTransportSettings(connectionStringBuilder, transportType));
-                dc.Certificate = connectionStringBuilder.Certificate;
-                return dc;
-            }
-#endif
-
-            return CreateFromConnectionString(connectionStringBuilder.ToString(), authenticationMethod, transportType, null);
+            return Create(() => ClientFactory.Create(hostname, gatewayHostname, authenticationMethod, transportType));
         }
 
         /// <summary>
@@ -203,7 +85,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         public static DeviceClient Create(string hostname, IAuthenticationMethod authenticationMethod,
             ITransportSettings[] transportSettings)
         {
-            return Create(hostname, null, authenticationMethod, transportSettings);
+            return Create(() => ClientFactory.Create(hostname, authenticationMethod, transportSettings));
         }
 
         /// <summary>
@@ -217,36 +99,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         public static DeviceClient Create(string hostname, string gatewayHostname, IAuthenticationMethod authenticationMethod,
             ITransportSettings[] transportSettings)
         {
-            if (hostname == null)
-            {
-                throw new ArgumentNullException("hostname");
-            }
-
-            if (authenticationMethod == null)
-            {
-                throw new ArgumentNullException("authenticationMethod");
-            }
-
-            var connectionStringBuilder = IotHubConnectionStringBuilder.Create(hostname, gatewayHostname, authenticationMethod);
-#if !NETMF
-            if (authenticationMethod is DeviceAuthenticationWithX509Certificate)
-            {
-                if (connectionStringBuilder.Certificate == null)
-                {
-                    throw new ArgumentException("certificate must be present in DeviceAuthenticationWithX509Certificate");
-                }
-
-                if (!connectionStringBuilder.Certificate.HasPrivateKey)
-                {
-                    throw new ArgumentException("certificate in DeviceAuthenticationWithX509Certificate must have a private key");
-                }
-
-                DeviceClient dc = CreateFromConnectionString(connectionStringBuilder.ToString(), PopulateCertificateInTransportSettings(connectionStringBuilder, transportSettings));
-                dc.Certificate = connectionStringBuilder.Certificate;
-                return dc;
-            }
-#endif
-            return CreateFromConnectionString(connectionStringBuilder.ToString(), authenticationMethod, transportSettings, null);
+            return Create(() => ClientFactory.Create(hostname, gatewayHostname, authenticationMethod, transportSettings));
         }
 
         /// <summary>
@@ -256,7 +109,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// <returns>DeviceClient</returns>
         public static DeviceClient CreateFromConnectionString(string connectionString)
         {
-            return CreateFromConnectionString(connectionString, TransportType.Amqp);
+            return Create(() => ClientFactory.CreateFromConnectionString(connectionString));
         }
 
         /// <summary>
@@ -267,7 +120,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// <returns>DeviceClient</returns>
         public static DeviceClient CreateFromConnectionString(string connectionString, string deviceId)
         {
-            return CreateFromConnectionString(connectionString, deviceId, TransportType.Amqp);
+            return Create(() => ClientFactory.CreateFromConnectionString(connectionString, deviceId));
         }
 
         /// <summary>
@@ -278,12 +131,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// <returns>DeviceClient</returns>
         public static DeviceClient CreateFromConnectionString(string connectionString, TransportType transportType)
         {
-            if (string.IsNullOrEmpty(connectionString))
-            {
-                throw new ArgumentNullException(nameof(connectionString));
-            }
-
-            return CreateFromConnectionString(connectionString, null, transportType, null);
+            return Create(() => ClientFactory.CreateFromConnectionString(connectionString, transportType));
         }
 
         /// <summary>
@@ -295,22 +143,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// <returns>DeviceClient</returns>
         public static DeviceClient CreateFromConnectionString(string connectionString, string deviceId, TransportType transportType)
         {
-            if (connectionString == null)
-            {
-                throw new ArgumentNullException(nameof(connectionString));
-            }
-
-            if (deviceId == null)
-            {
-                throw new ArgumentNullException(nameof(deviceId));
-            }
-
-            if (DeviceIdParameterRegex.IsMatch(connectionString))
-            {
-                throw new ArgumentException("Connection string must not contain DeviceId keyvalue parameter", nameof(connectionString));
-            }
-
-            return CreateFromConnectionString(connectionString + ";" + DeviceId + "=" + deviceId, transportType);
+            return Create(() => ClientFactory.CreateFromConnectionString(connectionString, deviceId, transportType));
         }
 
         /// <summary>
@@ -322,7 +155,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         public static DeviceClient CreateFromConnectionString(string connectionString,
             ITransportSettings[] transportSettings)
         {
-            return CreateFromConnectionString(connectionString, null, transportSettings, null);
+            return Create(() => ClientFactory.CreateFromConnectionString(connectionString, transportSettings));
         }
 
 
@@ -336,92 +169,140 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         public static DeviceClient CreateFromConnectionString(string connectionString, string deviceId,
             ITransportSettings[] transportSettings)
         {
-            if (connectionString == null)
-            {
-                throw new ArgumentNullException(nameof(connectionString));
-            }
-
-            if (deviceId == null)
-            {
-                throw new ArgumentNullException(nameof(deviceId));
-            }
-
-            if (DeviceIdParameterRegex.IsMatch(connectionString))
-            {
-                throw new ArgumentException("Connection string must not contain DeviceId keyvalue parameter", nameof(connectionString));
-            }
-
-            return CreateFromConnectionString(connectionString + ";" + DeviceId + "=" + deviceId, transportSettings);
+            return Create(() => ClientFactory.CreateFromConnectionString(connectionString, deviceId, transportSettings));
         }
 
-        internal static DeviceClient CreateFromConnectionString(
-            string connectionString,
-            IAuthenticationMethod authenticationMethod,
-            TransportType transportType,
-            IDeviceClientPipelineBuilder pipelineBuilder)
+        private static DeviceClient Create(Func<InternalClient> internalClientCreator)
         {
-            ITransportSettings[] transportSettings = GetTransportSettings(transportType);
-            return CreateFromConnectionString(
-                connectionString,
-                authenticationMethod,
-                transportSettings,
-                pipelineBuilder);
+            return new DeviceClient(internalClientCreator());
         }
 
-        internal static DeviceClient CreateFromConnectionString(
-            string connectionString,
-            IAuthenticationMethod authenticationMethod,
-            ITransportSettings[] transportSettings,
-            IDeviceClientPipelineBuilder pipelineBuilder)
+        internal IDelegatingHandler InnerHandler
         {
-            if (connectionString == null)
-            {
-                throw new ArgumentNullException(nameof(connectionString));
-            }
-
-            if (transportSettings == null)
-            {
-                throw new ArgumentNullException(nameof(transportSettings));
-            }
-
-            if (transportSettings.Length == 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(connectionString), "Must specify at least one TransportSettings instance");
-            }
-
-            var builder = IotHubConnectionStringBuilder.CreateWithIAuthenticationOverride(
-                connectionString,
-                authenticationMethod);
-
-            IotHubConnectionString iotHubConnectionString = builder.ToIotHubConnectionString();
-
-            ValidateTransportSettings(transportSettings);
-
-            pipelineBuilder = pipelineBuilder ?? BuildPipeline();
-
-            // Defer concrete DeviceClient creation to OpenAsync
-            return new DeviceClient(iotHubConnectionString, transportSettings, pipelineBuilder);
+            get => this.internalClient.InnerHandler;
+            set => this.internalClient.InnerHandler = value;
         }
+
+        internal InternalClient InternalClient => this.internalClient;
+
+        public int DiagnosticSamplingPercentage
+        {
+            get => this.internalClient.DiagnosticSamplingPercentage;
+            set => this.internalClient.DiagnosticSamplingPercentage = value;
+        }
+
+        /// <summary>
+        /// Stores the timeout used in the operation retries.
+        /// </summary>
+        // Codes_SRS_DEVICECLIENT_28_002: [This property shall be defaulted to 240000 (4 minutes).]
+        public uint OperationTimeoutInMilliseconds
+        {
+            get => this.internalClient.OperationTimeoutInMilliseconds;
+            set => this.internalClient.OperationTimeoutInMilliseconds = value;
+        }
+
+        /// <summary>
+        /// Stores custom product information that will be appended to the user agent string that is sent to IoT Hub.
+        /// </summary>
+        public string ProductInfo
+        {
+            get => this.internalClient.ProductInfo;
+            set => this.internalClient.ProductInfo = value;
+        }
+
+        /// <summary>
+        /// Stores the retry strategy used in the operation retries.
+        /// </summary>
+        // Codes_SRS_DEVICECLIENT_28_001: [This property shall be defaulted to the exponential retry strategy with backoff 
+        // parameters for calculating delay in between retries.]
+        [Obsolete("This method has been deprecated.  Please use Microsoft.Azure.Devices.Client.SetRetryPolicy(IRetryPolicy retryPolicy) instead.")]
+        public RetryPolicyType RetryPolicy
+        {
+            get => this.internalClient.RetryPolicy;
+            set => this.internalClient.RetryPolicy = value;
+        }
+
+        /// <summary>
+        /// Sets the retry policy used in the operation retries.
+        /// </summary>
+        /// <param name="retryPolicy">The retry policy. The default is new ExponentialBackoff(int.MaxValue, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100));</param>
+        // Codes_SRS_DEVICECLIENT_28_001: [This property shall be defaulted to the exponential retry strategy with backoff 
+        // parameters for calculating delay in between retries.]
+        public void SetRetryPolicy(IRetryPolicy retryPolicy)
+        {
+            this.internalClient.SetRetryPolicy(retryPolicy);
+        }
+
+        /// <summary>
+        /// Explicitly open the DeviceClient instance.
+        /// </summary>
+        public Task OpenAsync() => this.internalClient.OpenAsync();
+
+        /// <summary>
+        /// Close the DeviceClient instance
+        /// </summary>
+        /// <returns></returns>
+        public Task CloseAsync() => this.internalClient.CloseAsync();
 
         /// <summary>
         /// Receive a message from the device queue using the default timeout.
         /// </summary>
         /// <returns>The receive message or null if there was no message until the default timeout</returns>
-        public Task<Message> ReceiveAsync()
-        {
-            // Codes_SRS_DEVICECLIENT_28_011: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable(authentication, quota exceed) error occurs.]
-            return ApplyTimeoutMessage(operationTimeoutCancellationToken => this.InnerHandler.ReceiveAsync(operationTimeoutCancellationToken));
-        }
+        public Task<Message> ReceiveAsync() => this.internalClient.ReceiveAsync();
 
         /// <summary>
         /// Receive a message from the device queue with the specified timeout
         /// </summary>
         /// <returns>The receive message or null if there was no message until the specified time has elapsed</returns>
-        public Task<Message> ReceiveAsync(TimeSpan timeout)
-        {
-            // Codes_SRS_DEVICECLIENT_28_011: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable(authentication, quota exceed) error occurs.]
-            return ApplyTimeoutMessage(operationTimeoutCancellationToken => this.InnerHandler.ReceiveAsync(timeout, operationTimeoutCancellationToken));
-        }
+        public Task<Message> ReceiveAsync(TimeSpan timeout) => this.internalClient.ReceiveAsync(timeout);
+
+        /// <summary>
+        /// Deletes a received message from the device queue
+        /// </summary>
+        /// <returns>The lock identifier for the previously received message</returns>
+        public Task CompleteAsync(string lockToken) => this.internalClient.CompleteAsync(lockToken);
+
+        /// <summary>
+        /// Deletes a received message from the device queue
+        /// </summary>
+        /// <returns>The previously received message</returns>
+        public Task CompleteAsync(Message message) => this.internalClient.CompleteAsync(message);
+
+        /// <summary>
+        /// Puts a received message back onto the device queue
+        /// </summary>
+        /// <returns>The previously received message</returns>
+        public Task AbandonAsync(string lockToken) => this.internalClient.AbandonAsync(lockToken);
+
+        /// <summary>
+        /// Puts a received message back onto the device queue
+        /// </summary>
+        /// <returns>The lock identifier for the previously received message</returns>
+        public Task AbandonAsync(Message message) => this.internalClient.AbandonAsync(message);
+
+        /// <summary>
+        /// Deletes a received message from the device queue and indicates to the server that the message could not be processed.
+        /// </summary>
+        /// <returns>The previously received message</returns>
+        public Task RejectAsync(string lockToken) => this.internalClient.RejectAsync(lockToken);
+
+        /// <summary>
+        /// Deletes a received message from the device queue and indicates to the server that the message could not be processed.
+        /// </summary>
+        /// <returns>The lock identifier for the previously received message</returns>
+        public Task RejectAsync(Message message) => this.internalClient.RejectAsync(message);
+
+        /// <summary>
+        /// Sends an event to device hub
+        /// </summary>
+        /// <returns>The message containing the event</returns>
+        public Task SendEventAsync(Message message) => this.internalClient.SendEventAsync(message);
+
+        /// <summary>
+        /// Sends a batch of events to device hub
+        /// </summary>
+        /// <returns>The task containing the event</returns>
+        public Task SendEventBatchAsync(IEnumerable<Message> messages) => this.internalClient.SendEventBatchAsync(messages);
 
         /// <summary>
         /// Uploads a stream to a block blob in a storage account associated with the IoTHub for that device.
@@ -430,41 +311,82 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// <param name="blobName"></param>
         /// <param name="source"></param>
         /// <returns>AsncTask</returns>
-        public Task UploadToBlobAsync(String blobName, System.IO.Stream source)
-        {
-            if (String.IsNullOrEmpty(blobName))
-            {
-                throw Fx.Exception.ArgumentNull("blobName");
-            }
-            if (source == null)
-            {
-                throw Fx.Exception.ArgumentNull("source");
-            }
-            if (blobName.Length > 1024)
-            {
-                throw Fx.Exception.Argument("blobName", "Length cannot exceed 1024 characters");
-            }
-            if (blobName.Split('/').Count() > 254)
-            {
-                throw Fx.Exception.Argument("blobName", "Path segment count cannot exceed 254");
-            }
+        public Task UploadToBlobAsync(String blobName, System.IO.Stream source) =>
+            this.internalClient.UploadToBlobAsync(blobName, source);
 
-            HttpTransportHandler httpTransport = null;
-            var context = new PipelineContext();
-            context.Set(this.productInfo);
+        /// <summary>
+        /// Registers a new delegate for the named method. If a delegate is already associated with
+        /// the named method, it will be replaced with the new delegate.
+        /// <param name="methodName">The name of the method to associate with the delegate.</param>
+        /// <param name="methodHandler">The delegate to be used when a method with the given name is called by the cloud service.</param>
+        /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
+        /// </summary>
+        public async Task SetMethodHandlerAsync(string methodName, MethodCallback methodHandler, object userContext) =>
+            this.internalClient.SetMethodHandlerAsync(methodName, methodHandler, userContext);
 
-            //We need to add the certificate to the fileUpload httpTransport if DeviceAuthenticationWithX509Certificate
-            if (this.Certificate != null)
-            {
-                Http1TransportSettings transportSettings = new Http1TransportSettings();
-                transportSettings.ClientCertificate = this.Certificate;
-                httpTransport = new HttpTransportHandler(context, IotHubConnectionString, transportSettings);
-            }
-            else
-            {
-                httpTransport = new HttpTransportHandler(context, IotHubConnectionString, new Http1TransportSettings());
-            }
-            return httpTransport.UploadToBlobAsync(blobName, source);
-        }
+        /// <summary>
+        /// Registers a new delegate that is called for a method that doesn't have a delegate registered for its name. 
+        /// If a default delegate is already registered it will replace with the new delegate.
+        /// </summary>
+        /// <param name="methodHandler">The delegate to be used when a method is called by the cloud service and there is no delegate registered for that method name.</param>
+        /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
+        public async Task SetMethodDefaultHandlerAsync(MethodCallback methodHandler, object userContext) =>
+            this.internalClient.SetMethodDefaultHandlerAsync(methodHandler, userContext);
+
+        /// <summary>
+        /// Registers a new delegate for the named method. If a delegate is already associated with
+        /// the named method, it will be replaced with the new delegate.
+        /// <param name="methodName">The name of the method to associate with the delegate.</param>
+        /// <param name="methodHandler">The delegate to be used when a method with the given name is called by the cloud service.</param>
+        /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
+        /// </summary>
+
+        [Obsolete("Please use SetMethodHandlerAsync.")]
+        public void SetMethodHandler(string methodName, MethodCallback methodHandler, object userContext) =>
+            this.internalClient.SetMethodHandler(methodName, methodHandler, userContext);
+
+        /// <summary>
+        /// Registers a new delegate for the connection status changed callback. If a delegate is already associated, 
+        /// it will be replaced with the new delegate.
+        /// <param name="statusChangesHandler">The name of the method to associate with the delegate.</param>
+        /// </summary>
+        public void SetConnectionStatusChangesHandler(ConnectionStatusChangesHandler statusChangesHandler) =>
+            this.internalClient.SetConnectionStatusChangesHandler(statusChangesHandler);
+
+        public void Dispose() => this.internalClient?.Dispose();
+
+        /// <summary>
+        /// Set a callback that will be called whenever the client receives a state update 
+        /// (desired or reported) from the service.  This has the side-effect of subscribing
+        /// to the PATCH topic on the service.
+        /// </summary>
+        /// <param name="callback">Callback to call after the state update has been received and applied</param>
+        /// <param name="userContext">Context object that will be passed into callback</param>
+        [Obsolete("Please use SetDesiredPropertyUpdateCallbackAsync.")]
+        public Task SetDesiredPropertyUpdateCallback(DesiredPropertyUpdateCallback callback, object userContext) =>
+            this.internalClient.SetDesiredPropertyUpdateCallback(callback, userContext);
+
+        /// <summary>
+        /// Set a callback that will be called whenever the client receives a state update 
+        /// (desired or reported) from the service.  This has the side-effect of subscribing
+        /// to the PATCH topic on the service.
+        /// </summary>
+        /// <param name="callback">Callback to call after the state update has been received and applied</param>
+        /// <param name="userContext">Context object that will be passed into callback</param>
+        public Task SetDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallback callback, object userContext) =>
+            this.internalClient.SetDesiredPropertyUpdateCallbackAsync(callback, userContext);
+
+        /// <summary>
+        /// Retrieve a device twin object for the current device.
+        /// </summary>
+        /// <returns>The device twin object for the current device</returns>
+        public Task<Twin> GetTwinAsync() => this.internalClient.GetTwinAsync();
+
+        /// <summary>
+        /// Push reported property changes up to the service.
+        /// </summary>
+        /// <param name="reportedProperties">Reported properties to push</param>
+        public Task UpdateReportedPropertiesAsync(TwinCollection reportedProperties) =>
+            this.internalClient.UpdateReportedPropertiesAsync(reportedProperties);
     }
 }

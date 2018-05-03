@@ -156,7 +156,7 @@
                 return Task.FromResult(MessageResponse.Completed);
             }, "custom data");
 
-            await moduleClient.OnReceiveEventMessageCalled(null, null);
+            await moduleClient.InternalClient.OnReceiveEventMessageCalled(null, null);
             Assert.IsFalse(isMessageHandlerCalled);
         }
 
@@ -187,7 +187,7 @@
             Message testMessage = new Message();
             testMessage.LockToken = "AnyLockToken";
 
-            await moduleClient.OnReceiveEventMessageCalled("endpoint1", testMessage);
+            await moduleClient.InternalClient.OnReceiveEventMessageCalled("endpoint1", testMessage);
             Assert.IsTrue(isDefaultCallbackCalled);
             Assert.IsFalse(isSpecificCallbackCalled);
         }
@@ -218,7 +218,7 @@
             Message testMessage = new Message();
             testMessage.LockToken = "AnyLockToken";
 
-            await moduleClient.OnReceiveEventMessageCalled("endpoint2", testMessage);
+            await moduleClient.InternalClient.OnReceiveEventMessageCalled("endpoint2", testMessage);
             Assert.IsFalse(isDefaultCallbackCalled);
             Assert.IsTrue(isSpecificCallbackCalled);
         }

@@ -17,11 +17,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             var connectionString = context.Get<IotHubConnectionString>();
             var transportSetting = context.Get<ITransportSettings[]>();
-            var onMethodCallback = context.Get<DeviceClient.OnMethodCalledDelegate>();
+            var onMethodCallback = context.Get<InternalClient.OnMethodCalledDelegate>();
             var onDesiredStatePatchReceived = context.Get<Action<TwinCollection>>();
-            var OnConnectionClosedCallback = context.Get<DeviceClient.OnConnectionClosedDelegate>();
-            var OnConnectionOpenedCallback = context.Get<DeviceClient.OnConnectionOpenedDelegate>();
-            var onReceiveCallback = context.Get<DeviceClient.OnReceiveEventMessageCalledDelegate>();
+            var OnConnectionClosedCallback = context.Get<InternalClient.OnConnectionClosedDelegate>();
+            var OnConnectionOpenedCallback = context.Get<InternalClient.OnConnectionOpenedDelegate>();
+            var onReceiveCallback = context.Get<InternalClient.OnReceiveEventMessageCalledDelegate>();
 
             switch (transportSetting[0].GetTransportType())
             {

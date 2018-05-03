@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace Microsoft.Azure.Devices.Client
@@ -7,6 +7,7 @@ namespace Microsoft.Azure.Devices.Client
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Linq;
 #if NETSTANDARD1_3
     using System.Net.Http;
 #endif
@@ -16,6 +17,7 @@ namespace Microsoft.Azure.Devices.Client
     using Microsoft.Azure.Devices.Client.Extensions;
     using Microsoft.Azure.Devices.Client.Transport;
     using Microsoft.Azure.Devices.Shared;
+    using Newtonsoft.Json.Linq;
     using Microsoft.Azure.Devices.Client.Transport.Mqtt;
     using System.Security.Cryptography.X509Certificates;
 
@@ -34,6 +36,24 @@ namespace Microsoft.Azure.Devices.Client
     /// <param name="userContext">Context object passed in when the callback was registered.</param>
     /// <returns>MethodResponse</returns>
     public delegate Task<MethodResponse> MethodCallback(MethodRequest methodRequest, object userContext);
+
+    /// <summary>
+    ///    Status of handling a message. 
+    ///    None - Means Device SDK won't send an ackowledge of receipt.
+    ///    Completed - Means Device SDK will Complete the event. Removing from the queue.
+    ///    Abandoned - Event will be Abandoned. 
+    /// </summary>
+    public enum MessageResponse { None, Completed, Abandoned };
+
+
+
+    /// <summary>
+    /// Delegate that gets called when a message is received on a particular input.
+    /// </summary>
+    /// <param name="message">The message received</param>
+    /// <param name="userContext">The context object passed in</param>
+    /// <returns>MessageResponse</returns>
+    public delegate Task<MessageResponse> MessageHandler(Message message, object userContext);
 
     /// <summary>
     /// Delegate for connection status changed.
@@ -104,109 +124,17 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
     /// <summary>
     /// Contains methods that a device can use to send messages to and receive from the service.
     /// </summary>
-    public class BaseClient : IDisposable
+    internal class InternalClient : IDisposable
     {
-        internal const string DeviceId = "DeviceId";
-        internal const string DeviceIdParameterPattern = @"(^\s*?|.*;\s*?)" + DeviceId + @"\s*?=.*";
-
-        internal IotHubConnectionString IotHubConnectionString { get; }
-
-        /// <summary> 
-        /// Diagnostic sampling percentage value, [0-100];  
-        /// 0 means no message will carry on diag info 
-        /// </summary>
+        IotHubConnectionString iotHubConnectionString = null;
         int _diagnosticSamplingPercentage = 0;
-        public int DiagnosticSamplingPercentage
-        {
-            get { return _diagnosticSamplingPercentage; }
-            set
-            {
-                if (value > 100 || value < 0)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(DiagnosticSamplingPercentage), DiagnosticSamplingPercentage,
-                        "The range of diagnostic sampling percentage should between [0,100].");
-                }
-
-                if (IsE2EDiagnosticSupportedProtocol())
-                {
-                    _diagnosticSamplingPercentage = value;
-                }
-            }
-        }
-
         ITransportSettings[] transportSettings;
-
-        internal X509Certificate2 Certificate { get; set; }
-        const RegexOptions RegexOptions = System.Text.RegularExpressions.RegexOptions.Compiled | System.Text.RegularExpressions.RegexOptions.IgnoreCase;
-        internal static readonly Regex DeviceIdParameterRegex = new Regex(DeviceIdParameterPattern, RegexOptions);
-
-        internal IDelegatingHandler InnerHandler { get; set; }
-
         SemaphoreSlim methodsDictionarySemaphore = new SemaphoreSlim(1, 1);
-
-        public const string ModuleTwinsPropertyName = "moduleTwins";
-        public const string MetadataName = "$metadata";
-
+        readonly SemaphoreSlim receiveSemaphore = new SemaphoreSlim(1, 1);
+        volatile Dictionary<string, Tuple<MessageHandler, object>> receiveEventEndpoints;
+        volatile Tuple<MessageHandler, object> defaultEventCallback;
         DeviceClientConnectionStatusManager connectionStatusManager = new DeviceClientConnectionStatusManager();
-
-        public const uint DefaultOperationTimeoutInMilliseconds = 4 * 60 * 1000;
-
-        /// <summary>
-        /// Stores the timeout used in the operation retries.
-        /// </summary>
-        // Codes_SRS_DEVICECLIENT_28_002: [This property shall be defaulted to 240000 (4 minutes).]
-        public uint OperationTimeoutInMilliseconds { get; set; } = DefaultOperationTimeoutInMilliseconds;
-
-        /// <summary>
-        /// Stores the retry strategy used in the operation retries.
-        /// </summary>
-        // Codes_SRS_DEVICECLIENT_28_001: [This property shall be defaulted to the exponential retry strategy with backoff 
-        // parameters for calculating delay in between retries.]
-        [Obsolete("This method has been deprecated.  Please use Microsoft.Azure.Devices.Client.SetRetryPolicy(IRetryPolicy retryPolicy) instead.")]
-        public RetryPolicyType RetryPolicy { get; set; }
-
-        /// <summary>
-        /// Sets the retry policy used in the operation retries.
-        /// </summary>
-        /// <param name="retryPolicy">The retry policy. The default is new ExponentialBackoff(int.MaxValue, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100));</param>
-        // Codes_SRS_DEVICECLIENT_28_001: [This property shall be defaulted to the exponential retry strategy with backoff 
-        // parameters for calculating delay in between retries.]
-        public void SetRetryPolicy(IRetryPolicy retryPolicy)
-        {
-            var retryDelegatingHandler = GetDelegateHandler<RetryDelegatingHandler>();
-            if (retryDelegatingHandler == null)
-            {
-                throw new NotSupportedException();
-            }
-
-            retryDelegatingHandler.SetRetryPolicy(retryPolicy);
-        }
-
-
-        private T GetDelegateHandler<T>() where T : DefaultDelegatingHandler
-        {
-            var handler = this.InnerHandler as DefaultDelegatingHandler;
-            bool isFound = false;
-
-            while (!isFound || handler == null)
-            {
-                if (handler is T)
-                {
-                    isFound = true;
-                }
-                else
-                {
-                    handler = handler.InnerHandler as DefaultDelegatingHandler;
-                }
-            }
-
-            if (!isFound)
-            {
-                return default(T);
-            }
-
-            return (T)handler;
-        }
+        private ProductInfo productInfo = new ProductInfo();
 
         /// <summary>
         /// Stores Methods supported by the client device and their associated delegate.
@@ -242,95 +170,57 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
 
         private int _currentMessageCount = 0;
 
-        internal BaseClient(IotHubConnectionString iotHubConnectionString, ITransportSettings[] transportSettings)
+        public InternalClient(IotHubConnectionString iotHubConnectionString, ITransportSettings[] transportSettings, IDeviceClientPipelineBuilder pipelineBuilder)
         {
-            this.IotHubConnectionString = iotHubConnectionString;
+            this.iotHubConnectionString = iotHubConnectionString;
+
+            var pipelineContext = new PipelineContext();
+            pipelineContext.Set(transportSettings);
+            pipelineContext.Set(iotHubConnectionString);
+            pipelineContext.Set<OnMethodCalledDelegate>(OnMethodCalled);
+            pipelineContext.Set<Action<TwinCollection>>(OnReportedStatePatchReceived);
+            pipelineContext.Set<OnConnectionClosedDelegate>(OnConnectionClosed);
+            pipelineContext.Set<OnConnectionOpenedDelegate>(OnConnectionOpened);
+            pipelineContext.Set<OnReceiveEventMessageCalledDelegate>(OnReceiveEventMessageCalled);
+            pipelineContext.Set(this.productInfo);
+
+            IDelegatingHandler innerHandler = pipelineBuilder.Build(pipelineContext);
+
+            this.InnerHandler = innerHandler;
             this.transportSettings = transportSettings;
         }
 
-        internal static void ValidateTransportSettings(ITransportSettings[] transportSettings)
+        /// <summary> 
+        /// Diagnostic sampling percentage value, [0-100];  
+        /// 0 means no message will carry on diag info 
+        /// </summary>
+        public int DiagnosticSamplingPercentage
         {
-            foreach (ITransportSettings transportSetting in transportSettings)
+            get { return _diagnosticSamplingPercentage; }
+            set
             {
-                switch (transportSetting.GetTransportType())
+                if (value > 100 || value < 0)
                 {
-                    case TransportType.Amqp_WebSocket_Only:
-                    case TransportType.Amqp_Tcp_Only:
-                        if (!(transportSetting is AmqpTransportSettings))
-                        {
-                            throw new InvalidOperationException("Unknown implementation of ITransportSettings type");
-                        }
-                        break;
-                    case TransportType.Http1:
-                        if (!(transportSetting is Http1TransportSettings))
-                        {
-                            throw new InvalidOperationException("Unknown implementation of ITransportSettings type");
-                        }
-                        break;
-                    case TransportType.Mqtt_WebSocket_Only:
-                    case TransportType.Mqtt_Tcp_Only:
-                        if (!(transportSetting is MqttTransportSettings))
-                        {
-                            throw new InvalidOperationException("Unknown implementation of ITransportSettings type");
-                        }
-                        break;
-                    default:
-                        throw new InvalidOperationException("Unsupported Transport Type {0}".FormatInvariant(transportSetting.GetTransportType()));
+                    throw new ArgumentOutOfRangeException(nameof(DiagnosticSamplingPercentage), DiagnosticSamplingPercentage,
+                        "The range of diagnostic sampling percentage should between [0,100].");
+                }
+
+                if (IsE2EDiagnosticSupportedProtocol())
+                {
+                    _diagnosticSamplingPercentage = value;
                 }
             }
         }
 
-        internal static ITransportSettings[] GetTransportSettings(TransportType transportType)
-        {
-            switch (transportType)
-            {
-                case TransportType.Amqp:
-                    return new ITransportSettings[]
-                    {
-                        new AmqpTransportSettings(TransportType.Amqp_Tcp_Only),
-                        new AmqpTransportSettings(TransportType.Amqp_WebSocket_Only)
-                    };
+        /// <summary>
+        /// Stores the timeout used in the operation retries.
+        /// </summary>
+        // Codes_SRS_DEVICECLIENT_28_002: [This property shall be defaulted to 240000 (4 minutes).]
+        public uint OperationTimeoutInMilliseconds { get; set; } = DeviceClient.DefaultOperationTimeoutInMilliseconds;
 
-                case TransportType.Mqtt:
-                    return new ITransportSettings[]
-                    {
-                        new MqttTransportSettings(TransportType.Mqtt_Tcp_Only),
-                        new MqttTransportSettings(TransportType.Mqtt_WebSocket_Only)
-                    };
+        internal X509Certificate2 Certificate { get; set; }
 
-                case TransportType.Amqp_WebSocket_Only:
-                case TransportType.Amqp_Tcp_Only:
-                    return new ITransportSettings[]
-                    {
-                        new AmqpTransportSettings(transportType)
-                    };
-
-                case TransportType.Mqtt_WebSocket_Only:
-                case TransportType.Mqtt_Tcp_Only:
-                    return new ITransportSettings[]
-                    {
-                        new MqttTransportSettings(transportType)
-                    };
-
-                case TransportType.Http1:
-                    return new ITransportSettings[] { new Http1TransportSettings() };
-
-                default:
-                    throw new InvalidOperationException("Unsupported Transport Type {0}".FormatInvariant(transportType));
-            }
-        }
-
-        internal static IDeviceClientPipelineBuilder BuildPipeline()
-        {
-            var transporthandlerFactory = new TransportHandlerFactory();
-            IDeviceClientPipelineBuilder pipelineBuilder = new DeviceClientPipelineBuilder()
-                .With(ctx => new GateKeeperDelegatingHandler(ctx))
-                .With(ctx => new RetryDelegatingHandler(ctx))
-                .With(ctx => new ErrorDelegatingHandler(ctx))
-                .With(ctx => new ProtocolRoutingDelegatingHandler(ctx))
-                .With(ctx => transporthandlerFactory.Create(ctx));
-            return pipelineBuilder;
-        }
+        internal IDelegatingHandler InnerHandler { get; set; }
 
         internal Task SendMethodResponseAsync(MethodResponseInternal methodResponse)
         {
@@ -340,13 +230,75 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             });
         }
 
+        /// <summary>
+        /// Stores custom product information that will be appended to the user agent string that is sent to IoT Hub.
+        /// </summary>
+        public string ProductInfo
+        {
+            // We store InternalClient.ProductInfo as a string property of an object (rather than directly as a string)
+            // so that updates will propagate down to the transport layer throughout the lifetime of the InternalClient
+            // object instance.
+            get => productInfo.Extra;
+            set => productInfo.Extra = value;
+        }
+
+        /// <summary>
+        /// Stores the retry strategy used in the operation retries.
+        /// </summary>
+        // Codes_SRS_DEVICECLIENT_28_001: [This property shall be defaulted to the exponential retry strategy with backoff 
+        // parameters for calculating delay in between retries.]
+        [Obsolete("This method has been deprecated.  Please use Microsoft.Azure.Devices.Client.SetRetryPolicy(IRetryPolicy retryPolicy) instead.")]
+        public RetryPolicyType RetryPolicy { get; set; }
+
+        /// <summary>
+        /// Sets the retry policy used in the operation retries.
+        /// </summary>
+        /// <param name="retryPolicy">The retry policy. The default is new ExponentialBackoff(int.MaxValue, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100));</param>
+        // Codes_SRS_DEVICECLIENT_28_001: [This property shall be defaulted to the exponential retry strategy with backoff 
+        // parameters for calculating delay in between retries.]
+        public void SetRetryPolicy(IRetryPolicy retryPolicy)
+        {
+            var retryDelegatingHandler = GetDelegateHandler<RetryDelegatingHandler>();
+            if (retryDelegatingHandler == null)
+            {
+                throw new NotSupportedException();
+            }
+
+            retryDelegatingHandler.SetRetryPolicy(retryPolicy);
+        }
+
+        private T GetDelegateHandler<T>() where T : DefaultDelegatingHandler
+        {
+            var handler = this.InnerHandler as DefaultDelegatingHandler;
+            bool isFound = false;
+
+            while (!isFound || handler == null)
+            {
+                if (handler is T)
+                {
+                    isFound = true;
+                }
+                else
+                {
+                    handler = handler.InnerHandler as DefaultDelegatingHandler;
+                }
+            }
+
+            if (!isFound)
+            {
+                return default(T);
+            }
+
+            return (T)handler;
+        }
+
         CancellationTokenSource GetOperationTimeoutCancellationTokenSource()
         {
             return new CancellationTokenSource(TimeSpan.FromMilliseconds(OperationTimeoutInMilliseconds));
         }
 
         /// <summary>
-        /// Explicitly open the DeviceClient instance.
+        /// Explicitly open the InternalClient instance.
         /// </summary>
 
         public Task OpenAsync()
@@ -356,7 +308,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         }
 
         /// <summary>
-        /// Close the DeviceClient instance
+        /// Close the InternalClient instance
         /// </summary>
         /// <returns></returns>
         public Task CloseAsync()
@@ -365,141 +317,23 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         }
 
         /// <summary>
-        /// Sends an event to device hub
+        /// Receive a message from the device queue using the default timeout.
         /// </summary>
-        /// <returns>The message containing the event</returns>
-        public Task SendEventAsync(Message message)
+        /// <returns>The receive message or null if there was no message until the default timeout</returns>
+        public Task<Message> ReceiveAsync()
         {
-            if (message == null)
-            {
-                throw Fx.Exception.ArgumentNull("message");
-            }
-
-            IoTHubClientDiagnostic.AddDiagnosticInfoIfNecessary(message, _diagnosticSamplingPercentage, ref _currentMessageCount);
-            // Codes_SRS_DEVICECLIENT_28_019: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication or quota exceed) occurs.]
-            return ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.SendEventAsync(message, operationTimeoutCancellationToken));
+            // Codes_SRS_DEVICECLIENT_28_011: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable(authentication, quota exceed) error occurs.]
+            return ApplyTimeoutMessage(operationTimeoutCancellationToken => this.InnerHandler.ReceiveAsync(operationTimeoutCancellationToken));
         }
 
         /// <summary>
-        /// Sends a batch of events to device hub
+        /// Receive a message from the device queue with the specified timeout
         /// </summary>
-        /// <returns>The task containing the event</returns>
-        public Task SendEventBatchAsync(IEnumerable<Message> messages)
+        /// <returns>The receive message or null if there was no message until the specified time has elapsed</returns>
+        public Task<Message> ReceiveAsync(TimeSpan timeout)
         {
-            if (messages == null)
-            {
-                throw Fx.Exception.ArgumentNull("messages");
-            }
-
-            // Codes_SRS_DEVICECLIENT_28_019: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication or quota exceed) occurs.]
-            return ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.SendEventAsync(messages, operationTimeoutCancellationToken));
-        }
-
-        protected Task ApplyTimeout(Func<CancellationTokenSource, Task> operation)
-        {
-            if (OperationTimeoutInMilliseconds == 0)
-            {
-                var cancellationTokenSource = new CancellationTokenSource();
-                return operation(cancellationTokenSource)
-                    .WithTimeout(TimeSpan.MaxValue, () => Resources.OperationTimeoutExpired, cancellationTokenSource.Token);
-            }
-
-            CancellationTokenSource operationTimeoutCancellationTokenSource = GetOperationTimeoutCancellationTokenSource();
-
-            var result = operation(operationTimeoutCancellationTokenSource)
-                .WithTimeout(TimeSpan.FromMilliseconds(OperationTimeoutInMilliseconds), () => Resources.OperationTimeoutExpired, operationTimeoutCancellationTokenSource.Token);
-
-            return result.ContinueWith(t =>
-            {
-
-                // operationTimeoutCancellationTokenSource will be disposed by GC. 
-                // Cannot dispose here since we don't know if both tasks created by WithTimeout ran to completion.
-                if (t.IsCanceled)
-                {
-                    throw new TimeoutException(Resources.OperationTimeoutExpired);
-                }
-
-                if (t.IsFaulted)
-                {
-                    throw t.Exception.InnerException;
-                }
-            });
-        }
-
-        internal Task ApplyTimeout(Func<CancellationToken, Task> operation)
-        {
-            if (OperationTimeoutInMilliseconds == 0)
-            {
-                return operation(CancellationToken.None)
-                    .WithTimeout(TimeSpan.MaxValue, () => Resources.OperationTimeoutExpired, CancellationToken.None);
-            }
-
-            CancellationTokenSource operationTimeoutCancellationTokenSource = GetOperationTimeoutCancellationTokenSource();
-
-            Debug.WriteLine(operationTimeoutCancellationTokenSource.Token.GetHashCode() + " DeviceClient.ApplyTimeout()");
-
-            var result = operation(operationTimeoutCancellationTokenSource.Token)
-                .WithTimeout(TimeSpan.FromMilliseconds(OperationTimeoutInMilliseconds), () => Resources.OperationTimeoutExpired, operationTimeoutCancellationTokenSource.Token);
-
-            return result.ContinueWith(t =>
-            {
-                // operationTimeoutCancellationTokenSource will be disposed by GC. 
-                // Cannot dispose here since we don't know if both tasks created by WithTimeout ran to completion.
-                if (t.IsFaulted)
-                {
-                    throw t.Exception.InnerException;
-                }
-            }, TaskContinuationOptions.NotOnCanceled);
-        }
-
-        internal Task<Message> ApplyTimeoutMessage(Func<CancellationToken, Task<Message>> operation)
-        {
-            if (OperationTimeoutInMilliseconds == 0)
-            {
-                return operation(CancellationToken.None)
-                    .WithTimeout(TimeSpan.MaxValue, () => Resources.OperationTimeoutExpired, CancellationToken.None);
-            }
-
-            CancellationTokenSource operationTimeoutCancellationTokenSource = GetOperationTimeoutCancellationTokenSource();
-
-            var result = operation(operationTimeoutCancellationTokenSource.Token)
-                .WithTimeout(TimeSpan.FromMilliseconds(OperationTimeoutInMilliseconds), () => Resources.OperationTimeoutExpired, operationTimeoutCancellationTokenSource.Token);
-
-            return result.ContinueWith(t =>
-            {
-                // operationTimeoutCancellationTokenSource will be disposed by GC. 
-                // Cannot dispose here since we don't know if both tasks created by WithTimeout ran to completion.
-                if (t.IsFaulted)
-                {
-                    throw t.Exception.InnerException;
-                }
-                return t.Result;
-            });
-        }
-
-        Task<Twin> ApplyTimeoutTwin(Func<CancellationToken, Task<Twin>> operation)
-        {
-            if (OperationTimeoutInMilliseconds == 0)
-            {
-                return operation(CancellationToken.None)
-                    .WithTimeout(TimeSpan.MaxValue, () => Resources.OperationTimeoutExpired, CancellationToken.None);
-            }
-
-            CancellationTokenSource operationTimeoutCancellationTokenSource = GetOperationTimeoutCancellationTokenSource();
-
-            var result = operation(operationTimeoutCancellationTokenSource.Token)
-                .WithTimeout(TimeSpan.FromMilliseconds(OperationTimeoutInMilliseconds), () => Resources.OperationTimeoutExpired, operationTimeoutCancellationTokenSource.Token);
-
-            return result.ContinueWith(t =>
-            {
-                // operationTimeoutCancellationTokenSource will be disposed by GC. 
-                // Cannot dispose here since we don't know if both tasks created by WithTimeout ran to completion.
-                if (t.IsFaulted)
-                {
-                    throw t.Exception.InnerException;
-                }
-                return t.Result;
-            });
+            // Codes_SRS_DEVICECLIENT_28_011: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable(authentication, quota exceed) error occurs.]
+            return ApplyTimeoutMessage(operationTimeoutCancellationToken => this.InnerHandler.ReceiveAsync(timeout, operationTimeoutCancellationToken));
         }
 
         /// <summary>
@@ -584,7 +418,189 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                 throw Fx.Exception.ArgumentNull("message");
             }
             // Codes_SRS_DEVICECLIENT_28_017: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.]
-            return this.RejectAsync(message.LockToken);
+            return ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.RejectAsync(message.LockToken, operationTimeoutCancellationToken));
+        }
+
+        /// <summary>
+        /// Sends an event to device hub
+        /// </summary>
+        /// <returns>The message containing the event</returns>
+        public Task SendEventAsync(Message message)
+        {
+            if (message == null)
+            {
+                throw Fx.Exception.ArgumentNull("message");
+            }
+
+            IoTHubClientDiagnostic.AddDiagnosticInfoIfNecessary(message, _diagnosticSamplingPercentage, ref _currentMessageCount);
+            // Codes_SRS_DEVICECLIENT_28_019: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication or quota exceed) occurs.]
+            return ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.SendEventAsync(message, operationTimeoutCancellationToken));
+        }
+
+        /// <summary>
+        /// Sends a batch of events to device hub
+        /// </summary>
+        /// <returns>The task containing the event</returns>
+        public Task SendEventBatchAsync(IEnumerable<Message> messages)
+        {
+            if (messages == null)
+            {
+                throw Fx.Exception.ArgumentNull("messages");
+            }
+
+            // Codes_SRS_DEVICECLIENT_28_019: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication or quota exceed) occurs.]
+            return ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.SendEventAsync(messages, operationTimeoutCancellationToken));
+        }
+
+        Task ApplyTimeout(Func<CancellationTokenSource, Task> operation)
+        {
+            if (OperationTimeoutInMilliseconds == 0)
+            {
+                var cancellationTokenSource = new CancellationTokenSource();
+                return operation(cancellationTokenSource)
+                    .WithTimeout(TimeSpan.MaxValue, () => Resources.OperationTimeoutExpired, cancellationTokenSource.Token);
+            }
+
+            CancellationTokenSource operationTimeoutCancellationTokenSource = GetOperationTimeoutCancellationTokenSource();
+
+            var result = operation(operationTimeoutCancellationTokenSource)
+                .WithTimeout(TimeSpan.FromMilliseconds(OperationTimeoutInMilliseconds), () => Resources.OperationTimeoutExpired, operationTimeoutCancellationTokenSource.Token);
+
+            return result.ContinueWith(t =>
+            {
+
+                // operationTimeoutCancellationTokenSource will be disposed by GC. 
+                // Cannot dispose here since we don't know if both tasks created by WithTimeout ran to completion.
+                if (t.IsCanceled)
+                {
+                    throw new TimeoutException(Resources.OperationTimeoutExpired);
+                }
+
+                if (t.IsFaulted)
+                {
+                    throw t.Exception.InnerException;
+                }
+            });
+        }
+
+        Task ApplyTimeout(Func<CancellationToken, Task> operation)
+        {
+            if (OperationTimeoutInMilliseconds == 0)
+            {
+                return operation(CancellationToken.None)
+                    .WithTimeout(TimeSpan.MaxValue, () => Resources.OperationTimeoutExpired, CancellationToken.None);
+            }
+
+            CancellationTokenSource operationTimeoutCancellationTokenSource = GetOperationTimeoutCancellationTokenSource();
+
+            Debug.WriteLine(operationTimeoutCancellationTokenSource.Token.GetHashCode() + " InternalClient.ApplyTimeout()");
+
+            var result = operation(operationTimeoutCancellationTokenSource.Token)
+                .WithTimeout(TimeSpan.FromMilliseconds(OperationTimeoutInMilliseconds), () => Resources.OperationTimeoutExpired, operationTimeoutCancellationTokenSource.Token);
+
+            return result.ContinueWith(t =>
+            {
+                // operationTimeoutCancellationTokenSource will be disposed by GC. 
+                // Cannot dispose here since we don't know if both tasks created by WithTimeout ran to completion.
+                if (t.IsFaulted)
+                {
+                    throw t.Exception.InnerException;
+                }
+            }, TaskContinuationOptions.NotOnCanceled);
+        }
+
+        Task<Message> ApplyTimeoutMessage(Func<CancellationToken, Task<Message>> operation)
+        {
+            if (OperationTimeoutInMilliseconds == 0)
+            {
+                return operation(CancellationToken.None)
+                    .WithTimeout(TimeSpan.MaxValue, () => Resources.OperationTimeoutExpired, CancellationToken.None);
+            }
+
+            CancellationTokenSource operationTimeoutCancellationTokenSource = GetOperationTimeoutCancellationTokenSource();
+
+            var result = operation(operationTimeoutCancellationTokenSource.Token)
+                .WithTimeout(TimeSpan.FromMilliseconds(OperationTimeoutInMilliseconds), () => Resources.OperationTimeoutExpired, operationTimeoutCancellationTokenSource.Token);
+
+            return result.ContinueWith(t =>
+            {
+                // operationTimeoutCancellationTokenSource will be disposed by GC. 
+                // Cannot dispose here since we don't know if both tasks created by WithTimeout ran to completion.
+                if (t.IsFaulted)
+                {
+                    throw t.Exception.InnerException;
+                }
+                return t.Result;
+            });
+        }
+
+        Task<Twin> ApplyTimeoutTwin(Func<CancellationToken, Task<Twin>> operation)
+        {
+            if (OperationTimeoutInMilliseconds == 0)
+            {
+                return operation(CancellationToken.None)
+                    .WithTimeout(TimeSpan.MaxValue, () => Resources.OperationTimeoutExpired, CancellationToken.None);
+            }
+
+            CancellationTokenSource operationTimeoutCancellationTokenSource = GetOperationTimeoutCancellationTokenSource();
+
+            var result = operation(operationTimeoutCancellationTokenSource.Token)
+                .WithTimeout(TimeSpan.FromMilliseconds(OperationTimeoutInMilliseconds), () => Resources.OperationTimeoutExpired, operationTimeoutCancellationTokenSource.Token);
+
+            return result.ContinueWith(t =>
+            {
+                // operationTimeoutCancellationTokenSource will be disposed by GC. 
+                // Cannot dispose here since we don't know if both tasks created by WithTimeout ran to completion.
+                if (t.IsFaulted)
+                {
+                    throw t.Exception.InnerException;
+                }
+                return t.Result;
+            });
+        }
+
+        /// <summary>
+        /// Uploads a stream to a block blob in a storage account associated with the IoTHub for that device.
+        /// If the blob already exists, it will be overwritten.
+        /// </summary>
+        /// <param name="blobName"></param>
+        /// <param name="source"></param>
+        /// <returns>AsncTask</returns>
+        public Task UploadToBlobAsync(String blobName, System.IO.Stream source)
+        {
+            if (String.IsNullOrEmpty(blobName))
+            {
+                throw Fx.Exception.ArgumentNull("blobName");
+            }
+            if (source == null)
+            {
+                throw Fx.Exception.ArgumentNull("source");
+            }
+            if (blobName.Length > 1024)
+            {
+                throw Fx.Exception.Argument("blobName", "Length cannot exceed 1024 characters");
+            }
+            if (blobName.Split('/').Count() > 254)
+            {
+                throw Fx.Exception.Argument("blobName", "Path segment count cannot exceed 254");
+            }
+
+            HttpTransportHandler httpTransport = null;
+            var context = new PipelineContext();
+            context.Set(this.productInfo);
+
+            //We need to add the certificate to the fileUpload httpTransport if DeviceAuthenticationWithX509Certificate
+            if (this.Certificate != null)
+            {
+                Http1TransportSettings transportSettings = new Http1TransportSettings();
+                transportSettings.ClientCertificate = this.Certificate;
+                httpTransport = new HttpTransportHandler(context, iotHubConnectionString, transportSettings);
+            }
+            else
+            {
+                httpTransport = new HttpTransportHandler(context, iotHubConnectionString, new Http1TransportSettings());
+            }
+            return httpTransport.UploadToBlobAsync(blobName, source);
         }
 
         /// <summary>
@@ -869,104 +885,6 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             this.InnerHandler?.Dispose();
         }
 
-        internal static ITransportSettings[] PopulateCertificateInTransportSettings(IotHubConnectionStringBuilder connectionStringBuilder, TransportType transportType)
-        {
-            switch (transportType)
-            {
-                case TransportType.Amqp:
-                    return new ITransportSettings[]
-                    {
-                        new AmqpTransportSettings(TransportType.Amqp_Tcp_Only)
-                        {
-                            ClientCertificate = connectionStringBuilder.Certificate
-                        },
-                        new AmqpTransportSettings(TransportType.Amqp_WebSocket_Only)
-                        {
-                            ClientCertificate = connectionStringBuilder.Certificate
-                        }
-                    };
-                case TransportType.Amqp_Tcp_Only:
-                    return new ITransportSettings[]
-                    {
-                        new AmqpTransportSettings(TransportType.Amqp_Tcp_Only)
-                        {
-                            ClientCertificate = connectionStringBuilder.Certificate
-                        }
-                    };
-                case TransportType.Amqp_WebSocket_Only:
-                    return new ITransportSettings[]
-                    {
-                        new AmqpTransportSettings(TransportType.Amqp_WebSocket_Only)
-                        {
-                            ClientCertificate = connectionStringBuilder.Certificate
-                        }
-                    };
-                case TransportType.Http1:
-                    return new ITransportSettings[]
-                    {
-                        new Http1TransportSettings()
-                        {
-                            ClientCertificate = connectionStringBuilder.Certificate
-                        }
-                    };
-                case TransportType.Mqtt:
-                    return new ITransportSettings[]
-                    {
-                        new MqttTransportSettings(TransportType.Mqtt_Tcp_Only)
-                        {
-                            ClientCertificate = connectionStringBuilder.Certificate
-                        },
-                        new MqttTransportSettings(TransportType.Mqtt_WebSocket_Only)
-                        {
-                            ClientCertificate = connectionStringBuilder.Certificate
-                        }
-                    };
-                case TransportType.Mqtt_Tcp_Only:
-                    return new ITransportSettings[]
-                    {
-                        new MqttTransportSettings(TransportType.Mqtt_Tcp_Only)
-                        {
-                            ClientCertificate = connectionStringBuilder.Certificate
-                        }
-                    };
-                case TransportType.Mqtt_WebSocket_Only:
-                    return new ITransportSettings[]
-                    {
-                        new MqttTransportSettings(TransportType.Mqtt_WebSocket_Only)
-                        {
-                            ClientCertificate = connectionStringBuilder.Certificate
-                        }
-                    };
-                default:
-                    throw new InvalidOperationException("Unsupported Transport {0}".FormatInvariant(transportType));
-            }
-        }
-
-        internal static ITransportSettings[] PopulateCertificateInTransportSettings(IotHubConnectionStringBuilder connectionStringBuilder, ITransportSettings[] transportSettings)
-        {
-            foreach (var transportSetting in transportSettings)
-            {
-                switch (transportSetting.GetTransportType())
-                {
-                    case TransportType.Amqp_WebSocket_Only:
-                    case TransportType.Amqp_Tcp_Only:
-                        ((AmqpTransportSettings)transportSetting).ClientCertificate = connectionStringBuilder.Certificate;
-                        break;
-                    case TransportType.Http1:
-                        ((Http1TransportSettings)transportSetting).ClientCertificate = connectionStringBuilder.Certificate;
-                        break;
-                    case TransportType.Mqtt_WebSocket_Only:
-                    case TransportType.Mqtt_Tcp_Only:
-                        ((MqttTransportSettings)transportSetting).ClientCertificate = connectionStringBuilder.Certificate;
-                        break;
-                    default:
-                        throw new InvalidOperationException("Unsupported Transport {0}".FormatInvariant(transportSetting.GetTransportType()));
-                }
-            }
-
-            return transportSettings;
-        }
-
         /// <summary>
         /// Set a callback that will be called whenever the client receives a state update 
         /// (desired or reported) from the service.  This has the side-effect of subscribing
@@ -1079,5 +997,218 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             }
             return true;
         }
+
+        #region Module Specific API
+        /// <summary>
+        /// <param name="outputName">The output target for sending the given message</param>
+        /// <param name="message">The message to send</param>
+        /// <returns>The message containing the event</returns>
+        public Task SendEventAsync(string outputName, Message message)
+        {
+            ValidateModuleTransportHandler("SendEventAsync for a named output");
+
+            // Codes_SRS_DEVICECLIENT_10_012: [If `outputName` is `null` or empty, an `ArgumentNullException` shall be thrown.]
+            if (string.IsNullOrWhiteSpace(outputName))
+            {
+                throw new ArgumentException(nameof(outputName));
+            }
+
+            // Codes_SRS_DEVICECLIENT_10_013: [If `message` is `null` or empty, an `ArgumentNullException` shall be thrown.]
+            if (message == null)
+            {
+                throw new ArgumentNullException(nameof(message));
+            }
+
+            // Codes_SRS_DEVICECLIENT_10_015: [The `output` property of a given `message` shall be assigned the value `outputName` before submitting each request to the transport layer.]
+            message.SystemProperties.Add(MessageSystemPropertyNames.OutputName, outputName);
+
+            // Codes_SRS_DEVICECLIENT_10_011: [The `SendEventAsync` operation shall retry sending `message` until the `BaseClient::RetryStrategy` tiemspan expires or unrecoverable error(authentication or quota exceed) occurs.]
+            return ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.SendEventAsync(message, operationTimeoutCancellationToken));
+        }
+
+        /// <summary>
+        /// Sends a batch of events to device hub
+        /// <param name="outputName">The output target for sending the given message</param>
+        /// <param name="messages">A list of one or more messages to send</param>
+        /// </summary>
+        /// <returns>The task containing the event</returns>
+        public Task SendEventBatchAsync(string outputName, IEnumerable<Message> messages)
+        {
+            ValidateModuleTransportHandler("SendEventBatchAsync for a named output");
+
+            // Codes_SRS_DEVICECLIENT_10_012: [If `outputName` is `null` or empty, an `ArgumentNullException` shall be thrown.]
+            if (string.IsNullOrWhiteSpace(outputName))
+            {
+                throw new ArgumentException(nameof(outputName));
+            }
+
+            List<Message> messagesList = messages?.ToList();
+            // Codes_SRS_DEVICECLIENT_10_013: [If `message` is `null` or empty, an `ArgumentNullException` shall be thrown]
+            if (messagesList == null || messagesList.Count == 0)
+            {
+                throw new ArgumentNullException(nameof(messages));
+            }
+
+#if PCL
+            foreach(var m in messagesList)
+            {
+                m.SystemProperties.Add(MessageSystemPropertyNames.OutputName, outputName);
+            }
+#else
+            // Codes_SRS_DEVICECLIENT_10_015: [The `module-output` property of a given `message` shall be assigned the value `outputName` before submitting each request to the transport layer.]
+            messagesList.ForEach(m => m.SystemProperties.Add(MessageSystemPropertyNames.OutputName, outputName));
+#endif
+
+            // Codes_SRS_DEVICECLIENT_10_014: [The `SendEventBachAsync` operation shall retry sending `messages` until the `BaseClient::RetryStrategy` tiemspan expires or unrecoverable error(authentication or quota exceed) occurs.]
+            return ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.SendEventAsync(messagesList, operationTimeoutCancellationToken));
+        }
+
+        /// <summary>
+        /// Registers a new delgate for the particular input. If a delegate is already associated with
+        /// the input, it will be replaced with the new delegate.
+        /// <param name="inputName">The name of the input to associate with the delegate.</param>
+        /// <param name="messageHandler">The delegate to be used when a message is sent to the particular inputName.</param>
+        /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
+        /// </summary>
+        /// <returns>The task containing the event</returns>
+        public async Task SetInputMessageHandlerAsync(string inputName, MessageHandler messageHandler, object userContext)
+        {
+            ValidateModuleTransportHandler("SetInputMessageHandlerAsync for a named output");
+            try
+            {
+                await this.receiveSemaphore.WaitAsync();
+
+                if (messageHandler != null)
+                {
+                    // codes_SRS_DEVICECLIENT_33_003: [ It shall EnableEventReceiveAsync when called for the first time. ]
+                    await this.EnableEventReceiveAsync();
+                    // codes_SRS_DEVICECLIENT_33_005: [ It shall lazy-initialize the receiveEventEndpoints property. ]
+                    if (this.receiveEventEndpoints == null)
+                    {
+                        this.receiveEventEndpoints = new Dictionary<string, Tuple<MessageHandler, object>>();
+                    }
+                    this.receiveEventEndpoints[inputName] = new Tuple<MessageHandler, object>(messageHandler, userContext);
+                }
+                else
+                {
+                    if (this.receiveEventEndpoints != null)
+                    {
+                        this.receiveEventEndpoints.Remove(inputName);
+                        if (this.receiveEventEndpoints.Count == 0)
+                        {
+                            this.receiveEventEndpoints = null;
+                        }
+                    }
+                    // codes_SRS_DEVICECLIENT_33_004: [ It shall call DisableEventReceiveAsync when the last delegate has been removed. ]
+                    await this.DisableEventReceiveAsync();
+                }
+            }
+            finally
+            {
+                this.receiveSemaphore.Release();
+            }
+        }
+
+        /// <summary>
+        /// Registers a new default delegate which applies to all endpoints. If a delegate is already associated with
+        /// the input, it will be called, else the default delegate will be called. If a default delegate was set previously,
+        /// it will be overwritten.
+        /// <param name="messageHandler">The delegate to be called when a message is sent to any input.</param>
+        /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
+        /// </summary>
+        /// <returns>The task containing the event</returns>
+        public async Task SetMessageHandlerAsync(MessageHandler messageHandler, object userContext)
+        {
+            try
+            {
+                await this.receiveSemaphore.WaitAsync();
+                if (messageHandler != null)
+                {
+                    // codes_SRS_DEVICECLIENT_33_003: [ It shall EnableEventReceiveAsync when called for the first time. ]
+                    await this.EnableEventReceiveAsync();
+                    this.defaultEventCallback = new Tuple<MessageHandler, object>(messageHandler, userContext);
+                }
+                else
+                {
+                    this.defaultEventCallback = null;
+                    // codes_SRS_DEVICECLIENT_33_004: [ It shall DisableEventReceiveAsync when the last delegate has been removed. ]
+                    await this.DisableEventReceiveAsync();
+                }
+            }
+            finally
+            {
+                this.receiveSemaphore.Release();
+            }
+        }
+
+        private async Task EnableEventReceiveAsync()
+        {
+            if (this.receiveEventEndpoints == null && this.defaultEventCallback == null)
+            {
+                await ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.EnableEventReceiveAsync(operationTimeoutCancellationToken));
+            }
+        }
+
+        private async Task DisableEventReceiveAsync()
+        {
+            if (this.receiveEventEndpoints == null && this.defaultEventCallback == null)
+            {
+                await ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.DisableEventReceiveAsync(operationTimeoutCancellationToken));
+            }
+        }
+
+        /// <summary>
+        /// The delegate for handling event messages received
+        /// <param name="input">The input on which a message is received</param>
+        /// <param name="message">The message received</param>
+        /// </summary>
+        internal async Task OnReceiveEventMessageCalled(string input, Message message)
+        {
+            // codes_SRS_DEVICECLIENT_33_001: [ If the given eventMessageInternal argument is null, fail silently ]
+            if (message != null)
+            {
+                Tuple<MessageHandler, object> callback = null;
+                await this.receiveSemaphore.WaitAsync();
+                try
+                {
+                    // codes_SRS_DEVICECLIENT_33_006: [ The OnReceiveEventMessageCalled shall get the default delegate if a delegate has not been assigned. ]
+                    if (this.receiveEventEndpoints == null ||
+                        string.IsNullOrWhiteSpace(input) ||
+                        !this.receiveEventEndpoints.TryGetValue(input, out callback))
+                    {
+                        callback = this.defaultEventCallback;
+                    }
+                }
+                finally
+                {
+                    this.receiveSemaphore.Release();
+                }
+
+                // codes_SRS_DEVICECLIENT_33_002: [ The OnReceiveEventMessageCalled shall invoke the specified delegate. ]
+                MessageResponse response = await (callback?.Item1?.Invoke(message, callback.Item2) ?? Task.FromResult(MessageResponse.None));
+
+                switch (response)
+                {
+                    case MessageResponse.Completed:
+                        await this.CompleteAsync(message);
+                        break;
+                    case MessageResponse.Abandoned:
+                        await this.AbandonAsync(message);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+        void ValidateModuleTransportHandler(string apiName)
+        {
+            if (string.IsNullOrEmpty(this.iotHubConnectionString.ModuleId))
+            {
+                throw new InvalidOperationException("{0} is available for Modules only.".FormatInvariant(apiName));
+            }
+        }
+
+        #endregion Module Specific API
     }
 }
