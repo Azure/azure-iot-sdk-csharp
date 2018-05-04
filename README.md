@@ -1,57 +1,19 @@
-# Project Name
+---
+services: iot-hub 
+platforms: csharp, dotnet
+author: azure-iot-sdks
+---
 
-(short, 1-3 sentenced, description of the project)
+# Azure IoT Samples for C#
 
-## Features
+azure-iot-samples-csharp provides a set of easy-to-understand, continuously-tested samples for connecting to Azure IoT Hub via Azure/azure-iot-sdk-csharp.
 
-This project framework provides the following features:
+## Prerequisites
 
-* Feature 1
-* Feature 2
-* ...
+- .NET Core SDK 2.1.0 or greater on your development machine.  You can download the .NET Core SDK for multiple platforms from [.NET](https://www.microsoft.com/net/download/all).  You can verify the current version of C# on your development machine using 'dotnet --version'.
 
-## Getting Started
-
-### Prerequisites
-
-(ideally very short, if any)
-
-- OS
-- Library version
-- ...
-
-### Installation
-
-(ideally very short)
-
-- npm install [package name]
-- mvn install
-- ...
-
-### Quickstart
-(Add steps to get up and running quickly)
-
-1. git clone [repository clone url]
-2. cd [respository name]
-3. ...
-
-
-## Demo
-
-A demo app is included to show how to use the project.
-
-To run the demo, follow these steps:
-
-(Add steps to start up the demo)
-
-1.
-2.
-3.
 
 ## Resources
 
-(Any additional resources or related projects)
-
-- Link to supporting information
-- Link to similar sample
-- ...
+- [azure-iot-sdk-csharp](https://github.com/Azure/azure-iot-sdk-csharp): contains the source code for Azure IoT Java SDK.
+- [Azure IoT Hub Documentation](https://docs.microsoft.com/azure/iot-hub/)
