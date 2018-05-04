@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
             string data = string.Join("\n", new List<string> { audience, expiresOn });
             string signature = await signatureProvider.SignAsync(this.ModuleId, data);
 
-            return SasTokenBuilder.BuildSasToken(audience, signature, expiresOn, this.ModuleId);
+            return SasTokenBuilder.BuildSasToken(audience, signature, expiresOn);
         }
     }
 }

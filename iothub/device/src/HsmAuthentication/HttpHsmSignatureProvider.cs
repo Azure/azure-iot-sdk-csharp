@@ -12,6 +12,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
     {
         const string DefaultApiVersion = "2018-06-28";
         const SignRequestAlgo DefaultSignRequestAlgo = SignRequestAlgo.HMACSHA256;
+        const string DefaultKeyId = "primary";
         readonly string apiVersion;
         readonly HsmHttpClient httpClient;
 
@@ -50,7 +51,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
 
             var signRequest = new SignRequest()
             {
-                KeyId = keyName,
+                KeyId = DefaultKeyId,
                 Algo = DefaultSignRequestAlgo,
                 Data = Encoding.UTF8.GetBytes(data)
             };

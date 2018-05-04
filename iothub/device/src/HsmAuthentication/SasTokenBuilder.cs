@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
 {
     static class SasTokenBuilder
     {
-        public static string BuildSasToken(string audience, string signature, string expiry, string keyName)
+        public static string BuildSasToken(string audience, string signature, string expiry)
         {
             // Example returned string:
             // SharedAccessSignature sr=ENCODED(dh://myiothub.azure-devices.net/a/b/c?myvalue1=a)&sig=<Signature>&se=<ExpiresOnValue>[&skn=<KeyName>]
@@ -22,12 +22,6 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
                 SharedAccessSignatureConstants.AudienceFieldName, audience,
                 SharedAccessSignatureConstants.SignatureFieldName, WebUtility.UrlEncode(signature),
                 SharedAccessSignatureConstants.ExpiryFieldName, WebUtility.UrlEncode(expiry));
-
-            if (!string.IsNullOrWhiteSpace(keyName))
-            {
-                buffer.AppendFormat(CultureInfo.InvariantCulture, "&{0}={1}",
-                    SharedAccessSignatureConstants.KeyNameFieldName, WebUtility.UrlEncode(keyName));
-            }
 
             return buffer.ToString();
         }

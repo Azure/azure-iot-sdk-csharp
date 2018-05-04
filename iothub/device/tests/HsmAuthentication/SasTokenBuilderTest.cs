@@ -40,20 +40,18 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
         {
             string audience = "iothub.test/devices/device1/modules/module1";
             string signature = "signature";
-            
 
             DateTime expiresOn = DateTime.UtcNow.AddMinutes(10);
             TimeSpan secondsFromBaseTime = expiresOn.Subtract(SharedAccessSignatureConstants.EpochTime);
             string expiry = secondsFromBaseTime.TotalSeconds.ToString(CultureInfo.InvariantCulture);
 
-            string keyname = "module1";
-            string sasTokenString = SasTokenBuilder.BuildSasToken(audience, signature, expiry, keyname);
+            string sasTokenString = SasTokenBuilder.BuildSasToken(audience, signature, expiry);
 
             SharedAccessSignature token = SharedAccessSignature.Parse("iothub.test", sasTokenString);
 
             Assert.AreEqual(WebUtility.UrlDecode(audience), token.Audience);
             Assert.AreEqual(signature, token.Signature);
-            Assert.AreEqual(keyname, token.KeyName);
+            Assert.AreEqual(string.Empty, token.KeyName);
             Assert.AreEqual(SharedAccessSignatureConstants.EpochTime + TimeSpan.FromSeconds(double.Parse(expiry, CultureInfo.InvariantCulture)), token.ExpiresOn);
         }
     }

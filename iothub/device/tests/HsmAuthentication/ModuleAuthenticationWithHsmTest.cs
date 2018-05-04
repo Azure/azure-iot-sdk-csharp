@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
             Assert.IsNotNull(sasToken);
             Assert.AreEqual(this.signature, token.Signature);
             Assert.AreEqual(WebUtility.UrlDecode(audience), token.Audience);
-            Assert.AreEqual(this.moduleId, token.KeyName);
+            Assert.AreEqual(string.Empty, token.KeyName);
         }
 
         [TestMethod]
