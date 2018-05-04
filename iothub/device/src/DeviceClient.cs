@@ -326,7 +326,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <param name="methodHandler">The delegate to be used when a method with the given name is called by the cloud service.</param>
         /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
         /// </summary>
-        public async Task SetMethodHandlerAsync(string methodName, MethodCallback methodHandler, object userContext) =>
+        public Task SetMethodHandlerAsync(string methodName, MethodCallback methodHandler, object userContext) =>
             this.internalClient.SetMethodHandlerAsync(methodName, methodHandler, userContext);
 
         /// <summary>
@@ -335,7 +335,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="methodHandler">The delegate to be used when a method is called by the cloud service and there is no delegate registered for that method name.</param>
         /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
-        public async Task SetMethodDefaultHandlerAsync(MethodCallback methodHandler, object userContext) =>
+        public Task SetMethodDefaultHandlerAsync(MethodCallback methodHandler, object userContext) =>
             this.internalClient.SetMethodDefaultHandlerAsync(methodHandler, userContext);
 
         /// <summary>
