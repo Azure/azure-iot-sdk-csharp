@@ -3,6 +3,7 @@
 //     Generated using the NSwag toolchain v11.17.0.0 (NJsonSchema v9.10.42.0 (Newtonsoft.Json v9.0.0.0)) (http://NSwag.org)
 // </auto-generated>
 //----------------------
+// Note: Code manually changed to replace System.Uri.EscapeDataString with System.Net.WebUtility.UrlEncode to be consistent with the rest of the SDK
 
 namespace Microsoft.Azure.Devices.Client.HsmAuthentication
 {
@@ -63,8 +64,8 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
 
             var urlBuilder_ = new System.Text.StringBuilder();
             urlBuilder_.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/modules/{name}/sign?");
-            urlBuilder_.Replace("{name}", System.Uri.EscapeDataString(ConvertToString(name, System.Globalization.CultureInfo.InvariantCulture)));
-            urlBuilder_.Append("api-version=").Append(System.Uri.EscapeDataString(ConvertToString(api_version, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
+            urlBuilder_.Replace("{name}", System.Net.WebUtility.UrlEncode(ConvertToString(name, System.Globalization.CultureInfo.InvariantCulture)));
+            urlBuilder_.Append("api-version=").Append(System.Net.WebUtility.UrlEncode(ConvertToString(api_version, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
             urlBuilder_.Length--;
 
             var client_ = new System.Net.Http.HttpClient();
@@ -180,8 +181,8 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
 
             var urlBuilder_ = new System.Text.StringBuilder();
             urlBuilder_.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/modules/{name}/certificate/identity?");
-            urlBuilder_.Replace("{name}", System.Uri.EscapeDataString(ConvertToString(name, System.Globalization.CultureInfo.InvariantCulture)));
-            urlBuilder_.Append("api-version=").Append(System.Uri.EscapeDataString(ConvertToString(api_version, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
+            urlBuilder_.Replace("{name}", System.Net.WebUtility.UrlEncode(ConvertToString(name, System.Globalization.CultureInfo.InvariantCulture)));
+            urlBuilder_.Append("api-version=").Append(System.Net.WebUtility.UrlEncode(ConvertToString(api_version, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
             urlBuilder_.Length--;
 
             var client_ = new System.Net.Http.HttpClient();
@@ -297,8 +298,8 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
 
             var urlBuilder_ = new System.Text.StringBuilder();
             urlBuilder_.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/modules/{name}/certificate/server?");
-            urlBuilder_.Replace("{name}", System.Uri.EscapeDataString(ConvertToString(name, System.Globalization.CultureInfo.InvariantCulture)));
-            urlBuilder_.Append("api-version=").Append(System.Uri.EscapeDataString(ConvertToString(api_version, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
+            urlBuilder_.Replace("{name}", System.Net.WebUtility.UrlEncode(ConvertToString(name, System.Globalization.CultureInfo.InvariantCulture)));
+            urlBuilder_.Append("api-version=").Append(System.Net.WebUtility.UrlEncode(ConvertToString(api_version, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
             urlBuilder_.Length--;
 
             var client_ = new System.Net.Http.HttpClient();
