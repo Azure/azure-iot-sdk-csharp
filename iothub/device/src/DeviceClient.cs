@@ -1395,7 +1395,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
 
         private async Task DisableMethodAsync()
         {
-            if (this.deviceMethods == null && this.deviceDefaultMethodCallback == null)
+            if (this.deviceMethods == null) // && this.deviceDefaultMethodCallback == null)
             {
                 await ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.DisableMethodsAsync(operationTimeoutCancellationToken)).ConfigureAwait(false);
             }
