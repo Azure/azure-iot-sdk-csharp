@@ -35,6 +35,7 @@ namespace Microsoft.Azure.Devices
         {
             this.SchemaVersion = "1.0";
             this.ContentType = "assignment";
+            this.Metrics = new ConfigurationMetrics();
         }
 
         /// <summary>
@@ -92,10 +93,16 @@ namespace Microsoft.Azure.Devices
         public int Priority { get; set; }
 
         /// <summary>
-        /// Gets the configuration statistics in form of metric name and metric value pairs.
+        /// System Configuration Metrics
         /// </summary>
-        [JsonProperty(PropertyName = "statistics", NullValueHandling = NullValueHandling.Ignore)]
-        public IDictionary<string, long> Statistics { get; internal set; }
+        [JsonProperty(PropertyName = "systemMetrics", NullValueHandling = NullValueHandling.Ignore)]
+        public ConfigurationMetrics SystemMetrics { get; internal set; }
+
+        /// <summary>
+        /// Custom Configuration Metrics
+        /// </summary>
+        [JsonProperty(PropertyName = "metrics", NullValueHandling = NullValueHandling.Ignore)]
+        public ConfigurationMetrics Metrics { get; internal set; }
 
         /// <summary>
         /// Gets or sets configuration's ETag

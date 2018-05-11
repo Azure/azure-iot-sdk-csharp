@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices
         const string ApiVersionJuly2017 = "2017-07-11";
         const string ApiVersionOctober2017 = "2017-10-15";
 #if ENABLE_MODULES_SDK
-        const string ApiVersionEdgePublicPreview = "2017-11-08-preview";
+        const string ApiVersionEdgePublicPreview = "2018-03-01-preview";
         const string ApiVersionLatest = ApiVersionEdgePublicPreview;
 #else
         const string ApiVersionLatest = ApiVersionOctober2017;

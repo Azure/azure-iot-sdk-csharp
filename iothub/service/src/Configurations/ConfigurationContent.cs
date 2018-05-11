@@ -7,6 +7,7 @@ namespace Microsoft.Azure.Devices
     using System.Collections.Generic;
 
     using Newtonsoft.Json;
+    using Newtonsoft.Json.Linq;
 
     /// <summary>
     /// Configurations for Module Management Agent, Edge Hub and Modules on the device.
@@ -16,8 +17,14 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Gets or sets Module Configurations
         /// </summary>
-        [JsonProperty(PropertyName = "moduleContent")]
-        public IDictionary<string, TwinContent> ModuleContent { get; set; }
+        [JsonProperty(PropertyName = "modulesContent")]
+        public IDictionary<string, IDictionary<string, object>> ModulesContent { get; set; }
+
+        /// <summary>
+        /// Gets or sets Module Configurations
+        /// </summary>
+        [JsonProperty(PropertyName = "deviceContent")]
+        public IDictionary<string, object> DeviceContent { get; set; }
     }
 }
 #endif
