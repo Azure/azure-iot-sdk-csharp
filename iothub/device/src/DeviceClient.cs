@@ -241,6 +241,8 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
 
         private int _currentMessageCount = 0;
 
+        internal Boolean _isConnectionClosed = true;
+
         DeviceClient(IotHubConnectionString iotHubConnectionString, ITransportSettings[] transportSettings, IDeviceClientPipelineBuilder pipelineBuilder)
         {
             this.iotHubConnectionString = iotHubConnectionString;
@@ -1075,10 +1077,14 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         internal void OnConnectionOpened(object sender, ConnectionEventArgs e)
         {
             ConnectionStatusChangeResult result = this.connectionStatusManager.ChangeTo(e.ConnectionType, ConnectionStatus.Connected);
-            if (result.IsClientStatusChanged && (connectionStatusChangesHandler != null))
+            if (result.IsClientStatusChanged)
             {
-                // codes_SRS_DEVICECLIENT_28_024: [** `OnConnectionOpened` shall invoke the connectionStatusChangesHandler if ConnectionStatus is changed **]**  
-                this.connectionStatusChangesHandler(ConnectionStatus.Connected, e.ConnectionStatusChangeReason);
+                if (connectionStatusChangesHandler != null)
+                {
+                    // codes_SRS_DEVICECLIENT_28_024: [** `OnConnectionOpened` shall invoke the connectionStatusChangesHandler if ConnectionStatus is changed **]**  
+                    this.connectionStatusChangesHandler(ConnectionStatus.Connected, e.ConnectionStatusChangeReason);
+                }
+                _isConnectionClosed = false;
             }
         }
 
@@ -1125,6 +1131,11 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                 result = this.connectionStatusManager.ChangeTo(e.ConnectionType, ConnectionStatus.Disabled);
                 if (result.IsClientStatusChanged && (connectionStatusChangesHandler != null))
                 {
+                    if (e.ConnectionStatusChangeReason == ConnectionStatusChangeReason.Client_Close)
+                    {
+                        this.deviceDefaultMethodCallback = null;
+                        _isConnectionClosed = true;
+                    }
                     this.connectionStatusChangesHandler(ConnectionStatus.Disabled, e.ConnectionStatusChangeReason);
                 }
             }
@@ -1387,7 +1398,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
 
         private async Task EnableMethodAsync()
         {
-            if (this.deviceMethods == null && this.deviceDefaultMethodCallback == null)
+            if ((this.deviceMethods == null && this.deviceDefaultMethodCallback == null) || _isConnectionClosed)
             {
                 await ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.EnableMethodsAsync(operationTimeoutCancellationToken)).ConfigureAwait(false);
             }
@@ -1395,7 +1406,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
 
         private async Task DisableMethodAsync()
         {
-            if (this.deviceMethods == null && this.deviceDefaultMethodCallback == null)
+            if ((this.deviceMethods == null && this.deviceDefaultMethodCallback == null) || _isConnectionClosed)
             {
                 await ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.DisableMethodsAsync(operationTimeoutCancellationToken)).ConfigureAwait(false);
             }
