@@ -13,10 +13,12 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
     public partial class HsmHttpClient
     {
         private string _baseUrl = "http://";
+        private System.Net.Http.HttpClient _httpClient;
         private System.Lazy<Newtonsoft.Json.JsonSerializerSettings> _settings;
 
-        public HsmHttpClient()
+        public HsmHttpClient(System.Net.Http.HttpClient httpClient)
         {
+            _httpClient = httpClient;
             _settings = new System.Lazy<Newtonsoft.Json.JsonSerializerSettings>(() =>
             {
                 var settings = new Newtonsoft.Json.JsonSerializerSettings();
@@ -74,7 +76,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
             urlBuilder_.Append("api-version=").Append(System.Net.WebUtility.UrlEncode(ConvertToString(api_version, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
             urlBuilder_.Length--;
 
-            var client_ = new System.Net.Http.HttpClient();
+            var client_ = _httpClient;
             try
             {
                 using (var request_ = new System.Net.Http.HttpRequestMessage())
@@ -158,8 +160,6 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
             }
             finally
             {
-                if (client_ != null)
-                    client_.Dispose();
             }
         }
 
@@ -193,7 +193,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
             urlBuilder_.Append("api-version=").Append(System.Net.WebUtility.UrlEncode(ConvertToString(api_version, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
             urlBuilder_.Length--;
 
-            var client_ = new System.Net.Http.HttpClient();
+            var client_ = _httpClient;
             try
             {
                 using (var request_ = new System.Net.Http.HttpRequestMessage())
@@ -277,8 +277,6 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
             }
             finally
             {
-                if (client_ != null)
-                    client_.Dispose();
             }
         }
 
@@ -312,7 +310,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
             urlBuilder_.Append("api-version=").Append(System.Net.WebUtility.UrlEncode(ConvertToString(api_version, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
             urlBuilder_.Length--;
 
-            var client_ = new System.Net.Http.HttpClient();
+            var client_ = _httpClient;
             try
             {
                 using (var request_ = new System.Net.Http.HttpRequestMessage())
@@ -396,8 +394,6 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
             }
             finally
             {
-                if (client_ != null)
-                    client_.Dispose();
             }
         }
 
@@ -429,7 +425,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
             urlBuilder_.Append("api-version=").Append(System.Net.WebUtility.UrlEncode(ConvertToString(api_version, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
             urlBuilder_.Length--;
 
-            var client_ = new System.Net.Http.HttpClient();
+            var client_ = _httpClient;
             try
             {
                 using (var request_ = new System.Net.Http.HttpRequestMessage())
@@ -511,8 +507,6 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
             }
             finally
             {
-                if (client_ != null)
-                    client_.Dispose();
             }
         }
 
@@ -546,7 +540,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
             urlBuilder_.Append("api-version=").Append(System.Net.WebUtility.UrlEncode(ConvertToString(api_version, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
             urlBuilder_.Length--;
 
-            var client_ = new System.Net.Http.HttpClient();
+            var client_ = _httpClient;
             try
             {
                 using (var request_ = new System.Net.Http.HttpRequestMessage())
@@ -630,8 +624,6 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
             }
             finally
             {
-                if (client_ != null)
-                    client_.Dispose();
             }
         }
 

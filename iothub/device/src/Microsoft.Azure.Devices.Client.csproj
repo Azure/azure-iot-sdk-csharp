@@ -57,7 +57,7 @@
     <Reference Include="System.Net.Http.WebRequest" />
     <Reference Include="System.Transactions" />
     <Reference Include="System.Web" />
-    <Reference Include="System.Net.Http"/>
+    <Reference Include="System.Net.Http" />
     <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.3" />
     <PackageReference Include="Microsoft.Owin" Version="4.0.0" />
   </ItemGroup>
@@ -91,6 +91,10 @@
   <!-- NetStandard 2.0 -->
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
     <Compile Include="netstandard13\Common\IOThreadTimerSlim.cs" />
+    <Compile Include="netstandard20\HsmAuthentication\Transport\HttpUdsMessageHandler.cs" />
+    <Compile Include="netstandard20\HsmAuthentication\Transport\HttpBufferedStream.cs" />
+    <Compile Include="netstandard20\HsmAuthentication\Transport\HttpRequestResponseSerializer.cs" />
+    <Compile Include="netstandard20\HsmAuthentication\Transport\UnixDomainSocketEndPoint.cs" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.4.1" />

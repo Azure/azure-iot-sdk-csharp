@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
 
         public EdgeModuleClientFactoryTest()
         {
-            this.serverUrl = "localhost";
+            this.serverUrl = "http://localhost:8080";
             this.iotHubConnectionString = "Hostname=iothub.test;DeviceId=device1;ModuleId=module1;SharedAccessKey=" + Convert.ToBase64String(this.sasKey);
         }
 

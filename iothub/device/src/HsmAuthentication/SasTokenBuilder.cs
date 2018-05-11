@@ -9,7 +9,7 @@ using Microsoft.Azure.Devices.Common;
 
 namespace Microsoft.Azure.Devices.Client.HsmAuthentication
 {
-    static class SasTokenBuilder
+    internal static class SasTokenBuilder
     {
         public static string BuildSasToken(string audience, string signature, string expiry)
         {
