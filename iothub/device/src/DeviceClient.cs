@@ -1133,7 +1133,6 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                 {
                     if (e.ConnectionStatusChangeReason == ConnectionStatusChangeReason.Client_Close)
                     {
-                        this.deviceDefaultMethodCallback = null;
                         _isConnectionClosed = true;
                     }
                     this.connectionStatusChangesHandler(ConnectionStatus.Disabled, e.ConnectionStatusChangeReason);
