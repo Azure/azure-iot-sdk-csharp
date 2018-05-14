@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             {
                 try
                 {
-                    DeviceClient moduleClient = DeviceClient.CreateFromConnectionString(ModuleConnectionString);
+                    ModuleClient moduleClient = ModuleClient.CreateFromConnectionString(ModuleConnectionString);
                     moduleClient.OpenAsync().Wait();
                     SendMessages(moduleClient).Wait();
                     Twin twin = moduleClient.GetTwinAsync().Result;
@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
         }
 
-        static async Task SendMessages(DeviceClient moduleClient)
+        static async Task SendMessages(ModuleClient moduleClient)
         {
             string moduleId = IotHubConnectionStringBuilder.Create(ModuleConnectionString).ModuleId;
 
