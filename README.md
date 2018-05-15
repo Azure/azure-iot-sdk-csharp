@@ -4,7 +4,7 @@ platforms: csharp, dotnet
 author: azure-iot-sdks
 ---
 
-# Azure IoT Samples for C#
+# Azure IoT Samples for Csharp (.NET)
 
 azure-iot-samples-csharp provides a set of easy-to-understand, continuously-tested samples for connecting to Azure IoT Hub via Azure/azure-iot-sdk-csharp.
 
@@ -15,5 +15,5 @@ azure-iot-samples-csharp provides a set of easy-to-understand, continuously-test
 
 ## Resources
 
-- [azure-iot-sdk-csharp](https://github.com/Azure/azure-iot-sdk-csharp): contains the source code for Azure IoT Java SDK.
+- [azure-iot-sdk-csharp](https://github.com/Azure/azure-iot-sdk-csharp): contains the source code for Azure IoT C# SDK.
 - [Azure IoT Hub Documentation](https://docs.microsoft.com/azure/iot-hub/)
