@@ -12,12 +12,13 @@ namespace Microsoft.Azure.Devices.Client.Edge
     /// </summary>
     internal class EdgeModuleClientFactory
     {
-        const string IotEdgedUriVariableName = "IOTEDGE_IOTEDGEDURI";
-        const string IotEdgedApiVersionVariableName = "IOTEDGE_IOTEDGEDVERSION";
+        const string DefaultApiVersion = "2018-06-28";
+        const string IotEdgedUriVariableName = "IOTEDGE_WORKLOADURI";
         const string IotHubHostnameVariableName = "IOTEDGE_IOTHUBHOSTNAME";
         const string GatewayHostnameVariableName = "IOTEDGE_GATEWAYHOSTNAME";
         const string DeviceIdVariableName = "IOTEDGE_DEVICEID";
         const string ModuleIdVariableName = "IOTEDGE_MODULEID";
+        const string ModuleGenerationIdVariableName = "IOTEDGE_MODULEGENERATIONID";
         const string AuthSchemeVariableName = "IOTEDGE_AUTHSCHEME";
         const string SasTokenAuthScheme = "SasToken";
         const string EdgehubConnectionstringVariableName = "EdgeHubConnectionString";
@@ -61,18 +62,16 @@ namespace Microsoft.Azure.Devices.Client.Edge
                 string moduleId = this.GetValueFromEnvironment(envVariables, ModuleIdVariableName) ?? throw new InvalidOperationException($"Environment variable {ModuleIdVariableName} is required.");
                 string hostname = this.GetValueFromEnvironment(envVariables, IotHubHostnameVariableName) ?? throw new InvalidOperationException($"Environment variable {IotHubHostnameVariableName} is required.");
                 string authScheme = this.GetValueFromEnvironment(envVariables, AuthSchemeVariableName) ?? throw new InvalidOperationException($"Environment variable {AuthSchemeVariableName} is required.");
+                string generationId = this.GetValueFromEnvironment(envVariables, ModuleGenerationIdVariableName) ?? throw new InvalidOperationException($"Environment variable {ModuleGenerationIdVariableName} is required.");
                 string gateway = this.GetValueFromEnvironment(envVariables, GatewayHostnameVariableName);
-                string apiVersion = this.GetValueFromEnvironment(envVariables, IotEdgedApiVersionVariableName);
 
                 if (!string.Equals(authScheme, SasTokenAuthScheme, StringComparison.OrdinalIgnoreCase))
                 {
                     throw new InvalidOperationException($"Unsupported authentication scheme. Supported scheme is {SasTokenAuthScheme}.");
                 }
 
-                ISignatureProvider signatureProvider = string.IsNullOrWhiteSpace(apiVersion)
-                    ? new HttpHsmSignatureProvider(edgedUri)
-                    : new HttpHsmSignatureProvider(edgedUri, apiVersion);
-                var authMethod = new ModuleAuthenticationWithHsm(signatureProvider, deviceId, moduleId);
+                ISignatureProvider signatureProvider = new HttpHsmSignatureProvider(edgedUri, DefaultApiVersion);
+                var authMethod = new ModuleAuthenticationWithHsm(signatureProvider, deviceId, moduleId, generationId);
 
                 return this.CreateInternalClientFromAuthenticationMethod(hostname, gateway, authMethod);
             }

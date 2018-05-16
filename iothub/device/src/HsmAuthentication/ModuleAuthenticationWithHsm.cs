@@ -12,7 +12,8 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
     /// </summary>
     public class ModuleAuthenticationWithHsm : ModuleAuthenticationWithTokenRefresh
     {
-        readonly ISignatureProvider signatureProvider;
+        private readonly ISignatureProvider _signatureProvider;
+        private readonly string _generationId;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ModuleAuthenticationWithHsm"/> class.
@@ -20,9 +21,10 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
         /// <param name="signatureProvider">Provider for the token signature.</param>
         /// <param name="deviceId">Device Identifier.</param>
         /// <param name="moduleId">Module Identifier.</param>
-        public ModuleAuthenticationWithHsm(ISignatureProvider signatureProvider, string deviceId, string moduleId) : base(deviceId, moduleId)
+        public ModuleAuthenticationWithHsm(ISignatureProvider signatureProvider, string deviceId, string moduleId, string generationId) : base(deviceId, moduleId)
         {
-            this.signatureProvider = signatureProvider ?? throw new ArgumentNullException(nameof(signatureProvider)); 
+            _signatureProvider = signatureProvider ?? throw new ArgumentNullException(nameof(signatureProvider));
+            _generationId = generationId ?? throw new ArgumentNullException(nameof(generationId));
         }
 
         /// <summary>
@@ -37,7 +39,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
             string audience = SasTokenBuilder.BuildAudience(iotHub, this.DeviceId, this.ModuleId);
             string expiresOn = SasTokenBuilder.BuildExpiresOn(startTime, TimeSpan.FromSeconds(suggestedTimeToLive));
             string data = string.Join("\n", new List<string> { audience, expiresOn });
-            string signature = await signatureProvider.SignAsync(this.ModuleId, data);
+            string signature = await _signatureProvider.SignAsync(this.ModuleId, this._generationId, data);
 
             return SasTokenBuilder.BuildSasToken(audience, signature, expiresOn);
         }

@@ -10,6 +10,6 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
     /// </summary>
     public interface ISignatureProvider
     {
-        Task<string> SignAsync(string keyName, string data);
+        Task<string> SignAsync(string moduleId, string generationId, string data);
     }
 }

@@ -16,6 +16,7 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
         string signature = "signature";
         string deviceId = "device1";
         string moduleId = "module1";
+        string generationId = "1";
         string iotHub = "iothub.test";
 
         [TestMethod]
@@ -23,9 +24,9 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
         {
             // Arrange
             var httpClient = new Mock<ISignatureProvider>();
-            httpClient.Setup(p => p.SignAsync(this.moduleId, It.IsAny<string>())).Returns(Task.FromResult(this.signature));
+            httpClient.Setup(p => p.SignAsync(this.moduleId, this.generationId, It.IsAny<string>())).Returns(Task.FromResult(this.signature));
 
-            var moduleAuthenticationWithHsm = new ModuleAuthenticationWithHsm(httpClient.Object, this.deviceId, this.moduleId);
+            var moduleAuthenticationWithHsm = new ModuleAuthenticationWithHsm(httpClient.Object, this.deviceId, this.moduleId, this.generationId);
 
             // Act
             string sasToken = await moduleAuthenticationWithHsm.GetTokenAsync(this.iotHub);
@@ -48,9 +49,9 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
         public async Task TestSafeCreateNewToken_WhenIotEdgedThrows_ShouldThrow()
         {
             var httpClient = new Mock<ISignatureProvider>();
-            httpClient.Setup(p => p.SignAsync(this.moduleId, It.IsAny<string>())).Throws(new HttpHsmComunicationException(It.IsAny<string>(), It.IsAny<int>()));
+            httpClient.Setup(p => p.SignAsync(this.moduleId, this.generationId, It.IsAny<string>())).Throws(new HttpHsmComunicationException(It.IsAny<string>(), It.IsAny<int>()));
 
-            var authenticationWithHsm = new ModuleAuthenticationWithHsm(httpClient.Object, this.deviceId, this.moduleId);
+            var authenticationWithHsm = new ModuleAuthenticationWithHsm(httpClient.Object, this.deviceId, this.moduleId, this.generationId);
 
             await TestAssert.ThrowsAsync<HttpHsmComunicationException>(async () => await authenticationWithHsm.GetTokenAsync(this.iotHub));
         }

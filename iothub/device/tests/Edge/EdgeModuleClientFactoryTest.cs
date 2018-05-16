@@ -17,12 +17,13 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
         readonly string iotHubConnectionString;
 
         const string EdgehubConnectionstringVariableName = "EdgeHubConnectionString";
-        const string IotEdgedUriVariableName = "IOTEDGE_IOTEDGEDURI";
+        const string IotEdgedUriVariableName = "IOTEDGE_WORKLOADURI";
         const string IotHubHostnameVariableName = "IOTEDGE_IOTHUBHOSTNAME";
         const string GatewayHostnameVariableName = "IOTEDGE_GATEWAYHOSTNAME";
         const string DeviceIdVariableName = "IOTEDGE_DEVICEID";
         const string ModuleIdVariableName = "IOTEDGE_MODULEID";
         const string AuthSchemeVariableName = "IOTEDGE_AUTHSCHEME";
+        const string ModuleGeneratioIdVariableName = "IOTEDGE_MODULEGENERATIONID";
 
         public EdgeModuleClientFactoryTest()
         {
@@ -83,6 +84,9 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
             Environment.SetEnvironmentVariable(ModuleIdVariableName, "module1");
             TestAssert.Throws<InvalidOperationException>(() => ModuleClient.CreateFromEnvironment());
 
+            Environment.SetEnvironmentVariable(ModuleGeneratioIdVariableName, "1");
+            TestAssert.Throws<InvalidOperationException>(() => ModuleClient.CreateFromEnvironment());
+
             Environment.SetEnvironmentVariable(IotEdgedUriVariableName, null);
             Environment.SetEnvironmentVariable(IotHubHostnameVariableName, null);
             Environment.SetEnvironmentVariable(GatewayHostnameVariableName, null);
@@ -117,6 +121,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
             Environment.SetEnvironmentVariable(GatewayHostnameVariableName, "localhost");
             Environment.SetEnvironmentVariable(DeviceIdVariableName, "device1");
             Environment.SetEnvironmentVariable(ModuleIdVariableName, "module1");
+            Environment.SetEnvironmentVariable(ModuleGeneratioIdVariableName, "1");
             Environment.SetEnvironmentVariable(AuthSchemeVariableName, "sasToken");
 
             ModuleClient dc = ModuleClient.CreateFromEnvironment();
@@ -139,6 +144,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
             Environment.SetEnvironmentVariable(GatewayHostnameVariableName, "localhost");
             Environment.SetEnvironmentVariable(DeviceIdVariableName, "device1");
             Environment.SetEnvironmentVariable(ModuleIdVariableName, "module1");
+            Environment.SetEnvironmentVariable(ModuleGeneratioIdVariableName, "1");
             Environment.SetEnvironmentVariable(AuthSchemeVariableName, "sasToken");
 
             ModuleClient dc = ModuleClient.CreateFromEnvironment(TransportType.Mqtt_Tcp_Only);
@@ -161,6 +167,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
             Environment.SetEnvironmentVariable(GatewayHostnameVariableName, "localhost");
             Environment.SetEnvironmentVariable(DeviceIdVariableName, "device1");
             Environment.SetEnvironmentVariable(ModuleIdVariableName, "module1");
+            Environment.SetEnvironmentVariable(ModuleGeneratioIdVariableName, "1");
             Environment.SetEnvironmentVariable(AuthSchemeVariableName, "sasToken");
 
             ModuleClient dc = new EdgeModuleClientFactory(new ITransportSettings[] { new MqttTransportSettings(TransportType.Mqtt_Tcp_Only) }).Create();
