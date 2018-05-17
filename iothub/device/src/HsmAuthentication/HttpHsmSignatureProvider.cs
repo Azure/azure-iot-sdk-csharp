@@ -2,10 +2,10 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Client.HsmAuthentication.GeneratedCode;
 #if NETSTANDARD2_0
 using Microsoft.Azure.Devices.Client.HsmAuthentication.Transport;
 #endif
@@ -61,12 +61,12 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
                 Data = Encoding.UTF8.GetBytes(data)
             };
 
-            HttpClient httpClient = GetHttpClient();
+            HttpClient httpClient = HttpClientHelper.GetHttpClient(_providerUri);
             try
             {
-                var hsmHttpClient = new HsmHttpClient(httpClient)
+                var hsmHttpClient = new HttpHsmClient(httpClient)
                 {
-                    BaseUrl = GetBaseUrl()
+                    BaseUrl = HttpClientHelper.GetBaseUrl(_providerUri)
                 };
 
                 SignResponse response = await this.SignAsyncWithRetry(hsmHttpClient, moduleId, generationId, signRequest);
@@ -95,41 +95,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
             }
         }
 
-        private HttpClient GetHttpClient()
-        {
-            HttpClient client;
-
-            if (_providerUri.Scheme.Equals(HttpScheme, StringComparison.OrdinalIgnoreCase) || _providerUri.Scheme.Equals(HttpsScheme, StringComparison.OrdinalIgnoreCase))
-            {
-                client = new HttpClient();
-                return client;
-            }
-
-#if NETSTANDARD2_0
-            if (_providerUri.Scheme.Equals(UnixScheme, StringComparison.OrdinalIgnoreCase))
-            {
-                client = new HttpClient(new HttpUdsMessageHandler(_providerUri));
-                return client;
-            }
-#endif
-
-            throw new InvalidOperationException("ProviderUri scheme is not supported");
-        }
-
-        private string GetBaseUrl()
-        {
-
-#if NETSTANDARD2_0
-            if (_providerUri.Scheme.Equals(UnixScheme, StringComparison.OrdinalIgnoreCase))
-            {
-                return $"{HttpScheme}://{_providerUri.Segments.Last()}";
-            }
-#endif
-
-            return _providerUri.OriginalString;
-        }
-
-        private async Task<SignResponse> SignAsyncWithRetry(HsmHttpClient hsmHttpClient, string moduleId, string generationId, SignRequest signRequest)
+        private async Task<SignResponse> SignAsyncWithRetry(HttpHsmClient hsmHttpClient, string moduleId, string generationId, SignRequest signRequest)
         {
             var transientRetryPolicy = new RetryPolicy(TransientErrorDetectionStrategy, TransientRetryStrategy);
             SignResponse response = await transientRetryPolicy.ExecuteAsync(() => hsmHttpClient.SignAsync(_apiVersion, moduleId, generationId, signRequest));

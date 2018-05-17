@@ -5,6 +5,7 @@ namespace Microsoft.Azure.Devices.Client.Edge
 {
     using System;
     using System.Collections;
+    using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Client.HsmAuthentication;
 
     /// <summary>
@@ -25,26 +26,29 @@ namespace Microsoft.Azure.Devices.Client.Edge
         const string IothubConnectionstringVariableName = "IotHubConnectionString";
 
         readonly ITransportSettings[] transportSettings;
+        readonly ITrustBundleProvider trustBundleProvider;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EdgeModuleClientFactory"/> class with transport settings.
         /// </summary>
         /// <param name="transportSettings">Prioritized list of transportTypes and their settings.</param>
-        public EdgeModuleClientFactory(ITransportSettings[] transportSettings)
+        /// <param name="trustBundleProvider">Provider implementation to get trusted bundle for certificate validation.</param>
+        public EdgeModuleClientFactory(ITransportSettings[] transportSettings, ITrustBundleProvider trustBundleProvider)
         {
             this.transportSettings = transportSettings ?? throw new ArgumentNullException(nameof(transportSettings));
+            this.trustBundleProvider = trustBundleProvider ?? throw new ArgumentNullException(nameof(trustBundleProvider));
         }
 
         /// <summary>
         /// Creates a ModuleClient instance based on environment.
         /// </summary>
         /// <returns></returns>
-        public ModuleClient Create()
+        public Task<ModuleClient> CreateAsync()
         {
-            return new ModuleClient(this.CreateInternalClientFromEnvironment());
+            return this.CreateInternalClientFromEnvironmentAsync();
         }
 
-        InternalClient CreateInternalClientFromEnvironment()
+        async Task<ModuleClient> CreateInternalClientFromEnvironmentAsync()
         {
             IDictionary envVariables = Environment.GetEnvironmentVariables();
 
@@ -53,7 +57,7 @@ namespace Microsoft.Azure.Devices.Client.Edge
             // First try to create from connection string and if env variable for connection string is not found try to create from edgedUri
             if (!string.IsNullOrWhiteSpace(connectionString))
             {
-                return this.CreateInternalClientFromConnectionString(connectionString);
+                return new ModuleClient(this.CreateInternalClientFromConnectionString(connectionString));
             }
             else
             {
@@ -72,8 +76,9 @@ namespace Microsoft.Azure.Devices.Client.Edge
 
                 ISignatureProvider signatureProvider = new HttpHsmSignatureProvider(edgedUri, DefaultApiVersion);
                 var authMethod = new ModuleAuthenticationWithHsm(signatureProvider, deviceId, moduleId, generationId);
+                await trustBundleProvider.SetupTrustBundle(new Uri(edgedUri), DefaultApiVersion, transportSettings).ConfigureAwait(false);
 
-                return this.CreateInternalClientFromAuthenticationMethod(hostname, gateway, authMethod);
+                return new ModuleClient(this.CreateInternalClientFromAuthenticationMethod(hostname, gateway, authMethod));
             }
         }
 

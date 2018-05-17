@@ -11,6 +11,7 @@ namespace Microsoft.Azure.Devices.Client
     using System.Net.Http;
 #endif
     using System.Threading.Tasks;
+    using Microsoft.Azure.Devices.Client.Common;
     using Microsoft.Azure.Devices.Shared;
 
     /// <summary>
@@ -143,9 +144,9 @@ namespace Microsoft.Azure.Devices.Client
         /// based on environment variables.
         /// </summary>
         /// <returns>ModuleClient instance</returns>
-        public static ModuleClient CreateFromEnvironment()
+        public static Task<ModuleClient> CreateFromEnvironmentAsync()
         {
-            return CreateFromEnvironment(TransportType.Amqp);
+            return CreateFromEnvironmentAsync(TransportType.Amqp);
         }
 
         /// <summary>
@@ -154,9 +155,9 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="transportType">Specifies whether Amqp or Http transport is used</param>
         /// <returns>ModuleClient instance</returns>
-        public static ModuleClient CreateFromEnvironment(TransportType transportType)
+        public static Task<ModuleClient> CreateFromEnvironmentAsync(TransportType transportType)
         {
-            return CreateFromEnvironment(ClientFactory.GetTransportSettings(transportType));
+            return CreateFromEnvironmentAsync(ClientFactory.GetTransportSettings(transportType));
         }
 
         /// <summary>
@@ -165,9 +166,9 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="transportSettings">Prioritized list of transports and their settings</param>
         /// <returns>ModuleClient instance</returns>
-        public static ModuleClient CreateFromEnvironment(ITransportSettings[] transportSettings)
+        public static Task<ModuleClient> CreateFromEnvironmentAsync(ITransportSettings[] transportSettings)
         {
-            return new EdgeModuleClientFactory(transportSettings).Create();
+            return new EdgeModuleClientFactory(transportSettings, new TrustBundleProvider()).CreateAsync();
         }
 
         private static ModuleClient Create(Func<InternalClient> internalClientCreator)
@@ -222,7 +223,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Explicitly open the DeviceClient instance.
         /// </summary>
-        public Task OpenAsync() => this.internalClient.OpenAsync();
+        public Task OpenAsync() => this.internalClient.OpenAsync(); 
 
         /// <summary>
         /// Close the DeviceClient instance
