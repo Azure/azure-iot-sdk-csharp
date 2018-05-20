@@ -126,7 +126,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                          this.faultTolerantEventSendingLink,
                          new ConnectionEventArgs { ConnectionType = ConnectionType.AmqpTelemetry, ConnectionStatus = ConnectionStatus.Connected, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Connection_Ok });
 
-                     if (!string.IsNullOrWhiteSpace(this.moduleId))
+                     if (string.IsNullOrWhiteSpace(this.moduleId))
                      {
                          await this.faultTolerantDeviceBoundReceivingLink.OpenAsync(this.openTimeout, cancellationToken).ConfigureAwait(false);
                          this.linkOpenedListener(
