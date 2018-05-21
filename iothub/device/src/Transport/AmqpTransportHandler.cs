@@ -121,15 +121,18 @@ namespace Microsoft.Azure.Devices.Client.Transport
              {
                  try
                  {
-                     await Task.WhenAll(
-                         this.faultTolerantEventSendingLink.OpenAsync(this.openTimeout, cancellationToken),
-                         this.faultTolerantDeviceBoundReceivingLink.OpenAsync(this.openTimeout, cancellationToken)).ConfigureAwait(false);
+                     await this.faultTolerantEventSendingLink.OpenAsync(this.openTimeout, cancellationToken).ConfigureAwait(false);
                      this.linkOpenedListener(
                          this.faultTolerantEventSendingLink,
                          new ConnectionEventArgs { ConnectionType = ConnectionType.AmqpTelemetry, ConnectionStatus = ConnectionStatus.Connected, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Connection_Ok });
-                     this.linkOpenedListener(
-                         this.faultTolerantDeviceBoundReceivingLink,
-                         new ConnectionEventArgs { ConnectionType = ConnectionType.AmqpMessaging, ConnectionStatus = ConnectionStatus.Connected, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Connection_Ok });
+
+                     if (string.IsNullOrWhiteSpace(this.moduleId))
+                     {
+                         await this.faultTolerantDeviceBoundReceivingLink.OpenAsync(this.openTimeout, cancellationToken).ConfigureAwait(false);
+                         this.linkOpenedListener(
+                             this.faultTolerantDeviceBoundReceivingLink,
+                             new ConnectionEventArgs { ConnectionType = ConnectionType.AmqpMessaging, ConnectionStatus = ConnectionStatus.Connected, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Connection_Ok });
+                     }
                  }
                  catch (Exception exception)
                  {
@@ -987,7 +990,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             string path = this.BuildPath(CommonConstants.DeviceEventPathTemplate, CommonConstants.ModuleEventPathTemplate);
 
-            ReceivingAmqpLink messageReceivingLink = await this.IotHubConnection.CreateReceivingLinkAsync(path, this.iotHubConnectionString, this.deviceId, IotHubConnection.ReceivingLinkType.Events, this.prefetchCount, timeout, this.productInfo, cancellationToken);
+            ReceivingAmqpLink messageReceivingLink = await this.IotHubConnection.CreateReceivingLinkAsync(path, this.iotHubConnectionString, this.deviceId, IotHubConnection.ReceivingLinkType.Events, this.prefetchCount, timeout, this.productInfo, cancellationToken).ConfigureAwait(false);
             messageReceivingLink.RegisterMessageListener(amqpMessage => this.ProcessReceivedEventMessage(amqpMessage));
 
             MyStringCopy(messageReceivingLink.Name, out eventReceivingLinkName);
