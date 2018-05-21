@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices
         /// represents the modules managed by owner
         /// </summary>
         [JsonProperty(PropertyName = "managedBy")]
-        public string ManagedBy { get; private set; }
+        public string ManagedBy { get; set; }
     }
 }
 #endif
