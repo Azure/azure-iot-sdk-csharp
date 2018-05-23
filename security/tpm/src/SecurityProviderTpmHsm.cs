@@ -102,7 +102,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
             encryptedSecret = m.GetArray<byte>(encryptedSecret.Length, "encryptedSecret");
             TpmPrivate dupBlob = m.Get<TpmPrivate>();
             byte[] encWrapKey = new byte[m.Get<ushort>()];
-            encWrapKey = m.GetArray<byte>(encryptedSecret.Length, "encWrapKey");
+            encWrapKey = m.GetArray<byte>(encWrapKey.Length, "encWrapKey");
             UInt16 pubSize = m.Get<UInt16>();
             _idKeyPub = m.Get<TpmPublic>();
             byte[] cipherText = new byte[m.Get<ushort>()];
