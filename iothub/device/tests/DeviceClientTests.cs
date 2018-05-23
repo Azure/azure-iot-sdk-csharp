@@ -513,6 +513,10 @@
             Assert.AreEqual(methodBody, actualMethodBody);
             Assert.AreEqual(methodUserContext, actualMethodUserContext);
 
+            ConnectionEventArgs connectionEventArgs = new ConnectionEventArgs();
+            connectionEventArgs.ConnectionType = ConnectionType.AmqpMethodReceiving;
+            deviceClient.OnConnectionOpened(this, connectionEventArgs);
+
             innerHandler.ClearReceivedCalls();
             methodCallbackCalled = false;
             await deviceClient.SetMethodDefaultHandlerAsync(methodCallback, methodUserContext).ConfigureAwait(false);
@@ -561,6 +565,10 @@
             Assert.AreEqual(methodName, actualMethodName);
             Assert.AreEqual(methodBody, actualMethodBody);
             Assert.AreEqual(methodUserContext, actualMethodUserContext);
+
+            ConnectionEventArgs connectionEventArgs = new ConnectionEventArgs();
+            connectionEventArgs.ConnectionType = ConnectionType.AmqpMethodReceiving;
+            deviceClient.OnConnectionOpened(this, connectionEventArgs);
 
             innerHandler.ClearReceivedCalls();
             methodCallbackCalled = false;
@@ -778,6 +786,10 @@
             Assert.AreEqual(methodBody, actualMethodBody);
             Assert.AreEqual(methodUserContext, actualMethodUserContext);
 
+            ConnectionEventArgs connectionEventArgs = new ConnectionEventArgs();
+            connectionEventArgs.ConnectionType = ConnectionType.AmqpMethodReceiving;
+            deviceClient.OnConnectionOpened(this, connectionEventArgs);
+
             methodCallbackCalled = false;
             innerHandler.ClearReceivedCalls();
             await deviceClient.SetMethodDefaultHandlerAsync(methodCallback, methodUserContext).ConfigureAwait(false);
@@ -839,6 +851,10 @@
             Assert.AreEqual(methodName, actualMethodName);
             Assert.AreEqual(methodBody, actualMethodBody);
             Assert.AreEqual(methodUserContext, actualMethodUserContext);
+
+            ConnectionEventArgs connectionEventArgs = new ConnectionEventArgs();
+            connectionEventArgs.ConnectionType = ConnectionType.AmqpMethodReceiving;
+            deviceClient.OnConnectionOpened(this, connectionEventArgs);
 
             methodCallbackCalled = false;
             innerHandler.ClearReceivedCalls();
