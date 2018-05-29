@@ -5,11 +5,9 @@ using System;
 using System.Linq;
 using System.Net.Security;
 using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
 using Microsoft.Azure.Devices.Client.Edge;
 using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using NSubstitute;
 
 namespace Microsoft.Azure.Devices.Client.Test.Edge
 {

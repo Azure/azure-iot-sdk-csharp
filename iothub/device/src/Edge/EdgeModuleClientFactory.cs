@@ -24,6 +24,7 @@ namespace Microsoft.Azure.Devices.Client.Edge
         const string SasTokenAuthScheme = "SasToken";
         const string EdgehubConnectionstringVariableName = "EdgeHubConnectionString";
         const string IothubConnectionstringVariableName = "IotHubConnectionString";
+        const string EdgeCaCertificateFileVariableName = "EdgeModuleCACertificateFile";
 
         readonly ITransportSettings[] transportSettings;
         readonly ITrustBundleProvider trustBundleProvider;
@@ -57,6 +58,12 @@ namespace Microsoft.Azure.Devices.Client.Edge
             // First try to create from connection string and if env variable for connection string is not found try to create from edgedUri
             if (!string.IsNullOrWhiteSpace(connectionString))
             {
+                string certPath = Environment.GetEnvironmentVariable(EdgeCaCertificateFileVariableName);
+                if (!string.IsNullOrWhiteSpace(certPath))
+                {
+                    trustBundleProvider.SetupTrustBundle(certPath, transportSettings);
+                }
+
                 return new ModuleClient(this.CreateInternalClientFromConnectionString(connectionString));
             }
             else

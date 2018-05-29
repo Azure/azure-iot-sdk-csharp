@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Security;
@@ -19,8 +20,6 @@ namespace Microsoft.Azure.Devices.Client.Edge
 {
     internal class TrustBundleProvider : ITrustBundleProvider
     {
-        const string DefaultKeyId = "primary";
-
         static readonly ITransientErrorDetectionStrategy TransientErrorDetectionStrategy = new ErrorDetectionStrategy();
         static readonly RetryStrategy TransientRetryStrategy =
             new TransientFaultHandling.ExponentialBackoff(retryCount: 3, minBackoff: TimeSpan.FromSeconds(2), maxBackoff: TimeSpan.FromSeconds(30), deltaBackoff: TimeSpan.FromSeconds(3));
@@ -30,19 +29,16 @@ namespace Microsoft.Azure.Devices.Client.Edge
             TrustBundleResponse trustBundleResponse = await this.GetTrustBundleAsync(providerUri, apiVersion).ConfigureAwait(false);
             var certs = ParseCertificates(trustBundleResponse.Certificate);
 
-            if (certs.Count() == 0)
-            {
-                throw new InvalidOperationException("Trusted certificate is missing.");
-            }
+            Debug.WriteLine("TrustBundleProvider.SetupTrustBundle from service provider");
+            SetupCerts(transportSettings, certs);
+        }
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                WindowsCertificatesSetup(certs, transportSettings);
-            }
-            else
-            {
-                LinuxCertificatesSetup(certs);
-            }
+        public void SetupTrustBundle(string filePath, ITransportSettings[] transportSettings)
+        {
+            var expectedRoot = new X509Certificate2(filePath);
+
+            Debug.WriteLine("TrustBundleProvider.SetupTrustBundle from file");
+            SetupCerts(transportSettings, new List<X509Certificate2>() { expectedRoot });
         }
 
         internal void WindowsCertificatesSetup(IEnumerable<X509Certificate2> certs, ITransportSettings[] transportSettings)
@@ -99,6 +95,24 @@ namespace Microsoft.Azure.Devices.Client.Edge
             }
         }
 
+        private void SetupCerts(ITransportSettings[] transportSettings, IList<X509Certificate2> certs)
+        {
+            if (certs.Count() != 0)
+            {
+                Debug.WriteLine("TrustBundleProvider.SetupCerts()");
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    Debug.WriteLine("TrustBundleProvider.SetupCerts() on Windows");
+                    WindowsCertificatesSetup(certs, transportSettings);
+                }
+                else
+                {
+                    Debug.WriteLine("TrustBundleProvider.SetupCerts() on Linux");
+                    LinuxCertificatesSetup(certs);
+                }
+            }
+        }
+
         private async Task<TrustBundleResponse> GetTrustBundleAsync(Uri providerUri, string apiVersion)
         {
             HttpClient httpClient = null;
@@ -146,7 +160,7 @@ namespace Microsoft.Azure.Devices.Client.Edge
             SslPolicyErrors terminatingErrors = sslPolicyErrors & ~SslPolicyErrors.RemoteCertificateChainErrors;
             if (terminatingErrors != SslPolicyErrors.None)
             {
-                Console.WriteLine("Discovered SSL session errors: {0}", terminatingErrors);
+                Debug.WriteLine("Discovered SSL session errors: {0}", terminatingErrors);
                 return false;
             }
 
@@ -156,13 +170,13 @@ namespace Microsoft.Azure.Devices.Client.Edge
 #if NETSTANDARD2_0
             if (!chain.Build(new X509Certificate2(certificate)))
             {
-                Console.WriteLine("Unable to build the chain using the expected root certificate.");
+                Debug.WriteLine("Unable to build the chain using the expected root certificate.");
                 return false;
             }
 #else
             if (!chain.Build(new X509Certificate2(certificate.Export(X509ContentType.Cert))))
             {
-                Console.WriteLine("Unable to build the chain using the expected root certificate.");
+                Debug.WriteLine("Unable to build the chain using the expected root certificate.");
                 return false;
             }
 #endif
@@ -171,7 +185,7 @@ namespace Microsoft.Azure.Devices.Client.Edge
             X509Certificate2 actualRoot = chain.ChainElements[chain.ChainElements.Count - 1].Certificate;
             if (!trustedCertificate.Equals(actualRoot))
             {
-                Console.WriteLine("The certificate chain was not signed by the trusted root certificate.");
+                Debug.WriteLine("The certificate chain was not signed by the trusted root certificate.");
                 return false;
             }
             return true;

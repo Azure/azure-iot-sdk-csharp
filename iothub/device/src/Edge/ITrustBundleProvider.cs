@@ -9,5 +9,7 @@ namespace Microsoft.Azure.Devices.Client.Edge
     internal interface ITrustBundleProvider
     {
         Task SetupTrustBundle(Uri providerUri, string apiVersion, ITransportSettings[] transportSettings);
+
+        void SetupTrustBundle(string filePath, ITransportSettings[] transportSettings);
     }
 }
