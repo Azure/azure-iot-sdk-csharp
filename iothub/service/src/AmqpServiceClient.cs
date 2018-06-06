@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices
                 iotHubConnectionString,
                 ExceptionHandlingHelper.GetDefaultErrorMapping(),
                 DefaultOperationTimeout,
-                client => {});
+                client => { });
         }
 
         internal AmqpServiceClient(IotHubConnectionString iotHubConnectionString, bool useWebSocketOnly, IHttpClientHelper httpClientHelper) : base()
@@ -139,7 +139,7 @@ namespace Microsoft.Azure.Devices
                     SendingAmqpLink sendingLink = await GetSendingLinkAsync().ConfigureAwait(false);
                     if (timeout != null)
                     {
-                        outcome = await sendingLink.SendMessageAsync(amqpMessage, IotHubConnection.GetNextDeliveryTag(ref sendingDeliveryTag), AmqpConstants.NullBinary, (TimeSpan)timeout).ConfigureAwait(false);                        
+                        outcome = await sendingLink.SendMessageAsync(amqpMessage, IotHubConnection.GetNextDeliveryTag(ref sendingDeliveryTag), AmqpConstants.NullBinary, (TimeSpan)timeout).ConfigureAwait(false);
                     }
                     else
                     {
@@ -217,31 +217,15 @@ namespace Microsoft.Azure.Devices
             CancellationToken cancellationToken)
         {
             TimeSpan timeout = GetInvokeDeviceMethodOperationTimeout(cloudToDeviceMethod);
-            if (!string.IsNullOrEmpty(this.iotHubConnection?.ConnectionString?.ModuleId))
-            {
-                var customHeaders = new Dictionary<string, string>
-                {
-                    { CustomHeaderConstants.ModuleId, $"{this.iotHubConnection.ConnectionString.DeviceId}/{this.iotHubConnection.ConnectionString.ModuleId}" }
-                };
 
-                return this.httpClientHelper.PostAsync<CloudToDeviceMethod, CloudToDeviceMethodResult>(
-                    uri,
-                    cloudToDeviceMethod,
-                    timeout,
-                    null,
-                    customHeaders,
-                    cancellationToken);
-            }
-            else
-            {
-                return this.httpClientHelper.PostAsync<CloudToDeviceMethod, CloudToDeviceMethodResult>(
-                    uri,
-                    cloudToDeviceMethod,
-                    timeout,
-                    null,
-                    null,
-                    cancellationToken);
-            }
+            return this.httpClientHelper.PostAsync<CloudToDeviceMethod, CloudToDeviceMethodResult>(
+                uri,
+                cloudToDeviceMethod,
+                timeout,
+                null,
+                null,
+                cancellationToken);
+
         }
 
 #if ENABLE_MODULES_SDK
@@ -359,6 +343,7 @@ namespace Microsoft.Azure.Devices
         static Uri GetModuleMethodUri(string deviceId, string moduleId)
         {
             deviceId = WebUtility.UrlEncode(deviceId);
+            moduleId = WebUtility.UrlEncode(moduleId);
             return new Uri(ModuleMethodUriFormat.FormatInvariant(deviceId, moduleId), UriKind.Relative);
         }
 #endif

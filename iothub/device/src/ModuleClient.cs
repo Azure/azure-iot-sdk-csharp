@@ -1,17 +1,21 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Client.Edge;
-
 namespace Microsoft.Azure.Devices.Client
 {
+    using System.Globalization;
+    using System.Net;
+    using System.Net.Http;
+    using System.Threading;
+    using Microsoft.Azure.Devices.Client.Edge;
+    using Microsoft.Azure.Devices.Client.Transport;
     using System;
     using System.Collections.Generic;
 #if NETSTANDARD1_3
-    using System.Net.Http;
+using System.Net.Http;
 #endif
     using System.Threading.Tasks;
-    using Microsoft.Azure.Devices.Client.Common;
+    using Microsoft.Azure.Devices.Client.Extensions;
     using Microsoft.Azure.Devices.Shared;
 
     /// <summary>
@@ -19,11 +23,19 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public sealed class ModuleClient : IDisposable
     {
+        const string ModuleMethodUriFormat = "/twins/{0}/modules/{1}/methods?" + ClientApiVersionHelper.ApiVersionQueryString;
+        const string DeviceMethodUriFormat = "/twins/{0}/methods?" + ClientApiVersionHelper.ApiVersionQueryString;
         private readonly InternalClient internalClient;
+        private readonly ICertificateValidator certValidator;
 
-        internal ModuleClient(InternalClient internalClient)
+        internal ModuleClient(InternalClient internalClient) : this(internalClient, NullCertificateValidator.Instance)
+        {
+        }
+
+        internal ModuleClient(InternalClient internalClient, ICertificateValidator certValidator)
         {
             this.internalClient = internalClient ?? throw new ArgumentNullException(nameof(internalClient));
+            this.certValidator = certValidator ?? throw new ArgumentNullException(nameof(certValidator));
 
             if (string.IsNullOrWhiteSpace(this.internalClient.IotHubConnectionString?.ModuleId))
             {
@@ -223,7 +235,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Explicitly open the DeviceClient instance.
         /// </summary>
-        public Task OpenAsync() => this.internalClient.OpenAsync(); 
+        public Task OpenAsync() => this.internalClient.OpenAsync();
 
         /// <summary>
         /// Close the DeviceClient instance
@@ -358,6 +370,100 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>The task containing the event</returns>
         public Task SetMessageHandlerAsync(MessageHandler messageHandler, object userContext) =>
             this.internalClient.SetMessageHandlerAsync(messageHandler, userContext);
+
+        /// <summary>
+        /// Interactively invokes a method on device
+        /// </summary>
+        /// <param name="deviceId">Device Id</param>
+        /// <param name="directMethodRequest">Device method parameters (passthrough to device)</param>
+        /// <returns>Method result</returns>
+        public Task<DirectMethodResult> InvokeMethodAsync(string deviceId, DirectMethodRequest directMethodRequest)
+        {
+            return this.InvokeMethodAsync(deviceId, directMethodRequest, CancellationToken.None);
+        }
+
+        /// <summary>
+        /// Interactively invokes a method on device
+        /// </summary>
+        /// <param name="deviceId">Device Id</param>
+        /// <param name="directMethodRequest">Device method parameters (passthrough to device)</param>
+        /// <param name="cancellationToken">Cancellation Token</param>
+        /// <returns>Method result</returns>
+        public Task<DirectMethodResult> InvokeMethodAsync(string deviceId, DirectMethodRequest directMethodRequest, CancellationToken cancellationToken)
+        {
+            return InvokeMethodAsync(GetDeviceMethodUri(deviceId), directMethodRequest, cancellationToken);
+        }
+
+        /// <summary>
+        /// Interactively invokes a method on module
+        /// </summary>
+        /// <param name="deviceId">Device Id</param>
+        /// <param name="moduleId">Module Id</param>
+        /// <param name="directMethodRequest">Device method parameters (passthrough to device)</param>
+        /// <returns>Method result</returns>
+        public Task<DirectMethodResult> InvokeMethodAsync(string deviceId, string moduleId, DirectMethodRequest directMethodRequest)
+        {
+            return this.InvokeMethodAsync(deviceId, moduleId, directMethodRequest, CancellationToken.None);
+        }
+
+        /// <summary>
+        /// Interactively invokes a method on module
+        /// </summary>
+        /// <param name="deviceId">Device Id</param>
+        /// <param name="moduleId">Module Id</param>
+        /// <param name="directMethodRequest">Device method parameters (passthrough to device)</param>
+        /// <param name="cancellationToken">Cancellation Token</param>
+        /// <returns>Method result</returns>
+        public Task<DirectMethodResult> InvokeMethodAsync(string deviceId, string moduleId, DirectMethodRequest directMethodRequest, CancellationToken cancellationToken)
+        {
+            return InvokeMethodAsync(GetModuleMethodUri(deviceId, moduleId), directMethodRequest, cancellationToken);
+        }
+
+        private Task<DirectMethodResult> InvokeMethodAsync(Uri uri, DirectMethodRequest directMethodRequest, CancellationToken cancellationToken)
+        {
+            HttpClientHandler httpClientHandler = null;
+            var customCertificateValidation =  this.certValidator.GetCustomCertificateValidation();
+
+            if (customCertificateValidation != null)
+            {
+#if NETSTANDARD1_3 || NETSTANDARD2_0
+                httpClientHandler = new HttpClientHandler();
+                httpClientHandler.ServerCertificateCustomValidationCallback = customCertificateValidation;
+#else
+            httpClientHandler = new WebRequestHandler();
+            ((WebRequestHandler)httpClientHandler).ServerCertificateValidationCallback = (sender, certificate, chain, errors) =>
+            {
+                return customCertificateValidation(sender, certificate, chain, errors);
+            };
+#endif
+            }
+
+            var context = new PipelineContext();
+            context.Set(new ProductInfo() { Extra = this.InternalClient.ProductInfo });
+
+            Http1TransportSettings transportSettings = new Http1TransportSettings();
+            //We need to add the certificate to the httpTransport if DeviceAuthenticationWithX509Certificate
+            if (this.internalClient.Certificate != null)
+            {
+                transportSettings.ClientCertificate = this.internalClient.Certificate;
+            }
+
+            HttpTransportHandler httpTransport = new HttpTransportHandler(context, this.internalClient.IotHubConnectionString, transportSettings, httpClientHandler);
+            return httpTransport.InvokeMethodAsync(directMethodRequest, uri, cancellationToken);
+        }
+
+        static Uri GetDeviceMethodUri(string deviceId)
+        {
+            deviceId = WebUtility.UrlEncode(deviceId);
+            return new Uri(string.Format(CultureInfo.InvariantCulture, DeviceMethodUriFormat, deviceId), UriKind.Relative);
+        }
+
+        static Uri GetModuleMethodUri(string deviceId, string moduleId)
+        {
+            deviceId = WebUtility.UrlEncode(deviceId);
+            moduleId = WebUtility.UrlEncode(moduleId);
+            return new Uri(string.Format(CultureInfo.InvariantCulture, ModuleMethodUriFormat, deviceId, moduleId), UriKind.Relative);
+        }
 
         #endregion Module Specific API
     }

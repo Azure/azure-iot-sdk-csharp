@@ -23,6 +23,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
     sealed class HttpTransportHandler : TransportHandler
     {
         static readonly TimeSpan DefaultOperationTimeout = TimeSpan.FromSeconds(60);
+        static readonly TimeSpan DefaultMethodOperationTimeout = TimeSpan.FromSeconds(100);
         static readonly IDictionary<string, string> MapMessageProperties2HttpHeaders = new Dictionary<string, string>
             {
                 { MessageSystemPropertyNames.Ack, CustomHeaderConstants.Ack },
@@ -393,6 +394,38 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     ExceptionHandlingHelper.GetDefaultErrorMapping(),
                     customHeaders,
                     cancellationToken), cancellationToken);
+        }
+
+        internal Task<DirectMethodResult> InvokeMethodAsync(DirectMethodRequest directMethodRequest, Uri uri, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(this.moduleId))
+            {
+                throw new InvalidOperationException("ModuleId is required.");
+            }
+
+            TimeSpan timeout = GetInvokeDeviceMethodOperationTimeout(directMethodRequest);
+            var customHeaders = new Dictionary<string, string>
+            {
+                { CustomHeaderConstants.ModuleId, $"{this.deviceId}/{this.moduleId}" }
+            };
+
+            return this.httpClientHelper.PostAsync<DirectMethodRequest, DirectMethodResult>(
+                uri,
+                directMethodRequest,
+                null,
+                customHeaders,
+                cancellationToken);
+        }
+
+        static TimeSpan GetInvokeDeviceMethodOperationTimeout(DirectMethodRequest directMethodRequest)
+        {
+            // For InvokeDeviceMethod, we need to take into account the timeouts specified
+            // for the Device to connect and send a response. We also need to take into account
+            // the transmission time for the request send/receive
+            TimeSpan timeout = TimeSpan.FromSeconds(15); // For wire time
+            timeout += TimeSpan.FromSeconds(directMethodRequest.ConnectionTimeoutInSeconds ?? 0);
+            timeout += TimeSpan.FromSeconds(directMethodRequest.ResponseTimeoutInSeconds ?? 0);
+            return timeout <= DefaultMethodOperationTimeout ? DefaultMethodOperationTimeout : timeout;
         }
 
         static IDictionary<string, string> PrepareCustomHeaders(string toHeader, string messageId, string operation)
