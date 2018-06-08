@@ -5,6 +5,7 @@ namespace Microsoft.Azure.Devices.Shared
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.Reflection;
     using Microsoft.Azure.Devices.Common;
     using Newtonsoft.Json;
