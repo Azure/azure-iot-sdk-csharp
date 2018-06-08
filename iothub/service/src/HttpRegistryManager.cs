@@ -19,24 +19,29 @@ namespace Microsoft.Azure.Devices
 
     class HttpRegistryManager : RegistryManager
     {
-        const string AdminUriFormat = "/$admin/{0}?{1}";
-        const string RequestUriFormat = "/devices/{0}?{1}";
-        const string JobsUriFormat = "/jobs{0}?{1}";
-        const string StatisticsUriFormat = "/statistics/devices?" + ClientApiVersionHelper.ApiVersionQueryString;
-        const string DevicesRequestUriFormat = "/devices/?top={0}&{1}";
-        const string DevicesQueryUriFormat = "/devices/query?" + ClientApiVersionHelper.ApiVersionQueryString;
-        const string WildcardEtag = "*";
+        private const string AdminUriFormat = "/$admin/{0}?{1}";
+        private const string RequestUriFormat = "/devices/{0}?{1}";
+        private const string JobsUriFormat = "/jobs{0}?{1}";
+        private const string StatisticsUriFormat = "/statistics/devices?" + ClientApiVersionHelper.ApiVersionQueryString;
+        private const string DevicesRequestUriFormat = "/devices/?top={0}&{1}";
+        private const string DevicesQueryUriFormat = "/devices/query?" + ClientApiVersionHelper.ApiVersionQueryString;
+        private const string WildcardEtag = "*";
 
-        const string ContinuationTokenHeader = "x-ms-continuation";
-        const string PageSizeHeader = "x-ms-max-item-count";
+        private const string ContinuationTokenHeader = "x-ms-continuation";
+        private const string PageSizeHeader = "x-ms-max-item-count";
 
-        const string TwinUriFormat = "/twins/{0}?{1}";
-        const string TwinTagsUriFormat = "/twins/{0}/tags?{1}";
-        const string TwinDesiredPropertiesUriFormat = "/twins/{0}/properties/desired?{1}";
+        private const string TwinUriFormat = "/twins/{0}?{1}";
+        private const string TwinTagsUriFormat = "/twins/{0}/tags?{1}";
+        private const string TwinDesiredPropertiesUriFormat = "/twins/{0}/properties/desired?{1}";
 
-        static readonly Regex DeviceIdRegex = new Regex(@"^[A-Za-z0-9\-:.+%_#*?!(),=@;$']{1,128}$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        static readonly TimeSpan DefaultOperationTimeout = TimeSpan.FromSeconds(100);
-        static readonly TimeSpan DefaultGetDevicesOperationTimeout = TimeSpan.FromSeconds(120);
+        private static readonly TimeSpan regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
+        private static readonly Regex DeviceIdRegex = new Regex(
+            @"^[A-Za-z0-9\-:.+%_#*?!(),=@;$']{1,128}$", 
+            RegexOptions.Compiled | RegexOptions.IgnoreCase,
+            regexTimeoutMilliseconds);
+
+        private static readonly TimeSpan DefaultOperationTimeout = TimeSpan.FromSeconds(100);
+        private static readonly TimeSpan DefaultGetDevicesOperationTimeout = TimeSpan.FromSeconds(120);
 
         IHttpClientHelper httpClientHelper;
         readonly string iotHubName;
