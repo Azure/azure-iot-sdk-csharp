@@ -155,7 +155,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
             if (sasAuthorizationRule.PrimaryKey != null)
             {
                 string primareyKeyComputedSignature = ComputeSignature(Convert.FromBase64String(sasAuthorizationRule.PrimaryKey));
-                if (string.Equals(_signature, primareyKeyComputedSignature))
+                if (string.Equals(_signature, primareyKeyComputedSignature, StringComparison.Ordinal))
                 {
                     return;
                 }
@@ -164,7 +164,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
             if (sasAuthorizationRule.SecondaryKey != null)
             {
                 string secondaryKeyComputedSignature = ComputeSignature(Convert.FromBase64String(sasAuthorizationRule.SecondaryKey));
-                if (string.Equals(_signature, secondaryKeyComputedSignature))
+                if (string.Equals(_signature, secondaryKeyComputedSignature, StringComparison.Ordinal))
                 {
                     return;
                 }

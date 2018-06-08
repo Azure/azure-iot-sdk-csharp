@@ -33,7 +33,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="baseAddress">the <code>Uri</code> HTTP endpoint in the service.</param>
         /// <param name="authenticationHeaderProvider">the <see cref="IAuthorizationHeaderProvider"/> that will provide the 
         ///     authorization token for the HTTP communication.</param>
-        /// <param name="preRequestActionForAllRequests">the function with the HTTP pre-request actions.</param>
         public ContractApiHttp(
             Uri baseAddress,
             IAuthorizationHeaderProvider authenticationHeaderProvider)

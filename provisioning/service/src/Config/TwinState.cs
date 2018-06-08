@@ -65,10 +65,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// }
     /// </code>
     /// </example>
-    /// <seealso cref="https://docs.microsoft.com/en-us/rest/api/iot-dps/deviceenrollment">Device Enrollment</seealso>
-    /// <seealso cref="https://docs.microsoft.com/en-us/rest/api/iot-dps/deviceenrollmentgroup">Device Enrollment Group</seealso>
-    /// <seealso cref="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-device-twins">Understand and use device twins in IoT Hub</seealso>
-    /// <seealso cref="https://docs.microsoft.com/en-us/rest/api/iothub/devicetwinapi">Device Twin Api</seealso>
+    /// <seealso cref="!:https://docs.microsoft.com/en-us/rest/api/iot-dps/deviceenrollment">Device Enrollment</seealso>
+    /// <seealso cref="!:https://docs.microsoft.com/en-us/rest/api/iot-dps/deviceenrollmentgroup">Device Enrollment Group</seealso>
+    /// <seealso cref="!:https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-device-twins">Understand and use device twins in IoT Hub</seealso>
+    /// <seealso cref="!:https://docs.microsoft.com/en-us/rest/api/iothub/devicetwinapi">Device Twin Api</seealso>
     public class TwinState
     {
         /// <summary>

@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// </summary>
     /// <remarks>
     /// This error is returned as a result of the 
-    ///     <see cref="ProvisioningServiceClient.RunBulkEnrollmentOperationAsync(BulkOperationMode, IEnumerable{IndividualEnrollment})"/>
+    ///     <see cref="ProvisioningServiceClient.RunBulkEnrollmentOperationAsync(BulkOperationMode, System.Collections.Generic.IEnumerable{IndividualEnrollment})"/>
     ///     as part of the <see cref="BulkEnrollmentOperationResult"/>.
     /// </remarks>
     /// <example>
@@ -24,14 +24,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// }
     /// </code>
     /// </example>
-    /// <seealso cref="https://docs.microsoft.com/en-us/rest/api/iot-dps/deviceenrollment">Device Enrollment</seealso>
+    /// <seealso cref="!:https://docs.microsoft.com/en-us/rest/api/iot-dps/deviceenrollment">Device Enrollment</seealso>
     public class BulkEnrollmentOperationError
     {
         /* SRS_BULK_ENROLLMENT_OPERATION_ERRO_21_002: [The BulkEnrollmentOperationError shall store the provided information.] */
 
         /// <summary>
-        /// Registration ID
+        /// Registration ID.
         /// </summary>
+        /// <remarks>
+        /// A valid registration Id shall be alphanumeric, lowercase, and may contain hyphens. Max characters 128.
+        /// </remarks>
+        /// <exception cref="ArgumentException">if the provided string do not fits the registration Id requirements</exception>
         [JsonProperty(PropertyName = "registrationId", Required = Required.Always)]
         public string RegistrationId
         {
@@ -40,13 +44,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 return _registrationId;
             }
 
-            /// <summary>
-            /// Registration ID.
-            /// </summary>
-            /// <remarks>
-            /// A valid registration Id shall be alphanumeric, lowercase, and may contain hyphens. Max characters 128.
-            /// </remarks>
-            /// <exception cref="ArgumentException">if the provided string do not fits the registration Id requirements</exception>
             private set
             {
                 /* SRS_BULK_ENROLLMENT_OPERATION_ERRO_21_001: [The BulkEnrollmentOperationError shall throws JsonSerializationException if the 

@@ -194,7 +194,8 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
         {
             if (!regex.IsMatch(value))
             {
-                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "The connection string has an invalid value for property: {0}", propertyName), "serviceConnectionString");
+                throw new ArgumentException(
+                    string.Format(CultureInfo.InvariantCulture, "The connection string has an invalid value for property: {0}", propertyName), nameof(value));
             }
         }
 
@@ -211,7 +212,9 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
             string value;
             if (!map.TryGetValue(propertyName, out value))
             {
-                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "The connection string is missing the property: {0}", propertyName), "serviceConnectionString");
+                throw new ArgumentException(
+                    string.Format(CultureInfo.InvariantCulture, "The connection string is missing the property: {0}", propertyName), 
+                    nameof(map));
             }
 
             return value;
