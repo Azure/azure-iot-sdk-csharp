@@ -8,14 +8,14 @@ Need support?
 - Found a bug? Please help us fix it by thoroughly documenting it and filing an issue on GitHub (C, Java, .NET, Node.js, Python).
 -->
 
-# Checklist
+## Checklist
 - [ ] I have read the [contribution guidelines](https://github.com/Azure/azure-iot-sdk-csharp/blob/master/.github/CONTRIBUTING.md).
 - [ ] I added or modified the existing tests to cover the change (we do not allow our test coverage to go down).
 - [ ] This pull-request is submitted against the `master` branch.
 <!-- If not against master, please add the reason. -->
 
-# Description of the changes
+## Description of the changes
 <!-- Itemized list of changes. -->
 
-# Reference/Link to the issue solved with this PR (if any)
+## Reference/Link to the issue solved with this PR (if any)
 <!-- Use Fixes #nnnn to automatically close the issue. -->
