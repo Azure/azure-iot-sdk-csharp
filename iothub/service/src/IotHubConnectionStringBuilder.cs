@@ -6,7 +6,6 @@ namespace Microsoft.Azure.Devices
     using System;
     using System.Collections.Generic;
     using System.Globalization;
-    using System.Linq.Expressions;
     using System.Text;
     using System.Text.RegularExpressions;
     using Microsoft.Azure.Devices.Common;
@@ -21,10 +20,10 @@ namespace Microsoft.Azure.Devices
         private const char ValuePairSeparator = '=';
         private const string HostNameSeparator = ".";
 
-        private static readonly string HostNamePropertyName = ((MemberExpression)((Expression<Func<IotHubConnectionStringBuilder, string>>)(_ => _.HostName)).Body).Member.Name; // todo: replace with nameof()
-        private static readonly string SharedAccessKeyNamePropertyName = ((MemberExpression)((Expression<Func<IotHubConnectionStringBuilder, string>>)(_ => _.SharedAccessKeyName)).Body).Member.Name; // todo: replace with nameof()
-        private static readonly string SharedAccessKeyPropertyName = ((MemberExpression)((Expression<Func<IotHubConnectionStringBuilder, string>>)(_ => _.SharedAccessKey)).Body).Member.Name; // todo: replace with nameof()
-        private static readonly string SharedAccessSignaturePropertyName = ((MemberExpression)((Expression<Func<IotHubConnectionStringBuilder, string>>)(_ => _.SharedAccessSignature)).Body).Member.Name; // todo: replace with nameof();
+        private const string HostNamePropertyName = "HostName";
+        private const string SharedAccessKeyNamePropertyName = "SharedAccessKeyName";
+        private const string SharedAccessKeyPropertyName = "SharedAccessKey";
+        private const string SharedAccessSignaturePropertyName = "SharedAccessSignature";
 
         private static readonly TimeSpan regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
         private static readonly Regex HostNameRegex = new Regex(@"[a-zA-Z0-9_\-\.]+$", RegexOptions.Compiled | RegexOptions.IgnoreCase, regexTimeoutMilliseconds);
@@ -33,13 +32,18 @@ namespace Microsoft.Azure.Devices
         private static readonly Regex SharedAccessSignatureRegex = new Regex(@"^.+$", RegexOptions.Compiled | RegexOptions.IgnoreCase, regexTimeoutMilliseconds);
 
         private string hostName;
-        private string iotHubName;
         private IAuthenticationMethod authenticationMethod;
 
-        IotHubConnectionStringBuilder()
+        internal IotHubConnectionStringBuilder()
         {
         }
 
+        /// <summary>
+        /// Creates an <see cref="IotHubConnectionStringBuilder"/> object.
+        /// </summary>
+        /// <param name="hostname">The host name.</param>
+        /// <param name="authenticationMethod">The authentication method.</param>
+        /// <returns></returns>
         public static IotHubConnectionStringBuilder Create(string hostname, IAuthenticationMethod authenticationMethod)
         {
             var iotHubConnectionStringBuilder = new IotHubConnectionStringBuilder
@@ -53,11 +57,15 @@ namespace Microsoft.Azure.Devices
             return iotHubConnectionStringBuilder;
         }
 
+        /// <summary>
+        /// Creates an <see cref="IotHubConnectionStringBuilder"/> object.
+        /// </summary>
+        /// <param name="iotHubConnectionString">The connection string.</param>
         public static IotHubConnectionStringBuilder Create(string iotHubConnectionString)
         {
             if (string.IsNullOrWhiteSpace(iotHubConnectionString))
             {
-                throw new ArgumentNullException("iotHubConnectionString");
+                throw new ArgumentNullException(nameof(iotHubConnectionString));
             }
 
             var iotHubConnectionStringBuilder = new IotHubConnectionStringBuilder();
@@ -67,28 +75,43 @@ namespace Microsoft.Azure.Devices
             return iotHubConnectionStringBuilder;
         }
 
+        /// <summary>
+        /// Gets or sets the host name.
+        /// </summary>
         public string HostName
         {
             get { return this.hostName; }
             set { this.SetHostName(value); }
         }
 
+        /// <summary>
+        /// Gets or sets the authentication method.
+        /// </summary>
         public IAuthenticationMethod AuthenticationMethod
         {
             get { return this.authenticationMethod; }
             set { this.SetAuthenticationMethod(value); }
         }
 
+        /// <summary>
+        /// Gets the shared access key name.
+        /// </summary>
         public string SharedAccessKeyName { get; internal set; }
 
+        /// <summary>
+        /// Gets the shared access key value.
+        /// </summary>
         public string SharedAccessKey { get; internal set; }
 
+        /// <summary>
+        /// Gets the shared access key signature.
+        /// </summary>
         public string SharedAccessSignature { get; internal set; }
 
-        public string IotHubName
-        {
-            get { return this.iotHubName; }
-        }
+        /// <summary>
+        /// Gets the IoT Hub name.
+        /// </summary>
+        public string IotHubName { get; private set; }
 
         internal IotHubConnectionString ToIotHubConnectionString()
         {
@@ -96,6 +119,10 @@ namespace Microsoft.Azure.Devices
             return new IotHubConnectionString(this);
         }
 
+        /// <summary>
+        /// Gets the connection string.
+        /// </summary>
+        /// <returns>The connection string.</returns>
         public override string ToString()
         {
             this.Validate();
@@ -113,7 +140,7 @@ namespace Microsoft.Azure.Devices
             return stringBuilder.ToString();
         }
 
-        void Parse(string iotHubConnectionString)
+        internal void Parse(string iotHubConnectionString)
         {
             IDictionary<string, string> map = iotHubConnectionString.ToDictionary(ValuePairDelimiter, ValuePairSeparator);
 
@@ -125,7 +152,7 @@ namespace Microsoft.Azure.Devices
             this.Validate();
         }
 
-        void Validate()
+        internal void Validate()
         {
             if (this.SharedAccessKeyName.IsNullOrWhiteSpace())
             {
@@ -158,11 +185,11 @@ namespace Microsoft.Azure.Devices
             ValidateFormatIfSpecified(this.SharedAccessSignature, SharedAccessSignaturePropertyName, SharedAccessSignatureRegex);
         }
 
-        void SetHostName(string hostname)
+        internal void SetHostName(string hostname)
         {
             if (string.IsNullOrWhiteSpace(hostname))
             {
-                throw new ArgumentNullException("hostname");
+                throw new ArgumentNullException(nameof(hostname));
             }
 
             ValidateFormat(hostname, HostNamePropertyName, HostNameRegex);
@@ -170,9 +197,9 @@ namespace Microsoft.Azure.Devices
             this.SetIotHubName();
         }
 
-        void SetIotHubName()
+        internal void SetIotHubName()
         {
-            this.iotHubName = GetIotHubName(this.HostName);
+            this.IotHubName = GetIotHubName(this.HostName);
 
             if (string.IsNullOrWhiteSpace(this.IotHubName))
             {
@@ -180,11 +207,11 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        void SetAuthenticationMethod(IAuthenticationMethod authMethod)
+        internal void SetAuthenticationMethod(IAuthenticationMethod authMethod)
         {
             if (authMethod == null)
             {
-                throw new ArgumentNullException("authMethod");
+                throw new ArgumentNullException(nameof(authMethod));
             }
 
             authMethod.Populate(this);
@@ -192,15 +219,15 @@ namespace Microsoft.Azure.Devices
             this.Validate();
         }
 
-        static void ValidateFormat(string value, string propertyName, Regex regex)
+        internal static void ValidateFormat(string value, string propertyName, Regex regex)
         {
             if (!regex.IsMatch(value))
             {
-                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "The connection string has an invalid value for property: {0}", propertyName), "iotHubConnectionString");
+                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "The connection string has an invalid value for property: {0}", propertyName), nameof(value));
             }
         }
 
-        static void ValidateFormatIfSpecified(string value, string propertyName, Regex regex)
+        internal static void ValidateFormatIfSpecified(string value, string propertyName, Regex regex)
         {
             if (!string.IsNullOrEmpty(value))
             {
@@ -208,25 +235,25 @@ namespace Microsoft.Azure.Devices
             }
         }
 
-        static string GetConnectionStringValue(IDictionary<string, string> map, string propertyName)
+        internal static string GetConnectionStringValue(IDictionary<string, string> map, string propertyName)
         {
             string value;
             if (!map.TryGetValue(propertyName, out value))
             {
-                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "The connection string is missing the property: {0}", propertyName), "iotHubConnectionString");
+                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "The connection string is missing the property: {0}", propertyName), nameof(map));
             }
 
             return value;
         }
 
-        static string GetConnectionStringOptionalValue(IDictionary<string, string> map, string propertyName)
+        internal static string GetConnectionStringOptionalValue(IDictionary<string, string> map, string propertyName)
         {
             string value;
             map.TryGetValue(propertyName, out value);
             return value;
         }
 
-        static string GetIotHubName(string hostName)
+        internal static string GetIotHubName(string hostName)
         {
             int index = hostName.IndexOf(HostNameSeparator, StringComparison.OrdinalIgnoreCase);
             string iotHubName = index >= 0 ? hostName.Substring(0, index) : hostName;

@@ -196,7 +196,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <remarks>
         /// A valid registration Id shall be alphanumeric, lowercase, and may contain hyphens. Max characters 128.
         /// </remarks>
-        /// <exception cref="ArgumentException">if the provided string do not fits the registration Id requirements</exception>
+        /// <exception cref="ArgumentException">if the provided string does not fit the registration Id requirements</exception>
         [JsonProperty(PropertyName = "registrationId")]
         public string RegistrationId
         {

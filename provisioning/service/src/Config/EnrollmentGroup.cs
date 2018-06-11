@@ -218,7 +218,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <remarks>
         /// A valid enrollmentGroup Id shall be alphanumeric, lowercase, and may contain hyphens. Max characters 128.
         /// </remarks>
-        /// <exception cref="ArgumentException">if the provided string do not fits the enrollmentGroup Id requirements</exception>
+        /// <exception cref="ArgumentException">if the provided string does not fit the enrollmentGroup Id requirements</exception>
         [JsonProperty(PropertyName = "enrollmentGroupId")]
         public string EnrollmentGroupId
         {
