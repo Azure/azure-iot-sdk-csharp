@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "FileUploadSample": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "IOTHUB_DEVICE_CONN_STRING": "<yourDeviceConnectionString>"
+      }
+    }
+  }
+}

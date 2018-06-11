@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "KeysRolloverSample": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "IOTHUB_DEVICE_CONN_STRING": "<yourDeviceConnectionString>",
+        "IOTHUB_DEVICE_CONN_STRING2": "<yourDeviceConnectionString>"
+      }
+    }
+  }
+}
