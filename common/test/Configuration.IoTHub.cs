@@ -22,6 +22,53 @@ namespace Microsoft.Azure.Devices.E2ETests
             public static string ConnectionStringInvalidServiceCertificate => GetValue("IOTHUB_CONN_STRING_INVALIDCERT", string.Empty);
 
             public static string DeviceConnectionStringInvalidServiceCertificate => GetValue("IOTHUB_DEVICE_CONN_STRING_INVALIDCERT", string.Empty);
+
+            public static string DeviceConnectionString => GetValue("IOTHUB_DEVICE_CONN_STRING");
+
+            public class DeviceConnectionStringParser
+            {
+                public DeviceConnectionStringParser(string connectionString)
+                {
+                    string[] parts = connectionString.Split(';');
+                    foreach (string part in parts)
+                    {
+                        string[] tv = part.Split('=');
+    
+                        switch(tv[0].ToUpperInvariant())
+                        {
+                            case "HOSTNAME":
+                                IoTHub = tv[1];
+                                break;
+                            case "SHAREDACCESSKEY":
+                                SharedAccessKey = tv[1];
+                                break;
+                            case "DEVICEID":
+                                DeviceID = tv[1];
+                                break;
+                            default:
+                                throw new NotSupportedException("Unrecognized tag found in test ConnectionString.");
+                        }
+                    }
+                }
+
+                public string IoTHub
+                {
+                    get;
+                    private set;
+                }
+
+                public string DeviceID
+                {
+                    get;
+                    private set;
+                }
+
+                public string SharedAccessKey
+                {
+                    get;
+                    private set;
+                }
+            }
         }
     }
 }
