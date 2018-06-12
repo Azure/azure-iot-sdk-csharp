@@ -94,8 +94,13 @@ namespace Microsoft.Azure.Devices.Client.Edge
                 var authMethod = new ModuleAuthenticationWithHsm(signatureProvider, deviceId, moduleId, generationId);
 
                 Debug.WriteLine("EdgeModuleClientFactory setupTrustBundle from service");
-                IList<X509Certificate2> certs = await trustBundleProvider.GetTrustBundleAsync(new Uri(edgedUri), DefaultApiVersion).ConfigureAwait(false);
-                ICertificateValidator certificateValidator = this.GetCertificateValidator(certs);
+
+                ICertificateValidator certificateValidator = NullCertificateValidator.Instance;
+                if (!string.IsNullOrEmpty(gateway))
+                {
+                    IList<X509Certificate2> certs = await trustBundleProvider.GetTrustBundleAsync(new Uri(edgedUri), DefaultApiVersion).ConfigureAwait(false);
+                    certificateValidator = this.GetCertificateValidator(certs);
+                }
 
                 return new ModuleClient(this.CreateInternalClientFromAuthenticationMethod(hostname, gateway, authMethod), certificateValidator);
             }
