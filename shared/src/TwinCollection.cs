@@ -6,12 +6,17 @@ namespace Microsoft.Azure.Devices.Shared
     using System;
     using System.Collections;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
 
     /// <summary>
     /// Represents a collection of properties for <see cref="Twin"/>
     /// </summary>
+    [SuppressMessage(
+        "Microsoft.Design", 
+        "CA1010:CollectionsShouldImplementGenericInterface", 
+        Justification = "Public API: this was not designed to be a generic collection.")]
     [JsonConverter(typeof(TwinCollectionJsonConverter))]
     public class TwinCollection : IEnumerable
     {
@@ -127,6 +132,8 @@ namespace Microsoft.Azure.Devices.Shared
         /// </summary>
         /// <param name="propertyName">Name of the property to get</param>
         /// <returns>Value for the given property name</returns>
+        [SuppressMessage("Microsoft.Design", "CA1065:DoNotRaiseExceptionsInUnexpectedLocations",
+            Justification = "AppCompat. Changing the exception to ArgumentException might break existing applications.")]
         public dynamic this[string propertyName]
         {
             get

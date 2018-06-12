@@ -12,8 +12,9 @@ namespace Microsoft.Azure.Devices
     /// </summary>
     public static class X509ThumbprintExtensions
     {
-        static readonly Regex SHA1ThumbprintRegex = new Regex(@"^([a-f0-9]{2}){20}$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        static readonly Regex SHA256ThumbprintRegex = new Regex(@"^([a-f0-9]{2}){32}$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly TimeSpan regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
+        private static readonly Regex SHA1ThumbprintRegex = new Regex(@"^([a-f0-9]{2}){20}$", RegexOptions.Compiled | RegexOptions.IgnoreCase, regexTimeoutMilliseconds);
+        private static readonly Regex SHA256ThumbprintRegex = new Regex(@"^([a-f0-9]{2}){32}$", RegexOptions.Compiled | RegexOptions.IgnoreCase, regexTimeoutMilliseconds);
         
         /// <summary>
         /// Checks if contents are valid

@@ -128,8 +128,9 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         ITransportSettings[] transportSettings;
 
         internal X509Certificate2 Certificate { get; set; }
-        const RegexOptions RegexOptions = System.Text.RegularExpressions.RegexOptions.Compiled | System.Text.RegularExpressions.RegexOptions.IgnoreCase;
-        static readonly Regex DeviceIdParameterRegex = new Regex(DeviceIdParameterPattern, RegexOptions);
+        private static readonly TimeSpan regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
+        private static readonly Regex DeviceIdParameterRegex = 
+            new Regex(DeviceIdParameterPattern, RegexOptions.Compiled | RegexOptions.IgnoreCase, regexTimeoutMilliseconds);
 
         internal IDelegatingHandler InnerHandler { get; set; }
 

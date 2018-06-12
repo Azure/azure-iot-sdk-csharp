@@ -14,8 +14,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// User must provide the Endorsement Key, and can, optionally, provide the Storage Root Key.
     /// </remarks>
     ///
-    /// <seealso cref="https://docs.microsoft.com/en-us/rest/api/iot-dps/deviceenrollment">Device Enrollment</seealso>
-    /// <seealso cref="https://trustedcomputinggroup.org/work-groups/trusted-platform-module">Trusted Platform Module</seealso>
+    /// <seealso cref="!:https://docs.microsoft.com/en-us/rest/api/iot-dps/deviceenrollment">Device Enrollment</seealso>
+    /// <seealso cref="!:https://trustedcomputinggroup.org/work-groups/trusted-platform-module">Trusted Platform Module</seealso>
     public sealed class TpmAttestation : Attestation
     {
         /// <summary>
@@ -62,7 +62,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 {
                     /* SRS_TPM_ATTESTATION_21_001: [The EndorsementKey setter shall throws ArgumentNullException if the provided 
                                                 endorsementKey is null or white space.] */
-                    throw new ArgumentNullException(nameof(EndorsementKey));
+                    throw new ArgumentNullException(nameof(value));
                 }
                 _endorsementKey = value;
             }

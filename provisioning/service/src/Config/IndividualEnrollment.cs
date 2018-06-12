@@ -65,7 +65,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// }
     /// </code>
     /// </example>
-    /// <seealso cref="https://docs.microsoft.com/en-us/rest/api/iot-dps/deviceenrollment">Device Enrollment</seealso>
+    /// <seealso cref="!:https://docs.microsoft.com/en-us/rest/api/iot-dps/deviceenrollment">Device Enrollment</seealso>
     public class IndividualEnrollment : IETagHolder
     {
         /// <summary>
@@ -191,8 +191,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// Registration ID
+        /// Registration ID.
         /// </summary>
+        /// <remarks>
+        /// A valid registration Id shall be alphanumeric, lowercase, and may contain hyphens. Max characters 128.
+        /// </remarks>
+        /// <exception cref="ArgumentException">if the provided string does not fit the registration Id requirements</exception>
         [JsonProperty(PropertyName = "registrationId")]
         public string RegistrationId
         {
@@ -201,13 +205,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 return _registrationId;
             }
 
-            /// <summary>
-            /// Registration ID.
-            /// </summary>
-            /// <remarks>
-            /// A valid registration Id shall be alphanumeric, lowercase, and may contain hyphens. Max characters 128.
-            /// </remarks>
-            /// <exception cref="ArgumentException">if the provided string do not fits the registration Id requirements</exception>
             private set
             {
                 ParserUtils.EnsureRegistrationId(value);
@@ -253,6 +250,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </summary>
         [JsonProperty(PropertyName = "attestation")]
         private AttestationMechanism _attestation;
+
+        /// <summary>
+        /// Attestation
+        /// </summary>
         [JsonIgnore]
         public Attestation Attestation
         {

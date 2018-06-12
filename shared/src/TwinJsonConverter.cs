@@ -5,6 +5,7 @@ namespace Microsoft.Azure.Devices.Shared
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.Reflection;
     using Microsoft.Azure.Devices.Common;
     using Newtonsoft.Json;
@@ -188,7 +189,7 @@ namespace Microsoft.Azure.Devices.Shared
                         twin.Tags = new TwinCollection(JToken.ReadFrom(reader) as JObject);
                         break;
                     case PropertiesJsonTag:
-                        PopulatePropertiesForTwin(twin, reader, serializer);
+                        PopulatePropertiesForTwin(twin, reader);
                         break;
                     case VersionTag:
                         twin.Version = (long?)reader.Value;
@@ -277,7 +278,7 @@ namespace Microsoft.Azure.Devices.Shared
             return dict;
         }
 
-        private static void PopulatePropertiesForTwin(Twin twin, JsonReader reader, JsonSerializer serializer)
+        private static void PopulatePropertiesForTwin(Twin twin, JsonReader reader)
         {
             if (twin == null)
             {

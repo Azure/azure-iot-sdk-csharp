@@ -27,6 +27,7 @@ namespace Microsoft.Azure.Devices.Shared
         public void Dispose()
         {
             Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 }

@@ -21,31 +21,31 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public sealed class IotHubConnectionStringBuilder
     {
-        const char ValuePairDelimiter = ';';
-        const char ValuePairSeparator = '=';
-        const string HostNameSeparator = ".";
+        private const char ValuePairDelimiter = ';';
+        private const char ValuePairSeparator = '=';
+        private const string HostNameSeparator = ".";
 
 #if !NETMF
-        static readonly RegexOptions regexOptions = RegexOptions.Compiled | RegexOptions.IgnoreCase;
-        const string HostNamePropertyName = nameof(HostName);
-        const string DeviceIdPropertyName = nameof(DeviceId);
-        const string SharedAccessKeyNamePropertyName = nameof(SharedAccessKeyName);
-        const string SharedAccessKeyPropertyName = nameof(SharedAccessKey);
-        const string SharedAccessSignaturePropertyName = nameof(SharedAccessSignature);
-        const string GatewayHostNamePropertyName = nameof(GatewayHostName);
-        const string X509CertPropertyName =  "X509Cert";
-        static readonly Regex HostNameRegex = new Regex(@"[a-zA-Z0-9_\-\.]+$", regexOptions);
-        static readonly Regex DeviceIdRegex = new Regex(@"^[A-Za-z0-9\-:.+%_#*?!(),=@;$']{1,128}$", regexOptions);
-        static readonly Regex SharedAccessKeyNameRegex = new Regex(@"^[a-zA-Z0-9_\-@\.]+$", regexOptions);
-        static readonly Regex SharedAccessKeyRegex = new Regex(@"^.+$", regexOptions);
-        static readonly Regex SharedAccessSignatureRegex = new Regex(@"^.+$", regexOptions);
-        static readonly Regex X509CertRegex = new Regex(@"^[true|false]+$", regexOptions);
-        
+        private const RegexOptions regexOptions = RegexOptions.Compiled | RegexOptions.IgnoreCase;
+        private static readonly TimeSpan regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
+        private const string HostNamePropertyName = nameof(HostName);
+        private const string DeviceIdPropertyName = nameof(DeviceId);
+        private const string SharedAccessKeyNamePropertyName = nameof(SharedAccessKeyName);
+        private const string SharedAccessKeyPropertyName = nameof(SharedAccessKey);
+        private const string SharedAccessSignaturePropertyName = nameof(SharedAccessSignature);
+        private const string GatewayHostNamePropertyName = nameof(GatewayHostName);
+        private const string X509CertPropertyName =  "X509Cert";
+        private static readonly Regex HostNameRegex = new Regex(@"[a-zA-Z0-9_\-\.]+$", regexOptions, regexTimeoutMilliseconds);
+        private static readonly Regex DeviceIdRegex = new Regex(@"^[A-Za-z0-9\-:.+%_#*?!(),=@;$']{1,128}$", regexOptions, regexTimeoutMilliseconds);
+        private static readonly Regex SharedAccessKeyNameRegex = new Regex(@"^[a-zA-Z0-9_\-@\.]+$", regexOptions, regexTimeoutMilliseconds);
+        private static readonly Regex SharedAccessKeyRegex = new Regex(@"^.+$", regexOptions, regexTimeoutMilliseconds);
+        private static readonly Regex SharedAccessSignatureRegex = new Regex(@"^.+$", regexOptions, regexTimeoutMilliseconds);
+        private static readonly Regex X509CertRegex = new Regex(@"^[true|false]+$", regexOptions, regexTimeoutMilliseconds);
 #endif
 
-        string hostName;
-        string iotHubName;
-        IAuthenticationMethod authenticationMethod;
+        private string hostName;
+        private string iotHubName;
+        private IAuthenticationMethod authenticationMethod;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="IotHubConnectionStringBuilder"/> class.
