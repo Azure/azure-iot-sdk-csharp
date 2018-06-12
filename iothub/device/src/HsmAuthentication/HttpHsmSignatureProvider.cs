@@ -13,7 +13,7 @@ using Microsoft.Azure.Devices.Client.TransientFaultHandling;
 
 namespace Microsoft.Azure.Devices.Client.HsmAuthentication
 {
-    class HttpHsmSignatureProvider : ISignatureProvider
+    internal class HttpHsmSignatureProvider : ISignatureProvider
     {
         private const string DefaultApiVersion = "2018-06-28";
         private const string HttpScheme = "http";

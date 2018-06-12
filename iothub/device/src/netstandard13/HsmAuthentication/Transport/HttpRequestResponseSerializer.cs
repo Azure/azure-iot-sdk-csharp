@@ -107,7 +107,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
                 bool headerAdded = httpResponse.Headers.TryAddWithoutValidation(headerName, headerValue);
                 if (!headerAdded)
                 {
-                    if (string.Equals(headerName, ContentLengthHeaderName, StringComparison.InvariantCultureIgnoreCase))
+                    if (string.Equals(headerName, ContentLengthHeaderName, StringComparison.OrdinalIgnoreCase))
                     {
                         if (!long.TryParse(headerValue, out long contentLength))
                         {

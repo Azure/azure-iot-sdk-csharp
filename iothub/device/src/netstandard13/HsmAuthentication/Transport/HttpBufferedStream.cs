@@ -12,11 +12,15 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication.Transport
     {
         private const char CR = '\r';
         private const char LF = '\n';
-        private BufferedStream _innerStream;
+        private Stream _innerStream;
 
         public HttpBufferedStream(Stream stream)
         {
+#if NETSTANDARD2_0
             _innerStream = new BufferedStream(stream);
+#else
+            _innerStream = new BufferedReadStream(stream);
+#endif
         }
 
         public override void Flush()

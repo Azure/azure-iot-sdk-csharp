@@ -4,7 +4,7 @@
 using System;
 using System.Linq;
 using System.Net.Http;
-#if NETSTANDARD2_0
+#if NETSTANDARD1_3 || NETSTANDARD2_0
 using Microsoft.Azure.Devices.Client.HsmAuthentication.Transport;
 #endif
 
@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
                 return client;
             }
 
-#if NETSTANDARD2_0
+#if NETSTANDARD1_3 || NETSTANDARD2_0
             if (providerUri.Scheme.Equals(UnixScheme, StringComparison.OrdinalIgnoreCase))
             {
                 client = new HttpClient(new HttpUdsMessageHandler(providerUri));
@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
         public static string GetBaseUrl(Uri providerUri)
         {
 
-#if NETSTANDARD2_0
+#if NETSTANDARD1_3 || NETSTANDARD2_0
             if (providerUri.Scheme.Equals(UnixScheme, StringComparison.OrdinalIgnoreCase))
             {
                 return $"{HttpScheme}://{providerUri.Segments.Last()}";

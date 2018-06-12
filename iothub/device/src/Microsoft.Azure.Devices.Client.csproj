@@ -22,7 +22,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Version>1.17.0-preview-012</Version>
+    <Version>1.17.0-preview-013</Version>
     <Title>Microsoft Azure IoT Device Client SDK</Title>
     <Authors>Microsoft</Authors>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
@@ -70,6 +70,11 @@
     <Compile Include="netstandard13\System.Web\Util\HttpEncoderUtility.cs" />
     <Compile Include="netstandard13\System.Web\Util\UriUtil.cs" />
     <Compile Include="netstandard13\System.Web\Util\Utf16StringValidator.cs" />
+    <Compile Include="netstandard13\HsmAuthentication\Transport\HttpUdsMessageHandler.cs" />
+    <Compile Include="netstandard13\HsmAuthentication\Transport\HttpBufferedStream.cs" />
+    <Compile Include="netstandard13\HsmAuthentication\Transport\HttpRequestResponseSerializer.cs" />
+    <Compile Include="netstandard13\HsmAuthentication\Transport\UnixDomainSocketEndPoint.cs" />
+    <Compile Include="netstandard13\HsmAuthentication\Transport\BufferedReadStream.cs" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
     <PackageReference Include="System.AppContext" Version="4.3.0" />
@@ -91,15 +96,14 @@
   <!-- NetStandard 2.0 -->
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
     <Compile Include="netstandard13\Common\IOThreadTimerSlim.cs" />
-    <Compile Include="netstandard20\HsmAuthentication\Transport\HttpUdsMessageHandler.cs" />
-    <Compile Include="netstandard20\HsmAuthentication\Transport\HttpBufferedStream.cs" />
-    <Compile Include="netstandard20\HsmAuthentication\Transport\HttpRequestResponseSerializer.cs" />
-    <Compile Include="netstandard20\HsmAuthentication\Transport\UnixDomainSocketEndPoint.cs" />
+    <Compile Include="netstandard13\HsmAuthentication\Transport\HttpUdsMessageHandler.cs" />
+    <Compile Include="netstandard13\HsmAuthentication\Transport\HttpBufferedStream.cs" />
+    <Compile Include="netstandard13\HsmAuthentication\Transport\HttpRequestResponseSerializer.cs" />
+    <Compile Include="netstandard13\HsmAuthentication\Transport\UnixDomainSocketEndPoint.cs" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.4.1" />
   </ItemGroup>
-
 
   <ItemGroup>
     <!-- FXCop -->

@@ -8,7 +8,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
     /// <summary>
     /// HSM signature provider.
     /// </summary>
-    public interface ISignatureProvider
+    internal interface ISignatureProvider
     {
         Task<string> SignAsync(string moduleId, string generationId, string data);
     }
