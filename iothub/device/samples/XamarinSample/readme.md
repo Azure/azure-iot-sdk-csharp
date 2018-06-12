@@ -1,5 +1,7 @@
 # Microsoft Azure IoT device SDK Xamarin Samples for .NET
 
+**Xamarin is not an officially supported platform!  There are known issues on Xamarin and progress is tracked on ["Xamarin stabilization"](https://github.com/Azure/azure-iot-sdk-csharp/projects/1) project.**
+
 This folder contains the following samples:
 
 ### Device client samples for Android
