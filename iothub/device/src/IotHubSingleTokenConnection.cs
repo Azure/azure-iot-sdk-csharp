@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Client
 
     sealed class IotHubSingleTokenConnection : IotHubConnection
     {
-        readonly IotHubScopeConnectionPool iotHubScopeConnectionPool;
+        IotHubScopeConnectionPool iotHubScopeConnectionPool;
         IotHubTokenRefresher iotHubTokenRefresher;
 
         public IotHubSingleTokenConnection(IotHubScopeConnectionPool iotHubScopeConnectionPool, IotHubConnectionString connectionString, AmqpTransportSettings amqpTransportSettings)
@@ -39,6 +39,7 @@ namespace Microsoft.Azure.Devices.Client
             if (this.iotHubScopeConnectionPool != null)
             {
                 this.iotHubScopeConnectionPool.RemoveRef();
+                this.iotHubScopeConnectionPool = null;
             }
             else
             {

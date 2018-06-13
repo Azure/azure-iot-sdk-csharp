@@ -4,7 +4,6 @@
 using Microsoft.Azure.Devices.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Diagnostics;
 using System.Globalization;
 using System.Net;
 using System.Text;
@@ -35,6 +34,48 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task DeviceClient_TokenIsRefreshed_Fails_Mqtt()
         {
             await DeviceClient_TokenIsRefreshed_Internal(Client.TransportType.Mqtt).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task DeviceClient_TokenConnectionDoubleRelease_Ok()
+        {
+            string deviceConnectionString = null;
+
+            try
+            {
+                 deviceConnectionString = Configuration.IoTHub.DeviceConnectionString;
+            }
+            catch (InvalidOperationException) { /* Invalid configuration. */ }
+
+            if (string.IsNullOrEmpty(deviceConnectionString))
+            {
+                Console.WriteLine("Device configuration not found. Test inconclusive.");
+                return;
+            }
+
+            var config = new Configuration.IoTHub.DeviceConnectionStringParser(deviceConnectionString);
+            string iotHub = config.IoTHub;
+            string deviceId = config.DeviceID;
+            string key = config.SharedAccessKey;
+
+            SharedAccessSignatureBuilder builder = new SharedAccessSignatureBuilder()
+            {
+                Key = "Lfc0z9UTENYRt0vEoFQjXeUkQV3ifk5f3qFN5N7vFlY=",
+                TimeToLive = new TimeSpan(0, 10, 0),
+                Target = $"{iotHub}/devices/{WebUtility.UrlEncode(deviceId)}",
+            };
+
+            DeviceAuthenticationWithToken auth = new DeviceAuthenticationWithToken(deviceId, builder.ToSignature());
+
+            using (DeviceClient iotClient = DeviceClient.Create(iotHub, auth, Client.TransportType.Amqp_Tcp_Only))
+            {
+                Console.WriteLine("DeviceClient OpenAsync.");
+                await iotClient.OpenAsync();
+                Console.WriteLine("DeviceClient SendEventAsync.");
+                await iotClient.SendEventAsync(new Client.Message(Encoding.UTF8.GetBytes("TestMessage")));
+                Console.WriteLine("DeviceClient CloseAsync.");
+                await iotClient.CloseAsync();   // First release
+            } // Second release
         }
 
         private async Task DeviceClient_TokenIsRefreshed_Internal(Client.TransportType transport)
