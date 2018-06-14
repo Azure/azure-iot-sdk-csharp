@@ -1,9 +1,9 @@
 {
   "profiles": {
-    "ServiceClientSample": {
+    "TpmSample": {
       "commandName": "Project",
       "environmentVariables": {
-        "IOTHUB_CONN_STRING_CSHARP": "<yourIoTHubConnectionString>"
+        "DPS_IDSCOPE": "<yourProvisioningIDScope>"
       }
     }
   }

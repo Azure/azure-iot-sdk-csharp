@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "BulkOperationSample": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "PROVISIONING_CONNECTION_STRING": "<yourIoTHubConnectionString>"
+      }
+    }
+  }
+}

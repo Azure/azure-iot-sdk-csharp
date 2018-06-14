@@ -82,8 +82,8 @@ The samples use a TPMv2.0 simulator that uses a loopback TCP connection for comm
 
 ## List of samples
 
-- [Provisioning Devices with X.509 certificate attestation](ProvisioningDeviceClientX509)
-- [Provisioning Devices with TPM attestation](ProvisioningDeviceClientTpm)
+- [Provisioning Devices with X.509 certificate attestation](509Sample)
+- [Provisioning Devices with TPM attestation](TpmSample)
 
 ### How to run the samples
 

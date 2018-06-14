@@ -1,19 +1,26 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Provisioning.Client;
 using Microsoft.Azure.Devices.Provisioning.Client.Transport;
 using Microsoft.Azure.Devices.Shared;
 using System;
+using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace ProvisioningDeviceClientX509
+namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
 {
-    class Program
+    public static class Program
     {
+        // The Provisioning Hub IDScope.
+
+        // For this sample either:
+        // - pass this value as a command-prompt argument
+        // - set the DPS_IDSCOPE environment variable 
+        // - create a launchSettings.json (see launchSettings.json.template) containing the variable
+        private static string s_idScope = Environment.GetEnvironmentVariable("DPS_IDSCOPE");
+
         // In your Device Provisioning Service please go to "Manage enrollments" and select "Individual Enrollments".
         // Select "Add" then fill in the following:
         // Mechanism: X.509
@@ -24,51 +31,44 @@ namespace ProvisioningDeviceClientX509
         // DeviceID: iothubx509device1
 
         private const string GlobalDeviceEndpoint = "global.azure-devices-provisioning.net";
-        private static string s_idScope;
         private static string s_certificateFileName = "certificate.pfx";
 
-        public static async Task RunSample(X509Certificate2 certificate)
+        public static int Main(string[] args)
         {
-            using (var security = new SecurityProviderX509Certificate(certificate))
-            // using (var transport = new ProvisioningTransportHandlerHttp())
-            using (var transport = new ProvisioningTransportHandlerAmqp(TransportFallbackType.TcpOnly))
-            // using (var transport = new ProvisioningTransportHandlerMqtt(TransportFallbackType.TcpOnly))
+            if (string.IsNullOrWhiteSpace(s_idScope) && (args.Length > 1))
             {
-                ProvisioningDeviceClient provClient = 
+                s_idScope = args[0];
+            }
+
+            if (string.IsNullOrWhiteSpace(s_idScope))
+            {
+                Console.WriteLine("ProvisioningDeviceClientX509 <IDScope>");
+                return 1;
+            }
+
+            X509Certificate2 certificate = LoadProvisioningCertificate();
+
+            using (var security = new SecurityProviderX509Certificate(certificate))
+
+            // Select one of the available transports:
+            // To optimize for size, reference only the protocols used by your application.
+            using (var transport = new ProvisioningTransportHandlerAmqp(TransportFallbackType.TcpOnly))
+            // using (var transport = new ProvisioningTransportHandlerHttp())
+            // using (var transport = new ProvisioningTransportHandlerMqtt(TransportFallbackType.TcpOnly))
+            // using (var transport = new ProvisioningTransportHandlerMqtt(TransportFallbackType.WebSocketOnly))
+            {
+                ProvisioningDeviceClient provClient =
                     ProvisioningDeviceClient.Create(GlobalDeviceEndpoint, s_idScope, security, transport);
 
-                Console.WriteLine($"RegistrationID = {security.GetRegistrationID()}");
-                Console.Write("ProvisioningClient RegisterAsync . . . ");
-                DeviceRegistrationResult result = await provClient.RegisterAsync();
-
-                Console.WriteLine($"{result.Status}");
-                Console.WriteLine($"ProvisioningClient AssignedHub: {result.AssignedHub}; DeviceID: {result.DeviceId}");
-
-                if (result.Status != ProvisioningRegistrationStatusType.Assigned) return;
-
-                IAuthenticationMethod auth = new DeviceAuthenticationWithX509Certificate(result.DeviceId, certificate);
-                using (DeviceClient iotClient = DeviceClient.Create(result.AssignedHub, auth))
-                {
-                    Console.WriteLine("DeviceClient OpenAsync.");
-                    await iotClient.OpenAsync();
-                    Console.WriteLine("DeviceClient SendEventAsync.");
-                    await iotClient.SendEventAsync(new Message(Encoding.UTF8.GetBytes("TestMessage")));
-                    Console.WriteLine("DeviceClient CloseAsync.");
-                    await iotClient.CloseAsync();
-                }
+                var sample = new ProvisioningDeviceClientSample(provClient, security);
+                sample.RunSampleAsync().GetAwaiter().GetResult();
             }
+
+            return 0;
         }
 
-        public static void Main(string[] args)
+        private static X509Certificate2 LoadProvisioningCertificate()
         {
-            if (string.IsNullOrWhiteSpace(s_idScope) && (args.Length < 1))
-            {
-                Console.WriteLine("ProvisioningDeviceClientX509 sample requires your Azure Device Provisioning Service <IDScope>");
-                return;
-            }
-
-            s_idScope = args[0];
-
             string certificatePassword = ReadCertificatePassword();
 
             var certificateCollection = new X509Certificate2Collection();
@@ -91,15 +91,14 @@ namespace ProvisioningDeviceClientX509
 
             if (certificate == null)
             {
-                Console.WriteLine($"ERROR: {s_certificateFileName} did not contain any certificate with a private key.");
-                return;
+                throw new FileNotFoundException($"{s_certificateFileName} did not contain any certificate with a private key.");
             }
             else
             {
                 Console.WriteLine($"Using certificate {certificate.Thumbprint} {certificate.Subject}");
             }
 
-            RunSample(certificate).GetAwaiter().GetResult();
+            return certificate;
         }
 
         private static string ReadCertificatePassword()
