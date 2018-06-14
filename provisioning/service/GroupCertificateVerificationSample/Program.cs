@@ -5,7 +5,7 @@ using System;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 
-namespace Microsoft.Azure.Devices.Provisioning.Samples
+namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 {
     public class Program
     {

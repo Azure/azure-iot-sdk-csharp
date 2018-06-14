@@ -1,9 +1,9 @@
 {
   "profiles": {
-    "ServiceClientSample": {
+    "EnrollmentSample": {
       "commandName": "Project",
       "environmentVariables": {
-        "IOTHUB_CONN_STRING_CSHARP": "<yourIoTHubConnectionString>"
+        "PROVISIONING_CONNECTION_STRING": "<yourIoTHubConnectionString>"
       }
     }
   }

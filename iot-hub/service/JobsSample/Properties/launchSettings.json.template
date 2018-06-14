@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "ConsoleJobsSample": {
+    "JobsSample": {
       "commandName": "Project",
       "environmentVariables": {
         "IOTHUB_CONN_STRING_CSHARP": "<yourIoTHubConnectionString>"

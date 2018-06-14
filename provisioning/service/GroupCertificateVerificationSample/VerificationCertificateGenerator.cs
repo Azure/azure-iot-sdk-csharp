@@ -16,7 +16,7 @@ using Org.BouncyCastle.Pkcs;
 using Org.BouncyCastle.Security;
 using Org.BouncyCastle.X509;
 
-namespace Microsoft.Azure.Devices.Provisioning.Samples
+namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 {
     public class VerificationCertificateGenerator
     {

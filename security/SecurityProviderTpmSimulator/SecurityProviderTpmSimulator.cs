@@ -19,9 +19,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Security.Samples
     public class SecurityProviderTpmSimulator : SecurityProviderTpm
     {
         private const string SimulatorAddress = "127.0.0.1";
-        private const string SimulatorExeName = "Simulator.exe";
+
+        // TPM simulators available at: https://github.com/Microsoft/ms-tpm-20-ref, https://github.com/stwagnr/tpm2simulator
+        private const string WindowsSimulatorExeName = "Simulator.exe";
+        private const string LinuxSimulatorExeName = "/usr/local/tpm/build/Simulator";
         private const int SimulatorPort = 2321;
 
+        private static string s_simulatorExeName;
         private SecurityProviderTpmHsm _innerClient;
 
         public SecurityProviderTpmSimulator(string registrationId) : base(registrationId)
@@ -60,7 +64,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Security.Samples
 
         public static void StopSimulatorProcess()
         {
-            foreach (var process in Process.GetProcessesByName(Path.GetFileNameWithoutExtension(SimulatorExeName)))
+            foreach (var process in Process.GetProcessesByName(Path.GetFileNameWithoutExtension(s_simulatorExeName)))
             {
                 try
                 {
@@ -74,31 +78,41 @@ namespace Microsoft.Azure.Devices.Provisioning.Security.Samples
 
         public static void StartSimulatorProcess()
         {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                s_simulatorExeName = WindowsSimulatorExeName;
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                s_simulatorExeName = LinuxSimulatorExeName;
+            }
+            else
             {
                 throw new PlatformNotSupportedException(
-                    "TSS.MSR Simulator.exe is available only for Windows. On Linux, ensure that the simulator is " + 
+                    "TSS.MSR Simulator.exe is available only for Windows. On Linux, ensure that the simulator is " +
                     $"started and listening to TCP connections on {SimulatorAddress}:{SimulatorPort}.");
             }
 
-            if (Process.GetProcessesByName(Path.GetFileNameWithoutExtension(SimulatorExeName)).Length > 0) return;
+            // Exe is found at the exact specified path.
+            if (Process.GetProcessesByName(Path.GetFileNameWithoutExtension(s_simulatorExeName)).Length > 0) return;
             
+            // Search next to the simulator DLL location.
             string[] files = Directory.GetFiles(
                 Directory.GetCurrentDirectory(), 
-                SimulatorExeName, 
+                s_simulatorExeName, 
                 SearchOption.AllDirectories);
 
             if (files.Length == 0)
             {
                 files = Directory.GetFiles(
                     Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), 
-                    SimulatorExeName, 
+                    s_simulatorExeName, 
                     SearchOption.AllDirectories);
             }
 
             if (files.Length == 0)
             {
-                throw new InvalidOperationException($"TPM Simulator not found : {SimulatorExeName}");
+                throw new InvalidOperationException($"TPM Simulator not found : {s_simulatorExeName}");
             }
 
             var simulatorProcess = new Process

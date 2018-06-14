@@ -3,17 +3,17 @@
 
 using System;
 
-namespace Microsoft.Azure.Devices.Samples
+namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
 {
     public class Program
     {
-        // The IoT Hub connection string. This is available under the "Shared access policies" in the Azure portal.
+        // The Provisioning Service connection string. This is available under the "Shared access policies" in the Azure portal.
 
         // For this sample either:
         // - pass this value as a command-prompt argument
-        // - set the IOTHUB_CONN_STRING_CSHARP environment variable 
+        // - set the PROVISIONING_CONNECTION_STRING environment variable 
         // - create a launchSettings.json (see launchSettings.json.template) containing the variable
-        private static string s_connectionString = Environment.GetEnvironmentVariable("IOTHUB_CONN_STRING_CSHARP");
+        private static string s_connectionString = Environment.GetEnvironmentVariable("PROVISIONING_CONNECTION_STRING");
 
         public static int Main(string[] args)
         {
@@ -22,10 +22,11 @@ namespace Microsoft.Azure.Devices.Samples
                 s_connectionString = args[0];
             }
 
-            JobClient jobClient = JobClient.CreateFromConnectionString(s_connectionString);
-
-            var sample = new JobsSample(jobClient);
-            sample.RunSampleAsync().GetAwaiter().GetResult();
+            using (var provisioningServiceClient = ProvisioningServiceClient.CreateFromConnectionString(s_connectionString))
+            {
+                var sample = new EnrollmentSample(provisioningServiceClient);
+                sample.RunSampleAsync().GetAwaiter().GetResult();
+            }
 
             Console.WriteLine("Done.\n");
             return 0;

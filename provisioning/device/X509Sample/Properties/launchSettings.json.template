@@ -1,9 +1,9 @@
 {
   "profiles": {
-    "ServiceClientSample": {
+    "X509Sample": {
       "commandName": "Project",
       "environmentVariables": {
-        "IOTHUB_CONN_STRING_CSHARP": "<yourIoTHubConnectionString>"
+        "DPS_IDSCOPE": "<yourProvisioningIDScope>"
       }
     }
   }
