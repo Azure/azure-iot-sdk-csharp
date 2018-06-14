@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         public MethodSample(DeviceClient deviceClient)
         {
-            _deviceClient = deviceClient;
+            _deviceClient = deviceClient ?? throw new ArgumentNullException(nameof(deviceClient));
         }
 
         public async Task RunSampleAsync()
