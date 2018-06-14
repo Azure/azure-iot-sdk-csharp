@@ -1187,7 +1187,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                 }
 
                 // codes_SRS_DEVICECLIENT_33_002: [ The OnReceiveEventMessageCalled shall invoke the specified delegate. ]
-                MessageResponse response = await (callback?.Item1?.Invoke(message, callback.Item2) ?? Task.FromResult(MessageResponse.None));
+                MessageResponse response = await (callback?.Item1?.Invoke(message, callback.Item2) ?? Task.FromResult(MessageResponse.Completed));
 
                 switch (response)
                 {
