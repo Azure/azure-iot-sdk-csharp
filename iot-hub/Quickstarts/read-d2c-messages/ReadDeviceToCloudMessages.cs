@@ -22,7 +22,6 @@ namespace read_d2c_messages
         // Event Hub-compatible name
         // az iot hub show --query properties.eventHubEndpoints.events.path --name {your IoT Hub name}
         private readonly static string s_eventHubsCompatiblePath = "{your Event Hubs compatible name}";
-
         
         // az iot hub policy show --name iothubowner --query primaryKey --hub-name {your IoT Hub name}
         private readonly static string s_iotHubSasKey = "{your iothubowner primary key}";
@@ -82,7 +81,7 @@ namespace read_d2c_messages
 
             CancellationTokenSource cts = new CancellationTokenSource();
 
-            System.Console.CancelKeyPress += (s, e) =>
+            Console.CancelKeyPress += (s, e) =>
             {
                 e.Cancel = true;
                 cts.Cancel();
