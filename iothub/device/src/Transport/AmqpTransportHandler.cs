@@ -238,7 +238,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             bool needMethodRecovery = false;
             bool needTwinRecovery = false;
-            bool needEventReceivingLinkRecoverty = false;
+            bool needEventReceivingLinkRecovery = false;
 
             await recoverySemaphore.WaitAsync().ConfigureAwait(false);
 
@@ -267,7 +267,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 (link as ReceivingAmqpLink).Name == eventReceivingLinkName)
             {
                 eventReceivingLinkName = null;
-                needEventReceivingLinkRecoverty = true;
+                needEventReceivingLinkRecovery = true;
             }
 
             recoverySemaphore.Release(1);
@@ -286,7 +286,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 await this.EnableTwinPatchAsync(cancellationToken).ConfigureAwait(false);
             }
 
-            if (needEventReceivingLinkRecoverty)
+            if (needEventReceivingLinkRecovery)
             {
                 this.faultTolerantEventReceivingLink = null;
                 await this.EnableEventReceiveAsync(cancellationToken).ConfigureAwait(false);
