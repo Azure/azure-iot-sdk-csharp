@@ -238,6 +238,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             bool needMethodRecovery = false;
             bool needTwinRecovery = false;
+            bool needEventReceivingLinkRecoverty = false;
 
             await recoverySemaphore.WaitAsync().ConfigureAwait(false);
 
@@ -262,6 +263,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 needTwinRecovery = true;
             }
 
+            if (connectionType == ConnectionType.AmqpMessaging &&
+                (link as ReceivingAmqpLink).Name == eventReceivingLinkName)
+            {
+                eventReceivingLinkName = null;
+                needEventReceivingLinkRecoverty = true;
+            }
+
             recoverySemaphore.Release(1);
 
             if (needMethodRecovery)
@@ -276,6 +284,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 this.faultTolerantTwinSendingLink = null;
                 this.faultTolerantTwinReceivingLink = null;
                 await this.EnableTwinPatchAsync(cancellationToken).ConfigureAwait(false);
+            }
+
+            if (needEventReceivingLinkRecoverty)
+            {
+                this.faultTolerantEventReceivingLink = null;
+                await this.EnableEventReceiveAsync(cancellationToken).ConfigureAwait(false);
             }
         }
 
