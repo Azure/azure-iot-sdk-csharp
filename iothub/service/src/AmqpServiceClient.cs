@@ -22,9 +22,8 @@ namespace Microsoft.Azure.Devices
         const string StatisticsUriFormat = "/statistics/service?" + ClientApiVersionHelper.ApiVersionQueryString;
         const string PurgeMessageQueueFormat = "/devices/{0}/commands?" + ClientApiVersionHelper.ApiVersionQueryString;
         const string DeviceMethodUriFormat = "/twins/{0}/methods?" + ClientApiVersionHelper.ApiVersionQueryString;
-#if ENABLE_MODULES_SDK
         const string ModuleMethodUriFormat = "/twins/{0}/modules/{1}/methods?" + ClientApiVersionHelper.ApiVersionQueryString;
-#endif
+
         readonly IotHubConnection iotHubConnection;
         readonly TimeSpan openTimeout;
         readonly TimeSpan operationTimeout;
@@ -228,7 +227,6 @@ namespace Microsoft.Azure.Devices
 
         }
 
-#if ENABLE_MODULES_SDK
         public override Task<CloudToDeviceMethodResult> InvokeDeviceMethodAsync(string deviceId, string moduleId, CloudToDeviceMethod cloudToDeviceMethod)
         {
             return this.InvokeDeviceMethodAsync(deviceId, moduleId, cloudToDeviceMethod, CancellationToken.None);
@@ -281,7 +279,6 @@ namespace Microsoft.Azure.Devices
                 throw AmqpErrorMapper.GetExceptionFromOutcome(outcome);
             }
         }
-#endif
 
         async Task<SendingAmqpLink> GetSendingLinkAsync()
         {
@@ -339,13 +336,11 @@ namespace Microsoft.Azure.Devices
             return new Uri(DeviceMethodUriFormat.FormatInvariant(deviceId), UriKind.Relative);
         }
 
-#if ENABLE_MODULES_SDK
         static Uri GetModuleMethodUri(string deviceId, string moduleId)
         {
             deviceId = WebUtility.UrlEncode(deviceId);
             moduleId = WebUtility.UrlEncode(moduleId);
             return new Uri(ModuleMethodUriFormat.FormatInvariant(deviceId, moduleId), UriKind.Relative);
         }
-#endif
     }
 }

@@ -243,13 +243,11 @@ namespace Microsoft.Azure.Devices.Client
                     // DeviceId
                     this.DeviceId = WebUtility.UrlDecode(values[1]);
                 }
-#if ENABLE_MODULES_SDK
                 else if (part.IndexOf("ModuleId") > -1)
                 {
                     // ModuleId
                     this.ModuleId = WebUtility.UrlDecode(values[1]);
                 }
-#endif
                 else if (part.IndexOf("SharedAccessKeyName") > -1)
                 {
                     // Shared Access Key Name 
@@ -279,9 +277,7 @@ namespace Microsoft.Azure.Devices.Client
 
             this.HostName = GetConnectionStringValue(map, HostNamePropertyName);
             this.DeviceId = WebUtility.UrlDecode(GetConnectionStringOptionalValue(map, DeviceIdPropertyName));
-#if ENABLE_MODULES_SDK
             this.ModuleId = WebUtility.UrlDecode(GetConnectionStringOptionalValue(map, ModuleIdPropertyName));
-#endif
             this.SharedAccessKeyName = GetConnectionStringOptionalValue(map, SharedAccessKeyNamePropertyName);
             this.SharedAccessKey = GetConnectionStringOptionalValue(map, SharedAccessKeyPropertyName);
             this.SharedAccessSignature = GetConnectionStringOptionalValue(map, SharedAccessSignaturePropertyName);
@@ -348,12 +344,11 @@ namespace Microsoft.Azure.Devices.Client
 
             ValidateFormat(this.HostName, HostNamePropertyName, HostNameRegex);
             ValidateFormat(this.DeviceId, DeviceIdPropertyName, IdNameRegex);
-#if ENABLE_MODULES_SDK
             if (!string.IsNullOrEmpty(this.ModuleId))
             {
                 ValidateFormat(this.ModuleId, DeviceIdPropertyName, IdNameRegex);
             }
-#endif
+
             ValidateFormatIfSpecified(this.SharedAccessKeyName, SharedAccessKeyNamePropertyName, SharedAccessKeyNameRegex);
             ValidateFormatIfSpecified(this.SharedAccessKey, SharedAccessKeyPropertyName, SharedAccessKeyRegex);
             ValidateFormatIfSpecified(this.SharedAccessSignature, SharedAccessSignaturePropertyName, SharedAccessSignatureRegex);

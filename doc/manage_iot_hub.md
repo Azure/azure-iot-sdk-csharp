@@ -39,5 +39,4 @@ For information about using the Device Explorer tool to perform tasks such as di
 [lnk-install-iothub-explorer]: https://github.com/Azure/iothub-explorer#installing-iothub-explorer
 [lnk-iothub-explorer-identity]: https://github.com/Azure/iothub-explorer#working-with-the-device-identity-registry
 [lnk-iothub-explorer-devices]: https://github.com/Azure/iothub-explorer#working-with-devices
-[lnk-releasepage]: https://github.com/Azure/azure-iot-sdks-preview/releases
 [lnk-device-explorer-docs]: ../tools/DeviceExplorer/readme.md

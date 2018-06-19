@@ -19,12 +19,10 @@ namespace Microsoft.Azure.Devices.Shared
     public sealed class TwinJsonConverter : JsonConverter
     {
         const string DeviceIdJsonTag = "deviceId";
-#if ENABLE_MODULES_SDK
         const string ModuleIdJsonTag = "moduleId";
         const string ConfigurationsJsonTag = "configurations";
         const string CapabilitiesJsonTag = "capabilities";
         const string IotEdgeName = "iotEdge";
-#endif
         const string ETagJsonTag = "etag";
         const string TagsJsonTag = "tags";
         const string PropertiesJsonTag = "properties";
@@ -65,13 +63,11 @@ namespace Microsoft.Azure.Devices.Shared
             writer.WritePropertyName(DeviceIdJsonTag);
             writer.WriteValue(twin.DeviceId);
 
-#if ENABLE_MODULES_SDK
             if (!string.IsNullOrEmpty(twin.ModuleId))
             {
                 writer.WritePropertyName(ModuleIdJsonTag);
                 writer.WriteValue(twin.ModuleId);
             }
-#endif
 
             writer.WritePropertyName(ETagJsonTag);
             writer.WriteValue(twin.ETag);
@@ -127,13 +123,11 @@ namespace Microsoft.Azure.Devices.Shared
                 serializer.Serialize(writer, twin.X509Thumbprint);
             }
  
-#if ENABLE_MODULES_SDK
             if (twin.Configurations != null)
             {
                 writer.WritePropertyName(ConfigurationsJsonTag);
                 serializer.Serialize(writer, twin.Configurations, typeof(IDictionary<string, ConfigurationInfo>));
             }
-#endif
 
             if (twin.Tags != null && twin.Tags.Count > 0)
             {
@@ -200,7 +194,6 @@ namespace Microsoft.Azure.Devices.Shared
                     case DeviceIdJsonTag:
                         twin.DeviceId = reader.Value as string;
                         break;
-#if ENABLE_MODULES_SDK
                     case ModuleIdJsonTag:
                         twin.ModuleId = reader.Value as string;
                         break;
@@ -214,7 +207,6 @@ namespace Microsoft.Azure.Devices.Shared
                             IotEdge = capabilitiesDictionary.ContainsKey(IotEdgeName) && (bool)capabilitiesDictionary[IotEdgeName]
                         };
                         break;
-#endif
                     case ETagJsonTag:
                         twin.ETag = reader.Value as string;
                         break;

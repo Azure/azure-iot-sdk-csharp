@@ -70,7 +70,6 @@ namespace Microsoft.Azure.Devices
         /// <returns>echoes back the Device object with the generated keys and etags</returns>
         public abstract Task<Device> AddDeviceAsync(Device device, CancellationToken cancellationToken);
 
-#if ENABLE_MODULES_SDK
         /// <summary>
         /// Register a new module with device in the system
         /// </summary>
@@ -91,7 +90,6 @@ namespace Microsoft.Azure.Devices
         /// </param>
         /// <returns>echoes back the Module object with the generated keys and etags</returns>
         public abstract Task<Module> AddModuleAsync(Module module, CancellationToken cancellationToken);
-#endif
 
         /// <summary>
         /// Adds a Device with Twin information
@@ -201,7 +199,6 @@ namespace Microsoft.Azure.Devices
         /// <returns>echoes back the Device object with updated etags</returns>
         public abstract Task<Device> UpdateDeviceAsync(Device device, bool forceUpdate, CancellationToken cancellationToken);
 
-#if ENABLE_MODULES_SDK
         /// <summary>
         /// Update the mutable fields of the module registration
         /// </summary>
@@ -249,7 +246,6 @@ namespace Microsoft.Azure.Devices
         /// </param>
         /// <returns>echoes back the Module object with updated etags</returns>
         public abstract Task<Module> UpdateModuleAsync(Module module, bool forceUpdate, CancellationToken cancellationToken);
-#endif
 
         /// <summary>
         /// Update a list of devices with the system
@@ -339,7 +335,6 @@ namespace Microsoft.Azure.Devices
         /// </param>
         public abstract Task RemoveDeviceAsync(Device device, CancellationToken cancellationToken);
 
-#if ENABLE_MODULES_SDK
         /// <summary>
         /// Deletes a previously registered module from device in the system.
         /// </summary>
@@ -383,7 +378,6 @@ namespace Microsoft.Azure.Devices
         /// The token which allows the the operation to be cancelled.
         /// </param>
         public abstract Task RemoveModuleAsync(Module module, CancellationToken cancellationToken);
-#endif
 
         /// <summary>
         /// Deletes a list of previously registered devices from the system.
@@ -471,7 +465,6 @@ namespace Microsoft.Azure.Devices
         /// </returns>
         public abstract Task<Device> GetDeviceAsync(string deviceId, CancellationToken cancellationToken);
 
-#if ENABLE_MODULES_SDK
         /// <summary>
         /// Retrieves the specified Module object.
         /// </summary>
@@ -517,7 +510,6 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken"></param>
         /// <returns>List of modules on decice</returns>
         public abstract Task<IEnumerable<Module>> GetModulesOnDeviceAsync(string deviceId, CancellationToken cancellationToken);
-#endif
 
         /// <summary>
         /// Retrieves specified number of devices from every Iot Hub partition. 
@@ -712,7 +704,6 @@ namespace Microsoft.Azure.Devices
         /// <returns>Twin instance</returns>
         public abstract Task<Twin> GetTwinAsync(string deviceId, CancellationToken cancellationToken);
 
-#if ENABLE_MODULES_SDK
         /// <summary>
         /// Gets Module's <see cref="Twin"/> from IotHub
         /// </summary>
@@ -729,7 +720,6 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">cancellation token</param>
         /// <returns>Twin instance</returns>
         public abstract Task<Twin> GetTwinAsync(string deviceId, string moduleId, CancellationToken cancellationToken);
-#endif
 
         /// <summary>
         /// Updates the mutable fields of <see cref="Twin"/>
@@ -769,7 +759,6 @@ namespace Microsoft.Azure.Devices
         /// <returns>Updated Twin instance</returns>
         public abstract Task<Twin> UpdateTwinAsync(string deviceId, string jsonTwinPatch, string etag, CancellationToken cancellationToken);
 
-#if ENABLE_MODULES_SDK
         /// <summary>
         /// Updates the mutable fields of Module's <see cref="Twin"/>
         /// </summary>
@@ -811,7 +800,6 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Updated Twin instance</returns>
         public abstract Task<Twin> UpdateTwinAsync(string deviceId, string moduleId, string jsonTwinPatch, string etag, CancellationToken cancellationToken);
-#endif
 
         /// <summary>
         /// Update the mutable fields for a list of <see cref="Twin"/>s previously created within the system
@@ -883,7 +871,6 @@ namespace Microsoft.Azure.Devices
         /// <returns>Updated Twin instance</returns>
         public abstract Task<Twin> ReplaceTwinAsync(string deviceId, string newTwinJson, string etag, CancellationToken cancellationToken);
 
-#if ENABLE_MODULES_SDK
         /// <summary>
         /// Updates the mutable fields of Module's <see cref="Twin"/>
         /// </summary>
@@ -925,9 +912,7 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Updated Twin instance</returns>
         public abstract Task<Twin> ReplaceTwinAsync(string deviceId, string moduleId, string newTwinJson, string etag, CancellationToken cancellationToken);
-#endif
 
-#if ENABLE_MODULES_SDK
         /// <summary>
         /// Register a new Configuration for Azure IOT Edge in IotHub
         /// </summary>
@@ -1094,6 +1079,5 @@ namespace Microsoft.Azure.Devices
         /// The token which allows the the operation to be cancelled.
         /// </param>
         public abstract Task ApplyConfigurationContentOnDeviceAsync(string deviceId, ConfigurationContent content, CancellationToken cancellationToken);
-#endif
     }
 }

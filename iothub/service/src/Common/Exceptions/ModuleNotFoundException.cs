@@ -1,16 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-#if ENABLE_MODULES_SDK
 namespace Microsoft.Azure.Devices.Common.Exceptions
 {
     using System;
     using System.Runtime.Serialization;
 
-#if !WINDOWS_UWP
     [Serializable]
-#endif
-
     public class ModuleNotFoundException : IotHubException
     {
         public ModuleNotFoundException(string deviceId, string moduleId)
@@ -33,7 +29,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         {
         }
 
-#if !WINDOWS_UWP && !NETSTANDARD1_3
+#if !NETSTANDARD1_3
         public ModuleNotFoundException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
@@ -41,4 +37,3 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
 #endif
     }
 }
-#endif

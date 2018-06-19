@@ -151,7 +151,6 @@ namespace Microsoft.Azure.Devices
         /// <returns>Method result</returns>
         public abstract Task<CloudToDeviceMethodResult> InvokeDeviceMethodAsync(string deviceId, CloudToDeviceMethod cloudToDeviceMethod, CancellationToken cancellationToken);
 
-#if ENABLE_MODULES_SDK
         /// <summary>
         /// Interactively invokes a method on device
         /// </summary>
@@ -179,6 +178,5 @@ namespace Microsoft.Azure.Devices
         /// <param name="message">The message containing the notification</param>
         /// <returns></returns>
         public abstract Task SendAsync(string deviceId, string moduleId, Message message);
-#endif
     }
 }

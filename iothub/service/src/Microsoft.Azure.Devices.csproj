@@ -32,7 +32,6 @@
     <PackageProjectUrl>https://github.com/Azure/azure-iot-sdk-csharp</PackageProjectUrl>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
     <PackageTags>IoT Microsoft Azure IoTHub Service Client SDK Manage Devices .NET</PackageTags>
-    <DefineConstants>$(DefineConstants);ENABLE_MODULES_SDK</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup>
