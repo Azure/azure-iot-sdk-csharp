@@ -16,46 +16,6 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public sealed class DeviceClient : IDisposable
     {
-        private const string DeviceId = "DeviceId";
-        private const string DeviceIdParameterPattern = @"(^\s*?|.*;\s*?)" + DeviceId + @"\s*?=.*";
-        private IotHubConnectionString iotHubConnectionString = null;
-
-        /// <summary> 
-        /// Diagnostic sampling percentage value, [0-100];  
-        /// 0 means no message will carry on diag info 
-        /// </summary>
-        private int _diagnosticSamplingPercentage = 0;
-        public int DiagnosticSamplingPercentage
-        {
-            get { return _diagnosticSamplingPercentage; }
-            set
-            {
-                if (value > 100 || value < 0)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(DiagnosticSamplingPercentage), DiagnosticSamplingPercentage, 
-                        "The range of diagnostic sampling percentage should between [0,100].");
-                }
-
-                if (IsE2EDiagnosticSupportedProtocol())
-                {
-                    _diagnosticSamplingPercentage = value;
-                }
-            }
-        }
-
-        ITransportSettings[] transportSettings;
-
-        internal X509Certificate2 Certificate { get; set; }
-        private static readonly TimeSpan regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
-        private static readonly Regex DeviceIdParameterRegex = 
-            new Regex(DeviceIdParameterPattern, RegexOptions.Compiled | RegexOptions.IgnoreCase, regexTimeoutMilliseconds);
-
-        internal IDelegatingHandler InnerHandler { get; set; }
-
-        SemaphoreSlim methodsDictionarySemaphore = new SemaphoreSlim(1, 1);
-
-        DeviceClientConnectionStatusManager connectionStatusManager = new DeviceClientConnectionStatusManager();
-
         public const uint DefaultOperationTimeoutInMilliseconds = 4 * 60 * 1000;
 
         private readonly InternalClient internalClient;
@@ -200,8 +160,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             return Create(() => ClientFactory.CreateFromConnectionString(connectionString, transportSettings));
         }
-
-
+        
         /// <summary>
         /// Create DeviceClient from the specified connection string using the prioritized list of transports
         /// </summary>
@@ -228,6 +187,10 @@ namespace Microsoft.Azure.Devices.Client
 
         internal InternalClient InternalClient => this.internalClient;
 
+        /// <summary> 
+        /// Diagnostic sampling percentage value, [0-100];  
+        /// 0 means no message will carry on diag info 
+        /// </summary>
         public int DiagnosticSamplingPercentage
         {
             get => this.internalClient.DiagnosticSamplingPercentage;
@@ -393,7 +356,6 @@ namespace Microsoft.Azure.Devices.Client
         /// it will be replaced with the new delegate.
         /// <param name="statusChangesHandler">The name of the method to associate with the delegate.</param>
         /// </summary>
-
         public void SetConnectionStatusChangesHandler(ConnectionStatusChangesHandler statusChangesHandler) =>
             this.internalClient.SetConnectionStatusChangesHandler(statusChangesHandler);
 

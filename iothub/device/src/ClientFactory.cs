@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Client.Edge;
-
 namespace Microsoft.Azure.Devices.Client
 {
     using System;
@@ -13,11 +11,12 @@ namespace Microsoft.Azure.Devices.Client
 
     internal class ClientFactory
     {
-        const string DeviceId = "DeviceId";
-        const string DeviceIdParameterPattern = @"(^\s*?|.*;\s*?)" + DeviceId + @"\s*?=.*";
-        const RegexOptions RegexOptions = System.Text.RegularExpressions.RegexOptions.Compiled | System.Text.RegularExpressions.RegexOptions.IgnoreCase;
-        static readonly Regex DeviceIdParameterRegex = new Regex(DeviceIdParameterPattern, RegexOptions);
-
+        private const string DeviceId = "DeviceId";
+        private const string DeviceIdParameterPattern = @"(^\s*?|.*;\s*?)" + DeviceId + @"\s*?=.*";
+        private static readonly TimeSpan regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
+        private static readonly Regex DeviceIdParameterRegex =
+            new Regex(DeviceIdParameterPattern, RegexOptions.Compiled | RegexOptions.IgnoreCase, regexTimeoutMilliseconds);
+        
         /// <summary>
         /// Create an Amqp InternalClient from individual parameters
         /// </summary>

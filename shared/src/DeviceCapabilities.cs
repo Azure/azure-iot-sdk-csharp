@@ -10,6 +10,9 @@ namespace Microsoft.Azure.Devices.Shared
     /// </summary>
     public class DeviceCapabilities
     {
+        /// <summary>
+        /// IoT Edge capability.
+        /// </summary>
         [JsonProperty(PropertyName = "iotEdge")]
         public bool IotEdge { get; set; }
     }

@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Devices
         private const string ModuleTwinUriFormat = "/twins/{0}/modules/{1}?{2}";
 
         private const string ConfigurationRequestUriFormat = "/configurations/{0}?{1}";
-        private econst string ConfigurationsRequestUriFormat = "/configurations/?top={0}&{1}";
+        private const string ConfigurationsRequestUriFormat = "/configurations/?top={0}&{1}";
 
         private const string ApplyConfigurationOnDeviceUriFormat = "/devices/{0}/applyConfigurationContent?" + ClientApiVersionHelper.ApiVersionQueryString;
 

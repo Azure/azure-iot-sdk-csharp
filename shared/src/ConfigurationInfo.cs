@@ -3,7 +3,6 @@
 
 namespace Microsoft.Azure.Devices.Shared
 {
-
     using Newtonsoft.Json;
 
     /// <summary>
@@ -11,6 +10,9 @@ namespace Microsoft.Azure.Devices.Shared
     /// </summary>
     public class ConfigurationInfo
     {
+        /// <summary>
+        /// Configuration status.
+        /// </summary>
         [JsonProperty("status")]
         public ConfigurationStatus Status { get; set; }
     }

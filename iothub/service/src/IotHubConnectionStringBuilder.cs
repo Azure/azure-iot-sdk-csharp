@@ -123,7 +123,8 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         public string IotHubName
         {
-            get { return this.iotHubName; }
+            get;
+            private set;
         }
 
         internal IotHubConnectionString ToIotHubConnectionString()

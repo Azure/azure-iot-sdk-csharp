@@ -524,7 +524,7 @@
 
             ConnectionEventArgs connectionEventArgs = new ConnectionEventArgs();
             connectionEventArgs.ConnectionType = ConnectionType.AmqpMethodReceiving;
-            deviceClient.OnConnectionOpened(this, connectionEventArgs);
+            deviceClient.InternalClient.OnConnectionOpened(this, connectionEventArgs);
 
             innerHandler.ClearReceivedCalls();
             methodCallbackCalled = false;
@@ -577,7 +577,7 @@
 
             ConnectionEventArgs connectionEventArgs = new ConnectionEventArgs();
             connectionEventArgs.ConnectionType = ConnectionType.AmqpMethodReceiving;
-            deviceClient.OnConnectionOpened(this, connectionEventArgs);
+            deviceClient.InternalClient.OnConnectionOpened(this, connectionEventArgs);
 
             innerHandler.ClearReceivedCalls();
             methodCallbackCalled = false;
@@ -797,7 +797,7 @@
 
             ConnectionEventArgs connectionEventArgs = new ConnectionEventArgs();
             connectionEventArgs.ConnectionType = ConnectionType.AmqpMethodReceiving;
-            deviceClient.OnConnectionOpened(this, connectionEventArgs);
+            deviceClient.InternalClient.OnConnectionOpened(this, connectionEventArgs);
 
             methodCallbackCalled = false;
             innerHandler.ClearReceivedCalls();
@@ -863,7 +863,7 @@
 
             ConnectionEventArgs connectionEventArgs = new ConnectionEventArgs();
             connectionEventArgs.ConnectionType = ConnectionType.AmqpMethodReceiving;
-            deviceClient.OnConnectionOpened(this, connectionEventArgs);
+            deviceClient.InternalClient.OnConnectionOpened(this, connectionEventArgs);
 
             methodCallbackCalled = false;
             innerHandler.ClearReceivedCalls();
