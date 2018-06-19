@@ -70,6 +70,28 @@ namespace Microsoft.Azure.Devices
         /// <returns>echoes back the Device object with the generated keys and etags</returns>
         public abstract Task<Device> AddDeviceAsync(Device device, CancellationToken cancellationToken);
 
+#if ENABLE_MODULES_SDK
+        /// <summary>
+        /// Register a new module with device in the system
+        /// </summary>
+        /// <param name="module">
+        /// The Module object to be registered.
+        /// </param>
+        /// <returns>echoes back the Module object with the generated keys and etags</returns>
+        public abstract Task<Module> AddModuleAsync(Module module);
+
+        /// <summary>
+        /// Register a new module with device in the system
+        /// </summary>
+        /// <param name="module">
+        /// The Module object to be registered.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// The token which allows the the operation to be cancelled.
+        /// </param>
+        /// <returns>echoes back the Module object with the generated keys and etags</returns>
+        public abstract Task<Module> AddModuleAsync(Module module, CancellationToken cancellationToken);
+#endif
 
         /// <summary>
         /// Adds a Device with Twin information
@@ -179,6 +201,56 @@ namespace Microsoft.Azure.Devices
         /// <returns>echoes back the Device object with updated etags</returns>
         public abstract Task<Device> UpdateDeviceAsync(Device device, bool forceUpdate, CancellationToken cancellationToken);
 
+#if ENABLE_MODULES_SDK
+        /// <summary>
+        /// Update the mutable fields of the module registration
+        /// </summary>
+        /// <param name="module">
+        /// The Module object with updated fields.
+        /// </param>
+        /// <returns>echoes back the Module object with updated etags</returns>
+        public abstract Task<Module> UpdateModuleAsync(Module module);
+
+        /// <summary>
+        /// Update the mutable fields of the module registration
+        /// </summary>
+        /// <param name="module">
+        /// The Module object with updated fields.
+        /// </param>
+        /// <param name="forceUpdate">
+        /// Forces the device object to be replaced without regard for an ETag match.
+        /// </param>
+        /// <returns>echoes back the Module object with updated etags</returns>
+        public abstract Task<Module> UpdateModuleAsync(Module module, bool forceUpdate);
+
+        /// <summary>
+        /// Update the mutable fields of the module registration
+        /// </summary>
+        /// <param name="module">
+        /// The Module object with updated fields.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// The token which allows the the operation to be cancelled.
+        /// </param>
+        /// <returns>echoes back the Module object with updated etags</returns>
+        public abstract Task<Module> UpdateModuleAsync(Module module, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Update the mutable fields of the module registration
+        /// </summary>
+        /// <param name="module">
+        /// The Module object with updated fields.
+        /// </param>
+        /// <param name="forceUpdate">
+        /// Forces the module object to be replaced even if it was updated since it was retrieved last time.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// The token which allows the the operation to be cancelled.
+        /// </param>
+        /// <returns>echoes back the Module object with updated etags</returns>
+        public abstract Task<Module> UpdateModuleAsync(Module module, bool forceUpdate, CancellationToken cancellationToken);
+#endif
+
         /// <summary>
         /// Update a list of devices with the system
         /// </summary>
@@ -267,6 +339,52 @@ namespace Microsoft.Azure.Devices
         /// </param>
         public abstract Task RemoveDeviceAsync(Device device, CancellationToken cancellationToken);
 
+#if ENABLE_MODULES_SDK
+        /// <summary>
+        /// Deletes a previously registered module from device in the system.
+        /// </summary>
+        /// <param name="deviceId">
+        /// The id of the device to be deleted.
+        /// </param>
+        /// <param name="moduleId">
+        /// The id of the moduleId to be deleted.
+        /// </param>
+        public abstract Task RemoveModuleAsync(string deviceId, string moduleId);
+
+        /// <summary>
+        /// Deletes a previously registered module from device in the system.
+        /// </summary>
+        /// <param name="deviceId">
+        /// The id of the device to be deleted.
+        /// </param>
+        /// <param name="moduleId">
+        /// The id of the moduleId to be deleted.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// The token which allows the the operation to be cancelled.
+        /// </param>
+        public abstract Task RemoveModuleAsync(string deviceId, string moduleId, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Deletes a previously registered module from device in the system.
+        /// </summary>
+        /// <param name="module">
+        /// The module to be deleted.
+        /// </param>
+        public abstract Task RemoveModuleAsync(Module module);
+
+        /// <summary>
+        /// Deletes a previously registered module from device in the system.
+        /// </summary>
+        /// <param name="module">
+        /// The module to be deleted.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// The token which allows the the operation to be cancelled.
+        /// </param>
+        public abstract Task RemoveModuleAsync(Module module, CancellationToken cancellationToken);
+#endif
+
         /// <summary>
         /// Deletes a list of previously registered devices from the system.
         /// </summary>
@@ -352,6 +470,54 @@ namespace Microsoft.Azure.Devices
         /// The Device object.
         /// </returns>
         public abstract Task<Device> GetDeviceAsync(string deviceId, CancellationToken cancellationToken);
+
+#if ENABLE_MODULES_SDK
+        /// <summary>
+        /// Retrieves the specified Module object.
+        /// </summary>
+        /// <param name="deviceId">
+        /// The id of the device to be retrieved.
+        /// </param>
+        /// <param name="moduleId">
+        /// The id of the module to be retrieved.
+        /// </param>
+        /// <returns>
+        /// The Module object.
+        /// </returns>
+        public abstract Task<Module> GetModuleAsync(string deviceId, string moduleId);
+
+        /// <summary>
+        /// Retrieves the specified Module object.
+        /// </summary>
+        /// <param name="deviceId">
+        /// The id of the device to be retrieved.
+        /// </param>
+        /// <param name="moduleId">
+        /// The id of the module to be retrieved.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// The token which allows the the operation to be cancelled.
+        /// </param>
+        /// <returns>
+        /// The Module object.
+        /// </returns>
+        public abstract Task<Module> GetModuleAsync(string deviceId, string moduleId, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Retrieves the module identities on device
+        /// </summary>
+        /// <param name="deviceId">device id</param>
+        /// <returns>List of modules on decice</returns>
+        public abstract Task<IEnumerable<Module>> GetModulesOnDeviceAsync(string deviceId);
+
+        /// <summary>
+        /// Retrieves the module identities on device
+        /// </summary>
+        /// <param name="deviceId">device id</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns>List of modules on decice</returns>
+        public abstract Task<IEnumerable<Module>> GetModulesOnDeviceAsync(string deviceId, CancellationToken cancellationToken);
+#endif
 
         /// <summary>
         /// Retrieves specified number of devices from every Iot Hub partition. 
@@ -546,6 +712,25 @@ namespace Microsoft.Azure.Devices
         /// <returns>Twin instance</returns>
         public abstract Task<Twin> GetTwinAsync(string deviceId, CancellationToken cancellationToken);
 
+#if ENABLE_MODULES_SDK
+        /// <summary>
+        /// Gets Module's <see cref="Twin"/> from IotHub
+        /// </summary>
+        /// <param name="deviceId">device Id</param>
+        /// <param name="moduleId">module Id</param>
+        /// <returns>Twin instance</returns>
+        public abstract Task<Twin> GetTwinAsync(string deviceId, string moduleId);
+
+        /// <summary>
+        /// Gets Module's <see cref="Twin"/> from IotHub
+        /// </summary>
+        /// <param name="deviceId">device Id</param>
+        /// <param name="moduleId">module Id</param>
+        /// <param name="cancellationToken">cancellation token</param>
+        /// <returns>Twin instance</returns>
+        public abstract Task<Twin> GetTwinAsync(string deviceId, string moduleId, CancellationToken cancellationToken);
+#endif
+
         /// <summary>
         /// Updates the mutable fields of <see cref="Twin"/>
         /// </summary>
@@ -583,6 +768,50 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Updated Twin instance</returns>
         public abstract Task<Twin> UpdateTwinAsync(string deviceId, string jsonTwinPatch, string etag, CancellationToken cancellationToken);
+
+#if ENABLE_MODULES_SDK
+        /// <summary>
+        /// Updates the mutable fields of Module's <see cref="Twin"/>
+        /// </summary>
+        /// <param name="deviceId">Device Id</param>
+        /// <param name="moduleId">module Id</param>
+        /// <param name="twinPatch">Twin with updated fields</param>
+        /// <param name="etag">Twin's etag</param>
+        /// <returns>Updated Twin instance</returns>
+        public abstract Task<Twin> UpdateTwinAsync(string deviceId, string moduleId, Twin twinPatch, string etag);
+
+        /// <summary>
+        /// Updates the mutable fields of Module's <see cref="Twin"/>
+        /// </summary>
+        /// <param name="deviceId">Device Id</param>
+        /// <param name="moduleId">module Id</param>
+        /// <param name="twinPatch">Twin with updated fields</param>
+        /// <param name="etag">Twin's etag</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>Updated Twin instance</returns>
+        public abstract Task<Twin> UpdateTwinAsync(string deviceId, string moduleId, Twin twinPatch, string etag, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Updates the mutable fields of Module's <see cref="Twin"/>
+        /// </summary>
+        /// <param name="deviceId">Device Id</param>
+        /// <param name="moduleId">module Id</param>
+        /// <param name="jsonTwinPatch">Twin json with updated fields</param>
+        /// <param name="etag">Twin's etag</param>
+        /// <returns>Updated Twin instance</returns>
+        public abstract Task<Twin> UpdateTwinAsync(string deviceId, string moduleId, string jsonTwinPatch, string etag);
+
+        /// <summary>
+        /// Updates the mutable fields of Module's <see cref="Twin"/>
+        /// </summary>
+        /// <param name="deviceId">Device Id</param>
+        /// <param name="moduleId">module Id</param>
+        /// <param name="jsonTwinPatch">Twin json with updated fields</param>
+        /// <param name="etag">Twin's etag</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>Updated Twin instance</returns>
+        public abstract Task<Twin> UpdateTwinAsync(string deviceId, string moduleId, string jsonTwinPatch, string etag, CancellationToken cancellationToken);
+#endif
 
         /// <summary>
         /// Update the mutable fields for a list of <see cref="Twin"/>s previously created within the system
@@ -653,5 +882,218 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Updated Twin instance</returns>
         public abstract Task<Twin> ReplaceTwinAsync(string deviceId, string newTwinJson, string etag, CancellationToken cancellationToken);
+
+#if ENABLE_MODULES_SDK
+        /// <summary>
+        /// Updates the mutable fields of Module's <see cref="Twin"/>
+        /// </summary>
+        /// <param name="deviceId">Device Id</param>
+        /// <param name="moduleId">module Id</param>
+        /// <param name="newTwin">New Twin object to replace with</param>
+        /// <param name="etag">Twin's etag</param>
+        /// <returns>Updated Twin instance</returns>
+        public abstract Task<Twin> ReplaceTwinAsync(string deviceId, string moduleId, Twin newTwin, string etag);
+
+        /// <summary>
+        /// Updates the mutable fields of Module's <see cref="Twin"/>
+        /// </summary>
+        /// <param name="deviceId">Device Id</param>
+        /// <param name="moduleId">module Id</param>
+        /// <param name="newTwin">New Twin object to replace with</param>
+        /// <param name="etag">Twin's etag</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>Updated Twin instance</returns>
+        public abstract Task<Twin> ReplaceTwinAsync(string deviceId, string moduleId, Twin newTwin, string etag, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Updates the mutable fields of Module's <see cref="Twin"/>
+        /// </summary>
+        /// <param name="deviceId">Device Id</param>
+        /// <param name="moduleId">module Id</param>
+        /// <param name="newTwinJson">New Twin json to replace with</param>
+        /// <param name="etag">Twin's etag</param>
+        /// <returns>Updated Twin instance</returns>
+        public abstract Task<Twin> ReplaceTwinAsync(string deviceId, string moduleId, string newTwinJson, string etag);
+
+        /// <summary>
+        /// Updates the mutable fields of Module's <see cref="Twin"/>
+        /// </summary>
+        /// <param name="deviceId">Device Id</param>
+        /// <param name="moduleId">module Id</param>
+        /// <param name="newTwinJson">New Twin json to replace with</param>
+        /// <param name="etag">Twin's etag</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>Updated Twin instance</returns>
+        public abstract Task<Twin> ReplaceTwinAsync(string deviceId, string moduleId, string newTwinJson, string etag, CancellationToken cancellationToken);
+#endif
+
+#if ENABLE_MODULES_SDK
+        /// <summary>
+        /// Register a new Configuration for Azure IOT Edge in IotHub
+        /// </summary>
+        /// <param name="configuration">
+        /// The Configuration object to be registered.
+        /// </param>
+        /// <returns>echoes back the Configuration object</returns>
+        public abstract Task<Configuration> AddConfigurationAsync(Configuration configuration);
+
+        /// <summary>
+        /// Register a new Configuration for Azure IOT Edge in IotHub
+        /// </summary>
+        /// <param name="configuration">
+        /// The Configuration object to be registered.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// The token which allows the the operation to be cancelled.
+        /// </param>
+        /// <returns>echoes back the Configuration object</returns>
+        public abstract Task<Configuration> AddConfigurationAsync(Configuration configuration, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Retrieves the specified Configuration object.
+        /// </summary>
+        /// <param name="configurationId">
+        /// The id of the Configuration to be retrieved.
+        /// </param>
+        /// <returns>
+        /// The Configuration object.
+        /// </returns>
+        public abstract Task<Configuration> GetConfigurationAsync(string configurationId);
+
+        /// <summary>
+        /// Retrieves the specified Configuration object.
+        /// </summary>
+        /// <param name="configurationId">
+        /// The id of the Configuration to be retrieved.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// The token which allows the the operation to be cancelled.
+        /// </param>
+        /// <returns>
+        /// The Configuration object.
+        /// </returns>
+        public abstract Task<Configuration> GetConfigurationAsync(string configurationId, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Retrieves specified number of configurations from every Iot Hub partition. 
+        /// Results are not ordered.
+        /// </summary>
+        /// <returns>
+        /// The list of configurations
+        /// </returns>
+        public abstract Task<IEnumerable<Configuration>> GetConfigurationsAsync(int maxCount);
+
+        /// <summary>
+        /// Retrieves specified number of configurations from every Iot hub partition. 
+        /// Results are not ordered.
+        /// </summary>
+        /// <returns>
+        /// The list of configurations
+        /// </returns>
+        public abstract Task<IEnumerable<Configuration>> GetConfigurationsAsync(int maxCount, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Update the mutable fields of the Configuration registration
+        /// </summary>
+        /// <param name="configuration">
+        /// The Configuration object with updated fields.
+        /// </param>
+        /// <returns>echoes back the Configuration object with updated etags</returns>
+        public abstract Task<Configuration> UpdateConfigurationAsync(Configuration configuration);
+
+        /// <summary>
+        /// Update the mutable fields of the Configuration registration
+        /// </summary>
+        /// <param name="configuration">
+        /// The Configuration object with updated fields.
+        /// </param>
+        /// <param name="forceUpdate">
+        /// Forces the device object to be replaced without regard for an ETag match.
+        /// </param>
+        /// <returns>echoes back the Configuration object with updated etags</returns>
+        public abstract Task<Configuration> UpdateConfigurationAsync(Configuration configuration, bool forceUpdate);
+
+        /// <summary>
+        /// Update the mutable fields of the Configuration registration
+        /// </summary>
+        /// <param name="configuration">
+        /// The Configuration object with updated fields.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// The token which allows the the operation to be cancelled.
+        /// </param>
+        /// <returns>echoes back the Configuration object with updated etags</returns>
+        public abstract Task<Configuration> UpdateConfigurationAsync(Configuration configuration, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Update the mutable fields of the Configuration registration
+        /// </summary>
+        /// <param name="configuration">
+        /// The Configuration object with updated fields.
+        /// </param>
+        /// <param name="forceUpdate">
+        /// Forces the Configuration object to be replaced even if it was updated since it was retrieved last time.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// The token which allows the the operation to be cancelled.
+        /// </param>
+        /// <returns>echoes back the Configuration object with updated etags</returns>
+        public abstract Task<Configuration> UpdateConfigurationAsync(Configuration configuration, bool forceUpdate, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Deletes a previously registered device from the system.
+        /// </summary>
+        /// <param name="configurationId">
+        /// The id of the Configuration to be deleted.
+        /// </param>
+        public abstract Task RemoveConfigurationAsync(string configurationId);
+
+        /// <summary>
+        /// Deletes a previously registered device from the system.
+        /// </summary>
+        /// <param name="configurationId">
+        /// The id of the configurationId to be deleted.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// The token which allows the the operation to be cancelled.
+        /// </param>
+        public abstract Task RemoveConfigurationAsync(string configurationId, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Deletes a previously registered device from the system.
+        /// </summary>
+        /// <param name="configuration">
+        /// The Configuration to be deleted.
+        /// </param>
+        public abstract Task RemoveConfigurationAsync(Configuration configuration);
+
+        /// <summary>
+        /// Deletes a previously registered device from the system.
+        /// </summary>
+        /// <param name="configuration">
+        /// The Configuration to be deleted.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// The token which allows the the operation to be cancelled.
+        /// </param>
+        public abstract Task RemoveConfigurationAsync(Configuration configuration, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Applies configuration content to an IoTEdge device.
+        /// </summary>
+        /// <param name="deviceId">Device Id</param>
+        /// <param name="content"><see cref="ConfigurationContent"/></param>
+        public abstract Task ApplyConfigurationContentOnDeviceAsync(string deviceId, ConfigurationContent content);
+
+        /// <summary>
+        /// Applies configuration content to an IoTEdge device.
+        /// </summary>
+        /// <param name="deviceId">Device Id</param>
+        /// <param name="content"><see cref="ConfigurationContent"/></param>
+        /// <param name="cancellationToken">
+        /// The token which allows the the operation to be cancelled.
+        /// </param>
+        public abstract Task ApplyConfigurationContentOnDeviceAsync(string deviceId, ConfigurationContent content, CancellationToken cancellationToken);
+#endif
     }
 }

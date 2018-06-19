@@ -70,6 +70,18 @@ namespace Microsoft.Azure.Devices.Client.Transport
             await base.DisableMethodsAsync(cancellationToken).ConfigureAwait(false);
         }
 
+        public override async Task EnableEventReceiveAsync(CancellationToken cancellationToken)
+        {
+            await this.EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
+            await base.EnableEventReceiveAsync(cancellationToken).ConfigureAwait(false);
+        }
+
+        public override async Task DisableEventReceiveAsync(CancellationToken cancellationToken)
+        {
+            await this.EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);
+            await base.DisableEventReceiveAsync(cancellationToken).ConfigureAwait(false);
+        }
+
         public override async Task EnableTwinPatchAsync(CancellationToken cancellationToken)
         {
             await this.EnsureOpenedAsync(false, cancellationToken).ConfigureAwait(false);

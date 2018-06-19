@@ -37,10 +37,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             public const string MessageId = "$.mid";
             public const string To = "$.to";
             public const string UserId = "$.uid";
+            public const string OutputName = "$.on";
             public const string MessageSchema = "$.schema";
             public const string CreationTimeUtc = "$.ctime";
             public const string ContentType = "$.ct";
             public const string ContentEncoding = "$.ce";
+            public const string ConnectionDeviceId = "$.cdid";
+            public const string ConnectionModuleId = "$.cmid";
             public const string MqttDiagIdKey = "$.diagid";
             public const string MqttDiagCorrelationContextKey = "$.diagctx";
         }
@@ -58,6 +61,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {IotHubWirePropertyNames.ContentEncoding, MessageSystemPropertyNames.ContentEncoding},
             {MessageSystemPropertyNames.Operation, MessageSystemPropertyNames.Operation},
             {MessageSystemPropertyNames.Ack, MessageSystemPropertyNames.Ack},
+            {IotHubWirePropertyNames.ConnectionDeviceId, MessageSystemPropertyNames.ConnectionDeviceId },
+            {IotHubWirePropertyNames.ConnectionModuleId, MessageSystemPropertyNames.ConnectionModuleId },
             {IotHubWirePropertyNames.MqttDiagIdKey, MessageSystemPropertyNames.DiagId},
             {IotHubWirePropertyNames.MqttDiagCorrelationContextKey, MessageSystemPropertyNames.DiagCorrelationContext}
         };
@@ -75,6 +80,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {MessageSystemPropertyNames.ContentEncoding, IotHubWirePropertyNames.ContentEncoding},
             {MessageSystemPropertyNames.Operation, MessageSystemPropertyNames.Operation},
             {MessageSystemPropertyNames.Ack, MessageSystemPropertyNames.Ack},
+            {MessageSystemPropertyNames.OutputName, IotHubWirePropertyNames.OutputName },
             {MessageSystemPropertyNames.DiagId, IotHubWirePropertyNames.MqttDiagIdKey},
             {MessageSystemPropertyNames.DiagCorrelationContext, IotHubWirePropertyNames.MqttDiagCorrelationContextKey}
         };
@@ -213,7 +219,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         public static void PopulateMessagePropertiesFromPacket(Message message, PublishPacket publish)
         {
             message.LockToken = publish.QualityOfService == QualityOfService.AtLeastOnce ? publish.PacketId.ToString() : null;
-            Dictionary<string, string> properties = UrlEncodedDictionarySerializer.Deserialize(publish.TopicName, publish.TopicName.NthIndexOf('/', 0, 4) + 1);
+
+            // Device bound messages could be in 2 formats, depending on whether it is going to the device, or to a module endpoint
+            // Format 1 - going to the device - devices/{deviceId}/messages/devicebound/{properties}/
+            // Format 2 - going to module endpoint - devices/{deviceId}/modules/{moduleId/endpoints/{endpointId}/{properties}/
+            // So choose the right format to deserialize properties. 
+            string[] topicSegments = publish.TopicName.Split(new[] {'/'}, StringSplitOptions.RemoveEmptyEntries);
+            string propertiesSegment = topicSegments.Length > 6 ? topicSegments[6] : topicSegments[4];
+
+            Dictionary<string, string> properties = UrlEncodedDictionarySerializer.Deserialize(propertiesSegment, 0);
             foreach (KeyValuePair<string, string> property in properties)
             {
                 string propertyName;

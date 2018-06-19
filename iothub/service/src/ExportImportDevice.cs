@@ -44,6 +44,13 @@ namespace Microsoft.Azure.Devices
         [JsonProperty(PropertyName = "id", Required = Required.Always)]
         public string Id { get; set; }
 
+#if ENABLE_MODULES_SDK
+        /// <summary>
+        /// Module Id for the object
+        /// </summary>
+        [JsonProperty(PropertyName = "moduleId", NullValueHandling = NullValueHandling.Ignore)]
+        public string ModuleId { get; set; }
+#endif
         /// <summary>
         /// ETag of the device
         /// </summary>

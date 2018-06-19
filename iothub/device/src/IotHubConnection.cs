@@ -37,16 +37,19 @@ namespace Microsoft.Azure.Devices.Client
 
         readonly string twinConnectionCorrelationId = Guid.NewGuid().ToString("N");
 
-        public enum SendingLinkType {
+        public enum SendingLinkType
+        {
             TelemetryEvents,
             Methods,
             Twin
         };
 
-        public enum ReceivingLinkType {
+        public enum ReceivingLinkType
+        {
             C2DMessages,
             Methods,
-            Twin
+            Twin,
+            Events
         };
 
         protected IotHubConnection(string hostName, int port, AmqpTransportSettings amqpTransportSettings)
@@ -85,7 +88,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 Role = false,
                 InitialDeliveryCount = 0,
-                Target = new Target() {Address = linkAddress.AbsoluteUri},
+                Target = new Target() { Address = linkAddress.AbsoluteUri },
                 LinkName = Guid.NewGuid().ToString("N") // Use a human readable link name to help with debugging
             };
 
@@ -144,16 +147,25 @@ namespace Microsoft.Azure.Devices.Client
                 Role = true,
                 TotalLinkCredit = prefetchCount,
                 AutoSendFlow = prefetchCount > 0,
-                Source = new Source() {Address = linkAddress.AbsoluteUri},
+                Source = new Source() { Address = linkAddress.AbsoluteUri },
                 LinkName = Guid.NewGuid().ToString("N") // Use a human readable link name to help with debuggin
             };
 
             switch (linkType)
             {
+                // Exactly once
                 case ReceivingLinkType.C2DMessages:
                     linkSettings.SndSettleMode = null; // SenderSettleMode.Unsettled (null as it is the default and to avoid bytes on the wire)
                     linkSettings.RcvSettleMode = (byte)ReceiverSettleMode.Second;
                     break;
+
+                // At least once
+                case ReceivingLinkType.Events:
+                    linkSettings.SndSettleMode = null; // SenderSettleMode.Unsettled (null as it is the default and to avoid bytes on the wire)
+                    linkSettings.RcvSettleMode = (byte)ReceiverSettleMode.First;
+                    break;
+
+                // At most once
                 case ReceivingLinkType.Methods:
                 case ReceivingLinkType.Twin:
                     linkSettings.SndSettleMode = (byte)SenderSettleMode.Settled;
@@ -173,7 +185,7 @@ namespace Microsoft.Azure.Devices.Client
 
             var link = new ReceivingAmqpLink(linkSettings);
             link.AttachTo(session);
- 
+
             var audience = this.BuildAudience(connectionString, path);
             await this.OpenLinkAsync(link, connectionString, audience, timeoutHelper.RemainingTime(), cancellationToken).ConfigureAwait(false);
 
@@ -191,7 +203,7 @@ namespace Microsoft.Azure.Devices.Client
 
                 Fx.Assert(session != null, "Amqp Session cannot be null.");
                 if (session.State != AmqpObjectState.Opened)
-                {                    
+                {
                     if (session.State == AmqpObjectState.End)
                     {
                         this.FaultTolerantSession.TryRemove();
@@ -441,7 +453,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 TargetHost = this.hostName,
                 Certificate = null,
-                CertificateValidationCallback = OnRemoteCertificateValidation
+                CertificateValidationCallback = this.AmqpTransportSettings.RemoteCertificateValidationCallback ?? OnRemoteCertificateValidation
             };
 
             if (this.AmqpTransportSettings.ClientCertificate != null)

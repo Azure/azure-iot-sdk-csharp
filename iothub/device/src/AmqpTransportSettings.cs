@@ -4,6 +4,7 @@
 namespace Microsoft.Azure.Devices.Client
 {
     using System;
+    using System.Net.Security;
     using System.Security.Cryptography.X509Certificates;
 
     /// <summary>
@@ -76,6 +77,8 @@ namespace Microsoft.Azure.Devices.Client
         public uint PrefetchCount { get; set; }
 
         public X509Certificate2 ClientCertificate { get; set; }
+
+        public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; }
 
         public AmqpConnectionPoolSettings AmqpConnectionPoolSettings { get; set; }
 

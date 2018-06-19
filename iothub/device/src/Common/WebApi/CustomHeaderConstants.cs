@@ -208,5 +208,10 @@ namespace Microsoft.Azure.Devices.Client
         /// All the resource providers *must* return this value in the response headers to facilitate debugging.
         /// </summary>
         public const string RequestId = "x-ms-request-id";
+
+        /// <summary>
+        /// Used to supply module ID of invoking module when used by module to invoke method on other modules/devices.
+        /// </summary>
+        public const string ModuleId = "x-ms-edge-moduleId";
     }
 }

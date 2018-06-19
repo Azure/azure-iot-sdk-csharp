@@ -136,6 +136,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return this.InnerHandler?.RecoverConnections(o, connectionType, cancellationToken) ?? TaskConstants.Completed;
         }
 
+        public virtual Task EnableEventReceiveAsync(CancellationToken cancellationToken)
+        {
+            return this.InnerHandler?.EnableEventReceiveAsync(cancellationToken) ?? TaskConstants.Completed;
+        }
+
+        public virtual Task DisableEventReceiveAsync(CancellationToken cancellationToken)
+        {
+            return this.InnerHandler?.DisableEventReceiveAsync(cancellationToken) ?? TaskConstants.Completed;
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             this.innerHandler?.Dispose();

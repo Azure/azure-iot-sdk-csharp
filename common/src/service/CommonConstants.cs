@@ -115,6 +115,7 @@ namespace Microsoft.Azure.Devices.Common
 
         // Custom HTTP headers
         public const string IotHubErrorCode = "IotHubErrorCode";
+        public const string HttpErrorCodeName = "iothub-errorcode";
 
         //Service Analytics related
         public static class ServiceAnalytics
@@ -148,14 +149,14 @@ namespace Microsoft.Azure.Devices.Common
             public const string GlobalPrimaryEncryptionKey = "Global.PrimaryEncryptionKey";
             public const string GlobalSecondaryEncryptionKey = "Global.SecondaryEncryptionKey";
         }
-        
+
         // Billing related
         public static class Billing
         {
             public const int UsageRecordPartitionCount = 16;
             public const string FreeSkuMeterId = "a435c5fc-1ab7-4be4-8cf4-223a670cae26";
             public const string Standard1SkuMeterId = "2885a6b2-5013-4fa9-8f3b-fc3ead8d136d";
-            public const string Standard2SkuMeterId = "a36d229a-595c-44ad-a66c-1287be4bf433"; 
+            public const string Standard2SkuMeterId = "a36d229a-595c-44ad-a66c-1287be4bf433";
             public const int EventHubThroughputUnitRatioStandard1 = 1000;
             public const int EventHubThroughputUnitRatioStandard2 = 30;
         }
@@ -190,7 +191,7 @@ namespace Microsoft.Azure.Devices.Common
             public const int FreeSkuQueuePartitionSizeInMegabytes = 1024;
             public const int StandardSkuQueuePartitionSizeInMegabytes = 5120;
         }
-        
+
         public static class EventHub
         {
             public const string ScaleUnitSendKeyNamePrefix = "scaleunitsend";

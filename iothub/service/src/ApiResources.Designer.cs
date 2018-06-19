@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices {
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         internal ApiResources() {
         }
-        
+
         /// <summary>
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Devices {
                 return resourceMan;
             }
         }
-        
+
         /// <summary>
         ///   Overrides the current thread's CurrentUICulture property for all
         ///   resource lookups using this strongly typed resource class.
@@ -144,11 +144,29 @@ namespace Microsoft.Azure.Devices {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The ETag should be set while deleting the Configuration..
+        /// </summary>
+        internal static string ETagNotSetWhileDeletingConfiguration {
+            get {
+                return ResourceManager.GetString("ETagNotSetWhileDeletingConfiguration", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The ETag should be set while deleting the device..
         /// </summary>
         internal static string ETagNotSetWhileDeletingDevice {
             get {
                 return ResourceManager.GetString("ETagNotSetWhileDeletingDevice", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The ETag should be set while updating the Configuration..
+        /// </summary>
+        internal static string ETagNotSetWhileUpdatingConfiguration {
+            get {
+                return ResourceManager.GetString("ETagNotSetWhileUpdatingConfiguration", resourceCulture);
             }
         }
         
@@ -167,6 +185,15 @@ namespace Microsoft.Azure.Devices {
         internal static string ETagNotSetWhileUpdatingTwin {
             get {
                 return ResourceManager.GetString("ETagNotSetWhileUpdatingTwin", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The ETag should not be set while creating a Configuration..
+        /// </summary>
+        internal static string ETagSetWhileCreatingConfiguration {
+            get {
+                return ResourceManager.GetString("ETagSetWhileCreatingConfiguration", resourceCulture);
             }
         }
         
