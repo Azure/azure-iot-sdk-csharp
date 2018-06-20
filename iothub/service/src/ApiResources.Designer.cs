@@ -362,9 +362,22 @@ namespace Microsoft.Azure.Devices {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; is not a valid X.509 thumbprint.
         /// </summary>
-        internal static string StringIsNotThumbprint {
-            get {
+        internal static string StringIsNotThumbprint
+        {
+            get
+            {
                 return ResourceManager.GetString("StringIsNotThumbprint", resourceCulture);
+            }
+        }
+  
+        /// <summary>
+        ///   Looks up a localized string similar to The size of the X.509 primary thumbprint must match that of the secondary thumbprint..
+        /// </summary>
+        internal static string ThumbprintSizesMustMatch
+        {
+            get
+            {
+                return ResourceManager.GetString("ThumbprintSizesMustMatch", resourceCulture);
             }
         }
     }

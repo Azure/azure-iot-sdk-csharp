@@ -27,7 +27,7 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <Version>1.1.0</Version>
+    <Version>1.1.1</Version>
     <Title>Microsoft Azure IoT Provisioning Device Security TPM Client</Title>
     <Authors>Microsoft</Authors>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>

@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace Microsoft.Azure.Devices
 {
     /// <summary>
@@ -9,12 +11,12 @@ namespace Microsoft.Azure.Devices
     public enum DeviceConnectionState
     {
         /// <summary>
-        /// Represents a <see cref="Microsoft.Azure.Devices.Device"/> in the Disconnected state
+        /// Represents a device in the Disconnected state.
         /// </summary>
         Disconnected = 0,
 
         /// <summary>
-        /// Represents a <see cref="Microsoft.Azure.Devices.Device"/> in the Connected state
+        /// Represents a device in the Connected state.
         /// </summary>
         Connected = 1
     }

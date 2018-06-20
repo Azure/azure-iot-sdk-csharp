@@ -91,7 +91,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         // incoming topic regexp
         const string twinResponseTopicPattern = @"\$iothub/twin/res/(\d+)/(\?.+)";
-        Regex twinResponseTopicRegex = new Regex(twinResponseTopicPattern, RegexOptions.None);
+        private static readonly TimeSpan regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
+        Regex twinResponseTopicRegex = new Regex(twinResponseTopicPattern, RegexOptions.Compiled, regexTimeoutMilliseconds);
 
         Action<object, ConnectionEventArgs> connectionOpenedListener;
         Func<object, ConnectionEventArgs, Task> connectionClosedListener;
@@ -389,7 +390,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             try
             {
-                string[] tokens = System.Text.RegularExpressions.Regex.Split(message.MqttTopicName, "/");
+                string[] tokens = Regex.Split(message.MqttTopicName, "/", RegexOptions.Compiled, regexTimeoutMilliseconds);
 
                 var mr = new MethodRequestInternal(tokens[3], tokens[4].Substring(6), message.BodyStream);
                 await Task.Run(() =>this.messageListener(mr)).ConfigureAwait(false);

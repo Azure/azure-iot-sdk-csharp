@@ -23,21 +23,48 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// </remarks>
     public class ProvisioningServiceClientHttpException : ProvisioningServiceClientTransportException
     {
+        /// <summary>
+        /// The HTTP status code.
+        /// </summary>
         public HttpStatusCode StatusCode { get; private set; }
+
+        /// <summary>
+        /// The HTTP body.
+        /// </summary>
         public string Body { get; private set; }
+
+        /// <summary>
+        /// The HTTP headers.
+        /// </summary>
         public IDictionary<string, string> Fields { get; private set; }
+
+        /// <summary>
+        /// The error message.
+        /// </summary>
         public string ErrorMessage { get; private set; }
 
+        /// <summary>
+        /// Initializes the <see cref="ProvisioningServiceClientHttpException"/> class.
+        /// </summary>
         public ProvisioningServiceClientHttpException() 
             : base()
         {
         }
 
+        /// <summary>
+        /// Initializes the <see cref="ProvisioningServiceClientHttpException"/> class.
+        /// </summary>
+        /// <param name="message">The message.</param>
         public ProvisioningServiceClientHttpException(string message)
             : base(message: message)
         {
         }
 
+        /// <summary>
+        /// Initializes the <see cref="ProvisioningServiceClientHttpException"/> class.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        /// <param name="innerException">Inner exception.</param>
         public ProvisioningServiceClientHttpException(string message, Exception innerException)
             : base(message, innerException)
         {

@@ -48,12 +48,10 @@ namespace Microsoft.Azure.Devices.Shared
         /// </summary>
         public string DeviceId { get; set; }
 
-#if ENABLE_MODULES_SDK
         /// <summary>
         /// Gets and sets the <see cref="Twin" /> Module Id.
         /// </summary>
         public string ModuleId { get; set; }
-#endif
 
         /// <summary>
         /// Gets and sets the <see cref="Twin"/> tags.
@@ -65,7 +63,6 @@ namespace Microsoft.Azure.Devices.Shared
         /// </summary>
         public TwinProperties Properties { get; set; }
 
-#if ENABLE_MODULES_SDK
         /// <summary>
         /// Gets the <see cref="Twin"/> configuration properties. These are read only
         /// </summary>
@@ -75,7 +72,6 @@ namespace Microsoft.Azure.Devices.Shared
         /// Gets the <see cref="Twin"/> capabilities. These are read only.
         /// </summary>
         public DeviceCapabilities Capabilities { get; set; }
-#endif
 
         /// <summary>
         /// Twin's ETag

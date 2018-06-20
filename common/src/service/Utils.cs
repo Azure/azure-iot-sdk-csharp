@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.Common
         {
             if (buffer == null)
             {
-                throw new ArgumentNullException("buffer");
+                throw new ArgumentNullException(nameof(buffer));
             }
 
             ValidateBufferBounds(buffer.Length, offset, size);
@@ -36,23 +36,23 @@ namespace Microsoft.Azure.Devices.Common
         {
             if (offset < 0)
             {
-                throw new ArgumentOutOfRangeException("offset", offset, ApiResources.ArgumentMustBeNonNegative);
+                throw new ArgumentOutOfRangeException(nameof(offset), offset, ApiResources.ArgumentMustBeNonNegative);
             }
 
             if (offset > bufferSize)
             {
-                throw new ArgumentOutOfRangeException("offset", offset, ApiResources.OffsetExceedsBufferSize.FormatInvariant(bufferSize));
+                throw new ArgumentOutOfRangeException(nameof(offset), offset, ApiResources.OffsetExceedsBufferSize.FormatInvariant(bufferSize));
             }
 
             if (size <= 0)
             {
-                throw new ArgumentOutOfRangeException("size", size, ApiResources.ArgumentMustBePositive);
+                throw new ArgumentOutOfRangeException(nameof(size), size, ApiResources.ArgumentMustBePositive);
             }
 
             int remainingBufferSpace = bufferSize - offset;
             if (size > remainingBufferSpace)
             {
-                throw new ArgumentOutOfRangeException("size", size, ApiResources.SizeExceedsRemainingBufferSpace.FormatInvariant(remainingBufferSpace));
+                throw new ArgumentOutOfRangeException(nameof(size), size, ApiResources.SizeExceedsRemainingBufferSpace.FormatInvariant(remainingBufferSpace));
             }
         }
 
@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices.Common
 #if NETSTANDARD1_3
             // System.Reflection.Assembly.GetExecutingAssembly() does not exist for UWP, therefore use a hard-coded version name
             // (This string is picked up by the bump_version script, so don't change the line below)
-            var UWPAssemblyVersion = "1.16.0-preview-002";
+            var UWPAssemblyVersion = "1.16.0";
             return UWPAssemblyVersion;
 #else
             var a = Assembly.GetExecutingAssembly();

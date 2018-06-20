@@ -3,12 +3,14 @@
 
 namespace Microsoft.Azure.Devices.Shared
 {
-
+    using System.Diagnostics.CodeAnalysis;
     using DateTimeT = System.DateTime;
 
     /// <summary>
     /// <see cref="Metadata"/> for properties in <see cref="TwinCollection"/>
     /// </summary>
+    [SuppressMessage("Microsoft.Design", "CA1724:TypeNamesShouldNotMatchNamespaces",
+        Justification = "Public API cannot change name.")]
     public sealed class Metadata
     {
         /// <summary>

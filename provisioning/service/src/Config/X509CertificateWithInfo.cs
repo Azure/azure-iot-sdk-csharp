@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///  }
     /// </code>
     /// </example>
-    /// <seealso cref="https://docs.microsoft.com/en-us/rest/api/iot-dps/deviceenrollment">Device Enrollment</seealso>
+    /// <seealso cref="!:https://docs.microsoft.com/en-us/rest/api/iot-dps/deviceenrollment">Device Enrollment</seealso>
     public class X509CertificateWithInfo
     {
         /// <summary>
@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </remarks>
         /// <param name="certificate"> the <code>X509Certificate2"</code> with the provisioning certificate. It cannot be <code>null</code>.</param>
         /// <exception cref="ArgumentException">if the provided certificate is <code>null</code>.</exception>
-        /// <exception cref="CryptographicException">if the provided certificate context is invalid.</exception>
+        /// <exception cref="!:CryptographicException">if the provided certificate context is invalid.</exception>
         internal X509CertificateWithInfo(X509Certificate2 certificate)
         {
             /* SRS_X509_CERTIFICATE_WITH_INFO_21_001: [The public constructor shall throws ArgumentException if the provided 

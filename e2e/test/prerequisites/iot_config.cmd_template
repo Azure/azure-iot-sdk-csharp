@@ -34,6 +34,9 @@ set IOTHUB_PFX_X509_THUMBPRINT2=
 @REM DPS ID Scope 
 set DPS_IDSCOPE=
 
+@REM The DPS Global Device Endpoint (the default is defined in code)
+@REM set DPS_GLOBALDEVICEENDPOINT=global.azure-devices-provisioning.net
+
 @REM X509 PFX Base64 encoded Device Certificate with recommended RegistrationID: iothubx509device1 (recommended IOTHub DeviceID: provisionedx509device1)
 @REM This certificate should have CN=<RegistrationID>.
 set DPS_INDIVIDUALX509_PFX_CERTIFICATE=
@@ -56,5 +59,16 @@ set DPS_TPM_DEVICEID=provisionedtpm1
 
 @REM Provisioning service owner connection string.
 set PROVISIONING_CONNECTION_STRING=
+
+@REM TPM Simulator.exe path
+set TPM_SIMULATOR_PATH=
+
+@REM ---------- Invalid Certificate validation ----------
+@REM The connection strings below point to servers with incorrect TLS server certificates. Tests will attempt to connect and expect that the TLS connection ends in a security exception.
+
+set IOTHUB_DEVICE_CONN_STRING_INVALIDCERT=
+set IOTHUB_CONN_STRING_INVALIDCERT=
+set DPS_GLOBALDEVICEENDPOINT_INVALIDCERT=
+set PROVISIONING_CONNECTION_STRING_INVALIDCERT=
 
 exit /B 0

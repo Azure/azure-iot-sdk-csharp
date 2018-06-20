@@ -20,39 +20,33 @@ namespace Microsoft.Azure.Devices.Client
             }
             else if (iotHubConnectionStringBuilder.SharedAccessKey != null)
             {
-
-#if ENABLE_MODULES_SDK
+#if !NETMF
                 if(iotHubConnectionStringBuilder.ModuleId != null)
                 {
                     return new ModuleAuthenticationWithRegistrySymmetricKey(
                         iotHubConnectionStringBuilder.DeviceId, iotHubConnectionStringBuilder.ModuleId, iotHubConnectionStringBuilder.SharedAccessKey);
                 }
                 else
+#endif
                 {
                     return new DeviceAuthenticationWithRegistrySymmetricKey(
                         iotHubConnectionStringBuilder.DeviceId, iotHubConnectionStringBuilder.SharedAccessKey);
                 }
-#else
-                return new DeviceAuthenticationWithRegistrySymmetricKey(
-                    iotHubConnectionStringBuilder.DeviceId, iotHubConnectionStringBuilder.SharedAccessKey);
-#endif
             }
             else if (iotHubConnectionStringBuilder.SharedAccessSignature != null)
             {
-#if ENABLE_MODULES_SDK
+#if !NETMF
                 if(iotHubConnectionStringBuilder.ModuleId != null)
                 {
                     return new ModuleAuthenticationWithToken(
                         iotHubConnectionStringBuilder.DeviceId, iotHubConnectionStringBuilder.ModuleId, iotHubConnectionStringBuilder.SharedAccessSignature);
                 }
                 else
+#endif
                 {
                     return new DeviceAuthenticationWithToken(
                         iotHubConnectionStringBuilder.DeviceId, iotHubConnectionStringBuilder.SharedAccessSignature);
                 }
-#else
-                return new DeviceAuthenticationWithToken(iotHubConnectionStringBuilder.DeviceId, iotHubConnectionStringBuilder.SharedAccessSignature);
-#endif
             }
 #if !NETMF
             else if (iotHubConnectionStringBuilder.UsingX509Cert)
@@ -91,7 +85,7 @@ namespace Microsoft.Azure.Devices.Client
             return new DeviceAuthenticationWithToken(deviceId, token);
         }
 
-#if ENABLE_MODULES_SDK
+#if !NETMF
         /// <summary>
         /// Creates a <see cref="ModuleAuthenticationWithToken"/> instance based on the parameters.
         /// </summary>
@@ -116,7 +110,7 @@ namespace Microsoft.Azure.Devices.Client
             return new DeviceAuthenticationWithRegistrySymmetricKey(deviceId, key);
         }
 
-#if ENABLE_MODULES_SDK
+#if !NETMF
         /// <summary>
         /// Creates a <see cref="ModuleAuthenticationWithRegistrySymmetricKey"/> instance based on the parameters.
         /// </summary>

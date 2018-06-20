@@ -36,6 +36,9 @@
     <Compile Include="$(CommonTest)\VerboseTestLogging.cs">
       <Link>Common\VerboseTestLogging.cs</Link>
     </Compile>
+    <Compile Include="$(CommonTest)\ConsoleEventListener.cs">
+      <Link>Common\ConsoleEventListener.cs</Link>
+    </Compile>   
   </ItemGroup>
   <!-- Legacy .NET 4.5.1 -->
   <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
@@ -44,15 +47,13 @@
   </ItemGroup>
   <!-- NetCore and .NET 4.7 -->
   <ItemGroup Condition=" '$(TargetFramework)' != 'net451' ">
-    <Compile Include="$(CommonTest)\ConsoleEventListener.cs">
-      <Link>Common\ConsoleEventListener.cs</Link>
-    </Compile>
     <Compile Include="$(CommonTest)\Configuration.Provisioning.cs">
       <Link>Common\Configuration.Provisioning.cs</Link>
     </Compile>
     <Compile Include="netstandard13\MessageE2ETests.NetCore.cs" />
     <Compile Include="netstandard13\X509E2ETests.NetCore.cs" />
     <Compile Include="netstandard20\ProvisioningTests.cs" />
+    <Compile Include="netstandard20\ProvisioningCertificateValidationTest.cs" />
   </ItemGroup>
 
   <!-- All Platforms -->
@@ -83,6 +84,7 @@
     <ProjectReference Include="$(RootDir)\provisioning\transport\http\src\Microsoft.Azure.Devices.Provisioning.Transport.Http.csproj" />
     <ProjectReference Include="$(RootDir)\provisioning\transport\mqtt\src\Microsoft.Azure.Devices.Provisioning.Transport.Mqtt.csproj" />
     <ProjectReference Include="$(RootDir)\security\tpm\src\Microsoft.Azure.Devices.Provisioning.Security.Tpm.csproj" />
+    <ProjectReference Include="$(RootDir)\provisioning\service\src\Microsoft.Azure.Devices.Provisioning.Service.csproj" />
     <Compile Include="$(RootDir)\security\tpm\samples\SecurityProviderTpmSimulator\SecurityProviderTpmSimulator.cs" />
   </ItemGroup>
 
@@ -97,6 +99,7 @@
     <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Transport.Http" Version="1.*" />
     <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Transport.Mqtt" Version="1.*" />
     <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Security.Tpm" Version="1.*" />
+    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Service" Version="1.*" />
     <ProjectReference Include="$(RootDir)\security\tpm\samples\SecurityProviderTpmSimulator\SecurityProviderTpmSimulator.csproj" />
   </ItemGroup>
 

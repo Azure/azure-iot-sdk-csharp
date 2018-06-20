@@ -4,12 +4,17 @@
 namespace Microsoft.Azure.Devices.Shared
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
     using Microsoft.CSharp.RuntimeBinder;
     using Newtonsoft.Json.Linq;
 
     /// <summary>
     /// Represents a property value in <see cref="TwinCollection"/>
     /// </summary>
+    [SuppressMessage("Microsoft.Design", "CA1710:IdentifiersShouldHaveCorrectSuffix",
+        Justification = "Public API cannot change name.")]
+    [SuppressMessage("Microsoft.Design", "CA1036:OverrideMethodsOnComparableTypes",
+        Justification = "Uses default JValue comparison, equality and hashing implementations.")]
     public class TwinCollectionValue : JValue
     {
         const string metadataName = "$metadata";
@@ -29,6 +34,8 @@ namespace Microsoft.Azure.Devices.Shared
         /// </summary>
         /// <param name="propertyName">Property Name to lookup</param>
         /// <returns>Value if present</returns>
+        [SuppressMessage("Microsoft.Design", "CA1065:DoNotRaiseExceptionsInUnexpectedLocations",
+            Justification = "AppCompat. Changing the exception to ArgumentException might break existing applications.")]
         public dynamic this[string propertyName]
         {
             get

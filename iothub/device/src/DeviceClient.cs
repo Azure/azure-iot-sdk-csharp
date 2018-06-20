@@ -16,8 +16,6 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public sealed class DeviceClient : IDisposable
     {
-        public const string ModuleTwinsPropertyName = "moduleTwins";
-        public const string MetadataName = "$metadata";
         public const uint DefaultOperationTimeoutInMilliseconds = 4 * 60 * 1000;
 
         private readonly InternalClient internalClient;
@@ -162,8 +160,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             return Create(() => ClientFactory.CreateFromConnectionString(connectionString, transportSettings));
         }
-
-
+        
         /// <summary>
         /// Create DeviceClient from the specified connection string using the prioritized list of transports
         /// </summary>
@@ -190,6 +187,10 @@ namespace Microsoft.Azure.Devices.Client
 
         internal InternalClient InternalClient => this.internalClient;
 
+        /// <summary> 
+        /// Diagnostic sampling percentage value, [0-100];  
+        /// 0 means no message will carry on diag info 
+        /// </summary>
         public int DiagnosticSamplingPercentage
         {
             get => this.internalClient.DiagnosticSamplingPercentage;

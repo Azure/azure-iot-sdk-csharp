@@ -45,8 +45,6 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     public enum MessageResponse { None, Completed, Abandoned };
 
-
-
     /// <summary>
     /// Delegate that gets called when a message is received on a particular input.
     /// </summary>
@@ -986,7 +984,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             }
         }
 
-        private bool IsE2EDiagnosticSupportedProtocol()
+        internal bool IsE2EDiagnosticSupportedProtocol()
         {
             foreach (ITransportSettings transportSetting in this.transportSettings)
             {

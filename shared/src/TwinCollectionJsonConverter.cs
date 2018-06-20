@@ -4,10 +4,13 @@
 namespace Microsoft.Azure.Devices.Shared
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
     using System.Reflection;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
 
+    [SuppressMessage("Microsoft.Performance", "CA1812:AvoidUninstantiatedInternalClasses",
+        Justification = "CodeAnalysis limitation: TwinCollectionJsonConverter is actually used by TwinCollection")]
     internal class TwinCollectionJsonConverter : JsonConverter
     {
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)

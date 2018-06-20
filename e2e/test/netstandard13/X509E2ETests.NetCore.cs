@@ -32,7 +32,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             Tuple<string, string> deviceInfo = TestUtil.CreateDeviceWithX509(DevicePrefix, hostName, registryManager);
 
-            EventHubClient eventHubClient;
             PartitionReceiver eventHubReceiver = await CreateEventHubReceiver(deviceInfo.Item1).ConfigureAwait(false);
 
             X509Certificate2 cert = Configuration.IoTHub.GetCertificateWithPrivateKey();
