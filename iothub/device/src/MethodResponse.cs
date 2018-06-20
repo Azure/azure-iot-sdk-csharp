@@ -60,4 +60,3 @@ namespace Microsoft.Azure.Devices.Client
         }
     }
 }
-
