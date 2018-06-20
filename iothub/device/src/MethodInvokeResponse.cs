@@ -9,7 +9,7 @@ namespace Microsoft.Azure.Devices.Client
     /// <summary>
     /// Represents the Method Invocation Results.
     /// </summary>
-    public class DirectMethodResult
+    internal class MethodInvokeResponse
     {
         /// <summary>
         /// Gets or sets the status of device method invocation.

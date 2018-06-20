@@ -396,35 +396,35 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     cancellationToken), cancellationToken);
         }
 
-        internal Task<DirectMethodResult> InvokeMethodAsync(DirectMethodRequest directMethodRequest, Uri uri, CancellationToken cancellationToken)
+        internal Task<MethodInvokeResponse> InvokeMethodAsync(MethodInvokeRequest methodInvokeRequest, Uri uri, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(this.moduleId))
             {
                 throw new InvalidOperationException("ModuleId is required.");
             }
 
-            TimeSpan timeout = GetInvokeDeviceMethodOperationTimeout(directMethodRequest);
+            TimeSpan timeout = GetInvokeDeviceMethodOperationTimeout(methodInvokeRequest);
             var customHeaders = new Dictionary<string, string>
             {
                 { CustomHeaderConstants.ModuleId, $"{this.deviceId}/{this.moduleId}" }
             };
 
-            return this.httpClientHelper.PostAsync<DirectMethodRequest, DirectMethodResult>(
+            return this.httpClientHelper.PostAsync<MethodInvokeRequest, MethodInvokeResponse>(
                 uri,
-                directMethodRequest,
+                methodInvokeRequest,
                 null,
                 customHeaders,
                 cancellationToken);
         }
 
-        static TimeSpan GetInvokeDeviceMethodOperationTimeout(DirectMethodRequest directMethodRequest)
+        static TimeSpan GetInvokeDeviceMethodOperationTimeout(MethodInvokeRequest methodInvokeRequest)
         {
             // For InvokeDeviceMethod, we need to take into account the timeouts specified
             // for the Device to connect and send a response. We also need to take into account
             // the transmission time for the request send/receive
             TimeSpan timeout = TimeSpan.FromSeconds(15); // For wire time
-            timeout += TimeSpan.FromSeconds(directMethodRequest.ConnectionTimeoutInSeconds ?? 0);
-            timeout += TimeSpan.FromSeconds(directMethodRequest.ResponseTimeoutInSeconds ?? 0);
+            timeout += TimeSpan.FromSeconds(methodInvokeRequest.ConnectionTimeoutInSeconds ?? 0);
+            timeout += TimeSpan.FromSeconds(methodInvokeRequest.ResponseTimeoutInSeconds ?? 0);
             return timeout <= DefaultMethodOperationTimeout ? DefaultMethodOperationTimeout : timeout;
         }
 

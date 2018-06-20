@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Text;
+
 namespace Microsoft.Azure.Devices.Client
 {
     using System.Globalization;
@@ -375,23 +377,23 @@ using System.Net.Http;
         /// Interactively invokes a method on device
         /// </summary>
         /// <param name="deviceId">Device Id</param>
-        /// <param name="directMethodRequest">Device method parameters (passthrough to device)</param>
+        /// <param name="methodInvokeRequest">Device method parameters (passthrough to device)</param>
         /// <returns>Method result</returns>
-        public Task<DirectMethodResult> InvokeMethodAsync(string deviceId, DirectMethodRequest directMethodRequest)
+        public Task<MethodResponse> InvokeMethodAsync(string deviceId, MethodRequest methodInvokeRequest)
         {
-            return this.InvokeMethodAsync(deviceId, directMethodRequest, CancellationToken.None);
+            return this.InvokeMethodAsync(deviceId, methodInvokeRequest, CancellationToken.None);
         }
 
         /// <summary>
         /// Interactively invokes a method on device
         /// </summary>
         /// <param name="deviceId">Device Id</param>
-        /// <param name="directMethodRequest">Device method parameters (passthrough to device)</param>
+        /// <param name="methodInvokeRequest">Device method parameters (passthrough to device)</param>
         /// <param name="cancellationToken">Cancellation Token</param>
         /// <returns>Method result</returns>
-        public Task<DirectMethodResult> InvokeMethodAsync(string deviceId, DirectMethodRequest directMethodRequest, CancellationToken cancellationToken)
+        public Task<MethodResponse> InvokeMethodAsync(string deviceId, MethodRequest methodInvokeRequest, CancellationToken cancellationToken)
         {
-            return InvokeMethodAsync(GetDeviceMethodUri(deviceId), directMethodRequest, cancellationToken);
+            return InvokeMethodAsync(GetDeviceMethodUri(deviceId), methodInvokeRequest, cancellationToken);
         }
 
         /// <summary>
@@ -399,11 +401,11 @@ using System.Net.Http;
         /// </summary>
         /// <param name="deviceId">Device Id</param>
         /// <param name="moduleId">Module Id</param>
-        /// <param name="directMethodRequest">Device method parameters (passthrough to device)</param>
+        /// <param name="methodInvokeRequest">Device method parameters (passthrough to device)</param>
         /// <returns>Method result</returns>
-        public Task<DirectMethodResult> InvokeMethodAsync(string deviceId, string moduleId, DirectMethodRequest directMethodRequest)
+        public Task<MethodResponse> InvokeMethodAsync(string deviceId, string moduleId, MethodRequest methodInvokeRequest)
         {
-            return this.InvokeMethodAsync(deviceId, moduleId, directMethodRequest, CancellationToken.None);
+            return this.InvokeMethodAsync(deviceId, moduleId, methodInvokeRequest, CancellationToken.None);
         }
 
         /// <summary>
@@ -411,15 +413,15 @@ using System.Net.Http;
         /// </summary>
         /// <param name="deviceId">Device Id</param>
         /// <param name="moduleId">Module Id</param>
-        /// <param name="directMethodRequest">Device method parameters (passthrough to device)</param>
+        /// <param name="methodInvokeRequest">Device method parameters (passthrough to device)</param>
         /// <param name="cancellationToken">Cancellation Token</param>
         /// <returns>Method result</returns>
-        public Task<DirectMethodResult> InvokeMethodAsync(string deviceId, string moduleId, DirectMethodRequest directMethodRequest, CancellationToken cancellationToken)
+        public Task<MethodResponse> InvokeMethodAsync(string deviceId, string moduleId, MethodRequest methodInvokeRequest, CancellationToken cancellationToken)
         {
-            return InvokeMethodAsync(GetModuleMethodUri(deviceId, moduleId), directMethodRequest, cancellationToken);
+            return InvokeMethodAsync(GetModuleMethodUri(deviceId, moduleId), methodInvokeRequest, cancellationToken);
         }
 
-        private Task<DirectMethodResult> InvokeMethodAsync(Uri uri, DirectMethodRequest directMethodRequest, CancellationToken cancellationToken)
+        private async Task<MethodResponse> InvokeMethodAsync(Uri uri, MethodRequest methodRequest, CancellationToken cancellationToken)
         {
             HttpClientHandler httpClientHandler = null;
             var customCertificateValidation =  this.certValidator.GetCustomCertificateValidation();
@@ -449,7 +451,9 @@ using System.Net.Http;
             }
 
             HttpTransportHandler httpTransport = new HttpTransportHandler(context, this.internalClient.IotHubConnectionString, transportSettings, httpClientHandler);
-            return httpTransport.InvokeMethodAsync(directMethodRequest, uri, cancellationToken);
+            var methodInvokeRequest = new MethodInvokeRequest(methodRequest.Name, methodRequest.DataAsJson, methodRequest.ResponseTimeout, methodRequest.ConnectionTimeout);
+            var result = await httpTransport.InvokeMethodAsync(methodInvokeRequest, uri, cancellationToken);
+            return new MethodResponse(Encoding.UTF8.GetBytes(result.GetPayloadAsJson()), result.Status);
         }
 
         static Uri GetDeviceMethodUri(string deviceId)
