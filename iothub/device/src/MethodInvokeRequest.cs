@@ -39,34 +39,19 @@ namespace Microsoft.Azure.Devices.Client
         /// Method to run
         /// </summary>
         [JsonProperty("methodName", Required = Required.Always)]
-        public string MethodName { get; set; }
+        public string MethodName { get; private set; }
 
         /// <summary>
         /// Method timeout
         /// </summary>
         [JsonIgnore]
-        public TimeSpan? ResponseTimeout { get; set; }
+        public TimeSpan? ResponseTimeout { get; private set; }
 
         /// <summary>
         /// Timeout for device to come online
         /// </summary>
         [JsonIgnore]
-        public TimeSpan? ConnectionTimeout { get; set; }
-
-        /// <summary>
-        /// Set payload as json
-        /// </summary>
-        public void ValidatePayloadIsJson(string json)
-        {
-            try
-            {
-                JToken.Parse(json); // @ailn: this is just a check for valid json as JRaw does not do the validation.
-            }
-            catch (JsonException ex)
-            {
-                throw new ArgumentException(ex.Message, nameof(json)); // @ailn: here we want to hide the fact we're using Json.net
-            }
-        }
+        public TimeSpan? ConnectionTimeout { get; private set; }
 
         /// <summary>
         /// Method timeout in seconds
@@ -82,5 +67,17 @@ namespace Microsoft.Azure.Devices.Client
 
         [JsonProperty("payload")]
         internal JRaw Payload { get; set; }
+
+        private void ValidatePayloadIsJson(string json)
+        {
+            try
+            {
+                JToken.Parse(json); // @ailn: this is just a check for valid json as JRaw does not do the validation.
+            }
+            catch (JsonException ex)
+            {
+                throw new ArgumentException(ex.Message, nameof(json)); // @ailn: here we want to hide the fact we're using Json.net
+            }
+        }
     }
 }

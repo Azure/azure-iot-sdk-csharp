@@ -377,23 +377,23 @@ using System.Net.Http;
         /// Interactively invokes a method on device
         /// </summary>
         /// <param name="deviceId">Device Id</param>
-        /// <param name="methodInvokeRequest">Device method parameters (passthrough to device)</param>
+        /// <param name="methodRequest">Device method parameters (passthrough to device)</param>
         /// <returns>Method result</returns>
-        public Task<MethodResponse> InvokeMethodAsync(string deviceId, MethodRequest methodInvokeRequest)
+        public Task<MethodResponse> InvokeMethodAsync(string deviceId, MethodRequest methodRequest)
         {
-            return this.InvokeMethodAsync(deviceId, methodInvokeRequest, CancellationToken.None);
+            return this.InvokeMethodAsync(deviceId, methodRequest, CancellationToken.None);
         }
 
         /// <summary>
         /// Interactively invokes a method on device
         /// </summary>
         /// <param name="deviceId">Device Id</param>
-        /// <param name="methodInvokeRequest">Device method parameters (passthrough to device)</param>
+        /// <param name="methodRequest">Device method parameters (passthrough to device)</param>
         /// <param name="cancellationToken">Cancellation Token</param>
         /// <returns>Method result</returns>
-        public Task<MethodResponse> InvokeMethodAsync(string deviceId, MethodRequest methodInvokeRequest, CancellationToken cancellationToken)
+        public Task<MethodResponse> InvokeMethodAsync(string deviceId, MethodRequest methodRequest, CancellationToken cancellationToken)
         {
-            return InvokeMethodAsync(GetDeviceMethodUri(deviceId), methodInvokeRequest, cancellationToken);
+            return InvokeMethodAsync(GetDeviceMethodUri(deviceId), methodRequest, cancellationToken);
         }
 
         /// <summary>
@@ -401,11 +401,11 @@ using System.Net.Http;
         /// </summary>
         /// <param name="deviceId">Device Id</param>
         /// <param name="moduleId">Module Id</param>
-        /// <param name="methodInvokeRequest">Device method parameters (passthrough to device)</param>
+        /// <param name="methodRequest">Device method parameters (passthrough to device)</param>
         /// <returns>Method result</returns>
-        public Task<MethodResponse> InvokeMethodAsync(string deviceId, string moduleId, MethodRequest methodInvokeRequest)
+        public Task<MethodResponse> InvokeMethodAsync(string deviceId, string moduleId, MethodRequest methodRequest)
         {
-            return this.InvokeMethodAsync(deviceId, moduleId, methodInvokeRequest, CancellationToken.None);
+            return this.InvokeMethodAsync(deviceId, moduleId, methodRequest, CancellationToken.None);
         }
 
         /// <summary>
@@ -413,12 +413,12 @@ using System.Net.Http;
         /// </summary>
         /// <param name="deviceId">Device Id</param>
         /// <param name="moduleId">Module Id</param>
-        /// <param name="methodInvokeRequest">Device method parameters (passthrough to device)</param>
+        /// <param name="methodRequest">Device method parameters (passthrough to device)</param>
         /// <param name="cancellationToken">Cancellation Token</param>
         /// <returns>Method result</returns>
-        public Task<MethodResponse> InvokeMethodAsync(string deviceId, string moduleId, MethodRequest methodInvokeRequest, CancellationToken cancellationToken)
+        public Task<MethodResponse> InvokeMethodAsync(string deviceId, string moduleId, MethodRequest methodRequest, CancellationToken cancellationToken)
         {
-            return InvokeMethodAsync(GetModuleMethodUri(deviceId, moduleId), methodInvokeRequest, cancellationToken);
+            return InvokeMethodAsync(GetModuleMethodUri(deviceId, moduleId), methodRequest, cancellationToken);
         }
 
         private async Task<MethodResponse> InvokeMethodAsync(Uri uri, MethodRequest methodRequest, CancellationToken cancellationToken)

@@ -60,7 +60,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         public int Status
         {
-            get; set;
+            get; private set;
         }
     }
 }
