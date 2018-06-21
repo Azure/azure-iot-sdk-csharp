@@ -3,6 +3,8 @@
 
 namespace Microsoft.Azure.Devices.Client
 {
+    using System.Text;
+
     /// <summary>
     /// The data structure represent the Device Twin Method that is used for triggering an activity on the device
     /// </summary>
@@ -35,7 +37,7 @@ namespace Microsoft.Azure.Devices.Client
         /// Property containing entire result data. The formatting is checked for JSON correctness
         /// upon setting this property.
         /// </summary>
-        internal byte[] Result
+        public byte[] Result
         {
             private set
             {
@@ -51,12 +53,14 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
+        public string ResultAsJson => Result == null || Result.Length == 0 ? null : Encoding.UTF8.GetString(Result);
+
         /// <summary>
         /// contains the response of the device client application method handler.
         /// </summary>
-        internal int Status
+        public int Status
         {
-            get; set;
+            get; private set;
         }
     }
 }
