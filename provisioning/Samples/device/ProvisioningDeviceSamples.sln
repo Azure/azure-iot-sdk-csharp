@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TpmSample", "TpmSample\TpmS
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "X509Sample", "X509Sample\X509Sample.csproj", "{65C39A45-983D-4F0A-B839-F9109241C803}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SecurityProviderTpmSimulator", "..\..\security\SecurityProviderTpmSimulator\SecurityProviderTpmSimulator.csproj", "{3B888FEC-552E-4FCE-9126-147695BE4F7F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SecurityProviderTpmSimulator", "..\..\..\security\Samples\SecurityProviderTpmSimulator\SecurityProviderTpmSimulator.csproj", "{3B888FEC-552E-4FCE-9126-147695BE4F7F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

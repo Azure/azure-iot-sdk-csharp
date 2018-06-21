@@ -3,6 +3,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.0</TargetFramework>
+    <RootDir>$(MSBuildProjectDirectory)\..\..\..\..</RootDir>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,7 +22,7 @@
 
   <ItemGroup>
     <!-- Note: Applications should never use the TPM simulator. -->
-    <ProjectReference Include="..\..\..\security\SecurityProviderTpmSimulator\SecurityProviderTpmSimulator.csproj" />
+    <ProjectReference Include="$(RootDir)\security\Samples\SecurityProviderTpmSimulator\SecurityProviderTpmSimulator.csproj" />
   </ItemGroup>
 
 </Project>
