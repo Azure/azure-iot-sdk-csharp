@@ -36,7 +36,7 @@ namespace back_end_application
 
             // Create a ServiceClient to communicate with service-facing endpoint on your hub.
             s_serviceClient = ServiceClient.CreateFromConnectionString(s_connectionString);
-            InvokeMethod().Wait();
+            InvokeMethod().GetAwaiter().GetResult();
             Console.WriteLine("Press Enter to exit.");
             Console.ReadLine();
         }

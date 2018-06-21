@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "ServiceClientSample": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "IOTHUB_CONN_STRING_CSHARP": "<yourIoTHubConnectionString>"
+      }
+    }
+  }
+}
