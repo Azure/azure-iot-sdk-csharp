@@ -90,10 +90,10 @@ try {
     if (-not $nobuild)
     {
         # SDK binaries
-        BuildProject iothub\Samples\device "IoTHub Device Samples"
-        BuildProject iothub\Samples\service "IoTHub Service Samples"
-        BuildProject iothub\Quickstarts "IoTHub Device Quickstarts"
-        BuildProject iothub\Tutorials\Routing "IoTHub Tutorials - Routing"
+        BuildProject iot-hub\Samples\device "IoTHub Device Samples"
+        BuildProject iot-hub\Samples\service "IoTHub Service Samples"
+        BuildProject iot-hub\Quickstarts "IoTHub Device Quickstarts"
+        BuildProject iot-hub\Tutorials\Routing "IoTHub Tutorials - Routing"
         BuildProject provisioning\Samples\device "Provisioning Device Samples"
         BuildProject provisioning\Samples\service "Provisioning Service Samples"
         BuildProject Security\Samples "Security Samples"
