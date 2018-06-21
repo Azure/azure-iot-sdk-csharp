@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "RegistryManagerSample": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "IOTHUB_CONN_STRING_CSHARP": "<yourIoTHubConnectionString>",
+        "IOTHUB_PFX_X509_THUMBPRINT": "<replace_with_certificate_thumbprint>",
+        "IOTHUB_PFX_X509_THUMBPRINT2": "<replace_with_certificate_thumbprint>"
+      }
+    }
+  }
+}
