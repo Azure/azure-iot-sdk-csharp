@@ -23,6 +23,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
     sealed class HttpTransportHandler : TransportHandler
     {
         static readonly TimeSpan DefaultOperationTimeout = TimeSpan.FromSeconds(60);
+        static readonly TimeSpan DefaultMethodOperationTimeout = TimeSpan.FromSeconds(100);
         static readonly IDictionary<string, string> MapMessageProperties2HttpHeaders = new Dictionary<string, string>
             {
                 { MessageSystemPropertyNames.Ack, CustomHeaderConstants.Ack },
@@ -40,12 +41,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         readonly IHttpClientHelper httpClientHelper;
         readonly string deviceId;
+        readonly string moduleId;
 
-        internal HttpTransportHandler(IPipelineContext context, IotHubConnectionString iotHubConnectionString, Http1TransportSettings transportSettings)
+        internal HttpTransportHandler(IPipelineContext context, IotHubConnectionString iotHubConnectionString, Http1TransportSettings transportSettings, HttpClientHandler httpClientHandler = null)
             :base(context, transportSettings)
         {
             ProductInfo productInfo = context.Get<ProductInfo>();
             this.deviceId = iotHubConnectionString.DeviceId;
+            this.moduleId = iotHubConnectionString.ModuleId;
             this.httpClientHelper = new HttpClientHelper(
                 iotHubConnectionString.HttpsEndpoint,
                 iotHubConnectionString,
@@ -53,6 +56,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 DefaultOperationTimeout,
                 null,
                 transportSettings.ClientCertificate,
+                httpClientHandler,
                 productInfo);
         }
 
@@ -390,6 +394,38 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     ExceptionHandlingHelper.GetDefaultErrorMapping(),
                     customHeaders,
                     cancellationToken), cancellationToken);
+        }
+
+        internal Task<MethodInvokeResponse> InvokeMethodAsync(MethodInvokeRequest methodInvokeRequest, Uri uri, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(this.moduleId))
+            {
+                throw new InvalidOperationException("ModuleId is required.");
+            }
+
+            TimeSpan timeout = GetInvokeDeviceMethodOperationTimeout(methodInvokeRequest);
+            var customHeaders = new Dictionary<string, string>
+            {
+                { CustomHeaderConstants.ModuleId, $"{this.deviceId}/{this.moduleId}" }
+            };
+
+            return this.httpClientHelper.PostAsync<MethodInvokeRequest, MethodInvokeResponse>(
+                uri,
+                methodInvokeRequest,
+                null,
+                customHeaders,
+                cancellationToken);
+        }
+
+        static TimeSpan GetInvokeDeviceMethodOperationTimeout(MethodInvokeRequest methodInvokeRequest)
+        {
+            // For InvokeDeviceMethod, we need to take into account the timeouts specified
+            // for the Device to connect and send a response. We also need to take into account
+            // the transmission time for the request send/receive
+            TimeSpan timeout = TimeSpan.FromSeconds(15); // For wire time
+            timeout += TimeSpan.FromSeconds(methodInvokeRequest.ConnectionTimeoutInSeconds ?? 0);
+            timeout += TimeSpan.FromSeconds(methodInvokeRequest.ResponseTimeoutInSeconds ?? 0);
+            return timeout <= DefaultMethodOperationTimeout ? DefaultMethodOperationTimeout : timeout;
         }
 
         static IDictionary<string, string> PrepareCustomHeaders(string toHeader, string messageId, string operation)

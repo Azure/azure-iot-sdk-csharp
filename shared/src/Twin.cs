@@ -4,6 +4,7 @@
 namespace Microsoft.Azure.Devices.Shared
 {
     using System;
+    using System.Collections.Generic;
     using System.ComponentModel;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Converters;
@@ -48,6 +49,11 @@ namespace Microsoft.Azure.Devices.Shared
         public string DeviceId { get; set; }
 
         /// <summary>
+        /// Gets and sets the <see cref="Twin" /> Module Id.
+        /// </summary>
+        public string ModuleId { get; set; }
+
+        /// <summary>
         /// Gets and sets the <see cref="Twin"/> tags.
         /// </summary>
         public TwinCollection Tags { get; set; }
@@ -56,6 +62,16 @@ namespace Microsoft.Azure.Devices.Shared
         /// Gets and sets the <see cref="Twin"/> properties.
         /// </summary>
         public TwinProperties Properties { get; set; }
+
+        /// <summary>
+        /// Gets the <see cref="Twin"/> configuration properties. These are read only
+        /// </summary>
+        public IDictionary<string, ConfigurationInfo> Configurations { get; internal set; }
+
+        /// <summary>
+        /// Gets the <see cref="Twin"/> capabilities. These are read only.
+        /// </summary>
+        public DeviceCapabilities Capabilities { get; set; }
 
         /// <summary>
         /// Twin's ETag

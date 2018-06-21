@@ -46,6 +46,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             TimeSpan timeout,
             Action<HttpClient> preRequestActionForAllRequests,
             X509Certificate2 clientCert,
+            HttpClientHandler httpClientHandler,
             ProductInfo productInfo
             )
         {
@@ -55,17 +56,21 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 new ReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>(defaultErrorMapping);
 
 #if !NETSTANDARD1_3 && !NETSTANDARD2_0
-            WebRequestHandler handler = null;
+            WebRequestHandler handler = httpClientHandler as WebRequestHandler;
             if (clientCert != null)
             {
-                handler = new WebRequestHandler();
+                if (handler == null)
+                {
+                    handler = new WebRequestHandler();
+                }
+
                 handler.ClientCertificates.Add(clientCert);
                 this.usingX509ClientCert = true;
             }
 
             this.httpClientObj = handler != null ? new HttpClient(handler) : new HttpClient();
 #else
-            this.httpClientObj = new HttpClient();
+            this.httpClientObj = httpClientHandler != null ? new HttpClient(httpClientHandler) : new HttpClient();
 #endif
 
             this.httpClientObj.BaseAddress = this.baseAddress;

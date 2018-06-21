@@ -102,5 +102,11 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         [JsonProperty(PropertyName = "authentication")]
         public AuthenticationMechanism Authentication { get; set; }
+
+        /// <summary>
+        ///  Capabilities that are enabled one the device
+        /// </summary>
+        [JsonProperty(PropertyName = "capabilities", NullValueHandling = NullValueHandling.Ignore)]
+        public virtual DeviceCapabilities Capabilities { get; set; }
     }
 }

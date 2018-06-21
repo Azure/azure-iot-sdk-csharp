@@ -19,6 +19,12 @@ namespace Microsoft.Azure.Devices
         public string DeviceId { get; set; }
 
         /// <summary>
+        /// Module Id on the device that indicated the error.
+        /// </summary>
+        [JsonProperty(PropertyName = "moduleId", NullValueHandling = NullValueHandling.Ignore)]
+        public string ModuleId { get; set; }
+
+        /// <summary>
         /// ErrorCode associated with the error.
         /// </summary>
         [JsonProperty(PropertyName = "errorCode", NullValueHandling = NullValueHandling.Ignore)]

@@ -45,6 +45,12 @@ namespace Microsoft.Azure.Devices
         public string Id { get; set; }
 
         /// <summary>
+        /// Module Id for the object
+        /// </summary>
+        [JsonProperty(PropertyName = "moduleId", NullValueHandling = NullValueHandling.Ignore)]
+        public string ModuleId { get; set; }
+
+        /// <summary>
         /// ETag of the device
         /// </summary>
         [JsonProperty(PropertyName = "eTag", NullValueHandling = NullValueHandling.Ignore)]

@@ -28,15 +28,16 @@ namespace Microsoft.Azure.Devices.Client
 #if !NETMF
         private const RegexOptions regexOptions = RegexOptions.Compiled | RegexOptions.IgnoreCase;
         private static readonly TimeSpan regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
-        private const string HostNamePropertyName = nameof(HostName);
-        private const string DeviceIdPropertyName = nameof(DeviceId);
-        private const string SharedAccessKeyNamePropertyName = nameof(SharedAccessKeyName);
-        private const string SharedAccessKeyPropertyName = nameof(SharedAccessKey);
-        private const string SharedAccessSignaturePropertyName = nameof(SharedAccessSignature);
-        private const string GatewayHostNamePropertyName = nameof(GatewayHostName);
+        private const string HostNamePropertyName = "HostName";
+        private const string DeviceIdPropertyName = "DeviceId";
+        private const string ModuleIdPropertyName = "ModuleId";
+        private const string SharedAccessKeyNamePropertyName = "SharedAccessKeyName";
+        private const string SharedAccessKeyPropertyName = "SharedAccessKey";
+        private const string SharedAccessSignaturePropertyName = "SharedAccessSignature";
+        private const string GatewayHostNamePropertyName = "GatewayHostName";
         private const string X509CertPropertyName =  "X509Cert";
         private static readonly Regex HostNameRegex = new Regex(@"[a-zA-Z0-9_\-\.]+$", regexOptions, regexTimeoutMilliseconds);
-        private static readonly Regex DeviceIdRegex = new Regex(@"^[A-Za-z0-9\-:.+%_#*?!(),=@;$']{1,128}$", regexOptions, regexTimeoutMilliseconds);
+        private static readonly Regex IdNameRegex = new Regex(@"^[A-Za-z0-9\-:.+%_#*?!(),=@;$']{1,128}$", regexOptions, regexTimeoutMilliseconds);
         private static readonly Regex SharedAccessKeyNameRegex = new Regex(@"^[a-zA-Z0-9_\-@\.]+$", regexOptions, regexTimeoutMilliseconds);
         private static readonly Regex SharedAccessKeyRegex = new Regex(@"^.+$", regexOptions, regexTimeoutMilliseconds);
         private static readonly Regex SharedAccessSignatureRegex = new Regex(@"^.+$", regexOptions, regexTimeoutMilliseconds);
@@ -62,9 +63,22 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>A new instance of the <see cref="IotHubConnectionStringBuilder"/> class with a populated connection string.</returns>
         public static IotHubConnectionStringBuilder Create(string hostname, IAuthenticationMethod authenticationMethod)
         {
+            return Create(hostname, null, authenticationMethod);
+        }
+
+        /// <summary>
+        /// Creates a connection string based on the hostname of the IoT Hub, the hostname of Gateway and the authentication method passed as a parameter.
+        /// </summary>
+        /// <param name="hostname">The fully-qualified DNS hostname of IoT Hub</param>
+        /// <param name="gatewayHostname">The fully-qualified DNS hostname of the gateway</param>
+        /// <param name="authenticationMethod">The authentication method that is used</param>
+        /// <returns>A new instance of the <see cref="IotHubConnectionStringBuilder"/> class with a populated connection string.</returns>
+        public static IotHubConnectionStringBuilder Create(string hostname, string gatewayHostname, IAuthenticationMethod authenticationMethod)
+        {
             var iotHubConnectionStringBuilder = new IotHubConnectionStringBuilder()
             {
                 HostName = hostname,
+                GatewayHostName = gatewayHostname,
                 AuthenticationMethod = authenticationMethod
             };
 
@@ -136,6 +150,11 @@ namespace Microsoft.Azure.Devices.Client
         public string DeviceId { get; internal set; }
 
         /// <summary>
+        /// Gets the module identifier of the module connecting to the service.
+        /// </summary>
+        public string ModuleId { get; internal set; }
+
+        /// <summary>
         /// Gets the shared acess key name used to connect the device to the IoT Hub service.
         /// </summary>
         public string SharedAccessKeyName { get; internal set; }
@@ -184,6 +203,7 @@ namespace Microsoft.Azure.Devices.Client
             StringBuilder stringBuilder = new StringBuilder();
             stringBuilder.AppendKeyValuePairIfNotEmpty(HostNamePropertyName, this.HostName);
             stringBuilder.AppendKeyValuePairIfNotEmpty(DeviceIdPropertyName, WebUtility.UrlEncode(this.DeviceId));
+            stringBuilder.AppendKeyValuePairIfNotEmpty(ModuleIdPropertyName, WebUtility.UrlEncode(this.ModuleId));
             stringBuilder.AppendKeyValuePairIfNotEmpty(SharedAccessKeyNamePropertyName, this.SharedAccessKeyName);
             stringBuilder.AppendKeyValuePairIfNotEmpty(SharedAccessKeyPropertyName, this.SharedAccessKey);
             stringBuilder.AppendKeyValuePairIfNotEmpty(SharedAccessSignaturePropertyName, this.SharedAccessSignature);
@@ -223,6 +243,11 @@ namespace Microsoft.Azure.Devices.Client
                     // DeviceId
                     this.DeviceId = WebUtility.UrlDecode(values[1]);
                 }
+                else if (part.IndexOf("ModuleId") > -1)
+                {
+                    // ModuleId
+                    this.ModuleId = WebUtility.UrlDecode(values[1]);
+                }
                 else if (part.IndexOf("SharedAccessKeyName") > -1)
                 {
                     // Shared Access Key Name 
@@ -252,6 +277,7 @@ namespace Microsoft.Azure.Devices.Client
 
             this.HostName = GetConnectionStringValue(map, HostNamePropertyName);
             this.DeviceId = WebUtility.UrlDecode(GetConnectionStringOptionalValue(map, DeviceIdPropertyName));
+            this.ModuleId = WebUtility.UrlDecode(GetConnectionStringOptionalValue(map, ModuleIdPropertyName));
             this.SharedAccessKeyName = GetConnectionStringOptionalValue(map, SharedAccessKeyNamePropertyName);
             this.SharedAccessKey = GetConnectionStringOptionalValue(map, SharedAccessKeyPropertyName);
             this.SharedAccessSignature = GetConnectionStringOptionalValue(map, SharedAccessSignaturePropertyName);
@@ -272,7 +298,7 @@ namespace Microsoft.Azure.Devices.Client
             if (!(this.SharedAccessKey.IsNullOrWhiteSpace() ^ this.SharedAccessSignature.IsNullOrWhiteSpace()))
             {
 #if !NETMF
-                if (!(this.UsingX509Cert || (this.AuthenticationMethod is DeviceAuthenticationWithTokenRefresh)))
+                if (!(this.UsingX509Cert || (this.AuthenticationMethod is AuthenticationWithTokenRefresh)))
                 {
 #endif
                     throw new ArgumentException("Should specify either SharedAccessKey or SharedAccessSignature if X.509 certificate is not used");
@@ -317,7 +343,12 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             ValidateFormat(this.HostName, HostNamePropertyName, HostNameRegex);
-            ValidateFormat(this.DeviceId, DeviceIdPropertyName, DeviceIdRegex);
+            ValidateFormat(this.DeviceId, DeviceIdPropertyName, IdNameRegex);
+            if (!string.IsNullOrEmpty(this.ModuleId))
+            {
+                ValidateFormat(this.ModuleId, DeviceIdPropertyName, IdNameRegex);
+            }
+
             ValidateFormatIfSpecified(this.SharedAccessKeyName, SharedAccessKeyNamePropertyName, SharedAccessKeyNameRegex);
             ValidateFormatIfSpecified(this.SharedAccessKey, SharedAccessKeyPropertyName, SharedAccessKeyRegex);
             ValidateFormatIfSpecified(this.SharedAccessSignature, SharedAccessSignaturePropertyName, SharedAccessSignatureRegex);

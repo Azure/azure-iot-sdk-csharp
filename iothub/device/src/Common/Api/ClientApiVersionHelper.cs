@@ -3,13 +3,12 @@
 
 namespace Microsoft.Azure.Devices.Client
 {
-    class ClientApiVersionHelper
+    internal class ClientApiVersionHelper
     {
-        const string ApiVersionQueryPrefix = "api-version=";
-        const string ApiVersionNov2016 = "2016-11-14";
-        const string ApiVersionJune2017 = "2017-06-30";
-        public const string ApiVersionString = ApiVersionJune2017;
+        internal const string ApiVersionQueryPrefix = "api-version=";
+        internal const string ApiVersionLatest = "2018-06-30";
 
+        public const string ApiVersionString = ApiVersionLatest;
         public const string ApiVersionQueryString = ApiVersionQueryPrefix + ApiVersionString;
     }
 }
