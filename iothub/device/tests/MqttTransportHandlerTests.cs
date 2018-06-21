@@ -148,7 +148,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
 
             // The channel factory creates the channel.  This gets called from inside OpenAsync.  
             // Unfortunately, it needs access to the internals of the transport (like being able to call OnConnceted, which is passed into the Mqtt channel constructor, but we're not using that)
-            Func<IPAddress, int, Task<IChannel>> factory = (a, i) =>
+            Func<IPAddress[], int, Task<IChannel>> factory = (a, i) =>
             {
                 transport.OnConnected();
                 return Task<IChannel>.FromResult<IChannel>(_channel);

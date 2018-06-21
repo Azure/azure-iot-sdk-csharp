@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 elg => elg.ShutdownGracefullyAsync());
 
         readonly string hostName;
-        readonly Func<IPAddress, int, Task<IChannel>> channelFactory;
+        readonly Func<IPAddress[], int, Task<IChannel>> channelFactory;
         readonly Queue<string> completionQueue;
         readonly MqttIotHubAdapterFactory mqttIotHubAdapterFactory;
         readonly QualityOfService qos;
@@ -69,7 +69,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         Func<Task> cleanupFunc;
         IChannel channel;
         Exception fatalException;
-        IPAddress serverAddress;
+        IPAddress[] serverAddresses;
 
         int state = (int)TransportState.NotInitialized;
         public TransportState State => (TransportState)Volatile.Read(ref this.state);
@@ -126,7 +126,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             IPipelineContext context,
             IotHubConnectionString iotHubConnectionString,
             MqttTransportSettings settings,
-            Func<IPAddress, int, Task<IChannel>> channelFactory,
+            Func<IPAddress[], int, Task<IChannel>> channelFactory,
             Action<object, ConnectionEventArgs> onConnectionOpenedCallback,
             Func<object, ConnectionEventArgs, Task> onConnectionClosedCallback)
             : base(context, settings)
@@ -138,7 +138,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             this.messageQueue = new ConcurrentQueue<Message>();
             this.completionQueue = new Queue<string>();
 
-            this.serverAddress = null; // this will be resolved asynchronously in OpenAsync
+            this.serverAddresses = null; // this will be resolved asynchronously in OpenAsync
             this.hostName = iotHubConnectionString.HostName;
             this.receiveEventMessageFilter = string.Format(CultureInfo.InvariantCulture, receiveEventMessagePatternFilter, iotHubConnectionString.DeviceId, iotHubConnectionString.ModuleId);
             this.receiveEventMessagePrefix = string.Format(CultureInfo.InvariantCulture, receiveEventMessagePrefixPattern, iotHubConnectionString.DeviceId, iotHubConnectionString.ModuleId);
@@ -552,15 +552,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             Debug.WriteLine("MqttTransportHandler.OpenAsync()");
 
 #if NET451
-            this.serverAddress = Dns.GetHostEntry(this.hostName).AddressList[0];
+            this.serverAddresses = Dns.GetHostEntry(this.hostName).AddressList;
 #else
-            this.serverAddress = (await Dns.GetHostAddressesAsync(this.hostName).ConfigureAwait(false))[0];
+            this.serverAddresses = (await Dns.GetHostAddressesAsync(this.hostName).ConfigureAwait(false));
 #endif
             if (this.TryStateTransition(TransportState.NotInitialized, TransportState.Opening))
             {
                 try
                 {
-                    this.channel = await this.channelFactory(this.serverAddress, ProtocolGatewayPort).ConfigureAwait(false);
+                    this.channel = await this.channelFactory(this.serverAddresses, ProtocolGatewayPort).ConfigureAwait(false);
                 }
                 catch (Exception ex) when (!ex.IsFatal())
                 {
@@ -904,10 +904,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }, cancellationToken).ConfigureAwait(false);
         }
 
-        Func<IPAddress, int, Task<IChannel>> CreateChannelFactory(IotHubConnectionString iotHubConnectionString, MqttTransportSettings settings, ProductInfo productInfo)
+        Func<IPAddress[], int, Task<IChannel>> CreateChannelFactory(IotHubConnectionString iotHubConnectionString, MqttTransportSettings settings, ProductInfo productInfo)
         {
-            return (address, port) =>
+            return async (addresses, port) =>
             {
+                IChannel channel = null;
+
                 IEventLoopGroup eventLoopGroup = EventLoopGroupPool.TakeOrAdd(this.eventLoopGroupKey);
 
                 Func<Stream, SslStream> streamFactory = stream => new SslStream(stream, true, settings.RemoteCertificateValidationCallback);
@@ -937,11 +939,33 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     return TaskConstants.Completed;
                 });
 
-                return bootstrap.ConnectAsync(address, port);
+                foreach (IPAddress address in addresses)
+                {
+                    try
+                    {
+                        Debug.WriteLine("Connecting to {0}.", address.ToString());
+                        channel = await bootstrap.ConnectAsync(address, port).ConfigureAwait(false);
+                    }
+                    catch (AggregateException ae)
+                    {
+                        ae.Handle((ex) =>
+                        {
+                            if (ex is ConnectException)     // We will handle DotNetty.Transport.Channels.ConnectException
+                            {
+                                Debug.WriteLine("ConnectException trying to connect to {0}: {1}", address.ToString(), ex.ToString());
+                                return true;
+                            }
+                            return false; // Let anything else stop the application.
+                        });
+
+                    }
+                }
+
+                return channel;
             };
         }
 
-        Func<IPAddress, int, Task<IChannel>> CreateWebSocketChannelFactory(IotHubConnectionString iotHubConnectionString, MqttTransportSettings settings, ProductInfo productInfo)
+        Func<IPAddress[], int, Task<IChannel>> CreateWebSocketChannelFactory(IotHubConnectionString iotHubConnectionString, MqttTransportSettings settings, ProductInfo productInfo)
         {
             return async (address, port) =>
             {

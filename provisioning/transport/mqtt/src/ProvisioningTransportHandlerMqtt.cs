@@ -192,19 +192,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     if (Logging.IsEnabled) Logging.Info(this, $"Connecting to {address.ToString()}.");
                     channel = await bootstrap.ConnectAsync(address, Port).ConfigureAwait(false);
                 }
-                catch (TimeoutException ex)
+                catch (AggregateException ae)
                 {
-                    lastException = ex;
-                    if (Logging.IsEnabled) Logging.Info(
-                        this,
-                        $"TimeoutException trying to connect to {address.ToString()}: {ex.ToString()}");
-                }
-                catch (IOException ex)
-                {
-                    lastException = ex;
-                    if (Logging.IsEnabled) Logging.Info(
-                        this,
-                        $"IOException trying to connect to {address.ToString()}: {ex.ToString()}");
+                    ae.Handle((ex) =>
+                    {
+                        if (ex is ConnectException)     // We will handle DotNetty.Transport.Channels.ConnectException
+                        {
+                            lastException = ex;
+                            if (Logging.IsEnabled) Logging.Info(
+                                this,
+                                $"ConnectException trying to connect to {address.ToString()}: {ex.ToString()}");
+                            return true;
+                        }
+                        return false; // Let anything else stop the application.
+                    });
+
                 }
             }
 
