@@ -56,6 +56,15 @@ namespace Microsoft.Azure.Devices.Samples
             {
                 await RemoveDeviceAsync(DeviceId).ConfigureAwait(false);
             }
+
+            try
+            {
+                await UpdateDesiredProperties(DeviceId).ConfigureAwait(false);
+            }
+            finally
+            {
+                await RemoveDeviceAsync(DeviceId).ConfigureAwait(false);
+            }
         }
 
         public async Task EnumerateTwinsAsync()
@@ -129,6 +138,22 @@ namespace Microsoft.Azure.Devices.Samples
             Console.Write($"\tRemove device '{deviceId}' . . . ");
             await _registryManager.RemoveDeviceAsync(deviceId);
             Console.WriteLine("Done");
+        }
+
+        public async Task UpdateDesiredProperties(string deviceId)
+        {
+            var twin = await _registryManager.GetTwinAsync(deviceId);
+
+            var patch =
+                @"{
+                properties: {
+                    desired: {
+                      customKey: 'customValue'
+                    }
+                }
+            }";
+
+            await _registryManager.UpdateTwinAsync(twin.DeviceId, patch, twin.ETag);
         }
     }
 }
