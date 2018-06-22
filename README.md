@@ -17,3 +17,4 @@ azure-iot-samples-csharp provides a set of easy-to-understand, continuously-test
 
 - [azure-iot-sdk-csharp](https://github.com/Azure/azure-iot-sdk-csharp): contains the source code for Azure IoT C# SDK.
 - [Azure IoT Hub Documentation](https://docs.microsoft.com/azure/iot-hub/)
+- [Get-started](https://docs.microsoft.com/en-us/azure/iot-hub/quickstart-send-telemetry-dotnet)
