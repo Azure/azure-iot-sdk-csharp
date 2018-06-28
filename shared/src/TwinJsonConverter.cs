@@ -186,16 +186,16 @@ namespace Microsoft.Azure.Devices.Shared
                     continue;
                 }
 
-                string propertyName = reader.Value as string;
+                string propertyName = reader.ReadAsString();
                 reader.Read();
 
                 switch (propertyName)
                 {
                     case DeviceIdJsonTag:
-                        twin.DeviceId = reader.Value as string;
+                        twin.DeviceId = reader.ReadAsString();
                         break;
                     case ModuleIdJsonTag:
-                        twin.ModuleId = reader.Value as string;
+                        twin.ModuleId = reader.ReadAsString();
                         break;
                     case ConfigurationsJsonTag:
                         twin.Configurations = serializer.Deserialize<Dictionary<string, ConfigurationInfo>>(reader);
@@ -208,7 +208,7 @@ namespace Microsoft.Azure.Devices.Shared
                         };
                         break;
                     case ETagJsonTag:
-                        twin.ETag = reader.Value as string;
+                        twin.ETag = reader.ReadAsString();
                         break;
                     case TagsJsonTag:
                         if (reader.TokenType != JsonToken.StartObject)
@@ -224,27 +224,27 @@ namespace Microsoft.Azure.Devices.Shared
                         twin.Version = (long?)reader.Value;
                         break;
                     case StatusTag:
-                        string status = reader.Value as string;
+                        string status = reader.ReadAsString();
                         twin.Status = status?[0] == '\"' ? JsonConvert.DeserializeObject<DeviceStatus>(status) : serializer.Deserialize<DeviceStatus>(reader);
                         break;
                     case StatusReasonTag:
-                        twin.StatusReason = reader.Value as string;
+                        twin.StatusReason = reader.ReadAsString();
                         break;
                     case StatusUpdateTimeTag:
-                        twin.StatusUpdatedTime = (DateTime)reader.Value;
+                        twin.StatusUpdatedTime = reader.ReadAsDateTime();
                         break;
                     case ConnectionStateTag:
-                        string connectionState = reader.Value as string;
+                        string connectionState = reader.ReadAsString();
                         twin.ConnectionState = connectionState?[0] == '\"' ? JsonConvert.DeserializeObject<DeviceConnectionState>(connectionState) : serializer.Deserialize<DeviceConnectionState>(reader);
                         break;
                     case LastActivityTimeTag:
-                        twin.LastActivityTime = (DateTime)reader.Value;
+                        twin.LastActivityTime = reader.ReadAsDateTime();
                         break;
                     case CloudToDeviceMessageCountTag:
                         twin.CloudToDeviceMessageCount = serializer.Deserialize<int>(reader);
                         break;
                     case AuthenticationTypeTag:
-                        string authenticationType = reader.Value as string;
+                        string authenticationType = reader.ReadAsString();
                         twin.AuthenticationType = authenticationType?[0] == '\"' ? JsonConvert.DeserializeObject<AuthenticationType>(authenticationType) : serializer.Deserialize<AuthenticationType>(reader);
                         break;
                     case X509ThumbprintTag:
@@ -291,7 +291,7 @@ namespace Microsoft.Azure.Devices.Shared
                     break;
                 }
 
-                string propertyName = reader.Value as string;
+                string propertyName = reader.ReadAsString();
                 reader.Read();
 
                 if (reader.TokenType != JsonToken.StartObject)
@@ -328,7 +328,7 @@ namespace Microsoft.Azure.Devices.Shared
                     break;
                 }
 
-                string propertyName = reader.Value as string;
+                string propertyName = reader.ReadAsString();
                 reader.Read();
 
                 switch (propertyName)
