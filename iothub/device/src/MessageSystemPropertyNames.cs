@@ -39,9 +39,9 @@ namespace Microsoft.Azure.Devices.Client
 
         public const string ContentType = "iothub-content-type";
 
-        public const string ConnectionDeviceId = "connectionDeviceId";
+        public const string ConnectionDeviceId = "iothub-connection-device-id";
 
-        public const string ConnectionModuleId = "connectionModuleId";
+        public const string ConnectionModuleId = "iothub-connection-module-id";
 
         public const string DiagId = "iothub-diag-id";
 
