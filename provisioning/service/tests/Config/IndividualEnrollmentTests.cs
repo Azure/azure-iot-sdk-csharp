@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Test
@@ -18,6 +19,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         private const string SampleLastUpdatedDateTimeUTCString = "2017-11-14T12:34:18.321Z";
         private DateTime SampleLastUpdatedDateTimeUTC = new DateTime(2017, 11, 14, 12, 34, 18, 321, DateTimeKind.Utc);
         private const string SampleEtag = "00000000-0000-0000-0000-00000000000";
+        private DeviceCapabilities SampleEdgeCapabilityTrue = new DeviceCapabilities { IotEdge = true };
+        private DeviceCapabilities SampleEdgeCapabilityFalse = new DeviceCapabilities { IotEdge = false };
         private const string SampleEndorsementKey =
             "AToAAQALAAMAsgAgg3GXZ0SEs/gakMyNRqXXJP1S124GUgtk8qHaGzMUaaoABgCAAEMAEAgAAAAAAAEAxsj" +
             "2gUScTk1UjuioeTlfGYZrrimExB+bScH75adUMRIi2UOMxG1kw4y+9RW/IVoMl4e620VxZad0ARX2gUqVjY" +
@@ -42,8 +45,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         private X509Attestation SampleX509RootAttestation = X509Attestation.CreateFromRootCertificates(SamplePublicKeyCertificateString);
         private X509Attestation SampleX509ClientAttestation = X509Attestation.CreateFromClientCertificates(SamplePublicKeyCertificateString);
         private X509Attestation SampleX509CAReferenceAttestation = X509Attestation.CreateFromCAReferences(SampleCAReference);
-        private string SampleIndividualEnrollmentJson =
-            "{\n" +
+        private static string SampleIndividualEnrollmentJsonBody =
             "   \"registrationId\":\"" + SampleRegistrationId + "\",\n" +
             "   \"attestation\":{\n" +
             "       \"type\":\"x509\",\n" +
@@ -74,8 +76,28 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             "   \"provisioningStatus\":\"" + SampleProvisioningStatus + "\",\n" +
             "   \"createdDateTimeUtc\": \"" + SampleCreateDateTimeUTCString + "\",\n" +
             "   \"lastUpdatedDateTimeUtc\": \"" + SampleLastUpdatedDateTimeUTCString + "\",\n" +
-            "   \"etag\": \"" + SampleEtag + "\"\n" +
-            "}";
+            "   \"etag\": \"" + SampleEtag + "\",\n";
+
+        private string SampleIndividualEnrollmentJsonWithoutCapabilities =
+            "{\n" +
+                SampleIndividualEnrollmentJsonBody + 
+            "}\n";
+
+        private string SampleIndividualEnrollmentJsonWithCapabilitiesTrue =
+            "{\n" +
+                SampleIndividualEnrollmentJsonBody +
+            "   \"capabilities\": {\n" +
+            "       \"iotEdge\": true \n" +
+            "       },\n" +
+            "}\n";
+
+        private string SampleIndividualEnrollmentJsonWithCapabilitiesFalse =
+            "{\n" +
+                SampleIndividualEnrollmentJsonBody +
+            "   \"capabilities\": {\n" +
+            "       \"iotEdge\": false \n" +
+            "       },\n" +
+            "}\n";
 
         /* SRS_DEVICE_ENROLLMENT_21_001: [The constructor shall store the provided parameters.] */
         [TestMethod]
@@ -243,10 +265,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         /* SRS_INDIVIDUAL_ENROLLMENT_21_004: [The constructor shall store all parameters in the JSON.] */
         [TestMethod]
         [TestCategory("DevService")]
-        public void IndividualEnrollmentConstructorJSONSucceed()
+        public void IndividualEnrollmentConstructorWithoutCapabilitiesJSONSucceed()
         {
             // arrange
-            IndividualEnrollment individualEnrollment = Newtonsoft.Json.JsonConvert.DeserializeObject<IndividualEnrollment>(SampleIndividualEnrollmentJson);
+            IndividualEnrollment individualEnrollment = Newtonsoft.Json.JsonConvert.DeserializeObject<IndividualEnrollment>(SampleIndividualEnrollmentJsonWithoutCapabilities);
 
             // act - assert
             Assert.IsNotNull(individualEnrollment);
@@ -259,6 +281,49 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             Assert.AreEqual(SampleCreateDateTimeUTC, individualEnrollment.CreatedDateTimeUtc);
             Assert.AreEqual(SampleLastUpdatedDateTimeUTC, individualEnrollment.LastUpdatedDateTimeUtc);
             Assert.AreEqual(SampleEtag, individualEnrollment.ETag);
+            Assert.AreEqual(null, individualEnrollment.Capabilities);
+        }
+
+        [TestMethod]
+        [TestCategory("DevService")]
+        public void IndividualEnrollmentConstructorWithCapabilitiesTrueJSONSucceed()
+        {
+            // arrange
+            IndividualEnrollment individualEnrollment = Newtonsoft.Json.JsonConvert.DeserializeObject<IndividualEnrollment>(SampleIndividualEnrollmentJsonWithCapabilitiesTrue);
+
+            // act - assert
+            Assert.IsNotNull(individualEnrollment);
+            Assert.AreEqual(SampleRegistrationId, individualEnrollment.RegistrationId);
+            Assert.IsTrue(individualEnrollment.Attestation is X509Attestation);
+            Assert.AreEqual(SampleDeviceId, individualEnrollment.DeviceId);
+            Assert.AreEqual(SampleIotHubHostName, individualEnrollment.IotHubHostName);
+            Assert.IsNotNull(individualEnrollment.InitialTwinState);
+            Assert.AreEqual(SampleProvisioningStatus, individualEnrollment.ProvisioningStatus);
+            Assert.AreEqual(SampleCreateDateTimeUTC, individualEnrollment.CreatedDateTimeUtc);
+            Assert.AreEqual(SampleLastUpdatedDateTimeUTC, individualEnrollment.LastUpdatedDateTimeUtc);
+            Assert.AreEqual(SampleEtag, individualEnrollment.ETag);
+            Assert.AreEqual(SampleEdgeCapabilityTrue.IotEdge, individualEnrollment.Capabilities.IotEdge);
+        }
+
+        [TestMethod]
+        [TestCategory("DevService")]
+        public void IndividualEnrollmentConstructorWithCapabilitiesFalseJSONSucceed()
+        {
+            // arrange
+            IndividualEnrollment individualEnrollment = Newtonsoft.Json.JsonConvert.DeserializeObject<IndividualEnrollment>(SampleIndividualEnrollmentJsonWithCapabilitiesFalse);
+
+            // act - assert
+            Assert.IsNotNull(individualEnrollment);
+            Assert.AreEqual(SampleRegistrationId, individualEnrollment.RegistrationId);
+            Assert.IsTrue(individualEnrollment.Attestation is X509Attestation);
+            Assert.AreEqual(SampleDeviceId, individualEnrollment.DeviceId);
+            Assert.AreEqual(SampleIotHubHostName, individualEnrollment.IotHubHostName);
+            Assert.IsNotNull(individualEnrollment.InitialTwinState);
+            Assert.AreEqual(SampleProvisioningStatus, individualEnrollment.ProvisioningStatus);
+            Assert.AreEqual(SampleCreateDateTimeUTC, individualEnrollment.CreatedDateTimeUtc);
+            Assert.AreEqual(SampleLastUpdatedDateTimeUTC, individualEnrollment.LastUpdatedDateTimeUtc);
+            Assert.AreEqual(SampleEtag, individualEnrollment.ETag);
+            Assert.AreEqual(SampleEdgeCapabilityFalse.IotEdge, individualEnrollment.Capabilities.IotEdge);
         }
 
         [TestMethod]
