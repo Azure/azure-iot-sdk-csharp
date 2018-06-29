@@ -471,7 +471,7 @@ namespace Microsoft.Azure.Devices.Client
                 return true;
             }
 
-            if (DisableServerCertificateValidation.Value && sslPolicyErrors == SslPolicyErrors.RemoteCertificateNameMismatch)
+            if (DisableServerCertificateValidation.Value && (sslPolicyErrors.HasFlag(SslPolicyErrors.RemoteCertificateNameMismatch) || sslPolicyErrors.HasFlag(SslPolicyErrors.RemoteCertificateChainErrors)))
             {
                 return true;
             }
