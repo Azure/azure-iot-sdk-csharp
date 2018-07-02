@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "      \"attestation\": {\n" +
                 "        \"type\": \"tpm\",\n" +
                 "        \"tpm\": {\n" +
-                "          \"endorsementKey\": \"randonendorsementkeyfortest==\"\n" +
+                "          \"endorsementKey\": \"randonendorsementkeyfortest=\"\n" +
                 "        }\n" +
                 "      },\n" +
                 "      \"iotHubHostName\": \"ContosoIotHub.azure-devices.net\",\n" +
@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
                 "      \"attestation\": {\n" +
                 "        \"type\": \"tpm\",\n" +
                 "        \"tpm\": {\n" +
-                "          \"endorsementKey\": \"randonendorsementkeyfortest==\"\n" +
+                "          \"endorsementKey\": \"randonendorsementkeyfortest=\"\n" +
                 "        }\n" +
                 "      },\n" +
                 "      \"iotHubHostName\": \"ContosoIotHub.azure-devices.net\",\n" +
