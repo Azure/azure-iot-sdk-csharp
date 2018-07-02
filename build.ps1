@@ -96,7 +96,7 @@ try {
         BuildProject iot-hub\Tutorials\Routing "IoTHub Tutorials - Routing"
         BuildProject provisioning\Samples\device "Provisioning Device Samples"
         BuildProject provisioning\Samples\service "Provisioning Service Samples"
-        BuildProject Security\Samples "Security Samples"
+        BuildProject security\Samples "Security Samples"
     }
 
     $buildFailed = $false
