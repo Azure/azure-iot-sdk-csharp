@@ -66,7 +66,7 @@ Function BuildProject($path, $message) {
     }
 }
 
-Function RunApp($path, $message, $framework="netcoreapp2.0") {
+Function RunApp($path, $message, $framework="netcoreapp2.1") {
 
     $label = "RUN: --- $message $configuration ---"
 

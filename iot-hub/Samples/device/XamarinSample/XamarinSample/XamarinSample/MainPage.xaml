@@ -1,0 +1,68 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:XamarinSample"
+             x:Class="XamarinSample.MainPage">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*" />
+            <ColumnDefinition Width="2*" />
+        </Grid.ColumnDefinitions>
+
+        <Label Text="Xamarin Sample" 
+               Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" />
+
+        <Label Text="Select Transport Type" 
+               Grid.Row="1" Grid.Column="0" />
+
+        <Picker Grid.Row="1" Grid.Column="1" 
+                x:Name="Transport" SelectedIndexChanged="Picker_OnSelectedIndexChanged">
+            <Picker.Items>
+                <x:String>HTTP</x:String>
+                <x:String>MQTT</x:String>
+                <x:String>AMQP</x:String>
+            </Picker.Items>
+            <Picker.SelectedIndex>0</Picker.SelectedIndex>
+        </Picker>
+
+        <Label Text="Device ID"
+               Grid.Row="2" Grid.Column="0" />
+
+        <Label x:Name="deviceID" Text="Device ID placeholder"
+               Grid.Row="2" Grid.Column="1" />
+
+        <Button x:Name="sendEventButton" Text="Send Event" Clicked="SendEvent"
+                 Grid.Row="3" Grid.Column="0" />
+
+        <ListView x:Name="sentMessagesText" Grid.Row="3" Grid.Column="1" >
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <TextCell  x:Name="DataItem" Text="{Binding}" />
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+
+        <Button x:Name="receiveCommandsButton" Text="Receive Commands" Clicked="ReceiveCommands"
+                Grid.Row="4" Grid.Column="0" />
+
+        <ListView x:Name="receivedMessagesText" Grid.Row="4" Grid.Column="1" >
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <TextCell  x:Name="DataItem" Text="{Binding}" />
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+    </Grid>
+
+</ContentPage>
