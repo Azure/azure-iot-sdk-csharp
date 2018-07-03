@@ -10,7 +10,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// <summary>
     /// The Device Provisioning Service bulk operation modes.
     /// </summary>
-    /// <seealso cref="!:https://docs.microsoft.com/en-us/rest/api/iot-dps/deviceenrollment">Device Enrollment</seealso>
     [JsonConverter(typeof(StringEnumConverter))]
     public enum BulkOperationMode
     {

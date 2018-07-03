@@ -77,11 +77,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DotNetty.Codecs.Mqtt" Version="0.4.7" />
-    <PackageReference Include="DotNetty.Handlers" Version="0.4.7" />
+    <PackageReference Include="DotNetty.Codecs.Mqtt" Version="0.4.8" />
+    <PackageReference Include="DotNetty.Handlers" Version="0.4.8" />
 
     <!-- FXCop -->
-    <PackageReference Condition=" '$(Configuration)' == 'Debug' " Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.6.0-beta2" />
+    <PackageReference Condition=" '$(Configuration)' == 'Debug' " Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.6.1" />
   </ItemGroup>
 
 </Project>

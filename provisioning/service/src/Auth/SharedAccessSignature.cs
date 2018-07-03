@@ -220,7 +220,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
 
             foreach (string field in fields)
             {
-                if (field != string.Empty)
+                if (!string.IsNullOrEmpty(field))
                 {
                     string[] fieldParts = field.Split(new string[]{ SharedAccessSignatureConstants.KeyValueSeparator }, StringSplitOptions.None);
                     if (string.Equals(fieldParts[0], SharedAccessSignatureConstants.AudienceFieldName, StringComparison.OrdinalIgnoreCase))

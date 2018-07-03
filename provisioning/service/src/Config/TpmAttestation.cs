@@ -14,8 +14,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// User must provide the Endorsement Key, and can, optionally, provide the Storage Root Key.
     /// </remarks>
     ///
-    /// <seealso cref="!:https://docs.microsoft.com/en-us/rest/api/iot-dps/deviceenrollment">Device Enrollment</seealso>
-    /// <seealso cref="!:https://trustedcomputinggroup.org/work-groups/trusted-platform-module">Trusted Platform Module</seealso>
     public sealed class TpmAttestation : Attestation
     {
         /// <summary>

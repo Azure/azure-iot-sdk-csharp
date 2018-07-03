@@ -62,8 +62,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///                        +--------------------------------------------------------------------------------+
     /// </code>
     /// </remarks>
-    /// <see cref="!:https://docs.microsoft.com/en-us/azure/iot-dps">Azure IoT Hub Device Provisioning Service</see>
-    /// <see cref="!:https://docs.microsoft.com/en-us/azure/iot-dps/about-iot-dps">Provisioning devices with Azure IoT Hub Device Provisioning Service</see>
     public class ProvisioningServiceClient : IDisposable
     {
         private readonly ServiceConnectionString _provisioningConnectionString;
@@ -77,7 +75,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// The Device Provisioning Service Client is created based on a <b>Provisioning Connection string</b>.
         /// Once you create a Device Provisioning Service on Azure, you can get the connection string on the Azure portal.
         /// </remarks>
-        /// <see cref="!:http://portal.azure.com/">Azure portal</see>
         ///
         /// <param name="connectionString">the <code>string</code> that cares the connection string of the Device Provisioning Service.</param>
         /// <returns>The <code>ProvisioningServiceClient</code> with the new instance of this object.</returns>
@@ -217,8 +214,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// }
         /// </code>
         /// </example>
-        /// <see cref="!:https://docs.microsoft.com/en-us/azure/iot-dps/">Azure IoT Hub Device Provisioning Service</see>
-        /// <see cref="!:https://docs.microsoft.com/en-us/rest/api/iot-dps/deviceenrollment">Device Enrollment</see>
         ///
         /// <param name="individualEnrollment">the <see cref="IndividualEnrollment"/> object that describes the individualEnrollment that will be created of updated. It cannot be <code>null</code>.</param>
         /// <returns>An <see cref="IndividualEnrollment"/> object with the result of the create or update requested.</returns>
@@ -250,8 +245,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// This API provide the means to do a single operation over multiple individualEnrollments. A valid operation
         ///     is determined by <see cref="BulkOperationMode"/>, and can be 'create', 'update', 'updateIfMatchETag', or 'delete'.
         /// </remarks>
-        /// <see cref="!:https://docs.microsoft.com/en-us/azure/iot-dps/">Azure IoT Hub Device Provisioning Service</see>
-        /// <see cref="!:https://docs.microsoft.com/en-us/rest/api/iot-dps/deviceenrollment">Device Enrollment</see>
         ///
         /// <param name="bulkOperationMode">the <see cref="BulkOperationMode"/> that defines the single operation to do over the individualEnrollments. It cannot be <code>null</code>.</param>
         /// <param name="individualEnrollments">the collection of <see cref="IndividualEnrollment"/> that contains the description of each individualEnrollment. It cannot be <code>null</code> or empty.</param>
@@ -273,8 +266,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// This API provide the means to do a single operation over multiple individualEnrollments. A valid operation
         ///     is determined by <see cref="BulkOperationMode"/>, and can be 'create', 'update', 'updateIfMatchETag', or 'delete'.
         /// </remarks>
-        /// <see cref="!:https://docs.microsoft.com/en-us/azure/iot-dps/">Azure IoT Hub Device Provisioning Service</see>
-        /// <see cref="!:https://docs.microsoft.com/en-us/rest/api/iot-dps/deviceenrollment">Device Enrollment</see>
         ///
         /// <param name="bulkOperationMode">the <see cref="BulkOperationMode"/> that defines the single operation to do over the individualEnrollments. It cannot be <code>null</code>.</param>
         /// <param name="individualEnrollments">the collection of <see cref="IndividualEnrollment"/> that contains the description of each individualEnrollment. It cannot be <code>null</code> or empty.</param>
@@ -561,8 +552,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// using Microsoft.Azure.Devices.Provisioning.Service;
         /// </code>
         /// </remarks>
-        /// <see cref="!:https://docs.microsoft.com/en-us/azure/iot-dps/">Azure IoT Hub Device Provisioning Service</see>
-        /// <see cref="!:https://docs.microsoft.com/en-us/rest/api/iot-dps/deviceenrollmentgroup">Device Enrollment Group</see>
         ///
         /// <param name="enrollmentGroup">the <see cref="EnrollmentGroup"/> object that describes the individualEnrollment that will be created of updated.</param>
         /// <returns>An <see cref="EnrollmentGroup"/> object with the result of the create or update requested.</returns>
@@ -588,8 +577,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// using Microsoft.Azure.Devices.Provisioning.Service;
         /// </code>
         /// </remarks>
-        /// <see cref="!:https://docs.microsoft.com/en-us/azure/iot-dps/">Azure IoT Hub Device Provisioning Service</see>
-        /// <see cref="!:https://docs.microsoft.com/en-us/rest/api/iot-dps/deviceenrollmentgroup">Device Enrollment Group</see>
         ///
         /// <param name="enrollmentGroup">the <see cref="EnrollmentGroup"/> object that describes the individualEnrollment that will be created of updated.</param>
         /// <param name="cancellationToken">The cancellation token.</param>

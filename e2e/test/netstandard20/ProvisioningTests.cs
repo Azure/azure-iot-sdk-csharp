@@ -49,17 +49,13 @@ namespace Microsoft.Azure.Devices.E2ETests
         [DataRow(nameof(ProvisioningTransportHandlerAmqp), nameof(SecurityProviderTpmHsm), null, TransportFallbackType.TcpOnly)]
         [DataRow(nameof(ProvisioningTransportHandlerAmqp), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Individual, TransportFallbackType.TcpOnly)]
         [DataRow(nameof(ProvisioningTransportHandlerAmqp), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Group, TransportFallbackType.TcpOnly)]
-#if NET47 // .NET Core 2.0 doesn't support WebSockets.
         [DataRow(nameof(ProvisioningTransportHandlerAmqp), nameof(SecurityProviderTpmHsm), null, TransportFallbackType.WebSocketOnly)]
         [DataRow(nameof(ProvisioningTransportHandlerAmqp), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Individual, TransportFallbackType.WebSocketOnly)]
         [DataRow(nameof(ProvisioningTransportHandlerAmqp), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Group, TransportFallbackType.WebSocketOnly)]
-#endif
         [DataRow(nameof(ProvisioningTransportHandlerMqtt), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Individual, TransportFallbackType.TcpOnly)]
         [DataRow(nameof(ProvisioningTransportHandlerMqtt), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Group, TransportFallbackType.TcpOnly)]
-#if NET47 // .NET Core 2.0 doesn't support WebSockets.
         [DataRow(nameof(ProvisioningTransportHandlerMqtt), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Individual, TransportFallbackType.WebSocketOnly)]
         [DataRow(nameof(ProvisioningTransportHandlerMqtt), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Group, TransportFallbackType.WebSocketOnly)]
-#endif
         public async Task ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
             string transportType, 
             string securityType,
@@ -158,10 +154,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         [DataRow(nameof(ProvisioningTransportHandlerAmqp), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Group, TransportFallbackType.WebSocketOnly)]
         [DataRow(nameof(ProvisioningTransportHandlerMqtt), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Individual, TransportFallbackType.TcpOnly)]
         [DataRow(nameof(ProvisioningTransportHandlerMqtt), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Group, TransportFallbackType.TcpOnly)]
-#if NET47 // .NET Core 2.0 doesn't support WebSockets.
         [DataRow(nameof(ProvisioningTransportHandlerMqtt), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Individual, TransportFallbackType.WebSocketOnly)]
         [DataRow(nameof(ProvisioningTransportHandlerMqtt), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Group, TransportFallbackType.WebSocketOnly)]
-#endif
         public async Task ProvisioningDeviceClient_InvalidIdScope_Register_Fail(
             string transportType,
             string securityType,
@@ -197,9 +191,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [DataRow(nameof(ProvisioningTransportHandlerAmqp), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Individual, TransportFallbackType.TcpOnly)]
         [DataRow(nameof(ProvisioningTransportHandlerAmqp), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Individual, TransportFallbackType.WebSocketOnly)]
         [DataRow(nameof(ProvisioningTransportHandlerMqtt), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Individual, TransportFallbackType.TcpOnly)]
-#if NET47 // .NET Core 2.0 doesn't support WebSockets.
         [DataRow(nameof(ProvisioningTransportHandlerMqtt), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Individual, TransportFallbackType.WebSocketOnly)]
-#endif
         public async Task ProvisioningDeviceClient_InvalidGlobalAddress_Register_Fail(
             string transportType,
             string securityType,

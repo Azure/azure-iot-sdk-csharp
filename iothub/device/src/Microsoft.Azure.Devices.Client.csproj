@@ -35,9 +35,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DotNetty.Codecs.Mqtt" Version="0.4.7" />
-    <PackageReference Include="DotNetty.Handlers" Version="0.4.7" />
-    <PackageReference Include="Microsoft.Azure.Amqp" Version="2.2.0" />
+    <PackageReference Include="DotNetty.Codecs.Mqtt" Version="0.4.8" />
+    <PackageReference Include="DotNetty.Handlers" Version="0.4.8" />
+    <PackageReference Include="Microsoft.Azure.Amqp" Version="2.3.2" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
     <PackageReference Include="WindowsAzure.Storage" Version="8.7.0" />
   </ItemGroup>
@@ -106,7 +106,7 @@
 
   <ItemGroup>
     <!-- FXCop -->
-    <PackageReference Condition=" '$(Configuration)' == 'Debug' " Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.6.0-beta2" />
+    <PackageReference Condition=" '$(Configuration)' == 'Debug' " Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.6.1" />
   </ItemGroup>
 
 </Project>

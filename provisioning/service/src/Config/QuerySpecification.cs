@@ -11,8 +11,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// <summary>
     /// Representation of a single Device Provisioning Service query specification with a JSON serializer.
     /// </summary>
-    /// <seealso cref="!:https://docs.microsoft.com/en-us/rest/api/iot-dps/deviceenrollment">Device Enrollment</seealso>
-    /// <seealso cref="!:https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-query-language">Query Language</seealso>
     public class QuerySpecification
     {
         /// <summary>

@@ -148,7 +148,7 @@ Function BuildPackage($path, $message) {
     }
 }
 
-Function RunTests($path, $message, $framework="netcoreapp2.0") {
+Function RunTests($path, $message, $framework="netcoreapp2.1") {
 
     $label = "TEST: --- $message $configuration ---"
 
@@ -163,7 +163,7 @@ Function RunTests($path, $message, $framework="netcoreapp2.0") {
     }
 }
 
-Function RunApp($path, $message, $framework="netcoreapp2.0") {
+Function RunApp($path, $message, $framework="netcoreapp2.1") {
 
     $label = "RUN: --- $message $configuration ---"
 

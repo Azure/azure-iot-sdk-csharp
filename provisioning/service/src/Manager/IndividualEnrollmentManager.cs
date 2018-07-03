@@ -21,8 +21,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// This is the inner class that implements the IndividualEnrollment APIs.
     /// For the public API, please see <see cref="ProvisioningServiceClient"/>.
     /// </remarks>
-    /// <see cref="!:https://docs.microsoft.com/en-us/azure/iot-dps/">Azure IoT Hub Device Provisioning Service</see>
-    /// <see cref="!:https://docs.microsoft.com/en-us/rest/api/iot-dps/deviceenrollment">Device Enrollment</see>
     internal static class IndividualEnrollmentManager
     {
         private const string ServiceName = "enrollments";

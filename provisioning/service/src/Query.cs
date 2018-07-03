@@ -31,8 +31,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///     </item>
     /// </list>
     /// On all cases, the <see cref="QuerySpecification"/> contains a SQL query that must follow the
-    ///     <see cref="!:https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-query-language">Query Language</see>
-    ///     for the Device Provisioning Service.
+    ///     Query Language for the Device Provisioning Service.
     ///
     /// Optionally, an <code>Integer</code> with the <b>page size</b>, can determine the maximum number of the items in the
     ///     <see cref="QueryResult"/> returned by the <see cref="NextAsync()"/>. It must be any positive integer, and if it 
@@ -54,8 +53,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///     the point where you stopped. Just recreating the query with the same <see cref="QuerySpecification"/> and calling
     ///     the <see cref="NextAsync(string)"/> passing the stored <code>ContinuationToken</code>.
     /// </remarks>
-    /// <see cref="!:https://docs.microsoft.com/en-us/azure/iot-dps/">Azure IoT Hub Device Provisioning Service</see>
-    /// <see cref="!:https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-query-language">Query Language</see>
     public class Query : IDisposable
     {
         private const string ContinuationTokenHeaderKey = "x-ms-continuation";

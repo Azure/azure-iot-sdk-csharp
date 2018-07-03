@@ -51,7 +51,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///    ]
     /// }
     /// </code>
-    /// <seealso cref="!:https://docs.microsoft.com/en-us/rest/api/iot-dps/deviceenrollment">Device Enrollment</seealso>
     internal static class BulkEnrollmentOperation
     {
         private sealed class BulkOperation

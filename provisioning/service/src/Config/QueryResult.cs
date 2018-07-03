@@ -63,9 +63,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// ]
     /// </code>
     /// </remarks>
-    /// <seealso cref="!:https://docs.microsoft.com/en-us/rest/api/iot-dps/deviceenrollment">Device Enrollment</seealso>
-    /// <seealso cref="!:https://docs.microsoft.com/en-us/rest/api/iot-dps/deviceenrollmentgroup">Device Enrollment Group</seealso>
-    /// <seealso cref="!:https://docs.microsoft.com/en-us/rest/api/iot-dps/registrationstatus">Registration Status</seealso>
     public class QueryResult
     {
         /// <summary>

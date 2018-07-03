@@ -16,7 +16,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// It is an internal class that converts one of the attestations into JSON format. To configure
     ///     the attestation mechanism, see the external API <see cref="Attestation"/>.
     /// </remarks>
-    /// <seealso cref="!:https://docs.microsoft.com/en-us/rest/api/iot-dps/deviceenrollment">Device Enrollment</seealso>
     internal sealed class AttestationMechanism
     {
         /// <summary>

@@ -84,7 +84,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///  }
     /// </code>
     /// </example>
-    /// <seealso cref="!:https://docs.microsoft.com/en-us/rest/api/iot-dps/deviceenrollment">Device Enrollment</seealso>
     [SuppressMessage("Microsoft.Naming", "CA1724:TypeNamesShouldNotMatchNamespaces", Justification = "Public API cannot change name.")]
     public class X509Certificates 
     {

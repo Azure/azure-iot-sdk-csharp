@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
 
-#if NETCOREAPP2_0
+#if NETCOREAPP2_1
         [TestInitialize]
         public async Task Initialize()
         {
