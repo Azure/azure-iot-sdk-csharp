@@ -436,6 +436,11 @@ namespace Microsoft.Azure.Devices.Client
                 return this.GetSystemProperty<string>(MessageSystemPropertyNames.ConnectionDeviceId);
 #endif
             }
+
+            internal set
+            {
+                this.SystemProperties[MessageSystemPropertyNames.ConnectionDeviceId] = value;
+            }
         }
 
         /// <summary>
@@ -450,6 +455,11 @@ namespace Microsoft.Azure.Devices.Client
 #else
                 return this.GetSystemProperty<string>(MessageSystemPropertyNames.ConnectionModuleId);
 #endif
+            }
+
+            internal set
+            {
+                this.SystemProperties[MessageSystemPropertyNames.ConnectionModuleId] = value;
             }
         }
 
