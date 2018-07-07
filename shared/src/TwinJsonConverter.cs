@@ -80,7 +80,7 @@ namespace Microsoft.Azure.Devices.Shared
                 writer.WritePropertyName(StatusTag);
                 writer.WriteRawValue(JsonConvert.SerializeObject(twin.Status));
             }
-            
+
             if (!string.IsNullOrEmpty(twin.StatusReason))
             {
                 writer.WritePropertyName(StatusReasonTag);
@@ -122,7 +122,7 @@ namespace Microsoft.Azure.Devices.Shared
                 writer.WritePropertyName(X509ThumbprintTag);
                 serializer.Serialize(writer, twin.X509Thumbprint);
             }
- 
+
             if (twin.Configurations != null)
             {
                 writer.WritePropertyName(ConfigurationsJsonTag);
@@ -186,16 +186,16 @@ namespace Microsoft.Azure.Devices.Shared
                     continue;
                 }
 
-                string propertyName = reader.ReadAsString();
+                string propertyName = reader.Value as string;
                 reader.Read();
 
                 switch (propertyName)
                 {
                     case DeviceIdJsonTag:
-                        twin.DeviceId = reader.ReadAsString();
+                        twin.DeviceId = reader.Value as string;
                         break;
                     case ModuleIdJsonTag:
-                        twin.ModuleId = reader.ReadAsString();
+                        twin.ModuleId = reader.Value as string;
                         break;
                     case ConfigurationsJsonTag:
                         twin.Configurations = serializer.Deserialize<Dictionary<string, ConfigurationInfo>>(reader);
@@ -208,7 +208,7 @@ namespace Microsoft.Azure.Devices.Shared
                         };
                         break;
                     case ETagJsonTag:
-                        twin.ETag = reader.ReadAsString();
+                        twin.ETag = reader.Value as string;
                         break;
                     case TagsJsonTag:
                         if (reader.TokenType != JsonToken.StartObject)
@@ -224,27 +224,27 @@ namespace Microsoft.Azure.Devices.Shared
                         twin.Version = (long?)reader.Value;
                         break;
                     case StatusTag:
-                        string status = reader.ReadAsString();
+                        string status = reader.Value as string;
                         twin.Status = status?[0] == '\"' ? JsonConvert.DeserializeObject<DeviceStatus>(status) : serializer.Deserialize<DeviceStatus>(reader);
                         break;
                     case StatusReasonTag:
-                        twin.StatusReason = reader.ReadAsString();
+                        twin.StatusReason = reader.Value as string;
                         break;
                     case StatusUpdateTimeTag:
-                        twin.StatusUpdatedTime = reader.ReadAsDateTime();
+                        twin.StatusUpdatedTime = serializer.Deserialize<DateTime>(reader);
                         break;
                     case ConnectionStateTag:
-                        string connectionState = reader.ReadAsString();
+                        string connectionState = reader.Value as string;
                         twin.ConnectionState = connectionState?[0] == '\"' ? JsonConvert.DeserializeObject<DeviceConnectionState>(connectionState) : serializer.Deserialize<DeviceConnectionState>(reader);
                         break;
                     case LastActivityTimeTag:
-                        twin.LastActivityTime = reader.ReadAsDateTime();
+                        twin.LastActivityTime = serializer.Deserialize<DateTime>(reader);
                         break;
                     case CloudToDeviceMessageCountTag:
                         twin.CloudToDeviceMessageCount = serializer.Deserialize<int>(reader);
                         break;
                     case AuthenticationTypeTag:
-                        string authenticationType = reader.ReadAsString();
+                        string authenticationType = reader.Value as string;
                         twin.AuthenticationType = authenticationType?[0] == '\"' ? JsonConvert.DeserializeObject<AuthenticationType>(authenticationType) : serializer.Deserialize<AuthenticationType>(reader);
                         break;
                     case X509ThumbprintTag:
@@ -291,7 +291,7 @@ namespace Microsoft.Azure.Devices.Shared
                     break;
                 }
 
-                string propertyName = reader.ReadAsString();
+                string propertyName = reader.Value as string;
                 reader.Read();
 
                 if (reader.TokenType != JsonToken.StartObject)
@@ -328,7 +328,7 @@ namespace Microsoft.Azure.Devices.Shared
                     break;
                 }
 
-                string propertyName = reader.ReadAsString();
+                string propertyName = reader.Value as string;
                 reader.Read();
 
                 switch (propertyName)
