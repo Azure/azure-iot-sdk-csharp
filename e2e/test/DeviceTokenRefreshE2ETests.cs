@@ -41,17 +41,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             string deviceConnectionString = null;
 
-            try
-            {
-                 deviceConnectionString = Configuration.IoTHub.DeviceConnectionString;
-            }
-            catch (InvalidOperationException) { /* Invalid configuration. */ }
-
-            if (string.IsNullOrEmpty(deviceConnectionString))
-            {
-                Console.WriteLine("Device configuration not found. Test inconclusive.");
-                return;
-            }
+            deviceConnectionString = Configuration.IoTHub.DeviceConnectionString;
 
             var config = new Configuration.IoTHub.DeviceConnectionStringParser(deviceConnectionString);
             string iotHub = config.IoTHub;
@@ -60,7 +50,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             SharedAccessSignatureBuilder builder = new SharedAccessSignatureBuilder()
             {
-                Key = "Lfc0z9UTENYRt0vEoFQjXeUkQV3ifk5f3qFN5N7vFlY=",
+                Key = key,
                 TimeToLive = new TimeSpan(0, 10, 0),
                 Target = $"{iotHub}/devices/{WebUtility.UrlEncode(deviceId)}",
             };
@@ -70,11 +60,11 @@ namespace Microsoft.Azure.Devices.E2ETests
             using (DeviceClient iotClient = DeviceClient.Create(iotHub, auth, Client.TransportType.Amqp_Tcp_Only))
             {
                 Console.WriteLine("DeviceClient OpenAsync.");
-                await iotClient.OpenAsync();
+                await iotClient.OpenAsync().ConfigureAwait(false);
                 Console.WriteLine("DeviceClient SendEventAsync.");
-                await iotClient.SendEventAsync(new Client.Message(Encoding.UTF8.GetBytes("TestMessage")));
+                await iotClient.SendEventAsync(new Client.Message(Encoding.UTF8.GetBytes("TestMessage"))).ConfigureAwait(false);
                 Console.WriteLine("DeviceClient CloseAsync.");
-                await iotClient.CloseAsync();   // First release
+                await iotClient.CloseAsync().ConfigureAwait(false);   // First release
             } // Second release
         }
 

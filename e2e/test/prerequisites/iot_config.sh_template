@@ -11,7 +11,7 @@
 # IoT Hub Owner connection string:
 export IOTHUB_CONN_STRING_CSHARP=""
 
-# Device1 and Device2 connection string:
+# Device primary and secondary connection strings:
 export IOTHUB_DEVICE_CONN_STRING=""
 export IOTHUB_DEVICE_CONN_STRING2=""
 
@@ -56,6 +56,9 @@ export DPS_TPM_REGISTRATIONID=indtpmdevice1
 
 # TPM device device ID:
 export DPS_TPM_DEVICEID=provisionedtpm1
+
+#REM TPM Simulator path (using https://github.com/stwagnr/tpm2simulator defaults)
+export TPM_SIMULATOR_PATH=/usr/local/tpm/build/Simulator
 
 # Provisioning service owner connection string.
 export PROVISIONING_CONNECTION_STRING=""

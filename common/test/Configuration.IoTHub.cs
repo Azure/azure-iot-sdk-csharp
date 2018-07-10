@@ -37,13 +37,13 @@ namespace Microsoft.Azure.Devices.E2ETests
                         switch(tv[0].ToUpperInvariant())
                         {
                             case "HOSTNAME":
-                                IoTHub = tv[1];
+                                IoTHub = part.Substring("HOSTNAME=".Length);
                                 break;
                             case "SHAREDACCESSKEY":
-                                SharedAccessKey = tv[1];
+                                SharedAccessKey = part.Substring("SHAREDACCESSKEY=".Length);
                                 break;
                             case "DEVICEID":
-                                DeviceID = tv[1];
+                                DeviceID = part.Substring("DEVICEID=".Length);
                                 break;
                             default:
                                 throw new NotSupportedException("Unrecognized tag found in test ConnectionString.");

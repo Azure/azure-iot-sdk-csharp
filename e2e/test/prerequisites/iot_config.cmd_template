@@ -10,7 +10,7 @@
 @REM IoT Hub Owner connection string:
 set IOTHUB_CONN_STRING_CSHARP=
 
-@REM Device1 and Device2 connection string:
+@REM Device primary and secondary connection strings:
 set IOTHUB_DEVICE_CONN_STRING=
 set IOTHUB_DEVICE_CONN_STRING2=
 

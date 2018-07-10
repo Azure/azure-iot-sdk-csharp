@@ -7,6 +7,10 @@ if [ "$?" -ne 0 ]; then
 	exit 1
 fi 
 
+# Start the TPM simulator
+killall -9 Simulator
+$TPM_SIMULATOR_PATH &
+
 ./build.sh -clean -configuration Release -e2etests
 if [ "$?" -ne 0 ]; then
 	exit 1
