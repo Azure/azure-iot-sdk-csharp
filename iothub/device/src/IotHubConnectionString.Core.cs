@@ -8,6 +8,7 @@ namespace Microsoft.Azure.Devices.Client
     using Microsoft.Azure.Amqp;
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Client.Extensions;
+    using System.Diagnostics;
 
     internal sealed partial class IotHubConnectionString : IAuthorizationProvider, ICbsTokenProvider
     {
@@ -19,6 +20,8 @@ namespace Microsoft.Azure.Devices.Client
 
         Task<string> IAuthorizationProvider.GetPasswordAsync()
         {
+            Debug.Assert(this.TokenRefresher != null);
+
             if (!string.IsNullOrWhiteSpace(this.SharedAccessSignature))
             {
                 return Task.FromResult(this.SharedAccessSignature);

@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             this.defaultErrorMapping =
                 new ReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>(defaultErrorMapping);
 
-#if !NETSTANDARD1_3 && !NETSTANDARD2_0
+#if NET451
             WebRequestHandler handler = httpClientHandler as WebRequestHandler;
             if (clientCert != null)
             {
@@ -70,6 +70,17 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             this.httpClientObj = handler != null ? new HttpClient(handler) : new HttpClient();
 #else
+            if (clientCert != null)
+            {
+                if (httpClientHandler == null)
+                {
+                    httpClientHandler = new HttpClientHandler();
+                }
+
+                httpClientHandler.ClientCertificates.Add(clientCert);
+                this.usingX509ClientCert = true;
+            }
+
             this.httpClientObj = httpClientHandler != null ? new HttpClient(httpClientHandler) : new HttpClient();
 #endif
 
