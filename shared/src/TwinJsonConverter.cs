@@ -80,7 +80,7 @@ namespace Microsoft.Azure.Devices.Shared
                 writer.WritePropertyName(StatusTag);
                 writer.WriteRawValue(JsonConvert.SerializeObject(twin.Status));
             }
-            
+
             if (!string.IsNullOrEmpty(twin.StatusReason))
             {
                 writer.WritePropertyName(StatusReasonTag);
@@ -122,7 +122,7 @@ namespace Microsoft.Azure.Devices.Shared
                 writer.WritePropertyName(X509ThumbprintTag);
                 serializer.Serialize(writer, twin.X509Thumbprint);
             }
- 
+
             if (twin.Configurations != null)
             {
                 writer.WritePropertyName(ConfigurationsJsonTag);
@@ -231,14 +231,14 @@ namespace Microsoft.Azure.Devices.Shared
                         twin.StatusReason = reader.Value as string;
                         break;
                     case StatusUpdateTimeTag:
-                        twin.StatusUpdatedTime = (DateTime)reader.Value;
+                        twin.StatusUpdatedTime = serializer.Deserialize<DateTime>(reader);
                         break;
                     case ConnectionStateTag:
                         string connectionState = reader.Value as string;
                         twin.ConnectionState = connectionState?[0] == '\"' ? JsonConvert.DeserializeObject<DeviceConnectionState>(connectionState) : serializer.Deserialize<DeviceConnectionState>(reader);
                         break;
                     case LastActivityTimeTag:
-                        twin.LastActivityTime = (DateTime)reader.Value;
+                        twin.LastActivityTime = serializer.Deserialize<DateTime>(reader);
                         break;
                     case CloudToDeviceMessageCountTag:
                         twin.CloudToDeviceMessageCount = serializer.Deserialize<int>(reader);
