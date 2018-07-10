@@ -26,7 +26,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [Ignore]
         public async Task ProvisioningServiceClient_QueryInvalidServiceCertificateHttp_Fails()
         {
             using (var provisioningServiceClient = 
@@ -41,7 +40,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
 #if NET47 || NET451
                 Assert.IsInstanceOfType(exception.InnerException.InnerException.InnerException, typeof(AuthenticationException));
-#else
+#elif NETCOREAPP2_0
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
                     // WinHttpException (0x80072F8F): A security error occurred
@@ -52,12 +51,13 @@ namespace Microsoft.Azure.Devices.E2ETests
                     // CURLE_SSL_CACERT (60): Peer certificate cannot be authenticated with known CA certificates.
                     Assert.AreEqual(60, exception.InnerException.InnerException.HResult);
                 }
+#else
+                Assert.IsInstanceOfType(exception.InnerException.InnerException, typeof(AuthenticationException));
 #endif
             }
         }
 
         [TestMethod]
-        [Ignore]
         public async Task ProvisioningDeviceClient_RegisterAsyncInvalidServiceCertificateAmqpTcp_Fails()
         {
             using (var transport = new ProvisioningTransportHandlerAmqp(TransportFallbackType.TcpOnly))
@@ -70,7 +70,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [Ignore]
         public async Task ProvisioningDeviceClient_RegisterAsyncInvalidServiceCertificateMqttTcp_Fails()
         {
             using (var transport = new ProvisioningTransportHandlerMqtt(TransportFallbackType.TcpOnly))
@@ -90,7 +89,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [Ignore]
         public async Task ProvisioningDeviceClient_RegisterAsyncInvalidServiceCertificateHttp_Fails()
         {
             using (var transport = new ProvisioningTransportHandlerHttp())
@@ -100,7 +98,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
 #if NET47 || NET451
                 Assert.IsInstanceOfType(exception.InnerException.InnerException.InnerException, typeof(AuthenticationException));
-#else
+#elif NETCOREAPP2_0
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
                     // WinHttpException (0x80072F8F): A security error occurred
@@ -111,12 +109,13 @@ namespace Microsoft.Azure.Devices.E2ETests
                     // CURLE_SSL_CACERT (60): Peer certificate cannot be authenticated with known CA certificates.
                     Assert.AreEqual(60, exception.InnerException.InnerException.HResult);
                 }
+#else
+                Assert.IsInstanceOfType(exception.InnerException.InnerException, typeof(AuthenticationException));
 #endif
             }
         }
 
         [TestMethod]
-        [Ignore]
         public async Task ProvisioningDeviceClient_RegisterAsyncInvalidServiceCertificateAmqpWs_Fails()
         {
             using (var transport = new ProvisioningTransportHandlerAmqp(TransportFallbackType.WebSocketOnly))
@@ -124,7 +123,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 var exception = await Assert.ThrowsExceptionAsync<ProvisioningTransportException>(
                     () => TestInvalidServiceCertificate(transport)).ConfigureAwait(false);
 
-#if NET47 || NET451
+#if !NETCOREAPP2_0
                 Assert.IsInstanceOfType(exception.InnerException.InnerException.InnerException, typeof(AuthenticationException));
 #else
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -141,7 +140,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [Ignore]
         public async Task ProvisioningDeviceClient_RegisterAsyncInvalidServiceCertificateMqttWs_Fails()
         {
             using (var transport = new ProvisioningTransportHandlerMqtt(TransportFallbackType.WebSocketOnly))
@@ -149,7 +147,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 var exception = await Assert.ThrowsExceptionAsync<ProvisioningTransportException>(
                     () => TestInvalidServiceCertificate(transport)).ConfigureAwait(false);
 
-#if NET47 || NET451
+#if !NETCOREAPP2_0
                 Assert.IsInstanceOfType(exception.InnerException.InnerException.InnerException, typeof(AuthenticationException));
 #else
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))

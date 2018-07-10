@@ -432,7 +432,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         {
             if (Volatile.Read(ref _state) != (int)State.Failed)
             {
-                if (Logging.IsEnabled) Logging.Fail(this, $"Failing with Exception: {ex.ToString()}", nameof(FailWithExceptionAsync));
+                if (Logging.IsEnabled) Logging.Error(this, $"Failing with Exception: {ex.ToString()}", nameof(FailWithExceptionAsync));
                 ForceState(State.Failed);
                 _taskCompletionSource.TrySetException(ex);
 
@@ -440,7 +440,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             }
             else
             {
-                if (Logging.IsEnabled) Logging.Fail(this, $"Ignoring Exception: {ex.ToString()}", nameof(FailWithExceptionAsync));
+                if (Logging.IsEnabled) Logging.Error(this, $"Ignoring Exception: {ex.ToString()}", nameof(FailWithExceptionAsync));
             }
         }
 
@@ -449,7 +449,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             if (_cancellationToken.IsCancellationRequested &&
                 (Volatile.Read(ref _state) != (int)State.Failed))
             {
-                if (Logging.IsEnabled) Logging.Fail(this, "CancellationRequested", nameof(VerifyCancellationAsync));
+                if (Logging.IsEnabled) Logging.Error(this, "CancellationRequested", nameof(VerifyCancellationAsync));
 
                 ForceState(State.Failed);
                 _taskCompletionSource.TrySetCanceled(_cancellationToken);
