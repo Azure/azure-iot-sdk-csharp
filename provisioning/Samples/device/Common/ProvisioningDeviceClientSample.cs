@@ -6,6 +6,7 @@ using Microsoft.Azure.Devices.Provisioning.Client;
 using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
@@ -24,6 +25,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
         public async Task RunSampleAsync()
         {
             Console.WriteLine($"RegistrationID = {_security.GetRegistrationID()}");
+            VerifyRegistrationIdFormat(_security.GetRegistrationID());
 
             Console.Write("ProvisioningClient RegisterAsync . . . ");
             DeviceRegistrationResult result = await _provClient.RegisterAsync().ConfigureAwait(false);
@@ -57,6 +59,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
                 await iotClient.SendEventAsync(new Message(Encoding.UTF8.GetBytes("TestMessage"))).ConfigureAwait(false);
                 Console.WriteLine("DeviceClient CloseAsync.");
                 await iotClient.CloseAsync().ConfigureAwait(false);
+            }
+        }
+
+        private void VerifyRegistrationIdFormat(string v)
+        {
+            var r = new Regex("^[a-z0-9-]*$");
+            if (!r.IsMatch(v))
+            {
+                throw new FormatException("Invalid registrationId: The registration ID is alphanumeric, lowercase, and may contain hyphens");
             }
         }
     }
