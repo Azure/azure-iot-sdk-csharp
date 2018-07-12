@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
 
         public static int Main(string[] args)
         {
-            if (string.IsNullOrWhiteSpace(s_idScope) && (args.Length > 1))
+            if (string.IsNullOrWhiteSpace(s_idScope) && (args.Length > 0))
             {
                 s_idScope = args[0];
             }
