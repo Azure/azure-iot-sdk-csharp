@@ -191,6 +191,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 {
                     if (Logging.IsEnabled) Logging.Info(this, $"Connecting to {address.ToString()}.");
                     channel = await bootstrap.ConnectAsync(address, Port).ConfigureAwait(false);
+                    break;
                 }
                 catch (AggregateException ae)
                 {
@@ -204,6 +205,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                                 $"ConnectException trying to connect to {address.ToString()}: {ex.ToString()}");
                             return true;
                         }
+
                         return false; // Let anything else stop the application.
                     });
 

@@ -945,6 +945,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     {
                         Debug.WriteLine("Connecting to {0}.", address.ToString());
                         channel = await bootstrap.ConnectAsync(address, port).ConfigureAwait(false);
+                        break;
                     }
                     catch (AggregateException ae)
                     {
@@ -955,9 +956,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                                 Debug.WriteLine("ConnectException trying to connect to {0}: {1}", address.ToString(), ex.ToString());
                                 return true;
                             }
+
                             return false; // Let anything else stop the application.
                         });
-
                     }
                 }
 
