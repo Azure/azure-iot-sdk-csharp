@@ -91,6 +91,7 @@ try {
     {
         # SDK binaries
         BuildProject iot-hub\Samples\device "IoTHub Device Samples"
+        BuildProject iot-hub\Samples\module "IoTHub Module Samples"
         BuildProject iot-hub\Samples\service "IoTHub Service Samples"
         BuildProject iot-hub\Quickstarts "IoTHub Device Quickstarts"
         BuildProject iot-hub\Tutorials\Routing "IoTHub Tutorials - Routing"
