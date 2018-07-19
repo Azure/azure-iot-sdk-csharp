@@ -6,8 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- TODO #527: Update to 1.* after release. -->
-    <PackageReference Include="Microsoft.Azure.Devices.Client" Version="1.17.0-preview-007" />
+    <PackageReference Include="Microsoft.Azure.Devices.Client" Version="1.*" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
   </ItemGroup>
 

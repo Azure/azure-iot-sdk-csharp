@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Samples
         private static string s_secondaryThumbprint = Environment.GetEnvironmentVariable("IOTHUB_PFX_X509_THUMBPRINT2");
 
         private readonly RegistryManager _registryManager;
-        
+
         public RegistryManagerSample(RegistryManager registryManager)
         {
             _registryManager = registryManager ?? throw new ArgumentNullException(nameof(registryManager));

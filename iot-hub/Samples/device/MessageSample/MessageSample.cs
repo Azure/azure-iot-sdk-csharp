@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             string messageData;
 
             receivedMessage = await _deviceClient.ReceiveAsync().ConfigureAwait(false);
-                 
+
             if (receivedMessage != null)
             {
                 messageData = Encoding.ASCII.GetString(receivedMessage.GetBytes());

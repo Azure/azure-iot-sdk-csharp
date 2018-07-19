@@ -2,19 +2,35 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Samples
 {
     public class Program
     {
-        public static void Main(string[] args)
+        // The IoT Hub connection string. This is available under the "Shared access policies" in the Azure portal.
+
+        // For this sample either:
+        // - pass this value as a command-prompt argument
+        // - set the IOTHUB_CONN_STRING_CSHARP environment variable 
+        // - create a launchSettings.json (see launchSettings.json.template) containing the variable
+
+        private static string s_connectionString = Environment.GetEnvironmentVariable("IOTHUB_CONN_STRING_CSHARP");
+
+        public static int Main(string[] args)
         {
-            ADMSample aDMSample = new ADMSample();
-            aDMSample.RunSampleAsync().GetAwaiter().GetResult();
+            if (string.IsNullOrEmpty(s_connectionString) && args.Length > 0)
+            {
+                s_connectionString = args[0];
+            }
+
+            RegistryManager registryManager = RegistryManager.CreateFromConnectionString(s_connectionString);
+
+            var sample = new AutomaticDeviceManagementSample(registryManager);
+
+            sample.RunSampleAsync().GetAwaiter().GetResult();
+
+            Console.WriteLine("Done.\n");
+            return 0;
         }
     }
 }
