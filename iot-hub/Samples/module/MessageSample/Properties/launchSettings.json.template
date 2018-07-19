@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "MessageSample": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "IOTHUB_MODULE_CONN_STRING": "<yourModuleConnectionString>"
+      }
+    }
+  }
+}
