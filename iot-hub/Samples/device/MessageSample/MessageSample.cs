@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             Message receivedMessage;
             string messageData;
 
-            receivedMessage = await _deviceClient.ReceiveAsync().ConfigureAwait(false);
+            receivedMessage = await _deviceClient.ReceiveAsync(TimeSpan.FromSeconds(30)).ConfigureAwait(false);
 
             if (receivedMessage != null)
             {
