@@ -21,6 +21,11 @@ namespace Microsoft.Azure.Devices.Samples
 
         public static int Main(string[] args)
         {
+            if (string.IsNullOrEmpty(s_connectionString) && args.Length > 0)
+            {
+                s_connectionString = args[0];
+            }
+
             if (args.Length < 1)
             {
                 Console.WriteLine("\nUsage: \n");
