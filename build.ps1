@@ -109,8 +109,8 @@ try {
         RunApp iot-hub\Samples\device\TwinSample "IoTHub\Device\TwinSample"
 
         # TODO #10: Add module configuration in Jenkins.
-        RunApp iot-hub\Samples\module\MessageSample "IoTHub\Module\MessageSample"
-        RunApp iot-hub\Samples\module\MethodSample "IoTHub\Module\MethodSample"
+        #RunApp iot-hub\Samples\module\MessageSample "IoTHub\Module\MessageSample"
+        #RunApp iot-hub\Samples\module\MethodSample "IoTHub\Module\MethodSample"
 
         RunApp iot-hub\Samples\service\AutomaticDeviceManagementSample "IoTHub\Service\AutomaticDeviceManagementSample"
         RunApp iot-hub\Samples\service\JobsSample "IoTHub\Service\JobsSample"
