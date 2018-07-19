@@ -67,15 +67,15 @@ Function BuildProject($path, $message) {
     }
 }
 
-Function RunApp($path, $message, $framework="netcoreapp2.1") {
+Function RunApp($path, $message, $args) {
 
-    $label = "RUN: --- $message $configuration ---"
+    $label = "RUN: --- $message $configuration ($args)---"
 
     Write-Host
     Write-Host -ForegroundColor Cyan $label
     cd (Join-Path $rootDir $path)
 
-    & dotnet run --framework $framework --verbosity $verbosity --configuration $configuration --logger "trx"
+    & dotnet run $args
 
     if ($LASTEXITCODE -ne 0) {
         throw "Tests failed: $label"
@@ -115,12 +115,15 @@ try {
         RunApp iot-hub\Samples\service\AutomaticDeviceManagementSample "IoTHub\Service\AutomaticDeviceManagementSample"
         RunApp iot-hub\Samples\service\JobsSample "IoTHub\Service\JobsSample"
         RunApp iot-hub\Samples\service\RegistryManagerSample "IoTHub\Service\RegistryManagerSample"
-        RunApp iot-hub\Samples\service\ServiceClientSample "IoTHub\Service\ServiceClientSample"
+
+        $deviceId = ($Env:IOTHUB_DEVICE_CONN_STRING.Split(';') | where {$_ -like "DeviceId*"}).Split("=")[1]
+        Write-Warning $deviceId
+        RunApp iot-hub\Samples\service\ServiceClientSample "IoTHub\Service\ServiceClientSample" - $deviceId
 
         # TODO #11: Modify Provisioning\device samples to run unattended.
 
         RunApp provisioning\Samples\service\BulkOperationSample "Provisioning\Service\BulkOperationSample"
-        RunApp provisioning\Samples\service\EnrollmentGroupSample "Provisioning\Service\EnrollmentGroupSample"
+        # TODO #11 :RunApp provisioning\Samples\service\EnrollmentGroupSample "Provisioning\Service\EnrollmentGroupSample"
         RunApp provisioning\Samples\service\EnrollmentSample "Provisioning\Service\EnrollmentSample"
     }
 
