@@ -51,14 +51,6 @@ namespace Microsoft.Azure.Devices.Samples
             try
             {
                 await AddDeviceWithCertificateAuthorityAuthenticationAsync(DeviceId).ConfigureAwait(false);
-            }
-            finally
-            {
-                await RemoveDeviceAsync(DeviceId).ConfigureAwait(false);
-            }
-
-            try
-            {
                 await UpdateDesiredProperties(DeviceId).ConfigureAwait(false);
             }
             finally
@@ -90,7 +82,7 @@ namespace Microsoft.Azure.Devices.Samples
 
         public async Task AddDeviceAsync(string deviceId)
         {
-            Console.Write($"\tAdding device '{deviceId}' with default authentication . . . ");
+            Console.Write($"Adding device '{deviceId}' with default authentication . . . ");
             await _registryManager.AddDeviceAsync(new Device(deviceId)).ConfigureAwait(false);
             Console.WriteLine("DONE");
         }
@@ -113,7 +105,7 @@ namespace Microsoft.Azure.Devices.Samples
                 }
             };
 
-            Console.Write($"\tAdding device '{deviceId}' with self signed certificate auth . . . ");
+            Console.Write($"Adding device '{deviceId}' with self signed certificate auth . . . ");
             await _registryManager.AddDeviceAsync(device).ConfigureAwait(false);
             Console.WriteLine("DONE");
         }
@@ -128,14 +120,14 @@ namespace Microsoft.Azure.Devices.Samples
                 }
             };
 
-            Console.Write($"\tAdding device '{deviceId}' with CA authentication . . . ");
+            Console.Write($"Adding device '{deviceId}' with CA authentication . . . ");
             await _registryManager.AddDeviceAsync(device).ConfigureAwait(false);
             Console.WriteLine("DONE");
         }
 
         public async Task RemoveDeviceAsync(string deviceId)
         {
-            Console.Write($"\tRemove device '{deviceId}' . . . ");
+            Console.Write($"Remove device '{deviceId}' . . . ");
             await _registryManager.RemoveDeviceAsync(deviceId);
             Console.WriteLine("Done");
         }
