@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             _connectionString2 = connectionString2;
             _transportType = transportType;
         }
-        
+
         public async Task RunSampleAsync()
         {
             Console.WriteLine("Update device's first connection string (using the ServiceClient SDK or DeviceExplorer) while this sample is running.");
@@ -34,21 +34,22 @@ namespace Microsoft.Azure.Devices.Client.Samples
             {
                 Console.WriteLine("UnauthorizedExpception:\n" + ex.Message);
                 Console.WriteLine("Assuming key roll-over. ConnectionString1 should be reconfigured on this device.");
-                
+
                 await RunSampleWithConnectionString(_connectionString2);
             }
         }
-        
+
         private async Task RunSampleWithConnectionString(string connectionString)
         {
             string usedConnectionString = connectionString == _connectionString1 ? "PRIMARY" : "SECONDARY";
             int delaySeconds = 5;
+            int loopSeconds = 30;
             Console.WriteLine($"Sending one message every {delaySeconds} seconds");
 
             var deviceClient = DeviceClient.CreateFromConnectionString(connectionString, _transportType);
             var testMessage = new Message(Encoding.UTF8.GetBytes("message from key rollover sample"));
 
-            while (true)
+            for (int i = 0; i * delaySeconds < loopSeconds; i++)
             {
                 Console.WriteLine($"\t {DateTime.Now.ToLocalTime()} Sending message [{usedConnectionString} connection string].");
                 await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);

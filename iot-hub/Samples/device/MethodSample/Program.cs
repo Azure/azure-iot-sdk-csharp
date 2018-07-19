@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
 
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(s_deviceConnectionString, s_transportType);
-            
+
             if (deviceClient == null)
             {
                 Console.WriteLine("Failed to create DeviceClient!");

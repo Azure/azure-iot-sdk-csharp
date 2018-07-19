@@ -35,6 +35,7 @@ https://github.com/azure/azure-iot-sdk-csharp
 Param(
     [switch] $clean,
     [switch] $nobuild,
+    [switch] $norun,
     [string] $configuration = "Debug",
     [string] $verbosity = "q"
 )
@@ -89,7 +90,6 @@ $errorMessage = ""
 try {
     if (-not $nobuild)
     {
-        # SDK binaries
         BuildProject iot-hub\Samples\device "IoTHub Device Samples"
         BuildProject iot-hub\Samples\module "IoTHub Module Samples"
         BuildProject iot-hub\Samples\service "IoTHub Service Samples"
@@ -98,6 +98,30 @@ try {
         BuildProject provisioning\Samples\device "Provisioning Device Samples"
         BuildProject provisioning\Samples\service "Provisioning Service Samples"
         BuildProject security\Samples "Security Samples"
+    }
+
+    if (-not $norun)
+    {
+        RunApp iot-hub\Samples\device\FileUploadSample "IoTHub\Device\FileUploadSample"
+        RunApp iot-hub\Samples\device\KeysRolloverSample "IoTHub\Device\KeysRolloverSample"
+        RunApp iot-hub\Samples\device\MessageSample "IoTHub\Device\MessageSample"
+        RunApp iot-hub\Samples\device\MethodSample "IoTHub\Device\MethodSample"
+        RunApp iot-hub\Samples\device\TwinSample "IoTHub\Device\TwinSample"
+
+        # TODO #10: Add module configuration in Jenkins.
+        RunApp iot-hub\Samples\module\MessageSample "IoTHub\Module\MessageSample"
+        RunApp iot-hub\Samples\module\MethodSample "IoTHub\Module\MethodSample"
+
+        RunApp iot-hub\Samples\service\AutomaticDeviceManagementSample "IoTHub\Service\AutomaticDeviceManagementSample"
+        RunApp iot-hub\Samples\service\JobsSample "IoTHub\Service\JobsSample"
+        RunApp iot-hub\Samples\service\RegistryManagerSample "IoTHub\Service\RegistryManagerSample"
+        RunApp iot-hub\Samples\service\ServiceClientSample "IoTHub\Service\ServiceClientSample"
+
+        # TODO #11: Modify Provisioning\device samples to run unattended.
+
+        RunApp provisioning\Samples\service\BulkOperationSample "Provisioning\Service\BulkOperationSample"
+        RunApp provisioning\Samples\service\EnrollmentGroupSample "Provisioning\Service\EnrollmentGroupSample"
+        RunApp provisioning\Samples\service\EnrollmentSample "Provisioning\Service\EnrollmentSample"
     }
 
     $buildFailed = $false
