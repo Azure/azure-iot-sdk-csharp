@@ -30,7 +30,11 @@ namespace Microsoft.Azure.Devices
 
         public const string Ack = "iothub-ack";
 
+        public const string IotHubName = "iothub-name";
+
         public const string ConnectionDeviceId = "iothub-connection-device-id";
+
+        public const string ConnectionModuleId = "iothub-connection-module-id";
 
         public const string ConnectionDeviceGenerationId = "iothub-connection-auth-generation-id";
 
