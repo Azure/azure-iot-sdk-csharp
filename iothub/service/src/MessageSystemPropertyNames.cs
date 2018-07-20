@@ -36,6 +36,8 @@ namespace Microsoft.Azure.Devices
 
         public const string ConnectionAuthMethod = "iothub-connection-auth-method";
 
+        public const string MessageSource = "iothub-message-source";
+
         public const string MessageSchema = "iothub-message-schema";
 
         public const string CreationTimeUtc = "iothub-creation-time-utc";
