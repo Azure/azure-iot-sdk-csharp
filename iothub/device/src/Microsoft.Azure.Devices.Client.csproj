@@ -22,7 +22,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Version>1.17.2</Version>
+    <Version>1.18.0</Version>
     <Title>Microsoft Azure IoT Device Client SDK</Title>
     <Authors>Microsoft</Authors>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
@@ -55,6 +55,7 @@
     <Compile Include="$(Common)\net451\Logging.Common.cs">
       <Link>Common\Logging.Common.cs</Link>
     </Compile>
+    <Compile Include="$(Common)\DefaultWebProxySettings.cs" />
     <Compile Include="net451\Common\IOThreadTimer.cs" />
     <Compile Include="net451\Common\Interop\UnsafeNativeMethods.cs" />
   </ItemGroup>
@@ -73,6 +74,7 @@
     <Compile Include="$(Common)\Logging.Common.cs">
       <Link>Common\Logging.Common.cs</Link>
     </Compile>
+    <Compile Include="$(Common)\DefaultWebProxySettings.cs" />
     <Compile Include="netstandard13\Logging.DeviceClient.cs" />
     <Compile Include="netstandard13\Common\IOThreadTimerSlim.cs" />
     <Compile Include="netstandard13\System.Web\HttpUtility.cs" />
@@ -108,6 +110,7 @@
     <Compile Include="$(Common)\Logging.Common.cs">
       <Link>Common\Logging.Common.cs</Link>
     </Compile>
+    <Compile Include="$(Common)\DefaultWebProxySettings.cs" />
     <Compile Include="netstandard13\Logging.DeviceClient.cs" />
     <Compile Include="netstandard13\Common\IOThreadTimerSlim.cs" />
     <Compile Include="netstandard13\HsmAuthentication\Transport\HttpUdsMessageHandler.cs" />

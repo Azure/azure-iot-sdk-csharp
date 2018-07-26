@@ -30,6 +30,9 @@
     <Compile Include="$(CommonTest)\EventSourceTestLogging.cs">
       <Link>Common\EventSourceTestLogging.cs</Link>
     </Compile>
+    <Compile Include="$(CommonTest)\TestModule.cs">
+      <Link>Common\TestModule.cs</Link>
+    </Compile>
     <Compile Include="$(CommonTest)\TestLogging.cs">
       <Link>Common\TestLogging.cs</Link>
     </Compile>
@@ -41,7 +44,10 @@
     </Compile>
     <Compile Include="$(CommonTest)\ConsoleEventListener.cs">
       <Link>Common\ConsoleEventListener.cs</Link>
-    </Compile>   
+    </Compile>
+    <Compile Include="$(CommonTest)\CustomWebProxy.cs">
+      <Link>Common\CustomWebProxy.cs</Link>
+    </Compile>
   </ItemGroup>
   <!-- Legacy .NET 4.5.1 -->
   <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
@@ -56,6 +62,7 @@
     <Compile Include="netstandard13\MessageE2ETests.NetCore.cs" />
     <Compile Include="netstandard13\X509E2ETests.NetCore.cs" />
     <Compile Include="netstandard20\ProvisioningTests.cs" />
+    <Compile Include="netstandard20\ProvisioningServiceClientTests.cs" />
     <Compile Include="netstandard20\ProvisioningCertificateValidationTest.cs" />
   </ItemGroup>
 

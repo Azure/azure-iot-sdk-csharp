@@ -7,6 +7,7 @@ using System;
 using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -17,7 +18,9 @@ namespace Microsoft.Azure.Devices.E2ETests
     public partial class MessageE2ETests : IDisposable
     {
         private const string DevicePrefix = "E2E_Message_";
+        private const string ModulePrefix = "E2E_Module_";
         private const string DevicePrefixTimeout = "E2E_Message_Timeout_";
+        private static string ProxyServerAddress = Configuration.IoTHub.ProxyServerAddress;
         private static TestLogging _log = TestLogging.GetInstance();
 
         private readonly ConsoleEventListener _listener;
@@ -85,6 +88,76 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_DeviceReceiveSingleMessage_Http()
         {
             await ReceiveSingleMessage(Client.TransportType.Http1).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ProxyE2ETests")]
+        public async Task Message_DeviceSendSingleMessage_Http_WithProxy()
+        {
+            Client.Http1TransportSettings httpTransportSettings = new Client.Http1TransportSettings();
+            httpTransportSettings.Proxy = new WebProxy(ProxyServerAddress);
+            ITransportSettings[] transportSettings = new ITransportSettings[] { httpTransportSettings };
+
+            await SendSingleMessage(transportSettings).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ProxyE2ETests")]
+        public async Task Message_DeviceSendSingleMessage_Http_WithCustomeProxy()
+        {
+            Http1TransportSettings httpTransportSettings = new Http1TransportSettings();
+            CustomWebProxy proxy = new CustomWebProxy();
+            httpTransportSettings.Proxy = proxy;
+            ITransportSettings[] transportSettings = new ITransportSettings[] { httpTransportSettings };
+
+            await SendSingleMessage(transportSettings).ConfigureAwait(false);
+            Assert.AreNotEqual(proxy.Counter, 0);
+        }
+
+        [TestMethod]
+        [TestCategory("ProxyE2ETests")]
+        public async Task Message_DeviceSendSingleMessage_AmqpWs_WithProxy()
+        {
+            Client.AmqpTransportSettings amqpTransportSettings = new Client.AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only);
+            amqpTransportSettings.Proxy = new WebProxy(ProxyServerAddress);
+            ITransportSettings[] transportSettings = new ITransportSettings[] { amqpTransportSettings };
+
+            await SendSingleMessage(transportSettings).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ProxyE2ETests")]
+        public async Task Message_DeviceSendSingleMessage_MqttWs_WithProxy()
+        {
+            Client.Transport.Mqtt.MqttTransportSettings mqttTransportSettings = 
+                new Client.Transport.Mqtt.MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only);
+            mqttTransportSettings.Proxy = new WebProxy(ProxyServerAddress);
+            ITransportSettings[] transportSettings = new ITransportSettings[] { mqttTransportSettings };
+
+            await SendSingleMessage(transportSettings).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ProxyE2ETests")]
+        public async Task Message_ModuleSendSingleMessage_AmqpWs_WithProxy()
+        {
+            Client.AmqpTransportSettings amqpTransportSettings = new Client.AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only);
+            amqpTransportSettings.Proxy = new WebProxy(ProxyServerAddress);
+            ITransportSettings[] transportSettings = new ITransportSettings[] { amqpTransportSettings };
+
+            await SendSingleMessageModule(transportSettings).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ProxyE2ETests")]
+        public async Task Message_ModuleSendSingleMessage_MqttWs_WithProxy()
+        {
+            Client.Transport.Mqtt.MqttTransportSettings mqttTransportSettings = 
+                new Client.Transport.Mqtt.MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only);
+            mqttTransportSettings.Proxy = new WebProxy(ProxyServerAddress);
+            ITransportSettings[] transportSettings = new ITransportSettings[] { mqttTransportSettings };
+
+            await SendSingleMessageModule(transportSettings).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -609,6 +682,52 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
 
             sw.Stop();
+        }
+
+        internal async Task SendSingleMessage(Client.TransportType transport)
+        {
+            ITransportSettings[] transportSettings;
+            switch (transport)
+            {
+                case Client.TransportType.Amqp_Tcp_Only:
+                case Client.TransportType.Amqp_WebSocket_Only:
+                    transportSettings = new ITransportSettings[] { new Client.AmqpTransportSettings(transport) };
+                    break;
+
+                case Client.TransportType.Mqtt_Tcp_Only:
+                case Client.TransportType.Mqtt_WebSocket_Only:
+                    transportSettings = new ITransportSettings[] { new Client.Transport.Mqtt.MqttTransportSettings(transport) };
+                    break;
+
+                case Client.TransportType.Http1:
+                    transportSettings = new ITransportSettings[] { new Client.Http1TransportSettings() };
+                    break;
+
+                default:
+                    throw new NotSupportedException($"Unknown transport: '{transport}'.");
+            }
+
+            await SendSingleMessage(transportSettings).ConfigureAwait(false);
+        }
+
+        internal async Task SendSingleMessageModule(ITransportSettings[] transportSettings)
+        {
+            TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix, ModulePrefix).ConfigureAwait(false);
+            var moduleClient = ModuleClient.CreateFromConnectionString(testModule.ConnectionString, transportSettings);
+
+            try
+            {
+                await moduleClient.OpenAsync().ConfigureAwait(false);
+
+                string payload;
+                string p1Value;
+                Client.Message testMessage = ComposeD2CTestMessage(out payload, out p1Value);
+                await moduleClient.SendEventAsync(testMessage).ConfigureAwait(false);
+            }
+            finally
+            {
+                await moduleClient.CloseAsync().ConfigureAwait(false);
+            }
         }
 
         private async Task ReceiveSingleMessage(Client.TransportType transport)

@@ -3,6 +3,8 @@
 
 using Microsoft.Azure.Devices.Shared;
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,6 +17,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
     {
         private ProvisioningTransportHandler _innerHandler;
         private int _port;
+
+        /// <summary>
+        /// Gets or sets the proxy for Provisioning Client operations.
+        /// </summary>
+        public IWebProxy Proxy { get; set; }
 
         /// <summary>
         /// Creates an instance of the ProvisioningTransportHandler class.

@@ -18,14 +18,18 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             public static string EventHubConsumerGroup => GetValue("IOTHUB_EVENTHUB_CONSUMER_GROUP", "$Default");
 
-            public static X509Certificate2 GetCertificateWithPrivateKey() 
-                => GetBase64EncodedCertificate("IOTHUB_X509_PFX_CERTIFICATE", defaultValue:string.Empty);
+            public static X509Certificate2 GetCertificateWithPrivateKey()
+                => GetBase64EncodedCertificate("IOTHUB_X509_PFX_CERTIFICATE", defaultValue: string.Empty);
 
             public static string ConnectionStringInvalidServiceCertificate => GetValue("IOTHUB_CONN_STRING_INVALIDCERT", string.Empty);
 
             public static string DeviceConnectionStringInvalidServiceCertificate => GetValue("IOTHUB_DEVICE_CONN_STRING_INVALIDCERT", string.Empty);
 
             public static string DeviceConnectionString => GetValue("IOTHUB_DEVICE_CONN_STRING");
+
+            public static string ModuleConnectionString => GetValue("IOTHUB_MODULE_CONN_STRING");
+
+            public static string ProxyServerAddress => GetValue("IOTHUB_PROXY_SERVER_ADDRESS");
 
             public class DeviceConnectionStringParser
             {
@@ -35,8 +39,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                     foreach (string part in parts)
                     {
                         string[] tv = part.Split('=');
-    
-                        switch(tv[0].ToUpperInvariant())
+
+                        switch (tv[0].ToUpperInvariant())
                         {
                             case "HOSTNAME":
                                 IoTHub = part.Substring("HOSTNAME=".Length);

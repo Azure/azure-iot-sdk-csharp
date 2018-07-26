@@ -24,6 +24,7 @@ namespace Microsoft.Azure.Devices
     using Microsoft.Azure.Devices.Common;
     using Microsoft.Azure.Devices.Common.Client;
     using Microsoft.Azure.Devices.Common.Data;
+    using Microsoft.Azure.Devices.Shared;
 
     sealed class IotHubConnection : IDisposable
     {
@@ -43,8 +44,9 @@ namespace Microsoft.Azure.Devices
         readonly IOThreadTimer refreshTokenTimer;
 #endif
         readonly bool useWebSocketOnly;
+        readonly ServiceClientTransportSettings transportSettings;
 
-        public IotHubConnection(IotHubConnectionString connectionString, AccessRights accessRights, bool useWebSocketOnly)
+        public IotHubConnection(IotHubConnectionString connectionString, AccessRights accessRights, bool useWebSocketOnly, ServiceClientTransportSettings transportSettings)
         {
             this.connectionString = connectionString;
             this.accessRights = accessRights;
@@ -55,6 +57,7 @@ namespace Microsoft.Azure.Devices
             this.refreshTokenTimer = new IOThreadTimer(s => ((IotHubConnection)s).OnRefreshToken(), this, false);
 #endif
             this.useWebSocketOnly = useWebSocketOnly;
+            this.transportSettings = transportSettings;
         }
 
         internal IotHubConnection(Func<TimeSpan, Task<AmqpSession>> onCreate, Action<AmqpSession> onClose)
@@ -256,7 +259,7 @@ namespace Microsoft.Azure.Devices
         }
 
 #if !NETSTANDARD1_3
-        static async Task<ClientWebSocket> CreateClientWebSocketAsync(Uri websocketUri, TimeSpan timeout)
+        async Task<ClientWebSocket> CreateClientWebSocketAsync(Uri websocketUri, TimeSpan timeout)
         {
             var websocket = new ClientWebSocket();
 
@@ -264,24 +267,28 @@ namespace Microsoft.Azure.Devices
             websocket.Options.AddSubProtocol(WebSocketConstants.SubProtocols.Amqpwsb10);
 
             // Check if we're configured to use a proxy server
-            IWebProxy webProxy = WebRequest.DefaultWebProxy;
-            Uri proxyAddress = null;
+            IWebProxy webProxy = transportSettings.AmqpProxy;
 
             try
             {
-                proxyAddress = webProxy?.GetProxy(websocketUri);
-                if (!websocketUri.Equals(proxyAddress))
+                if (webProxy != DefaultWebProxySettings.Instance)
                 {
                     // Configure proxy server
                     websocket.Options.Proxy = webProxy;
+                    if (Logging.IsEnabled)
+                    {
+                        Logging.Info(this, $"{nameof(CreateClientWebSocketAsync)} Setting ClientWebSocket.Options.Proxy");
+                    }
                 }
             }
             catch (PlatformNotSupportedException)
             {
                 // .NET Core 2.0 doesn't support proxy. Ignore this setting.
+                if (Logging.IsEnabled)
+                {
+                    Logging.Error(this, $"{nameof(CreateClientWebSocketAsync)} PlatformNotSupportedException thrown as .NET Core 2.0 doesn't support proxy");
+                }
             }
-
-            websocket.Options.UseDefaultCredentials = true;
 
             using (var cancellationTokenSource = new CancellationTokenSource(timeout))
             {
@@ -306,6 +313,7 @@ namespace Microsoft.Azure.Devices
             var timeoutHelper = new TimeoutHelper(timeout);
             Uri websocketUri = new Uri(WebSocketConstants.Scheme + this.ConnectionString.HostName + ":" + WebSocketConstants.SecurePort + WebSocketConstants.UriSuffix);
 
+#if NET451
             // Use Legacy WebSocket if it is running on Windows 7 or older. Windows 7/Windows 2008 R2 is version 6.1
             if (Environment.OSVersion.Version.Major < 6 || (Environment.OSVersion.Version.Major == 6 && Environment.OSVersion.Version.Minor <= 1))
             {
@@ -318,12 +326,15 @@ namespace Microsoft.Azure.Devices
             }
             else
             {
-                var websocket = await CreateClientWebSocketAsync(websocketUri, timeoutHelper.RemainingTime()).ConfigureAwait(false);
+#endif
+                var websocket = await this.CreateClientWebSocketAsync(websocketUri, timeoutHelper.RemainingTime()).ConfigureAwait(false);
                 return new ClientWebSocketTransport(
                     websocket,
                     null,
                     null);
+#if NET451
             }
+#endif
 #endif
         }
 

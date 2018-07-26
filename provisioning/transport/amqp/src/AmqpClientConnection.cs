@@ -5,6 +5,7 @@ using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Azure.Amqp.Sasl;
 using Microsoft.Azure.Amqp.Transport;
+using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Net;
 using System.Net.WebSockets;
@@ -47,7 +48,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         private ProtocolHeader _sentHeader;
 
-        public async Task OpenAsync(TimeSpan timeout, bool useWebSocket, X509Certificate2 clientCert)
+        public async Task OpenAsync(TimeSpan timeout, bool useWebSocket, X509Certificate2 clientCert, IWebProxy proxy)
         {
             var hostName = _uri.Host;
 
@@ -62,7 +63,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
             if (useWebSocket)
             {
-                transport = await CreateClientWebSocketTransportAsync(timeout).ConfigureAwait(false);
+                transport = await CreateClientWebSocketTransportAsync(timeout, proxy).ConfigureAwait(false);
                 SaslTransportProvider provider = _amqpSettings.GetTransportProvider<SaslTransportProvider>();
                 if (provider != null)
                 {
@@ -123,7 +124,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             _isConnectionClosed = true;
         }
 
-        async Task<TransportBase> CreateClientWebSocketTransportAsync(TimeSpan timeout)
+        async Task<TransportBase> CreateClientWebSocketTransportAsync(TimeSpan timeout, IWebProxy proxy)
         {
             UriBuilder webSocketUriBuilder = new UriBuilder
             {
@@ -131,14 +132,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 Host = _uri.Host,
                 Port = _uri.Port
             };
-            var websocket = await CreateClientWebSocketAsync(webSocketUriBuilder.Uri, timeout).ConfigureAwait(false);
+            var websocket = await CreateClientWebSocketAsync(webSocketUriBuilder.Uri, timeout, proxy).ConfigureAwait(false);
             return new ClientWebSocketTransport(
                 websocket,
                 null,
                 null);
         }
 
-        async Task<ClientWebSocket> CreateClientWebSocketAsync(Uri websocketUri, TimeSpan timeout)
+        async Task<ClientWebSocket> CreateClientWebSocketAsync(Uri websocketUri, TimeSpan timeout, IWebProxy webProxy)
         {
             var websocket = new ClientWebSocket();
             // Set SubProtocol to AMQPWSB10
@@ -146,21 +147,26 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             websocket.Options.KeepAliveInterval = WebSocketConstants.KeepAliveInterval;
             websocket.Options.SetBuffer(WebSocketConstants.BufferSize, WebSocketConstants.BufferSize);
 
-            // TODO: expose the Proxy setting as public API on the transport layer
             //Check if we're configured to use a proxy server
             try
             {
-                IWebProxy webProxy = WebRequest.DefaultWebProxy;
-                Uri proxyAddress = webProxy != null ? webProxy.GetProxy(websocketUri) : null;
-                if (!websocketUri.Equals(proxyAddress))
+                if (webProxy != DefaultWebProxySettings.Instance)
                 {
                     // Configure proxy server
                     websocket.Options.Proxy = webProxy;
+                    if (Logging.IsEnabled)
+                    {
+                        Logging.Info(this, $"{nameof(CreateClientWebSocketAsync)} Setting ClientWebSocket.Options.Proxy");
+                    }
                 }
             }
             catch (PlatformNotSupportedException)
             {
-                // .NET Core doesn't support WebProxy configuration - ignore this setting.
+                // .NET Core 2.0 doesn't support WebProxy configuration - ignore this setting.
+                if (Logging.IsEnabled)
+                {
+                    Logging.Error(this, $"{nameof(CreateClientWebSocketAsync)} PlatformNotSupportedException thrown as .NET Core 2.0 doesn't support proxy");
+                }
             }
 
             if (TransportSettings.Certificate != null)

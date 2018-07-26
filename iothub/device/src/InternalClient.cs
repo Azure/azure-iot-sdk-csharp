@@ -11,14 +11,11 @@ namespace Microsoft.Azure.Devices.Client
 #if NETSTANDARD1_3
     using System.Net.Http;
 #endif
-    using System.Text.RegularExpressions;
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Client.Extensions;
     using Microsoft.Azure.Devices.Client.Transport;
     using Microsoft.Azure.Devices.Shared;
-    using Newtonsoft.Json.Linq;
-    using Microsoft.Azure.Devices.Client.Transport.Mqtt;
     using System.Security.Cryptography.X509Certificates;
 
     /// <summary>
@@ -595,17 +592,16 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             var context = new PipelineContext();
             context.Set(this.productInfo);
 
+            var transportSettings = new Http1TransportSettings();
+
             //We need to add the certificate to the fileUpload httpTransport if DeviceAuthenticationWithX509Certificate
             if (this.Certificate != null)
             {
-                Http1TransportSettings transportSettings = new Http1TransportSettings();
                 transportSettings.ClientCertificate = this.Certificate;
-                httpTransport = new HttpTransportHandler(context, iotHubConnectionString, transportSettings);
             }
-            else
-            {
-                httpTransport = new HttpTransportHandler(context, iotHubConnectionString, new Http1TransportSettings());
-            }
+
+            httpTransport = new HttpTransportHandler(context, iotHubConnectionString, transportSettings);
+
             return httpTransport.UploadToBlobAsync(blobName, source);
         }
 

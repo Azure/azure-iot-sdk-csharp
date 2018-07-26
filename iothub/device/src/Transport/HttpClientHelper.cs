@@ -47,7 +47,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             Action<HttpClient> preRequestActionForAllRequests,
             X509Certificate2 clientCert,
             HttpClientHandler httpClientHandler,
-            ProductInfo productInfo
+            ProductInfo productInfo,
+            IWebProxy proxy
             )
         {
             this.baseAddress = baseAddress;
@@ -68,6 +69,17 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 this.usingX509ClientCert = true;
             }
 
+            if (proxy != DefaultWebProxySettings.Instance)
+            {
+                if (handler == null)
+                {
+                    handler = new WebRequestHandler();
+                }
+
+                handler.UseProxy = (proxy != null);
+                handler.Proxy = proxy;
+            }
+
             this.httpClientObj = handler != null ? new HttpClient(handler) : new HttpClient();
 #else
             if (clientCert != null)
@@ -79,6 +91,17 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                 httpClientHandler.ClientCertificates.Add(clientCert);
                 this.usingX509ClientCert = true;
+            }
+
+            if (proxy != DefaultWebProxySettings.Instance)
+            {
+                if (httpClientHandler == null)
+                {
+                    httpClientHandler = new HttpClientHandler();
+                }
+
+                httpClientHandler.UseProxy = (proxy != null);
+                httpClientHandler.Proxy = proxy;
             }
 
             this.httpClientObj = httpClientHandler != null ? new HttpClient(httpClientHandler) : new HttpClient();

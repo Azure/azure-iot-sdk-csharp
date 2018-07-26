@@ -5,6 +5,8 @@ using Microsoft.Azure.Devices.Provisioning.Client.Transport.Models;
 using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Diagnostics;
+using System.Net;
+using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 
@@ -20,13 +22,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             _security = security;
         }
 
-        public override DeviceProvisioningServiceRuntimeClient CreateClient(Uri uri)
+        public override DeviceProvisioningServiceRuntimeClient CreateClient(Uri uri, HttpClientHandler httpClientHandler)
         {
             _certificate = _security.GetAuthenticationCertificate();
 
             return new DeviceProvisioningServiceRuntimeClient(
                 uri,
                 new CertificateChainCredentials(new[] { _certificate }),
+                httpClientHandler,
                 new ApiVersionDelegatingHandler());
         }
 

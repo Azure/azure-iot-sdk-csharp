@@ -4,6 +4,7 @@
 namespace Microsoft.Azure.Devices
 {
     using System;
+    using System.Net;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -66,8 +67,21 @@ namespace Microsoft.Azure.Devices
         /// <returns></returns>
         public static ServiceClient CreateFromConnectionString(string connectionString, TransportType transportType)
         {
+            return CreateFromConnectionString(connectionString, transportType, new ServiceClientTransportSettings());
+        }
+
+        /// <summary>
+        /// Create ServiceClient from the specified connection string using specified Transport Type
+        /// </summary>
+        /// <param name="connectionString">Connection string for the iothub</param>
+        /// <param name="transportType">Specifies whether Amqp or Amqp over Websocket transport is used</param>
+        /// <param name="transportSettings">Specifies the AMQP and HTTP proxy settings for Service Client</param>
+        /// <returns></returns>
+        public static ServiceClient CreateFromConnectionString(string connectionString, TransportType transportType, ServiceClientTransportSettings transportSettings)
+        {
             var iotHubConnectionString = IotHubConnectionString.Parse(connectionString);
-            var serviceClient = new AmqpServiceClient(iotHubConnectionString, (transportType == TransportType.Amqp_WebSocket_Only) ? true : false);
+            var useWebSocketOnly = (transportType == TransportType.Amqp_WebSocket_Only);
+            var serviceClient = new AmqpServiceClient(iotHubConnectionString, useWebSocketOnly, transportSettings);
             return serviceClient;
         }
 

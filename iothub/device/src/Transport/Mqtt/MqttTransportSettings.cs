@@ -1,13 +1,17 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using DotNetty.Codecs.Mqtt.Packets;
+using Microsoft.Azure.Devices.Client.Extensions;
+using Microsoft.Azure.Devices.Shared;
+using System;
+using System.Net;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
+
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {
-    using System;
-    using System.Net.Security;
-    using System.Security.Cryptography.X509Certificates;
-    using DotNetty.Codecs.Mqtt.Packets;
-    using Microsoft.Azure.Devices.Client.Extensions;
+    using TransportType = Microsoft.Azure.Devices.Client.TransportType;
 
     public class MqttTransportSettings : ITransportSettings
     {
@@ -31,6 +35,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             switch (transportType)
             {
                 case TransportType.Mqtt_WebSocket_Only:
+                    this.Proxy = DefaultWebProxySettings.Instance;
+                    this.transportType = transportType;
+                    break;
                 case TransportType.Mqtt_Tcp_Only:
                     this.transportType = transportType;
                     break;
@@ -95,5 +102,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; }
 
         public X509Certificate ClientCertificate { get; set; }
+
+        public IWebProxy Proxy { get; set; }
     }
 }

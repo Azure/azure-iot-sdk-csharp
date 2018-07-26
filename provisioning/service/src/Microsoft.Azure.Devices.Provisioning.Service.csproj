@@ -18,7 +18,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Version>1.2.1</Version>
+    <Version>1.3.0</Version>
     <Title>Microsoft Azure IoT Provisioning Service Client SDK</Title>
     <Authors>Microsoft</Authors>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
@@ -40,6 +40,7 @@
     <Compile Include="$(common)\service\Resources.Designer.cs" Link="Common\Resources.Designer.cs" />
     <Compile Include="$(common)\service\StringValidationHelper.cs" Link="Common\StringValidationHelper.cs" />
     <Compile Include="$(common)\service\Utils.cs" Link="Common\Utils.cs" />
+    <Compile Include="$(Common)\DefaultWebProxySettings.cs" />
   </ItemGroup>
 
   <ItemGroup>

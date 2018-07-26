@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices
         IHttpClientHelper httpClientHelper;
         readonly string iotHubName;
 
-        internal HttpRegistryManager(IotHubConnectionString connectionString)
+        internal HttpRegistryManager(IotHubConnectionString connectionString, HttpTransportSettings transportSettings)
         {
             this.iotHubName = connectionString.IotHubName;
             this.httpClientHelper = new HttpClientHelper(
@@ -63,7 +63,8 @@ namespace Microsoft.Azure.Devices
                 connectionString,
                 ExceptionHandlingHelper.GetDefaultErrorMapping(),
                 DefaultOperationTimeout,
-                client => { });
+                client => { },
+                transportSettings.Proxy);
         }
 
         // internal test helper

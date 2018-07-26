@@ -3,7 +3,9 @@
 
 namespace Microsoft.Azure.Devices.Client
 {
+    using Microsoft.Azure.Devices.Shared;
     using System;
+    using System.Net;
     using System.Security.Cryptography.X509Certificates;
 
     /// <summary>
@@ -13,6 +15,11 @@ namespace Microsoft.Azure.Devices.Client
     {
         static readonly TimeSpan DefaultOperationTimeout = TimeSpan.FromSeconds(60);
 
+        public Http1TransportSettings()
+        {
+            this.Proxy = DefaultWebProxySettings.Instance;
+        }
+
         public TransportType GetTransportType()
         {
             return TransportType.Http1;
@@ -20,5 +27,6 @@ namespace Microsoft.Azure.Devices.Client
 
         public X509Certificate2 ClientCertificate { get; set; }
         public TimeSpan DefaultReceiveTimeout => DefaultOperationTimeout;
+        public IWebProxy Proxy { get; set; }
     }
 }

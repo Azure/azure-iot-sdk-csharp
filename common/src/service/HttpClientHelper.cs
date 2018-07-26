@@ -3,6 +3,10 @@
 
 namespace Microsoft.Azure.Devices
 {
+    using Microsoft.Azure.Devices.Common;
+    using Microsoft.Azure.Devices.Common.Exceptions;
+    using Microsoft.Azure.Devices.Common.Extensions;
+    using Microsoft.Azure.Devices.Shared;
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
@@ -14,13 +18,6 @@ namespace Microsoft.Azure.Devices
     using System.Net.Http.Headers;
     using System.Threading;
     using System.Threading.Tasks;
-    using System.Text;
-
-    using Microsoft.Azure.Devices.Common;
-    using Microsoft.Azure.Devices.Common.Exceptions;
-    using Microsoft.Azure.Devices.Common.Extensions;
-    using Microsoft.Azure.Devices.Shared;
-    using Newtonsoft.Json;
 #if NET451
     using System.Net.Http.Formatting;
 #endif
@@ -43,7 +40,8 @@ namespace Microsoft.Azure.Devices
             IAuthorizationHeaderProvider authenticationHeaderProvider,
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> defaultErrorMapping,
             TimeSpan timeout,
-            Action<HttpClient> preRequestActionForAllRequests)
+            Action<HttpClient> preRequestActionForAllRequests,
+            IWebProxy customHttpProxy)
         {
             this.baseAddress = baseAddress;
             this.authenticationHeaderProvider = authenticationHeaderProvider;
@@ -51,7 +49,18 @@ namespace Microsoft.Azure.Devices
                 new ReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>(defaultErrorMapping);
             this.defaultOperationTimeout = timeout;
 
-            this.httpClientObj = new HttpClient();
+            if (customHttpProxy != DefaultWebProxySettings.Instance)
+            {
+                HttpClientHandler httpClientHandler = new HttpClientHandler();
+                httpClientHandler.UseProxy = (customHttpProxy != null);
+                httpClientHandler.Proxy = customHttpProxy;
+                this.httpClientObj = new HttpClient(httpClientHandler);
+            }
+            else
+            {
+                this.httpClientObj = new HttpClient();
+            }
+
             this.httpClientObj.BaseAddress = this.baseAddress;
             this.httpClientObj.Timeout = timeout;
             this.httpClientObj.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(CommonConstants.MediaTypeForDeviceManagementApis));
