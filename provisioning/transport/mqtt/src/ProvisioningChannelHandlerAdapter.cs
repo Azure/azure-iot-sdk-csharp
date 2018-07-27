@@ -67,17 +67,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         public override async void ChannelActive(IChannelHandlerContext context)
         {
             if (Logging.IsEnabled) Logging.Enter(this, context.Name, nameof(ChannelActive));
-            await VerifyCancellationAsync(context).ConfigureAwait(false);
+            await VerifyCancellationAsync(context);
 
             try
             {
                 ChangeState(State.Start, State.WaitForConnack);
-                await ConnectAsync(context).ConfigureAwait(false);
+                await ConnectAsync(context);
             }
             catch (Exception ex)
             {
                 if (ex is AggregateException) ex = ex.InnerException;
-                await FailWithExceptionAsync(context, ex).ConfigureAwait(false);
+                await FailWithExceptionAsync(context, ex);
             }
 
             base.ChannelActive(context);
@@ -92,7 +92,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
             await FailWithExceptionAsync(
                 context,
-                new ProvisioningTransportException($"{ExceptionPrefix} Channel closed.")).ConfigureAwait(false);
+                new ProvisioningTransportException($"{ExceptionPrefix} Channel closed."));
 
             if (Logging.IsEnabled) Logging.Exit(this, context.Name, nameof(ChannelInactive));
         }
@@ -101,9 +101,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         {
             if (Logging.IsEnabled) Logging.Enter(this, context.Name, nameof(ChannelRead));
             Debug.Assert(message is Packet);
-            await VerifyCancellationAsync(context).ConfigureAwait(false);
+            await VerifyCancellationAsync(context);
 
-            await ProcessMessageAsync(context, (Packet)message).ConfigureAwait(false);
+            await ProcessMessageAsync(context, (Packet)message);
 
             base.ChannelRead(context, message);
             if (Logging.IsEnabled) Logging.Exit(this, context.Name, nameof(ChannelRead));
@@ -112,7 +112,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         public async override void ChannelReadComplete(IChannelHandlerContext context)
         {
             if (Logging.IsEnabled) Logging.Enter(this, context.Name, nameof(ChannelReadComplete));
-            await VerifyCancellationAsync(context).ConfigureAwait(false);
+            await VerifyCancellationAsync(context);
 
             base.ChannelReadComplete(context);
 
@@ -124,8 +124,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             if (Logging.IsEnabled) Logging.Enter(this, context.Name, nameof(ExceptionCaught));
             base.ExceptionCaught(context, exception);
 
-            await FailWithExceptionAsync(context, exception).ConfigureAwait(false);
-            if (Logging.IsEnabled) Logging.Exit(this, context.Name, nameof(ExceptionCaught));
+            await FailWithExceptionAsync(context, exception);
+            if (Logging.IsEnabled) Logging.Exit(this, "", nameof(ExceptionCaught));
         }
 
         #endregion
@@ -170,26 +170,26 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     Debug.Fail($"{nameof(ProvisioningChannelHandlerAdapter)}: Invalid state: {nameof(State.Failed)}");
                     break;
                 case State.WaitForConnack:
-                    await VerifyExpectedPacketType(context, PacketType.CONNACK, message).ConfigureAwait(false);
-                    await ProcessConnAckAsync(context, (ConnAckPacket)message).ConfigureAwait(false);
+                    await VerifyExpectedPacketType(context, PacketType.CONNACK, message);
+                    await ProcessConnAckAsync(context, (ConnAckPacket)message);
                     break;
                 case State.WaitForSuback:
-                    await VerifyExpectedPacketType(context, PacketType.SUBACK, message).ConfigureAwait(false);
-                    await ProcessSubAckAsync(context, (SubAckPacket)message).ConfigureAwait(false);
+                    await VerifyExpectedPacketType(context, PacketType.SUBACK, message);
+                    await ProcessSubAckAsync(context, (SubAckPacket)message);
                     break;
                 case State.WaitForPubAck:
                     ChangeState(State.WaitForPubAck, State.WaitForStatus);
-                    await VerifyExpectedPacketType(context, PacketType.PUBACK, message).ConfigureAwait(false);
+                    await VerifyExpectedPacketType(context, PacketType.PUBACK, message);
                     break;
                 case State.WaitForStatus:
-                    await VerifyExpectedPacketType(context, PacketType.PUBLISH, message).ConfigureAwait(false);
-                    await ProcessRegistrationStatusAsync(context, (PublishPacket)message).ConfigureAwait(false);
+                    await VerifyExpectedPacketType(context, PacketType.PUBLISH, message);
+                    await ProcessRegistrationStatusAsync(context, (PublishPacket)message);
                     break;
                 default:
                     await FailWithExceptionAsync(
                         context,
                         new ProvisioningTransportException(
-                            $"{ExceptionPrefix} Invalid state: {(State)_state}")).ConfigureAwait(false);
+                            $"{ExceptionPrefix} Invalid state: {(State)_state}"));
                     break;
             }
         }
@@ -201,7 +201,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 await FailWithExceptionAsync(
                     context,
                     new ProvisioningTransportException(
-                        $"{ExceptionPrefix} Unexpected CONNACK with SessionPresent.")).ConfigureAwait(false);
+                        $"{ExceptionPrefix} Unexpected CONNACK with SessionPresent."));
             }
 
             switch (packet.ReturnCode)
@@ -210,12 +210,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     try
                     {
                         ChangeState(State.WaitForConnack, State.WaitForSuback);
-                        await SubscribeAsync(context).ConfigureAwait(false);
+                        await SubscribeAsync(context);
                     }
                     catch (Exception ex)
                     {
                         if (ex is AggregateException) ex = ex.InnerException;
-                        await FailWithExceptionAsync(context, ex).ConfigureAwait(false);
+                        await FailWithExceptionAsync(context, ex);
                     }
 
                     break;
@@ -227,7 +227,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     await FailWithExceptionAsync(
                         context,
                         new ProvisioningTransportException(
-                            $"{ExceptionPrefix} CONNACK failed with {packet.ReturnCode}")).ConfigureAwait(false);
+                            $"{ExceptionPrefix} CONNACK failed with {packet.ReturnCode}"));
                     break;
 
                 case ConnectReturnCode.RefusedServerUnavailable:
@@ -236,14 +236,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                         new ProvisioningTransportException(
                             $"{ExceptionPrefix} CONNACK failed with {packet.ReturnCode}. Try again later.",
                             null,
-                            true)).ConfigureAwait(false);
+                            true));
                     break;
 
                 default:
                     await FailWithExceptionAsync(
                         context,
                         new ProvisioningTransportException(
-                            $"{ExceptionPrefix} CONNACK failed unknown return code: {packet.ReturnCode}")).ConfigureAwait(false);
+                            $"{ExceptionPrefix} CONNACK failed unknown return code: {packet.ReturnCode}"));
                     break;
             }
         }
@@ -261,12 +261,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 try
                 {
                     ChangeState(State.WaitForSuback, State.WaitForPubAck);
-                    await PublishRegisterAsync(context).ConfigureAwait(false);
+                    await PublishRegisterAsync(context);
                 }
                 catch (Exception ex)
                 {
                     if (ex is AggregateException) ex = ex.InnerException;
-                    await FailWithExceptionAsync(context, ex).ConfigureAwait(false);
+                    await FailWithExceptionAsync(context, ex);
                 }
             }
         }
@@ -308,7 +308,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                                          errorDetails.CreateMessage($"{ExceptionPrefix} Server Error: {match.Groups[1].Value}"),
                                          null,
                                          isTransient,
-                                         errorDetails.TrackingId)).ConfigureAwait(false);
+                                         errorDetails.TrackingId));
                             }
                             catch (JsonException ex)
                             {
@@ -323,7 +323,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                                     new ProvisioningTransportException(
                                         $"{ExceptionPrefix} Malformed server error message: '{jsonData}'",
                                         ex,
-                                        false)).ConfigureAwait(false);
+                                        false));
                             }
                         }
                     }
@@ -335,12 +335,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                                  new ProvisioningTransportException(
                                      $"{ExceptionPrefix} Unexpected server response. TopicName invalid: '{topicName}'",
                                      null,
-                                     false)).ConfigureAwait(false);
+                                     false));
                 }
             }
             catch (RegexMatchTimeoutException e)
             {
-                await FailWithExceptionAsync(context, e).ConfigureAwait(false);
+                await FailWithExceptionAsync(context, e);
             }
         }
 
@@ -350,14 +350,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
             try // TODO : extract generic method for exception handling.
             {
-                await PubAckAsync(context, packet.PacketId).ConfigureAwait(false);
+                await PubAckAsync(context, packet.PacketId);
 
                 string jsonData = Encoding.UTF8.GetString(
                     packet.Payload.GetIoBuffer().Array,
                     packet.Payload.GetIoBuffer().Offset,
                     packet.Payload.GetIoBuffer().Count);
 
-                await VerifyPublishPacketTopicAsync(context, packet.TopicName, jsonData).ConfigureAwait(false);
+                await VerifyPublishPacketTopicAsync(context, packet.TopicName, jsonData);
 
                 //"{\"operationId\":\"0.indcertdevice1.e50c0fa7-8b9b-4b3d-8374-02d71377886f\",\"status\":\"assigning\"}"
                 var operation = JsonConvert.DeserializeObject<RegistrationOperationStatus>(jsonData);
@@ -366,21 +366,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 if (string.CompareOrdinal(operation.Status, RegistrationOperationStatus.OperationStatusAssigning) == 0 ||
                     string.CompareOrdinal(operation.Status, RegistrationOperationStatus.OperationStatusUnassigned) == 0)
                 {
-                    await Task.Delay(s_defaultOperationPoolingIntervalMilliseconds).ConfigureAwait(false);
+                    await Task.Delay(DefaultOperationPoolingIntervalMilliseconds);
                     ChangeState(State.WaitForStatus, State.WaitForPubAck);
-                    await PublishGetOperationAsync(context, operationId).ConfigureAwait(false);
+                    await PublishGetOperationAsync(context, operationId);
                 }
                 else
                 {
                     ChangeState(State.WaitForStatus, State.Done);
                     _taskCompletionSource.TrySetResult(operation);
 
-                    await this.DoneAsync(context).ConfigureAwait(false);
+                    await this.DoneAsync(context);
                 }
             }
             catch (ProvisioningTransportException te)
             {
-                await FailWithExceptionAsync(context, te).ConfigureAwait(false);
+                await FailWithExceptionAsync(context, te);
             }
             catch (Exception ex)
             {
@@ -389,7 +389,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     ex,
                     false);
 
-                await FailWithExceptionAsync(context, wrapperEx).ConfigureAwait(false);
+                await FailWithExceptionAsync(context, wrapperEx);
             }
         }
 
@@ -424,7 +424,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 await FailWithExceptionAsync(
                     context,
                     new ProvisioningTransportException(
-                        $"{ExceptionPrefix} Received unexpected packet type {message.PacketType} in state {(State)_state}")).ConfigureAwait(false);
+                        $"{ExceptionPrefix} Received unexpected packet type {message.PacketType} in state {(State)_state}"));
             }
         }
 
@@ -436,7 +436,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 ForceState(State.Failed);
                 _taskCompletionSource.TrySetException(ex);
 
-                await context.CloseAsync().ConfigureAwait(false);
+                await context.CloseAsync();
             }
             else
             {
@@ -454,7 +454,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 ForceState(State.Failed);
                 _taskCompletionSource.TrySetCanceled(_cancellationToken);
 
-                await context.CloseAsync().ConfigureAwait(false);
+                await context.CloseAsync();
             }
         }
 
@@ -491,28 +491,28 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
             try
             {
-                await context.Channel.WriteAndFlushAsync(DisconnectPacket.Instance).ConfigureAwait(false);
+                await context.Channel.WriteAndFlushAsync(DisconnectPacket.Instance);
             }
             catch (Exception e)
             {
                 if (Logging.IsEnabled) Logging.Info(this, $"Exception trying to send disconnect packet: {e.ToString()}", nameof(DoneAsync));
-                await FailWithExceptionAsync(context, e).ConfigureAwait(false);
+                await FailWithExceptionAsync(context, e);
             }
 
             // This delay is required to work-around a .NET Framework CloseAsync bug.
             if (Logging.IsEnabled) Logging.Info(this, "Applying close channel delay.", nameof(DoneAsync));
-            await Task.Delay(TimeSpan.FromMilliseconds(400)).ConfigureAwait(false);
+            await Task.Delay(TimeSpan.FromMilliseconds(400));
 
             if (Logging.IsEnabled) Logging.Info(this, "Closing channel.", nameof(DoneAsync));
 
             try
             {
-                await context.Channel.CloseAsync().ConfigureAwait(false);
+                await context.Channel.CloseAsync();
             }
             catch (Exception e)
             {
                 if (Logging.IsEnabled) Logging.Info(this, $"Exception trying to close channel: {e.ToString()}", nameof(DoneAsync));
-                await FailWithExceptionAsync(context, e).ConfigureAwait(false);
+                await FailWithExceptionAsync(context, e);
             }
 
             if (Logging.IsEnabled) Logging.Exit(this, context.Name, nameof(DoneAsync));
