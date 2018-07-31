@@ -15,6 +15,10 @@ export IOTHUB_CONN_STRING_CSHARP=""
 export IOTHUB_DEVICE_CONN_STRING=""
 export IOTHUB_DEVICE_CONN_STRING2=""
 
+# IoT Hub Module connection string:
+export IOTHUB_MODULE_CONN_STRING=""
+export IOTHUB_MODULE_CONN_STRING2=""
+
 # Use the following Powershell command to retrieve the Base64 encoding of a file:
 # Use Powershell: [Convert]::ToBase64String((Get-Content myFileName -Encoding Byte)) to generate.
 

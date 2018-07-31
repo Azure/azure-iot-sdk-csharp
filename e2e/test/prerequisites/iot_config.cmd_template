@@ -14,6 +14,10 @@ set IOTHUB_CONN_STRING_CSHARP=
 set IOTHUB_DEVICE_CONN_STRING=
 set IOTHUB_DEVICE_CONN_STRING2=
 
+@REM IoT Hub Module connection string:
+set IOTHUB_MODULE_CONN_STRING=
+set IOTHUB_MODULE_CONN_STRING2=
+
 @REM Use the following Powershell command to retrieve the Base64 encoding of a file:
 @REM Use Powershell: [Convert]::ToBase64String((Get-Content myFileName -Encoding Byte)) to generate.
 
