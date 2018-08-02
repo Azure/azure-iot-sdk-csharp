@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             var eventHubPartitions = await eventHubClient.GetRuntimeInformationAsync().ConfigureAwait(false);
             var eventHubPartitionsCount = eventHubPartitions.PartitionCount;
             string partition = EventHubPartitionKeyResolver.ResolveToPartition(deviceName, eventHubPartitionsCount);
-            string consumerGroupName = Configuration.IoTHub.ConsumerGroup;
+            string consumerGroupName = Configuration.IoTHub.EventHubConsumerGroup;
             return eventHubClient.GetConsumerGroup(consumerGroupName).CreateReceiver(partition, DateTime.Now, TestUtil.EventHubEpoch++);
         }
 

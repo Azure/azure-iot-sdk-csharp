@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
+    [TestCategory("IoTHub-E2E")]
     public class DeviceTokenRefreshE2ETests
     {
         private const string DevicePrefix = "E2E_Message_TokenRefresh_";
@@ -21,7 +22,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await DeviceClient_TokenIsRefreshed_Internal(Client.TransportType.Http1).ConfigureAwait(false);
         }
-        
 
         [Ignore]    // TODO: #263
         [TestMethod]
@@ -40,8 +40,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task DeviceClient_TokenConnectionDoubleRelease_Ok()
         {
             string deviceConnectionString = null;
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
 
-            deviceConnectionString = Configuration.IoTHub.DeviceConnectionString;
+            deviceConnectionString = testDevice.ConnectionString;
 
             var config = new Configuration.IoTHub.DeviceConnectionStringParser(deviceConnectionString);
             string iotHub = config.IoTHub;
@@ -70,73 +71,58 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private async Task DeviceClient_TokenIsRefreshed_Internal(Client.TransportType transport)
         {
-            var builder = IotHubConnectionStringBuilder.Create(Configuration.IoTHub.ConnectionString);
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
 
-            RegistryManager rm = await TestUtil.GetRegistryManagerAsync(DevicePrefix).ConfigureAwait(false);
             int ttl = 6;
             int buffer = 50;
 
-            try
+            Device device = testDevice.Identity;
+
+            var refresher = new TestTokenRefresher(
+                device.Id, 
+                device.Authentication.SymmetricKey.PrimaryKey, 
+                ttl, 
+                buffer);
+
+            DeviceClient deviceClient = 
+                DeviceClient.Create(testDevice.IoTHubHostName, refresher, transport);
+
+            var message = new Client.Message(Encoding.UTF8.GetBytes("Hello"));
+
+            // Create the first Token.
+            Console.WriteLine($"[{DateTime.UtcNow}] OpenAsync");
+            await deviceClient.OpenAsync().ConfigureAwait(false);
+            Console.WriteLine($"[{DateTime.UtcNow}] SendEventAsync (1)");
+            await deviceClient.SendEventAsync(message).ConfigureAwait(false);
+
+            int countAfterOpenAndFirstSend = refresher.SafeCreateNewTokenCallCount;
+            Assert.IsTrue(countAfterOpenAndFirstSend >= 1, $"[{DateTime.UtcNow}] Token should have been refreshed at least once.");
+
+            Console.WriteLine($"[{DateTime.UtcNow}] Waiting {ttl} seconds.");
+
+            // Wait for the Token to expire.
+            await Task.Delay(ttl * 1000).ConfigureAwait(false);
+
+            Console.WriteLine($"[{DateTime.UtcNow}] SendEventAsync (2)");
+            await deviceClient.SendEventAsync(message).ConfigureAwait(false);
+
+            // Ensure that the token was refreshed.
+            if (transport == Client.TransportType.Mqtt)
             {
-                Device device = await CreateDeviceClientAsync(rm).ConfigureAwait(false);
-                                
-                var refresher = new TestTokenRefresher(
-                    device.Id, 
-                    device.Authentication.SymmetricKey.PrimaryKey, 
-                    ttl, 
-                    buffer);
-
-                DeviceClient deviceClient = 
-                    DeviceClient.Create(builder.HostName, refresher, transport);
-
-                var message = new Client.Message(Encoding.UTF8.GetBytes("Hello"));
-
-                // Create the first Token.
-                Console.WriteLine($"[{DateTime.UtcNow}] OpenAsync");
-                await deviceClient.OpenAsync().ConfigureAwait(false);
-                Console.WriteLine($"[{DateTime.UtcNow}] SendEventAsync (1)");
-                await deviceClient.SendEventAsync(message).ConfigureAwait(false);
-
-                int countAfterOpenAndFirstSend = refresher.SafeCreateNewTokenCallCount;
-                Assert.IsTrue(countAfterOpenAndFirstSend >= 1, $"[{DateTime.UtcNow}] Token should have been refreshed at least once.");
-
-                Console.WriteLine($"[{DateTime.UtcNow}] Waiting {ttl} seconds.");
-
-                // Wait for the Token to expire.
-                await Task.Delay(ttl * 1000).ConfigureAwait(false);
-
-                Console.WriteLine($"[{DateTime.UtcNow}] SendEventAsync (2)");
-                await deviceClient.SendEventAsync(message).ConfigureAwait(false);
-
-                // Ensure that the token was refreshed.
-                if (transport == Client.TransportType.Mqtt)
-                {
-                    // This is not currently supported for MQTT unless the connection is dropped and re-established.
-                    Assert.IsTrue(
-                        refresher.SafeCreateNewTokenCallCount >= countAfterOpenAndFirstSend,
-                        $"[{DateTime.UtcNow}] Token should have been refreshed after TTL expired.");
-                }
-                else
-                {
-                    Assert.IsTrue(
-                        refresher.SafeCreateNewTokenCallCount >= countAfterOpenAndFirstSend + 1,
-                        $"[{DateTime.UtcNow}] Token should have been refreshed after TTL expired.");
-                }
-
-                Console.WriteLine($"[{DateTime.UtcNow}] CloseAsync");
-                await deviceClient.CloseAsync().ConfigureAwait(false);
+                // This is not currently supported for MQTT unless the connection is dropped and re-established.
+                Assert.IsTrue(
+                    refresher.SafeCreateNewTokenCallCount >= countAfterOpenAndFirstSend,
+                    $"[{DateTime.UtcNow}] Token should have been refreshed after TTL expired.");
             }
-            finally
+            else
             {
-                await TestUtil.UnInitializeEnvironment(rm).ConfigureAwait(false);
+                Assert.IsTrue(
+                    refresher.SafeCreateNewTokenCallCount >= countAfterOpenAndFirstSend + 1,
+                    $"[{DateTime.UtcNow}] Token should have been refreshed after TTL expired.");
             }
-        }
 
-        private Task<Device> CreateDeviceClientAsync(RegistryManager registryManager)
-        {
-            string deviceName = DevicePrefix + Guid.NewGuid();
-            Console.WriteLine($"Creating device {deviceName}");
-            return registryManager.AddDeviceAsync(new Device(deviceName));
+            Console.WriteLine($"[{DateTime.UtcNow}] CloseAsync");
+            await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
         private class TestTokenRefresher : DeviceAuthenticationWithTokenRefresh

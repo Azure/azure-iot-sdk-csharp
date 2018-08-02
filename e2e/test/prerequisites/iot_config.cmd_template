@@ -14,9 +14,6 @@ set IOTHUB_CONN_STRING_CSHARP=
 set IOTHUB_DEVICE_CONN_STRING=
 set IOTHUB_DEVICE_CONN_STRING2=
 
-@REM EventHub consumer group:
-set IOTHUB_EVENTHUB_CONSUMER_GROUP=e2e-tests
-
 @REM Use the following Powershell command to retrieve the Base64 encoding of a file:
 @REM Use Powershell: [Convert]::ToBase64String((Get-Content myFileName -Encoding Byte)) to generate.
 
@@ -27,6 +24,15 @@ set IOTHUB_X509_PFX_CERTIFICATE=
 
 @REM X509 Certificate 2 thumbprint:
 set IOTHUB_PFX_X509_THUMBPRINT2=
+
+@REM EventHub connection string for the messages/events endpoint:
+set IOTHUB_EVENTHUB_CONN_STRING_CSHARP=
+
+@REM EventHub compatible name:
+set IOTHUB_EVENTHUB_COMPATIBLE_NAME=
+
+@REM EventHub consumer group:
+set IOTHUB_EVENTHUB_CONSUMER_GROUP=
 
 @REM ---------- Device Provisioning Service Configuration ----------
 @REM See Configuration.Provisioning.cs for usage details.

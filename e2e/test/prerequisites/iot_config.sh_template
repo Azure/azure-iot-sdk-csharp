@@ -15,9 +15,6 @@ export IOTHUB_CONN_STRING_CSHARP=""
 export IOTHUB_DEVICE_CONN_STRING=""
 export IOTHUB_DEVICE_CONN_STRING2=""
 
-# EventHub consumer group:
-export IOTHUB_EVENTHUB_CONSUMER_GROUP=e2e-tests
-
 # Use the following Powershell command to retrieve the Base64 encoding of a file:
 # Use Powershell: [Convert]::ToBase64String((Get-Content myFileName -Encoding Byte)) to generate.
 
@@ -28,6 +25,15 @@ export IOTHUB_X509_PFX_CERTIFICATE=
 
 # X509 Certificate 2 thumbprint:
 export IOTHUB_PFX_X509_THUMBPRINT2=
+
+# EventHub connection string for the messages/events endpoint:
+export IOTHUB_EVENTHUB_CONN_STRING_CSHARP=
+
+# EventHub compatible name:
+export IOTHUB_EVENTHUB_COMPATIBLE_NAME=
+
+# EventHub consumer group:
+export IOTHUB_EVENTHUB_CONSUMER_GROUP=
 
 # ---------- Device Provisioning Service Configuration ----------
 # See Configuration.Provisioning.cs for usage details.
