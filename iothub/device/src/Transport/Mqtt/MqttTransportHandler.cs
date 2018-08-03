@@ -971,8 +971,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             return async (address, port) =>
             {
                 string additionalQueryParams = "";
-#if NETSTANDARD1_3 || NETSTANDARD2_0
-                // UWP and NETSTANDARD1_3 implementation doesn't set client certs, so we want to tell the IoT Hub to not ask for them
+#if NETSTANDARD1_3
+                // NETSTANDARD1_3 implementation doesn't set client certs, so we want to tell the IoT Hub to not ask for them
                 additionalQueryParams = "?iothub-no-client-cert=true";
 #endif
                 IEventLoopGroup eventLoopGroup = EventLoopGroupPool.TakeOrAdd(this.eventLoopGroupKey);
@@ -1005,12 +1005,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 {
                     websocket.Options.ClientCertificates.Add(settings.ClientCertificate);
                 }
-#if !NETSTANDARD1_3 // UseDefaultCredentials is not in UWP and NetStandard
-                else
-                {
-                    websocket.Options.UseDefaultCredentials = true;
-                }
-#endif
 
                 using (var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromMinutes(1)))
                 {

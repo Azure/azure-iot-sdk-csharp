@@ -91,6 +91,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestUtil.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore] // TODO: #558
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Twin_DeviceReportedPropertiesGracefulShutdownRecovery_Mqtt()
@@ -544,6 +545,8 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             deviceClient.SetConnectionStatusChangesHandler((status, statusChangeReason) =>
             {
+                _log.WriteLine("Connection Changed to {0} because {1}", status, statusChangeReason);
+
                 if (status == ConnectionStatus.Disconnected_Retrying)
                 {
                     tcsDisconnected.TrySetResult(true);
