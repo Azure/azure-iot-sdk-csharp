@@ -115,7 +115,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Console.WriteLine("Device successfully created");
             }).Wait();
 
-            Thread.Sleep(1000);
+            Thread.Sleep(5000);
             return new Tuple<string, string>(deviceName, deviceConnectionString);
         }
 
@@ -142,7 +142,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Console.WriteLine("Device successfully created");
             }).Wait();
 
-            Thread.Sleep(1000);
+            Thread.Sleep(5000);
             return new Tuple<string, string>(deviceName, hostName);
         }
 

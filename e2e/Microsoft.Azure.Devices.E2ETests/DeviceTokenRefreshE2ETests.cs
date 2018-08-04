@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             try
             {
                 Device device = await CreateDeviceClientAsync(rm);
-                                
+
                 var refresher = new TestTokenRefresher(
                     device.Id, 
                     device.Authentication.SymmetricKey.PrimaryKey, 
@@ -99,11 +99,16 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        private Task<Device> CreateDeviceClientAsync(RegistryManager registryManager)
+        private async Task<Device> CreateDeviceClientAsync(RegistryManager registryManager)
         {
             string deviceName = DevicePrefix + Guid.NewGuid();
             Console.WriteLine($"Creating device {deviceName}");
-            return registryManager.AddDeviceAsync(new Device(deviceName));
+            Device ret = await registryManager.AddDeviceAsync(new Device(deviceName));
+
+            Console.WriteLine("Pausing before using the device.");
+            await Task.Delay(5000).ConfigureAwait(false);
+
+            return ret;
         }
 
         private class TestTokenRefresher : DeviceAuthenticationWithTokenRefresh
