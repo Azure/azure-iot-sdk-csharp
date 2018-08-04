@@ -11,54 +11,48 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
     using Microsoft.Azure.Devices.Client.Test.ConnectionString;
 
     [TestClass]
+    [TestCategory("Unit")]
     public class AmqpTransportHandlerTests
     {
         const string DumpyConnectionString = "HostName=Do.Not.Exist;SharedAccessKeyName=AllAccessKey;DeviceId=FakeDevice;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
 
         [TestMethod]
-        [TestCategory("TransportHandlers")]
         public async Task AmqpTransportHandlerOpenAsyncTokenCancellationRequested()
         {
             await TestOperationCanceledByToken(token => CreateFromConnectionString().OpenAsync(true, token)).ConfigureAwait(false);
         }
 
         [TestMethod]
-        [TestCategory("TransportHandlers")]
         public async Task AmqpTransportHandlerSendEventAsyncTokenCancellationRequested()
         {
             await TestOperationCanceledByToken(token => CreateFromConnectionString().SendEventAsync(new Message(), token)).ConfigureAwait(false);
         }
 
         [TestMethod]
-        [TestCategory("TransportHandlers")]
         public async Task AmqpTransportHandlerSendEventAsyncMultipleMessagesTokenCancellationRequested()
         {
             await TestOperationCanceledByToken(token => CreateFromConnectionString().SendEventAsync(new List<Message>(), token)).ConfigureAwait(false);
         }
 
         [TestMethod]
-        [TestCategory("TransportHandlers")]
         public async Task AmqpTransportHandlerReceiveAsyncTokenCancellationRequested()
         {
             await TestOperationCanceledByToken(token => CreateFromConnectionString().ReceiveAsync(new TimeSpan(0, 10, 0), token)).ConfigureAwait(false);
         }
 
         [TestMethod]
-        [TestCategory("TransportHandlers")]
         public async Task AmqpTransportHandlerCompleteAsyncTokenCancellationRequested()
         {
             await TestOperationCanceledByToken(token => CreateFromConnectionString().CompleteAsync(Guid.NewGuid().ToString(), token)).ConfigureAwait(false);
         }
 
         [TestMethod]
-        [TestCategory("TransportHandlers")]
         public async Task AmqpTransportHandlerAbandonAsyncTokenCancellationRequested()
         {
             await TestOperationCanceledByToken(token => CreateFromConnectionString().AbandonAsync(Guid.NewGuid().ToString(), token)).ConfigureAwait(false);
         }
 
         [TestMethod]
-        [TestCategory("TransportHandlers")]
         public async Task AmqpTransportHandlerRejectAsyncTokenCancellationRequested()
         {
             await TestOperationCanceledByToken(token => CreateFromConnectionString().RejectAsync(Guid.NewGuid().ToString(), token)).ConfigureAwait(false);

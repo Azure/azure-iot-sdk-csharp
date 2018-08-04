@@ -10,6 +10,7 @@ namespace Microsoft.Azure.Devices.Client.Test
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
+    [TestCategory("Unit")]
     public class TransportSettingsTests
     {
         const string LocalCertFilename = "..\\..\\Microsoft.Azure.Devices.Client.Test\\LocalNoChain.pfx";
@@ -17,8 +18,6 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         [ExpectedException(typeof(ArgumentOutOfRangeException))]
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("TransportSettings")]
         public void TransportSettingsTestTransportTypeAmqp()
         {
             var transportSetting = new AmqpTransportSettings(TransportType.Amqp);
@@ -26,8 +25,6 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         [ExpectedException(typeof(ArgumentOutOfRangeException))]
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("TransportSettings")]
         public void TransportSettingsTestTransportTypeAmqpHttp()
         {
             var transportSetting = new AmqpTransportSettings(TransportType.Http1);
@@ -35,8 +32,6 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         [ExpectedException(typeof(ArgumentOutOfRangeException))]
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("TransportSettings")]
         public void TransportSettingsTestTransportTypeAmqpTcpPrefetch0()
         {
             var amqpConnectionPoolSettings = new AmqpConnectionPoolSettings();
@@ -44,8 +39,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("TransportSettings")]
         public void TransportSettingsTestTransportTypeAmqpWebSocket()
         {
             var transportSetting = new AmqpTransportSettings(TransportType.Amqp_WebSocket_Only);
@@ -54,8 +47,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("TransportSettings")]
         public void TransportSettingsTestTransportTypeAmqpWebSocketTcp()
         {
             var amqpConnectionPoolSettings = new AmqpConnectionPoolSettings();
@@ -65,8 +56,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("TransportSettings")]
         public void TransportSettingsTestTransportTypeHttp()
         {
             var transportSetting = new Http1TransportSettings();
@@ -74,8 +63,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("TransportSettings")]
         public void TransportSettingsTestTransportTypeMqttTcpOnly()
         {
             var transportSetting = new MqttTransportSettings(TransportType.Mqtt_Tcp_Only);
@@ -83,8 +70,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("TransportSettings")]
         public void TransportSettingsTestTransportTypeMqttWebSocketOnly()
         {
             var transportSetting = new MqttTransportSettings(TransportType.Mqtt_WebSocket_Only);
@@ -92,8 +77,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("TransportSettings")]
         [ExpectedException(typeof(ArgumentOutOfRangeException))]
         public void TransportSettingsTestTransportTypeMqtt()
         {
@@ -101,8 +84,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("TransportSettings")]
         [ExpectedException(typeof(ArgumentOutOfRangeException))]
         public void TransportSettingsTestZeroOperationTimeout()
         {
@@ -112,8 +93,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("TransportSettings")]
         [ExpectedException(typeof(ArgumentOutOfRangeException))]
         public void TransportSettingsTestZeroOpenTimeout()
         {
@@ -123,8 +102,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("TransportSettings")]
         public void TransportSettingsTestTimeouts()
         {
             var amqpConnectionPoolSettings = new AmqpConnectionPoolSettings();
@@ -136,8 +113,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("TransportSettings")]
         public void TransportSettingsTestDefaultTimeouts()
         {
             var amqpConnectionPoolSettings = new AmqpConnectionPoolSettings();
@@ -151,8 +126,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("TransportSettings")]
         [ExpectedException(typeof(ArgumentOutOfRangeException))]
         public void ConnectionPoolSettingsTestZeroPoolSize()
         {
@@ -162,8 +135,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("TransportSettings")]
         [ExpectedException(typeof(ArgumentOutOfRangeException))]
         public void ConnectionPoolSettingsTest4SecsIdleTimeout()
         {
@@ -173,8 +144,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("TransportSettings")]
         public void ConnectionPoolSettingsTestMaxPoolSizeTest()
         {
             var connectionPoolSettings = new AmqpConnectionPoolSettings();
@@ -184,8 +153,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("TransportSettings")]
         public void ConnectionPoolSettingsTestPoolingOff()
         {
             var connectionPoolSettings = new AmqpConnectionPoolSettings();
@@ -195,8 +162,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("TransportSettings")]
         [Ignore]
         public void X509CertificateAmqpTransportSettingsTest()
         {
@@ -208,8 +173,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("TransportSettings")]
         [Ignore]
         public void X509CertificateHttp1TransportSettingsTest()
         {
@@ -221,8 +184,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("TransportSettings")]
         [Ignore]
         public void X509CertificateMqttTransportSettingsTest()
         {
@@ -246,8 +207,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("TransportSettings")]
         [ExpectedException(typeof(ArgumentException))]
         public void NullX509CertificateAmqpTransportSettingsTest()
         {
@@ -258,8 +217,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("TransportSettings")]
         [Ignore]
         public void X509CertificateMutipleClientAuthMechanism()
         {
@@ -275,8 +232,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("TransportSettings")]
         public void AmqpTransportSettingsComparisonTests()
         {
             var amqpTransportSettings1 = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only);

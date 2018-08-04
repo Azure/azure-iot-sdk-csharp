@@ -8,11 +8,11 @@ using Newtonsoft.Json;
 namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 {
     [TestClass]
+    [TestCategory("Unit")]
     public class X509CAReferencesTests
     {
         /* SRS_X509_CAREFERENCE_21_001: [The constructor shall throw ArgumentException if the primary CA reference is null or empty.] */
         [TestMethod]
-        [TestCategory("DevService")]
         public void X509CAReferencesThrowsOnInvalidPrimaryReferences()
         {
             // arrange
@@ -25,7 +25,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         /* SRS_X509_CAREFERENCE_21_002: [The constructor shall store the primary and secondary CA references.] */
         [TestMethod]
-        [TestCategory("DevService")]
         public void X509CAReferencesSucceedOnValidPrimaryReferences()
         {
             // arrange
@@ -40,7 +39,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         [TestMethod]
-        [TestCategory("DevService")]
         public void X509CAReferencesSucceedOnValidPrimaryAndSecondaryReferences()
         {
             // arrange

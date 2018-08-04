@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 {
     [TestClass]
+    [TestCategory("Unit")]
     public class IndividualEnrollmentTests
     {
         private const string SampleRegistrationId = "valid-registration-id";
@@ -101,7 +102,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         /* SRS_DEVICE_ENROLLMENT_21_001: [The constructor shall store the provided parameters.] */
         [TestMethod]
-        [TestCategory("DevService")]
         public void IndividualEnrollmentConstructorSucceedOnTPM()
         {
             // arrange - act
@@ -113,7 +113,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         [TestMethod]
-        [TestCategory("DevService")]
         public void IndividualEnrollmentConstructorSucceedOnX509Client()
         {
             // arrange - act
@@ -125,7 +124,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         [TestMethod]
-        [TestCategory("DevService")]
         public void IndividualEnrollmentConstructorSucceedOnX509CAReference()
         {
             // arrange - act
@@ -138,7 +136,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         /* SRS_DEVICE_ENROLLMENT_21_002: [The constructor shall throws ArgumentException if one of the provided parameters is null.] */
         [TestMethod]
-        [TestCategory("DevService")]
         public void IndividualEnrollmentConstructorThrowsOnInvalidParameters()
         {
             // arrange - act - assert
@@ -152,7 +149,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         /* SRS_INDIVIDUAL_ENROLLMENT_21_003: [The constructor shall throws ProvisioningServiceClientException if one of the 
                                                 provided parameters in JSON is not valid.] */
         [TestMethod]
-        [TestCategory("DevService")]
         public void IndividualEnrollmentConstructorJSONThrowsOnNonRegistrationID()
         {
             // arrange
@@ -195,7 +191,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         [TestMethod]
-        [TestCategory("DevService")]
         public void IndividualEnrollmentConstructorJSONThrowsOnNonAttestation()
         {
             // arrange
@@ -220,7 +215,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         [TestMethod]
-        [TestCategory("DevService")]
         public void IndividualEnrollmentConstructorJSONThrowsOnNonEtag()
         {
             // arrange
@@ -264,7 +258,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         /* SRS_INDIVIDUAL_ENROLLMENT_21_004: [The constructor shall store all parameters in the JSON.] */
         [TestMethod]
-        [TestCategory("DevService")]
         public void IndividualEnrollmentConstructorWithoutCapabilitiesJSONSucceed()
         {
             // arrange
@@ -285,7 +278,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         [TestMethod]
-        [TestCategory("DevService")]
         public void IndividualEnrollmentConstructorWithCapabilitiesTrueJSONSucceed()
         {
             // arrange
@@ -306,7 +298,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         [TestMethod]
-        [TestCategory("DevService")]
         public void IndividualEnrollmentConstructorWithCapabilitiesFalseJSONSucceed()
         {
             // arrange
@@ -327,7 +318,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         [TestMethod]
-        [TestCategory("DevService")]
         public void IndividualEnrollmentConstructorJSONSucceedOnMinumum()
         {
             // arrange

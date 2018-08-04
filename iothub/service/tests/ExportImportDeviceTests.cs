@@ -9,9 +9,9 @@ namespace Microsoft.Azure.Devices.Api.Test
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
+    [TestCategory("Unit")]
     public class ExportImportDeviceTests
     {
-        [TestCategory("CIT")]
         [TestMethod]
         public void ExportImportDeviceTakingDeviceWithEtagWithoutQuotes()
         {
@@ -26,7 +26,6 @@ namespace Microsoft.Azure.Devices.Api.Test
             Assert.IsTrue(exportimportDevice.TwinETag == "MA==", "Twin ETag was not set correctly");
         }
 
-        [TestCategory("CIT")]
         [TestMethod]
         public void ExportImportDeviceTakingDeviceWithEtagWithQuotes()
         {
@@ -41,7 +40,6 @@ namespace Microsoft.Azure.Devices.Api.Test
             Assert.IsTrue(exportimportDevice.TwinETag == "MA==", "Twin ETag was not set correctly");
         }
 
-        [TestCategory("CIT")]
         [TestMethod]
         public void ExportImportDeviceTakingDeviceWithEtagWithDoubleQuotes()
         {
@@ -56,7 +54,6 @@ namespace Microsoft.Azure.Devices.Api.Test
             Assert.IsTrue(exportimportDevice.TwinETag == "\"MA==\"", "Twin ETag was not set correctly");
         }
 
-        [TestCategory("CIT")]
         [TestMethod]
         public void ExportImportDeviceTakingDeviceWithEtagWithStartingDoubleQuotes()
         {
@@ -71,7 +68,6 @@ namespace Microsoft.Azure.Devices.Api.Test
             Assert.IsTrue(exportimportDevice.TwinETag == "\"MA==", "Twin ETag was not set correctly");
         }
 
-        [TestCategory("CIT")]
         [TestMethod]
         public void ExportImportDeviceTakingDeviceWithEtagWithTrailingDoubleQuotes()
         {
@@ -86,7 +82,6 @@ namespace Microsoft.Azure.Devices.Api.Test
             Assert.IsTrue(exportimportDevice.TwinETag == "MA==\"", "Twin ETag was not set correctly");
         }
 
-        [TestCategory("CIT")]
         [TestMethod]
         public void ExportImportDeviceTakingDeviceWithNullEtag()
         {
@@ -100,7 +95,6 @@ namespace Microsoft.Azure.Devices.Api.Test
             Assert.IsTrue(exportimportDevice.TwinETag == null, "Twin ETag was not set correctly");
         }
 
-        [TestCategory("CIT")]
         [TestMethod]
         public void ExportImportDeviceTakingDeviceWithEmptyEtag()
         {

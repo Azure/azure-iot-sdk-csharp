@@ -12,8 +12,6 @@ namespace Microsoft.Azure.Devices.Test
     class SerializationTests
     {
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         public async Task JsonDateParseHandlingTest()
         {
             var previousDefaultSettings = JsonConvert.DefaultSettings;

@@ -11,10 +11,9 @@ namespace Microsoft.Azure.Devices.Client.Test
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
+    [TestCategory("Unit")]
     public class MessageTests
     {
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [TestMethod]
         public void ConstructorTakingStreamTest()
         {
@@ -24,8 +23,6 @@ namespace Microsoft.Azure.Devices.Client.Test
             Assert.AreSame(ms, stream);
         }
 
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [TestMethod]
         public void ConstructorTakingNullStreamTest()
         {
@@ -41,8 +38,6 @@ namespace Microsoft.Azure.Devices.Client.Test
             Assert.AreEqual(0, bytes.Length);
         }
 
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [TestMethod]
         public void ConstructorTakingByteArrayTest()
         {
@@ -57,8 +52,6 @@ namespace Microsoft.Azure.Devices.Client.Test
             Assert.AreEqual(Encoding.UTF8.GetString(msgBytes), MsgContents);
         }
 
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
         public void ConstructorTakingNullByteArrayTest()
@@ -66,8 +59,6 @@ namespace Microsoft.Azure.Devices.Client.Test
             new Message((byte[])null);
         }
 
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [TestMethod]
         public void ConstructorTakingEmptyByteArrayTest()
         {
@@ -83,8 +74,6 @@ namespace Microsoft.Azure.Devices.Client.Test
             Assert.AreEqual(0, bytes.Length);
         }
 
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [TestMethod]
         public void RetrievingMessageBytesAfterGetBodyStreamTest()
         {
@@ -94,8 +83,6 @@ namespace Microsoft.Azure.Devices.Client.Test
             TestAssert.Throws<InvalidOperationException>(() => msg.GetBytes());
         }
 
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [TestMethod]
         public void RetrievingMessageBodyStreamAfterGetBytesTest()
         {
@@ -108,8 +95,6 @@ namespace Microsoft.Azure.Devices.Client.Test
             Assert.AreSame(ms, stream);
         }
 
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [TestMethod]
         public void CallingGetBytesTwiceTest()
         {
@@ -123,8 +108,6 @@ namespace Microsoft.Azure.Devices.Client.Test
             Assert.AreEqual(Encoding.UTF8.GetString(msgBytes), MsgContents);
         }
 
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [TestMethod]
         public void CallingGetBodyStreamTwiceTest()
         {
@@ -134,8 +117,6 @@ namespace Microsoft.Azure.Devices.Client.Test
             TestAssert.Throws<InvalidOperationException>(() => msg.GetBodyStream());
         }
 
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [TestMethod]
         public void DisposingOwnedStreamTest()
         {

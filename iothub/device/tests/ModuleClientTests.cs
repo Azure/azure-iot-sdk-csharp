@@ -12,6 +12,7 @@
     using Newtonsoft.Json.Linq;
 
     [TestClass]
+    [TestCategory("Unit")]
     public class ModuleClientTests
     {
         const string DeviceId = "module-twin-test";
@@ -50,7 +51,6 @@
         static string fakeConnectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;ModuleId=dummyModuleId;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
 
         [TestMethod]
-        [TestCategory("ModuleClient")]
         [ExpectedException(typeof(ArgumentNullException))]
         // Tests_SRS_DEVICECLIENT_10_001: [** if `connectionString` is null, an `ArgumentNullException` shall be thrown. **]**
         public void ModuleClient_CreateFromConnectionString_NullConnectionString()
@@ -59,7 +59,6 @@
         }
 
         [TestMethod]
-        [TestCategory("ModuleClient")]
         public void ModuleClient_CreateFromConnectionString_WithModuleId()
         {
             ModuleClient moduleClient = ModuleClient.CreateFromConnectionString(ConnectionStringWithModuleId);
@@ -67,7 +66,6 @@
         }
 
         [TestMethod]
-        [TestCategory("ModuleClient")]
         [ExpectedException(typeof(ArgumentException))]
         public void ModuleClient_CreateFromConnectionString_WithNoModuleIdThrows()
         {
@@ -75,7 +73,6 @@
         }
 
         [TestMethod]
-        [TestCategory("ModuleClient")]
         public void ModuleClient_CreateFromConnectionString_NoTransportSettings()
         {
             ModuleClient moduleClient = ModuleClient.CreateFromConnectionString(fakeConnectionString, TransportType.Mqtt_Tcp_Only);
@@ -83,7 +80,6 @@
         }
 
         [TestMethod]
-        [TestCategory("ModuleClient")]
         // Tests_SRS_DEVICECLIENT_33_003: [** It shall EnableEventReceiveAsync when called for the first time. **]**
         public async Task ModuleClient_SetReceiveCallbackAsync_SetCallback()
         {
@@ -98,7 +94,6 @@
         }
 
         [TestMethod]
-        [TestCategory("ModuleClient")]
         // Tests_SRS_DEVICECLIENT_33_004: [** It shall call DisableEventReceiveAsync when the last delegate has been removed. **]**
         public async Task ModuleClient_SetReceiveCallbackAsync_RemoveCallback()
         {
@@ -122,7 +117,6 @@
         }
 
         [TestMethod]
-        [TestCategory("ModuleClient")]
         // Tests_SRS_DEVICECLIENT_33_003: [** It shall EnableEventReceiveAsync when called for the first time. **]**
         public async Task ModuleClient_SetDefaultReceiveCallbackAsync_SetCallback()
         {
@@ -137,7 +131,6 @@
         }
 
         [TestMethod]
-        [TestCategory("ModuleClient")]
         // Tests_SRS_DEVICECLIENT_33_004: [** It shall call DisableEventReceiveAsync when the last delegate has been removed. **]**
         public async Task ModuleClient_SetDefaultReceiveCallbackAsync_RemoveCallback()
         {
@@ -157,7 +150,6 @@
 
 
         [TestMethod]
-        [TestCategory("ModuleClient")]
         // Tests_SRS_DEVICECLIENT_33_001: [** If the given eventMessageInternal argument is null, fail silently **]**
         public async Task ModuleClient_OnReceiveEventMessageCalled_NullMessageRequest()
         {
@@ -177,7 +169,6 @@
         }
 
         [TestMethod]
-        [TestCategory("ModuleClient")]
         // Tests_SRS_DEVICECLIENT_33_006: [** The OnReceiveEventMessageCalled shall get the default delegate if a delegate has not been assigned. **]**
         // Tests_SRS_DEVICECLIENT_33_005: [** It shall lazy-initialize the receiveEventEndpoints property. **]**
         public async Task ModuleClient_OnReceiveEventMessageCalled_DefaultCallbackCalled()
@@ -209,7 +200,6 @@
         }
 
         [TestMethod]
-        [TestCategory("ModuleClient")]
         // Tests_SRS_DEVICECLIENT_33_002: [** The OnReceiveEventMessageCalled shall invoke the specified delegate. **]**
         public async Task ModuleClient_OnReceiveEventMessageCalled_SpecifiedCallbackCalled()
         {

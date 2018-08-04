@@ -9,6 +9,7 @@ using System.Diagnostics;
 namespace Microsoft.Azure.Devices.Client.Test
 {
     [TestClass]
+    [TestCategory("Unit")]
     public class AuthenticationWithTokenRefreshTests
     {
         private const string TestIoTHubName = "contoso.azure-devices.net";

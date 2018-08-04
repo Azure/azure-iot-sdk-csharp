@@ -8,9 +8,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.Azure.Devices.Client.Test
 {
     [TestClass]
+    [TestCategory("Unit")]
     public class MessageConverterTests
     {
-        [TestCategory("CIT")]
         [TestMethod]
         public void UpdateMessageHeaderAndPropertiesTest()
         {

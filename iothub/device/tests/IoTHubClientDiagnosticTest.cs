@@ -11,10 +11,10 @@
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
+    [TestCategory("Unit")]
     public class IoTHubClientDiagnosticTest
     {
         [TestMethod]
-        [TestCategory("IoTHubClientDiagnostic")]
         public void IoTHubClientDiagnostic_AddDiagnosticInfoIfNecessary_Test()
         {
             Message message = CreateMessage();
@@ -35,7 +35,6 @@
         }
 
         [TestMethod]
-        [TestCategory("IoTHubClientDiagnostic")]
         public void IoTHubClientDiagnostic_CopyDiagnosticPropertiesToAmqpAnnotations_Test()
         {
             Message message = CreateMessage();
@@ -49,7 +48,6 @@
         }
 
         [TestMethod]
-        [TestCategory("IoTHubClientDiagnostic")]
         public void IoTHubClientDiagnostic_DiagId_Test()
         {
             Message message = CreateMessage();
@@ -62,7 +60,6 @@
         }
 
         [TestMethod]
-        [TestCategory("IoTHubClientDiagnostic")]
         public void IoTHubClientDiagnostic_CorrelationContext_Test()
         {
             Message message = CreateMessage();
@@ -84,7 +81,6 @@
         }
 
         [TestMethod]
-        [TestCategory("IoTHubClientDiagnostic")]
         public void IoTHubClientDiagnostic_SamplingPercentage_Test()
         {
             int percentage = 0;

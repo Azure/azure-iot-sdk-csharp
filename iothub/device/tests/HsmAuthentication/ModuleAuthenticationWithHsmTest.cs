@@ -11,6 +11,7 @@ using Moq;
 namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
 {
     [TestClass]
+    [TestCategory("Unit")]
     public class ModuleAuthenticationWithHsmTest
     {
         string signature = "signature";

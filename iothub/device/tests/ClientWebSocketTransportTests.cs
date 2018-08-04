@@ -15,6 +15,7 @@ namespace Microsoft.Azure.Devices.Client.Test
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
+    [TestCategory("Unit")]
     public class ClientWebSocketTransportTests
     {
         const string IotHubName = "localhost";
@@ -44,8 +45,6 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         [ExpectedException(typeof(AmqpException))]
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("WebSocket")]
         [Ignore]
         public void ClientWebSocketTransportWriteWithoutConnectTest()
         {
@@ -58,8 +57,6 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         [ExpectedException(typeof(AmqpException))]
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("WebSocket")]
         [Ignore]
         public async Task ClientWebSocketTransportReadWithoutConnectTest()
         {
@@ -81,8 +78,6 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         // The following tests can only be run in Administrator mode
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("WebSocket")]
         [Ignore]
         public async Task ReadWriteTest()
         {
@@ -116,8 +111,6 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         [ExpectedException(typeof(ObjectDisposedException))]
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("WebSocket")]
         [Ignore]
         public async Task ReadAfterCloseTest()
         {
@@ -138,8 +131,6 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         [ExpectedException(typeof(ObjectDisposedException))]
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("WebSocket")]
         [Ignore]
         public async Task WriteAfterCloseTest()
         {
@@ -159,8 +150,6 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         [ExpectedException(typeof(ObjectDisposedException))]
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("WebSocket")]
         [Ignore]
         public async Task ReadAfterAbortTest()
         {
@@ -179,8 +168,6 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         [ExpectedException(typeof(ObjectDisposedException))]
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("WebSocket")]
         [Ignore]
         public async Task WriteAfterAbortTest()
         {
@@ -198,8 +185,6 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         [ExpectedException(typeof(AmqpException))]
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("WebSocket")]
         [Ignore]
         public void LegacyClientWebSocketTransportWriteWithoutConnectTest()
         {
@@ -212,8 +197,6 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         [ExpectedException(typeof(AmqpException))]
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("WebSocket")]
         [Ignore]
         public async Task LegacyClientWebSocketTransportReadWithoutConnectTest()
         {
@@ -235,8 +218,6 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         // The following tests can only be run in Administrator mode
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("WebSocket")]
         [Ignore]
         public async Task LegacyWebSocketReadWriteTest()
         {
@@ -267,8 +248,6 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         [ExpectedException(typeof(ObjectDisposedException))]
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("WebSocket")]
         [Ignore]
         public async Task LegacyWebSocketReadAfterCloseTest()
         {
@@ -284,8 +263,6 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         [ExpectedException(typeof(ObjectDisposedException))]
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("WebSocket")]
         [Ignore]
         public async Task LegacyWebSocketWriteAfterCloseTest()
         {
@@ -300,8 +277,6 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         [ExpectedException(typeof(ObjectDisposedException))]
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("WebSocket")]
         [Ignore]
         public async Task LegacyWebSocketReadAfterAbortTest()
         {
@@ -319,8 +294,6 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         [ExpectedException(typeof(ObjectDisposedException))]
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("WebSocket")]
         [Ignore]
         public async Task LegacyWebSocketWriteAfterAbortTest()
         {

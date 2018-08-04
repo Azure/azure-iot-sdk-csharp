@@ -9,6 +9,7 @@ using Microsoft.Azure.Devices.Shared;
 namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 {
     [TestClass]
+    [TestCategory("Unit")]
     public class TwinStateTests
     {
         private TwinCollection SampleTags = new TwinCollection
@@ -65,7 +66,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         /* SRS_TWIN_STATE_21_002: [If the _properties is null, the get.DesiredProperties shall return null.] */
         /* SRS_TWIN_STATE_21_004: [If the value is null, the set.DesiredProperties shall set _properties as null.] */
         [TestMethod]
-        [TestCategory("DevService")]
         public void TwinStateSucceedOnNull()
         {
             // arrange
@@ -81,7 +81,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         [TestMethod]
-        [TestCategory("DevService")]
         public void TwinStateSucceedOnTagsWitoutDesiredProperties()
         {
             // arrange
@@ -100,7 +99,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         /* SRS_TWIN_STATE_21_005: [The set.DesiredProperties shall convert the provided value in a 
                                     TwinPropertyes.Desired and store it as _properties.] */
         [TestMethod]
-        [TestCategory("DevService")]
         public void TwinStateSucceedOnDesiredPropertiesWitoutTags()
         {
             // arrange
@@ -116,7 +114,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         [TestMethod]
-        [TestCategory("DevService")]
         public void TwinStateSucceedOnDesiredPropertiesAndTags()
         {
             // arrange
@@ -132,7 +129,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         [TestMethod]
-        [TestCategory("DevService")]
         public void TwinStateSucceedOnTagsToJson()
         {
             // arrange
@@ -148,7 +144,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         [TestMethod]
-        [TestCategory("DevService")]
         public void TwinStateSucceedOnDesiredPropertiesToJson()
         {
             // arrange
@@ -164,7 +159,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         [TestMethod]
-        [TestCategory("DevService")]
         public void TwinStateSucceedOnToJson()
         {
             // arrange
@@ -180,7 +174,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         [TestMethod]
-        [TestCategory("DevService")]
         public void TwinStateSucceedOnFromJson()
         {
             // arrange

@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.Azure.Devices.Client.Test
 {
     [TestClass]
+    [TestCategory("Unit")]
     public class ProductInfoTests
     {
         string ExpectedUserAgentString()

@@ -9,6 +9,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
+    [TestCategory("Unit")]
     public class DeviceClientConnectionStringTests
     {
         const string LocalCertFilename = "..\\..\\Microsoft.Azure.Devices.Client.Test\\LocalNoChain.pfx";
@@ -16,7 +17,6 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
 
         /* rewrite connection strin gparse tests
         [TestMethod]
-        [TestCategory("CIT")]
         public void DeviceClient_Create_DeviceScope_SharedAccessSignature_Test()
         {
             string hostName = "acme.azure-devices.net";
@@ -34,7 +34,6 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
         public void DeviceClient_ConnectionString_DefaultScope_DefaultCredentialType_Test()
         {
             string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=device1;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
@@ -47,7 +46,6 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
 
         [TestMethod]
         [Owner("HillaryC")]
-        [TestCategory("CIT")]
         public void DeviceClient_ConnectionString_IotHubScope_ImplicitSharedAccessSignatureCredentialType_Test()
         {
             string connectionString = "HostName=acme.azure-devices.net;DeviceId=device1;SharedAccessKeyName=AllAccessKey;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
@@ -58,7 +56,6 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
         public void DeviceClient_ConnectionString_IotHubScope_ExplicitSharedAccessSignatureCredentialType_Test()
         {
             string connectionString = "HostName=acme.azure-devices.net;DeviceId=device1;SharedAccessSignature=SharedAccessSignature sr=dh%3a%2f%2facme.azure-devices.net&sig=poifbMLdBGtCJknubF2FW6FLn5vND5k1IKoeQ%2bONgkE%3d&se=87824124985&skn=AllAccessKey";
@@ -69,7 +66,6 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
         public void DeviceClient_ConnectionString_IotHubScope_SharedAccessKeyCredentialType_Test()
         {
             string connectionString = "HostName=acme.azure-devices.net;DeviceId=device1;SharedAccessKeyName=AllAccessKey;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
@@ -81,7 +77,6 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         */
 
         [TestMethod]
-        [TestCategory("CIT")]
         [Ignore]
         public void DeviceClientConnectionStringX509CertificateDefaultTest()
         {
@@ -93,7 +88,6 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
         public void DeviceClientConnectionStringX509CertTest()
         {
             string connectionString = "HostName=acme.azure-devices.net;X509Cert=true;DeviceId=device";
@@ -101,7 +95,6 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
         [Ignore]
         public void DeviceClientConnectionStringX509CertificateAmqpTest()
         {
@@ -113,7 +106,6 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
         [Ignore]
         public void DeviceClientConnectionStringX509CertificateAmqpWsTest()
         {
@@ -125,7 +117,6 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
         [Ignore]
         public void DeviceClientConnectionStringX509CertificateAmqpTcpTest()
         {
@@ -137,7 +128,6 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
         [Ignore]
         public void DeviceClientConnectionStringX509CertificateHttpTest()
         {
@@ -149,7 +139,6 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
         [Ignore]
         public void DeviceClientConnectionStringX509CertificateMqttTest()
         {
@@ -161,7 +150,6 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
         [ExpectedException(typeof(ArgumentException))]
         public void DeviceClientConnectionStringX509CertificateNullCertificateTest()
         {
@@ -172,7 +160,6 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
         public void DeviceClient_AuthMethod_NoGatewayHostnameTest()
         {
             string hostName = "acme.azure-devices.net";
@@ -182,7 +169,6 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
         public void DeviceClient_AuthMethod_TransportType_NoGatewayHostnameTest()
         {
             string hostName = "acme.azure-devices.net";
@@ -192,7 +178,6 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
         public void DeviceClient_AuthMethod_TransportSettings_NoGatewayHostnameTest()
         {
             string hostName = "acme.azure-devices.net";
@@ -205,7 +190,6 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
         public void DeviceClient_AuthMethod_GatewayHostnameTest()
         {
             string hostName = "acme.azure-devices.net";
@@ -216,7 +200,6 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
         public void DeviceClient_AuthMethod_TransportType_GatewayHostnameTest()
         {
             string hostName = "acme.azure-devices.net";
@@ -227,7 +210,6 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
         public void DeviceClient_AuthMethod_TransportSettings_GatewayHostnameTest()
         {
             string hostName = "acme.azure-devices.net";
@@ -241,7 +223,6 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
         public void DeviceClientIotHubConnectionStringBuilderTest()
         {
             string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=device1;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";

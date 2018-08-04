@@ -8,13 +8,13 @@ using Microsoft.Azure.Devices.Shared;
 namespace Microsoft.Azure.Devices.Client.Test
 {
     [TestClass]
+    [TestCategory("Unit")]
     public class DeviceClientTwinApiTests
     {
         static string fakeConnectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
 
         // Tests_SRS_DEVICECLIENT_18_003: `SetDesiredPropertyUpdateCallback` shall call the transport to register for PATCHes on it's first call.
         [TestMethod]
-        [TestCategory("Twin")]
         public async Task DeviceClientSetDesiredPropertyUpdateCallbackRegistersForPatchesOnFirstCall()
         {
             // arrange
@@ -36,7 +36,6 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         // Tests_SRS_DEVICECLIENT_18_003: `SetDesiredPropertyUpdateCallbackAsync` shall call the transport to register for PATCHes on it's first call.
         [TestMethod]
-        [TestCategory("Twin")]
         public async Task DeviceClientSetDesiredPropertyUpdateCallbackAsyncRegistersForPatchesOnFirstCall()
         {
             // arrange
@@ -58,7 +57,6 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         // Tests_SRS_DEVICECLIENT_18_004: `SetDesiredPropertyUpdateCallback` shall not call the transport to register for PATCHes on subsequent calls
         [TestMethod]
-        [TestCategory("Twin")]
         public async Task DeviceClientSetDesiredPropertyUpdateCallbackDoesNotRegisterForPatchesAfterFirstCall()
         {
             // arrange
@@ -80,7 +78,6 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         // Tests_SRS_DEVICECLIENT_18_004: `SetDesiredPropertyUpdateCallbackAsync` shall not call the transport to register for PATCHes on subsequent calls
         [TestMethod]
-        [TestCategory("Twin")]
         public async Task DeviceClientSetDesiredPropertyUpdateCallbackAsyncDoesNotRegisterForPatchesAfterFirstCall()
         {
             // arrange
@@ -102,7 +99,6 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         // Tests_SRS_DEVICECLIENT_18_001: `GetTwinAsync` shall call `SendTwinGetAsync` on the transport to get the twin state
         [TestMethod]
-        [TestCategory("Twin")]
         public async Task DeviceClientGetTwinAsyncCallsSendTwinGetAsync()
         {
             // arrange
@@ -121,7 +117,6 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         // Tests_SRS_DEVICECLIENT_18_002: `UpdateReportedPropertiesAsync` shall call `SendTwinPatchAsync` on the transport to update the reported properties
         [TestMethod]
-        [TestCategory("Twin")]
         public async Task DeviceClientUpdateReportedPropertiesAsyncCallsSendTwinPatchAsync()
         {
             // arrange
@@ -141,7 +136,6 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         // Tests_SRS_DEVICECLIENT_18_006: `UpdateReportedPropertiesAsync` shall throw an `ArgumentNull` exception if `reportedProperties` is null
         [TestMethod]
-        [TestCategory("Twin")]
         [ExpectedException(typeof(ArgumentNullException))]
         public async Task DeviceClientUpdateReportedPropertiesAsyncThrowsIfPatchIsNull()
         {
@@ -156,7 +150,6 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         // Tests_SRS_DEVICECLIENT_18_007: `SetDesiredPropertyUpdateCallback` shall throw an `ArgumentNull` exception if `callback` is null
         [TestMethod]
-        [TestCategory("Twin")]
         [ExpectedException(typeof(ArgumentNullException))]
         public async Task DeviceClientSetDesiredPropertyUpdateCallbackThrowsIfCallbackIsNull()
         {
@@ -171,7 +164,6 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         // Tests_SRS_DEVICECLIENT_18_007: `SetDesiredPropertyUpdateCallbackAsync` shall throw an `ArgumentNull` exception if `callback` is null
         [TestMethod]
-        [TestCategory("Twin")]
         [ExpectedException(typeof(ArgumentNullException))]
         public async Task DeviceClientSetDesiredPropertyUpdateCallbackAsyncThrowsIfCallbackIsNull()
         {
@@ -186,7 +178,6 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         //  Tests_SRS_DEVICECLIENT_18_005: When a patch is received from the service, the `callback` shall be called.
         [TestMethod]
-        [TestCategory("Twin")]
         public async Task DeviceClientCallbackIsCalledWhenPatchIsReceived()
         {
             // arrange
@@ -215,7 +206,6 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         //  Tests_SRS_DEVICECLIENT_18_005: When a patch is received from the service, the `callback` shall be called.
         [TestMethod]
-        [TestCategory("Twin")]
         public async Task DeviceClientCallbackAsyncIsCalledWhenPatchIsReceived()
         {
             // arrange

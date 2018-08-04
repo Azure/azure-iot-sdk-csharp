@@ -17,13 +17,12 @@ namespace Microsoft.Azure.Devices.Api.Test
     using Moq;
 
     [TestClass]
+    [TestCategory("Unit")]
     public class RegistryManagerTests
     {
         const string IotHubName = "acme";
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [ExpectedException(typeof(ArgumentNullException))]
         public void ConstructorWithInvalidConnectionStringTest()
         {
@@ -31,8 +30,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         public void ConstructorWithValidConnectionStringTest()
         {
             var authMethod = new ServiceAuthenticationWithSharedAccessPolicyKey("test", "CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=");
@@ -42,8 +39,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         public async Task GetDeviceAsyncTest()
         {
             const string DeviceId = "123";
@@ -59,8 +54,6 @@ namespace Microsoft.Azure.Devices.Api.Test
 
         [ExpectedException(typeof(ArgumentException))]
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         public async Task GetDeviceAsyncWithNullDeviceIdTest()
         {
             var restOpMock = new Mock<IHttpClientHelper>();
@@ -70,8 +63,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         public async Task GetDevicesAsyncTest()
         {
             List<Device> devicesToReturn = new List<Device>();
@@ -95,8 +86,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         public async Task RegisterDeviceAsyncTest()
         {
             var deviceToReturn = new Device("123") { ConnectionState = DeviceConnectionState.Connected };
@@ -110,8 +99,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [ExpectedException(typeof(ArgumentException))]
         public async Task RegisterDeviceAsyncWithInvalidDeviceIdTest()
         {
@@ -123,8 +110,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [ExpectedException(typeof(ArgumentException))]
         public async Task RegisterDeviceAsyncWithETagSetTest()
         {
@@ -136,8 +121,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [ExpectedException(typeof(ArgumentNullException))]
         public async Task RegisterDeviceAsyncWithNullDeviceTest()
         {
@@ -148,8 +131,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [ExpectedException(typeof(ArgumentException))]
         public async Task RegisterDeviceAsyncWithDeviceIdNullTest()
         {
@@ -160,8 +141,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [ExpectedException(typeof(ArgumentException))]
         public async Task RegisterDevicesAsyncWithInvalidDeviceIdTest()
         {
@@ -175,8 +154,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [ExpectedException(typeof(ArgumentException))]
         public async Task RegisterDevices2AsyncWithInvalidDeviceIdTest()
         {
@@ -190,8 +167,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [ExpectedException(typeof(ArgumentException))]
         public async Task RegisterDevicesAsyncWithETagsSetTest()
         {
@@ -204,8 +179,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [ExpectedException(typeof(ArgumentException))]
         public async Task RegisterDevices2AsyncWithETagsSetTest()
         {
@@ -218,8 +191,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [ExpectedException(typeof(ArgumentNullException))]
         public async Task RegisterDevicesAsyncWithNullDeviceTest()
         {
@@ -232,8 +203,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [ExpectedException(typeof(ArgumentNullException))]
         public async Task RegisterDevices2AsyncWithNullDeviceTest()
         {
@@ -246,8 +215,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [ExpectedException(typeof(ArgumentException))]
         public async Task RegisterDevicesAsyncWithNullDeviceListTest()
         {
@@ -258,8 +225,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [ExpectedException(typeof(ArgumentException))]
         public async Task RegisterDevices2AsyncWithNullDeviceListTest()
         {
@@ -270,8 +235,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [ExpectedException(typeof(ArgumentException))]
         public async Task RegisterDevicesAsyncWithDeviceIdNullTest()
         {
@@ -284,8 +247,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [ExpectedException(typeof(ArgumentException))]
         public async Task RegisterDevices2AsyncWithDeviceIdNullTest()
         {
@@ -298,8 +259,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         public async Task UpdateDeviceAsyncTest()
         {
             var deviceToReturn = new Device("123") { ConnectionState = DeviceConnectionState.Connected, ETag = "123" };
@@ -319,16 +278,12 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         public async Task UpdateManagedDeviceTagsAsyncTest()
         {
         }
 
         [ExpectedException(typeof(ArgumentNullException))]
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         public async Task UpdateDeviceWithNullDeviceTest()
         {
             var restOpMock = new Mock<IHttpClientHelper>();
@@ -339,8 +294,6 @@ namespace Microsoft.Azure.Devices.Api.Test
 
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [ExpectedException(typeof(ArgumentException))]
         public async Task UpdateDeviceWithDeviceIdNullTest()
         {
@@ -352,8 +305,6 @@ namespace Microsoft.Azure.Devices.Api.Test
 
         [ExpectedException(typeof(ArgumentException))]
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         public async Task UpdateDeviceWithInvalidDeviceIdTest()
         {
             var restOpMock = new Mock<IHttpClientHelper>();
@@ -364,8 +315,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [ExpectedException(typeof(ArgumentException))]
         public async Task UpdateDevicesAsyncWithInvalidDeviceIdTest()
         {
@@ -378,8 +327,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [ExpectedException(typeof(ArgumentException))]
         public async Task UpdateDevices2AsyncWithInvalidDeviceIdTest()
         {
@@ -392,8 +339,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [ExpectedException(typeof(ArgumentException))]
         public async Task UpdateDevicesAsyncWithETagMissingTest()
         {
@@ -406,8 +351,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [ExpectedException(typeof(ArgumentException))]
         public async Task UpdateDevices2AsyncWithETagMissingTest()
         {
@@ -420,8 +363,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [ExpectedException(typeof(ArgumentNullException))]
         public async Task UpdateDevicesAsyncWithNullDeviceTest()
         {
@@ -434,8 +375,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [ExpectedException(typeof(ArgumentNullException))]
         public async Task UpdateDevices2AsyncWithNullDeviceTest()
         {
@@ -448,8 +387,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [ExpectedException(typeof(ArgumentException))]
         public async Task UpdateDevicesAsyncWithNullDeviceListTest()
         {
@@ -460,8 +397,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [ExpectedException(typeof(ArgumentException))]
         public async Task UpdateDevices2AsyncWithNullDeviceListTest()
         {
@@ -472,8 +407,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [ExpectedException(typeof(ArgumentException))]
         public async Task UpdateDevicesAsyncWithDeviceIdNullTest()
         {
@@ -486,8 +419,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [ExpectedException(typeof(ArgumentException))]
         public async Task UpdateDevices2AsyncWithDeviceIdNullTest()
         {
@@ -500,8 +431,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         public async Task UpdateDevicesAsyncForceUpdateTest()
         {
             var goodDevice1 = new Device("123") { ConnectionState = DeviceConnectionState.Connected };
@@ -513,8 +442,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         public async Task UpdateDevices2AsyncForceUpdateTest()
         {
             var goodDevice1 = new Device("123") { ConnectionState = DeviceConnectionState.Connected };
@@ -527,8 +454,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [ExpectedException(typeof(ArgumentException))]
         public async Task UpdateDevicesAsyncForceUpdateMissingETagTest()
         {
@@ -542,8 +467,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [ExpectedException(typeof(ArgumentException))]
         public async Task UpdateDevices2AsyncForceUpdateMissingETagTest()
         {
@@ -557,8 +480,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         public async Task UpdateDevicesAsyncForceUpdateFalseTest()
         {
             var goodDevice1 = new Device("123") { ConnectionState = DeviceConnectionState.Connected, ETag = "234" };
@@ -571,8 +492,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         public async Task UpdateDevices2AsyncForceUpdateFalseTest()
         {
             var goodDevice1 = new Device("123") { ConnectionState = DeviceConnectionState.Connected, ETag = "234" };
@@ -585,8 +504,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [ExpectedException(typeof(ArgumentException))]
         public async Task DeleteDeviceAsyncTest()
         {
@@ -600,8 +517,6 @@ namespace Microsoft.Azure.Devices.Api.Test
 
         [ExpectedException(typeof(ArgumentException))]
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         public async Task DeleteDeviceAsyncWithNullIdTest()
         {
             var restOpMock = new Mock<IHttpClientHelper>();
@@ -611,8 +526,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [ExpectedException(typeof(ArgumentException))]
         public async Task DeleteDevicesAsyncWithInvalidDeviceIdTest()
         {
@@ -625,8 +538,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [ExpectedException(typeof(ArgumentException))]
         public async Task DeleteDevices2AsyncWithInvalidDeviceIdTest()
         {
@@ -639,8 +550,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [ExpectedException(typeof(ArgumentException))]
         public async Task DeleteDevicesAsyncWithETagMissingTest()
         {
@@ -653,8 +562,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [ExpectedException(typeof(ArgumentException))]
         public async Task DeleteDevices2AsyncWithETagMissingTest()
         {
@@ -667,8 +574,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [ExpectedException(typeof(ArgumentNullException))]
         public async Task DeleteDevicesAsyncWithNullDeviceTest()
         {
@@ -681,8 +586,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [ExpectedException(typeof(ArgumentNullException))]
         public async Task DeleteDevices2AsyncWithNullDeviceTest()
         {
@@ -695,8 +598,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [ExpectedException(typeof(ArgumentException))]
         public async Task DeleteDevicesAsyncWithNullDeviceListTest()
         {
@@ -707,8 +608,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [ExpectedException(typeof(ArgumentException))]
         public async Task DeleteDevices2AsyncWithNullDeviceListTest()
         {
@@ -719,8 +618,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [ExpectedException(typeof(ArgumentException))]
         public async Task DeleteDevicesAsyncWithDeviceIdNullTest()
         {
@@ -733,8 +630,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [ExpectedException(typeof(ArgumentException))]
         public async Task DeleteDevices2AsyncWithDeviceIdNullTest()
         {
@@ -747,8 +642,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         public async Task DeleteDevicesAsyncForceDeleteTest()
         {
             var goodDevice1 = new Device("123") { ConnectionState = DeviceConnectionState.Connected };
@@ -761,8 +654,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         public async Task DeleteDevices2AsyncForceDeleteTest()
         {
             var goodDevice1 = new Device("123") { ConnectionState = DeviceConnectionState.Connected };
@@ -775,8 +666,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [ExpectedException(typeof(ArgumentException))]
         public async Task DeleteDevicesAsyncForceDeleteFalseMissingETagTest()
         {
@@ -790,8 +679,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [ExpectedException(typeof(ArgumentException))]
         public async Task DeleteDevices2AsyncForceDeleteFalseMissingETagTest()
         {
@@ -805,8 +692,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         public async Task DeleteDevicesAsyncForceDeleteFalseTest()
         {
             var goodDevice1 = new Device("123") { ConnectionState = DeviceConnectionState.Connected, ETag = "234" };
@@ -819,8 +704,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         public async Task DeleteDevices2AsyncForceDeleteFalseTest()
         {
             var goodDevice1 = new Device("123") { ConnectionState = DeviceConnectionState.Connected, ETag = "234" };
@@ -833,8 +716,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [ExpectedException(typeof(ArgumentException))]
         public async Task UpdateTwins2AsyncWithInvalidDeviceIdTest()
         {
@@ -847,8 +728,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [ExpectedException(typeof(ArgumentException))]
         public async Task UpdateTwins2AsyncWithETagMissingTest()
         {
@@ -861,8 +740,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [ExpectedException(typeof(ArgumentNullException))]
         public async Task UpdateTwins2AsyncWithNullTwinTest()
         {
@@ -875,8 +752,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [ExpectedException(typeof(ArgumentException))]
         public async Task UpdateTwins2AsyncWithNullTwinListTest()
         {
@@ -887,8 +762,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [ExpectedException(typeof(ArgumentException))]
         public async Task UpdateTwins2AsyncWithDeviceIdNullTest()
         {
@@ -901,8 +774,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         public async Task UpdateTwins2AsyncForceUpdateTest()
         {
             var goodTwin1 = new Twin("123");
@@ -915,8 +786,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [ExpectedException(typeof(ArgumentException))]
         public async Task UpdateTwins2AsyncForceUpdateMissingETagTest()
         {
@@ -930,8 +799,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         public async Task UpdateTwins2AsyncForceUpdateFalseTest()
         {
             var goodTwin1 = new Twin("123") { ETag = "234" };
@@ -944,8 +811,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         public void DisposeTest()
         {
             var restOpMock = new Mock<IHttpClientHelper>();
@@ -957,8 +822,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
     
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         public async Task CloseAsyncTest()
         {
             var restOpMock = new Mock<IHttpClientHelper>();
