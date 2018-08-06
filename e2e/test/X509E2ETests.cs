@@ -18,6 +18,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     public partial class X509E2ETests
     {
         private const string DevicePrefix = "E2E_X509_CSharp_";
+        private static TestLogging _log = TestLogging.GetInstance();
 
         [TestMethod]
         public async Task X509_DeviceSendSingleMessage_Amqp()
@@ -68,14 +69,12 @@ namespace Microsoft.Azure.Devices.E2ETests
             await ReceiveSingleMessageX509(Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
         }
 
-
         [Ignore] // TODO: #171 - X509 tests are intermittently failing during CI.
         [TestMethod]
         public async Task X509_DeviceReceiveSingleMessage_MqttWs()
         {
             await ReceiveSingleMessageX509(Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
         }
-
 
         [Ignore] // TODO: #171 - X509 tests are intermittently failing during CI.
         [TestMethod]
@@ -89,18 +88,21 @@ namespace Microsoft.Azure.Devices.E2ETests
             payload = Guid.NewGuid().ToString();
             p1Value = Guid.NewGuid().ToString();
 
+            _log.WriteLine($"{nameof(ComposeD2CTestMessage)}: payload='{payload}' p1Value='{p1Value}'");
+
             return new Client.Message(Encoding.UTF8.GetBytes(payload))
             {
                 Properties = { ["property1"] = p1Value }
             };
         }
 
-
         private Message ComposeC2DTestMessage(out string payload, out string messageId, out string p1Value)
         {
             payload = Guid.NewGuid().ToString();
             messageId = Guid.NewGuid().ToString();
             p1Value = Guid.NewGuid().ToString();
+
+            _log.WriteLine($"{nameof(ComposeC2DTestMessage)}: payload='{payload}' messageId='{messageId}' p1Value='{p1Value}'");
 
             return new Message(Encoding.UTF8.GetBytes(payload))
             {

@@ -84,9 +84,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_TcpConnectionLossSendRecovery_Amqp()
         {
             await SendMessageRecovery(Client.TransportType.Amqp_Tcp_Only,
-                TestUtil.FaultType_Tcp,
-                TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
+                FaultInjection.FaultType_Tcp,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -94,9 +94,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_TcpConnectionLossSendRecovery_AmqpWs()
         {
             await SendMessageRecovery(Client.TransportType.Amqp_WebSocket_Only,
-                TestUtil.FaultType_Tcp,
-                TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
+                FaultInjection.FaultType_Tcp,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
         [Ignore] // TODO: #558
@@ -105,9 +105,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_TcpConnectionLossSendRecovery_Mqtt()
         {
             await SendMessageRecovery(Client.TransportType.Mqtt_Tcp_Only,
-                TestUtil.FaultType_Tcp,
-                TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
+                FaultInjection.FaultType_Tcp,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
         [Ignore] // TODO: #558
@@ -116,9 +116,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_TcpConnectionLossSendRecovery_MqttWs()
         {
             await SendMessageRecovery(Client.TransportType.Mqtt_WebSocket_Only,
-                TestUtil.FaultType_Tcp,
-                TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
+                FaultInjection.FaultType_Tcp,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -126,9 +126,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_AmqpConnectionLossSendRecovery_Amqp()
         {
             await SendMessageRecovery(Client.TransportType.Amqp_Tcp_Only,
-                TestUtil.FaultType_AmqpConn,
+                FaultInjection.FaultType_AmqpConn,
                 "",
-                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -136,9 +136,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_AmqpConnectionLossSendRecovery_AmqpWs()
         {
             await SendMessageRecovery(Client.TransportType.Amqp_WebSocket_Only,
-                TestUtil.FaultType_AmqpConn,
+                FaultInjection.FaultType_AmqpConn,
                 "",
-                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -146,9 +146,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_AmqpSessionLossSendRecovery_Amqp()
         {
             await SendMessageRecovery(Client.TransportType.Amqp_Tcp_Only,
-                TestUtil.FaultType_AmqpSess,
+                FaultInjection.FaultType_AmqpSess,
                 "",
-                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -156,9 +156,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_AmqpSessionLossSendRecovery_AmqpWs()
         {
             await SendMessageRecovery(Client.TransportType.Amqp_WebSocket_Only,
-                TestUtil.FaultType_AmqpSess,
+                FaultInjection.FaultType_AmqpSess,
                 "",
-                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -166,9 +166,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_AmqpD2CLinkDropSendRecovery_Amqp()
         {
             await SendMessageRecovery(Client.TransportType.Amqp_Tcp_Only,
-                TestUtil.FaultType_AmqpD2C,
-                TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
+                FaultInjection.FaultType_AmqpD2C,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -176,9 +176,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_AmqpD2CLinkDropSendRecovery_AmqpWs()
         {
             await SendMessageRecovery(Client.TransportType.Amqp_WebSocket_Only,
-                TestUtil.FaultType_AmqpD2C,
-                TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
+                FaultInjection.FaultType_AmqpD2C,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -186,9 +186,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_TcpConnectionLossReceiveRecovery_Amqp()
         {
             await ReceiveMessageRecovery(Client.TransportType.Amqp_Tcp_Only,
-                TestUtil.FaultType_Tcp,
-                TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
+                FaultInjection.FaultType_Tcp,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -196,9 +196,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_TcpConnectionLossReceiveRecovery_AmqpWs()
         {
             await ReceiveMessageRecovery(Client.TransportType.Amqp_WebSocket_Only,
-                TestUtil.FaultType_Tcp,
-                TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
+                FaultInjection.FaultType_Tcp,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
         [Ignore] // TODO: #558
@@ -207,9 +207,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_TcpConnectionLossReceiveRecovery_Mqtt()
         {
             await ReceiveMessageRecovery(Client.TransportType.Mqtt_Tcp_Only,
-                TestUtil.FaultType_Tcp,
-                TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
+                FaultInjection.FaultType_Tcp,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
         [Ignore] // TODO: #558
@@ -218,9 +218,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_TcpConnectionLossReceiveRecovery_MqttWs()
         {
             await ReceiveMessageRecovery(Client.TransportType.Mqtt_WebSocket_Only,
-                TestUtil.FaultType_Tcp,
-                TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
+                FaultInjection.FaultType_Tcp,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -228,9 +228,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_AmqpConnectionLossReceiveRecovery_Amqp()
         {
             await ReceiveMessageRecovery(Client.TransportType.Amqp_Tcp_Only,
-                TestUtil.FaultType_AmqpConn,
+                FaultInjection.FaultType_AmqpConn,
                 "",
-                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
         [Ignore] // TODO: #239.
@@ -239,8 +239,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_AmqpConnectionLossReceiveRecovery_AmqpWs()
         {
             await ReceiveMessageRecovery(Client.TransportType.Amqp_WebSocket_Only,
-                TestUtil.FaultType_AmqpConn, "",
-                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
+                FaultInjection.FaultType_AmqpConn, "",
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -248,9 +248,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_AmqpSessionLossReceiveRecovery_Amqp()
         {
             await ReceiveMessageRecovery(Client.TransportType.Amqp_Tcp_Only,
-                TestUtil.FaultType_AmqpSess,
+                FaultInjection.FaultType_AmqpSess,
                 "",
-                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -258,9 +258,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_AmqpSessionLossReceiveRecovery_AmqpWs()
         {
             await ReceiveMessageRecovery(Client.TransportType.Amqp_WebSocket_Only,
-                TestUtil.FaultType_AmqpSess,
+                FaultInjection.FaultType_AmqpSess,
                 "",
-                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -268,9 +268,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_AmqpC2DLinkDropReceiveRecovery_Amqp()
         {
             await ReceiveMessageRecovery(Client.TransportType.Amqp_Tcp_Only,
-                TestUtil.FaultType_AmqpC2D,
-                TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
+                FaultInjection.FaultType_AmqpC2D,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -278,9 +278,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_AmqpC2DLinkDropReceiveRecovery_AmqpWs()
         {
             await ReceiveMessageRecovery(Client.TransportType.Amqp_WebSocket_Only,
-                TestUtil.FaultType_AmqpD2C,
-                TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
+                FaultInjection.FaultType_AmqpD2C,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -288,10 +288,10 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_ThrottledConnectionRecovery_Amqp()
         {
             await SendMessageRecovery(Client.TransportType.Amqp_Tcp_Only,
-                TestUtil.FaultType_Throttle,
-                TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec,
-                TestUtil.DefaultDurationInSec).ConfigureAwait(false);
+                FaultInjection.FaultType_Throttle,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec,
+                FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -299,10 +299,10 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_ThrottledConnectionRecovery_AmqpWs()
         {
             await SendMessageRecovery(Client.TransportType.Amqp_WebSocket_Only,
-                TestUtil.FaultType_Throttle,
-                TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec,
-                TestUtil.DefaultDurationInSec).ConfigureAwait(false);
+                FaultInjection.FaultType_Throttle,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec,
+                FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -311,11 +311,11 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_ThrottledConnectionLongTimeNoRecovery_Amqp()
         {
             await SendMessageRecovery(Client.TransportType.Amqp_Tcp_Only,
-                TestUtil.FaultType_Throttle,
-                TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec,
-                TestUtil.DefaultDurationInSec,
-                TestUtil.ShortRetryInMilliSec).ConfigureAwait(false);
+                FaultInjection.FaultType_Throttle,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec,
+                FaultInjection.DefaultDurationInSec,
+                FaultInjection.ShortRetryInMilliSec).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -324,11 +324,11 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_ThrottledConnectionLongTimeNoRecovery_AmqpWs()
         {
             await SendMessageRecovery(Client.TransportType.Amqp_WebSocket_Only,
-                TestUtil.FaultType_Throttle,
-                TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec,
-                TestUtil.DefaultDurationInSec,
-                TestUtil.ShortRetryInMilliSec).ConfigureAwait(false);
+                FaultInjection.FaultType_Throttle,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec,
+                FaultInjection.DefaultDurationInSec,
+                FaultInjection.ShortRetryInMilliSec).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -345,10 +345,10 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_QuotaExceededRecovery_Amqp()
         {
             await SendMessageRecovery(Client.TransportType.Amqp_Tcp_Only,
-                TestUtil.FaultType_QuotaExceeded,
-                TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec,
-                TestUtil.DefaultDurationInSec).ConfigureAwait(false);
+                FaultInjection.FaultType_QuotaExceeded,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec,
+                FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -357,10 +357,10 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_QuotaExceededRecovery_AmqpWs()
         {
             await SendMessageRecovery(Client.TransportType.Amqp_WebSocket_Only,
-                TestUtil.FaultType_QuotaExceeded,
-                TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec,
-                TestUtil.DefaultDurationInSec).ConfigureAwait(false);
+                FaultInjection.FaultType_QuotaExceeded,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec,
+                FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -369,10 +369,10 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_QuotaExceededRecovery_Http()
         {
             await SendMessageRecovery(Client.TransportType.Http1,
-                TestUtil.FaultType_QuotaExceeded,
-                TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec,
-                TestUtil.DefaultDurationInSec).ConfigureAwait(false);
+                FaultInjection.FaultType_QuotaExceeded,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec,
+                FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -381,10 +381,10 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_AuthenticationRecovery_Amqp()
         {
             await SendMessageRecovery(Client.TransportType.Amqp_Tcp_Only,
-                TestUtil.FaultType_Auth,
-                TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec,
-                TestUtil.DefaultDurationInSec).ConfigureAwait(false);
+                FaultInjection.FaultType_Auth,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec,
+                FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -393,10 +393,10 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_AuthenticationRecovery_AmqpWs()
         {
             await SendMessageRecovery(Client.TransportType.Amqp_WebSocket_Only,
-                TestUtil.FaultType_Auth,
-                TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec,
-                TestUtil.DefaultDurationInSec).ConfigureAwait(false);
+                FaultInjection.FaultType_Auth,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec,
+                FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -405,10 +405,10 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_AuthenticationRecovery_Http()
         {
             await SendMessageRecovery(Client.TransportType.Http1,
-                TestUtil.FaultType_Auth,
-                TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec,
-                TestUtil.DefaultDurationInSec).ConfigureAwait(false);
+                FaultInjection.FaultType_Auth,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec,
+                FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -416,9 +416,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_SendGracefulShutdownSendRecovery_Amqp()
         {
             await SendMessageRecovery(Client.TransportType.Amqp_Tcp_Only,
-                TestUtil.FaultType_GracefulShutdownAmqp,
-                TestUtil.FaultCloseReason_Bye,
-                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
+                FaultInjection.FaultType_GracefulShutdownAmqp,
+                FaultInjection.FaultCloseReason_Bye,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -426,9 +426,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_GracefulShutdownSendRecovery_AmqpWs()
         {
             await SendMessageRecovery(Client.TransportType.Amqp_WebSocket_Only,
-                TestUtil.FaultType_GracefulShutdownAmqp,
-                TestUtil.FaultCloseReason_Bye,
-                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
+                FaultInjection.FaultType_GracefulShutdownAmqp,
+                FaultInjection.FaultCloseReason_Bye,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
         [Ignore] // TODO: #558
@@ -437,9 +437,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_GracefulShutdownSendRecovery_Mqtt()
         {
             await SendMessageRecovery(Client.TransportType.Mqtt_Tcp_Only,
-                TestUtil.FaultType_GracefulShutdownMqtt,
-                TestUtil.FaultCloseReason_Bye,
-                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
+                FaultInjection.FaultType_GracefulShutdownMqtt,
+                FaultInjection.FaultCloseReason_Bye,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
         [Ignore] // TODO: #558
@@ -448,9 +448,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_GracefulShutdownSendRecovery_MqttWs()
         {
             await SendMessageRecovery(Client.TransportType.Mqtt_WebSocket_Only,
-                TestUtil.FaultType_GracefulShutdownMqtt,
-                TestUtil.FaultCloseReason_Bye,
-                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
+                FaultInjection.FaultType_GracefulShutdownMqtt,
+                FaultInjection.FaultCloseReason_Bye,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -458,9 +458,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_GracefulShutdownReceiveRecovery_Amqp()
         {
             await ReceiveMessageRecovery(Client.TransportType.Amqp_Tcp_Only,
-                TestUtil.FaultType_GracefulShutdownAmqp,
-                TestUtil.FaultCloseReason_Bye,
-                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
+                FaultInjection.FaultType_GracefulShutdownAmqp,
+                FaultInjection.FaultCloseReason_Bye,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
         [Ignore] //TODO: #239
@@ -469,9 +469,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_GracefulShutdownReceiveRecovery_AmqpWs()
         {
             await ReceiveMessageRecovery(Client.TransportType.Amqp_WebSocket_Only,
-                TestUtil.FaultType_GracefulShutdownAmqp,
-                TestUtil.FaultCloseReason_Bye,
-                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
+                FaultInjection.FaultType_GracefulShutdownAmqp,
+                FaultInjection.FaultCloseReason_Bye,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
         [Ignore] // TODO: #558
@@ -480,9 +480,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_GracefulShutdownReceiveRecovery_Mqtt()
         {
             await ReceiveMessageRecovery(Client.TransportType.Mqtt_Tcp_Only,
-                TestUtil.FaultType_GracefulShutdownMqtt,
-                TestUtil.FaultCloseReason_Bye,
-                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
+                FaultInjection.FaultType_GracefulShutdownMqtt,
+                FaultInjection.FaultCloseReason_Bye,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
         [Ignore] // TODO: #558
@@ -491,9 +491,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_GracefulShutdownReceiveRecovery_MqttWs()
         {
             await ReceiveMessageRecovery(Client.TransportType.Mqtt_WebSocket_Only,
-                TestUtil.FaultType_GracefulShutdownMqtt,
-                TestUtil.FaultCloseReason_Bye,
-                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
+                FaultInjection.FaultType_GracefulShutdownMqtt,
+                FaultInjection.FaultCloseReason_Bye,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -658,7 +658,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 // send error command
                 await deviceClient.SendEventAsync(
-                    TestUtil.ComposeErrorInjectionProperties(faultType, reason, delayInSec)).ConfigureAwait(false);
+                    FaultInjection.ComposeErrorInjectionProperties(faultType, reason, delayInSec)).ConfigureAwait(false);
 
                 await Task.Delay(1000).ConfigureAwait(false);
                 await serviceClient.SendAsync(

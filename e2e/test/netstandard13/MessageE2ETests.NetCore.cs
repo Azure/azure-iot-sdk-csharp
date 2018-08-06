@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             try
             {
-                deviceClient.OperationTimeoutInMilliseconds = (uint)TestUtil.ShortRetryInMilliSec;
+                deviceClient.OperationTimeoutInMilliseconds = (uint)FaultInjection.ShortRetryInMilliSec;
                 await deviceClient.OpenAsync().ConfigureAwait(false);
 
                 string payload, p1Value;
@@ -50,8 +50,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 // Implementation of error injection of throttling on http is that it will throttle the
                 // fault injection message itself only.  The duration of fault has no effect on http throttle.
                 // Client is supposed to retry sending the throttling fault message until operation timeout.
-                await deviceClient.SendEventAsync(TestUtil.ComposeErrorInjectionProperties(TestUtil.FaultType_Throttle,
-                    TestUtil.FaultCloseReason_Boom, TestUtil.DefaultDelayInSec, TestUtil.DefaultDurationInSec)).ConfigureAwait(false);
+                await deviceClient.SendEventAsync(FaultInjection.ComposeErrorInjectionProperties(FaultInjection.FaultType_Throttle,
+                    FaultInjection.FaultCloseReason_Boom, FaultInjection.DefaultDelayInSec, FaultInjection.DefaultDurationInSec)).ConfigureAwait(false);
             }
             finally
             {
@@ -142,7 +142,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 sw.Stop();
 
                 // send error command and clear eventHubReceiver of the fault injection message
-                await deviceClient.SendEventAsync(TestUtil.ComposeErrorInjectionProperties(faultType, reason,
+                await deviceClient.SendEventAsync(FaultInjection.ComposeErrorInjectionProperties(faultType, reason,
                     delayInSec,
                     durationInSec)).ConfigureAwait(false);
 

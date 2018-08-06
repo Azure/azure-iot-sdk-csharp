@@ -493,7 +493,10 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
 
             CancellationTokenSource operationTimeoutCancellationTokenSource = GetOperationTimeoutCancellationTokenSource();
 
-            Debug.WriteLine(operationTimeoutCancellationTokenSource.Token.GetHashCode() + " InternalClient.ApplyTimeout()");
+            if (Logging.IsEnabled)
+            {
+                Logging.Info(this, $"{operationTimeoutCancellationTokenSource.GetHashCode()}", nameof(ApplyTimeout));
+            }
 
             var result = operation(operationTimeoutCancellationTokenSource.Token)
                 .WithTimeout(TimeSpan.FromMilliseconds(OperationTimeoutInMilliseconds), () => Resources.OperationTimeoutExpired, operationTimeoutCancellationTokenSource.Token);

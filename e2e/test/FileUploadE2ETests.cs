@@ -50,9 +50,9 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             await UploadFileDisconnectTransport(Client.TransportType.Amqp_Tcp_Only,
                 bigFile,
-                TestUtil.FaultType_Tcp,
-                TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec
+                FaultInjection.FaultType_Tcp,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec
                 ).ConfigureAwait(false);
         }
 
@@ -64,10 +64,10 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             await UploadFileDisconnectTransport(Client.TransportType.Amqp_Tcp_Only,
                 smallFile,
-                TestUtil.FaultType_Throttle,
-                TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec,
-                TestUtil.DefaultDurationInSec
+                FaultInjection.FaultType_Throttle,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec,
+                FaultInjection.DefaultDurationInSec
                 ).ConfigureAwait(false);
         }
 
@@ -79,10 +79,10 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             await UploadFileDisconnectTransport(Client.TransportType.Amqp_Tcp_Only,
                 smallFile,
-                TestUtil.FaultType_QuotaExceeded,
-                TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec,
-                TestUtil.DefaultDurationInSec
+                FaultInjection.FaultType_QuotaExceeded,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec,
+                FaultInjection.DefaultDurationInSec
                 ).ConfigureAwait(false);
         }
 
@@ -177,7 +177,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 try
                 {
                     await
-                        deviceClient.SendEventAsync(TestUtil.ComposeErrorInjectionProperties(faultType, reason,
+                        deviceClient.SendEventAsync(FaultInjection.ComposeErrorInjectionProperties(faultType, reason,
                             delayInSec, durationInSec)).ConfigureAwait(false);
                 }
                 catch (Exception)
