@@ -183,7 +183,7 @@ try {
         
         if ($Env:DPS_IDSCOPE -ne $null)
         {
-            RunTests provisioning\e2e "Provisioning End-to-end Tests"
+            #RunTests provisioning\e2e "Provisioning End-to-end Tests"
         }
     }
 

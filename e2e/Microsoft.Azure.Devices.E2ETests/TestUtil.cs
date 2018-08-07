@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Microsoft.Azure.Devices.Shared;
+using Microsoft.Azure.Devices.Common.Exceptions;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -77,21 +79,26 @@ namespace Microsoft.Azure.Devices.E2ETests
         private static async Task RemoveDevicesAsync(string devicePrefix, RegistryManager rm)
         {
             Console.WriteLine($"{nameof(RemoveDeviceAsync)} Enumerating devices.");
-            IEnumerable<Device> devices = await rm.GetDevicesAsync(int.MaxValue).ConfigureAwait(false);
+            var query = rm.CreateQuery("select * from devices");
 
-            if (devices == null) 
+            while (query.HasMoreResults)
             {
-                Console.WriteLine("GetDevicesAsync returned null");
-                return;
-            }
+                IEnumerable<Twin> twins = await query.GetNextAsTwinAsync().ConfigureAwait(false);
 
-            // Ensure to remove all previous devices.
-            foreach (Device device in devices)
-            {
-                if (device.Id.StartsWith(devicePrefix))
+                foreach(Twin twin in twins)
                 {
-                    Console.WriteLine($"{nameof(RemoveDeviceAsync)} Removing {device.Id}.");
-                    await RemoveDeviceAsync(device.Id, rm).ConfigureAwait(false);
+                    if (twin.DeviceId.StartsWith(devicePrefix, StringComparison.OrdinalIgnoreCase))
+                    {
+                        try
+                        {
+                            Console.WriteLine($"{nameof(RemoveDeviceAsync)} Removing {twin.DeviceId}.");
+                            await RemoveDeviceAsync(twin.DeviceId, rm).ConfigureAwait(false);
+                        }
+                        catch (ServerErrorException ex)
+                        {
+                            Console.WriteLine($"Error deleting {twin.DeviceId}: {ex}");
+                        }
+                    }
                 }
             }
         }
@@ -115,7 +122,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Console.WriteLine("Device successfully created");
             }).Wait();
 
-            Thread.Sleep(1000);
+            Thread.Sleep(5000);
             return new Tuple<string, string>(deviceName, deviceConnectionString);
         }
 
@@ -142,7 +149,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Console.WriteLine("Device successfully created");
             }).Wait();
 
-            Thread.Sleep(1000);
+            Thread.Sleep(5000);
             return new Tuple<string, string>(deviceName, hostName);
         }
 
