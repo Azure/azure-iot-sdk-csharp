@@ -86,7 +86,7 @@
             this.propertyTabs.Name = "propertyTabs";
             this.propertyTabs.SelectedIndex = 0;
             this.propertyTabs.Size = new System.Drawing.Size(594, 621);
-            this.propertyTabs.TabIndex = 0;
+            this.propertyTabs.TabIndex = 1;
             // 
             // tabTwin
             // 
@@ -94,7 +94,7 @@
             this.tabTwin.Location = new System.Drawing.Point(4, 22);
             this.tabTwin.Name = "tabTwin";
             this.tabTwin.Padding = new System.Windows.Forms.Padding(3);
-            this.tabTwin.Size = new System.Drawing.Size(688, 565);
+            this.tabTwin.Size = new System.Drawing.Size(586, 595);
             this.tabTwin.TabIndex = 0;
             this.tabTwin.Text = "Entire Twin";
             this.tabTwin.UseVisualStyleBackColor = true;
@@ -106,7 +106,7 @@
             this.jsonRichTextBox0.Location = new System.Drawing.Point(3, 3);
             this.jsonRichTextBox0.Name = "jsonRichTextBox0";
             this.jsonRichTextBox0.ReadOnly = true;
-            this.jsonRichTextBox0.Size = new System.Drawing.Size(682, 559);
+            this.jsonRichTextBox0.Size = new System.Drawing.Size(580, 589);
             this.jsonRichTextBox0.TabIndex = 0;
             this.jsonRichTextBox0.Text = "";
             // 
@@ -116,7 +116,7 @@
             this.tabTags.Location = new System.Drawing.Point(4, 22);
             this.tabTags.Name = "tabTags";
             this.tabTags.Padding = new System.Windows.Forms.Padding(3);
-            this.tabTags.Size = new System.Drawing.Size(688, 565);
+            this.tabTags.Size = new System.Drawing.Size(586, 595);
             this.tabTags.TabIndex = 1;
             this.tabTags.Text = "Tags";
             this.tabTags.UseVisualStyleBackColor = true;
@@ -128,7 +128,7 @@
             this.jsonRichTextBox1.Location = new System.Drawing.Point(3, 3);
             this.jsonRichTextBox1.Name = "jsonRichTextBox1";
             this.jsonRichTextBox1.ReadOnly = true;
-            this.jsonRichTextBox1.Size = new System.Drawing.Size(682, 559);
+            this.jsonRichTextBox1.Size = new System.Drawing.Size(580, 589);
             this.jsonRichTextBox1.TabIndex = 0;
             this.jsonRichTextBox1.Text = "";
             // 
@@ -138,7 +138,7 @@
             this.tabReportedProperties.Location = new System.Drawing.Point(4, 22);
             this.tabReportedProperties.Name = "tabReportedProperties";
             this.tabReportedProperties.Padding = new System.Windows.Forms.Padding(3);
-            this.tabReportedProperties.Size = new System.Drawing.Size(688, 565);
+            this.tabReportedProperties.Size = new System.Drawing.Size(586, 595);
             this.tabReportedProperties.TabIndex = 2;
             this.tabReportedProperties.Text = "Reported Properties";
             this.tabReportedProperties.UseVisualStyleBackColor = true;
@@ -150,7 +150,7 @@
             this.jsonRichTextBox2.Location = new System.Drawing.Point(3, 3);
             this.jsonRichTextBox2.Name = "jsonRichTextBox2";
             this.jsonRichTextBox2.ReadOnly = true;
-            this.jsonRichTextBox2.Size = new System.Drawing.Size(682, 559);
+            this.jsonRichTextBox2.Size = new System.Drawing.Size(580, 589);
             this.jsonRichTextBox2.TabIndex = 0;
             this.jsonRichTextBox2.Text = "";
             // 
@@ -184,12 +184,14 @@
             this.toolbarPanel.Location = new System.Drawing.Point(3, 3);
             this.toolbarPanel.Name = "toolbarPanel";
             this.toolbarPanel.Size = new System.Drawing.Size(594, 28);
-            this.toolbarPanel.TabIndex = 1;
+            this.toolbarPanel.TabIndex = 0;
             // 
             // deviceListCombo
             // 
+            this.deviceListCombo.AccessibleName = "Devices";
             this.deviceListCombo.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.deviceListCombo.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.AllUrl;
             this.deviceListCombo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.deviceListCombo.FormattingEnabled = true;
             this.deviceListCombo.Location = new System.Drawing.Point(82, 1);
@@ -241,6 +243,7 @@
             this.splitContainer2.Size = new System.Drawing.Size(276, 661);
             this.splitContainer2.SplitterDistance = 27;
             this.splitContainer2.TabIndex = 4;
+            this.splitContainer2.TabStop = false;
             // 
             // sendBtn
             // 
@@ -248,7 +251,7 @@
             this.sendBtn.Location = new System.Drawing.Point(0, 0);
             this.sendBtn.Name = "sendBtn";
             this.sendBtn.Size = new System.Drawing.Size(276, 30);
-            this.sendBtn.TabIndex = 0;
+            this.sendBtn.TabIndex = 2;
             this.sendBtn.Text = "Send ( use Json format )";
             this.sendBtn.UseVisualStyleBackColor = true;
             this.sendBtn.Click += new System.EventHandler(this.sendBtn_Click);
@@ -260,7 +263,7 @@
             this.jsonEditRichTextBox.Location = new System.Drawing.Point(0, 0);
             this.jsonEditRichTextBox.Name = "jsonEditRichTextBox";
             this.jsonEditRichTextBox.Size = new System.Drawing.Size(276, 630);
-            this.jsonEditRichTextBox.TabIndex = 0;
+            this.jsonEditRichTextBox.TabIndex = 3;
             this.jsonEditRichTextBox.Text = "";
             // 
             // checkBox1
@@ -290,6 +293,7 @@
             this.splitContainer3.SplitterDistance = 600;
             this.splitContainer3.SplitterWidth = 8;
             this.splitContainer3.TabIndex = 3;
+            this.splitContainer3.TabStop = false;
             // 
             // DeviceTwinPropertiesForm
             // 

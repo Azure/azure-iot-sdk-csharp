@@ -1,15 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 using Microsoft.Azure.Devices;
 using Microsoft.Azure.Devices.Common.Security;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
+using System.Windows.Forms;
 
 namespace DeviceExplorer
 {
@@ -122,7 +121,7 @@ namespace DeviceExplorer
                     }
                 }
 
-                decimal ttlValue = numericUpDown1.Value;
+                decimal ttlValue = ttlInDaysUpDown.Value;
 
                 var sasBuilder = new SharedAccessSignatureBuilder()
                 {
@@ -132,7 +131,7 @@ namespace DeviceExplorer
                 };
                 
                 sasRichTextBox.Text = deviceConnectionStringWithSAS(sasBuilder.ToSignature()) + "\r\n";
-
+                sasRichTextBox.Focus();
             }
             catch (Exception ex)
             {
