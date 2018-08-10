@@ -5,6 +5,7 @@ using Microsoft.Azure.Devices.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Diagnostics;
+using System.Diagnostics.Tracing;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -15,10 +16,17 @@ namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
     [TestCategory("IoTHub-E2E")]
-    public partial class X509E2ETests
+    public partial class X509E2ETests : IDisposable
     {
         private const string DevicePrefix = "E2E_X509_CSharp_";
         private static TestLogging _log = TestLogging.GetInstance();
+
+        private readonly ConsoleEventListener _listener;
+
+        public X509E2ETests()
+        {
+            _listener = new ConsoleEventListener("Microsoft-Azure-");
+        }
 
         [TestMethod]
         public async Task X509_DeviceSendSingleMessage_Amqp()
@@ -189,6 +197,20 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 await deviceClient.CloseAsync().ConfigureAwait(false);
                 await serviceClient.CloseAsync().ConfigureAwait(false);
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _listener.Dispose();
             }
         }
     }

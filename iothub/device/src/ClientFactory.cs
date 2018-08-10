@@ -8,6 +8,7 @@ namespace Microsoft.Azure.Devices.Client
     using Microsoft.Azure.Devices.Client.Extensions;
     using Microsoft.Azure.Devices.Client.Transport;
     using Microsoft.Azure.Devices.Client.Transport.Mqtt;
+    using Microsoft.Azure.Devices.Shared;
 
     internal class ClientFactory
     {
@@ -367,10 +368,15 @@ namespace Microsoft.Azure.Devices.Client
             pipelineBuilder = pipelineBuilder ?? BuildPipeline();
 
             // Defer concrete InternalClient creation to OpenAsync
-            return new InternalClient(iotHubConnectionString, transportSettings, pipelineBuilder);
+            var client = new InternalClient(iotHubConnectionString, transportSettings, pipelineBuilder);
+
+#if !NET451
+            if (Logging.IsEnabled) Logging.CreateFromConnectionString(client, connectionString, transportSettings);
+#endif
+
+            return client;
         }
-
-
+        
         static IDeviceClientPipelineBuilder BuildPipeline()
         {
             var transporthandlerFactory = new TransportHandlerFactory();

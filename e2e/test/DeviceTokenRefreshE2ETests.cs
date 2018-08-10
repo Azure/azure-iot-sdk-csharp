@@ -4,6 +4,7 @@
 using Microsoft.Azure.Devices.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Diagnostics.Tracing;
 using System.Globalization;
 using System.Net;
 using System.Text;
@@ -13,9 +14,16 @@ namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
     [TestCategory("IoTHub-E2E")]
-    public class DeviceTokenRefreshE2ETests
+    public class DeviceTokenRefreshE2ETests : IDisposable
     {
         private const string DevicePrefix = "E2E_Message_TokenRefresh_";
+
+        private readonly ConsoleEventListener _listener;
+
+        public DeviceTokenRefreshE2ETests()
+        {
+            _listener = new ConsoleEventListener("Microsoft-Azure-");
+        }
 
         [TestMethod]
         public async Task DeviceClient_TokenIsRefreshed_Ok_Http()
@@ -123,6 +131,20 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             Console.WriteLine($"[{DateTime.UtcNow}] CloseAsync");
             await deviceClient.CloseAsync().ConfigureAwait(false);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _listener.Dispose();
+            }
         }
 
         private class TestTokenRefresher : DeviceAuthenticationWithTokenRefresh

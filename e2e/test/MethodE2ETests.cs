@@ -5,6 +5,7 @@ using Microsoft.Azure.Devices.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Diagnostics;
+using System.Diagnostics.Tracing;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,7 +14,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
     [TestCategory("IoTHub-E2E")]
-    public class MethodE2ETests
+    public class MethodE2ETests : IDisposable
     {
         private const string DeviceResponseJson = "{\"name\":\"e2e_test\"}";
         private const string ServiceRequestJson = "{\"a\":123}";
@@ -21,6 +22,13 @@ namespace Microsoft.Azure.Devices.E2ETests
         private const string DevicePrefix = "E2E_Method_CSharp_";
         private const int MaximumRecoveryTimeSeconds = 60;
         private static TestLogging _log = TestLogging.GetInstance();
+
+        private readonly ConsoleEventListener _listener;
+
+        public MethodE2ETests()
+        {
+            _listener = new ConsoleEventListener("Microsoft-Azure-");
+        }
 
         [TestMethod]
         public async Task Method_DeviceReceivesMethodAndResponse_Mqtt()
@@ -135,6 +143,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore] //TODO: #571
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Method_DeviceMethodAmqpConnLostRecovery_Amqp()
@@ -145,6 +154,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore] //TODO: #571
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Method_DeviceMethodAmqpConnLostRecovery_AmqpWs()
@@ -155,6 +165,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore] //TODO: #571
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Method_DeviceMethodSessionLostRecovery_Amqp()
@@ -165,6 +176,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore] //TODO: #571
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Method_DeviceMethodSessionLostRecovery_AmqpWs()
@@ -219,6 +231,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore] //TODO: #571
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Method_DeviceMethodGracefulShutdownRecovery_Amqp()
@@ -229,6 +242,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore] //TODO: #571
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Method_DeviceMethodGracefulShutdownRecovery_AmqpWs()
@@ -411,6 +425,20 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Assert.AreEqual(1, setConnectionStatusChangesHandlerCount);
                 Assert.AreEqual(ConnectionStatus.Disabled, lastConnectionStatus);
                 Assert.AreEqual(ConnectionStatusChangeReason.Client_Close, lastConnectionStatusChangeReason);
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _listener.Dispose();
             }
         }
     }

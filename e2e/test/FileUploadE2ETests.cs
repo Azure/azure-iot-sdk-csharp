@@ -10,16 +10,24 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Tracing;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
     [TestCategory("IoTHub-E2E")]
-    public class FileUploadE2ETests
+    public class FileUploadE2ETests : IDisposable
     {
         private const string DevicePrefix = "E2E_FileUpload_";
         private const int FileSizeSmall = 10 * 1024;
         private const int FileSizeBig = 5120 * 1024;
+
+        private readonly ConsoleEventListener _listener;
+
+        public FileUploadE2ETests()
+        {
+            _listener = new ConsoleEventListener("Microsoft-Azure-");
+        }
 
         [TestMethod]
         public async Task FileUpload_SmallFile_Http()
@@ -216,6 +224,20 @@ namespace Microsoft.Azure.Devices.E2ETests
 #endif
 
             return filePath;
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _listener.Dispose();
+            }
         }
     }
 }
