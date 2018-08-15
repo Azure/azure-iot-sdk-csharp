@@ -23,17 +23,18 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="ArgumentException">If <b>methodName</b> is null or whitespace</exception>
         public MethodInvokeRequest(string methodName, string payload, TimeSpan? responseTimeout, TimeSpan? connectionTimeout)
         {
+            if (string.IsNullOrWhiteSpace(methodName))
+            {
+                throw new ArgumentNullException(nameof(methodName));
+            }
+            this.MethodName = methodName;
+
             if (!string.IsNullOrEmpty(payload))
             {
                 ValidatePayloadIsJson(payload);
                 this.Payload = new JRaw(payload);
             }
-            if (string.IsNullOrWhiteSpace(methodName))
-            {
-                throw new ArgumentException("Canot be empty", nameof(methodName));
-            }
 
-            this.MethodName = methodName;
             this.ResponseTimeout = responseTimeout;
             this.ConnectionTimeout = connectionTimeout; 
         }
