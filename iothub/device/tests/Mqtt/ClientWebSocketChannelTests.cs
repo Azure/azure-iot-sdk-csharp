@@ -118,7 +118,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
         }
 
         [TestMethod]
-        [Ignore]
+        [Ignore] //TODO #318
         public async Task ClientWebSocketChannelWriteAfterCloseTest()
         {
             var websocket = new ClientWebSocket();
@@ -150,7 +150,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
         }
 
         [TestMethod]
-        [Ignore]
+        [Ignore] //TODO #318
         public async Task MqttWebSocketClientAndServerScenario()
         {
             var websocket = new ClientWebSocket();

@@ -109,7 +109,7 @@ namespace Microsoft.Azure.Devices.Api.Test
 
         [ExpectedException(typeof(ObjectDisposedException))]
         [TestMethod]
-        [Ignore] //Issue #318
+        [Ignore] //TODO #318
         public async Task ReadAfterCloseTest()
         {
             var websocket = new ClientWebSocket();
@@ -129,7 +129,7 @@ namespace Microsoft.Azure.Devices.Api.Test
 
         [ExpectedException(typeof(ObjectDisposedException))]
         [TestMethod]
-        [Ignore] //Issue #318
+        [Ignore] //TODO #318
         public async Task WriteAfterCloseTest()
         {
             var websocket = new ClientWebSocket();
@@ -165,7 +165,7 @@ namespace Microsoft.Azure.Devices.Api.Test
 
         [ExpectedException(typeof(ObjectDisposedException))]
         [TestMethod]
-        [Ignore] //Issue #318
+        [Ignore] //TODO #318
         public async Task WriteAfterAbortTest()
         {
             var websocket = new ClientWebSocket();
@@ -213,7 +213,7 @@ namespace Microsoft.Azure.Devices.Api.Test
 
         // The following tests can only be run in Administrator mode
         [TestMethod]
-        [Ignore] //Issue #318
+        [Ignore] //TODO #318
         public async Task LegacyWebSocketReadWriteTest()
         {
             var websocket = new IotHubClientWebSocket(WebSocketConstants.SubProtocols.Amqpwsb10);
@@ -243,7 +243,7 @@ namespace Microsoft.Azure.Devices.Api.Test
 
         [ExpectedException(typeof(ObjectDisposedException))]
         [TestMethod]
-        [Ignore] //Issue #318
+        [Ignore] //TODO #318
         public async Task LegacyWebSocketReadAfterCloseTest()
         {
             var websocket = new IotHubClientWebSocket(WebSocketConstants.SubProtocols.Amqpwsb10);
@@ -258,7 +258,7 @@ namespace Microsoft.Azure.Devices.Api.Test
 
         [ExpectedException(typeof(ObjectDisposedException))]
         [TestMethod]
-        [Ignore] //Issue #318
+        [Ignore] //TODO #318
         public async Task LegacyWebSocketWriteAfterCloseTest()
         {
             var websocket = new IotHubClientWebSocket(WebSocketConstants.SubProtocols.Amqpwsb10);
@@ -272,7 +272,7 @@ namespace Microsoft.Azure.Devices.Api.Test
 
         [ExpectedException(typeof(ObjectDisposedException))]
         [TestMethod]
-        [Ignore] //Issue #318
+        [Ignore] //TODO #318
         public async Task LegacyWebSocketReadAfterAbortTest()
         {
             var websocket = new IotHubClientWebSocket(WebSocketConstants.SubProtocols.Amqpwsb10);
@@ -289,7 +289,7 @@ namespace Microsoft.Azure.Devices.Api.Test
 
         [ExpectedException(typeof(ObjectDisposedException))]
         [TestMethod]
-        [Ignore] //Issue #318
+        [Ignore] //TODO #318
         public async Task LegacyWebSocketWriteAfterAbortTest()
         {
             var websocket = new IotHubClientWebSocket(WebSocketConstants.SubProtocols.Amqpwsb10);

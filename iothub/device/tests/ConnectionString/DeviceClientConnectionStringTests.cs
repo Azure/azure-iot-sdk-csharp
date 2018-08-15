@@ -15,7 +15,8 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         const string LocalCertFilename = "..\\..\\Microsoft.Azure.Devices.Client.Test\\LocalNoChain.pfx";
         const string LocalCertPasswordFile = "..\\..\\Microsoft.Azure.Devices.Client.Test\\TestCertsPassword.txt";
 
-        /* rewrite connection strin gparse tests
+        // TODO #583
+        /* rewrite connection strin gparse tests 
         [TestMethod]
         public void DeviceClient_Create_DeviceScope_SharedAccessSignature_Test()
         {
@@ -77,7 +78,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         */
 
         [TestMethod]
-        [Ignore]
+        [Ignore] // TODO #583
         public void DeviceClientConnectionStringX509CertificateDefaultTest()
         {
             string hostName = "acme.azure-devices.net";
@@ -95,7 +96,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         }
 
         [TestMethod]
-        [Ignore]
+        [Ignore] // TODO #583
         public void DeviceClientConnectionStringX509CertificateAmqpTest()
         {
             string hostName = "acme.azure-devices.net";
@@ -106,7 +107,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         }
 
         [TestMethod]
-        [Ignore]
+        [Ignore] // TODO #583
         public void DeviceClientConnectionStringX509CertificateAmqpWsTest()
         {
             string hostName = "acme.azure-devices.net";
@@ -117,7 +118,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         }
 
         [TestMethod]
-        [Ignore]
+        [Ignore] // TODO #583
         public void DeviceClientConnectionStringX509CertificateAmqpTcpTest()
         {
             string hostName = "acme.azure-devices.net";
@@ -128,7 +129,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         }
 
         [TestMethod]
-        [Ignore]
+        [Ignore] // TODO #583
         public void DeviceClientConnectionStringX509CertificateHttpTest()
         {
             string hostName = "acme.azure-devices.net";
@@ -139,7 +140,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         }
 
         [TestMethod]
-        [Ignore]
+        [Ignore] // TODO #583
         public void DeviceClientConnectionStringX509CertificateMqttTest()
         {
             string hostName = "acme.azure-devices.net";

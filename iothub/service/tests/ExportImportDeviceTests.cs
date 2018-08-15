@@ -108,18 +108,5 @@ namespace Microsoft.Azure.Devices.Api.Test
             Assert.IsTrue(exportimportDevice.ETag == string.Empty, "ETag was not set correctly");
             Assert.IsTrue(exportimportDevice.TwinETag == string.Empty, "Twin ETag was not set correctly");
         }
-
-        //[TestCategory("CIT")]
-        //[TestMethod]
-        //public void ExportImportDeviceTakingDeviceWithEmptyEtag()
-        //{
-        //    // Arrange
-        //    var exportimportDevice = new ExportImportDevice(new Device("device") { ETag = string.Empty }, ImportMode.Create);
-
-        //    // nothing to Act on
-
-        //    // Assert
-        //    Assert.IsTrue(exportimportDevice.ETag == string.Empty, "ETag was not set correctly");
-        //}
     }
 }

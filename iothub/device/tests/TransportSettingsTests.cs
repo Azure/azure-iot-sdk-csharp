@@ -162,7 +162,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        [Ignore]
+        [Ignore] // TODO #582
         public void X509CertificateAmqpTransportSettingsTest()
         {
             string hostName = "acme.azure-devices.net";
@@ -173,7 +173,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        [Ignore]
+        [Ignore] // TODO #582
         public void X509CertificateHttp1TransportSettingsTest()
         {
             string hostName = "acme.azure-devices.net";
@@ -184,7 +184,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        [Ignore]
+        [Ignore] // TODO #582
         public void X509CertificateMqttTransportSettingsTest()
         {
             string hostName = "acme.azure-devices.net";
@@ -217,7 +217,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        [Ignore]
+        [Ignore] // TODO #582
         public void X509CertificateMutipleClientAuthMechanism()
         {
             string hostName = "acme.azure-devices.net";
