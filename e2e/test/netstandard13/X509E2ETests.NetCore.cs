@@ -72,8 +72,8 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             EventHubClient eventHubClient = EventHubClient.CreateFromConnectionString(builder.ToString());
 
-            var eventHubRuntime = await eventHubClient.GetRuntimeInformationAsync().ConfigureAwait(false);
-            var eventHubPartitionsCount = eventHubRuntime.PartitionCount;
+            EventHubRuntimeInformation eventHubRuntime = await eventHubClient.GetRuntimeInformationAsync().ConfigureAwait(false);
+            int eventHubPartitionsCount = eventHubRuntime.PartitionCount;
             string partition = EventHubPartitionKeyResolver.ResolveToPartition(deviceName, eventHubPartitionsCount);
             string consumerGroupName = Configuration.IoTHub.EventHubConsumerGroup;
             return eventHubClient.CreateReceiver(consumerGroupName, partition, DateTime.Now.AddMinutes(-5));
@@ -81,20 +81,38 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private bool VerifyTestMessage(IEnumerable<EventData> events, string deviceName, string payload, string p1Value)
         {
+            if (events == null)
+            {
+                _log.WriteLine($"{nameof(X509E2ETests)}.{nameof(VerifyTestMessage)}: no events received.");
+                return false;
+            }
+
+            _log.WriteLine($"{nameof(X509E2ETests)}.{nameof(VerifyTestMessage)}: {events.Count()} events received.");
+
             foreach (var eventData in events)
             {
-                var data = Encoding.UTF8.GetString(eventData.Body.ToArray());
-                if (data == payload)
+                try
                 {
-                    var connectionDeviceId = eventData.Properties["iothub-connection-device-id"].ToString();
-                    if (string.Equals(connectionDeviceId, deviceName, StringComparison.CurrentCultureIgnoreCase) &&
-                        VerifyKeyValue("property1", p1Value, eventData.Properties))
+                    string data = Encoding.UTF8.GetString(eventData.Body.ToArray());
+                    _log.WriteLine($"{nameof(X509E2ETests)}.{nameof(VerifyTestMessage)}: event data: '{data}'");
+
+                    if (data == payload)
                     {
-                        return true;
+                        var connectionDeviceId = eventData.Properties["iothub-connection-device-id"].ToString();
+                        if (string.Equals(connectionDeviceId, deviceName, StringComparison.CurrentCultureIgnoreCase) &&
+                            VerifyKeyValue("property1", p1Value, eventData.Properties))
+                        {
+                            return true;
+                        }
                     }
+                }
+                catch (Exception ex)
+                {
+                    _log.WriteLine($"{nameof(X509E2ETests)}.{nameof(VerifyTestMessage)}: Cannot read eventData: {ex}");
                 }
             }
 
+            _log.WriteLine($"{nameof(X509E2ETests)}.{nameof(VerifyTestMessage)}: none of the messages matched the expected payload '{payload}'.");
             return false;
         }
         private bool VerifyKeyValue(string checkForKey, string checkForValue, IDictionary<string, object> properties)
