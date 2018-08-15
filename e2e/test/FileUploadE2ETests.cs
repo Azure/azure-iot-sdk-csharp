@@ -165,7 +165,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             string reason, 
             int delayInSec, 
             int durationInSec = 0, 
-            int retryDurationInMilliSec = 24000)
+            int retryDurationInMilliSec = FaultInjection.RecoveryTimeMilliseconds)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
             ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);

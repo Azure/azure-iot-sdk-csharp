@@ -39,8 +39,10 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         public const int DefaultDelayInSec = 1;
         public const int DefaultDurationInSec = 5;
-
+        public const int WaitForDisconnectMilliseconds = 1 * 1000;
         public const int ShortRetryInMilliSec = 3000;
+
+        public const int RecoveryTimeMilliseconds = 5 * 60 * 1000;
 
 #if NET451
         public static int EventHubEpoch = 0;

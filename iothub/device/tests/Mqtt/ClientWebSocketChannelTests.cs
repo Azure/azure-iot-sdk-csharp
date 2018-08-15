@@ -80,7 +80,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
         }
 
         // The following tests can only be run in Administrator mode
-
+        [Ignore] //TODO #318
         [TestMethod]
         public async Task ClientWebSocketChannelReadAfterCloseTest()
         {
