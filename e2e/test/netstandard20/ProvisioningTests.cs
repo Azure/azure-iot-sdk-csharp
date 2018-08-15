@@ -170,7 +170,16 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         public async Task ProvisioningDeviceClient_InvalidRegistrationId_TpmRegister_Http_Fail()
         {
-            await ProvisioningDeviceClient_InvalidRegistrationId_TpmRegister_Fail(nameof(ProvisioningTransportHandlerHttp)).ConfigureAwait(false);
+            try
+            {
+                await ProvisioningDeviceClient_InvalidRegistrationId_TpmRegister_Fail(nameof(ProvisioningTransportHandlerHttp)).ConfigureAwait(false);
+                Assert.Fail();
+            }
+            catch (ProvisioningTransportException ex)
+            {
+                // TODO # 576 ProvisioningTransportException / HttpOperationException when provisioning with an invalid registrationId. 
+                Console.WriteLine($"Exception caught: {ex}");
+            }
         }
 
         [TestMethod]
@@ -200,8 +209,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Assert.AreEqual(ProvisioningRegistrationStatusType.Failed, result.Status);
                 Assert.IsNull(result.AssignedHub);
                 Assert.IsNull(result.DeviceId);
-                Assert.AreEqual("Enrollment not found", result.ErrorMessage);
-                Assert.AreEqual(0x00062ae9, result.ErrorCode);
+                Assert.AreEqual(400201, result.ErrorCode);
             }
         }
 
