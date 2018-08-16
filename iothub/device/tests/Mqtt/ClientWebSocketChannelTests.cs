@@ -18,10 +18,11 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
+    [TestCategory("Unit")]
     public class ClientWebSocketChannelTests
     {
         const string IotHubName = "localhost";
-        const int Port = 54321;
+        const int Port = 12346;
         static HttpListener listener;
         static ClientWebSocketChannel clientWebSocketChannel;
         static ServerWebSocketChannel serverWebSocketChannel;
@@ -58,9 +59,6 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
 
         [ExpectedException(typeof(ClosedChannelException))]
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("WebSocket")]
-        [Ignore]
         public async Task ClientWebSocketChannelWriteWithoutConnectTest()
         {
             var websocket = new ClientWebSocket();
@@ -72,9 +70,6 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
 
         [ExpectedException(typeof(ClosedChannelException))]
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("WebSocket")]
-        [Ignore]
         public async Task ClientWebSocketChannelReadWithoutConnectTest()
         {
             var websocket = new ClientWebSocket();
@@ -87,9 +82,6 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
         // The following tests can only be run in Administrator mode
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("WebSocket")]
-        [Ignore]
         public async Task ClientWebSocketChannelReadAfterCloseTest()
         {
             var websocket = new ClientWebSocket();
@@ -126,9 +118,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("WebSocket")]
-        [Ignore]
+        [Ignore] //TODO #318
         public async Task ClientWebSocketChannelWriteAfterCloseTest()
         {
             var websocket = new ClientWebSocket();
@@ -147,6 +137,9 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
                 await clientWebSocketChannel.WriteAndFlushAsync(Unpooled.Buffer()).ConfigureAwait(false);
                 Assert.Fail("Should have thrown ClosedChannelException");
             }
+            catch (ClosedChannelException)
+            {
+            }
             catch (AggregateException e)
             {
                 var innerException = e.InnerException as ClosedChannelException;
@@ -157,9 +150,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("WebSocket")]
-        [Ignore]
+        [Ignore] //TODO #318
         public async Task MqttWebSocketClientAndServerScenario()
         {
             var websocket = new ClientWebSocket();

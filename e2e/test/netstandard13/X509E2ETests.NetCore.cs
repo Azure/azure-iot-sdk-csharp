@@ -23,21 +23,14 @@ namespace Microsoft.Azure.Devices.E2ETests
         //// It then verifies the message is received at the eventHubClient.
         internal async Task SendSingleMessageX509(Client.TransportType transport)
         {
-            // TODO: Update Jenkins Config
-            string endpoint = Configuration.IoTHub.EventHubString;
-            if (endpoint.IsNullOrWhiteSpace())
-            {
-                return;
-            }
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, TestDeviceType.X509).ConfigureAwait(false);
 
-            Tuple<string, string> deviceInfo = TestUtil.CreateDeviceWithX509(DevicePrefix, hostName, registryManager);
-
-            PartitionReceiver eventHubReceiver = await CreateEventHubReceiver(deviceInfo.Item1).ConfigureAwait(false);
+            PartitionReceiver eventHubReceiver = await CreateEventHubReceiver(testDevice.Id).ConfigureAwait(false);
 
             X509Certificate2 cert = Configuration.IoTHub.GetCertificateWithPrivateKey();
 
-            var auth = new DeviceAuthenticationWithX509Certificate(deviceInfo.Item1, cert);
-            var deviceClient = DeviceClient.Create(deviceInfo.Item2, auth, transport);
+            var auth = new DeviceAuthenticationWithX509Certificate(testDevice.Id, cert);
+            var deviceClient = DeviceClient.Create(testDevice.IoTHubHostName, auth, transport);
 
             try
             {
@@ -54,7 +47,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 while (!isReceived && sw.Elapsed.Minutes < 1)
                 {
                     var events = await eventHubReceiver.ReceiveAsync(int.MaxValue, TimeSpan.FromSeconds(5)).ConfigureAwait(false);
-                    isReceived = VerifyTestMessage(events, deviceInfo.Item1, payload, p1Value);
+                    isReceived = VerifyTestMessage(events, testDevice.Id, payload, p1Value);
                 }
 
                 sw.Stop();
@@ -65,7 +58,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 await deviceClient.CloseAsync().ConfigureAwait(false);
                 await eventHubReceiver.CloseAsync().ConfigureAwait(false);
-                await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager).ConfigureAwait(false);
             }
         }
         #endregion
@@ -73,12 +65,17 @@ namespace Microsoft.Azure.Devices.E2ETests
         #region Helper Functions
         private async Task<PartitionReceiver> CreateEventHubReceiver(string deviceName)
         {
-            string endpoint = Configuration.IoTHub.EventHubString;
-            EventHubClient eventHubClient = EventHubClient.CreateFromConnectionString(endpoint);
+            var builder = new EventHubsConnectionStringBuilder(Configuration.IoTHub.EventHubString)
+            {
+                EntityPath = Configuration.IoTHub.EventHubCompatibleName
+            };
+
+            EventHubClient eventHubClient = EventHubClient.CreateFromConnectionString(builder.ToString());
+
             var eventHubRuntime = await eventHubClient.GetRuntimeInformationAsync().ConfigureAwait(false);
             var eventHubPartitionsCount = eventHubRuntime.PartitionCount;
             string partition = EventHubPartitionKeyResolver.ResolveToPartition(deviceName, eventHubPartitionsCount);
-            string consumerGroupName = Configuration.IoTHub.ConsumerGroup;
+            string consumerGroupName = Configuration.IoTHub.EventHubConsumerGroup;
             return eventHubClient.CreateReceiver(consumerGroupName, partition, DateTime.Now.AddMinutes(-5));
         }
 
@@ -87,11 +84,10 @@ namespace Microsoft.Azure.Devices.E2ETests
             foreach (var eventData in events)
             {
                 var data = Encoding.UTF8.GetString(eventData.Body.ToArray());
-                if (data.Equals(payload))
+                if (data == payload)
                 {
                     var connectionDeviceId = eventData.Properties["iothub-connection-device-id"].ToString();
                     if (string.Equals(connectionDeviceId, deviceName, StringComparison.CurrentCultureIgnoreCase) &&
-                        eventData.Properties.Count == 1 &&
                         VerifyKeyValue("property1", p1Value, eventData.Properties))
                     {
                         return true;
@@ -105,9 +101,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             foreach (var key in properties.Keys)
             {
-                if (checkForKey.Equals(key))
+                if (checkForKey == key)
                 {
-                    if (properties[checkForKey].Equals(checkForValue))
+                    if ((string)properties[checkForKey] == checkForValue)
                     {
                         return true;
                     }

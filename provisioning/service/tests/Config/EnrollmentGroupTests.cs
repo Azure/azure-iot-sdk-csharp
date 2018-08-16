@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 {
     [TestClass]
+    [TestCategory("Unit")]
     public class EnrollmentGroupTests
     {
         private const string SampleEnrollmentGroupId = "valid-enrollment-group-id";
@@ -75,7 +76,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         /* SRS_ENROLLMENT_GROUP_21_001: [The constructor shall store the provided parameters.] */
         [TestMethod]
-        [TestCategory("DevService")]
         public void EnrollmentGroupConstructorSucceed()
         {
             // arrange - act
@@ -88,7 +88,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         /* SRS_ENROLLMENT_GROUP_21_002: [The constructor shall throws ArgumentException if one of the provided parameters is null.] */
         [TestMethod]
-        [TestCategory("DevService")]
         public void EnrollmentGroupConstructorThrowsOnInvalidParameters()
         {
             // arrange - act - assert
@@ -103,7 +102,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         /* SRS_ENROLLMENT_GROUP_21_003: [The constructor shall throws ProvisioningServiceClientException if one of the 
                                                 provided parameters in JSON is not valid.] */
         [TestMethod]
-        [TestCategory("DevService")]
         public void EnrollmentGroupConstructorJSONThrowsOnNonEnrollmentGroupID()
         {
             // arrange
@@ -145,7 +143,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         [TestMethod]
-        [TestCategory("DevService")]
         public void EnrollmentGroupConstructorJSONThrowsOnNonAttestation()
         {
             // arrange
@@ -170,7 +167,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         /* SRS_ENROLLMENT_GROUP_21_004: [The constructor shall store all parameters in the JSON.] */
         [TestMethod]
-        [TestCategory("DevService")]
         public void EnrollmentGroupConstructorJSONSucceed()
         {
             // arrange
@@ -189,7 +185,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         [TestMethod]
-        [TestCategory("DevService")]
         public void EnrollmentGroupConstructorJSONSucceedOnMinimumJSON()
         {
             // arrange

@@ -67,24 +67,33 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             bool ShouldRetry(int retryCount, Exception lastException, out TimeSpan retryInterval)
             {
-                Debug.WriteLine(this.GetHashCode() + " IotHubRuntimeOperationRetryStrategy.ShouldRetry() " + retryCount);
-
-                if (lastException is IotHubThrottledException)
+                try
                 {
-                    return this.throttlingRetryStrategy(retryCount, lastException, out retryInterval);
-                }
+                    if (Logging.IsEnabled) Logging.Enter(this, retryCount, lastException, $"{nameof(IotHubRuntimeOperationRetryStrategy)}.{nameof(ShouldRetry)}");
 
-                return this.retryStrategy.GetShouldRetry()(retryCount, lastException, out retryInterval);
+                    if (lastException is IotHubThrottledException)
+                    {
+                        return this.throttlingRetryStrategy(retryCount, lastException, out retryInterval);
+                    }
+
+                    return this.retryStrategy.GetShouldRetry()(retryCount, lastException, out retryInterval);
+                }
+                finally
+                {
+                    if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(IotHubRuntimeOperationRetryStrategy)}.{nameof(ShouldRetry)}");
+                }
             }
         }
 
         internal RetryPolicy internalRetryPolicy;
-        
+
         public void SetRetryPolicy(IRetryPolicy retryPolicy)
         {
             this.internalRetryPolicy = new RetryPolicy(
                 new IotHubTransientErrorIgnoreStrategy(), 
                 new IotHubRuntimeOperationRetryStrategy(new RetryStrategyWrapper(retryPolicy)));
+
+            if (Logging.IsEnabled) Logging.Associate(this, this.internalRetryPolicy, $"{nameof(RetryDelegatingHandler)}.{nameof(SetRetryPolicy)}");
         }
 
         public RetryDelegatingHandler(IPipelineContext context)
@@ -92,13 +101,17 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             RetryStrategy retryStrategy = new ExponentialBackoff(RetryCount, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100));
             this.internalRetryPolicy = new RetryPolicy(new IotHubTransientErrorIgnoreStrategy(), new IotHubRuntimeOperationRetryStrategy(retryStrategy));
+
+            if (Logging.IsEnabled) Logging.Associate(this, this.internalRetryPolicy, $"{nameof(RetryDelegatingHandler)}.{nameof(SetRetryPolicy)}");
         }
-        
+
 
         public override async Task SendEventAsync(Message message, CancellationToken cancellationToken)
         {
             try
             {
+                if (Logging.IsEnabled) Logging.Enter(this, message, cancellationToken, $"{nameof(RetryDelegatingHandler)}.{nameof(SendEventAsync)}");
+
                 var sendState = new SendMessageState();
                 await this.internalRetryPolicy.ExecuteAsync(() =>
                 {
@@ -112,12 +125,18 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 GetNormalizedIotHubException(ex).Throw();
             }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, message, cancellationToken, $"{nameof(RetryDelegatingHandler)}.{nameof(SendEventAsync)}");
+            }
         }
 
         public override async Task SendMethodResponseAsync(MethodResponseInternal method, CancellationToken cancellationToken)
         {
             try
             {
+                if (Logging.IsEnabled) Logging.Enter(this, method, cancellationToken, $"{nameof(RetryDelegatingHandler)}.{nameof(SendMethodResponseAsync)}");
+
                 var sendState = new SendMessageState();
                 await this.internalRetryPolicy.ExecuteAsync(() =>
                 {
@@ -128,14 +147,18 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 GetNormalizedIotHubException(ex).Throw();
             }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, method, cancellationToken, $"{nameof(RetryDelegatingHandler)}.{nameof(SendMethodResponseAsync)}");
+            }
         }
 
         public override async Task SendEventAsync(IEnumerable<Message> messages, CancellationToken cancellationToken)
         {
-            Debug.WriteLine(cancellationToken.GetHashCode() + " RetryDelegatingHandler.SendEventAsync() ENTER");
-
             try
             {
+                if (Logging.IsEnabled) Logging.Enter(this, messages, cancellationToken, $"{nameof(RetryDelegatingHandler)}.{nameof(SendEventAsync)}");
+
                 var sendState = new SendMessageState();
                 IEnumerable<Message> messageList = messages as IList<Message> ?? messages.ToList();
                 await this.internalRetryPolicy.ExecuteAsync(() =>
@@ -152,7 +175,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             finally
             {
-                Debug.WriteLine(cancellationToken.GetHashCode() + " RetryDelegatingHandler.SendEventAsync() EXIT");
+                if (Logging.IsEnabled) Logging.Exit(this, messages, cancellationToken, $"{nameof(RetryDelegatingHandler)}.{nameof(SendEventAsync)}");
             }
         }
 
@@ -160,6 +183,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             try
             {
+                if (Logging.IsEnabled) Logging.Enter(this, cancellationToken, $"{nameof(RetryDelegatingHandler)}.{nameof(ReceiveAsync)}");
+
                 return await this.internalRetryPolicy.ExecuteAsync(() =>
                 {
                     return base.ReceiveAsync(cancellationToken);
@@ -170,12 +195,18 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 GetNormalizedIotHubException(ex).Throw();
                 throw;
             }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, cancellationToken, $"{nameof(RetryDelegatingHandler)}.{nameof(ReceiveAsync)}");
+            }
         }
 
         public override async Task<Message> ReceiveAsync(TimeSpan timeout, CancellationToken cancellationToken)
         {
             try
             {
+                if (Logging.IsEnabled) Logging.Enter(this, timeout, cancellationToken, $"{nameof(RetryDelegatingHandler)}.{nameof(ReceiveAsync)}");
+
                 return await this.internalRetryPolicy.ExecuteAsync(
                     () => base.ReceiveAsync(timeout, cancellationToken), 
                     cancellationToken).ConfigureAwait(false);
@@ -185,12 +216,18 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 GetNormalizedIotHubException(ex).Throw();
                 throw;
             }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, timeout, cancellationToken, $"{nameof(RetryDelegatingHandler)}.{nameof(ReceiveAsync)}");
+            }
         }
 
         public override async Task EnableMethodsAsync(CancellationToken cancellationToken)
         {
             try
             {
+                if (Logging.IsEnabled) Logging.Enter(this, cancellationToken, $"{nameof(RetryDelegatingHandler)}.{nameof(EnableMethodsAsync)}");
+
                 await this.internalRetryPolicy.ExecuteAsync(
                     () => base.EnableMethodsAsync(cancellationToken), 
                     cancellationToken).ConfigureAwait(false);
@@ -199,12 +236,18 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 GetNormalizedIotHubException(ex).Throw();
             }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, cancellationToken, $"{nameof(RetryDelegatingHandler)}.{nameof(EnableMethodsAsync)}");
+            }
         }
 
         public override async Task DisableMethodsAsync(CancellationToken cancellationToken)
         {
             try
             {
+                if (Logging.IsEnabled) Logging.Enter(this, cancellationToken, $"{nameof(RetryDelegatingHandler)}.{nameof(DisableMethodsAsync)}");
+
                 await this.internalRetryPolicy.ExecuteAsync(
                     () => base.DisableMethodsAsync(cancellationToken), 
                     cancellationToken).ConfigureAwait(false);
@@ -213,12 +256,18 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 GetNormalizedIotHubException(ex).Throw();
             }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, cancellationToken, $"{nameof(RetryDelegatingHandler)}.{nameof(DisableMethodsAsync)}");
+            }
         }
 
         public override async Task EnableEventReceiveAsync(CancellationToken cancellationToken)
         {
             try
             {
+                if (Logging.IsEnabled) Logging.Enter(this, cancellationToken, $"{nameof(RetryDelegatingHandler)}.{nameof(EnableEventReceiveAsync)}");
+
                 await this.internalRetryPolicy.ExecuteAsync(
                     () => base.EnableEventReceiveAsync(cancellationToken),
                     cancellationToken).ConfigureAwait(false);
@@ -227,12 +276,18 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 GetNormalizedIotHubException(ex).Throw();
             }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, cancellationToken, $"{nameof(RetryDelegatingHandler)}.{nameof(EnableEventReceiveAsync)}");
+            }
         }
 
         public override async Task DisableEventReceiveAsync(CancellationToken cancellationToken)
         {
             try
             {
+                if (Logging.IsEnabled) Logging.Enter(this, cancellationToken, $"{nameof(RetryDelegatingHandler)}.{nameof(DisableEventReceiveAsync)}");
+
                 await this.internalRetryPolicy.ExecuteAsync(
                     () => base.DisableEventReceiveAsync(cancellationToken),
                     cancellationToken).ConfigureAwait(false);
@@ -241,12 +296,18 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 GetNormalizedIotHubException(ex).Throw();
             }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, cancellationToken, $"{nameof(RetryDelegatingHandler)}.{nameof(DisableEventReceiveAsync)}");
+            }
         }
 
         public override async Task EnableTwinPatchAsync(CancellationToken cancellationToken)
         {
             try
             {
+                if (Logging.IsEnabled) Logging.Enter(this, cancellationToken, $"{nameof(RetryDelegatingHandler)}.{nameof(EnableTwinPatchAsync)}");
+
                 await this.internalRetryPolicy.ExecuteAsync(
                     () => base.EnableTwinPatchAsync(cancellationToken),
                     cancellationToken).ConfigureAwait(false);
@@ -255,12 +316,18 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 GetNormalizedIotHubException(ex).Throw();
             }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, cancellationToken, $"{nameof(RetryDelegatingHandler)}.{nameof(EnableTwinPatchAsync)}");
+            }
         }
-        
+
         public override async Task<Twin> SendTwinGetAsync(CancellationToken cancellationToken)
         {
             try
             {
+                if (Logging.IsEnabled) Logging.Enter(this, cancellationToken, $"{nameof(RetryDelegatingHandler)}.{nameof(SendTwinGetAsync)}");
+
                 return await this.internalRetryPolicy.ExecuteAsync(
                     () => base.SendTwinGetAsync(cancellationToken),
                     cancellationToken).ConfigureAwait(false);
@@ -270,12 +337,19 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 GetNormalizedIotHubException(ex).Throw();
                 throw;
             }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, cancellationToken, $"{nameof(RetryDelegatingHandler)}.{nameof(SendTwinGetAsync)}");
+            }
+
         }
-        
+
         public override async Task SendTwinPatchAsync(TwinCollection reportedProperties,  CancellationToken cancellationToken)
         {
             try
             {
+                if (Logging.IsEnabled) Logging.Enter(this, reportedProperties, cancellationToken, $"{nameof(RetryDelegatingHandler)}.{nameof(SendTwinPatchAsync)}");
+
                 await this.internalRetryPolicy.ExecuteAsync(
                     () => base.SendTwinPatchAsync(reportedProperties, cancellationToken), 
                     cancellationToken).ConfigureAwait(false);
@@ -284,12 +358,18 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 GetNormalizedIotHubException(ex).Throw();
             }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, reportedProperties, cancellationToken, $"{nameof(RetryDelegatingHandler)}.{nameof(SendTwinPatchAsync)}");
+            }
         }
 
         public override async Task RecoverConnections(object o, ConnectionType connectionType, CancellationToken cancellationToken)
         {
             try
             {
+                if (Logging.IsEnabled) Logging.Enter(this, o, connectionType, cancellationToken, $"{nameof(RetryDelegatingHandler)}.{nameof(RecoverConnections)}");
+
                 await this.internalRetryPolicy.ExecuteAsync(
                     () => base.RecoverConnections(o, connectionType, cancellationToken), 
                     cancellationToken).ConfigureAwait(false);
@@ -298,12 +378,18 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 GetNormalizedIotHubException(ex).Throw();
             }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, o, cancellationToken, $"{nameof(RetryDelegatingHandler)}.{nameof(RecoverConnections)}");
+            }
         }
 
         public override async Task CompleteAsync(string lockToken, CancellationToken cancellationToken)
         {
             try
             {
+                if (Logging.IsEnabled) Logging.Enter(this, lockToken, cancellationToken, $"{nameof(RetryDelegatingHandler)}.{nameof(CompleteAsync)}");
+
                 await this.internalRetryPolicy.ExecuteAsync(
                     () => base.CompleteAsync(lockToken, cancellationToken), 
                     cancellationToken).ConfigureAwait(false);
@@ -312,12 +398,18 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 GetNormalizedIotHubException(ex).Throw();
             }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, lockToken, cancellationToken, $"{nameof(RetryDelegatingHandler)}.{nameof(CompleteAsync)}");
+            }
         }
 
         public override async Task AbandonAsync(string lockToken, CancellationToken cancellationToken)
         {
             try
             {
+                if (Logging.IsEnabled) Logging.Enter(this, lockToken, cancellationToken, $"{nameof(RetryDelegatingHandler)}.{nameof(AbandonAsync)}");
+
                 await this.internalRetryPolicy.ExecuteAsync(
                     () => base.AbandonAsync(lockToken, cancellationToken), 
                     cancellationToken).ConfigureAwait(false);
@@ -326,12 +418,18 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 GetNormalizedIotHubException(ex).Throw();
             }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, lockToken, cancellationToken, $"{nameof(RetryDelegatingHandler)}.{nameof(AbandonAsync)}");
+            }
         }
 
         public override async Task RejectAsync(string lockToken, CancellationToken cancellationToken)
         {
             try
             {
+                if (Logging.IsEnabled) Logging.Enter(this, lockToken, cancellationToken, $"{nameof(RetryDelegatingHandler)}.{nameof(RejectAsync)}");
+
                 await this.internalRetryPolicy.ExecuteAsync(
                     () => base.RejectAsync(lockToken, cancellationToken), 
                     cancellationToken).ConfigureAwait(false);
@@ -340,12 +438,18 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 GetNormalizedIotHubException(ex).Throw();
             }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, lockToken, cancellationToken, $"{nameof(RetryDelegatingHandler)}.{nameof(RejectAsync)}");
+            }
         }
 
         public override async Task OpenAsync(bool explicitOpen, CancellationToken cancellationToken)
         {
             try
             {
+                if (Logging.IsEnabled) Logging.Enter(this, explicitOpen, cancellationToken, $"{nameof(RetryDelegatingHandler)}.{nameof(OpenAsync)}");
+
                 Debug.WriteLine(cancellationToken.GetHashCode() + " RetryDelegatingHandler.OpenAsync()");
                 await this.internalRetryPolicy.ExecuteAsync(
                     () => base.OpenAsync(explicitOpen, cancellationToken), 
@@ -355,6 +459,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 GetNormalizedIotHubException(ex).Throw();
             }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, explicitOpen, cancellationToken, $"{nameof(RetryDelegatingHandler)}.{nameof(OpenAsync)}");
+            }
+
         }
 
         async Task SendMessageWithRetryAsync(SendMessageState sendState, IEnumerable<Message> messages, Func<Task> action)
@@ -415,7 +524,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
 
             foreach (Message message in messageList)
-            {               
+            {
                 if (!message.IsBodyCalled || message.TryResetBody(0))
                 {
                     continue;
@@ -428,7 +537,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         static void EnsureStreamIsInOriginalState(SendMessageState sendState, Message message)
         {
-            //We do not retry if a message was attempted to read the body stream and the stream is not seekable;             
+            //We do not retry if a message was attempted to read the body stream and the stream is not seekable;
             if (!message.IsBodyCalled || message.TryResetBody(sendState.InitialStreamPosition))
             {
                 return;

@@ -13,13 +13,13 @@
     using NSubstitute.ExceptionExtensions;
 
     [TestClass]
+    [TestCategory("Unit")]
     public class DeviceClientTests
     {
         const string fakeConnectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
         const string fakeConnectionStringWithModuleId = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=;ModuleId=mod1";
 
         [TestMethod]
-        [TestCategory("ModuleClient")]
         [ExpectedException(typeof(ArgumentException))]
         public void DeviceClient_CreateFromConnectionString_WithModuleIdThrows()
         {
@@ -28,7 +28,6 @@
 
         /* Tests_SRS_DEVICECLIENT_28_002: [This property shall be defaulted to 240000 (4 minutes).] */
         [TestMethod]
-        [TestCategory("DeviceClient")]
         public void DeviceClient_OperationTimeoutInMilliseconds_Property_DefaultValue()
         {
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
@@ -37,7 +36,6 @@
         }
 
         [TestMethod]
-        [TestCategory("IoTHubClientDiagnostic")]
         public void DeviceClient_DefaultDiagnosticSamplingPercentage_Ok()
         {
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
@@ -46,7 +44,6 @@
         }
 
         [TestMethod]
-        [TestCategory("IoTHubClientDiagnostic")]
         public void DeviceClient_SetDiagnosticSamplingPercentageInRange_Ok()
         {
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
@@ -56,7 +53,6 @@
         }
 
         [TestMethod]
-        [TestCategory("IoTHubClientDiagnostic")]
         public void DeviceClient_SetDiagnosticSamplingPercentageOutOfRange_Fail()
         {
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
@@ -86,7 +82,6 @@
         }
 
         [TestMethod]
-        [TestCategory("IoTHubClientDiagnostic")]
         public void DeviceClient_StartDiagLocallyThatDoNotSupport_ThrowException()
         {
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString, TransportType.Http1);
@@ -102,7 +97,6 @@
         }
 
         [TestMethod]
-        [TestCategory("IoTHubClientDiagnostic")]
         public void DeviceClient_StartDiagLocallyWithMutipleProtocolThatDoNotSupport_ThrowException()
         {
             var transportSettings = new ITransportSettings[]
@@ -125,7 +119,6 @@
         }
 
         [TestMethod]
-        [TestCategory("DeviceClient")]
         public void DeviceClient_OperationTimeoutInMilliseconds_Property_GetSet()
         {
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
@@ -135,7 +128,6 @@
         }
 
         [TestMethod]
-        [TestCategory("DeviceClient")]
         public async Task DeviceClient_OperationTimeoutInMilliseconds_Equals_0_Open()
         {
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
@@ -151,7 +143,6 @@
         }
 
         [TestMethod]
-        [TestCategory("DeviceClient")]
         public async Task DeviceClient_OperationTimeoutInMilliseconds_Equals_0_Receive()
         {
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
@@ -167,7 +158,6 @@
         }
 
         [TestMethod]
-        [TestCategory("DeviceClient")]
         // Tests_SRS_DEVICECLIENT_10_012: [** If the given methodRequestInternal argument is null, fail silently **]**
         public async Task DeviceClient_OnMethodCalled_NullMethodRequest()
         {
@@ -188,7 +178,6 @@
         }
 
         [TestMethod]
-        [TestCategory("DeviceClient")]
         public async Task DeviceClient_OnMethodCalled_MethodRequestHasEmptyBody()
         {
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
@@ -210,7 +199,6 @@
         }
 
         [TestMethod]
-        [TestCategory("DeviceClient")]
         // Tests_SRS_DEVICECLIENT_28_020: [** If the given methodRequestInternal data is not valid json, respond with status code 400 (BAD REQUEST) **]**
         public async Task DeviceClient_OnMethodCalled_MethodRequestHasInvalidJson()
         {
@@ -232,7 +220,6 @@
         }
 
         [TestMethod]
-        [TestCategory("DeviceClient")]
         // Tests_SRS_DEVICECLIENT_10_011: [ The OnMethodCalled shall invoke the specified delegate. ]
         public async Task DeviceClient_OnMethodCalled_MethodRequestHasValidJson()
         {
@@ -254,7 +241,6 @@
         }
 
         [TestMethod]
-        [TestCategory("DeviceClient")]
         // Tests_SRS_DEVICECLIENT_28_021: [** If the MethodResponse from the MethodHandler is not valid json, respond with status code 500 (USER CODE EXCEPTION) **]**
         public async Task DeviceClient_OnMethodCalled_MethodResponseHasInvalidJson()
         {
@@ -276,7 +262,6 @@
         }
 
         [TestMethod]
-        [TestCategory("DeviceClient")]
         // Tests_SRS_DEVICECLIENT_10_012: [** If the given methodRequestInternal argument is null, fail silently **]**
         public async Task DeviceClient_OnMethodCalled_NullMethodRequest_With_SetMethodHandler()
         {
@@ -297,7 +282,6 @@
         }
 
         [TestMethod]
-        [TestCategory("DeviceClient")]
         public async Task DeviceClient_OnMethodCalled_MethodRequestHasEmptyBody_With_SetMethodHandler()
         {
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
@@ -319,7 +303,6 @@
         }
 
         [TestMethod]
-        [TestCategory("DeviceClient")]
         // Tests_SRS_DEVICECLIENT_10_011: [ The OnMethodCalled shall invoke the specified delegate. ]
         // Tests_SRS_DEVICECLIENT_03_013: [Otherwise, the MethodResponseInternal constructor shall be invoked with the result supplied.]
         public async Task DeviceClient_OnMethodCalled_MethodRequestHasValidJson_With_SetMethodHandler()
@@ -342,7 +325,6 @@
         }
 
         [TestMethod]
-        [TestCategory("DeviceClient")]
         // Tests_SRS_DEVICECLIENT_24_002: [ The OnMethodCalled shall invoke the default delegate if there is no specified delegate for that method. ]
         // Tests_SRS_DEVICECLIENT_03_013: [Otherwise, the MethodResponseInternal constructor shall be invoked with the result supplied.]
         public async Task DeviceClient_OnMethodCalled_MethodRequestHasValidJson_With_SetMethodDefaultHandler()
@@ -365,7 +347,6 @@
         }
 
         [TestMethod]
-        [TestCategory("DeviceClient")]
         // Tests_SRS_DEVICECLIENT_24_002: [ The OnMethodCalled shall invoke the default delegate if there is no specified delegate for that method. ]
         // Tests_SRS_DEVICECLIENT_03_013: [Otherwise, the MethodResponseInternal constructor shall be invoked with the result supplied.]
         public async Task DeviceClient_OnMethodCalled_MethodRequestHasValidJson_With_SetMethodHandlerNotMatchedAndDefaultHandler()
@@ -395,7 +376,6 @@
         }
 
         [TestMethod]
-        [TestCategory("DeviceClient")]
         // Tests_SRS_DEVICECLIENT_10_011: [ The OnMethodCalled shall invoke the specified delegate. ]
         // Tests_SRS_DEVICECLIENT_03_013: [Otherwise, the MethodResponseInternal constructor shall be invoked with the result supplied.]
         public async Task DeviceClient_OnMethodCalled_MethodRequestHasValidJson_With_SetMethodHandlerAndDefaultHandler()
@@ -425,7 +405,6 @@
         }
 
         [TestMethod]
-        [TestCategory("DeviceClient")]
         // Tests_SRS_DEVICECLIENT_10_011: [ The OnMethodCalled shall invoke the specified delegate. ]
         // Tests_SRS_DEVICECLIENT_03_012: [If the MethodResponse does not contain result, the MethodResponseInternal constructor shall be invoked with no results.]
         public async Task DeviceClient_OnMethodCalled_MethodRequestHasValidJson_With_SetMethodHandler_With_No_Result()
@@ -448,7 +427,6 @@
         }
 
         [TestMethod]
-        [TestCategory("DeviceClient")]
         // Tests_SRS_DEVICECLIENT_28_021: [** If the MethodResponse from the MethodHandler is not valid json, respond with status code 500 (USER CODE EXCEPTION) **]**
         public async Task DeviceClientOnMethodCalledMethodResponseHasInvalidJsonWithSetMethodHandler()
         {
@@ -470,7 +448,6 @@
         }
 
         [TestMethod]
-        [TestCategory("DeviceClient")]
         // Tests_SRS_DEVICECLIENT_10_013: [** If the given method does not have an associated delegate and no default delegate was registered, respond with status code 501 (METHOD NOT IMPLEMENTED) **]**
         public async Task DeviceClientOnMethodCalledNoMethodHandler()
         {
@@ -486,7 +463,6 @@
         }
 
         [TestMethod]
-        [TestCategory("DeviceClient")]
         // Tests_SRS_DEVICECLIENT_10_001: [ It shall lazy-initialize the deviceMethods property. ]
         // Tests_SRS_DEVICECLIENT_10_003: [ The given delegate will only be added if it is not null. ]
         public async Task DeviceClientSetMethodHandlerSetFirstMethodHandler()
@@ -539,7 +515,6 @@
         }
 
         [TestMethod]
-        [TestCategory("DeviceClient")]
         // Tests_SRS_DEVICECLIENT_10_001: [ It shall lazy-initialize the deviceMethods property. ]
         // Tests_SRS_DEVICECLIENT_10_003: [ The given delegate will only be added if it is not null. ]
         public async Task DeviceClientSetMethodHandlerSetFirstMethodDefaultHandler()
@@ -592,7 +567,6 @@
         }
 
         [TestMethod]
-        [TestCategory("DeviceClient")]
         // Tests_SRS_DEVICECLIENT_10_002: [ If the given methodName already has an associated delegate, the existing delegate shall be removed. ]
         public async Task DeviceClientSetMethodHandlerOverwriteExistingDelegate()
         {
@@ -653,7 +627,6 @@
         }
 
         [TestMethod]
-        [TestCategory("DeviceClient")]
         // Tests_SRS_DEVICECLIENT_24_001: [ If the default callback has already been set, it is replaced with the new callback. ]
         public async Task DeviceClientSetMethodHandlerOverwriteExistingDefaultDelegate()
         {
@@ -714,7 +687,6 @@
         }
 
         [TestMethod]
-        [TestCategory("DeviceClient")]
         // Tests_SRS_DEVICECLIENT_10_004: [ The deviceMethods property shall be deleted if the last delegate has been removed. ]
         // Tests_SRS_DEVICECLIENT_10_006: [ It shall DisableMethodsAsync when the last delegate has been removed. ]
         public async Task DeviceClientSetMethodHandlerUnsetLastMethodHandler()
@@ -759,7 +731,6 @@
         }
 
         [TestMethod]
-        [TestCategory("DeviceClient")]
         // Tests_SRS_DEVICECLIENT_10_004: [ The deviceMethods property shall be deleted if the last delegate has been removed. ]
         // Tests_SRS_DEVICECLIENT_10_006: [ It shall DisableMethodsAsync when the last delegate has been removed. ]
         public async Task DeviceClientSetMethodHandlerUnsetLastMethodHandlerWithDefaultHandlerSet()
@@ -825,7 +796,6 @@
         }
 
         [TestMethod]
-        [TestCategory("DeviceClient")]
         // Tests_SRS_DEVICECLIENT_10_004: [ The deviceMethods property shall be deleted if the last delegate has been removed. ]
         // Tests_SRS_DEVICECLIENT_10_006: [ It shall DisableMethodsAsync when the last delegate has been removed. ]
         public async Task DeviceClientSetMethodHandlerUnsetDefaultHandlerSet()
@@ -890,7 +860,6 @@
         }
 
         [TestMethod]
-        [TestCategory("DeviceClient")]
         public async Task DeviceClientSetMethodHandlerUnsetWhenNoMethodHandler()
         {
             string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
@@ -904,7 +873,6 @@
         }
 
         [TestMethod]
-        [TestCategory("DeviceClient")]
         // Tests_SRS_DEVICECLIENT_10_001: [ It shall lazy-initialize the deviceMethods property. ]
         // Tests_SRS_DEVICECLIENT_10_003: [ The given delegate will only be added if it is not null. ]
         public async Task DeviceClientSetMethodHandlerSetFirstMethodHandlerWithSetMethodHandler()
@@ -942,7 +910,6 @@
         }
 
         [TestMethod]
-        [TestCategory("DeviceClient")]
         // Tests_SRS_DEVICECLIENT_10_002: [ If the given methodName already has an associated delegate, the existing delegate shall be removed. ]
         public async Task DeviceClientSetMethodHandlerOverwriteExistingDelegateWithSetMethodHandler()
         {
@@ -1003,7 +970,6 @@
         }
 
         [TestMethod]
-        [TestCategory("DeviceClient")]
         // Tests_SRS_DEVICECLIENT_10_004: [ The deviceMethods property shall be deleted if the last delegate has been removed. ]
         // Tests_SRS_DEVICECLIENT_10_006: [ It shall DisableMethodsAsync when the last delegate has been removed. ]
         public async Task DeviceClientSetMethodHandlerUnsetLastMethodHandlerWithSetMethodHandler()
@@ -1048,7 +1014,6 @@
         }
 
         [TestMethod]
-        [TestCategory("DeviceClient")]
         public async Task DeviceClientSetMethodHandlerUnsetWhenNoMethodHandlerWithSetMethodHandler()
         {
             string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
@@ -1062,7 +1027,6 @@
         }
 
         [TestMethod]
-        [TestCategory("DeviceClient")]
         // Tests_SRS_DEVICECLIENT_28_024: [** `OnConnectionOpened` shall invoke the connectionStatusChangesHandler if ConnectionStatus is changed **]**
         // Tests_SRS_DEVICECLIENT_28_025: [** `SetConnectionStatusChangesHandler` shall set connectionStatusChangesHandler **]**
         // Tests_SRS_DEVICECLIENT_28_026: [** `SetConnectionStatusChangesHandler` shall unset connectionStatusChangesHandler if `statusChangesHandler` is null **]**
@@ -1089,7 +1053,6 @@
         }
 
         [TestMethod]
-        [TestCategory("DeviceClient")]
         // Tests_SRS_DEVICECLIENT_28_026: [** `SetConnectionStatusChangesHandler` shall unset connectionStatusChangesHandler if `statusChangesHandler` is null **]**
         public void DeviceClientOnConnectionOpenedWithNullHandler()
         {
@@ -1113,7 +1076,6 @@
         }
 
         [TestMethod]
-        [TestCategory("DeviceClient")]
         // Tests_SRS_DEVICECLIENT_28_024: [** `OnConnectionOpened` shall invoke the connectionStatusChangesHandler if ConnectionStatus is changed **]**
         public void DeviceClientOnConnectionOpenedNotInvokeHandlerWithoutStatusChange()
         {
@@ -1142,7 +1104,6 @@
         }
 
         [TestMethod]
-        [TestCategory("DeviceClient")]
         // Tests_SRS_DEVICECLIENT_28_022: [** `OnConnectionClosed` shall invoke the RecoverConnections process. **]**
         // Tests_SRS_DEVICECLIENT_28_023: [** `OnConnectionClosed` shall invoke the connectionStatusChangesHandler if ConnectionStatus is changed. **]**
         public async Task DeviceClientOnConnectionClosedInvokeHandlerAndRecoveryForStatusChange()
@@ -1185,7 +1146,6 @@
         }
 
         [TestMethod]
-        [TestCategory("DeviceClient")]
         // Tests_SRS_DEVICECLIENT_28_027: [** `OnConnectionClosed` shall invoke the connectionStatusChangesHandler if RecoverConnections throw exception **]**
         public void DeviceClientOnConnectionClosedRecoverThrowsExceptionInvokeHandler()
         {
@@ -1226,7 +1186,6 @@
         }
 
         [TestMethod]
-        [TestCategory("DeviceClient")]
         // Tests_SRS_DEVICECLIENT_28_023: [** `OnConnectionClosed` shall invoke the connectionStatusChangesHandler if ConnectionStatus is changed. **]**
         public async Task DeviceClientOnConnectionClosedInvokeHandlerForClientClosed()
         {
@@ -1263,7 +1222,6 @@
         }
 
         [TestMethod]
-        [TestCategory("DeviceClient")]
         public void ProductInfoStoresProductInfoOk()
         {
             const string userAgent = "name/version (runtime; os; arch)";

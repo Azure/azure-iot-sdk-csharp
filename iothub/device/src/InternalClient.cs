@@ -88,7 +88,7 @@ namespace Microsoft.Azure.Devices.Client
              |           |                   |inherits              |                |
              |           |                   |                      |                |
 +------------+       +---+---------+      +--+----------+       +---+--------+       +--------------+
-|            |       |             |      |             |       |            |       | <<abstract>> |
+|            |       |             |      |             |       | Protocol   |       | <<abstract>> |
 | GateKeeper |  use  | Retry       | use  |  Error      |  use  | Routing    |  use  | Transport    |
 | Delegating +-------> Delegating  +------>  Delegating +-------> Delegating +-------> Delegating   |
 | Handler    |       | Handler     |      |  Handler    |       | Handler    |       | Handler      |
@@ -184,7 +184,10 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
 
             IDelegatingHandler innerHandler = pipelineBuilder.Build(pipelineContext);
 
+            if (Logging.IsEnabled) Logging.Associate(this, innerHandler, nameof(InternalClient));
             this.InnerHandler = innerHandler;
+            
+            if (Logging.IsEnabled) Logging.Associate(this, transportSettings, nameof(InternalClient));
             this.transportSettings = transportSettings;
         }
 
@@ -493,7 +496,10 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
 
             CancellationTokenSource operationTimeoutCancellationTokenSource = GetOperationTimeoutCancellationTokenSource();
 
-            Debug.WriteLine(operationTimeoutCancellationTokenSource.Token.GetHashCode() + " InternalClient.ApplyTimeout()");
+            if (Logging.IsEnabled)
+            {
+                Logging.Info(this, $"{operationTimeoutCancellationTokenSource.GetHashCode()}", nameof(ApplyTimeout));
+            }
 
             var result = operation(operationTimeoutCancellationTokenSource.Token)
                 .WithTimeout(TimeSpan.FromMilliseconds(OperationTimeoutInMilliseconds), () => Resources.OperationTimeoutExpired, operationTimeoutCancellationTokenSource.Token);

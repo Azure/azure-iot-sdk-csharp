@@ -9,6 +9,7 @@ using System.Security.Cryptography.X509Certificates;
 namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 {
     [TestClass]
+    [TestCategory("Unit")]
     public class AttestationMechanismTests
     {
         private const string SampleEndorsementKey = "AToAAQALAAMAsgAgg3GXZ0SEs/gakMyNRqXXJP1S124GUgtk8qHaGzMUaaoABgCAAEMAEAgAAAAAAAEAxsj" +
@@ -69,7 +70,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         /* SRS_ATTESTATION_MECHANISM_21_001: [The constructor shall throw ArgumentNullException if the provided attestation is null.] */
         [TestMethod]
-        [TestCategory("DevService")]
         public void AttestationMechanismConstructorThrowsOnAttestationNull()
         {
             // arrange - act - assert
@@ -81,7 +81,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         /* SRS_ATTESTATION_MECHANISM_21_004: [If the provided attestation is instance of TpmAttestation, the constructor shall set the x508 as null.] */
         /* SRS_ATTESTATION_MECHANISM_21_010: [If the type is `TPM`, the getAttestation shall return the stored TpmAttestation.] */
         [TestMethod]
-        [TestCategory("DevService")]
         public void AttestationMechanismConstructorSucceedOnTPMAttestation()
         {
             // arrange - act
@@ -95,7 +94,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         /* SRS_ATTESTATION_MECHANISM_21_005: [The constructor shall throw ArgumentException if the provided attestation is unknown.] */
         [TestMethod]
-        [TestCategory("DevService")]
         public void AttestationMechanismConstructorThrowsOnUnknownAttestation()
         {
             // arrange
@@ -110,7 +108,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         /* SRS_ATTESTATION_MECHANISM_21_008: [If the provided attestation is instance of X509Attestation, the constructor shall set the TPM as null.] */
         /* SRS_ATTESTATION_MECHANISM_21_011: [If the type is `X509`, the getAttestation shall return the stored X509Attestation.] */
         [TestMethod]
-        [TestCategory("DevService")]
         public void AttestationMechanismConstructorSucceedOnX509Attestation()
         {
             // arrange - act
@@ -128,7 +125,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         /* SRS_ATTESTATION_MECHANISM_21_013: [The constructor shall throw ProvisioningServiceClientException if the provided AttestationMechanismType 
                                                 is `TPM` but the TPM attestation is null.] */
         [TestMethod]
-        [TestCategory("DevService")]
         public void AttestationMechanismConstructorJSONThrowsOnTypeTPMWithX509Attestation()
         {
             // arrange
@@ -159,7 +155,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         /* SRS_ATTESTATION_MECHANISM_21_014: [If the provided AttestationMechanismType is `TPM`, the constructor shall store the provided TPM attestation.] */
         [TestMethod]
-        [TestCategory("DevService")]
         public void AttestationMechanismConstructorJSONSucceedForTPM()
         {
             // arrange
@@ -174,7 +169,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         /* SRS_ATTESTATION_MECHANISM_21_015: [The constructor shall throw ProvisioningServiceClientException if the provided 
                                              AttestationMechanismType is `x509` but the x509 attestation is null.] */
         [TestMethod]
-        [TestCategory("DevService")]
         public void AttestationMechanismConstructorJSONThrowsOnTypeX509WithTPMAttestation()
         {
             // arrange
@@ -193,7 +187,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         /* SRS_ATTESTATION_MECHANISM_21_016: [If the provided AttestationMechanismType is `x509`, the constructor shall store the provided x509 attestation.] */
         [TestMethod]
-        [TestCategory("DevService")]
         public void AttestationMechanismConstructorJSONSucceedForX509()
         {
             // arrange
@@ -208,7 +201,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         /* SRS_ATTESTATION_MECHANISM_21_017: [The constructor shall throw ProvisioningServiceClientException if the provided 
                                             AttestationMechanismType is not `TPM` or `x509`.] */
         [TestMethod]
-        [TestCategory("DevService")]
         public void AttestationMechanismConstructorJSONThrowsOnNoneType()
         {
             // arrange

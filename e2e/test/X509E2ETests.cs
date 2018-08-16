@@ -1,110 +1,64 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Text;
-using System.Threading.Tasks;
-
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Azure.Devices.Client;
-using Microsoft.Azure.Devices.Common;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
+using System.Diagnostics;
+using System.Diagnostics.Tracing;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Threading;
-using System.Security.Cryptography;
-
+using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
-    public partial class X509E2ETests
+    [TestCategory("IoTHub-E2E")]
+    public partial class X509E2ETests : IDisposable
     {
         private const string DevicePrefix = "E2E_X509_CSharp_";
-        private static string hubConnectionString;
-        private static string hostName;
-        private static RegistryManager registryManager;
+        private static TestLogging _log = TestLogging.GetInstance();
 
-        private readonly SemaphoreSlim sequentialTestSemaphore = new SemaphoreSlim(1, 1);
+        private readonly ConsoleEventListener _listener;
 
-        public TestContext TestContext { get; set; }
-
-        [ClassInitialize]
-        public static void ClassInitialize(TestContext testContext)
+        public X509E2ETests()
         {
-            var environment = TestUtil.InitializeEnvironment(DevicePrefix);
-            hubConnectionString = environment.Item1;
-            registryManager = environment.Item2;
-            hostName = TestUtil.GetHostName(hubConnectionString);
-        }
-
-        [ClassCleanup]
-        public static void ClassCleanup()
-        {
-            TestUtil.UnInitializeEnvironment(registryManager).GetAwaiter().GetResult();
-        }
-
-
-#if NETCOREAPP2_1
-        [TestInitialize]
-        public async Task Initialize()
-        {
-            await sequentialTestSemaphore.WaitAsync().ConfigureAwait(false);
-        }
-#else
-        [TestInitialize]
-        public void Initialize()
-        {
-            sequentialTestSemaphore.Wait();
-        }
-
-#endif
-
-        [TestCleanup]
-        public void Cleanup()
-        {
-            sequentialTestSemaphore.Release(1);
+            _listener = new ConsoleEventListener("Microsoft-Azure-");
         }
 
         [TestMethod]
-        [TestCategory("X509-Message-E2E")]
         public async Task X509_DeviceSendSingleMessage_Amqp()
         {
             await SendSingleMessageX509(Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
         }
 
         [TestMethod]
-        [TestCategory("X509-Message-E2E")]
         public async Task X509_DeviceSendSingleMessage_AmqpWs()
         {
             await SendSingleMessageX509(Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
         }
 
         [TestMethod]
-        [TestCategory("X509-Message-E2E")]
         public async Task X509_DeviceSendSingleMessage_Mqtt()
         {
             await SendSingleMessageX509(Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
         }
 
         [TestMethod]
-        [TestCategory("X509-Message-E2E")]
         public async Task X509_DeviceSendSingleMessage_MqttWs()
         {
             await SendSingleMessageX509(Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
         }
 
         [TestMethod]
-        [TestCategory("X509-Message-E2E")]
         public async Task X509_DeviceSendSingleMessage_Http()
         {
             await SendSingleMessageX509(Client.TransportType.Http1).ConfigureAwait(false);
         }
 
         [TestMethod]
-        [TestCategory("X509-Message-E2E")]
         public async Task X509_DeviceReceiveSingleMessage_Amqp()
         {
             await ReceiveSingleMessageX509(Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
@@ -112,32 +66,26 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         [Ignore] // TODO: #171 - X509 tests are intermittently failing during CI.
         [TestMethod]
-        [TestCategory("X509-Message-E2E")]
         public async Task X509_DeviceReceiveSingleMessage_AmqpWs()
         {
             await ReceiveSingleMessageX509(Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
         }
 
         [TestMethod]
-        [TestCategory("X509-Message-E2E")]
         public async Task X509_DeviceReceiveSingleMessage_Mqtt()
         {
             await ReceiveSingleMessageX509(Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
         }
 
-
         [Ignore] // TODO: #171 - X509 tests are intermittently failing during CI.
         [TestMethod]
-        [TestCategory("X509-Message-E2E")]
         public async Task X509_DeviceReceiveSingleMessage_MqttWs()
         {
             await ReceiveSingleMessageX509(Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
         }
 
-
         [Ignore] // TODO: #171 - X509 tests are intermittently failing during CI.
         [TestMethod]
-        [TestCategory("X509-Message-E2E")]
         public async Task X509_DeviceReceiveSingleMessage_Http()
         {
             await ReceiveSingleMessageX509(Client.TransportType.Http1).ConfigureAwait(false);
@@ -148,18 +96,21 @@ namespace Microsoft.Azure.Devices.E2ETests
             payload = Guid.NewGuid().ToString();
             p1Value = Guid.NewGuid().ToString();
 
+            _log.WriteLine($"{nameof(ComposeD2CTestMessage)}: payload='{payload}' p1Value='{p1Value}'");
+
             return new Client.Message(Encoding.UTF8.GetBytes(payload))
             {
                 Properties = { ["property1"] = p1Value }
             };
         }
 
-
         private Message ComposeC2DTestMessage(out string payload, out string messageId, out string p1Value)
         {
             payload = Guid.NewGuid().ToString();
             messageId = Guid.NewGuid().ToString();
             p1Value = Guid.NewGuid().ToString();
+
+            _log.WriteLine($"{nameof(ComposeC2DTestMessage)}: payload='{payload}' messageId='{messageId}' p1Value='{p1Value}'");
 
             return new Message(Encoding.UTF8.GetBytes(payload))
             {
@@ -215,13 +166,14 @@ namespace Microsoft.Azure.Devices.E2ETests
         // It then verifies the message is received on the device.
         private async Task ReceiveSingleMessageX509(Client.TransportType transport)
         {
-            Tuple<string, string> deviceInfo = TestUtil.CreateDeviceWithX509(DevicePrefix, hostName, registryManager);
-            ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(hubConnectionString);
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, TestDeviceType.X509).ConfigureAwait(false);
+
+            ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
 
             X509Certificate2 cert = Configuration.IoTHub.GetCertificateWithPrivateKey();
 
-            var auth = new DeviceAuthenticationWithX509Certificate(deviceInfo.Item1, cert);
-            var deviceClient = DeviceClient.Create(deviceInfo.Item2, auth, transport);
+            var auth = new DeviceAuthenticationWithX509Certificate(testDevice.Id, cert);
+            var deviceClient = DeviceClient.Create(testDevice.IoTHubHostName, auth, transport);
 
             try
             {
@@ -236,7 +188,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 string payload, messageId, p1Value;
                 await serviceClient.OpenAsync().ConfigureAwait(false);
-                await serviceClient.SendAsync(deviceInfo.Item1,
+                await serviceClient.SendAsync(testDevice.Id,
                     ComposeC2DTestMessage(out payload, out messageId, out p1Value)).ConfigureAwait(false);
 
                 await VerifyReceivedC2DMessage(transport, deviceClient, payload, p1Value).ConfigureAwait(false);
@@ -245,7 +197,20 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 await deviceClient.CloseAsync().ConfigureAwait(false);
                 await serviceClient.CloseAsync().ConfigureAwait(false);
-                await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager).ConfigureAwait(false);
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _listener.Dispose();
             }
         }
     }

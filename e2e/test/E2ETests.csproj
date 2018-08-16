@@ -33,6 +33,9 @@
     <Compile Include="$(CommonTest)\TestLogging.cs">
       <Link>Common\TestLogging.cs</Link>
     </Compile>
+    <Compile Include="$(CommonTest)\TestDevice.cs">
+      <Link>Common\TestDevice.cs</Link>
+    </Compile>
     <Compile Include="$(CommonTest)\VerboseTestLogging.cs">
       <Link>Common\VerboseTestLogging.cs</Link>
     </Compile>

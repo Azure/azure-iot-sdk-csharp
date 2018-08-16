@@ -16,11 +16,10 @@ namespace Microsoft.Azure.Devices.Api.Test
     using System.Threading.Tasks;
 
     [TestClass]
+    [TestCategory("Unit")]
     public class ServiceClientTests
     {
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         public async Task PurgeMessageQueueTest()
         {
             // Arrange Moq
@@ -38,8 +37,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         public async Task PurgeMessageQueueWithCancellationTokenTest()
         {
             // Arrange Moq
@@ -57,8 +54,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         [ExpectedException(typeof(DeviceNotFoundException))]
         public async Task PurgeMessageQueueDeviceNotFoundTest()
         {
@@ -104,8 +99,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         public async Task DisposeTest()
         {
             var restOpMock = new Mock<IHttpClientHelper>();
@@ -124,8 +117,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("API")]
         public async Task CloseAsyncTest()
         {
             var restOpMock = new Mock<IHttpClientHelper>();

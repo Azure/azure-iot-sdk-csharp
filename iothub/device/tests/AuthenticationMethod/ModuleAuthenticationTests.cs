@@ -9,6 +9,7 @@ namespace Microsoft.Azure.Devices.Client.Test.AuthenticationMethod
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
+    [TestCategory("Unit")]
     public class ModuleAuthenticationMethodTests
     {
         static string fakeConnectionString = "HostName=acme.azure-devices.net;DeviceId=dumpy;ModuleId=dummyModuleId;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
@@ -18,7 +19,6 @@ namespace Microsoft.Azure.Devices.Client.Test.AuthenticationMethod
 
 
         [TestMethod]
-        [TestCategory("DeviceClient")]
         public void DeviceClient_ModuleAuthenticationWithRegistrySymmetricKey_Test()
         {
             //Arrange
@@ -45,7 +45,6 @@ namespace Microsoft.Azure.Devices.Client.Test.AuthenticationMethod
         }
 
         [TestMethod]
-        [TestCategory("DeviceClient")]
         public void DeviceClient_ModuleAuthenticationWithToken_Test()
         {
             //Arrange

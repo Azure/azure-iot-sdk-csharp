@@ -15,6 +15,7 @@ namespace Microsoft.Azure.Devices.Client.Test
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
+    [TestCategory("Unit")]
     public class ClientWebSocketTransportTests
     {
         const string IotHubName = "localhost";
@@ -44,9 +45,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         [ExpectedException(typeof(AmqpException))]
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("WebSocket")]
-        [Ignore]
+        [Ignore] // TODO #581
         public void ClientWebSocketTransportWriteWithoutConnectTest()
         {
             var websocket = new ClientWebSocket();
@@ -58,9 +57,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         [ExpectedException(typeof(AmqpException))]
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("WebSocket")]
-        [Ignore]
+        [Ignore] // TODO #581
         public async Task ClientWebSocketTransportReadWithoutConnectTest()
         {
             var websocket = new ClientWebSocket();
@@ -81,9 +78,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         // The following tests can only be run in Administrator mode
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("WebSocket")]
-        [Ignore]
+        [Ignore] // TODO #581
         public async Task ReadWriteTest()
         {
             var websocket = new ClientWebSocket();
@@ -116,9 +111,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         [ExpectedException(typeof(ObjectDisposedException))]
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("WebSocket")]
-        [Ignore]
+        [Ignore] // TODO #581
         public async Task ReadAfterCloseTest()
         {
             var websocket = new ClientWebSocket();
@@ -138,9 +131,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         [ExpectedException(typeof(ObjectDisposedException))]
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("WebSocket")]
-        [Ignore]
+        [Ignore] // TODO #581
         public async Task WriteAfterCloseTest()
         {
             var websocket = new ClientWebSocket();
@@ -159,9 +150,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         [ExpectedException(typeof(ObjectDisposedException))]
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("WebSocket")]
-        [Ignore]
+        [Ignore] // TODO #581
         public async Task ReadAfterAbortTest()
         {
             var websocket = new ClientWebSocket();
@@ -179,9 +168,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         [ExpectedException(typeof(ObjectDisposedException))]
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("WebSocket")]
-        [Ignore]
+        [Ignore] // TODO #581
         public async Task WriteAfterAbortTest()
         {
             var websocket = new ClientWebSocket();
@@ -198,9 +185,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         [ExpectedException(typeof(AmqpException))]
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("WebSocket")]
-        [Ignore]
+        [Ignore] // TODO #581
         public void LegacyClientWebSocketTransportWriteWithoutConnectTest()
         {
             var websocket = new IotHubClientWebSocket(WebSocketConstants.SubProtocols.Amqpwsb10);
@@ -212,9 +197,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         [ExpectedException(typeof(AmqpException))]
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("WebSocket")]
-        [Ignore]
+        [Ignore] // TODO #581
         public async Task LegacyClientWebSocketTransportReadWithoutConnectTest()
         {
             var websocket = new IotHubClientWebSocket(WebSocketConstants.SubProtocols.Amqpwsb10);
@@ -235,9 +218,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         // The following tests can only be run in Administrator mode
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("WebSocket")]
-        [Ignore]
+        [Ignore] // TODO #581
         public async Task LegacyWebSocketReadWriteTest()
         {
             var websocket = new IotHubClientWebSocket(WebSocketConstants.SubProtocols.Amqpwsb10);
@@ -267,9 +248,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         [ExpectedException(typeof(ObjectDisposedException))]
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("WebSocket")]
-        [Ignore]
+        [Ignore] // TODO #581
         public async Task LegacyWebSocketReadAfterCloseTest()
         {
             var websocket = new IotHubClientWebSocket(WebSocketConstants.SubProtocols.Amqpwsb10);
@@ -284,9 +263,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         [ExpectedException(typeof(ObjectDisposedException))]
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("WebSocket")]
-        [Ignore]
+        [Ignore] // TODO #581
         public async Task LegacyWebSocketWriteAfterCloseTest()
         {
             var websocket = new IotHubClientWebSocket(WebSocketConstants.SubProtocols.Amqpwsb10);
@@ -300,9 +277,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         [ExpectedException(typeof(ObjectDisposedException))]
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("WebSocket")]
-        [Ignore]
+        [Ignore] // TODO #581
         public async Task LegacyWebSocketReadAfterAbortTest()
         {
             var websocket = new IotHubClientWebSocket(WebSocketConstants.SubProtocols.Amqpwsb10);
@@ -319,9 +294,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         [ExpectedException(typeof(ObjectDisposedException))]
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("WebSocket")]
-        [Ignore]
+        [Ignore] // TODO #581
         public async Task LegacyWebSocketWriteAfterAbortTest()
         {
             var websocket = new IotHubClientWebSocket(WebSocketConstants.SubProtocols.Amqpwsb10);

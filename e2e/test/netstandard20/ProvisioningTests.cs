@@ -20,6 +20,7 @@ using System.Threading.Tasks;
 namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
+    [TestCategory("Provisioning-E2E")]
     public class ProvisioningTests : IDisposable
     {
         private const int PassingTimeoutMiliseconds = 30 * 1000;

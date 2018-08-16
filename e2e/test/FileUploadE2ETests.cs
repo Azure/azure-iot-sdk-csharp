@@ -10,149 +10,110 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Tracing;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
-    [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable",
-        Justification = "Uses custom scheme for cleanup")]
-    public class FileUploadE2ETests
+    [TestCategory("IoTHub-E2E")]
+    public class FileUploadE2ETests : IDisposable
     {
-        private const string DevicePrefix = "E2E_FileUpload_CSharp_";
-        private static string hubConnectionString;
-        private static string hostName;
-        private static RegistryManager registryManager;
-        private static ServiceClient serviceClient;
-        private static FileNotificationReceiver<FileNotification> fileNotificationReceiver;
+        private const string DevicePrefix = "E2E_FileUpload_";
+        private const int FileSizeSmall = 10 * 1024;
+        private const int FileSizeBig = 5120 * 1024;
 
-        private SemaphoreSlim sequentialTestSemaphore = new SemaphoreSlim(1, 1);
+        private readonly ConsoleEventListener _listener;
 
-        private const string smallFile = "FileUpload_test_small.txt";
-        private const string bigFile = "FileUpload_test_big.txt";
-
-        [ClassInitialize]
-        static public void ClassInitialize(TestContext testContext)
+        public FileUploadE2ETests()
         {
-            var environment = TestUtil.InitializeEnvironment("E2E_FileUpload_CSharp_");
-            hubConnectionString = environment.Item1;
-            registryManager = environment.Item2;
-            hostName = TestUtil.GetHostName(hubConnectionString);
-
-            serviceClient = ServiceClient.CreateFromConnectionString(hubConnectionString);
-            fileNotificationReceiver = serviceClient.GetFileNotificationReceiver();
-
-            File.WriteAllBytes(smallFile, new byte[10 * 1024]);
-            File.WriteAllBytes(bigFile, new byte[5120 * 1024]);
-        }
-
-        [ClassCleanup]
-        static public void ClassCleanup()
-        {
-            serviceClient.CloseAsync().Wait();
-            System.IO.File.Delete(smallFile);
-            System.IO.File.Delete(bigFile);
-            TestUtil.UnInitializeEnvironment(registryManager).GetAwaiter().GetResult();
-        }
-
-#if NETSTANDARD1_3
-        [TestInitialize]
-        public async Task Initialize()
-        {
-            await sequentialTestSemaphore.WaitAsync();
-        }
-#else
-        [TestInitialize]
-        public void Initialize()
-        {
-            sequentialTestSemaphore.Wait();
-        }
-#endif
-
-        [TestCleanup]
-        public void Cleanup()
-        {
-            sequentialTestSemaphore.Release(1);
+            _listener = new ConsoleEventListener("Microsoft-Azure-");
         }
 
         [TestMethod]
-        [TestCategory("FileUpload-E2E")]
         public async Task FileUpload_SmallFile_Http()
         {
-            await uploadFile(Client.TransportType.Http1, smallFile).ConfigureAwait(false);
+            string smallFile = await GetTestFileNameAsync(FileSizeSmall).ConfigureAwait(false);
+            await UploadFile(Client.TransportType.Http1, smallFile).ConfigureAwait(false);
         }
 
         [TestMethod]
-        [TestCategory("FileUpload-E2E")]
         public async Task FileUpload_BigFile_Http()
         {
-            await uploadFile(Client.TransportType.Http1, bigFile).ConfigureAwait(false);
+            string bigFile = await GetTestFileNameAsync(FileSizeBig).ConfigureAwait(false);
+            await UploadFile(Client.TransportType.Http1, bigFile).ConfigureAwait(false);
         }
 
         [TestMethod]
-        [TestCategory("FileUpload-E2E")]
         public async Task FileUpload_X509_SmallFile_Http()
         {
-            await uploadFile(Client.TransportType.Http1, smallFile, true).ConfigureAwait(false);
+            string smallFile = await GetTestFileNameAsync(FileSizeSmall).ConfigureAwait(false);
+            await UploadFile(Client.TransportType.Http1, smallFile, true).ConfigureAwait(false);
         }
 
         [TestMethod]
-        [TestCategory("FileUpload-E2E")]
-        [TestCategory("Recovery")]
+        [TestCategory("IoTHub-FaultInjection")]
         public async Task FileUploadSuccess_TcpLoss_Amqp()
         {
-            await uploadFileDisconnectTransport(Client.TransportType.Amqp_Tcp_Only,
+            string bigFile = await GetTestFileNameAsync(FileSizeBig).ConfigureAwait(false);
+
+            await UploadFileDisconnectTransport(Client.TransportType.Amqp_Tcp_Only,
                 bigFile,
-                TestUtil.FaultType_Tcp,
-                TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec
+                FaultInjection.FaultType_Tcp,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec
                 ).ConfigureAwait(false);
         }
 
         [TestMethod]
-        [TestCategory("FileUpload-E2E")]
-        [TestCategory("Recovery")]
+        [TestCategory("IoTHub-FaultInjection")]
         public async Task FileUploadSuccess_Throttled_Amqp()
         {
-            await uploadFileDisconnectTransport(Client.TransportType.Amqp_Tcp_Only,
+            string smallFile = await GetTestFileNameAsync(FileSizeSmall).ConfigureAwait(false);
+
+            await UploadFileDisconnectTransport(Client.TransportType.Amqp_Tcp_Only,
                 smallFile,
-                TestUtil.FaultType_Throttle,
-                TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec,
-                TestUtil.DefaultDurationInSec
+                FaultInjection.FaultType_Throttle,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec,
+                FaultInjection.DefaultDurationInSec
                 ).ConfigureAwait(false);
         }
 
         [TestMethod]
-        [TestCategory("FileUpload-E2E")]
-        [TestCategory("Recovery")]
+        [TestCategory("IoTHub-FaultInjection")]
         public async Task FileUploadSuccess_QuotaExceed_Amqp()
         {
-            await uploadFileDisconnectTransport(Client.TransportType.Amqp_Tcp_Only,
+            string smallFile = await GetTestFileNameAsync(FileSizeSmall).ConfigureAwait(false);
+
+            await UploadFileDisconnectTransport(Client.TransportType.Amqp_Tcp_Only,
                 smallFile,
-                TestUtil.FaultType_QuotaExceeded,
-                TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec,
-                TestUtil.DefaultDurationInSec
+                FaultInjection.FaultType_QuotaExceeded,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec,
+                FaultInjection.DefaultDurationInSec
                 ).ConfigureAwait(false);
         }
 
-        async Task uploadFile(Client.TransportType transport, string filename, bool x509auth = false)
+        private async Task UploadFile(Client.TransportType transport, string filename, bool x509auth = false)
         {
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(
+                DevicePrefix, 
+                x509auth ? TestDeviceType.X509 : TestDeviceType.Sasl).ConfigureAwait(false);
+
+            ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+            FileNotificationReceiver<FileNotification> notificationReceiver = serviceClient.GetFileNotificationReceiver();
+
             DeviceClient deviceClient;
-            Tuple<string, string> deviceInfo;
             if (x509auth)
             {
-                deviceInfo = TestUtil.CreateDeviceWithX509(DevicePrefix, hostName, registryManager);
-
                 X509Certificate2 cert = Configuration.IoTHub.GetCertificateWithPrivateKey();
 
-                var auth = new DeviceAuthenticationWithX509Certificate(deviceInfo.Item1, cert);
-                deviceClient = DeviceClient.Create(deviceInfo.Item2, auth, transport);
+                var auth = new DeviceAuthenticationWithX509Certificate(testDevice.Id, cert);
+                deviceClient = DeviceClient.Create(testDevice.IoTHubHostName, auth, transport);
             }
             else
             {
-                deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
-                deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, transport);
+                deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
             }
 
             using (FileStream fileStreamSource = new FileStream(filename, FileMode.Open, FileAccess.Read))
@@ -160,18 +121,18 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await deviceClient.UploadToBlobAsync(filename, fileStreamSource).ConfigureAwait(false);
             }
 
-            FileNotification fileNotification = await VerifyFileNotification(deviceInfo).ConfigureAwait(false);
+            FileNotification fileNotification = await VerifyFileNotification(notificationReceiver, testDevice.Id).ConfigureAwait(false);
 
             Assert.IsNotNull(fileNotification, "FileNotification is not received.");
-            Assert.AreEqual(deviceInfo.Item1 + "/" + filename, fileNotification.BlobName, "Uploaded file name mismatch in notifications");
+            Assert.AreEqual(testDevice.Id + "/" + filename, fileNotification.BlobName, "Uploaded file name mismatch in notifications");
             Assert.AreEqual(new FileInfo(filename).Length, fileNotification.BlobSizeInBytes, "Uploaded file size mismatch in notifications");
             Assert.IsFalse(string.IsNullOrEmpty(fileNotification.BlobUri), "File notification blob uri is null or empty");
 
             await deviceClient.CloseAsync().ConfigureAwait(false);
-            await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager).ConfigureAwait(false);
+            await serviceClient.CloseAsync().ConfigureAwait(false);
         }
 
-        private static async Task<FileNotification> VerifyFileNotification(Tuple<string, string> deviceInfo)
+        private static async Task<FileNotification> VerifyFileNotification(FileNotificationReceiver<FileNotification> fileNotificationReceiver, string deviceId)
         {
             FileNotification fileNotification = null;
 
@@ -183,7 +144,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 fileNotification = await fileNotificationReceiver.ReceiveAsync(TimeSpan.FromSeconds(20)).ConfigureAwait(false);
                 if (fileNotification != null)
                 {
-                    if (fileNotification.DeviceId == deviceInfo.Item1)
+                    if (fileNotification.DeviceId == deviceId)
                     {
                         await fileNotificationReceiver.CompleteAsync(fileNotification).ConfigureAwait(false);
                         break;
@@ -197,11 +158,20 @@ namespace Microsoft.Azure.Devices.E2ETests
             return fileNotification;
         }
 
-        async Task uploadFileDisconnectTransport(Client.TransportType transport, string filename, string faultType, string reason, int delayInSec, 
-            int durationInSec = 0, int retryDurationInMilliSec = 24000)
+        private async Task UploadFileDisconnectTransport(
+            Client.TransportType transport, 
+            string filename, 
+            string faultType, 
+            string reason, 
+            int delayInSec, 
+            int durationInSec = 0, 
+            int retryDurationInMilliSec = 24000)
         {
-            Tuple<string, string> deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
-            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, transport);
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
+            ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+            FileNotificationReceiver<FileNotification> notificationReceiver = serviceClient.GetFileNotificationReceiver();
+
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
 
             deviceClient.OperationTimeoutInMilliseconds = (uint)retryDurationInMilliSec;
 
@@ -209,13 +179,13 @@ namespace Microsoft.Azure.Devices.E2ETests
             Task<FileNotification> verifyTask;
             using (FileStream fileStreamSource = new FileStream(filename, FileMode.Open, FileAccess.Read))
             {
-                verifyTask = VerifyFileNotification(deviceInfo);
+                verifyTask = VerifyFileNotification(notificationReceiver, testDevice.Id);
                 fileuploadTask = deviceClient.UploadToBlobAsync(filename, fileStreamSource);
 
                 try
                 {
                     await
-                        deviceClient.SendEventAsync(TestUtil.ComposeErrorInjectionProperties(faultType, reason,
+                        deviceClient.SendEventAsync(FaultInjection.ComposeErrorInjectionProperties(faultType, reason,
                             delayInSec, durationInSec)).ConfigureAwait(false);
                 }
                 catch (Exception)
@@ -230,12 +200,44 @@ namespace Microsoft.Azure.Devices.E2ETests
             FileNotification fileNotification = await verifyTask.ConfigureAwait(false);
 
             Assert.IsNotNull(fileNotification, "FileNotification is not received.");
-            Assert.AreEqual(deviceInfo.Item1 + "/" + filename, fileNotification.BlobName, "Uploaded file name mismatch in notifications");
+            Assert.AreEqual(testDevice.Id + "/" + filename, fileNotification.BlobName, "Uploaded file name mismatch in notifications");
             Assert.AreEqual(new FileInfo(filename).Length, fileNotification.BlobSizeInBytes, "Uploaded file size mismatch in notifications");
             Assert.IsFalse(string.IsNullOrEmpty(fileNotification.BlobUri), "File notification blob uri is null or empty");
 
             await deviceClient.CloseAsync().ConfigureAwait(false);
-            await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager).ConfigureAwait(false);
+            await serviceClient.CloseAsync().ConfigureAwait(false);
+        }
+
+        private async Task<string> GetTestFileNameAsync(int fileSize)
+        {
+            var rnd = new Random();
+            byte[] buffer = new byte[fileSize];
+            rnd.NextBytes(buffer);
+
+            string filePath = Path.Combine(Path.GetTempPath(), Path.GetTempFileName());
+
+#if NET451 || NET47
+            File.WriteAllBytes(filePath, buffer);
+            await Task.Delay(0).ConfigureAwait(false);
+#else
+            await File.WriteAllBytesAsync(filePath, buffer).ConfigureAwait(false);
+#endif
+
+            return filePath;
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _listener.Dispose();
+            }
         }
     }
 }

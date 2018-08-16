@@ -51,44 +51,52 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task OpenAsync(bool explicitOpen, CancellationToken cancellationToken)
         {
-            Debug.WriteLine(cancellationToken.GetHashCode() + " ErrorDelegatingHandler.OpenAsync()");
-
-            TaskCompletionSource<int> openCompletionBeforeOperationStarted = Volatile.Read(ref this.openCompletion);
-            if (openCompletionBeforeOperationStarted == null)
+            try
             {
-                openCompletionBeforeOperationStarted = new TaskCompletionSource<int>();
-                TaskCompletionSource<int> currentOpenPromise;
-                if ((currentOpenPromise = Interlocked.CompareExchange(ref this.openCompletion, openCompletionBeforeOperationStarted, null)) == null)
+                if (Logging.IsEnabled) Logging.Enter(this, explicitOpen, cancellationToken, $"{nameof(ErrorDelegatingHandler)}.{nameof(OpenAsync)}");
+
+                TaskCompletionSource<int> openCompletionBeforeOperationStarted = Volatile.Read(ref this.openCompletion);
+                if (openCompletionBeforeOperationStarted == null)
                 {
-                    IDelegatingHandler handlerBeforeOperationStarted = this.ContinuationFactory(Context);
-                    this.InnerHandler = handlerBeforeOperationStarted;
-                    try
+                    openCompletionBeforeOperationStarted = new TaskCompletionSource<int>();
+                    TaskCompletionSource<int> currentOpenPromise;
+                    if ((currentOpenPromise = Interlocked.CompareExchange(ref this.openCompletion, openCompletionBeforeOperationStarted, null)) == null)
                     {
-                        await this.ExecuteWithErrorHandlingAsync(() => base.OpenAsync(explicitOpen, cancellationToken), false, cancellationToken).ConfigureAwait(false);
-                        openCompletionBeforeOperationStarted.TrySetResult(0);
+                        IDelegatingHandler handlerBeforeOperationStarted = this.ContinuationFactory(Context);
+                        this.InnerHandler = handlerBeforeOperationStarted;
+                        try
+                        {
+                            await this.ExecuteWithErrorHandlingAsync(() => base.OpenAsync(explicitOpen, cancellationToken), false, cancellationToken).ConfigureAwait(false);
+                            openCompletionBeforeOperationStarted.TrySetResult(0);
+                        }
+                        catch (Exception ex) when (IsTransportHandlerStillUsable(ex))
+                        {
+                            await this.Reset(openCompletionBeforeOperationStarted, handlerBeforeOperationStarted).ConfigureAwait(false);
+                            throw;
+                        }
+                        catch (Exception ex) when (!ex.IsFatal())
+                        {
+                            if (Logging.IsEnabled) Logging.Error(this, ex.Message, $"{nameof(ErrorDelegatingHandler)}.{nameof(OpenAsync)}");
+                            throw;
+                        }
                     }
-                    catch (Exception ex) when (IsTransportHandlerStillUsable(ex))
+                    else
                     {
-                        Debug.WriteLine(cancellationToken.GetHashCode() + " ErrorDelegatingHandler.OpenAsync() Reset " + ex.Message);
-                        await this.Reset(openCompletionBeforeOperationStarted, handlerBeforeOperationStarted).ConfigureAwait(false);
-                        throw;
-                    }
-                    catch (Exception ex) when (!ex.IsFatal())
-                    {
-                        Debug.WriteLine(cancellationToken.GetHashCode() + " ErrorDelegatingHandler.OpenAsync() Exception " + ex.Message);
-                        throw;
+                        if (Logging.IsEnabled) Logging.Info(this, "Awaiting new Open task.", $"{nameof(ErrorDelegatingHandler)}.{nameof(OpenAsync)}");
+
+                        await currentOpenPromise.Task.ConfigureAwait(false);
                     }
                 }
                 else
                 {
-                    Debug.WriteLine(cancellationToken.GetHashCode() + " ErrorDelegatingHandler.OpenAsync() Awaiting new Open task");
-                    await currentOpenPromise.Task.ConfigureAwait(false);
+                    if (Logging.IsEnabled) Logging.Info(this, "Awaiting existing Open task.", $"{nameof(ErrorDelegatingHandler)}.{nameof(OpenAsync)}");
+
+                    await openCompletionBeforeOperationStarted.Task.ConfigureAwait(false);
                 }
             }
-            else
+            finally
             {
-                Debug.WriteLine(cancellationToken.GetHashCode() + " ErrorDelegatingHandler.OpenAsync() Awaiting existing Open task");
-                await openCompletionBeforeOperationStarted.Task.ConfigureAwait(false);
+                if (Logging.IsEnabled) Logging.Exit(this, explicitOpen, cancellationToken, $"{nameof(ErrorDelegatingHandler)}.{nameof(OpenAsync)}");
             }
         }
 
@@ -159,15 +167,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override Task SendEventAsync(IEnumerable<Message> messages, CancellationToken cancellationToken)
         {
-            try
-            {
-                Debug.WriteLine(cancellationToken.GetHashCode() + " ErrorDelegatingHandler.SendEventAsync() ENTER");
-                return this.ExecuteWithErrorHandlingAsync(() => base.SendEventAsync(messages, cancellationToken), true, cancellationToken);
-            }
-            finally
-            {
-                Debug.WriteLine(cancellationToken.GetHashCode() + " ErrorDelegatingHandler.SendEventAsync() EXIT");
-            }
+            return this.ExecuteWithErrorHandlingAsync(() => base.SendEventAsync(messages, cancellationToken), true, cancellationToken);
         }
 
         public override Task SendEventAsync(Message message, CancellationToken cancellationToken)
@@ -187,42 +187,60 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         async Task<T> ExecuteWithErrorHandlingAsync<T>(Func<Task<T>> asyncOperation, bool ensureOpen, CancellationToken cancellationToken)
         {
-            if (ensureOpen)
-            {
-                await this.EnsureOpenAsync(cancellationToken).ConfigureAwait(false);
-            }
-
-            TaskCompletionSource<int> openCompletionBeforeOperationStarted = Volatile.Read(ref this.openCompletion);
-            IDelegatingHandler handlerBeforeOperationStarted = this.InnerHandler;
-
             try
             {
-                return await asyncOperation().ConfigureAwait(false);
-            }
-            catch (Exception ex) when (!ex.IsFatal())
-            {
-                if (IsTransient(ex))
+                if (Logging.IsEnabled) Logging.Enter(this, ensureOpen, cancellationToken, $"{nameof(ErrorDelegatingHandler)}.{nameof(ExecuteWithErrorHandlingAsync)}");
+
+                if (ensureOpen)
                 {
-                    if (IsTransportHandlerStillUsable(ex))
+                    await this.EnsureOpenAsync(cancellationToken).ConfigureAwait(false);
+                }
+
+                TaskCompletionSource<int> openCompletionBeforeOperationStarted = Volatile.Read(ref this.openCompletion);
+                IDelegatingHandler handlerBeforeOperationStarted = this.InnerHandler;
+
+                try
+                {
+                    return await asyncOperation().ConfigureAwait(false);
+                }
+                catch (Exception ex) when (!ex.IsFatal())
+                {
+                    if (IsTransient(ex))
                     {
+                        if (IsTransportHandlerStillUsable(ex))
+                        {
+                            if (Logging.IsEnabled) Logging.Error(this, $"Transient exception caught; IsTransportHandlerStillUsable=true : {ex}");
+
+                            if (ex is IotHubClientTransientException)
+                            {
+                                throw;
+                            }
+
+                            throw new IotHubClientTransientException("Transient error occurred, please retry.", ex);
+                        }
+
+                        await this.Reset(openCompletionBeforeOperationStarted, handlerBeforeOperationStarted).ConfigureAwait(false);
+
+                        if (Logging.IsEnabled) Logging.Error(this, $"Transient exception caught; IsTransportHandlerStillUsable=false : {ex}");
+
                         if (ex is IotHubClientTransientException)
                         {
                             throw;
                         }
                         throw new IotHubClientTransientException("Transient error occurred, please retry.", ex);
                     }
-                    await this.Reset(openCompletionBeforeOperationStarted, handlerBeforeOperationStarted).ConfigureAwait(false);
-                    if (ex is IotHubClientTransientException)
+                    else
                     {
+                        if (Logging.IsEnabled) Logging.Error(this, $"Non-transient exception caught: {ex}");
+
+                        await this.Reset(openCompletionBeforeOperationStarted, handlerBeforeOperationStarted).ConfigureAwait(false);
                         throw;
                     }
-                    throw new IotHubClientTransientException("Transient error occurred, please retry.", ex);
                 }
-                else
-                {
-                    await this.Reset(openCompletionBeforeOperationStarted, handlerBeforeOperationStarted).ConfigureAwait(false);
-                    throw;
-                }
+            }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, ensureOpen, cancellationToken, $"{nameof(ErrorDelegatingHandler)}.{nameof(ExecuteWithErrorHandlingAsync)}");
             }
         }
 
@@ -258,12 +276,22 @@ namespace Microsoft.Azure.Devices.Client.Transport
         
         async Task Reset(TaskCompletionSource<int> openCompletionBeforeOperationStarted, IDelegatingHandler handlerBeforeOperationStarted)
         {
-            if (openCompletionBeforeOperationStarted == Volatile.Read(ref this.openCompletion))
+
+            try
             {
-                if (Interlocked.CompareExchange(ref this.openCompletion, null, openCompletionBeforeOperationStarted) == openCompletionBeforeOperationStarted)
+                if (Logging.IsEnabled) Logging.Enter(this, openCompletionBeforeOperationStarted, handlerBeforeOperationStarted, $"{nameof(ErrorDelegatingHandler)}.{nameof(Reset)}");
+
+                if (openCompletionBeforeOperationStarted == Volatile.Read(ref this.openCompletion))
                 {
-                    await Cleanup(handlerBeforeOperationStarted).ConfigureAwait(false);
+                    if (Interlocked.CompareExchange(ref this.openCompletion, null, openCompletionBeforeOperationStarted) == openCompletionBeforeOperationStarted)
+                    {
+                        await Cleanup(handlerBeforeOperationStarted).ConfigureAwait(false);
+                    }
                 }
+            }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(ErrorDelegatingHandler)}.{nameof(Reset)}");
             }
         }
 
@@ -278,7 +306,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             catch (Exception ex) when (!ex.IsFatal())
             {
-                //unexpected behaviour - ignore. LOG?
+                if (Logging.IsEnabled) Logging.Error(handler, $"Unexpected exception: {ex}", $"{nameof(ErrorDelegatingHandler)}.{nameof(Cleanup)}");
             }
         }
     }

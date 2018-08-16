@@ -1,326 +1,261 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Azure.Devices.Client;
-using System.Text;
-using System.Threading.Tasks;
-using System.Threading;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Tracing;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
-    [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable",
-        Justification = "Uses custom scheme for cleanup")]
-    public class MethodE2ETests
+    [TestCategory("IoTHub-E2E")]
+    public class MethodE2ETests : IDisposable
     {
         private const string DeviceResponseJson = "{\"name\":\"e2e_test\"}";
         private const string ServiceRequestJson = "{\"a\":123}";
         private const string MethodName = "MethodE2ETest";
         private const string DevicePrefix = "E2E_Method_CSharp_";
+        private const int MaximumRecoveryTimeSeconds = 60;
+        private static TestLogging _log = TestLogging.GetInstance();
 
-        private static string hubConnectionString;
-        private static string hostName;
-        private static RegistryManager registryManager;
+        private readonly ConsoleEventListener _listener;
 
-        private readonly SemaphoreSlim sequentialTestSemaphore = new SemaphoreSlim(1, 1);
-
-        public TestContext TestContext { get; set; }
-
-        [ClassInitialize]
-        static public void ClassInitialize(TestContext testContext)
+        public MethodE2ETests()
         {
-            var environment = TestUtil.InitializeEnvironment(DevicePrefix);
-            hubConnectionString = environment.Item1;
-            registryManager = environment.Item2;
-            hostName = TestUtil.GetHostName(hubConnectionString);
-        }
-
-        [ClassCleanup]
-        static public void ClassCleanup()
-        {
-            TestUtil.UnInitializeEnvironment(registryManager).GetAwaiter().GetResult();
-        }
-
-#if NETSTANDARD1_3
-        [TestInitialize]
-        public async Task Initialize()
-        {
-            await sequentialTestSemaphore.WaitAsync();
-        }
-#else
-        [TestInitialize]
-        public void Initialize()
-        {
-            sequentialTestSemaphore.Wait();
-        }
-#endif
-
-        [TestCleanup]
-        public void Cleanup()
-        {
-            sequentialTestSemaphore.Release(1);
+            _listener = new ConsoleEventListener("Microsoft-Azure-");
         }
 
         [TestMethod]
-        [TestCategory("Method-E2E")]
         public async Task Method_DeviceReceivesMethodAndResponse_Mqtt()
         {
             await SendMethodAndRespond(Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
         }
 
         [TestMethod]
-        [TestCategory("Method-E2E")]
         public async Task Method_DeviceReceivesMethodAndResponse_MqttWs()
         {
             await SendMethodAndRespond(Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
         }
 
         [TestMethod]
-        [TestCategory("Method-E2E")]
         public async Task Method_DeviceReceivesMethodAndResponseWithObseletedSetMethodHandler_Mqtt()
         {
-            await sendMethodAndRespondWithObseletedSetMethodHandler(Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
+            await SendMethodAndRespondWithObseletedSetMethodHandler(Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
         }
 
         [TestMethod]
-        [TestCategory("Method-E2E")]
         public async Task Method_DeviceReceivesMethodAndResponseWithObseletedSetMethodHandler_MqttWs()
         {
-            await sendMethodAndRespondWithObseletedSetMethodHandler(Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
+            await SendMethodAndRespondWithObseletedSetMethodHandler(Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
         }
 
         [TestMethod]
-        [TestCategory("Method-E2E")]
         public async Task Method_DeviceReceivesMethodAndResponseWithSetMethodHandler_Mqtt()
         {
-            await sendMethodAndRespondWithSetMethodHandler(Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
+            await SendMethodAndRespondWithSetMethodHandler(Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
         }
 
         [TestMethod]
-        [TestCategory("Method-E2E")]
         public async Task Method_DeviceReceivesMethodAndResponseWithSetMethodHandler_MqttWs()
         {
-            await sendMethodAndRespondWithSetMethodHandler(Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
+            await SendMethodAndRespondWithSetMethodHandler(Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
         }
 
-        [Ignore]
+        [Ignore] // TODO: #558
         [TestMethod]
-        [TestCategory("Method-E2E")]
-        [TestCategory("Recovery")]
+        [TestCategory("IoTHub-FaultInjection")]
         public async Task Method_DeviceReceivesMethodAndResponseRecovery_Mqtt()
         {
             await SendMethodAndRespondRecovery(Client.TransportType.Mqtt_Tcp_Only, 
-                TestUtil.FaultType_Tcp,
-                TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
+                FaultInjection.FaultType_Tcp,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [Ignore]
+        [Ignore] // TODO: #558
         [TestMethod]
-        [TestCategory("Method-E2E")]
-        [TestCategory("Recovery")]
+        [TestCategory("IoTHub-FaultInjection")]
         public async Task Method_DeviceReceivesMethodAndResponseRecovery_MqttWs()
         {
             await SendMethodAndRespondRecovery(Client.TransportType.Mqtt_WebSocket_Only, 
-                TestUtil.FaultType_Tcp,
-                TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
+                FaultInjection.FaultType_Tcp,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [Ignore]
+        [Ignore] // TODO: #558
         [TestMethod]
-        [TestCategory("Method-E2E")]
-        [TestCategory("Recovery")]
+        [TestCategory("IoTHub-FaultInjection")]
         public async Task Method_DeviceMethodGracefulShutdownRecovery_Mqtt()
         {
             await SendMethodAndRespondRecovery(Client.TransportType.Mqtt_Tcp_Only,
-                TestUtil.FaultType_GracefulShutdownMqtt,
-                TestUtil.FaultCloseReason_Bye,
-                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
+                FaultInjection.FaultType_GracefulShutdownMqtt,
+                FaultInjection.FaultCloseReason_Bye,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [Ignore]
+        [Ignore] // TODO: #558
         [TestMethod]
-        [TestCategory("Method-E2E")]
-        [TestCategory("Recovery")]
+        [TestCategory("IoTHub-FaultInjection")]
         public async Task Method_DeviceMethodGracefulShutdownRecovery_MqttWs()
         {
             await SendMethodAndRespondRecovery(Client.TransportType.Mqtt_WebSocket_Only,
-                TestUtil.FaultType_GracefulShutdownMqtt,
-                TestUtil.FaultCloseReason_Bye,
-                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
+                FaultInjection.FaultType_GracefulShutdownMqtt,
+                FaultInjection.FaultCloseReason_Bye,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
         [TestMethod]
-        [TestCategory("Method-E2E")]
         public async Task Method_DeviceReceivesMethodAndResponse_Amqp()
         {
             await SendMethodAndRespond(Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
         }
 
-#if NETCOREAPP2_0
-        // GitHub Issue #302
-        [Ignore]
-#endif
         [TestMethod]
-        [TestCategory("Method-E2E")]
         public async Task Method_DeviceReceivesMethodAndResponse_AmqpWs()
         {
             await SendMethodAndRespond(Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
         }
 
-        [Ignore]
+        [Ignore] //TODO: #571
         [TestMethod]
-        [TestCategory("Method-E2E")]
-        [TestCategory("Recovery")]
+        [TestCategory("IoTHub-FaultInjection")]
         public async Task Method_DeviceMethodTcpConnRecovery_Amqp()
         {
             await SendMethodAndRespondRecovery(Client.TransportType.Amqp_Tcp_Only,
-                TestUtil.FaultType_Tcp,
-                TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
+                FaultInjection.FaultType_Tcp,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [Ignore]
         [TestMethod]
-        [TestCategory("Method-E2E")]
-        [TestCategory("Recovery")]
+        [TestCategory("IoTHub-FaultInjection")]
         public async Task Method_DeviceMethodTcpConnRecovery_AmqpWs()
         {
             await SendMethodAndRespondRecovery(Client.TransportType.Amqp_WebSocket_Only,
-                TestUtil.FaultType_Tcp,
-                TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec).ConfigureAwait(false)
-            ;
+                FaultInjection.FaultType_Tcp,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [Ignore]
+        [Ignore] //TODO: #571
         [TestMethod]
-        [TestCategory("Method-E2E")]
-        [TestCategory("Recovery")]
+        [TestCategory("IoTHub-FaultInjection")]
         public async Task Method_DeviceMethodAmqpConnLostRecovery_Amqp()
         {
             await SendMethodAndRespondRecovery(Client.TransportType.Amqp_Tcp_Only,
-                TestUtil.FaultType_AmqpConn,
-                TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
+                FaultInjection.FaultType_AmqpConn,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [Ignore]
+        [Ignore] //TODO: #571
         [TestMethod]
-        [TestCategory("Method-E2E")]
-        [TestCategory("Recovery")]
+        [TestCategory("IoTHub-FaultInjection")]
         public async Task Method_DeviceMethodAmqpConnLostRecovery_AmqpWs()
         {
             await SendMethodAndRespondRecovery(Client.TransportType.Amqp_WebSocket_Only, 
-                TestUtil.FaultType_AmqpConn,
-                TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
+                FaultInjection.FaultType_AmqpConn,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [Ignore]
+        [Ignore] //TODO: #571
         [TestMethod]
-        [TestCategory("Method-E2E")]
-        [TestCategory("Recovery")]
+        [TestCategory("IoTHub-FaultInjection")]
         public async Task Method_DeviceMethodSessionLostRecovery_Amqp()
         {
             await SendMethodAndRespondRecovery(Client.TransportType.Amqp_Tcp_Only,
-                TestUtil.FaultType_AmqpSess,
-                TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
+                FaultInjection.FaultType_AmqpSess,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [Ignore]
+        [Ignore] //TODO: #571
         [TestMethod]
-        [TestCategory("Method-E2E")]
-        [TestCategory("Recovery")]
+        [TestCategory("IoTHub-FaultInjection")]
         public async Task Method_DeviceMethodSessionLostRecovery_AmqpWs()
         {
             await SendMethodAndRespondRecovery(Client.TransportType.Amqp_WebSocket_Only,
-                TestUtil.FaultType_AmqpSess,
-                TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
+                FaultInjection.FaultType_AmqpSess,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
         [Ignore] //TODO: #194 Test intermittently failing on Windows.
         [TestMethod]
-        [TestCategory("Method-E2E")]
-        [TestCategory("Recovery")]
+        [TestCategory("IoTHub-FaultInjection")]
         public async Task Method_DeviceMethodReqLinkDropRecovery_Amqp()
         {
             await SendMethodAndRespondRecovery(Client.TransportType.Amqp_Tcp_Only,
-                TestUtil.FaultType_AmqpMethodReq,
-                TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
+                FaultInjection.FaultType_AmqpMethodReq,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
         [Ignore] //TODO: #194 Test intermittently failing on Windows.
         [TestMethod]
-        [TestCategory("Method-E2E")]
-        [TestCategory("Recovery")]
+        [TestCategory("IoTHub-FaultInjection")]
         public async Task Method_DeviceMethodReqLinkDropRecovery_AmqpWs()
         {
             await SendMethodAndRespondRecovery(Client.TransportType.Amqp_WebSocket_Only,
-                TestUtil.FaultType_AmqpMethodReq,
-                TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
+                FaultInjection.FaultType_AmqpMethodReq,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
         [Ignore] //TODO: #194 Test intermittently failing on Windows.
         [TestMethod]
-        [TestCategory("Method-E2E")]
-        [TestCategory("Recovery")]
+        [TestCategory("IoTHub-FaultInjection")]
         public async Task Method_DeviceMethodRespLinkDropRecovery_Amqp()
         {
             await SendMethodAndRespondRecovery(Client.TransportType.Amqp_Tcp_Only,
-                TestUtil.FaultType_AmqpMethodResp,
-                TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
+                FaultInjection.FaultType_AmqpMethodResp,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
         [Ignore] //TODO: #194 Test intermittently failing on Windows.
         [TestMethod]
-        [TestCategory("Method-E2E")]
-        [TestCategory("Recovery")]
+        [TestCategory("IoTHub-FaultInjection")]
         public async Task Method_DeviceMethodRespLinkDropRecovery_AmqpWs()
         {
             await SendMethodAndRespondRecovery(Client.TransportType.Amqp_WebSocket_Only,
-                TestUtil.FaultType_AmqpMethodResp,
-                TestUtil.FaultCloseReason_Boom,
-                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
+                FaultInjection.FaultType_AmqpMethodResp,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [Ignore]
+        [Ignore] //TODO: #571
         [TestMethod]
-        [TestCategory("Method-E2E")]
-        [TestCategory("Recovery")]
+        [TestCategory("IoTHub-FaultInjection")]
         public async Task Method_DeviceMethodGracefulShutdownRecovery_Amqp()
         {
             await SendMethodAndRespondRecovery(Client.TransportType.Amqp_Tcp_Only,
-                TestUtil.FaultType_GracefulShutdownAmqp,
-                TestUtil.FaultCloseReason_Bye,
-                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
+                FaultInjection.FaultType_GracefulShutdownAmqp,
+                FaultInjection.FaultCloseReason_Bye,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [Ignore]
+        [Ignore] //TODO: #571
         [TestMethod]
-        [TestCategory("Method-E2E")]
-        [TestCategory("Recovery")]
+        [TestCategory("IoTHub-FaultInjection")]
         public async Task Method_DeviceMethodGracefulShutdownRecovery_AmqpWs()
         {
             await SendMethodAndRespondRecovery(Client.TransportType.Amqp_WebSocket_Only,
-                TestUtil.FaultType_GracefulShutdownAmqp,
-                TestUtil.FaultCloseReason_Bye,
-                TestUtil.DefaultDelayInSec).ConfigureAwait(false);
+                FaultInjection.FaultType_GracefulShutdownAmqp,
+                FaultInjection.FaultCloseReason_Bye,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
         private async Task ServiceSendMethodAndVerifyResponse(string deviceName, string methodName, string respJson, string reqJson, TaskCompletionSource<Tuple<bool, bool>> rel)
         {
-            ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(hubConnectionString);
+            ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
             Task<CloudToDeviceMethodResult> directResponseFuture = serviceClient.InvokeDeviceMethodAsync(
                 deviceName,
                 new CloudToDeviceMethod(methodName, TimeSpan.FromMinutes(5)).SetPayloadJson(reqJson)
@@ -336,10 +271,10 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private async Task SendMethodAndRespond(Client.TransportType transport)
         {
-            Tuple<string, string> deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
 
             var assertResult = new TaskCompletionSource<Tuple<bool, bool>>();
-            var deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, transport);
+            var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
             await deviceClient.SetMethodHandlerAsync(MethodName,
                 (request, context) =>
                 {
@@ -348,36 +283,35 @@ namespace Microsoft.Azure.Devices.E2ETests
                 },
                 null).ConfigureAwait(false);
 
-            await ServiceSendMethodAndVerifyResponse(deviceInfo.Item1, MethodName, DeviceResponseJson, ServiceRequestJson, assertResult).ConfigureAwait(false);
+            await ServiceSendMethodAndVerifyResponse(testDevice.Id, MethodName, DeviceResponseJson, ServiceRequestJson, assertResult).ConfigureAwait(false);
 
             await deviceClient.CloseAsync().ConfigureAwait(false);
-            await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager).ConfigureAwait(false);
         }
 
-        private async Task sendMethodAndRespondWithSetMethodHandler(Client.TransportType transport)
+        private async Task SendMethodAndRespondWithSetMethodHandler(Client.TransportType transport)
         {
-            Tuple<string, string> deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
-            var assertResult = new TaskCompletionSource<Tuple<bool, bool>>();
-            var deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, transport);
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
             
-
+            var assertResult = new TaskCompletionSource<Tuple<bool, bool>>();
+            var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
+            
             await (deviceClient?.SetMethodHandlerAsync(MethodName, (request, context) => 
             {
                 assertResult.TrySetResult(new Tuple<bool, bool>(request.Name.Equals(MethodName), request.DataAsJson.Equals(ServiceRequestJson)));
                 return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(DeviceResponseJson), 200));
             }, null)).ConfigureAwait(false);
 
-            await ServiceSendMethodAndVerifyResponse(deviceInfo.Item1, MethodName, DeviceResponseJson, ServiceRequestJson, assertResult).ConfigureAwait(false);
+            await ServiceSendMethodAndVerifyResponse(testDevice.Id, MethodName, DeviceResponseJson, ServiceRequestJson, assertResult).ConfigureAwait(false);
 
             await deviceClient.CloseAsync().ConfigureAwait(false);
-            await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager).ConfigureAwait(false);
         }
 
-        private async Task sendMethodAndRespondWithObseletedSetMethodHandler(Client.TransportType transport)
+        private async Task SendMethodAndRespondWithObseletedSetMethodHandler(Client.TransportType transport)
         {
-            Tuple<string, string> deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
+
             var assertResult = new TaskCompletionSource<Tuple<bool, bool>>();
-            var deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, transport);
+            var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
 
 #pragma warning disable CS0618
 
@@ -391,18 +325,17 @@ namespace Microsoft.Azure.Devices.E2ETests
             // sleep to ensure async tasks started in SetMethodHandler has completed
             Thread.Sleep(5000);
 
-            await ServiceSendMethodAndVerifyResponse(deviceInfo.Item1, MethodName, DeviceResponseJson, ServiceRequestJson, assertResult).ConfigureAwait(false);
+            await ServiceSendMethodAndVerifyResponse(testDevice.Id, MethodName, DeviceResponseJson, ServiceRequestJson, assertResult).ConfigureAwait(false);
 
             await deviceClient.CloseAsync().ConfigureAwait(false);
-            await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager).ConfigureAwait(false);
         }
 
         private async Task SendMethodAndRespondRecovery(Client.TransportType transport, string faultType, string reason, int delayInSec)
         {
-            Tuple<string, string> deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
 
             var assertResult = new TaskCompletionSource<Tuple<bool, bool>>();
-            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, transport);
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
 
             ConnectionStatus? lastConnectionStatus = null;
             ConnectionStatusChangeReason? lastConnectionStatusChangeReason = null;
@@ -412,7 +345,8 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             deviceClient.SetConnectionStatusChangesHandler((status, statusChangeReason) =>
             {
-                Debug.WriteLine("Connection Changed to {0} because {1}", status, statusChangeReason);
+                _log.WriteLine("Connection Changed to {0} because {1}", status, statusChangeReason);
+                
                 if (status == ConnectionStatus.Disconnected_Retrying)
                 {
                     tcsDisconnected.TrySetResult(true);
@@ -437,13 +371,10 @@ namespace Microsoft.Azure.Devices.E2ETests
                 },
                 null).ConfigureAwait(false);
 
-            // assert on successfuly connection
-            await Task.WhenAny(
-                Task.Run(async () =>
-                {
-                    await Task.Delay(1000).ConfigureAwait(false);
-                }), tcsConnected.Task).ConfigureAwait(false);
+            // assert on successful connection
+            await Task.WhenAny(Task.Delay(1000), tcsConnected.Task).ConfigureAwait(false);
             Assert.IsTrue(tcsConnected.Task.IsCompleted, "Initial connection failed");
+
             if (transport != Client.TransportType.Http1)
             {
                 Assert.AreEqual(1, setConnectionStatusChangesHandlerCount);
@@ -453,7 +384,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             // check on normal operation
             await
-                ServiceSendMethodAndVerifyResponse(deviceInfo.Item1, MethodName, DeviceResponseJson,
+                ServiceSendMethodAndVerifyResponse(testDevice.Id, MethodName, DeviceResponseJson,
                     ServiceRequestJson, assertResult).ConfigureAwait(false);
 
             // reset ConnectionStatusChangesHandler data
@@ -462,7 +393,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             tcsDisconnected = new TaskCompletionSource<bool>();
 
             // send error command
-            await deviceClient.SendEventAsync(TestUtil.ComposeErrorInjectionProperties(faultType, reason, delayInSec)).ConfigureAwait(false);
+            await deviceClient.SendEventAsync(FaultInjection.ComposeErrorInjectionProperties(faultType, reason, delayInSec)).ConfigureAwait(false);
 
             // wait for disconnection
             await Task.WhenAny(
@@ -472,19 +403,17 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }), tcsDisconnected.Task).ConfigureAwait(false);
             Assert.IsTrue(tcsDisconnected.Task.IsCompleted, "Error injection did not interrupt the device");
 
-            // allow max 3 minutes for connection recovery
             await Task.WhenAny(
                 Task.Run(async () =>
                 {
-                    ////////////////////////change it to 30
-                    await Task.Delay(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
+                    await Task.Delay(TimeSpan.FromSeconds(MaximumRecoveryTimeSeconds)).ConfigureAwait(false);
                     return Task.FromResult(true);
                 }), tcsConnected.Task).ConfigureAwait(false);
             Assert.IsTrue(tcsConnected.Task.IsCompleted, "Recovery connection failed");
 
             assertResult = new TaskCompletionSource<Tuple<bool, bool>>();
             await
-                ServiceSendMethodAndVerifyResponse(deviceInfo.Item1, MethodName, DeviceResponseJson,
+                ServiceSendMethodAndVerifyResponse(testDevice.Id, MethodName, DeviceResponseJson,
                     ServiceRequestJson, assertResult).ConfigureAwait(false);
             setConnectionStatusChangesHandlerCount = 0;
 
@@ -497,8 +426,20 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Assert.AreEqual(ConnectionStatus.Disabled, lastConnectionStatus);
                 Assert.AreEqual(ConnectionStatusChangeReason.Client_Close, lastConnectionStatusChangeReason);
             }
+        }
 
-            await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager).ConfigureAwait(false);
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _listener.Dispose();
+            }
         }
     }
 }

@@ -5,6 +5,7 @@
     using Microsoft.Azure.Devices.Client.Transport;
     
     [TestClass]
+    [TestCategory("Unit")]
     public class DeviceClientConnectionStatusManagerTests
     {
         [TestMethod]

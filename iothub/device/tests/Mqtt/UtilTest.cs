@@ -7,6 +7,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
+    [TestCategory("Unit")]
     public class UtilTest
     {
         [TestMethod]

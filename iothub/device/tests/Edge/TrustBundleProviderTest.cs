@@ -13,6 +13,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
 {
 
     [TestClass]
+    [TestCategory("Unit")]
     public class TrustBundleProviderTest
     {
         private const string certificatesString =

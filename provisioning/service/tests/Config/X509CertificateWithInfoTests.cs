@@ -10,6 +10,7 @@ using System.Security.Cryptography;
 namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 {
     [TestClass]
+    [TestCategory("Unit")]
     public class X509CertificateWithInfoTests
     {
         private const string SUBJECT_NAME = "CN=ROOT_00000000-0000-0000-0000-000000000000, OU=Azure IoT, O=MSFT, C=US";
@@ -72,7 +73,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         /* SRS_X509_CERTIFICATE_WITH_INFO_21_001: [The public constructor shall throws ArgumentException if the provided certificate is null or InvalidOperationException if it is invalid.] */
         [TestMethod]
-        [TestCategory("DevService")]
         public void X509CertificateWithInfoConstructorThrowsOnNullX509Certificate()
         {
             // arrange
@@ -104,7 +104,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         /* SRS_X509_CERTIFICATE_WITH_INFO_21_002: [The public constructor shall store the provided certificate as Base64 string.] */
         /* SRS_X509_CERTIFICATE_WITH_INFO_21_003: [The public constructor shall set the Info to null.] */
         [TestMethod]
-        [TestCategory("DevService")]
         public void X509CertificateWithInfoConstructorSucceedOnValidX509Certificate()
         {
             // arrange
@@ -119,7 +118,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         [TestMethod]
-        [TestCategory("DevService")]
         public void X509CertificateWithInfoConstructorSucceedOnValidX509CertificateString()
         {
             // arrange
@@ -136,7 +134,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         /* SRS_X509_CERTIFICATE_WITH_INFO_21_005: [The constructor for JSON shall store the provided Info.] */
         /* SRS_X509_CERTIFICATE_WITH_INFO_21_006: [The constructor for JSON shall store the provided certificate as X509Certificate2.] */
         [TestMethod]
-        [TestCategory("DevService")]
         public void X509CertificateWithInfoSucceedOnJsonWithInfo()
         {
             // arrange

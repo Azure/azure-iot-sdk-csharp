@@ -10,6 +10,7 @@ using Microsoft.Azure.Amqp;
 namespace Microsoft.Azure.Devices.Client.Test
 {
     [TestClass]
+    [TestCategory("Unit")]
     public class DeviceAuthenticationWithTokenRefreshTests
     {
         private const string TestDeviceId = "TestDeviceID";

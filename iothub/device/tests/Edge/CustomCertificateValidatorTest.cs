@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.Azure.Devices.Client.Test.Edge
 {
     [TestClass]
+    [TestCategory("Unit")]
     public class CustomCertificateValidatorTest
     {
         private const string certificatesString =

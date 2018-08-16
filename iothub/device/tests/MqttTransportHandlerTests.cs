@@ -22,6 +22,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
     using Microsoft.Azure.Devices.Client.Test.ConnectionString;
 
     [TestClass]
+    [TestCategory("Unit")]
     public class MqttTransportHandlerTests
     {
         const string DummyConnectionString = "HostName=127.0.0.1;SharedAccessKeyName=AllAccessKey;DeviceId=FakeDevice;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
@@ -36,70 +37,60 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
         const string fakeResponseId = "fakeResponseId";
 
         [TestMethod]
-        [TestCategory("TransportHandlers")]
         public async Task MqttTransportHandlerOpenAsyncTokenCancellationRequested()
         {
             await TestOperationCanceledByToken(token => CreateFromConnectionString().OpenAsync(true, token)).ConfigureAwait(false);
         }
 
         [TestMethod]
-        [TestCategory("TransportHandlers")]
         public async Task MqttTransportHandlerSendEventAsyncTokenCancellationRequested()
         {
             await TestOperationCanceledByToken(token => CreateFromConnectionString().SendEventAsync(new Message(), token)).ConfigureAwait(false);
         }
 
         [TestMethod]
-        [TestCategory("TransportHandlers")]
         public async Task MqttTransportHandlerReceiveAsyncTokenCancellationRequested()
         {
             await TestOperationCanceledByToken(token => CreateFromConnectionString().ReceiveAsync(new TimeSpan(0, 10, 0), token)).ConfigureAwait(false);
         }
 
         [TestMethod]
-        [TestCategory("TransportHandlers")]
         public async Task MqttTransportHandlerCompleteAsyncTokenCancellationRequested()
         {
             await TestOperationCanceledByToken(token => CreateFromConnectionString().CompleteAsync(Guid.NewGuid().ToString(), token)).ConfigureAwait(false);
         }
 
         [TestMethod]
-        [TestCategory("TransportHandlers")]
         public async Task MqttTransportHandlerEnableMethodsAsyncTokenCancellationRequested()
         {
             await TestOperationCanceledByToken(token => CreateFromConnectionString().EnableMethodsAsync(token)).ConfigureAwait(false);
         }
 
         [TestMethod]
-        [TestCategory("TransportHandlers")]
         public async Task MqttTransportHandlerDisableMethodsAsyncTokenCancellationRequested()
         {
             await TestOperationCanceledByToken(token => CreateFromConnectionString().DisableMethodsAsync(token)).ConfigureAwait(false);
         }
 
         [TestMethod]
-        [TestCategory("TransportHandlers")]
         public async Task MqttTransportHandlerSendMethodResponseAsyncTokenCancellationRequested()
         {
             await TestOperationCanceledByToken(token => CreateFromConnectionString().SendMethodResponseAsync(new MethodResponseInternal(), token)).ConfigureAwait(false);
         }
 
         [TestMethod]
-        [TestCategory("TransportHandlers")]
         public async Task MqttTransportHandlerEnableTwinPatchAsyncTokenCancellationRequested()
         {
             await TestOperationCanceledByToken(token => CreateFromConnectionString().EnableTwinPatchAsync(token)).ConfigureAwait(false);
         }
 
         [TestMethod]
-        [TestCategory("TransportHandlers")]
         public async Task MqttTransportHandlerSendTwinGetAsyncTokenCancellationRequested()
         {
             await TestOperationCanceledByToken(token => CreateFromConnectionString().SendTwinGetAsync(token)).ConfigureAwait(false);
         }
 
         [TestMethod]
-        [TestCategory("TransportHandlers")]
         public async Task MqttTransportHandlerSendTwinPatchAsyncTokenCancellationRequested()
         {
             await TestOperationCanceledByToken(token => CreateFromConnectionString().SendTwinPatchAsync(new TwinCollection(), token)).ConfigureAwait(false);
@@ -161,8 +152,6 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
 
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_031: `OpenAsync` shall subscribe using the '$iothub/twin/res/#' topic filter
         [TestMethod]
-        [TestCategory("TransportHandlers")]
-        [TestCategory("Twin")]
         public async Task MqttTransportHandlerOpenAsyncSubscribesToTwinResultTopic()
         {
             // arrange
@@ -184,8 +173,6 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_032: `EnableMethodsAsync` shall open the transport if this method is called when the transport is not open.
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_002: `EnableMethodsAsync` shall wait for a SUBACK for the subscription request.
         [TestMethod]
-        [TestCategory("TransportHandlers")]
-        [TestCategory("Methods")]
         public async Task MqttTransportHandlerEnableMethodsAsyncSubscribesSuccessfully()
         {
             // arrange
@@ -205,8 +192,6 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
 
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_003: `EnableMethodsAsync` shall return failure if the subscription request fails.
         [TestMethod]
-        [TestCategory("TransportHandlers")]
-        [TestCategory("Methods")]
         [ExpectedException(typeof(TimeoutException))]
         public async Task MqttTransportHandlerEnableMethodsAsyncSubscribeTimesOut()
         {
@@ -225,8 +210,6 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_28_001: `DisableMethodsAsync` shall unsubscribe using the '$iothub/methods/POST/' topic filter.
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_28_002: `DisableMethodsAsync` shall wait for a UNSUBACK for the unsubscription.
         [TestMethod]
-        [TestCategory("TransportHandlers")]
-        [TestCategory("Methods")]
         public async Task MqttTransportHandlerDisableMethodsAsyncUnsubscribesSuccessfully()
         {
             // arrange
@@ -246,8 +229,6 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
 
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_28_003: `DisableMethodsAsync` shall return failure if the unsubscription fails.
         [TestMethod]
-        [TestCategory("TransportHandlers")]
-        [TestCategory("Methods")]
         [ExpectedException(typeof(TimeoutException))]
         public async Task MqttTransportHandlerDisablemethodsAsyncUnsubscribeTimesOut()
         {
@@ -268,8 +249,6 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_33_020: `EnableMethodsAsync` shall open the transport if this method is called when the transport is not open.
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_33_022: `EnableMethodsAsync` shall wait for a SUBACK for the subscription request.
         [TestMethod]
-        [TestCategory("TransportHandlers")]
-        [TestCategory("Methods")]
         public async Task MqttTransportHandler_EnableEventReceiveAsync_SubscribesSuccessfully()
         {
             // arrange
@@ -291,8 +270,6 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
 
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_33_023: `EnableMethodsAsync` shall return failure if the subscription request fails.
         [TestMethod]
-        [TestCategory("TransportHandlers")]
-        [TestCategory("Methods")]
         [ExpectedException(typeof(TimeoutException))]
         public async Task MqttTransportHandler_EnableEventReceiveAsync_SubscribeTimesOut()
         {
@@ -312,8 +289,6 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_33_021: `DisableEventReceiveAsync` shall unsubscribe using the 'devices/{0}/modules/{1}/#' topic filter.
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_33_022: `DisableEventReceiveAsync` shall wait for a UNSUBACK for the unsubscription.
         [TestMethod]
-        [TestCategory("TransportHandlers")]
-        [TestCategory("Methods")]
         public async Task MqttTransportHandler_DisableEventReceiveAsync_UnsubscribesSuccessfully()
         {
             // arrange
@@ -334,8 +309,6 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
 
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_33_023: `DisableEventReceiveAsync` shall return failure if the unsubscription fails.
         [TestMethod]
-        [TestCategory("TransportHandlers")]
-        [TestCategory("Methods")]
         [ExpectedException(typeof(TimeoutException))]
         public async Task MqttTransportHandler_DisableEventReceiveAsync_UnsubscribeTimesOut()
         {
@@ -358,8 +331,6 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_007: `SendMethodResponseAsync` shall set the message body to the response payload of the `Method` object.
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_008: `SendMethodResponseAsync` shall send the message to the service.
         [TestMethod]
-        [TestCategory("TransportHandlers")]
-        [TestCategory("Methods")]
         public async Task MqttTransportHandlerSendMethodResponseAsyncSendsMessage()
         {
             // arrange
@@ -392,8 +363,6 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_011: `EnableTwinPatchAsync` shall wait for a SUBACK on the subscription request.
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_033: `EnableTwinPatchAsync` shall open the transport  if this method is called when the transport is not open.
         [TestMethod]
-        [TestCategory("TransportHandlers")]
-        [TestCategory("Twin")]
         public async Task MqttTransportHandlerEnableTwinPatchAsyncSubscribes()
         {
             // arrange
@@ -412,8 +381,6 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
         
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_012: `EnableTwinPatchAsync` shall return failure if the subscription request fails.
         [TestMethod]
-        [TestCategory("TransportHandlers")]
-        [TestCategory("Twin")]
         [ExpectedException(typeof(TimeoutException))]
         public async Task MqttTransportHandlerEnableTwinPatchAsyncTimesOut()
         {
@@ -445,8 +412,6 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_034: `SendTwinGetAsync` shall shall open the transport  if this method is called when the transport is not open.
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_021: If the response contains a success code, `SendTwinGetAsync` shall return success to the caller 
         [TestMethod]
-        [TestCategory("TransportHandlers")]
-        [TestCategory("Twin")]
         public async Task MqttTransportHandlerSendTwinGetAsyncHappyPath()
         {
             // arrange
@@ -474,8 +439,6 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
 
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_019: If the response is failed, `SendTwinGetAsync` shall return that failure to the caller.
         [TestMethod]
-        [TestCategory("TransportHandlers")]
-        [TestCategory("Twin")]
         [ExpectedException(typeof(Exception))]
         public async Task MqttTransportHandlerSendTwinGetAsyncReturnsFailure()
         {
@@ -498,8 +461,6 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
 
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_020: If the response doesn't arrive within `MqttTransportHandler.TwinTimeout`, `SendTwinGetAsync` shall fail with a timeout error
         [TestMethod]
-        [TestCategory("TransportHandlers")]
-        [TestCategory("Twin")]
         [ExpectedException(typeof(TimeoutException))]
         public async Task MqttTransportHandlerSendTwinGetAsyncTimesOut()
         {
@@ -521,8 +482,6 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_030: If the response contains a success code, `SendTwinPatchAsync` shall return success to the caller.
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_035: `SendTwinPatchAsync` shall shall open the transport if this method is called when the transport is not open.
         [TestMethod]
-        [TestCategory("TransportHandlers")]
-        [TestCategory("Twin")]
         public async Task MqttTransportHandlerSendTwinPatchAsyncHappyPath()
         {
             // arrange
@@ -556,8 +515,6 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
 
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_028: If the response is failed, `SendTwinPatchAsync` shall return that failure to the caller.
         [TestMethod]
-        [TestCategory("TransportHandlers")]
-        [TestCategory("Twin")]
         [ExpectedException(typeof(Exception))]
         public async Task MqttTransportHandlerSendTwinPatchAsyncReturnsFailure()
         {
@@ -583,8 +540,6 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
 
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_029: If the response doesn't arrive within `MqttTransportHandler.TwinTimeout`, `SendTwinPatchAsync` shall fail with a timeout error. 
         [TestMethod]
-        [TestCategory("TransportHandlers")]
-        [TestCategory("Twin")]
         [ExpectedException(typeof(TimeoutException))]
         public async Task MqttTransportHandlerSendTwinPatchAsyncTimesOut()
         {

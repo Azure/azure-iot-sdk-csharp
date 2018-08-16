@@ -9,6 +9,7 @@ using System.Security.Cryptography.X509Certificates;
 namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 {
     [TestClass]
+    [TestCategory("Unit")]
     public class X509CertificatesTests
     {
         private const string SUBJECT_NAME = "CN=ROOT_00000000-0000-0000-0000-000000000000, OU=Azure IoT, O=MSFT, C=US";
@@ -58,7 +59,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         /* SRS_X509_CERTIFICATES_21_001: [The constructor shall store the provided primary and secondary certificates as X509CertificateWithInfo.] */
         [TestMethod]
-        [TestCategory("DevService")]
         public void X509CertificatesSucceedOnValidPrimaryX509Certificate()
         {
             // arrange
@@ -73,7 +73,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         [TestMethod]
-        [TestCategory("DevService")]
         public void X509CertificatesSucceedOnValidPrimaryAndSecondaryX509Certificate()
         {
             // arrange
@@ -89,7 +88,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         [TestMethod]
-        [TestCategory("DevService")]
         public void X509CertificatesSucceedOnValidPrimaryString()
         {
             // arrange
@@ -104,7 +102,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         [TestMethod]
-        [TestCategory("DevService")]
         public void X509CertificatesSucceedOnValidPrimaryAndSecondaryX509CertificateWithInfo()
         {
             // arrange
@@ -120,7 +117,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         [TestMethod]
-        [TestCategory("DevService")]
         public void X509CertificatesSucceedOnJsonWithPrimaryCertificate()
         {
             // arrange
@@ -139,7 +135,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         [TestMethod]
-        [TestCategory("DevService")]
         public void X509CertificatesSucceedOnJsonWithPrimaryAndSecondaryCertificate()
         {
             // arrange
@@ -162,7 +157,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         /* SRS_X509_CERTIFICATES_21_002: [The constructor shall throw ArgumentException if the provided primary certificates is invalid.] */
         [TestMethod]
-        [TestCategory("DevService")]
         public void X509CertificatesThrowsOnNullPrimaryX509Certificate()
         {
             // arrange
@@ -173,7 +167,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         [TestMethod]
-        [TestCategory("DevService")]
         public void X509CertificatesThrowsOnNullPrimaryString()
         {
             // arrange
@@ -184,7 +177,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         [TestMethod]
-        [TestCategory("DevService")]
         public void X509CertificatesThrowsOnJsonWithoutPrimaryCertificate()
         {
             // arrange

@@ -22,21 +22,15 @@ namespace Microsoft.Azure.Devices.E2ETests
         #region PAL
         internal async Task SendMessageThrottledForHttp()
         {
-            // TODO: Update Jenkins Config
-            if (Configuration.IoTHub.EventHubString.IsNullOrWhiteSpace())
-            {
-                return;
-            }
-            await sequentialTestSemaphore.WaitAsync().ConfigureAwait(false);
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
 
-            Tuple<string, string> deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
-            PartitionReceiver eventHubReceiver = await CreateEventHubReceiver(deviceInfo.Item1).ConfigureAwait(false);
+            PartitionReceiver eventHubReceiver = await CreateEventHubReceiver(testDevice.Id).ConfigureAwait(false);
 
-            var deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, Client.TransportType.Http1);
+            var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, Client.TransportType.Http1);
 
             try
             {
-                deviceClient.OperationTimeoutInMilliseconds = (uint)TestUtil.ShortRetryInMilliSec;
+                deviceClient.OperationTimeoutInMilliseconds = (uint)FaultInjection.ShortRetryInMilliSec;
                 await deviceClient.OpenAsync().ConfigureAwait(false);
 
                 string payload, p1Value;
@@ -49,33 +43,28 @@ namespace Microsoft.Azure.Devices.E2ETests
                 while (!isReceived && sw.Elapsed.Minutes < 1)
                 {
                     var events = await eventHubReceiver.ReceiveAsync(int.MaxValue, TimeSpan.FromSeconds(5)).ConfigureAwait(false);
-                    isReceived = VerifyTestMessage(events, deviceInfo.Item1, payload, p1Value);
+                    isReceived = VerifyTestMessage(events, testDevice.Id, payload, p1Value);
                 }
                 sw.Stop();
 
                 // Implementation of error injection of throttling on http is that it will throttle the
                 // fault injection message itself only.  The duration of fault has no effect on http throttle.
                 // Client is supposed to retry sending the throttling fault message until operation timeout.
-                await deviceClient.SendEventAsync(TestUtil.ComposeErrorInjectionProperties(TestUtil.FaultType_Throttle,
-                    TestUtil.FaultCloseReason_Boom, TestUtil.DefaultDelayInSec, TestUtil.DefaultDurationInSec)).ConfigureAwait(false);
+                await deviceClient.SendEventAsync(FaultInjection.ComposeErrorInjectionProperties(FaultInjection.FaultType_Throttle,
+                    FaultInjection.FaultCloseReason_Boom, FaultInjection.DefaultDelayInSec, FaultInjection.DefaultDurationInSec)).ConfigureAwait(false);
             }
             finally
             {
                 await deviceClient.CloseAsync().ConfigureAwait(false);
                 await eventHubReceiver.CloseAsync().ConfigureAwait(false);
-                sequentialTestSemaphore.Release(1);
             }
         }
         internal async Task SendSingleMessage(Client.TransportType transport)
         {
-            // TODO: Update Jenkins Config
-            if (Configuration.IoTHub.EventHubString.IsNullOrWhiteSpace())
-            {
-                return;
-            }
-            Tuple<string, string> deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
-            PartitionReceiver eventHubReceiver = await CreateEventHubReceiver(deviceInfo.Item1).ConfigureAwait(false);
-            var deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, transport);
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
+
+            PartitionReceiver eventHubReceiver = await CreateEventHubReceiver(testDevice.Id).ConfigureAwait(false);
+            var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
 
             try
             {
@@ -92,7 +81,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 while (!isReceived && sw.Elapsed.Minutes < 1)
                 {
                     var events = await eventHubReceiver.ReceiveAsync(int.MaxValue, TimeSpan.FromSeconds(30)).ConfigureAwait(false);
-                    isReceived = VerifyTestMessage(events, deviceInfo.Item1, payload, p1Value);
+                    isReceived = VerifyTestMessage(events, testDevice.Id, payload, p1Value);
                 }
                 sw.Stop();
 
@@ -102,24 +91,16 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 await deviceClient.CloseAsync().ConfigureAwait(false);
                 await eventHubReceiver.CloseAsync().ConfigureAwait(false);
-                await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager).ConfigureAwait(false);
             }
         }
 
         internal async Task SendMessageRecovery(Client.TransportType transport,
             string faultType, string reason, int delayInSec, int durationInSec = 0, int retryDurationInMilliSec = 240000)
         {
-            //ToDo: Update Config
-            if (Configuration.IoTHub.EventHubString.IsNullOrWhiteSpace())
-            {
-                return;
-            }
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
 
-            await sequentialTestSemaphore.WaitAsync().ConfigureAwait(false);
-
-            Tuple<string, string> deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
-            var deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, transport);
-            PartitionReceiver eventHubReceiver = await CreateEventHubReceiver(deviceInfo.Item1).ConfigureAwait(false);
+            var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
+            PartitionReceiver eventHubReceiver = await CreateEventHubReceiver(testDevice.Id).ConfigureAwait(false);
 
             try
             {
@@ -156,12 +137,12 @@ namespace Microsoft.Azure.Devices.E2ETests
                 while (!isReceived && sw.Elapsed.Minutes < 1)
                 {
                     var events = await eventHubReceiver.ReceiveAsync(int.MaxValue, TimeSpan.FromSeconds(5)).ConfigureAwait(false);
-                    isReceived = VerifyTestMessage(events, deviceInfo.Item1, payload, p1Value);
+                    isReceived = VerifyTestMessage(events, testDevice.Id, payload, p1Value);
                 }
                 sw.Stop();
 
                 // send error command and clear eventHubReceiver of the fault injection message
-                await deviceClient.SendEventAsync(TestUtil.ComposeErrorInjectionProperties(faultType, reason,
+                await deviceClient.SendEventAsync(FaultInjection.ComposeErrorInjectionProperties(faultType, reason,
                     delayInSec,
                     durationInSec)).ConfigureAwait(false);
 
@@ -177,7 +158,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 while (!isReceived && sw.Elapsed.Minutes < 1)
                 {
                     var events = await eventHubReceiver.ReceiveAsync(int.MaxValue, TimeSpan.FromSeconds(5)).ConfigureAwait(false);
-                    isReceived = VerifyTestMessage(events, deviceInfo.Item1, payload, p1Value);
+                    isReceived = VerifyTestMessage(events, testDevice.Id, payload, p1Value);
                 }
                 sw.Stop();
 
@@ -194,8 +175,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 await deviceClient.CloseAsync().ConfigureAwait(false);
                 await eventHubReceiver.CloseAsync().ConfigureAwait(false);
-                await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager).ConfigureAwait(false);
-                sequentialTestSemaphore.Release(1);
             }
         }
         #endregion
@@ -207,13 +186,16 @@ namespace Microsoft.Azure.Devices.E2ETests
             Stopwatch sw = new Stopwatch();
             sw.Start();
 
-            string endpoint = Configuration.IoTHub.EventHubString;
+            var builder = new EventHubsConnectionStringBuilder(Configuration.IoTHub.EventHubString)
+            {
+                EntityPath = Configuration.IoTHub.EventHubCompatibleName
+            };
 
-            EventHubClient eventHubClient = EventHubClient.CreateFromConnectionString(endpoint);
+            EventHubClient eventHubClient = EventHubClient.CreateFromConnectionString(builder.ToString());
             var eventRuntimeInformation = await eventHubClient.GetRuntimeInformationAsync().ConfigureAwait(false);
             var eventHubPartitionsCount = eventRuntimeInformation.PartitionCount;
             string partition = EventHubPartitionKeyResolver.ResolveToPartition(deviceName, eventHubPartitionsCount);
-            string consumerGroupName = Configuration.IoTHub.ConsumerGroup;
+            string consumerGroupName = Configuration.IoTHub.EventHubConsumerGroup;
 
             while (eventHubReceiver == null && sw.Elapsed.Minutes < 1)
             {
@@ -232,14 +214,12 @@ namespace Microsoft.Azure.Devices.E2ETests
             return eventHubReceiver;
         }
 
-        
-
         private bool VerifyTestMessage(IEnumerable<EventData> events, string deviceName, string payload, string p1Value)
         {
             foreach (var eventData in events)
             {
                 var data = Encoding.UTF8.GetString(eventData.Body.ToArray());
-                if (data.Equals(payload))
+                if (data == payload)
                 {
                     var connectionDeviceId = eventData.Properties["iothub-connection-device-id"].ToString();
                     if (string.Equals(connectionDeviceId, deviceName, StringComparison.CurrentCultureIgnoreCase) &&
@@ -256,9 +236,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             foreach (var key in properties.Keys)
             {
-                if (checkForKey.Equals(key))
+                if (checkForKey == key)
                 {
-                    if(properties[checkForKey].Equals(checkForValue))
+                    if((string)properties[checkForKey] == checkForValue)
                     {
                         return true;
                     }

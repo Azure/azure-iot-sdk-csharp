@@ -371,8 +371,8 @@ namespace Microsoft.Azure.Devices.Client
         {
             var timeoutHelper = new TimeoutHelper(timeout);
             string additionalQueryParams = "";
-#if NETSTANDARD1_3 || NETSTANDARD2_0
-            // NETSTANDARD1_3 or NETSTANDARD2_0 implementation doesn't set client certs, so we want to tell the IoT Hub to not ask for them
+#if NETSTANDARD1_3
+            // NETSTANDARD1_3 implementation doesn't set client certs, so we want to tell the IoT Hub to not ask for them
             additionalQueryParams = "?iothub-no-client-cert=true";
 #endif
             Uri websocketUri = new Uri(WebSocketConstants.Scheme + this.hostName + ":" + WebSocketConstants.SecurePort + WebSocketConstants.UriSuffix + additionalQueryParams);

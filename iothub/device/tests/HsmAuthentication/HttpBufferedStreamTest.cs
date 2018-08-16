@@ -11,6 +11,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
 {
     [TestClass]
+    [TestCategory("Unit")]
     public class HttpBufferedStreamTest
     {
         [TestMethod]

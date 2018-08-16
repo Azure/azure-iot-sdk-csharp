@@ -3,14 +3,15 @@
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
+    using Microsoft.Azure.Devices.Client.Exceptions;
+    using Microsoft.Azure.Devices.Client.Extensions;
+    using Microsoft.Azure.Devices.Shared;
     using System;
     using System.Collections.ObjectModel;
     using System.Linq;
     using System.Net.Sockets;
     using System.Threading;
     using System.Threading.Tasks;
-    using Microsoft.Azure.Devices.Client.Exceptions;
-    using Microsoft.Azure.Devices.Client.Extensions;
     using System.Diagnostics;
 
     /// <summary>
@@ -30,18 +31,34 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task OpenAsync(bool explicitOpen, CancellationToken cancellationToken)
         {
-            Debug.WriteLine(cancellationToken.GetHashCode() + " ProtocolRoutingDelegatingHandler.OpenAsync()");
-            await this.TryOpenPrioritizedTransportsAsync(explicitOpen, cancellationToken).ConfigureAwait(false);
+            try
+            {
+                if (Logging.IsEnabled) Logging.Enter(this, explicitOpen, cancellationToken, $"{nameof(ProtocolRoutingDelegatingHandler)}.{nameof(OpenAsync)}");
+
+                await this.TryOpenPrioritizedTransportsAsync(explicitOpen, cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, explicitOpen, cancellationToken, $"{nameof(ProtocolRoutingDelegatingHandler)}.{nameof(OpenAsync)}");
+            }
         }
 
         async Task TryOpenPrioritizedTransportsAsync(bool explicitOpen, CancellationToken cancellationToken)
         {
             Exception lastException = null;
+
             // Concrete Device Client creation was deferred. Use prioritized list of transports.
             foreach (ITransportSettings transportSetting in this.Context.Get<ITransportSettings[]>())
             {
+
+                if (Logging.IsEnabled) Logging.Info(
+                    this,
+                    $"Trying {transportSetting?.GetTransportType()}",
+                    $"{nameof(ProtocolRoutingDelegatingHandler)}.{nameof(TryOpenPrioritizedTransportsAsync)}");
+
                 if (cancellationToken.IsCancellationRequested)
                 {
+                    if (Logging.IsEnabled) Logging.Info(this, $"Cancellation requested for {Logging.GetHashCode(cancellationToken)}.", $"{nameof(ProtocolRoutingDelegatingHandler)}.{nameof(TryOpenPrioritizedTransportsAsync)}");
                     var tcs = new TaskCompletionSource<bool>();
                     tcs.SetCanceled();
                     await tcs.Task.ConfigureAwait(false);
@@ -66,7 +83,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     }
                     catch (Exception ex) when (!ex.IsFatal())
                     {
-                        //ignore close failures    
+                        //ignore close failures
+                        if (Logging.IsEnabled) Logging.Info(
+                            this,
+                            $"Exception caught while closing {transportSetting?.GetTransportType()}: {exception}",
+                            $"{nameof(ProtocolRoutingDelegatingHandler)}.{nameof(TryOpenPrioritizedTransportsAsync)}");
                     }
 
                     if (!(exception is IotHubCommunicationException ||
@@ -74,6 +95,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                           exception is SocketException ||
                           exception is AggregateException))
                     {
+                        if (Logging.IsEnabled) Logging.Error(this, $"Re-throwing exception caught: {exception}", $"{nameof(ProtocolRoutingDelegatingHandler)}.{nameof(TryOpenPrioritizedTransportsAsync)}");
                         throw;
                     }
 
@@ -85,11 +107,15 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             x is SocketException ||
                             x is TimeoutException))
                         {
+                            if (Logging.IsEnabled) Logging.Error(this, $"Re-throwing AggregateException: {exception}", $"{nameof(ProtocolRoutingDelegatingHandler)}.{nameof(TryOpenPrioritizedTransportsAsync)}");
+
                             throw;
                         }
                     }
 
                     lastException = exception;
+
+                    if (Logging.IsEnabled) Logging.Error(this, $"Exception caught: {exception}", $"{nameof(ProtocolRoutingDelegatingHandler)}.{nameof(TryOpenPrioritizedTransportsAsync)}");
 
                     // open connection failed. Move to next transport type
                     continue;

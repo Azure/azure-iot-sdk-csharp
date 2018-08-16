@@ -20,18 +20,16 @@ namespace Microsoft.Azure.Devices.E2ETests
         #region PAL
         internal async Task SendMessageThrottledForHttp()
         {
-            await sequentialTestSemaphore.WaitAsync().ConfigureAwait(false);
-
-            Tuple<string, string> deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
 
             EventHubClient eventHubClient;
-            EventHubReceiver eventHubReceiver = CreateEventHubReceiver(deviceInfo.Item1, out eventHubClient);
+            EventHubReceiver eventHubReceiver = CreateEventHubReceiver(testDevice.Id, out eventHubClient);
 
-            var deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, Client.TransportType.Http1);
+            var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, Client.TransportType.Http1);
 
             try
             {
-                deviceClient.OperationTimeoutInMilliseconds = (uint)TestUtil.ShortRetryInMilliSec;
+                deviceClient.OperationTimeoutInMilliseconds = (uint)FaultInjection.ShortRetryInMilliSec;
                 await deviceClient.OpenAsync().ConfigureAwait(false);
 
                 string payload, p1Value;
@@ -44,33 +42,31 @@ namespace Microsoft.Azure.Devices.E2ETests
                 while (!isReceived && sw.Elapsed.Minutes < 1)
                 {
                     var events = await eventHubReceiver.ReceiveAsync(int.MaxValue, TimeSpan.FromSeconds(5)).ConfigureAwait(false);
-                    isReceived = VerifyTestMessage(events, deviceInfo.Item1, payload, p1Value);
+                    isReceived = VerifyTestMessage(events, testDevice.Id, payload, p1Value);
                 }
                 sw.Stop();
 
                 // Implementation of error injection of throttling on http is that it will throttle the
                 // fault injection message itself only.  The duration of fault has no effect on http throttle.
                 // Client is supposed to retry sending the throttling fault message until operation timeout.
-                await deviceClient.SendEventAsync(TestUtil.ComposeErrorInjectionProperties(TestUtil.FaultType_Throttle,
-                    TestUtil.FaultCloseReason_Boom, TestUtil.DefaultDelayInSec, TestUtil.DefaultDurationInSec)).ConfigureAwait(false);
+                await deviceClient.SendEventAsync(FaultInjection.ComposeErrorInjectionProperties(FaultInjection.FaultType_Throttle,
+                    FaultInjection.FaultCloseReason_Boom, FaultInjection.DefaultDelayInSec, FaultInjection.DefaultDurationInSec)).ConfigureAwait(false);
             }
             finally
             {
                 await deviceClient.CloseAsync().ConfigureAwait(false);
                 await eventHubReceiver.CloseAsync().ConfigureAwait(false);
-                sequentialTestSemaphore.Release(1);
             }
         }
 
         internal async Task SendMessageRecovery(Client.TransportType transport,
             string faultType, string reason, int delayInSec, int durationInSec = 0, int retryDurationInMilliSec = 240000)
         {
-            await sequentialTestSemaphore.WaitAsync().ConfigureAwait(false);
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
 
-            Tuple<string, string> deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
-            var deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, transport);
+            var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
             EventHubClient eventHubClient;
-            EventHubReceiver eventHubReceiver = CreateEventHubReceiver(deviceInfo.Item1, out eventHubClient);
+            EventHubReceiver eventHubReceiver = CreateEventHubReceiver(testDevice.Id, out eventHubClient);
 
             try
             {
@@ -107,12 +103,12 @@ namespace Microsoft.Azure.Devices.E2ETests
                 while (!isReceived && sw.Elapsed.Minutes < 1)
                 {
                     var events = await eventHubReceiver.ReceiveAsync(int.MaxValue, TimeSpan.FromSeconds(5)).ConfigureAwait(false);
-                    isReceived = VerifyTestMessage(events, deviceInfo.Item1, payload, p1Value);
+                    isReceived = VerifyTestMessage(events, testDevice.Id, payload, p1Value);
                 }
                 sw.Stop();
 
                 // send error command and clear eventHubReceiver of the fault injection message
-                await deviceClient.SendEventAsync(TestUtil.ComposeErrorInjectionProperties(faultType, reason,
+                await deviceClient.SendEventAsync(FaultInjection.ComposeErrorInjectionProperties(faultType, reason,
                     delayInSec,
                     durationInSec)).ConfigureAwait(false);
 
@@ -128,7 +124,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 while (!isReceived && sw.Elapsed.Minutes < 1)
                 {
                     var events = await eventHubReceiver.ReceiveAsync(int.MaxValue, TimeSpan.FromSeconds(5)).ConfigureAwait(false);
-                    isReceived = VerifyTestMessage(events, deviceInfo.Item1, payload, p1Value);
+                    isReceived = VerifyTestMessage(events, testDevice.Id, payload, p1Value);
                 }
                 sw.Stop();
 
@@ -145,17 +141,16 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 await deviceClient.CloseAsync().ConfigureAwait(false);
                 await eventHubReceiver.CloseAsync().ConfigureAwait(false);
-                await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager).ConfigureAwait(false);
-                sequentialTestSemaphore.Release(1);
             }
         }
 
         internal async Task SendSingleMessage(Client.TransportType transport)
         {
-            Tuple<string, string> deviceInfo = TestUtil.CreateDevice(DevicePrefix, hostName, registryManager);
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
+
             EventHubClient eventHubClient;
-            EventHubReceiver eventHubReceiver = CreateEventHubReceiver(deviceInfo.Item1, out eventHubClient);
-            var deviceClient = DeviceClient.CreateFromConnectionString(deviceInfo.Item2, transport);
+            EventHubReceiver eventHubReceiver = CreateEventHubReceiver(testDevice.Id, out eventHubClient);
+            var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
 
             try
             {
@@ -172,7 +167,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 while (!isReceived && sw.Elapsed.Minutes < 1)
                 {
                     var events = await eventHubReceiver.ReceiveAsync(int.MaxValue, TimeSpan.FromSeconds(5)).ConfigureAwait(false);
-                    isReceived = VerifyTestMessage(events, deviceInfo.Item1, payload, p1Value);
+                    isReceived = VerifyTestMessage(events, testDevice.Id, payload, p1Value);
                 }
                 sw.Stop();
 
@@ -182,7 +177,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 await deviceClient.CloseAsync().ConfigureAwait(false);
                 await eventHubReceiver.CloseAsync().ConfigureAwait(false);
-                await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager).ConfigureAwait(false);
             }
         }
         #endregion
@@ -193,13 +187,13 @@ namespace Microsoft.Azure.Devices.E2ETests
             foreach (var eventData in events)
             {
                 var data = Encoding.UTF8.GetString(eventData.GetBytes());
-                if (data.Equals(payload))
+                if (data == payload)
                 {
                     var connectionDeviceId = eventData.SystemProperties["iothub-connection-device-id"].ToString();
                     if (string.Equals(connectionDeviceId, deviceName, StringComparison.CurrentCultureIgnoreCase) &&
                         eventData.Properties.Count == 1 &&
-                        eventData.Properties.Single().Key.Equals("property1") &&
-                        eventData.Properties.Single().Value.Equals(p1Value))
+                        eventData.Properties.Single().Key == "property1" &&
+                        (string)eventData.Properties.Single().Value == p1Value)
                     {
                         return true;
                     }
@@ -214,16 +208,16 @@ namespace Microsoft.Azure.Devices.E2ETests
             Stopwatch sw = new Stopwatch();
             sw.Start();
 
-            eventHubClient = EventHubClient.CreateFromConnectionString(hubConnectionString, "messages/events");
+            eventHubClient = EventHubClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString, "messages/events");
             var eventHubPartitionsCount = eventHubClient.GetRuntimeInformation().PartitionCount;
             string partition = EventHubPartitionKeyResolver.ResolveToPartition(deviceName, eventHubPartitionsCount);
-            string consumerGroupName = Configuration.IoTHub.ConsumerGroup;
+            string consumerGroupName = Configuration.IoTHub.EventHubConsumerGroup;
 
             while (eventHubReceiver == null && sw.Elapsed.Minutes < 1)
             {
                 try
                 {
-                    eventHubReceiver = eventHubClient.GetConsumerGroup(consumerGroupName).CreateReceiver(partition, DateTime.Now, TestUtil.EventHubEpoch++);
+                    eventHubReceiver = eventHubClient.GetConsumerGroup(consumerGroupName).CreateReceiver(partition, DateTime.Now, FaultInjection.EventHubEpoch++);
                 }
                 catch (QuotaExceededException ex)
                 {

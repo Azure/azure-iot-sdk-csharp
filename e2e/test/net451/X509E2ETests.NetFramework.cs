@@ -20,15 +20,14 @@ namespace Microsoft.Azure.Devices.E2ETests
         #region PAL
         internal async Task SendSingleMessageX509(Client.TransportType transport)
         {
-            Tuple<string, string> deviceInfo = TestUtil.CreateDeviceWithX509(DevicePrefix, hostName, registryManager);
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, TestDeviceType.X509).ConfigureAwait(false);
 
-            EventHubClient eventHubClient;
-            EventHubReceiver eventHubReceiver = await CreateEventHubReceiver(deviceInfo.Item1).ConfigureAwait(false);
+            EventHubReceiver eventHubReceiver = await CreateEventHubReceiver(testDevice.Id).ConfigureAwait(false);
 
             X509Certificate2 cert = Configuration.IoTHub.GetCertificateWithPrivateKey();
 
-            var auth = new DeviceAuthenticationWithX509Certificate(deviceInfo.Item1, cert);
-            var deviceClient = DeviceClient.Create(deviceInfo.Item2, auth, transport);
+            var auth = new DeviceAuthenticationWithX509Certificate(testDevice.Id, cert);
+            var deviceClient = DeviceClient.Create(testDevice.IoTHubHostName, auth, transport);
 
             try
             {
@@ -45,7 +44,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 while (!isReceived && sw.Elapsed.Minutes < 1)
                 {
                     var events = await eventHubReceiver.ReceiveAsync(int.MaxValue, TimeSpan.FromSeconds(5)).ConfigureAwait(false);
-                    isReceived = VerifyTestMessage(events, deviceInfo.Item1, payload, p1Value);
+                    isReceived = VerifyTestMessage(events, testDevice.Id, payload, p1Value);
                 }
 
                 sw.Stop();
@@ -56,7 +55,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 await deviceClient.CloseAsync().ConfigureAwait(false);
                 await eventHubReceiver.CloseAsync().ConfigureAwait(false);
-                await TestUtil.RemoveDeviceAsync(deviceInfo.Item1, registryManager).ConfigureAwait(false);
             }
         }
         #endregion
@@ -64,12 +62,12 @@ namespace Microsoft.Azure.Devices.E2ETests
         #region Helper Functions
         private async Task<EventHubReceiver> CreateEventHubReceiver(string deviceName)
         {
-            EventHubClient eventHubClient = EventHubClient.CreateFromConnectionString(hubConnectionString, "messages/events");
+            EventHubClient eventHubClient = EventHubClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString, "messages/events");
             var eventHubPartitions = await eventHubClient.GetRuntimeInformationAsync().ConfigureAwait(false);
             var eventHubPartitionsCount = eventHubPartitions.PartitionCount;
             string partition = EventHubPartitionKeyResolver.ResolveToPartition(deviceName, eventHubPartitionsCount);
-            string consumerGroupName = Configuration.IoTHub.ConsumerGroup;
-            return eventHubClient.GetConsumerGroup(consumerGroupName).CreateReceiver(partition, DateTime.Now, TestUtil.EventHubEpoch++);
+            string consumerGroupName = Configuration.IoTHub.EventHubConsumerGroup;
+            return eventHubClient.GetConsumerGroup(consumerGroupName).CreateReceiver(partition, DateTime.Now, FaultInjection.EventHubEpoch++);
         }
 
         private bool VerifyTestMessage(IEnumerable<EventData> events, string deviceName, string payload, string p1Value)

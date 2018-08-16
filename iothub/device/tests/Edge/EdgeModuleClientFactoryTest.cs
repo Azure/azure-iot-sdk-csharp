@@ -12,6 +12,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Edge
 {
 
     [TestClass]
+    [TestCategory("Unit")]
     public class EdgeModuleClientFactoryTest
     {
         readonly string serverUrl;
