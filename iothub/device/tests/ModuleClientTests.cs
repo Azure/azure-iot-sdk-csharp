@@ -228,5 +228,14 @@
             Assert.IsFalse(isDefaultCallbackCalled);
             Assert.IsTrue(isSpecificCallbackCalled);
         }
+
+        [TestMethod]
+        [TestCategory("ModuleClient")]
+        public async Task ModuleClient_InvokeMethodAsyncWithoutBody()
+        {
+            var request = new MethodRequest("test");
+            var invokeRequest = new MethodInvokeRequest(request.Name, request.DataAsJson, request.ResponseTimeout, request.ConnectionTimeout);
+            Assert.IsTrue(invokeRequest != null);
+        }
     }
 }

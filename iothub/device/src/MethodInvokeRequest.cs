@@ -23,16 +23,20 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="ArgumentException">If <b>methodName</b> is null or whitespace</exception>
         public MethodInvokeRequest(string methodName, string payload, TimeSpan? responseTimeout, TimeSpan? connectionTimeout)
         {
-            ValidatePayloadIsJson(payload);
             if (string.IsNullOrWhiteSpace(methodName))
             {
-                throw new ArgumentException("Canot be empty", nameof(methodName));
+                throw new ArgumentNullException(nameof(methodName));
+            }
+            this.MethodName = methodName;
+
+            if (!string.IsNullOrEmpty(payload))
+            {
+                ValidatePayloadIsJson(payload);
+                this.Payload = new JRaw(payload);
             }
 
-            this.MethodName = methodName;
             this.ResponseTimeout = responseTimeout;
-            this.ConnectionTimeout = connectionTimeout;
-            this.Payload = new JRaw(payload);
+            this.ConnectionTimeout = connectionTimeout; 
         }
 
         /// <summary>
@@ -65,7 +69,7 @@ namespace Microsoft.Azure.Devices.Client
         [JsonProperty("connectTimeoutInSeconds", NullValueHandling = NullValueHandling.Ignore)]
         internal int? ConnectionTimeoutInSeconds => !this.ConnectionTimeout.HasValue || this.ConnectionTimeout <= TimeSpan.Zero ? (int?)null : (int)this.ConnectionTimeout.Value.TotalSeconds;
 
-        [JsonProperty("payload")]
+        [JsonProperty("payload", NullValueHandling = NullValueHandling.Include)]
         internal JRaw Payload { get; set; }
 
         private void ValidatePayloadIsJson(string json)
