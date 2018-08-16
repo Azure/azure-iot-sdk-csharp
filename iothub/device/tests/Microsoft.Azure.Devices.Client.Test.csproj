@@ -18,8 +18,8 @@
   <ItemGroup>
     <PackageReference Include="NSubstitute" Version="3.1.0" />
     <PackageReference Include="Moq" Version="4.8.2" />
-    <PackageReference Include="DotNetty.Codecs.Mqtt" Version="0.4.8" />
-    <PackageReference Include="DotNetty.Handlers" Version="0.4.8" />
+    <PackageReference Include="DotNetty.Codecs.Mqtt" Version="0.5.0" />
+    <PackageReference Include="DotNetty.Handlers" Version="0.5.0" />
     <PackageReference Include="Microsoft.Azure.Amqp" Version="2.3.2" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
   </ItemGroup>
