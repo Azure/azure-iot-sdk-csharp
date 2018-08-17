@@ -58,6 +58,9 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 await deviceClient.CloseAsync().ConfigureAwait(false);
                 await eventHubReceiver.CloseAsync().ConfigureAwait(false);
+
+                _log.WriteLine($"Waiting for fault injection interval to finish {FaultInjection.DefaultDelayInSec}s.");
+                await Task.Delay(FaultInjection.DefaultDurationInSec * 1000).ConfigureAwait(false);
             }
         }
         #endregion

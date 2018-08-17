@@ -95,7 +95,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         internal async Task SendMessageRecovery(Client.TransportType transport,
-            string faultType, string reason, int delayInSec, int durationInSec = 0, int retryDurationInMilliSec = 240000)
+            string faultType, string reason, int delayInSec, int durationInSec = 0, int retryDurationInMilliSec = FaultInjection.RecoveryTimeMilliseconds)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
 
@@ -175,6 +175,9 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 await deviceClient.CloseAsync().ConfigureAwait(false);
                 await eventHubReceiver.CloseAsync().ConfigureAwait(false);
+
+                _log.WriteLine($"Waiting for fault injection interval to finish {FaultInjection.DefaultDelayInSec}s.");
+                await Task.Delay(FaultInjection.DefaultDurationInSec * 1000).ConfigureAwait(false);
             }
         }
         #endregion

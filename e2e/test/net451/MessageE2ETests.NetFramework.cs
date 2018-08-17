@@ -51,6 +51,9 @@ namespace Microsoft.Azure.Devices.E2ETests
                 // Client is supposed to retry sending the throttling fault message until operation timeout.
                 await deviceClient.SendEventAsync(FaultInjection.ComposeErrorInjectionProperties(FaultInjection.FaultType_Throttle,
                     FaultInjection.FaultCloseReason_Boom, FaultInjection.DefaultDelayInSec, FaultInjection.DefaultDurationInSec)).ConfigureAwait(false);
+
+                _log.WriteLine($"Waiting for fault injection interval to finish {FaultInjection.DefaultDelayInSec}s.");
+                await Task.Delay(FaultInjection.DefaultDurationInSec * 1000).ConfigureAwait(false);
             }
             finally
             {
@@ -141,6 +144,9 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 await deviceClient.CloseAsync().ConfigureAwait(false);
                 await eventHubReceiver.CloseAsync().ConfigureAwait(false);
+
+                _log.WriteLine($"Waiting for fault injection interval to finish {FaultInjection.DefaultDelayInSec}s.");
+                await Task.Delay(FaultInjection.DefaultDurationInSec * 1000).ConfigureAwait(false);
             }
         }
 

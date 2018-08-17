@@ -37,10 +37,10 @@ namespace Microsoft.Azure.Devices.E2ETests
         public const string FaultCloseReason_Boom = "Boom";
         public const string FaultCloseReason_Bye = "byebye";
 
-        public const int DefaultDelayInSec = 1;
-        public const int DefaultDurationInSec = 5;
-        public const int WaitForDisconnectMilliseconds = 1 * 1000;
-        public const int ShortRetryInMilliSec = 3000;
+        public const int DefaultDelayInSec = 1; // Time in seconds after service initiates the fault.
+        public const int DefaultDurationInSec = 10; // Duration in seconds 
+        public const int WaitForDisconnectMilliseconds = 3 * DefaultDelayInSec * 1000;
+        public const int ShortRetryInMilliSec = (int)(DefaultDurationInSec / 2.0 * 1000);
 
         public const int RecoveryTimeMilliseconds = 5 * 60 * 1000;
 
