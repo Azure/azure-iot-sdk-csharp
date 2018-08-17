@@ -291,6 +291,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore] // TODO #588 - Fails with InternalServerError intermittently.
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Message_ThrottledConnectionRecovery_Amqp()
@@ -302,6 +303,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
         }
 
+        [Ignore] // TODO #588 - Fails with InternalServerError intermittently.
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Message_ThrottledConnectionRecovery_AmqpWs()
@@ -313,6 +315,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
         }
 
+        [Ignore] // TODO #588 - Fails with InternalServerError intermittently.
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         [ExpectedException(typeof(System.TimeoutException))]
@@ -326,6 +329,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.ShortRetryInMilliSec).ConfigureAwait(false);
         }
 
+        [Ignore] // TODO #588 - Fails with InternalServerError intermittently.
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         [ExpectedException(typeof(System.TimeoutException))]
@@ -339,6 +343,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.ShortRetryInMilliSec).ConfigureAwait(false);
         }
 
+        [Ignore] // TODO #588 - Fails with InternalServerError intermittently.
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         [ExpectedException(typeof(System.TimeoutException))]
@@ -668,7 +673,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await deviceClient.SendEventAsync(
                     FaultInjection.ComposeErrorInjectionProperties(faultType, reason, delayInSec)).ConfigureAwait(false);
 
-                await Task.Delay(1000).ConfigureAwait(false);
+                await Task.Delay(FaultInjection.WaitForDisconnectMilliseconds).ConfigureAwait(false);
                 await serviceClient.SendAsync(
                     testDevice.Id,
                     ComposeC2DTestMessage(out payload, out messageId, out p1Value)).ConfigureAwait(false);

@@ -15,7 +15,6 @@ namespace Microsoft.Azure.Devices.E2ETests
     public class TwinE2ETests : IDisposable
     {
         private const string DevicePrefix = "E2E_Twin_CSharp_";
-        private const int MaximumRecoveryTimeSeconds = 60;
         private static TestLogging _log = TestLogging.GetInstance();
 
         private readonly ConsoleEventListener _listener;
@@ -595,11 +594,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }, null).ConfigureAwait(false);
 
             // assert on successful connection
-            await Task.WhenAny(
-                Task.Run(async () =>
-                {
-                    await Task.Delay(1000).ConfigureAwait(false);
-                }), tcsConnected.Task).ConfigureAwait(false);
+            await Task.WhenAny(Task.Delay(FaultInjection.ShortRetryInMilliSec), tcsConnected.Task).ConfigureAwait(false);
             Assert.IsTrue(tcsConnected.Task.IsCompleted, "Initial connection failed");
             if (transport != Client.TransportType.Http1)
             {
@@ -623,19 +618,10 @@ namespace Microsoft.Azure.Devices.E2ETests
             tcsDisconnected = new TaskCompletionSource<bool>();
 
             // wait for disconnection
-            await Task.WhenAny(
-                Task.Run(async () =>
-                {
-                    await Task.Delay(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
-                }), tcsDisconnected.Task).ConfigureAwait(false);
+            await Task.WhenAny(Task.Delay(FaultInjection.WaitForDisconnectMilliseconds), tcsDisconnected.Task).ConfigureAwait(false);
             Assert.IsTrue(tcsDisconnected.Task.IsCompleted, "Error injection did not interrupt the device");
 
-            await Task.WhenAny(
-                Task.Run(async () =>
-                {
-                    await Task.Delay(TimeSpan.FromSeconds(MaximumRecoveryTimeSeconds)).ConfigureAwait(false);
-                    return Task.FromResult(true);
-                }), tcsConnected.Task).ConfigureAwait(false);
+            await Task.WhenAny(Task.Delay(FaultInjection.RecoveryTimeMilliseconds), tcsConnected.Task).ConfigureAwait(false);
             Assert.IsTrue(tcsConnected.Task.IsCompleted, "Recovery connection failed");
 
             tcs = new TaskCompletionSource<bool>();
