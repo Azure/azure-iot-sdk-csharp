@@ -155,7 +155,8 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 Client.IAuthenticationMethod auth = CreateAuthenticationMethodFromSecurityProvider(security, result.DeviceId);
 
-                using (DeviceClient iotClient = DeviceClient.Create(result.AssignedHub, auth, Client.TransportType.Mqtt_Tcp_Only))
+                // TODO: #591 - ProvisioningClient and DeviceClient should use the same protocol.
+                using (DeviceClient iotClient = DeviceClient.Create(result.AssignedHub, auth, Client.TransportType.Http1))
                 {
                     _log.WriteLine("DeviceClient OpenAsync.");
                     await iotClient.OpenAsync().ConfigureAwait(false);
