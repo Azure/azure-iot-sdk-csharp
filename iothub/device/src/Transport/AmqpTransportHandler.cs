@@ -608,7 +608,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                 amqpMessage.Properties.CorrelationId = correlationId;
 
-                this.twinResponseCompletions[correlationId] = new TaskCompletionSource<AmqpMessage>();
+                var taskCompletionSource = new TaskCompletionSource<AmqpMessage>();
+                this.twinResponseCompletions[correlationId] = taskCompletionSource;
 
                 outcome = await eventSendingLink.SendMessageAsync(amqpMessage, new ArraySegment<byte>(Guid.NewGuid().ToByteArray()), AmqpConstants.NullBinary, this.operationTimeout).ConfigureAwait(false);
                 if (outcome.DescriptorCode != Accepted.Code)
@@ -616,7 +617,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     throw AmqpErrorMapper.GetExceptionFromOutcome(outcome);
                 }
 
-                var receivingTask = this.twinResponseCompletions[correlationId].Task;
+                var receivingTask = taskCompletionSource.Task;
                 if (await Task.WhenAny(receivingTask, Task.Delay(TimeSpan.FromSeconds(ResponseTimeoutInSeconds))).ConfigureAwait(false) == receivingTask)
                 {
                     // Task completed within timeout.
