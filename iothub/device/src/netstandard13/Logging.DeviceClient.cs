@@ -19,11 +19,11 @@ namespace Microsoft.Azure.Devices.Shared
         [NonEvent]
         public static void CreateFromConnectionString(
             object thisOrContextObject, 
-            string iotHubConnectionString,
+            string iotHubConnectionStringWithNoKey,
             ITransportSettings[] transportSettings)
         {
             DebugValidateArg(thisOrContextObject);
-            DebugValidateArg(iotHubConnectionString);
+            DebugValidateArg(iotHubConnectionStringWithNoKey);
 
             if (IsEnabled)
             {
@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.Shared
 
                 Log.CreateFromConnectionString(
                     IdOf(thisOrContextObject),
-                    iotHubConnectionString,
+                    iotHubConnectionStringWithNoKey,
                     sb.ToString());
 
             }
@@ -44,18 +44,15 @@ namespace Microsoft.Azure.Devices.Shared
         [NonEvent]
         public static void GenerateToken(
             object thisOrContextObject,
-            DateTime expirationDateTime,
-            long epochTime)
+            DateTime expirationDateTime)
         {
             DebugValidateArg(thisOrContextObject);
             DebugValidateArg(expirationDateTime);
-            DebugValidateArg(epochTime);
 
-            Log.CreateFromConnectionString(
+            Log.GenerateToken(
                 IdOf(thisOrContextObject),
                 DateTime.Now.ToUniversalTime().ToString("o", CultureInfo.InvariantCulture),
-                expirationDateTime.ToUniversalTime().ToString("o", CultureInfo.InvariantCulture),
-                epochTime);
+                expirationDateTime.ToUniversalTime().ToString("o", CultureInfo.InvariantCulture));
         }
 
         [Event(CreateId, Keywords = Keywords.Default, Level = EventLevel.Informational)]
@@ -69,8 +66,7 @@ namespace Microsoft.Azure.Devices.Shared
         private void GenerateToken(
             string thisOrContextObject,
             string currentDateTime,
-            string expirationDateTime,
-            long epochTime) =>
-            WriteEvent(GenerateTokenId, thisOrContextObject, currentDateTime, expirationDateTime, epochTime);
+            string expirationDateTime) =>
+            WriteEvent(GenerateTokenId, thisOrContextObject, currentDateTime, expirationDateTime);
     }
 }

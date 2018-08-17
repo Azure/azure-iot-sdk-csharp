@@ -7,6 +7,7 @@ namespace Microsoft.Azure.Devices.Client
     using System.Threading;
     using System.Threading.Tasks;
     using System.Diagnostics;
+    using Microsoft.Azure.Devices.Shared;
 
     /// <summary>
     /// Authentication method that uses a shared access signature token and allows for token refresh. 
@@ -89,6 +90,10 @@ namespace Microsoft.Azure.Devices.Client
                 _expiryTime = sas.ExpiresOn;
                 UpdateTimeBufferSeconds((int)(_expiryTime - DateTime.UtcNow).TotalSeconds);
 
+#if !NET451
+                if (Logging.IsEnabled) Logging.GenerateToken(this, _expiryTime);
+#endif
+
                 return _token;
             }
             finally
@@ -117,6 +122,12 @@ namespace Microsoft.Azure.Devices.Client
             return iotHubConnectionStringBuilder;
         }
 
+        /// <summary>
+        /// Creates a new token with a suggested TTL. This method is thread-safe.
+        /// </summary>
+        /// <param name="iotHub">The IoT Hub domain name.</param>
+        /// <param name="suggestedTimeToLive">The suggested TTL.</param>
+        /// <returns>The token string.</returns>
         protected abstract Task<string> SafeCreateNewToken(string iotHub, int suggestedTimeToLive);
 
         private void UpdateTimeBufferSeconds(int ttl)

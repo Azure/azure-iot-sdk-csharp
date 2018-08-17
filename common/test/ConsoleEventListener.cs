@@ -8,6 +8,7 @@ namespace System.Diagnostics.Tracing
     {
         private readonly string [] _eventFilters;
         private object _lock = new object();
+        private Stopwatch _stopwatch = new Stopwatch();
 
         public ConsoleEventListener() : this(string.Empty) { }
 
@@ -38,7 +39,11 @@ namespace System.Diagnostics.Tracing
         private void InitializeEventSources()
         {
             foreach (EventSource source in EventSource.GetSources())
+            {
                 EnableEvents(source, EventLevel.LogAlways);
+            }
+
+            _stopwatch.Start();
         }
 
         protected override void OnEventSourceCreated(EventSource eventSource)
@@ -57,7 +62,7 @@ namespace System.Diagnostics.Tracing
 
             lock (_lock)
             {
-                string text = $"[{eventData.EventSource.Name}-{eventData.EventId}]{(eventData.Payload != null ? $" ({string.Join(", ", eventData.Payload)})." : "")}";
+                string text = $"[{_stopwatch.ElapsedMilliseconds, 5}][{eventData.EventSource.Name}-{eventData.EventId}]{(eventData.Payload != null ? $" ({string.Join(", ", eventData.Payload)})." : "")}";
 
                 bool shouldDisplay = false;
 

@@ -371,7 +371,7 @@ namespace Microsoft.Azure.Devices.Client
             var client = new InternalClient(iotHubConnectionString, transportSettings, pipelineBuilder);
 
 #if !NET451
-            if (Logging.IsEnabled) Logging.CreateFromConnectionString(client, connectionString, transportSettings);
+            if (Logging.IsEnabled) Logging.CreateFromConnectionString(client, $"HostName={iotHubConnectionString.HostName};DeviceId={iotHubConnectionString.DeviceId}", transportSettings);
 #endif
 
             return client;
