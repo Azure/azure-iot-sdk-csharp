@@ -63,26 +63,15 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task ServiceClient_SendMessageToDeviceInvalidServiceCertificateAmqpWs_Fails()
         {
             var transport = TransportType.Amqp_WebSocket_Only;
-
-
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-
-                var exception = await Assert.ThrowsExceptionAsync<WebSocketException>(
-                    () => TestServiceClientInvalidServiceCertificate(transport)).ConfigureAwait(false);
+            var exception = await Assert.ThrowsExceptionAsync<WebSocketException>(
+                () => TestServiceClientInvalidServiceCertificate(transport)).ConfigureAwait(false);
 
 #if !NETCOREAPP2_0
-                Assert.IsInstanceOfType(exception.InnerException.InnerException, typeof(AuthenticationException));
+            Assert.IsInstanceOfType(exception.InnerException.InnerException, typeof(AuthenticationException));
 #else
-                // WinHttpException (0x80072F8F): A security error occurred
-                Assert.AreEqual(unchecked((int)0x80072F8F), exception.InnerException.InnerException.HResult);
-#endif       
-            }
-            else
-            {
-                var exception = await Assert.ThrowsExceptionAsync<AuthenticationException>(
-                    () => TestServiceClientInvalidServiceCertificate(transport)).ConfigureAwait(false);
-            }
+            // WinHttpException (0x80072F8F): A security error occurred
+            Assert.AreEqual(unchecked((int)0x80072F8F), exception.InnerException.InnerException.HResult);
+#endif
         }
 
         private static async Task TestServiceClientInvalidServiceCertificate(TransportType transport)
@@ -168,25 +157,15 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task DeviceClient_SendAsyncInvalidServiceCertificateAmqpWs_Fails()
         {
             var transport = Client.TransportType.Amqp_WebSocket_Only;
-
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                var exception = await Assert.ThrowsExceptionAsync<WebSocketException>(
-                    () => TestDeviceClientInvalidServiceCertificate(transport)).ConfigureAwait(false);
+            var exception = await Assert.ThrowsExceptionAsync<WebSocketException>(
+                () => TestDeviceClientInvalidServiceCertificate(transport)).ConfigureAwait(false);
 
 #if !NETCOREAPP2_0
-                Assert.IsInstanceOfType(exception.InnerException.InnerException, typeof(AuthenticationException));
+            Assert.IsInstanceOfType(exception.InnerException.InnerException, typeof(AuthenticationException));
 #else
-                // WinHttpException (0x80072F8F): A security error occurred
-                Assert.AreEqual(unchecked((int)0x80072F8F), exception.InnerException.InnerException.HResult);
+            // WinHttpException (0x80072F8F): A security error occurred
+            Assert.AreEqual(unchecked((int)0x80072F8F), exception.InnerException.InnerException.HResult);
 #endif
-
-            }
-            else
-            {
-                var exception = await Assert.ThrowsExceptionAsync<AuthenticationException>(
-                    () => TestDeviceClientInvalidServiceCertificate(transport)).ConfigureAwait(false);
-            }
         }
 
         [TestMethod]
