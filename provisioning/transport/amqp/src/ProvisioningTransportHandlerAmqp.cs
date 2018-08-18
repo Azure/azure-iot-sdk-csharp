@@ -37,6 +37,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             FallbackType = transportFallbackType;
             bool useWebSocket = (FallbackType == TransportFallbackType.WebSocketOnly);
             Port = useWebSocket ? WebSocketConstants.Port : AmqpConstants.DefaultSecurePort;
+            Proxy = DefaultWebProxySettings.Instance;
         }
 
         /// <summary>
@@ -89,7 +90,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 string linkEndpoint = $"{message.IdScope}/registrations/{registrationId}";
 
                 connection = authStrategy.CreateConnection(builder.Uri, message.IdScope);
-                await authStrategy.OpenConnectionAsync(connection, TimeoutConstant, useWebSocket).ConfigureAwait(false);
+                await authStrategy.OpenConnectionAsync(connection, TimeoutConstant, useWebSocket, Proxy).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
 
                 await CreateLinksAsync(connection, linkEndpoint, message.ProductInfo).ConfigureAwait(false);

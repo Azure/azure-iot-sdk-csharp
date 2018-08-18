@@ -36,9 +36,9 @@ namespace Microsoft.Azure.Devices
 
         int sendingDeliveryTag;
 
-        public AmqpServiceClient(IotHubConnectionString iotHubConnectionString, bool useWebSocketOnly)
+        public AmqpServiceClient(IotHubConnectionString iotHubConnectionString, bool useWebSocketOnly, ServiceClientTransportSettings transportSettings)
         {
-            var iotHubConnection = new IotHubConnection(iotHubConnectionString, AccessRights.ServiceConnect, useWebSocketOnly);
+            var iotHubConnection = new IotHubConnection(iotHubConnectionString, AccessRights.ServiceConnect, useWebSocketOnly, transportSettings);
             this.iotHubConnection = iotHubConnection;
             this.openTimeout = IotHubConnection.DefaultOpenTimeout;
             this.operationTimeout = IotHubConnection.DefaultOperationTimeout;
@@ -52,7 +52,8 @@ namespace Microsoft.Azure.Devices
                 iotHubConnectionString,
                 ExceptionHandlingHelper.GetDefaultErrorMapping(),
                 DefaultOperationTimeout,
-                client => { });
+                client => { },
+                transportSettings.HttpProxy);
         }
 
         internal AmqpServiceClient(IotHubConnectionString iotHubConnectionString, bool useWebSocketOnly, IHttpClientHelper httpClientHelper) : base()

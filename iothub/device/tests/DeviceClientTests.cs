@@ -1,16 +1,16 @@
 ﻿namespace Microsoft.Azure.Devices.Client.Test
 {
-    using System;
-    using System.IO;
-    using System.Text;
-    using System.Threading;
-    using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Client.Common;
     using Microsoft.Azure.Devices.Client.Transport;
     using Microsoft.Azure.Devices.Client.Transport.Mqtt;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using NSubstitute;
     using NSubstitute.ExceptionExtensions;
+    using System;
+    using System.IO;
+    using System.Text;
+    using System.Threading;
+    using System.Threading.Tasks;
 
     [TestClass]
     [TestCategory("Unit")]

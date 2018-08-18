@@ -12,6 +12,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Tracing;
+using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
@@ -28,6 +29,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private static string s_globalDeviceEndpoint = Configuration.Provisioning.GlobalDeviceEndpoint;
         private const string InvalidIDScope = "0neFFFFFFFF";
         private const string InvalidGlobalAddress = "httpbin.org";
+        private static string ProxyServerAddress = Configuration.IoTHub.ProxyServerAddress;
 
         private readonly VerboseTestLogging _verboseLog = VerboseTestLogging.GetInstance();
         private readonly TestLogging _log = TestLogging.GetInstance();
@@ -47,92 +49,119 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_Http_Tpm_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(nameof(ProvisioningTransportHandlerHttp), nameof(SecurityProviderTpmHsm), null, null).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(nameof(ProvisioningTransportHandlerHttp), nameof(SecurityProviderTpmHsm), null, null, null).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_Http_X509Individual_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(nameof(ProvisioningTransportHandlerHttp), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Individual, null).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(nameof(ProvisioningTransportHandlerHttp), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Individual, null, null).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_Http_X509Group_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(nameof(ProvisioningTransportHandlerHttp), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Group, null).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(nameof(ProvisioningTransportHandlerHttp), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Group, null, null).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_Amqp_Tpm_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(nameof(ProvisioningTransportHandlerAmqp), nameof(SecurityProviderTpmHsm), null, TransportFallbackType.TcpOnly).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(nameof(ProvisioningTransportHandlerAmqp), nameof(SecurityProviderTpmHsm), null, TransportFallbackType.TcpOnly, null).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_Amqp_X509Individual_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(nameof(ProvisioningTransportHandlerAmqp), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Individual, TransportFallbackType.TcpOnly).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(nameof(ProvisioningTransportHandlerAmqp), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Individual, TransportFallbackType.TcpOnly, null).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_Amqp_X509Group_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(nameof(ProvisioningTransportHandlerAmqp), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Group, TransportFallbackType.TcpOnly).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(nameof(ProvisioningTransportHandlerAmqp), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Group, TransportFallbackType.TcpOnly, null).ConfigureAwait(false);
         }
 
         [Ignore] //TODO #552
         [TestMethod]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_AmqpWs_Tpm_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(nameof(ProvisioningTransportHandlerAmqp), nameof(SecurityProviderTpmHsm), null, TransportFallbackType.WebSocketOnly).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(nameof(ProvisioningTransportHandlerAmqp), nameof(SecurityProviderTpmHsm), null, TransportFallbackType.WebSocketOnly, null).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_AmqpWs_X509Individual_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(nameof(ProvisioningTransportHandlerAmqp), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Individual, TransportFallbackType.WebSocketOnly).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(nameof(ProvisioningTransportHandlerAmqp), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Individual, TransportFallbackType.WebSocketOnly, null).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_AmqpWs_X509Group_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(nameof(ProvisioningTransportHandlerAmqp), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Group, TransportFallbackType.WebSocketOnly).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(nameof(ProvisioningTransportHandlerAmqp), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Group, TransportFallbackType.WebSocketOnly, null).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_Mqtt_X509Individual_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(nameof(ProvisioningTransportHandlerMqtt), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Individual, TransportFallbackType.TcpOnly).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(nameof(ProvisioningTransportHandlerMqtt), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Individual, TransportFallbackType.TcpOnly, null).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_Mqtt_X509Group_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(nameof(ProvisioningTransportHandlerMqtt), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Group, TransportFallbackType.TcpOnly).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(nameof(ProvisioningTransportHandlerMqtt), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Group, TransportFallbackType.TcpOnly, null).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_MqttWs_X509Individual_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(nameof(ProvisioningTransportHandlerMqtt), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Individual, TransportFallbackType.WebSocketOnly).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(nameof(ProvisioningTransportHandlerMqtt), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Individual, TransportFallbackType.WebSocketOnly, null).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_MqttWs_X509Group_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(nameof(ProvisioningTransportHandlerMqtt), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Group, TransportFallbackType.WebSocketOnly).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(nameof(ProvisioningTransportHandlerMqtt), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Group, TransportFallbackType.WebSocketOnly, null).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ProxyE2ETests")]
+        public async Task ProvisioningDeviceClient_ValidRegistrationId_HttpWithProxy_Tpm_RegisterOk()
+        {
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(nameof(ProvisioningTransportHandlerHttp), nameof(SecurityProviderTpmHsm), null, null, ProxyServerAddress).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ProxyE2ETests")]
+        public async Task ProvisioningDeviceClient_ValidRegistrationId_AmqpWsWithProxy_X509Individual_RegisterOk()
+        {
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(nameof(ProvisioningTransportHandlerAmqp), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Individual, TransportFallbackType.WebSocketOnly, ProxyServerAddress).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ProxyE2ETests")]
+        public async Task ProvisioningDeviceClient_ValidRegistrationId_MqttWsWithProxy_X509Individual_RegisterOk()
+        {
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(nameof(ProvisioningTransportHandlerMqtt), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Individual, TransportFallbackType.WebSocketOnly, ProxyServerAddress).ConfigureAwait(false);
         }
 
         public async Task ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
             string transportType, 
             string securityType,
             X509EnrollmentType? x509EnrollmentType,
-            TransportFallbackType? transportFallback)
+            TransportFallbackType? transportFallback,
+            string proxyServerAddress)
         {
             using (ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportType, transportFallback))
             using (SecurityProvider security = await CreateSecurityProviderFromName(securityType, x509EnrollmentType).ConfigureAwait(false))
             {
                 _verboseLog.WriteLine("Creating device");
+
+                if (ImplementsWebProxy(transportType, transportFallback))
+                {
+                    transport.Proxy = new WebProxy(proxyServerAddress);
+                }
 
                 ProvisioningDeviceClient provClient = ProvisioningDeviceClient.Create(
                     s_globalDeviceEndpoint,
@@ -168,7 +197,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
             }
         }
-        
+
         [TestMethod]
         public async Task ProvisioningDeviceClient_InvalidRegistrationId_TpmRegister_Http_Fail()
         {
@@ -461,6 +490,23 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
 
             throw new NotSupportedException($"Unknown provisioningSecurity type.");
+        }
+
+        private bool ImplementsWebProxy(string name, TransportFallbackType? fallbackType)
+        {
+            _verboseLog.WriteLine($"{nameof(ImplementsWebProxy)}({name})");
+
+            switch (name)
+            {
+                case nameof(ProvisioningTransportHandlerHttp):
+                    return true;
+
+                case nameof(ProvisioningTransportHandlerAmqp):
+                case nameof(ProvisioningTransportHandlerMqtt):
+                    return (fallbackType == TransportFallbackType.WebSocketOnly);
+            }
+
+            throw new NotSupportedException($"Unknown transport: '{name}'.");
         }
         
         public void Dispose()

@@ -57,7 +57,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 null,
                 transportSettings.ClientCertificate,
                 httpClientHandler,
-                productInfo);
+                productInfo,
+                transportSettings.Proxy);
         }
 
         private new Task HandleTimeoutCancellation(Func<Task> func, CancellationToken token)

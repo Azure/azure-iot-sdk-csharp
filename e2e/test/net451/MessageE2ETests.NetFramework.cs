@@ -150,13 +150,13 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        internal async Task SendSingleMessage(Client.TransportType transport)
+        internal async Task SendSingleMessage(ITransportSettings[] transportSettings)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
 
             EventHubClient eventHubClient;
             EventHubReceiver eventHubReceiver = CreateEventHubReceiver(testDevice.Id, out eventHubClient);
-            var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
+            var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transportSettings);
 
             try
             {

@@ -3,7 +3,9 @@
 
 namespace Microsoft.Azure.Devices.Client
 {
+    using Microsoft.Azure.Devices.Shared;
     using System;
+    using System.Net;
     using System.Net.Security;
     using System.Security.Cryptography.X509Certificates;
 
@@ -43,6 +45,9 @@ namespace Microsoft.Azure.Devices.Client
             switch (transportType)
             {
                 case TransportType.Amqp_WebSocket_Only:
+                    this.Proxy = DefaultWebProxySettings.Instance;
+                    this.transportType = transportType;
+                    break;
                 case TransportType.Amqp_Tcp_Only:
                     this.transportType = transportType;
                     break;
@@ -77,6 +82,8 @@ namespace Microsoft.Azure.Devices.Client
         public uint PrefetchCount { get; set; }
 
         public X509Certificate2 ClientCertificate { get; set; }
+
+        public IWebProxy Proxy { get; set; }
 
         public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; }
 

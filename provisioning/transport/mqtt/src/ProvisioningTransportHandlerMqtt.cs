@@ -14,9 +14,7 @@ using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Net;
-using System.Net.Security;
 using System.Net.WebSockets;
 using System.Runtime.ExceptionServices;
 using System.Security.Cryptography.X509Certificates;
@@ -62,6 +60,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             {
                 Port = MqttTcpPort;
             }
+            Proxy = DefaultWebProxySettings.Instance;
         }
 
         /// <summary>
@@ -241,6 +240,28 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             var websocket = new ClientWebSocket();
             websocket.Options.AddSubProtocol(WsMqttSubprotocol);
             websocket.Options.ClientCertificates.Add(clientCertificate);
+
+            //Check if we're configured to use a proxy server
+            try
+            {
+                if (Proxy != DefaultWebProxySettings.Instance)
+                {
+                    // Configure proxy server
+                    websocket.Options.Proxy = Proxy;
+                    if (Logging.IsEnabled)
+                    {
+                        Logging.Info(this, $"{nameof(ProvisionOverWssUsingX509CertificateAsync)} Setting ClientWebSocket.Options.Proxy");
+                    }
+                }
+            }
+            catch (PlatformNotSupportedException)
+            {
+                // .NET Core 2.0 doesn't support WebProxy configuration - ignore this setting.
+                if (Logging.IsEnabled)
+                {
+                    Logging.Error(this, $"{nameof(ProvisionOverWssUsingX509CertificateAsync)} PlatformNotSupportedException thrown as .NET Core 2.0 doesn't support proxy");
+                }
+            }
 
             await websocket.ConnectAsync(websocketUri, cancellationToken).ConfigureAwait(false);
 

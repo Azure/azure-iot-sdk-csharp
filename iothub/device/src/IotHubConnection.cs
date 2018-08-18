@@ -19,6 +19,7 @@ namespace Microsoft.Azure.Devices.Client
     using Microsoft.Azure.Amqp.Transport;
     using Microsoft.Azure.Devices.Client.Extensions;
     using Microsoft.Azure.Devices.Client.Transport;
+    using Microsoft.Azure.Devices.Shared;
 
     abstract class IotHubConnection
     {
@@ -337,27 +338,33 @@ namespace Microsoft.Azure.Devices.Client
             websocket.Options.AddSubProtocol(WebSocketConstants.SubProtocols.Amqpwsb10);
 
             // Check if we're configured to use a proxy server
-            IWebProxy webProxy = WebRequest.DefaultWebProxy;
-            Uri proxyAddress = null;
-#if !NETSTANDARD1_3 && !NETSTANDARD2_0
-            proxyAddress = webProxy != null ? webProxy.GetProxy(websocketUri) : null;
-#endif
-            if (!websocketUri.Equals(proxyAddress))
+            IWebProxy webProxy = this.AmqpTransportSettings.Proxy;
+
+            try
             {
-                // Configure proxy server
-                websocket.Options.Proxy = webProxy;
+                if (webProxy != DefaultWebProxySettings.Instance)
+                {
+                    // Configure proxy server
+                    websocket.Options.Proxy = webProxy;
+                    if (Logging.IsEnabled)
+                    {
+                        Logging.Info(this, $"{nameof(CreateClientWebSocketAsync)} Setting ClientWebSocket.Options.Proxy");
+                    }
+                }
+            }
+            catch (PlatformNotSupportedException)
+            {
+                // .NET Core 2.0 doesn't support proxy. Ignore this setting.
+                if (Logging.IsEnabled)
+                {
+                    Logging.Error(this, $"{nameof(CreateClientWebSocketAsync)} PlatformNotSupportedException thrown as .NET Core 2.0 doesn't support proxy");
+                }
             }
 
             if (this.AmqpTransportSettings.ClientCertificate != null)
             {
                 websocket.Options.ClientCertificates.Add(this.AmqpTransportSettings.ClientCertificate);
             }
-#if !NETSTANDARD1_3 && !NETSTANDARD2_0
-            else
-            {
-                websocket.Options.UseDefaultCredentials = true;
-            }
-#endif
 
             using (var cancellationTokenSource = new CancellationTokenSource(timeout))
             {
@@ -377,7 +384,7 @@ namespace Microsoft.Azure.Devices.Client
 #endif
             Uri websocketUri = new Uri(WebSocketConstants.Scheme + this.hostName + ":" + WebSocketConstants.SecurePort + WebSocketConstants.UriSuffix + additionalQueryParams);
             // Use Legacy WebSocket if it is running on Windows 7 or older. Windows 7/Windows 2008 R2 is version 6.1
-#if !NETSTANDARD1_3
+#if NET451
             if (Environment.OSVersion.Version.Major < 6 || (Environment.OSVersion.Version.Major == 6 && Environment.OSVersion.Version.Minor <= 1))
             {
                 var websocket = await CreateLegacyClientWebSocketAsync(websocketUri, this.AmqpTransportSettings.ClientCertificate, timeoutHelper.RemainingTime()).ConfigureAwait(false);
@@ -395,7 +402,7 @@ namespace Microsoft.Azure.Devices.Client
                     websocket,
                     null,
                     null);
-#if !NETSTANDARD1_3
+#if NET451
             }
 #endif
         }

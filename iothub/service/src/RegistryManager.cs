@@ -5,6 +5,7 @@ namespace Microsoft.Azure.Devices
 {
     using System;
     using System.Collections.Generic;
+    using System.Net;
     using System.Net.Http.Headers;
     using System.Threading;
     using System.Threading.Tasks;
@@ -22,8 +23,19 @@ namespace Microsoft.Azure.Devices
         /// <returns> An RegistryManager instance. </returns>
         public static RegistryManager CreateFromConnectionString(string connectionString)
         {
+            return CreateFromConnectionString(connectionString, new HttpTransportSettings());
+        }
+
+        /// <summary>
+        /// Creates a RegistryManager from the Iot Hub connection string and transport settings
+        /// </summary>
+        /// <param name="connectionString"> The Iot Hub connection string.</param>
+        /// <param name="transportSettings"> The HTTP transport settings.</param>
+        /// <returns> An RegistryManager instance. </returns>
+        public static RegistryManager CreateFromConnectionString(string connectionString, HttpTransportSettings transportSettings)
+        {
             IotHubConnectionString iotHubConnectionString = IotHubConnectionString.Parse(connectionString);
-            return new HttpRegistryManager(iotHubConnectionString);
+            return new HttpRegistryManager(iotHubConnectionString, transportSettings);
         }
 
         /// <inheritdoc />

@@ -7,6 +7,7 @@ using Microsoft.Rest;
 using Newtonsoft.Json;
 using System;
 using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -19,13 +20,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
     {
         private static readonly TimeSpan s_defaultOperationPoolingIntervalMilliseconds = TimeSpan.FromSeconds(2);
         private const int DefaultHttpsPort = 443;
-
         /// <summary>
         /// Creates an instance of the ProvisioningTransportHandlerHttp class.
         /// </summary>
         public ProvisioningTransportHandlerHttp()
         {
             Port = DefaultHttpsPort;
+            Proxy = DefaultWebProxySettings.Instance;
         }
 
         /// <summary>
@@ -71,7 +72,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     Port = Port,
                 };
 
-                DeviceProvisioningServiceRuntimeClient client = authStrategy.CreateClient(builder.Uri);
+                HttpClientHandler httpClientHandler = new HttpClientHandler();
+
+                if (Proxy != DefaultWebProxySettings.Instance)
+                {
+                    httpClientHandler.UseProxy = (Proxy != null);
+                    httpClientHandler.Proxy = Proxy;
+                    if (Logging.IsEnabled)
+                    {
+                        Logging.Info(this, $"{nameof(RegisterAsync)} Setting HttpClientHandler.Proxy");
+                    }
+                }
+
+                DeviceProvisioningServiceRuntimeClient client = authStrategy.CreateClient(builder.Uri, httpClientHandler);
                 client.HttpClient.DefaultRequestHeaders.Add("User-Agent", message.ProductInfo);
                 if (Logging.IsEnabled) Logging.Info(this, $"Uri: {builder.Uri}; User-Agent: {message.ProductInfo}");
 

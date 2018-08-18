@@ -1,38 +1,38 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using DotNetty.Buffers;
+using DotNetty.Codecs.Mqtt;
+using DotNetty.Codecs.Mqtt.Packets;
+using DotNetty.Common.Concurrency;
+using DotNetty.Handlers.Tls;
+using DotNetty.Transport.Bootstrapping;
+using DotNetty.Transport.Channels;
+using DotNetty.Transport.Channels.Sockets;
+using Microsoft.Azure.Devices.Client.Common;
+using Microsoft.Azure.Devices.Client.Exceptions;
+using Microsoft.Azure.Devices.Client.Extensions;
+using Microsoft.Azure.Devices.Client.TransientFaultHandling;
+using Microsoft.Azure.Devices.Shared;
+using Newtonsoft.Json;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
+using System.IO;
+using System.Net;
+using System.Net.Security;
+using System.Net.WebSockets;
+using System.Security.Cryptography.X509Certificates;
+using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Web;
+
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {
-    using System;
-    using System.Collections.Concurrent;
-    using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.Globalization;
-    using System.IO;
-    using System.Linq;
-    using System.Net;
-    using System.Net.Security;
-    using System.Net.WebSockets;
-    using System.Security.Cryptography.X509Certificates;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using System.Text.RegularExpressions;
-    using DotNetty.Buffers;
-    using DotNetty.Codecs.Mqtt;
-    using DotNetty.Codecs.Mqtt.Packets;
-    using DotNetty.Common.Concurrency;
-    using DotNetty.Handlers.Tls;
-    using DotNetty.Transport.Bootstrapping;
-    using DotNetty.Transport.Channels;
-    using DotNetty.Transport.Channels.Sockets;
-    using Microsoft.Azure.Devices.Client.Common;
-    using Microsoft.Azure.Devices.Client.Exceptions;
-    using Microsoft.Azure.Devices.Client.Extensions;
-    using Microsoft.Azure.Devices.Shared;
-    using Microsoft.Azure.Devices.Client.TransientFaultHandling;
-    using Newtonsoft.Json;
     using TransportType = Microsoft.Azure.Devices.Client.TransportType;
-    using System.Web;
 
     sealed class MqttTransportHandler : TransportHandler, IMqttIotHubEventHandler
     {
@@ -982,23 +982,27 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 websocket.Options.AddSubProtocol(WebSocketConstants.SubProtocols.Mqtt);
 
                 // Check if we're configured to use a proxy server
-                IWebProxy webProxy = WebRequest.DefaultWebProxy;
-                Uri proxyAddress = null;
+                IWebProxy webProxy = settings.Proxy;
 
                 try
                 {
-#if !NETSTANDARD1_3
-                    proxyAddress = webProxy?.GetProxy(websocketUri);
-#endif
-                    if (!websocketUri.Equals(proxyAddress))
+                    if (webProxy != DefaultWebProxySettings.Instance)
                     {
                         // Configure proxy server
                         websocket.Options.Proxy = webProxy;
+                        if (Logging.IsEnabled)
+                        {
+                            Logging.Info(this, $"{nameof(CreateWebSocketChannelFactory)} Setting ClientWebSocket.Options.Proxy");
+                        }
                     }
                 }
                 catch (PlatformNotSupportedException)
                 {
                     // .NET Core 2.0 doesn't support proxy. Ignore this setting.
+                    if (Logging.IsEnabled)
+                    {
+                        Logging.Error(this, $"{nameof(CreateWebSocketChannelFactory)} PlatformNotSupportedException thrown as .NET Core 2.0 doesn't support proxy");
+                    }
                 }
 
                 if (settings.ClientCertificate != null)
