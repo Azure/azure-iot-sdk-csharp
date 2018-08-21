@@ -59,8 +59,8 @@
     <Compile Include="$(CommonTest)\Configuration.Provisioning.cs">
       <Link>Common\Configuration.Provisioning.cs</Link>
     </Compile>
-    <Compile Include="netstandard13\MessageE2ETests.NetCore.cs" />
-    <Compile Include="netstandard13\X509E2ETests.NetCore.cs" />
+    <Compile Include="netstandard20\MessageE2ETests.NetCore.cs" />
+    <Compile Include="netstandard20\X509E2ETests.NetCore.cs" />
     <Compile Include="netstandard20\ProvisioningTests.cs" />
     <Compile Include="netstandard20\ProvisioningServiceClientTests.cs" />
     <Compile Include="netstandard20\ProvisioningCertificateValidationTest.cs" />

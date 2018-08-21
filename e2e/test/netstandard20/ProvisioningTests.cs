@@ -240,7 +240,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Assert.AreEqual(ProvisioningRegistrationStatusType.Failed, result.Status);
                 Assert.IsNull(result.AssignedHub);
                 Assert.IsNull(result.DeviceId);
-                Assert.AreEqual(400201, result.ErrorCode);
+                Assert.AreEqual(404201, result.ErrorCode);
             }
         }
 
