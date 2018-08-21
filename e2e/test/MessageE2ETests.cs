@@ -461,6 +461,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
         }
 
+        [Ignore] // 593 - Intermittently failing - no exception thrown.
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         [ExpectedException(typeof(Client.Exceptions.UnauthorizedException))]
@@ -473,6 +474,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
         }
 
+        [Ignore] // 593 - Intermittently failing - no exception thrown.
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         [ExpectedException(typeof(Client.Exceptions.UnauthorizedException))]
