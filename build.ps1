@@ -199,19 +199,11 @@ try {
     {
         CheckPublishTools
     }
-    
+
     if (-not $nobuild)
     {
         # SDK binaries
-        BuildProject shared\src "Shared Assembly"
-        BuildProject iothub\device\src "IoT Hub DeviceClient SDK"
-        BuildProject iothub\service\src "IoT Hub ServiceClient SDK"
-        BuildProject security\tpm\src "SecurityProvider for TPM"
-        BuildProject provisioning\device\src "Provisioning Device Client SDK"
-        BuildProject provisioning\transport\amqp\src "Provisioning Transport for AMQP"
-        BuildProject provisioning\transport\http\src "Provisioning Transport for HTTP"
-        BuildProject provisioning\transport\mqtt\src "Provisioning Transport for MQTT"
-        BuildProject provisioning\service\src "Provisioning Service Client SDK"
+        BuildProject . "Azure IoT C# SDK Solution"
     }
 
     # Unit Tests require InternalsVisibleTo and can only run in Debug builds.
@@ -254,7 +246,7 @@ try {
         {
             throw "Local NuGet package source path invalid: $($env:AZURE_IOT_LOCALPACKAGES)"
         }
-        
+
         # Clear the NuGet cache and the old packages.
         dotnet nuget locals --clear all
         Remove-Item $env:AZURE_IOT_LOCALPACKAGES\*.*
@@ -321,8 +313,8 @@ try {
             if($result.success)
             {
                 Write-Host -ForegroundColor Green "OK    : $($result.file.FullName)"
-            } 
-            else 
+            }
+            else
             {
                 Write-Host -ForegroundColor Red "FAILED: $($result.file.FullName)"
             }
