@@ -1,19 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 using Microsoft.Azure.Devices;
 using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Devices.Common.Security;
 using Microsoft.ServiceBus.Messaging;
-using System.Reflection;
-using System.Text.RegularExpressions;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace DeviceExplorer
 {
@@ -327,6 +331,7 @@ namespace DeviceExplorer
                 }.ToSignature();
 
                 sasRichTextBox.Text = builder + "\r\n";
+                sasRichTextBox.Focus();
             }
             catch (Exception ex)
             {
@@ -358,7 +363,7 @@ namespace DeviceExplorer
             devicesGridView.ReadOnly = true;
             devicesGridView.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
 
-            deviceCountLabel.Text = devicesList.Count > MAX_COUNT_OF_DEVICES
+            deviceCountTextBox.Text = devicesList.Count > MAX_COUNT_OF_DEVICES
                 ? MAX_COUNT_OF_DEVICES + "+"
                 : devicesList.Count.ToString();
 
@@ -772,6 +777,7 @@ namespace DeviceExplorer
                 await serviceClient.SendAsync(deviceIDsComboBoxForCloudToDeviceMessage.SelectedItem.ToString(), serviceMessage);
 
                 messagesTextBox.Text += $"Sent to Device ID: [{deviceIDsComboBoxForCloudToDeviceMessage.SelectedItem.ToString()}], Message:\"{cloudToDeviceMessage}\", message Id: {serviceMessage.MessageId}\n";
+                messagesTextBox.Focus();
 
                 await serviceClient.CloseAsync();
 
@@ -1083,6 +1089,9 @@ namespace DeviceExplorer
             messageSystemPropertiesGrid.Rows.Add(messageSysPropCorrelationId);
             messageSystemPropertiesGrid.Rows.Add(messageSysPropContentType);
             messageSystemPropertiesGrid.Rows.Add(messageSysPropContentEncoding);
+
+            label5.IsAccessible = true;
+            label13.IsAccessible = true;
         }
 
         private void devicesGridView_KeyPress(object sender, KeyPressEventArgs e)
