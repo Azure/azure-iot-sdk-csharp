@@ -112,7 +112,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Scope to which this device instance belongs to
         /// </summary>
-        [JsonProperty(PropertyName = "securityScope", NullValueHandling = NullValueHandling.Ignore)]
-        public virtual string SecurityScope { get; set; }
+        [JsonProperty(PropertyName = "deviceScope", NullValueHandling = NullValueHandling.Ignore)]
+        public virtual string Scope { get; set; }
     }
 }
