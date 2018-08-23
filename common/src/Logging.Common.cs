@@ -45,6 +45,7 @@ namespace Microsoft.Azure.Devices.Shared
         #endregion
         #region Events
         #region Enter
+#if !NET451
         /// <summary>Logs entrance to a method.</summary>
         /// <param name="thisOrContextObject">`this`, or another object that serves to provide context for the operation.</param>
         /// <param name="formattableString">A description of the entrance, including any arguments to the call.</param>
@@ -56,6 +57,7 @@ namespace Microsoft.Azure.Devices.Shared
             DebugValidateArg(formattableString);
             if (IsEnabled) Log.Enter(IdOf(thisOrContextObject), memberName, formattableString != null ? Format(formattableString) : NoParameters);
         }
+#endif
 
         /// <summary>Logs entrance to a method.</summary>
         /// <param name="thisOrContextObject">`this`, or another object that serves to provide context for the operation.</param>
@@ -105,6 +107,7 @@ namespace Microsoft.Azure.Devices.Shared
         #endregion
 
         #region Exit
+#if !NET451
         /// <summary>Logs exit from a method.</summary>
         /// <param name="thisOrContextObject">`this`, or another object that serves to provide context for the operation.</param>
         /// <param name="formattableString">A description of the exit operation, including any return values.</param>
@@ -116,7 +119,7 @@ namespace Microsoft.Azure.Devices.Shared
             DebugValidateArg(formattableString);
             if (IsEnabled) Log.Exit(IdOf(thisOrContextObject), memberName, formattableString != null ? Format(formattableString) : NoParameters);
         }
-
+#endif
         /// <summary>Logs exit from a method.</summary>
         /// <param name="thisOrContextObject">`this`, or another object that serves to provide context for the operation.</param>
         /// <param name="arg0">A return value from the member.</param>
@@ -149,6 +152,7 @@ namespace Microsoft.Azure.Devices.Shared
         #endregion
 
         #region Info
+#if !NET451
         /// <summary>Logs an information message.</summary>
         /// <param name="thisOrContextObject">`this`, or another object that serves to provide context for the operation.</param>
         /// <param name="formattableString">The message to be logged.</param>
@@ -160,6 +164,7 @@ namespace Microsoft.Azure.Devices.Shared
             DebugValidateArg(formattableString);
             if (IsEnabled) Log.Info(IdOf(thisOrContextObject), memberName, formattableString != null ? Format(formattableString) : NoParameters);
         }
+#endif
 
         /// <summary>Logs an information message.</summary>
         /// <param name="thisOrContextObject">`this`, or another object that serves to provide context for the operation.</param>
@@ -179,6 +184,7 @@ namespace Microsoft.Azure.Devices.Shared
         #endregion
 
         #region Error
+#if !NET451
         /// <summary>Logs an error message.</summary>
         /// <param name="thisOrContextObject">`this`, or another object that serves to provide context for the operation.</param>
         /// <param name="formattableString">The message to be logged.</param>
@@ -190,6 +196,7 @@ namespace Microsoft.Azure.Devices.Shared
             DebugValidateArg(formattableString);
             if (IsEnabled) Log.ErrorMessage(IdOf(thisOrContextObject), memberName, Format(formattableString));
         }
+#endif
 
         /// <summary>Logs an error message.</summary>
         /// <param name="thisOrContextObject">`this`, or another object that serves to provide context for the operation.</param>
@@ -209,6 +216,7 @@ namespace Microsoft.Azure.Devices.Shared
         #endregion
 
         #region Fail
+#if !NET451
         /// <summary>Logs a fatal error and raises an assert.</summary>
         /// <param name="thisOrContextObject">`this`, or another object that serves to provide context for the operation.</param>
         /// <param name="formattableString">The message to be logged.</param>
@@ -222,6 +230,7 @@ namespace Microsoft.Azure.Devices.Shared
             if (IsEnabled) Log.CriticalFailure(IdOf(thisOrContextObject), memberName, Format(formattableString));
             Debug.Fail(Format(formattableString), $"{IdOf(thisOrContextObject)}.{memberName}");
         }
+#endif
 
         /// <summary>Logs a fatal error and raises an assert.</summary>
         /// <param name="thisOrContextObject">`this`, or another object that serves to provide context for the operation.</param>
@@ -294,6 +303,7 @@ namespace Microsoft.Azure.Devices.Shared
             Debug.Assert(bufferPtr != IntPtr.Zero);
             Debug.Assert(count >= 0);
 
+#if !NET451
             if (IsEnabled)
             {
                 var buffer = new byte[Math.Min(count, MaxDumpSize)];
@@ -303,6 +313,7 @@ namespace Microsoft.Azure.Devices.Shared
                 }
                 Log.DumpBuffer(IdOf(thisOrContextObject), memberName, buffer);
             }
+#endif
         }
 
         [Event(DumpArrayEventId, Level = EventLevel.Verbose, Keywords = Keywords.Debug)]
@@ -349,14 +360,18 @@ namespace Microsoft.Azure.Devices.Shared
             if (!IsEnabled)
             {
                 Debug.Assert(!(arg is ValueType), $"Should not be passing value type {arg?.GetType()} to logging without IsEnabled check");
+#if !NET451
                 Debug.Assert(!(arg is FormattableString), $"Should not be formatting FormattableString \"{arg}\" if tracing isn't enabled");
+#endif
             }
         }
 
+#if !NET451
         private static void DebugValidateArg(FormattableString arg)
         {
             Debug.Assert(IsEnabled || arg == null, $"Should not be formatting FormattableString \"{arg}\" if tracing isn't enabled");
         }
+#endif
 
         public static new bool IsEnabled => Log.IsEnabled();
 
@@ -422,6 +437,7 @@ namespace Microsoft.Azure.Devices.Shared
             return value;
         }
 
+#if !NET451
         [NonEvent]
         private static string Format(FormattableString s)
         {
@@ -441,6 +457,7 @@ namespace Microsoft.Azure.Devices.Shared
                     return string.Format(CultureInfo.InvariantCulture, s.Format, formattedArgs);
             }
         }
+#endif
 
         static partial void AdditionalCustomizedToString<T>(T value, ref string result);
         #endregion
@@ -489,7 +506,11 @@ namespace Microsoft.Azure.Devices.Shared
             {
                 if (arg1 == null) arg1 = "";
                 if (arg2 == null) arg2 = "";
+#if !NET451
                 if (arg3 == null) arg3 = Array.Empty<byte>();
+#else
+                if (arg3 == null) arg3 = new byte[0];
+#endif
 
                 fixed (char* arg1Ptr = arg1)
                 fixed (char* arg2Ptr = arg2)

@@ -23,16 +23,12 @@ namespace Microsoft.Azure.Devices.E2ETests
         public void WriteLine(string message)
         {
             EventSourceTestLogging.Log.TestMessage(message);
-            Debug.WriteLine(message);
-            Console.WriteLine(message);
         }
 
         public void WriteLine(string format, params object[] args)
         {
             string message = string.Format(CultureInfo.InvariantCulture, format, args);
             EventSourceTestLogging.Log.TestMessage(message);
-            Debug.WriteLine(message);
-            Console.WriteLine(message);
         }
     }
 }

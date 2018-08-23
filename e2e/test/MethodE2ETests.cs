@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private const string DeviceResponseJson = "{\"name\":\"e2e_test\"}";
         private const string ServiceRequestJson = "{\"a\":123}";
         private const string MethodName = "MethodE2ETest";
-        private const string DevicePrefix = "E2E_Method_CSharp_";
+        private const string DevicePrefix = "E2E_Method_";
         private static TestLogging _log = TestLogging.GetInstance();
 
         private readonly ConsoleEventListener _listener;
@@ -32,40 +32,75 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         public async Task Method_DeviceReceivesMethodAndResponse_Mqtt()
         {
-            await SendMethodAndRespond(Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
+            await SendMethodAndRespond(Client.TransportType.Mqtt_Tcp_Only, SetDeviceReceiveMethod).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Method_DeviceReceivesMethodAndResponse_MqttWs()
         {
-            await SendMethodAndRespond(Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
+            await SendMethodAndRespond(Client.TransportType.Mqtt_WebSocket_Only, SetDeviceReceiveMethod).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Method_DeviceReceivesMethodAndResponseWithObseletedSetMethodHandler_Mqtt()
         {
-            await SendMethodAndRespondWithObseletedSetMethodHandler(Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
+            await SendMethodAndRespond(Client.TransportType.Mqtt_Tcp_Only, SetDeviceReceiveMethodObsoleteHandler).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Method_DeviceReceivesMethodAndResponseWithObseletedSetMethodHandler_MqttWs()
         {
-            await SendMethodAndRespondWithObseletedSetMethodHandler(Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
+            await SendMethodAndRespond(Client.TransportType.Mqtt_WebSocket_Only, SetDeviceReceiveMethodObsoleteHandler).ConfigureAwait(false);
         }
 
         [TestMethod]
-        public async Task Method_DeviceReceivesMethodAndResponseWithSetMethodHandler_Mqtt()
+        public async Task Method_DeviceReceivesMethodAndResponseWithDefaultMethodHandler_Mqtt()
         {
-            await SendMethodAndRespondWithSetMethodHandler(Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
+            await SendMethodAndRespond(Client.TransportType.Mqtt_Tcp_Only, SetDeviceReceiveMethodDefaultHandler).ConfigureAwait(false);
         }
 
         [TestMethod]
-        public async Task Method_DeviceReceivesMethodAndResponseWithSetMethodHandler_MqttWs()
+        public async Task Method_DeviceReceivesMethodAndResponseWithDefaultMethodHandler_MqttWs()
         {
-            await SendMethodAndRespondWithSetMethodHandler(Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
+            await SendMethodAndRespond(Client.TransportType.Mqtt_WebSocket_Only, SetDeviceReceiveMethodDefaultHandler).ConfigureAwait(false);
         }
 
-        [Ignore] // TODO: #558
+        [TestMethod]
+        public async Task Method_DeviceReceivesMethodAndResponse_Amqp()
+        {
+            await SendMethodAndRespond(Client.TransportType.Amqp_Tcp_Only, SetDeviceReceiveMethod).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task Method_DeviceReceivesMethodAndResponse_AmqpWs()
+        {
+            await SendMethodAndRespond(Client.TransportType.Amqp_WebSocket_Only, SetDeviceReceiveMethod).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task Method_DeviceReceivesMethodAndResponseWithObseletedSetMethodHandler_Amqp()
+        {
+            await SendMethodAndRespond(Client.TransportType.Amqp_Tcp_Only, SetDeviceReceiveMethodObsoleteHandler).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task Method_DeviceReceivesMethodAndResponseWithObseletedSetMethodHandler_AmqpWs()
+        {
+            await SendMethodAndRespond(Client.TransportType.Amqp_WebSocket_Only, SetDeviceReceiveMethodObsoleteHandler).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task Method_DeviceReceivesMethodAndResponseWithDefaultMethodHandler_Amqp()
+        {
+            await SendMethodAndRespond(Client.TransportType.Amqp_Tcp_Only, SetDeviceReceiveMethodDefaultHandler).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task Method_DeviceReceivesMethodAndResponseWithDefaultMethodHandler_AmqpWs()
+        {
+            await SendMethodAndRespond(Client.TransportType.Amqp_WebSocket_Only, SetDeviceReceiveMethodDefaultHandler).ConfigureAwait(false);
+        }
+
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Method_DeviceReceivesMethodAndResponseRecovery_Mqtt()
@@ -76,7 +111,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [Ignore] // TODO: #558
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Method_DeviceReceivesMethodAndResponseRecovery_MqttWs()
@@ -87,7 +121,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [Ignore] // TODO: #558
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Method_DeviceMethodGracefulShutdownRecovery_Mqtt()
@@ -98,7 +131,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [Ignore] // TODO: #558
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Method_DeviceMethodGracefulShutdownRecovery_MqttWs()
@@ -109,19 +141,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [TestMethod]
-        public async Task Method_DeviceReceivesMethodAndResponse_Amqp()
-        {
-            await SendMethodAndRespond(Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task Method_DeviceReceivesMethodAndResponse_AmqpWs()
-        {
-            await SendMethodAndRespond(Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
-        }
-
-        [Ignore] //TODO: #571
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Method_DeviceMethodTcpConnRecovery_Amqp()
@@ -142,7 +161,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [Ignore] //TODO: #571
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Method_DeviceMethodAmqpConnLostRecovery_Amqp()
@@ -153,7 +171,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [Ignore] //TODO: #571
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Method_DeviceMethodAmqpConnLostRecovery_AmqpWs()
@@ -164,7 +181,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [Ignore] //TODO: #571
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Method_DeviceMethodSessionLostRecovery_Amqp()
@@ -175,7 +191,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [Ignore] //TODO: #571
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Method_DeviceMethodSessionLostRecovery_AmqpWs()
@@ -186,7 +201,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [Ignore] //TODO: #194 Test intermittently failing on Windows.
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Method_DeviceMethodReqLinkDropRecovery_Amqp()
@@ -197,7 +211,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [Ignore] //TODO: #194 Test intermittently failing on Windows.
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Method_DeviceMethodReqLinkDropRecovery_AmqpWs()
@@ -208,7 +221,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [Ignore] //TODO: #194 Test intermittently failing on Windows.
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Method_DeviceMethodRespLinkDropRecovery_Amqp()
@@ -219,7 +231,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [Ignore] //TODO: #194 Test intermittently failing on Windows.
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Method_DeviceMethodRespLinkDropRecovery_AmqpWs()
@@ -230,7 +241,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [Ignore] //TODO: #571
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Method_DeviceMethodGracefulShutdownRecovery_Amqp()
@@ -241,7 +251,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [Ignore] //TODO: #571
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Method_DeviceMethodGracefulShutdownRecovery_AmqpWs()
@@ -252,170 +261,119 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        private async Task ServiceSendMethodAndVerifyResponse(string deviceName, string methodName, string respJson, string reqJson, TaskCompletionSource<Tuple<bool, bool>> rel)
+        private async Task ServiceSendMethodAndVerifyResponse(string deviceName, string methodName, string respJson, string reqJson)
         {
             ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
-            Task<CloudToDeviceMethodResult> directResponseFuture = serviceClient.InvokeDeviceMethodAsync(
-                deviceName,
-                new CloudToDeviceMethod(methodName, TimeSpan.FromMinutes(5)).SetPayloadJson(reqJson)
-            );
-            CloudToDeviceMethodResult response = await directResponseFuture.ConfigureAwait(false);
+
+            _log.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponse)}: Invoke method {methodName}.");
+            CloudToDeviceMethodResult response = 
+                await serviceClient.InvokeDeviceMethodAsync(
+                    deviceName,
+                    new CloudToDeviceMethod(methodName, TimeSpan.FromMinutes(5)).SetPayloadJson(reqJson)).ConfigureAwait(false);
+
+            _log.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponse)}: Method status: {response.Status}.");
             Assert.AreEqual(200, response.Status);
             Assert.AreEqual(respJson, response.GetPayloadAsJson());
-            Assert.IsTrue(rel.Task.Result.Item1, "Method name is not matching with the send data");
-            Assert.IsTrue(rel.Task.Result.Item2, "Json data is not matching with the send data");
-
+            
             await serviceClient.CloseAsync().ConfigureAwait(false);
         }
 
-        private async Task SendMethodAndRespond(Client.TransportType transport)
+        private async Task<Task> SetDeviceReceiveMethod(DeviceClient deviceClient)
         {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
+            var methodCallReceived = new TaskCompletionSource<bool>();
 
-            var assertResult = new TaskCompletionSource<Tuple<bool, bool>>();
-            var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
+
             await deviceClient.SetMethodHandlerAsync(MethodName,
                 (request, context) =>
                 {
-                    assertResult.TrySetResult(new Tuple<bool, bool>(request.Name.Equals(MethodName), request.DataAsJson.Equals(ServiceRequestJson)));
+                    _log.WriteLine($"{nameof(SetDeviceReceiveMethod)}: DeviceClient method: {request.Name} {request.ResponseTimeout}.");
+                    Assert.AreEqual(MethodName, request.Name);
+                    Assert.AreEqual(ServiceRequestJson, request.DataAsJson);
+
+                    methodCallReceived.SetResult(true);
+                    return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(DeviceResponseJson), 200));
+                },
+                null).ConfigureAwait(false);
+            
+            // Return the task that tells us we have received the callback.
+            return methodCallReceived.Task;
+        }
+
+        private async Task<Task> SetDeviceReceiveMethodDefaultHandler(DeviceClient deviceClient)
+        {
+            var methodCallReceived = new TaskCompletionSource<bool>();
+
+            await deviceClient.SetMethodDefaultHandlerAsync(
+                (request, context) =>
+                {
+                    _log.WriteLine($"{nameof(SetDeviceReceiveMethodDefaultHandler)}: DeviceClient method: {request.Name} {request.ResponseTimeout}.");
+
+                    Assert.AreEqual(MethodName, request.Name);
+                    Assert.AreEqual(ServiceRequestJson, request.DataAsJson);
+
+                    methodCallReceived.SetResult(true);
                     return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(DeviceResponseJson), 200));
                 },
                 null).ConfigureAwait(false);
 
-            await ServiceSendMethodAndVerifyResponse(testDevice.Id, MethodName, DeviceResponseJson, ServiceRequestJson, assertResult).ConfigureAwait(false);
-
-            await deviceClient.CloseAsync().ConfigureAwait(false);
+            return methodCallReceived.Task;
         }
 
-        private async Task SendMethodAndRespondWithSetMethodHandler(Client.TransportType transport)
+        private Task<Task> SetDeviceReceiveMethodObsoleteHandler(DeviceClient deviceClient)
         {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
-            
-            var assertResult = new TaskCompletionSource<Tuple<bool, bool>>();
-            var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
-            
-            await (deviceClient?.SetMethodHandlerAsync(MethodName, (request, context) => 
-            {
-                assertResult.TrySetResult(new Tuple<bool, bool>(request.Name.Equals(MethodName), request.DataAsJson.Equals(ServiceRequestJson)));
-                return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(DeviceResponseJson), 200));
-            }, null)).ConfigureAwait(false);
-
-            await ServiceSendMethodAndVerifyResponse(testDevice.Id, MethodName, DeviceResponseJson, ServiceRequestJson, assertResult).ConfigureAwait(false);
-
-            await deviceClient.CloseAsync().ConfigureAwait(false);
-        }
-
-        private async Task SendMethodAndRespondWithObseletedSetMethodHandler(Client.TransportType transport)
-        {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
-
-            var assertResult = new TaskCompletionSource<Tuple<bool, bool>>();
-            var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
+            var methodCallReceived = new TaskCompletionSource<bool>();
 
 #pragma warning disable CS0618
-
-            deviceClient?.SetMethodHandler(MethodName, (request, context) =>
+            deviceClient.SetMethodHandler(MethodName, (request, context) =>
             {
-                assertResult.TrySetResult(new Tuple<bool, bool>(request.Name.Equals(MethodName), request.DataAsJson.Equals(ServiceRequestJson)));
+                _log.WriteLine($"{nameof(SetDeviceReceiveMethodObsoleteHandler)}: DeviceClient method: {request.Name} {request.ResponseTimeout}.");
+                
+                Assert.AreEqual(MethodName, request.Name);
+                Assert.AreEqual(ServiceRequestJson, request.DataAsJson);
+
+                methodCallReceived.SetResult(true);
                 return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(DeviceResponseJson), 200));
             }, null);
 #pragma warning restore CS0618
 
-            // sleep to ensure async tasks started in SetMethodHandler has completed
-            Thread.Sleep(5000);
+            return Task.FromResult<Task>(methodCallReceived.Task);
+        }
 
-            await ServiceSendMethodAndVerifyResponse(testDevice.Id, MethodName, DeviceResponseJson, ServiceRequestJson, assertResult).ConfigureAwait(false);
+        private async Task SendMethodAndRespond(Client.TransportType transport, Func<DeviceClient, Task<Task>> setDeviceReceiveMethod)
+        {
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
+            var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
+            Task methodReceivedTask = await setDeviceReceiveMethod(deviceClient).ConfigureAwait(false);
+
+            await Task.WhenAll(
+                ServiceSendMethodAndVerifyResponse(testDevice.Id, MethodName, DeviceResponseJson, ServiceRequestJson),
+                methodReceivedTask).ConfigureAwait(false);
 
             await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
         private async Task SendMethodAndRespondRecovery(Client.TransportType transport, string faultType, string reason, int delayInSec)
         {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
-
-            var assertResult = new TaskCompletionSource<Tuple<bool, bool>>();
-            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
-
-            ConnectionStatus? lastConnectionStatus = null;
-            ConnectionStatusChangeReason? lastConnectionStatusChangeReason = null;
-            int setConnectionStatusChangesHandlerCount = 0;
-            var tcsConnected = new TaskCompletionSource<bool>();
-            var tcsDisconnected = new TaskCompletionSource<bool>();
-
-            deviceClient.SetConnectionStatusChangesHandler((status, statusChangeReason) =>
+            Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
             {
-                _log.WriteLine("Connection Changed to {0} because {1}", status, statusChangeReason);
-                
-                if (status == ConnectionStatus.Disconnected_Retrying)
-                {
-                    tcsDisconnected.TrySetResult(true);
-                    Assert.AreEqual(ConnectionStatusChangeReason.No_Network, statusChangeReason);
-                }
-                else if (status == ConnectionStatus.Connected)
-                {
-                    tcsConnected.TrySetResult(true);
-                }
+                Task methodReceivedTask = await SetDeviceReceiveMethod(deviceClient).ConfigureAwait(false);
 
-                lastConnectionStatus = status;
-                lastConnectionStatusChangeReason = statusChangeReason;
-                setConnectionStatusChangesHandlerCount++;
-            });
+                await Task.WhenAll(
+                    ServiceSendMethodAndVerifyResponse(testDevice.Id, MethodName, DeviceResponseJson, ServiceRequestJson),
+                    methodReceivedTask).ConfigureAwait(false);
+            };
 
-            await deviceClient.SetMethodHandlerAsync(MethodName,
-                (request, context) =>
-                {
-                    assertResult.TrySetResult(new Tuple<bool, bool>(request.Name.Equals(MethodName),
-                        request.DataAsJson.Equals(ServiceRequestJson)));
-                    return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(DeviceResponseJson), 200));
-                },
-                null).ConfigureAwait(false);
-
-            // assert on successful connection
-            await Task.WhenAny(Task.Delay(FaultInjection.ShortRetryInMilliSec), tcsConnected.Task).ConfigureAwait(false);
-            Assert.IsTrue(tcsConnected.Task.IsCompleted, "Initial connection failed");
-
-            if (transport != Client.TransportType.Http1)
-            {
-                Assert.AreEqual(1, setConnectionStatusChangesHandlerCount);
-                Assert.AreEqual(ConnectionStatus.Connected, lastConnectionStatus);
-                Assert.AreEqual(ConnectionStatusChangeReason.Connection_Ok, lastConnectionStatusChangeReason);
-            }
-
-            // check on normal operation
-            await
-                ServiceSendMethodAndVerifyResponse(testDevice.Id, MethodName, DeviceResponseJson,
-                    ServiceRequestJson, assertResult).ConfigureAwait(false);
-
-            // reset ConnectionStatusChangesHandler data
-            setConnectionStatusChangesHandlerCount = 0;
-            tcsConnected = new TaskCompletionSource<bool>();
-            tcsDisconnected = new TaskCompletionSource<bool>();
-
-            // send error command
-            await deviceClient.SendEventAsync(FaultInjection.ComposeErrorInjectionProperties(faultType, reason, delayInSec)).ConfigureAwait(false);
-
-            // wait for disconnection
-            await Task.WhenAny(Task.Delay(FaultInjection.WaitForDisconnectMilliseconds), tcsDisconnected.Task).ConfigureAwait(false);
-            Assert.IsTrue(tcsDisconnected.Task.IsCompleted, "Error injection did not interrupt the device");
-
-            await Task.WhenAny(Task.Delay(FaultInjection.RecoveryTimeMilliseconds), tcsConnected.Task).ConfigureAwait(false);
-            Assert.IsTrue(tcsConnected.Task.IsCompleted, "Recovery connection failed");
-
-            assertResult = new TaskCompletionSource<Tuple<bool, bool>>();
-            await
-                ServiceSendMethodAndVerifyResponse(testDevice.Id, MethodName, DeviceResponseJson,
-                    ServiceRequestJson, assertResult).ConfigureAwait(false);
-            setConnectionStatusChangesHandlerCount = 0;
-
-            //remove and CloseAsync
-            await deviceClient.SetMethodHandlerAsync(MethodName, null, null).ConfigureAwait(false);
-
-            if (transport != Client.TransportType.Http1)
-            {
-                Assert.AreEqual(1, setConnectionStatusChangesHandlerCount);
-                Assert.AreEqual(ConnectionStatus.Disabled, lastConnectionStatus);
-                Assert.AreEqual(ConnectionStatusChangeReason.Client_Close, lastConnectionStatusChangeReason);
-            }
+            await FaultInjection.TestErrorInjectionTemplate(
+                DevicePrefix,
+                TestDeviceType.Sasl,
+                transport,
+                faultType,
+                reason,
+                delayInSec,
+                FaultInjection.DefaultDelayInSec,
+                (d, t) => { return Task.FromResult<bool>(false); },
+                testOperation,
+                () => { return Task.FromResult<bool>(false); }).ConfigureAwait(false);
         }
 
         public void Dispose()

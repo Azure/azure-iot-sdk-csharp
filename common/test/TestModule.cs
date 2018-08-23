@@ -28,9 +28,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public static async Task<TestModule> GetTestModuleAsync(string deviceNamePrefix, string moduleNamePrefix)
         {
             var log = TestLogging.GetInstance();
-            string prefix = deviceNamePrefix + "Module" + "_";
-
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(prefix).ConfigureAwait(false);
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(deviceNamePrefix).ConfigureAwait(false);
 
             string deviceName = testDevice.Id;
             string moduleName = moduleNamePrefix + Guid.NewGuid();

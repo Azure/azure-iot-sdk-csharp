@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestCategory("IoTHub-E2E")]
     public class TwinE2ETests : IDisposable
     {
-        private const string DevicePrefix = "E2E_Twin_CSharp_";
+        private const string DevicePrefix = "E2E_Twin_";
         private static TestLogging _log = TestLogging.GetInstance();
 
         private readonly ConsoleEventListener _listener;
@@ -42,17 +42,12 @@ namespace Microsoft.Azure.Devices.E2ETests
             await Twin_DeviceSetsReportedPropertyAndGetsItBack(Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
         }
 
-#if NETCOREAPP2_0
-        // TODO: #302 In NetCoreApp2.0 the test is failing with TimeoutException.
-        [Ignore]
-#endif
         [TestMethod]
         public async Task Twin_DeviceSetsReportedPropertyAndGetsItBack_AmqpWs()
         {
             await Twin_DeviceSetsReportedPropertyAndGetsItBack(Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
         }
 
-        [Ignore] // TODO: #558
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Twin_DeviceReportedPropertiesTcpConnRecovery_Mqtt()
@@ -63,7 +58,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [Ignore] // TODO: #558
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Twin_DeviceReportedPropertiesTcpConnRecovery_MqttWs()
@@ -84,10 +78,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-#if NETCOREAPP2_0
-        // TODO: #302 In NetCoreApp2.0 the test is failing with TimeoutException.
-        [Ignore]
-#endif
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Twin_DeviceReportedPropertiesTcpConnRecovery_AmqpWs()
@@ -98,7 +88,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [Ignore] // TODO: #558
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Twin_DeviceReportedPropertiesGracefulShutdownRecovery_Mqtt()
@@ -109,7 +98,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [Ignore] // TODO: #558
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Twin_DeviceReportedPropertiesGracefulShutdownRecovery_MqttWs()
@@ -130,10 +118,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-#if NETCOREAPP2_0
-        // TODO: #302 In NetCoreApp2.0 the test is failing with TimeoutException.
-        [Ignore]
-#endif
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Twin_DeviceReportedPropertiesGracefulShutdownRecovery_AmqpWs()
@@ -147,60 +131,51 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_Mqtt()
         {
-            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent(Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent(Client.TransportType.Mqtt_Tcp_Only, SetTwinPropertyUpdateCallbackHandlerAsync).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_MqttWs()
         {
-            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent(Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent(Client.TransportType.Mqtt_WebSocket_Only, SetTwinPropertyUpdateCallbackHandlerAsync).ConfigureAwait(false);
         }
         
         [TestMethod]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_Amqp()
         {
-            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent(Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent(Client.TransportType.Amqp_Tcp_Only, SetTwinPropertyUpdateCallbackHandlerAsync).ConfigureAwait(false);
         }
 
-#if NETCOREAPP2_0
-        // TODO: #302 In NetCoreApp2.0 the test is failing with TimeoutException.
-        [Ignore]
-#endif
         [TestMethod]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_AmqpWs()
         {
-            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent(Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent(Client.TransportType.Amqp_WebSocket_Only, SetTwinPropertyUpdateCallbackHandlerAsync).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_WithObseleteCallbackSetter_Mqtt()
         {
-            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_WithObseleteCallbackSetter(Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent(Client.TransportType.Mqtt_Tcp_Only, SetTwinPropertyUpdateCallbackObsoleteHandlerAsync).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_WithObseleteCallbackSetter_MqttWs()
         {
-            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_WithObseleteCallbackSetter(Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent(Client.TransportType.Mqtt_WebSocket_Only, SetTwinPropertyUpdateCallbackObsoleteHandlerAsync).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_WithObseleteCallbackSetter_Amqp()
         {
-            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_WithObseleteCallbackSetter(Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent(Client.TransportType.Amqp_Tcp_Only, SetTwinPropertyUpdateCallbackObsoleteHandlerAsync).ConfigureAwait(false);
         }
 
-#if NETCOREAPP2_0
-        // TODO: #302 In NetCoreApp2.0 the test is failing with TimeoutException.
-        [Ignore]
-#endif
         [TestMethod]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_WithObseleteCallbackSetter_AmqpWs()
         {
-            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_WithObseleteCallbackSetter(Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent(Client.TransportType.Amqp_WebSocket_Only, SetTwinPropertyUpdateCallbackObsoleteHandlerAsync).ConfigureAwait(false);
         }
 
-        [Ignore] // TODO: #558
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Twin_DeviceDesiredPropertyUpdateTcpConnRecovery_Mqtt()
@@ -211,7 +186,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [Ignore] // TODO: #558
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Twin_DeviceDesiredPropertyUpdateTcpConnRecovery_MqttWs()
@@ -222,7 +196,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [Ignore] //TODO: #571
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Twin_DeviceDesiredPropertyUpdateTcpConnRecovery_Amqp()
@@ -233,7 +206,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [Ignore] //TODO: #571
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Twin_DeviceDesiredPropertyUpdateTcpConnRecovery_AmqpWs()
@@ -244,7 +216,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [Ignore] // TODO: #558
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Twin_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_Mqtt()
@@ -255,7 +226,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [Ignore] // TODO: #558
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Twin_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_MqttWs()
@@ -266,7 +236,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [Ignore] //TODO: #571
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Twin_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_Amqp()
@@ -277,7 +246,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [Ignore] //TODO: #571
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Twin_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_AmqpWs()
@@ -306,10 +274,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet(Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
         }
 
-#if NETCOREAPP2_0
-        // TODO: #302 In NetCoreApp2.0 the test is failing with TimeoutException.
-        [Ignore]
-#endif
         [TestMethod]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet_AmqpWs()
         {
@@ -334,47 +298,30 @@ namespace Microsoft.Azure.Devices.E2ETests
             await Twin_DeviceSetsReportedPropertyAndServiceReceivesIt(Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
         }
 
-#if NETCOREAPP2_0
-        // TODO: #302 In NetCoreApp2.0 the test is failing with TimeoutException.
-        [Ignore]
-#endif
         [TestMethod]
         public async Task Twin_DeviceSetsReportedPropertyAndServiceReceivesIt_AmqpWs()
         {
             await Twin_DeviceSetsReportedPropertyAndServiceReceivesIt(Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
         }
 
-        // TODO: #243 : Once the service team deploys the fix for Issue #243, the test can be executed
-        [Ignore]
         [TestMethod]
         public async Task Twin_ServiceDoesNotCreateNullPropertyInCollection_Mqtt()
         {
             await Twin_ServiceDoesNotCreateNullPropertyInCollection(Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
         }
 
-        // TODO: #243 : Once the service team deploys the fix for Issue #243, the test can be executed
-        [Ignore]
         [TestMethod]
         public async Task Twin_ServiceDoesNotCreateNullPropertyInCollection_MqttWs()
         {
             await Twin_ServiceDoesNotCreateNullPropertyInCollection(Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
         }
 
-        // TODO: #243 : Once the service team deploys the fix for Issue #243, the test can be executed
-        [Ignore]
         [TestMethod]
         public async Task Twin_ServiceDoesNotCreateNullPropertyInCollection_Amqp()
         {
             await Twin_ServiceDoesNotCreateNullPropertyInCollection(Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
         }
 
-#if NETCOREAPP2_0
-        // TODO: #302 In NetCoreApp2.0 the test is failing with TimeoutException.
-        [Ignore]
-#else
-        // TODO: #243 : Once the service team deploys the fix for Issue #243, the test can be executed
-        [Ignore]
-#endif
         [TestMethod]
         public async Task Twin_ServiceDoesNotCreateNullPropertyInCollection_AmqpWs()
         {
@@ -417,7 +364,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             props[propName] = propValue;
             await deviceClient.UpdateReportedPropertiesAsync(props).ConfigureAwait(false);
 
-            var deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
+            Twin deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
             Assert.AreEqual<String>(deviceTwin.Properties.Reported[propName].ToString(), propValue);
 
             await deviceClient.CloseAsync().ConfigureAwait(false);
@@ -426,213 +373,154 @@ namespace Microsoft.Azure.Devices.E2ETests
         private async Task Twin_DeviceReportedPropertiesRecovery(Client.TransportType transport, string faultType, string reason, int delayInSec)
         {
             var propName = Guid.NewGuid().ToString();
-            var propValue1 = Guid.NewGuid().ToString();
+            var props = new TwinCollection();
 
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
+            Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
+            {
+                var propValue = Guid.NewGuid().ToString();
+                props[propName] = propValue;
 
-            var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
-            TwinCollection props = new TwinCollection();
-            props[propName] = propValue1;
-            await deviceClient.UpdateReportedPropertiesAsync(props).ConfigureAwait(false);
+                await deviceClient.UpdateReportedPropertiesAsync(props).ConfigureAwait(false);
 
-            var deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
-            Assert.AreEqual<String>(deviceTwin.Properties.Reported[propName].ToString(), propValue1);
+                var deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
+                Assert.AreEqual<String>(deviceTwin.Properties.Reported[propName].ToString(), propValue);
+            };
 
-            // send error command
-            await deviceClient.SendEventAsync(FaultInjection.ComposeErrorInjectionProperties(faultType, reason, delayInSec)).ConfigureAwait(false);
-
-            deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
-            Assert.AreEqual<String>(deviceTwin.Properties.Reported[propName].ToString(), propValue1);
-
-            var propValue2 = Guid.NewGuid().ToString();
-            props[propName] = propValue2;
-            await deviceClient.UpdateReportedPropertiesAsync(props).ConfigureAwait(false);
-
-            deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
-            Assert.AreEqual<String>(deviceTwin.Properties.Reported[propName].ToString(), propValue2);
-
-            await deviceClient.CloseAsync().ConfigureAwait(false);
+            await FaultInjection.TestErrorInjectionTemplate(
+                DevicePrefix,
+                TestDeviceType.Sasl,
+                transport,
+                faultType,
+                reason,
+                delayInSec,
+                FaultInjection.DefaultDurationInSec,
+                (d, t) => { return Task.FromResult<bool>(false); },
+                testOperation,
+                () => { return Task.FromResult<bool>(false); }).ConfigureAwait(false);
         }
 
-        private async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent(Client.TransportType transport)
+        private async Task<Task> SetTwinPropertyUpdateCallbackHandlerAsync(DeviceClient deviceClient, string expectedPropName, string expectedPropValue)
         {
-            var tcs = new TaskCompletionSource<bool>();
-            var propName = Guid.NewGuid().ToString();
-            var propValue = Guid.NewGuid().ToString();
+            var propertyUpdateReceived = new TaskCompletionSource<bool>();
+            string userContext = "myContext";
 
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
-
-            RegistryManager registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
-
-            var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
-            await deviceClient.OpenAsync().ConfigureAwait(false);
-            await deviceClient.SetDesiredPropertyUpdateCallbackAsync((patch, context) =>
-            {
-                return Task.Run(() =>
+            await deviceClient.SetDesiredPropertyUpdateCallbackAsync(
+                (patch, context) =>
                 {
+                    _log.WriteLine($"{nameof(SetTwinPropertyUpdateCallbackHandlerAsync)}: DesiredProperty: {patch}, {context}");
+
                     try
                     {
-                        Assert.AreEqual(patch[propName].ToString(), propValue);
+                        Assert.AreEqual(expectedPropValue, patch[expectedPropName].ToString());
+                        Assert.AreEqual(userContext, context, "Context");
                     }
                     catch (Exception e)
                     {
-                        tcs.SetException(e);
+                        propertyUpdateReceived.SetException(e);
                     }
                     finally
                     {
-                        tcs.SetResult(true);
+                        propertyUpdateReceived.SetResult(true);
                     }
-                });
 
-            }, null).ConfigureAwait(false);
+                    return Task.FromResult<bool>(true);
+                }, userContext).ConfigureAwait(false);
 
-            var twinPatch = new Twin();
-            twinPatch.Properties.Desired[propName] = propValue;
-            await registryManager.UpdateTwinAsync(testDevice.Id, twinPatch, "*").ConfigureAwait(false);
-
-            await tcs.Task.ConfigureAwait(false);
-            await deviceClient.CloseAsync().ConfigureAwait(false);
-            await registryManager.CloseAsync().ConfigureAwait(false);
+            return propertyUpdateReceived.Task;
         }
         
-        private async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_WithObseleteCallbackSetter(Client.TransportType transport)
+        private async Task<Task> SetTwinPropertyUpdateCallbackObsoleteHandlerAsync(DeviceClient deviceClient, string expectedPropName, string expectedPropValue)
         {
-            var tcs = new TaskCompletionSource<bool>();
-            var propName = Guid.NewGuid().ToString();
-            var propValue = Guid.NewGuid().ToString();
-
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
-            RegistryManager registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
-
-            var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
-
 #pragma warning disable CS0618
-            await deviceClient.SetDesiredPropertyUpdateCallback((patch, context) =>
-            {
-                return Task.Run(() =>
+
+            string userContext = "myContext";
+            var propertyUpdateReceived = new TaskCompletionSource<bool>();
+
+            await deviceClient.SetDesiredPropertyUpdateCallback(
+                (patch, context) =>
                 {
+                    _log.WriteLine($"{nameof(SetTwinPropertyUpdateCallbackHandlerAsync)}: DesiredProperty: {patch}, {context}");
+                    
                     try
                     {
-                        Assert.AreEqual(patch[propName].ToString(), propValue);
+                        Assert.AreEqual(expectedPropValue, patch[expectedPropName].ToString());
+                        Assert.AreEqual(userContext, context, "Context");
                     }
                     catch (Exception e)
                     {
-                        tcs.SetException(e);
+                        propertyUpdateReceived.SetException(e);
                     }
                     finally
                     {
-                        tcs.SetResult(true);
+                        propertyUpdateReceived.SetResult(true);
                     }
-                });
-            }, null).ConfigureAwait(false);
+
+                    return Task.FromResult<bool>(true);
+                }, userContext).ConfigureAwait(false);
 #pragma warning restore CS0618
 
-            var twinPatch = new Twin();
-            twinPatch.Properties.Desired[propName] = propValue;
-            await registryManager.UpdateTwinAsync(testDevice.Id, twinPatch, "*").ConfigureAwait(false);
-            
-            await tcs.Task.ConfigureAwait(false);
-            await deviceClient.CloseAsync().ConfigureAwait(false);
-            await registryManager.CloseAsync().ConfigureAwait(false);
-
+            return propertyUpdateReceived.Task;
         }
 
-        private async Task Twin_DeviceDesiredPropertyUpdateRecovery(Client.TransportType transport, string faultType, string reason, int delayInSec)
+        private async Task RegistryManagerUpdateDesiredPropertyAsync(string deviceId, string propName, string propValue)
         {
-            var tcs = new TaskCompletionSource<bool>();
+            RegistryManager registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+            var twinPatch = new Twin();
+            twinPatch.Properties.Desired[propName] = propValue;
+
+            await registryManager.UpdateTwinAsync(deviceId, twinPatch, "*").ConfigureAwait(false);
+            await registryManager.CloseAsync().ConfigureAwait(false);
+        }
+
+        private async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent(Client.TransportType transport, Func<DeviceClient, string, string, Task<Task>> setTwinPropertyUpdateCallbackAsync)
+        {
             var propName = Guid.NewGuid().ToString();
             var propValue = Guid.NewGuid().ToString();
 
+            _log.WriteLine($"{nameof(Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent)}: name={propName}, value={propValue}");
+            
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
-            RegistryManager registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
 
             var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
-
-            ConnectionStatus? lastConnectionStatus = null;
-            ConnectionStatusChangeReason? lastConnectionStatusChangeReason = null;
-            int setConnectionStatusChangesHandlerCount = 0;
-            var tcsConnected = new TaskCompletionSource<bool>();
-            var tcsDisconnected = new TaskCompletionSource<bool>();
-
-            deviceClient.SetConnectionStatusChangesHandler((status, statusChangeReason) =>
-            {
-                _log.WriteLine("Connection Changed to {0} because {1}", status, statusChangeReason);
-
-                if (status == ConnectionStatus.Disconnected_Retrying)
-                {
-                    tcsDisconnected.TrySetResult(true);
-                    Assert.AreEqual(ConnectionStatusChangeReason.No_Network, statusChangeReason);
-                }
-                else if (status == ConnectionStatus.Connected)
-                {
-                    tcsConnected.TrySetResult(true);
-                }
-
-                lastConnectionStatus = status;
-                lastConnectionStatusChangeReason = statusChangeReason;
-                setConnectionStatusChangesHandlerCount++;
-            });
-
-            await deviceClient.SetDesiredPropertyUpdateCallbackAsync((patch, context) =>
-            {
-                return Task.Run(() =>
-                {
-                    try
-                    {
-                        Assert.AreEqual(patch[propName].ToString(), propValue);
-                    }
-                    catch (Exception e)
-                    {
-                        tcs.SetException(e);
-                    }
-                    finally
-                    {
-                        tcs.SetResult(true);
-                    }
-                });
-
-            }, null).ConfigureAwait(false);
-
-            // assert on successful connection
-            await Task.WhenAny(Task.Delay(FaultInjection.ShortRetryInMilliSec), tcsConnected.Task).ConfigureAwait(false);
-            Assert.IsTrue(tcsConnected.Task.IsCompleted, "Initial connection failed");
-            if (transport != Client.TransportType.Http1)
-            {
-                Assert.AreEqual(1, setConnectionStatusChangesHandlerCount);
-                Assert.AreEqual(ConnectionStatus.Connected, lastConnectionStatus);
-                Assert.AreEqual(ConnectionStatusChangeReason.Connection_Ok, lastConnectionStatusChangeReason);
-            }
-
-            var twinPatch = new Twin();
-            twinPatch.Properties.Desired[propName] = propValue;
-            await registryManager.UpdateTwinAsync(testDevice.Id, twinPatch, "*").ConfigureAwait(false);
-
-            await tcs.Task.ConfigureAwait(false);
-
-            // send error command
-            await deviceClient.SendEventAsync(FaultInjection.ComposeErrorInjectionProperties(faultType, reason, delayInSec)).ConfigureAwait(false);
-
-            // reset ConnectionStatusChangesHandler data
-            setConnectionStatusChangesHandlerCount = 0;
-            tcsConnected = new TaskCompletionSource<bool>();
-            tcsDisconnected = new TaskCompletionSource<bool>();
-
-            // wait for disconnection
-            await Task.WhenAny(Task.Delay(FaultInjection.WaitForDisconnectMilliseconds), tcsDisconnected.Task).ConfigureAwait(false);
-            Assert.IsTrue(tcsDisconnected.Task.IsCompleted, "Error injection did not interrupt the device");
-
-            await Task.WhenAny(Task.Delay(FaultInjection.RecoveryTimeMilliseconds), tcsConnected.Task).ConfigureAwait(false);
-            Assert.IsTrue(tcsConnected.Task.IsCompleted, "Recovery connection failed");
-
-            tcs = new TaskCompletionSource<bool>();
-            twinPatch = new Twin();
-            twinPatch.Properties.Desired[propName] = propValue;
-            await registryManager.UpdateTwinAsync(testDevice.Id, twinPatch, "*").ConfigureAwait(false);
-
-            await tcs.Task.ConfigureAwait(false);
+            Task updateReceivedTask = await setTwinPropertyUpdateCallbackAsync(deviceClient, propName, propValue).ConfigureAwait(false);
+            
+            await Task.WhenAll(
+                RegistryManagerUpdateDesiredPropertyAsync(testDevice.Id, propName, propValue),
+                updateReceivedTask).ConfigureAwait(false);
 
             await deviceClient.CloseAsync().ConfigureAwait(false);
-            await registryManager.CloseAsync().ConfigureAwait(false);
+        }
+  
+        private async Task Twin_DeviceDesiredPropertyUpdateRecovery(Client.TransportType transport, string faultType, string reason, int delayInSec)
+        {
+            RegistryManager registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+
+            var propName = Guid.NewGuid().ToString();
+            var props = new TwinCollection();
+
+            Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
+            {
+                var propValue = Guid.NewGuid().ToString();
+                _log.WriteLine($"{nameof(Twin_DeviceDesiredPropertyUpdateRecovery)}: name={propName}, value={propValue}");
+
+                Task updateReceivedTask = await SetTwinPropertyUpdateCallbackHandlerAsync(deviceClient, propName, propValue).ConfigureAwait(false);
+
+                await Task.WhenAll(
+                    RegistryManagerUpdateDesiredPropertyAsync(testDevice.Id, propName, propValue),
+                    updateReceivedTask).ConfigureAwait(false);
+            };
+
+            await FaultInjection.TestErrorInjectionTemplate(
+                DevicePrefix,
+                TestDeviceType.Sasl,
+                transport,
+                faultType,
+                reason,
+                delayInSec,
+                FaultInjection.DefaultDurationInSec,
+                (d, t) => { return Task.FromResult<bool>(false); },
+                testOperation,
+                () => { return Task.FromResult<bool>(false); }).ConfigureAwait(false);
         }
 
         private async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet(Client.TransportType transport)
