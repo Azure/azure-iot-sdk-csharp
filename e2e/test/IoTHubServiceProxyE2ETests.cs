@@ -47,6 +47,27 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
+        public async Task RegistryManager_AddAndRemoveDeviceWithScope()
+        {
+            RegistryManager registryManager = RegistryManager.CreateFromConnectionString(ConnectionString);
+
+            var edgeDevice = new Device(Guid.NewGuid().ToString())
+            {
+                Capabilities = new DeviceCapabilities { IotEdge = true }
+            };
+            edgeDevice = await registryManager.AddDeviceAsync(edgeDevice).ConfigureAwait(false);
+
+            var leafDevice = new Device(Guid.NewGuid().ToString()) { Scope = edgeDevice.Scope };
+            Device receivedDevice = await registryManager.AddDeviceAsync(leafDevice).ConfigureAwait(false);
+
+            Assert.IsNotNull(receivedDevice);
+            Assert.AreEqual(leafDevice.Id, receivedDevice.Id);
+            Assert.AreEqual(leafDevice.Scope, receivedDevice.Scope);
+            await registryManager.RemoveDeviceAsync(leafDevice.Id).ConfigureAwait(false);
+            await registryManager.RemoveDeviceAsync(edgeDevice.Id).ConfigureAwait(false);
+        }
+
+        [TestMethod]
         public async Task JobClient_ScheduleAndRunTwinJob_WithProxy()
         {
             HttpTransportSettings httpTransportSettings = new HttpTransportSettings();
@@ -91,7 +112,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             JobResponse jobResponse = await jobClient.GetJobAsync(jobId).ConfigureAwait(false);
         }
 
-       private Message ComposeD2CTestMessage(out string payload, out string p1Value)
+        private Message ComposeD2CTestMessage(out string payload, out string p1Value)
         {
             payload = Guid.NewGuid().ToString();
             p1Value = Guid.NewGuid().ToString();
