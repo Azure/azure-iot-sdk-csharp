@@ -5,16 +5,16 @@
 ./build.sh -clean -configuration Debug
 if [ "$?" -ne 0 ]; then
 	exit 1
-fi 
+fi
 
 # Start the TPM simulator
-killall -9 Simulator
-$TPM_SIMULATOR_PATH &
+pkill -9 Simulator
+for i in $(seq 1 5); do $TPM_SIMULATOR_PATH; done &
 
 ./build.sh -clean -configuration Release -e2etests
 if [ "$?" -ne 0 ]; then
 	exit 1
-fi 
+fi
 
 echo
 echo Linux C# build completed successfully.
