@@ -112,6 +112,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task OpenAsync(bool explicitOpen, CancellationToken cancellationToken)
         {
+            if (Logging.IsEnabled) Logging.Enter(this, explicitOpen, cancellationToken, $"{nameof(AmqpTransportHandler)}.{nameof(OpenAsync)}");
             if (!explicitOpen)
             {
                 return;
@@ -144,10 +145,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
                      throw AmqpClientHelper.ToIotHubClientContract(exception);
                  }
              }, cancellationToken).ConfigureAwait(false);
+            if (Logging.IsEnabled) Logging.Exit(this, explicitOpen, cancellationToken, $"{nameof(AmqpTransportHandler)}.{nameof(OpenAsync)}");
         }
 
         public override async Task SendEventAsync(Message message, CancellationToken cancellationToken)
         {
+            if (Logging.IsEnabled) Logging.Enter(this, message, cancellationToken, $"{nameof(AmqpTransportHandler)}.{nameof(SendEventAsync)}");
             await this.HandleTimeoutCancellation(async () =>
             {
                 Outcome outcome;
@@ -161,10 +164,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     throw AmqpErrorMapper.GetExceptionFromOutcome(outcome);
                 }
             }, cancellationToken).ConfigureAwait(false);
+            if (Logging.IsEnabled) Logging.Exit(this, message, cancellationToken, $"{nameof(AmqpTransportHandler)}.{nameof(SendEventAsync)}");
         }
 
         public override async Task SendEventAsync(IEnumerable<Message> messages, CancellationToken cancellationToken)
         {
+            if (Logging.IsEnabled) Logging.Enter(this, messages, cancellationToken, $"{nameof(AmqpTransportHandler)}.{nameof(SendEventAsync)}");
             await this.HandleTimeoutCancellation(async () =>
             {
                 // List to hold messages in Amqp friendly format
@@ -194,6 +199,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     throw AmqpErrorMapper.GetExceptionFromOutcome(outcome);
                 }
             }, cancellationToken).ConfigureAwait(false);
+            if (Logging.IsEnabled) Logging.Exit(this, messages, cancellationToken, $"{nameof(AmqpTransportHandler)}.{nameof(SendEventAsync)}");
         }
 
         public override async Task<Message> ReceiveAsync(TimeSpan timeout, CancellationToken cancellationToken)
@@ -236,6 +242,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task RecoverConnections(object link, ConnectionType connectionType, CancellationToken cancellationToken)
         {
+            if (Logging.IsEnabled) Logging.Enter(this, connectionType, cancellationToken, $"{nameof(AmqpTransportHandler)}.{nameof(RecoverConnections)}");
+
             bool needMethodRecovery = false;
             bool needTwinRecovery = false;
             bool needEventReceivingLinkRecovery = false;
@@ -291,10 +299,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 this.faultTolerantEventReceivingLink = null;
                 await this.EnableEventReceiveAsync(cancellationToken).ConfigureAwait(false);
             }
+
+            if (Logging.IsEnabled) Logging.Exit(this, connectionType, cancellationToken, $"{nameof(AmqpTransportHandler)}.{nameof(RecoverConnections)}");
         }
 
         public override async Task EnableMethodsAsync(CancellationToken cancellationToken)
         {
+            if (Logging.IsEnabled) Logging.Enter(this, cancellationToken, $"{nameof(AmqpTransportHandler)}.{nameof(EnableMethodsAsync)}");
+
             if (this.faultTolerantMethodSendingLink == null)
             {
                 this.faultTolerantMethodSendingLink = new Client.FaultTolerantAmqpObject<SendingAmqpLink>(this.CreateMethodSendingLinkAsync, this.IotHubConnection.CloseLink);
@@ -327,10 +339,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     throw AmqpClientHelper.ToIotHubClientContract(ex);
                 }
             }, cancellationToken).ConfigureAwait(false);
+
+            if (Logging.IsEnabled) Logging.Exit(this, cancellationToken, $"{nameof(AmqpTransportHandler)}.{nameof(EnableMethodsAsync)}");
         }
 
         public override async Task EnableTwinPatchAsync(CancellationToken cancellationToken)
         {
+            if (Logging.IsEnabled) Logging.Enter(this, cancellationToken, $"{nameof(AmqpTransportHandler)}.{nameof(EnableTwinPatchAsync)}");
+
             if (this.faultTolerantTwinSendingLink == null)
             {
                 this.faultTolerantTwinSendingLink = new Client.FaultTolerantAmqpObject<SendingAmqpLink>(this.CreateTwinSendingLinkAsync, this.IotHubConnection.CloseLink);
@@ -363,10 +379,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     throw AmqpClientHelper.ToIotHubClientContract(ex);
                 }
             }, cancellationToken).ConfigureAwait(false);
+
+            if (Logging.IsEnabled) Logging.Exit(this, cancellationToken, $"{nameof(AmqpTransportHandler)}.{nameof(EnableTwinPatchAsync)}");
         }
 
         public override async Task EnableEventReceiveAsync(CancellationToken cancellationToken)
         {
+            if (Logging.IsEnabled) Logging.Enter(this, cancellationToken, $"{nameof(AmqpTransportHandler)}.{nameof(EnableEventReceiveAsync)}");
+
             if (this.faultTolerantEventReceivingLink == null)
             {
                 this.faultTolerantEventReceivingLink = new Client.FaultTolerantAmqpObject<ReceivingAmqpLink>(this.CreateEventReceivingLinkAsync, this.IotHubConnection.CloseLink);
@@ -389,6 +409,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     throw AmqpClientHelper.ToIotHubClientContract(ex);
                 }
             }, cancellationToken);
+
+            if (Logging.IsEnabled) Logging.Exit(this, cancellationToken, $"{nameof(AmqpTransportHandler)}.{nameof(EnableEventReceiveAsync)}");
         }
 
         private async Task EnableMethodSendingLinkAsync(CancellationToken cancellationToken)
@@ -413,6 +435,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task DisableMethodsAsync(CancellationToken cancellationToken)
         {
+            if (Logging.IsEnabled) Logging.Enter(this, cancellationToken, $"{nameof(AmqpTransportHandler)}.{nameof(DisableMethodsAsync)}");
+
             Task receivingLinkCloseTask;
 
             this.SafeAddClosedMethodSendingLinkHandler = (o, ea) => { return TaskHelpers.CompletedTask; };
@@ -446,10 +470,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
             await this.linkClosedListener(
                 this.faultTolerantMethodReceivingLink,
                 new ConnectionEventArgs { ConnectionType = ConnectionType.AmqpMethodReceiving, ConnectionStatus = ConnectionStatus.Disabled, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Client_Close }).ConfigureAwait(false);
+
+            if (Logging.IsEnabled) Logging.Exit(this, cancellationToken, $"{nameof(AmqpTransportHandler)}.{nameof(DisableMethodsAsync)}");
         }
 
         public async Task DisableTwinAsync(CancellationToken cancellationToken)
         {
+            if (Logging.IsEnabled) Logging.Enter(this, cancellationToken, $"{nameof(AmqpTransportHandler)}.{nameof(DisableTwinAsync)}");
+
             Task receivingLinkCloseTask;
 
             this.SafeAddClosedTwinSendingLinkHandler = (o, ea) => { return TaskHelpers.CompletedTask; };
@@ -483,10 +511,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
             await this.linkClosedListener(
                 this.faultTolerantTwinReceivingLink,
                 new ConnectionEventArgs { ConnectionType = ConnectionType.AmqpTwinReceiving, ConnectionStatus = ConnectionStatus.Disabled, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Client_Close }).ConfigureAwait(false);
+
+            if (Logging.IsEnabled) Logging.Exit(this, cancellationToken, $"{nameof(AmqpTransportHandler)}.{nameof(DisableTwinAsync)}");
         }
 
         public override async Task SendMethodResponseAsync(MethodResponseInternal methodResponse, CancellationToken cancellationToken)
         {
+            if (Logging.IsEnabled) Logging.Enter(this, methodResponse, cancellationToken, $"{nameof(AmqpTransportHandler)}.{nameof(SendMethodResponseAsync)}");
             await this.HandleTimeoutCancellation(async () =>
             {
                 Outcome outcome;
@@ -500,6 +531,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     throw AmqpErrorMapper.GetExceptionFromOutcome(outcome);
                 }
             }, cancellationToken).ConfigureAwait(false);
+            if (Logging.IsEnabled) Logging.Exit(this, methodResponse, cancellationToken, $"{nameof(AmqpTransportHandler)}.{nameof(SendMethodResponseAsync)}");
         }
 
         public override Task CompleteAsync(string lockToken, CancellationToken cancellationToken)
@@ -535,6 +567,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task CloseAsync()
         {
+            if (Logging.IsEnabled) Logging.Enter(this, "", $"{nameof(AmqpTransportHandler)}.{nameof(CloseAsync)}");
+
             GC.SuppressFinalize(this);
             Task eventSendingLinkCloseTask = this.faultTolerantEventSendingLink.CloseAsync();
             Task deviceBoundReceivingLinkCloseTask = this.faultTolerantDeviceBoundReceivingLink.CloseAsync();
@@ -551,10 +585,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 new ConnectionEventArgs { ConnectionType = ConnectionType.AmqpMessaging, ConnectionStatus = ConnectionStatus.Disabled, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Client_Close }).ConfigureAwait(false);
 
             this.IotHubConnection.Release(this.deviceId);
+            if (Logging.IsEnabled) Logging.Exit(this, "", $"{nameof(AmqpTransportHandler)}.{nameof(CloseAsync)}");
         }
 
         async Task<Outcome> SendAmqpMessageAsync(AmqpMessage amqpMessage, CancellationToken cancellationToken)
         {
+            if (Logging.IsEnabled) Logging.Enter(this, amqpMessage, cancellationToken, $"{nameof(AmqpTransportHandler)}.{nameof(SendAmqpMessageAsync)}");
             Outcome outcome;
             try
             {
@@ -570,12 +606,17 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                 throw AmqpClientHelper.ToIotHubClientContract(exception);
             }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, amqpMessage, cancellationToken, $"{nameof(AmqpTransportHandler)}.{nameof(SendAmqpMessageAsync)}");
+            }
 
             return outcome;
         }
 
         async Task<Outcome> SendAmqpMethodResponseAsync(AmqpMessage amqpMessage, CancellationToken cancellationToken)
         {
+            if (Logging.IsEnabled) Logging.Enter(this, amqpMessage, cancellationToken, $"{nameof(AmqpTransportHandler)}.{nameof(SendAmqpMethodResponseAsync)}");
             Outcome outcome;
             try
             {
@@ -591,12 +632,17 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                 throw AmqpClientHelper.ToIotHubClientContract(exception);
             }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, amqpMessage, cancellationToken, $"{nameof(AmqpTransportHandler)}.{nameof(SendAmqpMethodResponseAsync)}");
+            }
 
             return outcome;
         }
 
         private async Task<AmqpMessage> RoundTripTwinMessage(AmqpMessage amqpMessage, CancellationToken cancellationToken)
         {
+            if (Logging.IsEnabled) Logging.Enter(this, amqpMessage, cancellationToken, $"{nameof(AmqpTransportHandler)}.{nameof(RoundTripTwinMessage)}");
             string correlationId = Guid.NewGuid().ToString();
             AmqpMessage response = null;
 
@@ -635,6 +681,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 TaskCompletionSource<AmqpMessage> throwAway;
                 this.twinResponseCompletions.TryRemove(correlationId, out throwAway);
+                if (Logging.IsEnabled) Logging.Exit(this, amqpMessage, cancellationToken, $"{nameof(AmqpTransportHandler)}.{nameof(RoundTripTwinMessage)}");
             }
 
             return response;
@@ -642,6 +689,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task<Twin> SendTwinGetAsync(CancellationToken cancellationToken)
         {
+            if (Logging.IsEnabled) Logging.Enter(this, cancellationToken, $"{nameof(AmqpTransportHandler)}.{nameof(SendTwinGetAsync)}");
             try
             {
                 await EnableTwinPatchAsync(cancellationToken).ConfigureAwait(false);
@@ -662,10 +710,15 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                 throw AmqpClientHelper.ToIotHubClientContract(exception);
             }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, cancellationToken, $"{nameof(AmqpTransportHandler)}.{nameof(SendTwinGetAsync)}");
+            }
         }
 
         public override async Task SendTwinPatchAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
         {
+            if (Logging.IsEnabled) Logging.Enter(this, reportedProperties, cancellationToken, $"{nameof(AmqpTransportHandler)}.{nameof(SendTwinPatchAsync)}");
             try
             {
                 await EnableTwinPatchAsync(cancellationToken).ConfigureAwait(false);
@@ -690,6 +743,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 }
 
                 throw AmqpClientHelper.ToIotHubClientContract(exception);
+            }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, reportedProperties, cancellationToken, $"{nameof(AmqpTransportHandler)}.{nameof(SendTwinPatchAsync)}");
             }
         }
 
