@@ -9,6 +9,7 @@ namespace Microsoft.Azure.Devices.Client
     using System.Collections.Concurrent;
     using Microsoft.Azure.Amqp;
     using Microsoft.Azure.Devices.Client.Extensions;
+    using Microsoft.Azure.Devices.Shared;
 
     sealed class IotHubDeviceMuxConnection : IotHubConnection
     {
@@ -27,13 +28,30 @@ namespace Microsoft.Azure.Devices.Client
 
         public override Task CloseAsync()
         {
-            this.FaultTolerantSession.Close();
-            return TaskHelpers.CompletedTask;
+            try
+            {
+                if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(IotHubDeviceMuxConnection)}.{nameof(CloseAsync)}");
+
+                this.FaultTolerantSession.Close();
+                return TaskHelpers.CompletedTask;
+            }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(IotHubDeviceMuxConnection)}.{nameof(CloseAsync)}");
+            }
         }
 
         public override void SafeClose(Exception exception)
         {
-            this.FaultTolerantSession.Close();
+            try
+            {
+                if (Logging.IsEnabled) Logging.Enter(this, exception, $"{nameof(IotHubDeviceMuxConnection)}.{nameof(SafeClose)}");
+                this.FaultTolerantSession.Close();
+            }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, exception, $"{nameof(IotHubDeviceMuxConnection)}.{nameof(SafeClose)}");
+            }
         }
 
         public override void Release(string deviceId)
@@ -90,6 +108,8 @@ namespace Microsoft.Azure.Devices.Client
 
         protected override async Task OpenLinkAsync(AmqpObject link, IotHubConnectionString connectionString, string audience, TimeSpan timeout, CancellationToken token)
         {
+            if (Logging.IsEnabled) Logging.Enter(this, timeout, token, $"{nameof(IotHubDeviceMuxConnection)}.{nameof(OpenLinkAsync)}");
+
             var timeoutHelper = new TimeoutHelper(timeout);
 
             token.ThrowIfCancellationRequested();
@@ -122,14 +142,26 @@ namespace Microsoft.Azure.Devices.Client
                 link.SafeClose(exception);
                 throw;
             }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, timeout, token, $"{nameof(IotHubDeviceMuxConnection)}.{nameof(OpenLinkAsync)}");
+            }
         }
 
         void CloseConnection(AmqpSession amqpSession)
         {
-            // Closing the connection also closes any sessions.
-            amqpSession.Connection.SafeClose();
+            try
+            {
+                if (Logging.IsEnabled) Logging.Enter(this, amqpSession.Identifier, $"{nameof(IotHubDeviceMuxConnection)}.{nameof(CloseConnection)}");
+                // Closing the connection also closes any sessions.
+                amqpSession.Connection.SafeClose();
 
-            this.CancelTokenRefreshers();
+                this.CancelTokenRefreshers();
+            }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, amqpSession.Identifier, $"{nameof(IotHubDeviceMuxConnection)}.{nameof(CloseConnection)}");
+            }
         }
 
         void CancelTokenRefreshers()

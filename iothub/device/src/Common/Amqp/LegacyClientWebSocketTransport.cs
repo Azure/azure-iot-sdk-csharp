@@ -10,6 +10,7 @@ namespace Microsoft.Azure.Devices.Client
     using System.Threading.Tasks;
     using Microsoft.Azure.Amqp;
     using Microsoft.Azure.Amqp.Transport;
+    using Microsoft.Azure.Devices.Shared;
 
     sealed class LegacyClientWebSocketTransport : TransportBase
     {
@@ -66,6 +67,8 @@ namespace Microsoft.Azure.Devices.Client
 
         public override bool WriteAsync(TransportAsyncCallbackArgs args)
         {
+            if (Logging.IsEnabled) Logging.Enter(this, args.Transport, $"{nameof(LegacyClientWebSocketTransport)}.{nameof(WriteAsync)}");
+
             this.ThrowIfNotOpen();
 
             Fx.AssertAndThrow(args.Buffer != null || args.ByteBufferList != null, "must have a buffer to write");
@@ -79,11 +82,15 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             taskResult.ToAsyncResult(onWriteComplete, args);
+
+            if (Logging.IsEnabled) Logging.Exit(this, args.Transport, $"{nameof(LegacyClientWebSocketTransport)}.{nameof(WriteAsync)}");
             return true;
         }
 
         async Task WriteAsyncCore(TransportAsyncCallbackArgs args)
         {
+            if (Logging.IsEnabled) Logging.Enter(this, args.Transport, $"{nameof(LegacyClientWebSocketTransport)}.{nameof(WriteAsyncCore)}");
+
             bool succeeded = false;
             try
             {
@@ -121,11 +128,14 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     this.Abort();
                 }
+                if (Logging.IsEnabled) Logging.Exit(this, args.Transport, $"{nameof(LegacyClientWebSocketTransport)}.{nameof(WriteAsyncCore)}");
             }
         }
 
         async Task<int> ReadAsyncCore()
         {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(LegacyClientWebSocketTransport)}.{nameof(ReadAsyncCore)}");
+
             bool succeeded = false;
             try
             {
@@ -154,11 +164,14 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     this.Abort();
                 }
+                if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(LegacyClientWebSocketTransport)}.{nameof(ReadAsyncCore)}");
             }
         }
 
         public override bool ReadAsync(TransportAsyncCallbackArgs args)
         {
+            if (Logging.IsEnabled) Logging.Enter(this, args.Transport, $"{nameof(LegacyClientWebSocketTransport)}.{nameof(ReadAsync)}");
+
             this.ThrowIfNotOpen();
 
             // Read with buffer list not supported
@@ -189,6 +202,8 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             taskResult.ToAsyncResult(this.OnReadComplete, args);
+
+            if (Logging.IsEnabled) Logging.Exit(this, args.Transport, $"{nameof(LegacyClientWebSocketTransport)}.{nameof(ReadAsync)}");
             return true;
         }
 
@@ -201,19 +216,29 @@ namespace Microsoft.Azure.Devices.Client
 
         protected override bool CloseInternal()
         {
-            var webSocketState = this.webSocket.State;
-            if (webSocketState != IotHubClientWebSocket.WebSocketState.Closed && webSocketState != IotHubClientWebSocket.WebSocketState.Aborted)
+            try
             {
-                this.CloseInternalAsync().Fork();
-            }
+                if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(LegacyClientWebSocketTransport)}.{nameof(CloseInternal)}");
 
-            return true;
+                var webSocketState = this.webSocket.State;
+                if (webSocketState != IotHubClientWebSocket.WebSocketState.Closed && webSocketState != IotHubClientWebSocket.WebSocketState.Aborted)
+                {
+                    this.CloseInternalAsync().Fork();
+                }
+                return true;
+            }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(LegacyClientWebSocketTransport)}.{nameof(CloseInternal)}");
+            }            
         }
 
         async Task CloseInternalAsync()
         {
             try
             {
+                if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(LegacyClientWebSocketTransport)}.{nameof(CloseInternalAsync)}");
+
                 await this.webSocket.CloseAsync().ConfigureAwait(false);
             }
             catch (Exception e)
@@ -223,14 +248,27 @@ namespace Microsoft.Azure.Devices.Client
                     throw;
                 }
             }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(LegacyClientWebSocketTransport)}.{nameof(CloseInternalAsync)}");
+            }
         }
 
         protected override void AbortInternal()
         {
-            if (!this.disposed && this.webSocket.State != IotHubClientWebSocket.WebSocketState.Aborted)
+            try
             {
-                this.disposed = true;
-                this.webSocket.Abort();
+                if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(LegacyClientWebSocketTransport)}.{nameof(AbortInternal)}");
+
+                if (!this.disposed && this.webSocket.State != IotHubClientWebSocket.WebSocketState.Aborted)
+                {
+                    this.disposed = true;
+                    this.webSocket.Abort();
+                }
+            }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(LegacyClientWebSocketTransport)}.{nameof(AbortInternal)}");
             }
         }
 
@@ -329,20 +367,29 @@ namespace Microsoft.Azure.Devices.Client
 
         void ThrowIfNotOpen()
         {
-            var webSocketState = this.webSocket.State;
-            if (webSocketState == IotHubClientWebSocket.WebSocketState.Open)
+           try
             {
-                return;
-            }
+                if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(LegacyClientWebSocketTransport)}.{nameof(ThrowIfNotOpen)}");
 
-            if (webSocketState == IotHubClientWebSocket.WebSocketState.Aborted ||
-                webSocketState == IotHubClientWebSocket.WebSocketState.Closed
-                )
+                var webSocketState = this.webSocket.State;
+                if (webSocketState == IotHubClientWebSocket.WebSocketState.Open)
+                {
+                    return;
+                }
+
+                if (webSocketState == IotHubClientWebSocket.WebSocketState.Aborted ||
+                    webSocketState == IotHubClientWebSocket.WebSocketState.Closed
+                    )
+                {
+                    throw new ObjectDisposedException(this.GetType().Name);
+                }
+
+                throw new AmqpException(AmqpErrorCode.IllegalState, null);
+            }
+            finally
             {
-                throw new ObjectDisposedException(this.GetType().Name);
+                if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(LegacyClientWebSocketTransport)}.{nameof(ThrowIfNotOpen)}");
             }
-
-            throw new AmqpException(AmqpErrorCode.IllegalState, null);
         }
     }
 }

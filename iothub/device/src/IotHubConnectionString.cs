@@ -12,6 +12,7 @@ namespace Microsoft.Azure.Devices.Client
 #endif
 
     using Microsoft.Azure.Devices.Client.Extensions;
+    using Microsoft.Azure.Devices.Shared;
 
     internal sealed partial class IotHubConnectionString : IAuthorizationProvider
 #if !NETMF

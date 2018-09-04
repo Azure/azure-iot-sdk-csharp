@@ -19,6 +19,7 @@ namespace Microsoft.Azure.Devices.Client
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Client.Common;
     using Microsoft.Azure.Devices.Client.Extensions;
+    using Microsoft.Azure.Devices.Shared;
 
     // http://tools.ietf.org/html/rfc6455
     [SuppressMessage(FxCop.Category.Design, FxCop.Rule.TypesThatOwnDisposableFieldsShouldBeDisposable, Justification = "Uses close/abort pattern")]
@@ -159,6 +160,8 @@ namespace Microsoft.Azure.Devices.Client
 
         public async Task ConnectAsync(string host, int port, string scheme, X509Certificate2 clientCertificate, TimeSpan timeout)
         {
+            if (Logging.IsEnabled) Logging.Enter(this, scheme, timeout, $"{nameof(IotHubClientWebSocket)}.{nameof(ConnectAsync)}");
+
             this.host = host;
             bool succeeded = false;
             try
@@ -244,11 +247,14 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     this.Abort();
                 }
+                if (Logging.IsEnabled) Logging.Exit(this, scheme, timeout, $"{nameof(IotHubClientWebSocket)}.{nameof(ConnectAsync)}");
             }
         }
 
         public async Task<int> ReceiveAsync(byte[] buffer, int offset, int size, TimeSpan timeout)
         {
+            if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(IotHubClientWebSocket)}.{nameof(ReceiveAsync)}");
+
             byte[] header = new byte[2];
 
             Fx.AssertAndThrow(this.State == WebSocketState.Open, ClientWebSocketNotInOpenStateDuringReceive);
@@ -433,11 +439,14 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     this.Fault();
                 }
+                if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(IotHubClientWebSocket)}.{nameof(ReceiveAsync)}");
             }
         }
 
         public async Task SendAsync(byte[] buffer, int offset, int size, WebSocketMessageType webSocketMessageType, TimeSpan timeout)
         {
+            if (Logging.IsEnabled) Logging.Enter(this, webSocketMessageType, timeout, $"{nameof(IotHubClientWebSocket)}.{nameof(SendAsync)}");
+
             Fx.AssertAndThrow(this.State == WebSocketState.Open, ClientWebSocketNotInOpenStateDuringSend);
             this.TcpClient.Client.SendTimeout = TimeoutHelper.ToMilliseconds(timeout);
             bool succeeded = false;
@@ -455,11 +464,14 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     this.Fault();
                 }
+                if (Logging.IsEnabled) Logging.Exit(this, webSocketMessageType, timeout, $"{nameof(IotHubClientWebSocket)}.{nameof(SendAsync)}");
             }
         }
 
         public async Task CloseAsync()
         {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(IotHubClientWebSocket)}.{nameof(CloseAsync)}");
+
             this.State = WebSocketState.Closed;
             bool succeeded = false;
             try
@@ -495,6 +507,7 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     this.Fault();
                 }
+                if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(IotHubClientWebSocket)}.{nameof(CloseAsync)}");
             }
         }
 
