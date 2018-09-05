@@ -9,23 +9,13 @@ using System.Threading.Tasks;
 namespace Microsoft.Azure.Devices.Test
 {
     [TestClass]
-    class SerializationTests
+    public class SerializationTests
     {
         [TestMethod]
-        public async Task JsonDateParseHandlingTest()
+        public void Twin_JsonDateParse_Ok()
         {
-            var previousDefaultSettings = JsonConvert.DefaultSettings;
-
-            try
-            {
-                JsonConvert.DefaultSettings = () => new JsonSerializerSettings
-                {
-                    DateParseHandling = DateParseHandling.DateTimeOffset
-                };
-
-                var now = DateTime.Now;
-
-                const string jsonString = @"
+            var now = DateTime.Now;
+            const string jsonString = @"
 {
  ""deviceId"": ""test"",
  ""etag"": ""AAAAAAAAAAM="",
@@ -34,14 +24,49 @@ namespace Microsoft.Azure.Devices.Test
  ""statusUpdateTime"": ""2018-06-29T21:17:08.7759733"",
  ""connectionState"": ""Connected"",
  ""lastActivityTime"": ""2018-06-29T21:17:08.7759733"",
-},"; 
+}"; 
 
-                JsonConvert.DeserializeObject<Twin>(jsonString);
+            JsonConvert.DeserializeObject<Twin>(jsonString);
+        }
+
+        [TestMethod]
+        public void Configuration_TestWithSchema_Ok()
+        {
+            const string jsonString = @"
+{
+  ""id"": ""aa"",
+  ""schemaVersion"": ""1.0"",
+  ""content"": {
+    ""modulesContent"": {
+        ""$edgeAgent"": {
+            ""properties.desired"": {
+                ""schemaVersion"": ""1.0""
             }
-            finally
-            {
-                JsonConvert.DefaultSettings = previousDefaultSettings;
+        }
+    }
+  }
+}";
+
+            JsonConvert.DeserializeObject<Configuration>(jsonString);
+        }
+
+        [TestMethod]
+        public void Configuration_TestNullSchema_Ok()
+        {
+            const string jsonString = @"
+{
+  ""id"": ""aa"",
+  ""content"": {
+    ""modulesContent"": {
+        ""$edgeAgent"": {
+            ""properties.desired"": {
             }
+        }
+    }
+  }
+}";
+
+            JsonConvert.DeserializeObject<Configuration>(jsonString);
         }
     }
 }

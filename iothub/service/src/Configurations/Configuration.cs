@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Gets Schema version for the configuration
         /// </summary>
-        [JsonProperty(PropertyName = "schemaVersion", Required = Required.Always)]
+        [JsonProperty(PropertyName = "schemaVersion", NullValueHandling = NullValueHandling.Ignore)]
         public string SchemaVersion { get; internal set; }
 
         /// <summary>
