@@ -252,9 +252,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             // disconnected link belongs to the current sets
             if (((connectionType == ConnectionType.AmqpMethodSending) &&
-                 ((link as SendingAmqpLink).Name == methodSendingLinkName)) ||
+                 (this.methodSendingLinkName == null || (link as SendingAmqpLink).Name == methodSendingLinkName)) ||
                 ((connectionType == ConnectionType.AmqpMethodReceiving) &&
-                 ((link as ReceivingAmqpLink).Name == methodReceivingLinkName)))
+                 (this.methodReceivingLinkName == null || (link as ReceivingAmqpLink).Name == methodReceivingLinkName)))
             {
                 methodSendingLinkName = null;
                 methodReceivingLinkName = null;
@@ -262,9 +262,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
 
             if (((connectionType == ConnectionType.AmqpTwinSending) &&
-                 ((link as SendingAmqpLink).Name == twinSendingLinkName)) ||
+                 (this.twinSendingLinkName == null || (link as SendingAmqpLink).Name == this.twinSendingLinkName)) ||
                 ((connectionType == ConnectionType.AmqpTwinReceiving) &&
-                 ((link as ReceivingAmqpLink).Name == twinReceivingLinkName)))
+                 (this.twinReceivingLinkName == null || (link as ReceivingAmqpLink).Name == this.twinReceivingLinkName)))
             {
                 twinSendingLinkName = null;
                 twinReceivingLinkName = null;
@@ -272,7 +272,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
 
             if (connectionType == ConnectionType.AmqpMessaging &&
-                (link as ReceivingAmqpLink).Name == eventReceivingLinkName)
+                (this.eventReceivingLinkName == null || (link as ReceivingAmqpLink).Name == this.eventReceivingLinkName))
             {
                 eventReceivingLinkName = null;
                 needEventReceivingLinkRecovery = true;

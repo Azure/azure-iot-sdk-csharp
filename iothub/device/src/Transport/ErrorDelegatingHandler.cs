@@ -132,7 +132,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override Task RecoverConnections(object o, ConnectionType connectionType, CancellationToken cancellationToken)
         {
-            return this.ExecuteWithErrorHandlingAsync(() => base.RecoverConnections(o, connectionType, cancellationToken), true, cancellationToken);
+            bool reset = connectionType == ConnectionType.MqttConnection;
+            return this.ExecuteWithErrorHandlingAsync(() => base.RecoverConnections(o, connectionType, cancellationToken), true, cancellationToken, reset);
         }
 
         public override Task EnableTwinPatchAsync(CancellationToken cancellationToken)
@@ -180,12 +181,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return this.ExecuteWithErrorHandlingAsync(() => base.SendMethodResponseAsync(methodResponse, cancellationToken), true, cancellationToken);
         }
 
-        Task ExecuteWithErrorHandlingAsync(Func<Task> asyncOperation, bool ensureOpen, CancellationToken cancellationToken)
+        Task ExecuteWithErrorHandlingAsync(Func<Task> asyncOperation, bool ensureOpen, CancellationToken cancellationToken, bool reset = true)
         {
-            return ExecuteWithErrorHandlingAsync(async () => { await asyncOperation().ConfigureAwait(false); return 0; }, ensureOpen, cancellationToken);
+            return ExecuteWithErrorHandlingAsync(async () => { await asyncOperation().ConfigureAwait(false); return 0; }, ensureOpen, cancellationToken, reset);
         }
 
-        async Task<T> ExecuteWithErrorHandlingAsync<T>(Func<Task<T>> asyncOperation, bool ensureOpen, CancellationToken cancellationToken)
+        async Task<T> ExecuteWithErrorHandlingAsync<T>(Func<Task<T>> asyncOperation, bool ensureOpen, CancellationToken cancellationToken, bool reset = true)
         {
             try
             {
@@ -219,7 +220,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             throw new IotHubClientTransientException("Transient error occurred, please retry.", ex);
                         }
 
-                        await this.Reset(openCompletionBeforeOperationStarted, handlerBeforeOperationStarted).ConfigureAwait(false);
+                        if (reset)
+                        {
+                            await this.Reset(openCompletionBeforeOperationStarted, handlerBeforeOperationStarted)
+                                .ConfigureAwait(false);
+                        }
 
                         if (Logging.IsEnabled) Logging.Error(this, $"Transient exception caught; IsTransportHandlerStillUsable=false : {ex}");
 
