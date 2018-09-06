@@ -108,5 +108,11 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         [JsonProperty(PropertyName = "capabilities", NullValueHandling = NullValueHandling.Ignore)]
         public virtual DeviceCapabilities Capabilities { get; set; }
+
+        /// <summary>
+        /// Scope to which this device instance belongs to
+        /// </summary>
+        [JsonProperty(PropertyName = "deviceScope", NullValueHandling = NullValueHandling.Ignore)]
+        public virtual string Scope { get; set; }
     }
 }
