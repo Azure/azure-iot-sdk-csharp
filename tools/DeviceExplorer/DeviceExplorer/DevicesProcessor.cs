@@ -30,6 +30,38 @@ namespace DeviceExplorer
         }
 
         /// <summary>
+        /// Receive an approximation of the devices in the IoT hub, up to the 
+        /// specified max.  This is not a definitive list, and seems to return
+        /// only up to around 1000 devices regardless of what you specify as 
+        /// the max.
+        /// </summary>
+        /// <remarks>
+        /// The GetDevicesAsync() method is currently marked as obsolete, but 
+        /// loading one thousand devices via this method is much, much faster
+        /// than doing so through the GetDeviceSample() method.  The reason for 
+        /// this is that that method makes one request to get the first page of
+        /// twins, and then another request for EVERY one of the devices in order
+        /// to get their keys and such (totaling 1001 requests for 1000 devices).  
+        /// If the call to FetchDeviceFromTwin() was removed from GetDevicesAsync(), 
+        /// it would be just as fast as GetDevicesAsync(), but it would not provide 
+        /// the device keys and other information to display in the table.
+        /// </remarks>
+        public async Task<List<DeviceEntity>> GetABunchOfDevices()
+        {
+            var listOfDevices = new List<DeviceEntity>();
+            IEnumerable<Device> devices = await registryManager.GetDevicesAsync(maxCountOfDevices);
+            if (devices == null) return listOfDevices;
+
+            foreach (Device device in devices)
+            {
+                DeviceEntity deviceEntity = MapDeviceToDeviceEntity(device);
+                listOfDevices.Add(deviceEntity);
+            }
+
+            return listOfDevices;
+        }
+
+        /// <summary>
         /// This method took well over an hour to load 120,000 devices
         /// </summary>
         /// <returns></returns>

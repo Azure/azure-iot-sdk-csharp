@@ -363,10 +363,8 @@ namespace DeviceExplorer
                 .ContinueWith(t => numDevicesInIotHub = t.Result)
                 .FireAndForget();
 
-            int sampleSize = 100;
             allLoadedDevices = new SortableBindingList<DeviceEntity>();
             devicesGridView.DataSource = allLoadedDevices;
-            allLoadedDevices.ListChanged += (sender, args) => updateDeviceCountLabel();
 
             // Save the device ID currently selected on the grid.
             string deviceCurrentlySelected = null;
@@ -374,11 +372,12 @@ namespace DeviceExplorer
             {
                 deviceCurrentlySelected = (string)devicesGridView.SelectedRows[0].Cells[0].Value;
             }
-
-            // Kick off the fetching of devices
-            devicesProcessor
-                .GetDeviceSample(sampleSize, allLoadedDevices)
-                .FireAndForget();
+            
+            // Fetch the priliminary set of devices to display
+            List<DeviceEntity> devices = await devicesProcessor.GetABunchOfDevices();
+            devices.Sort();
+            allLoadedDevices = new SortableBindingList<DeviceEntity>(devices);
+            updateDeviceCountLabel();
 
             // Re-select the device ID previously selected before the update.
             // This avoids the super-annoying need to scroll down every time the management grid gets updated.
