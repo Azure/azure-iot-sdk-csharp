@@ -60,6 +60,7 @@ namespace DeviceExplorer
         private static DataGridViewRow messageSysPropContentType = new DataGridViewRow();
         private static DataGridViewRow messageSysPropContentEncoding = new DataGridViewRow();
 
+        private DevicesProcessor devicesProcessor;
         private SortableBindingList<DeviceEntity> allLoadedDevices;
         private int? numDevicesInIotHub;
 
@@ -352,7 +353,7 @@ namespace DeviceExplorer
             devicesGridView.ReadOnly = true;
             devicesGridView.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
 
-            var devicesProcessor = new DevicesProcessor(
+            devicesProcessor = new DevicesProcessor(
                 activeIoTHubConnectionString,
                 MAX_COUNT_OF_DEVICES,
                 protocolGatewayHost.Text);
@@ -386,7 +387,7 @@ namespace DeviceExplorer
                 findAndSelectRowByDeviceID(deviceCurrentlySelected, true);
             }
 
-            FilterDevices();
+            SearchDevices();
         }
 
         private void updateDeviceCountLabel()
@@ -1156,11 +1157,11 @@ namespace DeviceExplorer
         #region Device Filtering
         private void filterDevicesTextBox_TextChanged(object sender, EventArgs e)
         {
-            FilterDevices();
+            SearchDevices();
         }
 
-        private void FilterDevices() { FilterDevices(filterDevicesTextBox.Text); }
-        private void FilterDevices(string filterText)
+        private void SearchDevices() { SearchDevices(searchDevicesTextBox.Text).FireAndForget(); }
+        private async Task SearchDevices(string filterText)
         {
             if (!IsValidRegex(filterText))
             {
@@ -1169,11 +1170,21 @@ namespace DeviceExplorer
             }
 
             IEnumerable<DeviceEntity> filteredDevices =
-                from device in allLoadedDevices
-                where DeviceMatchesFilterText(device, filterText)
-                select device;
+                from d in allLoadedDevices
+                where DeviceMatchesFilterText(d, filterText)
+                select d;
 
-            devicesGridView.DataSource = new SortableBindingList<DeviceEntity>(filteredDevices);
+            if (filteredDevices.Any())
+            {
+                devicesGridView.DataSource = new SortableBindingList<DeviceEntity>(filteredDevices);
+            }
+
+            DeviceEntity device = await devicesProcessor.GetDeviceById(filterText);
+            if (device == null) return;
+
+            allLoadedDevices.Add(device);
+            devicesGridView.DataSource = new SortableBindingList<DeviceEntity>(new [] { device });
+            updateDeviceCountLabel();
         }
 
         private static bool DeviceMatchesFilterText(DeviceEntity device, string filterText)

@@ -57,7 +57,8 @@
             this.updateDeviceButton = new System.Windows.Forms.Button();
             this.deleteDeviceButton = new System.Windows.Forms.Button();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.filterDevicesTextBox = new System.Windows.Forms.TextBox();
+            this.deviceCountTextBox = new System.Windows.Forms.TextBox();
+            this.searchDevicesTextBox = new System.Windows.Forms.TextBox();
             this.filterDevicesLabel = new System.Windows.Forms.Label();
             this.totalLabel = new System.Windows.Forms.Label();
             this.devicesGridView = new System.Windows.Forms.DataGridView();
@@ -128,7 +129,6 @@
             this.label14 = new System.Windows.Forms.Label();
             this.label13 = new System.Windows.Forms.Label();
             this.ehStringToolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.deviceCountTextBox = new System.Windows.Forms.TextBox();
             this.tabCallDeviceMethod.SuspendLayout();
             this.tabPage2.SuspendLayout();
             this.groupBox5.SuspendLayout();
@@ -493,7 +493,7 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox2.Controls.Add(this.deviceCountTextBox);
-            this.groupBox2.Controls.Add(this.filterDevicesTextBox);
+            this.groupBox2.Controls.Add(this.searchDevicesTextBox);
             this.groupBox2.Controls.Add(this.filterDevicesLabel);
             this.groupBox2.Controls.Add(this.totalLabel);
             this.groupBox2.Controls.Add(this.devicesGridView);
@@ -504,23 +504,33 @@
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Devices";
             // 
-            // filterDevicesTextBox
+            // deviceCountTextBox
             // 
-            this.filterDevicesTextBox.AccessibleName = "Filter devices list";
-            this.filterDevicesTextBox.Location = new System.Drawing.Point(58, 49);
-            this.filterDevicesTextBox.Name = "filterDevicesTextBox";
-            this.filterDevicesTextBox.Size = new System.Drawing.Size(676, 22);
-            this.filterDevicesTextBox.TabIndex = 12;
-            this.filterDevicesTextBox.TextChanged += new System.EventHandler(this.filterDevicesTextBox_TextChanged);
+            this.deviceCountTextBox.AccessibleName = "Total device count";
+            this.deviceCountTextBox.Location = new System.Drawing.Point(68, 19);
+            this.deviceCountTextBox.Name = "deviceCountTextBox";
+            this.deviceCountTextBox.ReadOnly = true;
+            this.deviceCountTextBox.Size = new System.Drawing.Size(100, 22);
+            this.deviceCountTextBox.TabIndex = 10;
+            this.deviceCountTextBox.Text = "0";
+            // 
+            // searchDevicesTextBox
+            // 
+            this.searchDevicesTextBox.AccessibleName = "Filter devices list";
+            this.searchDevicesTextBox.Location = new System.Drawing.Point(67, 49);
+            this.searchDevicesTextBox.Name = "searchDevicesTextBox";
+            this.searchDevicesTextBox.Size = new System.Drawing.Size(667, 22);
+            this.searchDevicesTextBox.TabIndex = 12;
+            this.searchDevicesTextBox.TextChanged += new System.EventHandler(this.filterDevicesTextBox_TextChanged);
             // 
             // filterDevicesLabel
             // 
             this.filterDevicesLabel.AutoSize = true;
             this.filterDevicesLabel.Location = new System.Drawing.Point(7, 52);
             this.filterDevicesLabel.Name = "filterDevicesLabel";
-            this.filterDevicesLabel.Size = new System.Drawing.Size(40, 16);
+            this.filterDevicesLabel.Size = new System.Drawing.Size(54, 16);
             this.filterDevicesLabel.TabIndex = 11;
-            this.filterDevicesLabel.Text = "Filter:";
+            this.filterDevicesLabel.Text = "Search:";
             // 
             // totalLabel
             // 
@@ -1293,16 +1303,6 @@
             this.label13.TabIndex = 0;
             this.label13.Text = "Call Method on Device";
             // 
-            // deviceCountTextBox
-            // 
-            this.deviceCountTextBox.AccessibleName = "Total device count";
-            this.deviceCountTextBox.Location = new System.Drawing.Point(58, 19);
-            this.deviceCountTextBox.Name = "deviceCountTextBox";
-            this.deviceCountTextBox.ReadOnly = true;
-            this.deviceCountTextBox.Size = new System.Drawing.Size(100, 22);
-            this.deviceCountTextBox.TabIndex = 10;
-            this.deviceCountTextBox.Text = "0";
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1445,7 +1445,7 @@
         private System.Windows.Forms.DataGridView messageSystemPropertiesGrid;
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn1;
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn2;
-        private System.Windows.Forms.TextBox filterDevicesTextBox;
+        private System.Windows.Forms.TextBox searchDevicesTextBox;
         private System.Windows.Forms.Label filterDevicesLabel;
         private System.Windows.Forms.RichTextBox messagesTextBox;
         private System.Windows.Forms.TextBox deviceCountTextBox;
