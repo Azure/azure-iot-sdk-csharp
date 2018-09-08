@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace DeviceExplorer
 {
@@ -28,12 +29,16 @@ namespace DeviceExplorer
             this.registryManager = RegistryManager.CreateFromConnectionString(iotHubConnectionString);
         }
 
-        public async Task<List<DeviceEntity>> GetDevices()
+        /// <summary>
+        /// This method took well over an hour to load 120,000 devices
+        /// </summary>
+        /// <returns></returns>
+        public async Task<List<DeviceEntity>> GetAllDevicesExtremelySlowly()
         {
             try
             {
-                DeviceEntity deviceEntity;
-                IQuery query = registryManager.CreateQuery("select * from devices", null); ;
+                // SELECT TOP 1000 * FROM devices
+                IQuery query = registryManager.CreateQuery("SELECT * FROM devices");
 
                 while (query.HasMoreResults)
                 {
@@ -41,26 +46,8 @@ namespace DeviceExplorer
                     foreach (Twin twin in page)
                     {
                         Device device = await registryManager.GetDeviceAsync(twin.DeviceId);
-                        deviceEntity = new DeviceEntity()
-                        {
-                            Id = twin.DeviceId,
-                            ConnectionState = twin.ConnectionState.ToString(),
-                            LastActivityTime = twin.LastActivityTime,
-                            LastStateUpdatedTime = twin.StatusUpdatedTime,
-                            MessageCount = twin.CloudToDeviceMessageCount,
-                            State = twin.Status.ToString(),
-                            SuspensionReason = twin.StatusReason,
-
-                            ConnectionString = CreateDeviceConnectionString(device),
-                            LastConnectionStateUpdatedTime = device.ConnectionStateUpdatedTime
-                        };
-
-                        deviceEntity.PrimaryThumbPrint = twin.X509Thumbprint?.PrimaryThumbprint;
-                        deviceEntity.SecondaryThumbPrint = twin.X509Thumbprint?.SecondaryThumbprint;
-
-                        deviceEntity.PrimaryKey = device.Authentication?.SymmetricKey?.PrimaryKey;
-                        deviceEntity.SecondaryKey = device.Authentication?.SymmetricKey?.SecondaryKey;
-
+                        DeviceEntity deviceEntity = MapDeviceToDeviceEntity(device, twin);
+                        Console.WriteLine("Loaded device " + deviceEntity.Id);
                         listOfDevices.Add(deviceEntity);
                     }
                 }
@@ -69,15 +56,37 @@ namespace DeviceExplorer
             {
                 throw ex;
             }
+
             return listOfDevices;
         }
 
-        private String CreateDeviceConnectionString(Device device)
+        private DeviceEntity MapDeviceToDeviceEntity(Device device, Twin twin=null)
         {
-            StringBuilder deviceConnectionString = new StringBuilder();
+            return new DeviceEntity
+            {
+                Id = device.Id,
+                PrimaryKey = device.Authentication?.SymmetricKey.PrimaryKey,
+                SecondaryKey = device.Authentication?.SymmetricKey.SecondaryKey,
+                PrimaryThumbPrint = twin?.X509Thumbprint?.PrimaryThumbprint,
+                SecondaryThumbPrint = twin?.X509Thumbprint?.SecondaryThumbprint,
+                ConnectionState = device.ConnectionState.ToString(),
+                ConnectionString = CreateDeviceConnectionString(device),
+                LastActivityTime = device.LastActivityTime,
+                LastStateUpdatedTime = device.StatusUpdatedTime,
+                MessageCount = device.CloudToDeviceMessageCount,
+                State = device.Status.ToString(),
+                SuspensionReason = device.StatusReason,
+                LastConnectionStateUpdatedTime = device.ConnectionStateUpdatedTime,
+            };
+        }
 
-            var hostName = String.Empty;
-            var tokenArray = iotHubConnectionString.Split(';');
+        private string CreateDeviceConnectionString(Device device)
+        {
+            var deviceConnectionString = new StringBuilder();
+
+            var hostName = string.Empty;
+
+            string[] tokenArray = iotHubConnectionString.Split(';');
             for (int i = 0; i < tokenArray.Length; i++)
             {
                 var keyValueArray = tokenArray[i].Split('=');
@@ -88,42 +97,46 @@ namespace DeviceExplorer
                 }
             }
 
-            if (!String.IsNullOrWhiteSpace(hostName))
+            if (string.IsNullOrWhiteSpace(hostName)) return deviceConnectionString.ToString();
+
+            deviceConnectionString.Append(hostName);
+            deviceConnectionString.AppendFormat("DeviceId={0}", device.Id);
+
+            if (device.Authentication != null)
             {
-                deviceConnectionString.Append(hostName);
-                deviceConnectionString.AppendFormat("DeviceId={0}", device.Id);
-
-                if (device.Authentication != null)
+                if (device.Authentication.SymmetricKey?.PrimaryKey != null)
                 {
-                    if ((device.Authentication.SymmetricKey != null) && (device.Authentication.SymmetricKey.PrimaryKey != null))
-                    {
-                        deviceConnectionString.AppendFormat(";SharedAccessKey={0}", device.Authentication.SymmetricKey.PrimaryKey);
-                    }
-                    else
-                    {
-                        deviceConnectionString.AppendFormat(";x509=true");
-                    }
+                    deviceConnectionString.AppendFormat(
+                        ";SharedAccessKey={0}", 
+                        device.Authentication.SymmetricKey.PrimaryKey);
                 }
-
-                if (this.protocolGatewayHostName.Length > 0)
+                else
                 {
-                    deviceConnectionString.AppendFormat(";GatewayHostName=ssl://{0}:8883", this.protocolGatewayHostName);
+                    deviceConnectionString.AppendFormat(";x509=true");
                 }
             }
-            
+
+            if (this.protocolGatewayHostName.Length > 0)
+            {
+                deviceConnectionString.AppendFormat(
+                    ";GatewayHostName=ssl://{0}:8883", 
+                    this.protocolGatewayHostName);
+            }
+
             return deviceConnectionString.ToString();
         }
         // For testing without connecting to a live service
-        static public List<DeviceEntity> GetDevicesForTest()
+        public static List<DeviceEntity> GetDevicesForTest()
         {
-            List<DeviceEntity> deviceList;
-            deviceList = new List<DeviceEntity>();
-            deviceList.Add(new DeviceEntity() { Id = "TestDevice01", PrimaryKey = "TestPrimKey01", SecondaryKey = "TestSecKey01" });
-            deviceList.Add(new DeviceEntity() { Id = "TestDevice02", PrimaryKey = "TestPrimKey02", SecondaryKey = "TestSecKey02" });
-            deviceList.Add(new DeviceEntity() { Id = "TestDevice03", PrimaryKey = "TestPrimKey03", SecondaryKey = "TestSecKey03" });
-            deviceList.Add(new DeviceEntity() { Id = "TestDevice04", PrimaryKey = "TestPrimKey04", SecondaryKey = "TestSecKey04" });
-            deviceList.Add(new DeviceEntity() { Id = "TestDevice05", PrimaryKey = "TestPrimKey05", SecondaryKey = "TestSecKey05" });
-            return deviceList;
+           return new List<DeviceEntity>
+           {
+               new DeviceEntity { Id = "TestDevice01", PrimaryKey = "TestPrimKey01", SecondaryKey = "TestSecKey01" },
+               new DeviceEntity { Id = "TestDevice02", PrimaryKey = "TestPrimKey02", SecondaryKey = "TestSecKey02" },
+               new DeviceEntity { Id = "TestDevice03", PrimaryKey = "TestPrimKey03", SecondaryKey = "TestSecKey03" },
+               new DeviceEntity { Id = "TestDevice04", PrimaryKey = "TestPrimKey04", SecondaryKey = "TestSecKey04" },
+               new DeviceEntity { Id = "TestDevice05", PrimaryKey = "TestPrimKey05", SecondaryKey = "TestSecKey05" },
+           };
+
         }
     }
 }

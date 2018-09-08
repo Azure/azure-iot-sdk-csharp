@@ -348,7 +348,7 @@ namespace DeviceExplorer
         private async Task updateDevicesGridView()
         {
             var devicesProcessor = new DevicesProcessor(activeIoTHubConnectionString, MAX_COUNT_OF_DEVICES, protocolGatewayHost.Text);
-            var devicesList = await devicesProcessor.GetDevices();
+            var devicesList = await devicesProcessor.GetAllDevicesExtremelySlowly();
             devicesList.Sort();
             allDevices = new SortableBindingList<DeviceEntity>(devicesList);
 
