@@ -94,6 +94,7 @@
       <DependentUpon>SASTokenForm.cs</DependentUpon>
     </Compile>
     <Compile Include="SortableBindingList.cs" />
+    <Compile Include="ThreadUtil.cs" />
     <EmbeddedResource Include="CreateDeviceForm.resx">
       <DependentUpon>CreateDeviceForm.cs</DependentUpon>
     </EmbeddedResource>

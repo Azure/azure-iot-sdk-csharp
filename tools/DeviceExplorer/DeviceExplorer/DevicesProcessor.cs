@@ -10,12 +10,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Newtonsoft.Json.Linq;
 
 namespace DeviceExplorer
 {
     class DevicesProcessor
     {
-        private List<DeviceEntity> listOfDevices;
         private RegistryManager registryManager;
         private String iotHubConnectionString;
         private int maxCountOfDevices;
@@ -23,7 +23,6 @@ namespace DeviceExplorer
 
         public DevicesProcessor(string iotHubConnenctionString, int devicesCount, string protocolGatewayName)
         {
-            this.listOfDevices = new List<DeviceEntity>();
             this.iotHubConnectionString = iotHubConnenctionString;
             this.maxCountOfDevices = devicesCount;
             this.protocolGatewayHostName = protocolGatewayName;
@@ -34,7 +33,9 @@ namespace DeviceExplorer
         /// This method took well over an hour to load 120,000 devices
         /// </summary>
         /// <returns></returns>
-        public async Task<List<DeviceEntity>> GetDeviceSample(int sampleSize)
+        public async Task GetDeviceSample(
+            int sampleSize, 
+            SortableBindingList<DeviceEntity> list)
         {
             try
             {
@@ -42,19 +43,14 @@ namespace DeviceExplorer
                 List<Twin> page = await GetDevicesFromPage(0, sampleSize);
                 foreach (Twin twin in page)
                 {
-                    Device device = await registryManager.GetDeviceAsync(twin.DeviceId);
-                    DeviceEntity deviceEntity = MapDeviceToDeviceEntity(device, twin);
-                    Console.WriteLine("Loaded device " + deviceEntity.Id);
-                    listOfDevices.Add(deviceEntity);
+                    DeviceEntity deviceEntity = await FetchDeviceFromTwin(twin);
+                    list.Add(deviceEntity);
                 }
-
             }
             catch (Exception ex)
             {
                 throw ex;
             }
-
-            return listOfDevices;
         }
 
         private async Task<List<Twin>> GetDevicesFromPage(int pageNumber, int pageSize)
@@ -69,10 +65,37 @@ namespace DeviceExplorer
             return pageTask.Result.ToList();
         }
 
+        public async Task<int> GetDeviceCount()
+        {
+            const string propName = "numberOfDevices";
+            IQuery query = registryManager.CreateQuery($"SELECT COUNT() AS {propName} FROM devices");
+            string json = (await query.GetNextAsJsonAsync()).FirstOrDefault();
+            JObject jObj = JObject.Parse(json);
+            return (int)jObj[propName];
+        }
+
+        private string ParseDeviceIdFromJson(string deviceIdJson)
+        {
+            // deviceIdJson = <space>"{\r\n  \"DeviceId\": \"Simulated-100004\"\r\n}"
+            string[] tokens = deviceIdJson.Split(':'); 
+            // tokens[1] = <space>"Simulated-100004"\r\n}
+            return tokens[1].Trim().TrimStart('"').TrimEnd('"', '\r', '\n', '}');
+        }
+
         public async Task<DeviceEntity> GetDeviceById(string deviceId)
         {
             Device device = await registryManager.GetDeviceAsync(deviceId);
-            return MapDeviceToDeviceEntity(device);
+            return device == null ? null : MapDeviceToDeviceEntity(device);
+
+            // IQuery query = registryManager.CreateQuery($"SELECT * FROM devices WHERE deviceId = '{deviceId}'");
+            // Twin twin = (await query.GetNextAsTwinAsync()).FirstOrDefault();
+            // return await FetchDeviceFromTwin(twin);
+        }
+
+        private async Task<DeviceEntity> FetchDeviceFromTwin(Twin twin)
+        {
+            Device device = await registryManager.GetDeviceAsync(twin.DeviceId);
+            return MapDeviceToDeviceEntity(device, twin);
         }
 
         private DeviceEntity MapDeviceToDeviceEntity(Device device, Twin twin=null)

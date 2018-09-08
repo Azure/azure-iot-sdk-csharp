@@ -11,6 +11,7 @@ using Newtonsoft.Json.Linq;
 
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -59,7 +60,8 @@ namespace DeviceExplorer
         private static DataGridViewRow messageSysPropContentType = new DataGridViewRow();
         private static DataGridViewRow messageSysPropContentEncoding = new DataGridViewRow();
 
-        private SortableBindingList<DeviceEntity> allDevices;
+        private SortableBindingList<DeviceEntity> allLoadedDevices;
+        private int? numDevicesInIotHub;
 
         private string deviceIDSearchPattern = String.Empty;
         private DateTime deviceIDSearchPatternLastUpdateTime = DateTime.Now;
@@ -347,31 +349,35 @@ namespace DeviceExplorer
         #region ManagementTab
         private async Task updateDevicesGridView()
         {
+            devicesGridView.ReadOnly = true;
+            devicesGridView.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+
             var devicesProcessor = new DevicesProcessor(
                 activeIoTHubConnectionString,
                 MAX_COUNT_OF_DEVICES,
                 protocolGatewayHost.Text);
 
-            const int sampleSize = 100;
-            var devicesList = await devicesProcessor.GetDeviceSample(sampleSize);
+            devicesProcessor
+                .GetDeviceCount()
+                .ContinueWith(t => numDevicesInIotHub = t.Result)
+                .FireAndForget();
 
-            devicesList.Sort();
-            allDevices = new SortableBindingList<DeviceEntity>(devicesList);
-
-            string deviceCurrentlySelected = null;
+            int sampleSize = 100;
+            allLoadedDevices = new SortableBindingList<DeviceEntity>();
+            devicesGridView.DataSource = allLoadedDevices;
+            allLoadedDevices.ListChanged += (sender, args) => updateDeviceCountLabel();
 
             // Save the device ID currently selected on the grid.
+            string deviceCurrentlySelected = null;
             if (devicesGridView.SelectedRows.Count == 1)
             {
                 deviceCurrentlySelected = (string)devicesGridView.SelectedRows[0].Cells[0].Value;
             }
 
-            devicesGridView.ReadOnly = true;
-            devicesGridView.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-
-            deviceCountTextBox.Text = devicesList.Count > MAX_COUNT_OF_DEVICES
-                ? MAX_COUNT_OF_DEVICES + "+"
-                : devicesList.Count.ToString();
+            // Kick off the fetching of devices
+            devicesProcessor
+                .GetDeviceSample(sampleSize, allLoadedDevices)
+                .FireAndForget();
 
             // Re-select the device ID previously selected before the update.
             // This avoids the super-annoying need to scroll down every time the management grid gets updated.
@@ -381,6 +387,18 @@ namespace DeviceExplorer
             }
 
             FilterDevices();
+        }
+
+        private void updateDeviceCountLabel()
+        {
+            if (numDevicesInIotHub == null)
+            {
+                deviceCountTextBox.Text = allLoadedDevices.Count.ToString();
+            }
+            else
+            {
+                deviceCountTextBox.Text = $"{allLoadedDevices.Count} of {numDevicesInIotHub}";
+            }
         }
 
         private void createButton_Click(object sender, EventArgs e)
@@ -1146,12 +1164,12 @@ namespace DeviceExplorer
         {
             if (!IsValidRegex(filterText))
             {
-                devicesGridView.DataSource = allDevices;
+                devicesGridView.DataSource = allLoadedDevices;
                 return;
             }
 
             IEnumerable<DeviceEntity> filteredDevices =
-                from device in allDevices
+                from device in allLoadedDevices
                 where DeviceMatchesFilterText(device, filterText)
                 select device;
 
