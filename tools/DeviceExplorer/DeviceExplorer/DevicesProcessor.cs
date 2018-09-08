@@ -6,6 +6,7 @@ using Microsoft.Azure.Devices.Shared;
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -33,24 +34,20 @@ namespace DeviceExplorer
         /// This method took well over an hour to load 120,000 devices
         /// </summary>
         /// <returns></returns>
-        public async Task<List<DeviceEntity>> GetAllDevicesExtremelySlowly()
+        public async Task<List<DeviceEntity>> GetDeviceSample(int sampleSize)
         {
             try
             {
-                // SELECT TOP 1000 * FROM devices
-                IQuery query = registryManager.CreateQuery("SELECT * FROM devices");
-
-                while (query.HasMoreResults)
+                // Get the first sampleSize of devices, starting at the beginning
+                List<Twin> page = await GetDevicesFromPage(0, sampleSize);
+                foreach (Twin twin in page)
                 {
-                    IEnumerable<Twin> page = await query.GetNextAsTwinAsync();
-                    foreach (Twin twin in page)
-                    {
-                        Device device = await registryManager.GetDeviceAsync(twin.DeviceId);
-                        DeviceEntity deviceEntity = MapDeviceToDeviceEntity(device, twin);
-                        Console.WriteLine("Loaded device " + deviceEntity.Id);
-                        listOfDevices.Add(deviceEntity);
-                    }
+                    Device device = await registryManager.GetDeviceAsync(twin.DeviceId);
+                    DeviceEntity deviceEntity = MapDeviceToDeviceEntity(device, twin);
+                    Console.WriteLine("Loaded device " + deviceEntity.Id);
+                    listOfDevices.Add(deviceEntity);
                 }
+
             }
             catch (Exception ex)
             {
@@ -58,6 +55,24 @@ namespace DeviceExplorer
             }
 
             return listOfDevices;
+        }
+
+        private async Task<List<Twin>> GetDevicesFromPage(int pageNumber, int pageSize)
+        {
+            IQuery query = registryManager.CreateQuery("SELECT * FROM devices", pageSize);
+
+            string pageToken = "skip=" + pageNumber * pageSize + "&total=" + pageSize;
+            string continuationToken = Convert.ToBase64String(Encoding.UTF8.GetBytes(pageToken));
+
+            Task<QueryResponse<Twin>> pageTask = query.GetNextAsTwinAsync(new QueryOptions { ContinuationToken = continuationToken });
+            await pageTask.ConfigureAwait(false);
+            return pageTask.Result.ToList();
+        }
+
+        public async Task<DeviceEntity> GetDeviceById(string deviceId)
+        {
+            Device device = await registryManager.GetDeviceAsync(deviceId);
+            return MapDeviceToDeviceEntity(device);
         }
 
         private DeviceEntity MapDeviceToDeviceEntity(Device device, Twin twin=null)
