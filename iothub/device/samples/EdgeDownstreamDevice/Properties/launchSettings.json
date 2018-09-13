@@ -1,0 +1,13 @@
+
+{
+    "profiles": {
+        "EdgeDownstreamDevice": {
+            "commandName": "Project",
+            "environmentVariables": {
+                "DEVICE_CONNECTION_STRING": "[Downstream device IoT Edge connection string]",
+                "EDGE_DEVICE_CA_CERTIFICATE_PATH": "[Path to Edge CA certificate]",
+                "DEVICE_MESSAGE_COUNT": 10
+            }
+        }
+    }
+}
