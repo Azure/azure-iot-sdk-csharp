@@ -77,8 +77,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            SecurityProviderX509 security;
-
+            RegistrationOperationStatus operation = null;
             try
             {
                 if (message.Security is SecurityProviderX509)
@@ -184,8 +183,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
                 try
                 {
-                    if (Logging.IsEnabled) Logging.Info(this, $"Connecting to {address.ToString()}.");                    
-                    channel = await bootstrap.ConnectAsync(address, this.Port ?? MqttTcpPort);
+                    if (Logging.IsEnabled) Logging.Info(this, $"Connecting to {address.ToString()}.");
+                    channel = await bootstrap.ConnectAsync(address, this.Port);
                     break;
                 }
                 catch (AggregateException ae)

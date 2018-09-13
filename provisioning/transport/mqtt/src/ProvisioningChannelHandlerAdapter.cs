@@ -366,7 +366,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 if (string.CompareOrdinal(operation.Status, RegistrationOperationStatus.OperationStatusAssigning) == 0 ||
                     string.CompareOrdinal(operation.Status, RegistrationOperationStatus.OperationStatusUnassigned) == 0)
                 {
-                    await Task.Delay(DefaultOperationPoolingIntervalMilliseconds);
+                    await Task.Delay(s_defaultOperationPoolingIntervalMilliseconds);
                     ChangeState(State.WaitForStatus, State.WaitForPubAck);
                     await PublishGetOperationAsync(context, operationId);
                 }

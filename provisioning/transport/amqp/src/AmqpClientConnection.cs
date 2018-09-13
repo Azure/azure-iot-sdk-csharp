@@ -73,6 +73,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     ByteBuffer buffer = new ByteBuffer(new byte[AmqpConstants.ProtocolHeaderSize]);
                     _sentHeader.Encode(buffer);
         
+                    _tcs = new TaskCompletionSource<TransportBase>();
                     var args = new TransportAsyncCallbackArgs();
                     args.SetBuffer(buffer.Buffer, buffer.Offset, buffer.Length);
                     args.CompletedCallback = OnWriteHeaderComplete;
