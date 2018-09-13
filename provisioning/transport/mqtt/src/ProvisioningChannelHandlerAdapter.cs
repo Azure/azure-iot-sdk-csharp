@@ -125,7 +125,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             base.ExceptionCaught(context, exception);
 
             await FailWithExceptionAsync(context, exception);
-            if (Logging.IsEnabled) Logging.Exit(this, "", nameof(ExceptionCaught));
+            if (Logging.IsEnabled) Logging.Exit(this, context.Name, nameof(ExceptionCaught));
         }
 
         #endregion
