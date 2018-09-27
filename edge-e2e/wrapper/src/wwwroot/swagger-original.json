@@ -1,0 +1,1011 @@
+{
+  "swagger" : "2.0",
+  "info" : {
+    "description" : "REST API definition for End-to-end testing of the Azure IoT SDKs.  All SDK APIs that are tested by our E2E tests need to be defined in this file.  This file takes some liberties with the API definitions.  In particular, response schemas are undefined, and error responses are also undefined.",
+    "version" : "1.0.0",
+    "title" : "IoT SDK Device & Client REST API"
+  },
+  "tags" : [ {
+    "name" : "wrapper",
+    "description" : "APIs that transcend the individual SDKs"
+  }, {
+    "name" : "module",
+    "description" : "ModuleClient APIs"
+  }, {
+    "name" : "device",
+    "description" : "DeviceClient APIs"
+  }, {
+    "name" : "service",
+    "description" : "ServiceClient APIs"
+  }, {
+    "name" : "eventhub",
+    "description" : "EventHub APIs"
+  }, {
+    "name" : "registry",
+    "description" : "registry APIs"
+  } ],
+  "schemes" : [ "https" ],
+  "produces" : [ "application/json" ],
+  "paths" : {
+    "/wrapper/configuration" : {
+      "get" : {
+        "tags" : [ "wrapper" ],
+        "summary" : "gets configuration details on the current wrapper configuration",
+        "produces" : [ "application/json" ],
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "schema" : {
+              "type" : "object",
+              "properties" : { }
+            }
+          }
+        }
+      }
+    },
+    "/wrapper/cleanup" : {
+      "put" : {
+        "tags" : [ "wrapper" ],
+        "summary" : "verify that the clients have cleaned themselves up completely",
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        }
+      }
+    },
+    "/wrapper/session" : {
+      "get" : {
+        "tags" : [ "wrapper" ],
+        "summary" : "Terminate a wrapper, optionally returning the log",
+        "produces" : [ "application/json" ],
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        }
+      },
+      "put" : {
+        "tags" : [ "wrapper" ],
+        "summary" : "Launch a wrapper, getting ready to test",
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        }
+      }
+    },
+    "/wrapper/message" : {
+      "put" : {
+        "tags" : [ "wrapper" ],
+        "summary" : "log a message to output",
+        "consumes" : [ "application/json" ],
+        "parameters" : [ {
+          "in" : "body",
+          "name" : "msg",
+          "required" : true,
+          "schema" : {
+            "type" : "object"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        }
+      }
+    },
+    "/registry/connect" : {
+      "put" : {
+        "tags" : [ "registry" ],
+        "summary" : "Connect to registry",
+        "description" : "Connect to the Azure IoTHub registry.  More specifically, the SDK saves the connection string that is passed in for future use.",
+        "parameters" : [ {
+          "name" : "connectionString",
+          "in" : "query",
+          "description" : "Service connection string",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "schema" : {
+              "$ref" : "#/definitions/connectResponse"
+            }
+          }
+        }
+      }
+    },
+    "/registry/{connectionId}/disconnect/" : {
+      "put" : {
+        "tags" : [ "registry" ],
+        "summary" : "Disconnect from the registry",
+        "description" : "Disconnects from the Azure IoTHub registry.  More specifically, closes all connections and cleans up all resources for the active connection",
+        "parameters" : [ {
+          "name" : "connectionId",
+          "in" : "path",
+          "description" : "Id for the connection",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        }
+      }
+    },
+    "/registry/{connectionId}/moduleTwin/{deviceId}/{moduleId}" : {
+      "get" : {
+        "tags" : [ "registry" ],
+        "summary" : "gets the module twin for the given deviceid and moduleid",
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "connectionId",
+          "in" : "path",
+          "description" : "Id for the connection",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "name" : "deviceId",
+          "in" : "path",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "name" : "moduleId",
+          "in" : "path",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "schema" : {
+              "type" : "object",
+              "properties" : { }
+            }
+          }
+        }
+      },
+      "patch" : {
+        "tags" : [ "registry" ],
+        "summary" : "update the module twin for the given deviceId and moduleId",
+        "consumes" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "connectionId",
+          "in" : "path",
+          "description" : "Id for the connection",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "name" : "deviceId",
+          "in" : "path",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "name" : "moduleId",
+          "in" : "path",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "in" : "body",
+          "name" : "props",
+          "required" : true,
+          "schema" : {
+            "type" : "object"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        }
+      }
+    },
+    "/module/connect/{transportType}" : {
+      "put" : {
+        "tags" : [ "module" ],
+        "summary" : "Connect to the azure IoT Hub as a module",
+        "consumes" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "transportType",
+          "in" : "path",
+          "description" : "Transport to use",
+          "required" : true,
+          "type" : "string",
+          "enum" : [ "amqp", "amqpws", "mqtt", "mqttws", "http" ]
+        }, {
+          "name" : "connectionString",
+          "in" : "query",
+          "description" : "connection string",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "in" : "body",
+          "name" : "caCertificate",
+          "required" : false,
+          "schema" : {
+            "$ref" : "#/definitions/certificate"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "schema" : {
+              "$ref" : "#/definitions/connectResponse"
+            }
+          }
+        }
+      }
+    },
+    "/module/connectFromEnvironment/{transportType}" : {
+      "put" : {
+        "tags" : [ "module" ],
+        "summary" : "Connect to the azure IoT Hub as a module using the environment variables",
+        "parameters" : [ {
+          "name" : "transportType",
+          "in" : "path",
+          "description" : "Transport to use",
+          "required" : true,
+          "type" : "string",
+          "enum" : [ "amqp", "amqpws", "mqtt", "mqttws", "http" ]
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "schema" : {
+              "$ref" : "#/definitions/connectResponse"
+            }
+          }
+        }
+      }
+    },
+    "/module/{connectionId}/disconnect" : {
+      "put" : {
+        "tags" : [ "module" ],
+        "summary" : "Disconnect the module",
+        "description" : "Disconnects from Azure IoTHub service.  More specifically, closes all connections and cleans up all resources for the active connection",
+        "parameters" : [ {
+          "name" : "connectionId",
+          "in" : "path",
+          "description" : "Id for the connection",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        }
+      }
+    },
+    "/module/{connectionId}/enableTwin" : {
+      "put" : {
+        "tags" : [ "module" ],
+        "summary" : "Enable module twins",
+        "parameters" : [ {
+          "name" : "connectionId",
+          "in" : "path",
+          "description" : "Id for the connection",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        }
+      }
+    },
+    "/module/{connectionId}/enableMethods" : {
+      "put" : {
+        "tags" : [ "module" ],
+        "summary" : "Enable methods",
+        "parameters" : [ {
+          "name" : "connectionId",
+          "in" : "path",
+          "description" : "Id for the connection",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        }
+      }
+    },
+    "/module/{connectionId}/enableInputMessages" : {
+      "put" : {
+        "tags" : [ "module" ],
+        "summary" : "Enable input messages",
+        "parameters" : [ {
+          "name" : "connectionId",
+          "in" : "path",
+          "description" : "Id for the connection",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        }
+      }
+    },
+    "/module/{connectionId}/twin" : {
+      "get" : {
+        "tags" : [ "module" ],
+        "summary" : "Get the device twin",
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "connectionId",
+          "in" : "path",
+          "description" : "Id for the connection",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "schema" : {
+              "type" : "object",
+              "properties" : { }
+            }
+          }
+        }
+      },
+      "patch" : {
+        "tags" : [ "module" ],
+        "summary" : "Updates the device twin",
+        "consumes" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "connectionId",
+          "in" : "path",
+          "description" : "Id for the connection",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "in" : "body",
+          "name" : "props",
+          "required" : true,
+          "schema" : {
+            "type" : "object"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        }
+      }
+    },
+    "/module/{connectionId}/twinDesiredPropPatch" : {
+      "get" : {
+        "tags" : [ "module" ],
+        "summary" : "Wait for the next desired property patch",
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "connectionId",
+          "in" : "path",
+          "description" : "Id for the connection",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "schema" : {
+              "type" : "object",
+              "properties" : { }
+            }
+          }
+        }
+      }
+    },
+    "/module/{connectionId}/event" : {
+      "put" : {
+        "tags" : [ "module" ],
+        "summary" : "Send an event",
+        "consumes" : [ "text/json" ],
+        "parameters" : [ {
+          "name" : "connectionId",
+          "in" : "path",
+          "description" : "Id for the connection",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "in" : "body",
+          "name" : "eventBody",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        }
+      }
+    },
+    "/module/{connectionId}/outputEvent/{outputName}" : {
+      "put" : {
+        "tags" : [ "module" ],
+        "summary" : "Send an event to a module output",
+        "consumes" : [ "text/json" ],
+        "parameters" : [ {
+          "name" : "connectionId",
+          "in" : "path",
+          "description" : "Id for the connection",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "name" : "outputName",
+          "in" : "path",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "in" : "body",
+          "name" : "eventBody",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        }
+      }
+    },
+    "/module/{connectionId}/inputMessage/{inputName}" : {
+      "get" : {
+        "tags" : [ "module" ],
+        "summary" : "Wait for a message on a module input",
+        "produces" : [ "text/json" ],
+        "parameters" : [ {
+          "name" : "connectionId",
+          "in" : "path",
+          "description" : "Id for the connection",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "name" : "inputName",
+          "in" : "path",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "schema" : {
+              "type" : "string"
+            }
+          }
+        }
+      }
+    },
+    "/module/{connectionId}/roundtripMethodCall/{methodName}" : {
+      "put" : {
+        "tags" : [ "module" ],
+        "summary" : "Wait for a method call, verify the request, and return the response.",
+        "description" : "This is a workaround to deal with SDKs that only have method call operations that are sync.  This function responds to the method with the payload of this function, and then returns the method parameters.  Real-world implemenatations would never do this, but this is the only same way to write our test code right now (because the method handlers for C, Java, and probably Python all return the method response instead of supporting an async method call)",
+        "consumes" : [ "application/json" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "connectionId",
+          "in" : "path",
+          "description" : "Id for the connection",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "name" : "methodName",
+          "in" : "path",
+          "description" : "name of the method to handle",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "in" : "body",
+          "name" : "requestAndResponse",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/definitions/roundtripMethodCallBody"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        }
+      }
+    },
+    "/module/{connectionId}/moduleMethod/{deviceId}/{moduleId}" : {
+      "put" : {
+        "tags" : [ "module" ],
+        "summary" : "call the given method on the given module",
+        "consumes" : [ "application/json" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "connectionId",
+          "in" : "path",
+          "description" : "Id for the connection",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "name" : "deviceId",
+          "in" : "path",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "name" : "moduleId",
+          "in" : "path",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "in" : "body",
+          "name" : "methodInvokeParameters",
+          "required" : true,
+          "schema" : {
+            "type" : "object"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "schema" : {
+              "type" : "object",
+              "properties" : { }
+            }
+          }
+        }
+      }
+    },
+    "/module/{connectionId}/deviceMethod/{deviceId}" : {
+      "put" : {
+        "tags" : [ "module" ],
+        "summary" : "call the given method on the given device",
+        "consumes" : [ "application/json" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "connectionId",
+          "in" : "path",
+          "description" : "Id for the connection",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "name" : "deviceId",
+          "in" : "path",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "in" : "body",
+          "name" : "methodInvokeParameters",
+          "required" : true,
+          "schema" : {
+            "type" : "object"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "schema" : {
+              "type" : "object",
+              "properties" : { }
+            }
+          }
+        }
+      }
+    },
+    "/service/connect" : {
+      "put" : {
+        "tags" : [ "service" ],
+        "summary" : "Connect to service",
+        "description" : "Connect to the Azure IoTHub service.  More specifically, the SDK saves the connection string that is passed in for future use.",
+        "parameters" : [ {
+          "name" : "connectionString",
+          "in" : "query",
+          "description" : "Service connection string",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "schema" : {
+              "$ref" : "#/definitions/connectResponse"
+            }
+          }
+        }
+      }
+    },
+    "/service/{connectionId}/disconnect/" : {
+      "put" : {
+        "tags" : [ "service" ],
+        "summary" : "Disconnect from the service",
+        "description" : "Disconnects from the Azure IoTHub service.  More specifically, closes all connections and cleans up all resources for the active connection",
+        "parameters" : [ {
+          "name" : "connectionId",
+          "in" : "path",
+          "description" : "Id for the connection",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        }
+      }
+    },
+    "/service/{connectionId}/moduleMethod/{deviceId}/{moduleId}" : {
+      "put" : {
+        "tags" : [ "service" ],
+        "summary" : "call the given method on the given module",
+        "consumes" : [ "application/json" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "connectionId",
+          "in" : "path",
+          "description" : "Id for the connection",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "name" : "deviceId",
+          "in" : "path",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "name" : "moduleId",
+          "in" : "path",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "in" : "body",
+          "name" : "methodInvokeParameters",
+          "required" : true,
+          "schema" : {
+            "type" : "object"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "schema" : {
+              "type" : "object",
+              "properties" : { }
+            }
+          }
+        }
+      }
+    },
+    "/service/{connectionId}/deviceMethod/{deviceId}" : {
+      "put" : {
+        "tags" : [ "service" ],
+        "summary" : "call the given method on the given device",
+        "consumes" : [ "application/json" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "connectionId",
+          "in" : "path",
+          "description" : "Id for the connection",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "name" : "deviceId",
+          "in" : "path",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "in" : "body",
+          "name" : "methodInvokeParameters",
+          "required" : true,
+          "schema" : {
+            "type" : "object"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "schema" : {
+              "type" : "object",
+              "properties" : { }
+            }
+          }
+        }
+      }
+    },
+    "/eventhub/connect" : {
+      "put" : {
+        "tags" : [ "eventhub" ],
+        "summary" : "Connect to eventhub",
+        "description" : "Connect to the Azure eventhub service.",
+        "parameters" : [ {
+          "name" : "connectionString",
+          "in" : "query",
+          "description" : "Service connection string",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "schema" : {
+              "$ref" : "#/definitions/connectResponse"
+            }
+          }
+        }
+      }
+    },
+    "/eventhub/{connectionId}/disconnect/" : {
+      "put" : {
+        "tags" : [ "eventhub" ],
+        "summary" : "Disconnect from the eventhub",
+        "description" : "Disconnects from the Azure eventhub service",
+        "parameters" : [ {
+          "name" : "connectionId",
+          "in" : "path",
+          "description" : "Id for the connection",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        }
+      }
+    },
+    "/eventhub/{connectionId}/enableTelemetry" : {
+      "put" : {
+        "tags" : [ "eventhub" ],
+        "summary" : "Enable telemetry",
+        "parameters" : [ {
+          "name" : "connectionId",
+          "in" : "path",
+          "description" : "Id for the connection",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        }
+      }
+    },
+    "/eventhub/{connectionId}/deviceTelemetry/{deviceId}" : {
+      "get" : {
+        "tags" : [ "eventhub" ],
+        "summary" : "wait for telemetry sent from a specific device",
+        "produces" : [ "text/json" ],
+        "parameters" : [ {
+          "name" : "connectionId",
+          "in" : "path",
+          "description" : "Id for the connection",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "name" : "deviceId",
+          "in" : "path",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "schema" : {
+              "type" : "string"
+            }
+          }
+        }
+      }
+    },
+    "/device/connect/{transportType}" : {
+      "put" : {
+        "tags" : [ "device" ],
+        "summary" : "Connect to the azure IoT Hub as a device",
+        "consumes" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "transportType",
+          "in" : "path",
+          "description" : "Transport to use",
+          "required" : true,
+          "type" : "string",
+          "enum" : [ "amqp", "amqpws", "mqtt", "mqttws", "http" ]
+        }, {
+          "name" : "connectionString",
+          "in" : "query",
+          "description" : "connection string",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "in" : "body",
+          "name" : "caCertificate",
+          "required" : false,
+          "schema" : {
+            "$ref" : "#/definitions/certificate"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "schema" : {
+              "$ref" : "#/definitions/connectResponse"
+            }
+          }
+        }
+      }
+    },
+    "/device/{connectionId}/disconnect" : {
+      "put" : {
+        "tags" : [ "device" ],
+        "summary" : "Disconnect the device",
+        "description" : "Disconnects from Azure IoTHub service.  More specifically, closes all connections and cleans up all resources for the active connection",
+        "parameters" : [ {
+          "name" : "connectionId",
+          "in" : "path",
+          "description" : "Id for the connection",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        }
+      }
+    },
+    "/device/{connectionId}/enableMethods" : {
+      "put" : {
+        "tags" : [ "device" ],
+        "summary" : "Enable methods",
+        "parameters" : [ {
+          "name" : "connectionId",
+          "in" : "path",
+          "description" : "Id for the connection",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        }
+      }
+    },
+    "/device/{connectionId}/methodRequest/{methodName}" : {
+      "get" : {
+        "tags" : [ "device" ],
+        "summary" : "Wait for a method call with the given name",
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "connectionId",
+          "in" : "path",
+          "description" : "Id for the connection",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "name" : "methodName",
+          "in" : "path",
+          "required" : true,
+          "type" : "string"
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "schema" : {
+              "$ref" : "#/definitions/methodRequestResponse"
+            }
+          }
+        }
+      }
+    },
+    "/device/{connectionId}/methodResponse/{responseId}/{statusCode}" : {
+      "put" : {
+        "tags" : [ "device" ],
+        "summary" : "Respond to the method call with the given name",
+        "consumes" : [ "application/json" ],
+        "parameters" : [ {
+          "name" : "connectionId",
+          "in" : "path",
+          "description" : "Id for the connection",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "name" : "responseId",
+          "in" : "path",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "name" : "statusCode",
+          "in" : "path",
+          "required" : true,
+          "type" : "string"
+        }, {
+          "in" : "body",
+          "name" : "responseBody",
+          "required" : true,
+          "schema" : {
+            "type" : "object"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        }
+      }
+    }
+  },
+  "definitions" : {
+    "connectResponse" : {
+      "type" : "object",
+      "properties" : {
+        "connectionId" : {
+          "type" : "string",
+          "description" : "unique identifier for this connection"
+        }
+      },
+      "description" : "result of a connection to a service, device, or module client",
+      "example" : {
+        "connectionId" : "connectionId"
+      }
+    },
+    "methodRequestResponse" : {
+      "type" : "object",
+      "properties" : {
+        "requestPayload" : {
+          "type" : "object",
+          "description" : "payload for the request that arrived from the service",
+          "properties" : { }
+        },
+        "responseId" : {
+          "type" : "string",
+          "description" : "response ID to be used when responding to this method call"
+        }
+      },
+      "description" : "result of waiting on a method call",
+      "example" : {
+        "requestPayload" : "{}",
+        "responseId" : "responseId"
+      }
+    },
+    "roundtripMethodCallBody" : {
+      "type" : "object",
+      "properties" : {
+        "requestPayload" : {
+          "type" : "object",
+          "description" : "payload for the request that arrived from the service.  Used to verify that the correct request arrived.",
+          "properties" : { }
+        },
+        "responsePayload" : {
+          "type" : "object",
+          "description" : "payload for the response to return to the service.  Used to verify that the correct request arrived.",
+          "properties" : { }
+        },
+        "statusCode" : {
+          "type" : "integer",
+          "description" : "status code to return to the service"
+        }
+      },
+      "description" : "parameters and response for a sync method call"
+    },
+    "certificate" : {
+      "type" : "object",
+      "properties" : {
+        "cert" : {
+          "type" : "string",
+          "description" : "unique identifier for this connection"
+        }
+      },
+      "description" : "certificate in the body of a message"
+    }
+  }
+}
