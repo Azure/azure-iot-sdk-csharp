@@ -7,7 +7,6 @@
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <AssemblyName>IO.Swagger</AssemblyName>
     <PackageId>IO.Swagger</PackageId>
-    <RootDir>$(MSBuildProjectDirectory)\..\..\..</RootDir>
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="wwwroot\" />
@@ -22,5 +21,10 @@
     <DotNetCliToolReference Include="Microsoft.Extensions.SecretManager.Tools" Version="2.0.0" />
     <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.1" />
     <DotNetCliToolReference Include="Microsoft.DotNet.Watcher.Tools" Version="2.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\iothub\device\src\Microsoft.Azure.Devices.Client.csproj" />
+    <ProjectReference Include="..\..\..\iothub\service\src\Microsoft.Azure.Devices.csproj" />
+    <ProjectReference Include="..\..\..\shared\src\Microsoft.Azure.Devices.Shared.csproj" />
   </ItemGroup>
 </Project>
