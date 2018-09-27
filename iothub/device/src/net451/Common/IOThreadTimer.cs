@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-
+#if NET451
 namespace Microsoft.Azure.Devices.Client
 {
     using System;
@@ -29,7 +29,6 @@ namespace Microsoft.Azure.Devices.Client
     // - Timer instances are relatively cheap.  They share "heavy" resources like the waiter thread and 
     //   waitable timer handle.
     // - Setting or canceling a timer does not typically involve any allocations.
-
     class IOThreadTimer
     {
         const int maxSkewInMillisecondsDefault = 100;
@@ -55,7 +54,6 @@ namespace Microsoft.Azure.Devices.Client
             this.timerGroup =
                 (isTypicallyCanceledShortlyAfterBeingSet ? TimerManager.Value.VolatileTimerGroup : TimerManager.Value.StableTimerGroup);
         }
-#if !NETSTANDARD1_3
         public static long SystemTimeResolutionTicks
         {
             get
@@ -83,7 +81,7 @@ namespace Microsoft.Azure.Devices.Client
             // Assume the default, which is around 15 milliseconds.
             return 15 * TimeSpan.TicksPerMillisecond;
         }
-#endif
+
         public bool Cancel()
         {
             return TimerManager.Value.Cancel(this);
@@ -635,11 +633,7 @@ namespace Microsoft.Azure.Devices.Client
             public WaitableTimer()
             {
 
-#if NETSTANDARD1_3
-                this.SetSafeWaitHandle(TimerHelper.CreateWaitableTimer());
-#else
                 this.SafeWaitHandle = TimerHelper.CreateWaitableTimer();
-#endif
             }
 
             public long DueTime
@@ -651,17 +645,13 @@ namespace Microsoft.Azure.Devices.Client
                 Safe = "Doesn't leak information or resources")]
             public void Set(long newDueTime)
             {
-#if NETSTANDARD1_3
-                this.dueTime = TimerHelper.Set(this.GetSafeWaitHandle(), newDueTime);
-#else
                 this.dueTime = TimerHelper.Set(this.SafeWaitHandle, newDueTime);
-#endif
             }
             [Fx.Tag.SecurityNote(Critical = "Provides a set of unsafe methods used to work with the WaitableTimer")]
             [SecurityCritical]
             static class TimerHelper
             {
-                public static unsafe SafeWaitHandle CreateWaitableTimer()
+                public static SafeWaitHandle CreateWaitableTimer()
                 {
                     SafeWaitHandle handle = UnsafeNativeMethods.CreateWaitableTimer(IntPtr.Zero, false, null);
                     if (handle.IsInvalid)
@@ -672,7 +662,7 @@ namespace Microsoft.Azure.Devices.Client
                     }
                     return handle;
                 }
-                public static unsafe long Set(SafeWaitHandle timer, long dueTime)
+                public static long Set(SafeWaitHandle timer, long dueTime)
                 {
                     if (!UnsafeNativeMethods.SetWaitableTimer(timer, ref dueTime, 0, IntPtr.Zero, IntPtr.Zero, false))
                     {
@@ -684,3 +674,4 @@ namespace Microsoft.Azure.Devices.Client
         }
     }
 }
+#endif

@@ -595,9 +595,15 @@ namespace Microsoft.Azure.Devices.Client
         // by the GC anyway.
         [Fx.Tag.SecurityNote(Critical = "manages NativeOverlapped instance, can be called outside user context")]
         [SecurityCritical]
+
+#if NET451
         unsafe class ScheduledOverlapped
+
+#else
+        class ScheduledOverlapped
+#endif
         {
-#if !NETSTANDARD1_3
+#if NET451
             readonly NativeOverlapped* nativeOverlapped;
 #endif
             IOThreadScheduler scheduler;
@@ -606,10 +612,10 @@ namespace Microsoft.Azure.Devices.Client
             {
 #if NETSTANDARD1_3
                 throw new NotImplementedException();
-#else
+#elif NET451
                 this.nativeOverlapped = (new Overlapped()).UnsafePack(
                     Fx.ThunkCallback(new IOCompletionCallback(IOCallback)), null);
-#endif
+
             }
 
             [Fx.Tag.SecurityNote(Miscellaneous = "note that in some hosts this runs without any user context on the stack")]
@@ -644,8 +650,8 @@ namespace Microsoft.Azure.Devices.Client
                         found = iots.TryCoalesce(out callback, out state);
                     }
                 }
+#endif
             }
-
             public void Post(IOThreadScheduler iots)
             {
                 Fx.Assert(this.scheduler == null, "Post called on an overlapped that is already posted.");
@@ -654,7 +660,7 @@ namespace Microsoft.Azure.Devices.Client
                 this.scheduler = iots;
 #if NETSTANDARD1_3
                 throw new NotImplementedException();
-#else
+#elif NET451
                 ThreadPool.UnsafeQueueNativeOverlapped(this.nativeOverlapped);
 #endif
             }
@@ -668,7 +674,7 @@ namespace Microsoft.Azure.Devices.Client
                 }
 #if NETSTANDARD1_3
                 throw new NotImplementedException();
-#else
+#elif NET451
                 Overlapped.Free(this.nativeOverlapped);
 #endif
             }
