@@ -130,13 +130,6 @@ phases:
     displayName: 'Disable strong name validation'
 
   - script: |  
-      rem Run the TPM Simulator
-      taskkill /F /IM Simulator.exe
-      start /D .\vsts\TpmSimulator Simulator.exe
-        
-    displayName: 'Start TPM Simulator'
-
-  - script: |  
        choco install -y squid
         
     displayName: 'Install Squid'

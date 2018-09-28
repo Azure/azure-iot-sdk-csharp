@@ -13,6 +13,9 @@ rem Build Debug + run UTs
 call build.cmd -clean -configuration Debug
 if errorlevel 1 goto :eof
 
+taskkill /F /IM Simulator.exe
+start /D .\vsts\TpmSimulator Simulator.exe
+
 rem Build Release + run E2E Tests
 rem If the build is Delay Signed, this requires strong name validation disabled for our key:
 rem (As Administrator:)  sn -Vr *,31bf3856ad364e35
