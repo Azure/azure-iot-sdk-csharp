@@ -11,30 +11,10 @@ phases:
     name: Hosted Ubuntu 1604
     timeoutInMinutes: 20
   steps:
-  - script: |  
-       if [ "$PRID" == "" ]
-       then 
-        git status
-        git reset --hard
-        git pull origin $COMMIT_ID
-        git checkout origin/$COMMIT_ID
-        git pull origin $BRANCH_TO_MERGE_TO
-        git checkout origin/$BRANCH_TO_MERGE_TO
-        git merge origin/$COMMIT_ID
-       else
-        git config --global user.email "azioclb@microsoft.com"
-        git config --global user.name "Azure IoT Builder"
-        git fetch origin +refs/pull/*/head:refs/remotes/origin/pr/*
-        git checkout pr/$PRID
-        git checkout $BRANCH_TO_MERGE_TO
-        git merge pr/$PRID -m "Merging PR $PRID"
-       
-       fi 
-    displayName: 'git checkout'
+  - powershell: ./ 'vsts/manual_checkout.ps1' 
+    displayName: 'GIT checkout'
     env:
-      BRANCH_TO_MERGE_TO: $(BRANCH_TO_MERGE_TO)
-      COMMIT_ID: $(COMMIT_ID)
-      PRID: $(PRID)
+      COMMIT_FROM: $(COMMIT_FROM)
 
   - task: Docker@1
     displayName: 'Start TPM Simulator'
@@ -139,33 +119,10 @@ phases:
         
     displayName: 'Install .NET 4.5.2 Targetting Pack'
 
-  - script: |  
-       @echo off
-       IF "%PRID%"=="" (
-       echo %COMMIT_ID%
-       ECHO SOURCE BRANCH IS %COMMIT_ID%
-       SET sourceBranch=origin/%COMMIT_ID%:refs/heads/=%
-       git checkout %BRANCH_TO_MERGE_TO%
-       ECHO GIT STATUS
-       git status
-       ECHO GIT MERGE
-       git merge %sourceBranch% -m "Merge to %BRANCH_TO_MERGE_TO%"
-       ECHO GIT STATUS
-       git status
-       EXIT
-       )
-       git config --global user.email "azioclb@microsoft.com"
-       git config --global user.name "Azure IoT Builder"
-       git fetch
-       git pull origin pull/%PRID%/head
-       git checkout %BRANCH_TO_MERGE_TO%
-       git pull
-       git merge -m "Merging PR %PRID%" 
-    displayName: 'git checkout'
+  - powershell: ./ 'vsts/manual_checkout.ps1' 
+    displayName: 'GIT checkout'
     env:
-      BRANCH_TO_MERGE_TO: $(BRANCH_TO_MERGE_TO)
-      COMMIT_ID: $(COMMIT_ID)
-      PRID: $(PRID)
+      COMMIT_FROM: $(COMMIT_FROM)
 
   - script: |  
        rem Run dotnet first experience.
@@ -227,33 +184,10 @@ phases:
     name: win
     timeoutInMinutes: 1
   steps:
-  - script: |  
-       @echo off
-       IF "%PRID%"=="" (
-       echo %COMMIT_ID%
-       ECHO SOURCE BRANCH IS %COMMIT_ID%
-       SET sourceBranch=origin/%COMMIT_ID%:refs/heads/=%
-       git checkout %BRANCH_TO_MERGE_TO%
-       ECHO GIT STATUS
-       git status
-       ECHO GIT MERGE
-       git merge %sourceBranch% -m "Merge to %BRANCH_TO_MERGE_TO%"
-       ECHO GIT STATUS
-       git status
-       EXIT
-       )
-       git config --global user.email "azioclb@microsoft.com"
-       git config --global user.name "Azure IoT Builder"
-       git fetch
-       git pull origin pull/%PRID%/head
-       git checkout %BRANCH_TO_MERGE_TO%
-       git pull
-       git merge -m "Merging PR %PRID%" 
-    displayName: 'git checkout'
+  - powershell: ./ 'vsts/manual_checkout.ps1' 
+    displayName: 'GIT checkout'
     env:
-      COMMIT_ID: $(COMMIT_ID)
-      BRANCH_TO_MERGE_TO: $(BRANCH_TO_MERGE_TO)
-      PRID: $(PRID)
+      COMMIT_FROM: $(COMMIT_FROM)
 
   - script: |  
        call "C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\Common7\\Tools\\VsDevCmd.bat"
@@ -270,79 +204,12 @@ phases:
     timeoutInMinutes: 5
 
   steps:
-  - script: |  
-       @echo off
-       IF "%PRID%"=="" (
-       echo %COMMIT_ID%
-       ECHO SOURCE BRANCH IS %COMMIT_ID%
-       SET sourceBranch=origin/%COMMIT_ID%:refs/heads/=%
-       git checkout %BRANCH_TO_MERGE_TO%
-       ECHO GIT STATUS
-       git status
-       ECHO GIT MERGE
-       git merge %sourceBranch% -m "Merge to %BRANCH_TO_MERGE_TO%"
-       ECHO GIT STATUS
-       git status
-       EXIT
-       )
-       git config --global user.email "azioclb@microsoft.com"
-       git config --global user.name "Azure IoT Builder"
-       git fetch
-       git pull origin pull/%PRID%/head
-       git checkout %BRANCH_TO_MERGE_TO%
-       git pull
-       git merge -m "Merging PR %PRID%" 
-    displayName: git
+  - powershell: ./ 'vsts/manual_checkout.ps1' 
+    displayName: 'GIT checkout'
     env:
-      COMMIT_ID: $(COMMIT_ID)
-      BRANCH_TO_MERGE_TO: $(BRANCH_TO_MERGE_TO)
-      PRID: $(PRID)
+      COMMIT_FROM: $(COMMIT_FROM)
 
   - script: |  
        call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
        vsts/windows_csharp_deviceexplorer.cmd 
     displayName: build
-
-- phase: GITMERGE
-  displayName: GitMerge
-
-  dependsOn: 
-    - LINUX
-    - WINDOWS
-    - NETMF
-    - DEVEXP
-  condition: succeeded()
-  queue:
-    name: Hosted Ubuntu 1604
-    timeoutInMinutes: 5
-
-  steps:
-  - script: |  
-       @echo off
-       IF "%PRID%"=="" (
-       echo %COMMIT_ID%
-       ECHO SOURCE BRANCH IS %COMMIT_ID%
-       SET sourceBranch=origin/%COMMIT_ID%:refs/heads/=%
-       git checkout %BRANCH_TO_MERGE_TO%
-       ECHO GIT STATUS
-       git status
-       ECHO GIT MERGE
-       git merge %sourceBranch% -m "Merge to %BRANCH_TO_MERGE_TO%"
-       ECHO GIT STATUS
-       git status
-       git push https://%GIT_USERNAME%:%GIT_PASSWORD%@github.com/Sahithkallakunta/azure-iot-sdk-csharp HEAD:%BRANCH_TO_MERGE_TO%
-       EXIT
-       )
-       git config --global user.email "azioclb@microsoft.com"
-       git config --global user.name "Azure IoT Builder"
-       git fetch origin +refs/pull/*/head:refs/remotes/origin/pr/*
-       git checkout pr/%PRID%
-       git checkout %BRANCH_TO_MERGE_TO%
-       git merge pr/%PRID% -m "Merging PR %PRID%"
-       git push https://%GIT_USERNAME%:%GIT_PASSWORD%@github.com/Sahithkallakunta/azure-iot-sdk-csharp HEAD:%BRANCH_TO_MERGE_TO% 
-    displayName: 'git push'
-    enabled: true
-    env:
-      COMMIT_ID: $(COMMIT_ID)
-      BRANCH_TO_MERGE_TO: $(BRANCH_TO_MERGE_TO)
-      PRID: $(PRID)
