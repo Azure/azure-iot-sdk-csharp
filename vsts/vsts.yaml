@@ -11,7 +11,7 @@ phases:
     name: Hosted Ubuntu 1604
     timeoutInMinutes: 20
   steps:
-  - powershell: ./ 'vsts/manual_checkout.ps1' 
+  - powershell: ./vsts/manual_checkout.ps1
     displayName: 'GIT checkout'
     env:
       COMMIT_FROM: $(COMMIT_FROM)
@@ -119,7 +119,7 @@ phases:
         
     displayName: 'Install .NET 4.5.2 Targetting Pack'
 
-  - powershell: ./ 'vsts/manual_checkout.ps1' 
+  - powershell: ./vsts/manual_checkout.ps1
     displayName: 'GIT checkout'
     env:
       COMMIT_FROM: $(COMMIT_FROM)
@@ -184,7 +184,7 @@ phases:
     name: win
     timeoutInMinutes: 1
   steps:
-  - powershell: ./ 'vsts/manual_checkout.ps1' 
+  - powershell: ./vsts/manual_checkout.ps1 
     displayName: 'GIT checkout'
     env:
       COMMIT_FROM: $(COMMIT_FROM)
@@ -204,7 +204,7 @@ phases:
     timeoutInMinutes: 5
 
   steps:
-  - powershell: ./ 'vsts/manual_checkout.ps1' 
+  - powershell: ./vsts/manual_checkout.ps1 
     displayName: 'GIT checkout'
     env:
       COMMIT_FROM: $(COMMIT_FROM)
