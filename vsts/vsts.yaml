@@ -180,13 +180,21 @@ phases:
 
     condition: always()
 
-# BEGIN: SDL and Compliance tasks #
+### WINDOWS Analyzers ###
+- phase: Analyzers
+  displayName: Analyzers
+
+  condition: succeeded()
+  queue:
+    name: Hosted VS2017
+    timeoutInMinutes: 60
+  steps:
 
   - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
     displayName: 'Component Detection'
 
     # TODO #181 CD component bugs currently investigated by the owning team.
-    enabled: false
+    enabled: false 
 
   - task: securedevelopmentteam.vss-secure-development-tools.build-task-antimalware.AntiMalware@3
     displayName: 'Run MpCmdRun.exe'
