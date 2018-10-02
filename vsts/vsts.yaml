@@ -190,11 +190,25 @@ phases:
     timeoutInMinutes: 60
   steps:
 
+  - powershell: ./vsts/manual_checkout.ps1
+    displayName: 'GIT checkout'
+    env:
+      COMMIT_FROM: $(COMMIT_FROM)
+
+  - script: |
+       rem Run dotnet first experience.
+       dotnet new
+
+       rem Start build
+       build.cmd -clean -nounittests -configuration Debug
+
+    displayName: build
+
   - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
     displayName: 'Component Detection'
 
     # TODO #181 CD component bugs currently investigated by the owning team.
-    enabled: false 
+    enabled: false
 
   - task: securedevelopmentteam.vss-secure-development-tools.build-task-antimalware.AntiMalware@3
     displayName: 'Run MpCmdRun.exe'
