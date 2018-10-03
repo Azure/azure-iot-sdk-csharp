@@ -88,6 +88,24 @@ phases:
       PROVISIONING_CONNECTION_STRING_INVALIDCERT: $(PROVISIONING-CONNECTION-STRING-INVALIDCERT)
       IOTHUB_PROXY_SERVER_ADDRESS: 127.0.0.1:8888
 
+  - task: CopyFiles@2
+    displayName: 'Copy files to the artifacts folder'
+    inputs:
+      SourceFolder: '$(Build.SourcesDirectory)'
+
+      Contents: '**/*.trx'
+
+      TargetFolder: '$(Build.ArtifactStagingDirectory)'
+
+    condition: always()
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact: testresults'
+    inputs:
+      ArtifactName: testresults
+
+    condition: always()
+
   - task: PublishTestResults@2
     displayName: 'Publish Test Results **/*.trx'
     inputs:
@@ -165,6 +183,24 @@ phases:
       PROVISIONING_CONNECTION_STRING_INVALIDCERT: $(PROVISIONING-CONNECTION-STRING-INVALIDCERT)
       IOTHUB_PROXY_SERVER_ADDRESS: 127.0.0.1:3128
 
+  - task: CopyFiles@2
+    displayName: 'Copy files to the artifacts folder'
+    inputs:
+      SourceFolder: '$(Build.SourcesDirectory)'
+
+      Contents: '**/*.trx'
+
+      TargetFolder: '$(Build.ArtifactStagingDirectory)'
+
+    condition: always()
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact: testresults'
+    inputs:
+      ArtifactName: testresults
+
+    condition: always()
+
   - task: PublishTestResults@2
     displayName: 'Publish Test Results **/*.trx'
     inputs:
@@ -207,8 +243,6 @@ phases:
   - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
     displayName: 'Component Detection'
 
-    # TODO #181 CD component bugs currently investigated by the owning team.
-    enabled: false
 
   - task: securedevelopmentteam.vss-secure-development-tools.build-task-antimalware.AntiMalware@3
     displayName: 'Run MpCmdRun.exe'
