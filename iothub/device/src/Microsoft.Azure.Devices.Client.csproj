@@ -56,6 +56,8 @@
       <Link>Common\Logging.Common.cs</Link>
     </Compile>
     <Compile Include="$(Common)\DefaultWebProxySettings.cs" />
+    <Compile Include="net451\IotHubClientWebSocket.cs" />
+    <Compile Include="net451\Common\LegacyClientWebSocketTransport.cs" />
     <Compile Include="net451\Common\IOThreadTimer.cs" />
     <Compile Include="net451\Common\Interop\UnsafeNativeMethods.cs" />
   </ItemGroup>
