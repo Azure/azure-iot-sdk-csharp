@@ -180,7 +180,6 @@ namespace Microsoft.Azure.Devices.Client
                         x509CertificateCollection.Add(clientCertificate);
                     }
 
-                    // TODO: Do we need to make CheckCertificateRevocation user configurable?
                     await sslStream.AuthenticateAsClientAsync(host, x509CertificateCollection, enabledSslProtocols: SslProtocols.Tls11 | SslProtocols.Tls12, checkCertificateRevocation:false).ConfigureAwait(false);
 
                     this.WebSocketStream = sslStream;

@@ -24,7 +24,10 @@ namespace Microsoft.Azure.Devices.Client.Test
         static readonly Action<TransportAsyncCallbackArgs> onReadOperationComplete = OnReadOperationComplete;
         static readonly Action<TransportAsyncCallbackArgs> onWriteOperationComplete = OnWriteOperationComplete;
         static ClientWebSocketTransport clientWebSocketTransport;
+#if NET451
         static LegacyClientWebSocketTransport legacyClientWebSocketTransport;
+#endif
+
         static byte[] byteArray = new byte[10] { 0x5, 0x6, 0x7, 0x8, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF };
         static volatile bool readComplete;
 
@@ -183,6 +186,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             clientWebSocketTransport.WriteAsync(args);
         }
 
+#if NET451
         [ExpectedException(typeof(AmqpException))]
         [TestMethod]
         [Ignore] // TODO #581
@@ -216,7 +220,6 @@ namespace Microsoft.Azure.Devices.Client.Test
             await websocket.CloseAsync().ConfigureAwait(false);
         }
 
-        // The following tests can only be run in Administrator mode
         [TestMethod]
         [Ignore] // TODO #581
         public async Task LegacyWebSocketReadWriteTest()
@@ -307,6 +310,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             legacyClientWebSocketTransport.WriteAsync(args);
             Assert.Fail("Did not throw object disposed exception");
         }
+#endif
 
         static void OnWriteOperationComplete(TransportAsyncCallbackArgs args)
         {

@@ -455,12 +455,14 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
+#if NET451
         static async Task<IotHubClientWebSocket> CreateLegacyClientWebSocketAsync(Uri webSocketUri, X509Certificate2 clientCertificate, TimeSpan timeout)
         {
             var websocket = new IotHubClientWebSocket(WebSocketConstants.SubProtocols.Amqpwsb10);
             await websocket.ConnectAsync(webSocketUri.Host, webSocketUri.Port, WebSocketConstants.Scheme, clientCertificate, timeout).ConfigureAwait(false);
             return websocket;
         }
+#endif
 
         static AmqpSettings CreateAmqpSettings()
         {

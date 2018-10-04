@@ -8,8 +8,10 @@ namespace Microsoft.Azure.Devices.Client
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Linq;
-#if NETSTANDARD1_3
+#if !NET451
     using System.Net.Http;
+#else
+    using System.Net;
 #endif
     using System.Threading;
     using System.Threading.Tasks;
@@ -167,6 +169,10 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
 
         public InternalClient(IotHubConnectionString iotHubConnectionString, ITransportSettings[] transportSettings, IDeviceClientPipelineBuilder pipelineBuilder)
         {
+#if NET451
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
+#endif
+
             this.iotHubConnectionString = iotHubConnectionString;
 
             var pipelineContext = new PipelineContext();
