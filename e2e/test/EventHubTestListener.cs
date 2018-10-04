@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.EventHubs;
 #else
 using Microsoft.ServiceBus.Messaging;
+using System.IO;
 #endif
 
 namespace Microsoft.Azure.Devices.E2ETests
@@ -64,16 +65,36 @@ namespace Microsoft.Azure.Devices.E2ETests
                 try
                 {
 #if !NET451
-                    var data = Encoding.UTF8.GetString(eventData.Body.ToArray());
+                    string data = Encoding.UTF8.GetString(eventData.Body.ToArray());
 #else
-                    var data = Encoding.UTF8.GetString(eventData.GetBytes());
+                    var bodyBytes = new byte[1024];
+                    int totalRead = 0;
+                    int read = 0;
+
+                    Stream bodyStream = eventData.GetBodyStream();
+                    do
+                    {
+                        read = bodyStream.Read(bodyBytes, totalRead, bodyBytes.Length - totalRead);
+                        totalRead += read;
+                    } while (read > 0 && (bodyBytes.Length - totalRead > 0));
+                    
+                    if (read > 0)
+                    {
+                        throw new InternalBufferOverflowException("EventHub message exceeded internal buffer.");
+                    }
+
+                    string data = Encoding.UTF8.GetString(bodyBytes, 0, totalRead);
 #endif
 
                     s_log.WriteLine($"{nameof(EventHubTestListener)}.{nameof(VerifyTestMessage)}: event data: '{data}'");
 
                     if (data == payload)
                     {
+#if !NET451
                         var connectionDeviceId = eventData.Properties["iothub-connection-device-id"].ToString();
+#else
+                        var connectionDeviceId = eventData.SystemProperties["iothub-connection-device-id"].ToString();
+#endif
                         if (string.Equals(connectionDeviceId, deviceName, StringComparison.CurrentCultureIgnoreCase) &&
                             VerifyKeyValue("property1", p1Value, eventData.Properties))
                         {

@@ -49,8 +49,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 // Delete existing devices named this way and create a new one.
                 RegistryManager rm = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
-                await RemoveDevicesAsync(prefix, rm).ConfigureAwait(false);
-                                
+
                 s_log.WriteLine($"{nameof(GetTestDeviceAsync)}: Creating device {deviceName} with type {type}.");
 
                 Client.IAuthenticationMethod auth = null;
@@ -160,25 +159,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             Regex regex = new Regex("HostName=([^;]+)", RegexOptions.None);
             return regex.Match(iotHubConnectionString).Groups[1].Value;
-        }
-
-        private static async Task RemoveDevicesAsync(string devicePrefix, RegistryManager rm)
-        {
-            s_log.WriteLine($"{nameof(RemoveDevicesAsync)} Enumerating devices.");
-
-            IQuery q = rm.CreateQuery("SELECT * FROM devices", 100);
-            while (q.HasMoreResults)
-            {
-                IEnumerable<Twin> results = await q.GetNextAsTwinAsync().ConfigureAwait(false);
-                foreach (Twin t in results)
-                {
-                    if (t.DeviceId.StartsWith(devicePrefix, StringComparison.OrdinalIgnoreCase))
-                    {
-                        s_log.WriteLine($"{nameof(RemoveDevicesAsync)} Removing device: {t.DeviceId}");
-                        await rm.RemoveDeviceAsync(t.DeviceId).ConfigureAwait(false);
-                    }
-                }
-            }
         }
     }
 }
