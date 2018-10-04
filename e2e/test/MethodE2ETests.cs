@@ -101,6 +101,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await SendMethodAndRespond(Client.TransportType.Amqp_WebSocket_Only, SetDeviceReceiveMethodDefaultHandler).ConfigureAwait(false);
         }
 
+        [Ignore] // TODO: #558
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Method_DeviceReceivesMethodAndResponseRecovery_Mqtt()
@@ -111,6 +112,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore] // TODO: #558
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Method_DeviceReceivesMethodAndResponseRecovery_MqttWs()
@@ -121,6 +123,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore] // TODO: #558
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Method_DeviceMethodGracefulShutdownRecovery_Mqtt()
@@ -131,6 +134,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore] // TODO: #558
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Method_DeviceMethodGracefulShutdownRecovery_MqttWs()
@@ -141,6 +145,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore] //TODO: #571
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Method_DeviceMethodTcpConnRecovery_Amqp()
@@ -161,6 +166,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore] //TODO: #571
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Method_DeviceMethodAmqpConnLostRecovery_Amqp()
@@ -171,6 +177,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore] //TODO: #571
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Method_DeviceMethodAmqpConnLostRecovery_AmqpWs()
@@ -181,6 +188,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore] //TODO: #571
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Method_DeviceMethodSessionLostRecovery_Amqp()
@@ -191,6 +199,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore] //TODO: #571
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Method_DeviceMethodSessionLostRecovery_AmqpWs()
@@ -201,6 +210,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore] //TODO: #194 Test intermittently failing on Windows.
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Method_DeviceMethodReqLinkDropRecovery_Amqp()
@@ -211,6 +221,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore] //TODO: #194 Test intermittently failing on Windows.
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Method_DeviceMethodReqLinkDropRecovery_AmqpWs()
@@ -221,6 +232,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore] //TODO: #194 Test intermittently failing on Windows.
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Method_DeviceMethodRespLinkDropRecovery_Amqp()
@@ -231,6 +243,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore] //TODO: #194 Test intermittently failing on Windows.
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Method_DeviceMethodRespLinkDropRecovery_AmqpWs()
@@ -241,6 +254,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore] //TODO: #571
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Method_DeviceMethodGracefulShutdownRecovery_Amqp()
@@ -251,6 +265,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore] //TODO: #571
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Method_DeviceMethodGracefulShutdownRecovery_AmqpWs()
