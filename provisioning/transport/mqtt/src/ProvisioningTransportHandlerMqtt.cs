@@ -265,7 +265,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
             await websocket.ConnectAsync(websocketUri, cancellationToken).ConfigureAwait(false);
 
-            // TODO: use ClientWebSocketChannel.
             var clientChannel = new ClientWebSocketChannel(null, websocket);
             clientChannel
                 .Option(ChannelOption.Allocator, UnpooledByteBufferAllocator.Default)
