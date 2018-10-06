@@ -7,6 +7,7 @@ using Microsoft.Azure.Amqp.Sasl;
 using Microsoft.Azure.Amqp.Transport;
 using Microsoft.Azure.Devices.Shared;
 using System;
+using System.Diagnostics;
 using System.Net;
 using System.Net.WebSockets;
 using System.Security.Cryptography.X509Certificates;
@@ -72,16 +73,18 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     _sentHeader = new ProtocolHeader(provider.ProtocolId, provider.DefaultVersion);
                     ByteBuffer buffer = new ByteBuffer(new byte[AmqpConstants.ProtocolHeaderSize]);
                     _sentHeader.Encode(buffer);
-        
+
+                    _tcs = new TaskCompletionSource<TransportBase>();
+
                     var args = new TransportAsyncCallbackArgs();
                     args.SetBuffer(buffer.Buffer, buffer.Offset, buffer.Length);
                     args.CompletedCallback = OnWriteHeaderComplete;
                     args.Transport = transport;
-                    bool writeAsyncResult = transport.WriteAsync(args);
+                    bool operationPending = transport.WriteAsync(args);
 
-                    if (Logging.IsEnabled) Logging.Info(this, $"{nameof(AmqpClientConnection)}.{nameof(OpenAsync)}: Sent Protocol Header: {_sentHeader.ToString()} writeAsyncResult: {writeAsyncResult} completedSynchronously: {args.CompletedSynchronously}");
-
-                    if (args.CompletedSynchronously)
+                    if (Logging.IsEnabled) Logging.Info(this, $"{nameof(AmqpClientConnection)}.{nameof(OpenAsync)}: Sent Protocol Header: {_sentHeader.ToString()} operationPending: {operationPending} completedSynchronously: {args.CompletedSynchronously}");
+                    
+                    if (!operationPending)
                     {
                         args.CompletedCallback(args);
                     }
@@ -203,7 +206,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             byte[] headerBuffer = new byte[AmqpConstants.ProtocolHeaderSize];
             args.SetBuffer(headerBuffer, 0, headerBuffer.Length);
             args.CompletedCallback = OnReadHeaderComplete;
-            args.Transport.ReadAsync(args);
+            bool operationPending = args.Transport.ReadAsync(args);
+
+            if (!operationPending)
+            {
+                args.CompletedCallback(args);
+            }
         }
 
         private void OnReadHeaderComplete(TransportAsyncCallbackArgs args)
