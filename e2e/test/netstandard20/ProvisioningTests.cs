@@ -373,6 +373,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await ProvisioningDeviceClient_InvalidGlobalAddress_Register_Fail(nameof(ProvisioningTransportHandlerHttp), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Individual, null).ConfigureAwait(false);
         }
 
+        // Note: This test takes 3 minutes.
         [TestMethod]
         public async Task ProvisioningDeviceClient_InvalidGlobalAddress_Register_Amqp_Fail()
         {
