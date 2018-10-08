@@ -176,6 +176,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         }
         public override async Task OpenAsync(bool explicitOpen, CancellationToken cancellationToken)
         {
+            if (Logging.IsEnabled) Logging.Enter(this, explicitOpen, cancellationToken, $"{nameof(MqttTransportHandler)}.{nameof(OpenAsync)}");
             this.EnsureValidState();
 
             if (this.TransportIsOpen())
@@ -183,8 +184,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 return;
             }
 
-            Debug.WriteLine(cancellationToken.GetHashCode() + " MqttTransportHandler.OpenAsync()");
             await this.HandleTimeoutCancellation(this.OpenAsync, cancellationToken).ConfigureAwait(false);
+            if (Logging.IsEnabled) Logging.Exit(this, explicitOpen, cancellationToken, $"{nameof(MqttTransportHandler)}.{nameof(OpenAsync)}");
         }
 
         public override async Task SendEventAsync(Message message, CancellationToken cancellationToken)
@@ -324,7 +325,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public override async Task CloseAsync()
         {
-            Debug.WriteLine("MqttTransportHandler.CloseAsync()");
+            if (Logging.IsEnabled) Logging.Enter(this, "", $"{nameof(MqttTransportHandler)}.{nameof(CloseAsync)}");
 
             if (this.TryStop())
             {
@@ -345,11 +346,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     throw new IotHubClientException(this.fatalException);
                 }
             }
+
+            if (Logging.IsEnabled) Logging.Exit(this, "", $"{nameof(MqttTransportHandler)}.{nameof(CloseAsync)}");
         }
 
-#endregion
+        #endregion
 
-#region MQTT callbacks
+        #region MQTT callbacks
         public void OnConnected()
         {
             if (this.TryStateTransition(TransportState.Opening, TransportState.Open))
@@ -549,8 +552,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         async Task OpenAsync()
         {
-            Debug.WriteLine("MqttTransportHandler.OpenAsync()");
-
 #if NET451
             this.serverAddresses = Dns.GetHostEntry(this.hostName).AddressList;
 #else
@@ -943,7 +944,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 {
                     try
                     {
-                        Debug.WriteLine("Connecting to {0}.", address.ToString());
+                        if (Logging.IsEnabled) Logging.Info(this, $"Connecting to {address.ToString()}", nameof(CreateChannelFactory));
                         channel = await bootstrap.ConnectAsync(address, port).ConfigureAwait(false);
                         break;
                     }
@@ -953,7 +954,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         {
                             if (ex is ConnectException)     // We will handle DotNetty.Transport.Channels.ConnectException
                             {
-                                Debug.WriteLine("ConnectException trying to connect to {0}: {1}", address.ToString(), ex.ToString());
+                                if (Logging.IsEnabled) Logging.Error(this, $"ConnectException trying to connect to {address.ToString()}: {ex.ToString()}", nameof(CreateChannelFactory));
                                 return true;
                             }
 

@@ -90,9 +90,7 @@ namespace Microsoft.Azure.Devices.Client
                 _expiryTime = sas.ExpiresOn;
                 UpdateTimeBufferSeconds((int)(_expiryTime - DateTime.UtcNow).TotalSeconds);
 
-#if !NET451
                 if (Logging.IsEnabled) Logging.GenerateToken(this, _expiryTime);
-#endif
 
                 return _token;
             }

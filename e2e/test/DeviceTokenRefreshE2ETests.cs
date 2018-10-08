@@ -16,13 +16,15 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestCategory("IoTHub-E2E")]
     public class DeviceTokenRefreshE2ETests : IDisposable
     {
-        private const string DevicePrefix = "E2E_Message_TokenRefresh_";
+        private const string DevicePrefix = "E2E_TokenRefresh_";
 
         private readonly ConsoleEventListener _listener;
+        private readonly TestLogging _log;
 
         public DeviceTokenRefreshE2ETests()
         {
             _listener = new ConsoleEventListener("Microsoft-Azure-");
+            _log = TestLogging.GetInstance();
         }
 
         [TestMethod]
@@ -31,7 +33,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             await DeviceClient_TokenIsRefreshed_Internal(Client.TransportType.Http1).ConfigureAwait(false);
         }
 
-        [Ignore]    // TODO: #263
         [TestMethod]
         public async Task DeviceClient_TokenIsRefreshed_Ok_Amqp()
         {
@@ -39,9 +40,11 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        public async Task DeviceClient_TokenIsRefreshed_Fails_Mqtt()
+        public async Task DeviceClient_TokenIsRefreshed_Ok_Mqtt()
         {
-            await DeviceClient_TokenIsRefreshed_Internal(Client.TransportType.Mqtt).ConfigureAwait(false);
+            // The IoT Hub service allows tokens expired < 5 minutes ago to be used during CONNECT.
+            // After connecting with such an expired token, the service has an allowance of 5 more minutes before dropping the TCP connection.
+            await DeviceClient_TokenIsRefreshed_Internal(Client.TransportType.Mqtt, 6 * 60).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -77,11 +80,10 @@ namespace Microsoft.Azure.Devices.E2ETests
             } // Second release
         }
 
-        private async Task DeviceClient_TokenIsRefreshed_Internal(Client.TransportType transport)
+        private async Task DeviceClient_TokenIsRefreshed_Internal(Client.TransportType transport, int ttl = 6)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
 
-            int ttl = 6;
             int buffer = 50;
 
             Device device = testDevice.Identity;
@@ -90,10 +92,20 @@ namespace Microsoft.Azure.Devices.E2ETests
                 device.Id, 
                 device.Authentication.SymmetricKey.PrimaryKey, 
                 ttl, 
-                buffer);
+                buffer,
+                transport);
 
             DeviceClient deviceClient = 
                 DeviceClient.Create(testDevice.IoTHubHostName, refresher, transport);
+            
+            if (transport == Client.TransportType.Mqtt)
+            {
+                deviceClient.SetConnectionStatusChangesHandler((ConnectionStatus status, ConnectionStatusChangeReason reason) =>
+                {
+                    _log.WriteLine($"{nameof(ConnectionStatusChangesHandler)}: {status}; {reason}");
+                });
+            }
+
 
             var message = new Client.Message(Encoding.UTF8.GetBytes("Hello"));
 
@@ -115,19 +127,9 @@ namespace Microsoft.Azure.Devices.E2ETests
             await deviceClient.SendEventAsync(message).ConfigureAwait(false);
 
             // Ensure that the token was refreshed.
-            if (transport == Client.TransportType.Mqtt)
-            {
-                // This is not currently supported for MQTT unless the connection is dropped and re-established.
-                Assert.IsTrue(
-                    refresher.SafeCreateNewTokenCallCount >= countAfterOpenAndFirstSend,
-                    $"[{DateTime.UtcNow}] Token should have been refreshed after TTL expired.");
-            }
-            else
-            {
-                Assert.IsTrue(
-                    refresher.SafeCreateNewTokenCallCount >= countAfterOpenAndFirstSend + 1,
-                    $"[{DateTime.UtcNow}] Token should have been refreshed after TTL expired.");
-            }
+            Assert.IsTrue(
+                refresher.SafeCreateNewTokenCallCount >= countAfterOpenAndFirstSend + 1,
+                $"[{DateTime.UtcNow}] Token should have been refreshed after TTL expired.");
 
             Console.WriteLine($"[{DateTime.UtcNow}] CloseAsync");
             await deviceClient.CloseAsync().ConfigureAwait(false);
@@ -151,6 +153,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             private int _callCount = 0;
             private string _key;
+            private Client.TransportType _transport;
 
             public int SafeCreateNewTokenCallCount
             {
@@ -169,15 +172,22 @@ namespace Microsoft.Azure.Devices.E2ETests
                 string deviceId, 
                 string key, 
                 int suggestedTimeToLive, 
-                int timeBufferPercentage) 
+                int timeBufferPercentage,
+                Client.TransportType transport) 
                 : base(deviceId, suggestedTimeToLive, timeBufferPercentage)
             {
                 _key = key;
+                _transport = transport;
             }
 
             protected override Task<string> SafeCreateNewToken(string iotHub, int suggestedTimeToLive)
             {
                 Console.WriteLine($"[{DateTime.UtcNow}] Refresher: Creating new token {_callCount}");
+
+                if (_transport == Client.TransportType.Mqtt)
+                {
+                    suggestedTimeToLive = -4 * 60 - 59; // server side time allowance.
+                }
 
                 var builder = new SharedAccessSignatureBuilder()
                 {

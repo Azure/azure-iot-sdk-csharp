@@ -119,6 +119,8 @@ phases:
 
 - phase: WINDOWS
   displayName: Windows
+# Uncomment to serialize builds:
+#  dependsOn: LINUX
 
   condition: succeeded()
   queue:
