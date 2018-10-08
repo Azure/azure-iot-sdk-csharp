@@ -943,9 +943,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 {
                     try
                     {
-                        Debug.WriteLine("Connecting to {0}.", address.ToString());
-                        channel = await bootstrap.ConnectAsync(address, port).ConfigureAwait(false);
-                        break;
+                        //Check if IPv4 as IPv6 not supported yet for IoT Hub / Edge Hub
+                        if (address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                        {
+                            Debug.WriteLine("Connecting to {0}.", address.ToString());
+                            channel = await bootstrap.ConnectAsync(address, port).ConfigureAwait(false);
+                            break;
+                        }
+                        continue;
                     }
                     catch (AggregateException ae)
                     {
@@ -959,6 +964,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                             return false; // Let anything else stop the application.
                         });
+                    }
+                    catch (DotNetty.Transport.Channels.ConnectException ex)
+                    {
+                        Debug.WriteLine("ConnectException trying to connect to {0}: {1}", address.ToString(), ex.ToString());
+                        this.OnError(ex);
                     }
                 }
 
