@@ -50,6 +50,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         public async Task OpenAsync(TimeSpan timeout, bool useWebSocket, X509Certificate2 clientCert, IWebProxy proxy)
         {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnection)}.{nameof(OpenAsync)}");
             var hostName = _uri.Host;
 
             var tcpSettings = new TcpTransportSettings { Host = hostName, Port = _uri.Port != -1 ? _uri.Port : AmqpConstants.DefaultSecurePort };
@@ -67,17 +68,25 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 SaslTransportProvider provider = _amqpSettings.GetTransportProvider<SaslTransportProvider>();
                 if (provider != null)
                 {
+                    if (Logging.IsEnabled) Logging.Info(this, $"{nameof(AmqpClientConnection)}.{nameof(OpenAsync)}: Using SaslTransport");
                     _sentHeader = new ProtocolHeader(provider.ProtocolId, provider.DefaultVersion);
                     ByteBuffer buffer = new ByteBuffer(new byte[AmqpConstants.ProtocolHeaderSize]);
                     _sentHeader.Encode(buffer);
-
+        
+                    _tcs = new TaskCompletionSource<TransportBase>();
                     var args = new TransportAsyncCallbackArgs();
                     args.SetBuffer(buffer.Buffer, buffer.Offset, buffer.Length);
                     args.CompletedCallback = OnWriteHeaderComplete;
                     args.Transport = transport;
-                    transport.WriteAsync(args);
+                    bool writeAsyncResult = transport.WriteAsync(args);
 
-                    _tcs = new TaskCompletionSource<TransportBase>();
+                    if (Logging.IsEnabled) Logging.Info(this, $"{nameof(AmqpClientConnection)}.{nameof(OpenAsync)}: Sent Protocol Header: {_sentHeader.ToString()} writeAsyncResult: {writeAsyncResult} completedSynchronously: {args.CompletedSynchronously}");
+
+                    if (args.CompletedSynchronously)
+                    {
+                        args.CompletedCallback(args);
+                    }
+
                     transport = await _tcs.Task.ConfigureAwait(false);
                     await transport.OpenAsync(timeout).ConfigureAwait(false);
                 }
@@ -184,6 +193,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         private void OnWriteHeaderComplete(TransportAsyncCallbackArgs args)
         {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnection)}.{nameof(OnWriteHeaderComplete)}");
+
             if (args.Exception != null)
             {
                 CompleteOnException(args);
@@ -198,6 +209,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         private void OnReadHeaderComplete(TransportAsyncCallbackArgs args)
         {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnection)}.{nameof(OnReadHeaderComplete)}");
+
             if (args.Exception != null)
             {
                 CompleteOnException(args);
@@ -208,6 +221,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             {
                 ProtocolHeader receivedHeader = new ProtocolHeader();
                 receivedHeader.Decode(new ByteBuffer(args.Buffer, args.Offset, args.Count));
+
+                if (Logging.IsEnabled) Logging.Info(this, $"{nameof(AmqpClientConnection)}.{nameof(OnReadHeaderComplete)}: Received Protocol Header: {receivedHeader.ToString()}");
+
                 if (!receivedHeader.Equals(_sentHeader))
                 {
                     throw new AmqpException(AmqpErrorCode.NotImplemented, $"The requested protocol version {_sentHeader} is not supported. The supported version is {receivedHeader}");
@@ -215,6 +231,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
                 SaslTransportProvider provider = _amqpSettings.GetTransportProvider<SaslTransportProvider>();
                 var transport = provider.CreateTransport(args.Transport, true);
+                if (Logging.IsEnabled) Logging.Info(this, $"{nameof(AmqpClientConnection)}.{nameof(OnReadHeaderComplete)}: Created SaslTransportHandler ");
                 _tcs.TrySetResult(transport);
             }
             catch (Exception ex)
@@ -226,8 +243,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         private void CompleteOnException(TransportAsyncCallbackArgs args)
         {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnection)}.{nameof(CompleteOnException)}");
+
             if (args.Exception != null && args.Transport != null)
             {
+                if (Logging.IsEnabled) Logging.Error(this, $"{nameof(AmqpClientConnection)}.{nameof(CompleteOnException)}: Exception thrown {args.Exception.Message}");
+
                 args.Transport.SafeClose(args.Exception);
                 args.Transport = null;
                 _tcs.TrySetException(args.Exception);

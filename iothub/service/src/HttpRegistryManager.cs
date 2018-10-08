@@ -183,6 +183,7 @@ namespace Microsoft.Azure.Devices
             exportImportDevice.Properties =  new ExportImportDevice.PropertyContainer();
             exportImportDevice.Properties.DesiredProperties = twin?.Properties.Desired;
             exportImportDevice.Properties.ReportedProperties = twin?.Properties.Reported;
+            exportImportDevice.TwinETag = twin?.ETag;
 
             exportImportDeviceList.Add(exportImportDevice);
 

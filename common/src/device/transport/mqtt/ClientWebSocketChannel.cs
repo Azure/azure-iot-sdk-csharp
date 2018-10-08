@@ -95,29 +95,35 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             throw new NotSupportedException("ClientWebSocketChannel does not support DoDisconnect()");
         }
 
-        protected override async void DoClose()
+        protected override void DoClose()
         {
-            try
+            WebSocketState webSocketState = _webSocket.State;
+            if (webSocketState != WebSocketState.Closed && webSocketState != WebSocketState.Aborted)
             {
-                WebSocketState webSocketState = _webSocket.State;
-                if (webSocketState != WebSocketState.Closed && webSocketState != WebSocketState.Aborted)
-                {
-                    // Cancel any pending write
-                    CancelPendingWrite();
-                    _active = false;
+                // Cancel any pending write
+                CancelPendingWrite();
+                _active = false;
 
-                    using (var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30)))
+                Task.Run(async () =>
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(5));
+                    try
                     {
-                        await _webSocket.CloseAsync(
-                            WebSocketCloseStatus.NormalClosure,
-                            string.Empty,
-                            cancellationTokenSource.Token).ConfigureAwait(false);
+                        using (var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30)))
+                        {
+                            await _webSocket.CloseAsync(
+                                WebSocketCloseStatus.NormalClosure,
+                                string.Empty,
+                                cancellationTokenSource.Token);
+                        }
+
+                        _webSocket.Dispose();
                     }
-                }
-            }
-            catch (Exception)
-            {
-                Abort();
+                    catch (Exception)
+                    {
+                        Abort();
+                    }
+                });
             }
         }
 
@@ -140,7 +146,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 do
                 {
                     byteBuffer = allocHandle.Allocate(allocator);
-                    allocHandle.LastBytesRead = await DoReadBytes(byteBuffer).ConfigureAwait(false);
+                    allocHandle.LastBytesRead = await DoReadBytes(byteBuffer);
                     if (allocHandle.LastBytesRead <= 0)
                     {
                         // nothing was read -> release the buffer.
@@ -174,7 +180,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 if (Active)
                 {
-                    await HandleCloseAsync().ConfigureAwait(false);
+                    await HandleCloseAsync();
                 }
             }
         }
@@ -206,7 +212,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         byteBuffer.GetIoBuffer(),
                         WebSocketMessageType.Binary,
                         true,
-                        _writeCancellationTokenSource.Token).ConfigureAwait(false);
+                        _writeCancellationTokenSource.Token);
 
                     channelOutboundBuffer.Remove();
                 }
@@ -219,7 +225,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 WriteInProgress = false;
                 Pipeline.FireExceptionCaught(e);
-                await HandleCloseAsync().ConfigureAwait(false);
+                await HandleCloseAsync();
             }
         }
 
@@ -227,7 +233,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             WebSocketReceiveResult receiveResult = await _webSocket.ReceiveAsync(
                 new ArraySegment<byte>(byteBuffer.Array, byteBuffer.ArrayOffset + byteBuffer.WriterIndex, byteBuffer.WritableBytes),
-                CancellationToken.None).ConfigureAwait(false);
+                CancellationToken.None);
 
             if (receiveResult.MessageType == WebSocketMessageType.Text)
             {
@@ -260,7 +266,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             try
             {
-                await CloseAsync().ConfigureAwait(false);
+                await CloseAsync();
             }
             catch (Exception)
             {
