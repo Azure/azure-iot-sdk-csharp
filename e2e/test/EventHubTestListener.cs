@@ -22,6 +22,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     // Common code for EventHubListener.
     public partial class EventHubTestListener
     {
+        private const int MaximumWaitTimeInMinutes = 1;
         private static TestLogging s_log = TestLogging.GetInstance();
 
         public static Task<EventHubTestListener> CreateListener(string deviceName)
