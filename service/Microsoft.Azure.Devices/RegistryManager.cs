@@ -4,6 +4,7 @@
 namespace Microsoft.Azure.Devices
 {
     using System;
+    using System.Net;
     using System.Collections.Generic;
     using System.Net.Http.Headers;
     using System.Threading;
@@ -22,6 +23,10 @@ namespace Microsoft.Azure.Devices
         /// <returns> An RegistryManager instance. </returns>
         public static RegistryManager CreateFromConnectionString(string connectionString)
         {
+#if !NETSTANDARD1_3 && !WINDOWS_UWP && !PCL
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
+#endif
+
             IotHubConnectionString iotHubConnectionString = IotHubConnectionString.Parse(connectionString);
             return new HttpRegistryManager(iotHubConnectionString);
         }

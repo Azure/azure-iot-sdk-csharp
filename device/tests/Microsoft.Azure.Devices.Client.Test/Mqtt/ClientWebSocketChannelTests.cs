@@ -180,7 +180,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
                 new MqttDecoder(false, 256 * 1024),
                 clientReadListener);
             var clientWorkerGroup = new MultithreadEventLoopGroup();
-            await clientWorkerGroup.GetNext().RegisterAsync(clientChannel);
+            await clientWorkerGroup.RegisterAsync(clientChannel);
 
             await Task.WhenAll(RunMqttClientScenarioAsync(clientChannel, clientReadListener), RunMqttServerScenarioAsync(serverWebSocketChannel, serverListener));
             done = true;
@@ -327,7 +327,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
                 new MqttDecoder(true, 256 * 1024),
                 serverListener);
             var workerGroup = new MultithreadEventLoopGroup();
-            await workerGroup.GetNext().RegisterAsync(serverWebSocketChannel);
+            await workerGroup.RegisterAsync(serverWebSocketChannel);
 
            while (true)
            {

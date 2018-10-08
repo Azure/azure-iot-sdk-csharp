@@ -927,7 +927,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 streamSocketChannel.Configuration.SetOption(ChannelOption.Allocator, UnpooledByteBufferAllocator.Default);
 
-                await eventLoopGroup.GetNext().RegisterAsync(streamSocketChannel).ConfigureAwait(false);
+                await eventLoopGroup.RegisterAsync(streamSocketChannel).ConfigureAwait(false);
 
                 this.ScheduleCleanup(() =>
                 {

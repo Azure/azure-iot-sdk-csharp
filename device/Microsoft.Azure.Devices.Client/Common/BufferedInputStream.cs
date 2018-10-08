@@ -8,8 +8,8 @@ namespace Microsoft.Azure.Devices.Client
     using System.Threading;
 
     class BufferedInputStream : Stream
-#if !WINDOWS_UWP
-        , ICloneable
+#if !NETSTANDARD1_3
+    , ICloneable
 #endif
     {
         BufferManagerByteArray data;
@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.Client
 
         // Note: this is the old style async model (APM) that we don't need to support. It is not supported in UWP
         // I'm leaving it in place for the code owners to review and decide. ArturL 8/14/15
-#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
+#if !NETSTANDARD1_3
         override
 #endif
         public IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
@@ -105,7 +105,7 @@ namespace Microsoft.Azure.Devices.Client
             return new CompletedAsyncResultT<int>(this.innerStream.Read(buffer, offset, count), callback, state);
         }
 
-#if !WINDOWS_UWP && !PCL && !NETSTANDARD1_3
+#if !NETSTANDARD1_3
         override
 #endif
         public int EndRead(IAsyncResult asyncResult)

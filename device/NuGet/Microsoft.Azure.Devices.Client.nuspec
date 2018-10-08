@@ -16,9 +16,9 @@
         <dependencies>
             <group targetFramework="net451" >
                 <dependency id="Microsoft.Azure.Devices.Shared" version="1.4.1" />
-                <dependency id="DotNetty.Codecs.Mqtt" version="0.4.7" />
-                <dependency id="DotNetty.Handlers" version="0.4.7" />
-                <dependency id="Microsoft.Azure.Amqp" version="2.1.3" />
+                <dependency id="DotNetty.Codecs.Mqtt" version="0.6.0" />
+                <dependency id="DotNetty.Handlers" version="0.6.0" />
+                <dependency id="Microsoft.Azure.Amqp" version="2.3.2" />
                 <dependency id="Newtonsoft.Json" version="10.0.3" />
                 <dependency id="Validation" version="2.4.18" /> 
                 <dependency id="WindowsAzure.Storage" version="8.7.0" />
@@ -41,9 +41,9 @@
 
             <group targetFramework="uap10.0">
                 <dependency id="Microsoft.Azure.Devices.Shared" version="1.4.1" />
-                <dependency id="DotNetty.Codecs.Mqtt" version="0.4.7" />
-                <dependency id="DotNetty.Handlers" version="0.4.7" />
-                <dependency id="Microsoft.Azure.Amqp" version="2.1.3" />
+                <dependency id="DotNetty.Codecs.Mqtt" version="0.6.0" />
+                <dependency id="DotNetty.Handlers" version="0.6.0" />
+                <dependency id="Microsoft.Azure.Amqp" version="2.3.2" />
                 <dependency id="Newtonsoft.Json" version="10.0.3" />
                 <dependency id="Validation" version="2.4.18" /> 
                 <dependency id="WindowsAzure.Storage" version="8.7.0" />
@@ -57,9 +57,9 @@
 
             <group targetFramework="netstandard1.3" >
                 <dependency id="Microsoft.Azure.Devices.Shared" version="1.4.1" />
-                <dependency id="DotNetty.Codecs.Mqtt" version="0.4.7" />
-                <dependency id="DotNetty.Handlers" version="0.4.7" />
-                <dependency id="Microsoft.Azure.Amqp" version="2.1.3" />
+                <dependency id="DotNetty.Codecs.Mqtt" version="0.6.0" />
+                <dependency id="DotNetty.Handlers" version="0.6.0" />
+                <dependency id="Microsoft.Azure.Amqp" version="2.3.2" />
                 <dependency id="Newtonsoft.Json" version="10.0.3" />
                 <dependency id="Validation" version="2.4.18" /> 
                 <dependency id="WindowsAzure.Storage" version="8.7.0" />

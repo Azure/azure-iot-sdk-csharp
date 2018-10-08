@@ -8,7 +8,7 @@ rem // resolve to fully qualified path
 for %%i in ("%build-root%") do set build-root=%%~fi
 
 REM -- C# --
-cd %build-root%\iothub\device\src.NetMF\build
+cd %build-root%\device\build
 call build_mf.cmd
 if errorlevel 1 goto :eof
 cd %build-root%
