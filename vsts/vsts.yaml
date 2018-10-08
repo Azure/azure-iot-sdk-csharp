@@ -51,7 +51,6 @@ phases:
 
       restartPolicy: unlessStopped
 
-
   - script: |  
        # Run dotnet first experience.
        dotnet new
