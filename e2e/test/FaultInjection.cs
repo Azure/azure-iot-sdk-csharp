@@ -4,12 +4,17 @@
 using Microsoft.Azure.Devices.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 
-// Fault injection is disabled by default for all IoT Hubs. 
-// Please open a support ticket requesting Fault Injection your subscription if you would like to run these tests.
+// If you see intermittent failures on devices that are created by this file, check to see if you have multiple suites 
+// running at the same time because one test run could be accidentally destroying devices created by a different test run.
+
 namespace Microsoft.Azure.Devices.E2ETests
 {
     public static class FaultInjection
@@ -36,6 +41,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         public const int DefaultDelayInSec = 1; // Time in seconds after service initiates the fault.
         public const int DefaultDurationInSec = 10; // Duration in seconds 
+        public const int WaitForDisconnectMilliseconds = 3 * DefaultDelayInSec * 1000;
         public const int ShortRetryInMilliSec = (int)(DefaultDurationInSec / 2.0 * 1000);
 
         public const int RecoveryTimeMilliseconds = 5 * 60 * 1000;
@@ -58,10 +64,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             };
         }
 
-        // Fault timings:
-        // --------------------------------------------------------------------------------------------------------------------------------------------------------------------
-        //  --- device in normal operation --- | FaultRequested | --- <delayInSec> --- | --- Device in fault mode for <durationInSec> --- | --- device in normal operation --- 
-        // --------------------------------------------------------------------------------------------------------------------------------------------------------------------
         public static async Task ActivateFaultInjection(Client.TransportType transport, string faultType, string reason, int delayInSec, int durationInSec, DeviceClient deviceClient)
         {
             s_log.WriteLine($"{nameof(ActivateFaultInjection)}: Requesting fault injection type={faultType} reason={reason}, delay={delayInSec}s, duration={FaultInjection.DefaultDurationInSec}s");
@@ -145,10 +147,8 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 s_log.WriteLine($">>> {nameof(FaultInjection)} Testing fault handling");
                 watch.Start();
-
-                int waitForFaultMilliseconds = delayInSec * 1100; // Wait 10% more than the delay.
-                s_log.WriteLine($"{nameof(FaultInjection)}: Waiting for fault injection to be active: {waitForFaultMilliseconds}ms");
-                await Task.Delay(waitForFaultMilliseconds).ConfigureAwait(false);
+                s_log.WriteLine($"{nameof(FaultInjection)}: Waiting for fault injection to be active: {FaultInjection.WaitForDisconnectMilliseconds}ms");
+                await Task.Delay(FaultInjection.WaitForDisconnectMilliseconds).ConfigureAwait(false);
 
                 await testOperation(deviceClient, testDevice).ConfigureAwait(false);
 

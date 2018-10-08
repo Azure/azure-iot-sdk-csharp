@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             _receiver = receiver;
         }
 
-        public static Task<EventHubTestListener> CreateListenerPal(string deviceName)
+        public static async Task<EventHubTestListener> CreateListenerPal(string deviceName)
         {
             EventHubReceiver receiver = null;
             Stopwatch sw = new Stopwatch();
@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             sw.Stop();
 
-            return Task.FromResult(new EventHubTestListener(receiver));
+            return new EventHubTestListener(receiver);
         }
     }
 }
