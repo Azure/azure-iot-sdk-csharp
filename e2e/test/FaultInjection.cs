@@ -64,6 +64,10 @@ namespace Microsoft.Azure.Devices.E2ETests
             };
         }
 
+        // Fault timings:
+        // --------------------------------------------------------------------------------------------------------------------------------------------------------------------
+        //  --- device in normal operation --- | FaultRequested | --- <delayInSec> --- | --- Device in fault mode for <durationInSec> --- | --- device in normal operation ---
+        // --------------------------------------------------------------------------------------------------------------------------------------------------------------------
         public static async Task ActivateFaultInjection(Client.TransportType transport, string faultType, string reason, int delayInSec, int durationInSec, DeviceClient deviceClient)
         {
             s_log.WriteLine($"{nameof(ActivateFaultInjection)}: Requesting fault injection type={faultType} reason={reason}, delay={delayInSec}s, duration={FaultInjection.DefaultDurationInSec}s");
@@ -72,7 +76,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             try
             {
-                // For MQTT FaultInjection will terminate the connection prior to a PUBACK 
+                // For MQTT FaultInjection will terminate the connection prior to a PUBACK
                 // which leads to an infinite loop trying to resend the FaultInjection message.
                 if (transport == Client.TransportType.Mqtt ||
                     transport == Client.TransportType.Mqtt_Tcp_Only ||
