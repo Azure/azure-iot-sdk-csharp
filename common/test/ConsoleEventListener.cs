@@ -25,7 +25,7 @@
             "foreground": "#11a046"
         },
         {
-            "pattern": ".*-Error]",
+            "pattern": ".*-ErrorMessage]",
             "foreground": "red"
         },
         {
@@ -34,7 +34,7 @@
         },
         {
             "pattern": ".*-TestMessage]",
-            "foreground": "red"
+            "foreground": "gray"
         },
     ]
  *
