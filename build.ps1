@@ -268,8 +268,8 @@ try {
         RunTests e2e\test "End-to-end tests (NetCoreApp)"
         if (IsWindowsDevelopmentBox)
         {
-            RunTests e2e\test "End-to-end tests (NET451)" "net451"
             RunTests e2e\test "End-to-end tests (NET47)" "net47"
+            RunTests e2e\test "End-to-end tests (NET451)" "net451"
         }
 
         $verbosity = $oldVerbosity

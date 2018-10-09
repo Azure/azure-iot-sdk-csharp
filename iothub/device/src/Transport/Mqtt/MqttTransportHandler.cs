@@ -43,12 +43,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         readonly string generationId = Guid.NewGuid().ToString();
 
-        static readonly ConcurrentObjectPool<string, IEventLoopGroup> EventLoopGroupPool =
-            new ConcurrentObjectPool<string, IEventLoopGroup>(
-                Environment.ProcessorCount,
-                () => new MultithreadEventLoopGroup(eg => new SingleThreadEventLoop(eg, "MQTTExecutionThread", TimeSpan.FromSeconds(1)), 1),
-                TimeSpan.FromSeconds(5),
-                elg => elg.ShutdownGracefullyAsync());
+        private static MultithreadEventLoopGroup s_eventLoopGroup = new MultithreadEventLoopGroup();
 
         readonly string hostName;
         readonly Func<IPAddress[], int, Task<IChannel>> channelFactory;
@@ -911,14 +906,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 IChannel channel = null;
 
-                IEventLoopGroup eventLoopGroup = EventLoopGroupPool.TakeOrAdd(this.eventLoopGroupKey);
-
                 Func<Stream, SslStream> streamFactory = stream => new SslStream(stream, true, settings.RemoteCertificateValidationCallback);
                 var clientTlsSettings = settings.ClientCertificate != null ?
                     new ClientTlsSettings(iotHubConnectionString.HostName, new List<X509Certificate> { settings.ClientCertificate }) :
                     new ClientTlsSettings(iotHubConnectionString.HostName);
                 Bootstrap bootstrap = new Bootstrap()
-                    .Group(eventLoopGroup)
+                    .Group(s_eventLoopGroup)
                     .Channel<TcpSocketChannel>()
                     .Option(ChannelOption.TcpNodelay, true)
                     .Option(ChannelOption.Allocator, UnpooledByteBufferAllocator.Default)
@@ -933,12 +926,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                                 new MqttDecoder(false, MaxMessageSize), 
                                 this.mqttIotHubAdapterFactory.Create(this, iotHubConnectionString, settings, productInfo));
                     }));
-
-                this.ScheduleCleanup(() =>
-                {
-                    EventLoopGroupPool.Release(this.eventLoopGroupKey);
-                    return TaskConstants.Completed;
-                });
 
                 foreach (IPAddress address in addresses)
                 {
@@ -976,7 +963,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 // NETSTANDARD1_3 implementation doesn't set client certs, so we want to tell the IoT Hub to not ask for them
                 additionalQueryParams = "?iothub-no-client-cert=true";
 #endif
-                IEventLoopGroup eventLoopGroup = EventLoopGroupPool.TakeOrAdd(this.eventLoopGroupKey);
 
                 var websocketUri = new Uri(WebSocketConstants.Scheme + iotHubConnectionString.HostName + ":" + WebSocketConstants.SecurePort + WebSocketConstants.UriSuffix + additionalQueryParams);
                 var websocket = new ClientWebSocket();
@@ -1026,13 +1012,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         MqttEncoder.Instance,
                         new MqttDecoder(false, MaxMessageSize),
                         this.mqttIotHubAdapterFactory.Create(this, iotHubConnectionString, settings, productInfo));
-                await eventLoopGroup.GetNext().RegisterAsync(clientChannel).ConfigureAwait(false);
-
-                this.ScheduleCleanup(() =>
-                {
-                    EventLoopGroupPool.Release(this.eventLoopGroupKey);
-                    return TaskConstants.Completed;
-                });
+                await s_eventLoopGroup.RegisterAsync(clientChannel).ConfigureAwait(false);
 
                 return clientChannel;
             };
