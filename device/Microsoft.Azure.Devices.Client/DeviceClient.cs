@@ -21,6 +21,10 @@ namespace Microsoft.Azure.Devices.Client
 #endif
 #endif
 
+#if !NETSTANDARD1_3 && !WINDOWS_UWP && !PCL
+    using System.Net;
+#endif
+
     /// <summary>
     /// Delegate for desired property update callbacks.  This will be called
     /// every time we receive a PATCH from the service.
@@ -251,6 +255,10 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
 
         DeviceClient(IotHubConnectionString iotHubConnectionString, ITransportSettings[] transportSettings, IDeviceClientPipelineBuilder pipelineBuilder)
         {
+#if !NETSTANDARD1_3 && !WINDOWS_UWP && !PCL
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
+#endif
+
             this.iotHubConnectionString = iotHubConnectionString;
 
             var pipelineContext = new PipelineContext();

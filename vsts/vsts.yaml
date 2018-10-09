@@ -130,6 +130,10 @@ phases:
        sn -Vr *,31bf3856ad364e35
         
     displayName: 'Disable strong name validation'
+  
+  - script: |  
+       choco install -y nuget.commandline
+    displayName: Install NuGet
 
   - script: |  
        choco install -y squid
@@ -147,6 +151,7 @@ phases:
       COMMIT_FROM: $(COMMIT_FROM)
 
   - script: |  
+       call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
        rem Run dotnet first experience.
        dotnet new
        
@@ -231,7 +236,12 @@ phases:
     env:
       COMMIT_FROM: $(COMMIT_FROM)
 
+  - script: |  
+       choco install -y nuget.commandline
+    displayName: Install NuGet
+
   - script: |
+       call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
        rem Run dotnet first experience.
        dotnet new
 
@@ -328,96 +338,3 @@ phases:
        vsts/windows_csharp_mf.cmd
         
     displayName: build
-
-- phase: DEVEXP
-  displayName: csharp-deviceexplorer
-
-  condition: succeeded()
-  queue:
-    name: win
-    timeoutInMinutes: 5
-
-  steps:
-  - powershell: ./vsts/manual_checkout.ps1 
-    displayName: 'GIT checkout'
-    env:
-      COMMIT_FROM: $(COMMIT_FROM)
-
-  - script: |  
-       call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
-       vsts/windows_csharp_deviceexplorer.cmd 
-    displayName: build
-
-# BEGIN: SDL and Compliance tasks #
-
-  - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
-    displayName: 'Component Detection'
-
-    # TODO #181 CD component bugs currently investigated by the owning team.
-    enabled: false
-
-  - task: securedevelopmentteam.vss-secure-development-tools.build-task-antimalware.AntiMalware@3
-    displayName: 'Run MpCmdRun.exe'
-    inputs:
-      EnableServices: true
-
-
-  - task: securedevelopmentteam.vss-secure-development-tools.build-task-autoapplicability.AutoApplicability@1
-    displayName: 'Run AutoApplicability'
-    inputs:
-      ExternalRelease: true
-
-      IsSoftware: true
-
-      UsesHSM: true
-
-  - task: securedevelopmentteam.vss-secure-development-tools.build-task-binskim.BinSkim@3
-    displayName: 'Run BinSkim '
-    inputs:
-      arguments: 'analyze  $(Build.SourcesDirectory)\Microsoft.Azure.Devices.*.dll $(Build.SourcesDirectory)\DeviceExplorer.exe --recurse --verbose'
-
-    # TODO #181 Config issue: must run on Debug builds only with valid PDBs.
-    enabled: false
-
-  - task: securedevelopmentteam.vss-secure-development-tools.build-task-codemetrics.CodeMetrics@1
-    displayName: 'Run CodeMetrics '
-    inputs:
-      Files: '$(Build.SourcesDirectory)\**\DeviceExplorer.exe;$(Build.SourcesDirectory)\**\Microsoft.Azure.Devices.*.dll'
-
-    # TODO #181 Config issue: must run on Debug builds only with valid PDBs.
-    enabled: false
-
-
-  - task: securedevelopmentteam.vss-secure-development-tools.build-task-credscan.CredScan@2
-    displayName: 'Run CredScan'
-    inputs:
-      regexMatchTimeoutInSeconds: 5
-
-    # TODO #181 Samples / tests fail the test due to fake connection strings.
-      debugMode: false
-
-  - task: securedevelopmentteam.vss-secure-development-tools.build-task-policheck.PoliCheck@1
-    displayName: 'Run PoliCheck'
-    inputs:
-      targetType: F
-
-  - task: securedevelopmentteam.vss-secure-development-tools.build-task-vulnerabilityassessment.VulnerabilityAssessment@0
-    displayName: 'Run Vulnerability Assessment'
-
-  - task: securedevelopmentteam.vss-secure-development-tools.build-task-publishsecurityanalysislogs.PublishSecurityAnalysisLogs@2
-    displayName: 'Publish Security Analysis Logs'
-
-  - task: securedevelopmentteam.vss-secure-development-tools.build-task-report.SdtReport@1
-    displayName: 'Create Security Analysis Report'
-    inputs:
-      AllTools: true
-
-  - task: securedevelopmentteam.vss-secure-development-tools.build-task-postanalysis.PostAnalysis@1
-    displayName: 'Post Analysis'
-    inputs:
-      AllTools: true
-
-    # TODO #181 Enable post analysis to break builds after all above items are enabled.
-    enabled: false
-
-# END: SDL and Compliance tasks #

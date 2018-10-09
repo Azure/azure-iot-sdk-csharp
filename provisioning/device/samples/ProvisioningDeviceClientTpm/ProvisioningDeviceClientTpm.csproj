@@ -7,7 +7,7 @@
 
   <ItemGroup>
     <!-- TODO #275: Workaround for unaligned Mqtt version. -->
-    <PackageReference Include="DotNetty.Codecs.Mqtt" Version="0.4.7" />
+    <PackageReference Include="DotNetty.Codecs.Mqtt" Version="0.6.0" />
     <PackageReference Include="Microsoft.Azure.Devices.Client" Version="1.6.0" />
     <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Client" Version="1.0.0" />
     <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Security.Tpm" Version="1.0.0" />

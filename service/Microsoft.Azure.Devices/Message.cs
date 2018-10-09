@@ -265,6 +265,9 @@ namespace Microsoft.Azure.Devices
             }
         }
 
+        /// <summary>
+        /// Number of times the message has been previously delivered
+        /// </summary>
         internal uint DeliveryCount
         {
             get
@@ -401,6 +404,7 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         internal ArraySegment<byte> DeliveryTag { get; set; }
 
+#if !NETSTANDARD1_3
         /// <summary>
         /// Makes a clone of the current event data instance.
         /// </summary>
@@ -444,6 +448,7 @@ namespace Microsoft.Azure.Devices
 
             return message;
         }
+#endif
 
         /// <summary>
         /// Dispose the current event data instance
@@ -571,12 +576,9 @@ namespace Microsoft.Azure.Devices
             }
         }
 
+#if !NETSTANDARD1_3
         static Stream CloneStream(Stream originalStream)
         {
-#if WINDOWS_UWP
-            // TODO: https://github.com/Azure/azure-amqp/issues/87
-            throw Fx.AssertAndThrow("Does not support cloning of Stream Type: " + originalStream.GetType());
-#else
             if (originalStream != null)
             {
                 MemoryStream memoryStream;
@@ -602,9 +604,9 @@ namespace Microsoft.Azure.Devices
 
                 throw Fx.AssertAndThrow("Does not support cloning of Stream Type: " + originalStream.GetType());
             }
-#endif
             return null;
         }
+#endif
 
         AmqpMessage PopulateAmqpMessageForSend(AmqpMessage message)
         {

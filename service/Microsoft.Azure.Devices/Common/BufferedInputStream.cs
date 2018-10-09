@@ -7,7 +7,10 @@ namespace Microsoft.Azure.Devices.Common
     using System.IO;
     using System.Threading;
 
-    class BufferedInputStream : Stream, ICloneable
+    class BufferedInputStream : Stream
+#if !NETSTANDARD1_3
+    , ICloneable
+#endif
     {
         BufferManagerByteArray data;
         MemoryStream innerStream;

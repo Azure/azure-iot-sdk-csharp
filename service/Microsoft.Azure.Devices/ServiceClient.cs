@@ -4,6 +4,7 @@
 namespace Microsoft.Azure.Devices
 {
     using System;
+    using System.Net;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -33,6 +34,9 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         internal ServiceClient()
         {
+#if !NETSTANDARD1_3 && !WINDOWS_UWP && !PCL
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
+#endif
         }
 
         /// <summary>

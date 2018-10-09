@@ -7,7 +7,7 @@
 
   <ItemGroup>
     <!-- TODO: #275 - Incorrect package for .NET Framework -->
-    <PackageReference Include="DotNetty.Codecs.Mqtt" Version="0.4.7" />
+    <PackageReference Include="DotNetty.Codecs.Mqtt" Version="0.6.0" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
