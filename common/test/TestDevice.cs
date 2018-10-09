@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Shared;
 using Microsoft.Azure.Devices.Client;
 using System;
 using System.Collections.Generic;
@@ -157,13 +156,13 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             if (_authenticationMethod == null)
             {
-                s_log.WriteLine($"{nameof(CreateDeviceClient)}: Creating {nameof(DeviceClient)} from connection string: {transport}");
                 deviceClient = DeviceClient.CreateFromConnectionString(ConnectionString, transport);
+                s_log.WriteLine($"{nameof(CreateDeviceClient)}: Created {nameof(DeviceClient)} from connection string: {transport} ID={TestLogging.IdOf(deviceClient)}");
             }
             else
             {
-                s_log.WriteLine($"{nameof(CreateDeviceClient)}: Create {nameof(DeviceClient)} from IAuthenticationMethod: {transport}");
                 deviceClient = DeviceClient.Create(IoTHubHostName, AuthenticationMethod, transport);
+                s_log.WriteLine($"{nameof(CreateDeviceClient)}: Created {nameof(DeviceClient)} from IAuthenticationMethod: {transport} ID={TestLogging.IdOf(deviceClient)}");
             }
 
             return deviceClient;

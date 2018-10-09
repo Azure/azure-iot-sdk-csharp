@@ -18,8 +18,8 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestCategory("IoTHub-E2E")]
     public partial class MessageSendTests : IDisposable
     {
-        private const string DevicePrefix = "E2E_Message_";
-        private const string ModulePrefix = "E2E_Module_";
+        private const string DevicePrefix = "E2E_MessageSend_";
+        private const string ModulePrefix = DevicePrefix;
         private static string ProxyServerAddress = Configuration.IoTHub.ProxyServerAddress;
         private static TestLogging _log = TestLogging.GetInstance();
 

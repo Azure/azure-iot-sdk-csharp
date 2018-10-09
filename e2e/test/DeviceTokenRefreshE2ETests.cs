@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestCategory("IoTHub-E2E")]
     public class DeviceTokenRefreshE2ETests : IDisposable
     {
-        private const string DevicePrefix = "E2E_TokenRefresh_";
+        private const string DevicePrefix = "E2E_DeviceTokenRefresh_";
 
         private readonly ConsoleEventListener _listener;
         private readonly TestLogging _log;

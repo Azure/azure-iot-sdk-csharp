@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestCategory("IoTHub-E2E")]
     public partial class MessageReceiveTests : IDisposable
     {
-        private const string DevicePrefix = "E2E_Message_";
+        private const string DevicePrefix = "E2E_MessageReceive_";
         private const string DevicePrefixTimeout = "E2E_Message_Timeout_";
         private static TestLogging _log = TestLogging.GetInstance();
 

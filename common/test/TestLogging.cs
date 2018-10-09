@@ -15,6 +15,12 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
         }
 
+        private const string NullInstance = "(null)";
+        
+        public static string IdOf(object value) => value != null ? value.GetType().Name + "#" + GetHashCode(value) : NullInstance;
+
+        public static int GetHashCode(object value) => value?.GetHashCode() ?? 0;
+
         public static TestLogging GetInstance()
         {
             return s_instance;

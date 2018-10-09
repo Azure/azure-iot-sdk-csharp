@@ -19,7 +19,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestCategory("ProxyE2ETests")]
     public class IoTHubServiceProxyE2ETests
     {
-        private const string DevicePrefix = "E2E_ServiceProxy_";
+        private const string DevicePrefix = "E2E_IoTHubServiceProxy_";
         private const string JobDeviceId = "JobsSample_Device";
         private const string JobTestTagName = "JobsSample_Tag";
         private const int JobTestTagValue = 100;
