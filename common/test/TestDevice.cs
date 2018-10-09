@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
@@ -21,6 +22,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private const int DelayAfterDeviceCreationSeconds = 3;
         private static Dictionary<string, TestDevice> s_deviceCache = new Dictionary<string, TestDevice>();
         private static TestLogging s_log = TestLogging.GetInstance();
+        private static SemaphoreSlim s_semaphore = new SemaphoreSlim(1, 1);
 
         private Device _device;
         private Client.IAuthenticationMethod _authenticationMethod;
@@ -33,23 +35,40 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         /// <summary>
         /// Factory method.
-        /// IMPORTANT: Not thread safe!
         /// </summary>
         /// <param name="namePrefix"></param>
         /// <param name="type"></param>
-        /// <returns></returns>
         public static async Task<TestDevice> GetTestDeviceAsync(string namePrefix, TestDeviceType type = TestDeviceType.Sasl)
         {
             string prefix = namePrefix + type + "_";
 
-            if (!s_deviceCache.TryGetValue(prefix, out TestDevice testDevice))
+            try
             {
-                string deviceName = prefix + Guid.NewGuid();
-                s_log.WriteLine($"{nameof(GetTestDeviceAsync)}: Device with prefix {prefix} not found. Removing old devices.");
+                await s_semaphore.WaitAsync().ConfigureAwait(false);
+                if (!s_deviceCache.TryGetValue(prefix, out TestDevice testDevice))
+                {
+                    await CreateDeviceAsync(type, prefix).ConfigureAwait(false);
+                }
 
-                // Delete existing devices named this way and create a new one.
-                RegistryManager rm = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+                TestDevice ret = s_deviceCache[prefix];
 
+                s_log.WriteLine($"{nameof(GetTestDeviceAsync)}: Using device {ret.Id}.");
+                return ret;
+            }
+            finally
+            {
+                s_semaphore.Release();
+            }
+        }
+
+        private static async Task CreateDeviceAsync(TestDeviceType type, string prefix)
+        {
+            string deviceName = prefix + Guid.NewGuid();
+            s_log.WriteLine($"{nameof(GetTestDeviceAsync)}: Device with prefix {prefix} not found. Removing old devices.");
+
+            // Delete existing devices named this way and create a new one.
+            using (RegistryManager rm = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
+            {
                 s_log.WriteLine($"{nameof(GetTestDeviceAsync)}: Creating device {deviceName} with type {type}.");
 
                 Client.IAuthenticationMethod auth = null;
@@ -77,11 +96,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 await rm.CloseAsync().ConfigureAwait(false);
             }
-
-            TestDevice ret = s_deviceCache[prefix];
-
-            s_log.WriteLine($"{nameof(GetTestDeviceAsync)}: Using device {ret.Id}.");
-            return ret;
         }
 
         /// <summary>
