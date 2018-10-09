@@ -272,7 +272,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 #endif
 
-#if !NETSTANDARD1_3
+#if NET451
         [Fx.Tag.SecurityNote(Critical = "Construct the unsafe object IOCompletionThunk")]
         [SecurityCritical]
         public static IOCompletionCallback ThunkCallback(IOCompletionCallback callback)
@@ -561,7 +561,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 #endif // UNUSED
 
-#if !NETSTANDARD1_3
+#if NET451
         // This can't derive from Thunk since T would be unsafe.
         [Fx.Tag.SecurityNote(Critical = "unsafe object")]
         [SecurityCritical]
