@@ -45,14 +45,22 @@ namespace Microsoft.Azure.Devices.Client
 
         public Task CloseAsync()
         {
-            this.Dispose();
+            var thisTaskCompletionSource = this.taskCompletionSource;
+            if (thisTaskCompletionSource != null && thisTaskCompletionSource.Task.Status == TaskStatus.RanToCompletion)
+            {
+                OnSafeClose(thisTaskCompletionSource.Task.Result);
+            }
 
             return TaskHelpers.CompletedTask;
         }
 
         public void Close()
         {
-            this.Dispose();
+            var thisTaskCompletionSource = this.taskCompletionSource;
+            if (thisTaskCompletionSource != null && thisTaskCompletionSource.Task.Status == TaskStatus.RanToCompletion)
+            {
+                OnSafeClose(thisTaskCompletionSource.Task.Result);
+            }
         }
 
         public void Dispose()

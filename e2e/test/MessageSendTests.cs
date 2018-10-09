@@ -20,8 +20,12 @@ namespace Microsoft.Azure.Devices.E2ETests
     {
         private const string DevicePrefix = "E2E_Message_";
         private const string ModulePrefix = "E2E_Module_";
+        private const string MultiplexingDevicePrefix = "TestMultiplexingDevice_";
+        const int closeAndReopenCount = 3;
         private static string ProxyServerAddress = Configuration.IoTHub.ProxyServerAddress;
         private static TestLogging _log = TestLogging.GetInstance();
+
+        private const int MultiplexingDeviceCount = 5;
 
         private readonly ConsoleEventListener _listener;
 
@@ -496,6 +500,79 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             await SendSingleMessage(TestDeviceType.X509, Client.TransportType.Http1).ConfigureAwait(false);
         }
+        
+        [TestMethod]
+        public async Task MultiplexingTest_Amqps()
+        {
+            await SendMessagesOverMultiplex(Client.TransportType.Amqp_Tcp_Only, MultiplexingDeviceCount).ConfigureAwait(true);
+        }
+
+        [TestMethod]
+        public async Task MultiplexingTest_Amqps_Ws()
+        {
+            await SendMessagesOverMultiplex(Client.TransportType.Amqp_WebSocket_Only, MultiplexingDeviceCount).ConfigureAwait(true);
+        }
+
+        [TestMethod]
+        public async Task Message_DeviceClientCanBeClosedAndReOpenedSequentially()
+        {
+            foreach (Client.TransportType transportType in Enum.GetValues(typeof(Client.TransportType)))
+            {
+                await DeviceClientCanBeClosedAndReOpenedSequentially(closeAndReopenCount, transportType).ConfigureAwait(true);
+            }
+        }
+
+        [TestMethod]
+        public async Task Message_DeviceClientCanBeClosedAndReOpenedInParallel()
+        {
+            foreach (Client.TransportType transportType in Enum.GetValues(typeof(Client.TransportType)))
+            {
+                await DeviceClientCanBeClosedAndReOpenedInParallel(closeAndReopenCount, transportType).ConfigureAwait(true);
+            }
+        }
+
+        private async Task DeviceClientCanBeClosedAndReOpenedSequentially(int OpenAndCloseCount, Client.TransportType transportType)
+        {
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
+
+            for (int attempt = 0; attempt < OpenAndCloseCount; attempt++)
+            {
+                DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString, testDevice.Id, transportType);
+                try
+                {
+                    await OpenCloseAndSendMessage(deviceClient).ConfigureAwait(true);
+                }
+                catch (Exception e)
+                {
+                    throw new Exception("Failed to open and close device client using " + transportType + " on attempt " + attempt, e);
+                }
+            }
+        }
+
+        private async Task DeviceClientCanBeClosedAndReOpenedInParallel(int OpenAndCloseCount, Client.TransportType transportType)
+        {
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
+
+            for (int attempt = 0; attempt < OpenAndCloseCount; attempt++)
+            {
+                DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString, testDevice.Id, transportType);
+                OpenCloseAndSendMessage(deviceClient); //do not await, want this method to continue before the call finishes
+            }
+        }
+
+        private async Task OpenCloseAndSendMessage(DeviceClient deviceClient)
+        {
+            try
+            {
+                await deviceClient.OpenAsync().ConfigureAwait(true);
+                await deviceClient.SendEventAsync(new Client.Message()).ConfigureAwait(true);
+                await deviceClient.CloseAsync().ConfigureAwait(true);
+            }
+            catch (Exception e)
+            {
+                Assert.Fail("Encountered an unexpected exception: ", e);
+            }
+        }
 
         private async Task DefaultTimeout()
         {
@@ -642,6 +719,39 @@ namespace Microsoft.Azure.Devices.E2ETests
             finally
             {
                 await moduleClient.CloseAsync().ConfigureAwait(false);
+            }
+        }
+
+        private async Task SendMessagesOverMultiplex(Client.TransportType transportType, int deviceCount)
+        {
+            TestDevice[] testDevices = new TestDevice[deviceCount];
+            DeviceClient[] testDeviceClients = new DeviceClient[deviceCount];
+
+            for (int deviceIndex = 0; deviceIndex < deviceCount; deviceIndex++)
+            {
+                testDevices[deviceIndex] = await TestDevice.GetTestDeviceAsync(MultiplexingDevicePrefix + "_" + deviceIndex + "_", TestDeviceType.Sasl).ConfigureAwait(false);
+
+                var auth = new DeviceAuthenticationWithRegistrySymmetricKey(testDevices[deviceIndex].getDevice().Id, testDevices[deviceIndex].getDevice().Authentication.SymmetricKey.PrimaryKey);
+                testDeviceClients[deviceIndex] = DeviceClient.Create(
+                    TestDevice.GetHostName(Configuration.IoTHub.ConnectionString),
+                    auth,
+                    new ITransportSettings[]
+                    {
+                        new AmqpTransportSettings(transportType)
+                        {
+                            AmqpConnectionPoolSettings = new AmqpConnectionPoolSettings()
+                            {
+                                Pooling = true,
+                                MaxPoolSize = 1
+                            }
+                        }
+                    });
+                await testDeviceClients[deviceIndex].OpenAsync().ConfigureAwait(true);
+            }
+
+            for (int deviceIndex = 0; deviceIndex < deviceCount; deviceIndex++)
+            {
+                await SendSingleMessage(testDeviceClients[deviceIndex], testDevices[deviceIndex].Id).ConfigureAwait(false);
             }
         }
 
