@@ -60,7 +60,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private string twinReceivingLinkName;
         private string eventReceivingLinkName;
 
-        const int ResponseTimeoutInSeconds = 10;
+        const int ResponseTimeoutInSeconds = 300;
 
         ConcurrentDictionary<string, TaskCompletionSource<AmqpMessage>> twinResponseCompletions = new ConcurrentDictionary<string, TaskCompletionSource<AmqpMessage>>();
 
