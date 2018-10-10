@@ -1,0 +1,48 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28010.2026
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "edge-e2e", "edge-e2e.csproj", "{5B959214-B7BA-4E49-9BE4-84435DF3ADA1}"
+	ProjectSection(ProjectDependencies) = postProject
+		{8BA81F33-B8AE-417D-9DF9-F1CE56D1CB94} = {8BA81F33-B8AE-417D-9DF9-F1CE56D1CB94}
+		{1E30776B-1278-4A0C-9644-26CD3C6AC96B} = {1E30776B-1278-4A0C-9644-26CD3C6AC96B}
+		{31F74682-76E3-485E-8E0E-21E42EB585E6} = {31F74682-76E3-485E-8E0E-21E42EB585E6}
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Shared", "..\..\..\shared\src\Microsoft.Azure.Devices.Shared.csproj", "{1E30776B-1278-4A0C-9644-26CD3C6AC96B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Client", "..\..\..\iothub\device\src\Microsoft.Azure.Devices.Client.csproj", "{8BA81F33-B8AE-417D-9DF9-F1CE56D1CB94}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices", "..\..\..\iothub\service\src\Microsoft.Azure.Devices.csproj", "{31F74682-76E3-485E-8E0E-21E42EB585E6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5B959214-B7BA-4E49-9BE4-84435DF3ADA1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5B959214-B7BA-4E49-9BE4-84435DF3ADA1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5B959214-B7BA-4E49-9BE4-84435DF3ADA1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5B959214-B7BA-4E49-9BE4-84435DF3ADA1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1E30776B-1278-4A0C-9644-26CD3C6AC96B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E30776B-1278-4A0C-9644-26CD3C6AC96B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1E30776B-1278-4A0C-9644-26CD3C6AC96B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1E30776B-1278-4A0C-9644-26CD3C6AC96B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8BA81F33-B8AE-417D-9DF9-F1CE56D1CB94}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8BA81F33-B8AE-417D-9DF9-F1CE56D1CB94}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8BA81F33-B8AE-417D-9DF9-F1CE56D1CB94}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8BA81F33-B8AE-417D-9DF9-F1CE56D1CB94}.Release|Any CPU.Build.0 = Release|Any CPU
+		{31F74682-76E3-485E-8E0E-21E42EB585E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{31F74682-76E3-485E-8E0E-21E42EB585E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{31F74682-76E3-485E-8E0E-21E42EB585E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{31F74682-76E3-485E-8E0E-21E42EB585E6}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E1528803-D62D-428E-B189-D3D72F2CB4E7}
+	EndGlobalSection
+EndGlobal
