@@ -95,44 +95,43 @@ namespace Microsoft.Azure.Devices.E2ETests
                 buffer,
                 transport);
 
-            DeviceClient deviceClient = 
-                DeviceClient.Create(testDevice.IoTHubHostName, refresher, transport);
-            
-            if (transport == Client.TransportType.Mqtt)
+            using (DeviceClient deviceClient = DeviceClient.Create(testDevice.IoTHubHostName, refresher, transport))
             {
-                deviceClient.SetConnectionStatusChangesHandler((ConnectionStatus status, ConnectionStatusChangeReason reason) =>
+                if (transport == Client.TransportType.Mqtt)
                 {
-                    _log.WriteLine($"{nameof(ConnectionStatusChangesHandler)}: {status}; {reason}");
-                });
+                    deviceClient.SetConnectionStatusChangesHandler((ConnectionStatus status, ConnectionStatusChangeReason reason) =>
+                    {
+                        _log.WriteLine($"{nameof(ConnectionStatusChangesHandler)}: {status}; {reason}");
+                    });
+                }
+
+                var message = new Client.Message(Encoding.UTF8.GetBytes("Hello"));
+
+                // Create the first Token.
+                Console.WriteLine($"[{DateTime.UtcNow}] OpenAsync");
+                await deviceClient.OpenAsync().ConfigureAwait(false);
+                Console.WriteLine($"[{DateTime.UtcNow}] SendEventAsync (1)");
+                await deviceClient.SendEventAsync(message).ConfigureAwait(false);
+
+                int countAfterOpenAndFirstSend = refresher.SafeCreateNewTokenCallCount;
+                Assert.IsTrue(countAfterOpenAndFirstSend >= 1, $"[{DateTime.UtcNow}] Token should have been refreshed at least once.");
+
+                Console.WriteLine($"[{DateTime.UtcNow}] Waiting {ttl} seconds.");
+
+                // Wait for the Token to expire.
+                await Task.Delay(ttl * 1000).ConfigureAwait(false);
+
+                Console.WriteLine($"[{DateTime.UtcNow}] SendEventAsync (2)");
+                await deviceClient.SendEventAsync(message).ConfigureAwait(false);
+
+                // Ensure that the token was refreshed.
+                Assert.IsTrue(
+                    refresher.SafeCreateNewTokenCallCount >= countAfterOpenAndFirstSend + 1,
+                    $"[{DateTime.UtcNow}] Token should have been refreshed after TTL expired.");
+
+                Console.WriteLine($"[{DateTime.UtcNow}] CloseAsync");
+                await deviceClient.CloseAsync().ConfigureAwait(false);
             }
-
-
-            var message = new Client.Message(Encoding.UTF8.GetBytes("Hello"));
-
-            // Create the first Token.
-            Console.WriteLine($"[{DateTime.UtcNow}] OpenAsync");
-            await deviceClient.OpenAsync().ConfigureAwait(false);
-            Console.WriteLine($"[{DateTime.UtcNow}] SendEventAsync (1)");
-            await deviceClient.SendEventAsync(message).ConfigureAwait(false);
-
-            int countAfterOpenAndFirstSend = refresher.SafeCreateNewTokenCallCount;
-            Assert.IsTrue(countAfterOpenAndFirstSend >= 1, $"[{DateTime.UtcNow}] Token should have been refreshed at least once.");
-
-            Console.WriteLine($"[{DateTime.UtcNow}] Waiting {ttl} seconds.");
-
-            // Wait for the Token to expire.
-            await Task.Delay(ttl * 1000).ConfigureAwait(false);
-
-            Console.WriteLine($"[{DateTime.UtcNow}] SendEventAsync (2)");
-            await deviceClient.SendEventAsync(message).ConfigureAwait(false);
-
-            // Ensure that the token was refreshed.
-            Assert.IsTrue(
-                refresher.SafeCreateNewTokenCallCount >= countAfterOpenAndFirstSend + 1,
-                $"[{DateTime.UtcNow}] Token should have been refreshed after TTL expired.");
-
-            Console.WriteLine($"[{DateTime.UtcNow}] CloseAsync");
-            await deviceClient.CloseAsync().ConfigureAwait(false);
         }
 
         public void Dispose()

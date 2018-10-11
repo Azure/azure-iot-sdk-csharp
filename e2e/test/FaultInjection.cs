@@ -171,7 +171,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             finally
             {
                 await cleanupOperation().ConfigureAwait(false);
-                await deviceClient.CloseAsync().ConfigureAwait(false);
+                deviceClient.Dispose();
 
                 watch.Stop();
 

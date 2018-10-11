@@ -58,23 +58,28 @@ namespace Microsoft.Azure.Devices.E2ETests
         private async Task SendSingleMessageService(ServiceClientTransportSettings transportSettings)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
-            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString);
+            using (DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString))
+            using (ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(ConnectionString, TransportType.Amqp, transportSettings))
+            {
+                string payload;
+                string p1Value;
+                Message testMessage = ComposeD2CTestMessage(out payload, out p1Value);
+                await serviceClient.SendAsync(testDevice.Id, testMessage).ConfigureAwait(false);
 
-            ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(ConnectionString, TransportType.Amqp, transportSettings);
-
-            string payload;
-            string p1Value;
-            Message testMessage = ComposeD2CTestMessage(out payload, out p1Value);
-            await serviceClient.SendAsync(testDevice.Id, testMessage).ConfigureAwait(false);
+                await deviceClient.CloseAsync().ConfigureAwait(false);
+                await serviceClient.CloseAsync().ConfigureAwait(false);
+            }
         }
 
         private async Task RegistryManager_AddDevice(HttpTransportSettings httpTransportSettings)
         {
             string deviceName = DevicePrefix + Guid.NewGuid();
 
-            RegistryManager registryManager = RegistryManager.CreateFromConnectionString(ConnectionString, httpTransportSettings);
-            await registryManager.AddDeviceAsync(new Device(deviceName)).ConfigureAwait(false);
-            await registryManager.RemoveDeviceAsync(deviceName).ConfigureAwait(false);
+            using (RegistryManager registryManager = RegistryManager.CreateFromConnectionString(ConnectionString, httpTransportSettings))
+            {
+                await registryManager.AddDeviceAsync(new Device(deviceName)).ConfigureAwait(false);
+                await registryManager.RemoveDeviceAsync(deviceName).ConfigureAwait(false);
+            }
         }
 
         private async Task JobClient_ScheduleAndRunTwinJob(HttpTransportSettings httpTransportSettings)
@@ -86,9 +91,11 @@ namespace Microsoft.Azure.Devices.E2ETests
             twin.Tags = new TwinCollection();
             twin.Tags[JobTestTagName] = JobDeviceId;
 
-            JobClient jobClient = JobClient.CreateFromConnectionString(ConnectionString, httpTransportSettings);
-            JobResponse createJobResponse = await jobClient.ScheduleTwinUpdateAsync(jobId, query, twin, DateTime.UtcNow, (long)TimeSpan.FromMinutes(2).TotalSeconds).ConfigureAwait(false);
-            JobResponse jobResponse = await jobClient.GetJobAsync(jobId).ConfigureAwait(false);
+            using (JobClient jobClient = JobClient.CreateFromConnectionString(ConnectionString, httpTransportSettings))
+            {
+                JobResponse createJobResponse = await jobClient.ScheduleTwinUpdateAsync(jobId, query, twin, DateTime.UtcNow, (long)TimeSpan.FromMinutes(2).TotalSeconds).ConfigureAwait(false);
+                JobResponse jobResponse = await jobClient.GetJobAsync(jobId).ConfigureAwait(false);
+            }
         }
 
        private Message ComposeD2CTestMessage(out string payload, out string p1Value)

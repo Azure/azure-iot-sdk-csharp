@@ -497,22 +497,26 @@ namespace Microsoft.Azure.Devices.E2ETests
             await SendSingleMessage(TestDeviceType.X509, Client.TransportType.Http1).ConfigureAwait(false);
         }
 
-        private async Task DefaultTimeout()
-        {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
-            ServiceClient sender = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
-
-            var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, Client.TransportType.Amqp);
-            await sender.SendAsync(testDevice.Id, new Message(Encoding.ASCII.GetBytes("Dummy Message")), null).ConfigureAwait(false);
-        }
-
         private async Task FastTimeout()
         {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
-            ServiceClient sender = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+            TimeSpan? timeout = TimeSpan.FromTicks(1);
+            await TestTimeout(timeout).ConfigureAwait(false);
+        }
 
-            var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, Client.TransportType.Amqp);
-            await sender.SendAsync(testDevice.Id, new Message(Encoding.ASCII.GetBytes("Dummy Message")), TimeSpan.FromTicks(1)).ConfigureAwait(false);
+        private async Task DefaultTimeout()
+        {
+            TimeSpan? timeout = null;
+            await TestTimeout(timeout).ConfigureAwait(false);
+        }
+
+        private static async Task TestTimeout(TimeSpan? timeout)
+        {
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
+            using (ServiceClient sender = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
+            using (DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, Client.TransportType.Amqp))
+            {
+                await sender.SendAsync(testDevice.Id, new Message(Encoding.ASCII.GetBytes("Dummy Message")), timeout).ConfigureAwait(false);
+            }
         }
 
         private Client.Message ComposeD2CTestMessage(out string payload, out string p1Value)
@@ -589,17 +593,19 @@ namespace Microsoft.Azure.Devices.E2ETests
         private async Task SendSingleMessage(TestDeviceType type, Client.TransportType transport)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, type).ConfigureAwait(false);
-            DeviceClient deviceClient = testDevice.CreateDeviceClient(transport);
-
-            await SendSingleMessage(deviceClient, testDevice.Id).ConfigureAwait(false);
+            using (DeviceClient deviceClient = testDevice.CreateDeviceClient(transport))
+            {
+                await SendSingleMessage(deviceClient, testDevice.Id).ConfigureAwait(false);
+            }
         }
 
         private async Task SendSingleMessage(TestDeviceType type, ITransportSettings[] transportSettings)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
-            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transportSettings);
-
-            await SendSingleMessage(deviceClient, testDevice.Id).ConfigureAwait(false);
+            using (DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transportSettings))
+            {
+                await SendSingleMessage(deviceClient, testDevice.Id).ConfigureAwait(false);
+            }
         }
         
         private async Task SendSingleMessage(DeviceClient deviceClient, string deviceId)
@@ -628,9 +634,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private async Task SendSingleMessageModule(TestDeviceType type, ITransportSettings[] transportSettings)
         {
             TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix, ModulePrefix).ConfigureAwait(false);
-            var moduleClient = ModuleClient.CreateFromConnectionString(testModule.ConnectionString, transportSettings);
-
-            try
+            using (ModuleClient moduleClient = ModuleClient.CreateFromConnectionString(testModule.ConnectionString, transportSettings))
             {
                 await moduleClient.OpenAsync().ConfigureAwait(false);
 
@@ -638,9 +642,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 string p1Value;
                 Client.Message testMessage = ComposeD2CTestMessage(out payload, out p1Value);
                 await moduleClient.SendEventAsync(testMessage).ConfigureAwait(false);
-            }
-            finally
-            {
                 await moduleClient.CloseAsync().ConfigureAwait(false);
             }
         }

@@ -278,19 +278,20 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private async Task ServiceSendMethodAndVerifyResponse(string deviceName, string methodName, string respJson, string reqJson)
         {
-            ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+            using (ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
+            {
+                _log.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponse)}: Invoke method {methodName}.");
+                CloudToDeviceMethodResult response =
+                    await serviceClient.InvokeDeviceMethodAsync(
+                        deviceName,
+                        new CloudToDeviceMethod(methodName, TimeSpan.FromMinutes(5)).SetPayloadJson(reqJson)).ConfigureAwait(false);
 
-            _log.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponse)}: Invoke method {methodName}.");
-            CloudToDeviceMethodResult response = 
-                await serviceClient.InvokeDeviceMethodAsync(
-                    deviceName,
-                    new CloudToDeviceMethod(methodName, TimeSpan.FromMinutes(5)).SetPayloadJson(reqJson)).ConfigureAwait(false);
+                _log.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponse)}: Method status: {response.Status}.");
+                Assert.AreEqual(200, response.Status);
+                Assert.AreEqual(respJson, response.GetPayloadAsJson());
 
-            _log.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponse)}: Method status: {response.Status}.");
-            Assert.AreEqual(200, response.Status);
-            Assert.AreEqual(respJson, response.GetPayloadAsJson());
-            
-            await serviceClient.CloseAsync().ConfigureAwait(false);
+                await serviceClient.CloseAsync().ConfigureAwait(false);
+            }
         }
 
         private async Task<Task> SetDeviceReceiveMethod(DeviceClient deviceClient)
@@ -357,14 +358,17 @@ namespace Microsoft.Azure.Devices.E2ETests
         private async Task SendMethodAndRespond(Client.TransportType transport, Func<DeviceClient, Task<Task>> setDeviceReceiveMethod)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
-            var deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
-            Task methodReceivedTask = await setDeviceReceiveMethod(deviceClient).ConfigureAwait(false);
 
-            await Task.WhenAll(
-                ServiceSendMethodAndVerifyResponse(testDevice.Id, MethodName, DeviceResponseJson, ServiceRequestJson),
-                methodReceivedTask).ConfigureAwait(false);
+            using (DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport))
+            {
+                Task methodReceivedTask = await setDeviceReceiveMethod(deviceClient).ConfigureAwait(false);
 
-            await deviceClient.CloseAsync().ConfigureAwait(false);
+                await Task.WhenAll(
+                    ServiceSendMethodAndVerifyResponse(testDevice.Id, MethodName, DeviceResponseJson, ServiceRequestJson),
+                    methodReceivedTask).ConfigureAwait(false);
+
+                await deviceClient.CloseAsync().ConfigureAwait(false);
+            }
         }
 
         private async Task SendMethodAndRespondRecovery(Client.TransportType transport, string faultType, string reason, int delayInSec)
