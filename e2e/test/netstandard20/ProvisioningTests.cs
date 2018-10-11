@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestCategory("Provisioning-E2E")]
     public class ProvisioningTests : IDisposable
     {
-        private const int PassingTimeoutMiliseconds = 30 * 1000;
+        private const int PassingTimeoutMiliseconds = 10 * 60 * 1000;
         private const int FailingTimeoutMiliseconds = 10 * 1000;
         private static string s_globalDeviceEndpoint = Configuration.Provisioning.GlobalDeviceEndpoint;
         private const string InvalidIDScope = "0neFFFFFFFF";
