@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         public ProvisioningE2ETests()
         {
-            _listener = new ConsoleEventListener("Microsoft-Azure-");
+            _listener = TestConfig.StartEventListener();
         }
 
         public enum X509EnrollmentType
@@ -537,10 +537,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         protected virtual void Dispose(bool disposing)
         {
-            if (disposing)
-            {
-                _listener.Dispose();
-            }
         }
     }
 }

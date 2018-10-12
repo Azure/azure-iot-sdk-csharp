@@ -18,8 +18,8 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestCategory("IoTHub-E2E")]
     public partial class MessageSendE2ETests : IDisposable
     {
-        private const string DevicePrefix = "E2E_MessageSend_";
-        private const string ModulePrefix = DevicePrefix;
+        private readonly string DevicePrefix = $"E2E_{nameof(MessageSendE2ETests)}_";
+        private readonly string ModulePrefix = $"E2E_{nameof(MessageSendE2ETests)}_";
         private static string ProxyServerAddress = Configuration.IoTHub.ProxyServerAddress;
         private static TestLogging _log = TestLogging.GetInstance();
 
@@ -509,7 +509,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await TestTimeout(timeout).ConfigureAwait(false);
         }
 
-        private static async Task TestTimeout(TimeSpan? timeout)
+        private async Task TestTimeout(TimeSpan? timeout)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
             using (ServiceClient sender = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
