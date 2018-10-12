@@ -238,6 +238,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             var propertyUpdateReceived = new TaskCompletionSource<bool>();
             string userContext = "myContext";
 
+            // TODO: Change to semaphore.
             await deviceClient.SetDesiredPropertyUpdateCallbackAsync(
                 (patch, context) =>
                 {

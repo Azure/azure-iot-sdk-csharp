@@ -123,15 +123,23 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             var methodCallReceived = new TaskCompletionSource<bool>();
 
-
             await deviceClient.SetMethodHandlerAsync(MethodName,
                 (request, context) =>
                 {
                     _log.WriteLine($"{nameof(SetDeviceReceiveMethod)}: DeviceClient method: {request.Name} {request.ResponseTimeout}.");
-                    Assert.AreEqual(MethodName, request.Name);
-                    Assert.AreEqual(ServiceRequestJson, request.DataAsJson);
 
-                    methodCallReceived.SetResult(true);
+                    try
+                    {
+                        Assert.AreEqual(MethodName, request.Name);
+                        Assert.AreEqual(ServiceRequestJson, request.DataAsJson);
+
+                        methodCallReceived.SetResult(true);
+                    }
+                    catch (Exception ex)
+                    {
+                        methodCallReceived.SetException(ex);
+                    }
+                    
                     return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(DeviceResponseJson), 200));
                 },
                 null).ConfigureAwait(false);
@@ -149,10 +157,18 @@ namespace Microsoft.Azure.Devices.E2ETests
                 {
                     _log.WriteLine($"{nameof(SetDeviceReceiveMethodDefaultHandler)}: DeviceClient method: {request.Name} {request.ResponseTimeout}.");
 
-                    Assert.AreEqual(MethodName, request.Name);
-                    Assert.AreEqual(ServiceRequestJson, request.DataAsJson);
+                    try
+                    {
+                        Assert.AreEqual(MethodName, request.Name);
+                        Assert.AreEqual(ServiceRequestJson, request.DataAsJson);
 
-                    methodCallReceived.SetResult(true);
+                        methodCallReceived.SetResult(true);
+                    }
+                    catch (Exception ex)
+                    {
+                        methodCallReceived.SetException(ex);
+                    }
+
                     return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(DeviceResponseJson), 200));
                 },
                 null).ConfigureAwait(false);
@@ -168,11 +184,19 @@ namespace Microsoft.Azure.Devices.E2ETests
             deviceClient.SetMethodHandler(MethodName, (request, context) =>
             {
                 _log.WriteLine($"{nameof(SetDeviceReceiveMethodObsoleteHandler)}: DeviceClient method: {request.Name} {request.ResponseTimeout}.");
-                
-                Assert.AreEqual(MethodName, request.Name);
-                Assert.AreEqual(ServiceRequestJson, request.DataAsJson);
 
-                methodCallReceived.SetResult(true);
+                try
+                {
+                    Assert.AreEqual(MethodName, request.Name);
+                    Assert.AreEqual(ServiceRequestJson, request.DataAsJson);
+
+                    methodCallReceived.SetResult(true);
+                }
+                catch (Exception ex)
+                {
+                    methodCallReceived.SetException(ex);
+                }
+
                 return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(DeviceResponseJson), 200));
             }, null);
 #pragma warning restore CS0618

@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
     //
     // Note on ConfigureAwait: dotNetty is using a custom TaskScheduler that binds Tasks to the corresponding
-    // EventLoopGroup. To limit I/O to the EventLoopGroup and keep Netty semantics, we are going to ensure that the
+    // EventLoop. To limit I/O to the EventLoopGroup and keep Netty semantics, we are going to ensure that the
     // task continuations are executed by this scheduler using ConfigureAwait(true).
     //
     sealed class MqttIotHubAdapter : ChannelHandlerAdapter

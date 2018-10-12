@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private static async Task CreateDeviceAsync(TestDeviceType type, string prefix)
         {
             string deviceName = prefix + Guid.NewGuid();
-            s_log.WriteLine($"{nameof(GetTestDeviceAsync)}: Device with prefix {prefix} not found. Removing old devices.");
+            s_log.WriteLine($"{nameof(GetTestDeviceAsync)}: Device with prefix {prefix} not found.");
 
             // Delete existing devices named this way and create a new one.
             using (RegistryManager rm = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))

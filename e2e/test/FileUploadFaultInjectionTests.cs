@@ -77,7 +77,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             Stopwatch sw = new Stopwatch();
             sw.Start();
-            while (sw.Elapsed.Minutes < 2)
+            while (sw.Elapsed.TotalMinutes < 2)
             {
                 // Receive the file notification from queue
                 fileNotification = await fileNotificationReceiver.ReceiveAsync(TimeSpan.FromSeconds(20)).ConfigureAwait(false);

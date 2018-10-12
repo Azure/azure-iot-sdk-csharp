@@ -2,10 +2,13 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.Azure.Devices.Client;
+using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Tracing;
+using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -32,16 +35,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         [Ignore] // TODO: #558
         [TestMethod]
-        public async Task Method_DeviceReceivesMethodAndResponseRecovery_Mqtt()
-        {
-            await SendMethodAndRespondRecovery(Client.TransportType.Mqtt_Tcp_Only,
-                FaultInjection.FaultType_Tcp,
-                FaultInjection.FaultCloseReason_Boom,
-                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
-        }
-
-        [Ignore] // TODO: #558
-        [TestMethod]
         public async Task Method_DeviceReceivesMethodAndResponseRecovery_MqttWs()
         {
             await SendMethodAndRespondRecovery(Client.TransportType.Mqtt_WebSocket_Only,
@@ -60,7 +53,15 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [Ignore] // TODO: #558
+        [TestMethod]
+        public async Task Method_DeviceReceivesMethodAndResponseRecovery_Mqtt()
+        {
+            await SendMethodAndRespondRecovery(Client.TransportType.Mqtt_Tcp_Only,
+                FaultInjection.FaultType_Tcp,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
         [TestMethod]
         public async Task Method_DeviceMethodGracefulShutdownRecovery_MqttWs()
         {
@@ -70,7 +71,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [Ignore] //TODO: #571
         [TestMethod]
         public async Task Method_DeviceMethodTcpConnRecovery_Amqp()
         {
@@ -80,6 +80,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore] //TODO: #571
         [TestMethod]
         public async Task Method_DeviceMethodTcpConnRecovery_AmqpWs()
         {
@@ -99,7 +100,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [Ignore] //TODO: #571
         [TestMethod]
         public async Task Method_DeviceMethodAmqpConnLostRecovery_AmqpWs()
         {
@@ -119,7 +119,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [Ignore] //TODO: #571
         [TestMethod]
         public async Task Method_DeviceMethodSessionLostRecovery_AmqpWs()
         {
@@ -129,7 +128,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [Ignore] //TODO: #194 Test intermittently failing on Windows.
         [TestMethod]
         public async Task Method_DeviceMethodReqLinkDropRecovery_Amqp()
         {
@@ -139,7 +137,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [Ignore] //TODO: #194 Test intermittently failing on Windows.
         [TestMethod]
         public async Task Method_DeviceMethodReqLinkDropRecovery_AmqpWs()
         {
@@ -149,7 +146,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [Ignore] //TODO: #194 Test intermittently failing on Windows.
         [TestMethod]
         public async Task Method_DeviceMethodRespLinkDropRecovery_Amqp()
         {
@@ -159,7 +155,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [Ignore] //TODO: #194 Test intermittently failing on Windows.
         [TestMethod]
         public async Task Method_DeviceMethodRespLinkDropRecovery_AmqpWs()
         {
@@ -169,7 +164,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [Ignore] //TODO: #571
         [TestMethod]
         public async Task Method_DeviceMethodGracefulShutdownRecovery_Amqp()
         {
@@ -179,7 +173,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [Ignore] //TODO: #571
         [TestMethod]
         public async Task Method_DeviceMethodGracefulShutdownRecovery_AmqpWs()
         {
@@ -191,52 +184,83 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private async Task ServiceSendMethodAndVerifyResponse(string deviceName, string methodName, string respJson, string reqJson)
         {
-            using (ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
+            var sw = new Stopwatch();
+            sw.Start();
+            bool done = false;
+            ExceptionDispatchInfo exceptionDispatchInfo = null;
+
+            while (!done && sw.ElapsedMilliseconds < 3000) //FaultInjection.RecoveryTimeMilliseconds)
             {
-                _log.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponse)}: Invoke method {methodName}.");
-                CloudToDeviceMethodResult response =
-                    await serviceClient.InvokeDeviceMethodAsync(
-                        deviceName,
-                        new CloudToDeviceMethod(methodName, TimeSpan.FromMinutes(5)).SetPayloadJson(reqJson)).ConfigureAwait(false);
+                try
+                {
+                    using (ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
+                    {
+                        _log.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponse)}: Invoke method {methodName}.");
+                        CloudToDeviceMethodResult response =
+                            await serviceClient.InvokeDeviceMethodAsync(
+                                deviceName,
+                                new CloudToDeviceMethod(methodName, TimeSpan.FromMinutes(5)).SetPayloadJson(reqJson)).ConfigureAwait(false);
 
-                _log.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponse)}: Method status: {response.Status}.");
-                Assert.AreEqual(200, response.Status);
-                Assert.AreEqual(respJson, response.GetPayloadAsJson());
+                        _log.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponse)}: Method status: {response.Status}.");
+                        Assert.AreEqual(200, response.Status);
+                        Assert.AreEqual(respJson, response.GetPayloadAsJson());
 
-                await serviceClient.CloseAsync().ConfigureAwait(false);
+                        await serviceClient.CloseAsync().ConfigureAwait(false);
+                        done = true;
+                    }
+                }
+                catch (DeviceNotFoundException ex)
+                {
+                    exceptionDispatchInfo = ExceptionDispatchInfo.Capture(ex);
+                    _log.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponse)}: ServiceClient exception caught: {ex}.");
+                    await Task.Delay(1000).ConfigureAwait(false);
+                }
+            }
+
+            if (exceptionDispatchInfo != null)
+            {
+                exceptionDispatchInfo.Throw();
             }
         }
 
-        private async Task<Task> SetDeviceReceiveMethod(DeviceClient deviceClient)
+        // TODO: Unify with fault injection.
+        private async Task SetDeviceReceiveMethod(DeviceClient deviceClient, SemaphoreSlim semaphore)
         {
-            var methodCallReceived = new TaskCompletionSource<bool>();
-
-
             await deviceClient.SetMethodHandlerAsync(MethodName,
                 (request, context) =>
                 {
-                    _log.WriteLine($"{nameof(SetDeviceReceiveMethod)}: DeviceClient method: {request.Name} {request.ResponseTimeout}.");
+                    // TODO: Catch Exception and test.
+                    _log.WriteLine($"{nameof(SetDeviceReceiveMethod)}: DeviceClient callback method: {request.Name} {request.ResponseTimeout}.");
                     Assert.AreEqual(MethodName, request.Name);
                     Assert.AreEqual(ServiceRequestJson, request.DataAsJson);
 
-                    methodCallReceived.SetResult(true);
+                    semaphore.Release();
                     return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(DeviceResponseJson), 200));
                 },
                 null).ConfigureAwait(false);
-
-            // Return the task that tells us we have received the callback.
-            return methodCallReceived.Task;
         }
 
         private async Task SendMethodAndRespondRecovery(Client.TransportType transport, string faultType, string reason, int delayInSec)
         {
+            var semaphore = new SemaphoreSlim(1, 1);
+
+            Func<DeviceClient, TestDevice, Task> initOperation = async (deviceClient, testDevice) =>
+            {
+                await SetDeviceReceiveMethod(deviceClient, semaphore).ConfigureAwait(false);
+            };
+
             Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
             {
-                Task methodReceivedTask = await SetDeviceReceiveMethod(deviceClient).ConfigureAwait(false);
+                Task serviceSendTask = ServiceSendMethodAndVerifyResponse(testDevice.Id, MethodName, DeviceResponseJson, ServiceRequestJson);
+                Task methodReceivedTask = semaphore.WaitAsync();
 
-                await Task.WhenAll(
-                    ServiceSendMethodAndVerifyResponse(testDevice.Id, MethodName, DeviceResponseJson, ServiceRequestJson),
-                    methodReceivedTask).ConfigureAwait(false);
+                var tasks = new List<Task>() { serviceSendTask, methodReceivedTask };
+                while (tasks.Count > 0)
+                {
+                    Task completedTask = await Task.WhenAny(tasks).ConfigureAwait(false);
+                    completedTask.GetAwaiter().GetResult();
+                    tasks.Remove(completedTask);
+                }
             };
 
             await FaultInjection.TestErrorInjectionTemplate(
@@ -247,7 +271,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 reason,
                 delayInSec,
                 FaultInjection.DefaultDelayInSec,
-                (d, t) => { return Task.FromResult<bool>(false); },
+                initOperation,
                 testOperation,
                 () => { return Task.FromResult<bool>(false); }).ConfigureAwait(false);
         }
