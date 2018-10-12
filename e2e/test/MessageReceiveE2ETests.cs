@@ -164,12 +164,12 @@ namespace Microsoft.Azure.Devices.E2ETests
                 if (receivedMessage != null)
                 {
                     string messageData = Encoding.ASCII.GetString(receivedMessage.GetBytes());
-                    Assert.AreEqual(messageData, payload);
+                    Assert.AreEqual(payload, messageData);
 
-                    Assert.AreEqual(receivedMessage.Properties.Count, 1);
+                    Assert.AreEqual(1, receivedMessage.Properties.Count);
                     var prop = receivedMessage.Properties.Single();
-                    Assert.AreEqual(prop.Key, "property1");
-                    Assert.AreEqual(prop.Value, p1Value);
+                    Assert.AreEqual("property1", prop.Key);
+                    Assert.AreEqual(p1Value, prop.Value);
 
                     await dc.CompleteAsync(receivedMessage).ConfigureAwait(false);
                     wait = false;
