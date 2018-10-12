@@ -30,7 +30,6 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
 
             set
             {
-                StringValidationHelper.EnsureBase64String(value, "Key");
                 _key = value;
             }
         }
