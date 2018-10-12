@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
     [TestCategory("Provisioning-E2E")]
-    public class ProvisioningTests : IDisposable
+    public class ProvisioningE2ETests : IDisposable
     {
         private const int PassingTimeoutMiliseconds = 10 * 60 * 1000;
         private const int FailingTimeoutMiliseconds = 10 * 1000;
@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private readonly TestLogging _log = TestLogging.GetInstance();
         private readonly ConsoleEventListener _listener;
 
-        public ProvisioningTests()
+        public ProvisioningE2ETests()
         {
             _listener = new ConsoleEventListener("Microsoft-Azure-");
         }

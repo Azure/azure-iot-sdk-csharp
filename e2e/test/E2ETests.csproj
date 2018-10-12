@@ -59,9 +59,9 @@
       <Link>Common\Configuration.Provisioning.cs</Link>
     </Compile>
     <Compile Include="netstandard20\EventHubTestListener.NetCore.cs" />
-    <Compile Include="netstandard20\ProvisioningTests.cs" />
-    <Compile Include="netstandard20\ProvisioningServiceClientTests.cs" />
-    <Compile Include="netstandard20\ProvisioningCertificateValidationTest.cs" />
+    <Compile Include="netstandard20\ProvisioningE2ETests.cs" />
+    <Compile Include="netstandard20\ProvisioningServiceClientE2ETests.cs" />
+    <Compile Include="netstandard20\ProvisioningCertificateValidationE2ETest.cs" />
   </ItemGroup>
 
   <!-- All Platforms -->

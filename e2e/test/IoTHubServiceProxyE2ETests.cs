@@ -6,6 +6,7 @@ using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Tracing;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,7 +18,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestClass]
     [TestCategory("IoTHub-E2E")]
     [TestCategory("ProxyE2ETests")]
-    public class IoTHubServiceProxyE2ETests
+    public class IoTHubServiceProxyE2ETests : IDisposable
     {
         private const string DevicePrefix = "E2E_IoTHubServiceProxy_";
         private const string JobDeviceId = "JobsSample_Device";
@@ -26,6 +27,12 @@ namespace Microsoft.Azure.Devices.E2ETests
         private static TestLogging _log = TestLogging.GetInstance();
         private static string ConnectionString = Configuration.IoTHub.ConnectionString;
         private static string ProxyServerAddress = Configuration.IoTHub.ProxyServerAddress;
+        private readonly ConsoleEventListener _listener;
+        
+        public IoTHubServiceProxyE2ETests()
+        {
+            _listener = TestConfig.StartEventListener();
+        }
 
         [TestMethod]
         public async Task ServiceClient_Message_SendSingleMessage_WithProxy()
@@ -109,6 +116,16 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 Properties = { ["property1"] = p1Value }
             };
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
         }
     }
 }

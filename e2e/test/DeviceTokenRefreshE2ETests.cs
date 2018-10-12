@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         public DeviceTokenRefreshE2ETests()
         {
-            _listener = new ConsoleEventListener("Microsoft-Azure-");
+            _listener = TestConfig.StartEventListener();
             _log = TestLogging.GetInstance();
         }
 
@@ -142,10 +142,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         protected virtual void Dispose(bool disposing)
         {
-            if (disposing)
-            {
-                _listener.Dispose();
-            }
         }
 
         private class TestTokenRefresher : DeviceAuthenticationWithTokenRefresh

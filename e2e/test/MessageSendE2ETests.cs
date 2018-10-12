@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
     [TestCategory("IoTHub-E2E")]
-    public partial class MessageSendTests : IDisposable
+    public partial class MessageSendE2ETests : IDisposable
     {
         private const string DevicePrefix = "E2E_MessageSend_";
         private const string ModulePrefix = DevicePrefix;
@@ -25,9 +25,9 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private readonly ConsoleEventListener _listener;
 
-        public MessageSendTests()
+        public MessageSendE2ETests()
         {
-            _listener = new ConsoleEventListener("Microsoft-Azure-");
+            _listener = TestConfig.StartEventListener();
         }
 
         [TestMethod]
@@ -701,10 +701,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         protected virtual void Dispose(bool disposing)
         {
-            if (disposing)
-            {
-                _listener.Dispose();
-            }
         }
     }
 }
