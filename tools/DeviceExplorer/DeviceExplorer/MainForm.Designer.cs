@@ -57,6 +57,7 @@
             this.updateDeviceButton = new System.Windows.Forms.Button();
             this.deleteDeviceButton = new System.Windows.Forms.Button();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.deviceCountTextBox = new System.Windows.Forms.TextBox();
             this.filterDevicesTextBox = new System.Windows.Forms.TextBox();
             this.filterDevicesLabel = new System.Windows.Forms.Label();
             this.totalLabel = new System.Windows.Forms.Label();
@@ -128,7 +129,6 @@
             this.label14 = new System.Windows.Forms.Label();
             this.label13 = new System.Windows.Forms.Label();
             this.ehStringToolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.deviceCountTextBox = new System.Windows.Forms.TextBox();
             this.tabCallDeviceMethod.SuspendLayout();
             this.tabPage2.SuspendLayout();
             this.groupBox5.SuspendLayout();
@@ -504,9 +504,19 @@
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Devices";
             // 
+            // deviceCountTextBox
+            // 
+            this.deviceCountTextBox.AccessibleName = "Total device count";
+            this.deviceCountTextBox.Location = new System.Drawing.Point(58, 19);
+            this.deviceCountTextBox.Name = "deviceCountTextBox";
+            this.deviceCountTextBox.ReadOnly = true;
+            this.deviceCountTextBox.Size = new System.Drawing.Size(100, 22);
+            this.deviceCountTextBox.TabIndex = 10;
+            this.deviceCountTextBox.Text = "0";
+            // 
             // filterDevicesTextBox
             // 
-            this.filterDevicesTextBox.AccessibleName = "Filter devices list";
+            this.filterDevicesTextBox.AccessibleName = "Filter devices list below";
             this.filterDevicesTextBox.Location = new System.Drawing.Point(58, 49);
             this.filterDevicesTextBox.Name = "filterDevicesTextBox";
             this.filterDevicesTextBox.Size = new System.Drawing.Size(676, 22);
@@ -635,27 +645,29 @@
             this.groupBox3.Location = new System.Drawing.Point(6, 24);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(739, 247);
-            this.groupBox3.TabIndex = 26;
+            this.groupBox3.TabIndex = 1;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Monitoring";
             // 
             // enableSystemProperties
             // 
+            this.enableSystemProperties.AccessibleName = "Show system properties";
             this.enableSystemProperties.AutoSize = true;
             this.enableSystemProperties.Location = new System.Drawing.Point(563, 208);
             this.enableSystemProperties.Name = "enableSystemProperties";
             this.enableSystemProperties.Size = new System.Drawing.Size(170, 20);
-            this.enableSystemProperties.TabIndex = 30;
+            this.enableSystemProperties.TabIndex = 14;
             this.enableSystemProperties.Text = "Show system properties";
             this.enableSystemProperties.UseVisualStyleBackColor = true;
             // 
             // consumerGroupCheckBox
             // 
+            this.consumerGroupCheckBox.AccessibleName = "Enable consumer group field";
             this.consumerGroupCheckBox.AutoSize = true;
             this.consumerGroupCheckBox.Location = new System.Drawing.Point(407, 157);
             this.consumerGroupCheckBox.Name = "consumerGroupCheckBox";
             this.consumerGroupCheckBox.Size = new System.Drawing.Size(70, 20);
-            this.consumerGroupCheckBox.TabIndex = 29;
+            this.consumerGroupCheckBox.TabIndex = 8;
             this.consumerGroupCheckBox.Text = "Enable";
             this.consumerGroupCheckBox.UseVisualStyleBackColor = true;
             this.consumerGroupCheckBox.CheckedChanged += new System.EventHandler(this.consumerGroupCheckBox_CheckedChanged);
@@ -666,7 +678,7 @@
             this.label6.Location = new System.Drawing.Point(22, 161);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(112, 16);
-            this.label6.TabIndex = 28;
+            this.label6.TabIndex = 9;
             this.label6.Text = "Consumer Group:";
             // 
             // groupNameTextBox
@@ -676,14 +688,15 @@
             this.groupNameTextBox.Location = new System.Drawing.Point(140, 155);
             this.groupNameTextBox.Name = "groupNameTextBox";
             this.groupNameTextBox.Size = new System.Drawing.Size(258, 22);
-            this.groupNameTextBox.TabIndex = 27;
+            this.groupNameTextBox.TabIndex = 10;
             // 
             // cancelMonitoringButton
             // 
+            this.cancelMonitoringButton.AccessibleName = "Cancel data monitoring";
             this.cancelMonitoringButton.Location = new System.Drawing.Point(182, 202);
             this.cancelMonitoringButton.Name = "cancelMonitoringButton";
             this.cancelMonitoringButton.Size = new System.Drawing.Size(133, 30);
-            this.cancelMonitoringButton.TabIndex = 26;
+            this.cancelMonitoringButton.TabIndex = 12;
             this.cancelMonitoringButton.Text = "Cancel";
             this.cancelMonitoringButton.UseVisualStyleBackColor = true;
             this.cancelMonitoringButton.Click += new System.EventHandler(this.cancelButton_Click);
@@ -694,25 +707,27 @@
             this.label12.Location = new System.Drawing.Point(22, 40);
             this.label12.Name = "label12";
             this.label12.Size = new System.Drawing.Size(73, 16);
-            this.label12.TabIndex = 15;
+            this.label12.TabIndex = 2;
             this.label12.Text = "Event Hub:";
             // 
             // clearDataButton
             // 
+            this.clearDataButton.AccessibleName = "Clear Event Hub Data field below";
             this.clearDataButton.Location = new System.Drawing.Point(353, 202);
             this.clearDataButton.Name = "clearDataButton";
             this.clearDataButton.Size = new System.Drawing.Size(120, 30);
-            this.clearDataButton.TabIndex = 21;
+            this.clearDataButton.TabIndex = 13;
             this.clearDataButton.Text = "Clear";
             this.clearDataButton.UseVisualStyleBackColor = true;
             this.clearDataButton.Click += new System.EventHandler(this.clearDataButton_Click);
             // 
             // dataMonitorButton
             // 
+            this.dataMonitorButton.AccessibleName = "Monitor data";
             this.dataMonitorButton.Location = new System.Drawing.Point(21, 202);
             this.dataMonitorButton.Name = "dataMonitorButton";
             this.dataMonitorButton.Size = new System.Drawing.Size(120, 30);
-            this.dataMonitorButton.TabIndex = 4;
+            this.dataMonitorButton.TabIndex = 11;
             this.dataMonitorButton.Text = "Monitor";
             this.dataMonitorButton.UseVisualStyleBackColor = true;
             this.dataMonitorButton.Click += new System.EventHandler(this.dataMonitorButton_Click);
@@ -723,7 +738,7 @@
             this.label15.Location = new System.Drawing.Point(22, 121);
             this.label15.Name = "label15";
             this.label15.Size = new System.Drawing.Size(72, 16);
-            this.label15.TabIndex = 23;
+            this.label15.TabIndex = 6;
             this.label15.Text = "Start Time:";
             // 
             // label11
@@ -732,7 +747,7 @@
             this.label11.Location = new System.Drawing.Point(22, 81);
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(70, 16);
-            this.label11.TabIndex = 2;
+            this.label11.TabIndex = 4;
             this.label11.Text = "Device ID:";
             // 
             // eventHubNameTextBoxForDataTab
@@ -744,7 +759,7 @@
             this.eventHubNameTextBoxForDataTab.Name = "eventHubNameTextBoxForDataTab";
             this.eventHubNameTextBoxForDataTab.ReadOnly = true;
             this.eventHubNameTextBoxForDataTab.Size = new System.Drawing.Size(622, 22);
-            this.eventHubNameTextBoxForDataTab.TabIndex = 17;
+            this.eventHubNameTextBoxForDataTab.TabIndex = 3;
             // 
             // deviceIDsComboBoxForEvent
             // 
@@ -756,7 +771,7 @@
             this.deviceIDsComboBoxForEvent.Location = new System.Drawing.Point(101, 73);
             this.deviceIDsComboBoxForEvent.Name = "deviceIDsComboBoxForEvent";
             this.deviceIDsComboBoxForEvent.Size = new System.Drawing.Size(622, 24);
-            this.deviceIDsComboBoxForEvent.TabIndex = 18;
+            this.deviceIDsComboBoxForEvent.TabIndex = 5;
             this.deviceIDsComboBoxForEvent.SelectionChangeCommitted += new System.EventHandler(this.deviceIDsComboBoxForEvent_SelectionChangeCommitted);
             // 
             // dateTimePicker
@@ -771,7 +786,7 @@
             this.dateTimePicker.Name = "dateTimePicker";
             this.dateTimePicker.ShowCheckBox = true;
             this.dateTimePicker.Size = new System.Drawing.Size(622, 22);
-            this.dateTimePicker.TabIndex = 22;
+            this.dateTimePicker.TabIndex = 7;
             // 
             // groupBox1
             // 
@@ -796,7 +811,7 @@
             this.eventHubTextBox.Name = "eventHubTextBox";
             this.eventHubTextBox.ReadOnly = true;
             this.eventHubTextBox.Size = new System.Drawing.Size(725, 276);
-            this.eventHubTextBox.TabIndex = 5;
+            this.eventHubTextBox.TabIndex = 15;
             this.eventHubTextBox.Text = "";
             // 
             // tabMessagesToDevice
@@ -1292,16 +1307,6 @@
             this.label13.Size = new System.Drawing.Size(143, 16);
             this.label13.TabIndex = 0;
             this.label13.Text = "Call Method on Device";
-            // 
-            // deviceCountTextBox
-            // 
-            this.deviceCountTextBox.AccessibleName = "Total device count";
-            this.deviceCountTextBox.Location = new System.Drawing.Point(58, 19);
-            this.deviceCountTextBox.Name = "deviceCountTextBox";
-            this.deviceCountTextBox.ReadOnly = true;
-            this.deviceCountTextBox.Size = new System.Drawing.Size(100, 22);
-            this.deviceCountTextBox.TabIndex = 10;
-            this.deviceCountTextBox.Text = "0";
             // 
             // MainForm
             // 
