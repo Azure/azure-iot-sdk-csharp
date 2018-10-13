@@ -70,6 +70,9 @@ export DPS_TPM_DEVICEID=provisionedtpm1
 # Provisioning service owner connection string.
 export PROVISIONING_CONNECTION_STRING=""
 
+# Provisioning service host.
+export PROVISIONING_SERVICE_HOST=""
+
 # ---------- Invalid Certificate validation ----------
 # The connection strings below point to servers with incorrect TLS server certificates. Tests will attempt to connect and expect that the TLS connection ends in a security exception.
 

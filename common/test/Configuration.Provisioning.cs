@@ -14,6 +14,8 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             public static string ConnectionString => GetValue("PROVISIONING_CONNECTION_STRING");
 
+            public static string Host => GetValue("PROVISIONING_SERVICE_HOST");
+
             public static string GlobalDeviceEndpoint => 
                 GetValue("DPS_GLOBALDEVICEENDPOINT", "global.azure-devices-provisioning.net");
 
