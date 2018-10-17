@@ -10,7 +10,7 @@ using System.Net;
 
 namespace Microsoft.Azure.Devices.Common.Service.Auth
 {    
-    internal sealed class SharedAccessSignature : ISharedAccessSignatureCredential
+    internal sealed class SharedAccessSignature
     {
         private readonly string _shareAccessSignatureName;
         private readonly string _signature;
@@ -138,72 +138,6 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
         public bool IsExpired()
         {
             return ExpiresOn + SharedAccessSignatureConstants.MaxClockSkew < DateTime.UtcNow;
-        }
-
-        public DateTime ExpiryTime()
-        {
-            return ExpiresOn + SharedAccessSignatureConstants.MaxClockSkew;
-        }
-
-        public void Authenticate(SharedAccessSignatureAuthorizationRule sasAuthorizationRule)
-        {
-            if (IsExpired())
-            {
-                throw new UnauthorizedAccessException("The specified SAS token is expired.");
-            }
-
-            if (sasAuthorizationRule.PrimaryKey != null)
-            {
-                string primareyKeyComputedSignature = ComputeSignature(Convert.FromBase64String(sasAuthorizationRule.PrimaryKey));
-                if (string.Equals(_signature, primareyKeyComputedSignature, StringComparison.Ordinal))
-                {
-                    return;
-                }
-            }
-
-            if (sasAuthorizationRule.SecondaryKey != null)
-            {
-                string secondaryKeyComputedSignature = ComputeSignature(Convert.FromBase64String(sasAuthorizationRule.SecondaryKey));
-                if (string.Equals(_signature, secondaryKeyComputedSignature, StringComparison.Ordinal))
-                {
-                    return;
-                }
-            }
-
-            throw new UnauthorizedAccessException("The specified SAS token has an invalid signature. It does not match either the primary or secondary key.");
-        }
-
-        public void Authorize(string serviceHostName)
-        {
-            SecurityHelper.ValidateServiceHostName(serviceHostName, ShareAccessSignatureName);
-        }
-
-        public void Authorize(Uri targetAddress)
-        {
-            if (targetAddress == null)
-            {
-                throw new ArgumentNullException(nameof(targetAddress));
-            }
-            
-            string target = targetAddress.Host + targetAddress.AbsolutePath;
-
-            if (!target.StartsWith(_audience.TrimEnd(new char[] { '/' }), StringComparison.OrdinalIgnoreCase))
-            {
-                throw new UnauthorizedAccessException("Invalid target audience");
-            }
-        }
-
-        public string ComputeSignature(byte[] key)
-        {
-            List<string> fields = new List<string>();
-            fields.Add(_encodedAudience);
-            fields.Add(_expiry);
-
-            using (var hmac = new HMACSHA256(key))
-            {
-                string value = string.Join("\n", fields);
-                return Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(value)));
-            }
         }
 
         private static IDictionary<string, string> ExtractFieldValues(string sharedAccessSignature)

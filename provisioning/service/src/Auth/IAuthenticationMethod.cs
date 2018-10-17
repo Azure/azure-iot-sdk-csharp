@@ -6,8 +6,13 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
     /// <summary>
     /// Authentication interface to use for IoTHub communications.
     /// </summary>
-    internal interface IAuthenticationMethod
+    public interface IAuthenticationMethod
     {
+        /// <summary>
+        /// Populates the Provisioning Service connection string builder object
+        /// </summary>
+        /// <param name="provisioningConnectionStringBuilder"> The Provisioning Service String Builder object </param>
+        /// <returns></returns>
         ServiceConnectionStringBuilder Populate(ServiceConnectionStringBuilder provisioningConnectionStringBuilder);
     }
 }

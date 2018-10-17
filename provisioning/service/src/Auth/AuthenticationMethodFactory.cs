@@ -8,7 +8,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
     /// <summary>
     /// Creates an instance of an implementation of <see cref="IAuthenticationMethod"/> based on known authentication parameters.
     /// </summary>
-    internal sealed class AuthenticationMethodFactory
+    internal static class AuthenticationMethodFactory
     {
         internal static IAuthenticationMethod GetAuthenticationMethod(ServiceConnectionStringBuilder iotHubConnectionStringBuilder)
         {
@@ -22,28 +22,6 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
             }
 
             throw new InvalidOperationException("Unsupported Authentication Method {0}".FormatInvariant(iotHubConnectionStringBuilder));
-        }
-
-        /// <summary>
-        ///  Factory method to create a ServiceAuthenticationWithSharedAccessPolicyKey object
-        /// </summary>
-        /// <param name="policyName"> PolicyName </param>
-        /// <param name="key"> SharedAccessKeyValue </param>
-        /// <returns> an AuthenticationMethod object </returns>
-        public static IAuthenticationMethod CreateAuthenticationWithSharedAccessPolicyKey(string policyName, string key)
-        {
-            return new ServiceAuthenticationWithSharedAccessPolicyKey(policyName, key);
-        }
-
-        /// <summary>
-        ///  Factory method to create a ServiceAuthenticationWithSharedAccessPolicyToken object
-        /// </summary>
-        /// <param name="policyName"> PolicyName </param>
-        /// <param name="token"> SharedAccessSignatureToken </param>
-        /// <returns> an AuthenticationMethod object </returns>
-        public static IAuthenticationMethod CreateAuthenticationWithSharedAccessPolicyToken(string policyName, string token)
-        {
-            return new ServiceAuthenticationWithSharedAccessPolicyToken(policyName, token);
         }
     }
 }

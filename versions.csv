@@ -7,4 +7,4 @@ provisioning\transport\amqp\src\Microsoft.Azure.Devices.Provisioning.Transport.A
 provisioning\transport\http\src\Microsoft.Azure.Devices.Provisioning.Transport.Http.csproj, 1.1.2
 provisioning\transport\mqtt\src\Microsoft.Azure.Devices.Provisioning.Transport.Mqtt.csproj, 1.1.4
 security\tpm\src\Microsoft.Azure.Devices.Provisioning.Security.Tpm.csproj, 1.1.2
-provisioning\service\src\Microsoft.Azure.Devices.Provisioning.Service.csproj, 1.3.0
+provisioning\service\src\Microsoft.Azure.Devices.Provisioning.Service.csproj, 2.0.0-preview-001
