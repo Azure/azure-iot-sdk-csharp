@@ -459,9 +459,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     string registrationId = Configuration.Provisioning.TpmDeviceRegistrationId;
 
 
-                    var credentials = ProvisioningServiceClient.CreateCredentialsFromConnectionString(Configuration.Provisioning.ConnectionString);
-                    var dpsUri = new Uri(Configuration.Provisioning.Host);
-                    var provisioningService = new ProvisioningServiceClient(dpsUri, credentials);
+                    var provisioningService = ProvisioningServiceClientFactory.CreateFromConnectionString(Configuration.Provisioning.ConnectionString);
 
                     _log.WriteLine($"Getting enrollment: RegistrationID = {registrationId}");
                     IndividualEnrollment enrollment = await provisioningService.GetIndividualEnrollmentAsync(registrationId).ConfigureAwait(false);
