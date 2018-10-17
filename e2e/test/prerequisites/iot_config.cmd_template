@@ -70,9 +70,6 @@ set DPS_TPM_DEVICEID=provisionedtpm1
 @REM Provisioning service owner connection string.
 set PROVISIONING_CONNECTION_STRING=
 
-@REM Provisioning service host.
-set PROVISIONING_SERVICE_HOST=
-
 @REM ---------- Invalid Certificate validation ----------
 @REM The connection strings below point to servers with incorrect TLS server certificates. Tests will attempt to connect and expect that the TLS connection ends in a security exception.
 

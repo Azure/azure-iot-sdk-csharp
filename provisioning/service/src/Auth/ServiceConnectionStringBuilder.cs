@@ -11,7 +11,10 @@ using SharedAccessSignatureParser = Microsoft.Azure.Devices.Common.Service.Auth.
 
 namespace Microsoft.Azure.Devices.Common.Service.Auth
 {
-    internal class ServiceConnectionStringBuilder
+    /// <summary>
+    /// The Service Connection String Builder class
+    /// </summary>
+    public class ServiceConnectionStringBuilder
     {
         private const char ValuePairDelimiter = ';';
         private const char ValuePairSeparator = '=';
@@ -65,24 +68,43 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
             return serviceConnectionStringBuilder;
         }
 
+        /// <summary>
+        /// The Provisioning Service Client Hostname
+        /// </summary>
         public string HostName
         {
             get { return _hostName; }
             set { SetHostName(value); }
         }
 
+        /// <summary>
+        /// The authentication method used for connection
+        /// </summary>
         public IAuthenticationMethod AuthenticationMethod
         {
             get { return _authenticationMethod; }
             set { SetAuthenticationMethod(value); }
         }
 
+        /// <summary>
+        /// The Provisioning Service Access Policy Name
+        /// </summary>
         public string SharedAccessKeyName { get; internal set; }
 
+        /// <summary>
+        /// The Provisioning Service Shared Access Key for the specified
+        /// access policy
+        /// </summary>
         public string SharedAccessKey { get; internal set; }
 
+        /// <summary>
+        /// The Provisioning Service Shared Access Signature
+        /// </summary>
         public string SharedAccessSignature { get; internal set; }
 
+        /// <summary>
+        /// The Provisioning Service Name
+        /// </summary>
         public string ServiceName
         {
             get { return _serviceName; }
@@ -94,6 +116,10 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
             return new ServiceConnectionString(this);
         }
 
+        /// <summary>
+        /// Returns the Provisioning Service Connection string
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             Validate();

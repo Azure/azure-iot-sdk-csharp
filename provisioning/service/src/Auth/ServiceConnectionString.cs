@@ -19,10 +19,9 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
     /// 
     /// This object parse and store the connection string. It is responsible to provide the authorization token too. 
     /// </remarks>
-    internal sealed class ServiceConnectionString : IAuthorizationHeaderProvider
+    public sealed class ServiceConnectionString : IAuthorizationHeaderProvider
     {
         private static readonly TimeSpan DefaultTokenTimeToLive = TimeSpan.FromMinutes(5);
-        private const string UserSeparator = "@";
 
         /// <summary>
         /// CONSTRUCOR
@@ -44,59 +43,73 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
             HttpsEndpoint = new UriBuilder("https", builder.HostName).Uri;
         }
 
+        /// <summary>
+        /// The Provisioning Service Name
+        /// </summary>
         public string ServiceName
         {
             get;
             private set;
         }
 
+        /// <summary>
+        /// The Provisioning Service Client Hostname
+        /// </summary>
         public string HostName
         {
             get;
             private set;
         }
 
+        /// <summary>
+        /// The Provisioning Service Client Https Endpoint
+        /// </summary>
         public Uri HttpsEndpoint
         {
             get;
             private set;
         }
 
+        /// <summary>
+        /// The Provisioning Service Audience
+        /// </summary>
         public string Audience
         {
             get { return HostName; }
         }
 
+        /// <summary>
+        /// The Provisioning Service Access Policy Name
+        /// </summary>
         public string SharedAccessKeyName
         {
             get;
             private set;
         }
 
+        /// <summary>
+        /// The Provisioning Service Shared Access Key for the specified
+        /// access policy
+        /// </summary>
         public string SharedAccessKey
         {
             get;
             private set;
         }
 
+        /// <summary>
+        /// The Provisioning Service Shared Access Signature
+        /// </summary>
         public string SharedAccessSignature
         {
             get;
             private set;
         }
 
-        public string GetUser()
-        {
-            var stringBuilder = new StringBuilder();
-            stringBuilder.Append(SharedAccessKeyName);
-            stringBuilder.Append(UserSeparator);
-            stringBuilder.Append("sas.");
-            stringBuilder.Append("root.");
-            stringBuilder.Append(ServiceName);
-
-            return stringBuilder.ToString();
-        }
-
+        /// <summary>
+        /// Returns the shared access signature for authorization
+        /// </summary>
+        /// <returns></returns>
         public string GetPassword()
         {
             string password;
@@ -113,11 +126,20 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
             return password;
         }
 
+        /// <summary>
+        /// Returns the Authorization header value
+        /// </summary>
+        /// <returns></returns>
         public string GetAuthorizationHeader()
         {
             return GetPassword();
         }
 
+        /// <summary>
+        /// Parser for the Provisioning Service Connection String
+        /// </summary>
+        /// <param name="connectionString"> The DPS Connection String </param>
+        /// <returns></returns>
         public static ServiceConnectionString Parse(string connectionString)
         {
             var builder = ServiceConnectionStringBuilder.Create(connectionString);

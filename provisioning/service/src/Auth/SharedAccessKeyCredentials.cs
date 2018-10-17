@@ -19,9 +19,9 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
         /// Create a new instance of <code>SharedAccessKeyCredentials</code> using
         /// the Shared Access Key
         /// </summary>
-        public SharedAccessKeyCredentials(string serviceConnectionString)
+        public SharedAccessKeyCredentials(ServiceConnectionString serviceConnectionString)
         {
-            _provisioningConnectionString = ServiceConnectionString.Parse(serviceConnectionString);
+            _provisioningConnectionString = serviceConnectionString;
         }
 
         /// <summary>
