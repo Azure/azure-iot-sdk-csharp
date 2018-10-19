@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private const string DeviceResponseJson = "{\"name\":\"e2e_test\"}";
         private const string ServiceRequestJson = "{\"a\":123}";
         private const string MethodName = "MethodE2ETest";
-        private static TestLogging _log = TestLogging.GetInstance();
+        private static TestLogging s_log = TestLogging.GetInstance();
 
         private readonly ConsoleEventListener _listener;
 
@@ -195,16 +195,16 @@ namespace Microsoft.Azure.Devices.E2ETests
                 {
                     using (ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
                     {
-                        _log.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponse)}: Invoke method {methodName}.");
+                        s_log.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponse)}: Invoke method {methodName}.");
                         CloudToDeviceMethodResult response =
                             await serviceClient.InvokeDeviceMethodAsync(
                                 deviceName,
                                 new CloudToDeviceMethod(methodName, TimeSpan.FromMinutes(5)).SetPayloadJson(reqJson)).ConfigureAwait(false);
 
-                        _log.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponse)}: Method status: {response.Status}.");
+                        s_log.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponse)}: Method status: {response.Status}.");
                         Assert.AreEqual(200, response.Status);
                         Assert.AreEqual(respJson, response.GetPayloadAsJson());
-
+                        
                         await serviceClient.CloseAsync().ConfigureAwait(false);
                         done = true;
                     }
@@ -212,7 +212,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 catch (DeviceNotFoundException ex)
                 {
                     exceptionDispatchInfo = ExceptionDispatchInfo.Capture(ex);
-                    _log.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponse)}: ServiceClient exception caught: {ex}.");
+                    s_log.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponse)}: ServiceClient exception caught: {ex}.");
                     await Task.Delay(1000).ConfigureAwait(false);
                 }
             }
@@ -222,37 +222,22 @@ namespace Microsoft.Azure.Devices.E2ETests
                 exceptionDispatchInfo.Throw();
             }
         }
-
-        // TODO: Unify with fault injection.
-        private async Task SetDeviceReceiveMethod(DeviceClient deviceClient, SemaphoreSlim semaphore)
-        {
-            await deviceClient.SetMethodHandlerAsync(MethodName,
-                (request, context) =>
-                {
-                    // TODO: Catch Exception and test.
-                    _log.WriteLine($"{nameof(SetDeviceReceiveMethod)}: DeviceClient callback method: {request.Name} {request.ResponseTimeout}.");
-                    Assert.AreEqual(MethodName, request.Name);
-                    Assert.AreEqual(ServiceRequestJson, request.DataAsJson);
-
-                    semaphore.Release();
-                    return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(DeviceResponseJson), 200));
-                },
-                null).ConfigureAwait(false);
-        }
-
+        
         private async Task SendMethodAndRespondRecovery(Client.TransportType transport, string faultType, string reason, int delayInSec)
         {
-            var semaphore = new SemaphoreSlim(1, 1);
+            TestDeviceCallbackHandler testDeviceCallbackHandler = new TestDeviceCallbackHandler(null);
+            var cts = new CancellationTokenSource(FaultInjection.RecoveryTimeMilliseconds);
 
             Func<DeviceClient, TestDevice, Task> initOperation = async (deviceClient, testDevice) =>
             {
-                await SetDeviceReceiveMethod(deviceClient, semaphore).ConfigureAwait(false);
+                testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient);
+                await testDeviceCallbackHandler.SetDeviceReceiveMethodAsync(MethodName, DeviceResponseJson, "{}" /*ServiceRequestJson*/).ConfigureAwait(false);
             };
 
             Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
             {
                 Task serviceSendTask = ServiceSendMethodAndVerifyResponse(testDevice.Id, MethodName, DeviceResponseJson, ServiceRequestJson);
-                Task methodReceivedTask = semaphore.WaitAsync();
+                Task methodReceivedTask = testDeviceCallbackHandler.WaitForMethodCallbackAsync(cts.Token);
 
                 var tasks = new List<Task>() { serviceSendTask, methodReceivedTask };
                 while (tasks.Count > 0)
@@ -263,7 +248,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
             };
 
-            await FaultInjection.TestErrorInjectionTemplate(
+            await FaultInjection.TestErrorInjectionAsync(
                 DevicePrefix,
                 TestDeviceType.Sasl,
                 transport,

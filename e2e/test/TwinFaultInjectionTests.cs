@@ -220,7 +220,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Assert.AreEqual<String>(deviceTwin.Properties.Reported[propName].ToString(), propValue);
             };
 
-            await FaultInjection.TestErrorInjectionTemplate(
+            await FaultInjection.TestErrorInjectionAsync(
                 DevicePrefix,
                 TestDeviceType.Sasl,
                 transport,
@@ -295,7 +295,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     updateReceivedTask).ConfigureAwait(false);
             };
 
-            await FaultInjection.TestErrorInjectionTemplate(
+            await FaultInjection.TestErrorInjectionAsync(
                 DevicePrefix,
                 TestDeviceType.Sasl,
                 transport,

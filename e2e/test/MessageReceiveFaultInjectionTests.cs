@@ -288,7 +288,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     return serviceClient.CloseAsync();
                 };
 
-                await FaultInjection.TestErrorInjectionTemplate(
+                await FaultInjection.TestErrorInjectionAsync(
                     DevicePrefix,
                     type,
                     transport,

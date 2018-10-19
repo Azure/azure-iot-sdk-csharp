@@ -105,7 +105,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        public static async Task TestErrorInjectionTemplate(
+        // Error injection template method.
+        public static async Task TestErrorInjectionAsync(
             string devicePrefix,
             TestDeviceType type,
             Client.TransportType transport,
