@@ -56,10 +56,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-#if NETCOREAPP2_0
-        // TODO: #302 In NetCoreApp2.0 the test is failing with TimeoutException.
-        [Ignore]
-#endif
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Twin_DeviceReportedPropertiesTcpConnRecovery_AmqpWs()
@@ -102,10 +98,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-#if NETCOREAPP2_0
-        // TODO: #302 In NetCoreApp2.0 the test is failing with TimeoutException.
-        [Ignore]
-#endif
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Twin_DeviceReportedPropertiesGracefulShutdownRecovery_AmqpWs()
