@@ -33,7 +33,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             _listener = TestConfig.StartEventListener();
         }
 
-        [Ignore] // TODO: #558
         [TestMethod]
         public async Task Method_DeviceReceivesMethodAndResponseRecovery_MqttWs()
         {
@@ -43,7 +42,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [Ignore] // TODO: #558
         [TestMethod]
         public async Task Method_DeviceMethodGracefulShutdownRecovery_Mqtt()
         {
@@ -231,7 +229,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             Func<DeviceClient, TestDevice, Task> initOperation = async (deviceClient, testDevice) =>
             {
                 testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient);
-                await testDeviceCallbackHandler.SetDeviceReceiveMethodAsync(MethodName, DeviceResponseJson, "{}" /*ServiceRequestJson*/).ConfigureAwait(false);
+                await testDeviceCallbackHandler.SetDeviceReceiveMethodAsync(MethodName, DeviceResponseJson, ServiceRequestJson).ConfigureAwait(false);
             };
 
             Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
