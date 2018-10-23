@@ -5,6 +5,7 @@ using DotNetty.Buffers;
 using DotNetty.Codecs.Mqtt;
 using DotNetty.Codecs.Mqtt.Packets;
 using DotNetty.Common.Concurrency;
+using DotNetty.Handlers.Logging;
 using DotNetty.Handlers.Tls;
 using DotNetty.Transport.Bootstrapping;
 using DotNetty.Transport.Channels;
@@ -51,7 +52,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         readonly MqttIotHubAdapterFactory mqttIotHubAdapterFactory;
         readonly QualityOfService qos;
 
-        readonly string eventLoopGroupKey;
         readonly object syncRoot = new object();
         readonly CancellationTokenSource disconnectAwaitersCancellationSource = new CancellationTokenSource();
         readonly RetryPolicy closeRetryPolicy;
@@ -139,7 +139,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             this.receiveEventMessagePrefix = string.Format(CultureInfo.InvariantCulture, receiveEventMessagePrefixPattern, iotHubConnectionString.DeviceId, iotHubConnectionString.ModuleId);
 
             this.qos = settings.PublishToServerQoS;
-            this.eventLoopGroupKey = iotHubConnectionString.IotHubName + "#" + iotHubConnectionString.DeviceId + "#" + iotHubConnectionString.Audience;
 
             if (channelFactory == null)
             {
@@ -924,6 +923,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                                 tlsHandler,
                                 MqttEncoder.Instance, 
                                 new MqttDecoder(false, MaxMessageSize), 
+                                new LoggingHandler(LogLevel.DEBUG),
                                 this.mqttIotHubAdapterFactory.Create(this, iotHubConnectionString, settings, productInfo));
                     }));
 
@@ -1011,6 +1011,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     .Pipeline.AddLast(
                         MqttEncoder.Instance,
                         new MqttDecoder(false, MaxMessageSize),
+                        new LoggingHandler(LogLevel.DEBUG),
                         this.mqttIotHubAdapterFactory.Create(this, iotHubConnectionString, settings, productInfo));
                 await s_eventLoopGroup.RegisterAsync(clientChannel).ConfigureAwait(false);
 

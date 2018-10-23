@@ -3,6 +3,7 @@
 
 using DotNetty.Buffers;
 using DotNetty.Codecs.Mqtt;
+using DotNetty.Handlers.Logging;
 using DotNetty.Handlers.Timeout;
 using DotNetty.Handlers.Tls;
 using DotNetty.Transport.Bootstrapping;
@@ -172,6 +173,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                         new TlsHandler(tlsSettings), //TODO: Ensure SystemDefault is used.
                         MqttEncoder.Instance,
                         new MqttDecoder(isServer: false, maxMessageSize: MaxMessageSize),
+                        new LoggingHandler(LogLevel.DEBUG),
                         new ProvisioningChannelHandlerAdapter(message, tcs, cancellationToken));
                 }));
 
@@ -275,6 +277,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     new ReadTimeoutHandler(ReadTimeoutSeconds),
                     MqttEncoder.Instance,
                     new MqttDecoder(false, MaxMessageSize),
+                    new LoggingHandler(LogLevel.DEBUG),
                     new ProvisioningChannelHandlerAdapter(message, tcs, cancellationToken));
 
             await s_eventLoopGroup.RegisterAsync(clientChannel).ConfigureAwait(false);

@@ -169,6 +169,8 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
 
         public InternalClient(IotHubConnectionString iotHubConnectionString, ITransportSettings[] transportSettings, IDeviceClientPipelineBuilder pipelineBuilder)
         {
+            if (Logging.IsEnabled) Logging.Enter(this, transportSettings, pipelineBuilder, nameof(InternalClient) + "_ctor");
+
 #if NET451
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
 #endif
@@ -192,6 +194,8 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             
             if (Logging.IsEnabled) Logging.Associate(this, transportSettings, nameof(InternalClient));
             this.transportSettings = transportSettings;
+
+            if (Logging.IsEnabled) Logging.Exit(this, transportSettings, pipelineBuilder, nameof(InternalClient) + "_ctor");
         }
 
         /// <summary> 
@@ -577,38 +581,47 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// <returns>AsncTask</returns>
         public Task UploadToBlobAsync(String blobName, System.IO.Stream source)
         {
-            if (String.IsNullOrEmpty(blobName))
+            try
             {
-                throw Fx.Exception.ArgumentNull("blobName");
+                if (Logging.IsEnabled) Logging.Enter(this, blobName, source, nameof(UploadToBlobAsync));
+
+                if (String.IsNullOrEmpty(blobName))
+                {
+                    throw Fx.Exception.ArgumentNull("blobName");
+                }
+                if (source == null)
+                {
+                    throw Fx.Exception.ArgumentNull("source");
+                }
+                if (blobName.Length > 1024)
+                {
+                    throw Fx.Exception.Argument("blobName", "Length cannot exceed 1024 characters");
+                }
+                if (blobName.Split('/').Count() > 254)
+                {
+                    throw Fx.Exception.Argument("blobName", "Path segment count cannot exceed 254");
+                }
+
+                HttpTransportHandler httpTransport = null;
+                var context = new PipelineContext();
+                context.Set(this.productInfo);
+
+                var transportSettings = new Http1TransportSettings();
+
+                //We need to add the certificate to the fileUpload httpTransport if DeviceAuthenticationWithX509Certificate
+                if (this.Certificate != null)
+                {
+                    transportSettings.ClientCertificate = this.Certificate;
+                }
+
+                httpTransport = new HttpTransportHandler(context, iotHubConnectionString, transportSettings);
+
+                return httpTransport.UploadToBlobAsync(blobName, source);
             }
-            if (source == null)
+            finally
             {
-                throw Fx.Exception.ArgumentNull("source");
+                if (Logging.IsEnabled) Logging.Exit(this, blobName, nameof(UploadToBlobAsync));
             }
-            if (blobName.Length > 1024)
-            {
-                throw Fx.Exception.Argument("blobName", "Length cannot exceed 1024 characters");
-            }
-            if (blobName.Split('/').Count() > 254)
-            {
-                throw Fx.Exception.Argument("blobName", "Path segment count cannot exceed 254");
-            }
-
-            HttpTransportHandler httpTransport = null;
-            var context = new PipelineContext();
-            context.Set(this.productInfo);
-
-            var transportSettings = new Http1TransportSettings();
-
-            //We need to add the certificate to the fileUpload httpTransport if DeviceAuthenticationWithX509Certificate
-            if (this.Certificate != null)
-            {
-                transportSettings.ClientCertificate = this.Certificate;
-            }
-
-            httpTransport = new HttpTransportHandler(context, iotHubConnectionString, transportSettings);
-
-            return httpTransport.UploadToBlobAsync(blobName, source);
         }
 
         /// <summary>
@@ -622,6 +635,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         {
             try
             {
+                if (Logging.IsEnabled) Logging.Enter(this, methodName, methodHandler, userContext, nameof(SetMethodHandlerAsync));
                 await methodsDictionarySemaphore.WaitAsync().ConfigureAwait(false);
 
                 if (methodHandler != null)
@@ -658,6 +672,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             finally
             {
                 methodsDictionarySemaphore.Release();
+                if (Logging.IsEnabled) Logging.Exit(this, methodName, methodHandler, userContext, nameof(SetMethodHandlerAsync));
             }
         }
 
@@ -671,6 +686,8 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         {
             try
             {
+                if (Logging.IsEnabled) Logging.Enter(this, methodHandler, userContext, nameof(SetMethodDefaultHandlerAsync));
+
                 await methodsDictionarySemaphore.WaitAsync().ConfigureAwait(false);
                 if (methodHandler != null)
                 {
@@ -691,6 +708,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             finally
             {
                 methodsDictionarySemaphore.Release();
+                if (Logging.IsEnabled) Logging.Exit(this, methodHandler, userContext, nameof(SetMethodDefaultHandlerAsync));
             }
         }
 
@@ -705,10 +723,13 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         [Obsolete("Please use SetMethodHandlerAsync.")]
         public void SetMethodHandler(string methodName, MethodCallback methodHandler, object userContext)
         {
+            if (Logging.IsEnabled) Logging.Enter(this, methodName, methodHandler, userContext, nameof(SetMethodHandler));
+
             methodsDictionarySemaphore.Wait();
 
             try
             {
+                
                 if (methodHandler != null)
                 {
                     // codes_SRS_DEVICECLIENT_10_001: [ It shall lazy-initialize the deviceMethods property. ]
@@ -743,6 +764,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             finally
             {
                 methodsDictionarySemaphore.Release();
+                if (Logging.IsEnabled) Logging.Exit(this, methodName, methodHandler, userContext, nameof(SetMethodHandler));
             }
         }
 
@@ -755,6 +777,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         {
             // codes_SRS_DEVICECLIENT_28_025: [** `SetConnectionStatusChangesHandler` shall set connectionStatusChangesHandler **]**
             // codes_SRS_DEVICECLIENT_28_026: [** `SetConnectionStatusChangesHandler` shall unset connectionStatusChangesHandler if `statusChangesHandler` is null **]**
+            if (Logging.IsEnabled) Logging.Info(this, statusChangesHandler, nameof(SetConnectionStatusChangesHandler));
             this.connectionStatusChangesHandler = statusChangesHandler;
         }
 
@@ -764,6 +787,11 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         internal void OnConnectionOpened(object sender, ConnectionEventArgs e)
         {
             ConnectionStatusChangeResult result = this.connectionStatusManager.ChangeTo(e.ConnectionType, ConnectionStatus.Connected);
+            if (Logging.IsEnabled) Logging.Info(
+                this, 
+                $"{nameof(ConnectionEventArgs.ConnectionStatus)}={e.ConnectionStatus}, {nameof(ConnectionEventArgs.ConnectionStatusChangeReason)}={e.ConnectionStatusChangeReason}", 
+                nameof(OnConnectionOpened));
+
             if (result.IsClientStatusChanged && (connectionStatusChangesHandler != null))
             {
                 // codes_SRS_DEVICECLIENT_28_024: [** `OnConnectionOpened` shall invoke the connectionStatusChangesHandler if ConnectionStatus is changed **]**  
@@ -777,6 +805,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         internal async Task OnConnectionClosed(object sender, ConnectionEventArgs e)
         {
             ConnectionStatusChangeResult result = null;
+            if (Logging.IsEnabled) Logging.Enter(this, e.ConnectionStatus, e.ConnectionStatusChangeReason, e.ConnectionType, nameof(OnConnectionClosed));
 
             // codes_SRS_DEVICECLIENT_28_023: [** `OnConnectionClosed` shall notify ConnectionStatusManager of the connection updates. **]**
             if (e.ConnectionStatus == ConnectionStatus.Disconnected_Retrying)
@@ -799,9 +828,11 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
 
                     }).ConfigureAwait(false);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    if (Logging.IsEnabled) Logging.Error(this, ex, nameof(OnConnectionClosed));
                     // codes_SRS_DEVICECLIENT_28_027: [** `OnConnectionClosed` shall invoke the connectionStatusChangesHandler if RecoverConnections throw exception **]**
+
                     result = this.connectionStatusManager.ChangeTo(e.ConnectionType, ConnectionStatus.Disconnected);
                     if (result.IsClientStatusChanged && (connectionStatusChangesHandler != null))
                     {
@@ -814,9 +845,12 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                 result = this.connectionStatusManager.ChangeTo(e.ConnectionType, ConnectionStatus.Disabled);
                 if (result.IsClientStatusChanged && (connectionStatusChangesHandler != null))
                 {
+                    if (Logging.IsEnabled) Logging.Info(this, $"Calling {nameof(connectionStatusChangesHandler)}", nameof(OnConnectionClosed));
                     this.connectionStatusChangesHandler(ConnectionStatus.Disabled, e.ConnectionStatusChangeReason);
                 }
             }
+
+            if (Logging.IsEnabled) Logging.Exit(this, e.ConnectionStatus, e.ConnectionStatusChangeReason, e.ConnectionType, nameof(OnConnectionClosed));
         }
 
         /// <summary>
@@ -825,6 +859,8 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         internal async Task OnMethodCalled(MethodRequestInternal methodRequestInternal)
         {
             Tuple<MethodCallback, object> m = null;
+
+            if (Logging.IsEnabled) Logging.Enter(this, methodRequestInternal.Name, methodRequestInternal, nameof(OnMethodCalled));
 
             // codes_SRS_DEVICECLIENT_10_012: [ If the given methodRequestInternal argument is null, fail silently ]
             if (methodRequestInternal != null)
@@ -842,11 +878,15 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                         m = this.deviceDefaultMethodCallback;
                     }
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    if (Logging.IsEnabled) Logging.Error(this, ex, nameof(OnMethodCalled));
+
                     // codes_SRS_DEVICECLIENT_28_020: [ If the given methodRequestInternal data is not valid json, respond with status code 400 (BAD REQUEST) ]
                     methodResponseInternal = new MethodResponseInternal(methodRequestInternal.RequestId, (int)MethodResposeStatusCode.BadRequest);
                     await this.SendMethodResponseAsync(methodResponseInternal).ConfigureAwait(false);
+
+                    if (Logging.IsEnabled) Logging.Exit(this, methodRequestInternal.Name, methodRequestInternal, nameof(OnMethodCalled));
                     return;
                 }
                 finally
@@ -873,8 +913,10 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                             methodResponseInternal = new MethodResponseInternal(rv.Result, methodRequestInternal.RequestId, rv.Status);
                         }
                     }
-                    catch (Exception)
+                    catch (Exception ex)
                     {
+                        if (Logging.IsEnabled) Logging.Error(this, ex, nameof(OnMethodCalled));
+
                         // codes_SRS_DEVICECLIENT_28_021: [ If the MethodResponse from the MethodHandler is not valid json, respond with status code 500 (USER CODE EXCEPTION) ]
                         methodResponseInternal = new MethodResponseInternal(methodRequestInternal.RequestId, (int)MethodResposeStatusCode.UserCodeException);
                     }
@@ -884,7 +926,10 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                     // codes_SRS_DEVICECLIENT_10_013: [ If the given method does not have an associated delegate and no default delegate was registered, respond with status code 501 (METHOD NOT IMPLEMENTED) ]
                     methodResponseInternal = new MethodResponseInternal(methodRequestInternal.RequestId, (int)MethodResposeStatusCode.MethodNotImplemented);
                 }
+
                 await this.SendMethodResponseAsync(methodResponseInternal).ConfigureAwait(false);
+
+                if (Logging.IsEnabled) Logging.Exit(this, methodRequestInternal.Name, methodRequestInternal, nameof(OnMethodCalled));
             }
         }
 
@@ -918,7 +963,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             // Codes_SRS_DEVICECLIENT_18_007: `SetDesiredPropertyUpdateCallbackAsync` shall throw an `ArgumentNull` exception if `callback` is null
             if (callback == null)
             {
-                throw Fx.Exception.ArgumentNull("callback");
+                throw Fx.Exception.ArgumentNull(nameof(callback));
             }
 
             return ApplyTimeout(async operationTimeoutCancellationToken =>
@@ -958,7 +1003,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             // Codes_SRS_DEVICECLIENT_18_006: `UpdateReportedPropertiesAsync` shall throw an `ArgumentNull` exception if `reportedProperties` is null
             if (reportedProperties == null)
             {
-                throw Fx.Exception.ArgumentNull("reportedProperties");
+                throw Fx.Exception.ArgumentNull(nameof(reportedProperties));
             }
             return ApplyTimeout(async operationTimeoutCancellationToken =>
             {
@@ -970,10 +1015,8 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         //  Codes_SRS_DEVICECLIENT_18_005: When a patch is received from the service, the `callback` shall be called.
         internal void OnReportedStatePatchReceived(TwinCollection patch)
         {
-            if (this.desiredPropertyUpdateCallback != null)
-            {
-                this.desiredPropertyUpdateCallback(patch, this.twinPatchCallbackContext);
-            }
+            if (Logging.IsEnabled) Logging.Info(this, patch.ToJson(), nameof(OnReportedStatePatchReceived));
+            this.desiredPropertyUpdateCallback(patch, this.twinPatchCallbackContext);
         }
 
         private async Task EnableMethodAsync()
@@ -1013,25 +1056,34 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// <returns>The message containing the event</returns>
         public Task SendEventAsync(string outputName, Message message)
         {
-            ValidateModuleTransportHandler("SendEventAsync for a named output");
-
-            // Codes_SRS_DEVICECLIENT_10_012: [If `outputName` is `null` or empty, an `ArgumentNullException` shall be thrown.]
-            if (string.IsNullOrWhiteSpace(outputName))
+            try
             {
-                throw new ArgumentException(nameof(outputName));
-            }
+                if (Logging.IsEnabled) Logging.Enter(this, outputName, message, nameof(SendEventAsync));
 
-            // Codes_SRS_DEVICECLIENT_10_013: [If `message` is `null` or empty, an `ArgumentNullException` shall be thrown.]
-            if (message == null)
+                ValidateModuleTransportHandler("SendEventAsync for a named output");
+
+                // Codes_SRS_DEVICECLIENT_10_012: [If `outputName` is `null` or empty, an `ArgumentNullException` shall be thrown.]
+                if (string.IsNullOrWhiteSpace(outputName))
+                {
+                    throw new ArgumentNullException(nameof(outputName));
+                }
+
+                // Codes_SRS_DEVICECLIENT_10_013: [If `message` is `null` or empty, an `ArgumentNullException` shall be thrown.]
+                if (message == null)
+                {
+                    throw new ArgumentNullException(nameof(message));
+                }
+
+                // Codes_SRS_DEVICECLIENT_10_015: [The `output` property of a given `message` shall be assigned the value `outputName` before submitting each request to the transport layer.]
+                message.SystemProperties.Add(MessageSystemPropertyNames.OutputName, outputName);
+
+                // Codes_SRS_DEVICECLIENT_10_011: [The `SendEventAsync` operation shall retry sending `message` until the `BaseClient::RetryStrategy` timespan expires or unrecoverable error(authentication or quota exceed) occurs.]
+                return ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.SendEventAsync(message, operationTimeoutCancellationToken));
+            }
+            finally
             {
-                throw new ArgumentNullException(nameof(message));
+                if (Logging.IsEnabled) Logging.Exit(this, outputName, message, nameof(SendEventAsync));
             }
-
-            // Codes_SRS_DEVICECLIENT_10_015: [The `output` property of a given `message` shall be assigned the value `outputName` before submitting each request to the transport layer.]
-            message.SystemProperties.Add(MessageSystemPropertyNames.OutputName, outputName);
-
-            // Codes_SRS_DEVICECLIENT_10_011: [The `SendEventAsync` operation shall retry sending `message` until the `BaseClient::RetryStrategy` tiemspan expires or unrecoverable error(authentication or quota exceed) occurs.]
-            return ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.SendEventAsync(message, operationTimeoutCancellationToken));
         }
 
         /// <summary>
@@ -1042,33 +1094,35 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// <returns>The task containing the event</returns>
         public Task SendEventBatchAsync(string outputName, IEnumerable<Message> messages)
         {
-            ValidateModuleTransportHandler("SendEventBatchAsync for a named output");
-
-            // Codes_SRS_DEVICECLIENT_10_012: [If `outputName` is `null` or empty, an `ArgumentNullException` shall be thrown.]
-            if (string.IsNullOrWhiteSpace(outputName))
+            try
             {
-                throw new ArgumentException(nameof(outputName));
-            }
+                if (Logging.IsEnabled) Logging.Enter(this, outputName, messages, nameof(SendEventBatchAsync));
 
-            List<Message> messagesList = messages?.ToList();
-            // Codes_SRS_DEVICECLIENT_10_013: [If `message` is `null` or empty, an `ArgumentNullException` shall be thrown]
-            if (messagesList == null || messagesList.Count == 0)
+                ValidateModuleTransportHandler("SendEventBatchAsync for a named output");
+
+                // Codes_SRS_DEVICECLIENT_10_012: [If `outputName` is `null` or empty, an `ArgumentNullException` shall be thrown.]
+                if (string.IsNullOrWhiteSpace(outputName))
+                {
+                    throw new ArgumentNullException(nameof(outputName));
+                }
+
+                List<Message> messagesList = messages?.ToList();
+                // Codes_SRS_DEVICECLIENT_10_013: [If `message` is `null` or empty, an `ArgumentNullException` shall be thrown]
+                if (messagesList == null || messagesList.Count == 0)
+                {
+                    throw new ArgumentNullException(nameof(messages));
+                }
+
+                // Codes_SRS_DEVICECLIENT_10_015: [The `module-output` property of a given `message` shall be assigned the value `outputName` before submitting each request to the transport layer.]
+                messagesList.ForEach(m => m.SystemProperties.Add(MessageSystemPropertyNames.OutputName, outputName));
+
+                // Codes_SRS_DEVICECLIENT_10_014: [The `SendEventBachAsync` operation shall retry sending `messages` until the `BaseClient::RetryStrategy` tiemspan expires or unrecoverable error(authentication or quota exceed) occurs.]
+                return ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.SendEventAsync(messagesList, operationTimeoutCancellationToken));
+            }
+            finally
             {
-                throw new ArgumentNullException(nameof(messages));
+                if (Logging.IsEnabled) Logging.Exit(this, outputName, messages, nameof(SendEventBatchAsync));
             }
-
-#if PCL
-            foreach(var m in messagesList)
-            {
-                m.SystemProperties.Add(MessageSystemPropertyNames.OutputName, outputName);
-            }
-#else
-            // Codes_SRS_DEVICECLIENT_10_015: [The `module-output` property of a given `message` shall be assigned the value `outputName` before submitting each request to the transport layer.]
-            messagesList.ForEach(m => m.SystemProperties.Add(MessageSystemPropertyNames.OutputName, outputName));
-#endif
-
-            // Codes_SRS_DEVICECLIENT_10_014: [The `SendEventBachAsync` operation shall retry sending `messages` until the `BaseClient::RetryStrategy` tiemspan expires or unrecoverable error(authentication or quota exceed) occurs.]
-            return ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.SendEventAsync(messagesList, operationTimeoutCancellationToken));
         }
 
         /// <summary>
@@ -1081,15 +1135,17 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// <returns>The task containing the event</returns>
         public async Task SetInputMessageHandlerAsync(string inputName, MessageHandler messageHandler, object userContext)
         {
+            if (Logging.IsEnabled) Logging.Enter(this, inputName, messageHandler, userContext, nameof(SetInputMessageHandlerAsync));
+
             ValidateModuleTransportHandler("SetInputMessageHandlerAsync for a named output");
             try
             {
-                await this.receiveSemaphore.WaitAsync();
+                await this.receiveSemaphore.WaitAsync().ConfigureAwait(false);
 
                 if (messageHandler != null)
                 {
                     // codes_SRS_DEVICECLIENT_33_003: [ It shall EnableEventReceiveAsync when called for the first time. ]
-                    await this.EnableEventReceiveAsync();
+                    await this.EnableEventReceiveAsync().ConfigureAwait(false);
                     // codes_SRS_DEVICECLIENT_33_005: [ It shall lazy-initialize the receiveEventEndpoints property. ]
                     if (this.receiveEventEndpoints == null)
                     {
@@ -1108,12 +1164,13 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                         }
                     }
                     // codes_SRS_DEVICECLIENT_33_004: [ It shall call DisableEventReceiveAsync when the last delegate has been removed. ]
-                    await this.DisableEventReceiveAsync();
+                    await this.DisableEventReceiveAsync().ConfigureAwait(false);
                 }
             }
             finally
             {
                 this.receiveSemaphore.Release();
+                if (Logging.IsEnabled) Logging.Exit(this, inputName, messageHandler, userContext, nameof(SetInputMessageHandlerAsync));
             }
         }
 
@@ -1127,25 +1184,28 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// <returns>The task containing the event</returns>
         public async Task SetMessageHandlerAsync(MessageHandler messageHandler, object userContext)
         {
+            if (Logging.IsEnabled) Logging.Enter(this, messageHandler, userContext, nameof(SetMessageHandlerAsync));
+
             try
             {
-                await this.receiveSemaphore.WaitAsync();
+                await this.receiveSemaphore.WaitAsync().ConfigureAwait(false);
                 if (messageHandler != null)
                 {
                     // codes_SRS_DEVICECLIENT_33_003: [ It shall EnableEventReceiveAsync when called for the first time. ]
-                    await this.EnableEventReceiveAsync();
+                    await this.EnableEventReceiveAsync().ConfigureAwait(false);
                     this.defaultEventCallback = new Tuple<MessageHandler, object>(messageHandler, userContext);
                 }
                 else
                 {
                     this.defaultEventCallback = null;
                     // codes_SRS_DEVICECLIENT_33_004: [ It shall DisableEventReceiveAsync when the last delegate has been removed. ]
-                    await this.DisableEventReceiveAsync();
+                    await this.DisableEventReceiveAsync().ConfigureAwait(false);
                 }
             }
             finally
             {
                 this.receiveSemaphore.Release();
+                if (Logging.IsEnabled) Logging.Exit(this, messageHandler, userContext, nameof(SetMessageHandlerAsync));
             }
         }
 
@@ -1153,7 +1213,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         {
             if (this.receiveEventEndpoints == null && this.defaultEventCallback == null)
             {
-                await ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.EnableEventReceiveAsync(operationTimeoutCancellationToken));
+                await ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.EnableEventReceiveAsync(operationTimeoutCancellationToken)).ConfigureAwait(false);
             }
         }
 
@@ -1161,7 +1221,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         {
             if (this.receiveEventEndpoints == null && this.defaultEventCallback == null)
             {
-                await ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.DisableEventReceiveAsync(operationTimeoutCancellationToken));
+                await ApplyTimeout(operationTimeoutCancellationToken => this.InnerHandler.DisableEventReceiveAsync(operationTimeoutCancellationToken)).ConfigureAwait(false);
             }
         }
 
@@ -1172,11 +1232,15 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
         /// </summary>
         internal async Task OnReceiveEventMessageCalled(string input, Message message)
         {
+            if (Logging.IsEnabled) Logging.Enter(this, input, message, nameof(OnReceiveEventMessageCalled));
+
             // codes_SRS_DEVICECLIENT_33_001: [ If the given eventMessageInternal argument is null, fail silently ]
-            if (message != null)
+            if (message == null) return;
+
+            try
             {
                 Tuple<MessageHandler, object> callback = null;
-                await this.receiveSemaphore.WaitAsync();
+                await this.receiveSemaphore.WaitAsync().ConfigureAwait(false);
                 try
                 {
                     // codes_SRS_DEVICECLIENT_33_006: [ The OnReceiveEventMessageCalled shall get the default delegate if a delegate has not been assigned. ]
@@ -1193,19 +1257,24 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                 }
 
                 // codes_SRS_DEVICECLIENT_33_002: [ The OnReceiveEventMessageCalled shall invoke the specified delegate. ]
-                MessageResponse response = await (callback?.Item1?.Invoke(message, callback.Item2) ?? Task.FromResult(MessageResponse.Completed));
+                MessageResponse response = await (callback?.Item1?.Invoke(message, callback.Item2) ?? Task.FromResult(MessageResponse.Completed)).ConfigureAwait(false);
+                if (Logging.IsEnabled) Logging.Info(this, $"{nameof(MessageResponse)} = {response}", nameof(OnReceiveEventMessageCalled));
 
                 switch (response)
                 {
                     case MessageResponse.Completed:
-                        await this.CompleteAsync(message);
+                        await this.CompleteAsync(message).ConfigureAwait(false);
                         break;
                     case MessageResponse.Abandoned:
-                        await this.AbandonAsync(message);
+                        await this.AbandonAsync(message).ConfigureAwait(false);
                         break;
                     default:
                         break;
                 }
+            }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, input, message, nameof(OnReceiveEventMessageCalled));
             }
         }
 
