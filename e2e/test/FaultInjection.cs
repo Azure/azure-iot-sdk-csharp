@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public const int WaitForDisconnectMilliseconds = 3 * DefaultDelayInSec * 1000;
         public const int ShortRetryInMilliSec = (int)(DefaultDurationInSec / 2.0 * 1000);
 
-        public const int RecoveryTimeMilliseconds = 5 * 60 * 1000;
+        public const int RecoveryTimeMilliseconds = 30 * 1000;
 
         private static TestLogging s_log = TestLogging.GetInstance();
 
