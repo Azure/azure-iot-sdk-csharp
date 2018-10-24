@@ -107,6 +107,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore] //TODO: #558
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Twin_DeviceDesiredPropertyUpdateTcpConnRecovery_Mqtt()
@@ -117,6 +118,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore] //TODO: #558
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Twin_DeviceDesiredPropertyUpdateTcpConnRecovery_MqttWs()
@@ -127,6 +129,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore] // TODO: #571
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Twin_DeviceDesiredPropertyUpdateTcpConnRecovery_Amqp()
@@ -137,6 +140,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore] // TODO: #571
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Twin_DeviceDesiredPropertyUpdateTcpConnRecovery_AmqpWs()
@@ -146,7 +150,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.FaultCloseReason_Boom,
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
-
+        
+        [Ignore] //TODO: #558
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Twin_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_Mqtt()
@@ -157,6 +162,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore] //TODO: #558
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Twin_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_MqttWs()
@@ -167,6 +173,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore] // TODO: #571
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Twin_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_Amqp()
@@ -177,6 +184,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore] // TODO: #571
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Twin_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_AmqpWs()
