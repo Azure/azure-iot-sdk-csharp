@@ -190,6 +190,7 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
             IDelegatingHandler innerHandler = pipelineBuilder.Build(pipelineContext);
 
             if (Logging.IsEnabled) Logging.Associate(this, innerHandler, nameof(InternalClient));
+            
             this.InnerHandler = innerHandler;
             
             if (Logging.IsEnabled) Logging.Associate(this, transportSettings, nameof(InternalClient));

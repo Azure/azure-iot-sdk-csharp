@@ -169,6 +169,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 IDelegatingHandler result = this.ContinuationFactory?.Invoke(this.Context);
                 Volatile.Write(ref this.innerHandler, result);
                 Volatile.Write(ref this.innerHandlerInitialized, 1);
+
+                if (Logging.IsEnabled) Logging.Associate(this, this.innerHandler, nameof(EnsureInnerHandlerInitialized));
+
                 return result;
             }
             else

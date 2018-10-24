@@ -20,6 +20,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private ExceptionDispatchInfo _twinExceptionDispatch;
         private SemaphoreSlim _twinCallbackSemaphore = new SemaphoreSlim(1, 1);
+        private string _expectedTwinPropertyValue = null;
 
         private static TestLogging s_log = TestLogging.GetInstance();
 
@@ -28,6 +29,19 @@ namespace Microsoft.Azure.Devices.E2ETests
             _deviceClient = deviceClient;
         }
 
+        public string ExpectedTwinPropertyValue
+        {
+            get
+            {
+                return Volatile.Read(ref _expectedTwinPropertyValue);
+            }
+
+            set
+            {
+                Volatile.Write(ref _expectedTwinPropertyValue, value);
+            }
+        }
+        
         public async Task SetDeviceReceiveMethodAsync(string methodName, string deviceResponseJson, string expectedServiceRequestJson)
         {
             await _deviceClient.SetMethodHandlerAsync(methodName,
@@ -60,8 +74,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             await _methodCallbackSemaphore.WaitAsync(ct).ConfigureAwait(false);
             _methodExceptionDispatch?.Throw();
         }
-        
-        public async Task SetTwinPropertyUpdateCallbackHandlerAsync(string expectedPropName, string expectedPropValue)
+
+        public async Task SetTwinPropertyUpdateCallbackHandlerAsync(string expectedPropName)
         {
             string userContext = "myContext";
 
@@ -72,7 +86,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                     try
                     {
-                        Assert.AreEqual(expectedPropValue, patch[expectedPropName].ToString());
+                        Assert.AreEqual(ExpectedTwinPropertyValue, patch[expectedPropName].ToString());
                         Assert.AreEqual(userContext, context, "Context");
                     }
                     catch (Exception ex)
