@@ -5,10 +5,7 @@ using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Diagnostics;
 using System.Diagnostics.Tracing;
-using System.Linq;
-using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -166,44 +163,74 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(TimeoutException))]
         public async Task Message_ThrottledConnectionLongTimeNoRecovery_Amqp()
         {
-            await SendMessageRecovery(
-                TestDeviceType.Sasl,
-                Client.TransportType.Amqp_Tcp_Only,
-                FaultInjection.FaultType_Throttle,
-                FaultInjection.FaultCloseReason_Boom,
-                FaultInjection.DefaultDelayInSec,
-                FaultInjection.DefaultDurationInSec,
-                FaultInjection.ShortRetryInMilliSec).ConfigureAwait(false);
+            try
+            {
+                await SendMessageRecovery(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Amqp_Tcp_Only,
+                    FaultInjection.FaultType_Throttle,
+                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjection.DefaultDelayInSec,
+                    FaultInjection.DefaultDurationInSec,
+                    FaultInjection.ShortRetryInMilliSec).ConfigureAwait(false);
+
+                Assert.Fail("None of the expected exceptions were thrown.");
+            }
+            catch (IotHubThrottledException) { }
+            catch (IotHubCommunicationException ex)
+            {
+                Assert.IsInstanceOfType(ex.InnerException, typeof(OperationCanceledException));
+            }
+            catch (OperationCanceledException) { }
         }
 
         [TestMethod]
-        [ExpectedException(typeof(TimeoutException))]
         public async Task Message_ThrottledConnectionLongTimeNoRecovery_AmqpWs()
         {
-            await SendMessageRecovery(
-                TestDeviceType.Sasl,
-                Client.TransportType.Amqp_WebSocket_Only,
-                FaultInjection.FaultType_Throttle,
-                FaultInjection.FaultCloseReason_Boom,
-                FaultInjection.DefaultDelayInSec,
-                FaultInjection.DefaultDurationInSec,
-                FaultInjection.ShortRetryInMilliSec).ConfigureAwait(false);
+            try
+            {
+                await SendMessageRecovery(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Amqp_WebSocket_Only,
+                    FaultInjection.FaultType_Throttle,
+                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjection.DefaultDelayInSec,
+                    FaultInjection.DefaultDurationInSec,
+                    FaultInjection.ShortRetryInMilliSec).ConfigureAwait(false);
+                Assert.Fail("None of the expected exceptions were thrown.");
+            }
+            catch (IotHubThrottledException) { }
+            catch (IotHubCommunicationException ex)
+            {
+                Assert.IsInstanceOfType(ex.InnerException, typeof(OperationCanceledException));
+            }
+            catch (OperationCanceledException) { }
         }
 
         [TestMethod]
-        [ExpectedException(typeof(QuotaExceededException))]
         public async Task Message_ThrottledConnectionLongTimeNoRecovery_Http()
         {
-            await SendMessageRecovery(
-                TestDeviceType.Sasl,
-                Client.TransportType.Http1,
-                FaultInjection.FaultType_QuotaExceeded,
-                FaultInjection.FaultCloseReason_Boom,
-                FaultInjection.DefaultDelayInSec,
-                FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
+            try
+            {
+                await SendMessageRecovery(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Http1,
+                    FaultInjection.FaultType_Throttle,
+                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjection.DefaultDelayInSec,
+                    FaultInjection.DefaultDurationInSec,
+                    FaultInjection.ShortRetryInMilliSec).ConfigureAwait(false);
+
+                Assert.Fail("None of the expected exceptions were thrown.");
+            }
+            catch (IotHubThrottledException) { }
+            catch (IotHubCommunicationException ex)
+            {
+                Assert.IsInstanceOfType(ex.InnerException, typeof(OperationCanceledException));
+            }
+            catch (OperationCanceledException) { }
         }
 
         [TestMethod]
@@ -233,16 +260,27 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(QuotaExceededException))]
         public async Task Message_QuotaExceededRecovery_Http()
         {
-            await SendMessageRecovery(
-                TestDeviceType.Sasl,
-                Client.TransportType.Http1,
-                FaultInjection.FaultType_QuotaExceeded,
-                FaultInjection.FaultCloseReason_Boom,
-                FaultInjection.DefaultDelayInSec,
-                FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
+            try
+            {
+                await SendMessageRecovery(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Http1,
+                    FaultInjection.FaultType_QuotaExceeded,
+                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjection.DefaultDelayInSec,
+                    FaultInjection.DefaultDurationInSec,
+                    FaultInjection.ShortRetryInMilliSec).ConfigureAwait(false);
+
+                Assert.Fail("None of the expected exceptions were thrown.");
+            }
+            catch (QuotaExceededException) { }
+            catch (IotHubCommunicationException ex)
+            {
+                Assert.IsInstanceOfType(ex.InnerException, typeof(OperationCanceledException));
+            }
+            catch (OperationCanceledException) { }
         }
 
         [TestMethod]
@@ -273,7 +311,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         [TestMethod]
         [ExpectedException(typeof(UnauthorizedException))]
-        public async Task Message_AuthenticationRecovery_Http()
+        public async Task Message_AuthenticationWontRecover_Http()
         {
             await SendMessageRecovery(
                 TestDeviceType.Sasl,
@@ -387,7 +425,14 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             Func<Task> cleanupOperation = () =>
             {
-                return testListener.CloseAsync();
+                if (testListener != null)
+                {
+                    return testListener.CloseAsync();
+                }
+                else
+                {
+                    return Task.FromResult(false);
+                }
             };
 
             await FaultInjection.TestErrorInjectionAsync(

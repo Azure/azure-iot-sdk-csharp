@@ -57,6 +57,7 @@ BundleArtifacts/
 *.log
 *.scc
 *.bak
+*.etl
 
 # Visual C++ cache files
 ipch/

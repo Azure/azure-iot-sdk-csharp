@@ -187,7 +187,7 @@ namespace Microsoft.Azure.Amqp.Transport
             var webSocketState = this.webSocket.State;
             if (webSocketState != WebSocketState.Closed && webSocketState != WebSocketState.Aborted)
             {
-                this.CloseInternalAsync(CloseTimeout).Fork();
+                this.CloseInternalAsync(CloseTimeout);
             }
 
             return true;

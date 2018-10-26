@@ -45,9 +45,9 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 try
                 {
-                    receiver = eventHubClient.CreateReceiver(consumerGroupName, partition, DateTime.Now.AddMinutes(-5));
+                    receiver = eventHubClient.CreateReceiver(consumerGroupName, partition, DateTime.Now.AddMinutes(-LookbackTimeInMinutes));
                 }
-                catch (QuotaExceededException ex)
+                catch (EventHubsException ex)
                 {
                     s_log.WriteLine($"{nameof(EventHubTestListener)}.{nameof(CreateListener)}: Cannot create receiver: {ex}");
                 }

@@ -22,11 +22,19 @@ namespace Microsoft.Azure.Devices.Client
         TimeSpan operationTimeout;
         TimeSpan openTimeout;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AmqpTransportSettings" class./>
+        /// </summary>
+        /// <param name="transportType">The AMQP transport type.</param>
         public AmqpTransportSettings(TransportType transportType)
             : this(transportType, DefaultPrefetchCount, new AmqpConnectionPoolSettings())
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AmqpTransportSettings" class./>
+        /// </summary>
+        /// <param name="transportType">The AMQP transport type.</param>
         public AmqpTransportSettings(TransportType transportType, uint prefetchCount)
             :this(transportType, prefetchCount, new AmqpConnectionPoolSettings())
         {

@@ -15,34 +15,36 @@ namespace Microsoft.Azure.Devices.Client.Transport
     {
         public IDelegatingHandler Create(IPipelineContext context)
         {
+            // ProtocolRoutingDelegatingHandler configures the ITransportSettings configuration
+            // which is different from ITransportSettings[] element.
+            var transportSetting = context.Get<ITransportSettings>();
             var connectionString = context.Get<IotHubConnectionString>();
-            var transportSetting = context.Get<ITransportSettings[]>();
             var onMethodCallback = context.Get<InternalClient.OnMethodCalledDelegate>();
             var onDesiredStatePatchReceived = context.Get<Action<TwinCollection>>();
-            var OnConnectionClosedCallback = context.Get<InternalClient.OnConnectionClosedDelegate>();
-            var OnConnectionOpenedCallback = context.Get<InternalClient.OnConnectionOpenedDelegate>();
             var onReceiveCallback = context.Get<InternalClient.OnReceiveEventMessageCalledDelegate>();
 
-            switch (transportSetting[0].GetTransportType())
+            switch (transportSetting.GetTransportType())
             {
                 case TransportType.Amqp_WebSocket_Only:
                 case TransportType.Amqp_Tcp_Only:
                     return new AmqpTransportHandler(
-                        context, connectionString, transportSetting[0] as AmqpTransportSettings,
-                        new Action<object, ConnectionEventArgs>(OnConnectionOpenedCallback),
-                        new Func<object, ConnectionEventArgs, Task>(OnConnectionClosedCallback),
-                        new Func<MethodRequestInternal, Task>(onMethodCallback), onDesiredStatePatchReceived,
+                        context, 
+                        connectionString, 
+                        transportSetting as AmqpTransportSettings,
+                        new Func<MethodRequestInternal, Task>(onMethodCallback), 
+                        onDesiredStatePatchReceived,
                         new Func<string, Message, Task>(onReceiveCallback));
                 case TransportType.Http1:
-                    return new HttpTransportHandler(context, connectionString, transportSetting[0] as Http1TransportSettings);
+                    return new HttpTransportHandler(context, connectionString, transportSetting as Http1TransportSettings);
 #if !NETMF
                 case TransportType.Mqtt_Tcp_Only:
                 case TransportType.Mqtt_WebSocket_Only:
                     return new MqttTransportHandler(
-                        context, connectionString, transportSetting[0] as MqttTransportSettings,
-                        new Action<object, ConnectionEventArgs>(OnConnectionOpenedCallback),
-                        new Func<object, ConnectionEventArgs, Task>(OnConnectionClosedCallback),
-                        new Func<MethodRequestInternal, Task>(onMethodCallback), onDesiredStatePatchReceived,
+                        context, 
+                        connectionString, 
+                        transportSetting as MqttTransportSettings,
+                        new Func<MethodRequestInternal, Task>(onMethodCallback), 
+                        onDesiredStatePatchReceived,
                         new Func<string, Message, Task>(onReceiveCallback));
 #endif
                 default:

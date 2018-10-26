@@ -13,7 +13,7 @@ Docker image: https://hub.docker.com/r/aziotbld/testtpm/
 
 ```
 docker pull aziotbld/testtpm
-docker run -d --name my-running-tpmsim -p 127.0.0.1:2321:2321 -p 127.0.0.1:2322:2322 aziotbld/testtpm
+docker run -d --restart unless-stopped --name azure-iot-tpmsim -p 127.0.0.1:2321:2321 -p 127.0.0.1:2322:2322 aziotbld/testtpm
 ```
 
 Alternatives:
@@ -25,7 +25,7 @@ Docker image: https://hub.docker.com/r/aziotbld/testproxy/
 
 ```
 docker pull aziotbld/testproxy
-docker run -d --restart unless-stopped --name my-running-tinyproxy -p 127.0.0.1:8888:8888 aziotbld/testproxy
+docker run -d --restart unless-stopped --name azure-iot-tinyproxy -p 127.0.0.1:8888:8888 aziotbld/testproxy
 ```
 
 Alternatives:

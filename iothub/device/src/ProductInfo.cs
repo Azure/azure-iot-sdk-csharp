@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Client
 
         public override string ToString()
         {
-            const string Name = "Microsoft.Azure.Devices.Client";
+            const string Name = ".NET";
             string version = typeof(DeviceClient).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
             string runtime = RuntimeInformation.FrameworkDescription.Trim();
             string operatingSystem = RuntimeInformation.OSDescription.Trim();

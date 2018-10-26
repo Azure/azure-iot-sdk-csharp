@@ -77,7 +77,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
         /// <returns>The receive message or null if there was no message until the specified time has elapsed</returns>
         public async Task<Message> ReceiveAsync(TimeSpan timeout)
         {
-            TimeoutHelper.ThrowIfNegativeArgument(timeout);
             await this.EnsureOpenedAsync(false).ConfigureAwait(false);
             return await this.OnReceiveAsync(timeout).ConfigureAwait(false);
         }

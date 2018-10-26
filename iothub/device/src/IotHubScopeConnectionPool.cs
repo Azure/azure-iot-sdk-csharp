@@ -4,6 +4,7 @@
 namespace Microsoft.Azure.Devices.Client
 {
     using System;
+    using System.Threading;
 
     sealed class IotHubScopeConnectionPool
     {
@@ -77,7 +78,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             Fx.Assert(this.referenceCount == 0, "Cached IotHubConnection's ref count should be zero when idle timeout occurs!");
             this.cache.RemoveHubScopeConnectionPool(this.ConnectionString);
-            this.Connection.CloseAsync().Fork();
+            this.Connection.CloseAsync(CancellationToken.None);
         }
     }
 }

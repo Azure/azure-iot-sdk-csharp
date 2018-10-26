@@ -6,12 +6,19 @@ namespace Microsoft.Azure.Devices.Client
     using System;
 
     /// <summary>
-    /// Interface used to define various transport-specific settings for DeviceClient
+    /// Interface used to define various transport-specific settings for DeviceClient and ModuleClient.
     /// </summary>
     public interface ITransportSettings
     {
+        /// <summary>
+        /// Returns the transport type of the TransportSettings object.
+        /// </summary>
+        /// <returns>The TransportType</returns>
         TransportType GetTransportType();
 
+        /// <summary>
+        /// The default receive timeout.
+        /// </summary>
         TimeSpan DefaultReceiveTimeout { get; }
     }
 }

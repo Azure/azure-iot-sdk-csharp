@@ -57,6 +57,7 @@ namespace Microsoft.Azure.Devices.Client
                 }
                 else
                 {
+                    Debug.Assert(TokenRefresher != null);
                     tokenValue = await this.TokenRefresher.GetTokenAsync(this.Audience).ConfigureAwait(false);
                     expiresOn = this.TokenRefresher.ExpiresOn;
                 }

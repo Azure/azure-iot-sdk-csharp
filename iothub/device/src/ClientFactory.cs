@@ -378,11 +378,11 @@ namespace Microsoft.Azure.Devices.Client
         {
             var transporthandlerFactory = new TransportHandlerFactory();
             IDeviceClientPipelineBuilder pipelineBuilder = new DeviceClientPipelineBuilder()
-                .With(ctx => new GateKeeperDelegatingHandler(ctx))
-                .With(ctx => new RetryDelegatingHandler(ctx))
-                .With(ctx => new ErrorDelegatingHandler(ctx))
-                .With(ctx => new ProtocolRoutingDelegatingHandler(ctx))
-                .With(ctx => transporthandlerFactory.Create(ctx));
+                .With((ctx, innerHandler) => new RetryDelegatingHandler(ctx, innerHandler))
+                .With((ctx, innerHandler) => new ErrorDelegatingHandler(ctx, innerHandler))
+                .With((ctx, innerHandler) => new ProtocolRoutingDelegatingHandler(ctx, innerHandler))
+                .With((ctx, innerHandler) => transporthandlerFactory.Create(ctx));
+
             return pipelineBuilder;
         }
 

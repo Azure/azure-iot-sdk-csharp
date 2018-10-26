@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
-    using QuotaExceededException = Microsoft.Azure.Devices.Client.Exceptions.QuotaExceededException;
+    using QuotaExceededException = Microsoft.ServiceBus.Messaging.QuotaExceededException;
 
     // EventHubListener Platform Adaptation Layer for .NET Framework.
     // This is using the WindowsAzure.ServiceBus NuGet dependency.
@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             _receiver = receiver;
         }
 
-        public static async Task<EventHubTestListener> CreateListenerPal(string deviceName)
+        public static Task<EventHubTestListener> CreateListenerPal(string deviceName)
         {
             EventHubReceiver receiver = null;
             Stopwatch sw = new Stopwatch();
@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 {
                     lock (s_eventHubEpochLock)
                     {
-                        receiver = eventHubClient.GetConsumerGroup(consumerGroupName).CreateReceiver(partition, DateTime.Now, s_eventHubEpoch++);
+                        receiver = eventHubClient.GetConsumerGroup(consumerGroupName).CreateReceiver(partition, DateTime.Now.AddMinutes(-LookbackTimeInMinutes), s_eventHubEpoch++);
                     }
                 }
                 catch (QuotaExceededException ex)
@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             sw.Stop();
 
-            return new EventHubTestListener(receiver);
+            return Task.FromResult(new EventHubTestListener(receiver));
         }
     }
 }
