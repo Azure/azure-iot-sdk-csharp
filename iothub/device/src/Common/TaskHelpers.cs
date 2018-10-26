@@ -327,8 +327,6 @@ namespace Microsoft.Azure.Devices.Client
             {
                 if (task == await Task.WhenAny(task, Task.Delay(timeout, delayCts.Token)).ConfigureAwait(false))
                 {
-                    Debug.WriteLine(token.GetHashCode() + " WithTimeout: task completed.");
-
                     delayCts.Cancel();
                     await task.ConfigureAwait(false);
                     return;

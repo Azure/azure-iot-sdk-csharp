@@ -310,7 +310,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                 if (this.TryCloseGate())
                 {
-                    Debug.WriteLine("GateKeeperDelegatingHandler.CloseAsync()");
                     await base.CloseAsync().ConfigureAwait(false);
                 }
             }

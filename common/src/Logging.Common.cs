@@ -146,6 +146,22 @@ namespace Microsoft.Azure.Devices.Shared
             if (IsEnabled) Log.Exit(IdOf(thisOrContextObject), memberName, $"{Format(arg0)}, {Format(arg1)}");
         }
 
+        /// <summary>Logs exit to a method.</summary>
+        /// <param name="thisOrContextObject">`this`, or another object that serves to provide context for the operation.</param>
+        /// <param name="arg0">The first object to log.</param>
+        /// <param name="arg1">The second object to log.</param>
+        /// <param name="arg2">The third object to log.</param>
+        /// <param name="memberName">The calling member.</param>
+        [NonEvent]
+        public static void Exit(object thisOrContextObject, object arg0, object arg1, object arg2, [CallerMemberName] string memberName = null)
+        {
+            DebugValidateArg(thisOrContextObject);
+            DebugValidateArg(arg0);
+            DebugValidateArg(arg1);
+            DebugValidateArg(arg2);
+            if (IsEnabled) Log.Exit(IdOf(thisOrContextObject), memberName, $"({Format(arg0)}, {Format(arg1)}, {Format(arg2)})");
+        }
+
         [Event(ExitEventId, Level = EventLevel.Informational, Keywords = Keywords.EnterExit)]
         private void Exit(string thisOrContextObject, string memberName, string result) =>
             WriteEvent(ExitEventId, thisOrContextObject, memberName ?? MissingMember, result);

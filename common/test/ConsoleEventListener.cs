@@ -25,7 +25,7 @@
             "foreground": "#11a046"
         },
         {
-            "pattern": ".*-Error]",
+            "pattern": ".*-ErrorMessage]",
             "foreground": "red"
         },
         {
@@ -34,7 +34,7 @@
         },
         {
             "pattern": ".*-TestMessage]",
-            "foreground": "red"
+            "foreground": "gray"
         },
     ]
  *
@@ -97,14 +97,9 @@ namespace System.Diagnostics.Tracing
 
             lock (_lock)
             {
-#if NET451
-                string text = $"{DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fffffff")} [{eventData.EventSource.Name}-{eventData.EventId}]{(eventData.Payload != null ? $" ({string.Join(", ", eventData.Payload)})." : "")}";
-#else
-                string text = $"{DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fffffff")} [{eventData.EventSource.Name}-{eventData.EventName}]{(eventData.Payload != null ? $" ({string.Join(", ", eventData.Payload)})." : "")}";
-#endif
                 bool shouldDisplay = false;
-
-                if (_eventFilters.Length == 1 && text.Contains(_eventFilters[0]))
+            
+                if (_eventFilters.Length == 1 && eventData.EventSource.Name.StartsWith(_eventFilters[0]))
                 {
                     shouldDisplay = true;
                 }
@@ -112,7 +107,7 @@ namespace System.Diagnostics.Tracing
                 {
                     foreach (string filter in _eventFilters)
                     {
-                        if (text.Contains(filter))
+                        if (eventData.EventSource.Name.StartsWith(filter))
                         {
                             shouldDisplay = true;
                         }
@@ -121,6 +116,12 @@ namespace System.Diagnostics.Tracing
 
                 if (shouldDisplay)
                 {
+#if NET451
+                    string text = $"{DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fffffff")} [{eventData.EventSource.Name}-{eventData.EventId}]{(eventData.Payload != null ? $" ({string.Join(", ", eventData.Payload)})." : "")}";
+#else
+                    string text = $"{DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fffffff")} [{eventData.EventSource.Name}-{eventData.EventName}]{(eventData.Payload != null ? $" ({string.Join(", ", eventData.Payload)})." : "")}";
+#endif
+
                     ConsoleColor origForeground = Console.ForegroundColor;
                     Console.ForegroundColor = ConsoleColor.DarkYellow;
                     Console.WriteLine(text);

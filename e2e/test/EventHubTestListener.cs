@@ -33,9 +33,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task<bool> WaitForMessage(string deviceId, string payload, string p1Value)
         {
             bool isReceived = false;
-            Stopwatch sw = new Stopwatch();
+            var sw = new Stopwatch();
             sw.Start();
-            while (!isReceived && sw.Elapsed.Minutes < 1)
+            while (!isReceived && sw.Elapsed.TotalMinutes < 1)
             {
                 var events = await _receiver.ReceiveAsync(int.MaxValue, TimeSpan.FromSeconds(5)).ConfigureAwait(false);
                 isReceived = VerifyTestMessage(events, deviceId, payload, p1Value);

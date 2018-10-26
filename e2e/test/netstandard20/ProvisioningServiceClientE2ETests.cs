@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
     [TestClass]
     [TestCategory("Provisioning-E2E")]
-    public class ProvisioningServiceClientTests : IDisposable
+    public class ProvisioningServiceClientE2ETests : IDisposable
     {
         private static string ProxyServerAddress = Configuration.IoTHub.ProxyServerAddress;
         private const string RegistrationId = "e2etest-myvalid-registrationid-csharp";
@@ -26,9 +26,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         private readonly TestLogging _log = TestLogging.GetInstance();
         private readonly ConsoleEventListener _listener;
 
-        public ProvisioningServiceClientTests()
+        public ProvisioningServiceClientE2ETests()
         {
-            _listener = new ConsoleEventListener("Microsoft-Azure-");
+            _listener = TestConfig.StartEventListener();
         }
 
         [TestMethod]
@@ -99,10 +99,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         protected virtual void Dispose(bool disposing)
         {
-            if (disposing)
-            {
-                _listener.Dispose();
-            }
         }
     }
 }
