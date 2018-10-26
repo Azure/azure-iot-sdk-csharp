@@ -103,6 +103,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet(Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
         }
 
+        [Ignore] // TODO: #682 - intermittently failing with parsing error.
         [TestMethod]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet_MqttWs()
         {
