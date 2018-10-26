@@ -184,7 +184,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             bool done = false;
             ExceptionDispatchInfo exceptionDispatchInfo = null;
 
-            while (!done && sw.ElapsedMilliseconds < 3000) //FaultInjection.RecoveryTimeMilliseconds)
+            while (!done && sw.ElapsedMilliseconds < FaultInjection.RecoveryTimeMilliseconds)
             {
                 try
                 {
@@ -267,6 +267,10 @@ namespace Microsoft.Azure.Devices.E2ETests
                         () => { return Task.FromResult<bool>(false); }).ConfigureAwait(false);
                 }
                 catch (DeviceNotFoundException e)
+                {
+                    s_log.WriteLine($"Retrying fault injection test ({retryCount} left): {e}");
+                }
+                catch (TaskCanceledException e)
                 {
                     s_log.WriteLine($"Retrying fault injection test ({retryCount} left): {e}");
                 }

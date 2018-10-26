@@ -34,7 +34,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         public async Task Message_TcpConnectionLossSendRecovery_Amqp()
         {
-            // NOTE: FaultInjection will not actually terminate the TCP layer.
             await SendMessageRecovery(
                 TestDeviceType.Sasl,
                 Client.TransportType.Amqp_Tcp_Only,
@@ -46,7 +45,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         public async Task Message_TcpConnectionLossSendRecovery_AmqpWs()
         {
-            // NOTE: FaultInjection will not actually terminate the TCP layer.
             await SendMessageRecovery(
                 TestDeviceType.Sasl,
                 Client.TransportType.Amqp_WebSocket_Only,

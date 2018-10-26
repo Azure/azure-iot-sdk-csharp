@@ -25,6 +25,7 @@ using System.IO;
 using System.Net;
 using System.Net.Security;
 using System.Net.WebSockets;
+using System.Runtime.ExceptionServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -853,10 +854,19 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     {
                         string body = reader.ReadToEnd();
 
-                        var props = JsonConvert.DeserializeObject<Microsoft.Azure.Devices.Shared.TwinProperties>(body);
+                        try
+                        {
+                            var props = JsonConvert.DeserializeObject<Microsoft.Azure.Devices.Shared.TwinProperties>(body);
 
-                        twin = new Twin();
-                        twin.Properties = props;
+                            twin = new Twin();
+                            twin.Properties = props;
+                        }
+                        catch (JsonReaderException ex)
+                        {
+                            var dispatchedEx = ExceptionDispatchInfo.Capture(ex);
+                            if (Logging.IsEnabled) Logging.Error(this, $"Failed to parse Twin JSON: {ex}. Message body: '{body}'");
+                            dispatchedEx.Throw();
+                        }
                     }
                 }
             }, cancellationToken).ConfigureAwait(false);
