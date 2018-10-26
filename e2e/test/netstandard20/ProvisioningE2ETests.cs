@@ -12,6 +12,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Tracing;
+using System.Globalization;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -225,19 +226,26 @@ namespace Microsoft.Azure.Devices.E2ETests
             try
             {
                 await ProvisioningDeviceClient_InvalidRegistrationId_TpmRegister_Fail(nameof(ProvisioningTransportHandlerHttp)).ConfigureAwait(false);
-                Assert.Fail();
+                Assert.Fail("Expected exception not thrown");
             }
             catch (ProvisioningTransportException ex)
             {
-                // TODO # 576 ProvisioningTransportException / HttpOperationException when provisioning with an invalid registrationId. 
-                Console.WriteLine($"Exception caught: {ex}");
+                Assert.IsTrue(ex.Message.Contains("404201"));
             }
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_InvalidRegistrationId_TpmRegister_Amqp_Fail()
         {
-            await ProvisioningDeviceClient_InvalidRegistrationId_TpmRegister_Fail(nameof(ProvisioningTransportHandlerAmqp)).ConfigureAwait(false);
+            try
+            {
+                await ProvisioningDeviceClient_InvalidRegistrationId_TpmRegister_Fail(nameof(ProvisioningTransportHandlerAmqp)).ConfigureAwait(false);
+                Assert.Fail("Expected exception not thrown");
+            }
+            catch (ProvisioningTransportException ex)
+            {
+                Assert.IsTrue(ex.Message.Contains("404201"));
+            }
         }
 
         public async Task ProvisioningDeviceClient_InvalidRegistrationId_TpmRegister_Fail(string transportType)
