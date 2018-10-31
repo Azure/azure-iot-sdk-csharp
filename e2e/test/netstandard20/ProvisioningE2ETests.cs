@@ -473,7 +473,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     var attestationMechanism = new AttestationMechanism(TpmAttestationType, tpmAttestation);
                     enrollment.Attestation = attestationMechanism;
                     _log.WriteLine($"Updating enrollment: RegistrationID = {registrationId} EK = '{base64Ek}'");
-                    await provisioningService.CreateOrUpdateIndividualEnrollmentAsync(registrationId, enrollment).ConfigureAwait(false);
+                    await provisioningService.CreateOrUpdateIndividualEnrollmentAsync(registrationId, enrollment, enrollment.Etag).ConfigureAwait(false);
 
                     return tpmSim;
 

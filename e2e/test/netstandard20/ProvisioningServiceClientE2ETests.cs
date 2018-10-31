@@ -89,11 +89,13 @@ namespace Microsoft.Azure.Devices.E2ETests
             EnrollmentGroup enrollmentGroup = await CreateGroupEnrollmentX509(provisioningServiceClient).ConfigureAwait(false);
             Assert.AreEqual(enrollmentGroup.ProvisioningStatus, StatusEnabled);
 
+            _log.WriteLine("ProvisioningServiceClient delete X509 Group Enrollment");
             await provisioningServiceClient.DeleteEnrollmentGroupAsync(EnrollmentGroupId).ConfigureAwait(false);
         }
 
         private async Task ProvisioningServiceClient_IndividualEnrollments_Query_Ok(ProvisioningServiceClient provisioningServiceClient)
         {
+            _log.WriteLine("ProvisioningServiceClient query enrollment");
             QuerySpecification querySpecification = new QuerySpecification("SELECT * FROM enrollments");
             IList<IndividualEnrollment> queryResult = await provisioningServiceClient.QueryIndividualEnrollmentsAsync(querySpecification).ConfigureAwait(false);
             foreach (IndividualEnrollment individualEnrollment in queryResult)
@@ -104,27 +106,35 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private async Task ProvisioningServiceClient_IndividualEnrollments_Create_Ok(ProvisioningServiceClient provisioningServiceClient)
         {
+            _log.WriteLine("ProvisioningServiceClient create enrollment");
             IndividualEnrollment individualEnrollment = await CreateIndividualEnrollmentTpm(provisioningServiceClient).ConfigureAwait(false);
+            _log.WriteLine("ProvisioningServiceClient get enrollment");
             IndividualEnrollment individualEnrollmentResult = await provisioningServiceClient.GetIndividualEnrollmentAsync(RegistrationId).ConfigureAwait(false);
             Assert.AreEqual(individualEnrollmentResult.ProvisioningStatus, StatusEnabled);
 
+            _log.WriteLine("ProvisioningServiceClient delete enrollment");
             await provisioningServiceClient.DeleteIndividualEnrollmentAsync(RegistrationId).ConfigureAwait(false);
         }
 
         private async Task ProvisioningServiceClient_IndividualEnrollments_Update_Ok(ProvisioningServiceClient provisioningServiceClient)
         {
+            _log.WriteLine("ProvisioningServiceClient create enrollment");
             IndividualEnrollment individualEnrollment = await CreateIndividualEnrollmentTpm(provisioningServiceClient).ConfigureAwait(false);
             individualEnrollment.Capabilities = OptionalEdgeCapabilityDisabled;
 
+            _log.WriteLine("ProvisioningServiceClient update enrollment");
             IndividualEnrollment individualEnrollmentUpdateResult = await provisioningServiceClient.CreateOrUpdateIndividualEnrollmentAsync(RegistrationId, individualEnrollment, individualEnrollment.Etag).ConfigureAwait(false);
             Assert.AreEqual(individualEnrollmentUpdateResult.Capabilities.IotEdge, OptionalEdgeCapabilityDisabled.IotEdge);
 
+            _log.WriteLine("ProvisioningServiceClient delete enrollment");
             await provisioningServiceClient.DeleteIndividualEnrollmentAsync(RegistrationId).ConfigureAwait(false);
         }
 
         private async Task ProvisioningServiceClient_IndividualEnrollments_Delete_Ok(ProvisioningServiceClient provisioningServiceClient)
         {
+            _log.WriteLine("ProvisioningServiceClient create enrollment");
             IndividualEnrollment individualEnrollment = await CreateIndividualEnrollmentTpm(provisioningServiceClient).ConfigureAwait(false);
+            _log.WriteLine("ProvisioningServiceClient delete enrollment");
             await provisioningServiceClient.DeleteIndividualEnrollmentAsync(RegistrationId).ConfigureAwait(false);
 
             var exception = await Assert.ThrowsExceptionAsync<ProvisioningServiceErrorDetailsException>(
@@ -145,6 +155,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                             attestationMechanism);
             individualEnrollment.Capabilities = OptionalEdgeCapabilityEnabled;
 
+            _log.WriteLine("ProvisioningServiceClient Create TPM Enrollment");
             IndividualEnrollment result = await provisioningServiceClient.CreateOrUpdateIndividualEnrollmentAsync(RegistrationId, individualEnrollment).ConfigureAwait(false);
             return result;
         }
@@ -162,6 +173,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                             EnrollmentGroupId,
                             attestationMechanism);
 
+            _log.WriteLine("ProvisioningServiceClient Create X509 Group Enrollment");
             EnrollmentGroup result = await provisioningServiceClient.CreateOrUpdateEnrollmentGroupAsync(EnrollmentGroupId, enrollmentGroup).ConfigureAwait(false);
             return result;
         }
@@ -171,11 +183,13 @@ namespace Microsoft.Azure.Devices.E2ETests
             var httpClientHandler = new HttpClientHandler();
             httpClientHandler.Proxy = new WebProxy(proxyServerAddress);
 
+            _log.WriteLine("Creating Provisioning Service Client using proxy");
             return ProvisioningServiceClientFactory.CreateFromConnectionString(Configuration.Provisioning.ConnectionString, httpClientHandler);
         }
 
         private ProvisioningServiceClient CreateProvisioningServiceClient()
         {
+            _verboseLog.WriteLine("Creating Provisioning Service Client");
             return ProvisioningServiceClientFactory.CreateFromConnectionString(Configuration.Provisioning.ConnectionString);
         }
 
