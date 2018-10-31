@@ -3,6 +3,7 @@
 
 namespace Microsoft.Azure.Devices.Client
 {
+    using Microsoft.Azure.Devices.Shared;
     using System;
     using System.Collections.Generic;
 

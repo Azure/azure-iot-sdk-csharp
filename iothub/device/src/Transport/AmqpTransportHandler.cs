@@ -60,11 +60,26 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private string twinReceivingLinkName;
         private string eventReceivingLinkName;
 
-        const int ResponseTimeoutInSeconds = 10;
+        const int ResponseTimeoutInSeconds = 300;
 
         ConcurrentDictionary<string, TaskCompletionSource<AmqpMessage>> twinResponseCompletions = new ConcurrentDictionary<string, TaskCompletionSource<AmqpMessage>>();
 
         ProductInfo productInfo;
+
+#pragma warning disable CA1810 // Initialize reference type static fields inline: We use the static ctor to have init-once semantics.
+        static AmqpTransportHandler()
+#pragma warning restore CA1810 // Initialize reference type static fields inline
+        {
+            try
+            {
+                AmqpTrace.Provider = new AmqpTransportLog();
+            }
+            catch (Exception ex)
+            {
+                // Do not throw from static ctor.
+                if (Logging.IsEnabled) Logging.Error(null, ex, nameof(AmqpTransportHandler));
+            }
+        }
 
         internal AmqpTransportHandler(
             IPipelineContext context,

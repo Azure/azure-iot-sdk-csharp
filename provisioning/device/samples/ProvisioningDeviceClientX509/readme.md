@@ -29,7 +29,7 @@ Continue by following the instructions presented by the sample.
 
 ## Using your certificates
 
-The SDK requires an [X509Certificate2](https://msdn.microsoft.com/en-us/library/system.security.cryptography.x509certificates.x509certificate2(v=vs.110).aspx) object with private key ([HasPrivateKey](https://msdn.microsoft.com/en-us/library/system.security.cryptography.x509certificates.x509certificate2.hasprivatekey(v=vs.110).aspx)==true) and, optionally, the certificate chain within an [X509Certificate2Colection](https://msdn.microsoft.com/en-us/library/system.security.cryptography.x509certificates.x509certificate2collection(v=vs.110).aspx) object.
+The SDK requires an [X509Certificate2](https://msdn.microsoft.com/en-us/library/system.security.cryptography.x509certificates.x509certificate2(v=vs.110).aspx) object with private key ([HasPrivateKey](https://msdn.microsoft.com/en-us/library/system.security.cryptography.x509certificates.x509certificate2.hasprivatekey(v=vs.110).aspx)==true) and, optionally, the certificate chain within an [X509Certificate2Collection](https://msdn.microsoft.com/en-us/library/system.security.cryptography.x509certificates.x509certificate2collection(v=vs.110).aspx) object.
 
 This can be achieved by changing the following line:
 

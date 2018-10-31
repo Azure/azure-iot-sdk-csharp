@@ -20,33 +20,31 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         /// <summary>
         /// Factory method.
-        /// IMPORTANT: Not thread safe!
         /// </summary>
         /// <param name="namePrefix"></param>
         /// <param name="type"></param>
-        /// <returns></returns>
         public static async Task<TestModule> GetTestModuleAsync(string deviceNamePrefix, string moduleNamePrefix)
         {
             var log = TestLogging.GetInstance();
-            string prefix = deviceNamePrefix + "Module" + "_";
-
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(prefix).ConfigureAwait(false);
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(deviceNamePrefix).ConfigureAwait(false);
 
             string deviceName = testDevice.Id;
             string moduleName = moduleNamePrefix + Guid.NewGuid();
 
-            RegistryManager rm = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
-            log.WriteLine($"{nameof(GetTestModuleAsync)}: Creating module for device {deviceName}.");
+            using (RegistryManager rm = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
+            {
+                log.WriteLine($"{nameof(GetTestModuleAsync)}: Creating module for device {deviceName}.");
 
-            Module requestModule = new Module(deviceName, moduleName);
-            Module module = await rm.AddModuleAsync(requestModule).ConfigureAwait(false);
+                Module requestModule = new Module(deviceName, moduleName);
+                Module module = await rm.AddModuleAsync(requestModule).ConfigureAwait(false);
 
-            await rm.CloseAsync().ConfigureAwait(false);
+                await rm.CloseAsync().ConfigureAwait(false);
 
-            TestModule ret = new TestModule(module);
+                TestModule ret = new TestModule(module);
 
-            log.WriteLine($"{nameof(GetTestModuleAsync)}: Using device {ret.DeviceId} with module {ret.Id}.");
-            return ret;
+                log.WriteLine($"{nameof(GetTestModuleAsync)}: Using device {ret.DeviceId} with module {ret.Id}.");
+                return ret;
+            }
         }
 
         /// <summary>
@@ -88,6 +86,5 @@ namespace Microsoft.Azure.Devices.E2ETests
             Regex regex = new Regex("HostName=([^;]+)", RegexOptions.None);
             return regex.Match(iotHubConnectionString).Groups[1].Value;
         }
-
     }
 }

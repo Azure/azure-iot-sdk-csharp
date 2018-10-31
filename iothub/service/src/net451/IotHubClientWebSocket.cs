@@ -11,7 +11,9 @@ namespace Microsoft.Azure.Devices
     using System.Net;
     using System.Net.Security;
     using System.Net.Sockets;
+    using System.Security.Authentication;
     using System.Security.Cryptography;
+    using System.Security.Cryptography.X509Certificates;
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
@@ -169,7 +171,8 @@ namespace Microsoft.Azure.Devices
                 {
                     // In the real world, web-socket will happen over HTTPS
                     var sslStream = new SslStream(this.TcpClient.GetStream(), false, IotHubConnection.OnRemoteCertificateValidation);
-                    await sslStream.AuthenticateAsClientAsync(host).ConfigureAwait(false);
+                    var x509CertificateCollection = new X509Certificate2Collection();
+                    await sslStream.AuthenticateAsClientAsync(host, x509CertificateCollection, enabledSslProtocols: SslProtocols.Tls11 | SslProtocols.Tls12, checkCertificateRevocation:false).ConfigureAwait(false);
                     this.WebSocketStream = sslStream;
                 }
                 else

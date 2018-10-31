@@ -12,6 +12,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Tracing;
+using System.Globalization;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -22,9 +23,9 @@ namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
     [TestCategory("Provisioning-E2E")]
-    public class ProvisioningTests : IDisposable
+    public class ProvisioningE2ETests : IDisposable
     {
-        private const int PassingTimeoutMiliseconds = 30 * 1000;
+        private const int PassingTimeoutMiliseconds = 10 * 60 * 1000;
         private const int FailingTimeoutMiliseconds = 10 * 1000;
         private static string s_globalDeviceEndpoint = Configuration.Provisioning.GlobalDeviceEndpoint;
         private const string InvalidIDScope = "0neFFFFFFFF";
@@ -35,9 +36,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         private readonly TestLogging _log = TestLogging.GetInstance();
         private readonly ConsoleEventListener _listener;
 
-        public ProvisioningTests()
+        public ProvisioningE2ETests()
         {
-            _listener = new ConsoleEventListener("Microsoft-Azure-");
+            _listener = TestConfig.StartEventListener();
         }
 
         public enum X509EnrollmentType
@@ -82,7 +83,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(nameof(ProvisioningTransportHandlerAmqp), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Group, TransportFallbackType.TcpOnly, false).ConfigureAwait(false);
         }
 
-        [Ignore] //TODO #552
         [TestMethod]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_AmqpWs_Tpm_RegisterOk()
         {
@@ -226,19 +226,26 @@ namespace Microsoft.Azure.Devices.E2ETests
             try
             {
                 await ProvisioningDeviceClient_InvalidRegistrationId_TpmRegister_Fail(nameof(ProvisioningTransportHandlerHttp)).ConfigureAwait(false);
-                Assert.Fail();
+                Assert.Fail("Expected exception not thrown");
             }
             catch (ProvisioningTransportException ex)
             {
-                // TODO # 576 ProvisioningTransportException / HttpOperationException when provisioning with an invalid registrationId. 
-                Console.WriteLine($"Exception caught: {ex}");
+                Assert.IsTrue(ex.Message.Contains("404201"));
             }
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_InvalidRegistrationId_TpmRegister_Amqp_Fail()
         {
-            await ProvisioningDeviceClient_InvalidRegistrationId_TpmRegister_Fail(nameof(ProvisioningTransportHandlerAmqp)).ConfigureAwait(false);
+            try
+            {
+                await ProvisioningDeviceClient_InvalidRegistrationId_TpmRegister_Fail(nameof(ProvisioningTransportHandlerAmqp)).ConfigureAwait(false);
+                Assert.Fail("Expected exception not thrown");
+            }
+            catch (ProvisioningTransportException ex)
+            {
+                Assert.IsTrue(ex.Message.Contains("404201"));
+            }
         }
 
         public async Task ProvisioningDeviceClient_InvalidRegistrationId_TpmRegister_Fail(string transportType)
@@ -302,7 +309,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             await ProvisioningDeviceClient_InvalidIdScope_Register_Fail(nameof(ProvisioningTransportHandlerAmqp), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Group, TransportFallbackType.TcpOnly).ConfigureAwait(false);
         }
 
-        [Ignore] //TODO #552
         [TestMethod]
         public async Task ProvisioningDeviceClient_InvalidIdScope_Register_AmqpWs_Tpm_Fail()
         {
@@ -375,7 +381,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await ProvisioningDeviceClient_InvalidGlobalAddress_Register_Fail(nameof(ProvisioningTransportHandlerHttp), nameof(SecurityProviderX509Certificate), X509EnrollmentType.Individual, null).ConfigureAwait(false);
         }
 
-        [Ignore] //TODO #552
+        // Note: This test takes 3 minutes.
         [TestMethod]
         public async Task ProvisioningDeviceClient_InvalidGlobalAddress_Register_Amqp_Fail()
         {
@@ -539,10 +545,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         protected virtual void Dispose(bool disposing)
         {
-            if (disposing)
-            {
-                _listener.Dispose();
-            }
         }
     }
 }

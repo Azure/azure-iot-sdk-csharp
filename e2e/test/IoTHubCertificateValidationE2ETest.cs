@@ -15,14 +15,14 @@ namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
     [TestCategory("InvalidServiceCertificate")]
-    public class IoTHubCertificateValidationTest : IDisposable
+    public class IoTHubCertificateValidationE2ETest : IDisposable
     {
         private readonly TestLogging _log = TestLogging.GetInstance();
         private readonly ConsoleEventListener _listener;
 
-        public IoTHubCertificateValidationTest()
+        public IoTHubCertificateValidationE2ETest()
         {
-            _listener = new ConsoleEventListener("Microsoft-Azure-");
+            _listener = TestConfig.StartEventListener();
         }
 
         [TestMethod]
@@ -210,10 +210,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         protected virtual void Dispose(bool disposing)
         {
-            if (disposing)
-            {
-                _listener.Dispose();
-            }
         }
     }
 }

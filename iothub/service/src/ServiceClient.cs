@@ -34,6 +34,9 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         internal ServiceClient()
         {
+#if NET451
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
+#endif
         }
 
         /// <summary>
