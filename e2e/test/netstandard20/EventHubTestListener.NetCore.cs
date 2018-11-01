@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             string partition = EventHubPartitionKeyResolver.ResolveToPartition(deviceName, eventHubPartitionsCount);
             string consumerGroupName = Configuration.IoTHub.EventHubConsumerGroup;
 
-            while (receiver == null && sw.Elapsed.Minutes < MaximumWaitTimeInMinutes)
+            while (receiver == null && sw.Elapsed.TotalMinutes < MaximumWaitTimeInMinutes)
             {
                 try
                 {

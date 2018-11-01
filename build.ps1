@@ -148,7 +148,7 @@ Function BuildPackage($path, $message) {
     }
 }
 
-Function RunTests($path, $message, $framework="netcoreapp2.1") {
+Function RunTests($path, $message, $framework="*") {
 
     $label = "TEST: --- $message $configuration ---"
 
@@ -156,7 +156,14 @@ Function RunTests($path, $message, $framework="netcoreapp2.1") {
     Write-Host -ForegroundColor Cyan $label
     cd (Join-Path $rootDir $path)
 
-    & dotnet test --framework $framework --verbosity $verbosity --configuration $configuration --logger "trx"
+    if ($framework -eq "*")
+    {
+        & dotnet test --verbosity $verbosity --configuration $configuration --logger "trx"
+    }
+    else 
+    {
+        & dotnet test --framework $framework --verbosity $verbosity --configuration $configuration --logger "trx"
+    }
 
     if ($LASTEXITCODE -ne 0) {
         throw "Tests failed: $label"
@@ -265,11 +272,13 @@ try {
         $oldVerbosity = $verbosity
         $verbosity = "normal"
 
-        RunTests e2e\test "End-to-end tests (NetCoreApp)"
         if (IsWindowsDevelopmentBox)
         {
-            RunTests e2e\test "End-to-end tests (NET47)" "net47"
-            RunTests e2e\test "End-to-end tests (NET451)" "net451"
+            RunTests e2e\test "End-to-end tests (NetCoreApp2.1, NET47, NET451)"
+        }
+        else 
+        {
+            RunTests e2e\test "End-to-end tests (NetCoreApp2.1)" "netcoreapp2.1"
         }
 
         $verbosity = $oldVerbosity

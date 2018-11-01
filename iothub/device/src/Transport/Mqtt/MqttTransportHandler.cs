@@ -5,6 +5,7 @@ using DotNetty.Buffers;
 using DotNetty.Codecs.Mqtt;
 using DotNetty.Codecs.Mqtt.Packets;
 using DotNetty.Common.Concurrency;
+using DotNetty.Handlers.Logging;
 using DotNetty.Handlers.Tls;
 using DotNetty.Transport.Bootstrapping;
 using DotNetty.Transport.Channels;
@@ -24,6 +25,7 @@ using System.IO;
 using System.Net;
 using System.Net.Security;
 using System.Net.WebSockets;
+using System.Runtime.ExceptionServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -51,7 +53,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         readonly MqttIotHubAdapterFactory mqttIotHubAdapterFactory;
         readonly QualityOfService qos;
 
-        readonly string eventLoopGroupKey;
         readonly object syncRoot = new object();
         readonly CancellationTokenSource disconnectAwaitersCancellationSource = new CancellationTokenSource();
         readonly RetryPolicy closeRetryPolicy;
@@ -139,7 +140,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             this.receiveEventMessagePrefix = string.Format(CultureInfo.InvariantCulture, receiveEventMessagePrefixPattern, iotHubConnectionString.DeviceId, iotHubConnectionString.ModuleId);
 
             this.qos = settings.PublishToServerQoS;
-            this.eventLoopGroupKey = iotHubConnectionString.IotHubName + "#" + iotHubConnectionString.DeviceId + "#" + iotHubConnectionString.Audience;
 
             if (channelFactory == null)
             {
@@ -854,10 +854,19 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     {
                         string body = reader.ReadToEnd();
 
-                        var props = JsonConvert.DeserializeObject<Microsoft.Azure.Devices.Shared.TwinProperties>(body);
+                        try
+                        {
+                            var props = JsonConvert.DeserializeObject<Microsoft.Azure.Devices.Shared.TwinProperties>(body);
 
-                        twin = new Twin();
-                        twin.Properties = props;
+                            twin = new Twin();
+                            twin.Properties = props;
+                        }
+                        catch (JsonReaderException ex)
+                        {
+                            var dispatchedEx = ExceptionDispatchInfo.Capture(ex);
+                            if (Logging.IsEnabled) Logging.Error(this, $"Failed to parse Twin JSON: {ex}. Message body: '{body}'");
+                            dispatchedEx.Throw();
+                        }
                     }
                 }
             }, cancellationToken).ConfigureAwait(false);
@@ -924,6 +933,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                                 tlsHandler,
                                 MqttEncoder.Instance, 
                                 new MqttDecoder(false, MaxMessageSize), 
+                                new LoggingHandler(LogLevel.DEBUG),
                                 this.mqttIotHubAdapterFactory.Create(this, iotHubConnectionString, settings, productInfo));
                     }));
 
@@ -1011,6 +1021,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     .Pipeline.AddLast(
                         MqttEncoder.Instance,
                         new MqttDecoder(false, MaxMessageSize),
+                        new LoggingHandler(LogLevel.DEBUG),
                         this.mqttIotHubAdapterFactory.Create(this, iotHubConnectionString, settings, productInfo));
                 await s_eventLoopGroup.RegisterAsync(clientChannel).ConfigureAwait(false);
 

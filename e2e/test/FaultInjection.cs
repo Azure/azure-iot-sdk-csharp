@@ -7,6 +7,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -40,11 +41,12 @@ namespace Microsoft.Azure.Devices.E2ETests
         public const string FaultCloseReason_Bye = "byebye";
 
         public const int DefaultDelayInSec = 1; // Time in seconds after service initiates the fault.
-        public const int DefaultDurationInSec = 10; // Duration in seconds 
+        public const int DefaultDurationInSec = 5; // Duration in seconds 
+
         public const int WaitForDisconnectMilliseconds = 3 * DefaultDelayInSec * 1000;
         public const int ShortRetryInMilliSec = (int)(DefaultDurationInSec / 2.0 * 1000);
 
-        public const int RecoveryTimeMilliseconds = 5 * 60 * 1000;
+        public const int RecoveryTimeMilliseconds = 30 * 1000;
 
         private static TestLogging s_log = TestLogging.GetInstance();
 
@@ -58,8 +60,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 {
                     ["AzIoTHub_FaultOperationType"] = faultType,
                     ["AzIoTHub_FaultOperationCloseReason"] = reason,
-                    ["AzIoTHub_FaultOperationDelayInSecs"] = delayInSecs.ToString(),
-                    ["AzIoTHub_FaultOperationDurationInSecs"] = durationInSecs.ToString()
+                    ["AzIoTHub_FaultOperationDelayInSecs"] = delayInSecs.ToString(CultureInfo.InvariantCulture),
+                    ["AzIoTHub_FaultOperationDurationInSecs"] = durationInSecs.ToString(CultureInfo.InvariantCulture)
                 }
             };
         }
@@ -82,7 +84,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     transport == Client.TransportType.Mqtt_Tcp_Only ||
                     transport == Client.TransportType.Mqtt_WebSocket_Only)
                 {
-                    deviceClient.OperationTimeoutInMilliseconds = 1000;
+                    deviceClient.OperationTimeoutInMilliseconds = (uint)delayInSec * 2000;
                 }
 
                 await deviceClient.SendEventAsync(
@@ -103,7 +105,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        public static async Task TestErrorInjectionTemplate(
+        // Error injection template method.
+        public static async Task TestErrorInjectionAsync(
             string devicePrefix,
             TestDeviceType type,
             Client.TransportType transport,
@@ -171,7 +174,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             finally
             {
                 await cleanupOperation().ConfigureAwait(false);
-                await deviceClient.CloseAsync().ConfigureAwait(false);
+                s_log.WriteLine($"{nameof(FaultInjection)}: Disposing deviceClient {TestLogging.GetHashCode(deviceClient)}");
+                deviceClient.Dispose();
 
                 watch.Stop();
 
