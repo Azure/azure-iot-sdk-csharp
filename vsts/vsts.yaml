@@ -3,13 +3,15 @@ resources:
 - repo: self
   clean: true
 phases:
+
+### Linux build ###
 - phase: LINUX
   displayName: Linux
 
   condition: succeeded()
   queue:
     name: Hosted Ubuntu 1604
-    timeoutInMinutes: 20
+    timeoutInMinutes: 120
   steps:
   - powershell: ./vsts/manual_checkout.ps1
     displayName: 'GIT checkout'
@@ -49,7 +51,6 @@ phases:
 
       restartPolicy: unlessStopped
 
-
   - script: |  
        # Run dotnet first experience.
        dotnet new
@@ -86,6 +87,24 @@ phases:
       PROVISIONING_CONNECTION_STRING_INVALIDCERT: $(PROVISIONING-CONNECTION-STRING-INVALIDCERT)
       IOTHUB_PROXY_SERVER_ADDRESS: 127.0.0.1:8888
 
+  - task: CopyFiles@2
+    displayName: 'Copy files to the artifacts folder'
+    inputs:
+      SourceFolder: '$(Build.SourcesDirectory)'
+
+      Contents: '**/*.trx'
+
+      TargetFolder: '$(Build.ArtifactStagingDirectory)'
+
+    condition: always()
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact: testresults'
+    inputs:
+      ArtifactName: testresults
+
+    condition: always()
+
   - task: PublishTestResults@2
     displayName: 'Publish Test Results **/*.trx'
     inputs:
@@ -95,13 +114,17 @@ phases:
 
     condition: always()
 
+### Windows build ###
+
 - phase: WINDOWS
   displayName: Windows
+# Uncomment to serialize builds:
+#  dependsOn: LINUX
 
   condition: succeeded()
   queue:
     name: Hosted VS2017
-    timeoutInMinutes: 60
+    timeoutInMinutes: 120
   steps:
   - script: |  
        call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
@@ -161,6 +184,24 @@ phases:
       PROVISIONING_CONNECTION_STRING_INVALIDCERT: $(PROVISIONING-CONNECTION-STRING-INVALIDCERT)
       IOTHUB_PROXY_SERVER_ADDRESS: 127.0.0.1:3128
 
+  - task: CopyFiles@2
+    displayName: 'Copy files to the artifacts folder'
+    inputs:
+      SourceFolder: '$(Build.SourcesDirectory)'
+
+      Contents: '**/*.trx'
+
+      TargetFolder: '$(Build.ArtifactStagingDirectory)'
+
+    condition: always()
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact: testresults'
+    inputs:
+      ArtifactName: testresults
+
+    condition: always()
+
   - task: PublishTestResults@2
     displayName: 'Publish Test Results **/*.trx'
     inputs:
@@ -175,6 +216,100 @@ phases:
       configuration: 'Debug UT + Release E2E'
 
     condition: always()
+
+### WINDOWS Analyzers ###
+- phase: Analyzers
+  displayName: Analyzers
+
+  condition: succeeded()
+  queue:
+    name: Hosted VS2017
+    timeoutInMinutes: 60
+  steps:
+
+  - powershell: ./vsts/manual_checkout.ps1
+    displayName: 'GIT checkout'
+    env:
+      COMMIT_FROM: $(COMMIT_FROM)
+
+  - script: |
+       rem Run dotnet first experience.
+       dotnet new
+
+       rem Start build
+       build.cmd -clean -nounittests -configuration Debug
+
+    displayName: build
+
+  - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
+    displayName: 'Component Detection'
+
+
+  - task: securedevelopmentteam.vss-secure-development-tools.build-task-antimalware.AntiMalware@3
+    displayName: 'Run MpCmdRun.exe'
+    inputs:
+      EnableServices: true
+
+
+  - task: securedevelopmentteam.vss-secure-development-tools.build-task-autoapplicability.AutoApplicability@1
+    displayName: 'Run AutoApplicability'
+    inputs:
+      ExternalRelease: true
+
+      IsSoftware: true
+
+      UsesHSM: true
+
+  - task: securedevelopmentteam.vss-secure-development-tools.build-task-binskim.BinSkim@3
+    displayName: 'Run BinSkim '
+    inputs:
+      arguments: 'analyze  $(Build.SourcesDirectory)\Microsoft.Azure.Devices.*.dll $(Build.SourcesDirectory)\DeviceExplorer.exe --recurse --verbose'
+
+    # TODO #181 Config issue: must run on Debug builds only with valid PDBs.
+    enabled: false
+
+  - task: securedevelopmentteam.vss-secure-development-tools.build-task-codemetrics.CodeMetrics@1
+    displayName: 'Run CodeMetrics '
+    inputs:
+      Files: '$(Build.SourcesDirectory)\**\DeviceExplorer.exe;$(Build.SourcesDirectory)\**\Microsoft.Azure.Devices.*.dll'
+
+    # TODO #181 Config issue: must run on Debug builds only with valid PDBs.
+    enabled: false
+
+
+  - task: securedevelopmentteam.vss-secure-development-tools.build-task-credscan.CredScan@2
+    displayName: 'Run CredScan'
+    inputs:
+      regexMatchTimeoutInSeconds: 5
+
+    # TODO #181 Samples / tests fail the test due to fake connection strings.
+      debugMode: false
+
+  - task: securedevelopmentteam.vss-secure-development-tools.build-task-policheck.PoliCheck@1
+    displayName: 'Run PoliCheck'
+    inputs:
+      targetType: F
+
+  - task: securedevelopmentteam.vss-secure-development-tools.build-task-vulnerabilityassessment.VulnerabilityAssessment@0
+    displayName: 'Run Vulnerability Assessment'
+
+  - task: securedevelopmentteam.vss-secure-development-tools.build-task-publishsecurityanalysislogs.PublishSecurityAnalysisLogs@2
+    displayName: 'Publish Security Analysis Logs'
+
+  - task: securedevelopmentteam.vss-secure-development-tools.build-task-report.SdtReport@1
+    displayName: 'Create Security Analysis Report'
+    inputs:
+      AllTools: true
+
+  - task: securedevelopmentteam.vss-secure-development-tools.build-task-postanalysis.PostAnalysis@1
+    displayName: 'Post Analysis'
+    inputs:
+      AllTools: true
+
+    # TODO #181 Enable post analysis to break builds after all above items are enabled.
+    enabled: false
+
+# END: SDL and Compliance tasks #
 
 - phase: NETMF
   displayName: NetMF
@@ -213,3 +348,77 @@ phases:
        call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
        vsts/windows_csharp_deviceexplorer.cmd 
     displayName: build
+
+# BEGIN: SDL and Compliance tasks #
+
+  - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
+    displayName: 'Component Detection'
+
+    # TODO #181 CD component bugs currently investigated by the owning team.
+    enabled: false
+
+  - task: securedevelopmentteam.vss-secure-development-tools.build-task-antimalware.AntiMalware@3
+    displayName: 'Run MpCmdRun.exe'
+    inputs:
+      EnableServices: true
+
+
+  - task: securedevelopmentteam.vss-secure-development-tools.build-task-autoapplicability.AutoApplicability@1
+    displayName: 'Run AutoApplicability'
+    inputs:
+      ExternalRelease: true
+
+      IsSoftware: true
+
+      UsesHSM: true
+
+  - task: securedevelopmentteam.vss-secure-development-tools.build-task-binskim.BinSkim@3
+    displayName: 'Run BinSkim '
+    inputs:
+      arguments: 'analyze  $(Build.SourcesDirectory)\Microsoft.Azure.Devices.*.dll $(Build.SourcesDirectory)\DeviceExplorer.exe --recurse --verbose'
+
+    # TODO #181 Config issue: must run on Debug builds only with valid PDBs.
+    enabled: false
+
+  - task: securedevelopmentteam.vss-secure-development-tools.build-task-codemetrics.CodeMetrics@1
+    displayName: 'Run CodeMetrics '
+    inputs:
+      Files: '$(Build.SourcesDirectory)\**\DeviceExplorer.exe;$(Build.SourcesDirectory)\**\Microsoft.Azure.Devices.*.dll'
+
+    # TODO #181 Config issue: must run on Debug builds only with valid PDBs.
+    enabled: false
+
+
+  - task: securedevelopmentteam.vss-secure-development-tools.build-task-credscan.CredScan@2
+    displayName: 'Run CredScan'
+    inputs:
+      regexMatchTimeoutInSeconds: 5
+
+    # TODO #181 Samples / tests fail the test due to fake connection strings.
+      debugMode: false
+
+  - task: securedevelopmentteam.vss-secure-development-tools.build-task-policheck.PoliCheck@1
+    displayName: 'Run PoliCheck'
+    inputs:
+      targetType: F
+
+  - task: securedevelopmentteam.vss-secure-development-tools.build-task-vulnerabilityassessment.VulnerabilityAssessment@0
+    displayName: 'Run Vulnerability Assessment'
+
+  - task: securedevelopmentteam.vss-secure-development-tools.build-task-publishsecurityanalysislogs.PublishSecurityAnalysisLogs@2
+    displayName: 'Publish Security Analysis Logs'
+
+  - task: securedevelopmentteam.vss-secure-development-tools.build-task-report.SdtReport@1
+    displayName: 'Create Security Analysis Report'
+    inputs:
+      AllTools: true
+
+  - task: securedevelopmentteam.vss-secure-development-tools.build-task-postanalysis.PostAnalysis@1
+    displayName: 'Post Analysis'
+    inputs:
+      AllTools: true
+
+    # TODO #181 Enable post analysis to break builds after all above items are enabled.
+    enabled: false
+
+# END: SDL and Compliance tasks #
