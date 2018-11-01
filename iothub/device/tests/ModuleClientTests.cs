@@ -230,7 +230,6 @@
         }
 
         [TestMethod]
-        [TestCategory("ModuleClient")]
         public async Task ModuleClient_InvokeMethodAsyncWithoutBody()
         {
             var request = new MethodRequest("test");

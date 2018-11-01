@@ -15,6 +15,12 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
         }
 
+        private const string NullInstance = "(null)";
+        
+        public static string IdOf(object value) => value != null ? value.GetType().Name + "#" + GetHashCode(value) : NullInstance;
+
+        public static int GetHashCode(object value) => value?.GetHashCode() ?? 0;
+
         public static TestLogging GetInstance()
         {
             return s_instance;
@@ -23,16 +29,12 @@ namespace Microsoft.Azure.Devices.E2ETests
         public void WriteLine(string message)
         {
             EventSourceTestLogging.Log.TestMessage(message);
-            Debug.WriteLine(message);
-            Console.WriteLine(message);
         }
 
         public void WriteLine(string format, params object[] args)
         {
             string message = string.Format(CultureInfo.InvariantCulture, format, args);
             EventSourceTestLogging.Log.TestMessage(message);
-            Debug.WriteLine(message);
-            Console.WriteLine(message);
         }
     }
 }

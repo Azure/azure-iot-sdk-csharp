@@ -297,7 +297,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Time when the message was received by the server
+        /// Number of times the message has been previously delivered
         /// </summary>
         public uint DeliveryCount
         {

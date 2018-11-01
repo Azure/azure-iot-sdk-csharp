@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Shared;
+using Microsoft.Azure.Devices.Client;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
@@ -18,38 +18,59 @@ namespace Microsoft.Azure.Devices.E2ETests
 
     public class TestDevice
     {
-        private const int DelayAfterDeviceCreationSeconds = 5;
+        private const int DelayAfterDeviceCreationSeconds = 3;
         private static Dictionary<string, TestDevice> s_deviceCache = new Dictionary<string, TestDevice>();
+        private static TestLogging s_log = TestLogging.GetInstance();
+        private static SemaphoreSlim s_semaphore = new SemaphoreSlim(1, 1);
 
         private Device _device;
+        private Client.IAuthenticationMethod _authenticationMethod;
 
-        private TestDevice(Device device)
+        private TestDevice(Device device, Client.IAuthenticationMethod authenticationMethod)
         {
             _device = device;
+            _authenticationMethod = authenticationMethod;
         }
 
         /// <summary>
         /// Factory method.
-        /// IMPORTANT: Not thread safe!
         /// </summary>
         /// <param name="namePrefix"></param>
         /// <param name="type"></param>
-        /// <returns></returns>
         public static async Task<TestDevice> GetTestDeviceAsync(string namePrefix, TestDeviceType type = TestDeviceType.Sasl)
         {
-            var log = TestLogging.GetInstance();
             string prefix = namePrefix + type + "_";
 
-            if (!s_deviceCache.TryGetValue(prefix, out TestDevice testDevice))
+            try
             {
-                string deviceName = prefix + Guid.NewGuid();
-                log.WriteLine($"{nameof(GetTestDeviceAsync)}: Device with prefix {prefix} not found. Removing old devices.");
+                await s_semaphore.WaitAsync().ConfigureAwait(false);
+                if (!s_deviceCache.TryGetValue(prefix, out TestDevice testDevice))
+                {
+                    await CreateDeviceAsync(type, prefix).ConfigureAwait(false);
+                }
 
-                // Delete existing devices named this way and create a new one.
-                RegistryManager rm = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
-                await RemoveDevicesAsync(prefix, rm).ConfigureAwait(false);
-                                
-                log.WriteLine($"{nameof(GetTestDeviceAsync)}: Creating device {deviceName} with type {type}.");
+                TestDevice ret = s_deviceCache[prefix];
+
+                s_log.WriteLine($"{nameof(GetTestDeviceAsync)}: Using device {ret.Id}.");
+                return ret;
+            }
+            finally
+            {
+                s_semaphore.Release();
+            }
+        }
+
+        private static async Task CreateDeviceAsync(TestDeviceType type, string prefix)
+        {
+            string deviceName = prefix + Guid.NewGuid();
+            s_log.WriteLine($"{nameof(GetTestDeviceAsync)}: Device with prefix {prefix} not found.");
+
+            // Delete existing devices named this way and create a new one.
+            using (RegistryManager rm = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
+            {
+                s_log.WriteLine($"{nameof(GetTestDeviceAsync)}: Creating device {deviceName} with type {type}.");
+
+                Client.IAuthenticationMethod auth = null;
 
                 Device requestDevice = new Device(deviceName);
                 if (type == TestDeviceType.X509)
@@ -61,22 +82,19 @@ namespace Microsoft.Azure.Devices.E2ETests
                             PrimaryThumbprint = Configuration.IoTHub.GetCertificateWithPrivateKey().Thumbprint
                         }
                     };
+
+                    auth = new DeviceAuthenticationWithX509Certificate(deviceName, Configuration.IoTHub.GetCertificateWithPrivateKey());
                 }
 
                 Device device = await rm.AddDeviceAsync(requestDevice).ConfigureAwait(false);
 
-                log.WriteLine($"{nameof(GetTestDeviceAsync)}: Pausing for {DelayAfterDeviceCreationSeconds} after device was created.");
+                s_log.WriteLine($"{nameof(GetTestDeviceAsync)}: Pausing for {DelayAfterDeviceCreationSeconds}s after device was created.");
                 await Task.Delay(DelayAfterDeviceCreationSeconds * 1000).ConfigureAwait(false);
 
-                s_deviceCache[prefix] = new TestDevice(device);
+                s_deviceCache[prefix] = new TestDevice(device, auth);
 
                 await rm.CloseAsync().ConfigureAwait(false);
             }
-
-            TestDevice ret = s_deviceCache[prefix];
-
-            log.WriteLine($"{nameof(GetTestDeviceAsync)}: Using device {ret.Id}.");
-            return ret;
         }
 
         /// <summary>
@@ -124,31 +142,36 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
+        public Client.IAuthenticationMethod AuthenticationMethod
+        {
+            get
+            {
+                return _authenticationMethod;
+            }
+        }
+
+        public DeviceClient CreateDeviceClient(Client.TransportType transport)
+        {
+            DeviceClient deviceClient = null;
+
+            if (_authenticationMethod == null)
+            {
+                deviceClient = DeviceClient.CreateFromConnectionString(ConnectionString, transport);
+                s_log.WriteLine($"{nameof(CreateDeviceClient)}: Created {nameof(DeviceClient)} from connection string: {transport} ID={TestLogging.IdOf(deviceClient)}");
+            }
+            else
+            {
+                deviceClient = DeviceClient.Create(IoTHubHostName, AuthenticationMethod, transport);
+                s_log.WriteLine($"{nameof(CreateDeviceClient)}: Created {nameof(DeviceClient)} from IAuthenticationMethod: {transport} ID={TestLogging.IdOf(deviceClient)}");
+            }
+
+            return deviceClient;
+        }
+
         private static string GetHostName(string iotHubConnectionString)
         {
             Regex regex = new Regex("HostName=([^;]+)", RegexOptions.None);
             return regex.Match(iotHubConnectionString).Groups[1].Value;
-        }
-
-        private static async Task RemoveDevicesAsync(string devicePrefix, RegistryManager rm)
-        {
-            var log = TestLogging.GetInstance();
-
-            log.WriteLine($"{nameof(RemoveDevicesAsync)} Enumerating devices.");
-
-            IQuery q = rm.CreateQuery("SELECT * FROM devices", 100);
-            while (q.HasMoreResults)
-            {
-                IEnumerable<Twin> results = await q.GetNextAsTwinAsync().ConfigureAwait(false);
-                foreach (Twin t in results)
-                {
-                    if (t.DeviceId.StartsWith(devicePrefix, StringComparison.OrdinalIgnoreCase))
-                    {
-                        log.WriteLine($"{nameof(RemoveDevicesAsync)} Removing device: {t.DeviceId}");
-                        await rm.RemoveDeviceAsync(t.DeviceId).ConfigureAwait(false);
-                    }
-                }
-            }
         }
     }
 }

@@ -16,13 +16,13 @@ namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
     [TestCategory("InvalidServiceCertificate")]
-    public class ProvisioningCertificateValidationTest : IDisposable
+    public class ProvisioningCertificateValidationE2ETest : IDisposable
     {
         private readonly ConsoleEventListener _listener;
 
-        public ProvisioningCertificateValidationTest()
+        public ProvisioningCertificateValidationE2ETest()
         {
-            _listener = new ConsoleEventListener("Microsoft-Azure-");
+            _listener = TestConfig.StartEventListener();
         }
 
         [TestMethod]
@@ -186,10 +186,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         protected virtual void Dispose(bool disposing)
         {
-            if (disposing)
-            {
-                _listener.Dispose();
-            }
         }
     }
 }

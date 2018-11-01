@@ -265,6 +265,9 @@ namespace Microsoft.Azure.Devices
             }
         }
 
+        /// <summary>
+        /// Number of times the message has been previously delivered
+        /// </summary>
         internal uint DeliveryCount
         {
             get

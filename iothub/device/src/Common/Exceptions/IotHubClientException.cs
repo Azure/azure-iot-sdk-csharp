@@ -6,7 +6,10 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
     using System;
     using System.Runtime.Serialization;
 
-    class IotHubClientException : IotHubException
+    /// <summary>
+    /// Base exception for a failure in device client operations
+    /// </summary>
+    public class IotHubClientException : IotHubException
     {
         public IotHubClientException(string message)
             : base(message)

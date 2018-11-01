@@ -6,7 +6,10 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
     using System;
     using System.Runtime.Serialization;
 
-    class IotHubClientTransientException : IotHubClientException
+    /// <summary>
+    /// Base exception for transient failures in device client operations
+    /// </summary>
+    public class IotHubClientTransientException : IotHubClientException
     {
         public IotHubClientTransientException(string message, string trackingId)
             : base(message, true, trackingId)

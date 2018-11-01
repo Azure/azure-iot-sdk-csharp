@@ -2,13 +2,50 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+/*
+ * To read colorized logs, analyze timings use https://marketplace.visualstudio.com/items?itemName=emilast.LogFileHighlighter 
+ * 
+ * Suggested color configuration :
+
+   "logFileHighlighter.customPatterns": [
+        {
+            "pattern": ".*-Enter]",
+            "foreground": "#42adf4"
+        },
+        {
+            "pattern": ".*-Exit]",
+            "foreground": "#cc99ff"
+        },
+        {
+            "pattern": ".*-Associate]",
+            "foreground": "magenta"
+        },
+        {
+            "pattern": ".*-Info]",
+            "foreground": "#11a046"
+        },
+        {
+            "pattern": ".*-ErrorMessage]",
+            "foreground": "red"
+        },
+        {
+            "pattern": ".*-Critical]",
+            "foreground": "#ea4112"
+        },
+        {
+            "pattern": ".*-TestMessage]",
+            "foreground": "gray"
+        },
+    ]
+ *
+ */
+
 namespace System.Diagnostics.Tracing
 {
     public sealed class ConsoleEventListener : EventListener
     {
-        private readonly string [] _eventFilters;
+        private readonly string[] _eventFilters;
         private object _lock = new object();
-        private Stopwatch _stopwatch = new Stopwatch();
 
         public ConsoleEventListener() : this(string.Empty) { }
 
@@ -42,8 +79,6 @@ namespace System.Diagnostics.Tracing
             {
                 EnableEvents(source, EventLevel.LogAlways);
             }
-
-            _stopwatch.Start();
         }
 
         protected override void OnEventSourceCreated(EventSource eventSource)
@@ -62,11 +97,9 @@ namespace System.Diagnostics.Tracing
 
             lock (_lock)
             {
-                string text = $"[{_stopwatch.ElapsedMilliseconds, 5}][{eventData.EventSource.Name}-{eventData.EventId}]{(eventData.Payload != null ? $" ({string.Join(", ", eventData.Payload)})." : "")}";
-
                 bool shouldDisplay = false;
-
-                if (_eventFilters.Length == 1 && text.Contains(_eventFilters[0]))
+            
+                if (_eventFilters.Length == 1 && eventData.EventSource.Name.StartsWith(_eventFilters[0]))
                 {
                     shouldDisplay = true;
                 }
@@ -74,7 +107,7 @@ namespace System.Diagnostics.Tracing
                 {
                     foreach (string filter in _eventFilters)
                     {
-                        if (text.Contains(filter))
+                        if (eventData.EventSource.Name.StartsWith(filter))
                         {
                             shouldDisplay = true;
                         }
@@ -83,6 +116,12 @@ namespace System.Diagnostics.Tracing
 
                 if (shouldDisplay)
                 {
+#if NET451
+                    string text = $"{DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fffffff")} [{eventData.EventSource.Name}-{eventData.EventId}]{(eventData.Payload != null ? $" ({string.Join(", ", eventData.Payload)})." : "")}";
+#else
+                    string text = $"{DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fffffff")} [{eventData.EventSource.Name}-{eventData.EventName}]{(eventData.Payload != null ? $" ({string.Join(", ", eventData.Payload)})." : "")}";
+#endif
+
                     ConsoleColor origForeground = Console.ForegroundColor;
                     Console.ForegroundColor = ConsoleColor.DarkYellow;
                     Console.WriteLine(text);
