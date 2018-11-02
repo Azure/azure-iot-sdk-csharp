@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.Client
 
             string userAgent = $"{Name}/{version} ({runtime}; {operatingSystem}; {processorArchitecture})";
 
-            if (_productType.Value != -1)
+            if (_productType.Value != 0)
             {
                 userAgent += $" WindowsProduct:0x{_productType.Value:X8}";
             }

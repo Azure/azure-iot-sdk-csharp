@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.Client
                 return productType;
             }
 #endif
-            return -1;
+            return 0;
         }
     }
 }

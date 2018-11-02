@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string processorArchitecture = RuntimeInformation.ProcessArchitecture.ToString().Trim();
 
             var productType = NativeMethods.GetWindowsProductType();
-            var productTypeString = (productType != -1) ? $" WindowsProduct:0x{productType:X8}" : string.Empty;
+            var productTypeString = (productType != 0) ? $" WindowsProduct:0x{productType:X8}" : string.Empty;
 
             return $"Microsoft.Azure.Devices.Client/{version} ({runtime}; {operatingSystem}; {processorArchitecture}){productTypeString}";
         }
