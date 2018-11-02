@@ -41,7 +41,7 @@
     <Compile Include="$(Common)\CommonExtensions.cs">
       <Link>Common\CommonExtensions.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\ProductInfo.cs">
+    <Compile Include="$(Common)\Provisioning\ProductInfo.cs">
       <Link>Common\ProductInfo.cs</Link>
     </Compile>
     <Compile Include="$(Common)\Logging.Common.cs">

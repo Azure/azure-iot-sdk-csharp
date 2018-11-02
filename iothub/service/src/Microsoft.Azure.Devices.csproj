@@ -42,64 +42,64 @@
     <Compile Include="$(Common)\Logging.Common.cs">
       <Link>Common\Logging.Common.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\service\AssertionFailedException.cs">
+    <Compile Include="$(Common)\iothub\service\AssertionFailedException.cs">
       <Link>Common\Exceptions\AssertionFailedException.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\service\AuthenticationMethodFactory.cs">
+    <Compile Include="$(Common)\iothub\service\AuthenticationMethodFactory.cs">
       <Link>AuthenticationMethodFactory.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\service\CommonConstants.cs">
+    <Compile Include="$(Common)\iothub\service\CommonConstants.cs">
       <Link>Common\CommonConstants.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\service\CommonResources.cs">
+    <Compile Include="$(Common)\iothub\service\CommonResources.cs">
       <Link>Common\CommonResources.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\service\EventTraceActivity.cs">
+    <Compile Include="$(Common)\iothub\service\EventTraceActivity.cs">
       <Link>Common\Tracing\EventTraceActivity.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\service\ExceptionDispatcher.cs">
+    <Compile Include="$(Common)\iothub\service\ExceptionDispatcher.cs">
       <Link>Common\ExceptionDispatcher.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\service\ExceptionHandlingHelper.cs">
+    <Compile Include="$(Common)\iothub\service\ExceptionHandlingHelper.cs">
       <Link>ExceptionHandlingHelper.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\service\ExceptionTrace.cs">
+    <Compile Include="$(Common)\iothub\service\ExceptionTrace.cs">
       <Link>Common\ExceptionTrace.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\service\FatalException.cs">
+    <Compile Include="$(Common)\iothub\service\FatalException.cs">
       <Link>Common\Exceptions\FatalException.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\service\Fx.cs">
+    <Compile Include="$(Common)\iothub\service\Fx.cs">
       <Link>Common\Fx.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\service\FxCop.cs">
+    <Compile Include="$(Common)\iothub\service\FxCop.cs">
       <Link>Common\FxCop.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\service\HttpClientHelper.cs">
+    <Compile Include="$(Common)\iothub\service\HttpClientHelper.cs">
       <Link>HttpClientHelper.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\service\IAuthorizationHeaderProvider.cs">
+    <Compile Include="$(Common)\iothub\service\IAuthorizationHeaderProvider.cs">
       <Link>IAuthorizationHeaderProvider.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\service\IHttpClientHelper.cs">
+    <Compile Include="$(Common)\iothub\service\IHttpClientHelper.cs">
       <Link>IHttpClientHelper.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\service\IotHubConnectionString.cs">
+    <Compile Include="$(Common)\iothub\service\IotHubConnectionString.cs">
       <Link>IotHubConnectionString.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\service\PutOperationType.cs">
+    <Compile Include="$(Common)\iothub\service\PutOperationType.cs">
       <Link>PutOperationType.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\service\QuerySpecification.cs">
+    <Compile Include="$(Common)\iothub\service\QuerySpecification.cs">
       <Link>QuerySpecification.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\service\StringValidationHelper.cs">
+    <Compile Include="$(Common)\iothub\service\StringValidationHelper.cs">
       <Link>Common\StringValidationHelper.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\service\TaskHelpers.cs">
+    <Compile Include="$(Common)\iothub\service\TaskHelpers.cs">
       <Link>Common\TaskHelpers.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\service\Utils.cs">
+    <Compile Include="$(Common)\iothub\service\Utils.cs">
       <Link>Common\Utils.cs</Link>
     </Compile>
   </ItemGroup>

@@ -37,6 +37,9 @@
     <Compile Include="$(Common)\Logging.Common.cs">
       <Link>Common\Logging.Common.cs</Link>
     </Compile>
+        <Compile Include="$(Common)\Provisioning\ProductInfo.cs">
+      <Link>Common\ProductInfo.cs</Link>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>

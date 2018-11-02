@@ -42,29 +42,29 @@
     <Compile Include="$(Common)\Logging.ProvisioningTransport.Common.cs">
       <Link>Common\Logging.ProvisioningTransport.Common.cs</Link>
     </Compile>  
-    <Compile Include="$(Common)\device\provisioning\transport\ClientApiVersionHelper.cs"> 
-      <Link>Common\device\provisioning\transport\ClientApiVersionHelper.cs</Link>
+    <Compile Include="$(Common)\provisioning\device\transport\ClientApiVersionHelper.cs"> 
+      <Link>Common\provisioning\device\transport\ClientApiVersionHelper.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\device\provisioning\transport\DeviceRegistrationResult.cs">
-      <Link>Common\device\provisioning\transport\DeviceRegistrationResult.cs</Link>
+    <Compile Include="$(Common)\provisioning\device\transport\DeviceRegistrationResult.cs">
+      <Link>Common\provisioning\device\transport\DeviceRegistrationResult.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\device\provisioning\transport\RegistrationOperationStatus.cs">
-      <Link>Common\device\provisioning\transport\RegistrationOperationStatus.cs</Link>
+    <Compile Include="$(Common)\provisioning\device\transport\RegistrationOperationStatus.cs">
+      <Link>Common\provisioning\device\transport\RegistrationOperationStatus.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\device\provisioning\transport\TpmRegistrationResult.cs">
-      <Link>Common\device\provisioning\transport\TpmRegistrationResult.cs</Link>
+    <Compile Include="$(Common)\provisioning\device\transport\TpmRegistrationResult.cs">
+      <Link>Common\provisioning\device\transport\TpmRegistrationResult.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\device\provisioning\transport\X509CertificateInfo.cs">
-      <Link>Common\device\provisioning\transport\X509CertificateInfo.cs</Link>
+    <Compile Include="$(Common)\provisioning\device\transport\X509CertificateInfo.cs">
+      <Link>Common\provisioning\device\transport\X509CertificateInfo.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\device\provisioning\transport\X509RegistrationResult.cs">
-      <Link>Common\device\provisioning\transport\X509RegistrationResult.cs</Link>
+    <Compile Include="$(Common)\provisioning\device\transport\X509RegistrationResult.cs">
+      <Link>Common\provisioning\device\transport\X509RegistrationResult.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\device\provisioning\transport\ProvisioingSasBuilder.cs">
-      <Link>Common\device\provisioning\transport\ProvisioingSasBuilder.cs</Link>
+    <Compile Include="$(Common)\provisioning\device\transport\ProvisioingSasBuilder.cs">
+      <Link>Common\provisioning\device\transport\ProvisioingSasBuilder.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\device\provisioning\transport\ProvisioningErrorDetails.cs">
-      <Link>Common\device\provisioning\transport\ProvisioningErrorDetails.cs</Link>
+    <Compile Include="$(Common)\provisioning\device\transport\ProvisioningErrorDetails.cs">
+      <Link>Common\provisioning\device\transport\ProvisioningErrorDetails.cs</Link>
     </Compile>
     <Compile Include="$(Common)\DefaultWebProxySettings.cs" />
   </ItemGroup>

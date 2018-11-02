@@ -5,18 +5,19 @@ using System;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.Azure.Devices.Provisioning.Client
+namespace Microsoft.Azure.Devices.Shared
 {
-    // TODO: Unify ProductInfo with DeviceClient.
     internal class ProductInfo
     {
         public string Extra { get; set; } = "";
 
         public override string ToString()
         {
-            const string Name = "Microsoft.Azure.Devices.Provisioning.Client";
+            Assembly executingAssembly = Assembly.GetExecutingAssembly();
 
-            string version = typeof(ProvisioningDeviceClient).GetTypeInfo().Assembly.GetName().Version.ToString(3);
+            string Name = executingAssembly.GetName().Name;
+            String version = executingAssembly.GetName().Version.ToString(3);
+
             string runtime = RuntimeInformation.FrameworkDescription.Trim();
             string operatingSystem = RuntimeInformation.OSDescription.Trim();
             string processorArchitecture = RuntimeInformation.ProcessArchitecture.ToString().Trim();
