@@ -11,6 +11,8 @@ namespace Microsoft.Azure.Devices.Client
     {
         public string Extra { get; set; } = "";
 
+        private Lazy<int> _productType = new Lazy<int>(() => NativeMethods.GetWindowsProductType());
+
         public override string ToString()
         {
             const string Name = "Microsoft.Azure.Devices.Client";
@@ -20,6 +22,11 @@ namespace Microsoft.Azure.Devices.Client
             string processorArchitecture = RuntimeInformation.ProcessArchitecture.ToString().Trim();
 
             string userAgent = $"{Name}/{version} ({runtime}; {operatingSystem}; {processorArchitecture})";
+
+            if (_productType.Value != -1)
+            {
+                userAgent += $" WindowsProduct:0x{_productType.Value:X8}";
+            }
 
             if (!String.IsNullOrWhiteSpace(this.Extra))
             {
