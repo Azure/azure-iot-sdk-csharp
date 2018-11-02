@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Client
     {
         public string Extra { get; set; } = "";
 
-        private Lazy<int> _productType = new Lazy<int>(() => NativeMethods.GetWindowsProductType());
+        private readonly Lazy<int> _productType = new Lazy<int>(() => NativeMethods.GetWindowsProductType());
 
         public override string ToString()
         {
