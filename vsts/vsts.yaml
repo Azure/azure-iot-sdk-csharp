@@ -241,7 +241,7 @@ phases:
 
     displayName: build
 
-  - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
+  - task: ComponentGovernanceComponentDetection@0
     displayName: 'Component Detection'
 
 
@@ -351,7 +351,7 @@ phases:
 
 # BEGIN: SDL and Compliance tasks #
 
-  - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
+  - task: ComponentGovernanceComponentDetection@0
     displayName: 'Component Detection'
 
     # TODO #181 CD component bugs currently investigated by the owning team.
