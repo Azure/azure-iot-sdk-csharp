@@ -20,7 +20,8 @@ namespace Microsoft.Azure.Devices.Client
         public static int GetWindowsProductType()
         {
 #if !NETSTANDARD1_3
-            if (GetProductInfo(Environment.OSVersion.Version.Major, Environment.OSVersion.Version.Minor, 0, 0, out int productType))
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
+                GetProductInfo(Environment.OSVersion.Version.Major, Environment.OSVersion.Version.Minor, 0, 0, out int productType))
             {
                 return productType;
             }
