@@ -20,10 +20,17 @@ namespace Microsoft.Azure.Devices.Client
         public static int GetWindowsProductType()
         {
 #if !NETSTANDARD1_3
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
-                GetProductInfo(Environment.OSVersion.Version.Major, Environment.OSVersion.Version.Minor, 0, 0, out int productType))
+            try
             {
-                return productType;
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
+                    GetProductInfo(Environment.OSVersion.Version.Major, Environment.OSVersion.Version.Minor, 0, 0, out int productType))
+                {
+                    return productType;
+                }
+            }
+            catch (DllNotFoundException)
+            {
+                // Catch any DLL not found exceptions
             }
 #endif
             return 0;
