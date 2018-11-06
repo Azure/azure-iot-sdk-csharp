@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Microsoft.Azure.Devices.Shared;
 using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace Microsoft.Azure.Devices.Client
@@ -28,9 +30,11 @@ namespace Microsoft.Azure.Devices.Client
                     return productType;
                 }
             }
-            catch (DllNotFoundException)
+            catch (DllNotFoundException ex)
             {
                 // Catch any DLL not found exceptions
+                Debug.Assert(false, ex.Message);
+                if (Logging.IsEnabled) Logging.Error(null, ex, nameof(NativeMethods));
             }
 #endif
             return 0;
