@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        public async Task ProvisioningServiceClient_Tpm_IndividualEnrollments_Query_Ok()
+        public async Task ProvisioningServiceClient_IndividualEnrollments_Query_Ok()
         {
             ProvisioningServiceClient provisioningServiceClient = CreateProvisioningServiceClient();
             await ProvisioningServiceClient_IndividualEnrollments_Query_Ok(provisioningServiceClient).ConfigureAwait(false);
@@ -145,19 +145,22 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private async Task<IndividualEnrollment> CreateIndividualEnrollmentTpm(ProvisioningServiceClient provisioningServiceClient)
         {
-            var tpmSim = new SecurityProviderTpmSimulator(Configuration.Provisioning.TpmDeviceRegistrationId);
-            string base64Ek = Convert.ToBase64String(tpmSim.GetEndorsementKey());
-            var tpmAttestation = new TpmAttestation(base64Ek);
-            AttestationMechanism attestationMechanism = new AttestationMechanism(TpmAttestationMechanism, tpmAttestation);
-            IndividualEnrollment individualEnrollment =
-                    new IndividualEnrollment(
-                            RegistrationId,
-                            attestationMechanism);
-            individualEnrollment.Capabilities = OptionalEdgeCapabilityEnabled;
+            using (SecurityProviderTpmSimulator tpmSim = new SecurityProviderTpmSimulator(Configuration.Provisioning.TpmDeviceRegistrationId))
+            {
+                string base64Ek = Convert.ToBase64String(tpmSim.GetEndorsementKey());
+                var tpmAttestation = new TpmAttestation(base64Ek);
+                AttestationMechanism attestationMechanism = new AttestationMechanism(TpmAttestationMechanism, tpmAttestation);
 
-            _log.WriteLine("ProvisioningServiceClient Create TPM Enrollment");
-            IndividualEnrollment result = await provisioningServiceClient.CreateOrUpdateIndividualEnrollmentAsync(RegistrationId, individualEnrollment).ConfigureAwait(false);
-            return result;
+                IndividualEnrollment individualEnrollment =
+                        new IndividualEnrollment(
+                                RegistrationId,
+                                attestationMechanism);
+                individualEnrollment.Capabilities = OptionalEdgeCapabilityEnabled;
+
+                _log.WriteLine("ProvisioningServiceClient Create TPM Enrollment");
+                IndividualEnrollment result = await provisioningServiceClient.CreateOrUpdateIndividualEnrollmentAsync(RegistrationId, individualEnrollment).ConfigureAwait(false);
+                return result;
+            }            
         }
 
         private async Task<EnrollmentGroup> CreateGroupEnrollmentX509(ProvisioningServiceClient provisioningServiceClient)
