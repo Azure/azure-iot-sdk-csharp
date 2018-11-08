@@ -22,13 +22,23 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
         private static string s_idScope = Environment.GetEnvironmentVariable("DPS_IDSCOPE");
 
         // In your Device Provisioning Service please go to "Manage enrollments" and select "Individual Enrollments".
-        // Select "Add" then fill in the following:
+        // Select "Add individual enrollment" then fill in the following:
         // Mechanism: X.509
         // Certificate: 
         //    You can generate a self-signed certificate by running the GenerateTestCertificate.ps1 powershell script.
         //    Select the public key 'certificate.cer' file. ('certificate.pfx' contains the private key and is password protected.)
         //    For production code, it is advised that you install the certificate in the CurrentUser (My) store.
         // DeviceID: iothubx509device1
+
+        // X.509 certificates may also be used for enrollment groups.
+        // In your Device Provisioning Service please go to "Manage enrollments" and select "Enrollment Groups".
+        // Select "Add enrollment group" then fill in the following:
+        // Group name: <your  group name>
+        // Attestation Type: Certificate
+        // Certificate Type: 
+        //    choose CA certificate then link primary and secondary certificates 
+        //    OR choose Intermediate certificate and upload primary and secondary certificate files
+        // You may also change other enrollemtn group parameters according to your needs
 
         private const string GlobalDeviceEndpoint = "global.azure-devices-provisioning.net";
         private static string s_certificateFileName = "certificate.pfx";
