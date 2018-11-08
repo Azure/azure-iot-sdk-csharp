@@ -34,8 +34,20 @@
   </PropertyGroup>
 
   <ItemGroup>
+<<<<<<< HEAD
     <Compile Include="$(Common)\CommonExtensions.cs" />
     <Compile Include="$(Common)\ProductInfo.cs" />
+=======
+    <Compile Include="$(Common)\CommonExtensions.cs">
+      <Link>Common\CommonExtensions.cs</Link>
+    </Compile>
+    <Compile Include="$(Common)\ProductInfo.cs">
+      <Link>Common\ProductInfo.cs</Link>
+    </Compile>
+    <Compile Include="$(Common)\Logging.Common.cs">
+      <Link>Common\Logging.Common.cs</Link>
+    </Compile>
+>>>>>>> f37db92e... Provisioning service - token refresh logic
   </ItemGroup>
 
   <ItemGroup>
