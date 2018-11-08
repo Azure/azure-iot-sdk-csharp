@@ -7,6 +7,7 @@ using Microsoft.Azure.Devices.Provisioning.Client.Transport;
 using Microsoft.Azure.Devices.Provisioning.Security;
 using Microsoft.Azure.Devices.Provisioning.Security.Samples;
 using Microsoft.Azure.Devices.Provisioning.Service;
+using Microsoft.Azure.Devices.Provisioning.Service.Models;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
@@ -31,6 +32,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private const string InvalidIDScope = "0neFFFFFFFF";
         private const string InvalidGlobalAddress = "httpbin.org";
         private static string ProxyServerAddress = Configuration.IoTHub.ProxyServerAddress;
+        private const string TpmAttestationType = "tpm";
 
         private readonly VerboseTestLogging _verboseLog = VerboseTestLogging.GetInstance();
         private readonly TestLogging _log = TestLogging.GetInstance();
@@ -463,14 +465,15 @@ namespace Microsoft.Azure.Devices.E2ETests
                     string registrationId = Configuration.Provisioning.TpmDeviceRegistrationId;
 
 
-                    var provisioningService = ProvisioningServiceClient.CreateFromConnectionString(Configuration.Provisioning.ConnectionString);
+                    var provisioningService = ProvisioningServiceClientFactory.CreateFromConnectionString(Configuration.Provisioning.ConnectionString);
 
                     _log.WriteLine($"Getting enrollment: RegistrationID = {registrationId}");
                     IndividualEnrollment enrollment = await provisioningService.GetIndividualEnrollmentAsync(registrationId).ConfigureAwait(false);
-                    var attestation = new TpmAttestation(base64Ek);
-                    enrollment.Attestation = attestation;
+                    var tpmAttestation = new TpmAttestation(base64Ek);
+                    var attestationMechanism = new AttestationMechanism(TpmAttestationType, tpmAttestation);
+                    enrollment.Attestation = attestationMechanism;
                     _log.WriteLine($"Updating enrollment: RegistrationID = {registrationId} EK = '{base64Ek}'");
-                    await provisioningService.CreateOrUpdateIndividualEnrollmentAsync(enrollment).ConfigureAwait(false);
+                    await provisioningService.CreateOrUpdateIndividualEnrollmentAsync(registrationId, enrollment, enrollment.Etag).ConfigureAwait(false);
 
                     return tpmSim;
 
