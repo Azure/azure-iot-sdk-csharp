@@ -509,18 +509,8 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
                 Logging.Info(this, $"{operationTimeoutCancellationTokenSource.GetHashCode()}", nameof(ApplyTimeout));
             }
 
-            var result = operation(operationTimeoutCancellationTokenSource.Token)
+            return operation(operationTimeoutCancellationTokenSource.Token)
                 .WithTimeout(TimeSpan.FromMilliseconds(OperationTimeoutInMilliseconds), () => Resources.OperationTimeoutExpired, operationTimeoutCancellationTokenSource.Token);
-
-            return result.ContinueWith(t =>
-            {
-                // operationTimeoutCancellationTokenSource will be disposed by GC. 
-                // Cannot dispose here since we don't know if both tasks created by WithTimeout ran to completion.
-                if (t.IsFaulted)
-                {
-                    throw t.Exception.InnerException;
-                }
-            }, TaskContinuationOptions.NotOnCanceled);
         }
 
         Task<Message> ApplyTimeoutMessage(Func<CancellationToken, Task<Message>> operation)
@@ -533,19 +523,8 @@ TODO: revisit DefaultDelegatingHandler - it seems redundant as long as we have t
 
             CancellationTokenSource operationTimeoutCancellationTokenSource = GetOperationTimeoutCancellationTokenSource();
 
-            var result = operation(operationTimeoutCancellationTokenSource.Token)
+            return operation(operationTimeoutCancellationTokenSource.Token)
                 .WithTimeout(TimeSpan.FromMilliseconds(OperationTimeoutInMilliseconds), () => Resources.OperationTimeoutExpired, operationTimeoutCancellationTokenSource.Token);
-
-            return result.ContinueWith(t =>
-            {
-                // operationTimeoutCancellationTokenSource will be disposed by GC. 
-                // Cannot dispose here since we don't know if both tasks created by WithTimeout ran to completion.
-                if (t.IsFaulted)
-                {
-                    throw t.Exception.InnerException;
-                }
-                return t.Result;
-            });
         }
 
         Task<Twin> ApplyTimeoutTwin(Func<CancellationToken, Task<Twin>> operation)
