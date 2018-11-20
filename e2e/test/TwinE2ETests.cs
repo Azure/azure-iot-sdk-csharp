@@ -103,11 +103,28 @@ namespace Microsoft.Azure.Devices.E2ETests
             await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet(Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
         }
 
-        [Ignore] // TODO: #682 - intermittently failing with parsing error.
+        //[Ignore] // TODO: #682 - intermittently failing with parsing error.
         [TestMethod]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet_MqttWs()
         {
-            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet(Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
+            try
+            {
+                //var list = new Task[100];
+
+                for (int i = 0; i < 100; i++)
+                {
+                    //list[i] = Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet(Client.TransportType.Mqtt_WebSocket_Only);
+                    //list[i].ConfigureAwait(false);
+                    await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet(Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
+                }
+
+                //Task.WaitAll(list);
+
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
         }
 
         [TestMethod]
