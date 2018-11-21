@@ -284,10 +284,6 @@ try {
         $verbosity = $oldVerbosity
 
         # Samples
-        BuildProject iothub\device\samples "IoT Hub DeviceClient Samples"
-        BuildProject iothub\service\samples "IoT Hub ServiceClient Samples"
-        BuildProject provisioning\device\samples "Provisioning Device Client Samples"
-        BuildProject provisioning\service\samples "Provisioning Service Client Samples"
         BuildProject security\tpm\samples "SecurityProvider for TPM Samples"
 
         # Xamarin samples (require Android, iOS and UWP SDKs and configured iOS remote)
