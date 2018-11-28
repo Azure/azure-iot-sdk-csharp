@@ -5,6 +5,7 @@ using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 using System.Threading;
 using System.Threading.Tasks;
@@ -109,14 +110,49 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             try
             {
-                //var list = new Task[100];
+                var list = new Task[100];
+                string iotHubHostName = "ebelouso-hub.azure-devices.net";
 
-                for (int i = 0; i < 100; i++)
+                //for (int i = 0; i < 100; i++)
+                //{
+                //list[i] = Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet(Client.TransportType.Mqtt_WebSocket_Only);
+                //list[i].ConfigureAwait(false);
+                //await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet(Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
+
+
+                var propName = Guid.NewGuid().ToString();
+                    var propValue = Guid.NewGuid().ToString();
+
+                var devices = new List<Device>();
+
+                    using (RegistryManager registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
+                //using (DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, Client.TransportType.Mqtt_WebSocket_Only))
                 {
-                    //list[i] = Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet(Client.TransportType.Mqtt_WebSocket_Only);
-                    //list[i].ConfigureAwait(false);
-                    await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet(Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
-                }
+                    for (int i = 0; i < 100; i++)
+                    {
+                        list[i] = new Task(async () =>
+                        {
+                            var device = await registryManager.AddDeviceAsync(new Device($"Test-Sdk682-{i}")).ConfigureAwait(false);
+                            devices.Add(device);
+
+                            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString($"HostName={iotHubHostName};DeviceId={device.Id};SharedAccessKey={device.Authentication.SymmetricKey.PrimaryKey}", Client.TransportType.Mqtt_WebSocket_Only);
+
+                            var twinPatch = new Twin();
+                            twinPatch.Properties.Desired[propName] = propValue;
+                            await registryManager.UpdateTwinAsync(device.Id, twinPatch, "*").ConfigureAwait(false);
+
+                            var deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
+                            Assert.AreEqual<string>(deviceTwin.Properties.Desired[propName].ToString(), propValue);
+
+                            await deviceClient.CloseAsync().ConfigureAwait(false);
+                        });
+                    }
+
+                    Task.WaitAll(list);
+                    await registryManager.RemoveDevices2Async(devices).ConfigureAwait(false);
+                        await registryManager.CloseAsync().ConfigureAwait(false);
+                    }
+                //}
 
                 //Task.WaitAll(list);
 
