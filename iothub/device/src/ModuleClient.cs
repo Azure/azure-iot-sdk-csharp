@@ -23,7 +23,7 @@ using System.Net.Http;
     /// <summary>
     /// Contains methods that a device can use to send messages to and receive from the service.
     /// </summary>
-    public sealed class ModuleClient : IDisposable
+    public sealed class ModuleClient : IModuleClient, IDisposable 
     {
         const string ModuleMethodUriFormat = "/twins/{0}/modules/{1}/methods?" + ClientApiVersionHelper.ApiVersionQueryString;
         const string DeviceMethodUriFormat = "/twins/{0}/methods?" + ClientApiVersionHelper.ApiVersionQueryString;
