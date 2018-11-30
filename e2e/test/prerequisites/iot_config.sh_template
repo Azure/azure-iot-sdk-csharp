@@ -56,6 +56,9 @@ export DPS_INDIVIDUALX509_PFX_CERTIFICATE=
 # This certificate should have CN=xdevice1
 export DPS_GROUPX509_PFX_CERTIFICATE=
 
+# X509 PFX Certificate password
+export DPS_X509_PFX_CERTIFICATE_PASSWORD=
+
 # X509 P7B Certificate chain.
 # This is the chain ending up in the root that has been verified by the Provisioning service.
 # The CN=xdevice1 certificate should be signed by an issuer within this chain.
