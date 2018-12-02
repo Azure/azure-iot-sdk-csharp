@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     {
         public static partial class Provisioning
         {
-            public const string CertificatePassword = "testcertificate";
+            public static string CertificatePassword => GetValue("DPS_X509_PFX_CERTIFICATE_PASSWORD");
 
             public static string GlobalDeviceEndpoint => 
                 GetValue("DPS_GLOBALDEVICEENDPOINT", "global.azure-devices-provisioning.net");
