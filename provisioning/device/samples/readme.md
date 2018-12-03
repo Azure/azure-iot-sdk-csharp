@@ -6,6 +6,6 @@ Device provisioning samples were moved to [Azure-Samples/azure-iot-samples-cshar
 
 
 [samples-repo]: https://github.com/Azure-Samples/azure-iot-samples-csharp
-[service-device-samples]: https://github.com/Azure/azure-iot-sdk-csharp/tree/master/provisioning/device/samples
-[x509-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/master/provisioning/device/samples/ProvisioningDeviceClientX509
-[tpm-sample]: https://github.com/Azure/azure-iot-sdk-csharp/tree/master/provisioning/device/samples/ProvisioningDeviceClientTpm
+[service-device-samples]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/master/provisioning/Samples/device
+[x509-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/master/provisioning/Samples/device/TpmSample
+[tpm-sample]: https://github.com/Azure-Samples/azure-iot-samples-csharp/tree/master/provisioning/Samples/device/X509Sample
