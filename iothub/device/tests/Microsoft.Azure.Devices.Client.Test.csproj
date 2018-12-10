@@ -20,7 +20,7 @@
     <PackageReference Include="Moq" Version="4.8.2" />
     <PackageReference Include="DotNetty.Codecs.Mqtt" Version="0.6.0" />
     <PackageReference Include="DotNetty.Handlers" Version="0.6.0" />
-    <PackageReference Include="Microsoft.Azure.Amqp" Version="2.3.5" />
+    <PackageReference Include="Microsoft.Azure.Amqp" Version="2.3.7" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
   </ItemGroup>
 
