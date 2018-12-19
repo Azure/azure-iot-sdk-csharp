@@ -88,16 +88,24 @@ namespace Microsoft.Azure.Devices.Client.Transport
             TransportType transportType = transportSettings.GetTransportType();
             this.deviceId = connectionString.DeviceId;
             this.moduleId = connectionString.ModuleId;
-            switch (transportType)
+
+            if (!transportSettings.AmqpConnectionPoolSettings.Pooling)
             {
-                case TransportType.Amqp_Tcp_Only:
-                    this.IotHubConnection = TcpConnectionCache.GetConnection(connectionString, transportSettings);
-                    break;
-                case TransportType.Amqp_WebSocket_Only:
-                    this.IotHubConnection = WsConnectionCache.GetConnection(connectionString, transportSettings);
-                    break;
-                default:
-                    throw new InvalidOperationException("Invalid Transport Type {0}".FormatInvariant(transportType));
+                this.IotHubConnection = new IotHubSingleTokenConnection(null, connectionString, transportSettings);
+            }
+            else
+            {
+                switch (transportType)
+                {
+                    case TransportType.Amqp_Tcp_Only:
+                        this.IotHubConnection = TcpConnectionCache.GetConnection(connectionString, transportSettings);
+                        break;
+                    case TransportType.Amqp_WebSocket_Only:
+                        this.IotHubConnection = WsConnectionCache.GetConnection(connectionString, transportSettings);
+                        break;
+                    default:
+                        throw new InvalidOperationException("Invalid Transport Type {0}".FormatInvariant(transportType));
+                }
             }
 
             this.IotHubConnection.OnConnectionClose += OnAmqpConnectionClose;
