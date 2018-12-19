@@ -215,7 +215,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
             }
 
-            if (exceptionDispatchInfo != null)
+            if (!done && (exceptionDispatchInfo != null))
             {
                 exceptionDispatchInfo.Throw();
             }

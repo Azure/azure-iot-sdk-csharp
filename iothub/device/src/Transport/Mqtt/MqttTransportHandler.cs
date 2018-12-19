@@ -243,6 +243,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             bool hasMessage = false;
             cancellationToken.ThrowIfCancellationRequested();
+            this.EnsureValidState();
 
             using (CancellationTokenSource linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, this.disconnectAwaitersCancellationSource.Token))
             {

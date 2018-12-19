@@ -183,7 +183,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 Assert.IsInstanceOfType(ex.InnerException, typeof(OperationCanceledException));
             }
-            catch (OperationCanceledException) { }
+            catch (TimeoutException) { }
         }
 
         [TestMethod]
@@ -206,7 +206,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 Assert.IsInstanceOfType(ex.InnerException, typeof(OperationCanceledException));
             }
-            catch (OperationCanceledException) { }
+            catch (TimeoutException) { }
         }
 
         [TestMethod]
@@ -230,7 +230,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 Assert.IsInstanceOfType(ex.InnerException, typeof(OperationCanceledException));
             }
-            catch (OperationCanceledException) { }
+            catch (TimeoutException) { }
         }
 
         [TestMethod]
@@ -280,7 +280,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 Assert.IsInstanceOfType(ex.InnerException, typeof(OperationCanceledException));
             }
-            catch (OperationCanceledException) { }
+            catch (TimeoutException) { }
         }
 
         [TestMethod]

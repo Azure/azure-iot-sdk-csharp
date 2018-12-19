@@ -20,8 +20,6 @@ namespace Microsoft.Azure.Devices.E2ETests
     public partial class EventHubTestListener
     {
         private EventHubReceiver _receiver;
-        private static int s_eventHubEpoch = 0;
-        private static object s_eventHubEpochLock = new object();
 
         private EventHubTestListener(EventHubReceiver receiver)
         {
@@ -43,10 +41,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 try
                 {
-                    lock (s_eventHubEpochLock)
-                    {
-                        receiver = eventHubClient.GetConsumerGroup(consumerGroupName).CreateReceiver(partition, DateTime.Now.AddMinutes(-LookbackTimeInMinutes), s_eventHubEpoch++);
-                    }
+                    receiver = eventHubClient.GetConsumerGroup(consumerGroupName).CreateReceiver(partition, DateTime.Now.AddMinutes(-LookbackTimeInMinutes));
                 }
                 catch (QuotaExceededException ex)
                 {

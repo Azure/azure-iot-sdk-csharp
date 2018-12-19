@@ -105,11 +105,16 @@ namespace Microsoft.Azure.Devices.E2ETests
             catch (IotHubCommunicationException ex)
             {
                 s_log.WriteLine($"{nameof(ActivateFaultInjection)}: {ex}");
+
+                // For quota injection, the fault is only seen for the original HTTP request.
                 if (transport == Client.TransportType.Http1) throw;
             }
             catch (TimeoutException ex)
             {
                 s_log.WriteLine($"{nameof(ActivateFaultInjection)}: {ex}");
+                
+                // For quota injection, the fault is only seen for the original HTTP request.
+                if (transport == Client.TransportType.Http1) throw;
             }
             finally
             {
@@ -163,12 +168,15 @@ namespace Microsoft.Azure.Devices.E2ETests
                 s_log.WriteLine($">>> {nameof(FaultInjection)} Testing baseline");
                 await testOperation(deviceClient, testDevice).ConfigureAwait(false);
 
+                watch.Start();
                 s_log.WriteLine($">>> {nameof(FaultInjection)} Testing fault handling");
                 await ActivateFaultInjection(transport, faultType, reason, delayInSec, durationInSec, deviceClient).ConfigureAwait(false);
 
-                watch.Start();
-                s_log.WriteLine($"{nameof(FaultInjection)}: Waiting for fault injection to be active: {FaultInjection.WaitForDisconnectMilliseconds}ms");
-                await Task.Delay(FaultInjection.WaitForDisconnectMilliseconds).ConfigureAwait(false);
+                int delay = FaultInjection.WaitForDisconnectMilliseconds - (int)watch.ElapsedMilliseconds;
+                if (delay < 0) delay = 0;
+
+                s_log.WriteLine($"{nameof(FaultInjection)}: Waiting for fault injection to be active: {delay}ms");
+                await Task.Delay(delay).ConfigureAwait(false);
 
                 await testOperation(deviceClient, testDevice).ConfigureAwait(false);
 
