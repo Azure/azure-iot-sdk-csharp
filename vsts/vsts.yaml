@@ -100,9 +100,9 @@ phases:
     condition: always()
 
   - task: PublishBuildArtifacts@1
-    displayName: 'Publish Artifact: testresults'
+    displayName: 'Publish Artifact: testresults_linux'
     inputs:
-      ArtifactName: testresults
+      ArtifactName: testresults_linux
 
     condition: always()
 
@@ -110,7 +110,7 @@ phases:
     displayName: 'Publish Test Results **/*.trx'
     inputs:
       testRunner: VSTest
-
+      testRunTitle: 'Linux Tests'
       testResultsFiles: '**/*.trx'
 
     condition: always()
@@ -200,7 +200,7 @@ phases:
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact: testresults'
     inputs:
-      ArtifactName: testresults
+      ArtifactName: testresults_windows
 
     condition: always()
 
@@ -211,7 +211,7 @@ phases:
 
       testResultsFiles: '**/*.trx'
 
-      testRunTitle: 'Azure IoT C#'
+      testRunTitle: 'Windows Tests'
 
       platform: Windows
 
