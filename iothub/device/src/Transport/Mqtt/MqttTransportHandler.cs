@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         readonly string generationId = Guid.NewGuid().ToString();
 
-        static readonly Lazy<IEventLoopGroup> s_eventLoopGroup = new Lazy<IEventLoopGroup>(GetEventLoopGroup);
+        private static readonly Lazy<IEventLoopGroup> s_eventLoopGroup = new Lazy<IEventLoopGroup>(GetEventLoopGroup);
 
         readonly string hostName;
         readonly Func<IPAddress[], int, Task<IChannel>> channelFactory;
@@ -1085,19 +1085,26 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             try
             {
-                var processorEventCountValue = Environment.GetEnvironmentVariable(ProcessorThreadCountVariableName);
-                if (int.TryParse(processorEventCountValue, out var processorThreadCount))
+                string envValue = Environment.GetEnvironmentVariable(ProcessorThreadCountVariableName);
+                if (!string.IsNullOrWhiteSpace(envValue))
                 {
-                    return processorThreadCount <= 0 ? new MultithreadEventLoopGroup() :
-                        processorThreadCount == 1 ? (IEventLoopGroup)new SingleThreadEventLoop() : new MultithreadEventLoopGroup(processorThreadCount);
+                    string processorEventCountValue = Environment.ExpandEnvironmentVariables(envValue);
+                    if (int.TryParse(processorEventCountValue, out var processorThreadCount))
+                    {
+                        if (Logging.IsEnabled) Logging.Info(null, $"EventLoopGroup threads count {processorThreadCount}.");
+                        return processorThreadCount <= 0 ? new MultithreadEventLoopGroup() :
+                            processorThreadCount == 1 ? (IEventLoopGroup) new SingleThreadEventLoop() :
+                            new MultithreadEventLoopGroup(processorThreadCount);
+                    }
                 }
-
             }
-            catch
+            catch (Exception ex)
             {
-                // If it fails use the default contructor 
+                if (Logging.IsEnabled) Logging.Info(null, $"Could not read EventLoopGroup threads count {ex}");
+                return new MultithreadEventLoopGroup();
             }
 
+            if (Logging.IsEnabled) Logging.Info(null, "EventLoopGroup threads count was not set.");
             return new MultithreadEventLoopGroup();
         }
     }
