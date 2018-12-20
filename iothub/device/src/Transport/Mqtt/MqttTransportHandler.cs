@@ -40,12 +40,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
     {
         const int ProtocolGatewayPort = 8883;
         const int MaxMessageSize = 256 * 1024;
+        const string ProcessorThreadCountVariableName = "MqttEventsProcessorThreadCount";
 
         static readonly int GenerationPrefixLength = Guid.NewGuid().ToString().Length;
 
         readonly string generationId = Guid.NewGuid().ToString();
 
-        private static MultithreadEventLoopGroup s_eventLoopGroup = new MultithreadEventLoopGroup();
+        private static readonly Lazy<IEventLoopGroup> s_eventLoopGroup = new Lazy<IEventLoopGroup>(GetEventLoopGroup);
 
         readonly string hostName;
         readonly Func<IPAddress[], int, Task<IChannel>> channelFactory;
@@ -920,7 +921,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     new ClientTlsSettings(iotHubConnectionString.HostName, new List<X509Certificate> { settings.ClientCertificate }) :
                     new ClientTlsSettings(iotHubConnectionString.HostName);
                 Bootstrap bootstrap = new Bootstrap()
-                    .Group(s_eventLoopGroup)
+                    .Group(s_eventLoopGroup.Value)
                     .Channel<TcpSocketChannel>()
                     .Option(ChannelOption.TcpNodelay, true)
                     .Option(ChannelOption.Allocator, UnpooledByteBufferAllocator.Default)
@@ -1023,7 +1024,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         new MqttDecoder(false, MaxMessageSize),
                         new LoggingHandler(LogLevel.DEBUG),
                         this.mqttIotHubAdapterFactory.Create(this, iotHubConnectionString, settings, productInfo));
-                await s_eventLoopGroup.RegisterAsync(clientChannel).ConfigureAwait(false);
+                await s_eventLoopGroup.Value.RegisterAsync(clientChannel).ConfigureAwait(false);
 
                 return clientChannel;
             };
@@ -1078,6 +1079,33 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 throw new ObjectDisposedException(this.GetType().Name);
             }
+        }
+
+        static IEventLoopGroup GetEventLoopGroup()
+        {
+            try
+            {
+                string envValue = Environment.GetEnvironmentVariable(ProcessorThreadCountVariableName);
+                if (!string.IsNullOrWhiteSpace(envValue))
+                {
+                    string processorEventCountValue = Environment.ExpandEnvironmentVariables(envValue);
+                    if (int.TryParse(processorEventCountValue, out var processorThreadCount))
+                    {
+                        if (Logging.IsEnabled) Logging.Info(null, $"EventLoopGroup threads count {processorThreadCount}.");
+                        return processorThreadCount <= 0 ? new MultithreadEventLoopGroup() :
+                            processorThreadCount == 1 ? (IEventLoopGroup) new SingleThreadEventLoop() :
+                            new MultithreadEventLoopGroup(processorThreadCount);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                if (Logging.IsEnabled) Logging.Info(null, $"Could not read EventLoopGroup threads count {ex}");
+                return new MultithreadEventLoopGroup();
+            }
+
+            if (Logging.IsEnabled) Logging.Info(null, "EventLoopGroup threads count was not set.");
+            return new MultithreadEventLoopGroup();
         }
     }
 }
