@@ -166,11 +166,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 this.EnsureValidState();
 
-                if (State.HasFlag(TransportState.Open))
-                {
-                    return;
-                }
-
                 await this.OpenAsyncInternal(cancellationToken).ConfigureAwait(true);
             }
             finally
