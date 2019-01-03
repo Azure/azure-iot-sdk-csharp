@@ -1,0 +1,120 @@
+<!DOCTYPE Project SYSTEM "http://www.slickedit.com/dtd/vse/10.0/vpj.dtd">
+<Project
+    Version="10.0"
+    VendorName="SlickEdit"
+    TemplateName="Microsoft .NET Core SDK"
+    WorkingDir="."
+    AssociatedFile="DeviceClientAmqpMultiplexingSample.csproj"
+    AssociatedFileType="microsoft visual studio csharp">
+    <Config
+        Name="Debug"
+        OutputFile=""
+        CompilerConfigName="">
+        <Menu>
+            <Target
+                Name="Build"
+                MenuCaption="&amp;Build"
+                CaptureOutputWith="ProcessBuffer"
+                SaveOption="SaveWorkspaceFiles"
+                RunFromDir="%rw">
+                <Exec CmdLine='dotnet build "%rm" --configuration "%bn"'/>
+            </Target>
+            <Target
+                Name="Rebuild"
+                MenuCaption="&amp;Rebuild"
+                CaptureOutputWith="ProcessBuffer"
+                SaveOption="SaveWorkspaceFiles"
+                RunFromDir="%rw">
+                <Exec CmdLine='dotnet build "%rm" --configuration "%bn" --no-incremental'/>
+            </Target>
+            <Target
+                Name="Clean"
+                MenuCaption="&amp;Clean"
+                CaptureOutputWith="ProcessBuffer"
+                SaveOption="SaveWorkspaceFiles"
+                RunFromDir="%rw">
+                <Exec CmdLine='dotnet clean "%rm" --configuration "%bn"'/>
+            </Target>
+            <Target
+                Name="Pack"
+                MenuCaption="&amp;Pack"
+                CaptureOutputWith="ProcessBuffer"
+                SaveOption="SaveWorkspaceFiles"
+                RunFromDir="%rw">
+                <Exec CmdLine='dotnet pack "%rm" --configuration "%bn"'/>
+            </Target>
+            <Target
+                Name="Publish"
+                MenuCaption="P&amp;ublish"
+                CaptureOutputWith="ProcessBuffer"
+                SaveOption="SaveWorkspaceFiles"
+                RunFromDir="%rw">
+                <Exec CmdLine='dotnet publish "%rm" --configuration "%bn"'/>
+            </Target>
+            <Target
+                Name="Run"
+                MenuCaption="Ru&amp;n"
+                CaptureOutputWith="ProcessBuffer"
+                SaveOption="SaveWorkspaceFiles"
+                RunFromDir="%rw">
+                <Exec CmdLine='dotnet run "%rm" --configuration "%bn"'/>
+            </Target>
+        </Menu>
+    </Config>
+    <Config
+        Name="Release"
+        OutputFile=""
+        CompilerConfigName="">
+        <Menu>
+            <Target
+                Name="Build"
+                MenuCaption="&amp;Build"
+                CaptureOutputWith="ProcessBuffer"
+                SaveOption="SaveWorkspaceFiles"
+                RunFromDir="%rw">
+                <Exec CmdLine='dotnet build "%rm" --configuration "%bn"'/>
+            </Target>
+            <Target
+                Name="Rebuild"
+                MenuCaption="&amp;Rebuild"
+                CaptureOutputWith="ProcessBuffer"
+                SaveOption="SaveWorkspaceFiles"
+                RunFromDir="%rw">
+                <Exec CmdLine='dotnet build "%rm" --configuration "%bn" --no-incremental'/>
+            </Target>
+            <Target
+                Name="Clean"
+                MenuCaption="&amp;Clean"
+                CaptureOutputWith="ProcessBuffer"
+                SaveOption="SaveWorkspaceFiles"
+                RunFromDir="%rw">
+                <Exec CmdLine='dotnet clean "%rm" --configuration "%bn"'/>
+            </Target>
+            <Target
+                Name="Pack"
+                MenuCaption="&amp;Pack"
+                CaptureOutputWith="ProcessBuffer"
+                SaveOption="SaveWorkspaceFiles"
+                RunFromDir="%rw">
+                <Exec CmdLine='dotnet pack "%rm" --configuration "%bn"'/>
+            </Target>
+            <Target
+                Name="Publish"
+                MenuCaption="P&amp;ublish"
+                CaptureOutputWith="ProcessBuffer"
+                SaveOption="SaveWorkspaceFiles"
+                RunFromDir="%rw">
+                <Exec CmdLine='dotnet publish "%rm" --configuration "%bn"'/>
+            </Target>
+            <Target
+                Name="Run"
+                MenuCaption="Ru&amp;n"
+                CaptureOutputWith="ProcessBuffer"
+                SaveOption="SaveWorkspaceFiles"
+                RunFromDir="%rw">
+                <Exec CmdLine='dotnet run "%rm" --configuration "%bn"'/>
+            </Target>
+        </Menu>
+    </Config>
+    <Files AutoFolders="DirectoryView"/>
+</Project>
