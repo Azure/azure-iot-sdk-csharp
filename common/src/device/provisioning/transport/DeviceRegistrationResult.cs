@@ -20,7 +20,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
 
         internal DeviceRegistrationResult(
             TpmRegistrationResult tpm = default(TpmRegistrationResult), 
-            X509RegistrationResult x509 = default(X509RegistrationResult), 
+            X509RegistrationResult x509 = default(X509RegistrationResult),
+            SymmetricKeyRegistrationResult symmetricKey = default(SymmetricKeyRegistrationResult),
             string registrationId = default(string), 
             DateTime? createdDateTimeUtc = default(DateTime?), 
             string assignedHub = default(string), 
@@ -34,6 +35,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
         {
             Tpm = tpm;
             X509 = x509;
+            SymmetricKey = symmetricKey;
             RegistrationId = registrationId;
             CreatedDateTimeUtc = createdDateTimeUtc;
             AssignedHub = assignedHub;
@@ -62,6 +64,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
         [JsonProperty(PropertyName = "x509")]
         public X509RegistrationResult X509 { get; set; }
 
+        /// <summary>
+        /// </summary>
+        [JsonProperty(PropertyName = "symmetricKey")]
+        public SymmetricKeyRegistrationResult SymmetricKey { get; set; }
+
+        
         /// <summary>
         /// </summary>
         [JsonProperty(PropertyName = "registrationId")]
