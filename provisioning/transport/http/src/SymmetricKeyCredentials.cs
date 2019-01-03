@@ -1,0 +1,46 @@
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using Microsoft.Rest;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
+{
+    internal class SymmetricKeyCredentials : ServiceClientCredentials
+    {
+        private const string SASHeaderName = "SharedAccessSignature";
+        private const string Registration = "registration";
+        private readonly string SymmetricKey;
+        private volatile string _sasToken;
+
+        public SymmetricKeyCredentials(string symmetricKey) : base()
+        {
+            SymmetricKey = symmetricKey;
+        }
+
+        public override Task ProcessHttpRequestAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            string audience = request.RequestUri.AbsolutePath.Trim('/');
+            var segments = audience.Split('/');
+
+            _sasToken = ProvisioningSasBuilder.BuildSasSignature(Registration, this.SymmetricKey, string.Concat(segments[0], '/', segments[1], '/', segments[2]), TimeSpan.FromDays(1));
+            SetAuthorizationHeader(request, _sasToken);
+
+            return base.ProcessHttpRequestAsync(request, cancellationToken);
+        }
+
+        private static void SetAuthorizationHeader(HttpRequestMessage request, string sasToken)
+        {
+            request.Headers.Authorization = new AuthenticationHeaderValue(SASHeaderName, sasToken.Substring(SASHeaderName.Length + 1));
+        }
+    }
+}
