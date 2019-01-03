@@ -185,7 +185,7 @@ namespace Microsoft.Azure.Devices
             var webSocketState = this.webSocket.State;
             if (webSocketState != WebSocketState.Closed && webSocketState != WebSocketState.Aborted)
             {
-                this.CloseInternalAsync(CloseTimeout).Fork();
+                this.CloseInternalAsync(CloseTimeout);
             }
 
             return true;

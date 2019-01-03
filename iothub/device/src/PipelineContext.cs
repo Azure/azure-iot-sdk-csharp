@@ -3,6 +3,7 @@
 
 namespace Microsoft.Azure.Devices.Client
 {
+    using Microsoft.Azure.Devices.Shared;
     using System.Collections.Generic;
 
     class PipelineContext: IPipelineContext
@@ -16,6 +17,7 @@ namespace Microsoft.Azure.Devices.Client
 
         public void Set<T>(string key, T value)
         {
+            if (Logging.IsEnabled) Logging.Info(this, $"{key} = {value}");
             this.context[key] = value;
         }
 
@@ -24,14 +26,15 @@ namespace Microsoft.Azure.Devices.Client
             return this.Get<T>(typeof(T).Name);
         }
 
-        public T Get<T>(string key) where T : class
+        public T Get<T>(string key)
         {
             object value;
             if (this.context.TryGetValue(key, out value))
             {
-                return value as T;
+                return (T)value;
             }
-            return null;
+
+            return default(T);
         }
 
         public bool TryGet<T>(string key, out T value)

@@ -57,6 +57,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                     }
                     catch (Exception ex)
                     {
+                        s_log.WriteLine($"{nameof(SetDeviceReceiveMethodAsync)}: Error during DeviceClient callback method: {ex}.");
+
                         _methodExceptionDispatch = ExceptionDispatchInfo.Capture(ex);
                         return Task.FromResult(new MethodResponse(500));
                     }
@@ -93,6 +95,11 @@ namespace Microsoft.Azure.Devices.E2ETests
                     {
                         _twinExceptionDispatch = ExceptionDispatchInfo.Capture(ex);
                     }
+                    finally
+                    {
+                        // Always notify that we got the callback.
+                        _twinCallbackSemaphore.Release();
+                    }
 
                     return Task.FromResult<bool>(true);
 
@@ -102,6 +109,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task WaitForTwinCallbackAsync(CancellationToken ct)
         {
             await _twinCallbackSemaphore.WaitAsync(ct).ConfigureAwait(false);
+            _twinExceptionDispatch?.Throw();
         }
     }
 }

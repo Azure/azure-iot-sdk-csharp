@@ -7,7 +7,6 @@ namespace Microsoft.Azure.Devices.Client
 
     static class CommonConstants
     {
-        // TODO: move these to ConfigProvider
         public const string DeviceAudienceFormat = "{0}/devices/{1}";
         public const string MediaTypeForDeviceManagementApis = "application/json";
         public const string AmqpsScheme = "amqps";

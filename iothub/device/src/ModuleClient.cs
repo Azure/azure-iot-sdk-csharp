@@ -198,6 +198,9 @@ using System.Net.Http;
 
         internal InternalClient InternalClient => this.internalClient;
 
+        /// <summary>
+        /// The diagnostic sampling percentage.
+        /// </summary>
         public int DiagnosticSamplingPercentage
         {
             get => this.internalClient.DiagnosticSamplingPercentage;
@@ -240,28 +243,72 @@ using System.Net.Http;
         public Task OpenAsync() => this.internalClient.OpenAsync();
 
         /// <summary>
+        /// Explicitly open the DeviceClient instance.
+        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>  
+        /// </summary>
+        public Task OpenAsync(CancellationToken cancellationToken) => this.internalClient.OpenAsync(cancellationToken);
+
+        /// <summary>
         /// Close the DeviceClient instance
         /// </summary>
-        /// <returns></returns>
         public Task CloseAsync() => this.internalClient.CloseAsync();
+
+        /// <summary>
+        /// Close the DeviceClient instance
+        /// </summary>
+        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>  
+        /// <returns></returns>
+        public Task CloseAsync(CancellationToken cancellationToken) => this.internalClient.CloseAsync(cancellationToken);
 
         /// <summary>
         /// Deletes a received message from the device queue
         /// </summary>
+        /// <param name="lockToken">The message lockToken.</param>
         /// <returns>The lock identifier for the previously received message</returns>
         public Task CompleteAsync(string lockToken) => this.internalClient.CompleteAsync(lockToken);
 
         /// <summary>
         /// Deletes a received message from the device queue
         /// </summary>
+        /// <param name="lockToken">The message lockToken.</param>
+        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>  
+        /// <returns>The lock identifier for the previously received message</returns>
+        public Task CompleteAsync(string lockToken, CancellationToken cancellationToken) => this.internalClient.CompleteAsync(lockToken, cancellationToken);
+
+        /// <summary>
+        /// Deletes a received message from the device queue
+        /// </summary>
+        /// <param name="message">The message.</param>
         /// <returns>The previously received message</returns>
         public Task CompleteAsync(Message message) => this.internalClient.CompleteAsync(message);
 
         /// <summary>
+        /// Deletes a received message from the device queue
+        /// </summary>
+        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        /// <param name="message">The message.</param>
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>  
+        /// <returns>The previously received message</returns>
+        public Task CompleteAsync(Message message, CancellationToken cancellationToken) => this.internalClient.CompleteAsync(message, cancellationToken);
+
+        /// <summary>
         /// Puts a received message back onto the device queue
         /// </summary>
+        /// <param name="lockToken">The message lockToken.</param>
         /// <returns>The previously received message</returns>
         public Task AbandonAsync(string lockToken) => this.internalClient.AbandonAsync(lockToken);
+
+        /// <summary>
+        /// Puts a received message back onto the device queue
+        /// </summary>
+        /// <param name="lockToken">The message lockToken.</param>
+        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>  
+        /// <returns>The previously received message</returns>
+        public Task AbandonAsync(string lockToken, CancellationToken cancellationToken) => this.internalClient.AbandonAsync(lockToken, cancellationToken);
 
         /// <summary>
         /// Puts a received message back onto the device queue
@@ -270,16 +317,46 @@ using System.Net.Http;
         public Task AbandonAsync(Message message) => this.internalClient.AbandonAsync(message);
 
         /// <summary>
+        /// Puts a received message back onto the device queue
+        /// </summary>
+        /// <param name="message">The message.</param>
+        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>  
+        /// <returns>The lock identifier for the previously received message</returns>
+        public Task AbandonAsync(Message message, CancellationToken cancellationToken) => this.internalClient.AbandonAsync(message, cancellationToken);
+
+
+        /// <summary>
         /// Sends an event to device hub
         /// </summary>
+        /// <param name="message">The message.</param>
         /// <returns>The message containing the event</returns>
         public Task SendEventAsync(Message message) => this.internalClient.SendEventAsync(message);
 
         /// <summary>
+        /// Sends an event to device hub
+        /// </summary>
+        /// <param name="message">The message.</param>
+        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>  
+        /// <returns>The message containing the event</returns>
+        public Task SendEventAsync(Message message, CancellationToken cancellationToken) => this.internalClient.SendEventAsync(message, cancellationToken);
+
+        /// <summary>
         /// Sends a batch of events to device hub
         /// </summary>
+        /// <param name="message">The message.</param>
         /// <returns>The task containing the event</returns>
         public Task SendEventBatchAsync(IEnumerable<Message> messages) => this.internalClient.SendEventBatchAsync(messages);
+
+        /// <summary>
+        /// Sends a batch of events to device hub
+        /// </summary>
+        /// <param name="messages">An IEnumerable set of Message objects.</param>
+        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>  
+        /// <returns>The task containing the event</returns>
+        public Task SendEventBatchAsync(IEnumerable<Message> messages, CancellationToken cancellationToken) => this.internalClient.SendEventBatchAsync(messages, cancellationToken);
 
         /// <summary>
         /// Registers a new delegate for the named method. If a delegate is already associated with
@@ -292,6 +369,19 @@ using System.Net.Http;
             this.internalClient.SetMethodHandlerAsync(methodName, methodHandler, userContext);
 
         /// <summary>
+        /// Registers a new delegate for the named method. If a delegate is already associated with
+        /// the named method, it will be replaced with the new delegate.
+        /// <param name="methodName">The name of the method to associate with the delegate.</param>
+        /// <param name="methodHandler">The delegate to be used when a method with the given name is called by the cloud service.</param>
+        /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
+        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>  
+        /// </summary>
+        public Task SetMethodHandlerAsync(string methodName, MethodCallback methodHandler, object userContext, CancellationToken cancellationToken) =>
+            this.internalClient.SetMethodHandlerAsync(methodName, methodHandler, userContext, cancellationToken);
+
+
+        /// <summary>
         /// Registers a new delegate that is called for a method that doesn't have a delegate registered for its name. 
         /// If a default delegate is already registered it will replace with the new delegate.
         /// </summary>
@@ -301,6 +391,17 @@ using System.Net.Http;
             this.internalClient.SetMethodDefaultHandlerAsync(methodHandler, userContext);
 
         /// <summary>
+        /// Registers a new delegate that is called for a method that doesn't have a delegate registered for its name. 
+        /// If a default delegate is already registered it will replace with the new delegate.
+        /// </summary>
+        /// <param name="methodHandler">The delegate to be used when a method is called by the cloud service and there is no delegate registered for that method name.</param>
+        /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
+        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>  
+        public Task SetMethodDefaultHandlerAsync(MethodCallback methodHandler, object userContext, CancellationToken cancellationToken) =>
+            this.internalClient.SetMethodDefaultHandlerAsync(methodHandler, userContext, cancellationToken);
+
+        /// <summary>
         /// Registers a new delegate for the connection status changed callback. If a delegate is already associated, 
         /// it will be replaced with the new delegate.
         /// <param name="statusChangesHandler">The name of the method to associate with the delegate.</param>
@@ -308,6 +409,9 @@ using System.Net.Http;
         public void SetConnectionStatusChangesHandler(ConnectionStatusChangesHandler statusChangesHandler) =>
             this.internalClient.SetConnectionStatusChangesHandler(statusChangesHandler);
 
+        /// <summary>
+        /// Releases the unmanaged resources used by the DeviceClient and optionally disposes of the managed resources.
+        /// </summary>
         public void Dispose() => this.internalClient?.Dispose();
 
         /// <summary>
@@ -321,10 +425,30 @@ using System.Net.Http;
             this.internalClient.SetDesiredPropertyUpdateCallbackAsync(callback, userContext);
 
         /// <summary>
+        /// Set a callback that will be called whenever the client receives a state update 
+        /// (desired or reported) from the service.  This has the side-effect of subscribing
+        /// to the PATCH topic on the service.
+        /// </summary>
+        /// <param name="callback">Callback to call after the state update has been received and applied</param>
+        /// <param name="userContext">Context object that will be passed into callback</param>
+        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>  
+        public Task SetDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallback callback, object userContext, CancellationToken cancellationToken) =>
+            this.internalClient.SetDesiredPropertyUpdateCallbackAsync(callback, userContext, cancellationToken);
+
+        /// <summary>
         /// Retrieve a device twin object for the current device.
         /// </summary>
         /// <returns>The device twin object for the current device</returns>
         public Task<Twin> GetTwinAsync() => this.internalClient.GetTwinAsync();
+
+        /// <summary>
+        /// Retrieve a device twin object for the current device.
+        /// </summary>
+        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>  
+        /// <returns>The device twin object for the current device</returns>
+        public Task<Twin> GetTwinAsync(CancellationToken cancellationToken) => this.internalClient.GetTwinAsync(cancellationToken);
 
         /// <summary>
         /// Push reported property changes up to the service.
@@ -333,56 +457,117 @@ using System.Net.Http;
         public Task UpdateReportedPropertiesAsync(TwinCollection reportedProperties) =>
             this.internalClient.UpdateReportedPropertiesAsync(reportedProperties);
 
+        /// <summary>
+        /// Push reported property changes up to the service.
+        /// </summary>
+        /// <param name="reportedProperties">Reported properties to push</param>
+        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>  
+        public Task UpdateReportedPropertiesAsync(TwinCollection reportedProperties, CancellationToken cancellationToken) =>
+            this.internalClient.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken);
+
         #region Module Specific API
 
         /// <summary>
+        /// Sends an event to device hub.
+        /// </summary>
         /// <param name="outputName">The output target for sending the given message</param>
         /// <param name="message">The message to send</param>
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>  
         /// <returns>The message containing the event</returns>
         public Task SendEventAsync(string outputName, Message message) =>
             this.internalClient.SendEventAsync(outputName, message);
 
         /// <summary>
+        /// Sends an event to device hub.
+        /// </summary>
+        /// <param name="outputName">The output target for sending the given message</param>
+        /// <param name="message">The message to send</param>
+        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>  
+        /// <returns>The message containing the event</returns>
+        public Task SendEventAsync(string outputName, Message message, CancellationToken cancellationToken) =>
+            this.internalClient.SendEventAsync(outputName, message, cancellationToken);
+        
+        /// <summary>
         /// Sends a batch of events to device hub
+        /// </summary>
         /// <param name="outputName">The output target for sending the given message</param>
         /// <param name="messages">A list of one or more messages to send</param>
-        /// </summary>
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>  
         /// <returns>The task containing the event</returns>
         public Task SendEventBatchAsync(string outputName, IEnumerable<Message> messages) =>
             this.internalClient.SendEventBatchAsync(outputName, messages);
 
         /// <summary>
-        /// Registers a new delgate for the particular input. If a delegate is already associated with
+        /// Sends a batch of events to device hub
+        /// </summary>
+        /// <param name="outputName">The output target for sending the given message</param>
+        /// <param name="messages">A list of one or more messages to send</param>
+        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>  
+        /// <returns>The task containing the event</returns>
+        public Task SendEventBatchAsync(string outputName, IEnumerable<Message> messages, CancellationToken cancellationToken) =>
+            this.internalClient.SendEventBatchAsync(outputName, messages, cancellationToken);
+
+        /// <summary>
+        /// Registers a new delegate for the particular input. If a delegate is already associated with
         /// the input, it will be replaced with the new delegate.
+        /// </summary>
         /// <param name="inputName">The name of the input to associate with the delegate.</param>
         /// <param name="messageHandler">The delegate to be used when a message is sent to the particular inputName.</param>
         /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
-        /// </summary>
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>  
         /// <returns>The task containing the event</returns>
         public Task SetInputMessageHandlerAsync(string inputName, MessageHandler messageHandler, object userContext) =>
             this.internalClient.SetInputMessageHandlerAsync(inputName, messageHandler, userContext);
 
         /// <summary>
+        /// Registers a new delegate for the particular input. If a delegate is already associated with
+        /// the input, it will be replaced with the new delegate.
+        /// </summary>
+        /// <param name="inputName">The name of the input to associate with the delegate.</param>
+        /// <param name="messageHandler">The delegate to be used when a message is sent to the particular inputName.</param>
+        /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
+        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>  
+        /// <returns>The task containing the event</returns>
+        public Task SetInputMessageHandlerAsync(string inputName, MessageHandler messageHandler, object userContext, CancellationToken cancellationToken) =>
+            this.internalClient.SetInputMessageHandlerAsync(inputName, messageHandler, userContext, cancellationToken);
+
+        /// <summary>
         /// Registers a new default delegate which applies to all endpoints. If a delegate is already associated with
         /// the input, it will be called, else the default delegate will be called. If a default delegate was set previously,
         /// it will be overwritten.
+        /// </summary>
         /// <param name="messageHandler">The delegate to be called when a message is sent to any input.</param>
         /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
-        /// </summary>
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>  
         /// <returns>The task containing the event</returns>
         public Task SetMessageHandlerAsync(MessageHandler messageHandler, object userContext) =>
             this.internalClient.SetMessageHandlerAsync(messageHandler, userContext);
 
         /// <summary>
+        /// Registers a new default delegate which applies to all endpoints. If a delegate is already associated with
+        /// the input, it will be called, else the default delegate will be called. If a default delegate was set previously,
+        /// it will be overwritten.
+        /// </summary>
+        /// <param name="messageHandler">The delegate to be called when a message is sent to any input.</param>
+        /// <param name="userContext">generic parameter to be interpreted by the client code.</param>
+        /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
+        /// <returns>The task containing the event</returns>
+        public Task SetMessageHandlerAsync(MessageHandler messageHandler, object userContext, CancellationToken cancellationToken) =>
+            this.internalClient.SetMessageHandlerAsync(messageHandler, userContext, cancellationToken);
+        
+        /// <summary>
         /// Interactively invokes a method on device
         /// </summary>
         /// <param name="deviceId">Device Id</param>
         /// <param name="methodRequest">Device method parameters (passthrough to device)</param>
         /// <returns>Method result</returns>
-        public Task<MethodResponse> InvokeMethodAsync(string deviceId, MethodRequest methodRequest)
-        {
-            return this.InvokeMethodAsync(deviceId, methodRequest, CancellationToken.None);
-        }
+        public Task<MethodResponse> InvokeMethodAsync(string deviceId, MethodRequest methodRequest) =>
+            InvokeMethodAsync(deviceId, methodRequest, CancellationToken.None);
 
         /// <summary>
         /// Interactively invokes a method on device
@@ -390,11 +575,10 @@ using System.Net.Http;
         /// <param name="deviceId">Device Id</param>
         /// <param name="methodRequest">Device method parameters (passthrough to device)</param>
         /// <param name="cancellationToken">Cancellation Token</param>
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>  
         /// <returns>Method result</returns>
-        public Task<MethodResponse> InvokeMethodAsync(string deviceId, MethodRequest methodRequest, CancellationToken cancellationToken)
-        {
-            return InvokeMethodAsync(GetDeviceMethodUri(deviceId), methodRequest, cancellationToken);
-        }
+        public Task<MethodResponse> InvokeMethodAsync(string deviceId, MethodRequest methodRequest, CancellationToken cancellationToken) =>
+            InvokeMethodAsync(GetDeviceMethodUri(deviceId), methodRequest, cancellationToken);
 
         /// <summary>
         /// Interactively invokes a method on module
@@ -402,11 +586,10 @@ using System.Net.Http;
         /// <param name="deviceId">Device Id</param>
         /// <param name="moduleId">Module Id</param>
         /// <param name="methodRequest">Device method parameters (passthrough to device)</param>
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>  
         /// <returns>Method result</returns>
-        public Task<MethodResponse> InvokeMethodAsync(string deviceId, string moduleId, MethodRequest methodRequest)
-        {
-            return this.InvokeMethodAsync(deviceId, moduleId, methodRequest, CancellationToken.None);
-        }
+        public Task<MethodResponse> InvokeMethodAsync(string deviceId, string moduleId, MethodRequest methodRequest) => 
+            InvokeMethodAsync(deviceId, moduleId, methodRequest, CancellationToken.None);
 
         /// <summary>
         /// Interactively invokes a method on module
@@ -415,11 +598,10 @@ using System.Net.Http;
         /// <param name="moduleId">Module Id</param>
         /// <param name="methodRequest">Device method parameters (passthrough to device)</param>
         /// <param name="cancellationToken">Cancellation Token</param>
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>  
         /// <returns>Method result</returns>
-        public Task<MethodResponse> InvokeMethodAsync(string deviceId, string moduleId, MethodRequest methodRequest, CancellationToken cancellationToken)
-        {
-            return InvokeMethodAsync(GetModuleMethodUri(deviceId, moduleId), methodRequest, cancellationToken);
-        }
+        public Task<MethodResponse> InvokeMethodAsync(string deviceId, string moduleId, MethodRequest methodRequest, CancellationToken cancellationToken) => 
+            InvokeMethodAsync(GetModuleMethodUri(deviceId, moduleId), methodRequest, cancellationToken);
 
         private async Task<MethodResponse> InvokeMethodAsync(Uri uri, MethodRequest methodRequest, CancellationToken cancellationToken)
         {
@@ -452,7 +634,7 @@ using System.Net.Http;
 
             HttpTransportHandler httpTransport = new HttpTransportHandler(context, this.internalClient.IotHubConnectionString, transportSettings, httpClientHandler);
             var methodInvokeRequest = new MethodInvokeRequest(methodRequest.Name, methodRequest.DataAsJson, methodRequest.ResponseTimeout, methodRequest.ConnectionTimeout);
-            var result = await httpTransport.InvokeMethodAsync(methodInvokeRequest, uri, cancellationToken);
+            var result = await httpTransport.InvokeMethodAsync(methodInvokeRequest, uri, cancellationToken).ConfigureAwait(false);
             return new MethodResponse(Encoding.UTF8.GetBytes(result.GetPayloadAsJson()), result.Status);
         }
 

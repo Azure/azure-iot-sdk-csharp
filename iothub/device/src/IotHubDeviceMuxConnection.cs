@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.Client
             this.iotHubTokenRefreshers = new ConcurrentDictionary<AmqpObject, IotHubTokenRefresher>();
         }
 
-        public override Task CloseAsync()
+        public override Task CloseAsync(CancellationToken cancellationToken)
         {
             try
             {

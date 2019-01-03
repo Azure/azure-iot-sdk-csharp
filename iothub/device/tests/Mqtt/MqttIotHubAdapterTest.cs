@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 namespace Microsoft.Azure.Devices.Client.Test.Mqtt
 {
     using DotNetty.Codecs.Mqtt.Packets;
@@ -8,7 +9,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
 
     [TestClass]
     [TestCategory("Unit")]
-    public class UtilTest
+    public class MqttIotHubAdapterTest
     {
         [TestMethod]
         public void TestPopulateMessagePropertiesFromPacket_NormalMessage()
@@ -20,7 +21,8 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
                 TopicName = "devices/d10/messages/devicebound/%24.cid=Corrid1&%24.mid=MessageId1&Prop1=Value1&Prop2=Value2&Prop3=Value3/"
             };
 
-            Util.PopulateMessagePropertiesFromPacket(message, publishPacket);
+
+            MqttIotHubAdapter.PopulateMessagePropertiesFromPacket(message, publishPacket);
             Assert.AreEqual(3, message.Properties.Count);
             Assert.AreEqual("Value1", message.Properties["Prop1"]);
             Assert.AreEqual("Value2", message.Properties["Prop2"]);
@@ -41,7 +43,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
                 TopicName = "devices/d10/modules/m3/endpoints/in2/%24.cid=Corrid1&%24.mid=MessageId1&Prop1=Value1&Prop2=Value2&Prop3=Value3/"
             };
 
-            Util.PopulateMessagePropertiesFromPacket(message, publishPacket);
+            MqttIotHubAdapter.PopulateMessagePropertiesFromPacket(message, publishPacket);
             Assert.AreEqual(3, message.Properties.Count);
             Assert.AreEqual("Value1", message.Properties["Prop1"]);
             Assert.AreEqual("Value2", message.Properties["Prop2"]);

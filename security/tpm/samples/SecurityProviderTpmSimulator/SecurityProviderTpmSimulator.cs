@@ -21,6 +21,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Security.Samples
         private const string SimulatorAddress = "127.0.0.1";
         private const string SimulatorExeName = "Simulator.exe";
         private const int SimulatorPort = 2321;
+        private const int TcpTpmDeviceTimeoutSeconds = 30;
 
         private SecurityProviderTpmHsm _innerClient;
 
@@ -28,6 +29,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Security.Samples
         {
             var tpmDevice = new TcpTpmDevice(SimulatorAddress, SimulatorPort);
             tpmDevice.Connect();
+            tpmDevice.SetSocketTimeout(TcpTpmDeviceTimeoutSeconds);
             tpmDevice.PowerCycle();
 
             using (var tpm2 = new Tpm2(tpmDevice))

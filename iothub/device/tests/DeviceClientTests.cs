@@ -1,17 +1,17 @@
-﻿namespace Microsoft.Azure.Devices.Client.Test
-{
-    using Microsoft.Azure.Devices.Client.Common;
-    using Microsoft.Azure.Devices.Client.Transport;
-    using Microsoft.Azure.Devices.Client.Transport.Mqtt;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using NSubstitute;
-    using NSubstitute.ExceptionExtensions;
-    using System;
-    using System.IO;
-    using System.Text;
-    using System.Threading;
-    using System.Threading.Tasks;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Microsoft.Azure.Devices.Client.Transport.Mqtt;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NSubstitute;
+using System;
+using System.IO;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace Microsoft.Azure.Devices.Client.Test
+{
     [TestClass]
     [TestCategory("Unit")]
     public class DeviceClientTests
@@ -92,7 +92,7 @@
             }
             catch (NotSupportedException e)
             {
-                Assert.AreEqual(e.Message, $"{TransportType.Http1} protocal doesn't support E2E diagnostic.");
+                Assert.AreEqual($"{TransportType.Http1} protocol doesn't support E2E diagnostic.", e.Message);
             }
         }
 
@@ -114,7 +114,7 @@
             }
             catch (NotSupportedException e)
             {
-                Assert.AreEqual(e.Message, $"{TransportType.Http1} protocal doesn't support E2E diagnostic.");
+                Assert.AreEqual($"{TransportType.Http1} protocol doesn't support E2E diagnostic.", e.Message);
             }
         }
 
@@ -134,12 +134,12 @@
             deviceClient.OperationTimeoutInMilliseconds = 0;
 
             var innerHandler = Substitute.For<IDelegatingHandler>();
-            innerHandler.OpenAsync(Arg.Any<bool>(), Arg.Is<CancellationToken>(ct => ct.CanBeCanceled == false)).Returns(TaskConstants.Completed);
+            innerHandler.OpenAsync(Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
             deviceClient.InnerHandler = innerHandler;
 
             Task t = deviceClient.OpenAsync();
 
-            await innerHandler.Received().OpenAsync(Arg.Any<bool>(), Arg.Is<CancellationToken>(ct => ct.CanBeCanceled == false)).ConfigureAwait(false);
+            await innerHandler.Received().OpenAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -149,12 +149,12 @@
             deviceClient.OperationTimeoutInMilliseconds = 0;
 
             var innerHandler = Substitute.For<IDelegatingHandler>();
-            innerHandler.ReceiveAsync(Arg.Is<CancellationToken>(ct => ct.CanBeCanceled == false)).Returns(new Task<Message>(() => new Message()));
+            innerHandler.ReceiveAsync(Arg.Any<CancellationToken>()).Returns(new Task<Message>(() => new Message()));
             deviceClient.InnerHandler = innerHandler;
 
             Task<Message> t = deviceClient.ReceiveAsync();
 
-            await innerHandler.Received().ReceiveAsync(Arg.Is<CancellationToken>(ct => ct.CanBeCanceled == false)).ConfigureAwait(false);
+            await innerHandler.Received().ReceiveAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -191,7 +191,7 @@
                 return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes("{\"name\":\"ABC\"}"), 200));
             }, "custom data").ConfigureAwait(false);
 
-            var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Array.Empty<byte>()));
+            var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Array.Empty<byte>()), CancellationToken.None);
 
             await deviceClient.InternalClient.OnMethodCalled(methodRequestInternal).ConfigureAwait(false);
             await innerHandler.Received().SendMethodResponseAsync(Arg.Any<MethodResponseInternal>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -212,7 +212,7 @@
                 return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes("{\"name\":\"ABC\"}"), 200));
             }, "custom data").ConfigureAwait(false);
 
-            var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{key")));
+            var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{key")), CancellationToken.None);
 
             await deviceClient.InternalClient.OnMethodCalled(methodRequestInternal).ConfigureAwait(false);
             await innerHandler.Received().SendMethodResponseAsync(Arg.Is<MethodResponseInternal>(resp => resp.Status == 400), Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -233,7 +233,7 @@
                 return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes("{\"name\":\"ABC\"}"), 200));
             }, "custom data").ConfigureAwait(false);
 
-            var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{\"grade\":\"good\"}")));
+            var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{\"grade\":\"good\"}")), CancellationToken.None);
 
             await deviceClient.InternalClient.OnMethodCalled(methodRequestInternal).ConfigureAwait(false);
             await innerHandler.Received().SendMethodResponseAsync(Arg.Any<MethodResponseInternal>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -254,7 +254,7 @@
                 return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes("{\"name\"\"ABC\"}"), 200));
             }, "custom data").ConfigureAwait(false);
 
-            var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{\"grade\":\"good\"}")));
+            var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{\"grade\":\"good\"}")), CancellationToken.None);
 
             await deviceClient.InternalClient.OnMethodCalled(methodRequestInternal).ConfigureAwait(false);
             Assert.IsTrue(isMethodHandlerCalled);
@@ -295,7 +295,7 @@
                 return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes("{\"name\":\"ABC\"}"), 200));
             }, "custom data");
 
-            var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Array.Empty<byte>()));
+            var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Array.Empty<byte>()), CancellationToken.None);
 
             await deviceClient.InternalClient.OnMethodCalled(methodRequestInternal).ConfigureAwait(false);
             await innerHandler.Received().SendMethodResponseAsync(Arg.Any<MethodResponseInternal>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -317,7 +317,7 @@
                 return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes("{\"name\":\"ABC\"}"), 200));
             }, "custom data");
 
-            var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{\"grade\":\"good\"}")));
+            var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{\"grade\":\"good\"}")), CancellationToken.None);
 
             await deviceClient.InternalClient.OnMethodCalled(methodRequestInternal).ConfigureAwait(false);
             await innerHandler.Received().SendMethodResponseAsync(Arg.Any<MethodResponseInternal>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -339,7 +339,7 @@
                 return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes("{\"name\":\"ABC\"}"), 200));
             }, "custom data").ConfigureAwait(false);
 
-            var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{\"grade\":\"good\"}")));
+            var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{\"grade\":\"good\"}")), CancellationToken.None);
 
             await deviceClient.InternalClient.OnMethodCalled(methodRequestInternal).ConfigureAwait(false);
             await innerHandler.Received().SendMethodResponseAsync(Arg.Any<MethodResponseInternal>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -367,7 +367,7 @@
                 return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes("{\"name\":\"ABC\"}"), 200));
             }, "custom data").ConfigureAwait(false);
 
-            var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{\"grade\":\"good\"}")));
+            var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{\"grade\":\"good\"}")), CancellationToken.None);
 
             await deviceClient.InternalClient.OnMethodCalled(methodRequestInternal).ConfigureAwait(false);
             await innerHandler.Received().SendMethodResponseAsync(Arg.Any<MethodResponseInternal>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -396,7 +396,7 @@
                 return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes("{\"name\":\"ABC\"}"), 200));
             }, "custom data").ConfigureAwait(false);
 
-            var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{\"grade\":\"good\"}")));
+            var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{\"grade\":\"good\"}")), CancellationToken.None);
 
             await deviceClient.InternalClient.OnMethodCalled(methodRequestInternal).ConfigureAwait(false);
             await innerHandler.Received().SendMethodResponseAsync(Arg.Any<MethodResponseInternal>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -419,7 +419,7 @@
                 return Task.FromResult(new MethodResponse(200));
             }, "custom data");
 
-            var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{\"grade\":\"good\"}")));
+            var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{\"grade\":\"good\"}")), CancellationToken.None);
 
             await deviceClient.InternalClient.OnMethodCalled(methodRequestInternal).ConfigureAwait(false);
             await innerHandler.Received().SendMethodResponseAsync(Arg.Any<MethodResponseInternal>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
@@ -440,7 +440,7 @@
                 return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes("{\"name\"\"ABC\"}"), 200));
             }, "custom data");
 
-            var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{\"grade\":\"good\"}")));
+            var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{\"grade\":\"good\"}")), CancellationToken.None);
 
             await deviceClient.InternalClient.OnMethodCalled(methodRequestInternal).ConfigureAwait(false);
             Assert.IsTrue(isMethodHandlerCalled);
@@ -455,7 +455,7 @@
 
             var innerHandler = Substitute.For<IDelegatingHandler>();
             deviceClient.InnerHandler = innerHandler;
-            var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{\"grade\":\"good\"}")));
+            var methodRequestInternal = new MethodRequestInternal("TestMethodName", "4B810AFC-CF5B-4AE8-91EB-245F7C7751F9", new MemoryStream(Encoding.UTF8.GetBytes("{\"grade\":\"good\"}")), CancellationToken.None);
 
             await deviceClient.InternalClient.OnMethodCalled(methodRequestInternal).ConfigureAwait(false);
 
@@ -490,7 +490,7 @@
             string methodUserContext = "UserContext";
             string methodBody = "{\"grade\":\"good\"}";
             await deviceClient.SetMethodHandlerAsync(methodName, methodCallback, methodUserContext).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)))).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
 
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
@@ -498,14 +498,10 @@
             Assert.AreEqual(methodBody, actualMethodBody);
             Assert.AreEqual(methodUserContext, actualMethodUserContext);
 
-            ConnectionEventArgs connectionEventArgs = new ConnectionEventArgs();
-            connectionEventArgs.ConnectionType = ConnectionType.AmqpMethodReceiving;
-            deviceClient.InternalClient.OnConnectionOpened(this, connectionEventArgs);
-
             innerHandler.ClearReceivedCalls();
             methodCallbackCalled = false;
             await deviceClient.SetMethodDefaultHandlerAsync(methodCallback, methodUserContext).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)))).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
 
             await innerHandler.DidNotReceive().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
@@ -542,7 +538,7 @@
             string methodUserContext = "UserContext";
             string methodBody = "{\"grade\":\"good\"}";
             await deviceClient.SetMethodDefaultHandlerAsync(methodCallback, methodUserContext).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)))).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
 
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
@@ -550,14 +546,10 @@
             Assert.AreEqual(methodBody, actualMethodBody);
             Assert.AreEqual(methodUserContext, actualMethodUserContext);
 
-            ConnectionEventArgs connectionEventArgs = new ConnectionEventArgs();
-            connectionEventArgs.ConnectionType = ConnectionType.AmqpMethodReceiving;
-            deviceClient.InternalClient.OnConnectionOpened(this, connectionEventArgs);
-
             innerHandler.ClearReceivedCalls();
             methodCallbackCalled = false;
             await deviceClient.SetMethodHandlerAsync(methodName, methodCallback, methodUserContext).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)))).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
 
             await innerHandler.DidNotReceive().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
@@ -593,7 +585,7 @@
             string methodUserContext = "UserContext";
             string methodBody = "{\"grade\":\"good\"}";
             await deviceClient.SetMethodHandlerAsync(methodName, methodCallback, methodUserContext).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)))).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
 
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
@@ -617,7 +609,7 @@
             string methodUserContext2 = "UserContext2";
             string methodBody2 = "{\"grade\":\"bad\"}";
             await deviceClient.SetMethodHandlerAsync(methodName, methodCallback2, methodUserContext2).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId2", new MemoryStream(Encoding.UTF8.GetBytes(methodBody2)))).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId2", new MemoryStream(Encoding.UTF8.GetBytes(methodBody2)), CancellationToken.None)).ConfigureAwait(false);
 
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled2);
@@ -653,7 +645,7 @@
             string methodUserContext = "UserContext";
             string methodBody = "{\"grade\":\"good\"}";
             await deviceClient.SetMethodDefaultHandlerAsync(methodCallback, methodUserContext).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)))).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
 
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
@@ -677,7 +669,7 @@
             string methodUserContext2 = "UserContext2";
             string methodBody2 = "{\"grade\":\"bad\"}";
             await deviceClient.SetMethodDefaultHandlerAsync(methodCallback2, methodUserContext2).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId2", new MemoryStream(Encoding.UTF8.GetBytes(methodBody2)))).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId2", new MemoryStream(Encoding.UTF8.GetBytes(methodBody2)), CancellationToken.None)).ConfigureAwait(false);
 
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled2);
@@ -714,7 +706,7 @@
             string methodUserContext = "UserContext";
             string methodBody = "{\"grade\":\"good\"}";
             await deviceClient.SetMethodHandlerAsync(methodName, methodCallback, methodUserContext).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)))).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
 
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
@@ -724,7 +716,7 @@
 
             methodCallbackCalled = false;
             await deviceClient.SetMethodHandlerAsync(methodName, null, null).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)))).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
 
             await innerHandler.Received().DisableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsFalse(methodCallbackCalled);
@@ -758,7 +750,7 @@
             string methodUserContext = "UserContext";
             string methodBody = "{\"grade\":\"good\"}";
             await deviceClient.SetMethodHandlerAsync(methodName, methodCallback, methodUserContext).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)))).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
 
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
@@ -766,14 +758,10 @@
             Assert.AreEqual(methodBody, actualMethodBody);
             Assert.AreEqual(methodUserContext, actualMethodUserContext);
 
-            ConnectionEventArgs connectionEventArgs = new ConnectionEventArgs();
-            connectionEventArgs.ConnectionType = ConnectionType.AmqpMethodReceiving;
-            deviceClient.InternalClient.OnConnectionOpened(this, connectionEventArgs);
-
             methodCallbackCalled = false;
             innerHandler.ClearReceivedCalls();
             await deviceClient.SetMethodDefaultHandlerAsync(methodCallback, methodUserContext).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)))).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
 
             await innerHandler.DidNotReceive().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
@@ -783,13 +771,13 @@
 
             methodCallbackCalled = false;
             await deviceClient.SetMethodDefaultHandlerAsync(null, null).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)))).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
             await innerHandler.DidNotReceive().DisableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
 
             methodCallbackCalled = false;
             await deviceClient.SetMethodHandlerAsync(methodName, null, null).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)))).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
 
             await innerHandler.Received().DisableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsFalse(methodCallbackCalled);
@@ -823,7 +811,7 @@
             string methodUserContext = "UserContext";
             string methodBody = "{\"grade\":\"good\"}";
             await deviceClient.SetMethodHandlerAsync(methodName, methodCallback, methodUserContext).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)))).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
 
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
@@ -831,14 +819,10 @@
             Assert.AreEqual(methodBody, actualMethodBody);
             Assert.AreEqual(methodUserContext, actualMethodUserContext);
 
-            ConnectionEventArgs connectionEventArgs = new ConnectionEventArgs();
-            connectionEventArgs.ConnectionType = ConnectionType.AmqpMethodReceiving;
-            deviceClient.InternalClient.OnConnectionOpened(this, connectionEventArgs);
-
             methodCallbackCalled = false;
             innerHandler.ClearReceivedCalls();
             await deviceClient.SetMethodDefaultHandlerAsync(methodCallback, methodUserContext).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)))).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
 
             await innerHandler.DidNotReceive().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
@@ -848,13 +832,13 @@
 
             methodCallbackCalled = false;
             await deviceClient.SetMethodHandlerAsync(methodName, null, null).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)))).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
             await innerHandler.DidNotReceive().DisableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
 
             methodCallbackCalled = false;
             await deviceClient.SetMethodDefaultHandlerAsync(null, null).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)))).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
             await innerHandler.Received().DisableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsFalse(methodCallbackCalled);
         }
@@ -900,7 +884,7 @@
             string methodUserContext = "UserContext";
             string methodBody = "{\"grade\":\"good\"}";
             deviceClient.SetMethodHandler(methodName, methodCallback, methodUserContext);
-            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)))).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
 
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
@@ -936,7 +920,7 @@
             string methodUserContext = "UserContext";
             string methodBody = "{\"grade\":\"good\"}";
             deviceClient.SetMethodHandler(methodName, methodCallback, methodUserContext);
-            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)))).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
 
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
@@ -960,7 +944,7 @@
             string methodUserContext2 = "UserContext2";
             string methodBody2 = "{\"grade\":\"bad\"}";
             await deviceClient.SetMethodHandlerAsync(methodName, methodCallback2, methodUserContext2).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId2", new MemoryStream(Encoding.UTF8.GetBytes(methodBody2)))).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId2", new MemoryStream(Encoding.UTF8.GetBytes(methodBody2)), CancellationToken.None)).ConfigureAwait(false);
 
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled2);
@@ -997,7 +981,7 @@
             string methodUserContext = "UserContext";
             string methodBody = "{\"grade\":\"good\"}";
             deviceClient.SetMethodHandler(methodName, methodCallback, methodUserContext);
-            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)))).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
 
             await innerHandler.Received().EnableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(methodCallbackCalled);
@@ -1007,7 +991,7 @@
 
             methodCallbackCalled = false;
             await deviceClient.SetMethodHandlerAsync(methodName, null, null).ConfigureAwait(false);
-            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)))).ConfigureAwait(false);
+            await deviceClient.InternalClient.OnMethodCalled(new MethodRequestInternal(methodName, "fakeRequestId", new MemoryStream(Encoding.UTF8.GetBytes(methodBody)), CancellationToken.None)).ConfigureAwait(false);
 
             await innerHandler.Received().DisableMethodsAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsFalse(methodCallbackCalled);
@@ -1045,7 +1029,7 @@
             deviceClient.SetConnectionStatusChangesHandler(statusChangeHandler);
 
             // Connection status changes from disconnected to connected
-            deviceClient.InternalClient.OnConnectionOpened(new object(), new ConnectionEventArgs { ConnectionType = ConnectionType.MqttConnection, ConnectionStatus = ConnectionStatus.Connected, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Connection_Ok });
+            deviceClient.InternalClient.OnConnectionStatusChanged(ConnectionStatus.Connected, ConnectionStatusChangeReason.Connection_Ok);
 
             Assert.IsTrue(handlerCalled);
             Assert.AreEqual(ConnectionStatus.Connected, status);
@@ -1070,7 +1054,7 @@
             deviceClient.SetConnectionStatusChangesHandler(null);
 
             // Connection status changes from disconnected to connected
-            deviceClient.InternalClient.OnConnectionOpened(new object(), new ConnectionEventArgs { ConnectionType = ConnectionType.MqttConnection, ConnectionStatus = ConnectionStatus.Connected, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Connection_Ok });
+            deviceClient.InternalClient.OnConnectionStatusChanged(ConnectionStatus.Connected, ConnectionStatusChangeReason.Connection_Ok);
 
             Assert.IsFalse(handlerCalled);
         }
@@ -1091,14 +1075,16 @@
             };
             deviceClient.SetConnectionStatusChangesHandler(statusChangeHandler);
             // current status = disabled
-            deviceClient.InternalClient.OnConnectionOpened(new object(), new ConnectionEventArgs { ConnectionType = ConnectionType.MqttConnection, ConnectionStatus = ConnectionStatus.Connected, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Connection_Ok });
+
+            deviceClient.InternalClient.OnConnectionStatusChanged(ConnectionStatus.Connected, ConnectionStatusChangeReason.Connection_Ok);
+            
             Assert.IsTrue(handlerCalled);
             Assert.AreEqual(ConnectionStatus.Connected, status);
             Assert.AreEqual(ConnectionStatusChangeReason.Connection_Ok, statusChangeReason);
             handlerCalled = false;
 
             // current status = connected
-            deviceClient.InternalClient.OnConnectionOpened(new object(), new ConnectionEventArgs { ConnectionType = ConnectionType.MqttConnection, ConnectionStatus = ConnectionStatus.Connected, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Connection_Ok });
+            deviceClient.InternalClient.OnConnectionStatusChanged(ConnectionStatus.Connected, ConnectionStatusChangeReason.Connection_Ok);
 
             Assert.IsFalse(handlerCalled);
         }
@@ -1122,103 +1108,21 @@
                 statusChangeReason = r;
             };
             deviceClient.SetConnectionStatusChangesHandler(statusChangeHandler);
+
             // current status = disabled
-            deviceClient.InternalClient.OnConnectionOpened(new object(), new ConnectionEventArgs { ConnectionType = ConnectionType.MqttConnection, ConnectionStatus = ConnectionStatus.Connected, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Connection_Ok });
+            deviceClient.InternalClient.OnConnectionStatusChanged(ConnectionStatus.Connected, ConnectionStatusChangeReason.Connection_Ok);
+
             Assert.IsTrue(handlerCalled);
             Assert.AreEqual(ConnectionStatus.Connected, status);
             Assert.AreEqual(ConnectionStatusChangeReason.Connection_Ok, statusChangeReason);
             handlerCalled = false;
 
             // current status = connected
-            deviceClient.InternalClient.OnConnectionClosed(
-                sender,
-                new ConnectionEventArgs
-                {
-                    ConnectionType = ConnectionType.MqttConnection,
-                    ConnectionStatus = ConnectionStatus.Disconnected_Retrying,
-                    ConnectionStatusChangeReason = ConnectionStatusChangeReason.No_Network
-                }).Wait();
+            deviceClient.InternalClient.OnConnectionStatusChanged(ConnectionStatus.Disconnected_Retrying, ConnectionStatusChangeReason.No_Network);
 
-            await innerHandler.Received().RecoverConnections(sender, Arg.Any<ConnectionType>(), Arg.Any<CancellationToken>()).ConfigureAwait(false);
             Assert.IsTrue(handlerCalled);
             Assert.AreEqual(ConnectionStatus.Disconnected_Retrying, status);
             Assert.AreEqual(ConnectionStatusChangeReason.No_Network, statusChangeReason);
-        }
-
-        [TestMethod]
-        // Tests_SRS_DEVICECLIENT_28_027: [** `OnConnectionClosed` shall invoke the connectionStatusChangesHandler if RecoverConnections throw exception **]**
-        public void DeviceClientOnConnectionClosedRecoverThrowsExceptionInvokeHandler()
-        {
-            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
-            var innerHandler = Substitute.For<IDelegatingHandler>();
-            deviceClient.InnerHandler = innerHandler;
-            innerHandler.RecoverConnections(Arg.Any<object>(), Arg.Any<ConnectionType>(), Arg.Any<CancellationToken>()).Throws<InvalidOperationException>();
-            var sender = new object();
-            int handlerCalled = 0;
-            ConnectionStatus? status = null;
-            ConnectionStatusChangeReason? statusChangeReason = null;
-            ConnectionStatusChangesHandler statusChangeHandler = (s, r) =>
-            {
-                handlerCalled++;
-                status = s;
-                statusChangeReason = r;
-            };
-            deviceClient.SetConnectionStatusChangesHandler(statusChangeHandler);
-            // current status = disabled
-            deviceClient.InternalClient.OnConnectionOpened(new object(), new ConnectionEventArgs { ConnectionType = ConnectionType.MqttConnection, ConnectionStatus = ConnectionStatus.Connected, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Connection_Ok });
-            Assert.AreEqual(handlerCalled, 1);
-            Assert.AreEqual(ConnectionStatus.Connected, status);
-            Assert.AreEqual(ConnectionStatusChangeReason.Connection_Ok, statusChangeReason);
-
-            // current status = connected
-            deviceClient.InternalClient.OnConnectionClosed(
-                sender,
-                new ConnectionEventArgs
-                {
-                    ConnectionType = ConnectionType.MqttConnection,
-                    ConnectionStatus = ConnectionStatus.Disconnected_Retrying,
-                    ConnectionStatusChangeReason = ConnectionStatusChangeReason.Retry_Expired
-                }).Wait();
-
-            Assert.AreEqual(handlerCalled, 3);
-            Assert.AreEqual(ConnectionStatus.Disconnected, status);
-            Assert.AreEqual(ConnectionStatusChangeReason.Retry_Expired, statusChangeReason);
-        }
-
-        [TestMethod]
-        // Tests_SRS_DEVICECLIENT_28_023: [** `OnConnectionClosed` shall invoke the connectionStatusChangesHandler if ConnectionStatus is changed. **]**
-        public async Task DeviceClientOnConnectionClosedInvokeHandlerForClientClosed()
-        {
-            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
-            bool handlerCalled = false;
-            ConnectionStatus? status = null;
-            ConnectionStatusChangeReason? statusChangeReason = null;
-            ConnectionStatusChangesHandler statusChangeHandler = (s, r) =>
-            {
-                handlerCalled = true;
-                status = s;
-                statusChangeReason = r;
-            };
-            deviceClient.SetConnectionStatusChangesHandler(statusChangeHandler);
-            // current status = disabled
-            deviceClient.InternalClient.OnConnectionOpened(new object(), new ConnectionEventArgs { ConnectionType = ConnectionType.MqttConnection, ConnectionStatus = ConnectionStatus.Connected, ConnectionStatusChangeReason = ConnectionStatusChangeReason.Connection_Ok });
-            Assert.IsTrue(handlerCalled);
-            Assert.AreEqual(ConnectionStatus.Connected, status);
-            handlerCalled = false;
-
-            // current status = connected
-            deviceClient.InternalClient.OnConnectionClosed(
-                new object(),
-                new ConnectionEventArgs
-                {
-                    ConnectionType = ConnectionType.MqttConnection,
-                    ConnectionStatus = ConnectionStatus.Disabled,
-                    ConnectionStatusChangeReason = ConnectionStatusChangeReason.Client_Close
-                }).Wait();
-
-            Assert.IsTrue(handlerCalled);
-            Assert.AreEqual(ConnectionStatus.Disabled, status);
-            Assert.AreEqual(ConnectionStatusChangeReason.Client_Close, statusChangeReason);
         }
 
         [TestMethod]

@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.Client
 
         public bool TryGetOpenedObject(out T openedAmqpObject)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(FaultTolerantAmqpObject<AmqpObject>)}.{nameof(TryGetOpenedObject)}");
+            if (Logging.IsEnabled) Logging.Enter(this, nameof(TryGetOpenedObject));
 
             var taskCompletionSource = this.TaskCompletionSource;
             if (taskCompletionSource != null && taskCompletionSource.Task.Status == TaskStatus.RanToCompletion)
@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.Client
                 openedAmqpObject = null;
             }
 
-            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(FaultTolerantAmqpObject<AmqpObject>)}.{nameof(TryGetOpenedObject)}");
+            if (Logging.IsEnabled) Logging.Exit(this, nameof(TryGetOpenedObject));
             return openedAmqpObject != null;
         }
 
@@ -48,16 +48,17 @@ namespace Microsoft.Azure.Devices.Client
         {
             try
             {
-                if (Logging.IsEnabled) Logging.Enter(this, timeout, cancellationToken, $"{nameof(FaultTolerantAmqpObject<AmqpObject>)}.{nameof(OnCreateAsync)}");
+                if (Logging.IsEnabled) Logging.Enter(this, timeout, cancellationToken, nameof(OnCreateAsync));
 
                 T amqpObject = await this.createObjectAsync(timeout, cancellationToken).ConfigureAwait(false);
                 amqpObject.SafeAddClosed((s, e) => this.Invalidate(amqpObject));
+                amqpObject.Closed += OnObjectClosed;
 
                 return amqpObject;
             }
             finally
             {
-                if (Logging.IsEnabled) Logging.Exit(this, timeout, cancellationToken, $"{nameof(FaultTolerantAmqpObject<AmqpObject>)}.{nameof(OnCreateAsync)}");
+                if (Logging.IsEnabled) Logging.Exit(this, timeout, cancellationToken, nameof(OnCreateAsync));
             }
         }
 
@@ -65,20 +66,29 @@ namespace Microsoft.Azure.Devices.Client
         {
             try
             {
-                if (Logging.IsEnabled) Logging.Enter(this, value.Identifier, $"{nameof(FaultTolerantAmqpObject<AmqpObject>)}.{nameof(OnSafeClose)}");
+                if (Logging.IsEnabled) Logging.Enter(this, value.Identifier, nameof(OnSafeClose));
                 this.closeObject(value);
             }
             finally
             {
-                if (Logging.IsEnabled) Logging.Exit(this, value.Identifier, $"{nameof(FaultTolerantAmqpObject<AmqpObject>)}.{nameof(OnSafeClose)}");
+                if (Logging.IsEnabled) Logging.Exit(this, value.Identifier, nameof(OnSafeClose));
             }
         }
 
         void OnObjectClosed(object sender, EventArgs e)
         {
-            T instance = (T)sender;
-            this.closeObject(instance); 
-            this.Invalidate(instance);
+            try
+            {
+                if (Logging.IsEnabled) Logging.Enter(this, sender, nameof(OnObjectClosed));
+
+                T instance = (T)sender;
+                this.closeObject(instance);
+                this.Invalidate(instance);
+            }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, sender, nameof(OnObjectClosed));
+            }
         }
     }
 }

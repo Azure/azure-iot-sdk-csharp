@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var productType = NativeMethods.GetWindowsProductType();
             var productTypeString = (productType != 0) ? $" WindowsProduct:0x{productType:X8}" : string.Empty;
 
-            return $"Microsoft.Azure.Devices.Client/{version} ({runtime}; {operatingSystem}{productTypeString}; {processorArchitecture})";
+            return $".NET/{version} ({runtime}; {operatingSystem}{productTypeString}; {processorArchitecture})";
         }
 
         [TestMethod]

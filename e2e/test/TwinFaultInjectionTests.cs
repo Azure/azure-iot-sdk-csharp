@@ -107,7 +107,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [Ignore] //TODO: #558
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Twin_DeviceDesiredPropertyUpdateTcpConnRecovery_Mqtt()
@@ -118,7 +117,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [Ignore] //TODO: #558
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Twin_DeviceDesiredPropertyUpdateTcpConnRecovery_MqttWs()
@@ -129,7 +127,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [Ignore] // TODO: #571
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Twin_DeviceDesiredPropertyUpdateTcpConnRecovery_Amqp()
@@ -140,7 +137,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [Ignore] // TODO: #571
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Twin_DeviceDesiredPropertyUpdateTcpConnRecovery_AmqpWs()
@@ -151,7 +147,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
         
-        [Ignore] //TODO: #558
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Twin_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_Mqtt()
@@ -162,7 +157,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [Ignore] //TODO: #558
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Twin_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_MqttWs()
@@ -173,7 +167,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [Ignore] // TODO: #571
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Twin_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_Amqp()
@@ -184,7 +177,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        [Ignore] // TODO: #571
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
         public async Task Twin_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_AmqpWs()
@@ -272,32 +264,17 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
             };
 
-            // This is a simple hack to ensure that we're still exercising these tests while we address the race conditions causing the following issues:
-            // [Ignore] // TODO: #571
-            // [Ignore] // TODO: #558
-            int retryCount = 3;
-
-            while (retryCount-- > 0)
-            {
-                try
-                {
-                    await FaultInjection.TestErrorInjectionAsync(
-                        DevicePrefix,
-                        TestDeviceType.Sasl,
-                        transport,
-                        faultType,
-                        reason,
-                        delayInSec,
-                        FaultInjection.DefaultDurationInSec,
-                        initOperation,
-                        testOperation,
-                        () => { return Task.FromResult<bool>(false); }).ConfigureAwait(false);
-                }
-                catch (DeviceNotFoundException e)
-                {
-                    s_log.WriteLine($"Retrying fault injection test ({retryCount} left)");
-                }
-            }
+            await FaultInjection.TestErrorInjectionAsync(
+                DevicePrefix,
+                TestDeviceType.Sasl,
+                transport,
+                faultType,
+                reason,
+                delayInSec,
+                FaultInjection.DefaultDurationInSec,
+                initOperation,
+                testOperation,
+                () => { return Task.FromResult<bool>(false); }).ConfigureAwait(false);
         }
 
         public void Dispose()

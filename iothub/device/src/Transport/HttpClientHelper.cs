@@ -177,7 +177,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     {
                         InsertEtag(requestMsg, entity, operationType);
                         requestMsg.Content = CreateContent(entity);
-                        return Task.FromResult(0);
+                        return TaskHelpers.CompletedTask;
                     },
                     async (httpClient, token) => result = await ReadResponseMessageAsync<T>(httpClient, token).ConfigureAwait(false),
                     errorMappingOverrides,
@@ -219,7 +219,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 }
             }
 
-            return Task.FromResult(0);
+            return TaskHelpers.CompletedTask;
         }
 
         static void InsertEtag(HttpRequestMessage requestMessage, IETagHolder entity, PutOperationType operationType)
@@ -309,7 +309,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         }
                     }
 
-                    return Task.FromResult(0);
+                    return TaskHelpers.CompletedTask;
                 },
                 ReadResponseMessageAsync<HttpResponseMessage>,
                 errorMappingOverrides,
@@ -367,7 +367,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         }
                     }
 
-                    return Task.FromResult(0);
+                    return TaskHelpers.CompletedTask;
                 },
                 processResponseMessageAsync,
                 errorMappingOverrides,
@@ -422,6 +422,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> errorMappingOverrides,
             CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> mergedErrorMapping =
                 this.MergeErrorMapping(errorMappingOverrides);
 
@@ -484,20 +486,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 {
                     throw new IotHubCommunicationException(ex.Message, ex);
                 }
-                catch (TaskCanceledException ex)
+                catch (OperationCanceledException)
                 {
-                    // Unfortunately TaskCanceledException is thrown when HttpClient times out.
-                    if (cancellationToken.IsCancellationRequested)
-                    {
-                        throw new IotHubException(ex.Message, ex);
-                    }
-
-                    throw new IotHubCommunicationException(string.Format(CultureInfo.InvariantCulture, "The {0} operation timed out.", httpMethod), ex);
+                    throw;
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (!ex.IsFatal())
                 {
-                    if (Fx.IsFatal(ex)) throw;
-
                     throw new IotHubException(ex.Message, ex);
                 }
 

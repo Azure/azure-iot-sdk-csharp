@@ -13,6 +13,7 @@ namespace Microsoft.Azure.Devices.Client
 
     using Microsoft.Azure.Devices.Client.Extensions;
     using Microsoft.Azure.Devices.Shared;
+    using System.Diagnostics;
 
     internal sealed partial class IotHubConnectionString : IAuthorizationProvider
 #if !NETMF
@@ -51,12 +52,25 @@ namespace Microsoft.Azure.Devices.Client
             if (builder.AuthenticationMethod is AuthenticationWithTokenRefresh)
             {
                 this.TokenRefresher = (AuthenticationWithTokenRefresh)builder.AuthenticationMethod;
+                if (Logging.IsEnabled) Logging.Info(this, $"{nameof(IAuthenticationMethod)} is {nameof(AuthenticationWithTokenRefresh)}: {Logging.IdOf(TokenRefresher)}");
+                if (Logging.IsEnabled) Logging.Associate(this, TokenRefresher, nameof(TokenRefresher));
+                Debug.Assert(TokenRefresher != null);
             }
             else if (!string.IsNullOrEmpty(this.SharedAccessKey))
             {
-                this.TokenRefresher = this.ModuleId.IsNullOrWhiteSpace()
-                    ? new DeviceAuthenticationWithSakRefresh(this.DeviceId, this)
-                    : new ModuleAuthenticationWithSakRefresh(this.DeviceId, this.ModuleId, this) as AuthenticationWithTokenRefresh;
+                if (this.ModuleId.IsNullOrWhiteSpace())
+                {
+                    this.TokenRefresher = new DeviceAuthenticationWithSakRefresh(this.DeviceId, this) as AuthenticationWithTokenRefresh;
+                    if (Logging.IsEnabled) Logging.Info(this, $"{nameof(IAuthenticationMethod)} is {nameof(DeviceAuthenticationWithSakRefresh)}: {Logging.IdOf(TokenRefresher)}");
+                }
+                else
+                {
+                    this.TokenRefresher = new ModuleAuthenticationWithSakRefresh(this.DeviceId, this.ModuleId, this) as AuthenticationWithTokenRefresh;
+                    if (Logging.IsEnabled) Logging.Info(this, $"{nameof(IAuthenticationMethod)} is {nameof(ModuleAuthenticationWithSakRefresh)}: {Logging.IdOf(TokenRefresher)}");
+                }
+
+                if (Logging.IsEnabled) Logging.Associate(this, TokenRefresher, nameof(TokenRefresher));
+                Debug.Assert(TokenRefresher != null);
             }
 #endif
         }

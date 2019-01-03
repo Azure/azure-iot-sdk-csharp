@@ -221,9 +221,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
 
             if (disposing)
             {
-                _tpm2?.Dispose();
-                _tpm2 = null;
-                _tpmDevice = null;
+                // _tpmDevice is owned by _tpm2 and will be disposed as well.
+                _tpm2.Dispose();
             }
 
             disposed = true;
