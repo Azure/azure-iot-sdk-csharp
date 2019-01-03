@@ -68,6 +68,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 {
                     authStrategy = new AmqpAuthStrategyX509((SecurityProviderX509)message.Security);
                 }
+                else if (message.Security is SecurityProviderSymmetricKey)
+                {
+                    authStrategy = new AmqpAuthStrategySymmetricKey((SecurityProviderSymmetricKey)message.Security);
+                }
                 else
                 {
                     throw new NotSupportedException(
@@ -93,9 +97,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 await authStrategy.OpenConnectionAsync(connection, TimeoutConstant, useWebSocket, Proxy).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await CreateLinksAsync(connection, linkEndpoint, message.ProductInfo).ConfigureAwait(false);
+                await CreateLinksAsync(
+                    connection,
+                    linkEndpoint,
+                    message.ProductInfo).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
-
+                
                 string correlationId = Guid.NewGuid().ToString();
                 RegistrationOperationStatus operation =
                     await RegisterDeviceAsync(connection, correlationId).ConfigureAwait(false);
@@ -240,10 +247,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     int statusCode = errorDetails.ErrorCode / 1000;
                     bool isTransient = statusCode >= (int)HttpStatusCode.InternalServerError || statusCode == 429;
                     throw new ProvisioningTransportException(
-                        errorDetails.CreateMessage("AMQP transport exception: service error."),
+                        rejected.Error.Description,
                         null,
                         isTransient,
-                        errorDetails.TrackingId);
+                        errorDetails);
                 }
                 catch (JsonException ex)
                 {
