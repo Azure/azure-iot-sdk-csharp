@@ -203,6 +203,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Assert.IsNotNull(deviceTwin, $"{nameof(deviceTwin)} is null");
                 Assert.IsNotNull(deviceTwin.Properties, $"{nameof(deviceTwin)}.Properties is null");
                 Assert.IsNotNull(deviceTwin.Properties.Reported, $"{nameof(deviceTwin)}.Properties.Reported is null");
+                Assert.IsNotNull(deviceTwin.Properties.Reported[propName], $"{nameof(deviceTwin)}.Properties.Reported[{nameof(propName)}] is null");
                 Assert.AreEqual<String>(deviceTwin.Properties.Reported[propName].ToString(), propValue);
             };
 
