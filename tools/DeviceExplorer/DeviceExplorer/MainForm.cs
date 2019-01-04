@@ -403,9 +403,11 @@ namespace DeviceExplorer
         {
             try
             {
+                listDevicesButton.Enabled = false;
                 await updateDevicesGridView();
                 devicesListed = true;
                 listDevicesButton.Text = "Refresh";
+                listDevicesButton.Enabled = true;
             }
             catch (Exception ex)
             {
@@ -443,6 +445,7 @@ namespace DeviceExplorer
         {
             try
             {
+                deleteDeviceButton.Enabled = false;   
                 RegistryManager registryManager = RegistryManager.CreateFromConnectionString(activeIoTHubConnectionString);
 
                 List<string> selectedDeviceIds = new List<string>();
@@ -454,7 +457,18 @@ namespace DeviceExplorer
 
                 using (new CenterDialog(this))
                 {
-                    var dialogResult = MessageBox.Show($"Are you sure you want to delete the following device?\n{String.Join(Environment.NewLine, selectedDeviceIds)}", "Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                    string deleteMessage;
+                    if (selectedDeviceIds.Count > 40)
+                    {
+
+                        deleteMessage = $"Are you sure you want to delete the {selectedDeviceIds.Count} devices?";
+                    }
+                    else
+                    {
+                        deleteMessage = $"Are you sure you want to delete the following devices?\n{String.Join(Environment.NewLine, selectedDeviceIds)}"; 
+                    }
+
+                    var dialogResult = MessageBox.Show(deleteMessage, "Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
                     if (dialogResult == DialogResult.Yes)
                     {
                         foreach (string deviceId in selectedDeviceIds)
@@ -477,6 +491,10 @@ namespace DeviceExplorer
                 {
                     MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
+            }
+            finally
+            {
+                deleteDeviceButton.Enabled = true;
             }
         }
         #endregion
