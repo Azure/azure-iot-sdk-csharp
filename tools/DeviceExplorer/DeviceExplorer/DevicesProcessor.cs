@@ -41,7 +41,6 @@ namespace DeviceExplorer
                     IEnumerable<Twin> page = await query.GetNextAsTwinAsync();
                     foreach (Twin twin in page)
                     {
-                        //Device device = await registryManager.GetDeviceAsync(twin.DeviceId);
                         deviceEntity = new DeviceEntity()
                         {
                             Id = twin.DeviceId,
@@ -52,15 +51,10 @@ namespace DeviceExplorer
                             State = twin.Status.ToString(),
                             SuspensionReason = twin.StatusReason,
 
-                            //ConnectionString = CreateDeviceConnectionString(device),
-                            //LastConnectionStateUpdatedTime = device.ConnectionStateUpdatedTime
                         };
 
                         deviceEntity.PrimaryThumbPrint = twin.X509Thumbprint?.PrimaryThumbprint;
                         deviceEntity.SecondaryThumbPrint = twin.X509Thumbprint?.SecondaryThumbprint;
-
-                        //deviceEntity.PrimaryKey = device.Authentication?.SymmetricKey?.PrimaryKey;
-                        //deviceEntity.SecondaryKey = device.Authentication?.SymmetricKey?.SecondaryKey;
 
                         listOfDevices.Add(deviceEntity);
                     }
