@@ -407,7 +407,6 @@ namespace DeviceExplorer
                 await updateDevicesGridView();
                 devicesListed = true;
                 listDevicesButton.Text = "Refresh";
-                listDevicesButton.Enabled = true;
             }
             catch (Exception ex)
             {
@@ -417,6 +416,10 @@ namespace DeviceExplorer
                 {
                     MessageBox.Show($"Unable to retrieve list of devices. Please verify your connection strings.\n{ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
+            }
+            finally
+            {
+                listDevicesButton.Enabled = true;
             }
         }
 
