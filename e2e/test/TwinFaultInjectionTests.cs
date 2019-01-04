@@ -199,7 +199,11 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 await deviceClient.UpdateReportedPropertiesAsync(props).ConfigureAwait(false);
 
-                var deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
+                Twin deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
+                Assert.IsNotNull(deviceTwin, $"{nameof(deviceTwin)} is null");
+                Assert.IsNotNull(deviceTwin.Properties, $"{nameof(deviceTwin)}.Properties is null");
+                Assert.IsNotNull(deviceTwin.Properties.Reported, $"{nameof(deviceTwin)}.Properties.Reported is null");
+                Assert.IsNotNull(deviceTwin.Properties.Reported[propName], $"{nameof(deviceTwin)}.Properties.Reported[{nameof(propName)}] is null");
                 Assert.AreEqual<String>(deviceTwin.Properties.Reported[propName].ToString(), propValue);
             };
 

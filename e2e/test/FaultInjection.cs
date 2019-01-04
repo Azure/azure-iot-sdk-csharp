@@ -158,7 +158,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await deviceClient.OpenAsync().ConfigureAwait(false);
                 if (transport != Client.TransportType.Http1)
                 {
-                    Assert.AreEqual(1, setConnectionStatusChangesHandlerCount);
+                    Assert.IsTrue(setConnectionStatusChangesHandlerCount >= 1); // Normally one connection but in some cases, due to network issues we might have already retried several times to connect.
                     Assert.AreEqual(ConnectionStatus.Connected, lastConnectionStatus);
                     Assert.AreEqual(ConnectionStatusChangeReason.Connection_Ok, lastConnectionStatusChangeReason);
                 }
