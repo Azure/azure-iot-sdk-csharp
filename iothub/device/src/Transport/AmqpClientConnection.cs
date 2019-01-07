@@ -316,18 +316,4 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         }
 #endif
     }
-    ////public static bool OnRemoteCertificateValidation(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
-    ////{
-    ////    if (sslPolicyErrors == SslPolicyErrors.None)
-    ////    {
-    ////        return true;
-    ////    }
-
-    ////    if (DisableServerCertificateValidation.Value && sslPolicyErrors == SslPolicyErrors.RemoteCertificateNameMismatch)
-    ////    {
-    ////        return true;
-    ////    }
-
-    ////    return false;
-    ////}
 }

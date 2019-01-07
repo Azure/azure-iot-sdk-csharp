@@ -19,6 +19,9 @@ namespace Microsoft.Azure.Devices
     using System.Threading.Tasks;
     using Microsoft.Azure.Amqp.Transport;
     using Microsoft.Azure.Devices.Common;
+#if !NETSTANDARD1_3
+    using System.Configuration;
+#endif
 
     // http://tools.ietf.org/html/rfc6455
     [SuppressMessage(FxCop.Category.Design, FxCop.Rule.TypesThatOwnDisposableFieldsShouldBeDisposable, Justification = "Uses close/abort pattern")]
@@ -60,6 +63,12 @@ namespace Microsoft.Azure.Devices
         readonly string requestPath;
         string webSocketKey;
         string host;
+
+        const string DisableServerCertificateValidationKeyName =
+            "Microsoft.Azure.Devices.DisableServerCertificateValidation";
+
+        static readonly Lazy<bool> DisableServerCertificateValidation =
+            new Lazy<bool>(InitializeDisableServerCertificateValidation);
 
         static class Headers
         {
@@ -170,7 +179,7 @@ namespace Microsoft.Azure.Devices
                 if (string.Equals(WebSocketConstants.Scheme, scheme, StringComparison.OrdinalIgnoreCase))
                 {
                     // In the real world, web-socket will happen over HTTPS
-                    var sslStream = new SslStream(this.TcpClient.GetStream(), false, IotHubConnection.OnRemoteCertificateValidation);
+                    var sslStream = new SslStream(this.TcpClient.GetStream(), false, OnRemoteCertificateValidation);
                     var x509CertificateCollection = new X509Certificate2Collection();
                     await sslStream.AuthenticateAsClientAsync(host, x509CertificateCollection, enabledSslProtocols: SslProtocols.Tls11 | SslProtocols.Tls12, checkCertificateRevocation:false).ConfigureAwait(false);
                     this.WebSocketStream = sslStream;
@@ -1015,6 +1024,40 @@ namespace Microsoft.Azure.Devices
             }
 
             return -1;
+        }
+
+        protected static bool InitializeDisableServerCertificateValidation()
+        {
+#if NETSTANDARD1_3 // No System.Configuration.ConfigurationManager in NetStandard1.3
+                    bool flag;
+                    if (!AppContext.TryGetSwitch("DisableServerCertificateValidationKeyName", out flag))
+                    {
+                        return false;
+                    }
+                    return flag;
+#else
+            string value = ""; // ConfigurationManager.AppSettings[DisableServerCertificateValidationKeyName];
+            if (!string.IsNullOrEmpty(value))
+            {
+                return bool.Parse(value);
+            }
+            return false;
+#endif
+        }
+
+        public static bool OnRemoteCertificateValidation(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
+        {
+            if (sslPolicyErrors == SslPolicyErrors.None)
+            {
+                return true;
+            }
+
+            if (DisableServerCertificateValidation.Value && sslPolicyErrors == SslPolicyErrors.RemoteCertificateNameMismatch)
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }
