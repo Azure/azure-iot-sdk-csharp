@@ -11,7 +11,7 @@ phases:
   condition: succeeded()
   queue:
     name: Hosted Ubuntu 1604
-    timeoutInMinutes: 120
+    timeoutInMinutes: 180
   steps:
   - powershell: ./vsts/manual_checkout.ps1
     displayName: 'GIT checkout'
@@ -125,7 +125,7 @@ phases:
   condition: succeeded()
   queue:
     name: Hosted VS2017
-    timeoutInMinutes: 120
+    timeoutInMinutes: 180
   steps:
   - script: |  
        call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
