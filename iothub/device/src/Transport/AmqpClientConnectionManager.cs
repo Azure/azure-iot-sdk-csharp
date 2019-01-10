@@ -45,10 +45,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
         /// <summary>
         /// Get connection by device identity
         /// </summary>
-        internal AmqpClientConnection GetClientConnection(IotHubConnectionString iotHubConnectionString, AmqpTransportSettings amqpTransportSettings)
+        internal AmqpClientConnection GetClientConnection(IotHubConnectionString iotHubConnectionString, AmqpTransportSettings amqpTransportSettings, ProductInfo productInfo)
         {
             DeviceClientEndpointIdentityFactory deviceClientEndpointIdentityFactory = new DeviceClientEndpointIdentityFactory();
-            DeviceClientEndpointIdentity deviceClientEndpointIdentity = deviceClientEndpointIdentityFactory.Create(iotHubConnectionString, amqpTransportSettings);
+            DeviceClientEndpointIdentity deviceClientEndpointIdentity = deviceClientEndpointIdentityFactory.Create(iotHubConnectionString, amqpTransportSettings, productInfo);
 
             return amqpClientConnectionPool.GetClientConnection(deviceClientEndpointIdentity);
         }

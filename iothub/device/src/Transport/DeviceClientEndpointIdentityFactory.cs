@@ -9,7 +9,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
     /// </summary>
     internal class DeviceClientEndpointIdentityFactory : IDeviceClientEndpointIdentityFactory
     {
-        public DeviceClientEndpointIdentity Create(IotHubConnectionString iotHubConnectionString, AmqpTransportSettings amqpTransportSettings)
+        public DeviceClientEndpointIdentity Create(IotHubConnectionString iotHubConnectionString, AmqpTransportSettings amqpTransportSettings, ProductInfo productInfo)
         {
             DeviceClientEndpointIdentity deviceClientEndpointIdentity;
 
@@ -21,21 +21,21 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     (iotHubConnectionString.SharedAccessSignature == null)
                    )
                 {
-                    deviceClientEndpointIdentity = new DeviceClientEndpointIdentityX509(iotHubConnectionString, amqpTransportSettings);
+                    deviceClientEndpointIdentity = new DeviceClientEndpointIdentityX509(iotHubConnectionString, amqpTransportSettings, productInfo);
                 }
                 else if (iotHubConnectionString.SharedAccessKeyName != null)
                 {
-                    deviceClientEndpointIdentity = new DeviceClientEndpointIdentityIoTHubSas(iotHubConnectionString, amqpTransportSettings);
+                    deviceClientEndpointIdentity = new DeviceClientEndpointIdentityIoTHubSas(iotHubConnectionString, amqpTransportSettings, productInfo);
                 }
                 else if (iotHubConnectionString.SharedAccessKeyName == null)
                 {
                     if (amqpTransportSettings.AmqpConnectionPoolSettings.Pooling)
                     {
-                        deviceClientEndpointIdentity = new DeviceClientEndpointIdentitySASMux(iotHubConnectionString, amqpTransportSettings);
+                        deviceClientEndpointIdentity = new DeviceClientEndpointIdentitySASMux(iotHubConnectionString, amqpTransportSettings, productInfo);
                     }
                     else
                     {
-                        deviceClientEndpointIdentity = new DeviceClientEndpointIdentitySasSingle(iotHubConnectionString, amqpTransportSettings);
+                        deviceClientEndpointIdentity = new DeviceClientEndpointIdentitySasSingle(iotHubConnectionString, amqpTransportSettings, productInfo);
                     }
                 }
                 else

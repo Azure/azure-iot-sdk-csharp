@@ -44,20 +44,23 @@ namespace Microsoft.Azure.Devices.Client.Transport
     /// </summary>
     internal abstract class AmqpClientConnection
     {
-        protected readonly AmqpVersion AmqpVersion_1_0_0 = new AmqpVersion(1, 0, 0);
+        protected readonly AmqpVersion amqpVersion_1_0_0 = new AmqpVersion(1, 0, 0);
 
-        protected AmqpTransportSettings amqpTransportSettings;
-        protected IotHubConnectionString iotHubConnectionString;
-        protected RemoveClientConnectionFromPool removeFromPoolDelegate;
+        internal DeviceClientEndpointIdentity deviceClientEndpointIdentity { get; private set; }
 
-        protected AmqpClientConnectionState amqpClientConnectionState;
+        internal IotHubConnectionString iotHubConnectionString { get; private set; }
 
-        protected TlsTransportSettings TransportSettings { get; private set; }
+        internal AmqpSettings amqpSettings { get; private set; }
+        internal AmqpTransportSettings amqpTransportSettings { get; private set; }
+        internal AmqpConnectionSettings amqpConnectionSettings { get; private set; }
 
-        protected AmqpSettings amqpSettings;
-        protected AmqpConnectionSettings amqpConnectionSettings;
-        protected TlsTransportSettings tlsTransportSettings;
-        protected AmqpConnection amqpConnection;
+        internal TlsTransportSettings tlsTransportSettings { get; private set; }
+
+        public AmqpConnection amqpConnection { get; protected set; }
+
+        internal AmqpClientConnectionState amqpClientConnectionState { get; private set; }
+
+        internal RemoveClientConnectionFromPool removeFromPoolDelegate { get; private set; }
 
         /// <summary>
         /// 
@@ -66,6 +69,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         /// <param name="removeDelegate"></param>
         protected AmqpClientConnection(DeviceClientEndpointIdentity deviceClientEndpointIdentity, RemoveClientConnectionFromPool removeDelegate)
         {
+            this.deviceClientEndpointIdentity = deviceClientEndpointIdentity;
             this.amqpTransportSettings = deviceClientEndpointIdentity.amqpTransportSettings;
             this.iotHubConnectionString = deviceClientEndpointIdentity.iotHubConnectionString;
             this.removeFromPoolDelegate = removeDelegate;
@@ -82,23 +86,15 @@ namespace Microsoft.Azure.Devices.Client.Transport
         /// <param name="timeout"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        internal abstract Task OpenAsync(TimeSpan timeout, CancellationToken cancellationToken);
+        internal abstract Task OpenAsync(TimeSpan timeout);
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="message"></param>
-        /// <param name="cancellationToken"></param>
+        /// <param name="operationTimeout"></param>
         /// <returns></returns>
-        internal abstract Task SendEventAsync(Message message, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="messages"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        internal abstract Task SendEventAsync(IEnumerable<Message> messages, CancellationToken cancellationToken);
+        internal abstract Task<Outcome> SendEventAsync(AmqpMessage message, TimeSpan timeout);
 
         /// <summary>
         /// 
@@ -106,7 +102,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         /// <param name="timeout"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        internal abstract Task<Message> ReceiveAsync(TimeSpan timeout, CancellationToken cancellationToken);
+        internal abstract Task<Message> ReceiveAsync(TimeSpan timeout);
 
         /// <summary>
         /// 
@@ -168,12 +164,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
         /// <returns></returns>
         internal abstract Task<Twin> RoundTripTwinMessage(object amqpMessage, CancellationToken cancellationToken);
 
+        internal abstract event EventHandler OnAmqpClientConnectionClosed;
+
         private AmqpSettings CreateAmqpSettings()
         {
             var amqpSettings = new AmqpSettings();
 
             var amqpTransportProvider = new AmqpTransportProvider();
-            amqpTransportProvider.Versions.Add(AmqpVersion_1_0_0);
+            amqpTransportProvider.Versions.Add(amqpVersion_1_0_0);
             amqpSettings.TransportProviders.Add(amqpTransportProvider);
 
             return amqpSettings;
@@ -185,21 +183,21 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 MaxFrameSize = AmqpConstants.DefaultMaxFrameSize,
                 ContainerId = Guid.NewGuid().ToString("N"),
-                HostName = this.iotHubConnectionString.HostName
+                HostName = iotHubConnectionString.HostName
             };
         }
 
-        private TlsTransportSettings CreateTlsTransportSettings()
+        protected TlsTransportSettings CreateTlsTransportSettings()
         {
             var tcpTransportSettings = new TcpTransportSettings()
             {
-                Host = this.iotHubConnectionString.HostName,
+                Host = iotHubConnectionString.HostName,
                 Port = AmqpConstants.DefaultSecurePort
             };
 
             var tlsTransportSettings = new TlsTransportSettings(tcpTransportSettings)
             {
-                TargetHost = this.iotHubConnectionString.HostName,
+                TargetHost = iotHubConnectionString.HostName,
                 Certificate = amqpTransportSettings.ClientCertificate,
                 CertificateValidationCallback = this.amqpTransportSettings.RemoteCertificateValidationCallback
             };
@@ -224,7 +222,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             // NETSTANDARD1_3 implementation doesn't set client certs, so we want to tell the IoT Hub to not ask for them
                             additionalQueryParams = "?iothub-no-client-cert=true";
 #endif
-                Uri websocketUri = new Uri(WebSocketConstants.Scheme + this.iotHubConnectionString.HostName + ":" + WebSocketConstants.SecurePort + WebSocketConstants.UriSuffix + additionalQueryParams);
+                Uri websocketUri = new Uri(WebSocketConstants.Scheme + iotHubConnectionString.HostName + ":" + WebSocketConstants.SecurePort + WebSocketConstants.UriSuffix + additionalQueryParams);
                 // Use Legacy WebSocket if it is running on Windows 7 or older. Windows 7/Windows 2008 R2 is version 6.1
 #if NET451
                             if (Environment.OSVersion.Version.Major < 6 || (Environment.OSVersion.Version.Major == 6 && Environment.OSVersion.Version.Minor <= 1))

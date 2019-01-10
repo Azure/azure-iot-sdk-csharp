@@ -14,10 +14,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
         internal IotHubConnectionString iotHubConnectionString { get; }
         internal AmqpTransportSettings amqpTransportSettings { get; }
 
-        internal DeviceClientEndpointIdentity(IotHubConnectionString iotHubConnectionString, AmqpTransportSettings amqpTransportSettings)
+        internal ProductInfo productInfo { get; }
+
+        internal DeviceClientEndpointIdentity(IotHubConnectionString iotHubConnectionString, AmqpTransportSettings amqpTransportSettings, ProductInfo productInfo)
         {
             this.iotHubConnectionString = iotHubConnectionString;
             this.amqpTransportSettings = amqpTransportSettings;
+            this.productInfo = productInfo;
         }
     }
 }

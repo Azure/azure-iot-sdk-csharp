@@ -12,7 +12,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
     using System.Threading.Tasks;
     using Microsoft.Azure.Amqp;
     using Microsoft.Azure.Amqp.Framing;
-    using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Azure.Devices.Client.Extensions;
     using Microsoft.Azure.Devices.Shared;
     using System.Collections.Concurrent;
@@ -23,17 +22,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
     {
         const string InputNameKey = "x-opt-input-name";
         public const string ResponseStatusName = "status";
-        //static readonly IotHubConnectionCache TcpConnectionCache = new IotHubConnectionCache();
-        //static readonly IotHubConnectionCache WsConnectionCache = new IotHubConnectionCache();
-        //readonly string deviceId;
-        //readonly string moduleId;
-        //readonly Client.FaultTolerantAmqpObject<SendingAmqpLink> faultTolerantEventSendingLink;
-        //readonly Client.FaultTolerantAmqpObject<ReceivingAmqpLink> faultTolerantDeviceBoundReceivingLink;
-        //volatile Client.FaultTolerantAmqpObject<SendingAmqpLink> faultTolerantMethodSendingLink;
-        //volatile Client.FaultTolerantAmqpObject<ReceivingAmqpLink> faultTolerantMethodReceivingLink;
-        //volatile Client.FaultTolerantAmqpObject<SendingAmqpLink> faultTolerantTwinSendingLink;
-        //volatile Client.FaultTolerantAmqpObject<ReceivingAmqpLink> faultTolerantTwinReceivingLink;
-        //volatile Client.FaultTolerantAmqpObject<ReceivingAmqpLink> faultTolerantEventReceivingLink;
+
         readonly IotHubConnectionString iotHubConnectionString;
         readonly TimeSpan openTimeout;
         readonly TimeSpan operationTimeout;
@@ -42,7 +31,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
         Func<MethodRequestInternal, Task> methodReceivedListener;
         Func<string, Message, Task> eventReceivedListener;
         Action<TwinCollection> onDesiredStatePatchListener;
-        internal delegate void OnConnectionClosedDelegate(object sender, EventArgs e);
 
         string methodConnectionCorrelationId = Guid.NewGuid().ToString("N");
         string twinConnectionCorrelationId = Guid.NewGuid().ToString("N");
@@ -89,39 +77,23 @@ namespace Microsoft.Azure.Devices.Client.Transport
             this.productInfo = context.Get<ProductInfo>();
 
             TransportType transportType = transportSettings.GetTransportType();
-            //this.deviceId = connectionString.DeviceId;
-            //this.moduleId = connectionString.ModuleId;
-
-            if (!transportSettings.AmqpConnectionPoolSettings.Pooling)
-            {
-                //this.IotHubConnection = new IotHubSingleTokenConnection(null, connectionString, transportSettings);
-            }
-            else
-            {
-                //switch (transportType)
-                //{
-                //    case TransportType.Amqp_Tcp_Only:
-                //        this.IotHubConnection = TcpConnectionCache.GetConnection(connectionString, transportSettings);
-                //        break;
-                //    case TransportType.Amqp_WebSocket_Only:
-                //        this.IotHubConnection = WsConnectionCache.GetConnection(connectionString, transportSettings);
-                //        break;
-                //    default:
-                //        throw new InvalidOperationException("Invalid Transport Type {0}".FormatInvariant(transportType));
-                //}
-            }
-
-            //this.IotHubConnection.OnConnectionClose += OnAmqpConnectionClose;
 
             this.openTimeout = transportSettings.OpenTimeout;
             this.operationTimeout = transportSettings.OperationTimeout;
             this.prefetchCount = transportSettings.PrefetchCount;
-            //this.faultTolerantEventSendingLink = new Client.FaultTolerantAmqpObject<SendingAmqpLink>(this.CreateEventSendingLinkAsync, OnAmqpLinkClose);
-            //this.faultTolerantDeviceBoundReceivingLink = new Client.FaultTolerantAmqpObject<ReceivingAmqpLink>(this.CreateDeviceBoundReceivingLinkAsync, OnAmqpLinkClose);
             this.iotHubConnectionString = connectionString;
             this.methodReceivedListener = onMethodCallback;
             this.onDesiredStatePatchListener = onDesiredStatePatchReceived;
             this.eventReceivedListener = onEventReceivedCallback;
+
+            // Get AmqpClientConnectionCache instance
+            this.amqpClientConnectionManager = AmqpClientConnectionManager.Instance;
+
+            // Get connection from AmqpClientConnectionCache
+            this.amqpClientConnection = amqpClientConnectionManager.GetClientConnection(connectionString, transportSettings, productInfo);
+
+            this.amqpClientConnection.OnAmqpClientConnectionClosed += OnAmqpConnectionClose;
+
         }
 
         private void OnAmqpConnectionClose(object sender, EventArgs e)
@@ -129,15 +101,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (Logging.IsEnabled) Logging.Info(this, $"{sender}", nameof(OnAmqpConnectionClose));
             _transportShouldRetry.TrySetResult(true);
         }
-
-        private void OnAmqpLinkClose(AmqpLink sender)
-        {
-            if (Logging.IsEnabled) Logging.Info(this, $"{sender}", nameof(OnAmqpLinkClose));
-            //this.IotHubConnection.CloseLink(sender);
-            _transportShouldRetry.TrySetResult(true);
-        }
-
-        //internal IotHubConnection IotHubConnection { get; }
 
         public override async Task OpenAsync(CancellationToken cancellationToken)
         {
@@ -147,12 +110,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                //await this.faultTolerantEventSendingLink.OpenAsync(this.openTimeout, cancellationToken).ConfigureAwait(false);
-
-                //if (string.IsNullOrWhiteSpace(this.moduleId))
-                //{
-                //    await this.faultTolerantDeviceBoundReceivingLink.OpenAsync(this.openTimeout, cancellationToken).ConfigureAwait(false);
-                //}
+                await amqpClientConnection.OpenAsync(this.openTimeout).ConfigureAwait(false);
             }
             catch (Exception exception) when (!exception.IsFatal() && !(exception is OperationCanceledException))
             {
@@ -182,10 +140,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 cancellationToken.ThrowIfCancellationRequested();
 
                 Outcome outcome;
-                using (AmqpMessage amqpMessage = message.ToAmqpMessage())
-                {
-                    outcome = await this.SendAmqpMessageAsync(amqpMessage, cancellationToken).ConfigureAwait(false);
-                }
+                outcome = await SendAmqpMessageAsync(message.ToAmqpMessage(), cancellationToken).ConfigureAwait(false);
 
                 if (outcome.DescriptorCode != Accepted.Code)
                 {
@@ -579,8 +534,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             Outcome outcome;
             try
             {
-                SendingAmqpLink eventSendingLink = await this.GetEventSendingLinkAsync(cancellationToken).ConfigureAwait(false);
-                outcome = await eventSendingLink.SendMessageAsync(amqpMessage, new ArraySegment<byte>(Guid.NewGuid().ToByteArray()), AmqpConstants.NullBinary, this.operationTimeout).ConfigureAwait(false);
+                outcome = await amqpClientConnection.SendEventAsync(amqpMessage, this.operationTimeout).ConfigureAwait(false);
             }
             catch (Exception exception) when (!exception.IsFatal() && !(exception is OperationCanceledException))
             {

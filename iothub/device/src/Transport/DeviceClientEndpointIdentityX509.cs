@@ -13,8 +13,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
     /// </summary>
     internal class DeviceClientEndpointIdentityX509 : DeviceClientEndpointIdentity
     {
-        internal DeviceClientEndpointIdentityX509(IotHubConnectionString iotHubConnectionString, AmqpTransportSettings amqpTransportSettings)
-            : base (iotHubConnectionString, amqpTransportSettings)
+        internal DeviceClientEndpointIdentityX509(IotHubConnectionString iotHubConnectionString, AmqpTransportSettings amqpTransportSettings, ProductInfo productInfo)
+            : base (iotHubConnectionString, amqpTransportSettings, productInfo)
         {
         }
     }

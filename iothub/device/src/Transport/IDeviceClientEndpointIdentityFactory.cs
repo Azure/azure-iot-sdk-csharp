@@ -13,6 +13,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
     /// </summary>
     interface IDeviceClientEndpointIdentityFactory
     {
-        DeviceClientEndpointIdentity Create(IotHubConnectionString iotHubConnectionString, AmqpTransportSettings amqpTransportSettings);
+        DeviceClientEndpointIdentity Create(IotHubConnectionString iotHubConnectionString, AmqpTransportSettings amqpTransportSettings, ProductInfo productInfo);
     }
 }

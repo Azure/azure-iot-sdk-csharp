@@ -13,9 +13,18 @@ namespace Microsoft.Azure.Devices.Client.Transport
     /// </summary>
     internal class DeviceClientEndpointIdentitySASMux : DeviceClientEndpointIdentity
     {
-        internal DeviceClientEndpointIdentitySASMux(IotHubConnectionString iotHubConnectionString, AmqpTransportSettings amqpTransportSettings)
-            : base(iotHubConnectionString, amqpTransportSettings)
+        internal DeviceClientEndpointIdentitySASMux(IotHubConnectionString iotHubConnectionString, AmqpTransportSettings amqpTransportSettings, ProductInfo productInfo)
+            : base(iotHubConnectionString, amqpTransportSettings, productInfo)
         {
+            //switch (transportType)
+            //{
+            //    case TransportType.Amqp_Tcp_Only:
+            //        break;
+            //    case TransportType.Amqp_WebSocket_Only:
+            //        break;
+            //    default:
+            //        throw new InvalidOperationException("Invalid Transport Type {0}".FormatInvariant(transportType));
+            //}
         }
     }
 }
