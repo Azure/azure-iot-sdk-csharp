@@ -106,14 +106,14 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet_MqttWs()
         {
-            try
-            {
+            //try
+            //{
                 await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesItOnNextGet(Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
-            }
-            catch (Newtonsoft.Json.JsonReaderException)
-            {
-                // [Ignore] // TODO: #682 - intermittently failing with JSON parsing error, especially on NET47, NET451.
-            }
+            //}
+            //catch (Newtonsoft.Json.JsonReaderException)
+            //{
+            //    // [Ignore] // TODO: #682 - intermittently failing with JSON parsing error, especially on NET47, NET451.
+            //}
         }
 
         [TestMethod]
