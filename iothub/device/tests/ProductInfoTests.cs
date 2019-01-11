@@ -3,6 +3,7 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -22,8 +23,17 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             var productType = NativeMethods.GetWindowsProductType();
             var productTypeString = (productType != 0) ? $" WindowsProduct:0x{productType:X8}" : string.Empty;
+            var deviceId = TelemetryMethods.GetSqmMachineId() ?? string.Empty;
 
-            return $".NET/{version} ({runtime}; {operatingSystem}{productTypeString}; {processorArchitecture})";
+            string[] agentInfoParts =
+            {
+                runtime,
+                operatingSystem + productTypeString,
+                processorArchitecture,
+                deviceId,
+            };
+
+            return $".NET/{version} ({string.Join("; ", agentInfoParts.Where(x => !string.IsNullOrEmpty(x)))})";
         }
 
         [TestMethod]
