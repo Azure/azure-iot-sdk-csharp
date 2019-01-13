@@ -1,49 +1,44 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Collections.Generic;
+
 namespace Microsoft.Azure.Devices.Client
 {
-    using Microsoft.Azure.Devices.Shared;
-    using System;
-    using System.Collections.Generic;
-
-    class DeviceClientPipelineBuilder : IDeviceClientPipelineBuilder
+    internal class DeviceClientPipelineBuilder : IDeviceClientPipelineBuilder
     {
-        readonly List<ContinuationFactory<IDelegatingHandler>> pipeline = new List<ContinuationFactory<IDelegatingHandler>>();
+        private readonly List<ContinuationFactory<IDelegatingHandler>> _pipeline = new List<ContinuationFactory<IDelegatingHandler>>();
 
         public IDeviceClientPipelineBuilder With(ContinuationFactory<IDelegatingHandler> delegatingHandlerCreator)
         {
-            this.pipeline.Add(delegatingHandlerCreator);
+            _pipeline.Add(delegatingHandlerCreator);
             return this;
         }
 
         public IDelegatingHandler Build(IPipelineContext context)
         {
-            if (this.pipeline.Count == 0)
+            if (_pipeline.Count == 0)
             {
                 throw new InvalidOperationException("Pipeline is not setup");
             }
 
-            IDelegatingHandler root = this.WrapContinuationFactory(0)(context);
-            return root;
-        }
+            IDelegatingHandler nextHandler = null;
+            IDelegatingHandler currentHandler = null;
 
-        ContinuationFactory<IDelegatingHandler> WrapContinuationFactory(int currentId)
-        {
-            ContinuationFactory<IDelegatingHandler> current = this.pipeline[currentId];
-            if (currentId == this.pipeline.Count - 1)
+            // Initializes all handlers except the last one: the transport. 
+            // That is dynamically initialized by the ProtocolRoutingDelegatingHandler.
+            for (int i = _pipeline.Count - 2; i >= 0; i--)
             {
-                return current;
+                ContinuationFactory<IDelegatingHandler> currentFactory = _pipeline[i];
+                ContinuationFactory<IDelegatingHandler> nextFactory = _pipeline[i + 1];
+                currentHandler = currentFactory(context, nextHandler);
+                currentHandler.ContinuationFactory = nextFactory;
+
+                nextHandler = currentHandler;
             }
-            ContinuationFactory<IDelegatingHandler> next = this.WrapContinuationFactory(currentId + 1);
-            ContinuationFactory<IDelegatingHandler> currentHandlerFactory = current;
-            current = ctx =>
-            {
-                IDelegatingHandler delegatingHandler = currentHandlerFactory(ctx);
-                delegatingHandler.ContinuationFactory = next;
-                return delegatingHandler;
-            };
-            return current;
+
+            return currentHandler;
         }
     }
 }

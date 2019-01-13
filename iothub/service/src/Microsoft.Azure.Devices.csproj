@@ -106,7 +106,7 @@
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
-    <PackageReference Include="Microsoft.Azure.Amqp" Version="2.3.5" />
+    <PackageReference Include="Microsoft.Azure.Amqp" Version="2.3.7" />
   </ItemGroup>
 
   <ItemGroup>

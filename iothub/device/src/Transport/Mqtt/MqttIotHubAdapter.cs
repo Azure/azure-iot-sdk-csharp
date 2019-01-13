@@ -5,11 +5,6 @@ using System.Net.Sockets;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 {
-    using System;
-    using System.Diagnostics.Contracts;
-    using System.IO;
-    using System.Collections.Concurrent;
-    using System.Threading.Tasks;
     using DotNetty.Buffers;
     using DotNetty.Codecs.Mqtt.Packets;
     using DotNetty.Common.Concurrency;
@@ -19,8 +14,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
     using Microsoft.Azure.Devices.Client.Common;
     using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Azure.Devices.Client.Extensions;
-    using System.Diagnostics;
     using Microsoft.Azure.Devices.Shared;
+    using System;
+    using System.Collections.Concurrent;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.Diagnostics.Contracts;
+    using System.Globalization;
+    using System.IO;
+    using System.Threading;
+    using System.Threading.Tasks;
 
     //
     // Note on ConfigureAwait: dotNetty is using a custom TaskScheduler that binds Tasks to the corresponding
@@ -30,45 +33,54 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
     sealed class MqttIotHubAdapter : ChannelHandlerAdapter
     {
         [Flags]
-        enum StateFlags
+        private enum StateFlags
         {
             NotConnected = 0,
             Connecting = 1,
             Connected = 2,
             Closed = 16
         }
-        const string DeviceCommandTopicFilterFormat = "devices/{0}/messages/devicebound/#";
-        const string DeviceTelemetryTopicFormat = "devices/{0}/messages/events/";
-        const string ModuleTelemetryTopicFormat = "devices/{0}/modules/{1}/messages/events/";
+        private const string DeviceCommandTopicFilterFormat = "devices/{0}/messages/devicebound/#";
+        private const string DeviceTelemetryTopicFormat = "devices/{0}/messages/events/";
+        private const string ModuleTelemetryTopicFormat = "devices/{0}/modules/{1}/messages/events/";
+        private const char SegmentSeparatorChar = '/';
+        private const char SingleSegmentWildcardChar = '+';
+        private const char MultiSegmentWildcardChar = '#';
+        private static readonly char[] WildcardChars = { MultiSegmentWildcardChar, SingleSegmentWildcardChar };
+        private const string IotHubTrueString = "true";
+        private const string SegmentSeparator = "/";
+        private const int MaxPayloadSize = 0x3ffff;
 
+        private static readonly Action<object> PingServerCallback = PingServer;
+        private static readonly Action<object> CheckConnAckTimeoutCallback = ShutdownIfNotReady;
+        private static readonly Func<IChannelHandlerContext, Exception, bool> ShutdownOnWriteErrorHandler = (ctx, ex) => { ShutdownOnError(ctx, ex); return false; };
 
-        static readonly Action<object> PingServerCallback = PingServer;
-        static readonly Action<object> CheckConnAckTimeoutCallback = ShutdownIfNotReady;
-        static readonly Func<IChannelHandlerContext, Exception, bool> ShutdownOnWriteErrorHandler = (ctx, ex) => { ShutdownOnError(ctx, ex); return false; };
+        private readonly IMqttIotHubEventHandler mqttIotHubEventHandler;
 
-        readonly IMqttIotHubEventHandler mqttIotHubEventHandler;
+        private readonly string deviceId;
+        private readonly string moduleId;
+        private readonly SimpleWorkQueue<PublishPacket> deviceBoundOneWayProcessor;
+        private readonly OrderedTwoPhaseWorkQueue<int, PublishPacket> deviceBoundTwoWayProcessor;
+        private readonly string iotHubHostName;
+        private readonly MqttTransportSettings mqttTransportSettings;
+        private readonly TimeSpan pingRequestInterval;
+        private readonly IAuthorizationProvider passwordProvider;
+        private readonly SimpleWorkQueue<PublishWorkItem> serviceBoundOneWayProcessor;
+        private readonly OrderedTwoPhaseWorkQueue<int, PublishWorkItem> serviceBoundTwoWayProcessor;
+        private readonly IWillMessage willMessage;
 
-        readonly string deviceId;
-        readonly string moduleId;
-        readonly SimpleWorkQueue<PublishPacket> deviceBoundOneWayProcessor;
-        readonly OrderedTwoPhaseWorkQueue<int, PublishPacket> deviceBoundTwoWayProcessor;
-        readonly string iotHubHostName;
-        readonly MqttTransportSettings mqttTransportSettings;
-        readonly TimeSpan pingRequestInterval;
-        readonly IAuthorizationProvider passwordProvider;
-        readonly SimpleWorkQueue<PublishWorkItem> serviceBoundOneWayProcessor;
-        readonly OrderedTwoPhaseWorkQueue<int, PublishWorkItem> serviceBoundTwoWayProcessor;
-        readonly IWillMessage willMessage;
+        private DateTime lastChannelActivityTime;
+        private StateFlags stateFlags;
 
-        DateTime lastChannelActivityTime;
-        StateFlags stateFlags;
+        private ConcurrentDictionary<int, TaskCompletionSource> subscribeCompletions = new ConcurrentDictionary<int, TaskCompletionSource>();
+        private ConcurrentDictionary<int, TaskCompletionSource> unsubscribeCompletions = new ConcurrentDictionary<int, TaskCompletionSource>();
 
-        ConcurrentDictionary<int, TaskCompletionSource> subscribeCompletions = new ConcurrentDictionary<int, TaskCompletionSource>();
-        ConcurrentDictionary<int, TaskCompletionSource> unsubscribeCompletions = new ConcurrentDictionary<int, TaskCompletionSource>();
+        private int InboundBacklogSize => this.deviceBoundOneWayProcessor.BacklogSize + this.deviceBoundTwoWayProcessor.BacklogSize;
 
-        int InboundBacklogSize => this.deviceBoundOneWayProcessor.BacklogSize + this.deviceBoundTwoWayProcessor.BacklogSize;
+        private ProductInfo productInfo;
 
-        ProductInfo productInfo;
+        private ushort _packetId = 0;
+        private SpinLock _packetIdLock = new SpinLock();
 
         public MqttIotHubAdapter(
             string deviceId,
@@ -150,7 +162,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 if (data is DisconnectPacket)
                 {
-                    await Util.WriteMessageAsync(context, data, ShutdownOnWriteErrorHandler).ConfigureAwait(true);
+                    await WriteMessageAsync(context, data, ShutdownOnWriteErrorHandler).ConfigureAwait(true);
                     return;
                 }
 
@@ -292,7 +304,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     Message message = this.willMessage.Message;
                     QualityOfService publishToServerQoS = this.mqttTransportSettings.PublishToServerQoS;
                     string topicName = this.GetTelemetryTopicName();
-                    PublishPacket will = await Util.ComposePublishPacketAsync(context, message, publishToServerQoS, topicName).ConfigureAwait(true);
+                    PublishPacket will = await ComposePublishPacketAsync(context, message, publishToServerQoS, topicName).ConfigureAwait(true);
 
                     connectPacket.WillMessage = will.Payload;
                     connectPacket.WillQualityOfService = this.willMessage.QoS;
@@ -301,7 +313,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 }
                 this.stateFlags = StateFlags.Connecting;
 
-                await Util.WriteMessageAsync(context, connectPacket, ShutdownOnWriteErrorHandler).ConfigureAwait(true);
+                await WriteMessageAsync(context, connectPacket, ShutdownOnWriteErrorHandler).ConfigureAwait(true);
                 this.lastChannelActivityTime = DateTime.UtcNow;
                 this.ScheduleKeepConnectionAlive(context);
 
@@ -376,7 +388,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 if (idleTime > self.pingRequestInterval)
                 {
                     // We've been idle for too long, send a ping!
-                    await Util.WriteMessageAsync(context, PingReqPacket.Instance, ShutdownOnWriteErrorHandler).ConfigureAwait(true);
+                    await WriteMessageAsync(context, PingReqPacket.Instance, ShutdownOnWriteErrorHandler).ConfigureAwait(true);
                 }
 
                 self.ScheduleKeepConnectionAlive(context);
@@ -448,13 +460,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (!string.IsNullOrEmpty(topicFilter))
             {
-                int packetId = Util.GetNextPacketId();
+                int packetId = GetNextPacketId();
                 var subscribePacket = new SubscribePacket(packetId, new SubscriptionRequest(topicFilter, qos));
-                this.subscribeCompletions[packetId] = new TaskCompletionSource();
+                var subscribeCompletion = new TaskCompletionSource();
+                this.subscribeCompletions[packetId] = subscribeCompletion;
 
-                await Util.WriteMessageAsync(context, subscribePacket, ShutdownOnWriteErrorHandler).ConfigureAwait(true);
+                await WriteMessageAsync(context, subscribePacket, ShutdownOnWriteErrorHandler).ConfigureAwait(true);
 
-                await this.subscribeCompletions[packetId].Task.ConfigureAwait(true);
+                await subscribeCompletion.Task.ConfigureAwait(true);
             }
 
             if (Logging.IsEnabled) Logging.Exit(this, context.Name, packetPassed, nameof(SubscribeAsync));
@@ -485,14 +498,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             
             Contract.Assert(packetPassed != null);
 
-            int packetId = Util.GetNextPacketId();
+            int packetId = GetNextPacketId();
             packetPassed.PacketId = packetId;
 
-            this.unsubscribeCompletions[packetId] = new TaskCompletionSource();
+            var unsubscribeCompletion = new TaskCompletionSource();
+            this.unsubscribeCompletions[packetId] = unsubscribeCompletion;
 
-            await Util.WriteMessageAsync(context, packetPassed, ShutdownOnWriteErrorHandler).ConfigureAwait(true);
+            await WriteMessageAsync(context, packetPassed, ShutdownOnWriteErrorHandler).ConfigureAwait(true);
 
-            await this.unsubscribeCompletions[packetId].Task.ConfigureAwait(true);
+            await unsubscribeCompletion.Task.ConfigureAwait(true);
 
             if (Logging.IsEnabled) Logging.Exit(this, context.Name, packetPassed, nameof(UnSubscribeAsync));
         }
@@ -572,21 +586,21 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 message = new Message(bodyStream, true);
 
-                Util.PopulateMessagePropertiesFromPacket(message, publish);
+                PopulateMessagePropertiesFromPacket(message, publish);
 
                 message.MqttTopicName = publish.TopicName;
             }
             catch (Exception ex) when (!ex.IsFatal())
             {
                 ShutdownOnError(context, ex);
-                return TaskConstants.Completed;
+                return TaskHelpers.CompletedTask;
             }
 
             this.mqttIotHubEventHandler.OnMessageReceived(message);
 
             if (Logging.IsEnabled) Logging.Exit(this, context.Name, publish, nameof(AcceptMessageAsync));
 
-            return TaskConstants.Completed;
+            return TaskHelpers.CompletedTask;
         }
 
         Task ProcessAckAsync(IChannelHandlerContext context, PublishWorkItem publish)
@@ -597,7 +611,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (Logging.IsEnabled) Logging.Exit(this, context.Name, publish?.Value, nameof(ProcessAckAsync));
 
-            return TaskConstants.Completed;
+            return TaskHelpers.CompletedTask;
         }
 #endregion
 
@@ -645,7 +659,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 qos = QualityOfService.AtMostOnce;
             }
 
-            PublishPacket packet = await Util.ComposePublishPacketAsync(context, message, qos, topicName).ConfigureAwait(true);
+            PublishPacket packet = await ComposePublishPacketAsync(context, message, qos, topicName).ConfigureAwait(true);
             var publishCompletion = new TaskCompletionSource();
             var workItem = new PublishWorkItem
             {
@@ -683,7 +697,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     return this.deviceBoundTwoWayProcessor.CompleteWorkAsync(context, packetId);
                 }
 
-                return TaskConstants.Completed;
+                return TaskHelpers.CompletedTask;
             }
             finally
             {
@@ -698,7 +712,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             try
             {
                 this.ResumeReadingIfNecessary(context);
-                return Util.WriteMessageAsync(context, PubAckPacket.InResponseTo(publish), ShutdownOnWriteErrorHandler);
+                return WriteMessageAsync(context, PubAckPacket.InResponseTo(publish), ShutdownOnWriteErrorHandler);
             }
             finally
             {
@@ -716,7 +730,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             try
             {
-                await Util.WriteMessageAsync(context, publish.Value, ShutdownOnWriteErrorHandler).ConfigureAwait(true);
+                await WriteMessageAsync(context, publish.Value, ShutdownOnWriteErrorHandler).ConfigureAwait(true);
                 if (publish.Value.QualityOfService == QualityOfService.AtMostOnce)
                 {
                     publish.Completion.TryComplete();
@@ -851,10 +865,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        // TODO: directly use HasFlag
         bool IsInState(StateFlags stateFlagsToCheck)
         {
-            return (this.stateFlags & stateFlagsToCheck) == stateFlagsToCheck;
+            return stateFlags.HasFlag(stateFlagsToCheck);
         }
 
         IByteBuffer GetWillMessageBody(Message message)
@@ -881,6 +894,288 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 : string.Empty;
             return topicFilter;
         }
-#endregion
+
+        private ushort GetNextPacketId()
+        {
+            bool lockTaken = false;
+            ushort ret;
+
+            _packetIdLock.Enter(ref lockTaken);
+
+            Debug.Assert(lockTaken);
+            unchecked
+            {
+                ret = ++_packetId == 0 ? ++_packetId : _packetId;
+            }
+            _packetIdLock.Exit();
+
+            return ret;
+        }
+
+        public async Task<PublishPacket> ComposePublishPacketAsync(IChannelHandlerContext context, Message message, QualityOfService qos, string topicName)
+        {
+            var packet = new PublishPacket(qos, false, false);
+            packet.TopicName = PopulateMessagePropertiesFromMessage(topicName, message);
+            if (qos > QualityOfService.AtMostOnce)
+            {
+                int packetId = GetNextPacketId();
+                switch (qos)
+                {
+                    case QualityOfService.AtLeastOnce:
+                        packetId &= 0x7FFF; // clear 15th bit
+                        break;
+                    case QualityOfService.ExactlyOnce:
+                        packetId |= 0x8000; // set 15th bit
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(qos), qos, null);
+                }
+                packet.PacketId = packetId;
+            }
+            Stream payloadStream = message.GetBodyStream();
+            long streamLength = payloadStream.Length;
+            if (streamLength > MaxPayloadSize)
+            {
+                throw new InvalidOperationException($"Message size ({streamLength} bytes) is too big to process. Maximum allowed payload size is {MaxPayloadSize}");
+            }
+
+            int length = (int)streamLength;
+            IByteBuffer buffer = context.Channel.Allocator.Buffer(length, length);
+            await buffer.WriteBytesAsync(payloadStream, length).ConfigureAwait(false);
+            Contract.Assert(buffer.ReadableBytes == length);
+
+            packet.Payload = buffer;
+            return packet;
+        }
+
+        public static void PopulateMessagePropertiesFromPacket(Message message, PublishPacket publish)
+        {
+            message.LockToken = publish.QualityOfService == QualityOfService.AtLeastOnce ? publish.PacketId.ToString() : null;
+
+            // Device bound messages could be in 2 formats, depending on whether it is going to the device, or to a module endpoint
+            // Format 1 - going to the device - devices/{deviceId}/messages/devicebound/{properties}/
+            // Format 2 - going to module endpoint - devices/{deviceId}/modules/{moduleId/endpoints/{endpointId}/{properties}/
+            // So choose the right format to deserialize properties. 
+            string[] topicSegments = publish.TopicName.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+            string propertiesSegment = topicSegments.Length > 6 ? topicSegments[6] : topicSegments[4];
+
+            Dictionary<string, string> properties = UrlEncodedDictionarySerializer.Deserialize(propertiesSegment, 0);
+            foreach (KeyValuePair<string, string> property in properties)
+            {
+                string propertyName;
+                if (ToSystemPropertiesMap.TryGetValue(property.Key, out propertyName))
+                {
+                    message.SystemProperties[propertyName] = ConvertToSystemProperty(property);
+                }
+                else
+                {
+                    message.Properties[property.Key] = property.Value;
+                }
+            }
+        }
+
+
+
+        static class IotHubWirePropertyNames
+        {
+            public const string AbsoluteExpiryTime = "$.exp";
+            public const string CorrelationId = "$.cid";
+            public const string MessageId = "$.mid";
+            public const string To = "$.to";
+            public const string UserId = "$.uid";
+            public const string OutputName = "$.on";
+            public const string MessageSchema = "$.schema";
+            public const string CreationTimeUtc = "$.ctime";
+            public const string ContentType = "$.ct";
+            public const string ContentEncoding = "$.ce";
+            public const string ConnectionDeviceId = "$.cdid";
+            public const string ConnectionModuleId = "$.cmid";
+            public const string MqttDiagIdKey = "$.diagid";
+            public const string MqttDiagCorrelationContextKey = "$.diagctx";
+        }
+
+        static readonly Dictionary<string, string> ToSystemPropertiesMap = new Dictionary<string, string>
+        {
+            {IotHubWirePropertyNames.AbsoluteExpiryTime, MessageSystemPropertyNames.ExpiryTimeUtc},
+            {IotHubWirePropertyNames.CorrelationId, MessageSystemPropertyNames.CorrelationId},
+            {IotHubWirePropertyNames.MessageId, MessageSystemPropertyNames.MessageId},
+            {IotHubWirePropertyNames.To, MessageSystemPropertyNames.To},
+            {IotHubWirePropertyNames.UserId, MessageSystemPropertyNames.UserId},
+            {IotHubWirePropertyNames.MessageSchema, MessageSystemPropertyNames.MessageSchema},
+            {IotHubWirePropertyNames.CreationTimeUtc, MessageSystemPropertyNames.CreationTimeUtc},
+            {IotHubWirePropertyNames.ContentType, MessageSystemPropertyNames.ContentType},
+            {IotHubWirePropertyNames.ContentEncoding, MessageSystemPropertyNames.ContentEncoding},
+            {MessageSystemPropertyNames.Operation, MessageSystemPropertyNames.Operation},
+            {MessageSystemPropertyNames.Ack, MessageSystemPropertyNames.Ack},
+            {IotHubWirePropertyNames.ConnectionDeviceId, MessageSystemPropertyNames.ConnectionDeviceId },
+            {IotHubWirePropertyNames.ConnectionModuleId, MessageSystemPropertyNames.ConnectionModuleId },
+            {IotHubWirePropertyNames.MqttDiagIdKey, MessageSystemPropertyNames.DiagId},
+            {IotHubWirePropertyNames.MqttDiagCorrelationContextKey, MessageSystemPropertyNames.DiagCorrelationContext}
+        };
+
+        static readonly Dictionary<string, string> FromSystemPropertiesMap = new Dictionary<string, string>
+        {
+            {MessageSystemPropertyNames.ExpiryTimeUtc, IotHubWirePropertyNames.AbsoluteExpiryTime},
+            {MessageSystemPropertyNames.CorrelationId, IotHubWirePropertyNames.CorrelationId},
+            {MessageSystemPropertyNames.MessageId, IotHubWirePropertyNames.MessageId},
+            {MessageSystemPropertyNames.To, IotHubWirePropertyNames.To},
+            {MessageSystemPropertyNames.UserId, IotHubWirePropertyNames.UserId},
+            {MessageSystemPropertyNames.MessageSchema, IotHubWirePropertyNames.MessageSchema},
+            {MessageSystemPropertyNames.CreationTimeUtc, IotHubWirePropertyNames.CreationTimeUtc},
+            {MessageSystemPropertyNames.ContentType, IotHubWirePropertyNames.ContentType},
+            {MessageSystemPropertyNames.ContentEncoding, IotHubWirePropertyNames.ContentEncoding},
+            {MessageSystemPropertyNames.Operation, MessageSystemPropertyNames.Operation},
+            {MessageSystemPropertyNames.Ack, MessageSystemPropertyNames.Ack},
+            {MessageSystemPropertyNames.OutputName, IotHubWirePropertyNames.OutputName },
+            {MessageSystemPropertyNames.DiagId, IotHubWirePropertyNames.MqttDiagIdKey},
+            {MessageSystemPropertyNames.DiagCorrelationContext, IotHubWirePropertyNames.MqttDiagCorrelationContextKey}
+        };
+
+        static string ConvertFromSystemProperties(object systemProperty)
+        {
+            if (systemProperty is string)
+            {
+                return (string)systemProperty;
+            }
+            if (systemProperty is DateTime)
+            {
+                return ((DateTime)systemProperty).ToString("o", CultureInfo.InvariantCulture);
+            }
+            return systemProperty?.ToString();
+        }
+
+        static object ConvertToSystemProperty(KeyValuePair<string, string> property)
+        {
+            if (string.IsNullOrEmpty(property.Value))
+            {
+                return property.Value;
+            }
+            if (property.Key == IotHubWirePropertyNames.AbsoluteExpiryTime ||
+                property.Key == IotHubWirePropertyNames.CreationTimeUtc)
+            {
+                return DateTime.ParseExact(property.Value, "o", CultureInfo.InvariantCulture);
+            }
+            if (property.Key == MessageSystemPropertyNames.Ack)
+            {
+                return Utils.ConvertDeliveryAckTypeFromString(property.Value);
+            }
+            return property.Value;
+        }
+
+        public static bool CheckTopicFilterMatch(string topicName, string topicFilter)
+        {
+            int topicFilterIndex = 0;
+            int topicNameIndex = 0;
+            while (topicNameIndex < topicName.Length && topicFilterIndex < topicFilter.Length)
+            {
+                int wildcardIndex = topicFilter.IndexOfAny(WildcardChars, topicFilterIndex);
+                if (wildcardIndex == -1)
+                {
+                    int matchLength = Math.Max(topicFilter.Length - topicFilterIndex, topicName.Length - topicNameIndex);
+                    return string.Compare(topicFilter, topicFilterIndex, topicName, topicNameIndex, matchLength, StringComparison.Ordinal) == 0;
+                }
+                else
+                {
+                    if (topicFilter[wildcardIndex] == MultiSegmentWildcardChar)
+                    {
+                        if (wildcardIndex == 0) // special case -- any topic name would match
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            int matchLength = wildcardIndex - topicFilterIndex - 1;
+                            if (string.Compare(topicFilter, topicFilterIndex, topicName, topicNameIndex, matchLength, StringComparison.Ordinal) == 0
+                                && (topicName.Length == topicNameIndex + matchLength || (topicName.Length > topicNameIndex + matchLength && topicName[topicNameIndex + matchLength] == SegmentSeparatorChar)))
+                            {
+                                // paths match up till wildcard and either it is parent topic in hierarchy (one level above # specified) or any child topic under a matching parent topic
+                                return true;
+                            }
+                            else
+                            {
+                                return false;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // single segment wildcard
+                        int matchLength = wildcardIndex - topicFilterIndex;
+                        if (matchLength > 0 && string.Compare(topicFilter, topicFilterIndex, topicName, topicNameIndex, matchLength, StringComparison.Ordinal) != 0)
+                        {
+                            return false;
+                        }
+                        topicNameIndex = topicName.IndexOf(SegmentSeparatorChar, topicNameIndex + matchLength);
+                        topicFilterIndex = wildcardIndex + 1;
+                        if (topicNameIndex == -1)
+                        {
+                            // there's no more segments following matched one
+                            return topicFilterIndex == topicFilter.Length;
+                        }
+                    }
+                }
+            }
+
+            return topicFilterIndex == topicFilter.Length && topicNameIndex == topicName.Length;
+        }
+
+        public static Message CompleteMessageFromPacket(Message message, PublishPacket packet, MqttTransportSettings mqttTransportSettings)
+        {
+            message.MessageId = Guid.NewGuid().ToString("N");
+            if (packet.RetainRequested)
+            {
+                message.Properties[mqttTransportSettings.RetainPropertyName] = IotHubTrueString;
+            }
+            if (packet.Duplicate)
+            {
+                message.Properties[mqttTransportSettings.DupPropertyName] = IotHubTrueString;
+            }
+
+            return message;
+        }
+
+
+        public static async Task WriteMessageAsync(IChannelHandlerContext context, object message, Func<IChannelHandlerContext, Exception, bool> exceptionHandler)
+        {
+            try
+            {
+                await context.WriteAndFlushAsync(message).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                if (!exceptionHandler(context, ex))
+                {
+                    throw;
+                }
+            }
+        }
+               
+        static string PopulateMessagePropertiesFromMessage(string topicName, Message message)
+        {
+            var systemProperties = new Dictionary<string, string>();
+            foreach (KeyValuePair<string, object> property in message.SystemProperties)
+            {
+                string propertyName;
+                if (FromSystemPropertiesMap.TryGetValue(property.Key, out propertyName))
+                {
+                    systemProperties[propertyName] = ConvertFromSystemProperties(property.Value);
+                }
+            }
+            string properties = UrlEncodedDictionarySerializer.Serialize(new ReadOnlyMergeDictionary<string, string>(systemProperties, message.Properties));
+
+            string msg;
+            if (properties != string.Empty)
+            {
+                msg = topicName.EndsWith(SegmentSeparator, StringComparison.Ordinal) ? topicName + properties + SegmentSeparator : topicName + SegmentSeparator + properties;
+            }
+            else
+            {
+                msg = topicName;
+            }
+
+            return msg;
+        }
+
+        #endregion
     }
 }

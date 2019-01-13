@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information
+
+using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.Client.Test.Transport
@@ -19,7 +22,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         [TestMethod]
         public async Task AmqpTransportHandlerOpenAsyncTokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => CreateFromConnectionString().OpenAsync(true, token)).ConfigureAwait(false);
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().OpenAsync(token)).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -93,11 +96,9 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             try
             {
                 await asyncMethod(tokenSource.Token).ConfigureAwait(false);
-            }
-            catch (SocketException)
-            {
                 Assert.Fail("Fail to skip execution of this operation using cancellation token.");
             }
+            catch (OperationCanceledException) {}
         }
 
         AmqpTransportHandler CreateFromConnectionString()
@@ -105,9 +106,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             return new AmqpTransportHandler(
                 new PipelineContext(), 
                 IotHubConnectionStringExtensions.Parse(DumpyConnectionString), 
-                new AmqpTransportSettings(TransportType.Amqp_Tcp_Only), 
-                (o, ea) => { }, 
-                (o, ea) => { return TaskHelpers.CompletedTask; });
+                new AmqpTransportSettings(TransportType.Amqp_Tcp_Only));
         }
     }
 }

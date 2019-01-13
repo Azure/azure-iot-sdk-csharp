@@ -4,7 +4,7 @@
     <OutputType>Exe</OutputType>
     <TargetFrameworks>netcoreapp2.1;net47</TargetFrameworks>
     <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">netcoreapp2.1</TargetFrameworks>
-    <RootDir>$(MSBuildProjectDirectory)\..\..\..</RootDir>
+    <RootDir>$(MSBuildProjectDirectory)\..\..</RootDir>
   </PropertyGroup>
 
   <PropertyGroup>

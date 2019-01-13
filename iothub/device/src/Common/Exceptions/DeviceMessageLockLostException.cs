@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Runtime.Serialization;
+using Microsoft.Azure.Devices.Client.Extensions;
+
 namespace Microsoft.Azure.Devices.Client.Exceptions
 {
-    using System;
-    using System.Runtime.Serialization;
-    using Microsoft.Azure.Devices.Client.Extensions;
-
     /// <summary>
     /// The exception that is thrown when an attempt to communicate with a device fails because the lock token was lost (if the connection is lost and regained for example). This timeout has the same effect as if the message was abandonned.
     /// </summary>
@@ -16,12 +16,20 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
     [Serializable]
     public class DeviceMessageLockLostException : IotHubException
     {
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DeviceMessageLockLostException"/> class.
+        /// </summary>
+        public DeviceMessageLockLostException()
+        {
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DeviceMessageLockLostException"/> class with the message string containing the device identifier that could not be found.
         /// </summary>
-        /// <param name="message">A description of the error. The content of message is intended to be understood by humans. The caller of this constructor is required to ensure that this string has been localized for the current system culture.</param>
+        /// <param name="message">A description of the error. The content of message is intended to be understood by humans.</param>
         public DeviceMessageLockLostException(string message)
-            : base(message)
+            : base(message, isTransient: false)
         {
         }
 
@@ -31,7 +39,16 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         /// <param name="deviceId">Device identifier.</param>
         /// <param name="messageId">Message identifier.</param>
         public DeviceMessageLockLostException(string deviceId, Guid messageId)
-            : base("Message {0} lock was lost for Device {1}".FormatInvariant(messageId, deviceId))
+            : base("Message {0} lock was lost for Device {1}".FormatInvariant(messageId, deviceId), isTransient: false)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DeviceMessageLockLostException"/> class with the message string containing the device identifier that could not be found.
+        /// </summary>
+        /// <param name="message">A description of the error. The content of message is intended to be understood by humans.</param>
+        /// <param name="innerException">The exception that is the cause of the current exception</param>
+        public DeviceMessageLockLostException(string message, Exception innerException) : base(message, innerException)
         {
         }
 

@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private static readonly ConsoleEventListener _listener = new ConsoleEventListener(new string[]
             {
             "DotNetty-Default",
-            "Microsoft-Azure-"
+            "Microsoft-Azure-",
             });
 
         public static ConsoleEventListener StartEventListener()

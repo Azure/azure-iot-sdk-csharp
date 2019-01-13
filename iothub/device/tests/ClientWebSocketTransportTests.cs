@@ -24,6 +24,8 @@ namespace Microsoft.Azure.Devices.Client.Test
         static readonly Action<TransportAsyncCallbackArgs> onReadOperationComplete = OnReadOperationComplete;
         static readonly Action<TransportAsyncCallbackArgs> onWriteOperationComplete = OnWriteOperationComplete;
         static ClientWebSocketTransport clientWebSocketTransport;
+        private static Task s_serverTask;
+
 #if NET451
         static LegacyClientWebSocketTransport legacyClientWebSocketTransport;
 #endif
@@ -37,7 +39,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             listener = new HttpListener();
             listener.Prefixes.Add("http://+:" + Port + WebSocketConstants.UriSuffix + "/");
             listener.Start();
-            RunWebSocketServer().Fork();
+            s_serverTask = RunWebSocketServer();
         }
 
         [ClassCleanup()]

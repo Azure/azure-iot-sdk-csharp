@@ -828,6 +828,7 @@ namespace Microsoft.Azure.Devices
 
                 var exportImportDevice = new ExportImportDevice();
                 exportImportDevice.Id = twin.DeviceId;
+                exportImportDevice.ModuleId = twin.ModuleId;
                 exportImportDevice.ImportMode = importMode;
                 exportImportDevice.TwinETag = importMode == ImportMode.UpdateTwinIfMatchETag ? twin.ETag : null;
                 exportImportDevice.Tags = twin.Tags;

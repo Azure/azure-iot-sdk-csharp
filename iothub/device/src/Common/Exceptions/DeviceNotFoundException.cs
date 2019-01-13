@@ -14,6 +14,13 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
     public sealed class DeviceNotFoundException : IotHubException
     {
         /// <summary>
+        /// Initializes a new instance of the <see cref="DeviceNotFoundException"/> class.
+        /// </summary>
+        public DeviceNotFoundException()
+        {
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="DeviceNotFoundException"/> class with the message string containing the device identifier that could not be found.
         /// </summary>
         /// <param name="deviceId">Device identifier that already exists.</param>
@@ -39,7 +46,10 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         /// <param name="iotHubName">Name of the IOT Hub instance.</param>
         /// <param name="trackingId">Tracking identifier that is used for telemetry purposes.</param>
         public DeviceNotFoundException(string deviceId, string iotHubName, string trackingId)
-            : base(!string.IsNullOrEmpty(iotHubName) ? "Device {0} at IotHub {1} not registered".FormatInvariant(deviceId, iotHubName) : "Device {0} not registered".FormatInvariant(deviceId), trackingId)
+            : base(!string.IsNullOrEmpty(iotHubName) ? "Device {0} at IotHub {1} not registered".FormatInvariant(deviceId, iotHubName) : "Device {0} not registered".FormatInvariant(deviceId), 
+                   null,
+                   isTransient: false,
+                   trackingId: trackingId)
         {
         }
         /// <summary>
@@ -48,7 +58,7 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
         /// <param name="message">A description of the error. The content of message is intended to be understood by humans. The caller of this constructor is required to ensure that this string has been localized for the current system culture.</param>
         /// <param name="innerException">The exception that is the cause of the current exception</param>
         public DeviceNotFoundException(string message, Exception innerException)
-            : base(message, innerException)
+            : base(message, innerException, isTransient: false)
         {
         }
 

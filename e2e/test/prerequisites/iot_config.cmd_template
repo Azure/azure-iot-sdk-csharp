@@ -56,6 +56,9 @@ set DPS_INDIVIDUALX509_PFX_CERTIFICATE=
 @REM This certificate should have CN=xdevice1
 set DPS_GROUPX509_PFX_CERTIFICATE=
 
+@REM X509 PFX Certificate password
+set DPS_X509_PFX_CERTIFICATE_PASSWORD=
+
 @REM X509 P7B Certificate chain.
 @REM This is the chain ending up in the root that has been verified by the Provisioning service.
 @REM The CN=xdevice1 certificate should be signed by an issuer within this chain.

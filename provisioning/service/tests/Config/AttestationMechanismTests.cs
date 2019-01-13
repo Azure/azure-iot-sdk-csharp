@@ -198,13 +198,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             Assert.IsTrue(attestationMechanism.GetAttestation() is X509Attestation);
         }
 
-        /* SRS_ATTESTATION_MECHANISM_21_017: [The constructor shall throw ProvisioningServiceClientException if the provided 
-                                            AttestationMechanismType is not `TPM` or `x509`.] */
         [TestMethod]
-        public void AttestationMechanismConstructorJSONThrowsOnNoneType()
+        public void AttestationMechanismConstructorJSONSucceedOnNoneType()
         {
             // arrange
-            string invalidJsonMissingEtag =
+            string typeNoneJson =
             "{\n" +
             "   \"type\":\"none\",\n" +
             "   \"tpm\":{\n" +
@@ -213,7 +211,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             "}";
 
             // act - assert
-            TestAssert.Throws<ProvisioningServiceClientException>(() => JsonConvert.DeserializeObject<AttestationMechanism>(invalidJsonMissingEtag));
+            Assert.IsNotNull(JsonConvert.DeserializeObject<AttestationMechanism>(typeNoneJson));
         }
 
 

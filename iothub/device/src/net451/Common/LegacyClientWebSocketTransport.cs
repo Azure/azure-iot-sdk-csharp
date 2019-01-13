@@ -223,7 +223,7 @@ namespace Microsoft.Azure.Devices.Client
                 var webSocketState = this.webSocket.State;
                 if (webSocketState != IotHubClientWebSocket.WebSocketState.Closed && webSocketState != IotHubClientWebSocket.WebSocketState.Aborted)
                 {
-                    this.CloseInternalAsync().Fork();
+                    this.CloseInternalAsync();
                 }
                 return true;
             }

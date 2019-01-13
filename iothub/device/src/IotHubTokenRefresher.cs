@@ -58,7 +58,8 @@ namespace Microsoft.Azure.Devices.Client
                     this.connectionString.AmqpEndpoint.AbsoluteUri,
                     AccessRightsStringArray,
                     timeout).ConfigureAwait(false);
-                this.SendCbsTokenLoopAsync(expiresAtUtc, timeout).Fork();
+
+                this.SendCbsTokenLoopAsync(expiresAtUtc, timeout);
             }
             finally
             {

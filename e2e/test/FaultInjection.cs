@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.Azure.Devices.Client;
+using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections;
@@ -46,7 +47,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public const int WaitForDisconnectMilliseconds = 3 * DefaultDelayInSec * 1000;
         public const int ShortRetryInMilliSec = (int)(DefaultDurationInSec / 2.0 * 1000);
 
-        public const int RecoveryTimeMilliseconds = 30 * 1000;
+        public const int RecoveryTimeMilliseconds = 5 * 60 * 1000;
 
         private static TestLogging s_log = TestLogging.GetInstance();
 
@@ -64,6 +65,13 @@ namespace Microsoft.Azure.Devices.E2ETests
                     ["AzIoTHub_FaultOperationDurationInSecs"] = durationInSecs.ToString(CultureInfo.InvariantCulture)
                 }
             };
+        }
+
+        public static bool FaultShouldDisconnect(string faultType)
+        {
+            return
+                (faultType != FaultType_Throttle) &&
+                (faultType != FaultType_QuotaExceeded);
         }
 
         // Fault timings:
@@ -84,7 +92,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     transport == Client.TransportType.Mqtt_Tcp_Only ||
                     transport == Client.TransportType.Mqtt_WebSocket_Only)
                 {
-                    deviceClient.OperationTimeoutInMilliseconds = (uint)delayInSec * 2000;
+                    deviceClient.OperationTimeoutInMilliseconds = (uint)delayInSec * 1000;
                 }
 
                 await deviceClient.SendEventAsync(
@@ -94,9 +102,19 @@ namespace Microsoft.Azure.Devices.E2ETests
                         delayInSec,
                         durationInSec)).ConfigureAwait(false);
             }
+            catch (IotHubCommunicationException ex)
+            {
+                s_log.WriteLine($"{nameof(ActivateFaultInjection)}: {ex}");
+
+                // For quota injection, the fault is only seen for the original HTTP request.
+                if (transport == Client.TransportType.Http1) throw;
+            }
             catch (TimeoutException ex)
             {
                 s_log.WriteLine($"{nameof(ActivateFaultInjection)}: {ex}");
+                
+                // For quota injection, the fault is only seen for the original HTTP request.
+                if (transport == Client.TransportType.Http1) throw;
             }
             finally
             {
@@ -127,10 +145,10 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             deviceClient.SetConnectionStatusChangesHandler((status, statusChangeReason) =>
             {
-                s_log.WriteLine($"{nameof(FaultInjection)}.{nameof(ConnectionStatusChangesHandler)}: status={status} statusChangeReason={statusChangeReason} count={setConnectionStatusChangesHandlerCount}");
+                setConnectionStatusChangesHandlerCount++;
                 lastConnectionStatus = status;
                 lastConnectionStatusChangeReason = statusChangeReason;
-                setConnectionStatusChangesHandlerCount++;
+                s_log.WriteLine($"{nameof(FaultInjection)}.{nameof(ConnectionStatusChangesHandler)}: status={status} statusChangeReason={statusChangeReason} count={setConnectionStatusChangesHandlerCount}");
             });
 
             var watch = new Stopwatch();
@@ -140,7 +158,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await deviceClient.OpenAsync().ConfigureAwait(false);
                 if (transport != Client.TransportType.Http1)
                 {
-                    Assert.AreEqual(1, setConnectionStatusChangesHandlerCount);
+                    Assert.IsTrue(setConnectionStatusChangesHandlerCount >= 1); // Normally one connection but in some cases, due to network issues we might have already retried several times to connect.
                     Assert.AreEqual(ConnectionStatus.Connected, lastConnectionStatus);
                     Assert.AreEqual(ConnectionStatusChangeReason.Connection_Ok, lastConnectionStatusChangeReason);
                 }
@@ -149,24 +167,38 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 s_log.WriteLine($">>> {nameof(FaultInjection)} Testing baseline");
                 await testOperation(deviceClient, testDevice).ConfigureAwait(false);
-                
+
+                watch.Start();
+                s_log.WriteLine($">>> {nameof(FaultInjection)} Testing fault handling");
                 await ActivateFaultInjection(transport, faultType, reason, delayInSec, durationInSec, deviceClient).ConfigureAwait(false);
 
-                s_log.WriteLine($">>> {nameof(FaultInjection)} Testing fault handling");
-                watch.Start();
-                s_log.WriteLine($"{nameof(FaultInjection)}: Waiting for fault injection to be active: {FaultInjection.WaitForDisconnectMilliseconds}ms");
-                await Task.Delay(FaultInjection.WaitForDisconnectMilliseconds).ConfigureAwait(false);
+                int delay = FaultInjection.WaitForDisconnectMilliseconds - (int)watch.ElapsedMilliseconds;
+                if (delay < 0) delay = 0;
+
+                s_log.WriteLine($"{nameof(FaultInjection)}: Waiting for fault injection to be active: {delay}ms");
+                await Task.Delay(delay).ConfigureAwait(false);
 
                 await testOperation(deviceClient, testDevice).ConfigureAwait(false);
 
                 await deviceClient.CloseAsync().ConfigureAwait(false);
 
-                if (transport == Client.TransportType.Mqtt ||
-                    transport == Client.TransportType.Mqtt_Tcp_Only ||
-                    transport == Client.TransportType.Mqtt_WebSocket_Only)
+                if (transport != Client.TransportType.Http1)
                 {
-                    // Our fault injection is only terminating the connection for MQTT. (HTTP is not connection-oriented, AMQP is not actually terminating the TCP layer.)
-                    Assert.IsTrue(setConnectionStatusChangesHandlerCount >= 4);
+                    if (FaultShouldDisconnect(faultType))
+                    {
+                        // 4 is the minimum notification count: connect, fault, reconnect, disable.
+                        // There are cases where the retry must be timed out (i.e. very likely for MQTT where otherwise 
+                        // we would attempt to send the fault injection forever.)
+                        Assert.IsTrue(setConnectionStatusChangesHandlerCount >= 4); 
+                    }
+                    else
+                    {
+                        // 2 is the minimum notification count: connect, disable.
+                        // We will monitor the test environment real network stability and switch to >=2 if necessary to 
+                        // account for real network issues.
+                        Assert.IsTrue(setConnectionStatusChangesHandlerCount == 2); 
+                    }
+
                     Assert.AreEqual(ConnectionStatus.Disabled, lastConnectionStatus);
                     Assert.AreEqual(ConnectionStatusChangeReason.Client_Close, lastConnectionStatusChangeReason);
                 }

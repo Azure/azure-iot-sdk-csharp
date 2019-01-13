@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 namespace Microsoft.Azure.Devices.Test
 {
     [TestClass]
+    [TestCategory("Unit")]
     public class SerializationTests
     {
         [TestMethod]

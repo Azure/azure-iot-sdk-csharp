@@ -53,6 +53,12 @@ namespace Microsoft.Azure.Devices.Client
             Events
         };
 
+        public EventHandler OnConnectionClose
+        {
+            get;
+            set;
+        }
+
         protected IotHubConnection(string hostName, int port, AmqpTransportSettings amqpTransportSettings)
         {
             this.hostName = hostName;
@@ -64,7 +70,7 @@ namespace Microsoft.Azure.Devices.Client
 
         protected AmqpTransportSettings AmqpTransportSettings { get; }
 
-        public abstract Task CloseAsync();
+        public abstract Task CloseAsync(CancellationToken cancellationToken);
 
         public abstract void SafeClose(Exception exception);
 
@@ -319,33 +325,35 @@ namespace Microsoft.Azure.Devices.Client
                     HostName = this.hostName
                 };
 
-                var amqpConnection = new AmqpConnection(transport, amqpSettings, amqpConnectionSettings);
+                var connection = new AmqpConnection(transport, amqpSettings, amqpConnectionSettings);
+                connection.Closed += Connection_Closed;
+                
                 try
                 {
                     token.ThrowIfCancellationRequested();
-                    await amqpConnection.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+                    await connection.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
 
                     var sessionSettings = new AmqpSessionSettings()
                     {
                         Properties = new Fields()
                     };
 
-                    AmqpSession amqpSession = amqpConnection.CreateSession(sessionSettings);
+                    AmqpSession amqpSession = connection.CreateSession(sessionSettings);
                     token.ThrowIfCancellationRequested();
                     await amqpSession.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
 
                     // This adds itself to amqpConnection.Extensions
-                    var cbsLink = new AmqpCbsLink(amqpConnection);
+                    var cbsLink = new AmqpCbsLink(connection);
                     return amqpSession;
                 }
                 catch (Exception ex) when (!ex.IsFatal())
                 {
-                    if (amqpConnection.TerminalException != null)
+                    if (connection.TerminalException != null)
                     {
-                        throw AmqpClientHelper.ToIotHubClientContract(amqpConnection.TerminalException);
+                        throw AmqpClientHelper.ToIotHubClientContract(connection.TerminalException);
                     }
 
-                    amqpConnection.SafeClose(ex);
+                    connection.SafeClose(ex);
                     throw;
                 }
             }
@@ -353,6 +361,11 @@ namespace Microsoft.Azure.Devices.Client
             {
                 if (Logging.IsEnabled) Logging.Exit(this, timeout, token, $"{nameof(IotHubConnection)}.{nameof(CreateSessionAsync)}");
             }
+        }
+
+        private void Connection_Closed(object sender, EventArgs e)
+        {
+            OnConnectionClose(sender, e);
         }
 
         protected virtual void OnCreateSession()

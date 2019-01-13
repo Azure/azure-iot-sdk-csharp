@@ -22,7 +22,10 @@ namespace Microsoft.Azure.Devices.E2ETests
     // Common code for EventHubListener.
     public partial class EventHubTestListener
     {
-        private const int MaximumWaitTimeInMinutes = 1;
+        private const int MaximumWaitTimeInMinutes = 5;
+        private const int LookbackTimeInMinutes = 5;
+        private const int OperationTimeoutInSeconds = 10;
+
         private static TestLogging s_log = TestLogging.GetInstance();
 
         public static Task<EventHubTestListener> CreateListener(string deviceName)
@@ -37,7 +40,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             sw.Start();
             while (!isReceived && sw.Elapsed.TotalMinutes < 1)
             {
-                var events = await _receiver.ReceiveAsync(int.MaxValue, TimeSpan.FromSeconds(5)).ConfigureAwait(false);
+                IEnumerable<EventData> events = await _receiver.ReceiveAsync(int.MaxValue, TimeSpan.FromSeconds(OperationTimeoutInSeconds)).ConfigureAwait(false);
                 isReceived = VerifyTestMessage(events, deviceId, payload, p1Value);
             }
 

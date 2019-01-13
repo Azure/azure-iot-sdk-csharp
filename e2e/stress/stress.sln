@@ -1,60 +1,42 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27004.2009
-MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MemoryLeakTest", "MemoryLeakTest\MemoryLeakTest.csproj", "{0576AAD0-D1D7-4975-96AB-85265FC94B37}"
+VisualStudioVersion = 15.0.26124.0
+MinimumVisualStudioVersion = 15.0.26124.0
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MemoryLeakTest", "MemoryLeakTest", "{51F20A25-22FD-4613-B4EE-A82E90E2425E}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "inc_int", "inc_int", "{C833E874-33B7-4F0F-BC0B-8964D6A6DE40}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Azure.Devices.Shared", "..\shared\Microsoft.Azure.Devices.Shared\Microsoft.Azure.Devices.Shared.csproj", "{835230FC-8D03-4CD1-8845-5A9D1B0B837D}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Shared.NetStandard", "..\shared\Microsoft.Azure.Devices.Shared.NetStandard\Microsoft.Azure.Devices.Shared.NetStandard.csproj", "{91DFB837-D8A3-4F54-AE0D-45C95ACD0C2A}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Azure.Devices.Client", "..\device\Microsoft.Azure.Devices.Client\Microsoft.Azure.Devices.Client.csproj", "{836B1FB6-70F0-4C7E-AA35-519C2F83AA81}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Client.NetStandard", "..\device\Microsoft.Azure.Devices.Client.NetStandard\Microsoft.Azure.Devices.Client.NetStandard.csproj", "{8988AB0E-0FDD-4BD4-A65F-6479BB2C5AF8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MemoryLeakTest", "MemoryLeakTest\MemoryLeakTest.csproj", "{97445B7F-D060-4CDE-9B35-93746A526C02}"
 EndProject
 Global
-	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		..\device\Microsoft.Azure.Devices.Client.Shared\Microsoft.Azure.Devices.Client.Shared.projitems*{836b1fb6-70f0-4c7e-aa35-519c2f83aa81}*SharedItemsImports = 4
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
 		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{0576AAD0-D1D7-4975-96AB-85265FC94B37}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0576AAD0-D1D7-4975-96AB-85265FC94B37}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0576AAD0-D1D7-4975-96AB-85265FC94B37}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0576AAD0-D1D7-4975-96AB-85265FC94B37}.Release|Any CPU.Build.0 = Release|Any CPU
-		{835230FC-8D03-4CD1-8845-5A9D1B0B837D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{835230FC-8D03-4CD1-8845-5A9D1B0B837D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{835230FC-8D03-4CD1-8845-5A9D1B0B837D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{835230FC-8D03-4CD1-8845-5A9D1B0B837D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{91DFB837-D8A3-4F54-AE0D-45C95ACD0C2A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{91DFB837-D8A3-4F54-AE0D-45C95ACD0C2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{91DFB837-D8A3-4F54-AE0D-45C95ACD0C2A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{91DFB837-D8A3-4F54-AE0D-45C95ACD0C2A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{836B1FB6-70F0-4C7E-AA35-519C2F83AA81}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{836B1FB6-70F0-4C7E-AA35-519C2F83AA81}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{836B1FB6-70F0-4C7E-AA35-519C2F83AA81}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{836B1FB6-70F0-4C7E-AA35-519C2F83AA81}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8988AB0E-0FDD-4BD4-A65F-6479BB2C5AF8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8988AB0E-0FDD-4BD4-A65F-6479BB2C5AF8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8988AB0E-0FDD-4BD4-A65F-6479BB2C5AF8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8988AB0E-0FDD-4BD4-A65F-6479BB2C5AF8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{97445B7F-D060-4CDE-9B35-93746A526C02}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{97445B7F-D060-4CDE-9B35-93746A526C02}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{97445B7F-D060-4CDE-9B35-93746A526C02}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{97445B7F-D060-4CDE-9B35-93746A526C02}.Debug|x64.Build.0 = Debug|Any CPU
+		{97445B7F-D060-4CDE-9B35-93746A526C02}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{97445B7F-D060-4CDE-9B35-93746A526C02}.Debug|x86.Build.0 = Debug|Any CPU
+		{97445B7F-D060-4CDE-9B35-93746A526C02}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{97445B7F-D060-4CDE-9B35-93746A526C02}.Release|Any CPU.Build.0 = Release|Any CPU
+		{97445B7F-D060-4CDE-9B35-93746A526C02}.Release|x64.ActiveCfg = Release|Any CPU
+		{97445B7F-D060-4CDE-9B35-93746A526C02}.Release|x64.Build.0 = Release|Any CPU
+		{97445B7F-D060-4CDE-9B35-93746A526C02}.Release|x86.ActiveCfg = Release|Any CPU
+		{97445B7F-D060-4CDE-9B35-93746A526C02}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{835230FC-8D03-4CD1-8845-5A9D1B0B837D} = {C833E874-33B7-4F0F-BC0B-8964D6A6DE40}
-		{91DFB837-D8A3-4F54-AE0D-45C95ACD0C2A} = {C833E874-33B7-4F0F-BC0B-8964D6A6DE40}
-		{836B1FB6-70F0-4C7E-AA35-519C2F83AA81} = {C833E874-33B7-4F0F-BC0B-8964D6A6DE40}
-		{8988AB0E-0FDD-4BD4-A65F-6479BB2C5AF8} = {C833E874-33B7-4F0F-BC0B-8964D6A6DE40}
+		{97445B7F-D060-4CDE-9B35-93746A526C02} = {51F20A25-22FD-4613-B4EE-A82E90E2425E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {FC59EADC-49B8-4697-A719-F326D87C3623}
+		SolutionGuid = {440C0CD3-F230-47A6-880C-82AE4451DC42}
 	EndGlobalSection
 EndGlobal

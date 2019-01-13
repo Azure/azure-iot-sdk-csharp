@@ -8,7 +8,6 @@ using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Diagnostics.Tracing;
-using System.Runtime.InteropServices;
 using System.Security.Authentication;
 using System.Threading.Tasks;
 
@@ -40,17 +39,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
 #if NET47 || NET451
                 Assert.IsInstanceOfType(exception.InnerException.InnerException.InnerException, typeof(AuthenticationException));
-#elif NETCOREAPP2_0
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    // WinHttpException (0x80072F8F): A security error occurred
-                    Assert.AreEqual(unchecked((int)0x80072F8F), exception.InnerException.InnerException.HResult);
-                }
-                else
-                {
-                    // CURLE_SSL_CACERT (60): Peer certificate cannot be authenticated with known CA certificates.
-                    Assert.AreEqual(60, exception.InnerException.InnerException.HResult);
-                }
 #else
                 Assert.IsInstanceOfType(exception.InnerException.InnerException, typeof(AuthenticationException));
 #endif
@@ -98,17 +86,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
 #if NET47 || NET451
                 Assert.IsInstanceOfType(exception.InnerException.InnerException.InnerException, typeof(AuthenticationException));
-#elif NETCOREAPP2_0
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    // WinHttpException (0x80072F8F): A security error occurred
-                    Assert.AreEqual(unchecked((int)0x80072F8F), exception.InnerException.InnerException.HResult);
-                }
-                else
-                {
-                    // CURLE_SSL_CACERT (60): Peer certificate cannot be authenticated with known CA certificates.
-                    Assert.AreEqual(60, exception.InnerException.InnerException.HResult);
-                }
 #else
                 Assert.IsInstanceOfType(exception.InnerException.InnerException, typeof(AuthenticationException));
 #endif
@@ -123,19 +100,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 var exception = await Assert.ThrowsExceptionAsync<ProvisioningTransportException>(
                     () => TestInvalidServiceCertificate(transport)).ConfigureAwait(false);
 
-#if !NETCOREAPP2_0
                 Assert.IsInstanceOfType(exception.InnerException.InnerException.InnerException, typeof(AuthenticationException));
-#else
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    // WinHttpException (0x80072F8F): A security error occurred
-                    Assert.AreEqual(unchecked((int)0x80072F8F), exception.InnerException.InnerException.InnerException.HResult);
-                }
-                else
-                {
-                    Assert.IsInstanceOfType(exception.InnerException.InnerException, typeof(AuthenticationException));
-                }
-#endif
             }
         }
 
@@ -147,19 +112,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 var exception = await Assert.ThrowsExceptionAsync<ProvisioningTransportException>(
                     () => TestInvalidServiceCertificate(transport)).ConfigureAwait(false);
 
-#if !NETCOREAPP2_0
                 Assert.IsInstanceOfType(exception.InnerException.InnerException.InnerException, typeof(AuthenticationException));
-#else
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    // WinHttpException (0x80072F8F): A security error occurred
-                    Assert.AreEqual(unchecked((int)0x80072F8F), exception.InnerException.InnerException.InnerException.HResult);
-                }
-                else
-                {
-                    Assert.IsInstanceOfType(exception.InnerException.InnerException, typeof(AuthenticationException));
-                }
-#endif
             }
         }
 

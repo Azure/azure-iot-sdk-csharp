@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
     public class TestDevice
     {
-        private const int DelayAfterDeviceCreationSeconds = 3;
+        private const int DelayAfterDeviceCreationSeconds = 5;
         private static Dictionary<string, TestDevice> s_deviceCache = new Dictionary<string, TestDevice>();
         private static TestLogging s_log = TestLogging.GetInstance();
         private static SemaphoreSlim s_semaphore = new SemaphoreSlim(1, 1);

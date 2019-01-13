@@ -214,17 +214,12 @@ namespace Microsoft.Azure.Devices.Client
                         throw;
                     }
 
-                    throw Fx.Exception.AsError(new CallbackException(CommonResources.AsyncCallbackThrewException, e));
+                    throw Fx.Exception.AsError(new InvalidOperationException(CommonResources.AsyncCallbackThrewException, e));
                 }
 #pragma warning restore 1634
             }
 
             return true;
-        }
-
-        protected bool TryComplete(bool didcompleteSynchronously)
-        {
-            return this.TryComplete(didcompleteSynchronously, null);
         }
 
         protected void Complete(bool didCompleteSynchronously)

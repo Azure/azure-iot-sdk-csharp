@@ -195,64 +195,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             };
         }
 
-        private Message ComposeC2DTestMessage(out string payload, out string messageId, out string p1Value)
-        {
-            payload = Guid.NewGuid().ToString();
-            messageId = Guid.NewGuid().ToString();
-            p1Value = Guid.NewGuid().ToString();
-
-            _log.WriteLine($"{nameof(ComposeC2DTestMessage)}: payload='{payload}' messageId='{messageId}' p1Value='{p1Value}'");
-
-            return new Message(Encoding.UTF8.GetBytes(payload))
-            {
-                MessageId = messageId,
-                Properties = { ["property1"] = p1Value }
-            };
-        }
-
-        private async Task VerifyReceivedC2DMessage(Client.TransportType transport, DeviceClient dc, string payload, string p1Value)
-        {
-            var wait = true;
-
-            Stopwatch sw = new Stopwatch();
-            sw.Start();
-            while (wait)
-            {
-                Client.Message receivedMessage;
-
-                if (transport == Client.TransportType.Http1)
-                {
-                    // Long-polling is not supported in http
-                    receivedMessage = await dc.ReceiveAsync().ConfigureAwait(false);
-                }
-                else
-                {
-                    receivedMessage = await dc.ReceiveAsync(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
-                }
-
-                if (receivedMessage != null)
-                {
-                    string messageData = Encoding.ASCII.GetString(receivedMessage.GetBytes());
-                    Assert.AreEqual(messageData, payload);
-
-                    Assert.AreEqual(receivedMessage.Properties.Count, 1);
-                    var prop = receivedMessage.Properties.Single();
-                    Assert.AreEqual(prop.Key, "property1");
-                    Assert.AreEqual(prop.Value, p1Value);
-
-                    await dc.CompleteAsync(receivedMessage).ConfigureAwait(false);
-                    wait = false;
-                }
-
-                if (sw.Elapsed.TotalSeconds > 5)
-                {
-                    throw new TimeoutException("Test is running longer than expected.");
-                }
-            }
-
-            sw.Stop();
-        }
-
         private async Task ReceiveMessageRecovery(
             TestDeviceType type,
             Client.TransportType transport,
@@ -270,7 +212,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                         transport == Client.TransportType.Mqtt_WebSocket_Only)
                     {
                         // Dummy ReceiveAsync to ensure mqtt subscription registration before SendAsync() is called on service client.
-                        await deviceClient.ReceiveAsync(TimeSpan.FromSeconds(2)).ConfigureAwait(false);
+                        await deviceClient.ReceiveAsync(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
                     }
                 };
 
@@ -279,8 +221,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                     string payload, messageId, p1Value;
                     await serviceClient.SendAsync(
                         testDevice.Id,
-                        ComposeC2DTestMessage(out payload, out messageId, out p1Value)).ConfigureAwait(false);
-                    await VerifyReceivedC2DMessage(transport, deviceClient, payload, p1Value).ConfigureAwait(false);
+                        MessageReceiveE2ETests.ComposeC2DTestMessage(out payload, out messageId, out p1Value)).ConfigureAwait(false);
+                    await MessageReceiveE2ETests.VerifyReceivedC2DMessageAsync(transport, deviceClient, payload, p1Value).ConfigureAwait(false);
                 };
 
                 Func<Task> cleanupOperation = () =>

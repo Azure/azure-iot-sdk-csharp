@@ -89,23 +89,21 @@ namespace Microsoft.Azure.Devices.Client.Test
             var ms = new MemoryStream(Encoding.UTF8.GetBytes("Hello, World!"));
             var msg = new Message(ms);
             msg.GetBytes();
-
+            msg.ResetBody();
             var stream = msg.GetBodyStream();
 
             Assert.AreSame(ms, stream);
         }
 
         [TestMethod]
-        public void CallingGetBytesTwiceTest()
+        public void Message_CallingGetBytesTwiceWithoutReset_Fails()
         {
             const string MsgContents = "Hello, World!";
 
             var msg = new Message(Encoding.UTF8.GetBytes(MsgContents));
             msg.GetBytes();
 
-            byte[] msgBytes = msg.GetBytes();
-
-            Assert.AreEqual(Encoding.UTF8.GetString(msgBytes), MsgContents);
+            Assert.ThrowsException<InvalidOperationException>(() => { byte[] msgBytes = msg.GetBytes(); });
         }
 
         [TestMethod]
