@@ -212,7 +212,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     await iotClient.OpenAsync().ConfigureAwait(false);
                     _log.WriteLine("DeviceClient SendEventAsync.");
                     await iotClient.SendEventAsync(
-                        new Client.Message(Encoding.UTF8.GetBytes("TestMessage"))).ConfigureAwait(false);
+                        new Client.Message(Encoding.UTF8.GetBytes("TestMessage")), cts.Token).ConfigureAwait(false);
                     _log.WriteLine("DeviceClient CloseAsync.");
                     await iotClient.CloseAsync().ConfigureAwait(false);
                 }
