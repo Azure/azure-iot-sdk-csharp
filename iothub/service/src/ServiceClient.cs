@@ -195,5 +195,42 @@ namespace Microsoft.Azure.Devices
         /// <param name="message">The message containing the notification</param>
         /// <returns></returns>
         public abstract Task SendAsync(string deviceId, string moduleId, Message message);
+		
+        /// <summary>
+        /// Initiates a new cloud-to-device stream.
+        /// </summary>
+        /// <param name="deviceId">Device Id</param>
+        /// <param name="deviceStreamRequest">Configuration needed for initiating a cloud-to-device stream.</param>
+        /// <returns>The result of the cloud-to-device stream request, or null of the request itself could not be completed.</returns>
+        public abstract Task<DeviceStreamResponse> CreateStreamAsync(string deviceId, DeviceStreamRequest deviceStreamRequest);
+
+        /// <summary>
+        /// Initiates a new cloud-to-device stream.
+        /// </summary>
+        /// <param name="deviceId">Device Id</param>
+        /// <param name="moduleId"></param>
+        /// <param name="deviceStreamRequest">Configuration needed for initiating a cloud-to-device stream.</param>
+        /// <returns>The result of the cloud-to-device stream request, or null of the request itself could not be completed.</returns>
+        public abstract Task<DeviceStreamResponse> CreateStreamAsync(string deviceId, string moduleId, DeviceStreamRequest deviceStreamRequest);
+
+        /// <summary>
+        /// Initiates a new cloud-to-device stream.
+        /// </summary>
+        /// <param name="deviceId">Device Id</param>
+        /// <param name="moduleId"></param>
+        /// <param name="deviceStreamRequest">Configuration needed for initiating a cloud-to-device stream.</param>
+        /// <param name="cancellationToken">Token used for controlling the termination of the asynchronous call.</param>
+        /// <returns>The result of the cloud-to-device stream request, or null of the request itself could not be completed.</returns>
+        public abstract Task<DeviceStreamResponse> CreateStreamAsync(string deviceId, string moduleId, DeviceStreamRequest deviceStreamRequest, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Initiates a new cloud-to-device stream.
+        /// </summary>
+        /// <param name="deviceId">Device Id</param>
+        /// <param name="deviceStreamRequest">Configuration needed for initiating a cloud-to-device stream.</param>
+        /// <param name="cancellationToken">Token used for controlling the termination of the asynchronous call.</param>
+        /// <returns>The result of the cloud-to-device stream request, or null of the request itself could not be completed.</returns>
+        public abstract Task<DeviceStreamResponse> CreateStreamAsync(string deviceId, DeviceStreamRequest deviceStreamRequest, CancellationToken cancellationToken);
+
     }
 }
