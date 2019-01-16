@@ -1,0 +1,37 @@
+{
+    "tool": "Credential Scanner",
+    "suppressions": [
+        {
+            "placeholder": "dGVzdFN0cmluZzE=",
+            "_justification": "Dummy secret used in unit tests, it is fake"
+        },
+        {
+            "placeholder": "dGVzdFN0cmluZzI=",
+            "_justification": "Dummy secret used in unit tests, it is fake"
+        },
+        {
+            "placeholder": "dGVzdFN0cmluZzM=",
+            "_justification": "Dummy secret used in unit tests, it is fake"
+        },
+        {
+            "placeholder": "dGVzdFN0cmluZzQ=",
+            "_justification": "Dummy secret used in unit tests, it is fake"
+        },
+        {
+            "placeholder": "dGVzdFN0cmluZzU=",
+            "_justification": "Dummy secret used in unit tests, it is fake"
+        },
+        {
+            "placeholder": "dGVzdFN0cmluZzY=",
+            "_justification": "Dummy secret used in unit tests, it is fake"
+        },
+        {
+            "placeholder": "notsafe",
+            "_justification": "Dummy secret used in unit tests, it is fake"
+        },
+        {
+            "file": ["\\device\\external_modules\\dotnetty\\shared\\dotnetty.com.pfx", "\\device\\external_modules\\dotnetty\\shared\\contoso.com.pfx "],
+            "_justification": "The PFX certificate is required for building the UWP Sample"
+        }
+    ]
+}

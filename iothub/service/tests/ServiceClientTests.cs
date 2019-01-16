@@ -65,7 +65,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                 ).Throws(new DeviceNotFoundException("device-id"));
 
             // Instantiate AmqpServiceClient with Mock IHttpClientHelper
-            var authMethod = new ServiceAuthenticationWithSharedAccessPolicyKey("test", "CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=");
+            var authMethod = new ServiceAuthenticationWithSharedAccessPolicyKey("test", "dGVzdFN0cmluZzE=");
             var builder = IotHubConnectionStringBuilder.Create("acme.azure-devices.net", authMethod);
             var serviceClient = new AmqpServiceClient(builder.ToIotHubConnectionString(), false, restOpMock.Object);
 
@@ -91,7 +91,7 @@ namespace Microsoft.Azure.Devices.Api.Test
                 ).ReturnsAsync(expectedResult);
 
             // Instantiate AmqpServiceClient with Mock IHttpClientHelper
-            var authMethod = new ServiceAuthenticationWithSharedAccessPolicyKey("test", "CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=");
+            var authMethod = new ServiceAuthenticationWithSharedAccessPolicyKey("test", "dGVzdFN0cmluZzE=");
             var builder = IotHubConnectionStringBuilder.Create("acme.azure-devices.net", authMethod);
             var serviceClient = new AmqpServiceClient(builder.ToIotHubConnectionString(), false, restOpMock.Object);
 
