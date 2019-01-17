@@ -84,6 +84,12 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             uint oldTimeout = deviceClient.OperationTimeoutInMilliseconds;
 
+            // TODO# IcM 100533650: Modify Throttling Fault Injection Tests until service fixes the issue
+            if (faultType.Equals(FaultInjection.FaultType_Throttle))
+            {
+                deviceClient.SetRetryPolicy(new NoRetry());
+            }
+
             try
             {
                 // For MQTT FaultInjection will terminate the connection prior to a PUBACK
