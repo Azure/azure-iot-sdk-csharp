@@ -138,28 +138,44 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        // TODO# IcM 100533650: Modify Throttling Fault Injection Tests until service fixes the issue
         [TestMethod]
         public async Task Message_ThrottledConnectionRecovery_Amqp()
         {
-            await SendMessageRecovery(
-                TestDeviceType.Sasl,
-                Client.TransportType.Amqp_Tcp_Only,
-                FaultInjection.FaultType_Throttle,
-                FaultInjection.FaultCloseReason_Boom,
-                FaultInjection.DefaultDelayInSec,
-                FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
+            try
+            {
+                await SendMessageRecovery(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Amqp_Tcp_Only,
+                    FaultInjection.FaultType_Throttle,
+                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjection.DefaultDelayInSec,
+                    FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
+            }
+            catch (IotHubException ex)
+            {
+                Assert.IsInstanceOfType(ex, typeof(IotHubThrottledException));
+            }
         }
 
+        // TODO# IcM 100533650: Modify Throttling Fault Injection Tests until service fixes the issue
         [TestMethod]
         public async Task Message_ThrottledConnectionRecovery_AmqpWs()
         {
-            await SendMessageRecovery(
-                TestDeviceType.Sasl,
-                Client.TransportType.Amqp_WebSocket_Only,
-                FaultInjection.FaultType_Throttle,
-                FaultInjection.FaultCloseReason_Boom,
-                FaultInjection.DefaultDelayInSec,
-                FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
+            try
+            {
+                await SendMessageRecovery(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Amqp_WebSocket_Only,
+                    FaultInjection.FaultType_Throttle,
+                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjection.DefaultDelayInSec,
+                    FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
+            }
+            catch (IotHubException ex)
+            {
+                Assert.IsInstanceOfType(ex, typeof(IotHubThrottledException));
+            }
         }
 
         [TestMethod]
