@@ -5,8 +5,11 @@ namespace Microsoft.Azure.Devices
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
+    using System.Linq;
     using System.Net;
     using System.Net.Http;
+    using System.Net.Http.Headers;
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Azure.Amqp;
@@ -22,6 +25,8 @@ namespace Microsoft.Azure.Devices
         const string StatisticsUriFormat = "/statistics/service?" + ClientApiVersionHelper.ApiVersionQueryString;
         const string PurgeMessageQueueFormat = "/devices/{0}/commands?" + ClientApiVersionHelper.ApiVersionQueryString;
         const string DeviceMethodUriFormat = "/twins/{0}/methods?" + ClientApiVersionHelper.ApiVersionQueryString;
+        const string DeviceStreamUriFormat = "/twins/{0}/streams/{1}?" + ClientApiVersionHelper.ApiVersionQueryString;
+        const string ModuleStreamUriFormat = "/twins/{0}/modules/{1}/streams/{2}?" + ClientApiVersionHelper.ApiVersionQueryString;
         const string ModuleMethodUriFormat = "/twins/{0}/modules/{1}/methods?" + ClientApiVersionHelper.ApiVersionQueryString;
 
         readonly IotHubConnection iotHubConnection;
@@ -280,6 +285,112 @@ namespace Microsoft.Azure.Devices
                 throw AmqpErrorMapper.GetExceptionFromOutcome(outcome);
             }
         }
+		
+        /// <summary>
+        /// Initiates a new cloud-to-device stream.
+        /// </summary>
+        /// <param name="deviceId">Device Id</param>
+        /// <param name="deviceStreamRequest">Configuration needed for initiating a cloud-to-device stream.</param>
+        /// <returns>The result of the cloud-to-device stream request, or null of the request itself could not be completed.</returns>
+        public override Task<DeviceStreamResponse> CreateStreamAsync(string deviceId, DeviceStreamRequest deviceStreamRequest)
+        {
+            return this.CreateStreamAsync(deviceId, deviceStreamRequest, CancellationToken.None);
+        }
+
+        /// <summary>
+        /// Initiates a new cloud-to-device stream.
+        /// </summary>
+        /// <param name="deviceId">Device Id</param>
+        /// <param name="deviceStreamRequest">Configuration needed for initiating a cloud-to-device stream.</param>
+        /// <param name="cancellationToken">Token used for controlling the termination of the asynchronous call.</param>
+        /// <returns>The result of the cloud-to-device stream request, or null of the request itself could not be completed.</returns>
+        public override Task<DeviceStreamResponse> CreateStreamAsync(string deviceId, DeviceStreamRequest deviceStreamRequest, CancellationToken cancellationToken)
+        {
+            return this.CreateStreamAsync(GetDeviceStreamUri(deviceId, deviceStreamRequest.StreamName), deviceStreamRequest, cancellationToken);
+        }
+
+        /// <summary>
+        /// Initiates a new cloud-to-device stream.
+        /// </summary>
+        /// <param name="deviceId">Device Id</param>
+        /// <param name="moduleId">Module ID</param>
+        /// <param name="deviceStreamRequest">Configuration needed for initiating a cloud-to-device stream.</param>
+        /// <returns>The result of the cloud-to-device stream request, or null of the request itself could not be completed.</returns>
+        public override Task<DeviceStreamResponse> CreateStreamAsync(string deviceId, string moduleId, DeviceStreamRequest deviceStreamRequest)
+        {
+            return this.CreateStreamAsync(GetModuleStreamUri(deviceId, moduleId, deviceStreamRequest.StreamName), deviceStreamRequest, CancellationToken.None);
+        }
+
+        /// <summary>
+        /// Initiates a new cloud-to-device stream.
+        /// </summary>
+        /// <param name="deviceId">Device Id</param>
+        /// <param name="moduleId">Module Id</param>
+        /// <param name="deviceStreamRequest">Configuration needed for initiating a cloud-to-device stream.</param>
+        /// <param name="cancellationToken">Token used for controlling the termination of the asynchronous call.</param>
+        /// <returns>The result of the cloud-to-device stream request, or null of the request itself could not be completed.</returns>
+        public override Task<DeviceStreamResponse> CreateStreamAsync(string deviceId, string moduleId, DeviceStreamRequest deviceStreamRequest, CancellationToken cancellationToken)
+        {
+            return this.CreateStreamAsync(GetModuleStreamUri(deviceId, moduleId, deviceStreamRequest.StreamName), deviceStreamRequest, cancellationToken);
+        }
+
+        internal async Task<DeviceStreamResponse> CreateStreamAsync(
+            Uri uri,
+            DeviceStreamRequest deviceStreamRequest,
+            CancellationToken cancellationToken)
+        {
+            DeviceStreamResponse result;
+
+            TimeSpan timeout = GetInitiateStreamOperationTimeout(deviceStreamRequest);
+
+            var customHeaders = new Dictionary<string, string>();
+
+            if (deviceStreamRequest.ConnectionTimeout > TimeSpan.Zero)
+            {
+                customHeaders["iothub-streaming-connect-timeout-in-seconds"] = deviceStreamRequest.ConnectionTimeout.TotalSeconds.ToString(CultureInfo.InvariantCulture);
+            }
+
+            if (deviceStreamRequest.ResponseTimeout > TimeSpan.Zero)
+            {
+                customHeaders["iothub-streaming-response-timeout-in-seconds"] = deviceStreamRequest.ResponseTimeout.TotalSeconds.ToString(CultureInfo.InvariantCulture);
+            }
+
+            var httpResponse = await this.httpClientHelper.PostAsync<byte[], HttpResponseMessage>(
+                 uri,
+                 null as byte[],
+                 timeout,
+                 null,
+                 customHeaders,
+                 cancellationToken).ConfigureAwait(false);
+
+            if (httpResponse.StatusCode != HttpStatusCode.OK &&
+                httpResponse.StatusCode != HttpStatusCode.Accepted)
+            {
+                // Log error when we have a solution for logging.
+                result = null;
+            }
+            else
+            {
+                bool isAccepted = bool.Parse(httpResponse.Headers.GetValues("iothub-streaming-is-accepted").Single());
+                string proxyUri = null;
+                string authToken = null;
+
+                if (isAccepted)
+                {
+                    proxyUri = httpResponse.Headers.GetValues("iothub-streaming-url").Single();
+                    authToken = httpResponse.Headers.GetValues("iothub-streaming-auth-token").Single();
+                }
+
+                result = new DeviceStreamResponse(
+                    deviceStreamRequest.StreamName,
+                    isAccepted,
+                    authToken,
+                    proxyUri != null ? new Uri(proxyUri) : null
+                );
+            }
+
+            return result;
+        }
 
         async Task<SendingAmqpLink> GetSendingLinkAsync()
         {
@@ -315,9 +426,19 @@ namespace Microsoft.Azure.Devices
             // For InvokeDeviceMethod, we need to take into account the timeouts specified
             // for the Device to connect and send a response. We also need to take into account
             // the transmission time for the request send/receive
+            return GetOperationTimeout(cloudToDeviceMethod.ConnectionTimeout, cloudToDeviceMethod.ResponseTimeout);
+        }
+
+        private static TimeSpan GetInitiateStreamOperationTimeout(DeviceStreamRequest initiation)
+        {
+            return GetOperationTimeout(initiation.ConnectionTimeout, initiation.ResponseTimeout);
+        }
+
+        private static TimeSpan GetOperationTimeout(TimeSpan connectionTimeout, TimeSpan responseTimeout)
+        {
             TimeSpan timeout = TimeSpan.FromSeconds(15); // For wire time
-            timeout += TimeSpan.FromSeconds(cloudToDeviceMethod.ConnectionTimeoutInSeconds ?? 0);
-            timeout += TimeSpan.FromSeconds(cloudToDeviceMethod.ResponseTimeoutInSeconds ?? 0);
+            timeout += connectionTimeout;
+            timeout += responseTimeout;
             return timeout <= DefaultOperationTimeout ? DefaultOperationTimeout : timeout;
         }
 
@@ -331,6 +452,12 @@ namespace Microsoft.Azure.Devices
             return new Uri(PurgeMessageQueueFormat.FormatInvariant(deviceId), UriKind.Relative);
         }
 
+        static Uri GetDeviceStreamUri(string deviceId, string streamName)
+        {
+            deviceId = WebUtility.UrlEncode(deviceId);
+            return new Uri(DeviceStreamUriFormat.FormatInvariant(deviceId, streamName), UriKind.Relative);
+        }
+
         static Uri GetDeviceMethodUri(string deviceId)
         {
             deviceId = WebUtility.UrlEncode(deviceId);
@@ -342,6 +469,12 @@ namespace Microsoft.Azure.Devices
             deviceId = WebUtility.UrlEncode(deviceId);
             moduleId = WebUtility.UrlEncode(moduleId);
             return new Uri(ModuleMethodUriFormat.FormatInvariant(deviceId, moduleId), UriKind.Relative);
+        }
+
+        static Uri GetModuleStreamUri(string deviceId, string moduleId, string streamName)
+        {
+            deviceId = WebUtility.UrlEncode(deviceId);
+            return new Uri(ModuleStreamUriFormat.FormatInvariant(deviceId, moduleId, streamName), UriKind.Relative);
         }
     }
 }

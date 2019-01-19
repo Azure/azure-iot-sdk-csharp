@@ -42,7 +42,8 @@ namespace Microsoft.Azure.Devices.Client
         {
             TelemetryEvents,
             Methods,
-            Twin
+            Twin,
+            Streams
         };
 
         public enum ReceivingLinkType
@@ -50,7 +51,8 @@ namespace Microsoft.Azure.Devices.Client
             C2DMessages,
             Methods,
             Twin,
-            Events
+            Events,
+            Streams
         };
 
         public EventHandler OnConnectionClose
@@ -111,6 +113,7 @@ namespace Microsoft.Azure.Devices.Client
                         break;
                     case SendingLinkType.Methods:
                     case SendingLinkType.Twin:
+                    case SendingLinkType.Streams:
                         linkSettings.SndSettleMode = (byte)SenderSettleMode.Settled;
                         linkSettings.RcvSettleMode = (byte)ReceiverSettleMode.First;
                         break;
@@ -120,6 +123,10 @@ namespace Microsoft.Azure.Devices.Client
                 if (linkType == SendingLinkType.Methods)
                 {
                     SetLinkSettingsCommonPropertiesForMethod(linkSettings, corrId);
+                }
+                else if (linkType == SendingLinkType.Streams)
+                {
+                    SetLinkSettingsCommonPropertiesForStream(linkSettings, corrId);
                 }
                 else if (linkType == SendingLinkType.Twin)
                 {
@@ -188,6 +195,7 @@ namespace Microsoft.Azure.Devices.Client
                     // At most once
                     case ReceivingLinkType.Methods:
                     case ReceivingLinkType.Twin:
+                    case ReceivingLinkType.Streams:
                         linkSettings.SndSettleMode = (byte)SenderSettleMode.Settled;
                         linkSettings.RcvSettleMode = (byte)ReceiverSettleMode.First;
                         break;
@@ -201,6 +209,10 @@ namespace Microsoft.Azure.Devices.Client
                 else if (linkType == ReceivingLinkType.Twin)
                 {
                     SetLinkSettingsCommonPropertiesForTwin(linkSettings, corrId);
+                }
+                else if (linkType == ReceivingLinkType.Streams)
+                {
+                    SetLinkSettingsCommonPropertiesForStream(linkSettings, corrId);
                 }
 
                 var link = new ReceivingAmqpLink(linkSettings);
@@ -501,6 +513,13 @@ namespace Microsoft.Azure.Devices.Client
         {
             linkSettings.AddProperty(IotHubAmqpProperty.ApiVersion, ClientApiVersionHelper.ApiVersionString);
             linkSettings.AddProperty(IotHubAmqpProperty.ChannelCorrelationId, "methods:" + corrId);
+            return linkSettings;
+        }
+
+        protected static AmqpLinkSettings SetLinkSettingsCommonPropertiesForStream(AmqpLinkSettings linkSettings, string corrId)
+        {
+            linkSettings.AddProperty(IotHubAmqpProperty.ApiVersion, ClientApiVersionHelper.ApiVersionString);
+            linkSettings.AddProperty(IotHubAmqpProperty.ChannelCorrelationId, "streams:" + corrId);
             return linkSettings;
         }
 
