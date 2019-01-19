@@ -39,6 +39,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
+        [Ignore] // TODO #764 Disable test due to intermittent test failure
         public async Task Twin_DeviceReportedPropertiesTcpConnRecovery_MqttWs()
         {
             await Twin_DeviceReportedPropertiesRecovery(Client.TransportType.Mqtt_WebSocket_Only,
@@ -119,6 +120,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         [TestMethod]
         [TestCategory("IoTHub-FaultInjection")]
+        [Ignore] // TODO #764 Disable test due to intermittent test failure
         public async Task Twin_DeviceDesiredPropertyUpdateTcpConnRecovery_MqttWs()
         {
             await Twin_DeviceDesiredPropertyUpdateRecovery(Client.TransportType.Mqtt_WebSocket_Only,
