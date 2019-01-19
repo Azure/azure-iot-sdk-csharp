@@ -118,6 +118,33 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return ExecuteWithErrorHandlingAsync(() => base.SendMethodResponseAsync(methodResponse, cancellationToken));
         }
 
+        #region Device Streaming
+        public override Task EnableStreamsAsync(CancellationToken cancellationToken)
+        {
+            return ExecuteWithErrorHandlingAsync(() => base.EnableStreamsAsync(cancellationToken));
+        }
+
+        public override Task DisableStreamsAsync(CancellationToken cancellationToken)
+        {
+            return ExecuteWithErrorHandlingAsync(() => base.DisableStreamsAsync(cancellationToken));
+        }
+
+        public override Task<DeviceStreamRequest> WaitForDeviceStreamRequestAsync(CancellationToken cancellationToken)
+        {
+            return ExecuteWithErrorHandlingAsync(() => base.WaitForDeviceStreamRequestAsync(cancellationToken));
+        }
+
+        public override Task AcceptDeviceStreamRequestAsync(DeviceStreamRequest request, CancellationToken cancellationToken)
+        {
+            return ExecuteWithErrorHandlingAsync(() => base.AcceptDeviceStreamRequestAsync(request, cancellationToken));
+        }
+
+        public override Task RejectDeviceStreamRequestAsync(DeviceStreamRequest request, CancellationToken cancellationToken)
+        {
+            return ExecuteWithErrorHandlingAsync(() => base.RejectDeviceStreamRequestAsync(request, cancellationToken));
+        }
+        #endregion Device Streaming
+
         private static bool IsNetworkExceptionChain(Exception exceptionChain)
         {
             return exceptionChain.Unwind(true).Any(e => IsNetwork(e) && !IsTlsSecurity(e));

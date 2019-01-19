@@ -124,11 +124,13 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     internal class InternalClient : IDisposable
     {
+        private const double _defaultDeviceStreamingTimeoutSecs = 60;
         private uint _operationTimeoutInMilliseconds = DeviceClient.DefaultOperationTimeoutInMilliseconds;
         private int _diagnosticSamplingPercentage = 0;
         private ITransportSettings[] transportSettings;
         private SemaphoreSlim methodsDictionarySemaphore = new SemaphoreSlim(1, 1);
         private readonly SemaphoreSlim receiveSemaphore = new SemaphoreSlim(1, 1);
+        private SemaphoreSlim deviceStreamsSemaphore = new SemaphoreSlim(1, 1);
         private volatile Dictionary<string, Tuple<MessageHandler, object>> receiveEventEndpoints;
         private volatile Tuple<MessageHandler, object> defaultEventCallback;
         private ProductInfo productInfo = new ProductInfo();
@@ -897,6 +899,77 @@ namespace Microsoft.Azure.Devices.Client
                 if (Logging.IsEnabled) Logging.Exit(this, methodName, methodHandler, userContext, nameof(SetMethodHandler));
             }
         }
+
+        #region DEVICE STREAMING
+        public Task<DeviceStreamRequest> WaitForDeviceStreamRequestAsync()
+        {
+            try
+            {
+                using (CancellationTokenSource cts = CancellationTokenSourceFactory())
+                {
+                    return WaitForDeviceStreamRequestAsync(cts.Token);
+                }
+            }
+            catch (OperationCanceledException ex)
+            {
+                // Exception adaptation for non-CancellationToken public API.
+                throw new TimeoutException("The operation timed out.", ex);
+            }
+        }
+
+        public async Task<DeviceStreamRequest> WaitForDeviceStreamRequestAsync(CancellationToken cancellationToken)
+        {
+            DeviceStreamRequest result;
+
+            try
+            {
+                await deviceStreamsSemaphore.WaitAsync().ConfigureAwait(false);
+
+                await this.EnableStreamAsync(cancellationToken).ConfigureAwait(false);
+
+                result = await this.InnerHandler.WaitForDeviceStreamRequestAsync(cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                deviceStreamsSemaphore.Release();
+            }
+
+            return result;
+        }
+
+        public async Task AcceptDeviceStreamRequestAsync(DeviceStreamRequest request)
+        {
+            using (CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(_defaultDeviceStreamingTimeoutSecs)))
+            {
+                await AcceptDeviceStreamRequestAsync(request, cts.Token).ConfigureAwait(false);
+            }
+        }
+
+        public async Task AcceptDeviceStreamRequestAsync(DeviceStreamRequest request, CancellationToken cancellationToken)
+        {
+            await this.InnerHandler.AcceptDeviceStreamRequestAsync(request, cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task RejectDeviceStreamRequestAsync(DeviceStreamRequest request)
+        {
+            using (CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(_defaultDeviceStreamingTimeoutSecs)))
+            {
+                await this.InnerHandler.RejectDeviceStreamRequestAsync(request, cts.Token).ConfigureAwait(false);
+            }
+        }
+
+        public async Task RejectDeviceStreamRequestAsync(DeviceStreamRequest request, CancellationToken cancellationToken)
+        {
+            await this.InnerHandler.RejectDeviceStreamRequestAsync(request, cancellationToken).ConfigureAwait(false);
+        }
+
+        private async Task EnableStreamAsync(CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            await this.InnerHandler.EnableStreamsAsync(cancellationToken).ConfigureAwait(false);
+        }
+#endregion DEVICE STREAMING
 
         /// <summary>
         /// Registers a new delegate for the connection status changed callback. If a delegate is already associated, 

@@ -23,6 +23,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
     using Client.Transport;
     using DotNetty.Common.Concurrency;
     using Microsoft.Azure.Devices.Client.Test.ConnectionString;
+    using System.Collections.Generic;
 
     [TestClass]
     [TestCategory("Unit")]
@@ -610,6 +611,135 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
             transport.Dispose();
             Assert.IsTrue(t.IsCompleted);
+        }
+
+        [TestMethod]
+        public void MqttTransportHandlerParseQueryString()
+        {
+            // arrange
+            string propKey0 = "$url";
+            string propValue0 = "wss%3A%2F%2Fcentralus-node-2.streaming.private.azure-devices-int.net%3A443%2Fbridges%2Fb253c304aa11443dbd94e3b511a6f1c5";
+            string propKey1 = "$auth";
+            string propValue1 = "IXrkbkRLow-hU7AYfteIQo5m4acwM69ncofrTj3SeX4";
+            string propKey2 = "$ip";
+            string propValue2 = "13.89.222.63";
+            string query = "?" + propKey0 + "=" + propValue0 + "&" + propKey1 + "=" + propValue1 + "&" + propKey2 + "=" + propValue2;
+
+            // act
+            IDictionary<string, string> result = MqttTransportHandler.ParseQueryString(query);
+
+            // assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(3, result.Count);
+            Assert.AreEqual(propValue0 , result[propKey0]);
+            Assert.AreEqual(propValue1 , result[propKey1]);
+            Assert.AreEqual(propValue2 , result[propKey2]);
+        }
+
+        [TestMethod]
+        public void MqttTransportHandlerParseQueryStringNoQuestionMark()
+        {
+            // arrange
+            string propKey0 = "$url";
+            string propValue0 = "wss%3A%2F%2Fcentralus-node-2.streaming.private.azure-devices-int.net%3A443%2Fbridges%2Fb253c304aa11443dbd94e3b511a6f1c5";
+            string propKey1 = "$auth";
+            string propValue1 = "IXrkbkRLow-hU7AYfteIQo5m4acwM69ncofrTj3SeX4";
+            string propKey2 = "$ip";
+            string propValue2 = "13.89.222.63";
+            string query = propKey0 + "=" + propValue0 + "&" + propKey1 + "=" + propValue1 + "&" + propKey2 + "=" + propValue2;
+
+            // act
+            IDictionary<string, string> result = MqttTransportHandler.ParseQueryString(query);
+
+            // assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(3, result.Count);
+            Assert.AreEqual(propValue0, result[propKey0]);
+            Assert.AreEqual(propValue1, result[propKey1]);
+            Assert.AreEqual(propValue2, result[propKey2]);
+        }
+
+        [TestMethod]
+        public void MqttTransportHandlerParseQueryStringEmptyString()
+        {
+            // arrange
+            string query = "";
+
+            // act
+            IDictionary<string, string> result = MqttTransportHandler.ParseQueryString(query);
+
+            // assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.Count);
+        }
+
+        [TestMethod]
+        public void MqttTransportHandlerParseQueryStringDoubleEqual()
+        {
+            // arrange
+            string propKey0 = "$url";
+            string propValue0 = "wss%3A%2F%2Fcentralus-node-2.streaming.private.azure-devices-int.net%3A443%2Fbridges%2Fb253c304aa11443dbd94e3b511a6f1c5";
+            string propKey1 = "$auth";
+            string propValue1 = "=IXrkbkRLow-hU7AYfteIQo5m4acwM69ncofrTj3SeX4"; // value starts with equal. Not valid.
+            string propKey2 = "$ip";
+            string propValue2 = "13.89.222.63";
+            string query = "?" + propKey0 + "=" + propValue0 + "&" + propKey1 + "=" + propValue1 + "&" + propKey2 + "=" + propValue2;
+
+            // act
+            IDictionary<string, string> result = MqttTransportHandler.ParseQueryString(query);
+
+            // assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(3, result.Count);
+            Assert.AreEqual(propValue0, result[propKey0]);
+            Assert.AreEqual(propValue1, result[propKey1]);
+            Assert.AreEqual(propValue2, result[propKey2]);
+        }
+
+        [TestMethod]
+        public void MqttTransportHandlerParseQueryStringDoubleAmpersand()
+        {
+            // arrange
+            string propKey0 = "$url";
+            string propValue0 = "wss%3A%2F%2Fcentralus-node-2.streaming.private.azure-devices-int.net%3A443%2Fbridges%2Fb253c304aa11443dbd94e3b511a6f1c5";
+            string propKey1 = "$auth";
+            string propValue1 = "IXrkbkRLow-hU7AYfteIQo5m4acwM69ncofrTj3SeX4";
+            string propKey2 = "$ip";
+            string propValue2 = "13.89.222.63";
+            string query = "?" + propKey0 + "=" + propValue0 + "&&" + propKey1 + "=" + propValue1 + "&" + propKey2 + "=" + propValue2;
+
+            // act
+            IDictionary<string, string> result = MqttTransportHandler.ParseQueryString(query);
+
+            // assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(3, result.Count);
+            Assert.AreEqual(propValue0, result[propKey0]);
+            Assert.AreEqual(propValue1, result[propKey1]);
+            Assert.AreEqual(propValue2, result[propKey2]);
+        }
+
+        [TestMethod]
+        public void MqttTransportHandlerParseQueryStringNoPropValue()
+        {
+            // arrange
+            string propKey0 = "$url";
+            string propValue0 = "wss%3A%2F%2Fcentralus-node-2.streaming.private.azure-devices-int.net%3A443%2Fbridges%2Fb253c304aa11443dbd94e3b511a6f1c5";
+            string propKey1 = "$auth";
+            string propValue1 = ""; // unexpected
+            string propKey2 = "$ip";
+            string propValue2 = "13.89.222.63";
+            string query = "?" + propKey0 + "=" + propValue0 + "&&" + propKey1 + "=" + propValue1 + "&" + propKey2 + "=" + propValue2;
+
+            // act
+            IDictionary<string, string> result = MqttTransportHandler.ParseQueryString(query);
+
+            // assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(3, result.Count);
+            Assert.AreEqual(propValue0, result[propKey0]);
+            Assert.AreEqual(propValue1, result[propKey1]);
+            Assert.AreEqual(propValue2, result[propKey2]);
         }
     }
 }

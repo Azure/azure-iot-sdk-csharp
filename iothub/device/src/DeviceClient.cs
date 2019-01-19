@@ -571,5 +571,56 @@ namespace Microsoft.Azure.Devices.Client
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>  
         public Task UpdateReportedPropertiesAsync(TwinCollection reportedProperties, CancellationToken cancellationToken) =>
             this.internalClient.UpdateReportedPropertiesAsync(reportedProperties, cancellationToken);
+
+#region Device Streaming
+        /// <summary>
+        /// Waits for an incoming Cloud-to-Device Stream request.
+        /// </summary>
+        /// <returns>A stream request when received</returns>
+        public Task<DeviceStreamRequest> WaitForDeviceStreamRequestAsync() 
+            => this.internalClient.WaitForDeviceStreamRequestAsync();
+
+        /// <summary>
+        /// Waits for an incoming Cloud-to-Device Stream request.
+        /// </summary>
+        /// <param name="cancellationToken">Token used for cancelling this operation.</param>
+        /// <returns>A stream request when received</returns>
+        public Task<DeviceStreamRequest> WaitForDeviceStreamRequestAsync(CancellationToken cancellationToken)
+            => this.internalClient.WaitForDeviceStreamRequestAsync(cancellationToken);
+
+        /// <summary>
+        /// Accepts a Device Stream request.
+        /// </summary>
+        /// <param name="request">The Device Stream request received through </param>
+        /// <returns>An awaitable async task</returns>
+        public Task AcceptDeviceStreamRequestAsync(DeviceStreamRequest request)
+            => this.internalClient.AcceptDeviceStreamRequestAsync(request);
+
+        /// <summary>
+        /// Accepts a Device Stream request.
+        /// </summary>
+        /// <param name="request">The Device Stream request received through </param>
+        /// <param name="cancellationToken">Token used for cancelling this operation.</param>
+        /// <returns>An awaitable async task</returns>
+        public Task AcceptDeviceStreamRequestAsync(DeviceStreamRequest request, CancellationToken cancellationToken)
+            => this.internalClient.AcceptDeviceStreamRequestAsync(request, cancellationToken);
+
+        /// <summary>
+        /// Rejects a Device Stream request.
+        /// </summary>
+        /// <param name="request">The Device Stream request received through </param>
+        /// <returns>An awaitable async task</returns>
+        public Task RejectDeviceStreamRequestAsync(DeviceStreamRequest request)
+            => this.internalClient.RejectDeviceStreamRequestAsync(request);
+
+        /// <summary>
+        /// Rejects a Device Stream request.
+        /// </summary>
+        /// <param name="request">The Device Stream request received through </param>
+        /// <param name="cancellationToken">Token used for cancelling this operation.</param>
+        /// <returns>An awaitable async task</returns>
+        public Task RejectDeviceStreamRequestAsync(DeviceStreamRequest request, CancellationToken cancellationToken)
+            => this.internalClient.RejectDeviceStreamRequestAsync(request, cancellationToken);
+#endregion Device Streaming
     }
 }
