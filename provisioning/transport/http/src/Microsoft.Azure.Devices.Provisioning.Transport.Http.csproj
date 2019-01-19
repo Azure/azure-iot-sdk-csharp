@@ -19,7 +19,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Version>1.1.3</Version>
+    <Version>1.1.4</Version>
     <Title>Microsoft Azure IoT Provisioning Device Client HTTP Transport</Title>
     <Authors>Microsoft</Authors>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>

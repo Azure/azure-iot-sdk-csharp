@@ -43,11 +43,12 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Default constructor with no body data
         /// </summary>
-        internal MethodRequestInternal()
+        internal MethodRequestInternal(CancellationToken cancellationToken)
         {
 #if !NETMF
             this.InitializeWithStream(Stream.Null, true);
 #endif
+            this.CancellationToken = cancellationToken;
             this.serializedAmqpMessage = null;
         }
 
@@ -57,8 +58,8 @@ namespace Microsoft.Azure.Devices.Client
         /// or in Cloning from a Message that has serialized.
         /// </summary>
 
-        internal MethodRequestInternal(string name, string requestId, Stream bodyStream)
-            : this()
+        internal MethodRequestInternal(string name, string requestId, Stream bodyStream, CancellationToken cancellationToken)
+            : this(cancellationToken)
         {
             Name = name;
             RequestId = requestId;
@@ -67,6 +68,12 @@ namespace Microsoft.Azure.Devices.Client
         }
 #endif
 
+        internal CancellationToken CancellationToken
+        {
+            get;
+            private set;
+        }
+        
         /// <summary>
         /// Property indicating the method name for this instance
         /// </summary>

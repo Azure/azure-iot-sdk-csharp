@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Client
 
         T Get<T>() where T : class;
 
-        T Get<T>(string key) where T : class;
+        T Get<T>(string key);
 
         bool TryGet<T>(string key, out T value);
     }

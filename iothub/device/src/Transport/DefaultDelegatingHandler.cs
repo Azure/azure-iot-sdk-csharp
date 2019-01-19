@@ -1,26 +1,26 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Client.Common;
+using Microsoft.Azure.Devices.Shared;
+
 namespace Microsoft.Azure.Devices.Client.Transport
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Microsoft.Azure.Devices.Client.Common;
-    using Microsoft.Azure.Devices.Shared;
-
-    abstract class DefaultDelegatingHandler : IDelegatingHandler
+    internal abstract class DefaultDelegatingHandler : IDelegatingHandler
     {
-        static readonly Task<Message> DummyResultObject = Task.FromResult((Message)null);
+        private static readonly Task<Message> s_dummyResultObject = Task.FromResult((Message)null);
+        private IDelegatingHandler _innerHandler;
+        protected bool _disposed;
 
-        int innerHandlerInitializing;
-        int innerHandlerInitialized;
-        IDelegatingHandler innerHandler;
-
-        protected DefaultDelegatingHandler(IPipelineContext context)
+        protected DefaultDelegatingHandler(IPipelineContext context, IDelegatingHandler innerHandler)
         {
-            this.Context = context;
+            Context = context;
+            _innerHandler = innerHandler;
+            if (Logging.IsEnabled) Logging.Associate(this, _innerHandler, nameof(InnerHandler));
         }
 
         public IPipelineContext Context { get; protected set; }
@@ -31,154 +31,164 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             get
             {
-                return Volatile.Read(ref this.innerHandlerInitialized) == 0 ? this.EnsureInnerHandlerInitialized() : Volatile.Read(ref this.innerHandler);
+                return _innerHandler;
             }
             protected set
             {
-                if (Interlocked.CompareExchange(ref this.innerHandlerInitializing, 1, 0) == 0)
-                {
-                    Volatile.Write(ref this.innerHandler, value);
-                    Volatile.Write(ref this.innerHandlerInitialized, 1);
-                }
-                else
-                {
-                    Volatile.Write(ref this.innerHandler, value);
-                }
+                if (Logging.IsEnabled) Logging.Associate(this, _innerHandler, nameof(InnerHandler));
+                _innerHandler = value;
             }
         }
 
-        public virtual Task OpenAsync(bool explicitOpen, CancellationToken cancellationToken)
+        public virtual Task OpenAsync(CancellationToken cancellationToken)
         {
-            return this.InnerHandler?.OpenAsync(explicitOpen, cancellationToken) ?? TaskConstants.Completed;
+            ThrowIfDisposed();
+            return InnerHandler?.OpenAsync(cancellationToken) ?? TaskHelpers.CompletedTask;
         }
         
-        public virtual Task CloseAsync()
+        public virtual Task CloseAsync(CancellationToken cancellationToken)
         {
-            if (this.InnerHandler == null)
+            ThrowIfDisposed();
+
+            if (InnerHandler == null)
             {
-                return TaskConstants.Completed;
+                return TaskHelpers.CompletedTask;
             }
             else
             {
-                Task closeTask = this.InnerHandler.CloseAsync();
-                closeTask.ContinueWith(t => GC.SuppressFinalize(this), TaskContinuationOptions.OnlyOnRanToCompletion | TaskContinuationOptions.ExecuteSynchronously);
+                Task closeTask = InnerHandler.CloseAsync(cancellationToken);
                 return closeTask;
             }
+        }
+        
+        /// <summary>
+        /// Completes when the transport disconnected.
+        /// </summary>
+        /// <returns></returns>
+        public virtual Task WaitForTransportClosedAsync()
+        {
+            ThrowIfDisposed();
+
+            if (InnerHandler == null) throw new InvalidOperationException();
+            return InnerHandler.WaitForTransportClosedAsync();
         }
 
         public virtual Task<Message> ReceiveAsync(CancellationToken cancellationToken)
         {
-            return this.InnerHandler?.ReceiveAsync(cancellationToken) ?? DummyResultObject;
+            ThrowIfDisposed();
+            return InnerHandler?.ReceiveAsync(cancellationToken) ?? s_dummyResultObject;
         }
 
         public virtual Task<Message> ReceiveAsync(TimeSpan timeout, CancellationToken cancellationToken)
         {
-            return this.InnerHandler?.ReceiveAsync(timeout, cancellationToken) ?? DummyResultObject;
+            ThrowIfDisposed();
+            return InnerHandler?.ReceiveAsync(timeout, cancellationToken) ?? s_dummyResultObject;
         }
 
         public virtual Task CompleteAsync(string lockToken, CancellationToken cancellationToken)
         {
-            return this.InnerHandler?.CompleteAsync(lockToken, cancellationToken) ?? TaskConstants.Completed;
+            ThrowIfDisposed();
+            return InnerHandler?.CompleteAsync(lockToken, cancellationToken) ?? TaskHelpers.CompletedTask;
         }
 
         public virtual Task AbandonAsync(string lockToken, CancellationToken cancellationToken)
         {
-            return this.InnerHandler?.AbandonAsync(lockToken, cancellationToken) ?? TaskConstants.Completed;
+            ThrowIfDisposed();
+            return InnerHandler?.AbandonAsync(lockToken, cancellationToken) ?? TaskHelpers.CompletedTask;
         }
 
         public virtual Task RejectAsync(string lockToken, CancellationToken cancellationToken)
         {
-            return this.InnerHandler?.RejectAsync(lockToken, cancellationToken) ?? TaskConstants.Completed;
+            ThrowIfDisposed();
+            return InnerHandler?.RejectAsync(lockToken, cancellationToken) ?? TaskHelpers.CompletedTask;
         }
 
         public virtual Task SendEventAsync(Message message, CancellationToken cancellationToken)
         {
-            return this.InnerHandler?.SendEventAsync(message, cancellationToken) ?? TaskConstants.Completed;
+            ThrowIfDisposed();
+            return InnerHandler?.SendEventAsync(message, cancellationToken) ?? TaskHelpers.CompletedTask;
         }
 
         public virtual Task SendEventAsync(IEnumerable<Message> messages, CancellationToken cancellationToken)
         {
-            return this.InnerHandler?.SendEventAsync(messages, cancellationToken) ?? TaskConstants.Completed;
+            ThrowIfDisposed();
+            return InnerHandler?.SendEventAsync(messages, cancellationToken) ?? TaskHelpers.CompletedTask;
         }
 
         public virtual Task EnableMethodsAsync(CancellationToken cancellationToken)
         {
-            return this.InnerHandler?.EnableMethodsAsync(cancellationToken) ?? TaskConstants.Completed;
+            ThrowIfDisposed();
+            return InnerHandler?.EnableMethodsAsync(cancellationToken) ?? TaskHelpers.CompletedTask;
         }
 
         public virtual Task DisableMethodsAsync(CancellationToken cancellationToken)
         {
-            return this.InnerHandler?.DisableMethodsAsync(cancellationToken) ?? TaskConstants.Completed;
+            ThrowIfDisposed();
+            return InnerHandler?.DisableMethodsAsync(cancellationToken) ?? TaskHelpers.CompletedTask;
         }
 
         public virtual Task SendMethodResponseAsync(MethodResponseInternal methodResponse, CancellationToken cancellationToken)
         {
-            return this.InnerHandler?.SendMethodResponseAsync(methodResponse, cancellationToken) ?? TaskConstants.Completed;
+            ThrowIfDisposed();
+            return InnerHandler?.SendMethodResponseAsync(methodResponse, cancellationToken) ?? TaskHelpers.CompletedTask;
         }
 
         public virtual Task EnableTwinPatchAsync(CancellationToken cancellationToken)
         {
-            return this.InnerHandler?.EnableTwinPatchAsync(cancellationToken) ?? TaskConstants.Completed;
+            ThrowIfDisposed();
+            return InnerHandler?.EnableTwinPatchAsync(cancellationToken) ?? TaskHelpers.CompletedTask;
         }
 
         public virtual Task<Twin> SendTwinGetAsync(CancellationToken cancellationToken)
         {
-            return this.InnerHandler?.SendTwinGetAsync(cancellationToken) ?? Task.FromResult((Twin)null);
+            ThrowIfDisposed();
+            return InnerHandler?.SendTwinGetAsync(cancellationToken) ?? Task.FromResult((Twin)null);
         }
         
         public virtual Task SendTwinPatchAsync(TwinCollection reportedProperties, CancellationToken cancellationToken)
         {
-            return this.InnerHandler?.SendTwinPatchAsync(reportedProperties, cancellationToken) ?? TaskConstants.Completed;
-        }
-
-        public virtual Task RecoverConnections(object o, ConnectionType connectionType, CancellationToken cancellationToken)
-        {
-            return this.InnerHandler?.RecoverConnections(o, connectionType, cancellationToken) ?? TaskConstants.Completed;
+            ThrowIfDisposed();
+            return InnerHandler?.SendTwinPatchAsync(reportedProperties, cancellationToken) ?? TaskHelpers.CompletedTask;
         }
 
         public virtual Task EnableEventReceiveAsync(CancellationToken cancellationToken)
         {
-            return this.InnerHandler?.EnableEventReceiveAsync(cancellationToken) ?? TaskConstants.Completed;
+            ThrowIfDisposed();
+            return InnerHandler?.EnableEventReceiveAsync(cancellationToken) ?? TaskHelpers.CompletedTask;
         }
 
         public virtual Task DisableEventReceiveAsync(CancellationToken cancellationToken)
         {
-            return this.InnerHandler?.DisableEventReceiveAsync(cancellationToken) ?? TaskConstants.Completed;
+            ThrowIfDisposed();
+            return InnerHandler?.DisableEventReceiveAsync(cancellationToken) ?? TaskHelpers.CompletedTask;
+        }
+
+        protected void ThrowIfDisposed()
+        {
+            if (_disposed) throw new ObjectDisposedException("IoT Client");
         }
 
         protected virtual void Dispose(bool disposing)
         {
-            this.innerHandler?.Dispose();
+            if (_disposed) return;
+
+            if (disposing)
+            {
+                _innerHandler?.Dispose();
+            }
+
+            _disposed = true;
         }
 
         public void Dispose()
         {
-            this.Dispose(true);   
+            Dispose(true);   
             GC.SuppressFinalize(this);
         }
 
         ~DefaultDelegatingHandler()
         {
-            this.Dispose(false);
-        }
-
-        IDelegatingHandler EnsureInnerHandlerInitialized()
-        {
-            if (Interlocked.CompareExchange(ref this.innerHandlerInitializing, 1, 0) == 0)
-            {
-                IDelegatingHandler result = this.ContinuationFactory?.Invoke(this.Context);
-                Volatile.Write(ref this.innerHandler, result);
-                Volatile.Write(ref this.innerHandlerInitialized, 1);
-
-                if (Logging.IsEnabled) Logging.Associate(this, this.innerHandler, nameof(EnsureInnerHandlerInitialized));
-
-                return result;
-            }
-            else
-            {
-                SpinWait.SpinUntil(() => Volatile.Read(ref this.innerHandlerInitialized) != 1);
-                return Volatile.Read(ref this.innerHandler);
-            }
+            Dispose(false);
         }
     }
 }

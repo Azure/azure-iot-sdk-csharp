@@ -31,7 +31,6 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
 
         public static Task<string> GetExceptionMessageAsync(HttpResponseMessage response)
         {
-            // TODO: pradeepc - consider parsing to HttpError
             return response.Content.ReadAsStringAsync();
         }
     }

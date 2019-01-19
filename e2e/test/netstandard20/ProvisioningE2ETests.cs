@@ -206,14 +206,13 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 Client.IAuthenticationMethod auth = CreateAuthenticationMethodFromSecurityProvider(security, result.DeviceId);
 
-                // TODO: #591 - ProvisioningClient and DeviceClient should use the same protocol.
-                using (DeviceClient iotClient = DeviceClient.Create(result.AssignedHub, auth, Client.TransportType.Http1))
+                using (DeviceClient iotClient = DeviceClient.Create(result.AssignedHub, auth, GetDeviceTransportType(transportType, transportFallback)))
                 {
                     _log.WriteLine("DeviceClient OpenAsync.");
                     await iotClient.OpenAsync().ConfigureAwait(false);
                     _log.WriteLine("DeviceClient SendEventAsync.");
                     await iotClient.SendEventAsync(
-                        new Client.Message(Encoding.UTF8.GetBytes("TestMessage"))).ConfigureAwait(false);
+                        new Client.Message(Encoding.UTF8.GetBytes("TestMessage")), cts.Token).ConfigureAwait(false);
                     _log.WriteLine("DeviceClient CloseAsync.");
                     await iotClient.CloseAsync().ConfigureAwait(false);
                 }
@@ -448,6 +447,50 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
 
             throw new NotSupportedException($"Unknown transport: '{name}'.");
+        }
+
+        private Client.TransportType GetDeviceTransportType(string provisioningTransport, TransportFallbackType? fallbackType)
+        {
+            switch (provisioningTransport)
+            {
+                case nameof(ProvisioningTransportHandlerHttp):
+                    return Client.TransportType.Http1;
+
+                case nameof(ProvisioningTransportHandlerAmqp):
+                    if (!fallbackType.HasValue) return Client.TransportType.Amqp;
+                    switch (fallbackType)
+                    {
+                        case TransportFallbackType.TcpWithWebSocketFallback:
+                            return Client.TransportType.Amqp;
+                        case TransportFallbackType.WebSocketOnly:
+                            return Client.TransportType.Amqp_WebSocket_Only;
+                        case TransportFallbackType.TcpOnly:
+                            return Client.TransportType.Amqp_Tcp_Only;
+                        default:
+                            break;
+                    }
+                    break;
+
+                case nameof(ProvisioningTransportHandlerMqtt):
+                    if (!fallbackType.HasValue) return Client.TransportType.Mqtt;
+                    switch (fallbackType)
+                    {
+                        case TransportFallbackType.TcpWithWebSocketFallback:
+                            return Client.TransportType.Mqtt;
+                        case TransportFallbackType.WebSocketOnly:
+                            return Client.TransportType.Mqtt_WebSocket_Only;
+                        case TransportFallbackType.TcpOnly:
+                            return Client.TransportType.Mqtt_Tcp_Only;
+                        default:
+                            break;
+                    }
+                    break;
+
+                default:
+                    break;
+            }
+
+            throw new NotSupportedException($"Unknown transport: '{provisioningTransport}'.");
         }
 
         private async Task<SecurityProvider> CreateSecurityProviderFromName(string name, X509EnrollmentType? x509Type)

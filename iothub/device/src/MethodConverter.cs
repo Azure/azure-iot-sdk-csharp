@@ -5,6 +5,7 @@ namespace Microsoft.Azure.Devices.Client
 {
     using System;
     using System.IO;
+    using System.Threading;
     using Microsoft.Azure.Amqp;
     using Microsoft.Azure.Amqp.Encoding;
     using Microsoft.Azure.Amqp.Framing;
@@ -17,7 +18,7 @@ namespace Microsoft.Azure.Devices.Client
         /// <summary>
         /// Copies the properties from the amqp message to the MethodRequest instance.
         /// </summary>
-        public static MethodRequestInternal ConstructMethodRequestFromAmqpMessage(AmqpMessage amqpMessage)
+        public static MethodRequestInternal ConstructMethodRequestFromAmqpMessage(AmqpMessage amqpMessage, CancellationToken cancellationToken)
         {
             if (amqpMessage == null)
             {
@@ -42,7 +43,7 @@ namespace Microsoft.Azure.Devices.Client
                 }
             }
 
-            return new MethodRequestInternal(methodName, methodRequestId, amqpMessage.BodyStream);
+            return new MethodRequestInternal(methodName, methodRequestId, amqpMessage.BodyStream, cancellationToken);
         }
 
         /// <summary>

@@ -1,133 +1,109 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Microsoft.Azure.Devices.Shared;
+using System.Diagnostics;
+using System.Threading;
+using System.Threading.Tasks;
+
 namespace Microsoft.Azure.Devices.Client.Transport
 {
-    using Microsoft.Azure.Devices.Client.Exceptions;
-    using Microsoft.Azure.Devices.Client.Extensions;
-    using Microsoft.Azure.Devices.Shared;
-    using System;
-    using System.Collections.ObjectModel;
-    using System.Linq;
-    using System.Net.Sockets;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using System.Diagnostics;
-
     /// <summary>
     /// Transport handler router. 
     /// Tries to open the connection in the protocol order it was set. 
     /// If fails tries to open the next one, etc.
     /// </summary>
-    class ProtocolRoutingDelegatingHandler : DefaultDelegatingHandler
+    internal class ProtocolRoutingDelegatingHandler : DefaultDelegatingHandler
     {
         internal delegate IDelegatingHandler TransportHandlerFactory(IotHubConnectionString iotHubConnectionString, ITransportSettings transportSettings);
 
-        public ProtocolRoutingDelegatingHandler(IPipelineContext context):
-            base(context)
-        {
+        /// <summary>
+        /// After we've verified that we could open the transport for any operation, we will stop attempting others in the list.
+        /// </summary>
+        private bool _transportSelectionComplete = false;
+        private int _nextTransportIndex = 0;
 
+        private SemaphoreSlim _handlerLock = new SemaphoreSlim(1, 1);
+
+        public ProtocolRoutingDelegatingHandler(IPipelineContext context, IDelegatingHandler innerHandler) :
+            base(context, innerHandler)
+        {
         }
 
-        public override async Task OpenAsync(bool explicitOpen, CancellationToken cancellationToken)
+        public override async Task OpenAsync(CancellationToken cancellationToken)
         {
             try
             {
-                if (Logging.IsEnabled) Logging.Enter(this, explicitOpen, cancellationToken, $"{nameof(ProtocolRoutingDelegatingHandler)}.{nameof(OpenAsync)}");
+                if (Logging.IsEnabled) Logging.Enter(this, cancellationToken, $"{nameof(ProtocolRoutingDelegatingHandler)}.{nameof(OpenAsync)}");
+                cancellationToken.ThrowIfCancellationRequested();
 
-                await this.TryOpenPrioritizedTransportsAsync(explicitOpen, cancellationToken).ConfigureAwait(false);
-            }
-            finally
-            {
-                if (Logging.IsEnabled) Logging.Exit(this, explicitOpen, cancellationToken, $"{nameof(ProtocolRoutingDelegatingHandler)}.{nameof(OpenAsync)}");
-            }
-        }
+                await _handlerLock.WaitAsync().ConfigureAwait(false);
 
-        async Task TryOpenPrioritizedTransportsAsync(bool explicitOpen, CancellationToken cancellationToken)
-        {
-            Exception lastException = null;
-
-            // Concrete Device Client creation was deferred. Use prioritized list of transports.
-            foreach (ITransportSettings transportSetting in this.Context.Get<ITransportSettings[]>())
-            {
-
-                if (Logging.IsEnabled) Logging.Info(
-                    this,
-                    $"Trying {transportSetting?.GetTransportType()}",
-                    $"{nameof(ProtocolRoutingDelegatingHandler)}.{nameof(TryOpenPrioritizedTransportsAsync)}");
-
-                if (cancellationToken.IsCancellationRequested)
+                if (!_transportSelectionComplete)
                 {
-                    if (Logging.IsEnabled) Logging.Info(this, $"Cancellation requested for {Logging.GetHashCode(cancellationToken)}.", $"{nameof(ProtocolRoutingDelegatingHandler)}.{nameof(TryOpenPrioritizedTransportsAsync)}");
-                    var tcs = new TaskCompletionSource<bool>();
-                    tcs.SetCanceled();
-                    await tcs.Task.ConfigureAwait(false);
+                    // Try next protocol if we're still searching.
+
+                    ITransportSettings[] transportSettingsArray = this.Context.Get<ITransportSettings[]>();
+                    Debug.Assert(transportSettingsArray != null);
+
+                    // Keep cycling through all transports until we find one that works.
+                    if (_nextTransportIndex >= transportSettingsArray.Length) _nextTransportIndex = 0;
+
+                    ITransportSettings transportSettings = transportSettingsArray[_nextTransportIndex];
+                    Debug.Assert(transportSettings != null);
+
+                    if (Logging.IsEnabled) Logging.Info(
+                        this,
+                        $"Trying {transportSettings?.GetTransportType()}",
+                        $"{nameof(ProtocolRoutingDelegatingHandler)}.{nameof(OpenAsync)}");
+
+                    // Configure the transportSettings for this context (Important! Within Context, 'ITransportSettings' != 'ITransportSettings[]').
+                    Context.Set<ITransportSettings>(transportSettings);
+                    CreateNewTransportHandler();
+
+                    _nextTransportIndex++;
                 }
 
                 try
                 {
-                    this.Context.Set(transportSetting);
-                    this.InnerHandler = this.ContinuationFactory(this.Context);
-
-                    // Try to open a connection with this transport
-                    await base.OpenAsync(explicitOpen, cancellationToken).ConfigureAwait(false);
+                    await base.OpenAsync(cancellationToken).ConfigureAwait(false);
+                    _transportSelectionComplete = true;
                 }
-                catch (Exception exception)
+                finally
                 {
-                    try
-                    {
-                        if (this.InnerHandler != null)
-                        {
-                            await this.CloseAsync().ConfigureAwait(false);
-                        }
-                    }
-                    catch (Exception ex) when (!ex.IsFatal())
-                    {
-                        //ignore close failures
-                        if (Logging.IsEnabled) Logging.Info(
-                            this,
-                            $"Exception caught while closing {transportSetting?.GetTransportType()}: {exception}",
-                            $"{nameof(ProtocolRoutingDelegatingHandler)}.{nameof(TryOpenPrioritizedTransportsAsync)}");
-                    }
-
-                    if (!(exception is IotHubCommunicationException ||
-                          exception is TimeoutException ||
-                          exception is SocketException ||
-                          exception is AggregateException))
-                    {
-                        if (Logging.IsEnabled) Logging.Error(this, $"Re-throwing exception caught: {exception}", $"{nameof(ProtocolRoutingDelegatingHandler)}.{nameof(TryOpenPrioritizedTransportsAsync)}");
-                        throw;
-                    }
-
-                    var aggregateException = exception as AggregateException;
-                    if (aggregateException != null)
-                    {
-                        ReadOnlyCollection<Exception> innerExceptions = aggregateException.Flatten().InnerExceptions;
-                        if (!innerExceptions.Any(x => x is IotHubCommunicationException ||
-                            x is SocketException ||
-                            x is TimeoutException))
-                        {
-                            if (Logging.IsEnabled) Logging.Error(this, $"Re-throwing AggregateException: {exception}", $"{nameof(ProtocolRoutingDelegatingHandler)}.{nameof(TryOpenPrioritizedTransportsAsync)}");
-
-                            throw;
-                        }
-                    }
-
-                    lastException = exception;
-
-                    if (Logging.IsEnabled) Logging.Error(this, $"Exception caught: {exception}", $"{nameof(ProtocolRoutingDelegatingHandler)}.{nameof(TryOpenPrioritizedTransportsAsync)}");
-
-                    // open connection failed. Move to next transport type
-                    continue;
+                    _handlerLock.Release();
                 }
-
-                return;
             }
-
-            if (lastException != null)
+            finally
             {
-                throw new IotHubCommunicationException("Unable to open transport", lastException);
+                if (Logging.IsEnabled) Logging.Exit(this, cancellationToken, $"{nameof(ProtocolRoutingDelegatingHandler)}.{nameof(OpenAsync)}");
             }
+        }
+
+        private void CreateNewTransportHandler()
+        {
+            if (InnerHandler != null)
+            {
+                InnerHandler.Dispose();
+                InnerHandler = null;
+            }
+
+            // Ask the ContinuationFactory to attach the proper handler given the Context's ITransportSettings.
+            InnerHandler = ContinuationFactory(Context, null);
+        }
+
+        public override async Task WaitForTransportClosedAsync()
+        {
+            await base.WaitForTransportClosedAsync().ConfigureAwait(false);
+
+            if (Logging.IsEnabled) Logging.Info(this, "Client disconnected.", nameof(WaitForTransportClosedAsync));
+
+            await _handlerLock.WaitAsync().ConfigureAwait(false);
+            Debug.Assert(InnerHandler != null);
+            CreateNewTransportHandler();
+
+            // Operations above should never throw. If they do, it's not safe to continue.
+            _handlerLock.Release();
         }
     }
 }

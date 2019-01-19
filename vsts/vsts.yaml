@@ -11,7 +11,7 @@ phases:
   condition: succeeded()
   queue:
     name: Hosted Ubuntu 1604
-    timeoutInMinutes: 120
+    timeoutInMinutes: 180
   steps:
   - powershell: ./vsts/manual_checkout.ps1
     displayName: 'GIT checkout'
@@ -77,6 +77,7 @@ phases:
       DPS_GLOBALDEVICEENDPOINT: $(DPS-GLOBALDEVICEENDPOINT)
       DPS_INDIVIDUALX509_PFX_CERTIFICATE: $(DPS-INDIVIDUALX509-PFX-CERTIFICATE)
       DPS_GROUPX509_PFX_CERTIFICATE: $(DPS-GROUPX509-PFX-CERTIFICATE)
+      DPS_X509_PFX_CERTIFICATE_PASSWORD: $(DPS-X509-PFX-CERTIFICATE-PASSWORD)
       DPS_GROUPX509_CERTIFICATE_CHAIN: $(DPS-GROUPX509-CERTIFICATE-CHAIN)
       DPS_TPM_REGISTRATIONID: $(DPS-TPM-REGISTRATIONID)
       DPS_TPM_DEVICEID: $(DPS-TPM-DEVICEID)
@@ -99,9 +100,9 @@ phases:
     condition: always()
 
   - task: PublishBuildArtifacts@1
-    displayName: 'Publish Artifact: testresults'
+    displayName: 'Publish Artifact: testresults_linux'
     inputs:
-      ArtifactName: testresults
+      ArtifactName: testresults_linux
 
     condition: always()
 
@@ -109,7 +110,7 @@ phases:
     displayName: 'Publish Test Results **/*.trx'
     inputs:
       testRunner: VSTest
-
+      testRunTitle: 'Linux Tests'
       testResultsFiles: '**/*.trx'
 
     condition: always()
@@ -124,7 +125,7 @@ phases:
   condition: succeeded()
   queue:
     name: Hosted VS2017
-    timeoutInMinutes: 120
+    timeoutInMinutes: 180
   steps:
   - script: |  
        call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
@@ -174,6 +175,7 @@ phases:
       DPS_GLOBALDEVICEENDPOINT: $(DPS-GLOBALDEVICEENDPOINT)
       DPS_INDIVIDUALX509_PFX_CERTIFICATE: $(DPS-INDIVIDUALX509-PFX-CERTIFICATE)
       DPS_GROUPX509_PFX_CERTIFICATE: $(DPS-GROUPX509-PFX-CERTIFICATE)
+      DPS_X509_PFX_CERTIFICATE_PASSWORD: $(DPS-X509-PFX-CERTIFICATE-PASSWORD)
       DPS_GROUPX509_CERTIFICATE_CHAIN: $(DPS-GROUPX509-CERTIFICATE-CHAIN)
       DPS_TPM_REGISTRATIONID: $(DPS-TPM-REGISTRATIONID)
       DPS_TPM_DEVICEID: $(DPS-TPM-DEVICEID)
@@ -198,7 +200,7 @@ phases:
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact: testresults'
     inputs:
-      ArtifactName: testresults
+      ArtifactName: testresults_windows
 
     condition: always()
 
@@ -209,7 +211,7 @@ phases:
 
       testResultsFiles: '**/*.trx'
 
-      testRunTitle: 'Azure IoT C#'
+      testRunTitle: 'Windows Tests'
 
       platform: Windows
 

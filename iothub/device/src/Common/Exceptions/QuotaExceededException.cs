@@ -13,6 +13,13 @@ namespace Microsoft.Azure.Devices.Client.Exceptions
     public sealed class QuotaExceededException : IotHubException
     {
         /// <summary>
+        /// Initializes a new instance of the <see cref="QuotaExceededException"/> class.
+        /// </summary>
+        public QuotaExceededException() : base(isTransient: true)
+        {
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="QuotaExceededException"/> class with the message string set to the message parameter.
         /// </summary>
         /// <param name="message">A description of the error. The content of message is intended to be understood by humans. The caller of this constructor is required to ensure that this string has been localized for the current system culture.</param>

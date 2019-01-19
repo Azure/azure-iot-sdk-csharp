@@ -25,9 +25,9 @@ namespace Microsoft.Azure.Devices.Client
 
         public IotHubConnectionString ConnectionString { get; }
 
-        public override Task CloseAsync()
+        public override Task CloseAsync(CancellationToken cancellationToken)
         {
-            return this.FaultTolerantSession.CloseAsync();
+            return this.FaultTolerantSession.CloseAsync(cancellationToken);
         }
 
         public override void SafeClose(Exception exception)

@@ -34,6 +34,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
+        [Ignore] // TODO #764 Disable test due to intermittent test failure
         public async Task Method_DeviceReceivesMethodAndResponseRecovery_MqttWs()
         {
             await SendMethodAndRespondRecovery(Client.TransportType.Mqtt_WebSocket_Only,
@@ -183,9 +184,11 @@ namespace Microsoft.Azure.Devices.E2ETests
             sw.Start();
             bool done = false;
             ExceptionDispatchInfo exceptionDispatchInfo = null;
+            int attempt = 0;
 
             while (!done && sw.ElapsedMilliseconds < FaultInjection.RecoveryTimeMilliseconds)
             {
+                attempt++;
                 try
                 {
                     using (ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
@@ -198,11 +201,8 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                         s_log.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponse)}: Method status: {response.Status}.");
 
-                        // This is a simple hack to ensure that we're still exercising these tests while we address the race conditions causing the following issues:
-                        // [Ignore] // TODO: #571
-                        // [Ignore] // TODO: #558
-                        //Assert.AreEqual(200, response.Status);
-                        //Assert.AreEqual(respJson, response.GetPayloadAsJson());
+                        Assert.AreEqual(200, response.Status);
+                        Assert.AreEqual(respJson, response.GetPayloadAsJson());
                         
                         await serviceClient.CloseAsync().ConfigureAwait(false);
                         done = true;
@@ -211,12 +211,12 @@ namespace Microsoft.Azure.Devices.E2ETests
                 catch (DeviceNotFoundException ex)
                 {
                     exceptionDispatchInfo = ExceptionDispatchInfo.Capture(ex);
-                    s_log.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponse)}: ServiceClient exception caught: {ex}.");
+                    s_log.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponse)}: [Tried {attempt} time(s)] ServiceClient exception caught: {ex}.");
                     await Task.Delay(1000).ConfigureAwait(false);
                 }
             }
 
-            if (exceptionDispatchInfo != null)
+            if (!done && (exceptionDispatchInfo != null))
             {
                 exceptionDispatchInfo.Throw();
             }
@@ -249,36 +249,17 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
             };
 
-            // This is a simple hack to ensure that we're still exercising these tests while we address the race conditions causing the following issues:
-            // [Ignore] // TODO: #571
-            // [Ignore] // TODO: #558
-            int retryCount = 3;
-
-            while (retryCount-- > 0)
-            {
-                try
-                {
-                    await FaultInjection.TestErrorInjectionAsync(
-                        DevicePrefix,
-                        TestDeviceType.Sasl,
-                        transport,
-                        faultType,
-                        reason,
-                        delayInSec,
-                        FaultInjection.DefaultDelayInSec,
-                        initOperation,
-                        testOperation,
-                        () => { return Task.FromResult<bool>(false); }).ConfigureAwait(false);
-                }
-                catch (DeviceNotFoundException e)
-                {
-                    s_log.WriteLine($"Retrying fault injection test ({retryCount} left): {e}");
-                }
-                catch (TaskCanceledException e)
-                {
-                    s_log.WriteLine($"Retrying fault injection test ({retryCount} left): {e}");
-                }
-            }
+            await FaultInjection.TestErrorInjectionAsync(
+                DevicePrefix,
+                TestDeviceType.Sasl,
+                transport,
+                faultType,
+                reason,
+                delayInSec,
+                FaultInjection.DefaultDelayInSec,
+                initOperation,
+                testOperation,
+                () => { return Task.FromResult<bool>(false); }).ConfigureAwait(false);
         }
 
         public void Dispose()

@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices.Client
             return this.GetOrCreateAsync(timeout, cancellationToken);
         }
 
-        public Task CloseAsync()
+        public Task CloseAsync(CancellationToken cancellationToken)
         {
             this.Dispose();
 
@@ -84,7 +84,7 @@ namespace Microsoft.Azure.Devices.Client
                 tcs = new TaskCompletionSource<TValue>();
                 if (this.TrySet(tcs))
                 {
-                    this.CreateValue(tcs, timeoutHelper.RemainingTime(), cancellationToken).Fork();
+                    this.CreateValue(tcs, timeoutHelper.RemainingTime(), cancellationToken);
                 }
             }
 

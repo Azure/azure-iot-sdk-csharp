@@ -21,6 +21,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         private readonly ConsoleEventListener _listener;
         private readonly TestLogging _log;
 
+        private const int IoTHubServerTimeAllowanceSeconds = 5 * 60;
+
         public DeviceTokenRefreshE2ETests()
         {
             _listener = TestConfig.StartEventListener();
@@ -44,7 +46,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             // The IoT Hub service allows tokens expired < 5 minutes ago to be used during CONNECT.
             // After connecting with such an expired token, the service has an allowance of 5 more minutes before dropping the TCP connection.
-            await DeviceClient_TokenIsRefreshed_Internal(Client.TransportType.Mqtt, 6 * 60).ConfigureAwait(false);
+            await DeviceClient_TokenIsRefreshed_Internal(Client.TransportType.Mqtt, IoTHubServerTimeAllowanceSeconds + 60).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -181,7 +183,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 if (_transport == Client.TransportType.Mqtt)
                 {
-                    suggestedTimeToLive = -4 * 60 - 59; // server side time allowance.
+                    suggestedTimeToLive = -IoTHubServerTimeAllowanceSeconds + 30; // Create an expired token.
                 }
 
                 var builder = new SharedAccessSignatureBuilder()

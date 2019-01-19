@@ -5,6 +5,7 @@ namespace Microsoft.Azure.Devices.Client
 {
     using System;
     using System.Collections.Generic;
+    using System.Threading;
     using Microsoft.Azure.Devices.Common.Cloud;
 
     sealed class IotHubDeviceScopeConnectionPool
@@ -172,7 +173,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             var iotHubDeviceMuxConnection = (IotHubDeviceMuxConnection)state;
             this.RemoveConnection(iotHubDeviceMuxConnection);
-            iotHubDeviceMuxConnection.CloseAsync().Fork();
+            iotHubDeviceMuxConnection.CloseAsync(CancellationToken.None);
         }
     }
 }

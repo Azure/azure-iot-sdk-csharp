@@ -113,7 +113,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             };
         }
 
-        private Message ComposeC2DTestMessage(out string payload, out string messageId, out string p1Value)
+        public static Message ComposeC2DTestMessage(out string payload, out string messageId, out string p1Value)
         {
             payload = Guid.NewGuid().ToString();
             messageId = Guid.NewGuid().ToString();
@@ -128,7 +128,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             };
         }
 
-        private async Task VerifyReceivedC2DMessage(Client.TransportType transport, DeviceClient dc, string payload, string p1Value)
+        public static async Task VerifyReceivedC2DMessageAsync(Client.TransportType transport, DeviceClient dc, string payload, string p1Value)
         {
             var wait = true;
 
@@ -136,7 +136,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             sw.Start();
             while (wait)
             {
-                Client.Message receivedMessage;
+                Client.Message receivedMessage = null;
 
                 if (transport == Client.TransportType.Http1)
                 {
@@ -151,6 +151,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 if (receivedMessage != null)
                 {
                     string messageData = Encoding.ASCII.GetString(receivedMessage.GetBytes());
+                    _log.WriteLine($"{nameof(VerifyReceivedC2DMessageAsync)}: Received message: {receivedMessage}");
+
                     Assert.AreEqual(payload, messageData);
 
                     Assert.AreEqual(1, receivedMessage.Properties.Count);
@@ -159,10 +161,10 @@ namespace Microsoft.Azure.Devices.E2ETests
                     Assert.AreEqual(p1Value, prop.Value);
 
                     await dc.CompleteAsync(receivedMessage).ConfigureAwait(false);
-                    wait = false;
+                    break;
                 }
 
-                if (sw.Elapsed.TotalSeconds > 5)
+                if (sw.Elapsed.TotalMilliseconds> FaultInjection.RecoveryTimeMilliseconds)
                 {
                     throw new TimeoutException("Test is running longer than expected.");
                 }
@@ -178,11 +180,12 @@ namespace Microsoft.Azure.Devices.E2ETests
             using (ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
             {
                 await deviceClient.OpenAsync().ConfigureAwait(false);
+
                 if (transport == Client.TransportType.Mqtt_Tcp_Only ||
                     transport == Client.TransportType.Mqtt_WebSocket_Only)
                 {
-                    _log.WriteLine("Dummy ReceiveAsync to ensure mqtt subscription registration before SendAsync() is called on service client.");
-                    await deviceClient.ReceiveAsync(TimeSpan.FromSeconds(2)).ConfigureAwait(false);
+                    // Dummy ReceiveAsync to ensure mqtt subscription registration before SendAsync() is called on service client.
+                    await deviceClient.ReceiveAsync(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
                 }
 
                 string payload, messageId, p1Value;
@@ -190,12 +193,13 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 Message msg = ComposeC2DTestMessage(out payload, out messageId, out p1Value);
                 await serviceClient.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
+                await VerifyReceivedC2DMessageAsync(transport, deviceClient, payload, p1Value).ConfigureAwait(false);
 
-                await VerifyReceivedC2DMessage(transport, deviceClient, payload, p1Value).ConfigureAwait(false);
                 await deviceClient.CloseAsync().ConfigureAwait(false);
                 await serviceClient.CloseAsync().ConfigureAwait(false);
             }
         }
+
 
         public void Dispose()
         {
