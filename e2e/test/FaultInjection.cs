@@ -9,6 +9,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -83,12 +84,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             s_log.WriteLine($"{nameof(ActivateFaultInjection)}: Requesting fault injection type={faultType} reason={reason}, delay={delayInSec}s, duration={FaultInjection.DefaultDurationInSec}s");
 
             uint oldTimeout = deviceClient.OperationTimeoutInMilliseconds;
-
-            // TODO# IcM 100533650: Modify Throttling Fault Injection Tests until service fixes the issue
-            if (faultType.Equals(FaultInjection.FaultType_Throttle))
-            {
-                deviceClient.SetRetryPolicy(new NoRetry());
-            }
 
             try
             {
