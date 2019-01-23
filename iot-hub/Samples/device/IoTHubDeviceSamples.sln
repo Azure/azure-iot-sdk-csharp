@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MethodSample", "MethodSampl
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TwinSample", "TwinSample\TwinSample.csproj", "{AE5A05F3-A0B7-4D56-ACE1-FC8B9D223FA5}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceClientStreamingSample", "DeviceStreamingSample\DeviceClientStreamingSample.csproj", "{B9A6FBA0-23DE-4197-9C3F-BDC4D58BD0DA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{AE5A05F3-A0B7-4D56-ACE1-FC8B9D223FA5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AE5A05F3-A0B7-4D56-ACE1-FC8B9D223FA5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AE5A05F3-A0B7-4D56-ACE1-FC8B9D223FA5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B9A6FBA0-23DE-4197-9C3F-BDC4D58BD0DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B9A6FBA0-23DE-4197-9C3F-BDC4D58BD0DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B9A6FBA0-23DE-4197-9C3F-BDC4D58BD0DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B9A6FBA0-23DE-4197-9C3F-BDC4D58BD0DA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
