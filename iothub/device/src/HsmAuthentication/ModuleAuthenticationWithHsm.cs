@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client.HsmAuthentication
@@ -36,7 +37,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
         protected override async Task<string> SafeCreateNewToken(string iotHub, int suggestedTimeToLive)
         {
             DateTime startTime = DateTime.UtcNow;
-            string audience = SasTokenBuilder.BuildAudience(iotHub, this.DeviceId, this.ModuleId);
+            string audience = SasTokenBuilder.BuildAudience(iotHub, WebUtility.UrlEncode(this.DeviceId), WebUtility.UrlEncode(this.ModuleId));
             string expiresOn = SasTokenBuilder.BuildExpiresOn(startTime, TimeSpan.FromSeconds(suggestedTimeToLive));
             string data = string.Join("\n", new List<string> { audience, expiresOn });
             string signature = await _signatureProvider.SignAsync(this.ModuleId, this._generationId, data).ConfigureAwait(false);
