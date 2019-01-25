@@ -33,16 +33,44 @@ namespace Microsoft.Azure.Devices.Client.Test.HsmAuthentication
             string sasToken = await moduleAuthenticationWithHsm.GetTokenAsync(this.iotHub);
             SharedAccessSignature token = SharedAccessSignature.Parse(iotHub, sasToken);
 
-            string audience = WebUtility.UrlEncode(string.Format(CultureInfo.InvariantCulture, "{0}/devices/{1}/modules/{2}",
+            string audience = string.Format(CultureInfo.InvariantCulture, "{0}/devices/{1}/modules/{2}",
                 this.iotHub,
-                this.deviceId,
-                this.moduleId));
+                WebUtility.UrlEncode(this.deviceId),
+                WebUtility.UrlEncode(this.moduleId));
 
             // Assert
             httpClient.Verify();
             Assert.IsNotNull(sasToken);
             Assert.AreEqual(this.signature, token.Signature);
-            Assert.AreEqual(WebUtility.UrlDecode(audience), token.Audience);
+            Assert.AreEqual(audience, token.Audience);
+            Assert.AreEqual(string.Empty, token.KeyName);
+        }
+
+        [TestMethod]
+        public async Task TestSafeCreateNewToken_ShouldReturnSasToken_DeviceIdWithChars()
+        {
+            // Arrange
+            string deviceId = "n@m.et#st";
+            string moduleId = "$edgeAgent";
+            var httpClient = new Mock<ISignatureProvider>();
+            httpClient.Setup(p => p.SignAsync(moduleId, this.generationId, It.IsAny<string>())).Returns(Task.FromResult(this.signature));
+
+            var moduleAuthenticationWithHsm = new ModuleAuthenticationWithHsm(httpClient.Object, deviceId, moduleId, this.generationId);
+
+            // Act
+            string sasToken = await moduleAuthenticationWithHsm.GetTokenAsync(this.iotHub);
+            SharedAccessSignature token = SharedAccessSignature.Parse(iotHub, sasToken);
+
+            string audience = string.Format(CultureInfo.InvariantCulture, "{0}/devices/{1}/modules/{2}",
+                this.iotHub,
+                WebUtility.UrlEncode(deviceId),
+                WebUtility.UrlEncode(moduleId));
+
+            // Assert
+            httpClient.Verify();
+            Assert.IsNotNull(sasToken);
+            Assert.AreEqual(this.signature, token.Signature);
+            Assert.AreEqual(audience, token.Audience);
             Assert.AreEqual(string.Empty, token.KeyName);
         }
 
