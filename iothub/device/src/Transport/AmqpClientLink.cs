@@ -2,151 +2,61 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.Azure.Amqp;
-using Microsoft.Azure.Amqp.Encoding;
 using Microsoft.Azure.Amqp.Framing;
+using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
-    public enum AmqpClientSenderLinkType
-    {
-        Telemetry,
-        Methods,
-        Twin
-    }
-    public enum AmqpClientReceiverLinkType
-    {
-        Methods,
-        Twin,
-        C2D,
-        Events
-    }
-
     /// <summary>
-    /// 
+    /// Encapsulates the AMQP library link object provides base class for IoTHubClient's sepcific links
+    /// Adds IoTHubClient related link configrations and settings
+    /// Implements generic AMQP operations: Open, Close, Send, Receive, Accept, Dispose
+    /// Exposes event for link-closed and provides API for message received
     /// </summary>
-    internal class AmqpClientLink
+    internal abstract class AmqpClientLink
     {
-        internal const string ClientVersionName = "client-version";
-        private readonly AmqpClientSession amqpClientSession;
-        private readonly DeviceClientEndpointIdentity deviceClientEndpointIdentity;
+        #region Members-Constructor
+        protected const string ClientVersionName = "client-version";
 
-        internal AmqpLink amqpLink { get; private set; }
+        protected AmqpClientSession amqpClientSession { get; private set; }
+        protected DeviceClientEndpointIdentity deviceClientEndpointIdentity { get; private set; }
 
-        internal AmqpLinkSettings amqpLinkSettings { get; private set; }
+        protected AmqpClientLinkType amqpClientLinkType { get; private set; }
+        protected AmqpLinkSettings amqpLinkSettings { get; set; }
 
-        internal bool isLinkClosed { get; private set; }
+        protected AmqpLink amqpLink { get; set; }
 
-        public AmqpClientLink(AmqpClientSenderLinkType amqpClientSenderLinkType, AmqpClientSession amqpClientSession, DeviceClientEndpointIdentity deviceClientEndpointIdentity, TimeSpan timeout)
+        protected string correlationId;
+        protected bool isLinkClosed { get; private set; }
+
+        internal event EventHandler OnAmqpClientLinkClosed;
+
+        internal AmqpClientLink(AmqpClientLinkType amqpClientLinkType, AmqpClientSession amqpClientSession, DeviceClientEndpointIdentity deviceClientEndpointIdentity, TimeSpan timeout, string correlationId = "")
         {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientLink)}");
+
+            this.amqpClientLinkType = amqpClientLinkType;
             this.amqpClientSession = amqpClientSession;
             this.deviceClientEndpointIdentity = deviceClientEndpointIdentity;
+            this.correlationId = correlationId;
 
-            AmqpLinkSettings amqpLinkSettings;
-
-            string path = this.BuildPath(CommonConstants.DeviceEventPathTemplate, CommonConstants.ModuleEventPathTemplate);
-            Uri uri = deviceClientEndpointIdentity.iotHubConnectionString.BuildLinkAddress(path);
-
-            amqpLinkSettings = new AmqpLinkSettings
-            {
-                LinkName = Guid.NewGuid().ToString("N"), // Use a human readable link name to help with debugging
-                Role = false,
-                InitialDeliveryCount = 0,
-                Target = new Target() { Address = uri.AbsoluteUri }
-            };
-
-            // Set common properties
-            var timeoutHelper = new TimeoutHelper(timeout);
-            amqpLinkSettings.AddProperty(IotHubAmqpProperty.TimeoutName, timeoutHelper.RemainingTime().TotalMilliseconds);
-            amqpLinkSettings.AddProperty(IotHubAmqpProperty.ClientVersion, deviceClientEndpointIdentity.productInfo.ToString());
-
-            switch (amqpClientSenderLinkType)
-            {
-                case AmqpClientSenderLinkType.Telemetry:
-                    amqpLinkSettings.SndSettleMode = null; // SenderSettleMode.Unsettled (null as it is the default and to avoid bytes on the wire)
-                    amqpLinkSettings.RcvSettleMode = null; // (byte)ReceiverSettleMode.First (null as it is the default and to avoid bytes on the wire)
-                    break;
-                case AmqpClientSenderLinkType.Methods:
-                    amqpLinkSettings.SndSettleMode = (byte)SenderSettleMode.Settled;
-                    amqpLinkSettings.RcvSettleMode = (byte)ReceiverSettleMode.First;
-                    amqpLinkSettings.AddProperty(IotHubAmqpProperty.ApiVersion, ClientApiVersionHelper.ApiVersionString);
-                    amqpLinkSettings.AddProperty(IotHubAmqpProperty.ChannelCorrelationId, "methods:" + deviceClientEndpointIdentity.iotHubConnectionString.DeviceId);
-                    break;
-                case AmqpClientSenderLinkType.Twin:
-                    amqpLinkSettings.SndSettleMode = (byte)SenderSettleMode.Settled;
-                    amqpLinkSettings.RcvSettleMode = (byte)ReceiverSettleMode.First;
-                    amqpLinkSettings.AddProperty(IotHubAmqpProperty.ApiVersion, ClientApiVersionHelper.ApiVersionString);
-                    amqpLinkSettings.AddProperty(IotHubAmqpProperty.ChannelCorrelationId, "twin:" + deviceClientEndpointIdentity.iotHubConnectionString.DeviceId);
-                    break;
-                default:
-                    break;
-            }
-
-            var amqpLink = new SendingAmqpLink(amqpLinkSettings);
-            amqpLink.AttachTo(this.amqpClientSession.amqpSession);
+            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientLink)}");
         }
+        #endregion
 
-        public AmqpClientLink(AmqpClientReceiverLinkType amqpClienReceiverLinkType, AmqpClientSession amqpClientSession, DeviceClientEndpointIdentity deviceClientEndpointIdentity, TimeSpan timeout)
+        #region Open-Close
+        internal virtual async Task OpenAsync(TimeSpan timeout)
         {
-            this.amqpClientSession = amqpClientSession;
-            this.deviceClientEndpointIdentity = deviceClientEndpointIdentity;
-
-            AmqpLinkSettings amqpLinkSettings;
-
-            string path = this.BuildPath(CommonConstants.DeviceEventPathTemplate, CommonConstants.ModuleEventPathTemplate);
-            Uri uri = deviceClientEndpointIdentity.iotHubConnectionString.BuildLinkAddress(path);
-            uint prefetchCount = deviceClientEndpointIdentity.amqpTransportSettings.PrefetchCount;
-
-            amqpLinkSettings = new AmqpLinkSettings
-            {
-                LinkName = Guid.NewGuid().ToString("N"), // Use a human readable link name to help with debugging
-                Role = true,
-                TotalLinkCredit = prefetchCount,
-                AutoSendFlow = prefetchCount > 0,
-                Target = new Source() { Address = uri.AbsoluteUri }
-            };
-
-            // Set common properties
-            var timeoutHelper = new TimeoutHelper(timeout);
-            amqpLinkSettings.AddProperty(IotHubAmqpProperty.TimeoutName, timeoutHelper.RemainingTime().TotalMilliseconds);
-            amqpLinkSettings.AddProperty(IotHubAmqpProperty.ClientVersion, deviceClientEndpointIdentity.productInfo.ToString());
-
-            switch (amqpClienReceiverLinkType)
-            {
-                case AmqpClientReceiverLinkType.Methods:
-                    amqpLinkSettings.SndSettleMode = (byte)SenderSettleMode.Settled;
-                    amqpLinkSettings.RcvSettleMode = (byte)ReceiverSettleMode.First;
-                    break;
-                case AmqpClientReceiverLinkType.Twin:
-                    amqpLinkSettings.SndSettleMode = (byte)SenderSettleMode.Settled;
-                    amqpLinkSettings.RcvSettleMode = (byte)ReceiverSettleMode.First;
-                    break;
-                case AmqpClientReceiverLinkType.C2D:
-                    amqpLinkSettings.SndSettleMode = null; // SenderSettleMode.Unsettled (null as it is the default and to avoid bytes on the wire)
-                    amqpLinkSettings.RcvSettleMode = (byte)ReceiverSettleMode.Second;
-                    break;
-                case AmqpClientReceiverLinkType.Events:
-                    amqpLinkSettings.SndSettleMode = null; // SenderSettleMode.Unsettled (null as it is the default and to avoid bytes on the wire)
-                    amqpLinkSettings.RcvSettleMode = (byte)ReceiverSettleMode.First;
-                    break;
-                default:
-                    break;
-            }
-
-            var amqpLink = new ReceivingAmqpLink(amqpLinkSettings);
-            amqpLink.AttachTo(this.amqpClientSession.amqpSession);
-        }
-
-        public async Task OpenAsync(TimeSpan timeout)
-        {
-            string path = this.BuildPath(CommonConstants.DeviceEventPathTemplate, CommonConstants.ModuleEventPathTemplate);
-            var audience = deviceClientEndpointIdentity.iotHubConnectionString.Audience + path;
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientLink)}.{nameof(OpenAsync)}.{amqpClientLinkType.ToString()}");
 
             try
             {
                 await amqpLink.OpenAsync(timeout).ConfigureAwait(false);
+                amqpLink.SafeAddClosed(OnLinkClosed);
+                isLinkClosed = false;
             }
             catch (Exception exception)
             {
@@ -154,80 +64,121 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                 throw;
             }
-            //await this.OpenLinkAsync(amqpLink, connectionString, audience, timeoutHelper.RemainingTime(), cancellationToken).ConfigureAwait(false);
-
-            //return link;
-
-            //if (Extensions.IsReceiver(AmqpLinkSettings))
-            //{
-            //    AmqpLink = new ReceivingAmqpLink(amqpClientSession.AmqpSession, AmqpLinkSettings);
-            //}
-            //else
-            //{
-            //    AmqpLink = new SendingAmqpLink(amqpClientSession.AmqpSession, AmqpLinkSettings);
-            //}
-
-            //AmqpLink.SafeAddClosed(OnLinkClosed);
-            //await AmqpLink.OpenAsync(timeout).ConfigureAwait(false);
-            //_isLinkClosed = false;
-        }
-
-        //void AddProperty(AmqpSymbol symbol, object value)
-        //{
-        //    //Extensions.AddProperty((Attach)AmqpLinkSettings, symbol, value);
-        //}
-
-        //public void AddApiVersion(string apiVersion)
-        //{
-        //    //AddProperty(AmqpConstants.Vendor + ":" + ClientApiVersionHelper.ApiVersionName, apiVersion);
-        //}
-
-        //public void AddClientVersion(string clientVersion)
-        //{
-        //    AddProperty(AmqpConstants.Vendor + ":" + ClientVersionName, clientVersion);
-        //}
-
-        public async Task<Outcome> SendMessageAsync(AmqpMessage message, ArraySegment<byte> deliveryTag, TimeSpan timeout)
-        {
-            var sendLink = amqpLink as SendingAmqpLink;
-            if (sendLink == null)
+            finally
             {
-                throw new InvalidOperationException("Link does not support sending.");
+                if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientLink)}.{nameof(OpenAsync)}.{amqpClientLinkType.ToString()}");
             }
-
-            return await sendLink.SendMessageAsync(message,
-                deliveryTag,
-                AmqpConstants.NullBinary,
-                timeout).ConfigureAwait(false);
         }
 
-        public async Task<AmqpMessage> ReceiveMessageAsync(TimeSpan timeout)
+        internal virtual async Task CloseAsync(TimeSpan timeout)
         {
-            var receiveLink = amqpLink as ReceivingAmqpLink;
-            if (receiveLink == null)
-            {
-                throw new InvalidOperationException("Link does not support receiving.");
-            }
-
-            return await receiveLink.ReceiveMessageAsync(timeout).ConfigureAwait(false);
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientLink)}.{nameof(CloseAsync)}.{amqpClientLinkType.ToString()}");
+            await amqpLink.CloseAsync(timeout).ConfigureAwait(false);
         }
 
-        public void AcceptMessage(AmqpMessage amqpMessage)
+        private void OnLinkClosed(object o, EventArgs args)
         {
-            var receiveLink = amqpLink as ReceivingAmqpLink;
-            if (receiveLink == null)
-            {
-                throw new InvalidOperationException("Link does not support receiving.");
-            }
-            receiveLink.AcceptMessage(amqpMessage, false);
-        }
-
-        void OnLinkClosed(object o, EventArgs args)
-        {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientLink)}.{nameof(OnLinkClosed)}.{amqpClientLinkType.ToString()}");
             isLinkClosed = true;
+            OnAmqpClientLinkClosed(o, args);
+        }
+        #endregion
+
+        #region Send
+        internal virtual async Task<Outcome> SendMessageAsync(AmqpMessage message, ArraySegment<byte> deliveryTag, TimeSpan timeout)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientLink)}.{nameof(SendMessageAsync)}.{amqpClientLinkType.ToString()}");
+
+            if (!(amqpLink is SendingAmqpLink senderLink))
+            {
+                throw new InvalidOperationException("Link does not support sending. Link type: " + amqpClientLinkType.ToString());
+            }
+
+            Outcome outcome = await senderLink.SendMessageAsync(message, deliveryTag, AmqpConstants.NullBinary, timeout).ConfigureAwait(false);
+
+            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientLink)}.{nameof(SendMessageAsync)}.{amqpClientLinkType.ToString()}");
+
+            return outcome;
+        }
+        #endregion
+
+        #region Receive
+        internal virtual async Task<AmqpMessage> ReceiveMessageAsync(TimeSpan timeout)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientLink)}.{nameof(ReceiveMessageAsync)}.{amqpClientLinkType.ToString()}");
+
+            if (!(amqpLink is ReceivingAmqpLink receiverLink))
+            {
+                throw new InvalidOperationException("Link does not support receiving. Link type: " + amqpClientLinkType.ToString());
+            }
+
+            AmqpMessage message = await receiverLink.ReceiveMessageAsync(timeout).ConfigureAwait(false);
+
+            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientLink)}.{nameof(ReceiveMessageAsync)}.{amqpClientLinkType.ToString()}");
+
+            return message;
         }
 
-        private string BuildPath(string deviceTemplate, string moduleTemplate)
+        internal virtual void RegisterMessageListener(Action<AmqpMessage> messageListener)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientLink)}.{nameof(RegisterMessageListener)}.{amqpClientLinkType.ToString()}");
+
+            if (!(amqpLink is ReceivingAmqpLink receiverLink))
+            {
+                throw new InvalidOperationException("Link does not support receiving. Link type: " + amqpClientLinkType.ToString());
+            }
+            receiverLink.RegisterMessageListener(messageListener);
+
+            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientLink)}.{nameof(RegisterMessageListener)}.{amqpClientLinkType.ToString()}");
+        }
+        #endregion
+
+        #region Accept-Dispose
+        internal virtual void AcceptMessage(AmqpMessage amqpMessage)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientLink)}.{nameof(AcceptMessage)}.{amqpClientLinkType.ToString()}");
+
+            if (!(amqpLink is ReceivingAmqpLink receiverLink))
+            {
+                throw new InvalidOperationException("Link does not support receiving. Link type: " + amqpClientLinkType.ToString());
+            }
+            receiverLink.AcceptMessage(amqpMessage, false);
+
+            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientLink)}.{nameof(AcceptMessage)}.{amqpClientLinkType.ToString()}");
+        }
+
+        internal virtual async Task<Outcome> DisposeMessageAsync(ArraySegment<byte> deliveryTag, Outcome outcome, bool batchable, TimeSpan timeout)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientLink)}.{nameof(DisposeMessageAsync)}.{amqpClientLinkType.ToString()}");
+
+            if (!(amqpLink is ReceivingAmqpLink receiverLink))
+            {
+                throw new InvalidOperationException("Link does not support receiving. Link type: " + amqpClientLinkType.ToString());
+            }
+
+            Outcome retVal = await receiverLink.DisposeMessageAsync(deliveryTag, outcome, batchable, timeout).ConfigureAwait(false);
+
+            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientLink)}.{nameof(DisposeMessageAsync)}.{amqpClientLinkType.ToString()}");
+
+            return retVal;
+        }
+
+        internal virtual void DisposeDelivery(AmqpMessage amqpMessage)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientLink)}.{nameof(DisposeDelivery)}.{amqpClientLinkType.ToString()}");
+
+            if (!(amqpLink is ReceivingAmqpLink receiverLink))
+            {
+                throw new InvalidOperationException("Link does not support receiving. Link type: " + amqpClientLinkType.ToString());
+            }
+            receiverLink.DisposeDelivery(amqpMessage, true, AmqpConstants.AcceptedOutcome);
+
+            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientLink)}.{nameof(DisposeDelivery)}.{amqpClientLinkType.ToString()}");
+        }
+        #endregion
+
+        #region Helpers
+        protected string BuildPath(string deviceTemplate, string moduleTemplate)
         {
             string path;
             if (string.IsNullOrEmpty(this.deviceClientEndpointIdentity.iotHubConnectionString.ModuleId))
@@ -241,5 +192,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             return path;
         }
+        #endregion
     }
 }

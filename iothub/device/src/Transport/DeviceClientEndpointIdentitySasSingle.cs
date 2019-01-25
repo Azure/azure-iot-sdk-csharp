@@ -7,6 +7,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
     using System.Collections.Generic;
     using System.Text;
     using System.IO;
+    using Microsoft.Azure.Devices.Shared;
 
     /// <summary>
     /// Represents DeviceClientEndpointIdentity which uses SAS authentication and single connection (no multiplexing)
@@ -16,6 +17,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         internal DeviceClientEndpointIdentitySasSingle(IotHubConnectionString iotHubConnectionString, AmqpTransportSettings amqpTransportSettings, ProductInfo productInfo)
             : base (iotHubConnectionString, amqpTransportSettings, productInfo)
         {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(DeviceClientEndpointIdentitySasSingle)}");
         }
     }
 }

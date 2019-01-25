@@ -71,7 +71,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             return
                 (faultType != FaultType_Throttle) &&
-                (faultType != FaultType_QuotaExceeded);
+                (faultType != FaultType_QuotaExceeded) &&
+                (faultType != FaultType_AmqpC2D) &&
+                (faultType != FaultType_AmqpD2C);
         }
 
         // Fault timings:

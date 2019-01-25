@@ -7,6 +7,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
     using System.Collections.Generic;
     using System.Text;
     using System.IO;
+    using Microsoft.Azure.Devices.Shared;
 
     /// <summary>
     /// Represents DeviceClientEndpointIdentity which uses SAS authentication and multiplexing
@@ -16,15 +17,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         internal DeviceClientEndpointIdentitySASMux(IotHubConnectionString iotHubConnectionString, AmqpTransportSettings amqpTransportSettings, ProductInfo productInfo)
             : base(iotHubConnectionString, amqpTransportSettings, productInfo)
         {
-            //switch (transportType)
-            //{
-            //    case TransportType.Amqp_Tcp_Only:
-            //        break;
-            //    case TransportType.Amqp_WebSocket_Only:
-            //        break;
-            //    default:
-            //        throw new InvalidOperationException("Invalid Transport Type {0}".FormatInvariant(transportType));
-            //}
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(DeviceClientEndpointIdentitySASMux)}");
         }
     }
 }

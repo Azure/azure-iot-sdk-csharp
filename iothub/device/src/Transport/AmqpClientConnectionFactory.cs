@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Azure.Devices.Shared;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -11,9 +12,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
     {
         public AmqpClientConnection Create(DeviceClientEndpointIdentity deviceClientEndpointIdentity, RemoveClientConnectionFromPool removeDelegate)
         {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionFactory)}.{nameof(Create)}");
+
             if (deviceClientEndpointIdentity.GetType() == typeof(DeviceClientEndpointIdentitySasSingle))
             {
-                return new AmqpClientConnectionSasSingle(deviceClientEndpointIdentity, removeDelegate);
+                return new AmqpClientConnectionSasSingle(deviceClientEndpointIdentity);
             }
             else if (deviceClientEndpointIdentity.GetType() == typeof(DeviceClientEndpointIdentityX509))
             {

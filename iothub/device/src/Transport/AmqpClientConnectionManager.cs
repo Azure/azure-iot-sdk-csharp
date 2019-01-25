@@ -3,6 +3,7 @@
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
+    using Microsoft.Azure.Devices.Shared;
     using System;
     using System.Collections.Generic;
     using System.Text;
@@ -12,12 +13,17 @@ namespace Microsoft.Azure.Devices.Client.Transport
     /// <summary>
     /// Thread safe singleton to manage connection pools
     /// </summary>
-    public class AmqpClientConnectionManager
+    internal class AmqpClientConnectionManager
     {
         private AmqpClientConnectionPool amqpClientConnectionPool;
 
-        AmqpClientConnectionManager()
+        /// <summary>
+        /// 
+        /// </summary>
+        internal AmqpClientConnectionManager()
         {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionManager)}");
+
             this.amqpClientConnectionPool = new AmqpClientConnectionPool();
         }
 
@@ -27,7 +33,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         /// <summary>
         /// Static member variable to store the single instance of this class
         /// </summary>
-        public static AmqpClientConnectionManager Instance
+        internal static AmqpClientConnectionManager Instance
         {
             get
             {
@@ -45,12 +51,18 @@ namespace Microsoft.Azure.Devices.Client.Transport
         /// <summary>
         /// Get connection by device identity
         /// </summary>
-        internal AmqpClientConnection GetClientConnection(IotHubConnectionString iotHubConnectionString, AmqpTransportSettings amqpTransportSettings, ProductInfo productInfo)
+        internal AmqpClientConnection GetClientConnection(DeviceClientEndpointIdentity deviceClientEndpointIdentity)
         {
-            DeviceClientEndpointIdentityFactory deviceClientEndpointIdentityFactory = new DeviceClientEndpointIdentityFactory();
-            DeviceClientEndpointIdentity deviceClientEndpointIdentity = deviceClientEndpointIdentityFactory.Create(iotHubConnectionString, amqpTransportSettings, productInfo);
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionManager)}.{nameof(GetClientConnection)}");
 
             return amqpClientConnectionPool.GetClientConnection(deviceClientEndpointIdentity);
+        }
+
+        internal void RemoveClientConnection(DeviceClientEndpointIdentity deviceClientEndpointIdentity)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionManager)}.{nameof(RemoveClientConnection)}");
+
+            amqpClientConnectionPool.RemoveClientConnection(deviceClientEndpointIdentity);
         }
     }
 }

@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Globalization;
+
 namespace Microsoft.Azure.Devices.Client
 {
     sealed class CommonResources
@@ -23,6 +26,15 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             return value;
+        }
+
+        internal static string GetNewStringGuid(string postfix)
+        {
+#if !NETSTANDARD1_3
+            return Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture) + postfix;
+#else
+            return Guid.NewGuid().ToString("N") + postfix;
+#endif
         }
     }
 }

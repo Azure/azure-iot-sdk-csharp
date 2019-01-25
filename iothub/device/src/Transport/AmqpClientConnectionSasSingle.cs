@@ -13,8 +13,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
 {
     internal class AmqpClientConnectionSasSingle : AmqpClientConnection
     {
+        #region Members-Constructor
         AmqpClientSession authenticationSession;
-        AmqpClientSession workerSession;
+        AmqpClientSession workerAmqpClientSession;
 
         internal bool isConnectionClosed;
         private ProtocolHeader sentProtocolHeader;
@@ -22,18 +23,41 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         internal override event EventHandler OnAmqpClientConnectionClosed;
 
-        public AmqpClientConnectionSasSingle(DeviceClientEndpointIdentity deviceClientEndpointIdentity, RemoveClientConnectionFromPool removeDelegate)
-            : base(deviceClientEndpointIdentity, removeDelegate)
-        {
-            authenticationSession = null;
-            workerSession = null;
-        }
+        internal bool isConnectionAuthenticated { get; private set; }
 
+        internal static readonly TimeSpan DefaultOperationTimeout = TimeSpan.FromMinutes(1);
+        static readonly TimeSpan RefreshTokenBuffer = TimeSpan.FromMinutes(2);
+        static readonly TimeSpan RefreshTokenRetryInterval = TimeSpan.FromSeconds(30);
+
+#if !NET451
+        readonly IOThreadTimerSlim refreshTokenTimer;
+#else
+        readonly IOThreadTimer refreshTokenTimer;
+#endif
+
+        internal AmqpClientConnectionSasSingle(DeviceClientEndpointIdentity deviceClientEndpointIdentity)
+            : base(deviceClientEndpointIdentity)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasSingle)}");
+
+            authenticationSession = null;
+            workerAmqpClientSession = null;
+            isConnectionAuthenticated = false;
+#if !NET451
+            this.refreshTokenTimer = new IOThreadTimerSlim(s => ((AmqpClientConnectionSasSingle)s).OnRefreshToken(), this, false);
+#else
+            this.refreshTokenTimer = new IOThreadTimer(s => ((AmqpClientConnectionSasSingle)s).OnRefreshToken(), this, false);
+#endif
+        }
+        #endregion
+
+        #region Open-Close
         internal override async Task OpenAsync(TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasSingle)}.{nameof(OpenAsync)}");
 
             var timeoutHelper = new TimeoutHelper(timeout);
+            refreshTokenTimer.Cancel();
 
             TransportBase transport;
 
@@ -85,15 +109,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 await amqpConnection.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
                 isConnectionClosed = false;
 
-                // Create Sessions
-                //authenticationSession = new AmqpClientSession(this);
-                workerSession = new AmqpClientSession(this);
-                await workerSession.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+                // Create Session for Authentication
+                authenticationSession = new AmqpClientSession(this);
+                await authenticationSession.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+                authenticationSession.OnAmqpClientSessionClosed += AuthenticationSession_OnAmqpClientSessionClosed;
 
-                //var amqpLinkFactory = new AmqpLinkFactory();
-                //amqpTestLinkFactory.LinkCreated += OnLinkCreated;
-
-                //this.authenticationSession = new AmqpSession(amqpConnection, amqpSettings, )
+                // Authenticate connection with Cbs
+                await SendCbsTokenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+                isConnectionAuthenticated = true;
             }
             catch (Exception ex) // when (!ex.IsFatal())
             {
@@ -111,20 +134,280 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        internal override async Task<Outcome> SendEventAsync(AmqpMessage message, TimeSpan timeout)
+        private void AuthenticationSession_OnAmqpClientSessionClosed(object sender, EventArgs e)
         {
-            Outcome outcome;
-
-            outcome = await workerSession.SendMessageAsync(message, timeout).ConfigureAwait(false);
-
-            return outcome;
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasSingle)}.{nameof(AuthenticationSession_OnAmqpClientSessionClosed)}");
+            amqpConnection.SafeClose();
         }
 
-        internal override Task<Message> ReceiveAsync(TimeSpan timeout)
+        private void WorkerAmqpClientSession_OnAmqpClientSessionClosed(object sender, EventArgs e)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasSingle)}.{nameof(WorkerAmqpClientSession_OnAmqpClientSessionClosed)}");
+            amqpConnection.SafeClose();
+        }
+
+        private void OnConnectionClosed(object o, EventArgs args)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasSingle)}.{nameof(OnConnectionClosed)}");
+            isConnectionClosed = true;
+            OnAmqpClientConnectionClosed?.Invoke(o, args);
+        }
+
+        internal override async Task CloseAsync(TimeSpan timeout)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasSingle)}.{nameof(CloseAsync)}");
+
+            if (amqpConnection != null)
+            {
+                await amqpConnection.CloseAsync(timeout).ConfigureAwait(false);
+            }
+
+            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionSasSingle)}.{nameof(CloseAsync)}");
+        }
+        #endregion
+
+        #region Authentication
+        private async Task SendCbsTokenAsync(TimeSpan timeout)
+        {
+            var expiresAtUtc = await authenticationSession.AuthenticateCbs(timeout).ConfigureAwait(false);
+            this.ScheduleTokenRefresh(expiresAtUtc);
+        }
+
+        private void ScheduleTokenRefresh(DateTime expiresAtUtc)
+        {
+            if (expiresAtUtc == DateTime.MaxValue)
+            {
+                return;
+            }
+
+            TimeSpan timeFromNow = expiresAtUtc.Subtract(RefreshTokenBuffer).Subtract(DateTime.UtcNow);
+            if (timeFromNow > TimeSpan.Zero)
+            {
+                this.refreshTokenTimer.Set(timeFromNow);
+            }
+        }
+
+        private async void OnRefreshToken()
+        {
+            try
+            {
+                await SendCbsTokenAsync(DefaultOperationTimeout).ConfigureAwait(false);
+            }
+            catch (Exception exception)
+            {
+                if (Fx.IsFatal(exception))
+                {
+                        throw;
+                }
+                this.refreshTokenTimer.Set(RefreshTokenRetryInterval);
+            }
+
+            await authenticationSession.AuthenticateCbs(DefaultOperationTimeout).ConfigureAwait(false);
+        }
+        #endregion
+
+        #region Telemetry
+        internal override async Task EnableTelemetryAndC2DAsync(TimeSpan timeout)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasSingle)}.{nameof(EnableTelemetryAndC2DAsync)}");
+
+            var timeoutHelper = new TimeoutHelper(timeout);
+
+            if (isConnectionAuthenticated)
+            {
+                if (workerAmqpClientSession == null)
+                {
+                    workerAmqpClientSession = new AmqpClientSession(this);
+                    await workerAmqpClientSession.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+                    workerAmqpClientSession.OnAmqpClientSessionClosed += WorkerAmqpClientSession_OnAmqpClientSessionClosed;
+                }
+                await workerAmqpClientSession.OpenLinkTelemetryAndC2DAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+            }
+            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionSasSingle)}.{nameof(EnableTelemetryAndC2DAsync)}");
+        }
+
+        internal override Task DisableTelemetryAndC2DAsync(TimeSpan timeout)
         {
             throw new NotImplementedException();
         }
 
+        internal override async Task<Outcome> SendTelemetrMessageAsync(AmqpMessage message, TimeSpan timeout)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasSingle)}.{nameof(SendTelemetrMessageAsync)}");
+
+            Outcome outcome;
+
+            // Create telemetry links on demand
+            await EnableTelemetryAndC2DAsync(timeout).ConfigureAwait(false);
+
+            // Send the message
+            outcome = await workerAmqpClientSession.SendTelemetryMessageAsync(message, timeout).ConfigureAwait(false);
+
+            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionSasSingle)}.{nameof(SendTelemetrMessageAsync)}");
+
+            return outcome;
+        }
+        #endregion
+
+        #region Methods
+        internal override async Task EnableMethodsAsync(string correlationid, Func<MethodRequestInternal, Task> methodReceivedListener, TimeSpan timeout)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasSingle)}.{nameof(EnableMethodsAsync)}");
+
+            var timeoutHelper = new TimeoutHelper(timeout);
+
+            if (isConnectionAuthenticated)
+            {
+                if (workerAmqpClientSession == null)
+                {
+                    workerAmqpClientSession = new AmqpClientSession(this);
+                    await workerAmqpClientSession.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+                    workerAmqpClientSession.OnAmqpClientSessionClosed += WorkerAmqpClientSession_OnAmqpClientSessionClosed;
+                }
+
+                await workerAmqpClientSession.OpenLinkMethodsAsync(correlationid, methodReceivedListener, timeoutHelper.RemainingTime()).ConfigureAwait(false);
+            }
+
+            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionSasSingle)}.{nameof(EnableMethodsAsync)}");
+        }
+
+        internal override async Task DisableMethodsAsync(TimeSpan timeout)
+        {
+            await workerAmqpClientSession.CloseLinkMethodsAsync(timeout).ConfigureAwait(false);
+        }
+
+        internal override async Task<Outcome> SendMethodResponseAsync(AmqpMessage methodResponse, TimeSpan timeout)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasSingle)}.{nameof(SendMethodResponseAsync)}");
+
+            Outcome outcome;
+
+            outcome = await workerAmqpClientSession.SendMethodResponseAsync(methodResponse, timeout).ConfigureAwait(false);
+
+            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionSasSingle)}.{nameof(SendMethodResponseAsync)}");
+
+            return outcome;
+        }
+        #endregion
+
+        #region Twin
+        internal override async Task EnableTwinPatchAsync(string correlationid, Action<AmqpMessage> onTwinPathReceivedListener, TimeSpan timeout)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasSingle)}.{nameof(EnableTwinPatchAsync)}");
+
+            var timeoutHelper = new TimeoutHelper(timeout);
+
+            if (isConnectionAuthenticated)
+            {
+                if (workerAmqpClientSession == null)
+                {
+                    workerAmqpClientSession = new AmqpClientSession(this);
+                    await workerAmqpClientSession.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+                    workerAmqpClientSession.OnAmqpClientSessionClosed += WorkerAmqpClientSession_OnAmqpClientSessionClosed;
+                }
+
+                await workerAmqpClientSession.OpenLinkTwinAsync(correlationid, onTwinPathReceivedListener, timeoutHelper.RemainingTime()).ConfigureAwait(false);
+            }
+
+            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionSasSingle)}.{nameof(EnableTwinPatchAsync)}");
+        }
+
+        internal override async Task DisableTwinAsync(TimeSpan timeout)
+        {
+            await workerAmqpClientSession.CloseLinkTwinAsync(timeout).ConfigureAwait(false);
+        }
+
+        internal override async Task<Outcome> SendTwinMessageAsync(AmqpMessage twinMessage, TimeSpan timeout)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasSingle)}.{nameof(SendTwinMessageAsync)}");
+
+            Outcome outcome;
+
+            outcome = await workerAmqpClientSession.SendTwinMessageAsync(twinMessage, timeout).ConfigureAwait(false);
+
+            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionSasSingle)}.{nameof(SendMethodResponseAsync)}");
+
+            return outcome;
+        }
+        #endregion
+
+        #region Events
+        internal override async Task EnableEventsReceiveAsync(Action<AmqpMessage> onEventsReceivedListener, TimeSpan timeout)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasSingle)}.{nameof(EnableEventsReceiveAsync)}");
+
+            var timeoutHelper = new TimeoutHelper(timeout);
+
+            if (isConnectionAuthenticated)
+            {
+                await workerAmqpClientSession.OpenLinkEventsAsync(onEventsReceivedListener, timeoutHelper.RemainingTime()).ConfigureAwait(false);
+            }
+
+            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionSasSingle)}.{nameof(EnableEventsReceiveAsync)}");
+        }
+        #endregion
+
+        #region Receive
+        internal override async Task<Message> ReceiveAsync(TimeSpan timeout)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasSingle)}.{nameof(ReceiveAsync)}");
+
+            Message message;
+            AmqpMessage amqpMessage;
+
+            // Create telemetry links on demand
+            await EnableTelemetryAndC2DAsync(timeout).ConfigureAwait(false);
+
+            amqpMessage = await workerAmqpClientSession.telemetryReceiverLink.ReceiveMessageAsync(timeout).ConfigureAwait(false);
+
+            if (amqpMessage != null)
+            {
+                message = new Message(amqpMessage)
+                {
+                    LockToken = new Guid(amqpMessage.DeliveryTag.Array).ToString()
+                };
+            }
+            else
+            {
+                message = null;
+            }
+
+            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionSasSingle)}.{nameof(ReceiveAsync)}");
+
+            return message;
+        }
+        #endregion
+
+        #region Accept-Dispose
+        internal override async Task<Outcome> DisposeMessageAsync(string lockToken, Outcome outcome, TimeSpan timeout)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasSingle)}.{nameof(DisposeMessageAsync)}");
+
+            ArraySegment<byte> deliveryTag = ConvertToDeliveryTag(lockToken);
+
+            Outcome disposeOutcome = null;
+
+            if (workerAmqpClientSession != null)
+            {
+                disposeOutcome = await workerAmqpClientSession.telemetryReceiverLink.DisposeMessageAsync(deliveryTag, outcome, batchable: true, timeout: timeout).ConfigureAwait(false);
+            }
+
+            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionSasSingle)}.{nameof(DisposeMessageAsync)}");
+
+            return disposeOutcome;
+        }
+
+        internal override void DisposeTwinPatchDelivery(AmqpMessage amqpMessage)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasSingle)}.{nameof(DisposeTwinPatchDelivery)}");
+
+            workerAmqpClientSession.DisposeTwinPatchDelivery(amqpMessage);
+
+            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionSasSingle)}.{nameof(DisposeTwinPatchDelivery)}");
+        }
+        #endregion
+
+        #region Helpers
         private void OnWriteHeaderComplete(TransportAsyncCallbackArgs args)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnection)}.{nameof(OnWriteHeaderComplete)}");
@@ -193,55 +476,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 taskCompletionSource.TrySetException(args.Exception);
             }
         }
-
-        void OnConnectionClosed(object o, EventArgs args)
-        {
-            isConnectionClosed = true;
-        }
-
-
-
-
-
-
-        internal override Task EnableMethodAsync(CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
-        internal override Task DisableMethodsAsync(CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
-        internal override Task EnableTwinPatchAsync(CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
-        internal override Task DisableTwinAsync(CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
-        internal override Task EnableEventReceiveAsync(CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
-        internal override Task SendMethodResponseAsync(MethodResponseInternal methodResponse, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
-        internal override Task DisposeMessageAsync(string lockToken, Accepted acceptedOutcome, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
-        internal override Task<Twin> RoundTripTwinMessage(object amqpMessage, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
+        #endregion
     }
 }

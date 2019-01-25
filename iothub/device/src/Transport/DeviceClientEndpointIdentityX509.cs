@@ -7,6 +7,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
     using System.Collections.Generic;
     using System.Text;
     using System.IO;
+    using Microsoft.Azure.Devices.Shared;
 
     /// <summary>
     /// Represents DeviceClientEndpointIdentity which uses X509 authentication and single connection (no multiplexing)
@@ -16,6 +17,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         internal DeviceClientEndpointIdentityX509(IotHubConnectionString iotHubConnectionString, AmqpTransportSettings amqpTransportSettings, ProductInfo productInfo)
             : base (iotHubConnectionString, amqpTransportSettings, productInfo)
         {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(DeviceClientEndpointIdentityX509)}");
         }
     }
 }

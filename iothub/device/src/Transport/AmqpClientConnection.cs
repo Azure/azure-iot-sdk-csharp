@@ -18,33 +18,21 @@ namespace Microsoft.Azure.Devices.Client.Transport
     using System.Net;
     using System.Security.Cryptography.X509Certificates;
     using System.Globalization;
+    using System.Net.Security;
+#if !NETSTANDARD1_3
+    using System.Configuration;
+#endif
 
-    /// <summary>
-    ///
-    /// 
-    /// </summary>
-    public enum AmqpClientConnectionState
-    {
-        /// <summary>
-        /// 
-        /// </summary>
-        NotStarted,
-        /// <summary>
-        /// 
-        /// </summary>
-        Opened,
-        /// <summary>
-        /// 
-        /// </summary>
-        Closed
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
     internal abstract class AmqpClientConnection
     {
+        #region Members-Constructor
         protected readonly AmqpVersion amqpVersion_1_0_0 = new AmqpVersion(1, 0, 0);
+
+        const string DisableServerCertificateValidationKeyName =
+            "Microsoft.Azure.Devices.DisableServerCertificateValidation";
+
+        static readonly Lazy<bool> DisableServerCertificateValidation =
+            new Lazy<bool>(InitializeDisableServerCertificateValidation);
 
         internal DeviceClientEndpointIdentity deviceClientEndpointIdentity { get; private set; }
 
@@ -58,114 +46,96 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public AmqpConnection amqpConnection { get; protected set; }
 
-        internal AmqpClientConnectionState amqpClientConnectionState { get; private set; }
-
-        internal RemoveClientConnectionFromPool removeFromPoolDelegate { get; private set; }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="deviceClientEndpointIdentity"></param>
-        /// <param name="removeDelegate"></param>
-        protected AmqpClientConnection(DeviceClientEndpointIdentity deviceClientEndpointIdentity, RemoveClientConnectionFromPool removeDelegate)
+        internal AmqpClientConnection(DeviceClientEndpointIdentity deviceClientEndpointIdentity)
         {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnection)}");
+
             this.deviceClientEndpointIdentity = deviceClientEndpointIdentity;
             this.amqpTransportSettings = deviceClientEndpointIdentity.amqpTransportSettings;
             this.iotHubConnectionString = deviceClientEndpointIdentity.iotHubConnectionString;
-            this.removeFromPoolDelegate = removeDelegate;
-            this.amqpClientConnectionState = AmqpClientConnectionState.NotStarted;
 
             this.amqpSettings = CreateAmqpSettings();
             this.amqpConnectionSettings = CreateAmqpConnectionSettings();
             this.tlsTransportSettings = CreateTlsTransportSettings();
+
+            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnection)}");
+        }
+        #endregion
+
+        #region Open-Close
+        internal abstract Task OpenAsync(TimeSpan timeout);
+        internal abstract Task CloseAsync(TimeSpan timeout);
+        internal abstract event EventHandler OnAmqpClientConnectionClosed;
+        #endregion
+
+        #region Authentication
+        protected static bool InitializeDisableServerCertificateValidation()
+        {
+#if NETSTANDARD1_3 // No System.Configuration.ConfigurationManager in NetStandard1.3
+            bool flag;
+            if (!AppContext.TryGetSwitch("DisableServerCertificateValidationKeyName", out flag))
+            {
+                return false;
+            }
+            return flag;
+#else
+            string value = ConfigurationManager.AppSettings[DisableServerCertificateValidationKeyName];
+            if (!string.IsNullOrEmpty(value))
+            {
+                return bool.Parse(value);
+            }
+            return false;
+#endif
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="timeout"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        internal abstract Task OpenAsync(TimeSpan timeout);
+        protected static bool OnRemoteCertificateValidation(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
+        {
+            if (sslPolicyErrors == SslPolicyErrors.None)
+            {
+                return true;
+            }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="message"></param>
-        /// <param name="operationTimeout"></param>
-        /// <returns></returns>
-        internal abstract Task<Outcome> SendEventAsync(AmqpMessage message, TimeSpan timeout);
+            if (DisableServerCertificateValidation.Value && sslPolicyErrors == SslPolicyErrors.RemoteCertificateNameMismatch)
+            {
+                return true;
+            }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="timeout"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+            return false;
+        }
+        #endregion
+
+        #region Telemetry
+        internal abstract Task EnableTelemetryAndC2DAsync(TimeSpan timeout);
+        internal abstract Task DisableTelemetryAndC2DAsync(TimeSpan timeout);
+        internal abstract Task<Outcome> SendTelemetrMessageAsync(AmqpMessage message, TimeSpan timeout);
+        #endregion
+
+        #region Methods
+        internal abstract Task EnableMethodsAsync(string correlationid, Func<MethodRequestInternal, Task> methodReceivedListener, TimeSpan timeout);
+        internal abstract Task DisableMethodsAsync(TimeSpan timeout);
+        internal abstract Task<Outcome> SendMethodResponseAsync(AmqpMessage methodResponse, TimeSpan timeout);
+        #endregion
+
+        #region Twin
+        internal abstract Task EnableTwinPatchAsync(string correlationid, Action<AmqpMessage> onTwinPathReceivedListener, TimeSpan timeout);
+        internal abstract Task DisableTwinAsync(TimeSpan timeout);
+        internal abstract Task<Outcome> SendTwinMessageAsync(AmqpMessage twinMessage, TimeSpan timeout);
+        #endregion
+
+        #region Events
+        internal abstract Task EnableEventsReceiveAsync(Action<AmqpMessage> onEventsReceivedListener, TimeSpan timeout);
+        #endregion
+
+        #region Receive
         internal abstract Task<Message> ReceiveAsync(TimeSpan timeout);
+        #endregion
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        internal abstract Task EnableMethodAsync(CancellationToken cancellationToken);
+        #region Accept-Dispose
+        internal abstract Task<Outcome> DisposeMessageAsync(string lockToken, Outcome outcome, TimeSpan timeout);
+        internal abstract void DisposeTwinPatchDelivery(AmqpMessage amqpMessage);
+        #endregion
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        internal abstract Task DisableMethodsAsync(CancellationToken cancellationToken);
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        internal abstract Task EnableTwinPatchAsync(CancellationToken cancellationToken);
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        internal abstract Task DisableTwinAsync(CancellationToken cancellationToken);
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        internal abstract Task EnableEventReceiveAsync(CancellationToken cancellationToken);
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="methodResponse"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        internal abstract Task SendMethodResponseAsync(MethodResponseInternal methodResponse, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="lockToken"></param>
-        /// <param name="acceptedOutcome"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        internal abstract Task DisposeMessageAsync(string lockToken, Accepted acceptedOutcome, CancellationToken cancellationToken);
-        
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="amqpMessage"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        internal abstract Task<Twin> RoundTripTwinMessage(object amqpMessage, CancellationToken cancellationToken);
-
-        internal abstract event EventHandler OnAmqpClientConnectionClosed;
-
+        #region Helpers
         private AmqpSettings CreateAmqpSettings()
         {
             var amqpSettings = new AmqpSettings();
@@ -182,13 +152,15 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return new AmqpConnectionSettings()
             {
                 MaxFrameSize = AmqpConstants.DefaultMaxFrameSize,
-                ContainerId = Guid.NewGuid().ToString("N"),
+                ContainerId = CommonResources.GetNewStringGuid(""),
                 HostName = iotHubConnectionString.HostName
             };
         }
 
-        protected TlsTransportSettings CreateTlsTransportSettings()
+        private TlsTransportSettings CreateTlsTransportSettings()
         {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnection)}.{nameof(CreateTlsTransportSettings)}");
+
             var tcpTransportSettings = new TcpTransportSettings()
             {
                 Host = iotHubConnectionString.HostName,
@@ -198,8 +170,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             var tlsTransportSettings = new TlsTransportSettings(tcpTransportSettings)
             {
                 TargetHost = iotHubConnectionString.HostName,
-                Certificate = amqpTransportSettings.ClientCertificate,
-                CertificateValidationCallback = this.amqpTransportSettings.RemoteCertificateValidationCallback
+                Certificate = null,
+                CertificateValidationCallback = this.amqpTransportSettings.RemoteCertificateValidationCallback ?? OnRemoteCertificateValidation
             };
 
             if (this.amqpTransportSettings.ClientCertificate != null)
@@ -207,8 +179,19 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 tlsTransportSettings.Certificate = this.amqpTransportSettings.ClientCertificate;
             }
 
+            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnection)}.{nameof(CreateTlsTransportSettings)}");
+
             return tlsTransportSettings;
         }
+
+#if NET451
+        private static async Task<IotHubClientWebSocket> CreateLegacyClientWebSocketAsync(Uri webSocketUri, X509Certificate2 clientCertificate, TimeSpan timeout)
+        {
+            var websocket = new IotHubClientWebSocket(WebSocketConstants.SubProtocols.Amqpwsb10);
+            await websocket.ConnectAsync(webSocketUri.Host, webSocketUri.Port, WebSocketConstants.Scheme, clientCertificate, timeout).ConfigureAwait(false);
+            return websocket;
+        }
+#endif
 
         protected async Task<TransportBase> CreateClientWebSocketTransportAsync(TimeSpan timeout)
         {
@@ -305,13 +288,22 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-#if NET451
-                        static async Task<IotHubClientWebSocket> CreateLegacyClientWebSocketAsync(Uri webSocketUri, X509Certificate2 clientCertificate, TimeSpan timeout)
-                        {
-                            var websocket = new IotHubClientWebSocket(WebSocketConstants.SubProtocols.Amqpwsb10);
-                            await websocket.ConnectAsync(webSocketUri.Host, webSocketUri.Port, WebSocketConstants.Scheme, clientCertificate, timeout).ConfigureAwait(false);
-                            return websocket;
-                        }
-#endif
+        protected static ArraySegment<byte> ConvertToDeliveryTag(string lockToken)
+        {
+            if (lockToken == null)
+            {
+                throw new ArgumentNullException("lockToken");
+            }
+
+            Guid lockTokenGuid;
+            if (!Guid.TryParse(lockToken, out lockTokenGuid))
+            {
+                throw new ArgumentException("Should be a valid Guid", "lockToken");
+            }
+
+            var deliveryTag = new ArraySegment<byte>(lockTokenGuid.ToByteArray());
+            return deliveryTag;
+        }
+        #endregion
     }
 }

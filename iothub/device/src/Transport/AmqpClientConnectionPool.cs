@@ -8,24 +8,27 @@ namespace Microsoft.Azure.Devices.Client.Transport
     using System.Text;
     using System.IO;
     using System.Collections.Concurrent;
+    using Microsoft.Azure.Devices.Shared;
 
     delegate void RemoveClientConnectionFromPool(DeviceClientEndpointIdentity deviceClientEndpointIdentity);
 
     /// <summary>
     /// 
     /// </summary>
-    public class AmqpClientConnectionPool
+    internal class AmqpClientConnectionPool
     {
         ConcurrentDictionary<DeviceClientEndpointIdentity, AmqpClientConnection> iotHubSasPool;
-        ConcurrentDictionary<DeviceClientEndpointIdentity, AmqpClientConnection> singleSasPool;
-        ConcurrentDictionary<DeviceClientEndpointIdentity, AmqpClientConnection> sasMuxPool;
-        ConcurrentDictionary<DeviceClientEndpointIdentity, AmqpClientConnection> x509Pool;
+        ConcurrentDictionary<DeviceClientEndpointIdentity ,AmqpClientConnection> singleSasPool;
+        ConcurrentDictionary<DeviceClientEndpointIdentity ,AmqpClientConnection> sasMuxPool;
+        ConcurrentDictionary<DeviceClientEndpointIdentity ,AmqpClientConnection> x509Pool;
 
         /// <summary>
         /// 
         /// </summary>
-        public AmqpClientConnectionPool()
+        internal AmqpClientConnectionPool()
         {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionPool)}");
+
             singleSasPool = new ConcurrentDictionary<DeviceClientEndpointIdentity, AmqpClientConnection>();
             x509Pool = new ConcurrentDictionary<DeviceClientEndpointIdentity, AmqpClientConnection>();
             sasMuxPool = new ConcurrentDictionary<DeviceClientEndpointIdentity, AmqpClientConnection>();
@@ -34,6 +37,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         internal AmqpClientConnection GetClientConnection(DeviceClientEndpointIdentity deviceClientEndpointIdentity)
         {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionPool)}.{nameof(GetClientConnection)}");
+
             if (deviceClientEndpointIdentity is DeviceClientEndpointIdentitySasSingle)
             {
                 return GetIoTHubSasSingleClientConnection(deviceClientEndpointIdentity);
@@ -55,6 +60,23 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 throw new NotImplementedException();
             }
         }
+        internal void RemoveClientConnection(DeviceClientEndpointIdentity deviceClientEndpointIdentity)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionPool)}.{nameof(RemoveClientConnection)}");
+
+            if (singleSasPool.ContainsKey(deviceClientEndpointIdentity))
+            {
+                AmqpClientConnection amqpClientConnection;
+                singleSasPool.TryRemove(deviceClientEndpointIdentity, out amqpClientConnection);
+
+                if (amqpClientConnection != null)
+                {
+                    if (Logging.IsEnabled) Logging.Info(this, $"{nameof(AmqpClientConnectionPool)}.{"Removed:"}.{nameof(amqpClientConnection)}");
+                }
+            }
+            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionPool)}.{nameof(RemoveClientConnection)}");
+        }
+
 
         private AmqpClientConnection GetIoTHubSasSingleClientConnection(DeviceClientEndpointIdentity deviceClientEndpointIdentity)
         {
@@ -78,11 +100,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     return null;
                 }
             }
-        }
-
-        private void RemoveClientConnection(DeviceClientEndpointIdentity deviceClientEndpointIdentity)
-        {
-            throw new NotImplementedException();
         }
 
         private AmqpClientConnection GetIoTHubX509ClientConnection(DeviceClientEndpointIdentity deviceClientEndpointIdentity)

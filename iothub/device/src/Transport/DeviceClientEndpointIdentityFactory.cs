@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Azure.Devices.Shared;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -11,6 +12,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
     {
         public DeviceClientEndpointIdentity Create(IotHubConnectionString iotHubConnectionString, AmqpTransportSettings amqpTransportSettings, ProductInfo productInfo)
         {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(DeviceClientEndpointIdentityFactory)}.{nameof(Create)}");
+
             DeviceClientEndpointIdentity deviceClientEndpointIdentity;
 
             if (iotHubConnectionString != null)
@@ -47,6 +50,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 deviceClientEndpointIdentity = null;
             }
+
+            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(DeviceClientEndpointIdentityFactory)}.{nameof(Create)}");
 
             return deviceClientEndpointIdentity;
         }
