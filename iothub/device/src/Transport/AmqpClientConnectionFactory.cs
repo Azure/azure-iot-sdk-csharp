@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             else if (deviceClientEndpointIdentity.GetType() == typeof(DeviceClientEndpointIdentityX509))
             {
-                throw new NotImplementedException();
+                return new AmqpClientConnectionX509(deviceClientEndpointIdentity);
             }
             else if (deviceClientEndpointIdentity.GetType() == typeof(DeviceClientEndpointIdentityIoTHubSas))
             {
