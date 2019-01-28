@@ -138,14 +138,17 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             if (isSessionOpened)
             {
-
-                cbsLink = new AmqpClientCbsLink(this, amqpClientConnection.deviceClientEndpointIdentity);
-                expiresAtUtc = await cbsLink.AuthenticateCbsAsync(timeout).ConfigureAwait(false);
+                if (cbsLink == null)
+                {
+                    cbsLink = new AmqpClientCbsLink(this, amqpClientConnection.deviceClientEndpointIdentity);
+                }
             }
             else
             {
                 throw new InvalidOperationException("Session is not opened");
             }
+
+            expiresAtUtc = await cbsLink.AuthenticateCbsAsync(timeout).ConfigureAwait(false);
 
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientSession)}.{nameof(AuthenticateCbs)}");
 
@@ -180,6 +183,20 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
 
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientSession)}.{nameof(OpenLinkTelemetryAndC2DAsync)}");
+        }
+
+        internal async Task CloseLinkTelemetryAsync(TimeSpan timeout)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientSession)}.{nameof(CloseLinkTelemetryAsync)}");
+
+            Task telemetrySenderLinkCloseTask = telemetrySenderLink.CloseAsync(timeout);
+            Task telemetryReceiverLinkCloseTask = telemetryReceiverLink.CloseAsync(timeout);
+            await Task.WhenAll(telemetrySenderLinkCloseTask, telemetryReceiverLinkCloseTask).ConfigureAwait(false);
+
+            telemetrySenderLink = null;
+            telemetryReceiverLink = null;
+
+            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientSession)}.{nameof(CloseLinkTelemetryAsync)}");
         }
 
         private void TelemetrySendingLink_OnAmqpClientLinkClosed(object sender, EventArgs e)

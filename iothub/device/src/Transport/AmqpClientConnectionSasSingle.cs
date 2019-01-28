@@ -2,6 +2,7 @@
 using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Azure.Amqp.Sasl;
 using Microsoft.Azure.Amqp.Transport;
+using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Collections.Generic;
@@ -11,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
-    internal class AmqpClientConnectionSasSingle : AmqpClientConnection
+    internal class AmqpClientConnectionSasSingle : AmqpClientConnection, IDisposable
     {
         #region Members-Constructor
         AmqpClientSession authenticationSession;
@@ -29,11 +30,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         static readonly TimeSpan RefreshTokenBuffer = TimeSpan.FromMinutes(2);
         static readonly TimeSpan RefreshTokenRetryInterval = TimeSpan.FromSeconds(30);
 
-#if !NET451
-        readonly IOThreadTimerSlim refreshTokenTimer;
-#else
-        readonly IOThreadTimer refreshTokenTimer;
-#endif
+        AmqpTokenRefresher amqpTokenRefresher;
 
         internal AmqpClientConnectionSasSingle(DeviceClientEndpointIdentity deviceClientEndpointIdentity)
             : base(deviceClientEndpointIdentity)
@@ -43,11 +40,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             authenticationSession = null;
             workerAmqpClientSession = null;
             isConnectionAuthenticated = false;
-#if !NET451
-            this.refreshTokenTimer = new IOThreadTimerSlim(s => ((AmqpClientConnectionSasSingle)s).OnRefreshToken(), this, false);
-#else
-            this.refreshTokenTimer = new IOThreadTimer(s => ((AmqpClientConnectionSasSingle)s).OnRefreshToken(), this, false);
-#endif
         }
         #endregion
 
@@ -57,7 +49,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasSingle)}.{nameof(OpenAsync)}");
 
             var timeoutHelper = new TimeoutHelper(timeout);
-            refreshTokenTimer.Cancel();
+            amqpTokenRefresher?.Cancel();
 
             TransportBase transport;
 
@@ -114,7 +106,27 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 authenticationSession.OnAmqpClientSessionClosed += AuthenticationSession_OnAmqpClientSessionClosed;
 
                 // Authenticate connection with Cbs
-                await SendCbsTokenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+                if (this.amqpTransportSettings.ClientCertificate == null)
+                {
+                    this.amqpTokenRefresher = new AmqpTokenRefresher(
+                       this.authenticationSession,
+                       this.iotHubConnectionString,
+                       this.iotHubConnectionString.AmqpEndpoint.AbsoluteUri
+                       );
+
+                    // Send Cbs token for new connection first
+                    try
+                    {
+                        await this.amqpTokenRefresher.RefreshTokenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+                    }
+                    catch (Exception exception) when (!exception.IsFatal())
+                    {
+                        authenticationSession.amqpSession?.Connection.SafeClose();
+
+                        throw;
+                    }
+
+                }
                 isConnectionAuthenticated = true;
             }
             catch (Exception ex) // when (!ex.IsFatal())
@@ -165,46 +177,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
         }
         #endregion
 
-        #region Authentication
-        private async Task SendCbsTokenAsync(TimeSpan timeout)
-        {
-            var expiresAtUtc = await authenticationSession.AuthenticateCbs(timeout).ConfigureAwait(false);
-            this.ScheduleTokenRefresh(expiresAtUtc);
-        }
-
-        private void ScheduleTokenRefresh(DateTime expiresAtUtc)
-        {
-            if (expiresAtUtc == DateTime.MaxValue)
-            {
-                return;
-            }
-
-            TimeSpan timeFromNow = expiresAtUtc.Subtract(RefreshTokenBuffer).Subtract(DateTime.UtcNow);
-            if (timeFromNow > TimeSpan.Zero)
-            {
-                this.refreshTokenTimer.Set(timeFromNow);
-            }
-        }
-
-        private async void OnRefreshToken()
-        {
-            try
-            {
-                await SendCbsTokenAsync(DefaultOperationTimeout).ConfigureAwait(false);
-            }
-            catch (Exception exception)
-            {
-                if (Fx.IsFatal(exception))
-                {
-                        throw;
-                }
-                this.refreshTokenTimer.Set(RefreshTokenRetryInterval);
-            }
-
-            await authenticationSession.AuthenticateCbs(DefaultOperationTimeout).ConfigureAwait(false);
-        }
-        #endregion
-
         #region Telemetry
         internal override async Task EnableTelemetryAndC2DAsync(TimeSpan timeout)
         {
@@ -225,9 +197,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionSasSingle)}.{nameof(EnableTelemetryAndC2DAsync)}");
         }
 
-        internal override Task DisableTelemetryAndC2DAsync(TimeSpan timeout)
+        internal override async Task DisableTelemetryAndC2DAsync(TimeSpan timeout)
         {
-            throw new NotImplementedException();
+            await workerAmqpClientSession.CloseLinkTelemetryAsync(timeout).ConfigureAwait(false);
         }
 
         internal override async Task<Outcome> SendTelemetrMessageAsync(AmqpMessage message, TimeSpan timeout)
@@ -474,6 +446,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 args.Transport = null;
                 taskCompletionSource.TrySetException(args.Exception);
             }
+        }
+
+        public void Dispose()
+        {
+            amqpTokenRefresher.Dispose();
         }
         #endregion
     }

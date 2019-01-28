@@ -21,7 +21,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 if (
                     (iotHubConnectionString.SharedAccessKey == null) &&
                     (iotHubConnectionString.SharedAccessKeyName == null) &&
-                    (iotHubConnectionString.SharedAccessSignature == null)
+                    (iotHubConnectionString.SharedAccessSignature == null) &&
+                    (iotHubConnectionString.TokenRefresher == null)
                    )
                 {
                     deviceClientEndpointIdentity = new DeviceClientEndpointIdentityX509(iotHubConnectionString, amqpTransportSettings, productInfo);
@@ -30,7 +31,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 {
                     deviceClientEndpointIdentity = new DeviceClientEndpointIdentityIoTHubSas(iotHubConnectionString, amqpTransportSettings, productInfo);
                 }
-                else if (iotHubConnectionString.SharedAccessKeyName == null)
+                else if ((iotHubConnectionString.SharedAccessKeyName == null) || (iotHubConnectionString.TokenRefresher != null))
                 {
                     if (amqpTransportSettings.AmqpConnectionPoolSettings.Pooling)
                     {
