@@ -3,7 +3,10 @@
 
 namespace Microsoft.Azure.Devices.Client
 {
+    using Microsoft.Azure.Devices.Shared;
     using System;
+    using System.Net;
+    using System.Net.Security;
     using System.Security.Cryptography.X509Certificates;
 
     /// <summary>
@@ -19,11 +22,19 @@ namespace Microsoft.Azure.Devices.Client
         TimeSpan operationTimeout;
         TimeSpan openTimeout;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AmqpTransportSettings" class./>
+        /// </summary>
+        /// <param name="transportType">The AMQP transport type.</param>
         public AmqpTransportSettings(TransportType transportType)
             : this(transportType, DefaultPrefetchCount, new AmqpConnectionPoolSettings())
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AmqpTransportSettings" class./>
+        /// </summary>
+        /// <param name="transportType">The AMQP transport type.</param>
         public AmqpTransportSettings(TransportType transportType, uint prefetchCount)
             :this(transportType, prefetchCount, new AmqpConnectionPoolSettings())
         {
@@ -42,6 +53,9 @@ namespace Microsoft.Azure.Devices.Client
             switch (transportType)
             {
                 case TransportType.Amqp_WebSocket_Only:
+                    this.Proxy = DefaultWebProxySettings.Instance;
+                    this.transportType = transportType;
+                    break;
                 case TransportType.Amqp_Tcp_Only:
                     this.transportType = transportType;
                     break;
@@ -76,6 +90,10 @@ namespace Microsoft.Azure.Devices.Client
         public uint PrefetchCount { get; set; }
 
         public X509Certificate2 ClientCertificate { get; set; }
+
+        public IWebProxy Proxy { get; set; }
+
+        public RemoteCertificateValidationCallback RemoteCertificateValidationCallback { get; set; }
 
         public AmqpConnectionPoolSettings AmqpConnectionPoolSettings { get; set; }
 

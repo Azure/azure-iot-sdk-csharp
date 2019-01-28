@@ -155,7 +155,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
             if (sasAuthorizationRule.PrimaryKey != null)
             {
                 string primareyKeyComputedSignature = ComputeSignature(Convert.FromBase64String(sasAuthorizationRule.PrimaryKey));
-                if (string.Equals(_signature, primareyKeyComputedSignature))
+                if (string.Equals(_signature, primareyKeyComputedSignature, StringComparison.Ordinal))
                 {
                     return;
                 }
@@ -164,7 +164,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
             if (sasAuthorizationRule.SecondaryKey != null)
             {
                 string secondaryKeyComputedSignature = ComputeSignature(Convert.FromBase64String(sasAuthorizationRule.SecondaryKey));
-                if (string.Equals(_signature, secondaryKeyComputedSignature))
+                if (string.Equals(_signature, secondaryKeyComputedSignature, StringComparison.Ordinal))
                 {
                     return;
                 }
@@ -220,7 +220,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
 
             foreach (string field in fields)
             {
-                if (field != string.Empty)
+                if (!string.IsNullOrEmpty(field))
                 {
                     string[] fieldParts = field.Split(new string[]{ SharedAccessSignatureConstants.KeyValueSeparator }, StringSplitOptions.None);
                     if (string.Equals(fieldParts[0], SharedAccessSignatureConstants.AudienceFieldName, StringComparison.OrdinalIgnoreCase))

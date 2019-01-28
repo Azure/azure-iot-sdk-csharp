@@ -65,7 +65,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// }
     /// </code>
     /// </example>
-    /// <seealso cref="https://docs.microsoft.com/en-us/rest/api/iot-dps/deviceenrollment">Device Enrollment</seealso>
     public class IndividualEnrollment : IETagHolder
     {
         /// <summary>
@@ -141,6 +140,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="createdDateTimeUtc">the <code>DateTime</code> with the date and time that the enrollment was created. This is optional and can be <code>null</code>.</param>
         /// <param name="lastUpdatedDateTimeUtc">the <code>DateTime</code> with the date and time that the enrollment was updated. This is optional and can be <code>null</code>.</param>
         /// <param name="eTag">the <code>string</code> with the eTag that identify the correct instance of the enrollment in the service. It cannot be <code>null</code> or empty.</param>
+        /// <param name="capabilities">the <see cref="DeviceCapabilities"/> that identifies the device capabilities. This is optional and can be <code>null</code>.</param>
         /// <exception cref="ProvisioningServiceClientException">if the received JSON is invalid.</exception>
         [JsonConstructor]
         internal IndividualEnrollment(
@@ -152,7 +152,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             ProvisioningStatus? provisioningStatus,
             DateTime createdDateTimeUtc,
             DateTime lastUpdatedDateTimeUtc,
-            string eTag)
+            string eTag,
+            DeviceCapabilities capabilities)
         {
             /* SRS_INDIVIDUAL_ENROLLMENT_21_003: [The constructor shall throws ProvisioningServiceClientException if one of the 
                                                     provided parameters in JSON is not valid.] */
@@ -173,6 +174,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 CreatedDateTimeUtc = createdDateTimeUtc;
                 LastUpdatedDateTimeUtc = lastUpdatedDateTimeUtc;
                 ETag = eTag;
+                Capabilities = capabilities;
             }
             catch (ArgumentException e)
             {
@@ -191,8 +193,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// Registration ID
+        /// Registration ID.
         /// </summary>
+        /// <remarks>
+        /// A valid registration Id shall be alphanumeric, lowercase, and may contain hyphens. Max characters 128.
+        /// </remarks>
+        /// <exception cref="ArgumentException">if the provided string does not fit the registration Id requirements</exception>
         [JsonProperty(PropertyName = "registrationId")]
         public string RegistrationId
         {
@@ -201,13 +207,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 return _registrationId;
             }
 
-            /// <summary>
-            /// Registration ID.
-            /// </summary>
-            /// <remarks>
-            /// A valid registration Id shall be alphanumeric, lowercase, and may contain hyphens. Max characters 128.
-            /// </remarks>
-            /// <exception cref="ArgumentException">if the provided string do not fits the registration Id requirements</exception>
             private set
             {
                 ParserUtils.EnsureRegistrationId(value);
@@ -253,6 +252,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </summary>
         [JsonProperty(PropertyName = "attestation")]
         private AttestationMechanism _attestation;
+
+        /// <summary>
+        /// Attestation
+        /// </summary>
         [JsonIgnore]
         public Attestation Attestation
         {
@@ -312,5 +315,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </summary>
         [JsonProperty(PropertyName = "etag", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string ETag { get; set; }
+
+        /// <summary>
+        /// Capabilities of the device
+        /// </summary>
+        [JsonProperty(PropertyName = "capabilities", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public DeviceCapabilities Capabilities { get; set; }
     }
 }

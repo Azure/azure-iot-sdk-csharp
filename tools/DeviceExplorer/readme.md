@@ -23,6 +23,7 @@ To learn more about IoT Hub, see [What is Azure IoT Hub?][what-is-iot-hub].
   - [Get device connection string or data](#getdatadevice)
 - [Monitor device-to-cloud events](#monitor)
 - [Send cloud-to-device messages](#send)
+- [Call Method on device](#method)
 
 <a name="download"/>
 
@@ -32,7 +33,7 @@ You can either download a pre-built version of Device Explorer or build it yours
 
 ### Download a pre-built version of the Device Explorer application
 
-A pre-built version of the Device Explorer application for Windows can be downloaded by clicking on this link:  [Downloads](https://github.com/Azure/azure-iot-sdk-csharp/releases) (Scroll down for __SetupDeviceExplorer.msi__). The default installation directory for this application is "C:\Program Files (x86)\Microsoft\DeviceExplorer". You might want to pin the DeviceExplorer.exe application to the taskbar for easier access.
+A pre-built version of the Device Explorer application for Windows can be downloaded from https://aka.ms/aziotdevexp as well as the [Releases](https://github.com/Azure/azure-iot-sdk-csharp/releases) page. (Scroll down for __SetupDeviceExplorer.msi__). The default installation directory for this application is "C:\Program Files (x86)\Microsoft\DeviceExplorer". You might want to pin the DeviceExplorer.exe application to the taskbar for easier access.
 
 
 ### Build the Device Explorer application
@@ -168,6 +169,25 @@ Run your sample application. Device Explorer should now show that the IoT hub ha
 {"Name":"SetAirResistance","Parameters":{"Position":55}}
 {"Name":"TurnFanOn","Parameters":{}}
 ```
+
+<a name="method"/>
+
+## Call Method on device
+
+- To call Method on device, you can use this [sample application](../../iothub/device/samples/DeviceClientMethodSample) from IoT client sdk.
+
+- Open this sample application in Visual Studio; Update device connection string in sample application.  Then hit F5 to run it.
+ 
+- Go to **Call Method on Device" tab in Device Explorer.
+
+- Input `WriteToConsole` in **Method name** field and `{ "MethodPayload": "hello world!" }` in **Method payload** field; then click **Call Method**.
+
+  ![](doc/media/device_explorer/iotgetstart10.png)
+
+- You should be able to see the **Method payload** message printed in the console window for the client sample application you are using.
+
+  ![](doc/media/device_explorer/iotgetstart11.png)
+
 
 
 [setup-iothub]: ../../doc/setup_iothub.md

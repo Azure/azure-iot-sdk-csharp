@@ -16,7 +16,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// It is an internal class that converts one of the attestations into JSON format. To configure
     ///     the attestation mechanism, see the external API <see cref="Attestation"/>.
     /// </remarks>
-    /// <seealso cref="https://docs.microsoft.com/en-us/rest/api/iot-dps/deviceenrollment">Device Enrollment</seealso>
     internal sealed class AttestationMechanism
     {
         /// <summary>
@@ -47,6 +46,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 /* SRS_ATTESTATION_MECHANISM_21_006: [If the provided attestation is instance of X509Attestation, the constructor 
                                                         shall store the provided X509 certificates.] */
                 X509 = (X509Attestation)attestation;
+            }
+            else if (attestation is NoneAttestation)
+            {
+                // No-op.
             }
             else
             {
@@ -97,6 +100,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                                                     shall store the provided X509 attestation.] */
                     X509 = x509;
                     break;
+                case AttestationMechanismType.None:
+                    break;
                 default:
                     /* SRS_ATTESTATION_MECHANISM_21_017: [The constructor shall throw ProvisioningServiceClientException if the 
                                                     provided ProvisioningServiceClientException is not `TPM` or `X509`.] */
@@ -116,6 +121,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     /* SRS_ATTESTATION_MECHANISM_21_011: [If the type is `X509`, the getAttestation shall return the 
                                                     stored X509Attestation.] */
                     return _x509;
+                case AttestationMechanismType.None:
+
+                    return s_none;
                 default:
                     /* SRS_ATTESTATION_MECHANISM_21_012: [If the type is not `X509` or `TPM`, the getAttestation shall 
                                                     throw ProvisioningServiceClientException.] */
@@ -178,5 +186,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             }
         }
         private X509Attestation _x509;
+
+        private class NoneAttestation : Attestation { }
+        private static NoneAttestation s_none = new NoneAttestation();
     }
 }

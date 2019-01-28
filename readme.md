@@ -9,6 +9,7 @@ This repository contains the following:
 The API reference documentation for .NET SDK is [here][dotnet-api-reference].
 
 To find SDKs in other languages for Azure IoT, please refer to the [azure-iot-sdks][azure-iot-sdks] repository.
+For IoT Hub Management SDK in .NET, please visit [azure-sdk-for-net](https://github.com/Azure/azure-sdk-for-net) repository
 
 ## Need Support?
 * Have a feature request for SDKs? Please post it on [User Voice](https://feedback.azure.com/forums/321918-azure-iot) to help us prioritize.
@@ -20,23 +21,19 @@ To find SDKs in other languages for Azure IoT, please refer to the [azure-iot-sd
 Visit [Azure IoT Dev Center][iot-dev-center] to learn more about developing applications for Azure IoT.
 
 ## Samples
-In the repository, you will find a set of samples that will help you get started:
-* [Azure IoT Samples for C#](https://github.com/Azure-Samples/azure-iot-samples-csharp)
-* [IoT Hub Device SDK samples](./iothub/device/samples)
-* [IoT Hub Service SDK samples](./iothub/service/samples)
-* [Provisioning Device SDK samples](./provisioning/device/samples)
-* [Provisioning Service SDK samples](./provisioning/service/samples)
-
-The samples require certain frameworks and SDKs to be installed on your dev machine. Please see [devbox-setup][devbox-setup] for details.
+Samples are available at [Azure IoT Samples for C#](https://github.com/Azure-Samples/azure-iot-samples-csharp)
 
 ## Contribute to the Azure IoT C# SDK
 If you would like to build or change the SDK source code, please follow the [devguide](doc/devguide.md).
 
-## How to use the Azure IoT SDKs for .NET
+### Build status
+Due to security considerations, build logs are not publicly available.
 
-* **Using packages and libraries**: The simplest way to use the Azure IoT SDKs is to use NuGet packages. See https://github.com/Azure/azure-iot-sdk-csharp/releases for a list released packages.
-
-* **Build from sources**: This is for advanced users that will build and maintain their own sources. See [devbox-setup][devbox-setup] for details on how to set up your machine to build the Azure IoT SDK C#. See the End-to-end tests and azureiot.sln file for an example on how to reference the source code SDK (as opposed to NuGet packages) into your application.
+| Service Environment      | Status |
+| ---                      | ---    |
+| WestUS                   | [![Build Status](https://azure-iot-sdks.visualstudio.com/azure-iot-sdks/_apis/build/status/csharp/csharp-westus1?branchName=master)](https://azure-iot-sdks.visualstudio.com/azure-iot-sdks/_build/latest?definitionId=44)|
+| Canary                   | [![Build Status](https://azure-iot-sdks.visualstudio.com/azure-iot-sdks/_apis/build/status/csharp/csharp-canary1?branchName=master)](https://azure-iot-sdks.visualstudio.com/azure-iot-sdks/_build/latest?definitionId=43)|
+| Dogfood                  | [![Build Status](https://azure-iot-sdks.visualstudio.com/azure-iot-sdks/_apis/build/status/csharp/csharp-df1?branchName=master)](https://azure-iot-sdks.visualstudio.com/azure-iot-sdks/_build/latest?definitionId=36)|
 
 ## OS platforms and hardware compatibility
 The IoT Hub device SDK for .NET can be used with a broad range of OS platforms and devices.
@@ -70,7 +67,6 @@ For details on OS support see the following resources:
 | Retry policies                                                                                                   | :heavy_check_mark:  | :heavy_check_mark:  | :heavy_check_mark:  | :heavy_check_mark:  | :heavy_check_mark:  | Retry policy for unsuccessful device-to-cloud messages have three options: no try, exponential backoff with jitter (default) and custom.                                                                                                                               |
 | Devices multiplexing over single connection                                                                      | :heavy_minus_sign:  | :heavy_minus_sign:  | :heavy_check_mark:  | :heavy_check_mark:  | :heavy_check_mark:  |                                                                                                                                                                                                                                                                        |
 | Connection Pooling - Specifying number of connections                                                            | :heavy_minus_sign:  | :heavy_minus_sign:  | :heavy_check_mark:  | :heavy_check_mark:  | :heavy_check_mark:  |                                                                                                                                                                                                                                                                        |
-
 
 ### IoT Hub Service SDK
 :heavy_check_mark: feature available  :heavy_multiplication_x: feature planned but not supported  :heavy_minus_sign: no support planned

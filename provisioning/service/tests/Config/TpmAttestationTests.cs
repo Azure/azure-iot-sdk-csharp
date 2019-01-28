@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 {
     [TestClass]
+    [TestCategory("Unit")]
     public class TpmAttestationTests
     {
         private const string Key = "AToAAQALAAMAsgAgg3GXZ0SEs/gakMyNRqXXJP1S124GUgtk8qHaGzMUaaoABgCAAEMAEAgAAAAAAAEAxsj" +
@@ -19,7 +20,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         /* SRS_TPM_ATTESTATION_21_001: [The EndorsementKey setter shall throws ArgumentNullException if the provided 
          *                              endorsementKey is null or white space.] */
         [TestMethod]
-        [TestCategory("DevService")]
         public void TpmAttestationThrowsOnNullEndorsementKey()
         {
             // arrange
@@ -30,7 +30,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         [TestMethod]
-        [TestCategory("DevService")]
         public void TpmAttestationThrowsOnEmptyEndorsementKey()
         {
             // arrange
@@ -42,7 +41,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         /* SRS_TPM_ATTESTATION_21_002: [The StorageRootKey setter shall store the storageRootKey passed.] */
         [TestMethod]
-        [TestCategory("DevService")]
         public void TpmAttestationSucceedOnNullStorageRootKey()
         {
             // arrange
@@ -58,7 +56,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         [TestMethod]
-        [TestCategory("DevService")]
         public void TpmAttestationSucceedOnEmptyStorageRootKey()
         {
             // arrange
@@ -75,7 +72,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         /* SRS_TPM_ATTESTATION_21_003: [The constructor shall store the provided endorsementKey and storageRootKey.] */
         [TestMethod]
-        [TestCategory("DevService")]
         public void TpmAttestationSucceedOnValidEndorsementKey()
         {
             // arrange
@@ -90,7 +86,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         [TestMethod]
-        [TestCategory("DevService")]
         public void TpmAttestationSucceedOnValidEndorsementKeyAndStorageRootKey()
         {
             // arrange
@@ -107,7 +102,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         /* SRS_TPM_ATTESTATION_21_004: [The TpmAttestation shall provide means to serialization and deserialization.] */
         [TestMethod]
-        [TestCategory("DevService")]
         public void TpmAttestationSucceedOnSerialization()
         {
             // arrange
@@ -128,7 +122,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         [TestMethod]
-        [TestCategory("DevService")]
         public void TpmAttestationSucceedOnSerializationWithoutStorageRootKey()
         {
             // arrange
@@ -147,7 +140,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         [TestMethod]
-        [TestCategory("DevService")]
         public void TpmAttestationSucceedOnSerializationWithEmptyStorageRootKey()
         {
             // arrange
@@ -168,7 +160,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         [TestMethod]
-        [TestCategory("DevService")]
         public void TpmAttestationSucceedOnDeserialization()
         {
             // arrange
@@ -189,7 +180,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         [TestMethod]
-        [TestCategory("DevService")]
         public void TpmAttestationThrowsOnDeserializationWithoutEndorsementKey()
         {
             // arrange
@@ -204,7 +194,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         [TestMethod]
-        [TestCategory("DevService")]
         public void TpmAttestationThrowsOnDeserializationWithEmptyEndorsementKey()
         {
             // arrange
@@ -220,7 +209,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         [TestMethod]
-        [TestCategory("DevService")]
         public void TpmAttestationSucceedOnDeserializationWithoutStorageRootKey()
         {
             // arrange
@@ -238,7 +226,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         [TestMethod]
-        [TestCategory("DevService")]
         public void TpmAttestationSucceedOnDeserializationWithEmptyStorageRootKey()
         {
             // arrange

@@ -61,5 +61,15 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
 
             return equals;
         }
+
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as SharedAccessSignatureAuthorizationRule);
+        }
+
+        public override int GetHashCode()
+        {
+            return (_primaryKey + _secondaryKey).GetHashCode();
+        }
     }
 }

@@ -21,10 +21,12 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
         private static readonly string SharedAccessKeyNamePropertyName = ((MemberExpression)((Expression<Func<ServiceConnectionStringBuilder, string>>)(_ => _.SharedAccessKeyName)).Body).Member.Name; // todo: replace with nameof()
         private static readonly string SharedAccessKeyPropertyName = ((MemberExpression)((Expression<Func<ServiceConnectionStringBuilder, string>>)(_ => _.SharedAccessKey)).Body).Member.Name; // todo: replace with nameof()
         private static readonly string SharedAccessSignaturePropertyName = ((MemberExpression)((Expression<Func<ServiceConnectionStringBuilder, string>>)(_ => _.SharedAccessSignature)).Body).Member.Name; // todo: replace with nameof();
-        private static readonly Regex HostNameRegex = new Regex(@"[a-zA-Z0-9_\-\.]+$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        private static readonly Regex SharedAccessKeyNameRegex = new Regex(@"^[a-zA-Z0-9_\-@\.]+$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        private static readonly Regex SharedAccessKeyRegex = new Regex(@"^.+$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        private static readonly Regex SharedAccessSignatureRegex = new Regex(@"^.+$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        private static readonly TimeSpan regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
+        private static readonly Regex HostNameRegex = new Regex(@"[a-zA-Z0-9_\-\.]+$", RegexOptions.Compiled | RegexOptions.IgnoreCase, regexTimeoutMilliseconds);
+        private static readonly Regex SharedAccessKeyNameRegex = new Regex(@"^[a-zA-Z0-9_\-@\.]+$", RegexOptions.Compiled | RegexOptions.IgnoreCase, regexTimeoutMilliseconds);
+        private static readonly Regex SharedAccessKeyRegex = new Regex(@"^.+$", RegexOptions.Compiled | RegexOptions.IgnoreCase, regexTimeoutMilliseconds);
+        private static readonly Regex SharedAccessSignatureRegex = new Regex(@"^.+$", RegexOptions.Compiled | RegexOptions.IgnoreCase, regexTimeoutMilliseconds);
 
         private string _hostName;
         private string _serviceName;
@@ -192,7 +194,8 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
         {
             if (!regex.IsMatch(value))
             {
-                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "The connection string has an invalid value for property: {0}", propertyName), "serviceConnectionString");
+                throw new ArgumentException(
+                    string.Format(CultureInfo.InvariantCulture, "The connection string has an invalid value for property: {0}", propertyName), nameof(value));
             }
         }
 
@@ -209,7 +212,9 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
             string value;
             if (!map.TryGetValue(propertyName, out value))
             {
-                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "The connection string is missing the property: {0}", propertyName), "serviceConnectionString");
+                throw new ArgumentException(
+                    string.Format(CultureInfo.InvariantCulture, "The connection string is missing the property: {0}", propertyName), 
+                    nameof(map));
             }
 
             return value;

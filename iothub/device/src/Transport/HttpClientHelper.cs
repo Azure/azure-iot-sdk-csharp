@@ -46,7 +46,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
             TimeSpan timeout,
             Action<HttpClient> preRequestActionForAllRequests,
             X509Certificate2 clientCert,
-            ProductInfo productInfo
+            HttpClientHandler httpClientHandler,
+            ProductInfo productInfo,
+            IWebProxy proxy
             )
         {
             this.baseAddress = baseAddress;
@@ -54,18 +56,55 @@ namespace Microsoft.Azure.Devices.Client.Transport
             this.defaultErrorMapping =
                 new ReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>(defaultErrorMapping);
 
-#if !NETSTANDARD1_3 && !NETSTANDARD2_0
-            WebRequestHandler handler = null;
+#if NET451
+            WebRequestHandler handler = httpClientHandler as WebRequestHandler;
             if (clientCert != null)
             {
-                handler = new WebRequestHandler();
+                if (handler == null)
+                {
+                    handler = new WebRequestHandler();
+                }
+
                 handler.ClientCertificates.Add(clientCert);
                 this.usingX509ClientCert = true;
             }
 
+            if (proxy != DefaultWebProxySettings.Instance)
+            {
+                if (handler == null)
+                {
+                    handler = new WebRequestHandler();
+                }
+
+                handler.UseProxy = (proxy != null);
+                handler.Proxy = proxy;
+            }
+
             this.httpClientObj = handler != null ? new HttpClient(handler) : new HttpClient();
 #else
-            this.httpClientObj = new HttpClient();
+            if (clientCert != null)
+            {
+                if (httpClientHandler == null)
+                {
+                    httpClientHandler = new HttpClientHandler();
+                }
+
+                httpClientHandler.ClientCertificates.Add(clientCert);
+                this.usingX509ClientCert = true;
+            }
+
+            if (proxy != DefaultWebProxySettings.Instance)
+            {
+                if (httpClientHandler == null)
+                {
+                    httpClientHandler = new HttpClientHandler();
+                }
+
+                httpClientHandler.UseProxy = (proxy != null);
+                httpClientHandler.Proxy = proxy;
+            }
+
+            this.httpClientObj = httpClientHandler != null ? new HttpClient(httpClientHandler) : new HttpClient();
 #endif
 
             this.httpClientObj.BaseAddress = this.baseAddress;
@@ -138,7 +177,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     {
                         InsertEtag(requestMsg, entity, operationType);
                         requestMsg.Content = CreateContent(entity);
-                        return Task.FromResult(0);
+                        return TaskHelpers.CompletedTask;
                     },
                     async (httpClient, token) => result = await ReadResponseMessageAsync<T>(httpClient, token).ConfigureAwait(false),
                     errorMappingOverrides,
@@ -180,7 +219,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 }
             }
 
-            return Task.FromResult(0);
+            return TaskHelpers.CompletedTask;
         }
 
         static void InsertEtag(HttpRequestMessage requestMessage, IETagHolder entity, PutOperationType operationType)
@@ -270,7 +309,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         }
                     }
 
-                    return Task.FromResult(0);
+                    return TaskHelpers.CompletedTask;
                 },
                 ReadResponseMessageAsync<HttpResponseMessage>,
                 errorMappingOverrides,
@@ -328,7 +367,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         }
                     }
 
-                    return Task.FromResult(0);
+                    return TaskHelpers.CompletedTask;
                 },
                 processResponseMessageAsync,
                 errorMappingOverrides,
@@ -383,6 +422,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> errorMappingOverrides,
             CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             IDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>> mergedErrorMapping =
                 this.MergeErrorMapping(errorMappingOverrides);
 
@@ -445,20 +486,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 {
                     throw new IotHubCommunicationException(ex.Message, ex);
                 }
-                catch (TaskCanceledException ex)
+                catch (OperationCanceledException)
                 {
-                    // Unfortunately TaskCanceledException is thrown when HttpClient times out.
-                    if (cancellationToken.IsCancellationRequested)
-                    {
-                        throw new IotHubException(ex.Message, ex);
-                    }
-
-                    throw new IotHubCommunicationException(string.Format(CultureInfo.InvariantCulture, "The {0} operation timed out.", httpMethod), ex);
+                    throw;
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (!ex.IsFatal())
                 {
-                    if (Fx.IsFatal(ex)) throw;
-
                     throw new IotHubException(ex.Message, ex);
                 }
 

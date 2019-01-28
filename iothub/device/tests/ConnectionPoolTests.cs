@@ -11,11 +11,10 @@ namespace Microsoft.Azure.Devices.Client.Test
     using Moq;
 
     [TestClass]
+    [TestCategory("Unit")]
     public class ConnectionPoolTests
     {
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("ConnectionPool")]
         public void DeviceScopeMuxConnection_PoolingOffReleaseTest()
         {
             // Arrange
@@ -38,8 +37,6 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         [ExpectedException(typeof(InvalidOperationException))]
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("ConnectionPool")]
         public void DeviceScopeMuxConnection_PoolingOnNegativeReleaseTest()
         {
             // Arrange
@@ -59,8 +56,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("ConnectionPool")]
         public void DeviceScopeMuxConnection_PoolingOnPositiveReleaseTest()
         {
             // Arrange
@@ -82,8 +77,6 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         [ExpectedException(typeof(InvalidOperationException))]
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("ConnectionPool")]
         public void DeviceScopeMuxConnection_MaxDevicesPerConnectionTest()
         {
             // Arrange
@@ -110,8 +103,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("ConnectionPool")]
         public void DeviceScopeMuxConnection_NumberOfPoolsTest()
         {
             // Arrange
@@ -136,8 +127,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("ConnectionPool")]
         public async Task DeviceScopeMuxConnection_ConnectionIdleTimeoutTest()
         {
             // Arrange
@@ -171,8 +160,6 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("ConnectionPool")]
         [ExpectedException(typeof(ObjectDisposedException))]
         public async Task HubScopeMuxConnection_ConnectionIdleTimeoutTest()
         {
@@ -212,8 +199,6 @@ namespace Microsoft.Azure.Devices.Client.Test
 
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("ConnectionPool")]
         public void AmqpConnectionPoolSettingsComparisonTests()
         {
             var amqpConnectionPoolSettings1 = new AmqpConnectionPoolSettings();

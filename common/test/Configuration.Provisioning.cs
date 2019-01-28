@@ -10,7 +10,9 @@ namespace Microsoft.Azure.Devices.E2ETests
     {
         public static partial class Provisioning
         {
-            public const string CertificatePassword = "testcertificate";
+            public static string CertificatePassword => GetValue("DPS_X509_PFX_CERTIFICATE_PASSWORD");
+
+            public static string ConnectionString => GetValue("PROVISIONING_CONNECTION_STRING");
 
             public static string GlobalDeviceEndpoint => 
                 GetValue("DPS_GLOBALDEVICEENDPOINT", "global.azure-devices-provisioning.net");
@@ -30,6 +32,10 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             public static X509Certificate2Collection GetGroupEnrollmentChain()
                 => GetBase64EncodedCertificateCollection("DPS_GROUPX509_CERTIFICATE_CHAIN");
+
+            public static string ConnectionStringInvalidServiceCertificate => GetValue("PROVISIONING_CONNECTION_STRING_INVALIDCERT", string.Empty);
+
+            public static string GlobalDeviceEndpointInvalidServiceCertificate => GetValue("DPS_GLOBALDEVICEENDPOINT_INVALIDCERT", string.Empty);
         }
     }
 }

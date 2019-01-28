@@ -1,7 +1,10 @@
-﻿using System;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information
+
+using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
+namespace Microsoft.Azure.Devices.Client.Test.Transport
 {
     using System.Diagnostics;
     using System.Net.Sockets;
@@ -15,15 +18,18 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
     using DotNetty.Codecs.Mqtt.Packets;
     using Newtonsoft.Json;
     using System.IO;
+    using System.Linq;
     using Exceptions;
     using Client.Transport;
     using DotNetty.Common.Concurrency;
     using Microsoft.Azure.Devices.Client.Test.ConnectionString;
 
     [TestClass]
+    [TestCategory("Unit")]
     public class MqttTransportHandlerTests
     {
-        const string DumpyConnectionString = "HostName=127.0.0.1;SharedAccessKeyName=AllAccessKey;DeviceId=FakeDevice;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
+        const string DummyConnectionString = "HostName=127.0.0.1;SharedAccessKeyName=AllAccessKey;DeviceId=FakeDevice;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
+        const string DummyModuleConnectionString = "HostName=127.0.0.1;SharedAccessKeyName=AllAccessKey;DeviceId=FakeDevice;ModuleId=FakeModule;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
         const string fakeMethodResponseBody = "{ \"foo\" : \"bar\" }";
         const string methodPostTopicFilter = "$iothub/methods/POST/#";
         const string twinPatchDesiredTopicFilter = "$iothub/twin/PATCH/properties/desired/#";
@@ -34,70 +40,60 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
         const string fakeResponseId = "fakeResponseId";
 
         [TestMethod]
-        [TestCategory("TransportHandlers")]
         public async Task MqttTransportHandlerOpenAsyncTokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => CreateFromConnectionString().OpenAsync(true, token)).ConfigureAwait(false);
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().OpenAsync(token)).ConfigureAwait(false);
         }
 
         [TestMethod]
-        [TestCategory("TransportHandlers")]
         public async Task MqttTransportHandlerSendEventAsyncTokenCancellationRequested()
         {
             await TestOperationCanceledByToken(token => CreateFromConnectionString().SendEventAsync(new Message(), token)).ConfigureAwait(false);
         }
 
         [TestMethod]
-        [TestCategory("TransportHandlers")]
         public async Task MqttTransportHandlerReceiveAsyncTokenCancellationRequested()
         {
             await TestOperationCanceledByToken(token => CreateFromConnectionString().ReceiveAsync(new TimeSpan(0, 10, 0), token)).ConfigureAwait(false);
         }
 
         [TestMethod]
-        [TestCategory("TransportHandlers")]
         public async Task MqttTransportHandlerCompleteAsyncTokenCancellationRequested()
         {
             await TestOperationCanceledByToken(token => CreateFromConnectionString().CompleteAsync(Guid.NewGuid().ToString(), token)).ConfigureAwait(false);
         }
 
         [TestMethod]
-        [TestCategory("TransportHandlers")]
         public async Task MqttTransportHandlerEnableMethodsAsyncTokenCancellationRequested()
         {
             await TestOperationCanceledByToken(token => CreateFromConnectionString().EnableMethodsAsync(token)).ConfigureAwait(false);
         }
 
         [TestMethod]
-        [TestCategory("TransportHandlers")]
         public async Task MqttTransportHandlerDisableMethodsAsyncTokenCancellationRequested()
         {
             await TestOperationCanceledByToken(token => CreateFromConnectionString().DisableMethodsAsync(token)).ConfigureAwait(false);
         }
 
         [TestMethod]
-        [TestCategory("TransportHandlers")]
         public async Task MqttTransportHandlerSendMethodResponseAsyncTokenCancellationRequested()
         {
             await TestOperationCanceledByToken(token => CreateFromConnectionString().SendMethodResponseAsync(new MethodResponseInternal(), token)).ConfigureAwait(false);
         }
 
         [TestMethod]
-        [TestCategory("TransportHandlers")]
         public async Task MqttTransportHandlerEnableTwinPatchAsyncTokenCancellationRequested()
         {
             await TestOperationCanceledByToken(token => CreateFromConnectionString().EnableTwinPatchAsync(token)).ConfigureAwait(false);
         }
 
         [TestMethod]
-        [TestCategory("TransportHandlers")]
         public async Task MqttTransportHandlerSendTwinGetAsyncTokenCancellationRequested()
         {
             await TestOperationCanceledByToken(token => CreateFromConnectionString().SendTwinGetAsync(token)).ConfigureAwait(false);
         }
 
         [TestMethod]
-        [TestCategory("TransportHandlers")]
         public async Task MqttTransportHandlerSendTwinPatchAsyncTokenCancellationRequested()
         {
             await TestOperationCanceledByToken(token => CreateFromConnectionString().SendTwinPatchAsync(new TwinCollection(), token)).ConfigureAwait(false);
@@ -107,10 +103,8 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
         {
             return new MqttTransportHandler(
                 new PipelineContext(),
-                IotHubConnectionStringExtensions.Parse(DumpyConnectionString), 
-                new MqttTransportSettings(Microsoft.Azure.Devices.Client.TransportType.Mqtt_Tcp_Only), 
-                (o, ea) => { }, 
-                (o, ea) => { return TaskHelpers.CompletedTask; });
+                IotHubConnectionStringExtensions.Parse(DummyConnectionString),
+                new MqttTransportSettings(TransportType.Mqtt_Tcp_Only));
         }
 
         async Task TestOperationCanceledByToken(Func<CancellationToken, Task> asyncMethod)
@@ -121,19 +115,12 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
             try
             {
                 await asyncMethod(tokenSource.Token).ConfigureAwait(false);
+                Assert.Fail("Operation did not throw expected exception.");
             }
-            catch (SocketException)
-            {
-                Assert.Fail("Fail to skip execution of this operation using cancellation token.");
-            }
+            catch (OperationCanceledException) { }
         }
 
-        MqttTransportHandler CreateTransportHandlerWithMockChannel(out IChannel channel)
-        {
-            return CreateTransportHandlerWithMockChannel(out channel, (o, ea) => { }, (o, ea) => { return TaskHelpers.CompletedTask; });
-        }
-
-        MqttTransportHandler CreateTransportHandlerWithMockChannel(out IChannel channel, Action<object, ConnectionEventArgs> onConnectionOpenedCallback, Func<object, ConnectionEventArgs, Task> onConnectionClosedCallback)
+        MqttTransportHandler CreateTransportHandlerWithMockChannel(out IChannel channel, string connectionString = DummyConnectionString)
         {
             var _channel = Substitute.For<IChannel>();
             channel = _channel;
@@ -141,20 +128,19 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
 
             // The channel factory creates the channel.  This gets called from inside OpenAsync.  
             // Unfortunately, it needs access to the internals of the transport (like being able to call OnConnceted, which is passed into the Mqtt channel constructor, but we're not using that)
-            Func<IPAddress, int, Task<IChannel>> factory = (a, i) =>
+            Func<IPAddress[], int, Task<IChannel>> factory = (a, i) =>
             {
                 transport.OnConnected();
                 return Task<IChannel>.FromResult<IChannel>(_channel);
             };
-            
-            transport = new MqttTransportHandler(new PipelineContext(), IotHubConnectionStringExtensions.Parse(DumpyConnectionString), new MqttTransportSettings(Microsoft.Azure.Devices.Client.TransportType.Mqtt_Tcp_Only), factory, onConnectionOpenedCallback, onConnectionClosedCallback);
+
+            transport = new MqttTransportHandler(new PipelineContext(), IotHubConnectionStringExtensions.Parse(connectionString), new MqttTransportSettings(Microsoft.Azure.Devices.Client.TransportType.Mqtt_Tcp_Only), factory);
             return transport;
         }
 
+
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_031: `OpenAsync` shall subscribe using the '$iothub/twin/res/#' topic filter
         [TestMethod]
-        [TestCategory("TransportHandlers")]
-        [TestCategory("Twin")]
         public async Task MqttTransportHandlerOpenAsyncSubscribesToTwinResultTopic()
         {
             // arrange
@@ -163,7 +149,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
 
             // act
             transport.OnConnected();
-            await transport.OpenAsync(true, CancellationToken.None).ConfigureAwait(false);
+            await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
 
             // assert
             await channel
@@ -176,8 +162,6 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_032: `EnableMethodsAsync` shall open the transport if this method is called when the transport is not open.
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_002: `EnableMethodsAsync` shall wait for a SUBACK for the subscription request.
         [TestMethod]
-        [TestCategory("TransportHandlers")]
-        [TestCategory("Methods")]
         public async Task MqttTransportHandlerEnableMethodsAsyncSubscribesSuccessfully()
         {
             // arrange
@@ -186,6 +170,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
 
             // act
             transport.OnConnected();
+            await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
             await transport.EnableMethodsAsync(CancellationToken.None).ConfigureAwait(false);
 
             // assert
@@ -197,8 +182,6 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
 
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_003: `EnableMethodsAsync` shall return failure if the subscription request fails.
         [TestMethod]
-        [TestCategory("TransportHandlers")]
-        [TestCategory("Methods")]
         [ExpectedException(typeof(TimeoutException))]
         public async Task MqttTransportHandlerEnableMethodsAsyncSubscribeTimesOut()
         {
@@ -211,14 +194,13 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
 
             // act & assert
             transport.OnConnected();
+            await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
             await transport.EnableMethodsAsync(CancellationToken.None).ConfigureAwait(false);
         }
 
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_28_001: `DisableMethodsAsync` shall unsubscribe using the '$iothub/methods/POST/' topic filter.
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_28_002: `DisableMethodsAsync` shall wait for a UNSUBACK for the unsubscription.
         [TestMethod]
-        [TestCategory("TransportHandlers")]
-        [TestCategory("Methods")]
         public async Task MqttTransportHandlerDisableMethodsAsyncUnsubscribesSuccessfully()
         {
             // arrange
@@ -227,7 +209,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
 
             // act
             transport.OnConnected();
-            await transport.OpenAsync(true, CancellationToken.None).ConfigureAwait(false);
+            await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
             await transport.DisableMethodsAsync(CancellationToken.None).ConfigureAwait(false);
 
             // assert
@@ -238,8 +220,6 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
 
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_28_003: `DisableMethodsAsync` shall return failure if the unsubscription fails.
         [TestMethod]
-        [TestCategory("TransportHandlers")]
-        [TestCategory("Methods")]
         [ExpectedException(typeof(TimeoutException))]
         public async Task MqttTransportHandlerDisablemethodsAsyncUnsubscribeTimesOut()
         {
@@ -253,7 +233,90 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
 
             // act & assert
             transport.OnConnected();
+            await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
             await transport.EnableMethodsAsync(CancellationToken.None).ConfigureAwait(false);
+        }
+
+        // Tests_SRS_CSHARP_MQTT_TRANSPORT_33_021: `EnableMethodsAsync` shall subscribe using the 'devices/{0}/modules/{1}/#' topic filter.
+        // Tests_SRS_CSHARP_MQTT_TRANSPORT_33_020: `EnableMethodsAsync` shall open the transport if this method is called when the transport is not open.
+        // Tests_SRS_CSHARP_MQTT_TRANSPORT_33_022: `EnableMethodsAsync` shall wait for a SUBACK for the subscription request.
+        [TestMethod]
+        public async Task MqttTransportHandler_EnableEventReceiveAsync_SubscribesSuccessfully()
+        {
+            // arrange
+            IChannel channel;
+
+            var transport = CreateTransportHandlerWithMockChannel(out channel, DummyModuleConnectionString);
+
+            // act
+            transport.OnConnected();
+            await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
+            await transport.EnableEventReceiveAsync(CancellationToken.None).ConfigureAwait(false);
+
+            // assert
+            string expectedTopicFilter = "devices/FakeDevice/modules/FakeModule/#";
+            await channel
+                .Received()
+                .WriteAsync(Arg.Is<SubscribePacket>(msg => msg.Requests[0].TopicFilter.Equals(expectedTopicFilter))).ConfigureAwait(false);
+        }
+
+
+        // Tests_SRS_CSHARP_MQTT_TRANSPORT_33_023: `EnableMethodsAsync` shall return failure if the subscription request fails.
+        [TestMethod]
+        [ExpectedException(typeof(TimeoutException))]
+        public async Task MqttTransportHandler_EnableEventReceiveAsync_SubscribeTimesOut()
+        {
+            // arrange
+            IChannel channel;
+            string expectedTopicFilter = "devices/FakeDevice/modules/FakeModule/#";
+            var transport = CreateTransportHandlerWithMockChannel(out channel, DummyModuleConnectionString);
+            channel
+                .WriteAsync(Arg.Is<SubscribePacket>(msg => msg.Requests[0].TopicFilter.Equals(expectedTopicFilter)))
+                .Returns(x => { throw new TimeoutException(); });
+
+            // act & assert
+            transport.OnConnected();
+            await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
+            await transport.EnableEventReceiveAsync(CancellationToken.None).ConfigureAwait(false);
+        }
+
+        // Tests_SRS_CSHARP_MQTT_TRANSPORT_33_021: `DisableEventReceiveAsync` shall unsubscribe using the 'devices/{0}/modules/{1}/#' topic filter.
+        // Tests_SRS_CSHARP_MQTT_TRANSPORT_33_022: `DisableEventReceiveAsync` shall wait for a UNSUBACK for the unsubscription.
+        [TestMethod]
+        public async Task MqttTransportHandler_DisableEventReceiveAsync_UnsubscribesSuccessfully()
+        {
+            // arrange
+            IChannel channel;
+            string expectedTopicFilter = "devices/FakeDevice/modules/FakeModule/#";
+            var transport = CreateTransportHandlerWithMockChannel(out channel, DummyModuleConnectionString);
+
+            // act
+            transport.OnConnected();
+            await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
+            await transport.DisableEventReceiveAsync(CancellationToken.None).ConfigureAwait(false);
+
+            // assert
+            await channel
+                .Received()
+                .WriteAsync(Arg.Is<UnsubscribePacket>(msg => Enumerable.ElementAt(msg.TopicFilters, 0).Equals(expectedTopicFilter))).ConfigureAwait(false);
+        }
+
+        // Tests_SRS_CSHARP_MQTT_TRANSPORT_33_023: `DisableEventReceiveAsync` shall return failure if the unsubscription fails.
+        [TestMethod]
+        [ExpectedException(typeof(TimeoutException))]
+        public async Task MqttTransportHandler_DisableEventReceiveAsync_UnsubscribeTimesOut()
+        {
+            // arrange
+            IChannel channel;
+            string expectedTopicFilter = "devices/FakeDevice/modules/FakeModule/#";
+            var transport = CreateTransportHandlerWithMockChannel(out channel, DummyModuleConnectionString);
+            channel.WriteAsync(Arg.Is<UnsubscribePacket>(msg => Enumerable.ElementAt(msg.TopicFilters, 0).Equals(expectedTopicFilter)))
+                .Returns(x => { throw new TimeoutException(); });
+
+            // act & assert
+            transport.OnConnected();
+            await transport.OpenAsync( CancellationToken.None).ConfigureAwait(false);
+            await transport.DisableEventReceiveAsync(CancellationToken.None).ConfigureAwait(false);
         }
 
         delegate bool MessageMatcher(Message msg);
@@ -262,8 +325,6 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_007: `SendMethodResponseAsync` shall set the message body to the response payload of the `Method` object.
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_008: `SendMethodResponseAsync` shall send the message to the service.
         [TestMethod]
-        [TestCategory("TransportHandlers")]
-        [TestCategory("Methods")]
         public async Task MqttTransportHandlerSendMethodResponseAsyncSendsMessage()
         {
             // arrange
@@ -274,6 +335,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
 
             // act
             transport.OnConnected();
+            await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
             await transport.SendMethodResponseAsync(response, CancellationToken.None).ConfigureAwait(false);
 
             // assert
@@ -296,8 +358,6 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_011: `EnableTwinPatchAsync` shall wait for a SUBACK on the subscription request.
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_033: `EnableTwinPatchAsync` shall open the transport  if this method is called when the transport is not open.
         [TestMethod]
-        [TestCategory("TransportHandlers")]
-        [TestCategory("Twin")]
         public async Task MqttTransportHandlerEnableTwinPatchAsyncSubscribes()
         {
             // arrange
@@ -306,6 +366,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
 
             // act
             transport.OnConnected();
+            await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
             await transport.EnableTwinPatchAsync(CancellationToken.None).ConfigureAwait(false);
 
             // assert
@@ -316,8 +377,6 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
         
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_012: `EnableTwinPatchAsync` shall return failure if the subscription request fails.
         [TestMethod]
-        [TestCategory("TransportHandlers")]
-        [TestCategory("Twin")]
         [ExpectedException(typeof(TimeoutException))]
         public async Task MqttTransportHandlerEnableTwinPatchAsyncTimesOut()
         {
@@ -330,6 +389,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
 
             // act & assert
             transport.OnConnected();
+            await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
             await transport.EnableTwinPatchAsync(CancellationToken.None).ConfigureAwait(false);
         }
 
@@ -349,8 +409,6 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_034: `SendTwinGetAsync` shall shall open the transport  if this method is called when the transport is not open.
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_021: If the response contains a success code, `SendTwinGetAsync` shall return success to the caller 
         [TestMethod]
-        [TestCategory("TransportHandlers")]
-        [TestCategory("Twin")]
         public async Task MqttTransportHandlerSendTwinGetAsyncHappyPath()
         {
             // arrange
@@ -370,6 +428,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
                 });
 
             // act
+            await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
             var twinReturned = await transport.SendTwinGetAsync(CancellationToken.None).ConfigureAwait(false);
 
             // assert
@@ -378,32 +437,28 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
 
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_019: If the response is failed, `SendTwinGetAsync` shall return that failure to the caller.
         [TestMethod]
-        [TestCategory("TransportHandlers")]
-        [TestCategory("Twin")]
-        [ExpectedException(typeof(Exception))]
         public async Task MqttTransportHandlerSendTwinGetAsyncReturnsFailure()
         {
             // arrange
             IChannel channel;
             var transport = CreateTransportHandlerWithMockChannel(out channel);
-            channel
-                .WriteAndFlushAsync(Arg.Is<Message>(msg => msg.MqttTopicName.StartsWith(twinGetTopicPrefix)))
-                .Returns(msg =>
-                {
-                    var response = new Message();
-                    response.MqttTopicName = getResponseTopic(msg.Arg<Message>().MqttTopicName, statusFailure);
-                    transport.OnMessageReceived(response);
-                    return TaskHelpers.CompletedTask;
-                });
+
+            channel.WriteAndFlushAsync(Arg.Is<Message>(msg => msg.MqttTopicName.StartsWith(twinGetTopicPrefix)))
+                   .Returns(msg =>
+                   {
+                       var response = new Message();
+                       response.MqttTopicName = getResponseTopic(msg.Arg<Message>().MqttTopicName, statusFailure);
+                       transport.OnMessageReceived(response);
+                       return TaskHelpers.CompletedTask;
+                   });
 
             // act & assert
-            var twinReturned = await transport.SendTwinGetAsync(CancellationToken.None).ConfigureAwait(false);
+            await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
+            await transport.SendTwinGetAsync(CancellationToken.None).ExpectedAsync<IotHubException>().ConfigureAwait(false);
         }
 
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_020: If the response doesn't arrive within `MqttTransportHandler.TwinTimeout`, `SendTwinGetAsync` shall fail with a timeout error
         [TestMethod]
-        [TestCategory("TransportHandlers")]
-        [TestCategory("Twin")]
         [ExpectedException(typeof(TimeoutException))]
         public async Task MqttTransportHandlerSendTwinGetAsyncTimesOut()
         {
@@ -413,6 +468,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
             transport.TwinTimeout = TimeSpan.FromMilliseconds(20);
 
             // act & assert
+            await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
             var twinReturned = await transport.SendTwinGetAsync(CancellationToken.None).ConfigureAwait(false);
         }
 
@@ -425,8 +481,6 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_030: If the response contains a success code, `SendTwinPatchAsync` shall return success to the caller.
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_035: `SendTwinPatchAsync` shall shall open the transport if this method is called when the transport is not open.
         [TestMethod]
-        [TestCategory("TransportHandlers")]
-        [TestCategory("Twin")]
         public async Task MqttTransportHandlerSendTwinPatchAsyncHappyPath()
         {
             // arrange
@@ -449,8 +503,9 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
                     transport.OnMessageReceived(response);
                     return TaskHelpers.CompletedTask;
                 });
-            
+
             // act
+            await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
             await transport.SendTwinPatchAsync(props, CancellationToken.None).ConfigureAwait(false);
 
             // assert
@@ -460,9 +515,6 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
 
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_028: If the response is failed, `SendTwinPatchAsync` shall return that failure to the caller.
         [TestMethod]
-        [TestCategory("TransportHandlers")]
-        [TestCategory("Twin")]
-        [ExpectedException(typeof(Exception))]
         public async Task MqttTransportHandlerSendTwinPatchAsyncReturnsFailure()
         {
             // arrange
@@ -481,14 +533,13 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
                 });
 
             // act & assert
-            await transport.SendTwinPatchAsync(props, CancellationToken.None).ConfigureAwait(false);
+            await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
+            await transport.SendTwinPatchAsync(props, CancellationToken.None).ExpectedAsync<IotHubException>().ConfigureAwait(false);
 
         }
 
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_18_029: If the response doesn't arrive within `MqttTransportHandler.TwinTimeout`, `SendTwinPatchAsync` shall fail with a timeout error. 
         [TestMethod]
-        [TestCategory("TransportHandlers")]
-        [TestCategory("Twin")]
         [ExpectedException(typeof(TimeoutException))]
         public async Task MqttTransportHandlerSendTwinPatchAsyncTimesOut()
         {
@@ -499,146 +550,66 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport.Mqtt
             var props = new TwinCollection();
 
             // act & assert
+            await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
             await transport.SendTwinPatchAsync(props, CancellationToken.None).ConfigureAwait(false);
         }
 
-        // Tests_SRS_CSHARP_MQTT_TRANSPORT_28_04: If OnError is triggered after OpenAsync is called, onConnectionClosedCallback shall be invoked.
+        // Tests_SRS_CSHARP_MQTT_TRANSPORT_28_04: If OnError is triggered after OpenAsync is called, WaitForTransportClosedAsync shall be invoked.
+        [TestMethod]
         public async Task MqttTransportHandlerOnErrorCallConnectionClosedListenerOpen()
         {
             // arrange
             IChannel channel;
-            var tcs = new TaskCompletionSource<bool>();
-            var transport = CreateTransportHandlerWithMockChannel(
-                out channel, 
-                (o, ea) => { }, 
-                (o, ea) => {
-                    tcs.SetResult(true);
-                    return TaskHelpers.CompletedTask;
-                });
+            var transport = CreateTransportHandlerWithMockChannel(out channel);
+
             transport.OnConnected();
-            await transport.OpenAsync(true, CancellationToken.None).ConfigureAwait(false);
+            await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
 
             // act
-            await Task.Run(() => transport.OnError(new ApplicationException("Testing"))).ConfigureAwait(false);
+            transport.OnError(new ApplicationException("Testing"));
 
             // assert
-            await Task.WhenAny(
-                Task.Run(async () =>
-                {
-                    await Task.Delay(1000).ConfigureAwait(false);
-                    tcs.SetResult(false);
-                }), tcs.Task).ConfigureAwait(false);
-
-            Assert.IsTrue(tcs.Task.Result);
+            await transport.WaitForTransportClosedAsync().ConfigureAwait(false);
         }
 
-        // Tests_SRS_CSHARP_MQTT_TRANSPORT_28_05: If OnError is triggered after ReceiveAsync is called, onConnectionClosedCallback shall be invoked.
+        // Tests_SRS_CSHARP_MQTT_TRANSPORT_28_05: If OnError is triggered after ReceiveAsync is called, WaitForTransportClosedAsync shall be invoked.
         [TestMethod]
         public async Task MqttTransportHandlerOnErrorCallConnectionClosedListenerReceiving()
         {
             // arrange
             IChannel channel;
-            var tcs = new TaskCompletionSource<bool>();
-            var transport = CreateTransportHandlerWithMockChannel(
-                out channel, 
-                (o, ea) => { },
-                (o, ea) =>
-                {
-                    tcs.SetResult(true);
-                    return TaskHelpers.CompletedTask;
-                });
+            var transport = CreateTransportHandlerWithMockChannel(out channel);
+
             transport.OnConnected();
-            await transport.OpenAsync(true, CancellationToken.None).ConfigureAwait(false);
+            await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
             await transport.ReceiveAsync(new TimeSpan(0, 0, 0, 0, 5), CancellationToken.None).ConfigureAwait(false);
 
             // act
-            await Task.Run(() => transport.OnError(new ApplicationException("Testing"))).ConfigureAwait(false);
+            transport.OnError(new ApplicationException("Testing"));
 
             // assert
-            await Task.WhenAny(
-                Task.Run(async () => 
-                {
-                    await Task.Delay(1000).ConfigureAwait(false);
-                    tcs.SetResult(false);
-                }), tcs.Task).ConfigureAwait(false);
-            
-            Assert.IsTrue(tcs.Task.Result);
+            await transport.WaitForTransportClosedAsync().ConfigureAwait(false);
         }
 
-        // Tests_SRS_CSHARP_MQTT_TRANSPORT_28_06: If OnError is triggered without any prior operation, onConnectionClosedCallback shall not be invoked.
+        // Tests_SRS_CSHARP_MQTT_TRANSPORT_28_06: If OnError is triggered without any prior operation, WaitForTransportClosedAsync shall not be invoked.
         [TestMethod]
         public async Task MqttTransportHandlerOnErrorCallConnectionClosedListenerNotInitialized()
         {
             // arrange
             IChannel channel;
             var tcs = new TaskCompletionSource<bool>();
-            var transport = CreateTransportHandlerWithMockChannel(
-                out channel, 
-                (o, ea) => { },
-                (o, ea) =>
-                {
-                    tcs.SetResult(true);
-                    return TaskHelpers.CompletedTask;
-                });
-
-            // act
-            await Task.Run(() => transport.OnError(new ApplicationException("Testing"))).ConfigureAwait(false);
-
-            // assert
-            await Task.WhenAny(
-                Task.Run(async () =>
-                {
-                    await Task.Delay(1000).ConfigureAwait(false);
-                    tcs.SetResult(false);
-                }), tcs.Task).ConfigureAwait(false);
-
-            Assert.IsFalse(tcs.Task.Result);
-        }
-
-        // Tests_SRS_CSHARP_MQTT_TRANSPORT_28_07: If OnError is triggered in error state, onConnectionClosedCallback shall not be invoked.
-        [TestMethod]
-        public async Task MqttTransportHandlerOnErrorCallConnectionClosedListenerError()
-        {
-            // arrange
-            IChannel channel;
-            var tcs = new TaskCompletionSource<bool>();
-            var transport = CreateTransportHandlerWithMockChannel(
-                out channel, 
-                (o, ea) => { },
-                (o, ea) =>
-                {
-                    tcs.SetResult(true);
-                    return TaskHelpers.CompletedTask;
-                });
-            transport.OnError(new ApplicationException("Testing"));
-
-            // act
-            await Task.Run(() => transport.OnError(new ApplicationException("Testing"))).ConfigureAwait(false);
-
-            // assert
-            await Task.WhenAny(
-                Task.Run(async () =>
-                {
-                    await Task.Delay(1000).ConfigureAwait(false);
-                    tcs.SetResult(false);
-                }), tcs.Task).ConfigureAwait(false);
-
-            Assert.IsFalse(tcs.Task.Result);
-        }
-
-        // Tests_SRS_CSHARP_MQTT_TRANSPORT_28_08: [** `RecoverConnections` shall throw IotHubClientException exception when in error state.
-        [TestMethod]
-        [ExpectedException(typeof(IotHubClientException))]
-        public async Task MqttTransportHandlerRecoverConnectionsThrow()
-        {
-            // arrange
-            IChannel channel;
             var transport = CreateTransportHandlerWithMockChannel(out channel);
-            transport.OnError(new ApplicationException("Testing"));
 
             // act
-            await transport.RecoverConnections(null, ConnectionType.MqttConnection, CancellationToken.None).ConfigureAwait(false);
+            transport.OnError(new ApplicationException("Testing"));
+
+            // assert
+            Task t = transport.WaitForTransportClosedAsync();
+            await Task.Delay(300).ConfigureAwait(false);
+            Assert.IsFalse(t.IsCompleted);
+
+            transport.Dispose();
+            Assert.IsTrue(t.IsCompleted);
         }
     }
-
 }

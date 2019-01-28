@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Copyright (c) Microsoft. All rights reserved.
+# Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 # To configure your environment, dot-source this before running the E2E tests.
 # . iot_config.sh
@@ -7,14 +9,15 @@
 # See Configuration.IoTHub.cs for usage details.
 
 # IoT Hub Owner connection string:
-export IOTHUB_CONN_STRING_CSHARP=
+export IOTHUB_CONN_STRING_CSHARP=""
 
-# Device1 and Device2 connection string:
-export IOTHUB_DEVICE_CONN_STRING=
-export IOTHUB_DEVICE_CONN_STRING2=
+# Device primary and secondary connection strings:
+export IOTHUB_DEVICE_CONN_STRING=""
+export IOTHUB_DEVICE_CONN_STRING2=""
 
-# EventHub consumer group:
-export IOTHUB_EVENTHUB_CONSUMER_GROUP=e2e-tests
+# IoT Hub Module connection string:
+export IOTHUB_MODULE_CONN_STRING=""
+export IOTHUB_MODULE_CONN_STRING2=""
 
 # Use the following Powershell command to retrieve the Base64 encoding of a file:
 # Use Powershell: [Convert]::ToBase64String((Get-Content myFileName -Encoding Byte)) to generate.
@@ -25,7 +28,16 @@ export IOTHUB_PFX_X509_THUMBPRINT=
 export IOTHUB_X509_PFX_CERTIFICATE=
 
 # X509 Certificate 2 thumbprint:
-set IOTHUB_PFX_X509_THUMBPRINT2=
+export IOTHUB_PFX_X509_THUMBPRINT2=
+
+# EventHub connection string for the messages/events endpoint:
+export IOTHUB_EVENTHUB_CONN_STRING_CSHARP=
+
+# EventHub compatible name:
+export IOTHUB_EVENTHUB_COMPATIBLE_NAME=
+
+# EventHub consumer group:
+export IOTHUB_EVENTHUB_CONSUMER_GROUP=
 
 # ---------- Device Provisioning Service Configuration ----------
 # See Configuration.Provisioning.cs for usage details.
@@ -33,6 +45,8 @@ set IOTHUB_PFX_X509_THUMBPRINT2=
 # DPS ID Scope 
 export DPS_IDSCOPE=
 
+# The DPS Global Device Endpoint (the default is defined in code)
+#export DPS_GLOBALDEVICEENDPOINT=global.azure-devices-provisioning.net
 # X509 PFX Base64 encoded Device Certificate with recommended RegistrationID: iothubx509device1 (recommended IOTHub DeviceID: provisionedx509device1)
 # This certificate should have CN=<RegistrationID>.
 export DPS_INDIVIDUALX509_PFX_CERTIFICATE=
@@ -42,10 +56,13 @@ export DPS_INDIVIDUALX509_PFX_CERTIFICATE=
 # This certificate should have CN=xdevice1
 export DPS_GROUPX509_PFX_CERTIFICATE=
 
+# X509 PFX Certificate password
+export DPS_X509_PFX_CERTIFICATE_PASSWORD=
+
 # X509 P7B Certificate chain.
 # This is the chain ending up in the root that has been verified by the Provisioning service.
 # The CN=xdevice1 certificate should be signed by an issuer within this chain.
-export DPS_GROUPX509_CERTIFICATE_CHAIN===
+export DPS_GROUPX509_CERTIFICATE_CHAIN=
 
 # TPM device registration ID.
 export DPS_TPM_REGISTRATIONID=indtpmdevice1
@@ -54,4 +71,15 @@ export DPS_TPM_REGISTRATIONID=indtpmdevice1
 export DPS_TPM_DEVICEID=provisionedtpm1
 
 # Provisioning service owner connection string.
-set PROVISIONING_CONNECTION_STRING=
+export PROVISIONING_CONNECTION_STRING=""
+
+# ---------- Invalid Certificate validation ----------
+# The connection strings below point to servers with incorrect TLS server certificates. Tests will attempt to connect and expect that the TLS connection ends in a security exception.
+
+export IOTHUB_DEVICE_CONN_STRING_INVALIDCERT=""
+export IOTHUB_CONN_STRING_INVALIDCERT=""
+export DPS_GLOBALDEVICEENDPOINT_INVALIDCERT=
+export PROVISIONING_CONNECTION_STRING_INVALIDCERT=""
+
+# Proxy configuration:
+export IOTHUB_PROXY_SERVER_ADDRESS=""

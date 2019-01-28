@@ -11,6 +11,7 @@ using Newtonsoft.Json.Linq;
 namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 {
     [TestClass]
+    [TestCategory("Unit")]
     public class QueryResultTests
     {
         private const string SerializedNameUnknown = "unknown";
@@ -156,7 +157,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         /* SRS_QUERY_RESULT_21_002: [The constructor shall throw ArgumentException if the provided body is null or empty and the type is not `unknown`.] */
         /* SRS_QUERY_RESULT_21_003: [The constructor shall throw JsonSerializationException if the JSON is invalid.] */
         [TestMethod]
-        [TestCategory("DevService")]
         public void QueryResultConstructorThrowsOnInvalidParameters()
         {
             // arrange - act - assert
@@ -171,7 +171,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         /* SRS_QUERY_RESULT_21_004: [If the type is `enrollment`, the constructor shall parse the body as IndividualEnrollment[].] */
         /* SRS_QUERY_RESULT_21_011: [The constructor shall store the provided parameters `type` and `continuationToken`.] */
         [TestMethod]
-        [TestCategory("DevService")]
         public void QueryResultConstructorSucceedOnIndividualEnrollment()
         {
             // arrange - act
@@ -188,7 +187,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         /* SRS_QUERY_RESULT_21_005: [If the type is `enrollmentGroup`, the constructor shall parse the body as EnrollmentGroup[].] */
         [TestMethod]
-        [TestCategory("DevService")]
         public void QueryResultConstructorSucceedOnEnrollmentGroup()
         {
             // arrange - act
@@ -205,7 +203,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         /* SRS_QUERY_RESULT_21_006: [If the type is `deviceRegistration`, the constructor shall parse the body as DeviceRegistrationState[].] */
         [TestMethod]
-        [TestCategory("DevService")]
         public void QueryResultConstructorSucceedOnDeviceRegistration()
         {
             // arrange - act
@@ -222,7 +219,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         /* SRS_QUERY_RESULT_21_007: [If the type is `unknown`, and the body is null, the constructor shall set `items` as null.] */
         [TestMethod]
-        [TestCategory("DevService")]
         public void QueryResultConstructorSucceedOnUnknownWithNullBody()
         {
             // arrange - act
@@ -237,7 +233,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         /* SRS_QUERY_RESULT_21_008: [If the type is `unknown`, the constructor shall try to parse the body as JObject[].] */
         [TestMethod]
-        [TestCategory("DevService")]
         public void QueryResultConstructorSucceedOnUnknownWithObjectListBody()
         {
             // arrange - act
@@ -254,7 +249,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         /* SRS_QUERY_RESULT_21_009: [If the type is `unknown`, the constructor shall try to parse the body as Object[].] */
         [TestMethod]
-        [TestCategory("DevService")]
         public void QueryResultConstructorSucceedOnUnknownWithIntegerListBody()
         {
             // arrange - act
@@ -271,7 +265,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         /* SRS_QUERY_RESULT_21_010: [If the type is `unknown`, and the constructor failed to parse the body as JObject[] and Object[], it shall return the body as a single string in the items.] */
         [TestMethod]
-        [TestCategory("DevService")]
         public void QueryResultConstructorSucceedOnUnknownWithStringBody()
         {
             // arrange
@@ -291,7 +284,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         /* SRS_QUERY_RESULT_21_011: [The constructor shall store the provided parameters `type` and `continuationToken`.] */
         [TestMethod]
-        [TestCategory("DevService")]
         public void QueryResultConstructorSucceedOnNullContinuationToken()
         {
             // arrange
@@ -306,7 +298,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         [TestMethod]
-        [TestCategory("DevService")]
         public void QueryResultConstructorSucceedOnEmptyContinuationToken()
         {
             // arrange

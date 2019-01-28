@@ -5,7 +5,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
 {
     public enum ErrorCode
     {
-        InvalidErrorCode = 0,        
+        InvalidErrorCode = 0,
 
         //BadRequest - 400
         InvalidProtocolVersion = 400001,
@@ -21,6 +21,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         DeviceDefinedMultipleTimes = 400011,
         DeserializationError = 400012,
         BulkRegistryOperationFailure = 400013,
+        CannotRegisterModuleToModule = 400301,
 
         //Unauthorized - 401
         IotHubNotFound = 401001,
@@ -38,9 +39,11 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         DeviceNotFound = 404001,
         JobNotFound = 404002,
         PartitionNotFound = 404003,
+        ModuleNotFound = 404010,
 
         //Conflict - 409
         DeviceAlreadyExists = 409001,
+        ModuleAlreadyExistsOnDevice = 409301,
 
         //PreconditionFailed - 412
         PreconditionFailed = 412001,
@@ -49,6 +52,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         //RequestEntityTooLarge - 413
         MessageTooLarge = 413001,
         TooManyDevices = 413002,
+        TooManyModulesOnDevice = 413003,
 
         //Throttling Exception 
         ThrottlingException = 429001,

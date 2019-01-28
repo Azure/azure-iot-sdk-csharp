@@ -8,6 +8,7 @@ namespace Microsoft.Azure.Devices.Api.Test.JobClient
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
+    [TestCategory("Unit")]
     public class DeviceJobParametersTest
     {
         [TestMethod]

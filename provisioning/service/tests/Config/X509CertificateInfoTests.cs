@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 {
     [TestClass]
+    [TestCategory("Unit")]
     public class X509CertificateInfoTests
     {
         private const string SUBJECT_NAME = "CN=ROOT_00000000-0000-0000-0000-000000000000, OU=Azure IoT, O=MSFT, C=US";
@@ -45,7 +46,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 
         /* SRS_X509_CERTIFICATE_INFO_21_001: [The X509CertificateInfo shall provide means to deserialization.] */
         [TestMethod]
-        [TestCategory("DevService")]
         public void X509CertificateInfoThrowsOnInvalidSubjectName()
         {
             foreach (string  failStr in FAIL_STRINGS)
@@ -59,7 +59,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         [TestMethod]
-        [TestCategory("DevService")]
         public void X509CertificateInfoThrowsOnInvalidSha1Thumbprint()
         {
             foreach (string failStr in FAIL_STRINGS)
@@ -73,7 +72,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         [TestMethod]
-        [TestCategory("DevService")]
         public void X509CertificateInfoThrowsOnInvalidSha256Thumbprint()
         {
             foreach (string failStr in FAIL_STRINGS)
@@ -87,7 +85,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         [TestMethod]
-        [TestCategory("DevService")]
         public void X509CertificateInfoThrowsOnInvalidIssuerName()
         {
             foreach (string failStr in FAIL_STRINGS)
@@ -101,7 +98,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         [TestMethod]
-        [TestCategory("DevService")]
         public void X509CertificateInfoThrowsOnInvalidNotBeforeUtc()
         {
             foreach (string failDateTime in FAIL_DATETIME)
@@ -115,7 +111,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         [TestMethod]
-        [TestCategory("DevService")]
         public void X509CertificateInfoThrowsOnInvalidNotAfterUtc()
         {
             foreach (string failDateTime in FAIL_DATETIME)
@@ -129,7 +124,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         [TestMethod]
-        [TestCategory("DevService")]
         public void X509CertificateInfoThrowsOnInvalidSerialNumber()
         {
             foreach (string failStr in FAIL_STRINGS)
@@ -143,7 +137,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         [TestMethod]
-        [TestCategory("DevService")]
         public void X509CertificateInfoThrowsOnInvalidVersion()
         {
             // arrange
@@ -163,7 +156,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         }
 
         [TestMethod]
-        [TestCategory("DevService")]
         public void X509CertificateInfoSucceedOnDeserialization()
         {
             // arrange

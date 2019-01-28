@@ -19,7 +19,7 @@
   </PropertyGroup>
   
   <PropertyGroup>
-    <Version>1.1.0</Version>
+    <Version>1.1.6</Version>
     <Title>Microsoft Azure IoT Provisioning Device Client MQTT Transport</Title>
     <Authors>Microsoft</Authors>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
@@ -27,7 +27,7 @@
     <Description>Provisioning Device Client MQTT Transport for Azure IoT Devices</Description>
     <PackageIconUrl>http://go.microsoft.com/fwlink/?LinkID=288890</PackageIconUrl>
     <PackageProjectUrl>https://github.com/Azure/azure-iot-sdk-csharp</PackageProjectUrl>
-    <Copyright>Â© Microsoft Corporation. All rights reserved.</Copyright>
+    <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
     <PackageTags>Microsoft Azure IoT Provisioning Device Client .NET MQTT</PackageTags>
   </PropertyGroup>
 
@@ -69,6 +69,7 @@
     <Compile Include="$(Common)\device\provisioning\transport\ProvisioningErrorDetails.cs">
       <Link>Common\device\provisioning\transport\ProvisioningErrorDetails.cs</Link>
     </Compile>
+    <Compile Include="$(Common)\DefaultWebProxySettings.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -77,11 +78,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DotNetty.Codecs.Mqtt" Version="0.4.7" />
-    <PackageReference Include="DotNetty.Handlers" Version="0.4.7" />
+    <PackageReference Include="DotNetty.Codecs.Mqtt" Version="0.6.0" />
+    <PackageReference Include="DotNetty.Handlers" Version="0.6.0" />
 
     <!-- FXCop -->
-    <PackageReference Condition=" '$(Configuration)' == 'Debug' " Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.6.0-beta2" />
+    <PackageReference Condition=" '$(Configuration)' == 'Debug' " Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.6.1" />
   </ItemGroup>
 
 </Project>

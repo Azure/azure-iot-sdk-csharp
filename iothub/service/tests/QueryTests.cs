@@ -12,6 +12,7 @@ namespace Microsoft.Azure.Devices.Api.Test
     using Microsoft.Azure.Devices.Shared;
 
     [TestClass]
+    [TestCategory("Unit")]
     public class QueryTests
     {
         [TestMethod]

@@ -9,10 +9,10 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
     using Microsoft.Azure.Devices.Client;
 
     [TestClass]
+    [TestCategory("Unit")]
     public class DeviceClientConnectionStringExceptionTests
     {
         [TestMethod]
-        [TestCategory("CIT")]
         [ExpectedException(typeof(ArgumentException))]
         public void DeviceClientConnectionStringDefaultScopeDefaultCredentialTypeMissingEndpointExceptionTest()
         {
@@ -21,7 +21,6 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
         [ExpectedException(typeof(ArgumentException))]
         public void DeviceClientConnectionStringDefaultScopeDefaultCredentialTypeMissingDeviceIdExceptionTest()
         {
@@ -30,7 +29,6 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
         [ExpectedException(typeof(ArgumentException))]
         public void DeviceClientConnectionStringDefaultScopeDefaultCredentialTypeMissingSharedAccessKeyExceptionTest()
         {
@@ -39,7 +37,6 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
         [ExpectedException(typeof(ArgumentException))]
         public void DeviceClientConnectionStringDefaultScopeDefaultCredentialTypeMissingSharedAccessKeyNameAndKeyExceptionTest()
         {
@@ -48,7 +45,6 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
         [ExpectedException(typeof(ArgumentException))]
         public void DeviceClientConnectionStringIotHubScopeSharedAccessSignatureCredentialTypeMissingSharedAccessKeyExceptionTest()
         {
@@ -57,7 +53,6 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
         [ExpectedException(typeof(ArgumentException))]
         public void DeviceClientConnectionStringIotHubScopeSharedAccessKeyCredentialTypeMissingSharedAccessKeyNameAndKeyExceptionTest()
         {
@@ -66,7 +61,6 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
         [ExpectedException(typeof(ArgumentException))]
         public void DeviceClientConnectionStringDeviceScopeSharedAccessKeyCredentialTypeMissingSharedAccessKeyExceptionTest()
         {
@@ -75,7 +69,6 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
         [ExpectedException(typeof(ArgumentException))]
         public void DeviceClientConnectionStringDeviceScopeSharedAccessKeyCredentialTypeNotAllowedSharedAccessKeyNameExceptionTest()
         {
@@ -84,7 +77,6 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
         [ExpectedException(typeof(FormatException))]
         public void DeviceClientConnectionStringDeviceScopeSharedAccessSignatureCredentialTypeInvalidSharedAccessKeyExceptionTest()
         {
@@ -93,7 +85,6 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
         public void DeviceClientMalformedConnectionStringTest()
         {
             string connectionString = "TODO: IoT Hub connection string to connect to";
@@ -108,7 +99,6 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
          }
 
         [TestMethod]
-        [TestCategory("CIT")]
         [ExpectedException(typeof(ArgumentException))]
         public void DeviceClientConnectionStringDeviceScopeImplicitSharedAccessSignatureCredentialTypeInvalidSharedAccessSignatureExceptionTest()
         {
@@ -117,7 +107,6 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
         [ExpectedException(typeof(ArgumentNullException))]
         public void DeviceClientConnectionStringEmptyConnectionStringExceptionTest()
         {
@@ -126,7 +115,6 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
         [ExpectedException(typeof(ArgumentNullException))]
         public void DeviceClientConnectionStringNullConnectionStringExceptionTest()
         {
@@ -135,7 +123,6 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
         [ExpectedException(typeof(ArgumentException))]
         public void DeviceClientConnectionStringSASKeyX509CertExceptionTest()
         {
@@ -144,7 +131,6 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
         [ExpectedException(typeof(ArgumentException))]
         public void DeviceClientConnectionStringSASSignatureX509ExceptionTest()
         {
@@ -153,7 +139,6 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
         [ExpectedException(typeof(ArgumentException))]
         public void DeviceClientConnectionStringX509CertFalseTest()
         {

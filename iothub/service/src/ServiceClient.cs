@@ -4,6 +4,7 @@
 namespace Microsoft.Azure.Devices
 {
     using System;
+    using System.Net;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -33,6 +34,9 @@ namespace Microsoft.Azure.Devices
         /// </summary>
         internal ServiceClient()
         {
+#if NET451
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
+#endif
         }
 
         /// <summary>
@@ -66,8 +70,21 @@ namespace Microsoft.Azure.Devices
         /// <returns></returns>
         public static ServiceClient CreateFromConnectionString(string connectionString, TransportType transportType)
         {
+            return CreateFromConnectionString(connectionString, transportType, new ServiceClientTransportSettings());
+        }
+
+        /// <summary>
+        /// Create ServiceClient from the specified connection string using specified Transport Type
+        /// </summary>
+        /// <param name="connectionString">Connection string for the iothub</param>
+        /// <param name="transportType">Specifies whether Amqp or Amqp over Websocket transport is used</param>
+        /// <param name="transportSettings">Specifies the AMQP and HTTP proxy settings for Service Client</param>
+        /// <returns></returns>
+        public static ServiceClient CreateFromConnectionString(string connectionString, TransportType transportType, ServiceClientTransportSettings transportSettings)
+        {
             var iotHubConnectionString = IotHubConnectionString.Parse(connectionString);
-            var serviceClient = new AmqpServiceClient(iotHubConnectionString, (transportType == TransportType.Amqp_WebSocket_Only) ? true : false);
+            var useWebSocketOnly = (transportType == TransportType.Amqp_WebSocket_Only);
+            var serviceClient = new AmqpServiceClient(iotHubConnectionString, useWebSocketOnly, transportSettings);
             return serviceClient;
         }
 
@@ -150,5 +167,33 @@ namespace Microsoft.Azure.Devices
         /// <param name="cancellationToken">Cancellation Token</param>
         /// <returns>Method result</returns>
         public abstract Task<CloudToDeviceMethodResult> InvokeDeviceMethodAsync(string deviceId, CloudToDeviceMethod cloudToDeviceMethod, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Interactively invokes a method on device
+        /// </summary>
+        /// <param name="deviceId">Device Id</param>
+        /// <param name="moduleId">Module Id</param>
+        /// <param name="cloudToDeviceMethod">Device method parameters (passthrough to device)</param>
+        /// <returns>Method result</returns>
+        public abstract Task<CloudToDeviceMethodResult> InvokeDeviceMethodAsync(string deviceId, string moduleId, CloudToDeviceMethod cloudToDeviceMethod);
+
+        /// <summary>
+        /// Interactively invokes a method on device
+        /// </summary>
+        /// <param name="deviceId">Device Id</param>
+        /// <param name="moduleId">Module Id</param>
+        /// <param name="cloudToDeviceMethod">Device method parameters (passthrough to device)</param>
+        /// <param name="cancellationToken">Cancellation Token</param>
+        /// <returns>Method result</returns>
+        public abstract Task<CloudToDeviceMethodResult> InvokeDeviceMethodAsync(string deviceId, string moduleId, CloudToDeviceMethod cloudToDeviceMethod, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Send a one-way notification to the specified device module
+        /// </summary>
+        /// <param name="deviceId">The device identifier for the target device</param>
+        /// <param name="moduleId">The module identifier for the target device module</param>
+        /// <param name="message">The message containing the notification</param>
+        /// <returns></returns>
+        public abstract Task SendAsync(string deviceId, string moduleId, Message message);
     }
 }

@@ -12,6 +12,8 @@ namespace Microsoft.Azure.Devices.Client
 #endif
 
     using Microsoft.Azure.Devices.Client.Extensions;
+    using Microsoft.Azure.Devices.Shared;
+    using System.Diagnostics;
 
     internal sealed partial class IotHubConnectionString : IAuthorizationProvider
 #if !NETMF
@@ -34,6 +36,7 @@ namespace Microsoft.Azure.Devices.Client
             this.SharedAccessSignature = builder.SharedAccessSignature;
             this.IotHubName = builder.IotHubName;
             this.DeviceId = builder.DeviceId;
+            this.ModuleId = builder.ModuleId;
 
 #if NETSTANDARD1_3
             this.HttpsEndpoint = new UriBuilder("https", this.HostName).Uri;
@@ -46,13 +49,28 @@ namespace Microsoft.Azure.Devices.Client
 #if !NETMF
             this.AmqpEndpoint = new UriBuilder(CommonConstants.AmqpsScheme, this.HostName, AmqpConstants.DefaultSecurePort).Uri;
 
-            if (builder.AuthenticationMethod is DeviceAuthenticationWithTokenRefresh)
+            if (builder.AuthenticationMethod is AuthenticationWithTokenRefresh)
             {
-                this.TokenRefresher = (DeviceAuthenticationWithTokenRefresh)builder.AuthenticationMethod;
+                this.TokenRefresher = (AuthenticationWithTokenRefresh)builder.AuthenticationMethod;
+                if (Logging.IsEnabled) Logging.Info(this, $"{nameof(IAuthenticationMethod)} is {nameof(AuthenticationWithTokenRefresh)}: {Logging.IdOf(TokenRefresher)}");
+                if (Logging.IsEnabled) Logging.Associate(this, TokenRefresher, nameof(TokenRefresher));
+                Debug.Assert(TokenRefresher != null);
             }
             else if (!string.IsNullOrEmpty(this.SharedAccessKey))
             {
-                this.TokenRefresher = new DeviceAuthenticationWithSakRefresh(this.DeviceId, this);
+                if (this.ModuleId.IsNullOrWhiteSpace())
+                {
+                    this.TokenRefresher = new DeviceAuthenticationWithSakRefresh(this.DeviceId, this) as AuthenticationWithTokenRefresh;
+                    if (Logging.IsEnabled) Logging.Info(this, $"{nameof(IAuthenticationMethod)} is {nameof(DeviceAuthenticationWithSakRefresh)}: {Logging.IdOf(TokenRefresher)}");
+                }
+                else
+                {
+                    this.TokenRefresher = new ModuleAuthenticationWithSakRefresh(this.DeviceId, this.ModuleId, this) as AuthenticationWithTokenRefresh;
+                    if (Logging.IsEnabled) Logging.Info(this, $"{nameof(IAuthenticationMethod)} is {nameof(ModuleAuthenticationWithSakRefresh)}: {Logging.IdOf(TokenRefresher)}");
+                }
+
+                if (Logging.IsEnabled) Logging.Associate(this, TokenRefresher, nameof(TokenRefresher));
+                Debug.Assert(TokenRefresher != null);
             }
 #endif
         }
@@ -64,6 +82,12 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         public string DeviceId
+        {
+            get;
+            private set;
+        }
+
+        public string ModuleId
         {
             get;
             private set;

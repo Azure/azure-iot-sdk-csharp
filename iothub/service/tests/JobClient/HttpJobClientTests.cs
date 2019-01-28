@@ -15,6 +15,7 @@ namespace Microsoft.Azure.Devices.Api.Test.JobClient
     using Moq;
 
     [TestClass]
+    [TestCategory("Unit")]
     public class HttpJobClientTests
     {
         private readonly string jobId = "testJobId";

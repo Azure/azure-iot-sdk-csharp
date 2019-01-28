@@ -16,13 +16,12 @@ namespace Microsoft.Azure.Devices.Api.Test
     using Moq;
 
     [TestClass]
+    [TestCategory("Unit")]
     public class DeviceAuthenticationTests
     {
         const string IotHubName = "acme";
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("Auth")]
         public async Task DeviceAuthenticationGoodAuthConfigTest1()
         {
             var deviceGoodAuthConfig = new Device("123")
@@ -50,8 +49,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("Auth")]
         public async Task DeviceAuthenticationGoodAuthConfigTest2()
         {
             var deviceGoodAuthConfig = new Device("123")
@@ -79,8 +76,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("Auth")]
         public async Task DeviceAuthenticationGoodAuthConfigTest3()
         {
             var deviceGoodAuthConfig = new Device("123")
@@ -108,8 +103,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("Auth")]
         public async Task DeviceAuthenticationGoodAuthConfigTest4()
         {
             var deviceGoodAuthConfig = new Device("123")
@@ -137,8 +130,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("Auth")]
         public async Task DeviceAuthenticationGoodAuthConfigTest5()
         {
             var deviceGoodAuthConfig = new Device("123")
@@ -166,8 +157,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("Auth")]
         public async Task DeviceAuthenticationGoodAuthConfigTest6()
         {
             var deviceBadAuthConfig = new Device("123")
@@ -195,8 +184,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("Auth")]
         public async Task DeviceAuthenticationGoodAuthSHA256()
         {
             var deviceBadAuthConfig = new Device("123")
@@ -224,8 +211,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("Auth")]
         [ExpectedException(typeof (ArgumentException))]
         public async Task DeviceAuthenticationBadAuthConfigTest1()
         {
@@ -258,8 +243,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("Auth")]
         [ExpectedException(typeof(ArgumentException))]
         public async Task DeviceAuthenticationBadAuthConfigTest2()
         {
@@ -292,8 +275,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("Auth")]
         [ExpectedException(typeof(ArgumentException))]
         public async Task DeviceAuthenticationBadAuthConfigTest3()
         {
@@ -326,8 +307,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("Auth")]
         [ExpectedException(typeof(ArgumentException))]
         public async Task DeviceAuthenticationBadAuthConfigTest4()
         {
@@ -360,8 +339,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("Auth")]
         [ExpectedException(typeof(ArgumentException))]
         public async Task DeviceAuthenticationBadAuthConfigTest5()
         {
@@ -394,8 +371,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("Auth")]
         [ExpectedException(typeof(ArgumentException))]
         public async Task DeviceAuthenticationBadAuthConfigTest6()
         {
@@ -424,8 +399,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("Auth")]
         [ExpectedException(typeof(ArgumentException))]
         public async Task DeviceAuthenticationBadAuthConfigTest7()
         {
@@ -454,8 +427,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("Auth")]
         [ExpectedException(typeof(ArgumentException))]
         public async Task DeviceAuthenticationBadThumbprintTest1()
         {
@@ -484,8 +455,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("Auth")]
         [ExpectedException(typeof(ArgumentException))]
         public async Task DeviceAuthenticationBadThumbprintTest2()
         {
@@ -514,8 +483,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("Auth")]
         [ExpectedException(typeof(ArgumentException))]
         public async Task DeviceAuthenticationBadThumbprintTest3()
         {
@@ -544,8 +511,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("Auth")]
         [ExpectedException(typeof(ArgumentException))]
         public async Task DeviceAuthenticationBadThumbprintTest4()
         {
@@ -574,8 +539,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("Auth")]
         [ExpectedException(typeof(ArgumentException))]
         public async Task DeviceAuthenticationBadThumbprintTest5()
         {
@@ -604,8 +567,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("Auth")]
         [ExpectedException(typeof(ArgumentException))]
         public async Task DeviceAuthenticationBadThumbprintTest6()
         {
@@ -634,8 +595,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("Auth")]
         [ExpectedException(typeof(ArgumentException))]
         public async Task DeviceAuthenticationBadThumbprintTest7()
         {
@@ -664,8 +623,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("Auth")]
         [ExpectedException(typeof(ArgumentException))]
         public async Task DeviceAuthenticationBadThumbprintSHA256Test()
         {
@@ -694,8 +651,6 @@ namespace Microsoft.Azure.Devices.Api.Test
         }
 
         [TestMethod]
-        [TestCategory("CIT")]
-        [TestCategory("Auth")]
         public async Task DeviceAuthenticationIsCertificateAuthority()
         {
             var deviceBadThumbprint = new Device("123")

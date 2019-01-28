@@ -213,4 +213,13 @@
   <data name="ThumbprintSizesMustMatch" xml:space="preserve">
     <value>The size of the X.509 primary thumbprint must match that of the secondary thumbprint.</value>
   </data>
+  <data name="ETagNotSetWhileDeletingConfiguration" xml:space="preserve">
+    <value>The ETag should be set while deleting the Configuration.</value>
+  </data>
+  <data name="ETagNotSetWhileUpdatingConfiguration" xml:space="preserve">
+    <value>The ETag should be set while updating the Configuration.</value>
+  </data>
+  <data name="ETagSetWhileCreatingConfiguration" xml:space="preserve">
+    <value>The ETag should not be set while creating a Configuration.</value>
+  </data>
 </root>

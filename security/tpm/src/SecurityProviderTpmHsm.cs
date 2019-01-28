@@ -55,6 +55,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
                 Logging.Associate(this, _tpm2);
                 Logging.Associate(_tpm2, _tpmDevice);
 
+#if DEBUG
                 _tpm2._SetTraceCallback((byte[] inBuffer, byte[] outBuffer) =>
                 {
                     if (Logging.IsEnabled)
@@ -64,6 +65,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
                         Logging.DumpBuffer(_tpm2, outBuffer, nameof(outBuffer));
                     }
                 });
+#endif
             }
         }
 
@@ -102,7 +104,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
             encryptedSecret = m.GetArray<byte>(encryptedSecret.Length, "encryptedSecret");
             TpmPrivate dupBlob = m.Get<TpmPrivate>();
             byte[] encWrapKey = new byte[m.Get<ushort>()];
-            encWrapKey = m.GetArray<byte>(encryptedSecret.Length, "encWrapKey");
+            encWrapKey = m.GetArray<byte>(encWrapKey.Length, "encWrapKey");
             UInt16 pubSize = m.Get<UInt16>();
             _idKeyPub = m.Get<TpmPublic>();
             byte[] cipherText = new byte[m.Get<ushort>()];
@@ -173,7 +175,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
         /// <returns>The signed data.</returns>
         public override byte[] Sign(byte[] data)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, $"{Convert.ToBase64String(data)}", nameof(Sign));
+            if (Logging.IsEnabled) Logging.Enter(this, null, nameof(Sign));
 
             byte[] result = Array.Empty<byte>();
             TpmHandle hmacKeyHandle = new TpmHandle(AIOTH_PERSISTED_KEY_HANDLE);
@@ -203,7 +205,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
                 result = _tpm2.SequenceComplete(hmacHandle, iterationBuffer, TpmHandle.RhNull, out TkHashcheck nullChk);
             }
 
-            if (Logging.IsEnabled) Logging.Exit(this, $"{Convert.ToBase64String(result)}", nameof(Sign));
+            if (Logging.IsEnabled) Logging.Exit(this, null, nameof(Sign));
             return result;
         }
 
@@ -219,9 +221,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Security
 
             if (disposing)
             {
-                _tpm2?.Dispose();
-                _tpm2 = null;
-                _tpmDevice = null;
+                // _tpmDevice is owned by _tpm2 and will be disposed as well.
+                _tpm2.Dispose();
             }
 
             disposed = true;

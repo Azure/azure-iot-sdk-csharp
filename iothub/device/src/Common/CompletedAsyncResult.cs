@@ -5,30 +5,6 @@ namespace Microsoft.Azure.Devices.Client
 {
     using System;
 
-    // An AsyncResult that completes as soon as it is instantiated.
-    [Serializable]
-    class CompletedAsyncResult : AsyncResult
-    {
-        public CompletedAsyncResult(AsyncCallback callback, object state)
-            : base(callback, state)
-        {
-            Complete(true);
-        }
-
-        public CompletedAsyncResult(Exception exception, AsyncCallback callback, object state)
-            : base(callback, state)
-        {
-            Complete(true, exception);
-        }
-
-        [Fx.Tag.GuaranteeNonBlocking]
-        public static void End(IAsyncResult result)
-        {
-            Fx.AssertAndThrowFatal(result.IsCompleted, "CompletedAsyncResult was not completed!");
-            AsyncResult.End<CompletedAsyncResult>(result);
-        }
-    }
-
     [Serializable]
     class CompletedAsyncResultT<T> : AsyncResult
     {

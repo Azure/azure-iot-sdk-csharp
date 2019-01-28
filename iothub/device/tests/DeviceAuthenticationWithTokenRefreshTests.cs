@@ -3,15 +3,14 @@
 
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Globalization;
 using System;
 using System.Diagnostics;
 using Microsoft.Azure.Amqp;
-using System.Threading;
 
 namespace Microsoft.Azure.Devices.Client.Test
 {
     [TestClass]
+    [TestCategory("Unit")]
     public class DeviceAuthenticationWithTokenRefreshTests
     {
         private const string TestDeviceId = "TestDeviceID";
@@ -101,9 +100,7 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task DeviceAuthenticationWithTokenRefresh_Populate_DefaultParameters_Ok()
         {
             var refresher = new TestImplementation(TestDeviceId);
-            var csBuilder = IotHubConnectionStringBuilder.Create(
-                TestIoTHubName,
-                new DeviceAuthenticationWithRegistrySymmetricKey(TestDeviceId, TestSharedAccessKey));
+            var csBuilder = IotHubConnectionStringBuilder.Create(TestIoTHubName, refresher);
 
             refresher.Populate(csBuilder);
 
@@ -232,7 +229,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             public TestImplementation(
                 string deviceId,
                 int suggestedTimeToLive,
-                int timeBufferPercentage) 
+                int timeBufferPercentage)
                 : base(deviceId, suggestedTimeToLive, timeBufferPercentage)
             {
             }

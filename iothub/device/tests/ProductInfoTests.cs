@@ -1,14 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Net.Http;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.Client.Test
 {
     [TestClass]
+    [TestCategory("Unit")]
     public class ProductInfoTests
     {
         string ExpectedUserAgentString()
@@ -18,7 +20,10 @@ namespace Microsoft.Azure.Devices.Client.Test
             string operatingSystem = RuntimeInformation.OSDescription.Trim();
             string processorArchitecture = RuntimeInformation.ProcessArchitecture.ToString().Trim();
 
-            return $"Microsoft.Azure.Devices.Client/{version} ({runtime}; {operatingSystem}; {processorArchitecture})";
+            var productType = NativeMethods.GetWindowsProductType();
+            var productTypeString = (productType != 0) ? $" WindowsProduct:0x{productType:X8}" : string.Empty;
+
+            return $".NET/{version} ({runtime}; {operatingSystem}{productTypeString}; {processorArchitecture})";
         }
 
         [TestMethod]
@@ -71,6 +76,13 @@ namespace Microsoft.Azure.Devices.Client.Test
             info.Extra = extra;
 
             Assert.AreEqual($"{ExpectedUserAgentString()} {extra.Trim()}", info.ToString());
+        }
+
+        [TestMethod]
+        public void ToString_IsValidHttpHeaderFormat()
+        {
+            var httpRequestMessage = new HttpRequestMessage();
+            Assert.IsTrue(httpRequestMessage.Headers.UserAgent.TryParseAdd((new ProductInfo()).ToString()));
         }
     }
 }

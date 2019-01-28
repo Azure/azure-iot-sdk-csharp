@@ -5,6 +5,7 @@ namespace Microsoft.Azure.Devices.Shared
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.Reflection;
     using Microsoft.Azure.Devices.Common;
     using Newtonsoft.Json;
@@ -18,6 +19,10 @@ namespace Microsoft.Azure.Devices.Shared
     public sealed class TwinJsonConverter : JsonConverter
     {
         const string DeviceIdJsonTag = "deviceId";
+        const string ModuleIdJsonTag = "moduleId";
+        const string ConfigurationsJsonTag = "configurations";
+        const string CapabilitiesJsonTag = "capabilities";
+        const string IotEdgeName = "iotEdge";
         const string ETagJsonTag = "etag";
         const string TagsJsonTag = "tags";
         const string PropertiesJsonTag = "properties";
@@ -58,6 +63,12 @@ namespace Microsoft.Azure.Devices.Shared
             writer.WritePropertyName(DeviceIdJsonTag);
             writer.WriteValue(twin.DeviceId);
 
+            if (!string.IsNullOrEmpty(twin.ModuleId))
+            {
+                writer.WritePropertyName(ModuleIdJsonTag);
+                writer.WriteValue(twin.ModuleId);
+            }
+
             writer.WritePropertyName(ETagJsonTag);
             writer.WriteValue(twin.ETag);
 
@@ -69,7 +80,7 @@ namespace Microsoft.Azure.Devices.Shared
                 writer.WritePropertyName(StatusTag);
                 writer.WriteRawValue(JsonConvert.SerializeObject(twin.Status));
             }
-            
+
             if (!string.IsNullOrEmpty(twin.StatusReason))
             {
                 writer.WritePropertyName(StatusReasonTag);
@@ -110,6 +121,12 @@ namespace Microsoft.Azure.Devices.Shared
             {
                 writer.WritePropertyName(X509ThumbprintTag);
                 serializer.Serialize(writer, twin.X509Thumbprint);
+            }
+
+            if (twin.Configurations != null)
+            {
+                writer.WritePropertyName(ConfigurationsJsonTag);
+                serializer.Serialize(writer, twin.Configurations, typeof(IDictionary<string, ConfigurationInfo>));
             }
 
             if (twin.Tags != null && twin.Tags.Count > 0)
@@ -177,6 +194,19 @@ namespace Microsoft.Azure.Devices.Shared
                     case DeviceIdJsonTag:
                         twin.DeviceId = reader.Value as string;
                         break;
+                    case ModuleIdJsonTag:
+                        twin.ModuleId = reader.Value as string;
+                        break;
+                    case ConfigurationsJsonTag:
+                        twin.Configurations = serializer.Deserialize<Dictionary<string, ConfigurationInfo>>(reader);
+                        break;
+                    case CapabilitiesJsonTag:
+                        var capabilitiesDictionary = serializer.Deserialize<Dictionary<string, object>>(reader);
+                        twin.Capabilities = new DeviceCapabilities
+                        {
+                            IotEdge = capabilitiesDictionary.ContainsKey(IotEdgeName) && (bool)capabilitiesDictionary[IotEdgeName]
+                        };
+                        break;
                     case ETagJsonTag:
                         twin.ETag = reader.Value as string;
                         break;
@@ -188,7 +218,7 @@ namespace Microsoft.Azure.Devices.Shared
                         twin.Tags = new TwinCollection(JToken.ReadFrom(reader) as JObject);
                         break;
                     case PropertiesJsonTag:
-                        PopulatePropertiesForTwin(twin, reader, serializer);
+                        PopulatePropertiesForTwin(twin, reader);
                         break;
                     case VersionTag:
                         twin.Version = (long?)reader.Value;
@@ -201,14 +231,14 @@ namespace Microsoft.Azure.Devices.Shared
                         twin.StatusReason = reader.Value as string;
                         break;
                     case StatusUpdateTimeTag:
-                        twin.StatusUpdatedTime = (DateTime)reader.Value;
+                        twin.StatusUpdatedTime = serializer.Deserialize<DateTime>(reader);
                         break;
                     case ConnectionStateTag:
                         string connectionState = reader.Value as string;
                         twin.ConnectionState = connectionState?[0] == '\"' ? JsonConvert.DeserializeObject<DeviceConnectionState>(connectionState) : serializer.Deserialize<DeviceConnectionState>(reader);
                         break;
                     case LastActivityTimeTag:
-                        twin.LastActivityTime = (DateTime)reader.Value;
+                        twin.LastActivityTime = serializer.Deserialize<DateTime>(reader);
                         break;
                     case CloudToDeviceMessageCountTag:
                         twin.CloudToDeviceMessageCount = serializer.Deserialize<int>(reader);
@@ -277,7 +307,7 @@ namespace Microsoft.Azure.Devices.Shared
             return dict;
         }
 
-        private static void PopulatePropertiesForTwin(Twin twin, JsonReader reader, JsonSerializer serializer)
+        private static void PopulatePropertiesForTwin(Twin twin, JsonReader reader)
         {
             if (twin == null)
             {

@@ -35,6 +35,10 @@ namespace Microsoft.Azure.Devices.Client
 #endif
         bool disposed;
         bool ownsBodyStream;
+
+        private const long StreamCannotSeek = -1;
+        long originalStreamPosition = StreamCannotSeek;
+
         int getBodyCalled;
 #if NETMF
         int sizeInBytesCalled;
@@ -297,7 +301,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Time when the message was received by the server
+        /// Number of times the message has been previously delivered
         /// </summary>
         public uint DeliveryCount
         {
@@ -400,6 +404,66 @@ namespace Microsoft.Azure.Devices.Client
             set
             {
                 this.SystemProperties[MessageSystemPropertyNames.ContentType] = value;
+            }
+        }
+
+        /// <summary>
+        /// Specifies the input name on which the message was sent, if there was one.
+        /// </summary>
+        public string InputName
+        {
+            get
+            {
+#if NETMF
+                return this.GetSystemProperty(MessageSystemPropertyNames.InputName) as string ?? string.Empty;
+#else
+                return this.GetSystemProperty<string>(MessageSystemPropertyNames.InputName);
+#endif
+            }
+
+            internal set
+            {
+                this.SystemProperties[MessageSystemPropertyNames.InputName] = value;
+            }
+        }
+
+        /// <summary>
+        /// Specifies the device Id from which this message was sent, if there is one. 
+        /// </summary>
+        public string ConnectionDeviceId
+        {
+            get
+            {
+#if NETMF
+                return this.GetSystemProperty(MessageSystemPropertyNames.ConnectionDeviceId) as string ?? string.Empty;
+#else
+                return this.GetSystemProperty<string>(MessageSystemPropertyNames.ConnectionDeviceId);
+#endif
+            }
+
+            internal set
+            {
+                this.SystemProperties[MessageSystemPropertyNames.ConnectionDeviceId] = value;
+            }
+        }
+
+        /// <summary>
+        /// Specifies the module Id from which this message was sent, if there is one.
+        /// </summary>
+        public string ConnectionModuleId
+        {
+            get
+            {
+#if NETMF
+                return this.GetSystemProperty(MessageSystemPropertyNames.ConnectionModuleId) as string ?? string.Empty;
+#else
+                return this.GetSystemProperty<string>(MessageSystemPropertyNames.ConnectionModuleId);
+#endif
+            }
+
+            internal set
+            {
+                this.SystemProperties[MessageSystemPropertyNames.ConnectionModuleId] = value;
             }
         }
 
@@ -521,7 +585,11 @@ namespace Microsoft.Azure.Devices.Client
             this.SetGetBodyCalled();
             if (this.bodyStream == null)
             {
+#if NET451 || NETMF
                 return new byte[] { };
+#else
+                return Array.Empty<byte>();
+#endif
             }
 
             byte[] result;
@@ -539,7 +607,6 @@ namespace Microsoft.Azure.Devices.Client
                 // This is just fail safe code in case we are not using the Amqp protocol.
                 result = ReadFullStream(this.bodyStream);
             }
-            TryResetBody(0);
 
             return result;
         }
@@ -578,28 +645,20 @@ namespace Microsoft.Azure.Devices.Client
             return this.serializedAmqpMessage;
         }
 #endif
-        // Test hook only
-        internal void ResetGetBodyCalled()
-        {
-            Interlocked.Exchange(ref this.getBodyCalled, 0);
-            if (this.bodyStream != null && this.bodyStream.CanSeek)
-            {
-                this.bodyStream.Seek(0, SeekOrigin.Begin);
-            }
-        }
 
-        internal bool TryResetBody(long position)
+        internal void ResetBody()
         {
-            if (this.bodyStream != null && this.bodyStream.CanSeek)
+            if (this.originalStreamPosition == StreamCannotSeek)
             {
-                this.bodyStream.Seek(position, SeekOrigin.Begin);
-                Interlocked.Exchange(ref this.getBodyCalled, 0);
-#if !NETMF
-                this.serializedAmqpMessage = null;
-#endif
-                return true;
+                throw new IOException("Stream cannot seek.");
             }
-            return false;
+
+            this.bodyStream.Seek(this.originalStreamPosition, SeekOrigin.Begin);
+            Interlocked.Exchange(ref this.getBodyCalled, 0);
+
+#if !NETMF
+            this.serializedAmqpMessage = null;
+#endif
         }
 
 #if NETMF
@@ -635,6 +694,11 @@ namespace Microsoft.Azure.Devices.Client
             // this has no locking on the bodyStream.
             this.bodyStream = stream;
             this.ownsBodyStream = ownsStream;
+
+            if (this.bodyStream.CanSeek)
+            {
+                this.originalStreamPosition = this.bodyStream.Position;
+            }
         }
 
         static byte[] ReadFullStream(Stream inputStream)

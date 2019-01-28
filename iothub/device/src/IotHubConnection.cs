@@ -19,6 +19,7 @@ namespace Microsoft.Azure.Devices.Client
     using Microsoft.Azure.Amqp.Transport;
     using Microsoft.Azure.Devices.Client.Extensions;
     using Microsoft.Azure.Devices.Client.Transport;
+    using Microsoft.Azure.Devices.Shared;
 
     abstract class IotHubConnection
     {
@@ -37,17 +38,26 @@ namespace Microsoft.Azure.Devices.Client
 
         readonly string twinConnectionCorrelationId = Guid.NewGuid().ToString("N");
 
-        public enum SendingLinkType {
+        public enum SendingLinkType
+        {
             TelemetryEvents,
             Methods,
             Twin
         };
 
-        public enum ReceivingLinkType {
+        public enum ReceivingLinkType
+        {
             C2DMessages,
             Methods,
-            Twin
+            Twin,
+            Events
         };
+
+        public EventHandler OnConnectionClose
+        {
+            get;
+            set;
+        }
 
         protected IotHubConnection(string hostName, int port, AmqpTransportSettings amqpTransportSettings)
         {
@@ -60,7 +70,7 @@ namespace Microsoft.Azure.Devices.Client
 
         protected AmqpTransportSettings AmqpTransportSettings { get; }
 
-        public abstract Task CloseAsync();
+        public abstract Task CloseAsync(CancellationToken cancellationToken);
 
         public abstract void SafeClose(Exception exception);
 
@@ -73,52 +83,61 @@ namespace Microsoft.Azure.Devices.Client
             ProductInfo productInfo,
             CancellationToken cancellationToken)
         {
-            this.OnCreateSendingLink(connectionString);
-
-            var timeoutHelper = new TimeoutHelper(timeout);
-
-            AmqpSession session = await this.GetSessionAsync(timeoutHelper, cancellationToken).ConfigureAwait(false);
-
-            var linkAddress = this.BuildLinkAddress(connectionString, path);
-
-            var linkSettings = new AmqpLinkSettings()
+            try
             {
-                Role = false,
-                InitialDeliveryCount = 0,
-                Target = new Target() {Address = linkAddress.AbsoluteUri},
-                LinkName = Guid.NewGuid().ToString("N") // Use a human readable link name to help with debugging
-            };
+                if (Logging.IsEnabled) Logging.Enter(this, corrId, linkType, $"{nameof(IotHubConnection)}.{nameof(CreateSendingLinkAsync)}");
 
-            switch (linkType)
-            {
-                case SendingLinkType.TelemetryEvents:
-                    linkSettings.SndSettleMode = null; // SenderSettleMode.Unsettled (null as it is the default and to avoid bytes on the wire)
-                    linkSettings.RcvSettleMode = null; // (byte)ReceiverSettleMode.First (null as it is the default and to avoid bytes on the wire)
-                    break;
-                case SendingLinkType.Methods:
-                case SendingLinkType.Twin:
-                    linkSettings.SndSettleMode = (byte)SenderSettleMode.Settled;
-                    linkSettings.RcvSettleMode = (byte)ReceiverSettleMode.First;
-                    break;
+                this.OnCreateSendingLink(connectionString);
+
+                var timeoutHelper = new TimeoutHelper(timeout);
+
+                AmqpSession session = await this.GetSessionAsync(timeoutHelper, cancellationToken).ConfigureAwait(false);
+
+                var linkAddress = this.BuildLinkAddress(connectionString, path);
+
+                var linkSettings = new AmqpLinkSettings()
+                {
+                    Role = false,
+                    InitialDeliveryCount = 0,
+                    Target = new Target() { Address = linkAddress.AbsoluteUri },
+                    LinkName = Guid.NewGuid().ToString("N") // Use a human readable link name to help with debugging
+                };
+
+                switch (linkType)
+                {
+                    case SendingLinkType.TelemetryEvents:
+                        linkSettings.SndSettleMode = null; // SenderSettleMode.Unsettled (null as it is the default and to avoid bytes on the wire)
+                        linkSettings.RcvSettleMode = null; // (byte)ReceiverSettleMode.First (null as it is the default and to avoid bytes on the wire)
+                        break;
+                    case SendingLinkType.Methods:
+                    case SendingLinkType.Twin:
+                        linkSettings.SndSettleMode = (byte)SenderSettleMode.Settled;
+                        linkSettings.RcvSettleMode = (byte)ReceiverSettleMode.First;
+                        break;
+                }
+
+                SetLinkSettingsCommonProperties(linkSettings, timeoutHelper.RemainingTime(), productInfo);
+                if (linkType == SendingLinkType.Methods)
+                {
+                    SetLinkSettingsCommonPropertiesForMethod(linkSettings, corrId);
+                }
+                else if (linkType == SendingLinkType.Twin)
+                {
+                    SetLinkSettingsCommonPropertiesForTwin(linkSettings, corrId);
+                }
+
+                var link = new SendingAmqpLink(linkSettings);
+                link.AttachTo(session);
+
+                var audience = this.BuildAudience(connectionString, path);
+                await this.OpenLinkAsync(link, connectionString, audience, timeoutHelper.RemainingTime(), cancellationToken).ConfigureAwait(false);
+
+                return link;
             }
-
-            SetLinkSettingsCommonProperties(linkSettings, timeoutHelper.RemainingTime(), productInfo);
-            if (linkType == SendingLinkType.Methods)
+            finally
             {
-                SetLinkSettingsCommonPropertiesForMethod(linkSettings, corrId);
+                if (Logging.IsEnabled) Logging.Exit(this, corrId, linkType, $"{nameof(IotHubConnection)}.{nameof(CreateSendingLinkAsync)}");
             }
-            else if (linkType == SendingLinkType.Twin)
-            {
-                SetLinkSettingsCommonPropertiesForTwin(linkSettings, corrId);
-            }
-
-            var link = new SendingAmqpLink(linkSettings);
-            link.AttachTo(session);
-
-            var audience = this.BuildAudience(connectionString, path);
-            await this.OpenLinkAsync(link, connectionString, audience, timeoutHelper.RemainingTime(), cancellationToken).ConfigureAwait(false);
-
-            return link;
         }
 
         public async Task<ReceivingAmqpLink> CreateReceivingLinkAsync(
@@ -131,57 +150,77 @@ namespace Microsoft.Azure.Devices.Client
             ProductInfo productInfo,
             CancellationToken cancellationToken)
         {
-            this.OnCreateReceivingLink(connectionString);
-
-            var timeoutHelper = new TimeoutHelper(timeout);
-
-            AmqpSession session = await this.GetSessionAsync(timeoutHelper, cancellationToken).ConfigureAwait(false);
-
-            var linkAddress = this.BuildLinkAddress(connectionString, path);
-
-            var linkSettings = new AmqpLinkSettings()
+            try
             {
-                Role = true,
-                TotalLinkCredit = prefetchCount,
-                AutoSendFlow = prefetchCount > 0,
-                Source = new Source() {Address = linkAddress.AbsoluteUri},
-                LinkName = Guid.NewGuid().ToString("N") // Use a human readable link name to help with debuggin
-            };
+                if (Logging.IsEnabled) Logging.Enter(this, corrId, linkType, $"{nameof(IotHubConnection)}.{nameof(CreateReceivingLinkAsync)}");
 
-            switch (linkType)
-            {
-                case ReceivingLinkType.C2DMessages:
-                    linkSettings.SndSettleMode = null; // SenderSettleMode.Unsettled (null as it is the default and to avoid bytes on the wire)
-                    linkSettings.RcvSettleMode = (byte)ReceiverSettleMode.Second;
-                    break;
-                case ReceivingLinkType.Methods:
-                case ReceivingLinkType.Twin:
-                    linkSettings.SndSettleMode = (byte)SenderSettleMode.Settled;
-                    linkSettings.RcvSettleMode = (byte)ReceiverSettleMode.First;
-                    break;
+                this.OnCreateReceivingLink(connectionString);
+
+                var timeoutHelper = new TimeoutHelper(timeout);
+
+                AmqpSession session = await this.GetSessionAsync(timeoutHelper, cancellationToken).ConfigureAwait(false);
+
+                var linkAddress = this.BuildLinkAddress(connectionString, path);
+
+                var linkSettings = new AmqpLinkSettings()
+                {
+                    Role = true,
+                    TotalLinkCredit = prefetchCount,
+                    AutoSendFlow = prefetchCount > 0,
+                    Source = new Source() { Address = linkAddress.AbsoluteUri },
+                    LinkName = Guid.NewGuid().ToString("N") // Use a human readable link name to help with debuggin
+                };
+
+                switch (linkType)
+                {
+                    // Exactly once
+                    case ReceivingLinkType.C2DMessages:
+                        linkSettings.SndSettleMode = null; // SenderSettleMode.Unsettled (null as it is the default and to avoid bytes on the wire)
+                        linkSettings.RcvSettleMode = (byte)ReceiverSettleMode.Second;
+                        break;
+
+                    // At least once
+                    case ReceivingLinkType.Events:
+                        linkSettings.SndSettleMode = null; // SenderSettleMode.Unsettled (null as it is the default and to avoid bytes on the wire)
+                        linkSettings.RcvSettleMode = (byte)ReceiverSettleMode.First;
+                        break;
+
+                    // At most once
+                    case ReceivingLinkType.Methods:
+                    case ReceivingLinkType.Twin:
+                        linkSettings.SndSettleMode = (byte)SenderSettleMode.Settled;
+                        linkSettings.RcvSettleMode = (byte)ReceiverSettleMode.First;
+                        break;
+                }
+
+                SetLinkSettingsCommonProperties(linkSettings, timeoutHelper.RemainingTime(), productInfo);
+                if (linkType == ReceivingLinkType.Methods)
+                {
+                    SetLinkSettingsCommonPropertiesForMethod(linkSettings, corrId);
+                }
+                else if (linkType == ReceivingLinkType.Twin)
+                {
+                    SetLinkSettingsCommonPropertiesForTwin(linkSettings, corrId);
+                }
+
+                var link = new ReceivingAmqpLink(linkSettings);
+                link.AttachTo(session);
+
+                var audience = this.BuildAudience(connectionString, path);
+                await this.OpenLinkAsync(link, connectionString, audience, timeoutHelper.RemainingTime(), cancellationToken).ConfigureAwait(false);
+
+                return link;
             }
-
-            SetLinkSettingsCommonProperties(linkSettings, timeoutHelper.RemainingTime(), productInfo);
-            if (linkType == ReceivingLinkType.Methods)
+            finally
             {
-                SetLinkSettingsCommonPropertiesForMethod(linkSettings, corrId);
+                if (Logging.IsEnabled) Logging.Exit(this, corrId, linkType, $"{nameof(IotHubConnection)}.{nameof(CreateReceivingLinkAsync)}");
             }
-            else if (linkType == ReceivingLinkType.Twin)
-            {
-                SetLinkSettingsCommonPropertiesForTwin(linkSettings, corrId);
-            }
-
-            var link = new ReceivingAmqpLink(linkSettings);
-            link.AttachTo(session);
- 
-            var audience = this.BuildAudience(connectionString, path);
-            await this.OpenLinkAsync(link, connectionString, audience, timeoutHelper.RemainingTime(), cancellationToken).ConfigureAwait(false);
-
-            return link;
         }
 
         private async Task<AmqpSession> GetSessionAsync(TimeoutHelper timeoutHelper, CancellationToken token)
         {
+            if (Logging.IsEnabled) Logging.Enter(this, timeoutHelper, token, $"{nameof(IotHubConnection)}.{nameof(GetSessionAsync)}");
+
             AmqpSession session;
             try
             {
@@ -191,7 +230,7 @@ namespace Microsoft.Azure.Devices.Client
 
                 Fx.Assert(session != null, "Amqp Session cannot be null.");
                 if (session.State != AmqpObjectState.Opened)
-                {                    
+                {
                     if (session.State == AmqpObjectState.End)
                     {
                         this.FaultTolerantSession.TryRemove();
@@ -202,6 +241,7 @@ namespace Microsoft.Azure.Devices.Client
             finally
             {
                 sessionSemaphore.Release();
+                if (Logging.IsEnabled) Logging.Exit(this, timeoutHelper, token, $"{nameof(IotHubConnection)}.{nameof(GetSessionAsync)}");
             }
 
             return session;
@@ -251,65 +291,81 @@ namespace Microsoft.Azure.Devices.Client
 
         protected virtual async Task<AmqpSession> CreateSessionAsync(TimeSpan timeout, CancellationToken token)
         {
-            this.OnCreateSession();
-
-            var timeoutHelper = new TimeoutHelper(timeout);
-
-            AmqpSettings amqpSettings = CreateAmqpSettings();
-            TransportBase transport;
-
-            token.ThrowIfCancellationRequested();
-
-            switch (this.AmqpTransportSettings.GetTransportType())
-            {
-                case TransportType.Amqp_WebSocket_Only:
-                    transport = await this.CreateClientWebSocketTransportAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
-                    break;
-                case TransportType.Amqp_Tcp_Only:
-                    TlsTransportSettings tlsTransportSettings = this.CreateTlsTransportSettings();
-                    var amqpTransportInitiator = new AmqpTransportInitiator(amqpSettings, tlsTransportSettings);
-                    transport = await amqpTransportInitiator.ConnectTaskAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
-                    break;
-                default:
-                    throw new InvalidOperationException("AmqpTransportSettings must specify WebSocketOnly or TcpOnly");
-            }
-
-            var amqpConnectionSettings = new AmqpConnectionSettings()
-            {
-                MaxFrameSize = AmqpConstants.DefaultMaxFrameSize,
-                ContainerId = Guid.NewGuid().ToString("N"),
-                HostName = this.hostName
-            };
-
-            var amqpConnection = new AmqpConnection(transport, amqpSettings, amqpConnectionSettings);
             try
             {
+                if (Logging.IsEnabled) Logging.Enter(this, timeout, token, $"{nameof(IotHubConnection)}.{nameof(CreateSessionAsync)}");
+
+                this.OnCreateSession();
+
+                var timeoutHelper = new TimeoutHelper(timeout);
+
+                AmqpSettings amqpSettings = CreateAmqpSettings();
+                TransportBase transport;
+
                 token.ThrowIfCancellationRequested();
-                await amqpConnection.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
 
-                var sessionSettings = new AmqpSessionSettings()
+                switch (this.AmqpTransportSettings.GetTransportType())
                 {
-                    Properties = new Fields()
-                };
-
-                AmqpSession amqpSession = amqpConnection.CreateSession(sessionSettings);
-                token.ThrowIfCancellationRequested();
-                await amqpSession.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
-
-                // This adds itself to amqpConnection.Extensions
-                var cbsLink = new AmqpCbsLink(amqpConnection);
-                return amqpSession;
-            }
-            catch (Exception ex) when (!ex.IsFatal())
-            {
-                if (amqpConnection.TerminalException != null)
-                {
-                    throw AmqpClientHelper.ToIotHubClientContract(amqpConnection.TerminalException);
+                    case TransportType.Amqp_WebSocket_Only:
+                        transport = await this.CreateClientWebSocketTransportAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+                        break;
+                    case TransportType.Amqp_Tcp_Only:
+                        TlsTransportSettings tlsTransportSettings = this.CreateTlsTransportSettings();
+                        var amqpTransportInitiator = new AmqpTransportInitiator(amqpSettings, tlsTransportSettings);
+                        transport = await amqpTransportInitiator.ConnectTaskAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+                        break;
+                    default:
+                        throw new InvalidOperationException("AmqpTransportSettings must specify WebSocketOnly or TcpOnly");
                 }
 
-                amqpConnection.SafeClose(ex);
-                throw;
+                var amqpConnectionSettings = new AmqpConnectionSettings()
+                {
+                    MaxFrameSize = AmqpConstants.DefaultMaxFrameSize,
+                    ContainerId = Guid.NewGuid().ToString("N"),
+                    HostName = this.hostName
+                };
+
+                var connection = new AmqpConnection(transport, amqpSettings, amqpConnectionSettings);
+                connection.Closed += Connection_Closed;
+                
+                try
+                {
+                    token.ThrowIfCancellationRequested();
+                    await connection.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+
+                    var sessionSettings = new AmqpSessionSettings()
+                    {
+                        Properties = new Fields()
+                    };
+
+                    AmqpSession amqpSession = connection.CreateSession(sessionSettings);
+                    token.ThrowIfCancellationRequested();
+                    await amqpSession.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+
+                    // This adds itself to amqpConnection.Extensions
+                    var cbsLink = new AmqpCbsLink(connection);
+                    return amqpSession;
+                }
+                catch (Exception ex) when (!ex.IsFatal())
+                {
+                    if (connection.TerminalException != null)
+                    {
+                        throw AmqpClientHelper.ToIotHubClientContract(connection.TerminalException);
+                    }
+
+                    connection.SafeClose(ex);
+                    throw;
+                }
             }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, timeout, token, $"{nameof(IotHubConnection)}.{nameof(CreateSessionAsync)}");
+            }
+        }
+
+        private void Connection_Closed(object sender, EventArgs e)
+        {
+            OnConnectionClose(sender, e);
         }
 
         protected virtual void OnCreateSession()
@@ -319,53 +375,72 @@ namespace Microsoft.Azure.Devices.Client
 
         async Task<ClientWebSocket> CreateClientWebSocketAsync(Uri websocketUri, TimeSpan timeout)
         {
-            var websocket = new ClientWebSocket();
-
-            // Set SubProtocol to AMQPWSB10
-            websocket.Options.AddSubProtocol(WebSocketConstants.SubProtocols.Amqpwsb10);
-
-            // Check if we're configured to use a proxy server
-            IWebProxy webProxy = WebRequest.DefaultWebProxy;
-            Uri proxyAddress = null;
-#if !NETSTANDARD1_3 && !NETSTANDARD2_0
-            proxyAddress = webProxy != null ? webProxy.GetProxy(websocketUri) : null;
-#endif
-            if (!websocketUri.Equals(proxyAddress))
+            try
             {
-                // Configure proxy server
-                websocket.Options.Proxy = webProxy;
-            }
+                if (Logging.IsEnabled) Logging.Enter(this, websocketUri, timeout, $"{nameof(IotHubConnection)}.{nameof(CreateClientWebSocketAsync)}");
 
-            if (this.AmqpTransportSettings.ClientCertificate != null)
-            {
-                websocket.Options.ClientCertificates.Add(this.AmqpTransportSettings.ClientCertificate);
-            }
-#if !NETSTANDARD1_3 && !NETSTANDARD2_0
-            else
-            {
-                websocket.Options.UseDefaultCredentials = true;
-            }
-#endif
+                var websocket = new ClientWebSocket();
 
-            using (var cancellationTokenSource = new CancellationTokenSource(timeout))
-            {
-                await websocket.ConnectAsync(websocketUri, cancellationTokenSource.Token).ConfigureAwait(false);
-            }
+                // Set SubProtocol to AMQPWSB10
+                websocket.Options.AddSubProtocol(WebSocketConstants.SubProtocols.Amqpwsb10);
 
-            return websocket;
+                // Check if we're configured to use a proxy server
+                IWebProxy webProxy = this.AmqpTransportSettings.Proxy;
+
+                try
+                {
+                    if (webProxy != DefaultWebProxySettings.Instance)
+                    {
+                        // Configure proxy server
+                        websocket.Options.Proxy = webProxy;
+                        if (Logging.IsEnabled)
+                        {
+                            Logging.Info(this, $"{nameof(CreateClientWebSocketAsync)} Setting ClientWebSocket.Options.Proxy");
+                        }
+                    }
+                }
+                catch (PlatformNotSupportedException)
+                {
+                    // .NET Core 2.0 doesn't support proxy. Ignore this setting.
+                    if (Logging.IsEnabled)
+                    {
+                        Logging.Error(this, $"{nameof(CreateClientWebSocketAsync)} PlatformNotSupportedException thrown as .NET Core 2.0 doesn't support proxy");
+                    }
+                }
+
+                if (this.AmqpTransportSettings.ClientCertificate != null)
+                {
+                    websocket.Options.ClientCertificates.Add(this.AmqpTransportSettings.ClientCertificate);
+                }
+
+                using (var cancellationTokenSource = new CancellationTokenSource(timeout))
+                {
+                    await websocket.ConnectAsync(websocketUri, cancellationTokenSource.Token).ConfigureAwait(false);
+                }
+
+                return websocket;
+            }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, websocketUri, timeout, $"{nameof(IotHubConnection)}.{nameof(CreateClientWebSocketAsync)}");
+            }
         }
 
         async Task<TransportBase> CreateClientWebSocketTransportAsync(TimeSpan timeout)
         {
-            var timeoutHelper = new TimeoutHelper(timeout);
-            string additionalQueryParams = "";
-#if NETSTANDARD1_3 || NETSTANDARD2_0
-            // NETSTANDARD1_3 or NETSTANDARD2_0 implementation doesn't set client certs, so we want to tell the IoT Hub to not ask for them
+            try
+            {
+                if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(IotHubConnection)}.{nameof(CreateClientWebSocketTransportAsync)}");
+
+                var timeoutHelper = new TimeoutHelper(timeout);
+                string additionalQueryParams = "";
+#if NETSTANDARD1_3
+            // NETSTANDARD1_3 implementation doesn't set client certs, so we want to tell the IoT Hub to not ask for them
             additionalQueryParams = "?iothub-no-client-cert=true";
 #endif
-            Uri websocketUri = new Uri(WebSocketConstants.Scheme + this.hostName + ":" + WebSocketConstants.SecurePort + WebSocketConstants.UriSuffix + additionalQueryParams);
-            // Use Legacy WebSocket if it is running on Windows 7 or older. Windows 7/Windows 2008 R2 is version 6.1
-#if !NETSTANDARD1_3
+                Uri websocketUri = new Uri(WebSocketConstants.Scheme + this.hostName + ":" + WebSocketConstants.SecurePort + WebSocketConstants.UriSuffix + additionalQueryParams);
+                // Use Legacy WebSocket if it is running on Windows 7 or older. Windows 7/Windows 2008 R2 is version 6.1
+#if NET451
             if (Environment.OSVersion.Version.Major < 6 || (Environment.OSVersion.Version.Major == 6 && Environment.OSVersion.Version.Minor <= 1))
             {
                 var websocket = await CreateLegacyClientWebSocketAsync(websocketUri, this.AmqpTransportSettings.ClientCertificate, timeoutHelper.RemainingTime()).ConfigureAwait(false);
@@ -383,17 +458,24 @@ namespace Microsoft.Azure.Devices.Client
                     websocket,
                     null,
                     null);
-#if !NETSTANDARD1_3
+#if NET451
             }
 #endif
+            }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(IotHubConnection)}.{nameof(CreateClientWebSocketTransportAsync)}");
+            }
         }
 
+#if NET451
         static async Task<IotHubClientWebSocket> CreateLegacyClientWebSocketAsync(Uri webSocketUri, X509Certificate2 clientCertificate, TimeSpan timeout)
         {
             var websocket = new IotHubClientWebSocket(WebSocketConstants.SubProtocols.Amqpwsb10);
             await websocket.ConnectAsync(webSocketUri.Host, webSocketUri.Port, WebSocketConstants.Scheme, clientCertificate, timeout).ConfigureAwait(false);
             return websocket;
         }
+#endif
 
         static AmqpSettings CreateAmqpSettings()
         {
@@ -441,7 +523,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 TargetHost = this.hostName,
                 Certificate = null,
-                CertificateValidationCallback = OnRemoteCertificateValidation
+                CertificateValidationCallback = this.AmqpTransportSettings.RemoteCertificateValidationCallback ?? OnRemoteCertificateValidation
             };
 
             if (this.AmqpTransportSettings.ClientCertificate != null)

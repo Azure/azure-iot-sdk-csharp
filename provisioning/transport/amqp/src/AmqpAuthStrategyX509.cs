@@ -7,6 +7,7 @@ using System;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Provisioning.Client.Transport.Models;
+using System.Net;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
@@ -24,10 +25,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             return new AmqpSettings();
         }
 
-        public override Task OpenConnectionAsync(AmqpClientConnection connection, TimeSpan timeout, bool useWebSocket)
+        public override Task OpenConnectionAsync(AmqpClientConnection connection, TimeSpan timeout, bool useWebSocket, IWebProxy proxy)
         {
             X509Certificate2 clientCert = _security.GetAuthenticationCertificate();
-            return connection.OpenAsync(timeout, useWebSocket, clientCert);
+            return connection.OpenAsync(timeout, useWebSocket, clientCert, proxy);
         }
 
         public override void SaveCredentials(RegistrationOperationStatus status)

@@ -11,15 +11,18 @@ namespace Microsoft.Azure.Devices.Client
     {
         public string Extra { get; set; } = "";
 
+        private readonly Lazy<int> _productType = new Lazy<int>(() => NativeMethods.GetWindowsProductType());
+
         public override string ToString()
         {
-            const string Name = "Microsoft.Azure.Devices.Client";
+            const string Name = ".NET";
             string version = typeof(DeviceClient).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
             string runtime = RuntimeInformation.FrameworkDescription.Trim();
             string operatingSystem = RuntimeInformation.OSDescription.Trim();
             string processorArchitecture = RuntimeInformation.ProcessArchitecture.ToString().Trim();
+            string productType = (_productType.Value != 0) ? $" WindowsProduct:0x{_productType.Value:X8}" : string.Empty;
 
-            string userAgent = $"{Name}/{version} ({runtime}; {operatingSystem}; {processorArchitecture})";
+            string userAgent = $"{Name}/{version} ({runtime}; {operatingSystem}{productType}; {processorArchitecture})";
 
             if (!String.IsNullOrWhiteSpace(this.Extra))
             {

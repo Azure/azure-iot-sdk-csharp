@@ -149,7 +149,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             _nextSequenceNumber++;
         }
 
-        private byte GetSequenceNumber(SaslChallenge saslChallenge)
+        private static byte GetSequenceNumber(SaslChallenge saslChallenge)
         {
             return (byte) (saslChallenge.Challenge.Array[0] & SaslControlByteMask.SequenceNumber);
         }
@@ -168,7 +168,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             return responseBuffer;
         }
 
-        private SaslChallengeAction GetChallengeAction(SaslChallenge saslChallenge)
+        private static SaslChallengeAction GetChallengeAction(SaslChallenge saslChallenge)
         {
             var challengeBytes = saslChallenge.Challenge.Array;
 

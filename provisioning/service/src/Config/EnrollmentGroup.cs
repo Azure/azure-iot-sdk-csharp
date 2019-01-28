@@ -77,7 +77,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// }
     /// </code>
     /// </example>
-    /// <seealso cref="https://docs.microsoft.com/en-us/rest/api/iot-dps/deviceenrollmentgroup">Device Enrollment Group</seealso>
     public class EnrollmentGroup : IETagHolder
     {
         /// <summary>
@@ -213,8 +212,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// Enrollment Group ID
+        /// Enrollment Group ID.
         /// </summary>
+        /// <remarks>
+        /// A valid enrollmentGroup Id shall be alphanumeric, lowercase, and may contain hyphens. Max characters 128.
+        /// </remarks>
+        /// <exception cref="ArgumentException">if the provided string does not fit the enrollmentGroup Id requirements</exception>
         [JsonProperty(PropertyName = "enrollmentGroupId")]
         public string EnrollmentGroupId
         {
@@ -223,13 +226,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 return _enrollmentGroupId;
             }
 
-            /// <summary>
-            /// Enrollment Group ID.
-            /// </summary>
-            /// <remarks>
-            /// A valid enrollmentGroup Id shall be alphanumeric, lowercase, and may contain hyphens. Max characters 128.
-            /// </remarks>
-            /// <exception cref="ArgumentException">if the provided string do not fits the enrollmentGroup Id requirements</exception>
             private set
             {
                 ParserUtils.EnsureRegistrationId(value);

@@ -41,10 +41,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///     it, <see cref="X509Attestation.GetPrimaryX509CertificateInfo()"/> and <see cref="X509Attestation.GetSecondaryX509CertificateInfo()"/> 
     ///     will return the certificate information for the certificates.
     /// </remarks>
-    /// <seealso cref="https://www.trustedcomputinggroup.org/wp-content/uploads/Device-Identifier-Composition-Engine-Rev69_Public-Review.pdf">Device Identifier Composition Engine (DICE) spec</seealso>
-    /// <seealso cref="https://www.microsoft.com/en-us/research/publication/riot-a-foundation-for-trust-in-the-internet-of-things">RIoT – A Foundation for Trust in the Internet of Things</seealso>
-    /// <seealso cref="https://docs.microsoft.com/en-us/rest/api/iot-dps/deviceenrollment">Device Enrollment</seealso>
-    /// <seealso cref="https://docs.microsoft.com/en-us/rest/api/iot-dps/deviceenrollmentgroup">Device Enrollment Group</seealso>
     public sealed class X509Attestation : Attestation
     {
         /// <summary>

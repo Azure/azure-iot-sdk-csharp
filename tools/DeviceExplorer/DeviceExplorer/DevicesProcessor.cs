@@ -1,5 +1,9 @@
-﻿using Microsoft.Azure.Devices;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using Microsoft.Azure.Devices;
 using Microsoft.Azure.Devices.Shared;
+
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -14,6 +18,7 @@ namespace DeviceExplorer
         private String iotHubConnectionString;
         private int maxCountOfDevices;
         private String protocolGatewayHostName;
+        private Task getDeviceDetailsTask;
 
         public DevicesProcessor(string iotHubConnenctionString, int devicesCount, string protocolGatewayName)
         {
@@ -36,7 +41,6 @@ namespace DeviceExplorer
                     IEnumerable<Twin> page = await query.GetNextAsTwinAsync();
                     foreach (Twin twin in page)
                     {
-                        Device device = await registryManager.GetDeviceAsync(twin.DeviceId);
                         deviceEntity = new DeviceEntity()
                         {
                             Id = twin.DeviceId,
@@ -47,15 +51,10 @@ namespace DeviceExplorer
                             State = twin.Status.ToString(),
                             SuspensionReason = twin.StatusReason,
 
-                            ConnectionString = CreateDeviceConnectionString(device),
-                            LastConnectionStateUpdatedTime = device.ConnectionStateUpdatedTime
                         };
 
                         deviceEntity.PrimaryThumbPrint = twin.X509Thumbprint?.PrimaryThumbprint;
                         deviceEntity.SecondaryThumbPrint = twin.X509Thumbprint?.SecondaryThumbprint;
-
-                        deviceEntity.PrimaryKey = device.Authentication?.SymmetricKey?.PrimaryKey;
-                        deviceEntity.SecondaryKey = device.Authentication?.SymmetricKey?.SecondaryKey;
 
                         listOfDevices.Add(deviceEntity);
                     }
@@ -65,7 +64,49 @@ namespace DeviceExplorer
             {
                 throw ex;
             }
+
+            if (getDeviceDetailsTask == null) getDeviceDetailsTask = GetDeviceDetailsAsync();
+
             return listOfDevices;
+        }
+
+        public async Task GetDeviceDetailsAsync()
+        {
+            try
+            {
+                DeviceEntity deviceEntity;
+                IQuery query = registryManager.CreateQuery("select * from devices", null);
+
+                while (query.HasMoreResults)
+                {
+                    IEnumerable<Twin> page = await query.GetNextAsTwinAsync();
+                    foreach (Twin twin in page)
+                    {
+                        Device device = await registryManager.GetDeviceAsync(twin.DeviceId);
+
+                        deviceEntity = this.listOfDevices.Find((e) => { return twin.DeviceId == e.Id; });
+
+                        if (deviceEntity == null) continue;
+
+                        deviceEntity.ConnectionString = CreateDeviceConnectionString(device);
+                        deviceEntity.LastConnectionStateUpdatedTime = device.ConnectionStateUpdatedTime;
+
+                        deviceEntity.PrimaryThumbPrint = twin.X509Thumbprint?.PrimaryThumbprint;
+                        deviceEntity.SecondaryThumbPrint = twin.X509Thumbprint?.SecondaryThumbprint;
+
+                        deviceEntity.PrimaryKey = device.Authentication?.SymmetricKey?.PrimaryKey;
+                        deviceEntity.SecondaryKey = device.Authentication?.SymmetricKey?.SecondaryKey;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+                this.getDeviceDetailsTask = null;
+            }
         }
 
         private String CreateDeviceConnectionString(Device device)

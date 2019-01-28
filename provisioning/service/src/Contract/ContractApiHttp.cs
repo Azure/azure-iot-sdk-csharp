@@ -1,19 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Microsoft.Azure.Devices.Common;
+using Microsoft.Azure.Devices.Common.Service.Auth;
+using Microsoft.Azure.Devices.Shared;
 using System;
-using System.Text;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-
-using Microsoft.Azure.Devices.Common;
-using Microsoft.Azure.Devices.Common.Service.Auth;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -33,15 +33,27 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="baseAddress">the <code>Uri</code> HTTP endpoint in the service.</param>
         /// <param name="authenticationHeaderProvider">the <see cref="IAuthorizationHeaderProvider"/> that will provide the 
         ///     authorization token for the HTTP communication.</param>
-        /// <param name="preRequestActionForAllRequests">the function with the HTTP pre-request actions.</param>
+        /// <param name="httpTransportSettings"> Specifies HTTP Transport Settings for the request</param>
         public ContractApiHttp(
             Uri baseAddress,
-            IAuthorizationHeaderProvider authenticationHeaderProvider)
+            IAuthorizationHeaderProvider authenticationHeaderProvider,
+            HttpTransportSettings httpTransportSettings)
         {
             _baseAddress = baseAddress;
             _authenticationHeaderProvider = authenticationHeaderProvider;
 
-            _httpClientObj = new HttpClient();
+            IWebProxy webProxy = httpTransportSettings.Proxy;
+            if (webProxy != DefaultWebProxySettings.Instance)
+            {
+                HttpClientHandler httpClientHandler = new HttpClientHandler();
+                httpClientHandler.UseProxy = (webProxy != null);
+                httpClientHandler.Proxy = webProxy;
+                _httpClientObj = new HttpClient(httpClientHandler);
+            }
+            else
+            {
+                _httpClientObj = new HttpClient();
+            }
             _httpClientObj.BaseAddress = _baseAddress;
             _httpClientObj.Timeout = s_defaultOperationTimeout;
             _httpClientObj.DefaultRequestHeaders.Accept.Add(

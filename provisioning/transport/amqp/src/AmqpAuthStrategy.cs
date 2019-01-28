@@ -5,6 +5,7 @@ using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Transport;
 using Microsoft.Azure.Devices.Provisioning.Client.Transport.Models;
 using System;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
@@ -23,7 +24,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         public abstract AmqpSettings CreateAmqpSettings(string idScope);
 
-        public abstract Task OpenConnectionAsync(AmqpClientConnection connection, TimeSpan timeout, bool useWebSocket);
+        public abstract Task OpenConnectionAsync(AmqpClientConnection connection, TimeSpan timeout, bool useWebSocket, IWebProxy proxy);
 
         public abstract void SaveCredentials(RegistrationOperationStatus status);
     }

@@ -10,12 +10,13 @@
 @REM IoT Hub Owner connection string:
 set IOTHUB_CONN_STRING_CSHARP=
 
-@REM Device1 and Device2 connection string:
+@REM Device primary and secondary connection strings:
 set IOTHUB_DEVICE_CONN_STRING=
 set IOTHUB_DEVICE_CONN_STRING2=
 
-@REM EventHub consumer group:
-set IOTHUB_EVENTHUB_CONSUMER_GROUP=e2e-tests
+@REM IoT Hub Module connection string:
+set IOTHUB_MODULE_CONN_STRING=
+set IOTHUB_MODULE_CONN_STRING2=
 
 @REM Use the following Powershell command to retrieve the Base64 encoding of a file:
 @REM Use Powershell: [Convert]::ToBase64String((Get-Content myFileName -Encoding Byte)) to generate.
@@ -28,11 +29,23 @@ set IOTHUB_X509_PFX_CERTIFICATE=
 @REM X509 Certificate 2 thumbprint:
 set IOTHUB_PFX_X509_THUMBPRINT2=
 
+@REM EventHub connection string for the messages/events endpoint:
+set IOTHUB_EVENTHUB_CONN_STRING_CSHARP=
+
+@REM EventHub compatible name:
+set IOTHUB_EVENTHUB_COMPATIBLE_NAME=
+
+@REM EventHub consumer group:
+set IOTHUB_EVENTHUB_CONSUMER_GROUP=
+
 @REM ---------- Device Provisioning Service Configuration ----------
 @REM See Configuration.Provisioning.cs for usage details.
 
 @REM DPS ID Scope 
 set DPS_IDSCOPE=
+
+@REM The DPS Global Device Endpoint (the default is defined in code)
+set DPS_GLOBALDEVICEENDPOINT=global.azure-devices-provisioning.net
 
 @REM X509 PFX Base64 encoded Device Certificate with recommended RegistrationID: iothubx509device1 (recommended IOTHub DeviceID: provisionedx509device1)
 @REM This certificate should have CN=<RegistrationID>.
@@ -42,6 +55,9 @@ set DPS_INDIVIDUALX509_PFX_CERTIFICATE=
 @REM RegistrationID/DeviceID is xdevice1.
 @REM This certificate should have CN=xdevice1
 set DPS_GROUPX509_PFX_CERTIFICATE=
+
+@REM X509 PFX Certificate password
+set DPS_X509_PFX_CERTIFICATE_PASSWORD=
 
 @REM X509 P7B Certificate chain.
 @REM This is the chain ending up in the root that has been verified by the Provisioning service.
@@ -56,5 +72,16 @@ set DPS_TPM_DEVICEID=provisionedtpm1
 
 @REM Provisioning service owner connection string.
 set PROVISIONING_CONNECTION_STRING=
+
+@REM ---------- Invalid Certificate validation ----------
+@REM The connection strings below point to servers with incorrect TLS server certificates. Tests will attempt to connect and expect that the TLS connection ends in a security exception.
+
+set IOTHUB_DEVICE_CONN_STRING_INVALIDCERT=
+set IOTHUB_CONN_STRING_INVALIDCERT=
+set DPS_GLOBALDEVICEENDPOINT_INVALIDCERT=
+set PROVISIONING_CONNECTION_STRING_INVALIDCERT=
+
+@REM Proxy configuration:
+set IOTHUB_PROXY_SERVER_ADDRESS=
 
 exit /B 0

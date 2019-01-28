@@ -14,6 +14,7 @@ namespace Microsoft.Azure.Devices
     using Microsoft.Azure.Devices.Common;
     using Microsoft.Azure.Devices.Common.Data;
     using Microsoft.Azure.Devices.Common.Exceptions;
+    using Microsoft.Azure.Devices.Common.WebApi;
 
     sealed class AmqpServiceClient : ServiceClient
     {
@@ -21,6 +22,7 @@ namespace Microsoft.Azure.Devices
         const string StatisticsUriFormat = "/statistics/service?" + ClientApiVersionHelper.ApiVersionQueryString;
         const string PurgeMessageQueueFormat = "/devices/{0}/commands?" + ClientApiVersionHelper.ApiVersionQueryString;
         const string DeviceMethodUriFormat = "/twins/{0}/methods?" + ClientApiVersionHelper.ApiVersionQueryString;
+        const string ModuleMethodUriFormat = "/twins/{0}/modules/{1}/methods?" + ClientApiVersionHelper.ApiVersionQueryString;
 
         readonly IotHubConnection iotHubConnection;
         readonly TimeSpan openTimeout;
@@ -34,9 +36,9 @@ namespace Microsoft.Azure.Devices
 
         int sendingDeliveryTag;
 
-        public AmqpServiceClient(IotHubConnectionString iotHubConnectionString, bool useWebSocketOnly)
+        public AmqpServiceClient(IotHubConnectionString iotHubConnectionString, bool useWebSocketOnly, ServiceClientTransportSettings transportSettings)
         {
-            var iotHubConnection = new IotHubConnection(iotHubConnectionString, AccessRights.ServiceConnect, useWebSocketOnly);
+            var iotHubConnection = new IotHubConnection(iotHubConnectionString, AccessRights.ServiceConnect, useWebSocketOnly, transportSettings);
             this.iotHubConnection = iotHubConnection;
             this.openTimeout = IotHubConnection.DefaultOpenTimeout;
             this.operationTimeout = IotHubConnection.DefaultOperationTimeout;
@@ -50,7 +52,8 @@ namespace Microsoft.Azure.Devices
                 iotHubConnectionString,
                 ExceptionHandlingHelper.GetDefaultErrorMapping(),
                 DefaultOperationTimeout,
-                client => {});
+                client => { },
+                transportSettings.HttpProxy);
         }
 
         internal AmqpServiceClient(IotHubConnectionString iotHubConnectionString, bool useWebSocketOnly, IHttpClientHelper httpClientHelper) : base()
@@ -61,7 +64,7 @@ namespace Microsoft.Azure.Devices
         internal AmqpServiceClient(IotHubConnection iotHubConnection, IHttpClientHelper httpClientHelper)
         {
             this.iotHubConnection = iotHubConnection;
-            this.faultTolerantSendingLink = new FaultTolerantAmqpObject<SendingAmqpLink>( this.CreateSendingLinkAsync, iotHubConnection.CloseLink );
+            this.faultTolerantSendingLink = new FaultTolerantAmqpObject<SendingAmqpLink>(this.CreateSendingLinkAsync, iotHubConnection.CloseLink);
             this.feedbackReceiver = new AmqpFeedbackReceiver(iotHubConnection);
             this.fileNotificationReceiver = new AmqpFileNotificationReceiver(iotHubConnection);
             this.httpClientHelper = httpClientHelper;
@@ -136,7 +139,7 @@ namespace Microsoft.Azure.Devices
                     SendingAmqpLink sendingLink = await GetSendingLinkAsync().ConfigureAwait(false);
                     if (timeout != null)
                     {
-                        outcome = await sendingLink.SendMessageAsync(amqpMessage, IotHubConnection.GetNextDeliveryTag(ref sendingDeliveryTag), AmqpConstants.NullBinary, (TimeSpan)timeout).ConfigureAwait(false);                        
+                        outcome = await sendingLink.SendMessageAsync(amqpMessage, IotHubConnection.GetNextDeliveryTag(ref sendingDeliveryTag), AmqpConstants.NullBinary, (TimeSpan)timeout).ConfigureAwait(false);
                     }
                     else
                     {
@@ -162,7 +165,7 @@ namespace Microsoft.Azure.Devices
                 throw AmqpErrorMapper.GetExceptionFromOutcome(outcome);
             }
         }
-        
+
         public override Task<PurgeMessageQueueResult> PurgeMessageQueueAsync(string deviceId)
         {
             return this.PurgeMessageQueueAsync(deviceId, CancellationToken.None);
@@ -206,14 +209,76 @@ namespace Microsoft.Azure.Devices
             CloudToDeviceMethod cloudToDeviceMethod,
             CancellationToken cancellationToken)
         {
+            return InvokeDeviceMethodAsync(GetDeviceMethodUri(deviceId), cloudToDeviceMethod, cancellationToken);
+        }
+
+        Task<CloudToDeviceMethodResult> InvokeDeviceMethodAsync(Uri uri,
+            CloudToDeviceMethod cloudToDeviceMethod,
+            CancellationToken cancellationToken)
+        {
             TimeSpan timeout = GetInvokeDeviceMethodOperationTimeout(cloudToDeviceMethod);
+
             return this.httpClientHelper.PostAsync<CloudToDeviceMethod, CloudToDeviceMethodResult>(
-                GetDeviceMethodUri(deviceId),
+                uri,
                 cloudToDeviceMethod,
                 timeout,
                 null,
                 null,
                 cancellationToken);
+
+        }
+
+        public override Task<CloudToDeviceMethodResult> InvokeDeviceMethodAsync(string deviceId, string moduleId, CloudToDeviceMethod cloudToDeviceMethod)
+        {
+            return this.InvokeDeviceMethodAsync(deviceId, moduleId, cloudToDeviceMethod, CancellationToken.None);
+        }
+
+        public override Task<CloudToDeviceMethodResult> InvokeDeviceMethodAsync(string deviceId, string moduleId, CloudToDeviceMethod cloudToDeviceMethod, CancellationToken cancellationToken)
+        {
+            return InvokeDeviceMethodAsync(GetModuleMethodUri(deviceId, moduleId), cloudToDeviceMethod, cancellationToken);
+        }
+
+        public override async Task SendAsync(string deviceId, string moduleId, Message message)
+        {
+            if (string.IsNullOrWhiteSpace(deviceId))
+            {
+                throw new ArgumentException("Value should be non null and non empty", nameof(deviceId));
+            }
+
+            if (string.IsNullOrWhiteSpace(moduleId))
+            {
+                throw new ArgumentException("Value should be non null and non empty", nameof(moduleId));
+            }
+
+            if (message == null)
+            {
+                throw new ArgumentNullException(nameof(message));
+            }
+
+            Outcome outcome;
+            using (AmqpMessage amqpMessage = message.ToAmqpMessage())
+            {
+                amqpMessage.Properties.To = "/devices/" + WebUtility.UrlEncode(deviceId) + "/modules/" + WebUtility.UrlEncode(moduleId) + "/messages/deviceBound";
+                try
+                {
+                    SendingAmqpLink sendingLink = await this.GetSendingLinkAsync();
+                    outcome = await sendingLink.SendMessageAsync(amqpMessage, IotHubConnection.GetNextDeliveryTag(ref this.sendingDeliveryTag), AmqpConstants.NullBinary, this.OperationTimeout);
+                }
+                catch (Exception exception)
+                {
+                    if (exception.IsFatal())
+                    {
+                        throw;
+                    }
+
+                    throw AmqpClientHelper.ToIotHubClientContract(exception);
+                }
+            }
+
+            if (outcome.DescriptorCode != Accepted.Code)
+            {
+                throw AmqpErrorMapper.GetExceptionFromOutcome(outcome);
+            }
         }
 
         async Task<SendingAmqpLink> GetSendingLinkAsync()
@@ -270,6 +335,13 @@ namespace Microsoft.Azure.Devices
         {
             deviceId = WebUtility.UrlEncode(deviceId);
             return new Uri(DeviceMethodUriFormat.FormatInvariant(deviceId), UriKind.Relative);
+        }
+
+        static Uri GetModuleMethodUri(string deviceId, string moduleId)
+        {
+            deviceId = WebUtility.UrlEncode(deviceId);
+            moduleId = WebUtility.UrlEncode(moduleId);
+            return new Uri(ModuleMethodUriFormat.FormatInvariant(deviceId, moduleId), UriKind.Relative);
         }
     }
 }

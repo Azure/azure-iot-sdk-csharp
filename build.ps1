@@ -148,7 +148,7 @@ Function BuildPackage($path, $message) {
     }
 }
 
-Function RunTests($path, $message, $framework="netcoreapp2.0") {
+Function RunTests($path, $message, $framework="*") {
 
     $label = "TEST: --- $message $configuration ---"
 
@@ -156,14 +156,21 @@ Function RunTests($path, $message, $framework="netcoreapp2.0") {
     Write-Host -ForegroundColor Cyan $label
     cd (Join-Path $rootDir $path)
 
-    & dotnet test --framework $framework --verbosity $verbosity --configuration $configuration --logger "trx"
+    if ($framework -eq "*")
+    {
+        & dotnet test --verbosity $verbosity --configuration $configuration --logger "trx"
+    }
+    else 
+    {
+        & dotnet test --framework $framework --verbosity $verbosity --configuration $configuration --logger "trx"
+    }
 
     if ($LASTEXITCODE -ne 0) {
         throw "Tests failed: $label"
     }
 }
 
-Function RunApp($path, $message, $framework="netcoreapp2.0") {
+Function RunApp($path, $message, $framework="netcoreapp2.1") {
 
     $label = "RUN: --- $message $configuration ---"
 
@@ -199,19 +206,11 @@ try {
     {
         CheckPublishTools
     }
-    
+
     if (-not $nobuild)
     {
         # SDK binaries
-        BuildProject shared\src "Shared Assembly"
-        BuildProject iothub\device\src "IoT Hub DeviceClient SDK"
-        BuildProject iothub\service\src "IoT Hub ServiceClient SDK"
-        BuildProject security\tpm\src "SecurityProvider for TPM"
-        BuildProject provisioning\device\src "Provisioning Device Client SDK"
-        BuildProject provisioning\transport\amqp\src "Provisioning Transport for AMQP"
-        BuildProject provisioning\transport\http\src "Provisioning Transport for HTTP"
-        BuildProject provisioning\transport\mqtt\src "Provisioning Transport for MQTT"
-        BuildProject provisioning\service\src "Provisioning Service Client SDK"
+        BuildProject . "Azure IoT C# SDK Solution"
     }
 
     # Unit Tests require InternalsVisibleTo and can only run in Debug builds.
@@ -254,7 +253,7 @@ try {
         {
             throw "Local NuGet package source path invalid: $($env:AZURE_IOT_LOCALPACKAGES)"
         }
-        
+
         # Clear the NuGet cache and the old packages.
         dotnet nuget locals --clear all
         Remove-Item $env:AZURE_IOT_LOCALPACKAGES\*.*
@@ -273,20 +272,18 @@ try {
         $oldVerbosity = $verbosity
         $verbosity = "normal"
 
-        RunTests e2e\test "End-to-end tests (NetCoreApp)"
         if (IsWindowsDevelopmentBox)
         {
-            RunTests e2e\test "End-to-end tests (NET451)" "net451"
-            RunTests e2e\test "End-to-end tests (NET47)" "net47"
+            RunTests e2e\test "End-to-end tests (NetCoreApp2.1, NET47, NET451)"
+        }
+        else 
+        {
+            RunTests e2e\test "End-to-end tests (NetCoreApp2.1)" "netcoreapp2.1"
         }
 
         $verbosity = $oldVerbosity
 
         # Samples
-        BuildProject iothub\device\samples "IoT Hub DeviceClient Samples"
-        BuildProject iothub\service\samples "IoT Hub ServiceClient Samples"
-        BuildProject provisioning\device\samples "Provisioning Device Client Samples"
-        BuildProject provisioning\service\samples "Provisioning Service Client Samples"
         BuildProject security\tpm\samples "SecurityProvider for TPM Samples"
 
         # Xamarin samples (require Android, iOS and UWP SDKs and configured iOS remote)
@@ -321,8 +318,8 @@ try {
             if($result.success)
             {
                 Write-Host -ForegroundColor Green "OK    : $($result.file.FullName)"
-            } 
-            else 
+            }
+            else
             {
                 Write-Host -ForegroundColor Red "FAILED: $($result.file.FullName)"
             }

@@ -1,17 +1,24 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Runtime.Serialization;
+
 namespace Microsoft.Azure.Devices.Client.Exceptions
 {
-    using System;
-    using System.Runtime.Serialization;
-
     /// <summary>
     /// The exception that is thrown when an attempt to communicate with the IoT Hub service fails.
     /// </summary>
     [Serializable]
     public sealed class IotHubCommunicationException : IotHubException
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="IotHubCommunicationException"/> class.
+        /// </summary>
+        public IotHubCommunicationException() : base(isTransient: true)
+        {
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="IotHubCommunicationException"/> class with the message string set to the message parameter.
         /// </summary>

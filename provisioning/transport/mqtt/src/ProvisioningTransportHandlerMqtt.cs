@@ -3,6 +3,7 @@
 
 using DotNetty.Buffers;
 using DotNetty.Codecs.Mqtt;
+using DotNetty.Handlers.Logging;
 using DotNetty.Handlers.Timeout;
 using DotNetty.Handlers.Tls;
 using DotNetty.Transport.Bootstrapping;
@@ -14,9 +15,7 @@ using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Net;
-using System.Net.Security;
 using System.Net.WebSockets;
 using System.Runtime.ExceptionServices;
 using System.Security.Cryptography.X509Certificates;
@@ -62,6 +61,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             {
                 Port = MqttTcpPort;
             }
+            Proxy = DefaultWebProxySettings.Instance;
         }
 
         /// <summary>
@@ -173,6 +173,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                         new TlsHandler(tlsSettings), //TODO: Ensure SystemDefault is used.
                         MqttEncoder.Instance,
                         new MqttDecoder(isServer: false, maxMessageSize: MaxMessageSize),
+                        new LoggingHandler(LogLevel.DEBUG),
                         new ProvisioningChannelHandlerAdapter(message, tcs, cancellationToken));
                 }));
 
@@ -191,20 +192,24 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 {
                     if (Logging.IsEnabled) Logging.Info(this, $"Connecting to {address.ToString()}.");
                     channel = await bootstrap.ConnectAsync(address, Port).ConfigureAwait(false);
+                    break;
                 }
-                catch (TimeoutException ex)
+                catch (AggregateException ae)
                 {
-                    lastException = ex;
-                    if (Logging.IsEnabled) Logging.Info(
-                        this,
-                        $"TimeoutException trying to connect to {address.ToString()}: {ex.ToString()}");
-                }
-                catch (IOException ex)
-                {
-                    lastException = ex;
-                    if (Logging.IsEnabled) Logging.Info(
-                        this,
-                        $"IOException trying to connect to {address.ToString()}: {ex.ToString()}");
+                    ae.Handle((ex) =>
+                    {
+                        if (ex is ConnectException)     // We will handle DotNetty.Transport.Channels.ConnectException
+                        {
+                            lastException = ex;
+                            if (Logging.IsEnabled) Logging.Info(
+                                this,
+                                $"ConnectException trying to connect to {address.ToString()}: {ex.ToString()}");
+                            return true;
+                        }
+
+                        return false; // Let anything else stop the application.
+                    });
+
                 }
             }
 
@@ -238,9 +243,30 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             websocket.Options.AddSubProtocol(WsMqttSubprotocol);
             websocket.Options.ClientCertificates.Add(clientCertificate);
 
+            //Check if we're configured to use a proxy server
+            try
+            {
+                if (Proxy != DefaultWebProxySettings.Instance)
+                {
+                    // Configure proxy server
+                    websocket.Options.Proxy = Proxy;
+                    if (Logging.IsEnabled)
+                    {
+                        Logging.Info(this, $"{nameof(ProvisionOverWssUsingX509CertificateAsync)} Setting ClientWebSocket.Options.Proxy");
+                    }
+                }
+            }
+            catch (PlatformNotSupportedException)
+            {
+                // .NET Core 2.0 doesn't support WebProxy configuration - ignore this setting.
+                if (Logging.IsEnabled)
+                {
+                    Logging.Error(this, $"{nameof(ProvisionOverWssUsingX509CertificateAsync)} PlatformNotSupportedException thrown as .NET Core 2.0 doesn't support proxy");
+                }
+            }
+
             await websocket.ConnectAsync(websocketUri, cancellationToken).ConfigureAwait(false);
 
-            // TODO: use ClientWebSocketChannel.
             var clientChannel = new ClientWebSocketChannel(null, websocket);
             clientChannel
                 .Option(ChannelOption.Allocator, UnpooledByteBufferAllocator.Default)
@@ -251,6 +277,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     new ReadTimeoutHandler(ReadTimeoutSeconds),
                     MqttEncoder.Instance,
                     new MqttDecoder(false, MaxMessageSize),
+                    new LoggingHandler(LogLevel.DEBUG),
                     new ProvisioningChannelHandlerAdapter(message, tcs, cancellationToken));
 
             await s_eventLoopGroup.RegisterAsync(clientChannel).ConfigureAwait(false);

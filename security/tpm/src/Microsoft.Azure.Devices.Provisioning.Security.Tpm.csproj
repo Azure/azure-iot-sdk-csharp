@@ -27,7 +27,7 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <Version>1.1.0</Version>
+    <Version>1.1.4</Version>
     <Title>Microsoft Azure IoT Provisioning Device Security TPM Client</Title>
     <Authors>Microsoft</Authors>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
@@ -35,7 +35,7 @@
     <Description>Provisioning Device Security TPM Client for Azure IoT Devices</Description>
     <PackageIconUrl>http://go.microsoft.com/fwlink/?LinkID=288890</PackageIconUrl>
     <PackageProjectUrl>https://github.com/Azure/azure-iot-sdk-csharp</PackageProjectUrl>
-    <Copyright>Â© Microsoft Corporation. All rights reserved.</Copyright>
+    <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
     <PackageTags>Microsoft Azure IoT Provisioning Device Security TPM Client .NET</PackageTags>    
   </PropertyGroup>
 
@@ -43,7 +43,7 @@
     <PackageReference Include="Microsoft.TSS" Version="2.0.1" />
 
     <!-- FXCop -->
-    <PackageReference Condition=" '$(Configuration)' == 'Debug' " Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.6.0-beta2" />
+    <PackageReference Condition=" '$(Configuration)' == 'Debug' " Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.6.1" />
   </ItemGroup>
 
   <ItemGroup>

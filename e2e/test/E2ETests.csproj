@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.0;net47;net451</TargetFrameworks>
-    <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">netcoreapp2.0</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.1;net47;net451</TargetFrameworks>
+    <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">netcoreapp2.1</TargetFrameworks>
     <!-- TODO #176: Enable warnings as errors. -->
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <IsPackable>false</IsPackable>
@@ -30,36 +30,45 @@
     <Compile Include="$(CommonTest)\EventSourceTestLogging.cs">
       <Link>Common\EventSourceTestLogging.cs</Link>
     </Compile>
+    <Compile Include="$(CommonTest)\TestModule.cs">
+      <Link>Common\TestModule.cs</Link>
+    </Compile>
     <Compile Include="$(CommonTest)\TestLogging.cs">
       <Link>Common\TestLogging.cs</Link>
+    </Compile>
+    <Compile Include="$(CommonTest)\TestDevice.cs">
+      <Link>Common\TestDevice.cs</Link>
     </Compile>
     <Compile Include="$(CommonTest)\VerboseTestLogging.cs">
       <Link>Common\VerboseTestLogging.cs</Link>
     </Compile>
-  </ItemGroup>
-  <!-- Legacy .NET 4.5.1 -->
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
-    <Compile Include="net451\MessageE2ETests.NetFramework.cs" />
-    <Compile Include="net451\X509E2ETests.NetFramework.cs" />
-  </ItemGroup>
-  <!-- NetCore and .NET 4.7 -->
-  <ItemGroup Condition=" '$(TargetFramework)' != 'net451' ">
     <Compile Include="$(CommonTest)\ConsoleEventListener.cs">
       <Link>Common\ConsoleEventListener.cs</Link>
     </Compile>
+    <Compile Include="$(CommonTest)\CustomWebProxy.cs">
+      <Link>Common\CustomWebProxy.cs</Link>
+    </Compile>
+  </ItemGroup>
+  <!-- Legacy .NET 4.5.1 -->
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
+    <Compile Include="net451\EventHubTestListener.NetFramework.cs" />
+  </ItemGroup>
+  <!-- NetCore and .NET 4.7 -->
+  <ItemGroup Condition=" '$(TargetFramework)' != 'net451' ">
     <Compile Include="$(CommonTest)\Configuration.Provisioning.cs">
       <Link>Common\Configuration.Provisioning.cs</Link>
     </Compile>
-    <Compile Include="netstandard13\MessageE2ETests.NetCore.cs" />
-    <Compile Include="netstandard13\X509E2ETests.NetCore.cs" />
-    <Compile Include="netstandard20\ProvisioningTests.cs" />
+    <Compile Include="netstandard20\EventHubTestListener.NetCore.cs" />
+    <Compile Include="netstandard20\ProvisioningE2ETests.cs" />
+    <Compile Include="netstandard20\ProvisioningServiceClientE2ETests.cs" />
+    <Compile Include="netstandard20\ProvisioningCertificateValidationE2ETest.cs" />
   </ItemGroup>
 
   <!-- All Platforms -->
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.3.0-preview-20170628-02" />
-    <PackageReference Include="MSTest.TestAdapter" Version="1.1.18" />
-    <PackageReference Include="MSTest.TestFramework" Version="1.1.18" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.8.0" />
+    <PackageReference Include="MSTest.TestAdapter" Version="1.3.2" />
+    <PackageReference Include="MSTest.TestFramework" Version="1.3.2" />
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <!-- Legacy .NET 4.5.1 -->
@@ -83,6 +92,7 @@
     <ProjectReference Include="$(RootDir)\provisioning\transport\http\src\Microsoft.Azure.Devices.Provisioning.Transport.Http.csproj" />
     <ProjectReference Include="$(RootDir)\provisioning\transport\mqtt\src\Microsoft.Azure.Devices.Provisioning.Transport.Mqtt.csproj" />
     <ProjectReference Include="$(RootDir)\security\tpm\src\Microsoft.Azure.Devices.Provisioning.Security.Tpm.csproj" />
+    <ProjectReference Include="$(RootDir)\provisioning\service\src\Microsoft.Azure.Devices.Provisioning.Service.csproj" />
     <Compile Include="$(RootDir)\security\tpm\samples\SecurityProviderTpmSimulator\SecurityProviderTpmSimulator.cs" />
   </ItemGroup>
 
@@ -97,6 +107,7 @@
     <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Transport.Http" Version="1.*" />
     <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Transport.Mqtt" Version="1.*" />
     <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Security.Tpm" Version="1.*" />
+    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Service" Version="1.*" />
     <ProjectReference Include="$(RootDir)\security\tpm\samples\SecurityProviderTpmSimulator\SecurityProviderTpmSimulator.csproj" />
   </ItemGroup>
 

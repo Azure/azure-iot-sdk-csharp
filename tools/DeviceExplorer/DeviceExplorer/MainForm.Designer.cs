@@ -57,9 +57,9 @@
             this.updateDeviceButton = new System.Windows.Forms.Button();
             this.deleteDeviceButton = new System.Windows.Forms.Button();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.deviceCountTextBox = new System.Windows.Forms.TextBox();
             this.filterDevicesTextBox = new System.Windows.Forms.TextBox();
             this.filterDevicesLabel = new System.Windows.Forms.Label();
-            this.deviceCountLabel = new System.Windows.Forms.Label();
             this.totalLabel = new System.Windows.Forms.Label();
             this.devicesGridView = new System.Windows.Forms.DataGridView();
             this.devicesGridViewContextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
@@ -87,6 +87,15 @@
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.eventHubTextBox = new System.Windows.Forms.RichTextBox();
             this.tabMessagesToDevice = new System.Windows.Forms.TabPage();
+            this.tabControl1 = new System.Windows.Forms.TabControl();
+            this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.messagePropertiesGrid = new System.Windows.Forms.DataGridView();
+            this.KeyColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.ValueColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.messageSystemPropertiesGrid = new System.Windows.Forms.DataGridView();
+            this.dataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumn2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.messagePropertiesLabel = new System.Windows.Forms.Label();
             this.checkBoxMonitorFeedbackEndpoint = new System.Windows.Forms.CheckBox();
             this.messageClearButton = new System.Windows.Forms.Button();
@@ -120,15 +129,6 @@
             this.label14 = new System.Windows.Forms.Label();
             this.label13 = new System.Windows.Forms.Label();
             this.ehStringToolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.tabControl1 = new System.Windows.Forms.TabControl();
-            this.tabPage1 = new System.Windows.Forms.TabPage();
-            this.tabPage3 = new System.Windows.Forms.TabPage();
-            this.messagePropertiesGrid = new System.Windows.Forms.DataGridView();
-            this.KeyColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.ValueColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.messageSystemPropertiesGrid = new System.Windows.Forms.DataGridView();
-            this.dataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewTextBoxColumn2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.tabCallDeviceMethod.SuspendLayout();
             this.tabPage2.SuspendLayout();
             this.groupBox5.SuspendLayout();
@@ -143,14 +143,14 @@
             this.groupBox3.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.tabMessagesToDevice.SuspendLayout();
+            this.tabControl1.SuspendLayout();
+            this.tabPage1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.messagePropertiesGrid)).BeginInit();
+            this.tabPage3.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.messageSystemPropertiesGrid)).BeginInit();
             this.groupBox4.SuspendLayout();
             this.tabDeviceMethod.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.callDeviceMethodNumericUpDown)).BeginInit();
-            this.tabControl1.SuspendLayout();
-            this.tabPage1.SuspendLayout();
-            this.tabPage3.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.messagePropertiesGrid)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.messageSystemPropertiesGrid)).BeginInit();
             this.SuspendLayout();
             // 
             // tabCallDeviceMethod
@@ -203,12 +203,13 @@
             this.groupBox5.Name = "groupBox5";
             this.groupBox5.Padding = new System.Windows.Forms.Padding(2);
             this.groupBox5.Size = new System.Drawing.Size(622, 288);
-            this.groupBox5.TabIndex = 13;
+            this.groupBox5.TabIndex = 7;
             this.groupBox5.TabStop = false;
             this.groupBox5.Text = "Shared Access Signature";
             // 
             // targetTextBox
             // 
+            this.targetTextBox.AccessibleName = "Target";
             this.targetTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.targetTextBox.Enabled = false;
@@ -216,10 +217,11 @@
             this.targetTextBox.Margin = new System.Windows.Forms.Padding(2);
             this.targetTextBox.Name = "targetTextBox";
             this.targetTextBox.Size = new System.Drawing.Size(522, 22);
-            this.targetTextBox.TabIndex = 16;
+            this.targetTextBox.TabIndex = 13;
             // 
             // keyValueTextBox
             // 
+            this.keyValueTextBox.AccessibleName = "Key value";
             this.keyValueTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.keyValueTextBox.Enabled = false;
@@ -227,10 +229,11 @@
             this.keyValueTextBox.Margin = new System.Windows.Forms.Padding(2);
             this.keyValueTextBox.Name = "keyValueTextBox";
             this.keyValueTextBox.Size = new System.Drawing.Size(522, 22);
-            this.keyValueTextBox.TabIndex = 15;
+            this.keyValueTextBox.TabIndex = 11;
             // 
             // keyNameTextBox
             // 
+            this.keyNameTextBox.AccessibleName = "Key name";
             this.keyNameTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.keyNameTextBox.Enabled = false;
@@ -238,7 +241,7 @@
             this.keyNameTextBox.Margin = new System.Windows.Forms.Padding(2);
             this.keyNameTextBox.Name = "keyNameTextBox";
             this.keyNameTextBox.Size = new System.Drawing.Size(522, 22);
-            this.keyNameTextBox.TabIndex = 14;
+            this.keyNameTextBox.TabIndex = 9;
             // 
             // label9
             // 
@@ -247,7 +250,7 @@
             this.label9.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(48, 16);
-            this.label9.TabIndex = 13;
+            this.label9.TabIndex = 12;
             this.label9.Text = "Target";
             // 
             // label4
@@ -257,7 +260,7 @@
             this.label4.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(69, 16);
-            this.label4.TabIndex = 12;
+            this.label4.TabIndex = 10;
             this.label4.Text = "Key Value";
             // 
             // label3
@@ -267,11 +270,12 @@
             this.label3.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(71, 16);
-            this.label3.TabIndex = 11;
+            this.label3.TabIndex = 8;
             this.label3.Text = "Key Name";
             // 
             // numericUpDownTTL
             // 
+            this.numericUpDownTTL.AccessibleName = "TTL (Days)";
             this.numericUpDownTTL.Location = new System.Drawing.Point(95, 108);
             this.numericUpDownTTL.Margin = new System.Windows.Forms.Padding(2);
             this.numericUpDownTTL.Maximum = new decimal(new int[] {
@@ -281,10 +285,11 @@
             0});
             this.numericUpDownTTL.Name = "numericUpDownTTL";
             this.numericUpDownTTL.Size = new System.Drawing.Size(144, 22);
-            this.numericUpDownTTL.TabIndex = 10;
+            this.numericUpDownTTL.TabIndex = 15;
             // 
             // sasRichTextBox
             // 
+            this.sasRichTextBox.AccessibleName = "Generated shared acces signature";
             this.sasRichTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
@@ -293,7 +298,8 @@
             this.sasRichTextBox.Name = "sasRichTextBox";
             this.sasRichTextBox.ReadOnly = true;
             this.sasRichTextBox.Size = new System.Drawing.Size(613, 137);
-            this.sasRichTextBox.TabIndex = 9;
+            this.sasRichTextBox.TabIndex = 17;
+            this.sasRichTextBox.TabStop = false;
             this.sasRichTextBox.Text = "";
             // 
             // generateSASButton
@@ -304,7 +310,7 @@
             this.generateSASButton.Margin = new System.Windows.Forms.Padding(2);
             this.generateSASButton.Name = "generateSASButton";
             this.generateSASButton.Size = new System.Drawing.Size(183, 28);
-            this.generateSASButton.TabIndex = 8;
+            this.generateSASButton.TabIndex = 16;
             this.generateSASButton.Text = "Generate SAS";
             this.generateSASButton.UseVisualStyleBackColor = true;
             this.generateSASButton.Click += new System.EventHandler(this.generateSASButton_Click);
@@ -316,7 +322,7 @@
             this.label10.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(76, 16);
-            this.label10.TabIndex = 3;
+            this.label10.TabIndex = 14;
             this.label10.Text = "TTL (Days)";
             // 
             // groupBox6
@@ -334,18 +340,19 @@
             this.groupBox6.Name = "groupBox6";
             this.groupBox6.Padding = new System.Windows.Forms.Padding(2);
             this.groupBox6.Size = new System.Drawing.Size(622, 268);
-            this.groupBox6.TabIndex = 14;
+            this.groupBox6.TabIndex = 1;
             this.groupBox6.TabStop = false;
             this.groupBox6.Text = "Connection Information";
             // 
             // protocolGatewayHost
             // 
+            this.protocolGatewayHost.AccessibleName = "Protocol gateway hostname";
             this.protocolGatewayHost.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.protocolGatewayHost.Location = new System.Drawing.Point(5, 199);
             this.protocolGatewayHost.Name = "protocolGatewayHost";
             this.protocolGatewayHost.Size = new System.Drawing.Size(612, 22);
-            this.protocolGatewayHost.TabIndex = 17;
+            this.protocolGatewayHost.TabIndex = 5;
             // 
             // label16
             // 
@@ -353,7 +360,7 @@
             this.label16.Location = new System.Drawing.Point(8, 180);
             this.label16.Name = "label16";
             this.label16.Size = new System.Drawing.Size(185, 16);
-            this.label16.TabIndex = 16;
+            this.label16.TabIndex = 4;
             this.label16.Text = "Protocol Gateway HostName:";
             // 
             // label1
@@ -363,7 +370,7 @@
             this.label1.Location = new System.Drawing.Point(8, 20);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(166, 16);
-            this.label1.TabIndex = 0;
+            this.label1.TabIndex = 2;
             this.label1.Text = "IoT Hub Connection String:";
             // 
             // updateSettingsButton
@@ -373,13 +380,14 @@
             this.updateSettingsButton.Location = new System.Drawing.Point(5, 227);
             this.updateSettingsButton.Name = "updateSettingsButton";
             this.updateSettingsButton.Size = new System.Drawing.Size(131, 31);
-            this.updateSettingsButton.TabIndex = 1;
+            this.updateSettingsButton.TabIndex = 6;
             this.updateSettingsButton.Text = "Update";
             this.updateSettingsButton.UseVisualStyleBackColor = true;
             this.updateSettingsButton.Click += new System.EventHandler(this.updateSettingsButton_Click);
             // 
             // dhConStringTextBox
             // 
+            this.dhConStringTextBox.AccessibleName = "IoT Hub Connection String";
             this.dhConStringTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.dhConStringTextBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -387,7 +395,7 @@
             this.dhConStringTextBox.Multiline = true;
             this.dhConStringTextBox.Name = "dhConStringTextBox";
             this.dhConStringTextBox.Size = new System.Drawing.Size(612, 138);
-            this.dhConStringTextBox.TabIndex = 4;
+            this.dhConStringTextBox.TabIndex = 3;
             this.dhConStringTextBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.dhConStringTextBox_KeyDown);
             // 
             // tabManagement
@@ -415,7 +423,7 @@
             this.groupBox7.Location = new System.Drawing.Point(6, 18);
             this.groupBox7.Name = "groupBox7";
             this.groupBox7.Size = new System.Drawing.Size(734, 59);
-            this.groupBox7.TabIndex = 8;
+            this.groupBox7.TabIndex = 1;
             this.groupBox7.TabStop = false;
             this.groupBox7.Text = "Actions";
             // 
@@ -444,7 +452,7 @@
             this.createDeviceButton.Location = new System.Drawing.Point(6, 21);
             this.createDeviceButton.Name = "createDeviceButton";
             this.createDeviceButton.Size = new System.Drawing.Size(100, 30);
-            this.createDeviceButton.TabIndex = 1;
+            this.createDeviceButton.TabIndex = 2;
             this.createDeviceButton.Text = "Create";
             this.createDeviceButton.UseVisualStyleBackColor = true;
             this.createDeviceButton.Click += new System.EventHandler(this.createButton_Click);
@@ -454,7 +462,7 @@
             this.listDevicesButton.Location = new System.Drawing.Point(130, 21);
             this.listDevicesButton.Name = "listDevicesButton";
             this.listDevicesButton.Size = new System.Drawing.Size(100, 30);
-            this.listDevicesButton.TabIndex = 2;
+            this.listDevicesButton.TabIndex = 3;
             this.listDevicesButton.Text = "List";
             this.listDevicesButton.UseVisualStyleBackColor = true;
             this.listDevicesButton.Click += new System.EventHandler(this.listButton_Click);
@@ -484,24 +492,35 @@
             this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox2.Controls.Add(this.deviceCountTextBox);
             this.groupBox2.Controls.Add(this.filterDevicesTextBox);
             this.groupBox2.Controls.Add(this.filterDevicesLabel);
-            this.groupBox2.Controls.Add(this.deviceCountLabel);
             this.groupBox2.Controls.Add(this.totalLabel);
             this.groupBox2.Controls.Add(this.devicesGridView);
             this.groupBox2.Location = new System.Drawing.Point(6, 83);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(739, 512);
-            this.groupBox2.TabIndex = 6;
+            this.groupBox2.TabIndex = 8;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Devices";
             // 
+            // deviceCountTextBox
+            // 
+            this.deviceCountTextBox.AccessibleName = "Total device count";
+            this.deviceCountTextBox.Location = new System.Drawing.Point(58, 19);
+            this.deviceCountTextBox.Name = "deviceCountTextBox";
+            this.deviceCountTextBox.ReadOnly = true;
+            this.deviceCountTextBox.Size = new System.Drawing.Size(100, 22);
+            this.deviceCountTextBox.TabIndex = 10;
+            this.deviceCountTextBox.Text = "0";
+            // 
             // filterDevicesTextBox
             // 
+            this.filterDevicesTextBox.AccessibleName = "Filter devices list below";
             this.filterDevicesTextBox.Location = new System.Drawing.Point(58, 49);
             this.filterDevicesTextBox.Name = "filterDevicesTextBox";
             this.filterDevicesTextBox.Size = new System.Drawing.Size(676, 22);
-            this.filterDevicesTextBox.TabIndex = 14;
+            this.filterDevicesTextBox.TabIndex = 12;
             this.filterDevicesTextBox.TextChanged += new System.EventHandler(this.filterDevicesTextBox_TextChanged);
             // 
             // filterDevicesLabel
@@ -509,18 +528,9 @@
             this.filterDevicesLabel.AutoSize = true;
             this.filterDevicesLabel.Location = new System.Drawing.Point(7, 52);
             this.filterDevicesLabel.Name = "filterDevicesLabel";
-            this.filterDevicesLabel.Size = new System.Drawing.Size(37, 16);
-            this.filterDevicesLabel.TabIndex = 13;
+            this.filterDevicesLabel.Size = new System.Drawing.Size(40, 16);
+            this.filterDevicesLabel.TabIndex = 11;
             this.filterDevicesLabel.Text = "Filter:";
-            // 
-            // deviceCountLabel
-            // 
-            this.deviceCountLabel.AutoSize = true;
-            this.deviceCountLabel.Location = new System.Drawing.Point(55, 22);
-            this.deviceCountLabel.Name = "deviceCountLabel";
-            this.deviceCountLabel.Size = new System.Drawing.Size(15, 16);
-            this.deviceCountLabel.TabIndex = 12;
-            this.deviceCountLabel.Text = "0";
             // 
             // totalLabel
             // 
@@ -528,11 +538,12 @@
             this.totalLabel.Location = new System.Drawing.Point(7, 22);
             this.totalLabel.Name = "totalLabel";
             this.totalLabel.Size = new System.Drawing.Size(42, 16);
-            this.totalLabel.TabIndex = 10;
+            this.totalLabel.TabIndex = 9;
             this.totalLabel.Text = "Total:";
             // 
             // devicesGridView
             // 
+            this.devicesGridView.AccessibleName = "Devices";
             this.devicesGridView.AllowUserToOrderColumns = true;
             this.devicesGridView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
@@ -542,14 +553,13 @@
             this.devicesGridView.EditMode = System.Windows.Forms.DataGridViewEditMode.EditProgrammatically;
             this.devicesGridView.Location = new System.Drawing.Point(5, 82);
             this.devicesGridView.Margin = new System.Windows.Forms.Padding(2);
-            this.devicesGridView.MultiSelect = true;
             this.devicesGridView.Name = "devicesGridView";
             this.devicesGridView.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.devicesGridView.Size = new System.Drawing.Size(729, 425);
-            this.devicesGridView.TabIndex = 9;
+            this.devicesGridView.TabIndex = 13;
             this.devicesGridView.DataBindingComplete += new System.Windows.Forms.DataGridViewBindingCompleteEventHandler(this.devicesGridView_DataBindingComplete);
-            this.devicesGridView.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.devicesGridView_KeyPress);
             this.devicesGridView.SelectionChanged += new System.EventHandler(this.devicesGridView_SelectionChanged);
+            this.devicesGridView.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.devicesGridView_KeyPress);
             // 
             // devicesGridViewContextMenu
             // 
@@ -635,27 +645,29 @@
             this.groupBox3.Location = new System.Drawing.Point(6, 24);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(739, 247);
-            this.groupBox3.TabIndex = 26;
+            this.groupBox3.TabIndex = 1;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Monitoring";
             // 
             // enableSystemProperties
             // 
+            this.enableSystemProperties.AccessibleName = "Show system properties";
             this.enableSystemProperties.AutoSize = true;
             this.enableSystemProperties.Location = new System.Drawing.Point(563, 208);
             this.enableSystemProperties.Name = "enableSystemProperties";
             this.enableSystemProperties.Size = new System.Drawing.Size(170, 20);
-            this.enableSystemProperties.TabIndex = 30;
+            this.enableSystemProperties.TabIndex = 14;
             this.enableSystemProperties.Text = "Show system properties";
             this.enableSystemProperties.UseVisualStyleBackColor = true;
             // 
             // consumerGroupCheckBox
             // 
+            this.consumerGroupCheckBox.AccessibleName = "Enable consumer group field";
             this.consumerGroupCheckBox.AutoSize = true;
             this.consumerGroupCheckBox.Location = new System.Drawing.Point(407, 157);
             this.consumerGroupCheckBox.Name = "consumerGroupCheckBox";
             this.consumerGroupCheckBox.Size = new System.Drawing.Size(70, 20);
-            this.consumerGroupCheckBox.TabIndex = 29;
+            this.consumerGroupCheckBox.TabIndex = 8;
             this.consumerGroupCheckBox.Text = "Enable";
             this.consumerGroupCheckBox.UseVisualStyleBackColor = true;
             this.consumerGroupCheckBox.CheckedChanged += new System.EventHandler(this.consumerGroupCheckBox_CheckedChanged);
@@ -666,23 +678,25 @@
             this.label6.Location = new System.Drawing.Point(22, 161);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(112, 16);
-            this.label6.TabIndex = 28;
+            this.label6.TabIndex = 9;
             this.label6.Text = "Consumer Group:";
             // 
             // groupNameTextBox
             // 
+            this.groupNameTextBox.AccessibleName = "Consumer group";
             this.groupNameTextBox.Enabled = false;
             this.groupNameTextBox.Location = new System.Drawing.Point(140, 155);
             this.groupNameTextBox.Name = "groupNameTextBox";
             this.groupNameTextBox.Size = new System.Drawing.Size(258, 22);
-            this.groupNameTextBox.TabIndex = 27;
+            this.groupNameTextBox.TabIndex = 10;
             // 
             // cancelMonitoringButton
             // 
+            this.cancelMonitoringButton.AccessibleName = "Cancel data monitoring";
             this.cancelMonitoringButton.Location = new System.Drawing.Point(182, 202);
             this.cancelMonitoringButton.Name = "cancelMonitoringButton";
             this.cancelMonitoringButton.Size = new System.Drawing.Size(133, 30);
-            this.cancelMonitoringButton.TabIndex = 26;
+            this.cancelMonitoringButton.TabIndex = 12;
             this.cancelMonitoringButton.Text = "Cancel";
             this.cancelMonitoringButton.UseVisualStyleBackColor = true;
             this.cancelMonitoringButton.Click += new System.EventHandler(this.cancelButton_Click);
@@ -693,25 +707,27 @@
             this.label12.Location = new System.Drawing.Point(22, 40);
             this.label12.Name = "label12";
             this.label12.Size = new System.Drawing.Size(73, 16);
-            this.label12.TabIndex = 15;
+            this.label12.TabIndex = 2;
             this.label12.Text = "Event Hub:";
             // 
             // clearDataButton
             // 
+            this.clearDataButton.AccessibleName = "Clear Event Hub Data field below";
             this.clearDataButton.Location = new System.Drawing.Point(353, 202);
             this.clearDataButton.Name = "clearDataButton";
             this.clearDataButton.Size = new System.Drawing.Size(120, 30);
-            this.clearDataButton.TabIndex = 21;
+            this.clearDataButton.TabIndex = 13;
             this.clearDataButton.Text = "Clear";
             this.clearDataButton.UseVisualStyleBackColor = true;
             this.clearDataButton.Click += new System.EventHandler(this.clearDataButton_Click);
             // 
             // dataMonitorButton
             // 
+            this.dataMonitorButton.AccessibleName = "Monitor data";
             this.dataMonitorButton.Location = new System.Drawing.Point(21, 202);
             this.dataMonitorButton.Name = "dataMonitorButton";
             this.dataMonitorButton.Size = new System.Drawing.Size(120, 30);
-            this.dataMonitorButton.TabIndex = 4;
+            this.dataMonitorButton.TabIndex = 11;
             this.dataMonitorButton.Text = "Monitor";
             this.dataMonitorButton.UseVisualStyleBackColor = true;
             this.dataMonitorButton.Click += new System.EventHandler(this.dataMonitorButton_Click);
@@ -722,7 +738,7 @@
             this.label15.Location = new System.Drawing.Point(22, 121);
             this.label15.Name = "label15";
             this.label15.Size = new System.Drawing.Size(72, 16);
-            this.label15.TabIndex = 23;
+            this.label15.TabIndex = 6;
             this.label15.Text = "Start Time:";
             // 
             // label11
@@ -731,21 +747,23 @@
             this.label11.Location = new System.Drawing.Point(22, 81);
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(70, 16);
-            this.label11.TabIndex = 2;
+            this.label11.TabIndex = 4;
             this.label11.Text = "Device ID:";
             // 
             // eventHubNameTextBoxForDataTab
             // 
+            this.eventHubNameTextBoxForDataTab.AccessibleName = "Event hub";
             this.eventHubNameTextBoxForDataTab.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.eventHubNameTextBoxForDataTab.Location = new System.Drawing.Point(101, 34);
             this.eventHubNameTextBoxForDataTab.Name = "eventHubNameTextBoxForDataTab";
             this.eventHubNameTextBoxForDataTab.ReadOnly = true;
             this.eventHubNameTextBoxForDataTab.Size = new System.Drawing.Size(622, 22);
-            this.eventHubNameTextBoxForDataTab.TabIndex = 17;
+            this.eventHubNameTextBoxForDataTab.TabIndex = 3;
             // 
             // deviceIDsComboBoxForEvent
             // 
+            this.deviceIDsComboBoxForEvent.AccessibleName = "Device ID";
             this.deviceIDsComboBoxForEvent.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.deviceIDsComboBoxForEvent.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
@@ -753,11 +771,12 @@
             this.deviceIDsComboBoxForEvent.Location = new System.Drawing.Point(101, 73);
             this.deviceIDsComboBoxForEvent.Name = "deviceIDsComboBoxForEvent";
             this.deviceIDsComboBoxForEvent.Size = new System.Drawing.Size(622, 24);
-            this.deviceIDsComboBoxForEvent.TabIndex = 18;
+            this.deviceIDsComboBoxForEvent.TabIndex = 5;
             this.deviceIDsComboBoxForEvent.SelectionChangeCommitted += new System.EventHandler(this.deviceIDsComboBoxForEvent_SelectionChangeCommitted);
             // 
             // dateTimePicker
             // 
+            this.dateTimePicker.AccessibleName = "Start time";
             this.dateTimePicker.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.dateTimePicker.Checked = false;
@@ -767,7 +786,7 @@
             this.dateTimePicker.Name = "dateTimePicker";
             this.dateTimePicker.ShowCheckBox = true;
             this.dateTimePicker.Size = new System.Drawing.Size(622, 22);
-            this.dateTimePicker.TabIndex = 22;
+            this.dateTimePicker.TabIndex = 7;
             // 
             // groupBox1
             // 
@@ -784,6 +803,7 @@
             // 
             // eventHubTextBox
             // 
+            this.eventHubTextBox.AccessibleName = "Event hub data";
             this.eventHubTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
@@ -791,11 +811,12 @@
             this.eventHubTextBox.Name = "eventHubTextBox";
             this.eventHubTextBox.ReadOnly = true;
             this.eventHubTextBox.Size = new System.Drawing.Size(725, 276);
-            this.eventHubTextBox.TabIndex = 5;
+            this.eventHubTextBox.TabIndex = 15;
             this.eventHubTextBox.Text = "";
             // 
             // tabMessagesToDevice
             // 
+            this.tabMessagesToDevice.AccessibleName = "Send message to device";
             this.tabMessagesToDevice.Controls.Add(this.tabControl1);
             this.tabMessagesToDevice.Controls.Add(this.messagePropertiesLabel);
             this.tabMessagesToDevice.Controls.Add(this.checkBoxMonitorFeedbackEndpoint);
@@ -818,6 +839,116 @@
             this.tabMessagesToDevice.Text = "Messages To Device";
             this.tabMessagesToDevice.UseVisualStyleBackColor = true;
             // 
+            // tabControl1
+            // 
+            this.tabControl1.Controls.Add(this.tabPage1);
+            this.tabControl1.Controls.Add(this.tabPage3);
+            this.tabControl1.Location = new System.Drawing.Point(24, 174);
+            this.tabControl1.Name = "tabControl1";
+            this.tabControl1.SelectedIndex = 0;
+            this.tabControl1.Size = new System.Drawing.Size(704, 153);
+            this.tabControl1.TabIndex = 10;
+            // 
+            // tabPage1
+            // 
+            this.tabPage1.Controls.Add(this.messagePropertiesGrid);
+            this.tabPage1.Location = new System.Drawing.Point(4, 25);
+            this.tabPage1.Name = "tabPage1";
+            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage1.Size = new System.Drawing.Size(696, 124);
+            this.tabPage1.TabIndex = 0;
+            this.tabPage1.Text = "Properties";
+            this.tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // messagePropertiesGrid
+            // 
+            this.messagePropertiesGrid.AccessibleName = "Message Properties";
+            this.messagePropertiesGrid.AllowUserToResizeColumns = false;
+            this.messagePropertiesGrid.AllowUserToResizeRows = false;
+            this.messagePropertiesGrid.BackgroundColor = System.Drawing.Color.White;
+            this.messagePropertiesGrid.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.messagePropertiesGrid.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.Single;
+            this.messagePropertiesGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.messagePropertiesGrid.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.KeyColumn,
+            this.ValueColumn});
+            this.messagePropertiesGrid.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.messagePropertiesGrid.Location = new System.Drawing.Point(3, 3);
+            this.messagePropertiesGrid.Name = "messagePropertiesGrid";
+            this.messagePropertiesGrid.RowHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
+            this.messagePropertiesGrid.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.messagePropertiesGrid.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.messagePropertiesGrid.Size = new System.Drawing.Size(690, 118);
+            this.messagePropertiesGrid.TabIndex = 11;
+            // 
+            // KeyColumn
+            // 
+            this.KeyColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.KeyColumn.HeaderText = "Key";
+            this.KeyColumn.Name = "KeyColumn";
+            this.KeyColumn.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.KeyColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            // 
+            // ValueColumn
+            // 
+            this.ValueColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.ValueColumn.HeaderText = "Value";
+            this.ValueColumn.Name = "ValueColumn";
+            this.ValueColumn.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.ValueColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            // 
+            // tabPage3
+            // 
+            this.tabPage3.Controls.Add(this.messageSystemPropertiesGrid);
+            this.tabPage3.Location = new System.Drawing.Point(4, 25);
+            this.tabPage3.Name = "tabPage3";
+            this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage3.Size = new System.Drawing.Size(696, 124);
+            this.tabPage3.TabIndex = 1;
+            this.tabPage3.Text = "System Properties";
+            this.tabPage3.UseVisualStyleBackColor = true;
+            // 
+            // messageSystemPropertiesGrid
+            // 
+            this.messageSystemPropertiesGrid.AccessibleName = "System properties";
+            this.messageSystemPropertiesGrid.AllowUserToAddRows = false;
+            this.messageSystemPropertiesGrid.AllowUserToDeleteRows = false;
+            this.messageSystemPropertiesGrid.AllowUserToResizeColumns = false;
+            this.messageSystemPropertiesGrid.AllowUserToResizeRows = false;
+            this.messageSystemPropertiesGrid.BackgroundColor = System.Drawing.Color.White;
+            this.messageSystemPropertiesGrid.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.messageSystemPropertiesGrid.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.Single;
+            this.messageSystemPropertiesGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.messageSystemPropertiesGrid.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.dataGridViewTextBoxColumn1,
+            this.dataGridViewTextBoxColumn2});
+            this.messageSystemPropertiesGrid.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.messageSystemPropertiesGrid.Location = new System.Drawing.Point(3, 3);
+            this.messageSystemPropertiesGrid.Name = "messageSystemPropertiesGrid";
+            this.messageSystemPropertiesGrid.RowHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
+            this.messageSystemPropertiesGrid.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.messageSystemPropertiesGrid.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.messageSystemPropertiesGrid.Size = new System.Drawing.Size(690, 118);
+            this.messageSystemPropertiesGrid.TabIndex = 12;
+            // 
+            // dataGridViewTextBoxColumn1
+            // 
+            this.dataGridViewTextBoxColumn1.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.dataGridViewTextBoxColumn1.FillWeight = 30F;
+            this.dataGridViewTextBoxColumn1.HeaderText = "Key";
+            this.dataGridViewTextBoxColumn1.Name = "dataGridViewTextBoxColumn1";
+            this.dataGridViewTextBoxColumn1.ReadOnly = true;
+            this.dataGridViewTextBoxColumn1.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.dataGridViewTextBoxColumn1.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            // 
+            // dataGridViewTextBoxColumn2
+            // 
+            this.dataGridViewTextBoxColumn2.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.dataGridViewTextBoxColumn2.HeaderText = "Value";
+            this.dataGridViewTextBoxColumn2.Name = "dataGridViewTextBoxColumn2";
+            this.dataGridViewTextBoxColumn2.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.dataGridViewTextBoxColumn2.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            // 
             // messagePropertiesLabel
             // 
             this.messagePropertiesLabel.AutoSize = true;
@@ -835,43 +966,45 @@
             this.checkBoxMonitorFeedbackEndpoint.Location = new System.Drawing.Point(281, 148);
             this.checkBoxMonitorFeedbackEndpoint.Name = "checkBoxMonitorFeedbackEndpoint";
             this.checkBoxMonitorFeedbackEndpoint.Size = new System.Drawing.Size(192, 20);
-            this.checkBoxMonitorFeedbackEndpoint.TabIndex = 12;
+            this.checkBoxMonitorFeedbackEndpoint.TabIndex = 9;
             this.checkBoxMonitorFeedbackEndpoint.Text = "Monitor Feedback Endpoint";
             this.checkBoxMonitorFeedbackEndpoint.UseVisualStyleBackColor = true;
             this.checkBoxMonitorFeedbackEndpoint.CheckedChanged += new System.EventHandler(this.checkBoxMonitorFeedbackEndpoint_CheckedChanged);
             // 
             // messageClearButton
             // 
+            this.messageClearButton.AccessibleName = "Clear list of sent messages";
             this.messageClearButton.Location = new System.Drawing.Point(199, 333);
             this.messageClearButton.MaximumSize = new System.Drawing.Size(145, 30);
             this.messageClearButton.Name = "messageClearButton";
             this.messageClearButton.Size = new System.Drawing.Size(145, 30);
-            this.messageClearButton.TabIndex = 11;
+            this.messageClearButton.TabIndex = 14;
             this.messageClearButton.Text = "Clear";
             this.messageClearButton.UseVisualStyleBackColor = true;
             this.messageClearButton.Click += new System.EventHandler(this.messageClearButton_Click);
             // 
             // deviceIDsComboBoxForCloudToDeviceMessage
             // 
+            this.deviceIDsComboBoxForCloudToDeviceMessage.AccessibleName = "Device ID";
             this.deviceIDsComboBoxForCloudToDeviceMessage.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.deviceIDsComboBoxForCloudToDeviceMessage.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.deviceIDsComboBoxForCloudToDeviceMessage.FormattingEnabled = true;
             this.deviceIDsComboBoxForCloudToDeviceMessage.Location = new System.Drawing.Point(104, 81);
             this.deviceIDsComboBoxForCloudToDeviceMessage.Name = "deviceIDsComboBoxForCloudToDeviceMessage";
             this.deviceIDsComboBoxForCloudToDeviceMessage.Size = new System.Drawing.Size(630, 24);
-            this.deviceIDsComboBoxForCloudToDeviceMessage.TabIndex = 10;
+            this.deviceIDsComboBoxForCloudToDeviceMessage.TabIndex = 5;
             this.deviceIDsComboBoxForCloudToDeviceMessage.SelectionChangeCommitted += new System.EventHandler(this.deviceIDsComboBoxForMessage_SelectionChangeCommitted);
             // 
             // iotHubNameTextBox
             // 
+            this.iotHubNameTextBox.AccessibleName = "IoT hub";
             this.iotHubNameTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.iotHubNameTextBox.Location = new System.Drawing.Point(104, 53);
             this.iotHubNameTextBox.Name = "iotHubNameTextBox";
             this.iotHubNameTextBox.ReadOnly = true;
             this.iotHubNameTextBox.Size = new System.Drawing.Size(630, 22);
-            this.iotHubNameTextBox.TabIndex = 9;
+            this.iotHubNameTextBox.TabIndex = 3;
             // 
             // label2
             // 
@@ -879,7 +1012,7 @@
             this.label2.Location = new System.Drawing.Point(21, 56);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(59, 16);
-            this.label2.TabIndex = 8;
+            this.label2.TabIndex = 2;
             this.label2.Text = "IoT Hub:";
             // 
             // checkBox1
@@ -890,7 +1023,7 @@
             this.checkBox1.Location = new System.Drawing.Point(104, 148);
             this.checkBox1.Name = "checkBox1";
             this.checkBox1.Size = new System.Drawing.Size(128, 20);
-            this.checkBox1.TabIndex = 5;
+            this.checkBox1.TabIndex = 8;
             this.checkBox1.Text = "Add Time Stamp";
             this.checkBox1.UseVisualStyleBackColor = true;
             // 
@@ -903,20 +1036,19 @@
             this.groupBox4.Location = new System.Drawing.Point(6, 378);
             this.groupBox4.Name = "groupBox4";
             this.groupBox4.Size = new System.Drawing.Size(728, 218);
-            this.groupBox4.TabIndex = 7;
+            this.groupBox4.TabIndex = 15;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Output";
             // 
             // messagesTextBox
             // 
-            this.messagesTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.messagesTextBox.AccessibleName = "Sent messages";
+            this.messagesTextBox.AccessibleRole = System.Windows.Forms.AccessibleRole.StaticText;
             this.messagesTextBox.Location = new System.Drawing.Point(6, 21);
             this.messagesTextBox.Name = "messagesTextBox";
             this.messagesTextBox.ReadOnly = true;
             this.messagesTextBox.Size = new System.Drawing.Size(716, 191);
-            this.messagesTextBox.TabIndex = 7;
+            this.messagesTextBox.TabIndex = 16;
             this.messagesTextBox.Text = "";
             // 
             // label8
@@ -925,7 +1057,7 @@
             this.label8.Location = new System.Drawing.Point(21, 114);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(68, 16);
-            this.label8.TabIndex = 3;
+            this.label8.TabIndex = 6;
             this.label8.Text = "Message:";
             // 
             // label7
@@ -934,37 +1066,40 @@
             this.label7.Location = new System.Drawing.Point(21, 84);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(70, 16);
-            this.label7.TabIndex = 1;
+            this.label7.TabIndex = 4;
             this.label7.Text = "Device ID:";
             // 
             // label5
             // 
+            this.label5.AccessibleName = "Send Message to Device";
             this.label5.AutoSize = true;
             this.label5.Location = new System.Drawing.Point(13, 19);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(163, 16);
-            this.label5.TabIndex = 2;
+            this.label5.TabIndex = 1;
             this.label5.Text = "Send Message to Device:";
             // 
             // sendMessageToDeviceButton
             // 
+            this.sendMessageToDeviceButton.AccessibleName = "Send message";
             this.sendMessageToDeviceButton.Location = new System.Drawing.Point(24, 333);
             this.sendMessageToDeviceButton.MaximumSize = new System.Drawing.Size(145, 30);
             this.sendMessageToDeviceButton.Name = "sendMessageToDeviceButton";
             this.sendMessageToDeviceButton.Size = new System.Drawing.Size(145, 30);
-            this.sendMessageToDeviceButton.TabIndex = 6;
+            this.sendMessageToDeviceButton.TabIndex = 13;
             this.sendMessageToDeviceButton.Text = "Send";
             this.sendMessageToDeviceButton.UseVisualStyleBackColor = true;
             this.sendMessageToDeviceButton.Click += new System.EventHandler(this.sendMessageToDeviceButton_Click);
             // 
             // textBoxMessage
             // 
+            this.textBoxMessage.AccessibleName = "Message";
             this.textBoxMessage.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.textBoxMessage.Location = new System.Drawing.Point(104, 111);
             this.textBoxMessage.Name = "textBoxMessage";
             this.textBoxMessage.Size = new System.Drawing.Size(630, 22);
-            this.textBoxMessage.TabIndex = 4;
+            this.textBoxMessage.TabIndex = 7;
             // 
             // tabDeviceMethod
             // 
@@ -1001,7 +1136,7 @@
             this.callDeviceMethodCancelButton.Location = new System.Drawing.Point(577, 328);
             this.callDeviceMethodCancelButton.Name = "callDeviceMethodCancelButton";
             this.callDeviceMethodCancelButton.Size = new System.Drawing.Size(155, 30);
-            this.callDeviceMethodCancelButton.TabIndex = 18;
+            this.callDeviceMethodCancelButton.TabIndex = 12;
             this.callDeviceMethodCancelButton.Text = "Cancel";
             this.callDeviceMethodCancelButton.UseVisualStyleBackColor = true;
             this.callDeviceMethodCancelButton.Click += new System.EventHandler(this.callDeviceMethodCancelButton_Click);
@@ -1012,15 +1147,16 @@
             this.label22.Location = new System.Drawing.Point(137, 335);
             this.label22.Name = "label22";
             this.label22.Size = new System.Drawing.Size(123, 16);
-            this.label22.TabIndex = 16;
+            this.label22.TabIndex = 9;
             this.label22.Text = "Timeout (seconds):";
             // 
             // callDeviceMethodNumericUpDown
             // 
+            this.callDeviceMethodNumericUpDown.AccessibleName = "Timeout (Seconds)";
             this.callDeviceMethodNumericUpDown.Location = new System.Drawing.Point(266, 333);
             this.callDeviceMethodNumericUpDown.Name = "callDeviceMethodNumericUpDown";
             this.callDeviceMethodNumericUpDown.Size = new System.Drawing.Size(53, 22);
-            this.callDeviceMethodNumericUpDown.TabIndex = 15;
+            this.callDeviceMethodNumericUpDown.TabIndex = 10;
             this.callDeviceMethodNumericUpDown.Value = new decimal(new int[] {
             60,
             0,
@@ -1033,11 +1169,12 @@
             this.label21.Location = new System.Drawing.Point(24, 417);
             this.label21.Name = "label21";
             this.label21.Size = new System.Drawing.Size(103, 16);
-            this.label21.TabIndex = 14;
+            this.label21.TabIndex = 15;
             this.label21.Text = "Return payload:";
             // 
             // returnPayloadTextBox
             // 
+            this.returnPayloadTextBox.AccessibleName = "Return payload";
             this.returnPayloadTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
@@ -1046,17 +1183,18 @@
             this.returnPayloadTextBox.Name = "returnPayloadTextBox";
             this.returnPayloadTextBox.ReadOnly = true;
             this.returnPayloadTextBox.Size = new System.Drawing.Size(592, 180);
-            this.returnPayloadTextBox.TabIndex = 13;
+            this.returnPayloadTextBox.TabIndex = 16;
             // 
             // returnStatusTextBox
             // 
+            this.returnStatusTextBox.AccessibleName = "Return status";
             this.returnStatusTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.returnStatusTextBox.Location = new System.Drawing.Point(140, 386);
             this.returnStatusTextBox.Name = "returnStatusTextBox";
             this.returnStatusTextBox.ReadOnly = true;
             this.returnStatusTextBox.Size = new System.Drawing.Size(592, 22);
-            this.returnStatusTextBox.TabIndex = 12;
+            this.returnStatusTextBox.TabIndex = 14;
             // 
             // label20
             // 
@@ -1064,7 +1202,7 @@
             this.label20.Location = new System.Drawing.Point(24, 389);
             this.label20.Name = "label20";
             this.label20.Size = new System.Drawing.Size(88, 16);
-            this.label20.TabIndex = 11;
+            this.label20.TabIndex = 13;
             this.label20.Text = "Return status:";
             // 
             // callDeviceMethodButton
@@ -1072,13 +1210,14 @@
             this.callDeviceMethodButton.Location = new System.Drawing.Point(362, 328);
             this.callDeviceMethodButton.Name = "callDeviceMethodButton";
             this.callDeviceMethodButton.Size = new System.Drawing.Size(149, 30);
-            this.callDeviceMethodButton.TabIndex = 10;
+            this.callDeviceMethodButton.TabIndex = 11;
             this.callDeviceMethodButton.Text = "Call Method";
             this.callDeviceMethodButton.UseVisualStyleBackColor = true;
             this.callDeviceMethodButton.Click += new System.EventHandler(this.callDeviceMethodButton_Click);
             // 
             // deviceIDsComboBoxForDeviceMethod
             // 
+            this.deviceIDsComboBoxForDeviceMethod.AccessibleName = "Device ID";
             this.deviceIDsComboBoxForDeviceMethod.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.deviceIDsComboBoxForDeviceMethod.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
@@ -1086,11 +1225,12 @@
             this.deviceIDsComboBoxForDeviceMethod.Location = new System.Drawing.Point(140, 81);
             this.deviceIDsComboBoxForDeviceMethod.Name = "deviceIDsComboBoxForDeviceMethod";
             this.deviceIDsComboBoxForDeviceMethod.Size = new System.Drawing.Size(592, 24);
-            this.deviceIDsComboBoxForDeviceMethod.TabIndex = 9;
+            this.deviceIDsComboBoxForDeviceMethod.TabIndex = 4;
             this.deviceIDsComboBoxForDeviceMethod.SelectionChangeCommitted += new System.EventHandler(this.deviceIDsComboBoxForDeviceMethod_SelectionChangeCommitted);
             // 
             // methodPayloadTextBox
             // 
+            this.methodPayloadTextBox.AccessibleName = "Method payload";
             this.methodPayloadTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.methodPayloadTextBox.Location = new System.Drawing.Point(140, 141);
@@ -1102,23 +1242,26 @@
             // 
             // methodNameTextBox
             // 
+            this.methodNameTextBox.AccessibleName = "Method name";
             this.methodNameTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.methodNameTextBox.Location = new System.Drawing.Point(140, 112);
             this.methodNameTextBox.Name = "methodNameTextBox";
             this.methodNameTextBox.Size = new System.Drawing.Size(592, 22);
-            this.methodNameTextBox.TabIndex = 7;
+            this.methodNameTextBox.TabIndex = 6;
             this.methodNameTextBox.Text = "MethodName";
             // 
             // iotHubNameTextBoxForDeviceMethod
             // 
+            this.iotHubNameTextBoxForDeviceMethod.AccessibleName = "IoT Hub";
+            this.iotHubNameTextBoxForDeviceMethod.AccessibleRole = System.Windows.Forms.AccessibleRole.StaticText;
             this.iotHubNameTextBoxForDeviceMethod.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.iotHubNameTextBoxForDeviceMethod.Location = new System.Drawing.Point(140, 52);
             this.iotHubNameTextBoxForDeviceMethod.Name = "iotHubNameTextBoxForDeviceMethod";
             this.iotHubNameTextBoxForDeviceMethod.ReadOnly = true;
             this.iotHubNameTextBoxForDeviceMethod.Size = new System.Drawing.Size(592, 22);
-            this.iotHubNameTextBoxForDeviceMethod.TabIndex = 5;
+            this.iotHubNameTextBoxForDeviceMethod.TabIndex = 2;
             // 
             // label19
             // 
@@ -1126,7 +1269,7 @@
             this.label19.Location = new System.Drawing.Point(21, 140);
             this.label19.Name = "label19";
             this.label19.Size = new System.Drawing.Size(109, 16);
-            this.label19.TabIndex = 4;
+            this.label19.TabIndex = 7;
             this.label19.Text = "Method payload:";
             // 
             // label18
@@ -1135,7 +1278,7 @@
             this.label18.Location = new System.Drawing.Point(21, 112);
             this.label18.Name = "label18";
             this.label18.Size = new System.Drawing.Size(93, 16);
-            this.label18.TabIndex = 3;
+            this.label18.TabIndex = 5;
             this.label18.Text = "Method name:";
             // 
             // label17
@@ -1144,7 +1287,7 @@
             this.label17.Location = new System.Drawing.Point(21, 84);
             this.label17.Name = "label17";
             this.label17.Size = new System.Drawing.Size(70, 16);
-            this.label17.TabIndex = 2;
+            this.label17.TabIndex = 3;
             this.label17.Text = "Device ID:";
             // 
             // label14
@@ -1164,114 +1307,6 @@
             this.label13.Size = new System.Drawing.Size(143, 16);
             this.label13.TabIndex = 0;
             this.label13.Text = "Call Method on Device";
-            // 
-            // tabControl1
-            // 
-            this.tabControl1.Controls.Add(this.tabPage1);
-            this.tabControl1.Controls.Add(this.tabPage3);
-            this.tabControl1.Location = new System.Drawing.Point(24, 174);
-            this.tabControl1.Name = "tabControl1";
-            this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(704, 153);
-            this.tabControl1.TabIndex = 15;
-            // 
-            // tabPage1
-            // 
-            this.tabPage1.Controls.Add(this.messagePropertiesGrid);
-            this.tabPage1.Location = new System.Drawing.Point(4, 25);
-            this.tabPage1.Name = "tabPage1";
-            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(696, 124);
-            this.tabPage1.TabIndex = 0;
-            this.tabPage1.Text = "Properties";
-            this.tabPage1.UseVisualStyleBackColor = true;
-            // 
-            // tabPage3
-            // 
-            this.tabPage3.Controls.Add(this.messageSystemPropertiesGrid);
-            this.tabPage3.Location = new System.Drawing.Point(4, 25);
-            this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage3.Size = new System.Drawing.Size(696, 124);
-            this.tabPage3.TabIndex = 1;
-            this.tabPage3.Text = "System Properties";
-            this.tabPage3.UseVisualStyleBackColor = true;
-            // 
-            // messagePropertiesGrid
-            // 
-            this.messagePropertiesGrid.AllowUserToResizeColumns = false;
-            this.messagePropertiesGrid.AllowUserToResizeRows = false;
-            this.messagePropertiesGrid.BackgroundColor = System.Drawing.Color.White;
-            this.messagePropertiesGrid.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.messagePropertiesGrid.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.Single;
-            this.messagePropertiesGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.messagePropertiesGrid.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.KeyColumn,
-            this.ValueColumn});
-            this.messagePropertiesGrid.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.messagePropertiesGrid.Location = new System.Drawing.Point(3, 3);
-            this.messagePropertiesGrid.Name = "messagePropertiesGrid";
-            this.messagePropertiesGrid.RowHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
-            this.messagePropertiesGrid.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.messagePropertiesGrid.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.messagePropertiesGrid.Size = new System.Drawing.Size(690, 118);
-            this.messagePropertiesGrid.TabIndex = 14;
-            // 
-            // KeyColumn
-            // 
-            this.KeyColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.KeyColumn.HeaderText = "Key";
-            this.KeyColumn.Name = "KeyColumn";
-            this.KeyColumn.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.KeyColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            // 
-            // ValueColumn
-            // 
-            this.ValueColumn.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.ValueColumn.HeaderText = "Value";
-            this.ValueColumn.Name = "ValueColumn";
-            this.ValueColumn.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.ValueColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            // 
-            // messageSystemPropertiesGrid
-            // 
-            this.messageSystemPropertiesGrid.AllowUserToAddRows = false;
-            this.messageSystemPropertiesGrid.AllowUserToDeleteRows = false;
-            this.messageSystemPropertiesGrid.AllowUserToResizeColumns = false;
-            this.messageSystemPropertiesGrid.AllowUserToResizeRows = false;
-            this.messageSystemPropertiesGrid.BackgroundColor = System.Drawing.Color.White;
-            this.messageSystemPropertiesGrid.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.messageSystemPropertiesGrid.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.Single;
-            this.messageSystemPropertiesGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.messageSystemPropertiesGrid.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.dataGridViewTextBoxColumn1,
-            this.dataGridViewTextBoxColumn2});
-            this.messageSystemPropertiesGrid.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.messageSystemPropertiesGrid.Location = new System.Drawing.Point(3, 3);
-            this.messageSystemPropertiesGrid.Name = "messageSystemPropertiesGrid";
-            this.messageSystemPropertiesGrid.RowHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
-            this.messageSystemPropertiesGrid.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.messageSystemPropertiesGrid.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.messageSystemPropertiesGrid.Size = new System.Drawing.Size(690, 118);
-            this.messageSystemPropertiesGrid.TabIndex = 15;
-            // 
-            // dataGridViewTextBoxColumn1
-            // 
-            this.dataGridViewTextBoxColumn1.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.dataGridViewTextBoxColumn1.FillWeight = 30F;
-            this.dataGridViewTextBoxColumn1.HeaderText = "Key";
-            this.dataGridViewTextBoxColumn1.Name = "dataGridViewTextBoxColumn1";
-            this.dataGridViewTextBoxColumn1.ReadOnly = true;
-            this.dataGridViewTextBoxColumn1.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.dataGridViewTextBoxColumn1.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            // 
-            // dataGridViewTextBoxColumn2
-            // 
-            this.dataGridViewTextBoxColumn2.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.dataGridViewTextBoxColumn2.HeaderText = "Value";
-            this.dataGridViewTextBoxColumn2.Name = "dataGridViewTextBoxColumn2";
-            this.dataGridViewTextBoxColumn2.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.dataGridViewTextBoxColumn2.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             // 
             // MainForm
             // 
@@ -1304,15 +1339,15 @@
             this.groupBox1.ResumeLayout(false);
             this.tabMessagesToDevice.ResumeLayout(false);
             this.tabMessagesToDevice.PerformLayout();
+            this.tabControl1.ResumeLayout(false);
+            this.tabPage1.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.messagePropertiesGrid)).EndInit();
+            this.tabPage3.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.messageSystemPropertiesGrid)).EndInit();
             this.groupBox4.ResumeLayout(false);
             this.tabDeviceMethod.ResumeLayout(false);
             this.tabDeviceMethod.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.callDeviceMethodNumericUpDown)).EndInit();
-            this.tabControl1.ResumeLayout(false);
-            this.tabPage1.ResumeLayout(false);
-            this.tabPage3.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.messagePropertiesGrid)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.messageSystemPropertiesGrid)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -1338,7 +1373,6 @@
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.GroupBox groupBox4;
-        private System.Windows.Forms.RichTextBox messagesTextBox;
         private System.Windows.Forms.Label label11;
         private System.Windows.Forms.CheckBox checkBox1;
         private System.Windows.Forms.TabPage tabPage2;
@@ -1382,7 +1416,6 @@
         private System.Windows.Forms.CheckBox checkBoxMonitorFeedbackEndpoint;
         private System.Windows.Forms.TextBox protocolGatewayHost;
         private System.Windows.Forms.Label label16;
-        private System.Windows.Forms.Label deviceCountLabel;
         private System.Windows.Forms.Label totalLabel;
         private System.Windows.Forms.Button sasTokenButton;
         private System.Windows.Forms.Label messagePropertiesLabel;
@@ -1419,6 +1452,8 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn dataGridViewTextBoxColumn2;
         private System.Windows.Forms.TextBox filterDevicesTextBox;
         private System.Windows.Forms.Label filterDevicesLabel;
+        private System.Windows.Forms.RichTextBox messagesTextBox;
+        private System.Windows.Forms.TextBox deviceCountTextBox;
     }
 }
 

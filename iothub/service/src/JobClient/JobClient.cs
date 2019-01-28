@@ -4,6 +4,7 @@
 namespace Microsoft.Azure.Devices
 {
     using System;
+    using System.Net;
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Shared;
@@ -20,8 +21,23 @@ namespace Microsoft.Azure.Devices
         /// <returns> A JobClient instance. </returns>
         public static JobClient CreateFromConnectionString(string connectionString)
         {
+            return CreateFromConnectionString(connectionString, new HttpTransportSettings());
+        }
+
+        /// <summary>
+        /// Creates a JobClient from the Iot Hub connection string and HTTP transport settings
+        /// </summary>
+        /// <param name="connectionString"> The Iot Hub connection string.</param>
+        /// <param name="transportSettings"> The HTTP transport settings.</param>
+        /// <returns> A JobClient instance. </returns>
+        public static JobClient CreateFromConnectionString(string connectionString, HttpTransportSettings transportSettings)
+        {
+#if NET451
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
+#endif
+
             var iotHubConnectionString = IotHubConnectionString.Parse(connectionString);
-            return new HttpJobClient(iotHubConnectionString);
+            return new HttpJobClient(iotHubConnectionString, transportSettings);
         }
 
         /// <inheritdoc />

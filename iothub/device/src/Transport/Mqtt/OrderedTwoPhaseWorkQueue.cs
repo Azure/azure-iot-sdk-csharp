@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             if (this.incompleteQueue.Count == 0)
             {
-                throw new IotHubClientException("Nothing to complete.");
+                throw new IotHubException("Nothing to complete.", isTransient:false);
             }
             IncompleteWorkItem incompleteWorkItem = this.incompleteQueue.Peek();
             if (incompleteWorkItem.Id.Equals(workId))
@@ -47,13 +47,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 this.incompleteQueue.Dequeue();
                 return this.completeWork(context, incompleteWorkItem.WorkItem);
             }
-            throw new IotHubClientException($"Work must be complete in the same order as it was started. Expected work id: '{incompleteWorkItem.Id}', actual work id: '{workId}'");
+            throw new IotHubException(
+                $"Work must be complete in the same order as it was started. Expected work id: '{incompleteWorkItem.Id}', actual work id: '{workId}'",
+                isTransient:false);
         }
 
         protected override async Task DoWorkAsync(IChannelHandlerContext context, TWork work)
-        {
-            await base.DoWorkAsync(context, work).ConfigureAwait(false);
+        {            
             this.incompleteQueue.Enqueue(new IncompleteWorkItem(this.getWorkId(work), work));
+            await base.DoWorkAsync(context, work).ConfigureAwait(false);
         }
 
         public override void Abort()

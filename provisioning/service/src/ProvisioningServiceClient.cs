@@ -62,8 +62,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///                        +--------------------------------------------------------------------------------+
     /// </code>
     /// </remarks>
-    /// <see cref="https://docs.microsoft.com/en-us/azure/iot-dps">Azure IoT Hub Device Provisioning Service</see>
-    /// <see cref="https://docs.microsoft.com/en-us/azure/iot-dps/about-iot-dps">Provisioning devices with Azure IoT Hub Device Provisioning Service</see>
     public class ProvisioningServiceClient : IDisposable
     {
         private readonly ServiceConnectionString _provisioningConnectionString;
@@ -77,7 +75,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// The Device Provisioning Service Client is created based on a <b>Provisioning Connection string</b>.
         /// Once you create a Device Provisioning Service on Azure, you can get the connection string on the Azure portal.
         /// </remarks>
-        /// <see cref="http://portal.azure.com/">Azure portal</see>
         ///
         /// <param name="connectionString">the <code>string</code> that cares the connection string of the Device Provisioning Service.</param>
         /// <returns>The <code>ProvisioningServiceClient</code> with the new instance of this object.</returns>
@@ -85,15 +82,35 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         public static ProvisioningServiceClient CreateFromConnectionString(string connectionString)
         {
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_001: [The createFromConnectionString shall create a new instance of this class using the provided connectionString.] */
-            return new ProvisioningServiceClient(connectionString);
+            return new ProvisioningServiceClient(connectionString, new HttpTransportSettings());
+        }
+
+        /// <summary>
+        /// Create a new instance of the <code>ProvisioningServiceClient</code> that exposes
+        /// the API to the Device Provisioning Service.
+        /// </summary>
+        /// <remarks>
+        /// The Device Provisioning Service Client is created based on a <b>Provisioning Connection string</b>.
+        /// Once you create a Device Provisioning Service on Azure, you can get the connection string on the Azure portal.
+        /// </remarks>
+        ///
+        /// <param name="connectionString">the <code>string</code> that cares the connection string of the Device Provisioning Service.</param>
+        /// <param name="httpTransportSettings"> Specifies the HTTP transport settings for the request</param>
+        /// <returns>The <code>ProvisioningServiceClient</code> with the new instance of this object.</returns>
+        /// <exception cref="ArgumentException">if the connectionString is <code>null</code> or empty.</exception>
+        public static ProvisioningServiceClient CreateFromConnectionString(string connectionString, HttpTransportSettings httpTransportSettings)
+        {
+            /* SRS_PROVISIONING_SERVICE_CLIENT_21_001: [The createFromConnectionString shall create a new instance of this class using the provided connectionString.] */
+            return new ProvisioningServiceClient(connectionString, httpTransportSettings);
         }
 
         /// <summary>
         /// PRIVATE CONSTRUCTOR
         /// </summary>
         /// <param name="connectionString">the <code>string</code> that contains the connection string for the Provisioning service.</param>
+        /// <param name="httpTransportSettings">Specifies the HTTP transport settings for the request</param>
         /// <exception cref="ArgumentException">if the connectionString is <code>null</code>, empty, or invalid.</exception>
-        private ProvisioningServiceClient(string connectionString)
+        private ProvisioningServiceClient(string connectionString, HttpTransportSettings httpTransportSettings)
         {
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_002: [The constructor shall throw ArgumentException if the provided connectionString is null or empty.] */
             if (string.IsNullOrWhiteSpace(connectionString ?? throw new ArgumentNullException(nameof(connectionString))))
@@ -106,7 +123,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             _provisioningConnectionString = ServiceConnectionString.Parse(connectionString);
             _contractApiHttp = new ContractApiHttp(
                 _provisioningConnectionString.HttpsEndpoint,
-                _provisioningConnectionString);
+                _provisioningConnectionString,
+                httpTransportSettings);
         }
 
         /// <summary>
@@ -118,6 +136,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// Releases the unmanaged resources used by the Component and optionally releases the managed resources.
+        /// </summary>
+        /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
         protected virtual void Dispose(bool disposing)
         {
             if (disposing)
@@ -213,8 +235,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// }
         /// </code>
         /// </example>
-        /// <see cref="https://docs.microsoft.com/en-us/azure/iot-dps/">Azure IoT Hub Device Provisioning Service</see>
-        /// <see cref="https://docs.microsoft.com/en-us/rest/api/iot-dps/deviceenrollment">Device Enrollment</see>
         ///
         /// <param name="individualEnrollment">the <see cref="IndividualEnrollment"/> object that describes the individualEnrollment that will be created of updated. It cannot be <code>null</code>.</param>
         /// <returns>An <see cref="IndividualEnrollment"/> object with the result of the create or update requested.</returns>
@@ -227,6 +247,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return IndividualEnrollmentManager.CreateOrUpdateAsync(_contractApiHttp, individualEnrollment, CancellationToken.None);
         }
 
+        /// <summary>
+        /// Creates or updates an individual enrollment.
+        /// </summary>
+        /// <param name="individualEnrollment">The individual enrollment object.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns></returns>
         public Task<IndividualEnrollment> CreateOrUpdateIndividualEnrollmentAsync(IndividualEnrollment individualEnrollment, CancellationToken cancellationToken)
         {
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_008: [The CreateOrUpdateIndividualEnrollmentAsync shall create a new Provisioning individualEnrollment by calling the CreateOrUpdateAsync in the IndividualEnrollmentManager.] */
@@ -240,8 +266,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// This API provide the means to do a single operation over multiple individualEnrollments. A valid operation
         ///     is determined by <see cref="BulkOperationMode"/>, and can be 'create', 'update', 'updateIfMatchETag', or 'delete'.
         /// </remarks>
-        /// <see cref="https://docs.microsoft.com/en-us/azure/iot-dps/">Azure IoT Hub Device Provisioning Service</see>
-        /// <see cref="https://docs.microsoft.com/en-us/rest/api/iot-dps/deviceenrollment">Device Enrollment</see>
         ///
         /// <param name="bulkOperationMode">the <see cref="BulkOperationMode"/> that defines the single operation to do over the individualEnrollments. It cannot be <code>null</code>.</param>
         /// <param name="individualEnrollments">the collection of <see cref="IndividualEnrollment"/> that contains the description of each individualEnrollment. It cannot be <code>null</code> or empty.</param>
@@ -256,6 +280,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return IndividualEnrollmentManager.BulkOperationAsync(_contractApiHttp, bulkOperationMode, individualEnrollments, CancellationToken.None);
         }
 
+        /// <summary>
+        /// Create, update or delete a set of individual Device Enrollments.
+        /// </summary>
+        /// <remarks>
+        /// This API provide the means to do a single operation over multiple individualEnrollments. A valid operation
+        ///     is determined by <see cref="BulkOperationMode"/>, and can be 'create', 'update', 'updateIfMatchETag', or 'delete'.
+        /// </remarks>
+        ///
+        /// <param name="bulkOperationMode">the <see cref="BulkOperationMode"/> that defines the single operation to do over the individualEnrollments. It cannot be <code>null</code>.</param>
+        /// <param name="individualEnrollments">the collection of <see cref="IndividualEnrollment"/> that contains the description of each individualEnrollment. It cannot be <code>null</code> or empty.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>A <see cref="BulkEnrollmentOperationResult"/> object with the result of operation for each enrollment.</returns>
+        /// <exception cref="ArgumentException">if the provided parameters are not correct.</exception>
+        /// <exception cref="ProvisioningServiceClientTransportException">if the SDK failed to send the request to the Device Provisioning Service.</exception>
+        /// <exception cref="ProvisioningServiceClientException">if the Device Provisioning Service was not able to execute the bulk operation.</exception>
         public Task<BulkEnrollmentOperationResult> RunBulkEnrollmentOperationAsync(
                 BulkOperationMode bulkOperationMode, IEnumerable<IndividualEnrollment> individualEnrollments, CancellationToken cancellationToken)
         {
@@ -271,8 +310,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         ///     the correspondent individualEnrollment from the Device Provisioning Service, and return it in the
         ///     <see cref="IndividualEnrollment"/> object.
         ///
-        /// If the registrationId do not exists, this method will throw <see cref="ProvisioningServiceClientNotFoundException"/>.
-        ///     for more exceptions that this method can throw, please see <see cref="ExceptionHandlingHelper"/>
+        /// If the registrationId do not exists, this method will throw <see cref="ProvisioningServiceClientException"/>.
         /// </remarks>
         /// <param name="registrationId">the <code>string} that identifies the individualEnrollment. It cannot be {@code null</code> or empty.</param>
         /// <returns>The <see cref="IndividualEnrollment"/> with the content of the individualEnrollment in the Provisioning Device Service.</returns>
@@ -285,6 +323,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return IndividualEnrollmentManager.GetAsync(_contractApiHttp, registrationId, CancellationToken.None);
         }
 
+        /// <summary>
+        /// Gets the individual enrollment object.
+        /// </summary>
+        /// <param name="registrationId">The registration ID.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns></returns>
         public Task<IndividualEnrollment> GetIndividualEnrollmentAsync(string registrationId, CancellationToken cancellationToken)
         {
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_010: [The GetIndividualEnrollmentAsync shall retrieve the individualEnrollment information for the provided registrationId by calling the GetAsync in the IndividualEnrollmentManager.] */
@@ -303,8 +347,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         ///
         /// Note that delete the individualEnrollment will not remove the Device itself from the IotHub.
         ///
-        /// If the registrationId does not exists or the eTag not matches, this method will throw <see cref="ProvisioningServiceClientNotFoundException"/>.
-        ///     for more exceptions that this method can throw, please see <see cref="ExceptionHandlingHelper"/>
+        /// If the registrationId does not exists or the eTag not matches, this method will throw <see cref="ProvisioningServiceClientException"/>.
         /// </remarks>
         /// <param name="individualEnrollment">the <see cref="IndividualEnrollment"/> that identifies the individualEnrollment. It cannot be <code>null</code>.</param>
         /// <exception cref="ArgumentException">if the provided parameter is not correct.</exception>
@@ -316,6 +359,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return IndividualEnrollmentManager.DeleteAsync(_contractApiHttp, individualEnrollment, CancellationToken.None);
         }
 
+        /// <summary>
+        /// Deletes an individual enrollment.
+        /// </summary>
+        /// <param name="individualEnrollment">The individual enrollment.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns></returns>
         public Task DeleteIndividualEnrollmentAsync(IndividualEnrollment individualEnrollment, CancellationToken cancellationToken)
         {
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_011: [The DeleteIndividualEnrollmentAsync shall delete the individualEnrollment for the provided individualEnrollment by calling the DeleteAsync in the IndividualEnrollmentManager.] */
@@ -332,8 +381,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         ///
         /// Note that delete the enrollment will not remove the Device itself from the IotHub.
         ///
-        /// If the registrationId does not exists, this method will throw <see cref="ProvisioningServiceClientNotFoundException"/>.
-        ///     for more exceptions that this method can throw, please see <see cref="ExceptionHandlingHelper"/>
+        /// If the registrationId does not exists, this method will throw <see cref="ProvisioningServiceClientException"/>.
         /// </remarks>
         /// <param name="registrationId">the <code>string} that identifies the individualEnrollment. It cannot be {@code null</code> or empty.</param>
         /// <exception cref="ArgumentException">if the provided registrationId is not correct.</exception>
@@ -345,6 +393,23 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return IndividualEnrollmentManager.DeleteAsync(_contractApiHttp, registrationId, CancellationToken.None);
         }
 
+        /// <summary>
+        /// Delete the individualEnrollment information.
+        /// </summary>
+        /// <remarks>
+        /// This method will remove the individualEnrollment from the Device Provisioning Service using the
+        ///     provided registrationId. It will delete the enrollment regardless the eTag. It means that this API
+        ///     correspond to the <see cref="DeleteIndividualEnrollmentAsync(string, string)"/> with the <code>eTag="*"</code>.
+        ///
+        /// Note that delete the enrollment will not remove the Device itself from the IotHub.
+        ///
+        /// If the registrationId does not exists, this method will throw <see cref="ProvisioningServiceClientException"/>.
+        /// </remarks>
+        /// <param name="registrationId">the <code>string} that identifies the individualEnrollment. It cannot be {@code null</code> or empty.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <exception cref="ArgumentException">if the provided registrationId is not correct.</exception>
+        /// <exception cref="ProvisioningServiceClientTransportException">if the SDK failed to send the request to the Device Provisioning Service.</exception>
+        /// <exception cref="ProvisioningServiceClientException">if the Device Provisioning Service was not able to execute the bulk operation.</exception>
         public Task DeleteIndividualEnrollmentAsync(string registrationId, CancellationToken cancellationToken)
         {
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_012: [The DeleteIndividualEnrollmentAsync shall delete the individualEnrollment for the provided registrationId by calling the DeleteAsync in the IndividualEnrollmentManager.] */
@@ -363,8 +428,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// Note that delete the enrollment will not remove the Device itself from the IotHub.
         ///
         /// If the registrationId does not exists or the eTag does not matches, this method will throw
-        ///     <see cref="ProvisioningServiceClientNotFoundException"/>. For more exceptions that this method can throw, please see
-        ///     <see cref="ExceptionHandlingHelper"/>
+        ///     <see cref="ProvisioningServiceClientException"/>. For more exceptions that this method can throw, please see
         /// </remarks>
         /// <param name="registrationId">the <code>string</code> that identifies the individualEnrollment. It cannot be <code>null</code> or empty.</param>
         /// <param name="eTag">the <code>string</code> with the IndividualEnrollment eTag. It can be <code>null</code> or empty.
@@ -378,6 +442,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return IndividualEnrollmentManager.DeleteAsync(_contractApiHttp, registrationId, CancellationToken.None, eTag);
         }
 
+        /// <summary>
+        /// Deletes an individual enrollment if the eTag matches.
+        /// </summary>
+        /// <param name="registrationId">The registration id</param>
+        /// <param name="eTag">The eTag.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns></returns>
         public Task DeleteIndividualEnrollmentAsync(string registrationId, string eTag, CancellationToken cancellationToken)
         {
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_013: [The DeleteIndividualEnrollmentAsync shall delete the individualEnrollment for the provided registrationId and etag by calling the DeleteAsync in the IndividualEnrollmentManager.] */
@@ -401,17 +472,58 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_014: [The CreateIndividualEnrollmentQuery shall create a new individual enrollment query by calling the CreateQuery in the IndividualEnrollmentManager.] */
             return IndividualEnrollmentManager.CreateQuery(
-                _provisioningConnectionString, 
-                querySpecification, 
+                _provisioningConnectionString,
+                querySpecification,
+                new HttpTransportSettings(),
                 CancellationToken.None);
         }
 
-        public Query CreateIndividualEnrollmentQuery(QuerySpecification querySpecification, CancellationToken cancellationToken)
+        /// <summary>
+        /// Factory to create a individualEnrollment query.
+        /// </summary>
+        /// <remarks>
+        /// This method will create a new individualEnrollment query for Device Provisioning Service and return it
+        ///     as a <see cref="Query"/> iterator.
+        ///
+        /// The Device Provisioning Service expects a SQL query in the <see cref="QuerySpecification"/>, for instance
+        ///     <code>"SELECT * FROM enrollments"</code>.
+        /// </remarks>
+        /// <param name="querySpecification">the <see cref="QuerySpecification"/> with the SQL query. It cannot be <code>null</code>.</param>
+        /// <param name="httpTransportSettings"> Specifies the HTTP transport settings</param>
+        /// <returns>The <see cref="Query"/> iterator.</returns>
+        /// <exception cref="ArgumentException">if the provided parameter is not correct.</exception>
+        public Query CreateIndividualEnrollmentQuery(QuerySpecification querySpecification, HttpTransportSettings httpTransportSettings)
         {
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_014: [The CreateIndividualEnrollmentQuery shall create a new individual enrollment query by calling the CreateQuery in the IndividualEnrollmentManager.] */
             return IndividualEnrollmentManager.CreateQuery(
                 _provisioningConnectionString,
                 querySpecification,
+                httpTransportSettings,
+                CancellationToken.None);
+        }
+
+
+        /// <summary>
+        /// Factory to create a individualEnrollment query.
+        /// </summary>
+        /// <remarks>
+        /// This method will create a new individualEnrollment query for Device Provisioning Service and return it
+        ///     as a <see cref="Query"/> iterator.
+        ///
+        /// The Device Provisioning Service expects a SQL query in the <see cref="QuerySpecification"/>, for instance
+        ///     <code>"SELECT * FROM enrollments"</code>.
+        /// </remarks>
+        /// <param name="querySpecification">the <see cref="QuerySpecification"/> with the SQL query. It cannot be <code>null</code>.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The <see cref="Query"/> iterator.</returns>
+        /// <exception cref="ArgumentException">if the provided parameter is not correct.</exception>
+        public Query CreateIndividualEnrollmentQuery(QuerySpecification querySpecification, CancellationToken cancellationToken)
+        {
+            /* SRS_PROVISIONING_SERVICE_CLIENT_21_014: [The CreateIndividualEnrollmentQuery shall create a new individual enrollment query by calling the CreateQuery in the IndividualEnrollmentManager.] */
+            return IndividualEnrollmentManager.CreateQuery(
+                _provisioningConnectionString,
+                querySpecification, 
+                new HttpTransportSettings(),
                 cancellationToken);
         }
 
@@ -437,19 +549,70 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_015: [The CreateIndividualEnrollmentQuery shall create a new individual enrollment query by calling the CreateQuery in the IndividualEnrollmentManager.] */
             return IndividualEnrollmentManager.CreateQuery(
-                _provisioningConnectionString, 
-                querySpecification, 
-                CancellationToken.None, 
+                _provisioningConnectionString,
+                querySpecification,
+                new HttpTransportSettings(),
+                CancellationToken.None,
                 pageSize);
         }
 
+        /// <summary>
+        /// Factory to create a individualEnrollment query.
+        /// </summary>
+        /// <remarks>
+        /// This method will create a new individualEnrollment query for Device Provisioning Service and return it
+        ///     as a <see cref="Query"/> iterator.
+        ///
+        /// The Device Provisioning Service expects a SQL query in the <see cref="QuerySpecification"/>, for instance
+        ///     <code>"SELECT * FROM enrollments"</code>.
+        ///
+        /// For each iteration, the Query will return a List of objects correspondent to the query result. The maximum
+        ///     number of items per iteration can be specified by the pageSize. It is optional, you can provide <b>0</b> for
+        ///     default pageSize or use the API <see cref="CreateIndividualEnrollmentQuery(QuerySpecification)"/>.
+        /// </remarks>
+        /// <param name="querySpecification">the <see cref="QuerySpecification"/> with the SQL query. It cannot be <code>null</code>.</param>
+        /// <param name="pageSize">the <code>int</code> with the maximum number of items per iteration. It can be 0 for default, but not negative.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The <see cref="Query"/> iterator.</returns>
+        /// <exception cref="ArgumentException">if the provided parameters are not correct.</exception>
         public Query CreateIndividualEnrollmentQuery(QuerySpecification querySpecification, int pageSize, CancellationToken cancellationToken)
         {
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_015: [The CreateIndividualEnrollmentQuery shall create a new individual enrollment query by calling the CreateQuery in the IndividualEnrollmentManager.] */
             return IndividualEnrollmentManager.CreateQuery(
                 _provisioningConnectionString,
                 querySpecification,
+                new HttpTransportSettings(),
                 cancellationToken,
+                pageSize);
+        }
+
+        /// <summary>
+        /// Factory to create a individualEnrollment query.
+        /// </summary>
+        /// <remarks>
+        /// This method will create a new individualEnrollment query for Device Provisioning Service and return it
+        ///     as a <see cref="Query"/> iterator.
+        ///
+        /// The Device Provisioning Service expects a SQL query in the <see cref="QuerySpecification"/>, for instance
+        ///     <code>"SELECT * FROM enrollments"</code>.
+        ///
+        /// For each iteration, the Query will return a List of objects correspondent to the query result. The maximum
+        ///     number of items per iteration can be specified by the pageSize. It is optional, you can provide <b>0</b> for
+        ///     default pageSize or use the API <see cref="CreateIndividualEnrollmentQuery(QuerySpecification)"/>.
+        /// </remarks>
+        /// <param name="querySpecification">the <see cref="QuerySpecification"/> with the SQL query. It cannot be <code>null</code>.</param>
+        /// <param name="pageSize">the <code>int</code> with the maximum number of items per iteration. It can be 0 for default, but not negative.</param>
+        /// <param name="httpTransportSettings"> Specifies the HTTP transport settings</param>
+        /// <returns>The <see cref="Query"/> iterator.</returns>
+        /// <exception cref="ArgumentException">if the provided parameters are not correct.</exception>
+        public Query CreateIndividualEnrollmentQuery(QuerySpecification querySpecification, int pageSize, HttpTransportSettings httpTransportSettings)
+        {
+            /* SRS_PROVISIONING_SERVICE_CLIENT_21_015: [The CreateIndividualEnrollmentQuery shall create a new individual enrollment query by calling the CreateQuery in the IndividualEnrollmentManager.] */
+            return IndividualEnrollmentManager.CreateQuery(
+                _provisioningConnectionString,
+                querySpecification,
+                httpTransportSettings,
+                CancellationToken.None,
                 pageSize);
         }
 
@@ -468,8 +631,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// using Microsoft.Azure.Devices.Provisioning.Service;
         /// </code>
         /// </remarks>
-        /// <see cref="https://docs.microsoft.com/en-us/azure/iot-dps/">Azure IoT Hub Device Provisioning Service</see>
-        /// <see cref="https://docs.microsoft.com/en-us/rest/api/iot-dps/deviceenrollmentgroup">Device Enrollment Group</see>
         ///
         /// <param name="enrollmentGroup">the <see cref="EnrollmentGroup"/> object that describes the individualEnrollment that will be created of updated.</param>
         /// <returns>An <see cref="EnrollmentGroup"/> object with the result of the create or update requested.</returns>
@@ -480,6 +641,26 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return EnrollmentGroupManager.CreateOrUpdateAsync(_contractApiHttp, enrollmentGroup, CancellationToken.None);
         }
 
+        /// <summary>
+        /// Create or update an enrollment group record.
+        /// </summary>
+        /// <remarks>
+        /// This API creates a new enrollment group or update a existed one. All enrollment group in the Device
+        ///     Provisioning Service contains a unique identifier called enrollmentGroupId. If this API is called
+        ///     with an enrollmentGroupId that already exists, it will replace the existed enrollmentGroup information
+        ///     by the new one. On the other hand, if the enrollmentGroupId does not exit, it will be created.
+        ///
+        /// To use the Device Provisioning Service API, you must include the follow package on your application.
+        /// <code>
+        /// // Include the following using to use the Device Provisioning Service APIs.
+        /// using Microsoft.Azure.Devices.Provisioning.Service;
+        /// </code>
+        /// </remarks>
+        ///
+        /// <param name="enrollmentGroup">the <see cref="EnrollmentGroup"/> object that describes the individualEnrollment that will be created of updated.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>An <see cref="EnrollmentGroup"/> object with the result of the create or update requested.</returns>
+        /// <exception cref="ProvisioningServiceClientException">if the Provisioning was not able to create or update the enrollment.</exception>
         public Task<EnrollmentGroup> CreateOrUpdateEnrollmentGroupAsync(EnrollmentGroup enrollmentGroup, CancellationToken cancellationToken)
         {
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_016: [The createOrUpdateEnrollmentGroup shall create a new Provisioning enrollmentGroup by calling the createOrUpdate in the EnrollmentGroupManager.] */
@@ -494,8 +675,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         ///     the correspondent enrollmentGroup from the Device Provisioning Service, and return it in the
         ///     <see cref="EnrollmentGroup"/> object.
         ///
-        /// If the enrollmentGroupId does not exists, this method will throw <see cref="ProvisioningServiceClientNotFoundException"/>.
-        ///     for more exceptions that this method can throw, please see <see cref="ExceptionHandlingHelper"/>
+        /// If the enrollmentGroupId does not exists, this method will throw <see cref="ProvisioningServiceClientException"/>.
         /// </remarks>
         /// <param name="enrollmentGroupId">the <code>string</code> that identifies the enrollmentGroup. It cannot be <code>null</code> or empty.</param>
         /// <returns>The <see cref="EnrollmentGroup"/> with the content of the enrollmentGroup in the Provisioning Device Service.</returns>
@@ -506,6 +686,20 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return EnrollmentGroupManager.GetAsync(_contractApiHttp, enrollmentGroupId, CancellationToken.None);
         }
 
+        /// <summary>
+        /// Retrieve the enrollmentGroup information.
+        /// </summary>
+        /// <remarks>
+        /// This method will return the enrollmentGroup information for the provided enrollmentGroupId. It will retrieve
+        ///     the correspondent enrollmentGroup from the Device Provisioning Service, and return it in the
+        ///     <see cref="EnrollmentGroup"/> object.
+        ///
+        /// If the enrollmentGroupId does not exists, this method will throw <see cref="ProvisioningServiceClientException"/>.
+        /// </remarks>
+        /// <param name="enrollmentGroupId">the <code>string</code> that identifies the enrollmentGroup. It cannot be <code>null</code> or empty.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The <see cref="EnrollmentGroup"/> with the content of the enrollmentGroup in the Provisioning Device Service.</returns>
+        /// <exception cref="ProvisioningServiceClientException">if the Provisioning Device Service was not able to retrieve the enrollmentGroup information for the provided enrollmentGroupId.</exception>
         public Task<EnrollmentGroup> GetEnrollmentGroupAsync(string enrollmentGroupId, CancellationToken cancellationToken)
         {
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_017: [The getEnrollmentGroup shall retrieve the enrollmentGroup information for the provided enrollmentGroupId by calling the get in the EnrollmentGroupManager.] */
@@ -524,9 +718,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         ///
         /// Note that delete the enrollmentGroup will not remove the Devices itself from the IotHub.
         ///
-        /// If the enrollmentGroupId does not exists or the eTag does not matches, this method will throw
-        ///     <see cref="ProvisioningServiceClientNotFoundException"/>. For more exceptions that this method can throw, please see
-        ///     <see cref="ExceptionHandlingHelper"/>.
+        /// If the enrollmentGroupId does not exists or the eTag does not matches, this method will throw <see cref="ProvisioningServiceClientException"/>.
         /// </remarks>
         /// <param name="enrollmentGroup">the <see cref="EnrollmentGroup"/> that identifies the enrollmentGroup. It cannot be <code>null</code>.</param>
         /// <exception cref="ProvisioningServiceClientException">if the Provisioning Device Service was not able to delete the enrollmentGroup information for the provided enrollmentGroup.</exception>
@@ -536,6 +728,23 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return EnrollmentGroupManager.DeleteAsync(_contractApiHttp, enrollmentGroup, CancellationToken.None);
         }
 
+        /// <summary>
+        /// Delete the enrollmentGroup information.
+        /// </summary>
+        /// <remarks>
+        /// This method will remove the enrollmentGroup from the Device Provisioning Service using the
+        ///     provided <see cref="EnrollmentGroup"/> information. The Device Provisioning Service will care about the
+        ///     enrollmentGroupId and the eTag on the enrollmentGroup. If you want to delete the enrollment regardless the
+        ///     eTag, you can set the <code>eTag="*"</code> into the enrollmentGroup, or use the <see cref="DeleteEnrollmentGroupAsync(string)"/>.
+        ///     passing only the enrollmentGroupId.
+        ///
+        /// Note that delete the enrollmentGroup will not remove the Devices itself from the IotHub.
+        ///
+        /// If the enrollmentGroupId does not exists or the eTag does not matches, this method will throw <see cref="ProvisioningServiceClientException"/>.
+        /// </remarks>
+        /// <param name="enrollmentGroup">the <see cref="EnrollmentGroup"/> that identifies the enrollmentGroup. It cannot be <code>null</code>.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <exception cref="ProvisioningServiceClientException">if the Provisioning Device Service was not able to delete the enrollmentGroup information for the provided enrollmentGroup.</exception>
         public Task DeleteEnrollmentGroupAsync(EnrollmentGroup enrollmentGroup, CancellationToken cancellationToken)
         {
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_018: [The deleteEnrollmentGroup shall delete the enrollmentGroup for the provided enrollmentGroup by calling the delete in the EnrollmentGroupManager.] */
@@ -552,8 +761,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         ///
         /// Note that delete the enrollmentGroup will not remove the Devices itself from the IotHub.
         ///
-        /// If the enrollmentGroupId does not exists, this method will throw <see cref="ProvisioningServiceClientNotFoundException"/>.
-        ///     For more exceptions that this method can throw, please see <see cref="ExceptionHandlingHelper"/>
+        /// If the enrollmentGroupId does not exists, this method will throw <see cref="ProvisioningServiceClientException"/>.
         /// </remarks>
         /// <param name="enrollmentGroupId">the <code>string</code> that identifies the enrollmentGroup. It cannot be <code>null</code> or empty.</param>
         /// <exception cref="ProvisioningServiceClientException">if the Provisioning Device Service was not able to delete the enrollmentGroup information for the provided enrollmentGroupId.</exception>
@@ -563,6 +771,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return EnrollmentGroupManager.DeleteAsync(_contractApiHttp, enrollmentGroupId, CancellationToken.None);
         }
 
+        /// <summary>
+        /// Delete the enrollmentGroup information.
+        /// </summary>
+        /// <remarks>
+        /// This method will remove the enrollmentGroup from the Device Provisioning Service using the
+        ///     provided enrollmentGroupId. It will delete the enrollmentGroup regardless the eTag. It means that this API
+        ///     correspond to the <see cref="DeleteEnrollmentGroupAsync(string, string)"/> with the <code>eTag="*"</code>.
+        ///
+        /// Note that delete the enrollmentGroup will not remove the Devices itself from the IotHub.
+        ///
+        /// If the enrollmentGroupId does not exists, this method will throw <see cref="ProvisioningServiceClientException"/>.
+        /// </remarks>
+        /// <param name="enrollmentGroupId">the <code>string</code> that identifies the enrollmentGroup. It cannot be <code>null</code> or empty.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <exception cref="ProvisioningServiceClientException">if the Provisioning Device Service was not able to delete the enrollmentGroup information for the provided enrollmentGroupId.</exception>
         public Task DeleteEnrollmentGroupAsync(string enrollmentGroupId, CancellationToken cancellationToken)
         {
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_019: [The deleteEnrollmentGroup shall delete the enrollmentGroup for the provided enrollmentGroupId by calling the delete in the EnrollmentGroupManager.] */
@@ -580,9 +803,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         ///
         /// Note that delete the enrollmentGroup will not remove the Device itself from the IotHub.
         ///
-        /// If the enrollmentGroupId does not exists or eTag does not matches, this method will throw
-        ///     <see cref="ProvisioningServiceClientNotFoundException"/>. For more exceptions that this method can throw, please see
-        ///     <see cref="ExceptionHandlingHelper"/>
+        /// If the enrollmentGroupId does not exists or eTag does not matches, this method will throw <see cref="ProvisioningServiceClientException"/>. 
         /// </remarks>
         /// <param name="enrollmentGroupId">the <code>string</code> that identifies the enrollmentGroup. It cannot be <code>null</code> or empty.</param>
         /// <param name="eTag">the <code>string</code> with the enrollmentGroup eTag. It can be <code>null</code> or empty.
@@ -594,6 +815,24 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return EnrollmentGroupManager.DeleteAsync(_contractApiHttp, enrollmentGroupId, CancellationToken.None, eTag);
         }
 
+        /// <summary>
+        /// Delete the enrollmentGroup information.
+        /// </summary>
+        /// <remarks>
+        /// This method will remove the enrollmentGroup from the Device Provisioning Service using the
+        ///     provided enrollmentGroupId and eTag. If you want to delete the enrollmentGroup regardless the eTag, you can
+        ///     use <see cref="DeleteEnrollmentGroupAsync(string)"/> or you can pass the eTag as <code>null</code>, empty, or
+        ///     <code>"*"</code>.
+        ///
+        /// Note that delete the enrollmentGroup will not remove the Device itself from the IotHub.
+        ///
+        /// If the enrollmentGroupId does not exists or eTag does not matches, this method will throw <see cref="ProvisioningServiceClientException"/>. 
+        /// </remarks>
+        /// <param name="enrollmentGroupId">the <code>string</code> that identifies the enrollmentGroup. It cannot be <code>null</code> or empty.</param>
+        /// <param name="eTag">the <code>string</code> with the enrollmentGroup eTag. It can be <code>null</code> or empty.
+        ///             The Device Provisioning Service will ignore it in all of these cases.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <exception cref="ProvisioningServiceClientException">if the Provisioning Device Service was not able to delete the enrollmentGroup information for the provided enrollmentGroupId and eTag.</exception>
         public Task DeleteEnrollmentGroupAsync(string enrollmentGroupId, string eTag, CancellationToken cancellationToken)
         {
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_020: [The deleteEnrollmentGroup shall delete the enrollmentGroup for the provided enrollmentGroupId and eTag by calling the delete in the EnrollmentGroupManager.] */
@@ -619,15 +858,55 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return EnrollmentGroupManager.CreateQuery(
                 _provisioningConnectionString,
                 querySpecification,
+                new HttpTransportSettings(),
                 CancellationToken.None);
         }
 
+        /// <summary>
+        /// Factory to create an enrollmentGroup query.
+        /// </summary>
+        /// <remarks>
+        /// This method will create a new enrollment group query on Device Provisioning Service and return it as
+        ///     a <see cref="Query"/> iterator.
+        ///
+        /// The Device Provisioning Service expects a SQL query in the <see cref="QuerySpecification"/>, for instance
+        ///     <code>"SELECT * FROM enrollments"</code>.
+        /// </remarks>
+        /// <param name="querySpecification">the <see cref="QuerySpecification"/> with the SQL query. It cannot be <code>null</code>.</param>
+        /// <param name="httpTransportSettings"> Specifies the HTTP transport settings</param>
+        /// <returns>The <see cref="Query"/> iterator.</returns>
+        /// <exception cref="ArgumentException">if the provided parameter is not correct.</exception>
+        public Query CreateEnrollmentGroupQuery(QuerySpecification querySpecification, HttpTransportSettings httpTransportSettings)
+        {
+            /* SRS_PROVISIONING_SERVICE_CLIENT_21_021: [The createEnrollmentGroupQuery shall create a new enrolmentGroup query by calling the createQuery in the EnrollmentGroupManager.] */
+            return EnrollmentGroupManager.CreateQuery(
+                _provisioningConnectionString,
+                querySpecification,
+                httpTransportSettings,
+                CancellationToken.None);
+        }
+
+        /// <summary>
+        /// Factory to create an enrollmentGroup query.
+        /// </summary>
+        /// <remarks>
+        /// This method will create a new enrollment group query on Device Provisioning Service and return it as
+        ///     a <see cref="Query"/> iterator.
+        ///
+        /// The Device Provisioning Service expects a SQL query in the <see cref="QuerySpecification"/>, for instance
+        ///     <code>"SELECT * FROM enrollments"</code>.
+        /// </remarks>
+        /// <param name="querySpecification">the <see cref="QuerySpecification"/> with the SQL query. It cannot be <code>null</code>.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The <see cref="Query"/> iterator.</returns>
+        /// <exception cref="ArgumentException">if the provided parameter is not correct.</exception>
         public Query CreateEnrollmentGroupQuery(QuerySpecification querySpecification, CancellationToken cancellationToken)
         {
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_021: [The createEnrollmentGroupQuery shall create a new enrolmentGroup query by calling the createQuery in the EnrollmentGroupManager.] */
             return EnrollmentGroupManager.CreateQuery(
                 _provisioningConnectionString,
                 querySpecification,
+                new HttpTransportSettings(),
                 cancellationToken);
         }
 
@@ -655,17 +934,68 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return EnrollmentGroupManager.CreateQuery(
                 _provisioningConnectionString,
                 querySpecification,
+                new HttpTransportSettings(),
                 CancellationToken.None,
                 pageSize);
         }
 
+        /// <summary>
+        /// Factory to create an enrollmentGroup query.
+        /// </summary>
+        /// <remarks>
+        /// This method will create a new enrollment group query on Device Provisioning Service and return it as
+        ///     a <see cref="Query"/> iterator.
+        ///
+        /// The Device Provisioning Service expects a SQL query in the <see cref="QuerySpecification"/>, for instance
+        ///     <code>"SELECT * FROM enrollments"</code>.
+        ///
+        /// For each iteration, the Query will return a List of objects correspondent to the query result. The maximum
+        ///     number of items per iteration can be specified by the pageSize. It is optional, you can provide <b>0</b> for
+        ///     default pageSize or use the API <see cref="CreateEnrollmentGroupQuery(QuerySpecification)"/>.
+        /// </remarks>
+        /// <param name="querySpecification">the <see cref="QuerySpecification"/> with the SQL query. It cannot be <code>null</code>.</param>
+        /// <param name="pageSize">the <code>int</code> with the maximum number of items per iteration. It can be 0 for default, but not negative.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The <see cref="Query"/> iterator.</returns>
+        /// <exception cref="ArgumentException">if the provided parameters are not correct.</exception>
         public Query CreateEnrollmentGroupQuery(QuerySpecification querySpecification, int pageSize, CancellationToken cancellationToken)
         {
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_022: [The createEnrollmentGroupQuery shall create a new enrolmentGroup query by calling the createQuery in the EnrollmentGroupManager.] */
             return EnrollmentGroupManager.CreateQuery(
                 _provisioningConnectionString,
                 querySpecification,
+                new HttpTransportSettings(),
                 cancellationToken,
+                pageSize);
+        }
+
+        /// <summary>
+        /// Factory to create an enrollmentGroup query.
+        /// </summary>
+        /// <remarks>
+        /// This method will create a new enrollment group query on Device Provisioning Service and return it as
+        ///     a <see cref="Query"/> iterator.
+        ///
+        /// The Device Provisioning Service expects a SQL query in the <see cref="QuerySpecification"/>, for instance
+        ///     <code>"SELECT * FROM enrollments"</code>.
+        ///
+        /// For each iteration, the Query will return a List of objects correspondent to the query result. The maximum
+        ///     number of items per iteration can be specified by the pageSize. It is optional, you can provide <b>0</b> for
+        ///     default pageSize or use the API <see cref="CreateEnrollmentGroupQuery(QuerySpecification)"/>.
+        /// </remarks>
+        /// <param name="querySpecification">the <see cref="QuerySpecification"/> with the SQL query. It cannot be <code>null</code>.</param>
+        /// <param name="pageSize">the <code>int</code> with the maximum number of items per iteration. It can be 0 for default, but not negative.</param>
+        /// <param name="httpTransportSettings"> Specifies the HTTP transport settings</param>
+        /// <returns>The <see cref="Query"/> iterator.</returns>
+        /// <exception cref="ArgumentException">if the provided parameters are not correct.</exception>
+        public Query CreateEnrollmentGroupQuery(QuerySpecification querySpecification, int pageSize, HttpTransportSettings httpTransportSettings)
+        {
+            /* SRS_PROVISIONING_SERVICE_CLIENT_21_022: [The createEnrollmentGroupQuery shall create a new enrolmentGroup query by calling the createQuery in the EnrollmentGroupManager.] */
+            return EnrollmentGroupManager.CreateQuery(
+                _provisioningConnectionString,
+                querySpecification,
+                httpTransportSettings,
+                CancellationToken.None,
                 pageSize);
         }
 
@@ -677,8 +1007,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         ///     the correspondent DeviceRegistrationState from the Device Provisioning Service, and return it in the
         ///     <see cref="DeviceRegistrationState"/> object.
         ///
-        /// If the id does not exist, this method will throw <see cref="ProvisioningServiceClientNotFoundException"/>.
-        ///     For more exceptions that this method can throw, please see <see cref="ExceptionHandlingHelper"/>
+        /// If the id does not exist, this method will throw <see cref="ProvisioningServiceClientException"/>.
         /// </remarks>
         /// <param name="id">the <code>string</code> that identifies the DeviceRegistrationState. It cannot be <code>null</code> or empty.</param>
         /// <returns>The <see cref="DeviceRegistrationState"/> with the content of the DeviceRegistrationState in the Provisioning Device Service.</returns>
@@ -689,6 +1018,20 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return RegistrationStatusManager.GetAsync(_contractApiHttp, id, CancellationToken.None);
         }
 
+        /// <summary>
+        /// Retrieve the registration status information.
+        /// </summary>
+        /// <remarks>
+        /// This method will return the DeviceRegistrationState for the provided id. It will retrieve
+        ///     the correspondent DeviceRegistrationState from the Device Provisioning Service, and return it in the
+        ///     <see cref="DeviceRegistrationState"/> object.
+        ///
+        /// If the id does not exist, this method will throw <see cref="ProvisioningServiceClientException"/>.
+        /// </remarks>
+        /// <param name="id">the <code>string</code> that identifies the DeviceRegistrationState. It cannot be <code>null</code> or empty.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The <see cref="DeviceRegistrationState"/> with the content of the DeviceRegistrationState in the Provisioning Device Service.</returns>
+        /// <exception cref="ProvisioningServiceClientException">if the Provisioning Device Service was not able to retrieve the DeviceRegistrationState information for the provided registrationId.</exception>
         public Task<DeviceRegistrationState> GetDeviceRegistrationStateAsync(string id, CancellationToken cancellationToken)
         {
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_023: [The getDeviceRegistrationState shall retrieve the DeviceRegistrationState information for the provided id by calling the get in the RegistrationStatusManager.] */
@@ -705,8 +1048,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         ///     eTag, you can use the <see cref="DeleteDeviceRegistrationStateAsync(string)"/> passing only the id.
         ///
         /// If the id does not exists or the eTag does not matches, this method will throw
-        ///     <see cref="ProvisioningServiceClientNotFoundException"/>. For more exceptions that this method can throw, please see
-        ///     <see cref="ExceptionHandlingHelper"/>
+        ///     <see cref="ProvisioningServiceClientException"/>.
         /// </remarks>
         /// <param name="deviceRegistrationState">the <see cref="DeviceRegistrationState"/> that identifies the DeviceRegistrationState. It cannot be <code>null</code>.</param>
         /// <exception cref="ProvisioningServiceClientException">if the Provisioning Device Service was not able to delete the registration status information for the provided DeviceRegistrationState.</exception>
@@ -715,6 +1057,22 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_024: [The deleteDeviceRegistrationState shall delete the DeviceRegistrationState for the provided DeviceRegistrationState by calling the delete in the registrationStatusManager.] */
             return RegistrationStatusManager.DeleteAsync(_contractApiHttp, deviceRegistrationState, CancellationToken.None);
         }
+
+        /// <summary>
+        /// Delete the registration status information.
+        /// </summary>
+        /// <remarks>
+        /// This method will remove the DeviceRegistrationState from the Device Provisioning Service using the
+        ///     provided <see cref="DeviceRegistrationState"/> information. The Device Provisioning Service will care about the
+        ///     id and the eTag on the DeviceRegistrationState. If you want to delete the DeviceRegistrationState regardless the
+        ///     eTag, you can use the <see cref="DeleteDeviceRegistrationStateAsync(string)"/> passing only the id.
+        ///
+        /// If the id does not exists or the eTag does not matches, this method will throw
+        ///     <see cref="ProvisioningServiceClientException"/>.
+        /// </remarks>
+        /// <param name="deviceRegistrationState">the <see cref="DeviceRegistrationState"/> that identifies the DeviceRegistrationState. It cannot be <code>null</code>.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <exception cref="ProvisioningServiceClientException">if the Provisioning Device Service was not able to delete the registration status information for the provided DeviceRegistrationState.</exception>
 
         public Task DeleteDeviceRegistrationStateAsync(DeviceRegistrationState deviceRegistrationState, CancellationToken cancellationToken)
         {
@@ -730,8 +1088,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         ///     provided id. It will delete the registration status regardless the eTag. It means that this API
         ///     correspond to the <see cref="DeleteDeviceRegistrationStateAsync(string, string)"/> with the <code>eTag="*"</code>.
         ///
-        /// If the id does not exists, this method will throw <see cref="ProvisioningServiceClientNotFoundException"/>.
-        ///     For more exceptions that this method can throw, please see <see cref="ExceptionHandlingHelper"/>
+        /// If the id does not exists, this method will throw <see cref="ProvisioningServiceClientException"/>.
         /// </remarks>
         /// <param name="id">the <code>string</code> that identifies the DeviceRegistrationState. It cannot be <code>null</code> or empty.</param>
         /// <exception cref="ProvisioningServiceClientException">if the Provisioning Device Service was not able to delete the DeviceRegistrationState information for the provided registrationId.</exception>
@@ -741,6 +1098,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return RegistrationStatusManager.DeleteAsync(_contractApiHttp, id, CancellationToken.None);
         }
 
+        /// <summary>
+        /// Delete the registration status information.
+        /// </summary>
+        /// <remarks>
+        /// This method will remove the DeviceRegistrationState from the Device Provisioning Service using the
+        ///     provided id. It will delete the registration status regardless the eTag. It means that this API
+        ///     correspond to the <see cref="DeleteDeviceRegistrationStateAsync(string, string)"/> with the <code>eTag="*"</code>.
+        ///
+        /// If the id does not exists, this method will throw <see cref="ProvisioningServiceClientException"/>.
+        /// </remarks>
+        /// <param name="id">the <code>string</code> that identifies the DeviceRegistrationState. It cannot be <code>null</code> or empty.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <exception cref="ProvisioningServiceClientException">if the Provisioning Device Service was not able to delete the DeviceRegistrationState information for the provided registrationId.</exception>
         public Task DeleteDeviceRegistrationStateAsync(string id, CancellationToken cancellationToken)
         {
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_025: [The deleteDeviceRegistrationState shall delete the DeviceRegistrationState for the provided id by calling the delete in the registrationStatusManager.] */
@@ -757,8 +1127,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         ///     <code>"*"</code>.
         ///
         /// If the id does not exists or the eTag does not matches, this method will throw
-        ///     <see cref="ProvisioningServiceClientNotFoundException"/>. For more exceptions that this method can throw, please see
-        ///     <see cref="ExceptionHandlingHelper"/>
+        ///     <see cref="ProvisioningServiceClientException"/>.
         /// </remarks>
         /// <param name="id">the <code>string</code> that identifies the DeviceRegistrationState. It cannot be <code>null</code> or empty.</param>
         /// <param name="eTag">the <code>string</code> with the DeviceRegistrationState eTag. It can be <code>null</code> or empty.
@@ -770,6 +1139,23 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return RegistrationStatusManager.DeleteAsync(_contractApiHttp, id, CancellationToken.None, eTag);
         }
 
+        /// <summary>
+        /// Delete the registration status information.
+        /// </summary>
+        /// <remarks>
+        /// This method will remove the registration status from the Device Provisioning Service using the
+        ///     provided id and eTag. If you want to delete the registration status regardless the eTag, you can
+        ///     use <see cref="DeleteDeviceRegistrationStateAsync(string)"/> or you can pass the eTag as <code>null</code>, empty, or
+        ///     <code>"*"</code>.
+        ///
+        /// If the id does not exists or the eTag does not matches, this method will throw
+        ///     <see cref="ProvisioningServiceClientException"/>.
+        /// </remarks>
+        /// <param name="id">the <code>string</code> that identifies the DeviceRegistrationState. It cannot be <code>null</code> or empty.</param>
+        /// <param name="eTag">the <code>string</code> with the DeviceRegistrationState eTag. It can be <code>null</code> or empty.
+        ///             The Device Provisioning Service will ignore it in all of these cases.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <exception cref="ProvisioningServiceClientException">if the Provisioning Device Service was not able to delete the DeviceRegistrationState information for the provided registrationId and eTag.</exception>
         public Task DeleteDeviceRegistrationStateAsync(string id, string eTag, CancellationToken cancellationToken)
         {
             /* SRS_PROVISIONING_SERVICE_CLIENT_21_026: [The deleteDeviceRegistrationState shall delete the DeviceRegistrationState for the provided id and eTag by calling the delete in the registrationStatusManager.] */
@@ -795,10 +1181,50 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return RegistrationStatusManager.CreateEnrollmentGroupQuery(
                 _provisioningConnectionString,
                 querySpecification,
+                new HttpTransportSettings(),
                 CancellationToken.None,
                 enrollmentGroupId);
         }
 
+        /// <summary>
+        /// Factory to create a registration status query.
+        /// </summary>
+        /// <remarks>
+        /// This method will create a new registration status query for a specific enrollment group on the Device
+        ///     Provisioning Service and return it as a <see cref="Query"/> iterator.
+        ///
+        /// The Device Provisioning Service expects a SQL query in the <see cref="QuerySpecification"/>, for instance
+        ///     <code>"SELECT * FROM enrollments"</code>.
+        /// </remarks>
+        /// <param name="querySpecification">the <see cref="QuerySpecification"/> with the SQL query. It cannot be <code>null</code>.</param>
+        /// <param name="enrollmentGroupId">the <code>string</code> that identifies the enrollmentGroup. It cannot be <code>null</code> or empty.</param>
+        /// <param name="httpTransportSettings"> Specifies the HTTP transport settings</param>
+        /// <returns>The <see cref="Query"/> iterator.</returns>
+        public Query CreateEnrollmentGroupRegistrationStateQuery(QuerySpecification querySpecification, string enrollmentGroupId, HttpTransportSettings httpTransportSettings)
+        {
+            /* SRS_PROVISIONING_SERVICE_CLIENT_21_027: [The createEnrollmentGroupRegistrationStateQuery shall create a new DeviceRegistrationState query by calling the createQuery in the registrationStatusManager.] */
+            return RegistrationStatusManager.CreateEnrollmentGroupQuery(
+                _provisioningConnectionString,
+                querySpecification,
+                httpTransportSettings,
+                CancellationToken.None,
+                enrollmentGroupId);
+        }
+
+        /// <summary>
+        /// Factory to create a registration status query.
+        /// </summary>
+        /// <remarks>
+        /// This method will create a new registration status query for a specific enrollment group on the Device
+        ///     Provisioning Service and return it as a <see cref="Query"/> iterator.
+        ///
+        /// The Device Provisioning Service expects a SQL query in the <see cref="QuerySpecification"/>, for instance
+        ///     <code>"SELECT * FROM enrollments"</code>.
+        /// </remarks>
+        /// <param name="querySpecification">the <see cref="QuerySpecification"/> with the SQL query. It cannot be <code>null</code>.</param>
+        /// <param name="enrollmentGroupId">the <code>string</code> that identifies the enrollmentGroup. It cannot be <code>null</code> or empty.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The <see cref="Query"/> iterator.</returns>
         public Query CreateEnrollmentGroupRegistrationStateQuery(
             QuerySpecification querySpecification, 
             string enrollmentGroupId,
@@ -808,6 +1234,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return RegistrationStatusManager.CreateEnrollmentGroupQuery(
                 _provisioningConnectionString,
                 querySpecification,
+                new HttpTransportSettings(),
                 cancellationToken,
                 enrollmentGroupId);
         }
@@ -837,14 +1264,71 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return RegistrationStatusManager.CreateEnrollmentGroupQuery(
                 _provisioningConnectionString,
                 querySpecification,
+                new HttpTransportSettings(),
                 CancellationToken.None, 
                 enrollmentGroupId, 
                 pageSize);
         }
 
+        /// <summary>
+        /// Factory to create a registration status query.
+        /// </summary>
+        /// <remarks>
+        /// This method will create a new registration status query for a specific enrollment group on the Device
+        ///     Provisioning Service and return it as a <see cref="Query"/> iterator.
+        ///
+        /// The Device Provisioning Service expects a SQL query in the <see cref="QuerySpecification"/>, for instance
+        ///     <code>"SELECT * FROM enrollments"</code>.
+        ///
+        /// For each iteration, the Query will return a List of objects correspondent to the query result. The maximum
+        ///     number of items per iteration can be specified by the pageSize. It is optional, you can provide <b>0</b> for
+        ///     default pageSize or use the API <see cref="CreateIndividualEnrollmentQuery(QuerySpecification)"/>.
+        /// </remarks>
+        /// <param name="querySpecification">the <see cref="QuerySpecification"/> with the SQL query. It cannot be <code>null</code>.</param>
+        /// <param name="enrollmentGroupId">the <code>string</code> that identifies the enrollmentGroup. It cannot be <code>null</code> or empty.</param>
+        /// <param name="pageSize">the <code>int</code> with the maximum number of items per iteration. It can be 0 for default, but not negative.</param>
+        /// <param name="httpTransportSettings"> Specifies the HTTP transport settings</param>
+        /// <returns>The <see cref="Query"/> iterator.</returns>
+        /// <exception cref="ArgumentException">if the provided parameters are not correct.</exception>
         public Query CreateEnrollmentGroupRegistrationStateQuery(
             QuerySpecification querySpecification, 
             string enrollmentGroupId, 
+            int pageSize,
+            HttpTransportSettings httpTransportSettings)
+        {
+            /* SRS_PROVISIONING_SERVICE_CLIENT_21_028: [The createEnrollmentGroupRegistrationStateQuery shall create a new DeviceRegistrationState query by calling the createQuery in the registrationStatusManager.] */
+            return RegistrationStatusManager.CreateEnrollmentGroupQuery(
+                _provisioningConnectionString,
+                querySpecification,
+                httpTransportSettings,
+                CancellationToken.None,
+                enrollmentGroupId,
+                pageSize);
+        }
+
+        /// <summary>
+        /// Factory to create a registration status query.
+        /// </summary>
+        /// <remarks>
+        /// This method will create a new registration status query for a specific enrollment group on the Device
+        ///     Provisioning Service and return it as a <see cref="Query"/> iterator.
+        ///
+        /// The Device Provisioning Service expects a SQL query in the <see cref="QuerySpecification"/>, for instance
+        ///     <code>"SELECT * FROM enrollments"</code>.
+        ///
+        /// For each iteration, the Query will return a List of objects correspondent to the query result. The maximum
+        ///     number of items per iteration can be specified by the pageSize. It is optional, you can provide <b>0</b> for
+        ///     default pageSize or use the API <see cref="CreateIndividualEnrollmentQuery(QuerySpecification)"/>.
+        /// </remarks>
+        /// <param name="querySpecification">the <see cref="QuerySpecification"/> with the SQL query. It cannot be <code>null</code>.</param>
+        /// <param name="enrollmentGroupId">the <code>string</code> that identifies the enrollmentGroup. It cannot be <code>null</code> or empty.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <param name="pageSize">the <code>int</code> with the maximum number of items per iteration. It can be 0 for default, but not negative.</param>
+        /// <returns>The <see cref="Query"/> iterator.</returns>
+        /// <exception cref="ArgumentException">if the provided parameters are not correct.</exception>
+        public Query CreateEnrollmentGroupRegistrationStateQuery(
+            QuerySpecification querySpecification,
+            string enrollmentGroupId,
             int pageSize,
             CancellationToken cancellationToken)
         {
@@ -852,6 +1336,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             return RegistrationStatusManager.CreateEnrollmentGroupQuery(
                 _provisioningConnectionString,
                 querySpecification,
+                new HttpTransportSettings(),
                 cancellationToken,
                 enrollmentGroupId,
                 pageSize);

@@ -9,6 +9,7 @@ namespace Microsoft.Azure.Devices.Client
     using Microsoft.Azure.Devices.Client.Extensions;
     using Microsoft.Azure.Amqp;
     using System.Diagnostics;
+    using Microsoft.Azure.Devices.Shared;
 
     internal sealed class IotHubTokenRefresher
     {
@@ -42,24 +43,36 @@ namespace Microsoft.Azure.Devices.Client
 
         public async Task SendCbsTokenAsync(TimeSpan timeout)
         {
-            // Send a Cbs Token right away and fork off a task to periodically renew it
-            var cbsLink = this.amqpSession.Connection.Extensions.Find<AmqpCbsLink>();
+            try
+            {
+                if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(IotHubTokenRefresher)}.{nameof(SendCbsTokenAsync)}");
 
-            // This can throw PutToken failure in error cases
-            var expiresAtUtc = await cbsLink.SendTokenAsync(
-                this.connectionString,
-                this.connectionString.AmqpEndpoint,
-                this.audience,
-                this.connectionString.AmqpEndpoint.AbsoluteUri,
-                AccessRightsStringArray,
-                timeout).ConfigureAwait(false);
-            this.SendCbsTokenLoopAsync(expiresAtUtc, timeout).Fork();
+                // Send a Cbs Token right away and fork off a task to periodically renew it
+                var cbsLink = this.amqpSession.Connection.Extensions.Find<AmqpCbsLink>();
+
+                // This can throw PutToken failure in error cases
+                var expiresAtUtc = await cbsLink.SendTokenAsync(
+                    this.connectionString,
+                    this.connectionString.AmqpEndpoint,
+                    this.audience,
+                    this.connectionString.AmqpEndpoint.AbsoluteUri,
+                    AccessRightsStringArray,
+                    timeout).ConfigureAwait(false);
+
+                this.SendCbsTokenLoopAsync(expiresAtUtc, timeout);
+            }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(IotHubTokenRefresher)}.{nameof(SendCbsTokenAsync)}");
+            }
         }
 
         private async Task SendCbsTokenLoopAsync(DateTime expiryTimeUtc, TimeSpan timeout)
         {
             try
             {
+                if (Logging.IsEnabled) Logging.Enter(this, expiryTimeUtc, timeout, $"{nameof(IotHubTokenRefresher)}.{nameof(SendCbsTokenLoopAsync)}");
+
                 bool continueSendingTokens = await WaitUntilNextTokenSendTime(
                     expiryTimeUtc, 
                     this.cancellationTokenSource.Token).ConfigureAwait(false);
@@ -111,6 +124,10 @@ namespace Microsoft.Azure.Devices.Client
             }
             catch (Exception e) when (!e.IsFatal())
             {
+            }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, expiryTimeUtc, timeout, $"{nameof(IotHubTokenRefresher)}.{nameof(SendCbsTokenLoopAsync)}");
             }
         }
 

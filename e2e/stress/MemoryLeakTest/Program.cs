@@ -2,8 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 // Run using the following:
-//  dotnet run --framework netcoreapp2.0 --configuration Release
-//  dotnet run --framework net46 --configuration Release
+//  dotnet run --framework netcoreapp2.1 --configuration Release
+//  dotnet run --framework net47 --configuration Release
 
 using System;
 using System.Collections.Generic;

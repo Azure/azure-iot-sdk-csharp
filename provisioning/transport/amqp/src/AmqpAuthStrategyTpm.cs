@@ -7,6 +7,7 @@ using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Provisioning.Client.Transport.Models;
+using System.Net;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
@@ -35,9 +36,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             return settings;
         }
 
-        public override Task OpenConnectionAsync(AmqpClientConnection connection, TimeSpan timeout, bool useWebSocket)
+        public override Task OpenConnectionAsync(AmqpClientConnection connection, TimeSpan timeout, bool useWebSocket, IWebProxy proxy)
         {
-            return connection.OpenAsync(timeout, useWebSocket, null);
+            return connection.OpenAsync(timeout, useWebSocket, null, proxy);
         }
 
         public override void SaveCredentials(RegistrationOperationStatus operation)

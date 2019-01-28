@@ -22,7 +22,6 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         ///     internal ctor
         /// </summary>
-        /// <param name="pageSize"></param>
         /// <param name="queryTaskFunc"></param>
         internal Query(Func<string, Task<QueryResult>> queryTaskFunc)
         {

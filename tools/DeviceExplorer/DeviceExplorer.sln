@@ -3,12 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2027
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{D557470D-B427-49B7-B133-DBD9E4BA3DAD}"
-	ProjectSection(SolutionItems) = preProject
-		..\..\service\Microsoft.Azure.Devices\AmqpFeedbackReceiver.cs = ..\..\service\Microsoft.Azure.Devices\AmqpFeedbackReceiver.cs
-		doc\DeviceExplorer_Requirements.docx = doc\DeviceExplorer_Requirements.docx
-	EndProjectSection
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeviceExplorer", "DeviceExplorer\DeviceExplorer.csproj", "{6EC48194-96D3-4B82-976D-F7957AF58AC4}"
 EndProject
 Global

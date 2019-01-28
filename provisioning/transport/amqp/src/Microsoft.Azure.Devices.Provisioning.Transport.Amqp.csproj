@@ -19,7 +19,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Version>1.1.1</Version>
+    <Version>1.1.5</Version>
     <Title>Microsoft Azure IoT Provisioning Device Client AMQP Transport</Title>
     <Authors>Microsoft</Authors>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
@@ -27,7 +27,7 @@
     <Description>Provisioning Device Client AMQP Transport for Azure IoT Devices</Description>
     <PackageIconUrl>http://go.microsoft.com/fwlink/?LinkID=288890</PackageIconUrl>
     <PackageProjectUrl>https://github.com/Azure/azure-iot-sdk-csharp</PackageProjectUrl>
-    <Copyright>Â© Microsoft Corporation. All rights reserved.</Copyright>
+    <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
     <PackageTags>Microsoft Azure IoT Provisioning Device Client .NET AMQP</PackageTags>
   </PropertyGroup>
 
@@ -42,7 +42,7 @@
     <Compile Include="$(Common)\Logging.ProvisioningTransport.Common.cs">
       <Link>Common\Logging.ProvisioningTransport.Common.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\device\provisioning\transport\ClientApiVersionHelper.cs"> 
+    <Compile Include="$(Common)\device\provisioning\transport\ClientApiVersionHelper.cs">
       <Link>Common\device\provisioning\transport\ClientApiVersionHelper.cs</Link>
     </Compile>
     <Compile Include="$(Common)\device\provisioning\transport\DeviceRegistrationResult.cs">
@@ -66,15 +66,16 @@
     <Compile Include="$(Common)\device\provisioning\transport\ProvisioningErrorDetails.cs">
       <Link>Common\device\provisioning\transport\ProvisioningErrorDetails.cs</Link>
     </Compile>
+    <Compile Include="$(Common)\DefaultWebProxySettings.cs" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <ProjectReference Include="$(RootDir)\shared\src\Microsoft.Azure.Devices.Shared.csproj" />
     <ProjectReference Include="$(RootDir)\provisioning\device\src\Microsoft.Azure.Devices.Provisioning.Client.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Azure.Amqp" Version="2.*" />
-    <PackageReference Condition=" '$(Configuration)' == 'Debug' " Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.6.0-beta2" />
+    <PackageReference Include="Microsoft.Azure.Amqp" Version="2.3.7" />
+    <PackageReference Condition=" '$(Configuration)' == 'Debug' " Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.6.1" />
   </ItemGroup>
 </Project>

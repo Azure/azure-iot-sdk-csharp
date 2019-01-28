@@ -10,10 +10,10 @@ namespace Microsoft.Azure.Devices.Client.Test
     using NSubstitute;
 
     [TestClass]
+    [TestCategory("Unit")]
     public class RetryPolicyTests
     {
         [TestMethod]
-        [TestCategory("RetryPolicy")]
         public void NoRetryPolicy_VerifyBehavior_Success()
         {
             var noRetryPolicy = new NoRetry();

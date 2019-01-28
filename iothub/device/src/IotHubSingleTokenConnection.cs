@@ -8,10 +8,11 @@ namespace Microsoft.Azure.Devices.Client
     using System.Threading.Tasks;
     using Microsoft.Azure.Amqp;
     using Microsoft.Azure.Devices.Client.Extensions;
+    using Microsoft.Azure.Devices.Shared;
 
     sealed class IotHubSingleTokenConnection : IotHubConnection
     {
-        readonly IotHubScopeConnectionPool iotHubScopeConnectionPool;
+        IotHubScopeConnectionPool iotHubScopeConnectionPool;
         IotHubTokenRefresher iotHubTokenRefresher;
 
         public IotHubSingleTokenConnection(IotHubScopeConnectionPool iotHubScopeConnectionPool, IotHubConnectionString connectionString, AmqpTransportSettings amqpTransportSettings)
@@ -24,9 +25,9 @@ namespace Microsoft.Azure.Devices.Client
 
         public IotHubConnectionString ConnectionString { get; }
 
-        public override Task CloseAsync()
+        public override Task CloseAsync(CancellationToken cancellationToken)
         {
-            return this.FaultTolerantSession.CloseAsync();
+            return this.FaultTolerantSession.CloseAsync(cancellationToken);
         }
 
         public override void SafeClose(Exception exception)
@@ -39,6 +40,7 @@ namespace Microsoft.Azure.Devices.Client
             if (this.iotHubScopeConnectionPool != null)
             {
                 this.iotHubScopeConnectionPool.RemoveRef();
+                this.iotHubScopeConnectionPool = null;
             }
             else
             {
@@ -48,35 +50,44 @@ namespace Microsoft.Azure.Devices.Client
 
         protected override async Task<AmqpSession> CreateSessionAsync(TimeSpan timeout, CancellationToken cancellationToken)
         {
-            var timeoutHelper = new TimeoutHelper(timeout);
-
-            this.iotHubTokenRefresher?.Cancel();
-
-            AmqpSession amqpSession = await base.CreateSessionAsync(timeoutHelper.RemainingTime(), cancellationToken).ConfigureAwait(false);
-
-            if (this.AmqpTransportSettings.ClientCertificate == null)
+            try
             {
-                this.iotHubTokenRefresher = new IotHubTokenRefresher(
-                   amqpSession,
-                   this.ConnectionString,
-                   this.ConnectionString.AmqpEndpoint.AbsoluteUri
-                   );
+                if (Logging.IsEnabled) Logging.Enter(this, timeout, cancellationToken, $"{nameof(IotHubSingleTokenConnection)}.{nameof(CreateSessionAsync)}");
 
-                // Send Cbs token for new connection first
-                try
+                var timeoutHelper = new TimeoutHelper(timeout);
+
+                this.iotHubTokenRefresher?.Cancel();
+
+                AmqpSession amqpSession = await base.CreateSessionAsync(timeoutHelper.RemainingTime(), cancellationToken).ConfigureAwait(false);
+
+                if (this.AmqpTransportSettings.ClientCertificate == null)
                 {
-                   await this.iotHubTokenRefresher.SendCbsTokenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
-                }
-                catch (Exception exception) when (!exception.IsFatal())
-                {
-                    amqpSession?.Connection.SafeClose();
+                    this.iotHubTokenRefresher = new IotHubTokenRefresher(
+                       amqpSession,
+                       this.ConnectionString,
+                       this.ConnectionString.AmqpEndpoint.AbsoluteUri
+                       );
 
-                    throw;
+                    // Send Cbs token for new connection first
+                    try
+                    {
+                        await this.iotHubTokenRefresher.SendCbsTokenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+                    }
+                    catch (Exception exception) when (!exception.IsFatal())
+                    {
+                        amqpSession?.Connection.SafeClose();
+
+                        throw;
+                    }
+
                 }
 
+                return amqpSession;
             }
-
-            return amqpSession;
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, timeout, cancellationToken, $"{nameof(IotHubSingleTokenConnection)}.{nameof(CreateSessionAsync)}");
+            }
         }
 
         protected override Uri BuildLinkAddress(IotHubConnectionString doNotUse, string path)
@@ -91,6 +102,8 @@ namespace Microsoft.Azure.Devices.Client
 
         protected override async Task OpenLinkAsync(AmqpObject link, IotHubConnectionString doNotUse, string doNotUse2, TimeSpan timeout, CancellationToken token)
         {
+            if (Logging.IsEnabled) Logging.Enter(this, timeout, token, $"{nameof(IotHubSingleTokenConnection)}.{nameof(OpenLinkAsync)}");
+
             token.ThrowIfCancellationRequested();
             try
             {
@@ -107,13 +120,25 @@ namespace Microsoft.Azure.Devices.Client
 
                 throw;
             }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, timeout, token, $"{nameof(IotHubSingleTokenConnection)}.{nameof(OpenLinkAsync)}");
+            }
         }
 
         void CloseConnection(AmqpSession amqpSession)
         {
-            // Closing the connection also closes any sessions.
-            amqpSession?.Connection.SafeClose();
-            this.iotHubTokenRefresher?.Cancel();
+            try
+            {
+                if (Logging.IsEnabled) Logging.Enter(this, amqpSession.Identifier, $"{nameof(IotHubSingleTokenConnection)}.{nameof(CloseConnection)}");
+                // Closing the connection also closes any sessions.
+                amqpSession?.Connection.SafeClose();
+                this.iotHubTokenRefresher?.Cancel();
+            }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, amqpSession.Identifier, $"{nameof(IotHubSingleTokenConnection)}.{nameof(CloseConnection)}");
+            }
         }
     }
 }

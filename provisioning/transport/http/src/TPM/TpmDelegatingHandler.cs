@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             return response;
         }
 
-        private string GetTarget(string requestUriLocalPath)
+        private static string GetTarget(string requestUriLocalPath)
         {
             requestUriLocalPath = requestUriLocalPath.TrimStart('/');
             string[] parameters = requestUriLocalPath.Split('/');

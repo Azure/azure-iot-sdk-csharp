@@ -26,6 +26,11 @@ namespace Microsoft.Azure.Devices
         /// <summary>
         /// Certificate Authority
         /// </summary>
-        [EnumMember(Value = "certificateAuthority")] CertificateAuthority = 2
+        [EnumMember(Value = "certificateAuthority")] CertificateAuthority = 2,
+
+        /// <summary>
+        /// No Authentication Token at this scope
+        /// </summary>
+        [EnumMember(Value = "none")] None = 3
     }
 }

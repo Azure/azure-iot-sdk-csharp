@@ -22,17 +22,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// <list type="bullet">
     ///     <item><b>IndividualEnrollment:</b>
     ///         <see cref="ProvisioningServiceClient.CreateIndividualEnrollmentQuery(QuerySpecification, int)"/>
+    ///     </item>
     ///     <item><b>EnrollmentGroup:</b>
     ///         <see cref="ProvisioningServiceClient.CreateEnrollmentGroupQuery(QuerySpecification, int)"/>
+    ///     </item>    
     ///     <item><b>RegistrationStatus:</b>
-    ///         <see cref="ProvisioningServiceClient.CreateEnrollmentGroupRegistrationStatusQuery(QuerySpecification, String, int)"/>
+    ///         <see cref="ProvisioningServiceClient.CreateEnrollmentGroupRegistrationStateQuery(QuerySpecification, String, int)"/>
+    ///     </item>
     /// </list>
     /// On all cases, the <see cref="QuerySpecification"/> contains a SQL query that must follow the
-    ///     <see cref="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-query-language">Query Language</see>
-    ///     for the Device Provisioning Service.
+    ///     Query Language for the Device Provisioning Service.
     ///
     /// Optionally, an <code>Integer</code> with the <b>page size</b>, can determine the maximum number of the items in the
-    ///     <see cref="QueryResult"/> returned by the <see cref="NextAsync"/>. It must be any positive integer, and if it 
+    ///     <see cref="QueryResult"/> returned by the <see cref="NextAsync()"/>. It must be any positive integer, and if it 
     ///     contains 0, the Device Provisioning Service will ignore it and use a standard page size.
     ///
     /// You can use this Object as a standard iterator, just using the <code>HasNext</code> and <code>NextAsync</code> in a
@@ -51,8 +53,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     ///     the point where you stopped. Just recreating the query with the same <see cref="QuerySpecification"/> and calling
     ///     the <see cref="NextAsync(string)"/> passing the stored <code>ContinuationToken</code>.
     /// </remarks>
-    /// <see cref="https://docs.microsoft.com/en-us/azure/iot-dps/">Azure IoT Hub Device Provisioning Service</see>
-    /// <see cref="https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-query-language">Query Language</see>
     public class Query : IDisposable
     {
         private const string ContinuationTokenHeaderKey = "x-ms-continuation";
@@ -67,30 +67,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         private CancellationToken _cancellationToken;
         private bool _hasNext;
 
-        /// <summary>
-        /// INTERNAL CONSTRUCTOR
-        /// </summary>
-        /// <remarks>
-        /// Use one of the following factories to create a new query.
-        /// <list type="bullet">
-        ///     <item><b>IndividualEnrollment:</b>
-        ///         <see cref="ProvisioningServiceClient.CreateIndividualEnrollmentQuery(QuerySpecification, int)"/>
-        ///     <item><b>EnrollmentGroup:</b>
-        ///         <see cref="ProvisioningServiceClient.CreateEnrollmentGroupQuery(QuerySpecification, int)"/>
-        ///     <item><b>RegistrationStatus:</b>
-        ///         <see cref="ProvisioningServiceClient.CreateEnrollmentGroupRegistrationStatusQuery(QuerySpecification, String, int)"/>
-        /// </list>
-        /// </remarks>
-        /// <param name="contractApiHttp">the <see cref="ContractApiHttp"/> that send request messages to the Device Provisioning Service. It cannot be <code>null</code>.</param>
-        /// <param name="serviceName">the <code>String</code> with the path that will be part of the URL in the rest API. It cannot be <code>null</code>.</param>
-        /// <param name="querySpecification">the <see cref="QuerySpecification"/> with the SQL query. It cannot be <code>null</code>.</param>
-        /// <param name="pageSize">the <code>int</code> with the maximum number of items per iteration. It cannot be negative.</param>
-        /// <param name="cancellationToken">the <see cref="CancellationToken"/> to cancel the query operation <see cref="NextAsync"/>.</param>
-        /// <exception cref="ArgumentException">if one of the parameters is invalid.</exception>
         internal Query(
             ServiceConnectionString serviceConnectionString, 
-            string serviceName, 
-            QuerySpecification querySpecification, 
+            string serviceName,
+            QuerySpecification querySpecification,
+            HttpTransportSettings httpTransportSettings,
             int pageSize,
             CancellationToken cancellationToken)
         {
@@ -118,10 +99,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 throw new ArgumentException($"{nameof(pageSize)} cannot be negative.");
             }
 
+            // TODO: Refactor ContractApiHttp being created again
             /* SRS_QUERY_21_005: [The constructor shall create and store a `contractApiHttp` using the provided Service Connection String.] */
             _contractApiHttp = new ContractApiHttp(
                 serviceConnectionString.HttpsEndpoint,
-                serviceConnectionString);
+                serviceConnectionString, httpTransportSettings);
 
             /* SRS_QUERY_21_006: [The constructor shall store the provided  `pageSize`, and `cancelationToken`.] */
             PageSize = pageSize;
@@ -145,9 +127,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </summary>
         /// <remarks>
         /// Contains <code>true</code> if the query is not finished in the Device Provisioning Service, and another
-        ///     iteration with <see cref="NextAsync"/> may return more items. Call <see cref="NextAsync"/> after 
+        ///     iteration with <see cref="NextAsync()"/> may return more items. Call <see cref="NextAsync()"/> after 
         ///     a <code>true</code> <code>HasNext</code> will result in a <see cref="QueryResult"/> that can or 
-        ///     cannot contains elements. But call <see cref="NextAsync"/> after a <code>false</code> <code>HasNext</code> 
+        ///     cannot contains elements. But call <see cref="NextAsync()"/> after a <code>false</code> <code>HasNext</code> 
         ///     will result in a exception.
         /// </remarks>
         public bool HasNext()
@@ -243,6 +225,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// Releases the unmanaged resources used by the Component and optionally releases the managed resources.
+        /// </summary>
+        /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
         protected virtual void Dispose(bool disposing)
         {
             if (disposing)

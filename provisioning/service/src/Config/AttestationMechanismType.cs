@@ -10,7 +10,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// <summary>
     /// Type of Device Provisioning Service attestation mechanism.
     /// </summary>
-    /// <seealso cref="https://docs.microsoft.com/en-us/rest/api/iot-dps/deviceenrollment">Device Enrollment</seealso>
     [JsonConverter(typeof(StringEnumConverter))]
     internal enum AttestationMechanismType
     {

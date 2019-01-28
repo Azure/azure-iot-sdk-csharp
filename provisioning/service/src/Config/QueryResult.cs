@@ -63,9 +63,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// ]
     /// </code>
     /// </remarks>
-    /// <seealso cref="https://docs.microsoft.com/en-us/rest/api/iot-dps/deviceenrollment">Device Enrollment</seealso>
-    /// <seealso cref="https://docs.microsoft.com/en-us/rest/api/iot-dps/deviceenrollmentgroup">Device Enrollment Group</seealso>
-    /// <seealso cref="https://docs.microsoft.com/en-us/rest/api/iot-dps/registrationstatus">Registration Status</seealso>
     public class QueryResult
     {
         /// <summary>
@@ -109,7 +106,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             {
                 if(bodyString == null)
                     throw new ArgumentNullException(nameof(bodyString));
-                throw new ArgumentException(nameof(bodyString));
+
+                throw new ArgumentException("Invalid query body.", nameof(bodyString));
             }
 
             /* SRS_QUERY_RESULT_21_003: [The constructor shall throw JsonSerializationException if the JSON is invalid.] */

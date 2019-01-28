@@ -9,9 +9,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// <summary>
     /// The Device Provisioning Service query result type
     /// </summary>
-    /// <seealso cref="https://docs.microsoft.com/en-us/rest/api/iot-dps/deviceenrollment">Device Enrollment</seealso>
-    /// <seealso cref="https://docs.microsoft.com/en-us/rest/api/iot-dps/deviceenrollmentgroup">Device Enrollment Group</seealso>
-    /// <seealso cref="https://docs.microsoft.com/en-us/rest/api/iot-dps/registrationstatus">Registration Status</seealso>
     [JsonConverter(typeof(StringEnumConverter))]
     public enum QueryResultType
     {

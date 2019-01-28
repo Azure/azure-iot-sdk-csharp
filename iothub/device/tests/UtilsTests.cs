@@ -8,6 +8,7 @@ namespace Microsoft.Azure.Devices.Client.Test
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
+    [TestCategory("Unit")]
     public class UtilsTests
     {
         [TestMethod]

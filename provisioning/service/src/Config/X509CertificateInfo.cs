@@ -27,11 +27,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// }
     /// </code>
     /// </example>
-    /// <seealso cref="https://www.trustedcomputinggroup.org/wp-content/uploads/Device-Identifier-Composition-Engine-Rev69_Public-Review.pdf">Device Identifier Composition Engine (DICE) spec</seealso>
-    /// <seealso cref="https://www.microsoft.com/en-us/research/publication/riot-a-foundation-for-trust-in-the-internet-of-things">RIoT – A Foundation for Trust in the Internet of Things</seealso>
-    /// <seealso cref="https://docs.microsoft.com/en-us/rest/api/iot-dps/deviceenrollment">Device Enrollment</seealso>
-    /// <seealso cref="https://docs.microsoft.com/en-us/rest/api/iot-dps/deviceenrollmentgroup">Device Enrollment Group</seealso>
-    public class X509CertificateInfo
+     public class X509CertificateInfo
     {
         /// <summary>
         /// CONSTRUCTOR
