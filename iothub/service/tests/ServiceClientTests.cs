@@ -134,5 +134,112 @@ namespace Microsoft.Azure.Devices.Api.Test
             restOpMock.Verify(restOp => restOp.Dispose(), Times.Never());
             Assert.IsTrue(connectionClosed);
         }
+
+        #region Device Streaming
+        const string DS_Http_Resp_Header_Is_Accepted = "iothub-streaming-is-accepted";
+        const string DS_Http_Resp_Header_Url = "iothub-streaming-url";
+        const string DS_Http_Resp_Header_Auth_Token = "iothub-streaming-auth-token";
+        const string FakeDeviceStreamSGWUrl = "wss://sgw.eastus2euap-001.streams.azure-devices.net/bridges/iot-sdks-tcpstreaming/E2E_DeviceStreamingTests_Sasl_f88fd19b-ed0d-496b-b32c-6346ca61d289/E2E_DeviceStreamingTests_b82c9ec4-4fb3-432a-bfb5-af484966a7d4c002f7a841b8/3a6a2eba4b525c38bfcb";
+        const string FakeDeviceStreamAuthToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1NDgzNTU0ODEsImp0aSI6InFfdlllQkF4OGpmRW5tTWFpOHhSNTM2QkpxdTZfRlBOa2ZWSFJieUc4bUUiLCJpb3RodWIRrcy10Y3BzdHJlYW1pbmciOiJpb3Qtc2ifQ.X_HIb53nDsCT2SZ0P4-vnA_Wz94jxYRLbk_5nvP9bj8";
+
+        [TestMethod]
+        public async Task CreateStreamAsyncDeviceClientAccepts()
+        {
+            await TestCreateStreamAsync("myDevice01", null, true).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task CreateStreamAsyncDeviceClientRejects()
+        {
+            await TestCreateStreamAsync("myDevice01", null, false).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task CreateStreamAsyncModuleClientAccepts()
+        {
+            await TestCreateStreamAsync("myDevice01", "myModule01", true).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task CreateStreamAsyncModuleClientRejects()
+        {
+            await TestCreateStreamAsync("myDevice01", "myModule01", false).ConfigureAwait(false);
+        }
+
+        private static async Task TestCreateStreamAsync(string deviceId, string moduleId, bool acceptRequest)
+        {
+            // arrange
+            string streamName = "StreamA";
+
+            var restOpMock = new Mock<IHttpClientHelper>();
+            restOpMock.Setup(restOp => restOp.Dispose());
+            Func<TimeSpan, Task<AmqpSession>> onCreate = _ => Task.FromResult(new AmqpSession(null, new AmqpSessionSettings(), null));
+            Action<AmqpSession> onClose = _ => { };
+
+            // Instantiate AmqpServiceClient with Mock IHttpClientHelper and IotHubConnection
+            var connection = new IotHubConnection(onCreate, onClose);
+            var serviceClient = new AmqpServiceClient(connection, restOpMock.Object);
+
+            HttpResponseMessage httpResponse = new HttpResponseMessage(HttpStatusCode.OK);
+            httpResponse.Headers.Add(DS_Http_Resp_Header_Is_Accepted, acceptRequest ? "true" : "false");
+            httpResponse.Headers.Add(DS_Http_Resp_Header_Url, FakeDeviceStreamSGWUrl);
+            httpResponse.Headers.Add(DS_Http_Resp_Header_Auth_Token, FakeDeviceStreamAuthToken);
+
+            Uri requestUri;
+
+            if (String.IsNullOrEmpty(moduleId))
+            {
+                requestUri = new Uri($"/twins/{WebUtility.UrlEncode(deviceId)}/streams/{streamName}?{ClientApiVersionHelper.ApiVersionQueryString}", UriKind.Relative);
+            }
+            else
+            {
+                requestUri = new Uri($"/twins/{WebUtility.UrlEncode(deviceId)}/modules/{WebUtility.UrlEncode(moduleId)}/streams/{streamName}?{ClientApiVersionHelper.ApiVersionQueryString}", UriKind.Relative);
+            }
+
+            restOpMock.Setup(m => m.PostAsync<byte[], HttpResponseMessage>(
+                requestUri,
+                null as byte[],
+                It.IsAny<TimeSpan>(),
+                null,
+                It.IsAny<Dictionary<string, string>>(),
+                It.IsAny<CancellationToken>()))
+                .Returns(() => Task.FromResult(httpResponse));
+
+            // run
+            DeviceStreamRequest request = new DeviceStreamRequest(streamName);
+            DeviceStreamResponse response;
+
+            using (CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(3)))
+            {
+                if (String.IsNullOrEmpty(moduleId))
+                {
+                    response = await serviceClient.CreateStreamAsync(deviceId, request, cts.Token).ConfigureAwait(false);
+                }
+                else
+                {
+                    response = await serviceClient.CreateStreamAsync(deviceId, moduleId, request, cts.Token).ConfigureAwait(false);
+                }
+            }
+
+            // assert
+            Assert.IsNotNull(response);
+            Assert.AreEqual(response.StreamName, streamName);
+
+            if (acceptRequest)
+            {
+                Assert.IsTrue(response.IsAccepted);
+                Assert.AreEqual(response.Url.ToString(), FakeDeviceStreamSGWUrl);
+                Assert.AreEqual(response.AuthorizationToken, FakeDeviceStreamAuthToken);
+            }
+            else
+            {
+                Assert.IsFalse(response.IsAccepted);
+                Assert.IsNull(response.Url);
+                Assert.IsNull(response.AuthorizationToken);
+            }
+
+        }
+
+        #endregion Device Streaming
     }
 }
