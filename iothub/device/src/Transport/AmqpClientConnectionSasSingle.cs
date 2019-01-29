@@ -122,6 +122,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     catch (Exception exception) when (!exception.IsFatal())
                     {
                         authenticationSession.amqpSession?.Connection.SafeClose();
+                        amqpTokenRefresher.Dispose();
 
                         throw;
                     }
