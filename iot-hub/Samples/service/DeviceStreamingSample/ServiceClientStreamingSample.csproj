@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\Common\DeviceStreamingCommon.cs" Link="DeviceStreamingCommon.cs" />
+    <Compile Include="..\..\common\DeviceStreamingCommon.cs" Link="DeviceStreamingCommon.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-  	<PackageReference Include="Microsoft.Azure.Devices" Version="1.*" />
+  	<PackageReference Include="Microsoft.Azure.Devices" Version="1.27.0-preview-*" />
   </ItemGroup>
 
 </Project>

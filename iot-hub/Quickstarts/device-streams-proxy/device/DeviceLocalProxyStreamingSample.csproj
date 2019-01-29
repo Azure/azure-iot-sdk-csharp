@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\Common\DeviceStreamingCommon.cs" Link="DeviceStreamingCommon.cs" />
+    <Compile Include="..\..\common\DeviceStreamingCommon.cs" Link="DeviceStreamingCommon.cs" />
   </ItemGroup>
 
   <ItemGroup>
