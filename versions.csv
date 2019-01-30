@@ -1,7 +1,7 @@
 AssemblyPath, Version
-iothub\device\src\Microsoft.Azure.Devices.Client.csproj, 1.19.0
-iothub\service\src\Microsoft.Azure.Devices.csproj, 1.27.0-preview-001
-shared\src\Microsoft.Azure.Devices.Shared.csproj, 1.15.2
+iothub\device\src\Microsoft.Azure.Devices.Client.csproj, 1.29.0-preview-001
+iothub\service\src\Microsoft.Azure.Devices.csproj, 1.27.0-preview-002
+shared\src\Microsoft.Azure.Devices.Shared.csproj, 1.25.0-preview-001
 provisioning\device\src\Microsoft.Azure.Devices.Provisioning.Client.csproj, 1.2.2
 provisioning\transport\amqp\src\Microsoft.Azure.Devices.Provisioning.Transport.Amqp.csproj, 1.1.5
 provisioning\transport\http\src\Microsoft.Azure.Devices.Provisioning.Transport.Http.csproj, 1.1.4
