@@ -19,13 +19,21 @@ namespace Microsoft.Azure.Devices.Client.Transport
         const string linkNamePostFix = "_TwinSenderLink";
         const string correlationIdPrefix = "twin:";
 
-        internal AmqpClientTwinSenderLink(AmqpClientLinkType amqpClientLinkType, AmqpClientSession amqpClientSession, DeviceClientEndpointIdentity deviceClientEndpointIdentity, TimeSpan timeout, string correlationId = "")
-            : base(amqpClientLinkType, amqpClientSession, deviceClientEndpointIdentity, timeout, correlationId)
+        internal AmqpClientTwinSenderLink(
+            AmqpClientLinkType amqpClientLinkType, 
+            AmqpClientSession amqpClientSession, 
+            DeviceClientEndpointIdentity deviceClientEndpointIdentity, 
+            TimeSpan timeout,
+            string correlationId,
+            bool useTokenRefresher,
+            AmqpClientSession amqpAuthenticationSession
+            )
+            : base(amqpClientLinkType, amqpClientSession, deviceClientEndpointIdentity, correlationId, useTokenRefresher, amqpAuthenticationSession)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientTwinSenderLink)}");
 
-            string path = this.BuildPath(CommonConstants.DeviceTwinPathTemplate, CommonConstants.ModuleTwinPathTemplate);
-            Uri uri = deviceClientEndpointIdentity.iotHubConnectionString.BuildLinkAddress(path);
+            linkPath = this.BuildPath(CommonConstants.DeviceTwinPathTemplate, CommonConstants.ModuleTwinPathTemplate);
+            Uri uri = deviceClientEndpointIdentity.iotHubConnectionString.BuildLinkAddress(linkPath);
             uint prefetchCount = deviceClientEndpointIdentity.amqpTransportSettings.PrefetchCount;
 
             amqpLinkSettings = new AmqpLinkSettings

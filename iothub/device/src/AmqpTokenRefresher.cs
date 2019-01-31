@@ -44,16 +44,16 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        internal async Task RefreshTokenAsync(TimeSpan timeout)
+        internal async Task RefreshTokenAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, TimeSpan timeout)
         {
             try
             {
                 if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(AmqpTokenRefresher)}.{nameof(RefreshTokenAsync)}");
 
                 // Send a Cbs Token right away and fork off a task to periodically renew it
-                var expiresAtUtc = await this.amqpClientSession.AuthenticateCbs(timeout).ConfigureAwait(false);
+                var expiresAtUtc = await this.amqpClientSession.AuthenticateCbs(deviceClientEndpointIdentity, timeout).ConfigureAwait(false);
 
-                this.RefreshTokenLoopAsync(expiresAtUtc, timeout).ConfigureAwait(false);
+                this.RefreshTokenLoopAsync(deviceClientEndpointIdentity, expiresAtUtc, timeout).ConfigureAwait(false);
             }
             finally
             {
@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        private async Task RefreshTokenLoopAsync(DateTime expiryTimeUtc, TimeSpan timeout)
+        private async Task RefreshTokenLoopAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, DateTime expiryTimeUtc, TimeSpan timeout)
         {
             try
             {
@@ -83,7 +83,7 @@ namespace Microsoft.Azure.Devices.Client
                         break;
                     }
 
-                    var expiresAtUtc = await this.amqpClientSession.AuthenticateCbs(timeout).ConfigureAwait(false);
+                    var expiresAtUtc = await this.amqpClientSession.AuthenticateCbs(deviceClientEndpointIdentity, timeout).ConfigureAwait(false);
 
                     try
                     {

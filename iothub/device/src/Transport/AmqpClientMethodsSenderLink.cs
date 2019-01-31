@@ -19,13 +19,21 @@ namespace Microsoft.Azure.Devices.Client.Transport
         const string linkNamePostFix = "_MethodsSenderLink";
         const string correlationIdPrefix = "methods:";
 
-        public AmqpClientMethodsSenderLink(AmqpClientLinkType amqpClientLinkType, AmqpClientSession amqpClientSession, DeviceClientEndpointIdentity deviceClientEndpointIdentity, TimeSpan timeout, string correlationId = "")
-            : base(amqpClientLinkType, amqpClientSession, deviceClientEndpointIdentity, timeout, correlationId)
+        public AmqpClientMethodsSenderLink(
+            AmqpClientLinkType amqpClientLinkType, 
+            AmqpClientSession amqpClientSession, 
+            DeviceClientEndpointIdentity deviceClientEndpointIdentity, 
+            TimeSpan timeout, 
+            string correlationId,
+            bool useTokenRefresher,
+            AmqpClientSession amqpAuthenticationSession
+            )
+            : base(amqpClientLinkType, amqpClientSession, deviceClientEndpointIdentity, correlationId, useTokenRefresher, amqpAuthenticationSession)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientMethodsSenderLink)}");
 
-            string path = BuildPath(CommonConstants.DeviceMethodPathTemplate, CommonConstants.ModuleMethodPathTemplate);
-            Uri uri = deviceClientEndpointIdentity.iotHubConnectionString.BuildLinkAddress(path);
+            linkPath = BuildPath(CommonConstants.DeviceMethodPathTemplate, CommonConstants.ModuleMethodPathTemplate);
+            Uri uri = deviceClientEndpointIdentity.iotHubConnectionString.BuildLinkAddress(linkPath);
             uint prefetchCount = deviceClientEndpointIdentity.amqpTransportSettings.PrefetchCount;
 
             amqpLinkSettings = new AmqpLinkSettings

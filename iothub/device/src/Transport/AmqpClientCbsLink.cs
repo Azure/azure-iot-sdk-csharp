@@ -22,16 +22,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
         #region Members-Constructor
         protected AmqpClientSession amqpClientSession { get; private set; }
 
-        protected DeviceClientEndpointIdentity deviceClientEndpointIdentity { get; private set; }
-
         private AmqpCbsLink amqpCbsLink { get; set; }
 
-        internal AmqpClientCbsLink(AmqpClientSession amqpClientSession, DeviceClientEndpointIdentity deviceClientEndpointIdentity)
+        internal AmqpClientCbsLink(AmqpClientSession amqpClientSession)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientCbsLink)}");
 
             this.amqpClientSession = amqpClientSession;
-            this.deviceClientEndpointIdentity = deviceClientEndpointIdentity;
 
             amqpCbsLink = new AmqpCbsLink(this.amqpClientSession.amqpClientConnection.amqpConnection);
 
@@ -40,21 +37,18 @@ namespace Microsoft.Azure.Devices.Client.Transport
         #endregion
 
         #region Authenticate
-        internal async Task<DateTime> AuthenticateCbsAsync(TimeSpan timeout)
+        internal async Task<DateTime> AuthenticateCbsAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, string audience, TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientCbsLink)}.{nameof(AuthenticateCbsAsync)}");
 
             DateTime expiresAtUtc;
             var timeoutHelper = new TimeoutHelper(timeout);
 
-            string audience = this.deviceClientEndpointIdentity.iotHubConnectionString.AmqpEndpoint.AbsoluteUri;
-            string resource = this.deviceClientEndpointIdentity.iotHubConnectionString.AmqpEndpoint.AbsoluteUri;
-
             expiresAtUtc = await amqpCbsLink.SendTokenAsync(
                 deviceClientEndpointIdentity.iotHubConnectionString,
                 deviceClientEndpointIdentity.iotHubConnectionString.AmqpEndpoint,
                 audience,
-                resource,
+                deviceClientEndpointIdentity.iotHubConnectionString.AmqpEndpoint.AbsoluteUri,
                 AccessRightsHelper.AccessRightsToStringArray(AccessRights.DeviceConnect), 
                 timeout).ConfigureAwait(false);
 

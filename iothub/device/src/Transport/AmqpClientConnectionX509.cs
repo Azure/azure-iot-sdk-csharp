@@ -14,7 +14,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
     internal class AmqpClientConnectionX509 : AmqpClientConnection
     {
         #region Members-Constructor
-        AmqpClientSession workerAmqpClientSession;
+        private const bool useLinkBasedTokenRefresh = false;
+
+        private AmqpClientSession workerAmqpClientSession;
 
         internal bool isConnectionClosed;
         private ProtocolHeader sentProtocolHeader;
@@ -26,20 +28,39 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         internal static readonly TimeSpan DefaultOperationTimeout = TimeSpan.FromMinutes(1);
 
+        private DeviceClientEndpointIdentity deviceClientEndpointIdentity;
+
         public AmqpClientConnectionX509(DeviceClientEndpointIdentity deviceClientEndpointIdentity)
-            : base(deviceClientEndpointIdentity)
+            : base(deviceClientEndpointIdentity.amqpTransportSettings, deviceClientEndpointIdentity.iotHubConnectionString.HostName)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionX509)}");
+
+            if (!(deviceClientEndpointIdentity is DeviceClientEndpointIdentityX509))
+            {
+                throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionX509)}." + "accepts only X509 device identities");
+            }
+
+            this.deviceClientEndpointIdentity = deviceClientEndpointIdentity;
 
             workerAmqpClientSession = null;
             isConnectionAuthenticated = false;
         }
+
+        internal override bool AddToMux(DeviceClientEndpointIdentity deviceClientEndpointIdentity)
+        {
+            return false;
+        }
         #endregion
 
         #region Open-Close
-        internal override async Task OpenAsync(TimeSpan timeout)
+        internal override async Task OpenAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionX509)}.{nameof(OpenAsync)}");
+
+            if (this.deviceClientEndpointIdentity != deviceClientEndpointIdentity)
+            {
+                throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionX509)}.{nameof(OpenAsync)}" + "DeviceClientEndpointIdentity crisis");
+            }
 
             var timeoutHelper = new TimeoutHelper(timeout);
 
@@ -48,7 +69,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             switch (this.amqpTransportSettings.GetTransportType())
             {
                 case TransportType.Amqp_WebSocket_Only:
-                    transport = await CreateClientWebSocketTransportAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+                    transport = await CreateClientWebSocketTransportAsync(deviceClientEndpointIdentity, timeoutHelper.RemainingTime()).ConfigureAwait(false);
                     SaslTransportProvider provider = amqpSettings.GetTransportProvider<SaslTransportProvider>();
                     if (provider != null)
                     {
@@ -133,6 +154,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionX509)}.{nameof(CloseAsync)}");
 
+            if (this.deviceClientEndpointIdentity != deviceClientEndpointIdentity)
+            {
+                throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionX509)}.{nameof(OpenAsync)}" + "DeviceClientEndpointIdentity crisis");
+            }
+
             if (amqpConnection != null)
             {
                 await amqpConnection.CloseAsync(timeout).ConfigureAwait(false);
@@ -143,9 +169,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
         #endregion
 
         #region Telemetry
-        internal override async Task EnableTelemetryAndC2DAsync(TimeSpan timeout)
+        internal override async Task EnableTelemetryAndC2DAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionX509)}.{nameof(EnableTelemetryAndC2DAsync)}");
+
+            if (this.deviceClientEndpointIdentity != deviceClientEndpointIdentity)
+            {
+                throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionX509)}.{nameof(OpenAsync)}" + "DeviceClientEndpointIdentity crisis");
+            }
 
             var timeoutHelper = new TimeoutHelper(timeout);
 
@@ -157,27 +188,41 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     await workerAmqpClientSession.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
                     workerAmqpClientSession.OnAmqpClientSessionClosed += WorkerAmqpClientSession_OnAmqpClientSessionClosed;
                 }
-                await workerAmqpClientSession.OpenLinkTelemetryAndC2DAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+                await workerAmqpClientSession.OpenLinkTelemetryAndC2DAsync(deviceClientEndpointIdentity, timeoutHelper.RemainingTime(), useLinkBasedTokenRefresh, null).ConfigureAwait(false);
             }
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionX509)}.{nameof(EnableTelemetryAndC2DAsync)}");
         }
 
-        internal override Task DisableTelemetryAndC2DAsync(TimeSpan timeout)
+        internal override async Task DisableTelemetryAndC2DAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, TimeSpan timeout)
         {
-            throw new NotImplementedException();
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionX509)}.{nameof(DisableTelemetryAndC2DAsync)}");
+
+            if (this.deviceClientEndpointIdentity != deviceClientEndpointIdentity)
+            {
+                throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionX509)}.{nameof(OpenAsync)}" + "DeviceClientEndpointIdentity crisis");
+            }
+
+            await workerAmqpClientSession.CloseLinkTelemetryAsync(deviceClientEndpointIdentity, timeout).ConfigureAwait(false);
+
+            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionX509)}.{nameof(DisableTelemetryAndC2DAsync)}");
         }
 
-        internal override async Task<Outcome> SendTelemetrMessageAsync(AmqpMessage message, TimeSpan timeout)
+        internal override async Task<Outcome> SendTelemetrMessageAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, AmqpMessage message, TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionX509)}.{nameof(SendTelemetrMessageAsync)}");
+
+            if (this.deviceClientEndpointIdentity != deviceClientEndpointIdentity)
+            {
+                throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionX509)}.{nameof(OpenAsync)}" + "DeviceClientEndpointIdentity crisis");
+            }
 
             Outcome outcome;
 
             // Create telemetry links on demand
-            await EnableTelemetryAndC2DAsync(timeout).ConfigureAwait(false);
+            await EnableTelemetryAndC2DAsync(deviceClientEndpointIdentity, timeout).ConfigureAwait(false);
 
             // Send the message
-            outcome = await workerAmqpClientSession.SendTelemetryMessageAsync(message, timeout).ConfigureAwait(false);
+            outcome = await workerAmqpClientSession.SendTelemetryMessageAsync(deviceClientEndpointIdentity, message, timeout).ConfigureAwait(false);
 
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionX509)}.{nameof(SendTelemetrMessageAsync)}");
 
@@ -186,9 +231,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
         #endregion
 
         #region Methods
-        internal override async Task EnableMethodsAsync(string correlationid, Func<MethodRequestInternal, Task> methodReceivedListener, TimeSpan timeout)
+        internal override async Task EnableMethodsAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, string correlationid, Func<MethodRequestInternal, Task> methodReceivedListener, TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionX509)}.{nameof(EnableMethodsAsync)}");
+
+            if (this.deviceClientEndpointIdentity != deviceClientEndpointIdentity)
+            {
+                throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionX509)}.{nameof(OpenAsync)}" + "DeviceClientEndpointIdentity crisis");
+            }
 
             var timeoutHelper = new TimeoutHelper(timeout);
 
@@ -201,24 +251,38 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     workerAmqpClientSession.OnAmqpClientSessionClosed += WorkerAmqpClientSession_OnAmqpClientSessionClosed;
                 }
 
-                await workerAmqpClientSession.OpenLinkMethodsAsync(correlationid, methodReceivedListener, timeoutHelper.RemainingTime()).ConfigureAwait(false);
+                await workerAmqpClientSession.OpenLinkMethodsAsync(deviceClientEndpointIdentity, correlationid, methodReceivedListener, timeoutHelper.RemainingTime(), useLinkBasedTokenRefresh, null).ConfigureAwait(false);
             }
 
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionX509)}.{nameof(EnableMethodsAsync)}");
         }
 
-        internal override async Task DisableMethodsAsync(TimeSpan timeout)
+        internal override async Task DisableMethodsAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, TimeSpan timeout)
         {
-            await workerAmqpClientSession.CloseLinkMethodsAsync(timeout).ConfigureAwait(false);
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionX509)}.{nameof(DisableMethodsAsync)}");
+
+            if (this.deviceClientEndpointIdentity != deviceClientEndpointIdentity)
+            {
+                throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionX509)}.{nameof(OpenAsync)}" + "DeviceClientEndpointIdentity crisis");
+            }
+
+            await workerAmqpClientSession.CloseLinkMethodsAsync(deviceClientEndpointIdentity, timeout).ConfigureAwait(false);
+
+            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionX509)}.{nameof(DisableMethodsAsync)}");
         }
 
-        internal override async Task<Outcome> SendMethodResponseAsync(AmqpMessage methodResponse, TimeSpan timeout)
+        internal override async Task<Outcome> SendMethodResponseAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, AmqpMessage methodResponse, TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionX509)}.{nameof(SendMethodResponseAsync)}");
 
+            if (this.deviceClientEndpointIdentity != deviceClientEndpointIdentity)
+            {
+                throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionX509)}.{nameof(OpenAsync)}" + "DeviceClientEndpointIdentity crisis");
+            }
+
             Outcome outcome;
 
-            outcome = await workerAmqpClientSession.SendMethodResponseAsync(methodResponse, timeout).ConfigureAwait(false);
+            outcome = await workerAmqpClientSession.SendMethodResponseAsync(deviceClientEndpointIdentity, methodResponse, timeout).ConfigureAwait(false);
 
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionX509)}.{nameof(SendMethodResponseAsync)}");
 
@@ -227,9 +291,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
         #endregion
 
         #region Twin
-        internal override async Task EnableTwinPatchAsync(string correlationid, Action<AmqpMessage> onTwinPathReceivedListener, TimeSpan timeout)
+        internal override async Task EnableTwinPatchAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, string correlationid, Action<AmqpMessage> onTwinPathReceivedListener, TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionX509)}.{nameof(EnableTwinPatchAsync)}");
+
+            if (this.deviceClientEndpointIdentity != deviceClientEndpointIdentity)
+            {
+                throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionX509)}.{nameof(OpenAsync)}" + "DeviceClientEndpointIdentity crisis");
+            }
 
             var timeoutHelper = new TimeoutHelper(timeout);
 
@@ -242,24 +311,38 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     workerAmqpClientSession.OnAmqpClientSessionClosed += WorkerAmqpClientSession_OnAmqpClientSessionClosed;
                 }
 
-                await workerAmqpClientSession.OpenLinkTwinAsync(correlationid, onTwinPathReceivedListener, timeoutHelper.RemainingTime()).ConfigureAwait(false);
+                await workerAmqpClientSession.OpenLinkTwinAsync(deviceClientEndpointIdentity, correlationid, onTwinPathReceivedListener, timeoutHelper.RemainingTime(), useLinkBasedTokenRefresh, null).ConfigureAwait(false);
             }
 
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionX509)}.{nameof(EnableTwinPatchAsync)}");
         }
 
-        internal override async Task DisableTwinAsync(TimeSpan timeout)
+        internal override async Task DisableTwinAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, TimeSpan timeout)
         {
-            await workerAmqpClientSession.CloseLinkTwinAsync(timeout).ConfigureAwait(false);
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionX509)}.{nameof(DisableTwinAsync)}");
+
+            if (this.deviceClientEndpointIdentity != deviceClientEndpointIdentity)
+            {
+                throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionX509)}.{nameof(OpenAsync)}" + "DeviceClientEndpointIdentity crisis");
+            }
+
+            await workerAmqpClientSession.CloseLinkTwinAsync(deviceClientEndpointIdentity, timeout).ConfigureAwait(false);
+
+            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionX509)}.{nameof(DisableTwinAsync)}");
         }
 
-        internal override async Task<Outcome> SendTwinMessageAsync(AmqpMessage twinMessage, TimeSpan timeout)
+        internal override async Task<Outcome> SendTwinMessageAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, AmqpMessage twinMessage, TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionX509)}.{nameof(SendTwinMessageAsync)}");
 
+            if (this.deviceClientEndpointIdentity != deviceClientEndpointIdentity)
+            {
+                throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionX509)}.{nameof(OpenAsync)}" + "DeviceClientEndpointIdentity crisis");
+            }
+
             Outcome outcome;
 
-            outcome = await workerAmqpClientSession.SendTwinMessageAsync(twinMessage, timeout).ConfigureAwait(false);
+            outcome = await workerAmqpClientSession.SendTwinMessageAsync(deviceClientEndpointIdentity, twinMessage, timeout).ConfigureAwait(false);
 
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionX509)}.{nameof(SendMethodResponseAsync)}");
 
@@ -268,15 +351,20 @@ namespace Microsoft.Azure.Devices.Client.Transport
         #endregion
 
         #region Events
-        internal override async Task EnableEventsReceiveAsync(Action<AmqpMessage> onEventsReceivedListener, TimeSpan timeout)
+        internal override async Task EnableEventsReceiveAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, Action<AmqpMessage> onEventsReceivedListener, TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionX509)}.{nameof(EnableEventsReceiveAsync)}");
+
+            if (this.deviceClientEndpointIdentity != deviceClientEndpointIdentity)
+            {
+                throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionX509)}.{nameof(OpenAsync)}" + "DeviceClientEndpointIdentity crisis");
+            }
 
             var timeoutHelper = new TimeoutHelper(timeout);
 
             if (isConnectionAuthenticated)
             {
-                await workerAmqpClientSession.OpenLinkEventsAsync(onEventsReceivedListener, timeoutHelper.RemainingTime()).ConfigureAwait(false);
+                await workerAmqpClientSession.OpenLinkEventsAsync(deviceClientEndpointIdentity, onEventsReceivedListener, timeoutHelper.RemainingTime(), useLinkBasedTokenRefresh).ConfigureAwait(false);
             }
 
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionX509)}.{nameof(EnableEventsReceiveAsync)}");
@@ -284,15 +372,20 @@ namespace Microsoft.Azure.Devices.Client.Transport
         #endregion
 
         #region Receive
-        internal override async Task<Message> ReceiveAsync(TimeSpan timeout)
+        internal override async Task<Message> ReceiveAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionX509)}.{nameof(ReceiveAsync)}");
+
+            if (this.deviceClientEndpointIdentity != deviceClientEndpointIdentity)
+            {
+                throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionX509)}.{nameof(OpenAsync)}" + "DeviceClientEndpointIdentity crisis");
+            }
 
             Message message;
             AmqpMessage amqpMessage;
 
             // Create telemetry links on demand
-            await EnableTelemetryAndC2DAsync(timeout).ConfigureAwait(false);
+            await EnableTelemetryAndC2DAsync(deviceClientEndpointIdentity, timeout).ConfigureAwait(false);
 
             amqpMessage = await workerAmqpClientSession.telemetryReceiverLink.ReceiveMessageAsync(timeout).ConfigureAwait(false);
 
@@ -315,9 +408,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
         #endregion
 
         #region Accept-Dispose
-        internal override async Task<Outcome> DisposeMessageAsync(string lockToken, Outcome outcome, TimeSpan timeout)
+        internal override async Task<Outcome> DisposeMessageAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, string lockToken, Outcome outcome, TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionX509)}.{nameof(DisposeMessageAsync)}");
+
+            if (this.deviceClientEndpointIdentity != deviceClientEndpointIdentity)
+            {
+                throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionX509)}.{nameof(OpenAsync)}" + "DeviceClientEndpointIdentity crisis");
+            }
 
             ArraySegment<byte> deliveryTag = ConvertToDeliveryTag(lockToken);
 
@@ -333,9 +431,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return disposeOutcome;
         }
 
-        internal override void DisposeTwinPatchDelivery(AmqpMessage amqpMessage)
+        internal override void DisposeTwinPatchDelivery(DeviceClientEndpointIdentity deviceClientEndpointIdentity, AmqpMessage amqpMessage)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionX509)}.{nameof(DisposeTwinPatchDelivery)}");
+
+            if (this.deviceClientEndpointIdentity != deviceClientEndpointIdentity)
+            {
+                throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionX509)}.{nameof(OpenAsync)}" + "DeviceClientEndpointIdentity crisis");
+            }
 
             workerAmqpClientSession.DisposeTwinPatchDelivery(amqpMessage);
 

@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.Client
             return value;
         }
 
-        internal static string GetNewStringGuid(string postfix)
+        internal static string GetNewStringGuid(string postfix = "")
         {
 #if !NETSTANDARD1_3
             return Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture) + postfix;

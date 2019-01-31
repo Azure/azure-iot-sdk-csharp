@@ -34,8 +34,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         Func<string, Message, Task> eventReceivedListener;
         Action<TwinCollection> onDesiredStatePatchListener;
 
-        string methodConnectionCorrelationId = CommonResources.GetNewStringGuid("");
-        string twinConnectionCorrelationId = CommonResources.GetNewStringGuid("");
+        string methodConnectionCorrelationId = CommonResources.GetNewStringGuid();
+        string twinConnectionCorrelationId = CommonResources.GetNewStringGuid();
 
         const int ResponseTimeoutInSeconds = 300;
 
@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             TransportType transportType = transportSettings.GetTransportType();
 
-            this.openTimeout = transportSettings.OpenTimeout;
+            openTimeout = transportSettings.OpenTimeout;
             this.operationTimeout = transportSettings.OperationTimeout;
             this.prefetchCount = transportSettings.PrefetchCount;
             this.iotHubConnectionString = connectionString;
@@ -105,7 +105,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await amqpClientConnection.OpenAsync(this.openTimeout).ConfigureAwait(false);
+                await amqpClientConnection.OpenAsync(this.deviceClientEndpointIdentity, openTimeout).ConfigureAwait(false);
             }
             catch (Exception exception) when (!exception.IsFatal() && !(exception is OperationCanceledException))
             {
@@ -146,7 +146,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                 _transportShouldRetry.TrySetCanceled();
 
-                await amqpClientConnection.CloseAsync(this.openTimeout).ConfigureAwait(false);
+                await amqpClientConnection.CloseAsync(openTimeout).ConfigureAwait(false);
 
                 amqpClientConnectionManager.RemoveClientConnection(deviceClientEndpointIdentity);
             }
@@ -166,7 +166,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                Outcome outcome = await amqpClientConnection.SendTelemetrMessageAsync(message.ToAmqpMessage(), this.operationTimeout).ConfigureAwait(false);
+                Outcome outcome = await amqpClientConnection.SendTelemetrMessageAsync(deviceClientEndpointIdentity, message.ToAmqpMessage(), this.operationTimeout).ConfigureAwait(false);
 
                 if (outcome.DescriptorCode != Accepted.Code)
                 {
@@ -206,7 +206,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 using (AmqpMessage amqpMessage = AmqpMessage.Create(messageList))
                 {
                     amqpMessage.MessageFormat = AmqpConstants.AmqpBatchedMessageFormat;
-                    outcome = await amqpClientConnection.SendTelemetrMessageAsync(amqpMessage, this.operationTimeout).ConfigureAwait(false);
+                    outcome = await amqpClientConnection.SendTelemetrMessageAsync(deviceClientEndpointIdentity, amqpMessage, this.operationTimeout).ConfigureAwait(false);
                 }
 
                 if (outcome.DescriptorCode != Accepted.Code)
@@ -229,7 +229,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                message = await amqpClientConnection.ReceiveAsync(operationTimeout).ConfigureAwait(false);
+                message = await amqpClientConnection.ReceiveAsync(deviceClientEndpointIdentity, operationTimeout).ConfigureAwait(false);
 
             }
             catch (Exception exception) when (!exception.IsFatal() && !(exception is OperationCanceledException))
@@ -256,14 +256,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                 if (String.IsNullOrEmpty(methodConnectionCorrelationId))
                 {
-                    methodConnectionCorrelationId = CommonResources.GetNewStringGuid("");
+                    methodConnectionCorrelationId = CommonResources.GetNewStringGuid();
                 }
 
-                await amqpClientConnection.EnableMethodsAsync(methodConnectionCorrelationId, methodReceivedListener, this.openTimeout).ConfigureAwait(false);
+                await amqpClientConnection.EnableMethodsAsync(deviceClientEndpointIdentity, methodConnectionCorrelationId, methodReceivedListener, openTimeout).ConfigureAwait(false);
 
                 if (methodReceivedListener != null)
                 {
-                    methodConnectionCorrelationId = CommonResources.GetNewStringGuid("");
+                    methodConnectionCorrelationId = CommonResources.GetNewStringGuid();
                 }
             }
             catch (Exception exception) when (!exception.IsFatal() && !(exception is OperationCanceledException))
@@ -284,7 +284,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await amqpClientConnection.DisableMethodsAsync(this.openTimeout).ConfigureAwait(false);
+                await amqpClientConnection.DisableMethodsAsync(deviceClientEndpointIdentity, openTimeout).ConfigureAwait(false);
             }
             finally
             {
@@ -303,7 +303,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 Outcome outcome;
                 using (AmqpMessage amqpMessage = methodResponse.ToAmqpMessage())
                 {
-                    outcome = await amqpClientConnection.SendMethodResponseAsync(amqpMessage, this.operationTimeout).ConfigureAwait(false);
+                    outcome = await amqpClientConnection.SendMethodResponseAsync(deviceClientEndpointIdentity, amqpMessage, this.operationTimeout).ConfigureAwait(false);
                 }
                 if (outcome.DescriptorCode != Accepted.Code)
                 {
@@ -328,14 +328,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                 if (String.IsNullOrEmpty(twinConnectionCorrelationId))
                 {
-                    twinConnectionCorrelationId = CommonResources.GetNewStringGuid("");
+                    twinConnectionCorrelationId = CommonResources.GetNewStringGuid();
                 }
 
-                await amqpClientConnection.EnableTwinPatchAsync(twinConnectionCorrelationId, onTwinPatchReceived, this.openTimeout).ConfigureAwait(false);
+                await amqpClientConnection.EnableTwinPatchAsync(deviceClientEndpointIdentity, twinConnectionCorrelationId, onTwinPatchReceived, openTimeout).ConfigureAwait(false);
 
                 if (onDesiredStatePatchListener != null)
                 {
-                    twinConnectionCorrelationId = CommonResources.GetNewStringGuid("");
+                    twinConnectionCorrelationId = CommonResources.GetNewStringGuid();
                 }
             }
             catch (Exception exception) when (!exception.IsFatal() && !(exception is OperationCanceledException))
@@ -350,7 +350,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private void onTwinPatchReceived(AmqpMessage message)
         {
-            amqpClientConnection.DisposeTwinPatchDelivery(message);
+            amqpClientConnection.DisposeTwinPatchDelivery(deviceClientEndpointIdentity, message);
 
             string correlationId = message.Properties?.CorrelationId?.ToString();
             if (correlationId != null)
@@ -385,7 +385,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await amqpClientConnection.DisableTwinAsync(this.openTimeout).ConfigureAwait(false);
+                await amqpClientConnection.DisableTwinAsync(deviceClientEndpointIdentity, openTimeout).ConfigureAwait(false);
             }
             finally
             {
@@ -461,7 +461,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 var taskCompletionSource = new TaskCompletionSource<AmqpMessage>();
                 this.twinResponseCompletions[correlationId] = taskCompletionSource;
 
-                outcome = await amqpClientConnection.SendTwinMessageAsync(amqpMessage, this.operationTimeout).ConfigureAwait(false);
+                outcome = await amqpClientConnection.SendTwinMessageAsync(deviceClientEndpointIdentity, amqpMessage, this.operationTimeout).ConfigureAwait(false);
 
                 if (outcome.DescriptorCode != Accepted.Code)
                 {
@@ -502,7 +502,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await amqpClientConnection.EnableEventsReceiveAsync(onEventsReceived, this.openTimeout).ConfigureAwait(false);
+                await amqpClientConnection.EnableEventsReceiveAsync(deviceClientEndpointIdentity, onEventsReceived, openTimeout).ConfigureAwait(false);
             }
             finally
             {
@@ -572,7 +572,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 // the DeviceBoundReceivingLink or the EventsReceivingLink. 
                 // If this changes (i.e. modules are able to receive C2D messages, or devices are able to receive telemetry), this logic 
                 // will have to be updated.
-                disposeOutcome = await amqpClientConnection.DisposeMessageAsync(lockToken, outcome, this.operationTimeout).ConfigureAwait(false);
+                disposeOutcome = await amqpClientConnection.DisposeMessageAsync(deviceClientEndpointIdentity, lockToken, outcome, this.operationTimeout).ConfigureAwait(false);
             }
             catch (Exception exception) when (!exception.IsFatal() && !(exception is OperationCanceledException))
             {

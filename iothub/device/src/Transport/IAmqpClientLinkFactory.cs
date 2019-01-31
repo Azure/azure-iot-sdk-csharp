@@ -48,6 +48,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
     /// </summary>
     internal interface IAmqpClientLinkFactory
     {
-        AmqpClientLink Create(AmqpClientLinkType amqpClientLinkType, AmqpClientSession amqpClientSession, DeviceClientEndpointIdentity deviceClientEndpointIdentity, TimeSpan timeout, string correlationid = "");
+        AmqpClientLink Create(
+            AmqpClientLinkType amqpClientLinkType,
+            AmqpClientSession amqpClientSession,
+            DeviceClientEndpointIdentity deviceClientEndpointIdentity,
+            TimeSpan timeout,
+            string correlationid = "",
+            bool useTokenRefresher = false,
+            AmqpClientSession amqpAuthenticationSession = null);
     }
 }

@@ -29,9 +29,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 throw new NotImplementedException();
             }
-            else if (deviceClientEndpointIdentity.GetType() == typeof(DeviceClientEndpointIdentitySASMux))
+            else if (deviceClientEndpointIdentity.GetType() == typeof(DeviceClientEndpointIdentitySasMux))
             {
-                throw new NotImplementedException();
+                return new AmqpClientConnectionSasMux(deviceClientEndpointIdentity);
             }
             else
             {

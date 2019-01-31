@@ -34,10 +34,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
         static readonly Lazy<bool> DisableServerCertificateValidation =
             new Lazy<bool>(InitializeDisableServerCertificateValidation);
 
-        internal DeviceClientEndpointIdentity deviceClientEndpointIdentity { get; private set; }
-
-        internal IotHubConnectionString iotHubConnectionString { get; private set; }
-
         internal AmqpSettings amqpSettings { get; private set; }
         internal AmqpTransportSettings amqpTransportSettings { get; private set; }
         internal AmqpConnectionSettings amqpConnectionSettings { get; private set; }
@@ -46,13 +42,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public AmqpConnection amqpConnection { get; protected set; }
 
-        internal AmqpClientConnection(DeviceClientEndpointIdentity deviceClientEndpointIdentity)
+        string hostName;
+
+        internal AmqpClientConnection(AmqpTransportSettings amqpTransportSettings, string hostName)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnection)}");
 
-            this.deviceClientEndpointIdentity = deviceClientEndpointIdentity;
-            this.amqpTransportSettings = deviceClientEndpointIdentity.amqpTransportSettings;
-            this.iotHubConnectionString = deviceClientEndpointIdentity.iotHubConnectionString;
+            this.amqpTransportSettings = amqpTransportSettings;
+            this.hostName = hostName;
 
             this.amqpSettings = CreateAmqpSettings();
             this.amqpConnectionSettings = CreateAmqpConnectionSettings();
@@ -60,10 +57,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnection)}");
         }
+
+        internal abstract bool AddToMux(DeviceClientEndpointIdentity deviceClientEndpointIdentity);
         #endregion
 
         #region Open-Close
-        internal abstract Task OpenAsync(TimeSpan timeout);
+        internal abstract Task OpenAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, TimeSpan timeout);
         internal abstract Task CloseAsync(TimeSpan timeout);
         internal abstract event EventHandler OnAmqpClientConnectionClosed;
         #endregion
@@ -105,34 +104,34 @@ namespace Microsoft.Azure.Devices.Client.Transport
         #endregion
 
         #region Telemetry
-        internal abstract Task EnableTelemetryAndC2DAsync(TimeSpan timeout);
-        internal abstract Task DisableTelemetryAndC2DAsync(TimeSpan timeout);
-        internal abstract Task<Outcome> SendTelemetrMessageAsync(AmqpMessage message, TimeSpan timeout);
+        internal abstract Task EnableTelemetryAndC2DAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, TimeSpan timeout);
+        internal abstract Task DisableTelemetryAndC2DAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, TimeSpan timeout);
+        internal abstract Task<Outcome> SendTelemetrMessageAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, AmqpMessage message, TimeSpan timeout);
         #endregion
 
         #region Methods
-        internal abstract Task EnableMethodsAsync(string correlationid, Func<MethodRequestInternal, Task> methodReceivedListener, TimeSpan timeout);
-        internal abstract Task DisableMethodsAsync(TimeSpan timeout);
-        internal abstract Task<Outcome> SendMethodResponseAsync(AmqpMessage methodResponse, TimeSpan timeout);
+        internal abstract Task EnableMethodsAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, string correlationid, Func<MethodRequestInternal, Task> methodReceivedListener, TimeSpan timeout);
+        internal abstract Task DisableMethodsAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, TimeSpan timeout);
+        internal abstract Task<Outcome> SendMethodResponseAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, AmqpMessage methodResponse, TimeSpan timeout);
         #endregion
 
         #region Twin
-        internal abstract Task EnableTwinPatchAsync(string correlationid, Action<AmqpMessage> onTwinPathReceivedListener, TimeSpan timeout);
-        internal abstract Task DisableTwinAsync(TimeSpan timeout);
-        internal abstract Task<Outcome> SendTwinMessageAsync(AmqpMessage twinMessage, TimeSpan timeout);
+        internal abstract Task EnableTwinPatchAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, string correlationid, Action<AmqpMessage> onTwinPathReceivedListener, TimeSpan timeout);
+        internal abstract Task DisableTwinAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, TimeSpan timeout);
+        internal abstract Task<Outcome> SendTwinMessageAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, AmqpMessage twinMessage, TimeSpan timeout);
         #endregion
 
         #region Events
-        internal abstract Task EnableEventsReceiveAsync(Action<AmqpMessage> onEventsReceivedListener, TimeSpan timeout);
+        internal abstract Task EnableEventsReceiveAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, Action<AmqpMessage> onEventsReceivedListener, TimeSpan timeout);
         #endregion
 
         #region Receive
-        internal abstract Task<Message> ReceiveAsync(TimeSpan timeout);
+        internal abstract Task<Message> ReceiveAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, TimeSpan timeout);
         #endregion
 
         #region Accept-Dispose
-        internal abstract Task<Outcome> DisposeMessageAsync(string lockToken, Outcome outcome, TimeSpan timeout);
-        internal abstract void DisposeTwinPatchDelivery(AmqpMessage amqpMessage);
+        internal abstract Task<Outcome> DisposeMessageAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, string lockToken, Outcome outcome, TimeSpan timeout);
+        internal abstract void DisposeTwinPatchDelivery(DeviceClientEndpointIdentity deviceClientEndpointIdentity, AmqpMessage amqpMessage);
         #endregion
 
         #region Helpers
@@ -152,8 +151,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return new AmqpConnectionSettings()
             {
                 MaxFrameSize = AmqpConstants.DefaultMaxFrameSize,
-                ContainerId = CommonResources.GetNewStringGuid(""),
-                HostName = iotHubConnectionString.HostName
+                ContainerId = CommonResources.GetNewStringGuid(),
+                HostName = hostName
             };
         }
 
@@ -163,13 +162,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             var tcpTransportSettings = new TcpTransportSettings()
             {
-                Host = iotHubConnectionString.HostName,
+                Host = hostName,
                 Port = AmqpConstants.DefaultSecurePort
             };
 
             var tlsTransportSettings = new TlsTransportSettings(tcpTransportSettings)
             {
-                TargetHost = iotHubConnectionString.HostName,
+                TargetHost = hostName,
                 Certificate = null,
                 CertificateValidationCallback = this.amqpTransportSettings.RemoteCertificateValidationCallback ?? OnRemoteCertificateValidation
             };
@@ -193,7 +192,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         }
 #endif
 
-        protected async Task<TransportBase> CreateClientWebSocketTransportAsync(TimeSpan timeout)
+        protected async Task<TransportBase> CreateClientWebSocketTransportAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, TimeSpan timeout)
         {
             try
             {
@@ -205,7 +204,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             // NETSTANDARD1_3 implementation doesn't set client certs, so we want to tell the IoT Hub to not ask for them
                             additionalQueryParams = "?iothub-no-client-cert=true";
 #endif
-                Uri websocketUri = new Uri(WebSocketConstants.Scheme + iotHubConnectionString.HostName + ":" + WebSocketConstants.SecurePort + WebSocketConstants.UriSuffix + additionalQueryParams);
+                Uri websocketUri = new Uri(WebSocketConstants.Scheme + deviceClientEndpointIdentity.iotHubConnectionString.HostName + ":" + WebSocketConstants.SecurePort + WebSocketConstants.UriSuffix + additionalQueryParams);
                 // Use Legacy WebSocket if it is running on Windows 7 or older. Windows 7/Windows 2008 R2 is version 6.1
 #if NET451
                             if (Environment.OSVersion.Version.Major < 6 || (Environment.OSVersion.Version.Major == 6 && Environment.OSVersion.Version.Minor <= 1))

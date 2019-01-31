@@ -18,13 +18,21 @@ namespace Microsoft.Azure.Devices.Client.Transport
     {
         const string linkNamePostFix = "_TelemetrySenderLink";
 
-        internal AmqpClientTelemetrySenderLink(AmqpClientLinkType amqpClientLinkType, AmqpClientSession amqpClientSession, DeviceClientEndpointIdentity deviceClientEndpointIdentity, TimeSpan timeout, string correlationId = "")
-            : base(amqpClientLinkType, amqpClientSession, deviceClientEndpointIdentity, timeout, correlationId)
+        internal AmqpClientTelemetrySenderLink(
+            AmqpClientLinkType amqpClientLinkType, 
+            AmqpClientSession amqpClientSession, 
+            DeviceClientEndpointIdentity deviceClientEndpointIdentity, 
+            TimeSpan timeout,
+            string correlationId,
+            bool useTokenRefresher,
+            AmqpClientSession amqpAuthenticationSession
+            )
+            : base(amqpClientLinkType, amqpClientSession, deviceClientEndpointIdentity, correlationId, useTokenRefresher, amqpAuthenticationSession)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientTelemetrySenderLink)}");
 
-            string path = BuildPath(CommonConstants.DeviceEventPathTemplate, CommonConstants.ModuleEventPathTemplate);
-            Uri uri = deviceClientEndpointIdentity.iotHubConnectionString.BuildLinkAddress(path);
+            linkPath = BuildPath(CommonConstants.DeviceEventPathTemplate, CommonConstants.ModuleEventPathTemplate);
+            Uri uri = deviceClientEndpointIdentity.iotHubConnectionString.BuildLinkAddress(linkPath);
 
             amqpLinkSettings = new AmqpLinkSettings
             {

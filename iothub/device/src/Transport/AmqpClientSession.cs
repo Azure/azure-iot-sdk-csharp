@@ -130,7 +130,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         #endregion
 
         #region Authentication
-        internal async Task<DateTime> AuthenticateCbs(TimeSpan timeout)
+        internal async Task<DateTime> AuthenticateCbs(DeviceClientEndpointIdentity deviceClientEndpointIdentity, TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientSession)}.{nameof(AuthenticateCbs)}");
 
@@ -140,15 +140,15 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 if (cbsLink == null)
                 {
-                    cbsLink = new AmqpClientCbsLink(this, amqpClientConnection.deviceClientEndpointIdentity);
+                    cbsLink = new AmqpClientCbsLink(this);
                 }
             }
             else
             {
-                throw new InvalidOperationException("Session is not opened");
+                throw new InvalidOperationException("Authentication session is not opened");
             }
 
-            expiresAtUtc = await cbsLink.AuthenticateCbsAsync(timeout).ConfigureAwait(false);
+            expiresAtUtc = await cbsLink.AuthenticateCbsAsync(deviceClientEndpointIdentity, "", timeout).ConfigureAwait(false);
 
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientSession)}.{nameof(AuthenticateCbs)}");
 
@@ -157,22 +157,23 @@ namespace Microsoft.Azure.Devices.Client.Transport
         #endregion
 
         #region Telemetry
-        internal async Task OpenLinkTelemetryAndC2DAsync(TimeSpan timeout)
+        internal async Task OpenLinkTelemetryAndC2DAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, TimeSpan timeout, bool useTokenRefresher, AmqpClientSession amqpAuthenticationSession)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientSession)}.{nameof(OpenLinkTelemetryAndC2DAsync)}");
 
             if (isSessionOpened)
             {
+                string correlationId = "";
                 if (telemetrySenderLink == null)
                 {
-                    telemetrySenderLink = amqpClientLinkFactory.Create(AmqpClientLinkType.TelemetrySender, this, amqpClientConnection.deviceClientEndpointIdentity, timeout);
+                    telemetrySenderLink = amqpClientLinkFactory.Create(AmqpClientLinkType.TelemetrySender, this, deviceClientEndpointIdentity, timeout, correlationId, useTokenRefresher, amqpAuthenticationSession);
                     await telemetrySenderLink.OpenAsync(timeout).ConfigureAwait(false);
                     telemetrySenderLink.OnAmqpClientLinkClosed += TelemetrySendingLink_OnAmqpClientLinkClosed;
                 }
 
                 if (telemetryReceiverLink == null)
                 {
-                    telemetryReceiverLink = amqpClientLinkFactory.Create(AmqpClientLinkType.C2D, this, amqpClientConnection.deviceClientEndpointIdentity, timeout);
+                    telemetryReceiverLink = amqpClientLinkFactory.Create(AmqpClientLinkType.C2D, this, deviceClientEndpointIdentity, timeout, correlationId, useTokenRefresher, amqpAuthenticationSession);
                     await telemetryReceiverLink.OpenAsync(timeout).ConfigureAwait(false);
                     telemetryReceiverLink.OnAmqpClientLinkClosed += TelemetryReceivingLink_OnAmqpClientLinkClosed;
                 }
@@ -185,7 +186,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientSession)}.{nameof(OpenLinkTelemetryAndC2DAsync)}");
         }
 
-        internal async Task CloseLinkTelemetryAsync(TimeSpan timeout)
+        internal async Task CloseLinkTelemetryAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientSession)}.{nameof(CloseLinkTelemetryAsync)}");
 
@@ -211,7 +212,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             telemetryReceiverLink = null;
         }
 
-        internal async Task<Outcome> SendTelemetryMessageAsync(AmqpMessage amqpMessage, TimeSpan operationTimeout)
+        internal async Task<Outcome> SendTelemetryMessageAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, AmqpMessage amqpMessage, TimeSpan operationTimeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientSession)}.{nameof(SendTelemetryMessageAsync)}");
 
@@ -240,7 +241,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
         #endregion
 
         #region Methods
-        internal async Task OpenLinkMethodsAsync(string correlationid, Func<MethodRequestInternal, Task> methodReceivedListener, TimeSpan timeout)
+        internal async Task OpenLinkMethodsAsync(
+            DeviceClientEndpointIdentity deviceClientEndpointIdentity, 
+            string correlationId, 
+            Func<MethodRequestInternal, Task> methodReceivedListener, 
+            TimeSpan timeout, 
+            bool useTokenRefresher, 
+            AmqpClientSession amqpAuthenticationSession
+            )
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientSession)}.{nameof(OpenLinkMethodsAsync)}");
 
@@ -248,14 +256,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 if (methodsSenderLink == null)
                 {
-                    methodsSenderLink = amqpClientLinkFactory.Create(AmqpClientLinkType.MethodsSender, this, amqpClientConnection.deviceClientEndpointIdentity, timeout, correlationid);
+                    methodsSenderLink = amqpClientLinkFactory.Create(AmqpClientLinkType.MethodsSender, this, deviceClientEndpointIdentity, timeout, correlationId, useTokenRefresher, amqpAuthenticationSession);
                     methodsSenderLink.OnAmqpClientLinkClosed += MethodsSendingLink_OnAmqpClientLinkClosed;
                     await methodsSenderLink.OpenAsync(timeout).ConfigureAwait(false);
                 }
 
                 if (methodsReceiverLink == null)
                 {
-                    methodsReceiverLink = amqpClientLinkFactory.Create(AmqpClientLinkType.MethodsReceiver, this, amqpClientConnection.deviceClientEndpointIdentity, timeout, correlationid);
+                    methodsReceiverLink = amqpClientLinkFactory.Create(AmqpClientLinkType.MethodsReceiver, this, deviceClientEndpointIdentity, timeout, correlationId, useTokenRefresher, amqpAuthenticationSession);
                     methodsReceiverLink.OnAmqpClientLinkClosed += MethodsReceivingLink_OnAmqpClientLinkClosed;
                     await methodsReceiverLink.OpenAsync(timeout).ConfigureAwait(false);
 
@@ -271,7 +279,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientSession)}.{nameof(OpenLinkMethodsAsync)}");
         }
 
-        internal async Task CloseLinkMethodsAsync(TimeSpan timeout)
+        internal async Task CloseLinkMethodsAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientSession)}.{nameof(CloseLinkMethodsAsync)}");
 
@@ -285,7 +293,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientSession)}.{nameof(CloseLinkMethodsAsync)}");
         }
 
-        internal async Task<Outcome> SendMethodResponseAsync(AmqpMessage amqpMessage, TimeSpan operationTimeout)
+        internal async Task<Outcome> SendMethodResponseAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, AmqpMessage amqpMessage, TimeSpan operationTimeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientSession)}.{nameof(SendMethodResponseAsync)}");
 
@@ -338,7 +346,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
         #endregion
 
         #region Twin
-        internal async Task OpenLinkTwinAsync(string correlationid, Action<AmqpMessage> onTwinPathReceivedListener, TimeSpan timeout)
+        internal async Task OpenLinkTwinAsync(
+            DeviceClientEndpointIdentity deviceClientEndpointIdentity, 
+            string correlationId, 
+            Action<AmqpMessage> onTwinPathReceivedListener, 
+            TimeSpan timeout,
+            bool useTokenRefresher,
+            AmqpClientSession amqpAuthenticationSession
+            )
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientSession)}.{nameof(OpenLinkTwinAsync)}");
 
@@ -346,14 +361,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 if (twinSenderLink == null)
                 {
-                    twinSenderLink = amqpClientLinkFactory.Create(AmqpClientLinkType.TwinSender, this, amqpClientConnection.deviceClientEndpointIdentity, timeout);
+                    twinSenderLink = amqpClientLinkFactory.Create(AmqpClientLinkType.TwinSender, this, deviceClientEndpointIdentity, timeout, correlationId, useTokenRefresher, amqpAuthenticationSession);
                     twinSenderLink.OnAmqpClientLinkClosed += TwinSendingLink_OnAmqpClientLinkClosed;
                     await twinSenderLink.OpenAsync(timeout).ConfigureAwait(false);
                 }
 
                 if (twinReceiverLink == null)
                 {
-                    twinReceiverLink = amqpClientLinkFactory.Create(AmqpClientLinkType.TwinReceiver, this, amqpClientConnection.deviceClientEndpointIdentity, timeout);
+                    twinReceiverLink = amqpClientLinkFactory.Create(AmqpClientLinkType.TwinReceiver, this, deviceClientEndpointIdentity, timeout, correlationId, useTokenRefresher, amqpAuthenticationSession);
                     twinReceiverLink.OnAmqpClientLinkClosed += TwinReceivingLink_OnAmqpClientLinkClosed;
                     await twinReceiverLink.OpenAsync(timeout).ConfigureAwait(false);
 
@@ -382,7 +397,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             amqpSession.SafeClose();
         }
 
-        internal async Task CloseLinkTwinAsync(TimeSpan timeout)
+        internal async Task CloseLinkTwinAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientSession)}.{nameof(CloseLinkTwinAsync)}");
 
@@ -396,7 +411,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientSession)}.{nameof(CloseLinkTwinAsync)}");
         }
 
-        internal async Task<Outcome> SendTwinMessageAsync(AmqpMessage amqpMessage, TimeSpan operationTimeout)
+        internal async Task<Outcome> SendTwinMessageAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, AmqpMessage amqpMessage, TimeSpan operationTimeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientSession)}.{nameof(SendTwinMessageAsync)}");
 
@@ -429,7 +444,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         #endregion
 
         #region Events
-        internal async Task OpenLinkEventsAsync(Action<AmqpMessage> onEventsReceivedListener, TimeSpan timeout)
+        internal async Task OpenLinkEventsAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, Action<AmqpMessage> onEventsReceivedListener, TimeSpan timeout, bool useTokenRefresher)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientSession)}.{nameof(OpenLinkEventsAsync)}");
 
@@ -437,7 +452,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 if (eventsReceiverLink == null)
                 {
-                    eventsReceiverLink = amqpClientLinkFactory.Create(AmqpClientLinkType.EventsReceiver, this, amqpClientConnection.deviceClientEndpointIdentity, timeout);
+                    string correlationId = "";
+                    eventsReceiverLink = amqpClientLinkFactory.Create(AmqpClientLinkType.EventsReceiver, this, deviceClientEndpointIdentity, timeout, correlationId, useTokenRefresher);
                     eventsReceiverLink.OnAmqpClientLinkClosed += EventsReceivingLink_OnAmqpClientLinkClosed;
                 }
                 await eventsReceiverLink.OpenAsync(timeout).ConfigureAwait(false);

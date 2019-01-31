@@ -31,11 +31,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 {
                     deviceClientEndpointIdentity = new DeviceClientEndpointIdentityIoTHubSas(iotHubConnectionString, amqpTransportSettings, productInfo);
                 }
-                else if ((iotHubConnectionString.SharedAccessKeyName == null) || (iotHubConnectionString.TokenRefresher != null))
+                else if (iotHubConnectionString.TokenRefresher != null)
                 {
                     if (amqpTransportSettings.AmqpConnectionPoolSettings.Pooling)
                     {
-                        deviceClientEndpointIdentity = new DeviceClientEndpointIdentitySASMux(iotHubConnectionString, amqpTransportSettings, productInfo);
+                        deviceClientEndpointIdentity = new DeviceClientEndpointIdentitySasMux(iotHubConnectionString, amqpTransportSettings, productInfo);
                     }
                     else
                     {

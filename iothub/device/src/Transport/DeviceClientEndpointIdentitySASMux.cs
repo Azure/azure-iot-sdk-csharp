@@ -12,12 +12,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
     /// <summary>
     /// Represents DeviceClientEndpointIdentity which uses SAS authentication and multiplexing
     /// </summary>
-    internal class DeviceClientEndpointIdentitySASMux : DeviceClientEndpointIdentity
+    internal class DeviceClientEndpointIdentitySasMux : DeviceClientEndpointIdentity
     {
-        internal DeviceClientEndpointIdentitySASMux(IotHubConnectionString iotHubConnectionString, AmqpTransportSettings amqpTransportSettings, ProductInfo productInfo)
+        internal DeviceClientEndpointIdentitySasMux(IotHubConnectionString iotHubConnectionString, AmqpTransportSettings amqpTransportSettings, ProductInfo productInfo)
             : base(iotHubConnectionString, amqpTransportSettings, productInfo)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(DeviceClientEndpointIdentitySASMux)}");
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(DeviceClientEndpointIdentitySasMux)}");
         }
     }
 }

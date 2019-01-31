@@ -3,6 +3,7 @@
 
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
+using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Globalization;
@@ -16,11 +17,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
     /// Implements generic AMQP operations: Open, Close, Send, Receive, Accept, Dispose
     /// Exposes event for link-closed and provides API for message received
     /// </summary>
-    internal abstract class AmqpClientLink
+    internal abstract class AmqpClientLink : IDisposable
     {
         #region Members-Constructor
         protected const string ClientVersionName = "client-version";
 
+        protected string linkPath;
+
+        private string audience;
+
+        protected AmqpClientSession amqpAuthenticationSession { get; private set; }
         protected AmqpClientSession amqpClientSession { get; private set; }
         protected DeviceClientEndpointIdentity deviceClientEndpointIdentity { get; private set; }
 
@@ -30,11 +36,22 @@ namespace Microsoft.Azure.Devices.Client.Transport
         protected AmqpLink amqpLink { get; set; }
 
         protected string correlationId;
+
         protected bool isLinkClosed { get; private set; }
+
+        private AmqpTokenRefresher amqpTokenRefresher;
+        private bool useAmqpTokenRefresher;
 
         internal event EventHandler OnAmqpClientLinkClosed;
 
-        internal AmqpClientLink(AmqpClientLinkType amqpClientLinkType, AmqpClientSession amqpClientSession, DeviceClientEndpointIdentity deviceClientEndpointIdentity, TimeSpan timeout, string correlationId = "")
+
+        internal AmqpClientLink(
+            AmqpClientLinkType amqpClientLinkType,
+            AmqpClientSession amqpClientSession,
+            DeviceClientEndpointIdentity deviceClientEndpointIdentity, 
+            string correlationId = "",
+            bool useAmqpTokenRefresher = false,
+            AmqpClientSession amqpAuthenticationSession = null)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientLink)}");
 
@@ -42,6 +59,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
             this.amqpClientSession = amqpClientSession;
             this.deviceClientEndpointIdentity = deviceClientEndpointIdentity;
             this.correlationId = correlationId;
+            this.useAmqpTokenRefresher = useAmqpTokenRefresher;
+            this.amqpAuthenticationSession = amqpAuthenticationSession;
+
+            audience = deviceClientEndpointIdentity.iotHubConnectionString.Audience + linkPath;
+            amqpTokenRefresher = null;
 
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientLink)}");
         }
@@ -50,10 +72,30 @@ namespace Microsoft.Azure.Devices.Client.Transport
         #region Open-Close
         internal virtual async Task OpenAsync(TimeSpan timeout)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientLink)}.{nameof(OpenAsync)}.{amqpClientLinkType.ToString()}");
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientLink)}.{nameof(OpenAsync)}.{amqpClientLinkType.ToString()}.{audience}");
+
+            var timeoutHelper = new TimeoutHelper(timeout);
 
             try
             {
+                if (useAmqpTokenRefresher)
+                {
+                    this.amqpTokenRefresher = new AmqpTokenRefresher(
+                       this.amqpAuthenticationSession,
+                       this.deviceClientEndpointIdentity.iotHubConnectionString,
+                       this.audience
+                       );
+                    // Send Cbs token for the new link
+                    try
+                    {
+                        await this.amqpTokenRefresher.RefreshTokenAsync(deviceClientEndpointIdentity, timeoutHelper.RemainingTime()).ConfigureAwait(false);
+                    }
+                    catch (Exception exception) when (!exception.IsFatal())
+                    {
+                        throw;
+                    }
+                }
+
                 await amqpLink.OpenAsync(timeout).ConfigureAwait(false);
                 amqpLink.SafeAddClosed(OnLinkClosed);
                 isLinkClosed = false;
@@ -66,7 +108,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             finally
             {
-                if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientLink)}.{nameof(OpenAsync)}.{amqpClientLinkType.ToString()}");
+                if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientLink)}.{nameof(OpenAsync)}.{amqpClientLinkType.ToString()}.{audience}");
             }
         }
 
@@ -191,6 +233,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
 
             return path;
+        }
+
+        public void Dispose()
+        {
+            amqpTokenRefresher.Dispose();
         }
         #endregion
     }
