@@ -105,36 +105,46 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         public static async Task ProvisioningServiceClient_IndividualEnrollments_Create_Ok(string proxyServerAddress, AttestationType attestationType)
         {
-            ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService(proxyServerAddress);
-            IndividualEnrollment individualEnrollment = await CreateIndividualEnrollment(provisioningServiceClient, attestationType).ConfigureAwait(false);
-            IndividualEnrollment individualEnrollmentResult = await provisioningServiceClient.GetIndividualEnrollmentAsync(individualEnrollment.RegistrationId).ConfigureAwait(false);
-            Assert.AreEqual(individualEnrollmentResult.ProvisioningStatus, ProvisioningStatus.Enabled);
-
-            await provisioningServiceClient.DeleteIndividualEnrollmentAsync(individualEnrollment.RegistrationId).ConfigureAwait(false);
+            using (ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService(proxyServerAddress))
+            {
+                IndividualEnrollment individualEnrollment = await CreateIndividualEnrollment(provisioningServiceClient, attestationType).ConfigureAwait(false);
+                IndividualEnrollment individualEnrollmentResult = await provisioningServiceClient.GetIndividualEnrollmentAsync(individualEnrollment.RegistrationId).ConfigureAwait(false);
+                Assert.AreEqual(individualEnrollmentResult.ProvisioningStatus, ProvisioningStatus.Enabled);
+                await provisioningServiceClient.DeleteIndividualEnrollmentAsync(individualEnrollment.RegistrationId).ConfigureAwait(false);
+            }
         }
 
         public static async Task ProvisioningServiceClient_GroupEnrollments_Create_Ok(string proxyServerAddress, AttestationType attestationType)
         {
             string groupId = "some-valid-group-id-" + attestationTypeToString(attestationType) + "-" + Guid.NewGuid();
-            ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService(proxyServerAddress);
-            EnrollmentGroup enrollmentGroup = await CreateEnrollmentGroup(provisioningServiceClient, attestationType, groupId).ConfigureAwait(false);
-            EnrollmentGroup enrollmentGroupResult = await provisioningServiceClient.GetEnrollmentGroupAsync(enrollmentGroup.EnrollmentGroupId).ConfigureAwait(false);
-            Assert.AreEqual(enrollmentGroupResult.ProvisioningStatus, ProvisioningStatus.Enabled);
-
-            await provisioningServiceClient.DeleteEnrollmentGroupAsync(enrollmentGroup.EnrollmentGroupId).ConfigureAwait(false);
+            using (ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService(proxyServerAddress))
+            {
+                EnrollmentGroup enrollmentGroup = await CreateEnrollmentGroup(provisioningServiceClient, attestationType, groupId).ConfigureAwait(false);
+                EnrollmentGroup enrollmentGroupResult = await provisioningServiceClient.GetEnrollmentGroupAsync(enrollmentGroup.EnrollmentGroupId).ConfigureAwait(false);
+                Assert.AreEqual(enrollmentGroupResult.ProvisioningStatus, ProvisioningStatus.Enabled);
+                await provisioningServiceClient.DeleteEnrollmentGroupAsync(enrollmentGroup.EnrollmentGroupId).ConfigureAwait(false);
+            }
         }
 
         public static async Task<IndividualEnrollment> CreateIndividualEnrollment(ProvisioningServiceClient provisioningServiceClient, AttestationType attestationType)
         {
-            string registrationId = "some-valid-registration-id-" + attestationTypeToString(attestationType) + "-" + Guid.NewGuid();
+            string registrationId = attestationTypeToString(attestationType) + "-registration-id-" + Guid.NewGuid();
             Attestation attestation;
+            IndividualEnrollment individualEnrollment;
+            IndividualEnrollment result;
             switch (attestationType)
             {
                 case AttestationType.Tpm:
-                    var tpmSim = new SecurityProviderTpmSimulator(registrationId);
-                    string base64Ek = Convert.ToBase64String(tpmSim.GetEndorsementKey());
-                    attestation = new TpmAttestation(base64Ek);
-                    break;
+                    using (var tpmSim = new SecurityProviderTpmSimulator(registrationId))
+                    {
+                        string base64Ek = Convert.ToBase64String(tpmSim.GetEndorsementKey());
+                        var provisioningService = ProvisioningServiceClient.CreateFromConnectionString(Configuration.Provisioning.ConnectionString);
+                        individualEnrollment = new IndividualEnrollment(registrationId, new TpmAttestation(base64Ek));
+                        IndividualEnrollment enrollment = await provisioningService.CreateOrUpdateIndividualEnrollmentAsync(individualEnrollment).ConfigureAwait(false);
+                        attestation = new TpmAttestation(base64Ek);
+                        enrollment.Attestation = attestation;
+                        return await provisioningService.CreateOrUpdateIndividualEnrollmentAsync(enrollment).ConfigureAwait(false);
+                    }
                 case AttestationType.SymmetricKey:
                     string primaryKey = CryptoKeyGenerator.GenerateKey(32);
                     string secondaryKey = CryptoKeyGenerator.GenerateKey(32);
@@ -145,12 +155,12 @@ namespace Microsoft.Azure.Devices.E2ETests
                     throw new NotSupportedException("Test code has not been written for testing this attestation type yet");
             }
 
-            IndividualEnrollment individualEnrollment =
+            individualEnrollment =
                     new IndividualEnrollment(
                             registrationId,
                             attestation);
 
-            IndividualEnrollment result = await provisioningServiceClient.CreateOrUpdateIndividualEnrollmentAsync(individualEnrollment).ConfigureAwait(false);
+            result = await provisioningServiceClient.CreateOrUpdateIndividualEnrollmentAsync(individualEnrollment).ConfigureAwait(false);
             return result;
         }
 

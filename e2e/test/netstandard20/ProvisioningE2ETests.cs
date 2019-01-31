@@ -653,8 +653,22 @@ namespace Microsoft.Azure.Devices.E2ETests
             switch (attestationType)
             {
                 case AttestationType.Tpm:
-                    IndividualEnrollment tpmIndividualEnrollment = await CreateIndividualEnrollment(provisioningServiceClient, AttestationType.Tpm).ConfigureAwait(false);
-                    var tpmSim = new SecurityProviderTpmSimulator(tpmIndividualEnrollment.RegistrationId);
+                    string registrationId = attestationTypeToString(attestationType) + "-registration-id-" + Guid.NewGuid();
+                    var tpmSim = new SecurityProviderTpmSimulator(registrationId);
+
+                    string base64Ek = Convert.ToBase64String(tpmSim.GetEndorsementKey());
+
+
+                    var provisioningService = ProvisioningServiceClient.CreateFromConnectionString(Configuration.Provisioning.ConnectionString);
+
+                    _log.WriteLine($"Getting enrollment: RegistrationID = {registrationId}");
+                    IndividualEnrollment individualEnrollment = new IndividualEnrollment(registrationId, new TpmAttestation(base64Ek));
+                    IndividualEnrollment enrollment = await provisioningService.CreateOrUpdateIndividualEnrollmentAsync(individualEnrollment).ConfigureAwait(false);
+                    var attestation = new TpmAttestation(base64Ek);
+                    enrollment.Attestation = attestation;
+                    _log.WriteLine($"Updating enrollment: RegistrationID = {registrationId} EK = '{base64Ek}'");
+                    await provisioningService.CreateOrUpdateIndividualEnrollmentAsync(enrollment).ConfigureAwait(false);
+
                     return tpmSim;
 
                 case AttestationType.x509:
