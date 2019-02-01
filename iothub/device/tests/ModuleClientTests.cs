@@ -17,8 +17,8 @@
     {
         const string DeviceId = "module-twin-test";
         const string ModuleId = "mongo-server";
-        const string ConnectionStringWithModuleId = "GatewayHostName=edge.iot.microsoft.com;HostName=acme.azure-devices.net;DeviceId=module-twin-test;ModuleId=mongo-server;SharedAccessKey=5zz6y/+wz4JtAloKTaBmAfmwfA2FhkK6mpADU7qDHcQ=";
-        const string ConnectionStringWithoutModuleId = "GatewayHostName=edge.iot.microsoft.com;HostName=acme.azure-devices.net;DeviceId=module-twin-test;SharedAccessKey=5zz6y/+wz4JtAloKTaBmAfmwfA2FhkK6mpADU7qDHcQ=";
+        const string ConnectionStringWithModuleId = "GatewayHostName=edge.iot.microsoft.com;HostName=acme.azure-devices.net;DeviceId=module-twin-test;ModuleId=mongo-server;SharedAccessKey=dGVzdFN0cmluZzQ=";
+        const string ConnectionStringWithoutModuleId = "GatewayHostName=edge.iot.microsoft.com;HostName=acme.azure-devices.net;DeviceId=module-twin-test;SharedAccessKey=dGVzdFN0cmluZzQ=";
 
         public readonly string ValidDeviceTwinJson = string.Format(
             @"
@@ -48,7 +48,7 @@
 
         public readonly string NoModuleTwinJson = "{ \"maxConnections\": 10 }";
 
-        static string fakeConnectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;ModuleId=dummyModuleId;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
+        static string fakeConnectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;ModuleId=dummyModuleId;SharedAccessKey=dGVzdFN0cmluZzE=";
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
