@@ -91,7 +91,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             this.deviceClientEndpointIdentity = deviceClientEndpointIdentityFactory.Create(iotHubConnectionString, transportSettings, productInfo);
 
             this.amqpClientConnection = amqpClientConnectionManager.GetClientConnection(deviceClientEndpointIdentity);
-
             this.amqpClientConnection.OnAmqpClientConnectionClosed += OnAmqpConnectionClose;
         }
         #endregion
@@ -146,7 +145,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                 _transportShouldRetry.TrySetCanceled();
 
-                await amqpClientConnection.CloseAsync(openTimeout).ConfigureAwait(false);
+                await amqpClientConnection.CloseAsync(deviceClientEndpointIdentity, openTimeout).ConfigureAwait(false);
 
                 amqpClientConnectionManager.RemoveClientConnection(deviceClientEndpointIdentity);
             }

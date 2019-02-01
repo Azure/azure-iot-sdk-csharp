@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             else if (deviceClientEndpointIdentity.GetType() == typeof(DeviceClientEndpointIdentitySasMux))
             {
-                return new AmqpClientConnectionSasMux(deviceClientEndpointIdentity);
+                return new AmqpClientConnectionSasMux(deviceClientEndpointIdentity, removeDelegate);
             }
             else
             {

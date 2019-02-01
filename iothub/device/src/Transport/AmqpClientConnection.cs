@@ -3,22 +3,19 @@
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Text;
-    using System.IO;
-    using Microsoft.Azure.Devices;
     using Microsoft.Azure.Amqp;
+    using Microsoft.Azure.Amqp.Framing;
+    using Microsoft.Azure.Amqp.Sasl;
     using Microsoft.Azure.Amqp.Transport;
+    using Microsoft.Azure.Devices.Shared;
+    using System;
     using System.Threading.Tasks;
     using System.Threading;
-    using Microsoft.Azure.Amqp.Framing;
-    using Microsoft.Azure.Devices.Shared;
     using System.Net.WebSockets;
     using System.Net;
-    using System.Security.Cryptography.X509Certificates;
-    using System.Globalization;
     using System.Net.Security;
+    using System.Security.Cryptography.X509Certificates;
+
 #if !NETSTANDARD1_3
     using System.Configuration;
 #endif
@@ -42,6 +39,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public AmqpConnection amqpConnection { get; protected set; }
 
+        private TaskCompletionSource<TransportBase> taskCompletionSource;
+        private ProtocolHeader sentProtocolHeader;
+
         string hostName;
 
         internal AmqpClientConnection(AmqpTransportSettings amqpTransportSettings, string hostName)
@@ -63,8 +63,125 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         #region Open-Close
         internal abstract Task OpenAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, TimeSpan timeout);
-        internal abstract Task CloseAsync(TimeSpan timeout);
+        internal abstract Task CloseAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, TimeSpan timeout);
         internal abstract event EventHandler OnAmqpClientConnectionClosed;
+
+        protected async Task<TransportBase> InitializeTransport(DeviceClientEndpointIdentity deviceClientEndpointIdentity, TimeSpan timeout)
+        {
+            TransportBase transport;
+
+            var timeoutHelper = new TimeoutHelper(timeout);
+
+            switch (this.amqpTransportSettings.GetTransportType())
+            {
+                case Microsoft.Azure.Devices.Client.TransportType.Amqp_WebSocket_Only:
+                    transport = await CreateClientWebSocketTransportAsync(deviceClientEndpointIdentity, timeoutHelper.RemainingTime()).ConfigureAwait(false);
+                    SaslTransportProvider provider = amqpSettings.GetTransportProvider<SaslTransportProvider>();
+                    if (provider != null)
+                    {
+                        if (Logging.IsEnabled) Logging.Info(this, $"{nameof(AmqpClientConnection)}.{nameof(OpenAsync)}: Using SaslTransport");
+                        sentProtocolHeader = new ProtocolHeader(provider.ProtocolId, provider.DefaultVersion);
+                        ByteBuffer buffer = new ByteBuffer(new byte[AmqpConstants.ProtocolHeaderSize]);
+                        sentProtocolHeader.Encode(buffer);
+
+                        taskCompletionSource = new TaskCompletionSource<TransportBase>();
+
+                        var args = new TransportAsyncCallbackArgs();
+                        args.SetBuffer(buffer.Buffer, buffer.Offset, buffer.Length);
+                        args.CompletedCallback = OnWriteHeaderComplete;
+                        args.Transport = transport;
+                        bool operationPending = transport.WriteAsync(args);
+
+                        if (Logging.IsEnabled) Logging.Info(this, $"{nameof(AmqpClientConnection)}.{nameof(OpenAsync)}: Sent Protocol Header: {sentProtocolHeader.ToString()} operationPending: {operationPending} completedSynchronously: {args.CompletedSynchronously}");
+
+                        if (!operationPending)
+                        {
+                            args.CompletedCallback(args);
+                        }
+
+                        transport = await taskCompletionSource.Task.ConfigureAwait(false);
+                        await transport.OpenAsync(timeout).ConfigureAwait(false);
+                    }
+                    break;
+                case Microsoft.Azure.Devices.Client.TransportType.Amqp_Tcp_Only:
+                    var amqpTransportInitiator = new AmqpTransportInitiator(amqpSettings, tlsTransportSettings);
+                    transport = await amqpTransportInitiator.ConnectTaskAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+                    break;
+                default:
+                    throw new InvalidOperationException("AmqpTransportSettings must specify WebSocketOnly or TcpOnly");
+            }
+
+            return transport;
+        }
+
+        private void OnReadHeaderComplete(TransportAsyncCallbackArgs args)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnection)}.{nameof(OnReadHeaderComplete)}");
+
+            if (args.Exception != null)
+            {
+                CompleteOnException(args);
+                return;
+            }
+
+            try
+            {
+                ProtocolHeader receivedHeader = new ProtocolHeader();
+                receivedHeader.Decode(new ByteBuffer(args.Buffer, args.Offset, args.Count));
+
+                if (Logging.IsEnabled) Logging.Info(this, $"{nameof(AmqpClientConnection)}.{nameof(OnReadHeaderComplete)}: Received Protocol Header: {receivedHeader.ToString()}");
+
+                if (!receivedHeader.Equals(sentProtocolHeader))
+                {
+                    throw new AmqpException(AmqpErrorCode.NotImplemented, $"The requested protocol version {sentProtocolHeader} is not supported. The supported version is {receivedHeader}");
+                }
+
+                SaslTransportProvider provider = amqpSettings.GetTransportProvider<SaslTransportProvider>();
+                var transport = provider.CreateTransport(args.Transport, true);
+                if (Logging.IsEnabled) Logging.Info(this, $"{nameof(AmqpClientConnection)}.{nameof(OnReadHeaderComplete)}: Created SaslTransportHandler ");
+                taskCompletionSource.TrySetResult(transport);
+            }
+            catch (Exception ex)
+            {
+                args.Exception = ex;
+                CompleteOnException(args);
+            }
+        }
+
+        private void CompleteOnException(TransportAsyncCallbackArgs args)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnection)}.{nameof(CompleteOnException)}");
+
+            if (args.Exception != null && args.Transport != null)
+            {
+                if (Logging.IsEnabled) Logging.Error(this, $"{nameof(AmqpClientConnection)}.{nameof(CompleteOnException)}: Exception thrown {args.Exception.Message}");
+
+                args.Transport.SafeClose(args.Exception);
+                args.Transport = null;
+                taskCompletionSource.TrySetException(args.Exception);
+            }
+        }
+
+        private void OnWriteHeaderComplete(TransportAsyncCallbackArgs args)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnection)}.{nameof(OnWriteHeaderComplete)}");
+
+            if (args.Exception != null)
+            {
+                CompleteOnException(args);
+                return;
+            }
+
+            byte[] headerBuffer = new byte[AmqpConstants.ProtocolHeaderSize];
+            args.SetBuffer(headerBuffer, 0, headerBuffer.Length);
+            args.CompletedCallback = OnReadHeaderComplete;
+            bool operationPending = args.Transport.ReadAsync(args);
+
+            if (!operationPending)
+            {
+                args.CompletedCallback(args);
+            }
+        }
         #endregion
 
         #region Authentication

@@ -73,6 +73,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         if (Logging.IsEnabled) Logging.Info(this, $"{nameof(AmqpClientConnectionPool)}.{"Removed from sasMuxPool:"}.{nameof(amqpClientConnection)}");
                     }
                 }
+                amqpClientConnectionSasMux = null;
             }
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionPool)}.{nameof(RemoveClientConnection)}");
         }
