@@ -7,6 +7,7 @@ using Microsoft.Azure.Amqp.Transport;
 using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Collections.Concurrent;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client.Transport
@@ -31,6 +32,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
         static readonly TimeSpan RefreshTokenRetryInterval = TimeSpan.FromSeconds(30);
 
         RemoveClientConnectionFromPool RemoveClientConnectionFromPool;
+
+        private static Semaphore openSemaphore = new Semaphore(1,1);
+        private static Semaphore closeSemaphore = new Semaphore(1,1);
 
         internal AmqpClientConnectionSasMux(DeviceClientEndpointIdentity deviceClientEndpointIdentity, RemoveClientConnectionFromPool removeDelegate)
             : base(deviceClientEndpointIdentity.amqpTransportSettings, deviceClientEndpointIdentity.iotHubConnectionString.HostName)
@@ -81,13 +85,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
         #region Open-Close
         internal override async Task OpenAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, TimeSpan timeout)
         {
+            openSemaphore.WaitOne();
+            
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasSingle)}.{nameof(OpenAsync)}");
 
             if (!(muxedDevices.ContainsKey(deviceClientEndpointIdentity)))
             {
                 throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionSasMux)}.{nameof(OpenAsync)}" + "DeviceClientEndpointIdentity crisis");
             }
-
             var timeoutHelper = new TimeoutHelper(timeout);
 
             if (amqpConnection == null)
@@ -131,6 +136,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionSasSingle)}.{nameof(OpenAsync)}");
                 }
             }
+            openSemaphore.Release();
         }
 
         private void AuthenticationSession_OnAmqpClientSessionClosed(object sender, EventArgs e)
@@ -154,6 +160,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         internal override async Task CloseAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, TimeSpan timeout)
         {
+            closeSemaphore.WaitOne();
+
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasSingle)}.{nameof(CloseAsync)}");
 
             if (!(muxedDevices.ContainsKey(deviceClientEndpointIdentity)))
@@ -178,6 +186,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
 
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionSasSingle)}.{nameof(CloseAsync)}");
+
+            closeSemaphore.Release();
         }
         #endregion
 

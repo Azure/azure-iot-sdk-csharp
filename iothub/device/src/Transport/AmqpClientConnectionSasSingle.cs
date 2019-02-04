@@ -68,11 +68,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
             var timeoutHelper = new TimeoutHelper(timeout);
             amqpTokenRefresher?.Cancel();
 
+            // Create transport
+            TransportBase transport = await InitializeTransport(deviceClientEndpointIdentity, timeout).ConfigureAwait(false);
+
             try
             {
-                // Create transport
-                TransportBase transport = await InitializeTransport(deviceClientEndpointIdentity, timeout).ConfigureAwait(false);
-
                 // Create connection from transport
                 amqpConnection = new AmqpConnection(transport, this.amqpSettings, this.amqpConnectionSettings);
                 amqpConnection.Closed += OnConnectionClosed;
@@ -109,7 +109,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     isConnectionAuthenticated = true;
                 }
             }
-            catch (Exception ex) // when (!ex.IsFatal())
+            catch (Exception ex)  when (!ex.IsFatal())
             {
                 if (amqpConnection.TerminalException != null)
                 {
