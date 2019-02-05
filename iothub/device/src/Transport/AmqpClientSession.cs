@@ -34,8 +34,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         internal AmqpClientLink eventsReceiverLink { get; private set; }
 
-        internal bool isSessionOpened { get; private set; }
-
         private AmqpClientLinkFactory amqpClientLinkFactory;
 
         Func<MethodRequestInternal, Task> methodReceivedListener;
@@ -49,7 +47,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 Properties = new Fields()
             };
-            isSessionOpened = false;
 
             telemetrySenderLink = null;
             telemetryReceiverLink = null;
@@ -82,7 +79,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             // Open Session
             await amqpSession.OpenAsync(timeout).ConfigureAwait(false);
-            isSessionOpened = true;
 
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientSession)}.{nameof(OpenAsync)}");
         }
@@ -96,11 +92,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientSession)}.{nameof(CloseAsync)}");
 
-            if ((amqpSession != null) && (isSessionOpened))
+            if ((amqpSession != null) && (amqpSession.State.Equals(AmqpObjectState.Opened)) && (!amqpSession.IsClosing()))
             {
                 await amqpSession.CloseAsync(timeout).ConfigureAwait(false);
-
-                isSessionOpened = false;
 
                 telemetrySenderLink = null;
                 telemetryReceiverLink = null;
@@ -110,10 +104,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 twinReceiverLink = null;
                 eventsReceiverLink = null;
             }
-            else
-            {
-                throw new InvalidOperationException("CloseAsync: Session is not authenticated");
-            }
 
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientSession)}.{nameof(CloseAsync)}");
         }
@@ -122,7 +112,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientSession)}.{nameof(OnSessionClosed)}");
 
-            isSessionOpened = false;
             OnAmqpClientSessionClosed?.Invoke(o, args);
 
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientSession)}.{nameof(OnSessionClosed)}");
@@ -136,7 +125,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             DateTime expiresAtUtc;
 
-            if (isSessionOpened)
+            if ((amqpSession != null) && (amqpSession.State.Equals(AmqpObjectState.Opened)) && (!amqpSession.IsClosing()))
             {
                 if (cbsLink == null)
                 {
@@ -161,7 +150,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientSession)}.{nameof(OpenLinkTelemetryAndC2DAsync)}");
 
-            if (isSessionOpened)
+            if ((amqpSession != null) && (amqpSession.State.Equals(AmqpObjectState.Opened)) && (!amqpSession.IsClosing()))
             {
                 string correlationId = "";
                 if (telemetrySenderLink == null)
@@ -213,7 +202,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientSession)}.{nameof(SendTelemetryMessageAsync)}");
 
             Outcome outcome = null;
-            if (isSessionOpened)
+            if ((amqpSession != null) && (amqpSession.State.Equals(AmqpObjectState.Opened)) && (!amqpSession.IsClosing()))
             {
                 if (telemetrySenderLink != null)
                 {
@@ -244,7 +233,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientSession)}.{nameof(OpenLinkMethodsAsync)}");
 
-            if (isSessionOpened)
+            if ((amqpSession != null) && (amqpSession.State.Equals(AmqpObjectState.Opened)) && (!amqpSession.IsClosing()))
             {
                 if (methodsSenderLink == null)
                 {
@@ -286,7 +275,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientSession)}.{nameof(SendMethodResponseAsync)}");
 
             Outcome outcome = null;
-            if (isSessionOpened)
+
+            if ((amqpSession != null) && (amqpSession.State.Equals(AmqpObjectState.Opened)) && (!amqpSession.IsClosing()))
             {
                 if (methodsSenderLink != null)
                 {
@@ -341,7 +331,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientSession)}.{nameof(OpenLinkTwinAsync)}");
 
-            if (isSessionOpened)
+            if ((amqpSession != null) && (amqpSession.State.Equals(AmqpObjectState.Opened)) && (!amqpSession.IsClosing()))
             {
                 if (twinSenderLink == null)
                 {
@@ -400,7 +390,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientSession)}.{nameof(SendTwinMessageAsync)}");
 
             Outcome outcome = null;
-            if (isSessionOpened)
+
+            if ((amqpSession != null) && (amqpSession.State.Equals(AmqpObjectState.Opened)) && (!amqpSession.IsClosing()))
             {
                 if (twinSenderLink != null)
                 {
@@ -428,7 +419,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientSession)}.{nameof(OpenLinkEventsAsync)}");
 
-            if (isSessionOpened)
+            if ((amqpSession != null) && (amqpSession.State.Equals(AmqpObjectState.Opened)) && (!amqpSession.IsClosing()))
             {
                 if (eventsReceiverLink == null)
                 {

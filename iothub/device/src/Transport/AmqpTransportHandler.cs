@@ -104,6 +104,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
+                if (amqpClientConnection == null)
+                {
+                    throw new Exception($"{nameof(AmqpTransportHandler)}.{nameof(OpenAsync)}: AmqpConnection is null");
+                }
+
                 await amqpClientConnection.OpenAsync(this.deviceClientEndpointIdentity, openTimeout).ConfigureAwait(false);
             }
             catch (Exception exception) when (!exception.IsFatal() && !(exception is OperationCanceledException))
@@ -165,11 +170,19 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
+                if (amqpClientConnection == null)
+                {
+                    throw new Exception($"{nameof(AmqpTransportHandler)}.{nameof(SendEventAsync)}: AmqpConnection is null");
+                }
+
                 Outcome outcome = await amqpClientConnection.SendTelemetrMessageAsync(deviceClientEndpointIdentity, message.ToAmqpMessage(), this.operationTimeout).ConfigureAwait(false);
 
-                if (outcome.DescriptorCode != Accepted.Code)
+                if (outcome != null)
                 {
-                    throw AmqpErrorMapper.GetExceptionFromOutcome(outcome);
+                    if (outcome.DescriptorCode != Accepted.Code)
+                    {
+                        throw AmqpErrorMapper.GetExceptionFromOutcome(outcome);
+                    }
                 }
             }
             finally
@@ -208,9 +221,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     outcome = await amqpClientConnection.SendTelemetrMessageAsync(deviceClientEndpointIdentity, amqpMessage, this.operationTimeout).ConfigureAwait(false);
                 }
 
-                if (outcome.DescriptorCode != Accepted.Code)
+                if (outcome != null)
                 {
-                    throw AmqpErrorMapper.GetExceptionFromOutcome(outcome);
+                    if (outcome.DescriptorCode != Accepted.Code)
+                    {
+                        throw AmqpErrorMapper.GetExceptionFromOutcome(outcome);
+                    }
                 }
             }
             finally
