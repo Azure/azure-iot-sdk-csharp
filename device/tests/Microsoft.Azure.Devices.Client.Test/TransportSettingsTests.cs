@@ -266,7 +266,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             string hostName = "acme.azure-devices.net";
             var amqpConnectionPoolSettings = new AmqpConnectionPoolSettings();
             var transportSetting = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only, 200, amqpConnectionPoolSettings);
-            var authMethod1 = new DeviceAuthenticationWithRegistrySymmetricKey("device1", "CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=");
+            var authMethod1 = new DeviceAuthenticationWithRegistrySymmetricKey("device1", "dGVzdFN0cmluZzE=");
             var deviceClient = DeviceClient.Create(hostName, authMethod1, new ITransportSettings[] { transportSetting });
 
             var cert = CertificateHelper.InstallCertificateFromFile(LocalCertFilename, LocalCertPasswordFile);

@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.Api.Test.ConnectionString
         [ExpectedException(typeof(ArgumentException))]
         public void ServiceClient_ConnectionString_DefaultScope_DefaultCredentialType_MissingEndpoint_ExceptionTest()
         {
-            string connectionString = "SharedAccessKeyName=AllAccessKey;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
+            string connectionString = "SharedAccessKeyName=AllAccessKey;SharedAccessKey=dGVzdFN0cmluZzE=";
             var serviceClient = ServiceClient.CreateFromConnectionString(connectionString);
         }
 
@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.Api.Test.ConnectionString
         [ExpectedException(typeof(ArgumentException))]
         public void ServiceClient_ConnectionString_DefaultScope_DefaultCredentialType_MissingSharedAccessKeyName_ExceptionTest()
         {
-            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
+            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKey=dGVzdFN0cmluZzE=";
             var serviceClient = ServiceClient.CreateFromConnectionString(connectionString);
         }
 
@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Devices.Api.Test.ConnectionString
         [ExpectedException(typeof(ArgumentException))]
         public void ServiceClient_ConnectionString_IotHubScope_SharedAccessSignatureCredentialType_MissingSharedAccessKeyName_ExceptionTest()
         {
-            string connectionString = "HostName=acme.azure-devices.net;CredentialScope=IotHub;CredentialType=SharedAccessSignature;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
+            string connectionString = "HostName=acme.azure-devices.net;CredentialScope=IotHub;CredentialType=SharedAccessSignature;SharedAccessKey=dGVzdFN0cmluZzE=";
             var serviceClient = ServiceClient.CreateFromConnectionString(connectionString);
         }
 

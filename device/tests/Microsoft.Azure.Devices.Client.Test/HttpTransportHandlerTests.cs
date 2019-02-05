@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
     [TestClass]
     public class HttpTransportHandlerTests
     {
-        const string DumpyConnectionString = "HostName=Do.Not.Exist;SharedAccessKeyName=AllAccessKey;DeviceId=FakeDevice;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
+        const string DumpyConnectionString = "HostName=Do.Not.Exist;SharedAccessKeyName=AllAccessKey;DeviceId=FakeDevice;SharedAccessKey=dGVzdFN0cmluZzE=";
 
         [TestMethod]
         [TestCategory("TransportHandlers")]

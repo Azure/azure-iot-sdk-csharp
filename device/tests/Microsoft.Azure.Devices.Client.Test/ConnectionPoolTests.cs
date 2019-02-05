@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var amqpConnectionPoolSettings = new AmqpConnectionPoolSettings();
             amqpConnectionPoolSettings.Pooling = false;
             var amqpTransportSettings = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only, 200, amqpConnectionPoolSettings);
-            string connectionString = "HostName=acme.azure-devices.net;DeviceId=device1;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
+            string connectionString = "HostName=acme.azure-devices.net;DeviceId=device1;SharedAccessKey=dGVzdFN0cmluZzE=";
             var iotHubConnectionString = IotHubConnectionStringBuilder.Create(connectionString).ToIotHubConnectionString();
             var connectionCache = new Mock<IotHubConnectionCache>();
             // Pooling is off - pass null for ConnectionPoolCache
@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             // Arrange
             var amqpConnectionPoolSettings = new AmqpConnectionPoolSettings();
             var amqpTransportSettings = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only, 200, amqpConnectionPoolSettings);
-            string connectionString = "HostName=acme.azure-devices.net;DeviceId=device1;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
+            string connectionString = "HostName=acme.azure-devices.net;DeviceId=device1;SharedAccessKey=dGVzdFN0cmluZzE=";
             var iotHubConnectionString = IotHubConnectionStringBuilder.Create(connectionString).ToIotHubConnectionString();
             var connectionCache = new Mock<IotHubConnectionCache>();
             var connectionPool = new IotHubDeviceScopeConnectionPool(connectionCache.Object, iotHubConnectionString, amqpTransportSettings);
@@ -66,7 +66,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             // Arrange
             var amqpConnectionPoolSettings = new AmqpConnectionPoolSettings();
             var amqpTransportSettings = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only, 200, amqpConnectionPoolSettings);
-            string connectionString = "HostName=acme.azure-devices.net;DeviceId=device1;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
+            string connectionString = "HostName=acme.azure-devices.net;DeviceId=device1;SharedAccessKey=dGVzdFN0cmluZzE=";
             var iotHubConnectionString = IotHubConnectionStringBuilder.Create(connectionString).ToIotHubConnectionString();
             var connectionCache = new Mock<IotHubConnectionCache>();
             var connectionPool = new IotHubDeviceScopeConnectionPool(connectionCache.Object, iotHubConnectionString, amqpTransportSettings);
@@ -92,7 +92,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             // Reduce poolsize to 1. This will mux all devices onto one connection
             amqpConnectionPoolSettings.MaxPoolSize = 1;
             var amqpTransportSettings = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only, 200, amqpConnectionPoolSettings);
-            string connectionString = "HostName=acme.azure-devices.net;DeviceId=device1;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
+            string connectionString = "HostName=acme.azure-devices.net;DeviceId=device1;SharedAccessKey=dGVzdFN0cmluZzE=";
             var iotHubConnectionString = IotHubConnectionStringBuilder.Create(connectionString).ToIotHubConnectionString();
             var connectionCache = new Mock<IotHubConnectionCache>();
             var connectionPool = new IotHubDeviceScopeConnectionPool(connectionCache.Object, iotHubConnectionString, amqpTransportSettings);
@@ -118,7 +118,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             var amqpConnectionPoolSettings = new AmqpConnectionPoolSettings();
             var amqpTransportSettings = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only, 200, amqpConnectionPoolSettings);
-            string connectionString = "HostName=acme.azure-devices.net;DeviceId=device1;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
+            string connectionString = "HostName=acme.azure-devices.net;DeviceId=device1;SharedAccessKey=dGVzdFN0cmluZzE=";
             var iotHubConnectionString = IotHubConnectionStringBuilder.Create(connectionString).ToIotHubConnectionString();
             var connectionCache = new Mock<IotHubConnectionCache>();
             var connectionPool = new IotHubDeviceScopeConnectionPool(connectionCache.Object, iotHubConnectionString, amqpTransportSettings);
@@ -145,7 +145,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var amqpConnectionPoolSettings = new AmqpConnectionPoolSettings();
             amqpConnectionPoolSettings.ConnectionIdleTimeout = TimeSpan.FromSeconds(5);
             var amqpTransportSettings = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only, 200, amqpConnectionPoolSettings);
-            string connectionString = "HostName=acme.azure-devices.net;DeviceId=device1;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
+            string connectionString = "HostName=acme.azure-devices.net;DeviceId=device1;SharedAccessKey=dGVzdFN0cmluZzE=";
             var iotHubConnectionString = IotHubConnectionStringBuilder.Create(connectionString).ToIotHubConnectionString();
             var connectionCache = new Mock<IotHubConnectionCache>();
             var connectionPool = new IotHubDeviceScopeConnectionPool(connectionCache.Object, iotHubConnectionString, amqpTransportSettings);
@@ -180,7 +180,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             var amqpConnectionPoolSettings = new AmqpConnectionPoolSettings();
             amqpConnectionPoolSettings.ConnectionIdleTimeout = TimeSpan.FromSeconds(5);
             var amqpTransportSettings = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only, 200, amqpConnectionPoolSettings);
-            string connectionString = "HostName=acme.azure-devices.net;DeviceId=device1;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
+            string connectionString = "HostName=acme.azure-devices.net;DeviceId=device1;SharedAccessKey=dGVzdFN0cmluZzE=";
             var iotHubConnectionString = IotHubConnectionStringBuilder.Create(connectionString).ToIotHubConnectionString();
             var connectionCache = new Mock<IotHubConnectionCache>();
             connectionCache.Setup(cache => cache.RemoveHubScopeConnectionPool(It.IsAny<IotHubConnectionString>())).Returns(true);

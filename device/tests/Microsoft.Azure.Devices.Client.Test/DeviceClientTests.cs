@@ -14,7 +14,7 @@
     [TestClass]
     public class DeviceClientTests
     {
-        static string fakeConnectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
+        static string fakeConnectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=";
 
         /* Tests_SRS_DEVICECLIENT_28_002: [This property shall be defaulted to 240000 (4 minutes).] */
         [TestMethod]
@@ -442,7 +442,7 @@
         // Tests_SRS_DEVICECLIENT_10_003: [ The given delegate will only be added if it is not null. ]
         public async Task DeviceClient_SetMethodHandler_SetFirstMethodHandler()
         {
-            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
+            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=";
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
 
             var innerHandler = Substitute.For<IDelegatingHandler>();
@@ -491,7 +491,7 @@
         // Tests_SRS_DEVICECLIENT_10_003: [ The given delegate will only be added if it is not null. ]
         public async Task DeviceClient_SetMethodHandler_SetFirstMethodDefaultHandler()
         {
-            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
+            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=";
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
 
             var innerHandler = Substitute.For<IDelegatingHandler>();
@@ -539,7 +539,7 @@
         // Tests_SRS_DEVICECLIENT_10_002: [ If the given methodName already has an associated delegate, the existing delegate shall be removed. ]
         public async Task DeviceClient_SetMethodHandler_OverwriteExistingDelegate()
         {
-            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
+            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=";
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
 
             var innerHandler = Substitute.For<IDelegatingHandler>();
@@ -600,7 +600,7 @@
         // Tests_SRS_DEVICECLIENT_24_001: [ If the default callback has already been set, it is replaced with the new callback. ]
         public async Task DeviceClient_SetMethodHandler_OverwriteExistingDefaultDelegate()
         {
-            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
+            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=";
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
 
             var innerHandler = Substitute.For<IDelegatingHandler>();
@@ -662,7 +662,7 @@
         // Tests_SRS_DEVICECLIENT_10_006: [ It shall DisableMethodsAsync when the last delegate has been removed. ]
         public async Task DeviceClient_SetMethodHandler_UnsetLastMethodHandler()
         {
-            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
+            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=";
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
 
             var innerHandler = Substitute.For<IDelegatingHandler>();
@@ -707,7 +707,7 @@
         // Tests_SRS_DEVICECLIENT_10_006: [ It shall DisableMethodsAsync when the last delegate has been removed. ]
         public async Task DeviceClient_SetMethodHandler_UnsetLastMethodHandler_WithDefaultHandlerSet()
         {
-            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
+            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=";
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
 
             var innerHandler = Substitute.For<IDelegatingHandler>();
@@ -769,7 +769,7 @@
         // Tests_SRS_DEVICECLIENT_10_006: [ It shall DisableMethodsAsync when the last delegate has been removed. ]
         public async Task DeviceClient_SetMethodHandler_UnsetDefaultHandlerSet()
         {
-            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
+            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=";
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
 
             var innerHandler = Substitute.For<IDelegatingHandler>();
@@ -828,7 +828,7 @@
         [TestCategory("DeviceClient")]
         public async Task DeviceClient_SetMethodHandler_UnsetWhenNoMethodHandler()
         {
-            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
+            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=";
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
 
             var innerHandler = Substitute.For<IDelegatingHandler>();
@@ -844,7 +844,7 @@
         // Tests_SRS_DEVICECLIENT_10_003: [ The given delegate will only be added if it is not null. ]
         public async Task DeviceClient_SetMethodHandler_SetFirstMethodHandler_With_SetMethodHandler()
         {
-            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
+            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=";
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
 
             var innerHandler = Substitute.For<IDelegatingHandler>();
@@ -881,7 +881,7 @@
         // Tests_SRS_DEVICECLIENT_10_002: [ If the given methodName already has an associated delegate, the existing delegate shall be removed. ]
         public async Task DeviceClient_SetMethodHandler_OverwriteExistingDelegate_With_SetMethodHandler()
         {
-            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
+            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=";
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
 
             var innerHandler = Substitute.For<IDelegatingHandler>();
@@ -943,7 +943,7 @@
         // Tests_SRS_DEVICECLIENT_10_006: [ It shall DisableMethodsAsync when the last delegate has been removed. ]
         public async Task DeviceClient_SetMethodHandler_UnsetLastMethodHandler_With_SetMethodHandler()
         {
-            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
+            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=";
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
 
             var innerHandler = Substitute.For<IDelegatingHandler>();
@@ -986,7 +986,7 @@
         [TestCategory("DeviceClient")]
         public async Task DeviceClient_SetMethodHandler_UnsetWhenNoMethodHandler_With_SetMethodHandler()
         {
-            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
+            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=dumpy;SharedAccessKey=dGVzdFN0cmluZzE=";
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
 
             var innerHandler = Substitute.For<IDelegatingHandler>();

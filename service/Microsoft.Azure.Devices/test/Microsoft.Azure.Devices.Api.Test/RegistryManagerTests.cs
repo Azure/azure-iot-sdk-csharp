@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.Api.Test
         [TestCategory("API")]
         public void ConstructorWithValidConnectionStringTest()
         {
-            var authMethod = new ServiceAuthenticationWithSharedAccessPolicyKey("test", "CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=");
+            var authMethod = new ServiceAuthenticationWithSharedAccessPolicyKey("test", "dGVzdFN0cmluZzE=");
             var builder = IotHubConnectionStringBuilder.Create("acme.azure-devices.net", authMethod);
             var registryManager = RegistryManager.CreateFromConnectionString(builder.ToString());
             Assert.IsNotNull(registryManager);
