@@ -30,6 +30,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private static readonly object padlock = new object();
         private static AmqpClientConnectionManager instance = null;
 
+        private static Semaphore getConnectionSemaphore = new Semaphore(1, 1);
+
+
         /// <summary>
         /// Static member variable to store the single instance of this class
         /// </summary>
@@ -53,9 +56,15 @@ namespace Microsoft.Azure.Devices.Client.Transport
         /// </summary>
         internal AmqpClientConnection GetClientConnection(DeviceClientEndpointIdentity deviceClientEndpointIdentity)
         {
+            getConnectionSemaphore.WaitOne();
+
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionManager)}.{nameof(GetClientConnection)}");
 
-            return amqpClientConnectionPool.GetClientConnection(deviceClientEndpointIdentity);
+            AmqpClientConnection amqpClientConnection = amqpClientConnectionPool.GetClientConnection(deviceClientEndpointIdentity);
+
+            getConnectionSemaphore.Release();
+
+            return amqpClientConnection;
         }
 
         internal void RemoveClientConnection(DeviceClientEndpointIdentity deviceClientEndpointIdentity)

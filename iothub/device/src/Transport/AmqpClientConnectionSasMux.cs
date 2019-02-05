@@ -214,6 +214,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         muxWorker.workerAmqpClientSession.OnAmqpClientSessionClosed += WorkerAmqpClientSession_OnAmqpClientSessionClosed;
                     }
                     await muxWorker.workerAmqpClientSession.OpenLinkTelemetryAndC2DAsync(deviceClientEndpointIdentity, timeoutHelper.RemainingTime(), useLinkBasedTokenRefresh, authenticationSession).ConfigureAwait(false);
+
                 }
                 else
                 {
@@ -259,14 +260,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             Outcome outcome = null;
 
-            // Create telemetry links on demand
-            await EnableTelemetryAndC2DAsync(deviceClientEndpointIdentity, timeout).ConfigureAwait(false);
-
-            // Send the message
             if (muxedDevices.TryGetValue(deviceClientEndpointIdentity, out MuxWorker muxWorker))
             {
+                // Create telemetry links on demand
+                await EnableTelemetryAndC2DAsync(deviceClientEndpointIdentity, timeout).ConfigureAwait(false);
+
                 if (muxWorker.workerAmqpClientSession != null)
                 {
+                    // Send the message
                     outcome = await muxWorker.workerAmqpClientSession.SendTelemetryMessageAsync(deviceClientEndpointIdentity, message, timeout).ConfigureAwait(false);
                 }
             }

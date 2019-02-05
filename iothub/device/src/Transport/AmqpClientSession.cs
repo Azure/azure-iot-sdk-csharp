@@ -112,7 +112,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             else
             {
-                throw new InvalidOperationException("Session is not authenticated");
+                throw new InvalidOperationException("CloseAsync: Session is not authenticated");
             }
 
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientSession)}.{nameof(CloseAsync)}");
@@ -178,10 +178,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     telemetryReceiverLink.OnAmqpClientLinkClosed += TelemetryReceivingLink_OnAmqpClientLinkClosed;
                 }
             }
-            else
-            {
-                throw new InvalidOperationException("Session is not opened and authenticated");
-            }
 
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientSession)}.{nameof(OpenLinkTelemetryAndC2DAsync)}");
         }
@@ -228,10 +224,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     throw new InvalidOperationException("TelemetrySendingLink link is null");
                 }
             }
-            else
-            {
-                throw new InvalidOperationException("Session is not opened and authenticated");
-            }
 
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientSession)}.{nameof(SendTelemetryMessageAsync)}");
 
@@ -271,10 +263,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     methodsReceiverLink.RegisterMessageListener(MethodsRequestReceived);
                 }
             }
-            else
-            {
-                throw new InvalidOperationException("Session is not opened and authenticated");
-            }
 
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientSession)}.{nameof(OpenLinkMethodsAsync)}");
         }
@@ -308,10 +296,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 {
                     throw new InvalidOperationException("MethodsSendingLink link is null");
                 }
-            }
-            else
-            {
-                throw new InvalidOperationException("Session is not opened and authenticated");
             }
 
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientSession)}.{nameof(SendMethodResponseAsync)}");
@@ -377,7 +361,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             else
             {
-                throw new InvalidOperationException("Session is not authenticated");
+                throw new InvalidOperationException("OpenLinkTwinAsync: Session is not opened");
             }
 
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientSession)}.{nameof(OpenLinkTwinAsync)}");
@@ -427,10 +411,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     throw new InvalidOperationException("MethodsSendingLink link is null");
                 }
             }
-            else
-            {
-                throw new InvalidOperationException("Session is not opened and authenticated");
-            }
 
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientSession)}.{nameof(SendTwinMessageAsync)}");
 
@@ -462,7 +442,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             else
             {
-                throw new InvalidOperationException("Session is not authenticated");
+                throw new InvalidOperationException("OpenLinkEventsAsync: Session is not opened");
             }
 
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientSession)}.{nameof(OpenLinkEventsAsync)}");
