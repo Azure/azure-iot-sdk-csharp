@@ -435,7 +435,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     msg.Headers.Add(HttpRequestHeader.Authorization.ToString(), authHeader);
                 }
 
-                msg.Headers.UserAgent.ParseAdd(this.productInfo.ToString());
+                msg.Headers.UserAgent.ParseAdd(this.productInfo.ToString(UserAgentFormats.Http));
 
                 if (modifyRequestMessageAsync != null) await modifyRequestMessageAsync(msg, cancellationToken).ConfigureAwait(false);
 
