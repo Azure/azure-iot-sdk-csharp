@@ -18,7 +18,7 @@
             "_justification": "Dummy secret used in unit tests, it is fake"
         },
         {
-            "file": ["\\device\\external_modules\\dotnetty\\shared\\dotnetty.com.pfx", "\\device\\external_modules\\dotnetty\\shared\\contoso.com.pfx "],
+            "file": ["\\device\\external_modules\\dotnetty\\shared\\dotnetty.com.pfx", "\\device\\external_modules\\dotnetty\\shared\\contoso.com.pfx", "\\device\\external_modules\\dotnetty\\examples\\UWPEcho.Client\\UWPEcho.Client_TemporaryKey.pfx", "\\device\\samples\\UWPSample\\UWPSample_TemporaryKey.pfx"],
             "_justification": "The PFX certificate is required for building the UWP Sample"
         }
     ]
