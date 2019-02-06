@@ -50,11 +50,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             authenticationSession = null;
         }
 
-        internal override bool AddToMux(DeviceClientEndpointIdentity deviceClientEndpointIdentity)
-        {
-            return true;
-        }
-
         private bool RemoveFromMux(DeviceClientEndpointIdentity deviceClientEndpointIdentity)
         {
             if (muxedDevices.ContainsKey(deviceClientEndpointIdentity))
@@ -93,12 +88,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     try
                     {
                         // Create connection from transport
-                        if (amqpConnection == null)
-                        {
-                            amqpConnection = new AmqpConnection(transport, this.amqpSettings, this.amqpConnectionSettings);
-                            amqpConnection.Closed += OnConnectionClosed;
-                            await amqpConnection.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
-                        }
+                        amqpConnection = new AmqpConnection(transport, this.amqpSettings, this.amqpConnectionSettings);
+                        amqpConnection.Closed += OnConnectionClosed;
+                        await amqpConnection.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
 
                         if (!(amqpConnection.IsClosing()))
                         {
@@ -200,7 +192,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         muxWorker.workerAmqpClientSession.OnAmqpClientSessionClosed += WorkerAmqpClientSession_OnAmqpClientSessionClosed;
                     }
                     await muxWorker.workerAmqpClientSession.OpenLinkTelemetryAndC2DAsync(deviceClientEndpointIdentity, timeoutHelper.RemainingTime(), useLinkBasedTokenRefresh, authenticationSession).ConfigureAwait(false);
-
                 }
                 else
                 {
@@ -571,6 +562,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
 
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(DisposeTwinPatchDelivery)}");
+        }
+
+        internal override int GetNumberOfClients()
+        {
+            return muxedDevices.Count;
         }
         #endregion
     }

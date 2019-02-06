@@ -57,8 +57,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnection)}");
         }
-
-        internal abstract bool AddToMux(DeviceClientEndpointIdentity deviceClientEndpointIdentity);
         #endregion
 
         #region Open-Close
@@ -252,6 +250,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         #endregion
 
         #region Helpers
+        internal abstract int GetNumberOfClients();
+
         private AmqpSettings CreateAmqpSettings()
         {
             var amqpSettings = new AmqpSettings();

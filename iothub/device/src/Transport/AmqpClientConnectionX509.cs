@@ -48,11 +48,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             workerAmqpClientSession = null;
             isConnectionAuthenticated = false;
         }
-
-        internal override bool AddToMux(DeviceClientEndpointIdentity deviceClientEndpointIdentity)
-        {
-            return false;
-        }
         #endregion
 
         #region Open-Close
@@ -408,6 +403,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
             workerAmqpClientSession.DisposeTwinPatchDelivery(amqpMessage);
 
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionX509)}.{nameof(DisposeTwinPatchDelivery)}");
+        }
+
+        internal override int GetNumberOfClients()
+        {
+            return 1;
         }
         #endregion
     }
