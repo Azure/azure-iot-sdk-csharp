@@ -7,6 +7,7 @@ using Microsoft.Azure.Amqp.Transport;
 using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,26 +16,31 @@ namespace Microsoft.Azure.Devices.Client.Transport
     internal class AmqpClientConnectionSasMux : AmqpClientConnection
     {
         #region Members-Constructor
+        internal static readonly TimeSpan DefaultOperationTimeout = TimeSpan.FromMinutes(1);
         private const bool useLinkBasedTokenRefresh = true;
-
-        private AmqpClientSession authenticationSession;
 
         private class MuxWorker
         {
-            internal AmqpClientSession workerAmqpClientSession = null;
+            internal AmqpClientSession WorkerSession;
+
+            internal MuxWorker(AmqpClientConnectionSasMux connection)
+            {
+                WorkerSession = new AmqpClientSession(connection);
+                WorkerSession.OnAmqpClientSessionClosed += connection.WorkerLinkSession_OnAmqpClientSessionClosed;
+            }
         }
-        private ConcurrentDictionary<DeviceClientEndpointIdentity, MuxWorker> muxedDevices = new ConcurrentDictionary<DeviceClientEndpointIdentity, MuxWorker>();
+
+        private ConcurrentDictionary<DeviceClientEndpointIdentity, MuxWorker> MuxedDevices;
 
         internal override event EventHandler OnAmqpClientConnectionClosed;
 
-        internal static readonly TimeSpan DefaultOperationTimeout = TimeSpan.FromMinutes(1);
-        static readonly TimeSpan RefreshTokenBuffer = TimeSpan.FromMinutes(2);
-        static readonly TimeSpan RefreshTokenRetryInterval = TimeSpan.FromSeconds(30);
-
         RemoveClientConnectionFromPool RemoveClientConnectionFromPool;
 
-        private static Semaphore openSemaphore = new Semaphore(1,1);
-        private static Semaphore closeSemaphore = new Semaphore(1,1);
+        private readonly Semaphore DeviceLock;
+
+        private readonly Semaphore StatusLock;
+
+        private DeviceClientEndpointIdentity ConnectionId;
 
         internal AmqpClientConnectionSasMux(DeviceClientEndpointIdentity deviceClientEndpointIdentity, RemoveClientConnectionFromPool removeDelegate)
             : base(deviceClientEndpointIdentity.amqpTransportSettings, deviceClientEndpointIdentity.iotHubConnectionString.HostName)
@@ -47,158 +53,180 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
 
             RemoveClientConnectionFromPool = removeDelegate;
-            authenticationSession = null;
+            DeviceLock = new Semaphore(1, 1);
+            StatusLock = new Semaphore(1, 1);
+            MuxedDevices = new ConcurrentDictionary<DeviceClientEndpointIdentity, MuxWorker>();
         }
 
-        private bool RemoveFromMux(DeviceClientEndpointIdentity deviceClientEndpointIdentity)
+        private MuxWorker GetMuxWorker(DeviceClientEndpointIdentity deviceClientEndpointIdentity)
         {
-            if (muxedDevices.ContainsKey(deviceClientEndpointIdentity))
+            DeviceLock.WaitOne();
+            MuxWorker muxWorker;
+            MuxedDevices.TryGetValue(deviceClientEndpointIdentity, out muxWorker);
+            DeviceLock.Release();
+            return muxWorker;
+        }
+
+        private async Task EnsureConnection(DeviceClientEndpointIdentity deviceClientEndpointIdentity, TimeSpan timeout)
+        {
+            TimeoutHelper timeoutHelper = new TimeoutHelper(timeout);
+            
+            StatusLock.WaitOne();
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(EnsureConnection)}");
+            if (ConnectionId is null)
             {
-                var worker = new MuxWorker();
-                if (muxedDevices.TryRemove(deviceClientEndpointIdentity, out worker))
+                try
                 {
-                    return true;
+                    // Create transport
+                    TransportBase transport = await InitializeTransport(deviceClientEndpointIdentity, timeoutHelper.RemainingTime()).ConfigureAwait(false);
+
+                    // Establish connection
+                    amqpConnection = new AmqpConnection(transport, this.amqpSettings, this.amqpConnectionSettings);
+                    await amqpConnection.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+
+                    // Update status and event handler
+                    ConnectionId = deviceClientEndpointIdentity;
+                    amqpConnection.Closed += OnConnectionClosed;
+
+                    // TODO ??? No API found for add connection into Pool, already handled or a gap ???
+                }
+                catch (Exception ex) // when (!ex.IsFatal())
+                {
+                    if (amqpConnection == null)
+                    {
+                        throw;
+                    }
+                    else
+                    {
+                        OnConnectionFailure(ex);
+                        throw;
+                    }
+                }
+                finally
+                {
+                    if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(EnsureConnection)}");
+                    StatusLock.Release();
                 }
             }
-            return false;
+            else
+            {
+                // Already connected, do nothing
+                if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(EnsureConnection)}");
+                StatusLock.Release();
+            }
+            
         }
+
+        private void OnConnectionFailure(Exception ex)
+        {
+            if (amqpConnection != null)
+            {
+                if (amqpConnection.TerminalException == null)
+                {
+                    amqpConnection.SafeClose(ex);
+                    amqpConnection = null;
+                }
+                else
+                {
+                    amqpConnection = null;
+                    throw AmqpClientHelper.ToIotHubClientContract(amqpConnection.TerminalException);
+                }
+            }
+        }
+        
         #endregion
 
         #region Open-Close
         internal override async Task OpenAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, TimeSpan timeout)
         {
-            openSemaphore.WaitOne();
-            
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(OpenAsync)}");
-
-            if (!(muxedDevices.ContainsKey(deviceClientEndpointIdentity)))
+            await EnsureConnection(deviceClientEndpointIdentity, timeout).ConfigureAwait(false);
+            DeviceLock.WaitOne();
+            if (!MuxedDevices.ContainsKey(deviceClientEndpointIdentity))
             {
-                muxedDevices.TryAdd(deviceClientEndpointIdentity, new MuxWorker());
+                MuxedDevices.TryAdd(deviceClientEndpointIdentity, new MuxWorker(this));
             }
-
-            if (muxedDevices.ContainsKey(deviceClientEndpointIdentity))
-            {
-                var timeoutHelper = new TimeoutHelper(timeout);
-
-                if (amqpConnection == null)
-                {
-                    // Create transport
-                    TransportBase transport = await InitializeTransport(deviceClientEndpointIdentity, timeout).ConfigureAwait(false);
-
-                    try
-                    {
-                        // Create connection from transport
-                        amqpConnection = new AmqpConnection(transport, this.amqpSettings, this.amqpConnectionSettings);
-                        amqpConnection.Closed += OnConnectionClosed;
-                        await amqpConnection.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
-
-                        if (!(amqpConnection.IsClosing()))
-                        {
-                            // Create Session for Authentication
-                            if (authenticationSession == null)
-                            {
-                                authenticationSession = new AmqpClientSession(this);
-                                await authenticationSession.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
-                                authenticationSession.OnAmqpClientSessionClosed += AuthenticationSession_OnAmqpClientSessionClosed;
-                            }
-                        }
-                    }
-                    catch (Exception ex) // when (!ex.IsFatal())
-                    {
-                        if (amqpConnection.TerminalException != null)
-                        {
-                            throw AmqpClientHelper.ToIotHubClientContract(amqpConnection.TerminalException);
-                        }
-
-                        amqpConnection.SafeClose(ex);
-                        throw;
-                    }
-                    finally
-                    {
-                        if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(OpenAsync)}");
-                    }
-                }
-            }
-            openSemaphore.Release();
+            DeviceLock.Release();
+            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(OpenAsync)}");
         }
 
-        private void AuthenticationSession_OnAmqpClientSessionClosed(object sender, EventArgs e)
+        internal override async Task CloseAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, TimeSpan timeout)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(AuthenticationSession_OnAmqpClientSessionClosed)}");
-            amqpConnection.SafeClose();
+            TimeoutHelper timeoutHelper = new TimeoutHelper(timeout);
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(CloseAsync)}");
+            AmqpConnection connection = null;
+            DeviceLock.WaitOne();
+            MuxWorker muxWorker;
+            MuxedDevices.TryRemove(deviceClientEndpointIdentity, out muxWorker);
+            if (muxWorker != null && MuxedDevices.Count == 0)
+            {
+                // Last device is removed
+                connection = amqpConnection;
+                amqpConnection = null;
+                RemoveClientConnectionFromPool(ConnectionId);
+            }
+            DeviceLock.Release();
+            if (muxWorker != null)
+            {
+                await muxWorker.WorkerSession.CloseAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+            }
+            if (connection != null)
+            {
+                await connection.CloseAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+            }
+            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(CloseAsync)}");
         }
 
-        private void WorkerAmqpClientSession_OnAmqpClientSessionClosed(object sender, EventArgs e)
+        private void WorkerLinkSession_OnAmqpClientSessionClosed(object sender, EventArgs e)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(WorkerAmqpClientSession_OnAmqpClientSessionClosed)}");
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(WorkerLinkSession_OnAmqpClientSessionClosed)}");
             amqpConnection.SafeClose();
         }
 
         private void OnConnectionClosed(object o, EventArgs args)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(OnConnectionClosed)}");
-            muxedDevices.Clear();
-            OnAmqpClientConnectionClosed?.Invoke(o, args);
-        }
+            
 
-        internal override async Task CloseAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, TimeSpan timeout)
-        {
-            closeSemaphore.WaitOne();
+            StatusLock.WaitOne();
+            RemoveClientConnectionFromPool(ConnectionId);
+            ConnectionId = null;
+            amqpConnection = null;
+            StatusLock.Release();
+            
+            DeviceLock.WaitOne();
+            ICollection<MuxWorker> workers = MuxedDevices.Values;
+            MuxedDevices.Clear();
+            DeviceLock.Release();
 
-            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(CloseAsync)}");
-
-            if (muxedDevices.TryGetValue(deviceClientEndpointIdentity, out MuxWorker muxWorker))
+            foreach(MuxWorker worker in workers)
             {
-                if (muxWorker.workerAmqpClientSession != null)
-                {
-                    await muxWorker.workerAmqpClientSession.CloseAsync(timeout).ConfigureAwait(false);
-                }
-                if (RemoveFromMux(deviceClientEndpointIdentity))
-                {
-                    if (muxedDevices.IsEmpty)
-                    {
-                        await amqpConnection.CloseAsync(timeout).ConfigureAwait(false);
-                        RemoveClientConnectionFromPool(deviceClientEndpointIdentity);
-                    }
-                }
+                worker.WorkerSession.CloseAsync(DefaultOperationTimeout).ConfigureAwait(true);
             }
 
-            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(CloseAsync)}");
-
-            closeSemaphore.Release();
+            OnAmqpClientConnectionClosed?.Invoke(o, args);
         }
+        
+        
         #endregion
 
         #region Telemetry
         internal override async Task EnableTelemetryAndC2DAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(EnableTelemetryAndC2DAsync)}");
+            DeviceLock.WaitOne();
+            MuxWorker muxWorker;
+            MuxedDevices.TryGetValue(deviceClientEndpointIdentity, out muxWorker);
+            DeviceLock.Release();
 
-            if (!(muxedDevices.ContainsKey(deviceClientEndpointIdentity)))
+            if (muxWorker == null)
             {
                 throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionSasMux)}.{nameof(EnableTelemetryAndC2DAsync)}: " + "DeviceClientEndpointIdentity crisis");
             }
-
-            if ((amqpConnection != null) & (!(amqpConnection.IsClosing())))
+            else
             {
-                var timeoutHelper = new TimeoutHelper(timeout);
-
-                if (muxedDevices.TryGetValue(deviceClientEndpointIdentity, out MuxWorker muxWorker))
-                {
-                    if (muxWorker.workerAmqpClientSession == null)
-                    {
-                        muxWorker.workerAmqpClientSession = new AmqpClientSession(this);
-                        await muxWorker.workerAmqpClientSession.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
-                        muxWorker.workerAmqpClientSession.OnAmqpClientSessionClosed += WorkerAmqpClientSession_OnAmqpClientSessionClosed;
-                    }
-                    await muxWorker.workerAmqpClientSession.OpenLinkTelemetryAndC2DAsync(deviceClientEndpointIdentity, timeoutHelper.RemainingTime(), useLinkBasedTokenRefresh, authenticationSession).ConfigureAwait(false);
-                }
-                else
-                {
-                    throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionSasMux)}.{nameof(EnableTelemetryAndC2DAsync)}: " + "TryGetValue failed");
-                }
+                await muxWorker.WorkerSession.OpenLinkTelemetryAndC2DAsync(deviceClientEndpointIdentity, timeout, useLinkBasedTokenRefresh, null).ConfigureAwait(false);
             }
-
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(EnableTelemetryAndC2DAsync)}");
         }
 
@@ -206,21 +234,15 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(DisableTelemetryAndC2DAsync)}");
 
-            if (!(muxedDevices.ContainsKey(deviceClientEndpointIdentity)))
+            MuxWorker muxWorker = GetMuxWorker(deviceClientEndpointIdentity);
+
+            if (muxWorker == null)
             {
                 throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionSasMux)}.{nameof(DisableTelemetryAndC2DAsync)}: " + "DeviceClientEndpointIdentity crisis");
             }
-
-            if (muxedDevices.TryGetValue(deviceClientEndpointIdentity, out MuxWorker muxWorker))
-            {
-                if (muxWorker.workerAmqpClientSession != null)
-                {
-                    await muxWorker.workerAmqpClientSession.CloseLinkTelemetryAsync(deviceClientEndpointIdentity, timeout).ConfigureAwait(false);
-                }
-            }
             else
             {
-                throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionSasMux)}.{nameof(DisableTelemetryAndC2DAsync)}: " + "TryGetValue failed");
+                await muxWorker.WorkerSession.CloseLinkTelemetryAsync(deviceClientEndpointIdentity, timeout).ConfigureAwait(false);
             }
 
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(DisableTelemetryAndC2DAsync)}");
@@ -230,35 +252,20 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(SendTelemetrMessageAsync)}");
 
-            if (!(muxedDevices.ContainsKey(deviceClientEndpointIdentity)))
+            MuxWorker muxWorker = GetMuxWorker(deviceClientEndpointIdentity);
+
+            if (muxWorker == null)
             {
                 throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionSasMux)}.{nameof(SendTelemetrMessageAsync)}: " + "DeviceClientEndpointIdentity crisis");
             }
-
-            Outcome outcome = null;
-
-            if ((amqpConnection != null) & (!(amqpConnection.IsClosing())))
+            else
             {
-                if (muxedDevices.TryGetValue(deviceClientEndpointIdentity, out MuxWorker muxWorker))
-                {
-                    // Create telemetry links on demand
-                    await EnableTelemetryAndC2DAsync(deviceClientEndpointIdentity, timeout).ConfigureAwait(false);
-
-                    if (muxWorker.workerAmqpClientSession != null)
-                    {
-                        // Send the message
-                        outcome = await muxWorker.workerAmqpClientSession.SendTelemetryMessageAsync(deviceClientEndpointIdentity, message, timeout).ConfigureAwait(false);
-                    }
-                }
-                else
-                {
-                    throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionSasMux)}.{nameof(SendTelemetrMessageAsync)}: " + "TryGetValue failed");
-                }
+                await EnableTelemetryAndC2DAsync(deviceClientEndpointIdentity, timeout).ConfigureAwait(false);
+                Outcome outcome = await muxWorker.WorkerSession.SendTelemetryMessageAsync(deviceClientEndpointIdentity, message, timeout).ConfigureAwait(false);
+                if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(SendTelemetrMessageAsync)}");
+                return outcome;
             }
-
-            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(SendTelemetrMessageAsync)}");
-
-            return outcome;
+            
         }
         #endregion
 
@@ -267,29 +274,15 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(EnableMethodsAsync)}");
 
-            if (!(muxedDevices.ContainsKey(deviceClientEndpointIdentity)))
+            MuxWorker muxWorker = GetMuxWorker(deviceClientEndpointIdentity);
+
+            if (muxWorker == null)
             {
                 throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionSasMux)}.{nameof(EnableMethodsAsync)}: " + "DeviceClientEndpointIdentity crisis");
             }
-
-            if (!(amqpConnection.IsClosing()))
+            else
             {
-                var timeoutHelper = new TimeoutHelper(timeout);
-
-                if (muxedDevices.TryGetValue(deviceClientEndpointIdentity, out MuxWorker muxWorker))
-                {
-                    if (muxWorker.workerAmqpClientSession == null)
-                    {
-                        muxWorker.workerAmqpClientSession = new AmqpClientSession(this);
-                        await muxWorker.workerAmqpClientSession.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
-                        muxWorker.workerAmqpClientSession.OnAmqpClientSessionClosed += WorkerAmqpClientSession_OnAmqpClientSessionClosed;
-                    }
-                    await muxWorker.workerAmqpClientSession.OpenLinkMethodsAsync(deviceClientEndpointIdentity, correlationid, methodReceivedListener, timeoutHelper.RemainingTime(), useLinkBasedTokenRefresh, authenticationSession).ConfigureAwait(false);
-                }
-                else
-                {
-                    throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionSasMux)}.{nameof(EnableMethodsAsync)}: " + "TryGetValue failed");
-                }
+                await muxWorker.WorkerSession.OpenLinkMethodsAsync(deviceClientEndpointIdentity, correlationid, methodReceivedListener, timeout, useLinkBasedTokenRefresh, null).ConfigureAwait(false);
             }
 
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(EnableMethodsAsync)}");
@@ -299,21 +292,15 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(DisableMethodsAsync)}");
 
-            if (!(muxedDevices.ContainsKey(deviceClientEndpointIdentity)))
+            MuxWorker muxWorker = GetMuxWorker(deviceClientEndpointIdentity);
+
+            if (muxWorker == null)
             {
                 throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionSasMux)}.{nameof(DisableMethodsAsync)}: " + "DeviceClientEndpointIdentity crisis");
             }
-
-            if (muxedDevices.TryGetValue(deviceClientEndpointIdentity, out MuxWorker muxWorker))
-            {
-                if (muxWorker.workerAmqpClientSession != null)
-                {
-                    await muxWorker.workerAmqpClientSession.CloseLinkMethodsAsync(deviceClientEndpointIdentity, timeout).ConfigureAwait(false);
-                }
-            }
             else
             {
-                throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionSasMux)}.{nameof(DisableMethodsAsync)}: " + "TryGetValue failed");
+                await muxWorker.WorkerSession.CloseLinkMethodsAsync(deviceClientEndpointIdentity, timeout).ConfigureAwait(false);
             }
 
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(DisableMethodsAsync)}");
@@ -323,28 +310,17 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(SendMethodResponseAsync)}");
 
-            if (!(muxedDevices.ContainsKey(deviceClientEndpointIdentity)))
+            MuxWorker muxWorker = GetMuxWorker(deviceClientEndpointIdentity);
+            if (muxWorker == null)
             {
                 throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionSasMux)}.{nameof(SendMethodResponseAsync)}: " + "DeviceClientEndpointIdentity crisis");
             }
-
-            Outcome outcome = null;
-
-            if (muxedDevices.TryGetValue(deviceClientEndpointIdentity, out MuxWorker muxWorker))
-            {
-                if (muxWorker.workerAmqpClientSession != null)
-                {
-                    outcome = await muxWorker.workerAmqpClientSession.SendMethodResponseAsync(deviceClientEndpointIdentity, methodResponse, timeout).ConfigureAwait(false);
-                }
-            }
             else
             {
-                throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionSasMux)}.{nameof(SendMethodResponseAsync)}: " + "TryGetValue failed");
+                Outcome outcome = await muxWorker.WorkerSession.SendMethodResponseAsync(deviceClientEndpointIdentity, methodResponse, timeout).ConfigureAwait(false);
+                if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(SendMethodResponseAsync)}");
+                return outcome;
             }
-
-            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(SendMethodResponseAsync)}");
-
-            return outcome;
         }
         #endregion
 
@@ -353,31 +329,15 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(EnableTwinPatchAsync)}");
 
-            if (!(muxedDevices.ContainsKey(deviceClientEndpointIdentity)))
+            MuxWorker muxWorker = GetMuxWorker(deviceClientEndpointIdentity);
+            if (muxWorker == null)
             {
                 throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionSasMux)}.{nameof(EnableTwinPatchAsync)}: " + "DeviceClientEndpointIdentity crisis");
             }
-
-            if (!(amqpConnection.IsClosing()))
+            else
             {
-                var timeoutHelper = new TimeoutHelper(timeout);
-
-                if (muxedDevices.TryGetValue(deviceClientEndpointIdentity, out MuxWorker muxWorker))
-                {
-                    if (muxWorker.workerAmqpClientSession == null)
-                    {
-                        muxWorker.workerAmqpClientSession = new AmqpClientSession(this);
-                        await muxWorker.workerAmqpClientSession.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
-                        muxWorker.workerAmqpClientSession.OnAmqpClientSessionClosed += WorkerAmqpClientSession_OnAmqpClientSessionClosed;
-                    }
-                    await muxWorker.workerAmqpClientSession.OpenLinkTwinAsync(deviceClientEndpointIdentity, correlationid, onTwinPathReceivedListener, timeoutHelper.RemainingTime(), useLinkBasedTokenRefresh, authenticationSession).ConfigureAwait(false);
-                }
-                else
-                {
-                    throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionSasMux)}.{nameof(EnableTwinPatchAsync)}: " + "TryGetValue failed");
-                }
+                await muxWorker.WorkerSession.OpenLinkTwinAsync(deviceClientEndpointIdentity, correlationid, onTwinPathReceivedListener, timeout, useLinkBasedTokenRefresh, null).ConfigureAwait(false);
             }
-
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(EnableTwinPatchAsync)}");
         }
 
@@ -385,23 +345,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(DisableTwinAsync)}");
 
-            if (!(muxedDevices.ContainsKey(deviceClientEndpointIdentity)))
+            MuxWorker muxWorker = GetMuxWorker(deviceClientEndpointIdentity);
+            if (muxWorker == null)
             {
                 throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionSasMux)}.{nameof(DisableTwinAsync)}: " + "DeviceClientEndpointIdentity crisis");
             }
-
-            if (muxedDevices.TryGetValue(deviceClientEndpointIdentity, out MuxWorker muxWorker))
-            {
-                if (muxWorker.workerAmqpClientSession != null)
-                {
-                    await muxWorker.workerAmqpClientSession.CloseLinkTwinAsync(deviceClientEndpointIdentity, timeout).ConfigureAwait(false);
-                }
-            }
-            else
-            {
-                throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionSasMux)}.{nameof(DisableTwinAsync)}: " + "TryGetValue failed");
-            }
-
+            else {
+                await muxWorker.WorkerSession.CloseLinkTwinAsync(deviceClientEndpointIdentity, timeout).ConfigureAwait(false);
+            }            
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(DisableTwinAsync)}");
         }
 
@@ -409,29 +360,17 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(SendTwinMessageAsync)}");
 
-            if (!(muxedDevices.ContainsKey(deviceClientEndpointIdentity)))
+            MuxWorker muxWorker = GetMuxWorker(deviceClientEndpointIdentity);
+            if (muxWorker == null)
             {
                 throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionSasMux)}.{nameof(SendTwinMessageAsync)}: " + "DeviceClientEndpointIdentity crisis");
             }
-
-            Outcome outcome = null;
-
-            if (muxedDevices.TryGetValue(deviceClientEndpointIdentity, out MuxWorker muxWorker))
-            {
-                if (muxWorker.workerAmqpClientSession != null)
-                {
-                    outcome = await muxWorker.workerAmqpClientSession.SendTwinMessageAsync(deviceClientEndpointIdentity, twinMessage, timeout).ConfigureAwait(false);
-                }
-            }
             else
             {
-                throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionSasMux)}.{nameof(SendTwinMessageAsync)}: " + "TryGetValue failed");
+                Outcome outcome = await muxWorker.WorkerSession.SendTwinMessageAsync(deviceClientEndpointIdentity, twinMessage, timeout).ConfigureAwait(false);
+                if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(SendTwinMessageAsync)}");
+                return outcome;
             }
-
-
-            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(SendTwinMessageAsync)}");
-
-            return outcome;
         }
         #endregion
 
@@ -440,28 +379,15 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(EnableEventsReceiveAsync)}");
 
-            if (!(muxedDevices.ContainsKey(deviceClientEndpointIdentity)))
+            MuxWorker muxWorker = GetMuxWorker(deviceClientEndpointIdentity);
+            if (muxWorker == null)
             {
                 throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionSasMux)}.{nameof(EnableEventsReceiveAsync)}: " + "DeviceClientEndpointIdentity crisis");
             }
-
-            if (!(amqpConnection.IsClosing()))
+            else
             {
-                var timeoutHelper = new TimeoutHelper(timeout);
-
-                if (muxedDevices.TryGetValue(deviceClientEndpointIdentity, out MuxWorker muxWorker))
-                {
-                    if (muxWorker.workerAmqpClientSession != null)
-                    {
-                        await muxWorker.workerAmqpClientSession.OpenLinkEventsAsync(deviceClientEndpointIdentity, onEventsReceivedListener, timeoutHelper.RemainingTime(), useLinkBasedTokenRefresh).ConfigureAwait(false);
-                    }
-                }
-                else
-                {
-                    throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionSasMux)}.{nameof(EnableEventsReceiveAsync)}: " + "TryGetValue failed");
-                }
+                await muxWorker.WorkerSession.OpenLinkEventsAsync(deviceClientEndpointIdentity, onEventsReceivedListener, timeout, useLinkBasedTokenRefresh).ConfigureAwait(false);
             }
-
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(EnableEventsReceiveAsync)}");
         }
         #endregion
@@ -471,44 +397,26 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(ReceiveAsync)}");
 
-            if (!(muxedDevices.ContainsKey(deviceClientEndpointIdentity)))
+            MuxWorker muxWorker = GetMuxWorker(deviceClientEndpointIdentity);
+            if (muxWorker == null)
             {
                 throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionSasMux)}.{nameof(ReceiveAsync)}: " + "DeviceClientEndpointIdentity crisis");
             }
-
-            Message message;
-            AmqpMessage amqpMessage = null;
-
-            // Create telemetry links on demand
-            await EnableTelemetryAndC2DAsync(deviceClientEndpointIdentity, timeout).ConfigureAwait(false);
-
-            if (muxedDevices.TryGetValue(deviceClientEndpointIdentity, out MuxWorker muxWorker))
+            else
             {
-                if (muxWorker.workerAmqpClientSession != null)
+                AmqpMessage amqpMessage = await muxWorker.WorkerSession.telemetryReceiverLink.ReceiveMessageAsync(timeout).ConfigureAwait(false);
+                Message message = null;
+                if (amqpMessage != null)
                 {
-                    amqpMessage = await muxWorker.workerAmqpClientSession.telemetryReceiverLink.ReceiveMessageAsync(timeout).ConfigureAwait(false);
+                    message = new Message(amqpMessage)
+                    {
+                        LockToken = new Guid(amqpMessage.DeliveryTag.Array).ToString()
+                    };
                 }
+                if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(ReceiveAsync)}");
+                return message;
             }
-            else
-            {
-                throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionSasMux)}.{nameof(ReceiveAsync)}: " + "TryGetValue failed");
-            }
-
-            if (amqpMessage != null)
-            {
-                message = new Message(amqpMessage)
-                {
-                    LockToken = new Guid(amqpMessage.DeliveryTag.Array).ToString()
-                };
-            }
-            else
-            {
-                message = null;
-            }
-
-            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(ReceiveAsync)}");
-
-            return message;
+            
         }
         #endregion
 
@@ -517,56 +425,39 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(DisposeMessageAsync)}");
 
-            if (!(muxedDevices.ContainsKey(deviceClientEndpointIdentity)))
+            MuxWorker muxWorker = GetMuxWorker(deviceClientEndpointIdentity);
+            if (muxWorker == null)
             {
                 throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionSasMux)}.{nameof(DisposeMessageAsync)}: " + "DeviceClientEndpointIdentity crisis");
             }
-
-            ArraySegment<byte> deliveryTag = ConvertToDeliveryTag(lockToken);
-
-            Outcome disposeOutcome = null;
-
-            if (muxedDevices.TryGetValue(deviceClientEndpointIdentity, out MuxWorker muxWorker))
+            else
             {
-                if (muxWorker.workerAmqpClientSession != null)
-                {
-                    disposeOutcome = await muxWorker.workerAmqpClientSession.telemetryReceiverLink.DisposeMessageAsync(deliveryTag, outcome, batchable: true, timeout: timeout).ConfigureAwait(false);
-                }
-            }
-
-            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(DisposeMessageAsync)}");
-
-            return disposeOutcome;
+                ArraySegment<byte> deliveryTag = ConvertToDeliveryTag(lockToken);
+                Outcome disposeOutcome = await muxWorker.WorkerSession.telemetryReceiverLink.DisposeMessageAsync(deliveryTag, outcome, batchable: true, timeout: timeout).ConfigureAwait(false);
+                if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(DisposeMessageAsync)}");
+                return disposeOutcome;
+            }            
         }
 
         internal override void DisposeTwinPatchDelivery(DeviceClientEndpointIdentity deviceClientEndpointIdentity, AmqpMessage amqpMessage)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(DisposeTwinPatchDelivery)}");
 
-            if (!(muxedDevices.ContainsKey(deviceClientEndpointIdentity)))
+            MuxWorker muxWorker = GetMuxWorker(deviceClientEndpointIdentity);
+            if (muxWorker == null)
             {
                 throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionSasMux)}.{nameof(DisposeTwinPatchDelivery)}: " + "DeviceClientEndpointIdentity crisis");
             }
-
-            if (muxedDevices.TryGetValue(deviceClientEndpointIdentity, out MuxWorker muxWorker))
-            {
-                if (muxWorker.workerAmqpClientSession != null)
-                {
-                    muxWorker.workerAmqpClientSession.DisposeTwinPatchDelivery(amqpMessage);
-                }
-            }
             else
             {
-                throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionSasMux)}.{nameof(DisposeTwinPatchDelivery)}: " + "TryGetValue failed");
+                muxWorker.WorkerSession.DisposeTwinPatchDelivery(amqpMessage);
             }
-
-
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(DisposeTwinPatchDelivery)}");
         }
 
         internal override int GetNumberOfClients()
         {
-            return muxedDevices.Count;
+            return MuxedDevices.Count;
         }
         #endregion
     }
