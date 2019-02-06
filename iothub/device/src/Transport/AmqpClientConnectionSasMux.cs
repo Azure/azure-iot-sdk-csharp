@@ -174,11 +174,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(EnableTelemetryAndC2DAsync)}");
 
-            if (!(muxedDevices.ContainsKey(deviceClientEndpointIdentity)))
-            {
-                throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionSasMux)}.{nameof(EnableTelemetryAndC2DAsync)}: " + "DeviceClientEndpointIdentity crisis");
-            }
-
             if ((amqpConnection != null) & (!(amqpConnection.IsClosing())))
             {
                 var timeoutHelper = new TimeoutHelper(timeout);
@@ -206,11 +201,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(DisableTelemetryAndC2DAsync)}");
 
-            if (!(muxedDevices.ContainsKey(deviceClientEndpointIdentity)))
-            {
-                throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionSasMux)}.{nameof(DisableTelemetryAndC2DAsync)}: " + "DeviceClientEndpointIdentity crisis");
-            }
-
             if (muxedDevices.TryGetValue(deviceClientEndpointIdentity, out MuxWorker muxWorker))
             {
                 if (muxWorker.workerAmqpClientSession != null)
@@ -229,11 +219,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
         internal override async Task<Outcome> SendTelemetrMessageAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, AmqpMessage message, TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(SendTelemetrMessageAsync)}");
-
-            if (!(muxedDevices.ContainsKey(deviceClientEndpointIdentity)))
-            {
-                throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionSasMux)}.{nameof(SendTelemetrMessageAsync)}: " + "DeviceClientEndpointIdentity crisis");
-            }
 
             Outcome outcome = null;
 
@@ -267,11 +252,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(EnableMethodsAsync)}");
 
-            if (!(muxedDevices.ContainsKey(deviceClientEndpointIdentity)))
-            {
-                throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionSasMux)}.{nameof(EnableMethodsAsync)}: " + "DeviceClientEndpointIdentity crisis");
-            }
-
             if (!(amqpConnection.IsClosing()))
             {
                 var timeoutHelper = new TimeoutHelper(timeout);
@@ -299,11 +279,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(DisableMethodsAsync)}");
 
-            if (!(muxedDevices.ContainsKey(deviceClientEndpointIdentity)))
-            {
-                throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionSasMux)}.{nameof(DisableMethodsAsync)}: " + "DeviceClientEndpointIdentity crisis");
-            }
-
             if (muxedDevices.TryGetValue(deviceClientEndpointIdentity, out MuxWorker muxWorker))
             {
                 if (muxWorker.workerAmqpClientSession != null)
@@ -322,11 +297,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
         internal override async Task<Outcome> SendMethodResponseAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, AmqpMessage methodResponse, TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(SendMethodResponseAsync)}");
-
-            if (!(muxedDevices.ContainsKey(deviceClientEndpointIdentity)))
-            {
-                throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionSasMux)}.{nameof(SendMethodResponseAsync)}: " + "DeviceClientEndpointIdentity crisis");
-            }
 
             Outcome outcome = null;
 
@@ -352,11 +322,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
         internal override async Task EnableTwinPatchAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, string correlationid, Action<AmqpMessage> onTwinPathReceivedListener, TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(EnableTwinPatchAsync)}");
-
-            if (!(muxedDevices.ContainsKey(deviceClientEndpointIdentity)))
-            {
-                throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionSasMux)}.{nameof(EnableTwinPatchAsync)}: " + "DeviceClientEndpointIdentity crisis");
-            }
 
             if (!(amqpConnection.IsClosing()))
             {
@@ -385,11 +350,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(DisableTwinAsync)}");
 
-            if (!(muxedDevices.ContainsKey(deviceClientEndpointIdentity)))
-            {
-                throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionSasMux)}.{nameof(DisableTwinAsync)}: " + "DeviceClientEndpointIdentity crisis");
-            }
-
             if (muxedDevices.TryGetValue(deviceClientEndpointIdentity, out MuxWorker muxWorker))
             {
                 if (muxWorker.workerAmqpClientSession != null)
@@ -408,11 +368,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
         internal override async Task<Outcome> SendTwinMessageAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, AmqpMessage twinMessage, TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(SendTwinMessageAsync)}");
-
-            if (!(muxedDevices.ContainsKey(deviceClientEndpointIdentity)))
-            {
-                throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionSasMux)}.{nameof(SendTwinMessageAsync)}: " + "DeviceClientEndpointIdentity crisis");
-            }
 
             Outcome outcome = null;
 
@@ -440,11 +395,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(EnableEventsReceiveAsync)}");
 
-            if (!(muxedDevices.ContainsKey(deviceClientEndpointIdentity)))
-            {
-                throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionSasMux)}.{nameof(EnableEventsReceiveAsync)}: " + "DeviceClientEndpointIdentity crisis");
-            }
-
             if (!(amqpConnection.IsClosing()))
             {
                 var timeoutHelper = new TimeoutHelper(timeout);
@@ -470,11 +420,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
         internal override async Task<Message> ReceiveAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(ReceiveAsync)}");
-
-            if (!(muxedDevices.ContainsKey(deviceClientEndpointIdentity)))
-            {
-                throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionSasMux)}.{nameof(ReceiveAsync)}: " + "DeviceClientEndpointIdentity crisis");
-            }
 
             Message message;
             AmqpMessage amqpMessage = null;
@@ -517,11 +462,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(DisposeMessageAsync)}");
 
-            if (!(muxedDevices.ContainsKey(deviceClientEndpointIdentity)))
-            {
-                throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionSasMux)}.{nameof(DisposeMessageAsync)}: " + "DeviceClientEndpointIdentity crisis");
-            }
-
             ArraySegment<byte> deliveryTag = ConvertToDeliveryTag(lockToken);
 
             Outcome disposeOutcome = null;
@@ -542,11 +482,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
         internal override void DisposeTwinPatchDelivery(DeviceClientEndpointIdentity deviceClientEndpointIdentity, AmqpMessage amqpMessage)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasMux)}.{nameof(DisposeTwinPatchDelivery)}");
-
-            if (!(muxedDevices.ContainsKey(deviceClientEndpointIdentity)))
-            {
-                throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionSasMux)}.{nameof(DisposeTwinPatchDelivery)}: " + "DeviceClientEndpointIdentity crisis");
-            }
 
             if (muxedDevices.TryGetValue(deviceClientEndpointIdentity, out MuxWorker muxWorker))
             {
