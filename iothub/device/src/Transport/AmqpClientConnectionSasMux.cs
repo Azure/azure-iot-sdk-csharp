@@ -4,6 +4,7 @@
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Azure.Amqp.Transport;
+using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Collections.Concurrent;
@@ -103,7 +104,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                             }
                         }
                     }
-                    catch (Exception ex) // when (!ex.IsFatal())
+                    catch (Exception ex) when (!ex.IsFatal())
                     {
                         if (amqpConnection.TerminalException != null)
                         {
