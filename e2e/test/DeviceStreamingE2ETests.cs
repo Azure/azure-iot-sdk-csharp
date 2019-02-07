@@ -190,7 +190,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
         #endregion Device Client Tests
-/*
+
         #region Module Client Tests
         [TestMethod]
         public async Task ModuleStreaming_RequestAccepted_Sas_Amqp()
@@ -268,7 +268,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await TestModuleStreamingAsync(TestDeviceType.Sasl, transportSettings, false).ConfigureAwait(false);
         }
 #endregion Module Client Tests
-*/
+
 #region Private Methods
         private async Task TestDeviceStreamingAsync(TestDeviceType type, ITransportSettings[] transportSettings, bool acceptRequest)
         {
@@ -322,7 +322,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await deviceClient.CloseAsync().ConfigureAwait(false);
             }
         }
-/*
+
         private async Task TestModuleStreamingAsync(TestDeviceType type, ITransportSettings[] transportSettings, bool acceptRequest)
         {
             TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix, ModulePrefix).ConfigureAwait(false);
@@ -375,7 +375,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await moduleClient.CloseAsync().ConfigureAwait(false);
             }
         }
-*/
+
         public static async Task<ClientWebSocket> GetStreamingClientAsync(Uri url, string authorizationToken, CancellationToken cancellationToken)
         {
             ClientWebSocket wsClient = new ClientWebSocket();
