@@ -107,7 +107,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         public TimeSpan TwinTimeout = TimeSpan.FromSeconds(60);
 
         private const int DeviceStreamingTopicNameLevelCount = 5;
-        private const int DeviceStreamingC2DRequestParamCount = 4;
 
         internal MqttTransportHandler(
             IPipelineContext context,
@@ -440,24 +439,21 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 {
                     IDictionary<string, string> param = ParseQueryString(tokens[4]);
 
-                    if (param.Count != DeviceStreamingC2DRequestParamCount)
-                    {
-                        throw new FormatException($"Unexpected number of parameters in Device Streaming cloud to device request ({param.Count}).");
-                    }
-                    else
-                    {
-                        string streamName = tokens[3];
-                        string rid = param.GetValueOrDefault("$rid") ?? string.Empty;
-                        string webSocketUrl = Uri.UnescapeDataString(param.GetValueOrDefault("$url") ?? string.Empty);
-                        string authToken = param.GetValueOrDefault("$auth") ?? string.Empty;
+                    string streamName = tokens[3];
+                    string rid = param.GetValueOrDefault("$rid") ?? string.Empty;
+                    string webSocketUrl = Uri.UnescapeDataString(param.GetValueOrDefault("$url") ?? string.Empty);
+                    string authToken = param.GetValueOrDefault("$auth") ?? string.Empty;
 
-                        DeviceStreamRequest request = new DeviceStreamRequest(rid, streamName, new Uri(webSocketUrl), authToken);
+                    DeviceStreamRequest request = new DeviceStreamRequest(rid, streamName, new Uri(webSocketUrl), authToken);
 
-                        streamRequestQueue.Enqueue(request);
+                    streamRequestQueue.Enqueue(request);
 
-                        streamRequestSemaphore.Release();
-                    }
+                    streamRequestSemaphore.Release();
                 }
+            }
+            catch (Exception exception) when (!exception.IsFatal())
+            {
+                throw AmqpClientHelper.ToIotHubClientContract(exception);
             }
             finally
             {
@@ -504,7 +500,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     {
                         await HandleIncomingEventMessage(message).ConfigureAwait(true);
                     }
-                    else if (message.MqttTopicName.StartsWith(deviceStreamingPostTopicPrefix))
+                    else if (message.MqttTopicName.StartsWith(deviceStreamingPostTopicPrefix, StringComparison.OrdinalIgnoreCase))
                     {
                         await this.HandleIncomingStreamPost(message).ConfigureAwait(false);
                     }
