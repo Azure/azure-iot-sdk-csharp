@@ -19,9 +19,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             public static string IdScope => GetValue("DPS_IDSCOPE");
 
-            public static string TpmDeviceRegistrationId => GetValue("DPS_TPM_REGISTRATIONID");
-
-            public static string TpmDeviceId => GetValue("DPS_TPM_DEVICEID");
 
             // To generate use Powershell: [System.Convert]::ToBase64String( (Get-Content .\certificate.pfx -Encoding Byte) )
             public static X509Certificate2 GetIndividualEnrollmentCertificate() 

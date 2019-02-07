@@ -171,7 +171,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             AttestationMechanism attestation,
             string iotHubHostName,
             TwinState initialTwinState,
-            ProvisioningStatus provisioningStatus,
+            ProvisioningStatus? provisioningStatus,
             DateTime createdDateTimeUtc,
             DateTime lastUpdatedDateTimeUtc,
             string eTag)
@@ -258,14 +258,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             }
             set
             {
-                if(!((value ?? throw new ArgumentNullException(nameof(value))) is X509Attestation))
+                if (value == null)
                 {
-                    throw new ArgumentException("Attestation for enrollmentGroup shall be X509");
+                    throw new ArgumentNullException(nameof(value));
+                }
+                else if (!(value is X509Attestation) && !(value is SymmetricKeyAttestation))
+                {
+                    throw new ArgumentException("Attestation for enrollmentGroup shall be X509 or symmetric key");
                 }
 
-                if((((X509Attestation)value).RootCertificates == null) && (((X509Attestation)value).CAReferences == null))
+                if (value is X509Attestation)
                 {
-                    throw new ArgumentException("Attestation mechanism do not contains a valid certificate.");
+                    if ((((X509Attestation)value).RootCertificates == null) && (((X509Attestation)value).CAReferences == null))
+                    {
+                        throw new ArgumentException("Attestation mechanism do not contains a valid certificate.");
+                    }
                 }
 
                 _attestation = new AttestationMechanism(value);

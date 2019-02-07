@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <remarks>
         /// It will create a new instance of the AttestationMechanism for the provided attestation type.
         /// </remarks>
-        /// <param name="attestation">the <see cref="Attestation"/> with the TPM keys or X509 certificates. It cannot 
+        /// <param name="attestation">the <see cref="Attestation"/> with the TPM keys, X509 certificates, or Symmetric keys. It cannot 
         ///     be <code>null</code>.</param>
         /// <exception cref="ArgumentNullException">If the provided attestation is <code>null</code>.</exception> 
         internal AttestationMechanism(Attestation attestation)
@@ -51,6 +51,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             {
                 // No-op.
             }
+            else if (attestation is SymmetricKeyAttestation)
+            {
+                SymmetricKey = (SymmetricKeyAttestation)attestation;
+            }
             else
             {
                 /* SRS_ATTESTATION_MECHANISM_21_005: [The constructor shall throw ArgumentException if the provided attestation is 
@@ -70,11 +74,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         ///     is using.</param>
         /// <param name="tpm">the <see cref="TpmAttestation"/> with the TPM keys.</param>
         /// <param name="x509">the <see cref="X509Attestation"/> with the certificate information.</param>
+        /// <param name="symmetricKey">the <see cref="SymmetricKeyAttestation"/> with the certificate information.</param>
         /// <exception cref="ProvisioningServiceClientException">if the received JSON is invalid.</exception>
         [JsonConstructor]
-        private AttestationMechanism(AttestationMechanismType type, TpmAttestation tpm, X509Attestation x509)
+        private AttestationMechanism(AttestationMechanismType type, TpmAttestation tpm, X509Attestation x509, SymmetricKeyAttestation symmetricKey)
         {
-            switch(type)
+            switch (type)
             {
                 case AttestationMechanismType.Tpm:
                     if(tpm == null)
@@ -102,6 +107,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                     break;
                 case AttestationMechanismType.None:
                     break;
+                case AttestationMechanismType.SymmetricKey:
+                    // In some cases symmetric keys are nulled out by the service
+                    if (symmetricKey == null)
+                    {
+                        SymmetricKey = new SymmetricKeyAttestation(string.Empty, string.Empty);
+                    }
+                    else
+                    {
+                        SymmetricKey = symmetricKey;
+                    }
+                    break;
                 default:
                     /* SRS_ATTESTATION_MECHANISM_21_017: [The constructor shall throw ProvisioningServiceClientException if the 
                                                     provided ProvisioningServiceClientException is not `TPM` or `X509`.] */
@@ -122,8 +138,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                                                     stored X509Attestation.] */
                     return _x509;
                 case AttestationMechanismType.None:
-
                     return s_none;
+                case AttestationMechanismType.SymmetricKey:
+                    return _symmetricKey;
                 default:
                     /* SRS_ATTESTATION_MECHANISM_21_012: [If the type is not `X509` or `TPM`, the getAttestation shall 
                                                     throw ProvisioningServiceClientException.] */
@@ -136,7 +153,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </summary>
         [DefaultValue(AttestationMechanismType.None)]
         [JsonProperty(PropertyName = "type")]
-        [JsonConverter(typeof(StringEnumConverter))]
+        [JsonConverter(typeof(StringEnumConverter), true)]
         public AttestationMechanismType Type { get; set; }
 
         /// <summary>
@@ -156,6 +173,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 /* SRS_ATTESTATION_MECHANISM_21_004: [If the provided attestation is instance of TpmAttestation, the 
                                                         constructor shall set the x508 as null.] */
                 _x509 = null;
+                _symmetricKey = null;
+
                 /* SRS_ATTESTATION_MECHANISM_21_003: [If the provided attestation is instance of TpmAttestation, the 
                                                         constructor shall set the attestation type as TPM.] */
                 this.Type = AttestationMechanismType.Tpm;
@@ -180,12 +199,34 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 /* SRS_ATTESTATION_MECHANISM_21_008: [If the provided attestation is instance of X509Attestation, the 
                                                         constructor shall set the TPM as null.] */
                 _tpm = null;
+                _symmetricKey = null;
+
                 /* SRS_ATTESTATION_MECHANISM_21_007: [If the provided attestation is instance of X509Attestation, the 
                                                         constructor shall set the attestation type as X509.] */
                 this.Type = AttestationMechanismType.X509;
             }
         }
         private X509Attestation _x509;
+
+        [JsonProperty(PropertyName = "symmetricKey", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        private SymmetricKeyAttestation SymmetricKey
+        {
+            get
+            {
+                return _symmetricKey;
+            }
+
+            set
+            {
+                _symmetricKey = value;
+                _x509 = null;
+                _tpm = null;
+
+                this.Type = AttestationMechanismType.SymmetricKey;
+            }
+        }
+
+        private SymmetricKeyAttestation _symmetricKey;
 
         private class NoneAttestation : Attestation { }
         private static NoneAttestation s_none = new NoneAttestation();

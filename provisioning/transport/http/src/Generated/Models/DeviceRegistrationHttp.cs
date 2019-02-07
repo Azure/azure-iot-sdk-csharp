@@ -13,25 +13,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
         /// <summary>
         /// Initializes a new instance of the DeviceRegistration class.
         /// </summary>
-        public DeviceRegistration()
-        {
-          CustomInit();
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the DeviceRegistration class.
-        /// </summary>
         public DeviceRegistration(string registrationId = default(string), TpmAttestation tpm = default(TpmAttestation))
         {
             RegistrationId = registrationId;
             Tpm = tpm;
             CustomInit();
         }
-
-        /// <summary>
-        /// An initialization method that performs custom operations like setting defaults
-        /// </summary>
-        partial void CustomInit();
 
         /// <summary>
         /// </summary>
@@ -42,6 +29,5 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
         /// </summary>
         [JsonProperty(PropertyName = "tpm")]
         public TpmAttestation Tpm { get; set; }
-
     }
 }
