@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             };
 
             // Example string to be signed:
-            // dh://myiothub.azure-devices.net/a/b/c?myvalue1=a
+            // dh://myiothub.azure-devices-provisioning.net/a/b/c?myvalue1=a
             // <Value for ExpiresOn>
 
             byte[] signedBytes = securityProvider.Sign(Encoding.UTF8.GetBytes(string.Join("\n", fields)));

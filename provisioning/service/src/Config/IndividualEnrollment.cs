@@ -5,6 +5,7 @@ using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System;
+using System.Collections.Generic;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
@@ -321,5 +322,29 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </summary>
         [JsonProperty(PropertyName = "capabilities", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public DeviceCapabilities Capabilities { get; set; }
+
+        /// <summary> 
+        /// The behavior when a device is re-provisioned to an IoT hub.
+        /// </summary>
+        [JsonProperty(PropertyName = "reprovisionPolicy", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public ReprovisionPolicy ReprovisionPolicy { get; set; }
+
+        /// <summary> 
+        /// Custom allocation definition.  
+        /// </summary>  
+        [JsonProperty(PropertyName = "customAllocationDefinition", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public CustomAllocationDefinition CustomAllocationDefinition { get; set; }
+
+        /// <summary> 
+        /// The allocation policy of this resource. Overrides the tenant level allocation policy.
+        /// </summary>
+        [JsonProperty(PropertyName = "allocationPolicy", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public AllocationPolicy? AllocationPolicy { get; set; }
+
+        /// <summary> 
+        /// The list of names of IoT hubs the device in this resource can be allocated to. Must be a subset of tenant level list of IoT hubs
+        /// </summary>
+        [JsonProperty(PropertyName = "iotHubs", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public ICollection<string> IotHubs { get; set; }
     }
 }
