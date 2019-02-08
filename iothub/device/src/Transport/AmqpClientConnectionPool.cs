@@ -104,6 +104,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private AmqpClientConnection GetIoTHubSasClientConnection(DeviceClientEndpointIdentity deviceClientEndpointIdentity)
         {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionPool)}.{nameof(GetIoTHubSasClientConnection)}");
+
             AmqpClientConnection amqpClientConnection = null;
 
             if (connectionPoolIotHubSas.Count < deviceClientEndpointIdentity.amqpTransportSettings.AmqpConnectionPoolSettings.MaxPoolSize)
@@ -120,31 +122,28 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             else
             {
-                // Find the least used Mux
-                var values = deviceConnectionDictionaryIoTHubSas.Values;
-
-                int count = int.MaxValue;
-
-                foreach (var value in values)
-                {
-                    int clientCount = value.GetNumberOfClients();
-                    if (clientCount < count)
-                    {
-                        amqpClientConnection = value;
-                        count = clientCount;
-                    }
-                }
+                amqpClientConnection = GetLeastUsedConnection(amqpClientConnection);
                 if (!(deviceConnectionDictionaryIoTHubSas.TryAdd(deviceClientEndpointIdentity, amqpClientConnection)))
                 {
                     amqpClientConnection = null;
                 }
             }
+
+            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionPool)}.{nameof(GetIoTHubSasClientConnection)}");
+
             return amqpClientConnection;
         }
 
         private AmqpClientConnection GetIoTHubSasMuxClientConnection(DeviceClientEndpointIdentity deviceClientEndpointIdentity)
         {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionPool)}.{nameof(GetIoTHubSasMuxClientConnection)}");
+
             AmqpClientConnection amqpClientConnection = null;
+
+            if (deviceConnectionDictionary.TryGetValue(deviceClientEndpointIdentity, out amqpClientConnection))
+            {
+                return amqpClientConnection;
+            }
 
             if (connectionPool.Count < deviceClientEndpointIdentity.amqpTransportSettings.AmqpConnectionPoolSettings.MaxPoolSize)
             {
@@ -160,25 +159,38 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             else
             {
-                // Find the least used Mux
-                var values = deviceConnectionDictionary.Values;
-
-                int count = int.MaxValue;
-
-                foreach (var value in values)
-                {
-                    int clientCount = value.GetNumberOfClients();
-                    if (clientCount < count)
-                    {
-                        amqpClientConnection = value;
-                        count = clientCount;
-                    }
-                }
+                amqpClientConnection = GetLeastUsedConnection(amqpClientConnection);
                 if (!(deviceConnectionDictionary.TryAdd(deviceClientEndpointIdentity, amqpClientConnection)))
                 {
                     amqpClientConnection = null;
                 }
             }
+
+            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionPool)}.{nameof(GetIoTHubSasMuxClientConnection)}");
+
+            return amqpClientConnection;
+        }
+
+        private AmqpClientConnection GetLeastUsedConnection(AmqpClientConnection amqpClientConnection)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionPool)}.{nameof(GetLeastUsedConnection)}");
+
+            var values = deviceConnectionDictionary.Values;
+
+            int count = int.MaxValue;
+
+            foreach (var value in values)
+            {
+                int clientCount = value.GetNumberOfClients();
+                if (clientCount < count)
+                {
+                    amqpClientConnection = value;
+                    count = clientCount;
+                }
+            }
+
+            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionPool)}.{nameof(GetLeastUsedConnection)}");
+
             return amqpClientConnection;
         }
     }
