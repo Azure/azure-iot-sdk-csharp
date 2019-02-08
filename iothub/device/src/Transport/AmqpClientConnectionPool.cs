@@ -17,8 +17,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
         ConcurrentDictionary<DeviceClientEndpointIdentity ,AmqpClientConnection> deviceConnectionDictionary;
         ConcurrentBag<AmqpClientConnection> connectionPool;
 
+        ConcurrentDictionary<DeviceClientEndpointIdentity, AmqpClientConnection> deviceConnectionDictionaryIoTHubSas;
+        ConcurrentBag<AmqpClientConnection> connectionPoolIotHubSas;
+
         AmqpClientConnectionFactory amqpClientConnectionFactory;
-        AmqpClientConnection amqpClientConnectionIotHubSas;
 
         internal AmqpClientConnectionPool()
         {
@@ -26,6 +28,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             deviceConnectionDictionary = new ConcurrentDictionary<DeviceClientEndpointIdentity, AmqpClientConnection>();
             connectionPool = new ConcurrentBag<AmqpClientConnection>();
+
+            deviceConnectionDictionaryIoTHubSas = new ConcurrentDictionary<DeviceClientEndpointIdentity, AmqpClientConnection>();
+            connectionPoolIotHubSas = new ConcurrentBag<AmqpClientConnection>();
 
             amqpClientConnectionFactory = new AmqpClientConnectionFactory();
         }
@@ -70,16 +75,22 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         if (Logging.IsEnabled) Logging.Info(this, $"{nameof(AmqpClientConnectionPool)}.{"Removed from sasMuxPool:"}.{nameof(amqpClientConnection)}");
                     }
                 }
-                //amqpClientConnectionSasMux = null;
             }
             else if (deviceClientEndpointIdentity is DeviceClientEndpointIdentityIoTHubSas)
             {
-                amqpClientConnectionIotHubSas = null;
+                if (deviceConnectionDictionaryIoTHubSas.ContainsKey(deviceClientEndpointIdentity))
+                {
+                    deviceConnectionDictionaryIoTHubSas.TryRemove(deviceClientEndpointIdentity, out AmqpClientConnection amqpClientConnection);
+
+                    if (amqpClientConnection != null)
+                    {
+                        if (Logging.IsEnabled) Logging.Info(this, $"{nameof(AmqpClientConnectionPool)}.{"Removed from IoTHubSasPool:"}.{nameof(amqpClientConnection)}");
+                    }
+                }
             }
 
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionPool)}.{nameof(RemoveClientConnection)}");
         }
-
 
         private AmqpClientConnection GetIoTHubSasSingleClientConnection(DeviceClientEndpointIdentity deviceClientEndpointIdentity)
         {
@@ -93,12 +104,42 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private AmqpClientConnection GetIoTHubSasClientConnection(DeviceClientEndpointIdentity deviceClientEndpointIdentity)
         {
-            if (amqpClientConnectionIotHubSas == null)
-            {
-                amqpClientConnectionIotHubSas = amqpClientConnectionFactory.Create(deviceClientEndpointIdentity, RemoveClientConnection);
-            }
+            AmqpClientConnection amqpClientConnection = null;
 
-            return amqpClientConnectionIotHubSas;
+            if (connectionPoolIotHubSas.Count < deviceClientEndpointIdentity.amqpTransportSettings.AmqpConnectionPoolSettings.MaxPoolSize)
+            {
+                amqpClientConnection = amqpClientConnectionFactory.Create(deviceClientEndpointIdentity, RemoveClientConnection);
+                if (deviceConnectionDictionaryIoTHubSas.TryAdd(deviceClientEndpointIdentity, amqpClientConnection))
+                {
+                    connectionPoolIotHubSas.Add(amqpClientConnection);
+                }
+                else
+                {
+                    amqpClientConnection = null;
+                }
+            }
+            else
+            {
+                // Find the least used Mux
+                var values = deviceConnectionDictionaryIoTHubSas.Values;
+
+                int count = int.MaxValue;
+
+                foreach (var value in values)
+                {
+                    int clientCount = value.GetNumberOfClients();
+                    if (clientCount < count)
+                    {
+                        amqpClientConnection = value;
+                        count = clientCount;
+                    }
+                }
+                if (!(deviceConnectionDictionaryIoTHubSas.TryAdd(deviceClientEndpointIdentity, amqpClientConnection)))
+                {
+                    amqpClientConnection = null;
+                }
+            }
+            return amqpClientConnection;
         }
 
         private AmqpClientConnection GetIoTHubSasMuxClientConnection(DeviceClientEndpointIdentity deviceClientEndpointIdentity)
