@@ -47,515 +47,508 @@ namespace Microsoft.Azure.Devices.E2ETests
             Group
         }
 
-        public enum TransportProtocol
-        {
-            Http,
-            Mqtt,
-            Amqp
-        }
-
         [TestMethod]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_Http_Tpm_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(TransportProtocol.Http, AttestationType.Tpm, EnrollmentType.Individual, null, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Http1, AttestationType.Tpm, EnrollmentType.Individual, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_Http_X509Individual_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(TransportProtocol.Http, AttestationType.x509, EnrollmentType.Individual, null, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Http1, AttestationType.x509, EnrollmentType.Individual, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_Http_X509Group_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(TransportProtocol.Http, AttestationType.x509, EnrollmentType.Group, null, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Http1, AttestationType.x509, EnrollmentType.Group, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_Amqp_Tpm_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(TransportProtocol.Amqp, AttestationType.Tpm, EnrollmentType.Individual, TransportFallbackType.TcpOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Amqp_Tcp_Only, AttestationType.Tpm, EnrollmentType.Individual, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_Amqp_X509Individual_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(TransportProtocol.Amqp, AttestationType.x509, EnrollmentType.Individual, TransportFallbackType.TcpOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Amqp_Tcp_Only, AttestationType.x509, EnrollmentType.Individual, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_Amqp_X509Group_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(TransportProtocol.Amqp, AttestationType.x509, EnrollmentType.Group, TransportFallbackType.TcpOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Amqp_Tcp_Only, AttestationType.x509, EnrollmentType.Group, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_AmqpWs_Tpm_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(TransportProtocol.Amqp, AttestationType.Tpm, EnrollmentType.Individual, TransportFallbackType.WebSocketOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Amqp_WebSocket_Only, AttestationType.Tpm, EnrollmentType.Individual, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_AmqpWs_X509Individual_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(TransportProtocol.Amqp, AttestationType.x509, EnrollmentType.Individual, TransportFallbackType.WebSocketOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Amqp_WebSocket_Only, AttestationType.x509, EnrollmentType.Individual, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_AmqpWs_X509Group_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(TransportProtocol.Amqp, AttestationType.x509, EnrollmentType.Group, TransportFallbackType.WebSocketOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Amqp_WebSocket_Only, AttestationType.x509, EnrollmentType.Group, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_Mqtt_X509Individual_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(TransportProtocol.Mqtt, AttestationType.x509, EnrollmentType.Individual, TransportFallbackType.TcpOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Mqtt_Tcp_Only, AttestationType.x509, EnrollmentType.Individual, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_Mqtt_X509Group_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(TransportProtocol.Mqtt, AttestationType.x509, EnrollmentType.Group, TransportFallbackType.TcpOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Mqtt_Tcp_Only, AttestationType.x509, EnrollmentType.Group, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_MqttWs_X509Individual_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(TransportProtocol.Mqtt, AttestationType.x509, EnrollmentType.Individual, TransportFallbackType.WebSocketOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Mqtt_WebSocket_Only, AttestationType.x509, EnrollmentType.Individual, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_MqttWs_X509Group_RegisterOk_GroupEnrollment()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(TransportProtocol.Mqtt, AttestationType.x509, EnrollmentType.Group, TransportFallbackType.WebSocketOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Mqtt_WebSocket_Only, AttestationType.x509, EnrollmentType.Group, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         [TestCategory("ProxyE2ETests")]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_HttpWithProxy_Tpm_RegisterOk_IndividualEnrollment()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(TransportProtocol.Http, AttestationType.Tpm, EnrollmentType.Individual, null, true, ProxyServerAddress).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Http1, AttestationType.Tpm, EnrollmentType.Individual, true, ProxyServerAddress).ConfigureAwait(false);
         }
 
         [TestMethod]
         [TestCategory("ProxyE2ETests")]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_HttpWithNullProxy_Tpm_RegisterOk_Individual()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(TransportProtocol.Http, AttestationType.Tpm, EnrollmentType.Individual, null, true).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Http1, AttestationType.Tpm, EnrollmentType.Individual, true).ConfigureAwait(false);
         }
 
         [TestMethod]
         [TestCategory("ProxyE2ETests")]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_AmqpWsWithProxy_X509Individual_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(TransportProtocol.Amqp, AttestationType.x509, EnrollmentType.Individual, TransportFallbackType.WebSocketOnly, true, ProxyServerAddress).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Amqp_WebSocket_Only, AttestationType.x509, EnrollmentType.Individual, true, ProxyServerAddress).ConfigureAwait(false);
         }
 
         [TestMethod]
         [TestCategory("ProxyE2ETests")]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_AmqpWsWithNullProxy_X509Individual_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(TransportProtocol.Amqp, AttestationType.x509, EnrollmentType.Individual, TransportFallbackType.WebSocketOnly, true).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Amqp_WebSocket_Only, AttestationType.x509, EnrollmentType.Individual, true).ConfigureAwait(false);
         }
 
         [TestMethod]
         [TestCategory("ProxyE2ETests")]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_MqttWsWithProxy_X509Individual_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(TransportProtocol.Mqtt, AttestationType.x509, EnrollmentType.Individual, TransportFallbackType.WebSocketOnly, true, ProxyServerAddress).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Mqtt_WebSocket_Only, AttestationType.x509, EnrollmentType.Individual, true, ProxyServerAddress).ConfigureAwait(false);
         }
 
         [TestMethod]
         [TestCategory("ProxyE2ETests")]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_MqttWsWithNullProxy_X509Individual_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(TransportProtocol.Mqtt, AttestationType.x509, EnrollmentType.Individual, TransportFallbackType.WebSocketOnly, true).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Mqtt_WebSocket_Only, AttestationType.x509, EnrollmentType.Individual, true).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_Http_SymmetricKey_RegisterOk()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(TransportProtocol.Http, AttestationType.SymmetricKey, EnrollmentType.Individual, null, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Http1, AttestationType.SymmetricKey, EnrollmentType.Individual, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_Http_SymmetricKey_RegisterOk_GroupEnrollment()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(TransportProtocol.Http, AttestationType.SymmetricKey, EnrollmentType.Group, null, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Http1, AttestationType.SymmetricKey, EnrollmentType.Group, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_Amqp_SymmetricKey_RegisterOk_GroupEnrollment()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(TransportProtocol.Amqp, AttestationType.SymmetricKey, EnrollmentType.Group, null, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Amqp, AttestationType.SymmetricKey, EnrollmentType.Group, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_Mqtt_SymmetricKey_RegisterOk_GroupEnrollment()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(TransportProtocol.Mqtt, AttestationType.SymmetricKey, EnrollmentType.Group, null, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Mqtt, AttestationType.SymmetricKey, EnrollmentType.Group, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_AmqpWs_SymmetricKey_RegisterOk_GroupEnrollment()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(TransportProtocol.Amqp, AttestationType.SymmetricKey, EnrollmentType.Group, TransportFallbackType.WebSocketOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Amqp_WebSocket_Only, AttestationType.SymmetricKey, EnrollmentType.Group, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_MqttWs_SymmetricKey_RegisterOk_GroupEnrollment()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(TransportProtocol.Mqtt, AttestationType.SymmetricKey, EnrollmentType.Group, TransportFallbackType.WebSocketOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Mqtt_WebSocket_Only, AttestationType.SymmetricKey, EnrollmentType.Group, false).ConfigureAwait(false);
         }
 
         [TestCategory("ProxyE2ETests")]
         [TestMethod]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_HttpWithProxy_SymmetricKey_RegisterOk_GroupEnrollment()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(TransportProtocol.Http, AttestationType.SymmetricKey, EnrollmentType.Group, null, true, ProxyServerAddress).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Http1, AttestationType.SymmetricKey, EnrollmentType.Group, true, ProxyServerAddress).ConfigureAwait(false);
         }
 
         [TestCategory("ProxyE2ETests")]
         [TestMethod]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_AmqpWithProxy_SymmetricKey_RegisterOk_GroupEnrollment()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(TransportProtocol.Amqp, AttestationType.SymmetricKey, EnrollmentType.Group, null, true, ProxyServerAddress).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Amqp, AttestationType.SymmetricKey, EnrollmentType.Group, true, ProxyServerAddress).ConfigureAwait(false);
         }
 
         [TestCategory("ProxyE2ETests")]
         [TestMethod]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_MqttWithProxy_SymmetricKey_RegisterOk_GroupEnrollment()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(TransportProtocol.Mqtt, AttestationType.SymmetricKey, EnrollmentType.Group, null, true, ProxyServerAddress).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Mqtt, AttestationType.SymmetricKey, EnrollmentType.Group, true, ProxyServerAddress).ConfigureAwait(false);
         }
 
         [TestCategory("ProxyE2ETests")]
         [TestMethod]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_AmqpWsWithProxy_SymmetricKey_RegisterOk_GroupEnrollment()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(TransportProtocol.Amqp, AttestationType.SymmetricKey, EnrollmentType.Group, TransportFallbackType.WebSocketOnly, true, ProxyServerAddress).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Amqp_WebSocket_Only, AttestationType.SymmetricKey, EnrollmentType.Group, true, ProxyServerAddress).ConfigureAwait(false);
         }
 
         [TestCategory("ProxyE2ETests")]
         [TestMethod]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_MqttWsWithProxy_SymmetricKey_RegisterOk_GroupEnrollment()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(TransportProtocol.Mqtt, AttestationType.SymmetricKey, EnrollmentType.Group, TransportFallbackType.WebSocketOnly, true, ProxyServerAddress).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Mqtt_WebSocket_Only, AttestationType.SymmetricKey, EnrollmentType.Group, true, ProxyServerAddress).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_Amqp_SymmetricKey_RegisterOk_IndividualEnrollment()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(TransportProtocol.Amqp, AttestationType.SymmetricKey, EnrollmentType.Individual, null, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Amqp, AttestationType.SymmetricKey, EnrollmentType.Individual, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_AmqpWs_SymmetricKey_RegisterOk_IndividualEnrollment()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(TransportProtocol.Amqp, AttestationType.SymmetricKey, EnrollmentType.Individual, null, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Amqp, AttestationType.SymmetricKey, EnrollmentType.Individual, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_Mqtt_SymmetricKey_RegisterOk_IndividualEnrollment()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(TransportProtocol.Mqtt, AttestationType.SymmetricKey, EnrollmentType.Individual, null, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Mqtt, AttestationType.SymmetricKey, EnrollmentType.Individual, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_MqttWs_SymmetricKey_RegisterOk_IndividualEnrollment()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(TransportProtocol.Mqtt, AttestationType.SymmetricKey, EnrollmentType.Individual, null, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Mqtt, AttestationType.SymmetricKey, EnrollmentType.Individual, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ReprovisionedDeviceResetsTwin_MqttWs_SymmetricKey_RegisterOk_Individual()
         {
-            await ProvisioningDeviceClient_ReprovisioningFlow_ResetTwin(TransportProtocol.Mqtt, AttestationType.SymmetricKey, EnrollmentType.Individual, TransportFallbackType.WebSocketOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ReprovisioningFlow_ResetTwin(Client.TransportType.Mqtt_WebSocket_Only, AttestationType.SymmetricKey, EnrollmentType.Individual, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ReprovisionedDeviceResetsTwin_Mqtt_SymmetricKey_RegisterOk_Individual()
         {
-            await ProvisioningDeviceClient_ReprovisioningFlow_ResetTwin(TransportProtocol.Mqtt, AttestationType.SymmetricKey, EnrollmentType.Individual, TransportFallbackType.TcpOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ReprovisioningFlow_ResetTwin(Client.TransportType.Mqtt_Tcp_Only, AttestationType.SymmetricKey, EnrollmentType.Individual, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ReprovisionedDeviceResetsTwin_AmqpWs_SymmetricKey_RegisterOk_Individual()
         {
-            await ProvisioningDeviceClient_ReprovisioningFlow_ResetTwin(TransportProtocol.Amqp, AttestationType.SymmetricKey, EnrollmentType.Individual, TransportFallbackType.WebSocketOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ReprovisioningFlow_ResetTwin(Client.TransportType.Amqp_WebSocket_Only, AttestationType.SymmetricKey, EnrollmentType.Individual, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ReprovisionedDeviceResetsTwin_Amqp_SymmetricKey_RegisterOk_Individual()
         {
-            await ProvisioningDeviceClient_ReprovisioningFlow_KeepTwin(TransportProtocol.Amqp, AttestationType.SymmetricKey, EnrollmentType.Individual, TransportFallbackType.TcpOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ReprovisioningFlow_KeepTwin(Client.TransportType.Amqp_Tcp_Only, AttestationType.SymmetricKey, EnrollmentType.Individual, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ReprovisionedDeviceKeepsTwin_MqttWs_SymmetricKey_RegisterOk_Individual()
         {
-            await ProvisioningDeviceClient_ReprovisioningFlow_ResetTwin(TransportProtocol.Mqtt, AttestationType.SymmetricKey, EnrollmentType.Individual, TransportFallbackType.WebSocketOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ReprovisioningFlow_ResetTwin(Client.TransportType.Mqtt_WebSocket_Only, AttestationType.SymmetricKey, EnrollmentType.Individual, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ReprovisionedDeviceKeepsTwin_Mqtt_SymmetricKey_RegisterOk_Individual()
         {
-            await ProvisioningDeviceClient_ReprovisioningFlow_ResetTwin(TransportProtocol.Mqtt, AttestationType.SymmetricKey, EnrollmentType.Individual, TransportFallbackType.TcpOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ReprovisioningFlow_ResetTwin(Client.TransportType.Mqtt_Tcp_Only, AttestationType.SymmetricKey, EnrollmentType.Individual, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ReprovisionedDeviceKeepsTwin_AmqpWs_SymmetricKey_RegisterOk_Individual()
         {
-            await ProvisioningDeviceClient_ReprovisioningFlow_KeepTwin(TransportProtocol.Amqp, AttestationType.SymmetricKey, EnrollmentType.Individual, TransportFallbackType.WebSocketOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ReprovisioningFlow_KeepTwin(Client.TransportType.Amqp_WebSocket_Only, AttestationType.SymmetricKey, EnrollmentType.Individual, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ReprovisionedDeviceKeepsTwin_Amqp_SymmetricKey_RegisterOk_Individual()
         {
-            await ProvisioningDeviceClient_ReprovisioningFlow_KeepTwin(TransportProtocol.Amqp, AttestationType.SymmetricKey, EnrollmentType.Individual, TransportFallbackType.TcpOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ReprovisioningFlow_KeepTwin(Client.TransportType.Amqp_Tcp_Only, AttestationType.SymmetricKey, EnrollmentType.Individual, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ReprovisioningWorks_Http_SymmetricKey_RegisterOk_Individual()
         {
             //twin is irrelevant since HTTP Device Clients can't use twin
-            await ProvisioningDeviceClient_ReprovisioningFlow_KeepTwin(TransportProtocol.Http, AttestationType.SymmetricKey, EnrollmentType.Individual, TransportFallbackType.TcpOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ReprovisioningFlow_KeepTwin(Client.TransportType.Http1, AttestationType.SymmetricKey, EnrollmentType.Individual, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ReprovisioningBlockingWorks_Http_SymmetricKey_RegisterOk_Individual()
         {
-            await ProvisioningDeviceClient_ReprovisioningFlow_DoNotReprovision(TransportProtocol.Http, AttestationType.SymmetricKey, EnrollmentType.Individual, TransportFallbackType.TcpOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ReprovisioningFlow_DoNotReprovision(Client.TransportType.Http1, AttestationType.SymmetricKey, EnrollmentType.Individual, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ReprovisioningBlockingWorks_Mqtt_SymmetricKey_RegisterOk_Individual()
         {
-            await ProvisioningDeviceClient_ReprovisioningFlow_DoNotReprovision(TransportProtocol.Mqtt, AttestationType.SymmetricKey, EnrollmentType.Individual, TransportFallbackType.TcpOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ReprovisioningFlow_DoNotReprovision(Client.TransportType.Mqtt_Tcp_Only, AttestationType.SymmetricKey, EnrollmentType.Individual, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ReprovisioningBlockingWorks_Amqp_SymmetricKey_RegisterOk_Individual()
         {
-            await ProvisioningDeviceClient_ReprovisioningFlow_DoNotReprovision(TransportProtocol.Amqp, AttestationType.SymmetricKey, EnrollmentType.Individual, TransportFallbackType.TcpOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ReprovisioningFlow_DoNotReprovision(Client.TransportType.Amqp_Tcp_Only, AttestationType.SymmetricKey, EnrollmentType.Individual, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ReprovisioningBlockingWorks_AmqpWs_SymmetricKey_RegisterOk_Individual()
         {
-            await ProvisioningDeviceClient_ReprovisioningFlow_DoNotReprovision(TransportProtocol.Amqp, AttestationType.SymmetricKey, EnrollmentType.Individual, TransportFallbackType.WebSocketOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ReprovisioningFlow_DoNotReprovision(Client.TransportType.Amqp_WebSocket_Only, AttestationType.SymmetricKey, EnrollmentType.Individual, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ReprovisioningBlockingWorks_MqttWs_SymmetricKey_RegisterOk_Individual()
         {
-            await ProvisioningDeviceClient_ReprovisioningFlow_DoNotReprovision(TransportProtocol.Http, AttestationType.SymmetricKey, EnrollmentType.Individual, TransportFallbackType.WebSocketOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ReprovisioningFlow_DoNotReprovision(Client.TransportType.Http1, AttestationType.SymmetricKey, EnrollmentType.Individual, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ReprovisioningGeolatencyWorks_Http_SymmetricKey_RegisterOk_Individual()
         {
-            await ProvisioningDeviceClient_ReprovisioningFlow_Geolatency(TransportProtocol.Http, AttestationType.SymmetricKey, EnrollmentType.Individual, TransportFallbackType.TcpOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ReprovisioningFlow_Geolatency(Client.TransportType.Http1, AttestationType.SymmetricKey, EnrollmentType.Individual, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ReprovisioningGeolatencyWorks_Mqtt_SymmetricKey_RegisterOk_Individual()
         {
-            await ProvisioningDeviceClient_ReprovisioningFlow_Geolatency(TransportProtocol.Mqtt, AttestationType.SymmetricKey, EnrollmentType.Individual, TransportFallbackType.TcpOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ReprovisioningFlow_Geolatency(Client.TransportType.Mqtt_Tcp_Only, AttestationType.SymmetricKey, EnrollmentType.Individual, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ReprovisioningGeolatencyWorks_Amqp_SymmetricKey_RegisterOk_Individual()
         {
-            await ProvisioningDeviceClient_ReprovisioningFlow_Geolatency(TransportProtocol.Amqp, AttestationType.SymmetricKey, EnrollmentType.Individual, TransportFallbackType.TcpOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ReprovisioningFlow_Geolatency(Client.TransportType.Amqp_Tcp_Only, AttestationType.SymmetricKey, EnrollmentType.Individual, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ReprovisioningGeolatencyWorks_AmqpWs_SymmetricKey_RegisterOk_Individual()
         {
-            await ProvisioningDeviceClient_ReprovisioningFlow_Geolatency(TransportProtocol.Amqp, AttestationType.SymmetricKey, EnrollmentType.Individual, TransportFallbackType.WebSocketOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ReprovisioningFlow_Geolatency(Client.TransportType.Amqp_WebSocket_Only, AttestationType.SymmetricKey, EnrollmentType.Individual, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ReprovisioningGeolatencyWorks_MqttWs_SymmetricKey_RegisterOk_Individual()
         {
-            await ProvisioningDeviceClient_ReprovisioningFlow_Geolatency(TransportProtocol.Http, AttestationType.SymmetricKey, EnrollmentType.Individual, TransportFallbackType.WebSocketOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ReprovisioningFlow_Geolatency(Client.TransportType.Http1, AttestationType.SymmetricKey, EnrollmentType.Individual, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_CustomAllocationPolicy_Http_SymmetricKey_RegisterOk_Individual()
         {
-            await ProvisioningDeviceClient_CustomAllocationPolicy(TransportProtocol.Http, AttestationType.SymmetricKey, EnrollmentType.Individual, TransportFallbackType.TcpOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_CustomAllocationPolicy(Client.TransportType.Http1, AttestationType.SymmetricKey, EnrollmentType.Individual, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_CustomAllocationPolicy_Mqtt_SymmetricKey_RegisterOk_Individual()
         {
-            await ProvisioningDeviceClient_CustomAllocationPolicy(TransportProtocol.Mqtt, AttestationType.SymmetricKey, EnrollmentType.Individual, TransportFallbackType.TcpOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_CustomAllocationPolicy(Client.TransportType.Mqtt_Tcp_Only, AttestationType.SymmetricKey, EnrollmentType.Individual, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_CustomAllocationPolicy_Amqp_SymmetricKey_RegisterOk_Individual()
         {
-            await ProvisioningDeviceClient_CustomAllocationPolicy(TransportProtocol.Amqp, AttestationType.SymmetricKey, EnrollmentType.Individual, TransportFallbackType.TcpOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_CustomAllocationPolicy(Client.TransportType.Amqp_Tcp_Only, AttestationType.SymmetricKey, EnrollmentType.Individual, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_CustomAllocationPolicy_AmqpWs_SymmetricKey_RegisterOk_Individual()
         {
-            await ProvisioningDeviceClient_CustomAllocationPolicy(TransportProtocol.Amqp, AttestationType.SymmetricKey, EnrollmentType.Individual, TransportFallbackType.WebSocketOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_CustomAllocationPolicy(Client.TransportType.Amqp_WebSocket_Only, AttestationType.SymmetricKey, EnrollmentType.Individual, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_CustomAllocationPolicy_MqttWs_SymmetricKey_RegisterOk_Individual()
         {
-            await ProvisioningDeviceClient_CustomAllocationPolicy(TransportProtocol.Http, AttestationType.SymmetricKey, EnrollmentType.Individual, TransportFallbackType.WebSocketOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_CustomAllocationPolicy(Client.TransportType.Http1, AttestationType.SymmetricKey, EnrollmentType.Individual, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ReprovisionedDeviceResetsTwin_MqttWs_SymmetricKey_RegisterOk_Group()
         {
-            await ProvisioningDeviceClient_ReprovisioningFlow_ResetTwin(TransportProtocol.Mqtt, AttestationType.SymmetricKey, EnrollmentType.Group, TransportFallbackType.WebSocketOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ReprovisioningFlow_ResetTwin(Client.TransportType.Mqtt_WebSocket_Only, AttestationType.SymmetricKey, EnrollmentType.Group, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ReprovisionedDeviceResetsTwin_Mqtt_SymmetricKey_RegisterOk_Group()
         {
-            await ProvisioningDeviceClient_ReprovisioningFlow_ResetTwin(TransportProtocol.Mqtt, AttestationType.SymmetricKey, EnrollmentType.Group, TransportFallbackType.TcpOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ReprovisioningFlow_ResetTwin(Client.TransportType.Mqtt_Tcp_Only, AttestationType.SymmetricKey, EnrollmentType.Group, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ReprovisionedDeviceResetsTwin_AmqpWs_SymmetricKey_RegisterOk_Group()
         {
-            await ProvisioningDeviceClient_ReprovisioningFlow_ResetTwin(TransportProtocol.Amqp, AttestationType.SymmetricKey, EnrollmentType.Group, TransportFallbackType.WebSocketOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ReprovisioningFlow_ResetTwin(Client.TransportType.Amqp_WebSocket_Only, AttestationType.SymmetricKey, EnrollmentType.Group, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ReprovisionedDeviceResetsTwin_Amqp_SymmetricKey_RegisterOk_Group()
         {
-            await ProvisioningDeviceClient_ReprovisioningFlow_KeepTwin(TransportProtocol.Amqp, AttestationType.SymmetricKey, EnrollmentType.Group, TransportFallbackType.TcpOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ReprovisioningFlow_KeepTwin(Client.TransportType.Amqp_Tcp_Only, AttestationType.SymmetricKey, EnrollmentType.Group, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ReprovisionedDeviceKeepsTwin_MqttWs_SymmetricKey_RegisterOk_Group()
         {
-            await ProvisioningDeviceClient_ReprovisioningFlow_ResetTwin(TransportProtocol.Mqtt, AttestationType.SymmetricKey, EnrollmentType.Group, TransportFallbackType.WebSocketOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ReprovisioningFlow_ResetTwin(Client.TransportType.Mqtt_WebSocket_Only, AttestationType.SymmetricKey, EnrollmentType.Group, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ReprovisionedDeviceKeepsTwin_Mqtt_SymmetricKey_RegisterOk_Group()
         {
-            await ProvisioningDeviceClient_ReprovisioningFlow_ResetTwin(TransportProtocol.Mqtt, AttestationType.SymmetricKey, EnrollmentType.Group, TransportFallbackType.TcpOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ReprovisioningFlow_ResetTwin(Client.TransportType.Mqtt_Tcp_Only, AttestationType.SymmetricKey, EnrollmentType.Group, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ReprovisionedDeviceKeepsTwin_AmqpWs_SymmetricKey_RegisterOk_Group()
         {
-            await ProvisioningDeviceClient_ReprovisioningFlow_KeepTwin(TransportProtocol.Amqp, AttestationType.SymmetricKey, EnrollmentType.Group, TransportFallbackType.WebSocketOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ReprovisioningFlow_KeepTwin(Client.TransportType.Amqp_WebSocket_Only, AttestationType.SymmetricKey, EnrollmentType.Group, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ReprovisionedDeviceKeepsTwin_Amqp_SymmetricKey_RegisterOk_Group()
         {
-            await ProvisioningDeviceClient_ReprovisioningFlow_KeepTwin(TransportProtocol.Amqp, AttestationType.SymmetricKey, EnrollmentType.Group, TransportFallbackType.TcpOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ReprovisioningFlow_KeepTwin(Client.TransportType.Amqp_Tcp_Only, AttestationType.SymmetricKey, EnrollmentType.Group, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ReprovisioningWorks_Http_SymmetricKey_RegisterOk_Group()
         {
-            await ProvisioningDeviceClient_ReprovisioningFlow_KeepTwin(TransportProtocol.Http, AttestationType.SymmetricKey, EnrollmentType.Group, TransportFallbackType.TcpOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ReprovisioningFlow_KeepTwin(Client.TransportType.Http1, AttestationType.SymmetricKey, EnrollmentType.Group, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ReprovisioningBlockingWorks_Http_SymmetricKey_RegisterOk_Group()
         {
-            await ProvisioningDeviceClient_ReprovisioningFlow_DoNotReprovision(TransportProtocol.Http, AttestationType.SymmetricKey, EnrollmentType.Group, TransportFallbackType.TcpOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ReprovisioningFlow_DoNotReprovision(Client.TransportType.Http1, AttestationType.SymmetricKey, EnrollmentType.Group, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ReprovisioningBlockingWorks_Mqtt_SymmetricKey_RegisterOk_Group()
         {
-            await ProvisioningDeviceClient_ReprovisioningFlow_DoNotReprovision(TransportProtocol.Mqtt, AttestationType.SymmetricKey, EnrollmentType.Group, TransportFallbackType.TcpOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ReprovisioningFlow_DoNotReprovision(Client.TransportType.Mqtt_Tcp_Only, AttestationType.SymmetricKey, EnrollmentType.Group, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ReprovisioningBlockingWorks_Amqp_SymmetricKey_RegisterOk_Group()
         {
-            await ProvisioningDeviceClient_ReprovisioningFlow_DoNotReprovision(TransportProtocol.Amqp, AttestationType.SymmetricKey, EnrollmentType.Group, TransportFallbackType.TcpOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ReprovisioningFlow_DoNotReprovision(Client.TransportType.Amqp_Tcp_Only, AttestationType.SymmetricKey, EnrollmentType.Group, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ReprovisioningBlockingWorks_AmqpWs_SymmetricKey_RegisterOk_Group()
         {
-            await ProvisioningDeviceClient_ReprovisioningFlow_DoNotReprovision(TransportProtocol.Amqp, AttestationType.SymmetricKey, EnrollmentType.Group, TransportFallbackType.WebSocketOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ReprovisioningFlow_DoNotReprovision(Client.TransportType.Amqp_WebSocket_Only, AttestationType.SymmetricKey, EnrollmentType.Group, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ReprovisioningBlockingWorks_MqttWs_SymmetricKey_RegisterOk_Group()
         {
-            await ProvisioningDeviceClient_ReprovisioningFlow_DoNotReprovision(TransportProtocol.Http, AttestationType.SymmetricKey, EnrollmentType.Group, TransportFallbackType.WebSocketOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ReprovisioningFlow_DoNotReprovision(Client.TransportType.Http1, AttestationType.SymmetricKey, EnrollmentType.Group, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ReprovisioningGeolatencyWorks_Http_SymmetricKey_RegisterOk_Group()
         {
-            await ProvisioningDeviceClient_ReprovisioningFlow_Geolatency(TransportProtocol.Http, AttestationType.SymmetricKey, EnrollmentType.Group, TransportFallbackType.TcpOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ReprovisioningFlow_Geolatency(Client.TransportType.Http1, AttestationType.SymmetricKey, EnrollmentType.Group, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ReprovisioningGeolatencyWorks_Mqtt_SymmetricKey_RegisterOk_Group()
         {
-            await ProvisioningDeviceClient_ReprovisioningFlow_Geolatency(TransportProtocol.Mqtt, AttestationType.SymmetricKey, EnrollmentType.Group, TransportFallbackType.TcpOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ReprovisioningFlow_Geolatency(Client.TransportType.Mqtt_Tcp_Only, AttestationType.SymmetricKey, EnrollmentType.Group, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ReprovisioningGeolatencyWorks_Amqp_SymmetricKey_RegisterOk_Group()
         {
-            await ProvisioningDeviceClient_ReprovisioningFlow_Geolatency(TransportProtocol.Amqp, AttestationType.SymmetricKey, EnrollmentType.Group, TransportFallbackType.TcpOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ReprovisioningFlow_Geolatency(Client.TransportType.Amqp_Tcp_Only, AttestationType.SymmetricKey, EnrollmentType.Group, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ReprovisioningGeolatencyWorks_AmqpWs_SymmetricKey_RegisterOk_Group()
         {
-            await ProvisioningDeviceClient_ReprovisioningFlow_Geolatency(TransportProtocol.Amqp, AttestationType.SymmetricKey, EnrollmentType.Group, TransportFallbackType.WebSocketOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ReprovisioningFlow_Geolatency(Client.TransportType.Amqp_WebSocket_Only, AttestationType.SymmetricKey, EnrollmentType.Group, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_ReprovisioningGeolatencyWorks_MqttWs_SymmetricKey_RegisterOk_Group()
         {
-            await ProvisioningDeviceClient_ReprovisioningFlow_Geolatency(TransportProtocol.Http, AttestationType.SymmetricKey, EnrollmentType.Group, TransportFallbackType.WebSocketOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ReprovisioningFlow_Geolatency(Client.TransportType.Http1, AttestationType.SymmetricKey, EnrollmentType.Group, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_CustomAllocationPolicy_Http_SymmetricKey_RegisterOk_Group()
         {
-            await ProvisioningDeviceClient_CustomAllocationPolicy(TransportProtocol.Http, AttestationType.SymmetricKey, EnrollmentType.Group, TransportFallbackType.TcpOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_CustomAllocationPolicy(Client.TransportType.Http1, AttestationType.SymmetricKey, EnrollmentType.Group, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_CustomAllocationPolicy_Mqtt_SymmetricKey_RegisterOk_Group()
         {
-            await ProvisioningDeviceClient_CustomAllocationPolicy(TransportProtocol.Mqtt, AttestationType.SymmetricKey, EnrollmentType.Group, TransportFallbackType.TcpOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_CustomAllocationPolicy(Client.TransportType.Mqtt_Tcp_Only, AttestationType.SymmetricKey, EnrollmentType.Group, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_CustomAllocationPolicy_Amqp_SymmetricKey_RegisterOk_Group()
         {
-            await ProvisioningDeviceClient_CustomAllocationPolicy(TransportProtocol.Amqp, AttestationType.SymmetricKey, EnrollmentType.Group, TransportFallbackType.TcpOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_CustomAllocationPolicy(Client.TransportType.Amqp_Tcp_Only, AttestationType.SymmetricKey, EnrollmentType.Group, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_CustomAllocationPolicy_AmqpWs_SymmetricKey_RegisterOk_Group()
         {
-            await ProvisioningDeviceClient_CustomAllocationPolicy(TransportProtocol.Amqp, AttestationType.SymmetricKey, EnrollmentType.Group, TransportFallbackType.WebSocketOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_CustomAllocationPolicy(Client.TransportType.Amqp_WebSocket_Only, AttestationType.SymmetricKey, EnrollmentType.Group, false).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_CustomAllocationPolicy_MqttWs_SymmetricKey_RegisterOk_Group()
         {
-            await ProvisioningDeviceClient_CustomAllocationPolicy(TransportProtocol.Http, AttestationType.SymmetricKey, EnrollmentType.Group, TransportFallbackType.WebSocketOnly, false).ConfigureAwait(false);
+            await ProvisioningDeviceClient_CustomAllocationPolicy(Client.TransportType.Http1, AttestationType.SymmetricKey, EnrollmentType.Group, false).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -564,7 +557,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         /// the device to the hub with the longest host name. This test verifies that an enrollment with a custom allocation policy 
         /// pointing to that Azure function will always enroll to the hub with the longest name
         /// </summary>
-        private async Task ProvisioningDeviceClient_CustomAllocationPolicy(TransportProtocol transportProtocol, AttestationType attestationType, EnrollmentType enrollmentType, TransportFallbackType transportFallbackType, bool setCustomProxy, string customServerProxy = null)
+        private async Task ProvisioningDeviceClient_CustomAllocationPolicy(Client.TransportType transportProtocol, AttestationType attestationType, EnrollmentType enrollmentType, bool setCustomProxy, string customServerProxy = null)
         {
             var closeHostName = IotHubConnectionStringBuilder.Create(Configuration.IoTHub.ConnectionString).HostName;
 
@@ -585,7 +578,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Assert.Fail("Configuration failure: far away hub hostname cannot be the same length as the close hub hostname");
             }
 
-            await ProvisioningDeviceClient_ProvisioningFlow_CustomAllocation_AllocateToHubWithLongestHostName(transportProtocol, attestationType, enrollmentType, transportFallbackType, setCustomProxy, iotHubsToProvisionTo, expectedDestinationHub, customServerProxy).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ProvisioningFlow_CustomAllocation_AllocateToHubWithLongestHostName(transportProtocol, attestationType, enrollmentType, setCustomProxy, iotHubsToProvisionTo, expectedDestinationHub, customServerProxy).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -593,101 +586,99 @@ namespace Microsoft.Azure.Devices.E2ETests
         /// in a far away hub, but then the enrollment is updated to reflect a closer hub being linked to it, and the expectation is that
         /// the device reprovisions over to the closer hub
         /// </summary>
-        private async Task ProvisioningDeviceClient_ReprovisioningFlow_Geolatency(TransportProtocol transportProtocol, AttestationType attestationType, EnrollmentType enrollmentType, TransportFallbackType transportFallbackType, bool setCustomProxy, string customServerProxy = null)
+        private async Task ProvisioningDeviceClient_ReprovisioningFlow_Geolatency(Client.TransportType transportProtocol, AttestationType attestationType, EnrollmentType enrollmentType, bool setCustomProxy, string customServerProxy = null)
         {
             var connectionString = IotHubConnectionStringBuilder.Create(Configuration.IoTHub.ConnectionString);
             ICollection<string> iotHubsToStartAt = new List<string>() { Configuration.Provisioning.FarAwayIotHubHostName };
             ICollection<string> iotHubsToReprovisionTo = new List<string>() { connectionString.HostName, Configuration.Provisioning.FarAwayIotHubHostName };
-            await ProvisioningDeviceClient_ReprovisioningFlow(transportProtocol, attestationType, enrollmentType, transportFallbackType, setCustomProxy, new ReprovisionPolicy { MigrateDeviceData = false, UpdateHubAssignment = true }, AllocationPolicy.GeoLatency, null, iotHubsToStartAt, iotHubsToReprovisionTo, customServerProxy).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ReprovisioningFlow(transportProtocol, attestationType, enrollmentType, setCustomProxy, new ReprovisionPolicy { MigrateDeviceData = false, UpdateHubAssignment = true }, AllocationPolicy.GeoLatency, null, iotHubsToStartAt, iotHubsToReprovisionTo, customServerProxy).ConfigureAwait(false);
         }
 
         /// <summary>
         /// This test flow reprovisions a device after that device created some twin updates on its original hub.
         /// The expected behaviour is that, with ReprovisionPolicy set to not migrate data, the twin updates from the original hub are not present at the new hub
         /// </summary>
-        private async Task ProvisioningDeviceClient_ReprovisioningFlow_ResetTwin(TransportProtocol transportProtocol, AttestationType attestationType, EnrollmentType enrollmentType, TransportFallbackType transportFallbackType, bool setCustomProxy, string customServerProxy = null)
+        private async Task ProvisioningDeviceClient_ReprovisioningFlow_ResetTwin(Client.TransportType transportProtocol, AttestationType attestationType, EnrollmentType enrollmentType, bool setCustomProxy, string customServerProxy = null)
         {
             var connectionString = IotHubConnectionStringBuilder.Create(Configuration.IoTHub.ConnectionString);
             ICollection<string> iotHubsToStartAt = new List<string>() { Configuration.Provisioning.FarAwayIotHubHostName };
             ICollection<string> iotHubsToReprovisionTo = new List<string>() { connectionString.HostName };
-            await ProvisioningDeviceClient_ReprovisioningFlow(transportProtocol, attestationType, enrollmentType, transportFallbackType, setCustomProxy, new ReprovisionPolicy { MigrateDeviceData = false, UpdateHubAssignment = true }, AllocationPolicy.Hashed, null, iotHubsToStartAt, iotHubsToReprovisionTo, customServerProxy).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ReprovisioningFlow(transportProtocol, attestationType, enrollmentType, setCustomProxy, new ReprovisionPolicy { MigrateDeviceData = false, UpdateHubAssignment = true }, AllocationPolicy.Hashed, null, iotHubsToStartAt, iotHubsToReprovisionTo, customServerProxy).ConfigureAwait(false);
         }
 
         /// <summary>
         /// This test flow reprovisions a device after that device created some twin updates on its original hub.
         /// The expected behaviour is that, with ReprovisionPolicy set to migrate data, the twin updates from the original hub are present at the new hub
         /// </summary>
-        private async Task ProvisioningDeviceClient_ReprovisioningFlow_KeepTwin(TransportProtocol transportProtocol, AttestationType attestationType, EnrollmentType enrollmentType, TransportFallbackType transportFallbackType, bool setCustomProxy, string customServerProxy = null)
+        private async Task ProvisioningDeviceClient_ReprovisioningFlow_KeepTwin(Client.TransportType transportProtocol, AttestationType attestationType, EnrollmentType enrollmentType, bool setCustomProxy, string customServerProxy = null)
         {
             var connectionString = IotHubConnectionStringBuilder.Create(Configuration.IoTHub.ConnectionString);
             ICollection<string> iotHubsToStartAt = new List<string>() { Configuration.Provisioning.FarAwayIotHubHostName };
             ICollection<string> iotHubsToReprovisionTo = new List<string>() { connectionString.HostName };
-            await ProvisioningDeviceClient_ReprovisioningFlow(transportProtocol, attestationType, enrollmentType, transportFallbackType, setCustomProxy, new ReprovisionPolicy { MigrateDeviceData = true, UpdateHubAssignment = true }, AllocationPolicy.Hashed, null, iotHubsToStartAt, iotHubsToReprovisionTo, customServerProxy).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ReprovisioningFlow(transportProtocol, attestationType, enrollmentType, setCustomProxy, new ReprovisionPolicy { MigrateDeviceData = true, UpdateHubAssignment = true }, AllocationPolicy.Hashed, null, iotHubsToStartAt, iotHubsToReprovisionTo, customServerProxy).ConfigureAwait(false);
         }
 
         /// <summary>
         /// The expected behaviour is that, with ReprovisionPolicy set to never update hub, the a device is not reprovisioned, even when other settings would suggest it should
         /// </summary>
-        private async Task ProvisioningDeviceClient_ReprovisioningFlow_DoNotReprovision(TransportProtocol transportProtocol, AttestationType attestationType, EnrollmentType enrollmentType, TransportFallbackType transportFallbackType, bool setCustomProxy, string customServerProxy = null)
+        private async Task ProvisioningDeviceClient_ReprovisioningFlow_DoNotReprovision(Client.TransportType transportProtocol, AttestationType attestationType, EnrollmentType enrollmentType, bool setCustomProxy, string customServerProxy = null)
         {
             var connectionString = IotHubConnectionStringBuilder.Create(Configuration.IoTHub.ConnectionString);
             ICollection<string> iotHubsToStartAt = new List<string>() { Configuration.Provisioning.FarAwayIotHubHostName };
             ICollection<string> iotHubsToReprovisionTo = new List<string>() { connectionString.HostName };
-            await ProvisioningDeviceClient_ReprovisioningFlow(transportProtocol, attestationType, enrollmentType, transportFallbackType, setCustomProxy, new ReprovisionPolicy { MigrateDeviceData = false, UpdateHubAssignment = false }, AllocationPolicy.Hashed, null, iotHubsToStartAt, iotHubsToReprovisionTo, customServerProxy).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ReprovisioningFlow(transportProtocol, attestationType, enrollmentType, setCustomProxy, new ReprovisionPolicy { MigrateDeviceData = false, UpdateHubAssignment = false }, AllocationPolicy.Hashed, null, iotHubsToStartAt, iotHubsToReprovisionTo, customServerProxy).ConfigureAwait(false);
         }
 
         [TestMethod]
         [TestCategory("ProxyE2ETests")]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_HttpWithProxy_SymmetricKey_RegisterOk_IndividualEnrollment()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(TransportProtocol.Http, AttestationType.SymmetricKey, EnrollmentType.Individual, null, true, ProxyServerAddress).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Http1, AttestationType.SymmetricKey, EnrollmentType.Individual, true, ProxyServerAddress).ConfigureAwait(false);
         }
 
         [TestMethod]
         [TestCategory("ProxyE2ETests")]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_AmqpWithProxy_SymmetricKey_RegisterOk_IndividualEnrollment()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(TransportProtocol.Amqp, AttestationType.SymmetricKey, EnrollmentType.Individual, null, true, ProxyServerAddress).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Amqp, AttestationType.SymmetricKey, EnrollmentType.Individual, true, ProxyServerAddress).ConfigureAwait(false);
         }
 
         [TestMethod]
         [TestCategory("ProxyE2ETests")]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_AmqpWsWithProxy_SymmetricKey_RegisterOk_IndividualEnrollment()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(TransportProtocol.Amqp, AttestationType.SymmetricKey, EnrollmentType.Individual, null, true, ProxyServerAddress).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Amqp, AttestationType.SymmetricKey, EnrollmentType.Individual, true, ProxyServerAddress).ConfigureAwait(false);
         }
 
         [TestMethod]
         [TestCategory("ProxyE2ETests")]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_MqttWithProxy_SymmetricKey_RegisterOk_IndividualEnrollment()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(TransportProtocol.Mqtt, AttestationType.SymmetricKey, EnrollmentType.Individual, null, true, ProxyServerAddress).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Mqtt, AttestationType.SymmetricKey, EnrollmentType.Individual, true, ProxyServerAddress).ConfigureAwait(false);
         }
 
         [TestMethod]
         [TestCategory("ProxyE2ETests")]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_MqttWsWithProxy_SymmetricKey_RegisterOk_IndividualEnrollment()
         {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(TransportProtocol.Mqtt, AttestationType.SymmetricKey, EnrollmentType.Individual, null, true, ProxyServerAddress).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Mqtt, AttestationType.SymmetricKey, EnrollmentType.Individual, true, ProxyServerAddress).ConfigureAwait(false);
         }
 
         public async Task ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
-            TransportProtocol transportProtocol,
+            Client.TransportType transportType,
             AttestationType attestationType,
             EnrollmentType? enrollmentType,
-            TransportFallbackType? transportFallback,
             bool setCustomProxy,
             string proxyServerAddress = null)
         {
             //Default reprovisioning settings: Hashed allocation, no reprovision policy, hub names, or custom allocation policy
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(transportProtocol, attestationType, enrollmentType, transportFallback, setCustomProxy, null, AllocationPolicy.Hashed, null, null, ProxyServerAddress).ConfigureAwait(false);
+            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(transportType, attestationType, enrollmentType, setCustomProxy, null, AllocationPolicy.Hashed, null, null, ProxyServerAddress).ConfigureAwait(false);
         }
 
         public async Task ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(
-            TransportProtocol transportProtocol,
+            Client.TransportType transportType,
             AttestationType attestationType,
             EnrollmentType? enrollmentType,
-            TransportFallbackType? transportFallback,
             bool setCustomProxy,
             ReprovisionPolicy reprovisionPolicy,
             AllocationPolicy allocationPolicy,
@@ -696,13 +687,13 @@ namespace Microsoft.Azure.Devices.E2ETests
             string proxyServerAddress = null)
         {
             string groupId = "some-valid-group-id-" + attestationTypeToString(attestationType) + "-" + Guid.NewGuid();
-            using (ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportProtocol, transportFallback))
+            using (ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportType))
             using (SecurityProvider security = await CreateSecurityProviderFromName(attestationType, enrollmentType, groupId, reprovisionPolicy, allocationPolicy, customAllocationDefinition, iothubs).ConfigureAwait(false))
             {
 
                 _verboseLog.WriteLine("Creating device");
 
-                if (ImplementsWebProxy(transportProtocol, transportFallback) && setCustomProxy)
+                if (ImplementsWebProxy(transportType) && setCustomProxy)
                 {
                     transport.Proxy = (proxyServerAddress != null) ? new WebProxy(ProxyServerAddress) : null;
                 }
@@ -722,7 +713,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 Client.IAuthenticationMethod auth = CreateAuthenticationMethodFromSecurityProvider(security, result.DeviceId);
 
-                await ConfirmRegisteredDeviceWorks(result, auth, transportProtocol, transportFallback, false).ConfigureAwait(false);
+                await ConfirmRegisteredDeviceWorks(result, auth, transportType, false).ConfigureAwait(false);
 
                 if (attestationType != AttestationType.x509) //x509 enrollments are hardcoded, should never be deleted
                 {
@@ -739,10 +730,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         /// did/did not migrate twin data as expected.
         /// </summary>
         public async Task ProvisioningDeviceClient_ReprovisioningFlow(
-            TransportProtocol transportProtocol,
+            Client.TransportType transportProtocol,
             AttestationType attestationType,
             EnrollmentType? enrollmentType,
-            TransportFallbackType? transportFallback,
             bool setCustomProxy,
             ReprovisionPolicy reprovisionPolicy,
             AllocationPolicy allocationPolicy,
@@ -754,13 +744,13 @@ namespace Microsoft.Azure.Devices.E2ETests
             ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService(ProxyServerAddress);
             string groupId = "some-valid-group-id-" + attestationTypeToString(attestationType) + "-" + Guid.NewGuid();
 
-            bool twinOperationsAllowed = transportProtocol != TransportProtocol.Http;
+            bool twinOperationsAllowed = transportProtocol != Client.TransportType.Http1;
 
-            using (ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportProtocol, transportFallback))
+            using (ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportProtocol))
             using (SecurityProvider security = await CreateSecurityProviderFromName(attestationType, enrollmentType, groupId, reprovisionPolicy, allocationPolicy, customAllocationDefinition, iotHubsToStartAt).ConfigureAwait(false))
             {
                 //Check basic provisioning
-                if (ImplementsWebProxy(transportProtocol, transportFallback) && setCustomProxy)
+                if (ImplementsWebProxy(transportProtocol) && setCustomProxy)
                 {
                     transport.Proxy = (proxyServerAddress != null) ? new WebProxy(ProxyServerAddress) : null;
                 }
@@ -774,13 +764,13 @@ namespace Microsoft.Azure.Devices.E2ETests
                 DeviceRegistrationResult result = await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
                 ValidateDeviceRegistrationResult(result);
                 Client.IAuthenticationMethod auth = CreateAuthenticationMethodFromSecurityProvider(security, result.DeviceId);
-                await ConfirmRegisteredDeviceWorks(result, auth, transportProtocol, transportFallback, twinOperationsAllowed).ConfigureAwait(false);
+                await ConfirmRegisteredDeviceWorks(result, auth, transportProtocol, twinOperationsAllowed).ConfigureAwait(false);
 
                 //Check reprovisioning
                 await UpdateEnrollmentToForceReprovision(enrollmentType, provisioningServiceClient, iotHubsToReprovisionTo, security, groupId).ConfigureAwait(false);
                 result = await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
                 ConfirmDeviceInExpectedHub(result, reprovisionPolicy, iotHubsToStartAt, iotHubsToReprovisionTo, allocationPolicy);
-                await ConfirmDeviceWorksAfterReprovisioning(result, auth, transportProtocol, transportFallback, reprovisionPolicy, twinOperationsAllowed).ConfigureAwait(false);
+                await ConfirmDeviceWorksAfterReprovisioning(result, auth, transportProtocol, reprovisionPolicy, twinOperationsAllowed).ConfigureAwait(false);
 
                 if (attestationType != AttestationType.x509) //x509 enrollments are hardcoded, should never be deleted
                 {
@@ -790,10 +780,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         public async Task ProvisioningDeviceClient_ProvisioningFlow_CustomAllocation_AllocateToHubWithLongestHostName(
-            TransportProtocol transportProtocol,
+            Client.TransportType transportProtocol,
             AttestationType attestationType,
             EnrollmentType? enrollmentType,
-            TransportFallbackType? transportFallback,
             bool setCustomProxy,
             ICollection<string> iotHubsToProvisionTo,
             string expectedDestinationHub,
@@ -804,11 +793,11 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             CustomAllocationDefinition customAllocationDefinition = new CustomAllocationDefinition() { WebhookUrl = Configuration.Provisioning.CustomAllocationPolicyWebhook, ApiVersion = "2018-11-01" };
 
-            using (ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportProtocol, transportFallback))
+            using (ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportProtocol))
             using (SecurityProvider security = await CreateSecurityProviderFromName(attestationType, enrollmentType, groupId, null, AllocationPolicy.Custom, customAllocationDefinition, iotHubsToProvisionTo).ConfigureAwait(false))
             {
                 //Check basic provisioning
-                if (ImplementsWebProxy(transportProtocol, transportFallback) && setCustomProxy)
+                if (ImplementsWebProxy(transportProtocol) && setCustomProxy)
                 {
                     transport.Proxy = (proxyServerAddress != null) ? new WebProxy(ProxyServerAddress) : null;
                 }
@@ -836,7 +825,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             try
             {
-                await ProvisioningDeviceClient_InvalidRegistrationId_TpmRegister_Fail(TransportProtocol.Http).ConfigureAwait(false);
+                await ProvisioningDeviceClient_InvalidRegistrationId_TpmRegister_Fail(Client.TransportType.Http1).ConfigureAwait(false);
                 Assert.Fail("Expected exception not thrown");
             }
             catch (ProvisioningTransportException ex)
@@ -850,7 +839,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             try
             {
-                await ProvisioningDeviceClient_InvalidRegistrationId_TpmRegister_Fail(TransportProtocol.Amqp).ConfigureAwait(false);
+                await ProvisioningDeviceClient_InvalidRegistrationId_TpmRegister_Fail(Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
                 Assert.Fail("Expected exception not thrown");
             }
             catch (ProvisioningTransportException ex)
@@ -859,9 +848,9 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        public async Task ProvisioningDeviceClient_InvalidRegistrationId_TpmRegister_Fail(TransportProtocol transportProtocol)
+        public async Task ProvisioningDeviceClient_InvalidRegistrationId_TpmRegister_Fail(Client.TransportType transportProtocol)
         {
-            using (ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportProtocol, TransportFallbackType.TcpOnly))
+            using (ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportProtocol))
             using (SecurityProvider security = new SecurityProviderTpmSimulator("invalidregistrationid"))
             {
                 ProvisioningDeviceClient provClient = ProvisioningDeviceClient.Create(
@@ -887,89 +876,88 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         public async Task ProvisioningDeviceClient_InvalidIdScope_Register_Http_Tpm_Fail()
         {
-            await ProvisioningDeviceClient_InvalidIdScope_Register_Fail(TransportProtocol.Http, AttestationType.Tpm, null, null, "").ConfigureAwait(false);
+            await ProvisioningDeviceClient_InvalidIdScope_Register_Fail(Client.TransportType.Http1, AttestationType.Tpm, null, "").ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_InvalidIdScope_Register_Http_X509Individual_Fail()
         {
-            await ProvisioningDeviceClient_InvalidIdScope_Register_Fail(TransportProtocol.Http, AttestationType.x509, EnrollmentType.Individual, null, "").ConfigureAwait(false);
+            await ProvisioningDeviceClient_InvalidIdScope_Register_Fail(Client.TransportType.Http1, AttestationType.x509, EnrollmentType.Individual, "").ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_InvalidIdScope_Register_Http_X509Group_Fail()
         {
-            await ProvisioningDeviceClient_InvalidIdScope_Register_Fail(TransportProtocol.Http, AttestationType.x509, EnrollmentType.Group, null, "").ConfigureAwait(false);
+            await ProvisioningDeviceClient_InvalidIdScope_Register_Fail(Client.TransportType.Http1, AttestationType.x509, EnrollmentType.Group, "").ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_InvalidIdScope_Register_Amqp_Tpm_Fail()
         {
-            await ProvisioningDeviceClient_InvalidIdScope_Register_Fail(TransportProtocol.Amqp, AttestationType.Tpm, null, TransportFallbackType.TcpOnly, "").ConfigureAwait(false);
+            await ProvisioningDeviceClient_InvalidIdScope_Register_Fail(Client.TransportType.Amqp_Tcp_Only, AttestationType.Tpm, null, "").ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_InvalidIdScope_Register_Amqp_X509Individual_Fail()
         {
-            await ProvisioningDeviceClient_InvalidIdScope_Register_Fail(TransportProtocol.Amqp, AttestationType.x509, EnrollmentType.Individual, TransportFallbackType.TcpOnly, "").ConfigureAwait(false);
+            await ProvisioningDeviceClient_InvalidIdScope_Register_Fail(Client.TransportType.Amqp_Tcp_Only, AttestationType.x509, EnrollmentType.Individual, "").ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_InvalidIdScope_Register_Amqp_X509Group_Fail()
         {
-            await ProvisioningDeviceClient_InvalidIdScope_Register_Fail(TransportProtocol.Amqp, AttestationType.x509, EnrollmentType.Group, TransportFallbackType.TcpOnly, "").ConfigureAwait(false);
+            await ProvisioningDeviceClient_InvalidIdScope_Register_Fail(Client.TransportType.Amqp_Tcp_Only, AttestationType.x509, EnrollmentType.Group, "").ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_InvalidIdScope_Register_AmqpWs_Tpm_Fail()
         {
-            await ProvisioningDeviceClient_InvalidIdScope_Register_Fail(TransportProtocol.Amqp, AttestationType.Tpm, null, TransportFallbackType.WebSocketOnly, "").ConfigureAwait(false);
+            await ProvisioningDeviceClient_InvalidIdScope_Register_Fail(Client.TransportType.Amqp_WebSocket_Only, AttestationType.Tpm, null, "").ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_InvalidIdScope_Register_AmqpWs_X509Individual_Fail()
         {
-            await ProvisioningDeviceClient_InvalidIdScope_Register_Fail(TransportProtocol.Amqp, AttestationType.x509, EnrollmentType.Individual, TransportFallbackType.WebSocketOnly, "").ConfigureAwait(false);
+            await ProvisioningDeviceClient_InvalidIdScope_Register_Fail(Client.TransportType.Amqp_WebSocket_Only, AttestationType.x509, EnrollmentType.Individual, "").ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_InvalidIdScope_Register_AmqpWs_X509Group_Fail()
         {
-            await ProvisioningDeviceClient_InvalidIdScope_Register_Fail(TransportProtocol.Amqp, AttestationType.x509, EnrollmentType.Group, TransportFallbackType.WebSocketOnly, "").ConfigureAwait(false);
+            await ProvisioningDeviceClient_InvalidIdScope_Register_Fail(Client.TransportType.Amqp_WebSocket_Only, AttestationType.x509, EnrollmentType.Group, "").ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_InvalidIdScope_Register_Mqtt_X509Individual_Fail()
         {
-            await ProvisioningDeviceClient_InvalidIdScope_Register_Fail(TransportProtocol.Mqtt, AttestationType.x509, EnrollmentType.Individual, TransportFallbackType.TcpOnly, "").ConfigureAwait(false);
+            await ProvisioningDeviceClient_InvalidIdScope_Register_Fail(Client.TransportType.Mqtt_Tcp_Only, AttestationType.x509, EnrollmentType.Individual, "").ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_InvalidIdScope_Register_Mqtt_X509Group_Fail()
         {
-            await ProvisioningDeviceClient_InvalidIdScope_Register_Fail(TransportProtocol.Mqtt, AttestationType.x509, EnrollmentType.Group, TransportFallbackType.TcpOnly, "").ConfigureAwait(false);
+            await ProvisioningDeviceClient_InvalidIdScope_Register_Fail(Client.TransportType.Mqtt_Tcp_Only, AttestationType.x509, EnrollmentType.Group, "").ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_InvalidIdScope_Register_MqttWs_X509Individual_Fail()
         {
-            await ProvisioningDeviceClient_InvalidIdScope_Register_Fail(TransportProtocol.Mqtt, AttestationType.x509, EnrollmentType.Individual, TransportFallbackType.WebSocketOnly, "").ConfigureAwait(false);
+            await ProvisioningDeviceClient_InvalidIdScope_Register_Fail(Client.TransportType.Mqtt_WebSocket_Only, AttestationType.x509, EnrollmentType.Individual, "").ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_InvalidIdScope_Register_MqttWs_X509Group_Fail()
         {
-            await ProvisioningDeviceClient_InvalidIdScope_Register_Fail(TransportProtocol.Mqtt, AttestationType.x509, EnrollmentType.Group, TransportFallbackType.WebSocketOnly, "").ConfigureAwait(false);
+            await ProvisioningDeviceClient_InvalidIdScope_Register_Fail(Client.TransportType.Mqtt_WebSocket_Only, AttestationType.x509, EnrollmentType.Group, "").ConfigureAwait(false);
         }
 
         public async Task ProvisioningDeviceClient_InvalidIdScope_Register_Fail(
-            TransportProtocol transportProtocol,
+            Client.TransportType transportProtocol,
             AttestationType attestationType,
             EnrollmentType? enrollmentType,
-            TransportFallbackType? transportFallback,
             string groupId)
         {
-            using (ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportProtocol, transportFallback))
+            using (ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportProtocol))
             using (SecurityProvider security = await CreateSecurityProviderFromName(attestationType, enrollmentType, groupId, null, AllocationPolicy.Hashed, null, null).ConfigureAwait(false))
             {
                 ProvisioningDeviceClient provClient = ProvisioningDeviceClient.Create(
@@ -990,42 +978,41 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         public async Task ProvisioningDeviceClient_InvalidGlobalAddress_Register_Http_Fail()
         {
-            await ProvisioningDeviceClient_InvalidGlobalAddress_Register_Fail(TransportProtocol.Http, AttestationType.x509, EnrollmentType.Individual, null).ConfigureAwait(false);
+            await ProvisioningDeviceClient_InvalidGlobalAddress_Register_Fail(Client.TransportType.Http1, AttestationType.x509, EnrollmentType.Individual, null).ConfigureAwait(false);
         }
 
         // Note: This test takes 3 minutes.
         [TestMethod]
         public async Task ProvisioningDeviceClient_InvalidGlobalAddress_Register_Amqp_Fail()
         {
-            await ProvisioningDeviceClient_InvalidGlobalAddress_Register_Fail(TransportProtocol.Amqp, AttestationType.x509, EnrollmentType.Individual, TransportFallbackType.TcpOnly).ConfigureAwait(false);
+            await ProvisioningDeviceClient_InvalidGlobalAddress_Register_Fail(Client.TransportType.Amqp_Tcp_Only, AttestationType.x509, EnrollmentType.Individual).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_InvalidGlobalAddress_Register_AmqpWs_Fail()
         {
-            await ProvisioningDeviceClient_InvalidGlobalAddress_Register_Fail(TransportProtocol.Amqp, AttestationType.x509, EnrollmentType.Individual, TransportFallbackType.WebSocketOnly).ConfigureAwait(false);
+            await ProvisioningDeviceClient_InvalidGlobalAddress_Register_Fail(Client.TransportType.Amqp_WebSocket_Only, AttestationType.x509, EnrollmentType.Individual).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_InvalidGlobalAddress_Register_Mqtt_Fail()
         {
-            await ProvisioningDeviceClient_InvalidGlobalAddress_Register_Fail(TransportProtocol.Mqtt, AttestationType.x509, EnrollmentType.Individual, TransportFallbackType.TcpOnly).ConfigureAwait(false);
+            await ProvisioningDeviceClient_InvalidGlobalAddress_Register_Fail(Client.TransportType.Mqtt_Tcp_Only, AttestationType.x509, EnrollmentType.Individual).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task ProvisioningDeviceClient_InvalidGlobalAddress_Register_MqttWs_Fail()
         {
-            await ProvisioningDeviceClient_InvalidGlobalAddress_Register_Fail(TransportProtocol.Mqtt, AttestationType.x509, EnrollmentType.Individual, TransportFallbackType.WebSocketOnly).ConfigureAwait(false);
+            await ProvisioningDeviceClient_InvalidGlobalAddress_Register_Fail(Client.TransportType.Mqtt_WebSocket_Only, AttestationType.x509, EnrollmentType.Individual).ConfigureAwait(false);
         }
 
         public async Task ProvisioningDeviceClient_InvalidGlobalAddress_Register_Fail(
-            TransportProtocol transportProtocol,
+            Client.TransportType transportProtocol,
             AttestationType attestationType,
             EnrollmentType? enrollmentType,
-            TransportFallbackType? transportFallback,
             string groupId = "")
         {
-            using (ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportProtocol, transportFallback))
+            using (ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportProtocol))
             using (SecurityProvider security = await CreateSecurityProviderFromName(attestationType, enrollmentType, groupId, null, AllocationPolicy.Hashed, null, null).ConfigureAwait(false))
             {
                 ProvisioningDeviceClient provClient = ProvisioningDeviceClient.Create(
@@ -1043,33 +1030,41 @@ namespace Microsoft.Azure.Devices.E2ETests
                 _log.WriteLine($"Exception: {exception}");
             }
         }
-
-        private ProvisioningTransportHandler CreateTransportHandlerFromName(TransportProtocol transportProtocol, TransportFallbackType? fallbackType)
+        
+        private ProvisioningTransportHandler CreateTransportHandlerFromName(Client.TransportType transportType)
         {
-            _verboseLog.WriteLine($"{nameof(CreateTransportHandlerFromName)}({transportProtocol})");
+            _verboseLog.WriteLine($"{nameof(CreateTransportHandlerFromName)}({transportType})");
 
-            switch (transportProtocol)
+            switch (transportType)
             {
-                case TransportProtocol.Http:
+                case Client.TransportType.Http1:
                     return new ProvisioningTransportHandlerHttp();
 
-                case TransportProtocol.Amqp:
-                    return new ProvisioningTransportHandlerAmqp(fallbackType ?? TransportFallbackType.TcpOnly);
+                case Client.TransportType.Amqp:
+                case Client.TransportType.Amqp_Tcp_Only:
+                    return new ProvisioningTransportHandlerAmqp(TransportFallbackType.TcpOnly);
 
-                case TransportProtocol.Mqtt:
-                    return new ProvisioningTransportHandlerMqtt(fallbackType ?? TransportFallbackType.TcpOnly);
+                case Client.TransportType.Amqp_WebSocket_Only:
+                    return new ProvisioningTransportHandlerAmqp(TransportFallbackType.WebSocketOnly);
+
+                case Client.TransportType.Mqtt:
+                case Client.TransportType.Mqtt_Tcp_Only:
+                    return new ProvisioningTransportHandlerMqtt(TransportFallbackType.TcpOnly);
+
+                case Client.TransportType.Mqtt_WebSocket_Only:
+                    return new ProvisioningTransportHandlerMqtt(TransportFallbackType.WebSocketOnly);
             }
 
-            throw new NotSupportedException($"Unknown transport: '{transportProtocol}'.");
+            throw new NotSupportedException($"Unknown transport: '{transportType}'.");
         }
 
         /// <summary>
         /// Attempt to create device client instance from provided arguments, ensure that it can open a
         /// connection, ensure that it can send telemetry, and (optionally) send a reported property update
         /// </summary>
-        private async Task ConfirmRegisteredDeviceWorks(DeviceRegistrationResult result, Client.IAuthenticationMethod auth, TransportProtocol transportProtocol, TransportFallbackType? transportFallback, bool sendReportedPropertiesUpdate)
+        private async Task ConfirmRegisteredDeviceWorks(DeviceRegistrationResult result, Client.IAuthenticationMethod auth, Client.TransportType transportProtocol, bool sendReportedPropertiesUpdate)
         {
-            using (DeviceClient iotClient = DeviceClient.Create(result.AssignedHub, auth, GetDevicetransportProtocol(transportProtocol, transportFallback)))
+            using (DeviceClient iotClient = DeviceClient.Create(result.AssignedHub, auth, transportProtocol))
             {
                 _log.WriteLine("DeviceClient OpenAsync.");
                 await iotClient.OpenAsync().ConfigureAwait(false);
@@ -1087,50 +1082,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 _log.WriteLine("DeviceClient CloseAsync.");
                 await iotClient.CloseAsync().ConfigureAwait(false);
             }
-        }
-
-        private Client.TransportType GetDevicetransportProtocol(TransportProtocol provisioningTransport, TransportFallbackType? fallbackType)
-        {
-            switch (provisioningTransport)
-            {
-                case TransportProtocol.Http:
-                    return Client.TransportType.Http1;
-
-                case TransportProtocol.Amqp:
-                    if (!fallbackType.HasValue) return Client.TransportType.Amqp;
-                    switch (fallbackType)
-                    {
-                        case TransportFallbackType.TcpWithWebSocketFallback:
-                            return Client.TransportType.Amqp;
-                        case TransportFallbackType.WebSocketOnly:
-                            return Client.TransportType.Amqp_WebSocket_Only;
-                        case TransportFallbackType.TcpOnly:
-                            return Client.TransportType.Amqp_Tcp_Only;
-                        default:
-                            break;
-                    }
-                    break;
-
-                case TransportProtocol.Mqtt:
-                    if (!fallbackType.HasValue) return Client.TransportType.Mqtt;
-                    switch (fallbackType)
-                    {
-                        case TransportFallbackType.TcpWithWebSocketFallback:
-                            return Client.TransportType.Mqtt;
-                        case TransportFallbackType.WebSocketOnly:
-                            return Client.TransportType.Mqtt_WebSocket_Only;
-                        case TransportFallbackType.TcpOnly:
-                            return Client.TransportType.Mqtt_Tcp_Only;
-                        default:
-                            break;
-                    }
-                    break;
-
-                default:
-                    break;
-            }
-
-            throw new NotSupportedException($"Unknown transport: '{provisioningTransport}'.");
         }
 
         private async Task<SecurityProvider> CreateSecurityProviderFromName(AttestationType attestationType, EnrollmentType? enrollmentType, string groupId, ReprovisionPolicy reprovisionPolicy, AllocationPolicy allocationPolicy, CustomAllocationDefinition customAllocationDefinition, ICollection<string> iothubs)
@@ -1297,9 +1248,9 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        private async Task ConfirmDeviceWorksAfterReprovisioning(DeviceRegistrationResult result, Client.IAuthenticationMethod auth, TransportProtocol transportProtocol, TransportFallbackType? transportFallback, ReprovisionPolicy reprovisionPolicy, bool twinOperationsAllowed)
+        private async Task ConfirmDeviceWorksAfterReprovisioning(DeviceRegistrationResult result, Client.IAuthenticationMethod auth, Client.TransportType transportProtocol, ReprovisionPolicy reprovisionPolicy, bool twinOperationsAllowed)
         {
-            using (DeviceClient iotClient = DeviceClient.Create(result.AssignedHub, auth, GetDevicetransportProtocol(transportProtocol, transportFallback)))
+            using (DeviceClient iotClient = DeviceClient.Create(result.AssignedHub, auth, transportProtocol))
             {
                 _log.WriteLine("DeviceClient OpenAsync.");
                 await iotClient.OpenAsync().ConfigureAwait(false);
@@ -1362,18 +1313,22 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        private bool ImplementsWebProxy(TransportProtocol transportProtocol, TransportFallbackType? fallbackType)
+        private bool ImplementsWebProxy(Client.TransportType transportProtocol)
         {
             _verboseLog.WriteLine($"{nameof(ImplementsWebProxy)}({transportProtocol})");
 
             switch (transportProtocol)
             {
-                case TransportProtocol.Http:
+                case Client.TransportType.Mqtt_WebSocket_Only:
+                case Client.TransportType.Amqp_WebSocket_Only:
                     return true;
-
-                case TransportProtocol.Amqp:
-                case TransportProtocol.Mqtt:
-                    return (fallbackType == TransportFallbackType.WebSocketOnly);
+                case Client.TransportType.Amqp:
+                case Client.TransportType.Amqp_Tcp_Only:
+                case Client.TransportType.Mqtt:
+                case Client.TransportType.Mqtt_Tcp_Only:
+                case Client.TransportType.Http1:
+                default:
+                    return false;
             }
 
             throw new NotSupportedException($"Unknown transport: '{transportProtocol}'.");
