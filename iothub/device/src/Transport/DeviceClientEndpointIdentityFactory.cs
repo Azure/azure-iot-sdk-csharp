@@ -21,11 +21,17 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 if (
                     (iotHubConnectionString.SharedAccessKey == null) &&
                     (iotHubConnectionString.SharedAccessKeyName == null) &&
-                    (iotHubConnectionString.SharedAccessSignature == null) &&
                     (iotHubConnectionString.TokenRefresher == null)
                    )
                 {
-                    deviceClientEndpointIdentity = new DeviceClientEndpointIdentityX509(iotHubConnectionString, amqpTransportSettings, productInfo);
+                    if (iotHubConnectionString.SharedAccessSignature == null)
+                    {
+                        deviceClientEndpointIdentity = new DeviceClientEndpointIdentityX509(iotHubConnectionString, amqpTransportSettings, productInfo);
+                    }
+                    else
+                    {
+                        deviceClientEndpointIdentity = new DeviceClientEndpointIdentitySasSingle(iotHubConnectionString, amqpTransportSettings, productInfo);
+                    }
                 }
                 else if (iotHubConnectionString.SharedAccessKeyName != null)
                 {
