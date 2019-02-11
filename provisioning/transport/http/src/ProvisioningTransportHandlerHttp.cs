@@ -197,12 +197,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             var status = ProvisioningRegistrationStatusType.Failed;
             Enum.TryParse(result.Status, true, out status);
 
+            var substatus = ProvisioningRegistrationSubstatusType.InitialAssignment;
+            Enum.TryParse(result.Substatus, true, out substatus);
+
             return new DeviceRegistrationResult(
                 result.RegistrationId,
                 result.CreatedDateTimeUtc,
                 result.AssignedHub,
                 result.DeviceId,
                 status,
+                substatus,
                 result.GenerationId,
                 result.LastUpdatedDateTimeUtc,
                 result.ErrorCode == null ? 0 : (int)result.ErrorCode,

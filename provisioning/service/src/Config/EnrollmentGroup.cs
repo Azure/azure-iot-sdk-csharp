@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -178,7 +179,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         {
             /* SRS_ENROLLMENT_GROUP_21_003: [The constructor shall throws ProvisioningServiceClientException if one of the 
                                                     provided parameters in JSON is not valid.] */
-            if(attestation == null)
+            if (attestation == null)
             {
                 throw new ProvisioningServiceClientException("Service respond an enrollmentGroup without attestation.");
             }
@@ -271,7 +272,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 {
                     if ((((X509Attestation)value).RootCertificates == null) && (((X509Attestation)value).CAReferences == null))
                     {
-                        throw new ArgumentException("Attestation mechanism do not contains a valid certificate.");
+                        throw new ArgumentException("Attestation mechanism does not contain a valid certificate");
                     }
                 }
 
@@ -315,5 +316,28 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </summary>
         [JsonProperty(PropertyName = "etag", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string ETag { get; set; }
+
+        /// <summary> 
+        /// The behavior when a device is re-provisioned to an IoT hub.
+        /// </summary>
+        [JsonProperty(PropertyName = "reprovisionPolicy", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public ReprovisionPolicy ReprovisionPolicy { get; set; }
+
+        /// <summary> 
+        /// The allocation policy of this resource. Overrides the tenant level allocation policy.
+        /// </summary>
+        [JsonProperty(PropertyName = "allocationPolicy", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public AllocationPolicy? AllocationPolicy { get; set; }
+        /// <summary> 
+        /// The list of names of IoT hubs the device(s) in this resource can be allocated to. Must be a subset of tenant level list of IoT hubs
+        /// </summary>
+        [JsonProperty(PropertyName = "iotHubs", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public ICollection<string> IotHubs { get; set; }
+
+        /// <summary> 
+        /// Custom allocation definition.  
+        /// </summary>  
+        [JsonProperty(PropertyName = "customAllocationDefinition", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public CustomAllocationDefinition CustomAllocationDefinition { get; set; }
     }
 }
