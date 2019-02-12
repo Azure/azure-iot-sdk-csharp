@@ -10,30 +10,33 @@ namespace Microsoft.Azure.Devices.Client
     using Microsoft.Azure.Amqp;
     using System.Diagnostics;
     using Microsoft.Azure.Devices.Shared;
+    using Microsoft.Azure.Devices.Client.Transport;
 
-    internal sealed class IotHubTokenRefresher
+    internal sealed class AmqpTokenRefresher : IDisposable
     {
         private static readonly string[] AccessRightsStringArray = 
             AccessRightsHelper.AccessRightsToStringArray(AccessRights.DeviceConnect);
 
         static readonly TimeSpan BufferPeriod = TimeSpan.FromSeconds(120);
 
-        private readonly AmqpSession amqpSession;
+        private readonly AmqpClientSession amqpClientSession;
         private readonly IotHubConnectionString connectionString;
         private readonly string audience;
         private readonly CancellationTokenSource cancellationTokenSource;
         private volatile bool taskCancelled;
 
-        public IotHubTokenRefresher(AmqpSession amqpSession, IotHubConnectionString connectionString, string audience)
+        public AmqpTokenRefresher(AmqpClientSession amqpClientSession, IotHubConnectionString connectionString, string audience)
         {
-            this.amqpSession = amqpSession ?? throw new ArgumentNullException("amqpSession");
+            this.amqpClientSession = amqpClientSession ?? throw new ArgumentNullException("amqpClientSession");
             this.connectionString = connectionString;
             this.audience = audience;
             this.cancellationTokenSource = new CancellationTokenSource();
         }
 
-        public void Cancel()
+        internal void Cancel()
         {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpTokenRefresher)}.{nameof(Cancel)}");
+
             if (!this.taskCancelled)
             {
                 this.taskCancelled = true;
@@ -41,37 +44,28 @@ namespace Microsoft.Azure.Devices.Client
             }
         }
 
-        public async Task SendCbsTokenAsync(TimeSpan timeout)
+        internal async Task RefreshTokenAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, TimeSpan timeout)
         {
             try
             {
-                if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(IotHubTokenRefresher)}.{nameof(SendCbsTokenAsync)}");
+                if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(AmqpTokenRefresher)}.{nameof(RefreshTokenAsync)}");
 
                 // Send a Cbs Token right away and fork off a task to periodically renew it
-                var cbsLink = this.amqpSession.Connection.Extensions.Find<AmqpCbsLink>();
+                var expiresAtUtc = await this.amqpClientSession.AuthenticateCbs(deviceClientEndpointIdentity, timeout).ConfigureAwait(false);
 
-                // This can throw PutToken failure in error cases
-                var expiresAtUtc = await cbsLink.SendTokenAsync(
-                    this.connectionString,
-                    this.connectionString.AmqpEndpoint,
-                    this.audience,
-                    this.connectionString.AmqpEndpoint.AbsoluteUri,
-                    AccessRightsStringArray,
-                    timeout).ConfigureAwait(false);
-
-                this.SendCbsTokenLoopAsync(expiresAtUtc, timeout);
+                this.RefreshTokenLoopAsync(deviceClientEndpointIdentity, expiresAtUtc, timeout).ConfigureAwait(false);
             }
             finally
             {
-                if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(IotHubTokenRefresher)}.{nameof(SendCbsTokenAsync)}");
+                if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(AmqpTokenRefresher)}.{nameof(RefreshTokenAsync)}");
             }
         }
 
-        private async Task SendCbsTokenLoopAsync(DateTime expiryTimeUtc, TimeSpan timeout)
+        private async Task RefreshTokenLoopAsync(DeviceClientEndpointIdentity deviceClientEndpointIdentity, DateTime expiryTimeUtc, TimeSpan timeout)
         {
             try
             {
-                if (Logging.IsEnabled) Logging.Enter(this, expiryTimeUtc, timeout, $"{nameof(IotHubTokenRefresher)}.{nameof(SendCbsTokenLoopAsync)}");
+                if (Logging.IsEnabled) Logging.Enter(this, expiryTimeUtc, timeout, $"{nameof(AmqpTokenRefresher)}.{nameof(RefreshTokenLoopAsync)}");
 
                 bool continueSendingTokens = await WaitUntilNextTokenSendTime(
                     expiryTimeUtc, 
@@ -82,34 +76,18 @@ namespace Microsoft.Azure.Devices.Client
                     return;
                 }
 
-                while (!this.amqpSession.IsClosing())
+                while (!this.amqpClientSession.amqpSession.IsClosing())
                 {
                     if (this.taskCancelled)
                     {
                         break;
                     }
 
-                    var cbsLink = this.amqpSession.Connection.Extensions.Find<AmqpCbsLink>();
-
-                    if (cbsLink == null)
-                    {
-                        break;
-                    }
+                    var expiresAtUtc = await this.amqpClientSession.AuthenticateCbs(deviceClientEndpointIdentity, timeout).ConfigureAwait(false);
 
                     try
                     {
-                        var expiresAtUtc = await cbsLink.SendTokenAsync(
-                            this.connectionString,
-                            this.connectionString.AmqpEndpoint,
-                            this.audience,
-                            this.connectionString.AmqpEndpoint.AbsoluteUri,
-                            AccessRightsStringArray,
-                            timeout).ConfigureAwait(false);
-
-                        continueSendingTokens = await WaitUntilNextTokenSendTime(
-                            expiresAtUtc, 
-                            this.cancellationTokenSource.Token).ConfigureAwait(false);
-
+                        continueSendingTokens = await WaitUntilNextTokenSendTime(expiresAtUtc, this.cancellationTokenSource.Token).ConfigureAwait(false);
                         if (!continueSendingTokens)
                         {
                             break;
@@ -119,7 +97,6 @@ namespace Microsoft.Azure.Devices.Client
                     {
                         if (amqpException.Error.Condition.Equals(AmqpErrorCode.NotFound)) throw;
                     }
-                    catch (Exception exception) when (!exception.IsFatal()) { }
                 }
             }
             catch (Exception e) when (!e.IsFatal())
@@ -127,7 +104,7 @@ namespace Microsoft.Azure.Devices.Client
             }
             finally
             {
-                if (Logging.IsEnabled) Logging.Exit(this, expiryTimeUtc, timeout, $"{nameof(IotHubTokenRefresher)}.{nameof(SendCbsTokenLoopAsync)}");
+                if (Logging.IsEnabled) Logging.Exit(this, expiryTimeUtc, timeout, $"{nameof(AmqpTokenRefresher)}.{nameof(RefreshTokenLoopAsync)}");
             }
         }
 
@@ -147,6 +124,11 @@ namespace Microsoft.Azure.Devices.Client
             waitTime = waitTime > BufferPeriod ? waitTime - BufferPeriod : TimeSpan.Zero;
             await Task.Delay(waitTime, cancellationToken).ConfigureAwait(false);
             return true;
+        }
+
+        public void Dispose()
+        {
+            cancellationTokenSource.Dispose();
         }
     }
 }
