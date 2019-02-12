@@ -69,6 +69,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         ConcurrentDictionary<string, TaskCompletionSource<AmqpMessage>> twinResponseCompletions = new ConcurrentDictionary<string, TaskCompletionSource<AmqpMessage>>();
 
+        private SemaphoreSlim streamRequestSemaphore = new SemaphoreSlim(0);
+        private ConcurrentQueue<DeviceStreamRequest> streamRequestQueue;
+
         ProductInfo productInfo;
 
 #pragma warning disable CA1810 // Initialize reference type static fields inline: We use the static ctor to have init-once semantics.
@@ -131,6 +134,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             this.methodReceivedListener = onMethodCallback;
             this.onDesiredStatePatchListener = onDesiredStatePatchReceived;
             this.eventReceivedListener = onEventReceivedCallback;
+            this.streamRequestQueue = new ConcurrentQueue<DeviceStreamRequest>();
         }
 
         private void OnAmqpConnectionClose(object sender, EventArgs e)
@@ -258,22 +262,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 DeviceStreamRequest request;
 
-                ReceivingAmqpLink deviceBoundReceivingLink = await this.GetStreamReceivingLinkAsync(cancellationToken).ConfigureAwait(false);
-                AmqpMessage amqpMessage = await deviceBoundReceivingLink.ReceiveMessageAsync(operationTimeout).ConfigureAwait(false);
-
-                cancellationToken.ThrowIfCancellationRequested();
-
-                if (amqpMessage != null)
+                if (!this.streamRequestQueue.TryDequeue(out request))
                 {
-                    request = ConstructStreamRequestFromAmqpMessage(amqpMessage);
-
-                    deviceBoundReceivingLink.DisposeDelivery(amqpMessage, true, AmqpConstants.AcceptedOutcome);
-                }
-                else
-                {
-                    request = null;
-
-                    deviceBoundReceivingLink.DisposeDelivery(amqpMessage, true, AmqpConstants.RejectedOutcome);
+                    await this.streamRequestSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+                    this.streamRequestQueue.TryDequeue(out request);
                 }
 
                 return request;
@@ -1227,7 +1219,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (Logging.IsEnabled) Logging.Enter(this, cancellationToken, $"{nameof(AmqpTransportHandler)}.{nameof(CreateStreamSendingLinkAsync)}");
 
-            string path = string.Format(CultureInfo.InvariantCulture, CommonConstants.DeviceStreamsPathTemplate, System.Net.WebUtility.UrlEncode(this.deviceId));
+            string path = BuildPath(CommonConstants.DeviceStreamsPathTemplate, CommonConstants.ModuleStreamsPathTemplate);
 
             SendingAmqpLink streamsSendingLink = await this.IotHubConnection.CreateSendingLinkAsync(
                 path,
@@ -1251,7 +1243,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (Logging.IsEnabled) Logging.Enter(this, cancellationToken, $"{nameof(AmqpTransportHandler)}.{nameof(CreateStreamReceivingLinkAsync)}");
 
-            string path = string.Format(CultureInfo.InvariantCulture, CommonConstants.DeviceStreamsPathTemplate, System.Net.WebUtility.UrlEncode(this.deviceId));
+            string path = BuildPath(CommonConstants.DeviceStreamsPathTemplate, CommonConstants.ModuleStreamsPathTemplate);
 
             ReceivingAmqpLink streamReceivingLink = await this.IotHubConnection.CreateReceivingLinkAsync(
                 path,
@@ -1262,6 +1254,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 timeout,
                 this.productInfo,
                 cancellationToken).ConfigureAwait(false);
+
+            streamReceivingLink.RegisterMessageListener(amqpMessage =>
+            {
+                streamRequestQueue.Enqueue(ConstructStreamRequestFromAmqpMessage(amqpMessage));
+                streamRequestSemaphore.Release();
+
+                streamReceivingLink.DisposeDelivery(amqpMessage, true, AmqpConstants.AcceptedOutcome);
+            });
 
             MyStringCopy(streamReceivingLink.Name, out this.streamReceivingLinkName);
       
