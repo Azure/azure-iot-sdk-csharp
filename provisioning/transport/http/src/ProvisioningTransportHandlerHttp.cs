@@ -126,10 +126,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    operation = await client.RuntimeRegistration.OperationStatusLookupAsync(
-                        registrationId,
-                        operationId,
-                        message.IdScope).ConfigureAwait(false);
+                    try
+                    {
+                        operation = await client.RuntimeRegistration.OperationStatusLookupAsync(
+                            registrationId,
+                            operationId,
+                            message.IdScope).ConfigureAwait(false);
+                    }
+                    catch (HttpOperationException ex) when (ex.Response != null && (int) ex.Response.StatusCode >= 429)
+                    {
+                        if (Logging.IsEnabled) Logging.Error(this,
+                        $"{nameof(ProvisioningTransportHandlerHttp)} " +
+                        $"Server returned transient error code {ex.Response.StatusCode}." +
+                        $"Polling will continue until a final state is reached. Error details: {ex.StackTrace}",
+                        nameof(RegisterAsync));
+                    }
 
                     if (Logging.IsEnabled) Logging.OperationStatusLookup(
                         this,

@@ -200,7 +200,20 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     break;
                 case State.WaitForStatus:
                     await VerifyExpectedPacketType(context, PacketType.PUBLISH, message).ConfigureAwait(true);
-                    await ProcessRegistrationStatusAsync(context, (PublishPacket)message).ConfigureAwait(true);
+                    try
+                    {
+                        await ProcessRegistrationStatusAsync(context, (PublishPacket)message).ConfigureAwait(true);
+                    }
+                    catch (ProvisioningTransportException ex) when (ex.IsTransient)
+                    {
+                        string errorMessage = ex.ErrorDetails != null ? ex.ErrorDetails.CreateMessage(ex.Message) : ex.Message;
+
+                        if (Logging.IsEnabled) Logging.Error(this,
+                        $"{nameof(ProvisioningChannelHandlerAdapter)} " +
+                        $"Server returned transient error." +
+                        $"Polling will continue until a final state is reached. Error details: {errorMessage}",
+                        nameof(ProcessMessageAsync));
+                    }
                     break;
                 default:
                     await FailWithExceptionAsync(

@@ -122,11 +122,23 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                         DefaultOperationPoolingIntervalMilliseconds).ConfigureAwait(false);
 
                     cancellationToken.ThrowIfCancellationRequested();
-
-                    operation = await OperationStatusLookupAsync(
+                    try
+                    {
+                        operation = await OperationStatusLookupAsync(
                         connection,
                         operationId,
                         correlationId).ConfigureAwait(false);
+                    }
+                    catch (ProvisioningTransportException ex) when (ex.IsTransient)
+                    {
+                        string errorMessage = ex.ErrorDetails != null ? ex.ErrorDetails.CreateMessage(ex.Message) : ex.Message;
+                        if (Logging.IsEnabled) Logging.Error(
+                            this,
+                            $"{nameof(ProvisioningTransportHandlerAmqp)} " +
+                            $"Server returned transient error." +
+                            $"Polling will continue until a final state is reached. Error details: {errorMessage}",
+                            nameof(RegisterAsync));
+                    }
 
                     attempts++;
                 }

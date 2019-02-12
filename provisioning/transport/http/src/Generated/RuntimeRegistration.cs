@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
     /// <summary>
     /// RuntimeRegistration operations.
     /// </summary>
-    internal partial class RuntimeRegistration 
+    internal partial class RuntimeRegistration
         : IServiceOperations<DeviceProvisioningServiceRuntimeClient>, IRuntimeRegistration
     {
         /// <summary>
@@ -75,10 +75,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// A response object containing the response body and response headers.
         /// </return>
         public async Task<HttpOperationResponse<RegistrationOperationStatus>> OperationStatusLookupWithHttpMessagesAsync(
-            string registrationId, 
-            string operationId, 
-            string idScope, 
-            Dictionary<string, List<string>> customHeaders = null, 
+            string registrationId,
+            string operationId,
+            string idScope,
+            Dictionary<string, List<string>> customHeaders = null,
             CancellationToken cancellationToken = default(CancellationToken))
         {
             if (registrationId == null)
@@ -111,7 +111,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             // Construct URL
             var _baseUrl = Client.BaseUri.AbsoluteUri;
             var _url = new Uri(
-                new Uri(_baseUrl + (_baseUrl.EndsWith("/", StringComparison.Ordinal) ? "" : "/")), 
+                new Uri(_baseUrl + (_baseUrl.EndsWith("/", StringComparison.Ordinal) ? "" : "/")),
                 "{idScope}/registrations/{registrationId}/operations/{operationId}").ToString();
 
             _url = _url.Replace("{registrationId}", Uri.EscapeDataString(registrationId));
@@ -127,7 +127,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
             if (customHeaders != null)
             {
-                foreach(var _header in customHeaders)
+                foreach (var _header in customHeaders)
                 {
                     if (_httpRequest.Headers.Contains(_header.Key))
                     {
@@ -159,13 +159,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             HttpStatusCode _statusCode = _httpResponse.StatusCode;
             cancellationToken.ThrowIfCancellationRequested();
             string _responseContent = null;
+
             if ((int)_statusCode != 200 && (int)_statusCode != 202)
             {
                 var ex = new HttpOperationException(string.Format(CultureInfo.InvariantCulture, "Operation returned an invalid status code '{0}'", _statusCode));
-                if (_httpResponse.Content != null) {
+                if (_httpResponse.Content != null)
+                {
                     _responseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
                 }
-                else {
+                else
+                {
                     _responseContent = string.Empty;
                 }
                 ex.Request = new HttpRequestMessageWrapper(_httpRequest, _requestContent);
@@ -263,10 +266,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// A response object containing the response body and response headers.
         /// </return>
         public async Task<HttpOperationResponse<Models.DeviceRegistrationResult>> DeviceRegistrationStatusLookupWithHttpMessagesAsync(
-            string registrationId, 
-            string idScope, 
-            DeviceRegistration deviceRegistration = default(DeviceRegistration), 
-            Dictionary<string, List<string>> customHeaders = null, 
+            string registrationId,
+            string idScope,
+            DeviceRegistration deviceRegistration = default(DeviceRegistration),
+            Dictionary<string, List<string>> customHeaders = null,
             CancellationToken cancellationToken = default(CancellationToken))
         {
             if (registrationId == null)
@@ -307,7 +310,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
             if (customHeaders != null)
             {
-                foreach(var _header in customHeaders)
+                foreach (var _header in customHeaders)
                 {
                     if (_httpRequest.Headers.Contains(_header.Key))
                     {
@@ -319,11 +322,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
             // Serialize Request
             string _requestContent = null;
-            if(deviceRegistration != null)
+            if (deviceRegistration != null)
             {
                 _requestContent = SafeJsonConvert.SerializeObject(deviceRegistration, Client.SerializationSettings);
                 _httpRequest.Content = new StringContent(_requestContent, Encoding.UTF8);
-                _httpRequest.Content.Headers.ContentType =MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
+                _httpRequest.Content.Headers.ContentType = MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
             }
             // Set Credentials
             if (Client.Credentials != null)
@@ -348,10 +351,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             if ((int)_statusCode != 200)
             {
                 var ex = new HttpOperationException(string.Format(CultureInfo.InvariantCulture, "Operation returned an invalid status code '{0}'", _statusCode));
-                if (_httpResponse.Content != null) {
+                if (_httpResponse.Content != null)
+                {
                     _responseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
                 }
-                else {
+                else
+                {
                     _responseContent = string.Empty;
                 }
                 ex.Request = new HttpRequestMessageWrapper(_httpRequest, _requestContent);
@@ -435,11 +440,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// A response object containing the response body and response headers.
         /// </return>
         public async Task<HttpOperationResponse<RegistrationOperationStatus>> RegisterDeviceWithHttpMessagesAsync(
-            string registrationId, 
-            string idScope, 
-            DeviceRegistration deviceRegistration = default(DeviceRegistration), 
-            bool? forceRegistration = default(bool?), 
-            Dictionary<string, List<string>> customHeaders = null, 
+            string registrationId,
+            string idScope,
+            DeviceRegistration deviceRegistration = default(DeviceRegistration),
+            bool? forceRegistration = default(bool?),
+            Dictionary<string, List<string>> customHeaders = null,
             CancellationToken cancellationToken = default(CancellationToken))
         {
             if (registrationId == null)
@@ -447,7 +452,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 throw new ValidationException(ValidationRules.CannotBeNull, "registrationId");
             }
             if (idScope == null)
-            {                throw new ValidationException(ValidationRules.CannotBeNull, "idScope");
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "idScope");
             }
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
@@ -475,7 +481,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             {
                 _queryParameters.Add(string.Format(
                     CultureInfo.InvariantCulture,
-                    "forceRegistration={0}", 
+                    "forceRegistration={0}",
                     Uri.EscapeDataString(SafeJsonConvert.SerializeObject(forceRegistration, Client.SerializationSettings).Trim('"'))));
             }
             if (_queryParameters.Count > 0)
@@ -492,7 +498,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
             if (customHeaders != null)
             {
-                foreach(var _header in customHeaders)
+                foreach (var _header in customHeaders)
                 {
                     if (_httpRequest.Headers.Contains(_header.Key))
                     {
@@ -504,7 +510,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
             // Serialize Request
             string _requestContent = null;
-            if(deviceRegistration != null)
+            if (deviceRegistration != null)
             {
                 _requestContent = SafeJsonConvert.SerializeObject(deviceRegistration, Client.SerializationSettings);
                 _httpRequest.Content = new StringContent(_requestContent, Encoding.UTF8);
@@ -533,10 +539,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             if ((int)_statusCode != 202)
             {
                 var ex = new HttpOperationException(string.Format(CultureInfo.InvariantCulture, "Operation returned an invalid status code '{0}'", _statusCode));
-                if (_httpResponse.Content != null) {
+                if (_httpResponse.Content != null)
+                {
                     _responseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
                 }
-                else {
+                else
+                {
                     _responseContent = string.Empty;
                 }
                 ex.Request = new HttpRequestMessageWrapper(_httpRequest, _requestContent);
