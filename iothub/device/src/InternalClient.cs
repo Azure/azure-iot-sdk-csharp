@@ -233,11 +233,6 @@ namespace Microsoft.Azure.Devices.Client
             set
             {
                 _operationTimeoutInMilliseconds = value;
-                var retryDelegatingHandler = GetDelegateHandler<RetryDelegatingHandler>();
-                if (retryDelegatingHandler != null)
-                {
-                    retryDelegatingHandler.RetryTimeoutInMilliseconds = value;
-                }
             }
         }
 
@@ -1168,11 +1163,7 @@ namespace Microsoft.Azure.Devices.Client
 
         private Task DisableMethodAsync(CancellationToken cancellationToken)
         {
-            if (this.deviceMethods == null && this.deviceDefaultMethodCallback == null)
-            {
-                return InnerHandler.DisableMethodsAsync(cancellationToken);
-            }
-
+            // TODO # 890.
             return TaskHelpers.CompletedTask;
         }
 
