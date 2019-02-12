@@ -221,8 +221,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                     string payload, messageId, p1Value;
                     await serviceClient.SendAsync(
                         testDevice.Id,
-                        MessageReceiveE2ETests.ComposeC2DTestMessage(out payload, out messageId, out p1Value)).ConfigureAwait(false);
-                    await MessageReceiveE2ETests.VerifyReceivedC2DMessageAsync(transport, deviceClient, payload, p1Value).ConfigureAwait(false);
+                        MessageReceive.ComposeC2DTestMessage(out payload, out messageId, out p1Value)).ConfigureAwait(false);
+                    await MessageReceive.VerifyReceivedC2DMessageAsync(transport, deviceClient, payload, p1Value).ConfigureAwait(false);
                 };
 
                 Func<Task> cleanupOperation = () =>

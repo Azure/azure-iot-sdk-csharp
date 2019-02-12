@@ -333,7 +333,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 if (this.TryStop())
                 {
-                    _transportShouldRetry.TrySetCanceled();
+                    OnTransportClosedGracefully();
 
                     await this.closeRetryPolicy.ExecuteAsync(this.CleanupAsync, cancellationToken).ConfigureAwait(true);
                 }
@@ -482,12 +482,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     case TransportState.Subscribing:
                         this.fatalException = ExceptionDispatchInfo.Capture(exception);
                         this.subscribeCompletionSource.TrySetException(exception);
-                        _transportShouldRetry.TrySetResult(true);
+                        OnTransportDisconnected();
                         break;
                     case TransportState.Receiving:
                         this.fatalException = ExceptionDispatchInfo.Capture(exception);
                         this.disconnectAwaitersCancellationSource.Cancel();
-                        _transportShouldRetry.TrySetResult(true);
+                        OnTransportDisconnected();
                         break;
                     default:
                         Debug.Fail($"Unknown transport state: {previousState}");

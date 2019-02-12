@@ -10,17 +10,17 @@ namespace Microsoft.Azure.Devices.Client.Transport
     abstract class TransportHandler : DefaultDelegatingHandler
     {
         protected ITransportSettings TransportSettings;
-        protected TaskCompletionSource<bool> _transportShouldRetry = new TaskCompletionSource<bool>();
+        private TaskCompletionSource<bool> _transportShouldRetry = new TaskCompletionSource<bool>();
 
         protected TransportHandler(IPipelineContext context, ITransportSettings transportSettings)
             : base(context, innerHandler: null)
         {
-            this.TransportSettings = transportSettings;
+            TransportSettings = transportSettings;
         }
 
         public override Task<Message> ReceiveAsync(CancellationToken cancellationToken)
         {
-            return this.ReceiveAsync(this.TransportSettings.DefaultReceiveTimeout, cancellationToken);
+            return ReceiveAsync(TransportSettings.DefaultReceiveTimeout, cancellationToken);
         }
 
         public override Task WaitForTransportClosedAsync()
@@ -30,7 +30,24 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         protected override void Dispose(bool disposing)
         {
+            if (_disposed) return;
+
+            if (disposing)
+            {
+                OnTransportClosedGracefully();
+            }
+
+            base.Dispose(disposing);
+        }
+
+        protected void OnTransportClosedGracefully()
+        {
             _transportShouldRetry.TrySetCanceled();
+        }
+
+        protected void OnTransportDisconnected()
+        {
+            _transportShouldRetry.TrySetResult(true);
         }
     }
 }
