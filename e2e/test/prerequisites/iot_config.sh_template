@@ -64,11 +64,11 @@ export DPS_X509_PFX_CERTIFICATE_PASSWORD=
 # The CN=xdevice1 certificate should be signed by an issuer within this chain.
 export DPS_GROUPX509_CERTIFICATE_CHAIN=
 
-# TPM device registration ID.
-export DPS_TPM_REGISTRATIONID=indtpmdevice1
+# hostname of an Iot Hub that is far away from the other test Iot Hub. Both this hub and the other hub must be linked to the DPS instance under test
+export FAR_AWAY_IOTHUB_HOSTNAME=
 
-# TPM device device ID:
-export DPS_TPM_DEVICEID=provisionedtpm1
+# Webhook url for the custom allocation policy implementation used in reprovisioning tests
+export CUSTOM_ALLOCATION_POLICY_WEBHOOK=
 
 # Provisioning service owner connection string.
 export PROVISIONING_CONNECTION_STRING=""

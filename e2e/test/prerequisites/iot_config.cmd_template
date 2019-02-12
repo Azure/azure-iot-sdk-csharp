@@ -64,11 +64,11 @@ set DPS_X509_PFX_CERTIFICATE_PASSWORD=
 @REM The CN=xdevice1 certificate should be signed by an issuer within this chain.
 set DPS_GROUPX509_CERTIFICATE_CHAIN=
 
-@REM TPM device registration ID.
-set DPS_TPM_REGISTRATIONID=indtpmdevice1
+@REM hostname of an Iot Hub that is far away from the other test Iot Hub. Both this hub and the other hub must be linked to the DPS instance under test
+set FAR_AWAY_IOTHUB_HOSTNAME=
 
-@REM TPM device device ID:
-set DPS_TPM_DEVICEID=provisionedtpm1
+@REM Webhook url for the custom allocation policy implementation used in reprovisioning tests
+set CUSTOM_ALLOCATION_POLICY_WEBHOOK=
 
 @REM Provisioning service owner connection string.
 set PROVISIONING_CONNECTION_STRING=
