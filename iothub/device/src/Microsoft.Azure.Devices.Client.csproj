@@ -121,9 +121,4 @@
     <PackageReference Include="Microsoft.Win32.Registry" Version="4.5.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <!-- FXCop -->
-    <PackageReference Condition=" '$(Configuration)' == 'Debug' " Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.6.1" />
-  </ItemGroup>
-
 </Project>
