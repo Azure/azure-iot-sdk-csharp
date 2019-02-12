@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Threading;
+using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
@@ -105,7 +106,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             get
             {
                 string iotHubHostName = GetHostName(Configuration.IoTHub.ConnectionString);
-                return $"HostName={iotHubHostName};DeviceId={_device.Id};SharedAccessKey={_device.Authentication.SymmetricKey.PrimaryKey}";
+                return $"HostName={iotHubHostName};DeviceId={_device.Id};SharedAccessKey={_device.Authentication.SymmetricKey.PrimaryKey}";// ;GatewayHostName=127.0.0.1";
             }
         }
 
@@ -150,18 +151,26 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
+        ITransportSettings[] transportSettings = new ITransportSettings[]
+        {
+            new MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only)
+            {
+             RemoteCertificateValidationCallback = (sender, certificate, chain, errors) => true
+            }
+        };
+
         public DeviceClient CreateDeviceClient(Client.TransportType transport)
         {
             DeviceClient deviceClient = null;
 
             if (_authenticationMethod == null)
             {
-                deviceClient = DeviceClient.CreateFromConnectionString(ConnectionString, transport);
+                deviceClient = DeviceClient.CreateFromConnectionString(ConnectionString, transportSettings);
                 s_log.WriteLine($"{nameof(CreateDeviceClient)}: Created {nameof(DeviceClient)} from connection string: {transport} ID={TestLogging.IdOf(deviceClient)}");
             }
             else
             {
-                deviceClient = DeviceClient.Create(IoTHubHostName, AuthenticationMethod, transport);
+                deviceClient = DeviceClient.Create(IoTHubHostName, AuthenticationMethod, transportSettings);
                 s_log.WriteLine($"{nameof(CreateDeviceClient)}: Created {nameof(DeviceClient)} from IAuthenticationMethod: {transport} ID={TestLogging.IdOf(deviceClient)}");
             }
 

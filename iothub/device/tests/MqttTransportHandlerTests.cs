@@ -104,7 +104,9 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             return new MqttTransportHandler(
                 new PipelineContext(),
                 IotHubConnectionStringExtensions.Parse(DummyConnectionString),
-                new MqttTransportSettings(TransportType.Mqtt_Tcp_Only));
+                new MqttTransportSettings(TransportType.Mqtt_Tcp_Only),
+                (o, ea) => { },
+                (o, ea) => { return TaskHelpers.CompletedTask; });
         }
 
         async Task TestOperationCanceledByToken(Func<CancellationToken, Task> asyncMethod)
@@ -120,7 +122,17 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             catch (OperationCanceledException) { }
         }
 
-        MqttTransportHandler CreateTransportHandlerWithMockChannel(out IChannel channel, string connectionString = DummyConnectionString)
+        MqttTransportHandler CreateTransportHandlerWithMockChannel(out IChannel channel)
+        {
+            return CreateTransportHandlerWithMockChannel(out channel, (o, ea) => { }, (o, ea) => { return TaskHelpers.CompletedTask; });
+        }
+
+        MqttTransportHandler CreateTransportHandlerWithMockChannel(out IChannel channel, string connectionString)
+        {
+            return CreateTransportHandlerWithMockChannel(out channel, (o, ea) => { }, (o, ea) => { return TaskHelpers.CompletedTask; }, connectionString);
+        }
+
+        MqttTransportHandler CreateTransportHandlerWithMockChannel(out IChannel channel, Action<object, ConnectionEventArgs> onConnectionOpenedCallback, Func<object, ConnectionEventArgs, Task> onConnectionClosedCallback, string connectionString = DummyConnectionString)
         {
             var _channel = Substitute.For<IChannel>();
             channel = _channel;
@@ -134,7 +146,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
                 return Task<IChannel>.FromResult<IChannel>(_channel);
             };
 
-            transport = new MqttTransportHandler(new PipelineContext(), IotHubConnectionStringExtensions.Parse(connectionString), new MqttTransportSettings(Microsoft.Azure.Devices.Client.TransportType.Mqtt_Tcp_Only), factory);
+            transport = new MqttTransportHandler(new PipelineContext(), IotHubConnectionStringExtensions.Parse(connectionString), new MqttTransportSettings(Microsoft.Azure.Devices.Client.TransportType.Mqtt_Tcp_Only), factory, onConnectionOpenedCallback, onConnectionClosedCallback);
             return transport;
         }
 
@@ -560,7 +572,14 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         {
             // arrange
             IChannel channel;
-            var transport = CreateTransportHandlerWithMockChannel(out channel);
+            var tcs = new TaskCompletionSource<bool>();
+            var transport = CreateTransportHandlerWithMockChannel(
+                out channel,
+                (o, ea) => { },
+                (o, ea) => {
+                    tcs.SetResult(true);
+                    return TaskHelpers.CompletedTask;
+                });
 
             transport.OnConnected();
             await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
@@ -578,7 +597,15 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         {
             // arrange
             IChannel channel;
-            var transport = CreateTransportHandlerWithMockChannel(out channel);
+            var tcs = new TaskCompletionSource<bool>();
+            var transport = CreateTransportHandlerWithMockChannel(
+                out channel,
+                (o, ea) => { },
+                (o, ea) =>
+                {
+                    tcs.SetResult(true);
+                    return TaskHelpers.CompletedTask;
+                });
 
             transport.OnConnected();
             await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
@@ -598,7 +625,14 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             // arrange
             IChannel channel;
             var tcs = new TaskCompletionSource<bool>();
-            var transport = CreateTransportHandlerWithMockChannel(out channel);
+            var transport = CreateTransportHandlerWithMockChannel(
+                out channel,
+                (o, ea) => { },
+                (o, ea) =>
+                {
+                    tcs.SetResult(true);
+                    return TaskHelpers.CompletedTask;
+                });
 
             // act
             transport.OnError(new ApplicationException("Testing"));
@@ -610,6 +644,37 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
             transport.Dispose();
             Assert.IsTrue(t.IsCompleted);
+        }
+
+        // Tests_SRS_CSHARP_MQTT_TRANSPORT_28_07: If OnError is triggered in error state, onConnectionClosedCallback shall not be invoked.
+        [TestMethod]
+        public async Task MqttTransportHandlerOnErrorCallConnectionClosedListenerError()
+        {
+            // arrange
+            IChannel channel;
+            var tcs = new TaskCompletionSource<bool>();
+            var transport = CreateTransportHandlerWithMockChannel(
+                out channel,
+                (o, ea) => { },
+                (o, ea) =>
+                {
+                    tcs.SetResult(true);
+                    return TaskHelpers.CompletedTask;
+                });
+            transport.OnError(new ApplicationException("Testing"));
+
+            // act
+            await Task.Run(() => transport.OnError(new ApplicationException("Testing"))).ConfigureAwait(false);
+
+            // assert
+            await Task.WhenAny(
+                Task.Run(async () =>
+                {
+                    await Task.Delay(1000).ConfigureAwait(false);
+                    tcs.SetResult(false);
+                }), tcs.Task).ConfigureAwait(false);
+
+            Assert.IsFalse(tcs.Task.Result);
         }
     }
 }

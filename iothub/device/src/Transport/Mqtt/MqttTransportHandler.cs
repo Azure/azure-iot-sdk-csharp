@@ -90,6 +90,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         private static readonly TimeSpan regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
         Regex twinResponseTopicRegex = new Regex(twinResponseTopicPattern, RegexOptions.Compiled, regexTimeoutMilliseconds);
 
+        Action<object, ConnectionEventArgs> connectionOpenedListener;
+        Func<object, ConnectionEventArgs, Task> connectionClosedListener;
         Func<MethodRequestInternal, Task> messageListener;
         Action<TwinCollection> onDesiredStatePatchListener;
         Action<Message> twinResponseEvent;
@@ -104,10 +106,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             IPipelineContext context,
             IotHubConnectionString iotHubConnectionString,
             MqttTransportSettings settings,
+            Action<object, ConnectionEventArgs> onConnectionOpenedCallback,
+            Func<object, ConnectionEventArgs, Task> onConnectionClosedCallback,
             Func<MethodRequestInternal, Task> onMethodCallback = null,
             Action<TwinCollection> onDesiredStatePatchReceivedCallback = null,
             Func<string, Message, Task> onReceiveCallback = null)
-            : this(context, iotHubConnectionString, settings, null)
+            : this(context, iotHubConnectionString, settings, null, onConnectionOpenedCallback, onConnectionClosedCallback)
         {
             this.messageListener = onMethodCallback;
             this.messageReceivedListener = onReceiveCallback;
@@ -118,9 +122,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             IPipelineContext context,
             IotHubConnectionString iotHubConnectionString,
             MqttTransportSettings settings,
-            Func<IPAddress[], int, Task<IChannel>> channelFactory)
+            Func<IPAddress[], int, Task<IChannel>> channelFactory,
+            Action<object, ConnectionEventArgs> onConnectionOpenedCallback,
+            Func<object, ConnectionEventArgs, Task> onConnectionClosedCallback)
             : base(context, settings)
         {
+            this.connectionOpenedListener = onConnectionOpenedCallback;
+            this.connectionClosedListener = onConnectionClosedCallback;
+
             this.mqttIotHubAdapterFactory = new MqttIotHubAdapterFactory(settings);
             this.messageQueue = new ConcurrentQueue<Message>();
             this.completionQueue = new Queue<string>();
@@ -154,7 +163,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             this.closeRetryPolicy = new RetryPolicy(new TransientErrorIgnoreStrategy(), 5, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
         }
 
-#region Client operations
+        #region Client operations
+
+        bool TransportIsOpen()
+        {
+            return this.State.HasFlag(TransportState.Open);
+        }
 
         public override async Task OpenAsync(CancellationToken cancellationToken)
         {
@@ -165,6 +179,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 cancellationToken.ThrowIfCancellationRequested();
 
                 this.EnsureValidState();
+
+                if (this.TransportIsOpen())
+                {
+                    return;
+                }
 
                 await this.OpenAsyncInternal(cancellationToken).ConfigureAwait(true);
             }
@@ -357,6 +376,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             if (this.TryStateTransition(TransportState.Opening, TransportState.Open))
             {
                 this.connectCompletion.TryComplete();
+                Task.Run(() => this.connectionOpenedListener(
+                    this.channel,
+                    new ConnectionEventArgs
+                    {
+                        ConnectionType = ConnectionType.MqttConnection,
+                        ConnectionStatus = ConnectionStatus.Connected,
+                        ConnectionStatusChangeReason = ConnectionStatusChangeReason.Connection_Ok
+                    }));
             }
         }
 
@@ -493,13 +520,37 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 }
 
                 await this.closeRetryPolicy.ExecuteAsync(this.CleanupAsync).ConfigureAwait(true);
+
+                // Codes_SRS_CSHARP_MQTT_TRANSPORT_28_04: If OnError is triggered after OpenAsync is called, onConnectionClosedCallback shall be invoked.
+                // Codes_SRS_CSHARP_MQTT_TRANSPORT_28_05: If OnError is triggered after ReceiveAsync is called, onConnectionClosedCallback shall be invoked.
+                // Codes_SRS_CSHARP_MQTT_TRANSPORT_28_06: If OnError is triggered without any prior operation, onConnectionClosedCallback shall not be invoked.
+                // Codes_SRS_CSHARP_MQTT_TRANSPORT_28_07: If OnError is triggered in error state, onConnectionClosedCallback shall not be invoked.
+
+                if ((previousState & TransportState.Open) == TransportState.Open)
+                {
+                    await Task.Run(async () => await connectionClosedListener(
+                        channel,
+                        new ConnectionEventArgs
+                        {
+                            ConnectionType = ConnectionType.MqttConnection,
+                            ConnectionStatus = ConnectionStatus.Disconnected_Retrying,
+                            ConnectionStatusChangeReason = ConnectionStatusChangeReason.No_Network
+                        }).ConfigureAwait(false)).ConfigureAwait(false);
+                }
             }
             catch (Exception ex) when (!ex.IsFatal())
             {
                 if (Logging.IsEnabled) Logging.Error(this, ex.ToString(), nameof(OnError));
             }
         }
-        
+
+        public override Task RecoverConnections(object link, ConnectionType connectionType, CancellationToken cancellationToken)
+        {
+            // Codes_SRS_CSHARP_MQTT_TRANSPORT_28_08: [** `RecoverConnections` shall throw IotHubClientException exception when in error state.
+            this.EnsureValidState();
+            return Common.TaskConstants.Completed;
+        }
+
         TransportState MoveToStateIfPossible(TransportState destination, TransportState illegalStates)
         {
             TransportState previousState = this.State;
@@ -617,10 +668,17 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             cancellationToken.ThrowIfCancellationRequested();
             this.EnsureValidState();
 
+            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_032: `EnableMethodsAsync` shall open the transport if this method is called when the transport is not open.
+            if (!this.TransportIsOpen())
+            {
+                await this.OpenAsync(cancellationToken).ConfigureAwait(false);
+            }
+
             // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_001:  `EnableMethodsAsync` shall subscribe using the '$iothub/methods/POST/' topic filter. 
             // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_002:  `EnableMethodsAsync` shall wait for a SUBACK for the subscription request. 
             // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_003:  `EnableMethodsAsync` shall return failure if the subscription request fails. 
-            await this.channel.WriteAsync(new SubscribePacket(0, new SubscriptionRequest(methodPostTopicFilter, QualityOfService.AtMostOnce))).ConfigureAwait(true);
+            await this.channel.WriteAsync(new SubscribePacket(0, new SubscriptionRequest(methodPostTopicFilter, QualityOfService.AtMostOnce))).ConfigureAwait(false);
+            
         }
 
         public override async Task DisableMethodsAsync(CancellationToken cancellationToken)
@@ -631,7 +689,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             //SRS_CSHARP_MQTT_TRANSPORT_28_001: `DisableMethodsAsync` shall unsubscribe using the '$iothub/methods/POST/' topic filter.
             //SRS_CSHARP_MQTT_TRANSPORT_28_002: `DisableMethodsAsync` shall wait for a UNSUBACK for the unsubscription.
             //SRS_CSHARP_MQTT_TRANSPORT_28_003: `DisableMethodsAsync` shall return failure if the unsubscription fails.
-            await this.channel.WriteAsync(new UnsubscribePacket(0, methodPostTopicFilter)).ConfigureAwait(true);
+            await this.channel.WriteAsync(new UnsubscribePacket(0, methodPostTopicFilter)).ConfigureAwait(false);
+            
         }
 
         public override async Task EnableEventReceiveAsync(CancellationToken cancellationToken)
@@ -639,10 +698,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             cancellationToken.ThrowIfCancellationRequested();
             this.EnsureValidState();
 
+            if (!this.TransportIsOpen())
+            {
+                await this.OpenAsync(cancellationToken).ConfigureAwait(false);
+            }
+
             // Codes_SRS_CSHARP_MQTT_TRANSPORT_33_021:  `EnableEventReceiveAsync` shall subscribe using the 'devices/{0}/modules/{1}/' topic filter. 
             // Codes_SRS_CSHARP_MQTT_TRANSPORT_33_022:  `EnableEventReceiveAsync` shall wait for a SUBACK for the subscription request. 
             // Codes_SRS_CSHARP_MQTT_TRANSPORT_33_023:  `EnableEventReceiveAsync` shall return failure if the subscription request fails. 
             await this.channel.WriteAsync(new SubscribePacket(0, new SubscriptionRequest(this.receiveEventMessageFilter, this.qos))).ConfigureAwait(true);
+            
         }
 
         public override async Task DisableEventReceiveAsync(CancellationToken cancellationToken)
@@ -653,7 +718,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             //SRS_CSHARP_MQTT_TRANSPORT_33_021: `DisableEventReceiveAsync` shall unsubscribe using the 'devices/{0}/modules/{1}/#' topic filter.
             //SRS_CSHARP_MQTT_TRANSPORT_33_022: `DisableEventReceiveAsync` shall wait for a UNSUBACK for the unsubscription.
             //SRS_CSHARP_MQTT_TRANSPORT_33_023: `DisableEventReceiveAsync` shall return failure if the unsubscription fails.
-            await this.channel.WriteAsync(new UnsubscribePacket(0, this.receiveEventMessageFilter)).ConfigureAwait(true);
+            await this.channel.WriteAsync(new UnsubscribePacket(0, this.receiveEventMessageFilter)).ConfigureAwait(true); ;
         }
 
         public override async Task SendMethodResponseAsync(MethodResponseInternal methodResponse, CancellationToken cancellationToken)
@@ -661,6 +726,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             cancellationToken.ThrowIfCancellationRequested();
             this.EnsureValidState();
 
+            if (!this.TransportIsOpen())
+            {
+                await this.OpenAsync(cancellationToken).ConfigureAwait(false);
+            }
             // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_005:  `SendMethodResponseAsync` shall allocate a `Message` object containing the method response. 
             // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_006:  `SendMethodResponseAsync` shall set the message topic to '$iothub/methods/res/<STATUS>/?$rid=<REQUEST_ID>' where STATUS is the return status for the method and REQUEST_ID is the request ID received from the service in the original method call. 
             // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_007:  `SendMethodResponseAsync` shall set the message body to the response payload of the `Method` object. 
@@ -669,7 +738,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             message.MqttTopicName = methodResponseTopic.FormatInvariant(methodResponse.Status, methodResponse.RequestId);
 
-            await this.SendEventAsync(message, cancellationToken).ConfigureAwait(true);
+            await this.SendEventAsync(message, cancellationToken).ConfigureAwait(false);
         }
 
         public override async Task EnableTwinPatchAsync(CancellationToken cancellationToken)
@@ -677,10 +746,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             cancellationToken.ThrowIfCancellationRequested();
             this.EnsureValidState();
 
+            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_033: `EnableTwinPatchAsync` shall open the transport if this method is called when the transport is not open. 
+            if (!this.TransportIsOpen())
+            {
+                await this.OpenAsync(cancellationToken).ConfigureAwait(false);
+            }
+
             // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_010: `EnableTwinPatchAsync` shall subscribe using the '$iothub/twin/PATCH/properties/desired/#' topic filter.
             // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_011: `EnableTwinPatchAsync` shall wait for a SUBACK on the subscription request.
             // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_012: `EnableTwinPatchAsync` shall return failure if the subscription request fails.
-            await this.channel.WriteAsync(new SubscribePacket(0, new SubscriptionRequest(twinPatchTopicFilter, QualityOfService.AtMostOnce))).ConfigureAwait(true);
+            await this.channel.WriteAsync(new SubscribePacket(0, new SubscriptionRequest(twinPatchTopicFilter, QualityOfService.AtMostOnce))).ConfigureAwait(false);
         }
 
         Boolean ParseResponseTopic(string topicName, out string rid, out Int32 status)
@@ -688,7 +763,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             var match = this.twinResponseTopicRegex.Match(topicName);
             if (match.Success)
             {
-                status = Convert.ToInt32(match.Groups[1].Value);
+                status = Convert.ToInt32(match.Groups[1].Value, CultureInfo.InvariantCulture);
                 rid = HttpUtility.ParseQueryString(match.Groups[2].Value).Get("$rid");
                 return true;
             }
@@ -721,7 +796,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         {
                             if (status >= 300)
                             {
-                                throw new IotHubException("request " + rid + " returned status " + status.ToString(), isTransient:false);
+                                throw new IotHubException("request " + rid + " returned status " + status.ToString(CultureInfo.InvariantCulture), isTransient:false);
                             }
                             else
                             {
@@ -812,6 +887,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             cancellationToken.ThrowIfCancellationRequested();
             this.EnsureValidState();
 
+            // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_035: `SendTwinPatchAsync` shall shall open the transport if this method is called when the transport is not open. 
+            if (!this.TransportIsOpen())
+            {
+                await this.OpenAsync(cancellationToken).ConfigureAwait(false);
+            }
+
             // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_025:  `SendTwinPatchAsync` shall serialize the `reported` object into a JSON string 
             var body = JsonConvert.SerializeObject(reportedProperties);
             var bodyStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(body));
@@ -829,8 +910,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_028:  If the response is failed, `SendTwinPatchAsync` shall return that failure to the caller. 
                 // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_029:  If the response doesn't arrive within `MqttTransportHandler.TwinTimeout`, `SendTwinPatchAsync` shall fail with a timeout error.  
                 // Codes_SRS_CSHARP_MQTT_TRANSPORT_18_030:  If the response contains a success code, `SendTwinPatchAsync` shall return success to the caller. 
-                await SendTwinRequestAsync(request, rid, cancellationToken).ConfigureAwait(true);
-            }
+                await SendTwinRequestAsync(request, rid, cancellationToken).ConfigureAwait(false);
+                }
         }
 
         Func<IPAddress[], int, Task<IChannel>> CreateChannelFactory(IotHubConnectionString iotHubConnectionString, MqttTransportSettings settings, ProductInfo productInfo)
@@ -1033,5 +1114,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             if (Logging.IsEnabled) Logging.Info(null, "EventLoopGroup threads count was not set.");
             return new MultithreadEventLoopGroup();
         }
+        
     }
 }

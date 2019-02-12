@@ -21,6 +21,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             var connectionString = context.Get<IotHubConnectionString>();
             var onMethodCallback = context.Get<InternalClient.OnMethodCalledDelegate>();
             var onDesiredStatePatchReceived = context.Get<Action<TwinCollection>>();
+            var OnConnectionClosedCallback = context.Get<InternalClient.OnConnectionClosedDelegate>();
+            var OnConnectionOpenedCallback = context.Get<InternalClient.OnConnectionOpenedDelegate>();
             var onReceiveCallback = context.Get<InternalClient.OnReceiveEventMessageCalledDelegate>();
 
             switch (transportSetting.GetTransportType())
@@ -43,6 +45,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         context, 
                         connectionString, 
                         transportSetting as MqttTransportSettings,
+                        new Action<object, ConnectionEventArgs>(OnConnectionOpenedCallback),
+                        new Func<object, ConnectionEventArgs, Task>(OnConnectionClosedCallback),
                         new Func<MethodRequestInternal, Task>(onMethodCallback), 
                         onDesiredStatePatchReceived,
                         new Func<string, Message, Task>(onReceiveCallback));

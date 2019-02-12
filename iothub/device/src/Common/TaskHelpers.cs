@@ -123,5 +123,43 @@ namespace Microsoft.Azure.Devices.Client
                     break;
             }
         }
+
+        public static async Task WithTimeout(this Task task, TimeSpan timeout, Func<string> errorMessage, CancellationToken token)
+        {
+            if (timeout == TimeSpan.MaxValue)
+            {
+                timeout = Timeout.InfiniteTimeSpan;
+            }
+
+            if (task.IsCanceled || token.IsCancellationRequested)
+            {
+                Debug.WriteLine(token.GetHashCode() + " WithTimeout: task canceled before adding delay task.");
+                throw new TimeoutException(errorMessage());
+            }
+
+            if (task.IsCompleted || (timeout == Timeout.InfiniteTimeSpan && token == CancellationToken.None))
+            {
+                Debug.WriteLine(token.GetHashCode() + " WithTimeout: task completed before adding delay task.");
+                await task.ConfigureAwait(false);
+                return;
+            }
+
+            using (var delayCts = CancellationTokenSource.CreateLinkedTokenSource(token))
+            {
+                if (task == await Task.WhenAny(task, Task.Delay(timeout, delayCts.Token)).ConfigureAwait(false))
+                {
+                    Debug.WriteLine(token.GetHashCode() + " WithTimeout: task completed.");
+
+                    delayCts.Cancel();
+                    await task.ConfigureAwait(false);
+                    return;
+                }
+            }
+
+            Debug.WriteLine(token.GetHashCode() + " WithTimeout: task timed-out.");
+
+            throw new TimeoutException(errorMessage());
+        }
     }
+
 }

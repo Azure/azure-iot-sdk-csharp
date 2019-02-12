@@ -3,6 +3,7 @@
 
 namespace Microsoft.Azure.Devices.Client
 {
+    using Common;
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
@@ -131,6 +132,7 @@ namespace Microsoft.Azure.Devices.Client
         private readonly SemaphoreSlim receiveSemaphore = new SemaphoreSlim(1, 1);
         private volatile Dictionary<string, Tuple<MessageHandler, object>> receiveEventEndpoints;
         private volatile Tuple<MessageHandler, object> defaultEventCallback;
+        DeviceClientConnectionStatusManager connectionStatusManager = new DeviceClientConnectionStatusManager();
         private ProductInfo productInfo = new ProductInfo();
 
         /// <summary>
@@ -146,6 +148,10 @@ namespace Microsoft.Azure.Devices.Client
 
 
         internal delegate Task OnMethodCalledDelegate(MethodRequestInternal methodRequestInternal);
+
+        internal delegate Task OnConnectionClosedDelegate(object sender, ConnectionEventArgs e);
+
+        internal delegate void OnConnectionOpenedDelegate(object sender, ConnectionEventArgs e);
 
         internal delegate Task OnReceiveEventMessageCalledDelegate(string input, Message message);
 
@@ -182,6 +188,8 @@ namespace Microsoft.Azure.Devices.Client
             pipelineContext.Set<OnMethodCalledDelegate>(OnMethodCalled);
             pipelineContext.Set<Action<TwinCollection>>(OnReportedStatePatchReceived);
             pipelineContext.Set<ConnectionStatusChangesHandler>(OnConnectionStatusChanged);
+            pipelineContext.Set<OnConnectionClosedDelegate>(OnConnectionClosed);
+            pipelineContext.Set<OnConnectionOpenedDelegate>(OnConnectionOpened);
             pipelineContext.Set<OnReceiveEventMessageCalledDelegate>(OnReceiveEventMessageCalled);
             pipelineContext.Set(this.productInfo);
 
@@ -271,6 +279,11 @@ namespace Microsoft.Azure.Devices.Client
         // parameters for calculating delay in between retries.]
         [Obsolete("This method has been deprecated.  Please use Microsoft.Azure.Devices.Client.SetRetryPolicy(IRetryPolicy retryPolicy) instead.")]
         public RetryPolicyType RetryPolicy { get; set; }
+        
+        CancellationTokenSource GetOperationTimeoutCancellationTokenSource()
+        {
+            return new CancellationTokenSource(TimeSpan.FromMilliseconds(OperationTimeoutInMilliseconds));
+        }
 
         /// <summary>
         /// Sets the retry policy used in the operation retries.
@@ -676,6 +689,37 @@ namespace Microsoft.Azure.Devices.Client
             return InnerHandler.SendEventAsync(messages, cancellationToken);
         }
 
+        Task ApplyTimeout(Func<CancellationTokenSource, Task> operation)
+        {
+            if (OperationTimeoutInMilliseconds == 0)
+            {
+                var cancellationTokenSource = new CancellationTokenSource();
+                return operation(cancellationTokenSource)
+                    .WithTimeout(TimeSpan.MaxValue, () => Common.Resources.OperationTimeoutExpired, cancellationTokenSource.Token);
+            }
+
+            CancellationTokenSource operationTimeoutCancellationTokenSource = GetOperationTimeoutCancellationTokenSource();
+
+            var result = operation(operationTimeoutCancellationTokenSource)
+                .WithTimeout(TimeSpan.FromMilliseconds(OperationTimeoutInMilliseconds), () => Common.Resources.OperationTimeoutExpired, operationTimeoutCancellationTokenSource.Token);
+
+            return result.ContinueWith(t =>
+            {
+
+                // operationTimeoutCancellationTokenSource will be disposed by GC. 
+                // Cannot dispose here since we don't know if both tasks created by WithTimeout ran to completion.
+                if (t.IsCanceled)
+                {
+                    throw new TimeoutException(Common.Resources.OperationTimeoutExpired);
+                }
+
+                if (t.IsFaulted)
+                {
+                    throw t.Exception.InnerException;
+                }
+            });
+        }
+
         /// <summary>
         /// Uploads a stream to a block blob in a storage account associated with the IoTHub for that device.
         /// If the blob already exists, it will be overwritten.
@@ -1015,6 +1059,69 @@ namespace Microsoft.Azure.Devices.Client
 
             if (Logging.IsEnabled) Logging.Exit(this, methodRequestInternal.Name, methodRequestInternal, nameof(OnMethodCalled));
         }
+
+
+        /// <summary>
+        /// The delegate for handling disrupted connection/links in the transport layer.
+        /// </summary>
+        internal void OnConnectionOpened(object sender, ConnectionEventArgs e)
+        {
+            ConnectionStatusChangeResult result = this.connectionStatusManager.ChangeTo(e.ConnectionType, ConnectionStatus.Connected);
+            if (result.IsClientStatusChanged && (connectionStatusChangesHandler != null))
+            {
+                // codes_SRS_DEVICECLIENT_28_024: [** `OnConnectionOpened` shall invoke the connectionStatusChangesHandler if ConnectionStatus is changed **]**  
+                this.connectionStatusChangesHandler(ConnectionStatus.Connected, e.ConnectionStatusChangeReason);
+            }
+        }
+
+        /// <summary>
+        /// The delegate for handling disrupted connection/links in the transport layer.
+        /// </summary>
+        internal async Task OnConnectionClosed(object sender, ConnectionEventArgs e)
+        {
+            ConnectionStatusChangeResult result = null;
+
+            // codes_SRS_DEVICECLIENT_28_023: [** `OnConnectionClosed` shall notify ConnectionStatusManager of the connection updates. **]**
+            if (e.ConnectionStatus == ConnectionStatus.Disconnected_Retrying)
+            {
+                try
+                {
+                    // codes_SRS_DEVICECLIENT_28_022: [** `OnConnectionClosed` shall invoke the RecoverConnections operation. **]**          
+                    await ApplyTimeout(async operationTimeoutCancellationTokenSource =>
+                    {
+                        result = this.connectionStatusManager.ChangeTo(e.ConnectionType, ConnectionStatus.Disconnected_Retrying, ConnectionStatus.Connected);
+                        if (result.IsClientStatusChanged && (connectionStatusChangesHandler != null))
+                        {
+                            this.connectionStatusChangesHandler(e.ConnectionStatus, e.ConnectionStatusChangeReason);
+                        }
+
+                        using (CancellationTokenSource linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(result.StatusChangeCancellationTokenSource.Token, operationTimeoutCancellationTokenSource.Token))
+                        {
+                            await this.InnerHandler.RecoverConnections(sender, e.ConnectionType, linkedTokenSource.Token).ConfigureAwait(false);
+                        }
+
+                    }).ConfigureAwait(false);
+                }
+                catch (Exception)
+                {
+                    // codes_SRS_DEVICECLIENT_28_027: [** `OnConnectionClosed` shall invoke the connectionStatusChangesHandler if RecoverConnections throw exception **]**
+                    result = this.connectionStatusManager.ChangeTo(e.ConnectionType, ConnectionStatus.Disconnected);
+                    if (result.IsClientStatusChanged && (connectionStatusChangesHandler != null))
+                    {
+                        this.connectionStatusChangesHandler(ConnectionStatus.Disconnected, ConnectionStatusChangeReason.Retry_Expired);
+                    }
+                }
+            }
+            else
+            {
+                result = this.connectionStatusManager.ChangeTo(e.ConnectionType, ConnectionStatus.Disabled);
+                if (result.IsClientStatusChanged && (connectionStatusChangesHandler != null))
+                {
+                    this.connectionStatusChangesHandler(ConnectionStatus.Disabled, e.ConnectionStatusChangeReason);
+                }
+            }
+        }
+
 
         public void Dispose()
         {
