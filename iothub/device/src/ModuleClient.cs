@@ -673,10 +673,27 @@ using System.Net.Http;
         /// Accepts a Device Stream request.
         /// </summary>
         /// <param name="request">The Device Stream request received through </param>
+        /// <returns>A awaitable async task</returns>
+        public Task AcceptDeviceStreamRequestAsync(DeviceStreamRequest request)
+            => this.internalClient.AcceptDeviceStreamRequestAsync(request);
+
+
+        /// <summary>
+        /// Accepts a Device Stream request.
+        /// </summary>
+        /// <param name="request">The Device Stream request received through </param>
         /// <param name="cancellationToken">Token used for cancelling this operation.</param>
         /// <returns>A awaitable async task</returns>
         public Task AcceptDeviceStreamRequestAsync(DeviceStreamRequest request, CancellationToken cancellationToken)
             => this.internalClient.AcceptDeviceStreamRequestAsync(request, cancellationToken);
+
+        /// <summary>
+        /// Rejects a Device Stream request.
+        /// </summary>
+        /// <param name="request">The Device Stream request received through </param>
+        /// <returns>A awaitable async task</returns>
+        public Task RejectDeviceStreamRequestAsync(DeviceStreamRequest request)
+            => this.internalClient.RejectDeviceStreamRequestAsync(request);
 
         /// <summary>
         /// Rejects a Device Stream request.

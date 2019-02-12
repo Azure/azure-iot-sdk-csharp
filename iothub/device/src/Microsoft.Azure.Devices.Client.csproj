@@ -119,9 +119,4 @@
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.4.1" />
   </ItemGroup>
 
-  <ItemGroup>
-    <!-- FXCop -->
-    <PackageReference Condition=" '$(Configuration)' == 'Debug' " Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.6.1" />
-  </ItemGroup>
-
 </Project>
