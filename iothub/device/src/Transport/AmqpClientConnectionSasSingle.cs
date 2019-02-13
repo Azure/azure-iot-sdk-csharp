@@ -69,12 +69,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
             try
             {
                 // Create connection from transport
-                amqpConnection = new AmqpConnection(transport, this.amqpSettings, this.amqpConnectionSettings);
-                amqpConnection.Closed += OnConnectionClosed;
-                await amqpConnection.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+                AmqpConnection = new AmqpConnection(transport, this.amqpSettings, this.amqpConnectionSettings);
+                AmqpConnection.Closed += OnConnectionClosed;
+                await AmqpConnection.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
 
                 // Create Session for Authentication
-                authenticationSession = new AmqpClientSession(this);
+                authenticationSession = new AmqpClientSession(AmqpConnection);
                 await authenticationSession.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
                 authenticationSession.OnAmqpClientSessionClosed += AuthenticationSession_OnAmqpClientSessionClosed;
 
@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         }
                         catch (Exception exception) when (!exception.IsFatal())
                         {
-                            authenticationSession.amqpSession?.Connection.SafeClose();
+                            authenticationSession.AmqpSession?.Connection.SafeClose();
 
                             throw;
                         }
@@ -106,12 +106,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             catch (Exception ex)  when (!ex.IsFatal())
             {
-                if (amqpConnection.TerminalException != null)
+                if (AmqpConnection.TerminalException != null)
                 {
-                    throw AmqpClientHelper.ToIotHubClientContract(amqpConnection.TerminalException);
+                    throw AmqpClientHelper.ToIotHubClientContract(AmqpConnection.TerminalException);
                 }
 
-                amqpConnection.SafeClose(ex);
+                AmqpConnection.SafeClose(ex);
                 throw;
             }
             finally
@@ -123,13 +123,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private void AuthenticationSession_OnAmqpClientSessionClosed(object sender, EventArgs e)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasSingle)}.{nameof(AuthenticationSession_OnAmqpClientSessionClosed)}");
-            amqpConnection.SafeClose();
+            AmqpConnection.SafeClose();
         }
 
         private void WorkerAmqpClientSession_OnAmqpClientSessionClosed(object sender, EventArgs e)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasSingle)}.{nameof(WorkerAmqpClientSession_OnAmqpClientSessionClosed)}");
-            amqpConnection.SafeClose();
+            AmqpConnection.SafeClose();
         }
 
         private void OnConnectionClosed(object o, EventArgs args)
@@ -147,9 +147,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionSasSingle)}.{nameof(CloseAsync)}" + "DeviceClientEndpointIdentity crisis");
             }
 
-            if (amqpConnection != null)
+            if (AmqpConnection != null)
             {
-                await amqpConnection.CloseAsync(timeout).ConfigureAwait(false);
+                await AmqpConnection.CloseAsync(timeout).ConfigureAwait(false);
             }
 
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionSasSingle)}.{nameof(CloseAsync)}");
@@ -172,7 +172,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 if (workerAmqpClientSession == null)
                 {
-                    workerAmqpClientSession = new AmqpClientSession(this);
+                    workerAmqpClientSession = new AmqpClientSession(AmqpConnection);
                     await workerAmqpClientSession.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
                     workerAmqpClientSession.OnAmqpClientSessionClosed += WorkerAmqpClientSession_OnAmqpClientSessionClosed;
                 }
@@ -234,7 +234,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 if (workerAmqpClientSession == null)
                 {
-                    workerAmqpClientSession = new AmqpClientSession(this);
+                    workerAmqpClientSession = new AmqpClientSession(AmqpConnection);
                     await workerAmqpClientSession.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
                     workerAmqpClientSession.OnAmqpClientSessionClosed += WorkerAmqpClientSession_OnAmqpClientSessionClosed;
                 }
@@ -294,7 +294,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 if (workerAmqpClientSession == null)
                 {
-                    workerAmqpClientSession = new AmqpClientSession(this);
+                    workerAmqpClientSession = new AmqpClientSession(AmqpConnection);
                     await workerAmqpClientSession.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
                     workerAmqpClientSession.OnAmqpClientSessionClosed += WorkerAmqpClientSession_OnAmqpClientSessionClosed;
                 }
@@ -375,7 +375,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             // Create telemetry links on demand
             await EnableTelemetryAndC2DAsync(deviceClientEndpointIdentity, timeout).ConfigureAwait(false);
 
-            amqpMessage = await workerAmqpClientSession.telemetryReceiverLink.ReceiveMessageAsync(timeout).ConfigureAwait(false);
+            amqpMessage = await workerAmqpClientSession.TelemetryReceiverLink.ReceiveMessageAsync(timeout).ConfigureAwait(false);
 
             if (amqpMessage != null)
             {
@@ -411,7 +411,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             if (workerAmqpClientSession != null)
             {
-                disposeOutcome = await workerAmqpClientSession.telemetryReceiverLink.DisposeMessageAsync(deliveryTag, outcome, batchable: true, timeout: timeout).ConfigureAwait(false);
+                disposeOutcome = await workerAmqpClientSession.TelemetryReceiverLink.DisposeMessageAsync(deliveryTag, outcome, batchable: true, timeout: timeout).ConfigureAwait(false);
             }
 
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionSasSingle)}.{nameof(DisposeMessageAsync)}");
@@ -438,10 +438,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             amqpTokenRefresher.Dispose();
         }
 
-        internal override int GetNumberOfClients()
-        {
-            return 1;
-        }
         #endregion
     }
 }

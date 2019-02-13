@@ -3,10 +3,6 @@
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Text;
-    using System.IO;
     using Microsoft.Azure.Devices.Shared;
 
     /// <summary>

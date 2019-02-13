@@ -19,8 +19,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         const string linkNamePostFix = "_TelemetryReceiverLink";
 
         public AmqpClientTelemetryReceiverLink(
-            AmqpClientLinkType amqpClientLinkType, 
-            AmqpClientSession amqpClientSession, 
+            AmqpClientLinkType amqpClientLinkType,
+            AmqpSession amqpSession, 
             DeviceClientEndpointIdentity 
             deviceClientEndpointIdentity, 
             TimeSpan timeout,
@@ -28,7 +28,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             bool useTokenRefresher,
             AmqpClientSession amqpAuthenticationSession
             )
-            : base(amqpClientLinkType, amqpClientSession, deviceClientEndpointIdentity, correlationId, useTokenRefresher, amqpAuthenticationSession)
+            : base(amqpClientLinkType, amqpSession, deviceClientEndpointIdentity, correlationId, useTokenRefresher, amqpAuthenticationSession)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientTelemetryReceiverLink)}");
 
@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             amqpLinkSettings.AddProperty(IotHubAmqpProperty.ClientVersion, deviceClientEndpointIdentity.productInfo.ToString());
 
             amqpLink = new ReceivingAmqpLink(amqpLinkSettings);
-            amqpLink.AttachTo(this.amqpClientSession.amqpSession);
+            amqpLink.AttachTo(amqpSession);
 
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientTelemetryReceiverLink)}");
         }

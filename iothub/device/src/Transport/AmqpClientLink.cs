@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private string audience;
 
         protected AmqpClientSession amqpAuthenticationSession { get; private set; }
-        protected AmqpClientSession amqpClientSession { get; private set; }
+        protected AmqpSession amqpSession { get; private set; }
         protected DeviceClientEndpointIdentity deviceClientEndpointIdentity { get; private set; }
 
         protected AmqpClientLinkType amqpClientLinkType { get; private set; }
@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         internal AmqpClientLink(
             AmqpClientLinkType amqpClientLinkType,
-            AmqpClientSession amqpClientSession,
+            AmqpSession amqpSession,
             DeviceClientEndpointIdentity deviceClientEndpointIdentity, 
             string correlationId = "",
             bool useAmqpTokenRefresher = false,
@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientLink)}");
 
             this.amqpClientLinkType = amqpClientLinkType;
-            this.amqpClientSession = amqpClientSession;
+            this.amqpSession = amqpSession;
             this.deviceClientEndpointIdentity = deviceClientEndpointIdentity;
             this.correlationId = correlationId;
             this.useAmqpTokenRefresher = useAmqpTokenRefresher;

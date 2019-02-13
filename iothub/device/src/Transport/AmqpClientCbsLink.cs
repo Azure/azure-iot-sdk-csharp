@@ -2,11 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.Azure.Amqp;
-using Microsoft.Azure.Amqp.Encoding;
-using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Azure.Devices.Shared;
 using System;
-using System.Globalization;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client.Transport
@@ -20,17 +17,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
     internal class AmqpClientCbsLink
     {
         #region Members-Constructor
-        protected AmqpClientSession amqpClientSession { get; private set; }
-
         private AmqpCbsLink amqpCbsLink { get; set; }
 
-        internal AmqpClientCbsLink(AmqpClientSession amqpClientSession)
+        internal AmqpClientCbsLink(AmqpConnection amqpConnection)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientCbsLink)}");
 
-            this.amqpClientSession = amqpClientSession;
-
-            amqpCbsLink = new AmqpCbsLink(this.amqpClientSession.amqpClientConnection.amqpConnection);
+            amqpCbsLink = new AmqpCbsLink(amqpConnection);
 
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientCbsLink)}");
         }
@@ -42,7 +35,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientCbsLink)}.{nameof(AuthenticateCbsAsync)}");
 
             DateTime expiresAtUtc;
-            var timeoutHelper = new TimeoutHelper(timeout);
 
             expiresAtUtc = await amqpCbsLink.SendTokenAsync(
                 deviceClientEndpointIdentity.iotHubConnectionString,

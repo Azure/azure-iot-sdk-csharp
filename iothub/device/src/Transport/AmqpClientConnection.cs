@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         internal TlsTransportSettings tlsTransportSettings { get; private set; }
 
-        public AmqpConnection amqpConnection { get; protected set; }
+        public AmqpConnection AmqpConnection { get; protected set; }
 
         private TaskCompletionSource<TransportBase> taskCompletionSource;
         private ProtocolHeader sentProtocolHeader;
@@ -250,8 +250,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
         #endregion
 
         #region Helpers
-        internal abstract int GetNumberOfClients();
-
         private AmqpSettings CreateAmqpSettings()
         {
             var amqpSettings = new AmqpSettings();

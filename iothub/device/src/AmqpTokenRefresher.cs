@@ -76,7 +76,7 @@ namespace Microsoft.Azure.Devices.Client
                     return;
                 }
 
-                while (!this.amqpClientSession.amqpSession.IsClosing())
+                while (!this.amqpClientSession.AmqpSession.IsClosing())
                 {
                     if (this.taskCancelled)
                     {
