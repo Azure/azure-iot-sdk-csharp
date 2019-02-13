@@ -154,7 +154,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             this.closeRetryPolicy = new RetryPolicy(new TransientErrorIgnoreStrategy(), 5, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
         }
 
-        public override bool IsReady() => this.State != TransportState.Closed && this.State != TransportState.Error;
+        public override bool IsReady => this.State != TransportState.Closed && this.State != TransportState.Error;
 
 #region Client operations
 
