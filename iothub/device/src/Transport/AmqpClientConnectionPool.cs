@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
     internal class AmqpClientConnectionPool
     {
-        private static readonly TimeSpan TimeWait = TimeSpan.FromSeconds(1);
+        private static readonly TimeSpan TimeWait = TimeSpan.FromSeconds(10);
         private ISet<AmqpClientConnectionMux> AmqpClientSasConnections;
         private ISet<AmqpClientConnectionMux> AmqpClientIoTHubSasConnections;
         private readonly Semaphore Lock;
@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionPool)}");
 
-           AmqpClientSasConnections = new HashSet<AmqpClientConnectionMux>();
+            AmqpClientSasConnections = new HashSet<AmqpClientConnectionMux>();
             AmqpClientIoTHubSasConnections = new HashSet<AmqpClientConnectionMux>();
             Lock = new Semaphore(1, 1);
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionPool)}");
