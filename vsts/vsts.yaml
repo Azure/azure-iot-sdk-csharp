@@ -252,7 +252,7 @@ phases:
 
     displayName: build
 
-  - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
+  - task: ComponentGovernanceComponentDetection@0
     displayName: 'Component Detection'
 
 
@@ -291,6 +291,7 @@ phases:
   - task: securedevelopmentteam.vss-secure-development-tools.build-task-credscan.CredScan@2
     displayName: 'Run CredScan'
     inputs:
+      suppressionsFile: vsts/CredScanSuppressions.json
       regexMatchTimeoutInSeconds: 5
 
     # TODO #181 Samples / tests fail the test due to fake connection strings.
@@ -311,6 +312,12 @@ phases:
     displayName: 'Create Security Analysis Report'
     inputs:
       AllTools: true
+
+  - task: securedevelopmentteam.vss-secure-development-tools.build-task-uploadtotsa.TSAUpload@1
+    displayName: 'TSA upload'
+    inputs:
+      tsaStamp: Azure
+      codeBaseName: 'Azure-Iot-SDK-CSharp-lts_2018_01'
 
   - task: securedevelopmentteam.vss-secure-development-tools.build-task-postanalysis.PostAnalysis@1
     displayName: 'Post Analysis'
