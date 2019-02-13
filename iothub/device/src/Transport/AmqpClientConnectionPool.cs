@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
     internal class AmqpClientConnectionPool
     {
-        private static readonly TimeSpan TimeWait = TimeSpan.FromSeconds(1);
+        private static readonly TimeSpan TimeWait = TimeSpan.FromSeconds(10);
         private ISet<AmqpClientConnectionMux> AmqpClientSasConnections;
         private ISet<AmqpClientConnectionMux> AmqpClientIoTHubSasConnections;
         private readonly Semaphore Lock;
