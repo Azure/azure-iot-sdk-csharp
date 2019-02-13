@@ -15,6 +15,7 @@ namespace Microsoft.Azure.Devices.Client
         Task OpenAsync(CancellationToken cancellationToken);
         Task CloseAsync(CancellationToken cancellationToken);
         Task WaitForTransportClosedAsync();
+        bool IsReady();
 
         // Telemetry uplink.
         Task SendEventAsync(Message message, CancellationToken cancellationToken);

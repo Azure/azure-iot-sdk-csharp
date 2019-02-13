@@ -66,6 +66,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                 try
                 {
+                    CreateNewTransportIfNotReady();
                     await base.OpenAsync(cancellationToken).ConfigureAwait(false);
                     _transportSelectionComplete = true;
                 }
@@ -77,6 +78,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
             finally
             {
                 if (Logging.IsEnabled) Logging.Exit(this, cancellationToken, $"{nameof(ProtocolRoutingDelegatingHandler)}.{nameof(OpenAsync)}");
+            }
+        }
+
+        private void CreateNewTransportIfNotReady()
+        {
+            if (InnerHandler == null || !InnerHandler.IsReady())
+            {
+                CreateNewTransportHandler();
             }
         }
 
