@@ -482,20 +482,26 @@ namespace Microsoft.Azure.Devices.Client.Transport
         internal bool DisposeOnIdle()
         {
             bool result = false;
+            AmqpConnection amqpConnection = null;
+            AmqpTokenRefresher amqpTokenRefresher = null;
             Lock.WaitOne();
             if (MuxedDevices.Count == 0 && AmqpConnection != null)
             {
-                AmqpTokenRefresher amqpTokenRefresher = AmqpTokenRefresher;
-                if (amqpTokenRefresher != null)
-                {
-                    amqpTokenRefresher.Dispose();
-                    amqpTokenRefresher = null;
-                }
-                AmqpConnection.SafeClose();
+                amqpConnection = AmqpConnection;
+                amqpTokenRefresher = AmqpTokenRefresher;
                 AmqpConnection = null;
+                AmqpTokenRefresher = null;
                 result = true;
             }
             Lock.Release();
+            if (amqpTokenRefresher != null)
+            {
+                amqpTokenRefresher.Dispose();
+            }
+            if (amqpConnection != null)
+            {
+                amqpConnection.SafeClose();
+            }
             return result;
         }
         #endregion

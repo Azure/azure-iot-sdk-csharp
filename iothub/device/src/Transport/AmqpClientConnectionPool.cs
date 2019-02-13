@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionPool)}");
 
-           AmqpClientSasConnections = new HashSet<AmqpClientConnectionMux>();
+            AmqpClientSasConnections = new HashSet<AmqpClientConnectionMux>();
             AmqpClientIoTHubSasConnections = new HashSet<AmqpClientConnectionMux>();
             Lock = new Semaphore(1, 1);
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionPool)}");
