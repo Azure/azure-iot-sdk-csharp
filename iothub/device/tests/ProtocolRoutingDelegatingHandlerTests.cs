@@ -3,15 +3,12 @@
 namespace Microsoft.Azure.Devices.Client.Test
 {
     using System;
-    using System.Net.Sockets;
+    using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
-    using Microsoft.Azure.Devices.Client.Common;
-    using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Azure.Devices.Client.Transport;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using NSubstitute;
-    using NSubstitute.ExceptionExtensions;
 
     [TestClass]
     [TestCategory("Unit")]
@@ -63,24 +60,37 @@ namespace Microsoft.Azure.Devices.Client.Test
             var contextMock = Substitute.For<IPipelineContext>();
             var amqpTransportSettings = Substitute.For<ITransportSettings>();
             var mqttTransportSettings = Substitute.For<ITransportSettings>();
-            var innerHandler = Substitute.For<IDelegatingHandler>();
             int openCallCounter = 0;
-            innerHandler.OpenAsync(Arg.Any<CancellationToken>()).Returns(async ci =>
+
+            var innerHandlers = new List<IDelegatingHandler>(2);
+            IDelegatingHandler GetInnerHandler()
             {
-                openCallCounter++;
-                await Task.Yield();
-                throw new TimeoutException();
-            });
+                var innerHandler = Substitute.For<IDelegatingHandler>();
+                innerHandler.IsUsable.Returns(true);
+                innerHandler.OpenAsync(Arg.Any<CancellationToken>()).Returns(async ci =>
+                {
+                    openCallCounter++;
+                    await Task.Yield();
+                    innerHandler.IsUsable.Returns(false);
+                    throw new TimeoutException();
+                });
+                innerHandlers.Add(innerHandler);
+                return innerHandler;
+            }
+
             contextMock.Get<ITransportSettings[]>().Returns(new[] { amqpTransportSettings, mqttTransportSettings });
             var sut = new ProtocolRoutingDelegatingHandler(contextMock, null);
-            sut.ContinuationFactory = (ctx, inner) => innerHandler;
+            sut.ContinuationFactory = (ctx, inner) => GetInnerHandler();
             var cancellationToken = new CancellationToken();
 
             await sut.OpenAsync(cancellationToken).ExpectedAsync<TimeoutException>().ConfigureAwait(false);
-            innerHandler.Received(0).Dispose();
+            Assert.AreEqual(1, innerHandlers.Count);
+            innerHandlers[0].Received(0).Dispose();
 
             await sut.OpenAsync(cancellationToken).ExpectedAsync<TimeoutException>().ConfigureAwait(false);
-            innerHandler.Received(1).Dispose();
+            Assert.AreEqual(2, innerHandlers.Count);
+            innerHandlers[0].Received(1).Dispose();
+            innerHandlers[1].Received(0).Dispose();
 
             Assert.AreEqual(2, openCallCounter);
         }

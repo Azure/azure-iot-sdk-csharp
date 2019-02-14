@@ -163,7 +163,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return InnerHandler?.DisableEventReceiveAsync(cancellationToken) ?? TaskHelpers.CompletedTask;
         }
 
-        public virtual bool IsReady => true;
+        public virtual bool IsUsable => InnerHandler?.IsUsable ?? true;
 
         protected void ThrowIfDisposed()
         {

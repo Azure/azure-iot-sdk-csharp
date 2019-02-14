@@ -83,7 +83,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private void CreateNewTransportIfNotReady()
         {
-            if (InnerHandler == null || !InnerHandler.IsReady)
+            if (InnerHandler == null || !InnerHandler.IsUsable)
             {
                 CreateNewTransportHandler();
             }
