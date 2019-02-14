@@ -14,9 +14,16 @@ namespace Microsoft.Azure.Devices.Samples
 
         public static int Main(string[] args)
         {
-            if (string.IsNullOrEmpty(s_connectionString) && args.Length > 0)
+            if (args.Length > 0)
             {
                 s_connectionString = args[0];
+            }
+            else
+            {
+                if (string.IsNullOrEmpty(s_connectionString))
+                {
+                    return 1;
+                }
             }
 
             RegistryManager rm = RegistryManager.CreateFromConnectionString(s_connectionString);
@@ -25,6 +32,7 @@ namespace Microsoft.Azure.Devices.Samples
             sample.RunSampleAsync().GetAwaiter().GetResult();
 
             Console.WriteLine("Done.\n");
+            Console.ReadLine();
             return 0;
         }
     }
