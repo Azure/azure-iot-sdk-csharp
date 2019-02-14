@@ -96,6 +96,46 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
+        public async Task TransportRouting_TryOpenWhenInnerHandlerNotUsable_Success()
+        {
+            var contextMock = Substitute.For<IPipelineContext>();
+            var amqpTransportSettings = Substitute.For<ITransportSettings>();
+            var mqttTransportSettings = Substitute.For<ITransportSettings>();
+            int openCallCounter = 0;
+
+            var innerHandlers = new List<IDelegatingHandler>(2);
+            IDelegatingHandler GetInnerHandler()
+            {
+                var innerHandler = Substitute.For<IDelegatingHandler>();
+                innerHandler.IsUsable.Returns(true);
+                innerHandler.OpenAsync(Arg.Any<CancellationToken>()).Returns(async ci =>
+                {
+                    openCallCounter++;
+                    await Task.Yield();
+                    innerHandler.IsUsable.Returns(false);
+                });
+                innerHandlers.Add(innerHandler);
+                return innerHandler;
+            }
+
+            contextMock.Get<ITransportSettings[]>().Returns(new[] { amqpTransportSettings, mqttTransportSettings });
+            var sut = new ProtocolRoutingDelegatingHandler(contextMock, null);
+            sut.ContinuationFactory = (ctx, inner) => GetInnerHandler();
+            var cancellationToken = new CancellationToken();
+
+            await sut.OpenAsync(cancellationToken).ConfigureAwait(false);
+            Assert.AreEqual(1, innerHandlers.Count);
+            innerHandlers[0].Received(0).Dispose();
+
+            await sut.OpenAsync(cancellationToken).ConfigureAwait(false);
+            Assert.AreEqual(2, innerHandlers.Count);
+            innerHandlers[0].Received(1).Dispose();
+            innerHandlers[1].Received(0).Dispose();
+
+            Assert.AreEqual(2, openCallCounter);
+        }
+
+        [TestMethod]
         public async Task TransportRouting_CancellationTokenCanceled_Open()
         {
             var transportSettings = Substitute.For<ITransportSettings>();
