@@ -14,17 +14,17 @@ namespace Microsoft.Azure.Devices.Client.Transport
     internal class AmqpClientConnectionPool
     {
         private static readonly TimeSpan TimeWait = TimeSpan.FromSeconds(10);
-        private ISet<AmqpClientConnectionMux> AmqpClientSasConnections;
-        private ISet<AmqpClientConnectionMux> AmqpClientIoTHubSasConnections;
-        private readonly Semaphore Lock;
+        private ISet<AmqpClientConnectionMux> amqpClientSasConnections;
+        private ISet<AmqpClientConnectionMux> amqpClientIoTHubSasConnections;
+        private readonly Semaphore connectionLock;
 
         internal AmqpClientConnectionPool()
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionPool)}");
 
-            AmqpClientSasConnections = new HashSet<AmqpClientConnectionMux>();
-            AmqpClientIoTHubSasConnections = new HashSet<AmqpClientConnectionMux>();
-            Lock = new Semaphore(1, 1);
+            amqpClientSasConnections = new HashSet<AmqpClientConnectionMux>();
+            amqpClientIoTHubSasConnections = new HashSet<AmqpClientConnectionMux>();
+            connectionLock = new Semaphore(1, 1);
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionPool)}");
         }
 
@@ -42,11 +42,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             else if (deviceClientEndpointIdentity is DeviceClientEndpointIdentitySasMux)
             {
-                amqpClientConnection = GetOrAllocateAmqpClientConnectionMux(AmqpClientSasConnections, deviceClientEndpointIdentity, true);
+                amqpClientConnection = GetOrAllocateAmqpClientConnectionMux(amqpClientSasConnections, deviceClientEndpointIdentity, true);
             }
             else if (deviceClientEndpointIdentity is DeviceClientEndpointIdentityIoTHubSas)
             {
-                amqpClientConnection = GetOrAllocateAmqpClientConnectionMux(AmqpClientIoTHubSasConnections, deviceClientEndpointIdentity, false);
+                amqpClientConnection = GetOrAllocateAmqpClientConnectionMux(amqpClientIoTHubSasConnections, deviceClientEndpointIdentity, false);
             }
             else
             {
@@ -67,7 +67,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionPool)}.{nameof(GetOrAllocateAmqpClientConnectionMux)}");
 
-            Lock.WaitOne();
+            connectionLock.WaitOne();
             AmqpClientConnectionMux amqpClientConnection;
             if (amqpClientMuxConnections.Count < deviceClientEndpointIdentity.amqpTransportSettings.AmqpConnectionPoolSettings.MaxPoolSize)
             {
@@ -79,7 +79,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 amqpClientConnection = GetLeastUsedConnection(amqpClientMuxConnections);
             }
             amqpClientConnection.AppendMuxWorker(deviceClientEndpointIdentity);
-            Lock.Release();
+            connectionLock.Release();
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionPool)}.{nameof(GetOrAllocateAmqpClientConnectionMux)}");
             return amqpClientConnection;
         }
@@ -88,23 +88,23 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             // wait before cleanup to get better performace by avoiding close AMQP connection
             await Task.Delay(TimeWait).ConfigureAwait(false);
-            Lock.WaitOne();
+            connectionLock.WaitOne();
             AmqpClientConnectionMux amqpClientConnectionMux = amqpClientConnection as AmqpClientConnectionMux;
             if (amqpClientConnectionMux != null)
             {
                 if (amqpClientConnectionMux.DisposeOnIdle())
                 {
-                    if (amqpClientConnectionMux.UseLinkBasedTokenRefresh)
+                    if (amqpClientConnectionMux.useLinkBasedTokenRefresh)
                     {
-                         AmqpClientSasConnections.Remove(amqpClientConnectionMux);
+                         amqpClientSasConnections.Remove(amqpClientConnectionMux);
                     }
                     else
                     {
-                       AmqpClientIoTHubSasConnections.Remove(amqpClientConnectionMux);
+                       amqpClientIoTHubSasConnections.Remove(amqpClientConnectionMux);
                     }
                 }
             }
-            Lock.Release();
+            connectionLock.Release();
         }
 
         private AmqpClientConnectionMux GetLeastUsedConnection(ISet<AmqpClientConnectionMux> amqpClientConnectionMuxes)

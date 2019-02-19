@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         internal TlsTransportSettings tlsTransportSettings { get; private set; }
 
-        public AmqpConnection AmqpConnection { get; protected set; }
+        public AmqpConnection amqpConnection { get; protected set; }
 
         private TaskCompletionSource<TransportBase> taskCompletionSource;
         private ProtocolHeader sentProtocolHeader;

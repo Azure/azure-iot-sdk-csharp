@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
     internal class AmqpClientConnectionSasSingle : AmqpClientConnection, IDisposable
     {
         #region Members-Constructor
-        private const bool useLinkBasedTokenRefresh = false;
+        private const bool UseLinkBasedTokenRefresh = false;
 
         AmqpClientSession authenticationSession;
         AmqpClientSession workerAmqpClientSession;
@@ -25,8 +25,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
         internal bool isConnectionAuthenticated { get; private set; }
 
         internal static readonly TimeSpan DefaultOperationTimeout = TimeSpan.FromMinutes(1);
-        static readonly TimeSpan RefreshTokenBuffer = TimeSpan.FromMinutes(2);
-        static readonly TimeSpan RefreshTokenRetryInterval = TimeSpan.FromSeconds(30);
 
         private AmqpTokenRefresher amqpTokenRefresher;
 
@@ -69,17 +67,17 @@ namespace Microsoft.Azure.Devices.Client.Transport
             try
             {
                 // Create connection from transport
-                AmqpConnection = new AmqpConnection(transport, this.amqpSettings, this.amqpConnectionSettings);
-                AmqpConnection.Closed += OnConnectionClosed;
-                await AmqpConnection.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+                amqpConnection = new AmqpConnection(transport, this.amqpSettings, this.amqpConnectionSettings);
+                amqpConnection.Closed += OnConnectionClosed;
+                await amqpConnection.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
 
                 // Create Session for Authentication
-                authenticationSession = new AmqpClientSession(AmqpConnection);
+                authenticationSession = new AmqpClientSession(amqpConnection);
                 await authenticationSession.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
                 authenticationSession.OnAmqpClientSessionClosed += AuthenticationSession_OnAmqpClientSessionClosed;
 
                 // Authenticate connection with Cbs
-                if (!useLinkBasedTokenRefresh)
+                if (!UseLinkBasedTokenRefresh)
                 {
                     if (this.amqpTransportSettings.ClientCertificate == null)
                     {
@@ -96,7 +94,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         }
                         catch (Exception exception) when (!exception.IsFatal())
                         {
-                            authenticationSession.AmqpSession?.Connection.SafeClose();
+                            authenticationSession.amqpSession?.Connection.SafeClose();
 
                             throw;
                         }
@@ -106,12 +104,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             catch (Exception ex)  when (!ex.IsFatal())
             {
-                if (AmqpConnection.TerminalException != null)
+                if (amqpConnection.TerminalException != null)
                 {
-                    throw AmqpClientHelper.ToIotHubClientContract(AmqpConnection.TerminalException);
+                    throw AmqpClientHelper.ToIotHubClientContract(amqpConnection.TerminalException);
                 }
 
-                AmqpConnection.SafeClose(ex);
+                amqpConnection.SafeClose(ex);
                 throw;
             }
             finally
@@ -123,13 +121,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private void AuthenticationSession_OnAmqpClientSessionClosed(object sender, EventArgs e)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasSingle)}.{nameof(AuthenticationSession_OnAmqpClientSessionClosed)}");
-            AmqpConnection.SafeClose();
+            amqpConnection.SafeClose();
         }
 
         private void WorkerAmqpClientSession_OnAmqpClientSessionClosed(object sender, EventArgs e)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionSasSingle)}.{nameof(WorkerAmqpClientSession_OnAmqpClientSessionClosed)}");
-            AmqpConnection.SafeClose();
+            amqpConnection.SafeClose();
         }
 
         private void OnConnectionClosed(object o, EventArgs args)
@@ -147,9 +145,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 throw new ArgumentOutOfRangeException($"{nameof(AmqpClientConnectionSasSingle)}.{nameof(CloseAsync)}" + "DeviceClientEndpointIdentity crisis");
             }
 
-            if (AmqpConnection != null)
+            if (amqpConnection != null)
             {
-                await AmqpConnection.CloseAsync(timeout).ConfigureAwait(false);
+                await amqpConnection.CloseAsync(timeout).ConfigureAwait(false);
             }
 
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionSasSingle)}.{nameof(CloseAsync)}");
@@ -172,11 +170,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 if (workerAmqpClientSession == null)
                 {
-                    workerAmqpClientSession = new AmqpClientSession(AmqpConnection);
+                    workerAmqpClientSession = new AmqpClientSession(amqpConnection);
                     await workerAmqpClientSession.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
                     workerAmqpClientSession.OnAmqpClientSessionClosed += WorkerAmqpClientSession_OnAmqpClientSessionClosed;
                 }
-                await workerAmqpClientSession.OpenLinkTelemetryAndC2DAsync(deviceClientEndpointIdentity, timeoutHelper.RemainingTime(), useLinkBasedTokenRefresh, null).ConfigureAwait(false);
+                await workerAmqpClientSession.OpenLinkTelemetryAndC2DAsync(deviceClientEndpointIdentity, timeoutHelper.RemainingTime(), UseLinkBasedTokenRefresh, null).ConfigureAwait(false);
             }
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionSasSingle)}.{nameof(EnableTelemetryAndC2DAsync)}");
         }
@@ -234,12 +232,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 if (workerAmqpClientSession == null)
                 {
-                    workerAmqpClientSession = new AmqpClientSession(AmqpConnection);
+                    workerAmqpClientSession = new AmqpClientSession(amqpConnection);
                     await workerAmqpClientSession.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
                     workerAmqpClientSession.OnAmqpClientSessionClosed += WorkerAmqpClientSession_OnAmqpClientSessionClosed;
                 }
 
-                await workerAmqpClientSession.OpenLinkMethodsAsync(deviceClientEndpointIdentity, correlationid, methodReceivedListener, timeoutHelper.RemainingTime(), useLinkBasedTokenRefresh, null).ConfigureAwait(false);
+                await workerAmqpClientSession.OpenLinkMethodsAsync(deviceClientEndpointIdentity, correlationid, methodReceivedListener, timeoutHelper.RemainingTime(), UseLinkBasedTokenRefresh, null).ConfigureAwait(false);
             }
 
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionSasSingle)}.{nameof(EnableMethodsAsync)}");
@@ -294,12 +292,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 if (workerAmqpClientSession == null)
                 {
-                    workerAmqpClientSession = new AmqpClientSession(AmqpConnection);
+                    workerAmqpClientSession = new AmqpClientSession(amqpConnection);
                     await workerAmqpClientSession.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
                     workerAmqpClientSession.OnAmqpClientSessionClosed += WorkerAmqpClientSession_OnAmqpClientSessionClosed;
                 }
 
-                await workerAmqpClientSession.OpenLinkTwinAsync(deviceClientEndpointIdentity, correlationid, onTwinPathReceivedListener, timeoutHelper.RemainingTime(), useLinkBasedTokenRefresh, null).ConfigureAwait(false);
+                await workerAmqpClientSession.OpenLinkTwinAsync(deviceClientEndpointIdentity, correlationid, onTwinPathReceivedListener, timeoutHelper.RemainingTime(), UseLinkBasedTokenRefresh, null).ConfigureAwait(false);
             }
 
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionSasSingle)}.{nameof(EnableTwinPatchAsync)}");
@@ -352,7 +350,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             if (isConnectionAuthenticated)
             {
-                await workerAmqpClientSession.OpenLinkEventsAsync(deviceClientEndpointIdentity, onEventsReceivedListener, timeoutHelper.RemainingTime(), useLinkBasedTokenRefresh).ConfigureAwait(false);
+                await workerAmqpClientSession.OpenLinkEventsAsync(deviceClientEndpointIdentity, onEventsReceivedListener, timeoutHelper.RemainingTime(), UseLinkBasedTokenRefresh).ConfigureAwait(false);
             }
 
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionSasSingle)}.{nameof(EnableEventsReceiveAsync)}");
@@ -375,7 +373,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             // Create telemetry links on demand
             await EnableTelemetryAndC2DAsync(deviceClientEndpointIdentity, timeout).ConfigureAwait(false);
 
-            amqpMessage = await workerAmqpClientSession.TelemetryReceiverLink.ReceiveMessageAsync(timeout).ConfigureAwait(false);
+            amqpMessage = await workerAmqpClientSession.telemetryReceiverLink.ReceiveMessageAsync(timeout).ConfigureAwait(false);
 
             if (amqpMessage != null)
             {
@@ -411,7 +409,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             if (workerAmqpClientSession != null)
             {
-                disposeOutcome = await workerAmqpClientSession.TelemetryReceiverLink.DisposeMessageAsync(deliveryTag, outcome, batchable: true, timeout: timeout).ConfigureAwait(false);
+                disposeOutcome = await workerAmqpClientSession.telemetryReceiverLink.DisposeMessageAsync(deliveryTag, outcome, batchable: true, timeout: timeout).ConfigureAwait(false);
             }
 
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionSasSingle)}.{nameof(DisposeMessageAsync)}");
