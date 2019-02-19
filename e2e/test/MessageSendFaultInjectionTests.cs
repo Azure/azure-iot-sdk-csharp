@@ -62,7 +62,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [Ignore] // TODO #764 Disable test due to intermittent test failure
         public async Task Message_TcpConnectionLossSendRecovery_MqttWs()
         {
             await SendMessageRecovery(
