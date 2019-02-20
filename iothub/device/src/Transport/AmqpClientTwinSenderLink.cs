@@ -21,20 +21,19 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         internal AmqpClientTwinSenderLink(
             AmqpClientLinkType amqpClientLinkType, 
-            AmqpClientSession amqpClientSession, 
+            AmqpSession amqpSession, 
             DeviceClientEndpointIdentity deviceClientEndpointIdentity, 
             TimeSpan timeout,
             string correlationId,
             bool useTokenRefresher,
             AmqpClientSession amqpAuthenticationSession
             )
-            : base(amqpClientLinkType, amqpClientSession, deviceClientEndpointIdentity, correlationId, useTokenRefresher, amqpAuthenticationSession)
+            : base(amqpClientLinkType, amqpSession, deviceClientEndpointIdentity, correlationId, useTokenRefresher, amqpAuthenticationSession)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientTwinSenderLink)}");
 
             linkPath = this.BuildPath(CommonConstants.DeviceTwinPathTemplate, CommonConstants.ModuleTwinPathTemplate);
             Uri uri = deviceClientEndpointIdentity.iotHubConnectionString.BuildLinkAddress(linkPath);
-            uint prefetchCount = deviceClientEndpointIdentity.amqpTransportSettings.PrefetchCount;
 
             amqpLinkSettings = new AmqpLinkSettings
             {
@@ -54,7 +53,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             amqpLinkSettings.AddProperty(IotHubAmqpProperty.ChannelCorrelationId, correlationIdPrefix + correlationId);
 
             amqpLink = new SendingAmqpLink(amqpLinkSettings);
-            amqpLink.AttachTo(this.amqpClientSession.amqpSession);
+            amqpLink.AttachTo(amqpSession);
 
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientTwinSenderLink)}");
         }

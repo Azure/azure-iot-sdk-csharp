@@ -144,7 +144,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 if (workerAmqpClientSession == null)
                 {
-                    workerAmqpClientSession = new AmqpClientSession(this);
+                    workerAmqpClientSession = new AmqpClientSession(amqpConnection);
                     await workerAmqpClientSession.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
                     workerAmqpClientSession.OnAmqpClientSessionClosed += WorkerAmqpClientSession_OnAmqpClientSessionClosed;
                 }
@@ -206,7 +206,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 if (workerAmqpClientSession == null)
                 {
-                    workerAmqpClientSession = new AmqpClientSession(this);
+                    workerAmqpClientSession = new AmqpClientSession(amqpConnection);
                     await workerAmqpClientSession.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
                     workerAmqpClientSession.OnAmqpClientSessionClosed += WorkerAmqpClientSession_OnAmqpClientSessionClosed;
                 }
@@ -266,7 +266,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 if (workerAmqpClientSession == null)
                 {
-                    workerAmqpClientSession = new AmqpClientSession(this);
+                    workerAmqpClientSession = new AmqpClientSession(amqpConnection);
                     await workerAmqpClientSession.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
                     workerAmqpClientSession.OnAmqpClientSessionClosed += WorkerAmqpClientSession_OnAmqpClientSessionClosed;
                 }
@@ -405,10 +405,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionX509)}.{nameof(DisposeTwinPatchDelivery)}");
         }
 
-        internal override int GetNumberOfClients()
-        {
-            return 1;
-        }
         #endregion
     }
 }

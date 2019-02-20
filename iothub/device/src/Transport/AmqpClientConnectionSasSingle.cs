@@ -74,7 +74,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 await amqpConnection.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
 
                 // Create Session for Authentication
-                authenticationSession = new AmqpClientSession(this);
+                authenticationSession = new AmqpClientSession(amqpConnection);
                 await authenticationSession.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
                 authenticationSession.OnAmqpClientSessionClosed += AuthenticationSession_OnAmqpClientSessionClosed;
 
@@ -172,7 +172,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 if (workerAmqpClientSession == null)
                 {
-                    workerAmqpClientSession = new AmqpClientSession(this);
+                    workerAmqpClientSession = new AmqpClientSession(amqpConnection);
                     await workerAmqpClientSession.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
                     workerAmqpClientSession.OnAmqpClientSessionClosed += WorkerAmqpClientSession_OnAmqpClientSessionClosed;
                 }
@@ -234,7 +234,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 if (workerAmqpClientSession == null)
                 {
-                    workerAmqpClientSession = new AmqpClientSession(this);
+                    workerAmqpClientSession = new AmqpClientSession(amqpConnection);
                     await workerAmqpClientSession.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
                     workerAmqpClientSession.OnAmqpClientSessionClosed += WorkerAmqpClientSession_OnAmqpClientSessionClosed;
                 }
@@ -294,7 +294,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 if (workerAmqpClientSession == null)
                 {
-                    workerAmqpClientSession = new AmqpClientSession(this);
+                    workerAmqpClientSession = new AmqpClientSession(amqpConnection);
                     await workerAmqpClientSession.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
                     workerAmqpClientSession.OnAmqpClientSessionClosed += WorkerAmqpClientSession_OnAmqpClientSessionClosed;
                 }
@@ -438,10 +438,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             amqpTokenRefresher.Dispose();
         }
 
-        internal override int GetNumberOfClients()
-        {
-            return 1;
-        }
         #endregion
     }
 }

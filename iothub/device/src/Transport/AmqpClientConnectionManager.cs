@@ -52,26 +52,20 @@ namespace Microsoft.Azure.Devices.Client.Transport
         }
 
         /// <summary>
-        /// Get connection by device identity
+        /// Create connection by device identity
         /// </summary>
-        internal AmqpClientConnection GetClientConnection(DeviceClientEndpointIdentity deviceClientEndpointIdentity)
+        internal AmqpClientConnection CreateClientConnection(DeviceClientEndpointIdentity deviceClientEndpointIdentity)
         {
             getConnectionSemaphore.WaitOne();
 
-            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionManager)}.{nameof(GetClientConnection)}");
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionManager)}.{nameof(CreateClientConnection)}");
 
-            AmqpClientConnection amqpClientConnection = amqpClientConnectionPool.GetClientConnection(deviceClientEndpointIdentity);
+            AmqpClientConnection amqpClientConnection = amqpClientConnectionPool.CreateClientConnection(deviceClientEndpointIdentity);
 
             getConnectionSemaphore.Release();
 
             return amqpClientConnection;
         }
 
-        internal void RemoveClientConnection(DeviceClientEndpointIdentity deviceClientEndpointIdentity)
-        {
-            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionManager)}.{nameof(RemoveClientConnection)}");
-
-            amqpClientConnectionPool.RemoveClientConnection(deviceClientEndpointIdentity);
-        }
     }
 }
