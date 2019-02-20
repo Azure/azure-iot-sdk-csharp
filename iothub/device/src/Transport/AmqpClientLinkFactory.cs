@@ -1,4 +1,4 @@
-﻿using Microsoft.Azure.Amqp;
+using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Devices.Shared;
 using System;
 

@@ -66,6 +66,5 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             return amqpClientConnection;
         }
-
     }
 }

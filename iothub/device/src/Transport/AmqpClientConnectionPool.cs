@@ -52,6 +52,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 throw new NotImplementedException();
             }
+
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionPool)}.{nameof(CreateClientConnection)}");
             return amqpClientConnection;
         }
