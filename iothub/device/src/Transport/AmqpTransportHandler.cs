@@ -58,6 +58,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
+        public override bool IsUsable => amqpClientConnection != null && amqpClientConnection.amqpConnection != null && !amqpClientConnection.amqpConnection.IsClosing();
+
         internal AmqpTransportHandler(
             IPipelineContext context,
             IotHubConnectionString connectionString,
