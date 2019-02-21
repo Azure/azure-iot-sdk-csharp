@@ -316,6 +316,7 @@ phases:
   - task: securedevelopmentteam.vss-secure-development-tools.build-task-uploadtotsa.TSAUpload@1
     displayName: 'TSA upload'
     inputs:
+      tsaVersion: TsaV2
       tsaStamp: Azure
       codeBaseName: 'Azure-Iot-SDK-CSharp-lts_2018_01'
 
