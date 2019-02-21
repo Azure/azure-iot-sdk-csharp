@@ -5,9 +5,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 {
     using System;
     using System.Collections.Generic;
-    using System.Globalization;
     using System.IO;
-    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Azure.Amqp;
@@ -16,7 +14,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
     using Microsoft.Azure.Devices.Shared;
     using System.Collections.Concurrent;
     using Newtonsoft.Json;
-    using System.Diagnostics;
     using Microsoft.Azure.Devices.Client.Exceptions;
 
     sealed class AmqpTransportHandler : TransportHandler
@@ -45,7 +42,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private DeviceClientEndpointIdentity deviceClientEndpointIdentity;
         private AmqpClientConnection amqpClientConnection;
-        private AmqpClientConnectionManager amqpClientConnectionManager;
 
 #pragma warning disable CA1810 // Initialize reference type static fields inline: We use the static ctor to have init-once semantics.
         static AmqpTransportHandler()
@@ -61,6 +57,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 if (Logging.IsEnabled) Logging.Error(null, ex, nameof(AmqpTransportHandler));
             }
         }
+
+        public override bool IsUsable => amqpClientConnection != null && amqpClientConnection.amqpConnection != null && !amqpClientConnection.amqpConnection.IsClosing();
 
         internal AmqpTransportHandler(
             IPipelineContext context,
@@ -82,16 +80,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
             this.methodReceivedListener = onMethodCallback;
             this.onDesiredStatePatchListener = onDesiredStatePatchReceived;
             this.eventReceivedListener = onEventReceivedCallback;
-
-            // Get AmqpClientConnectionCache instance
-            this.amqpClientConnectionManager = AmqpClientConnectionManager.Instance;
-
+            
             // Get connection from AmqpClientConnectionCache
             DeviceClientEndpointIdentityFactory deviceClientEndpointIdentityFactory = new DeviceClientEndpointIdentityFactory();
             this.deviceClientEndpointIdentity = deviceClientEndpointIdentityFactory.Create(iotHubConnectionString, transportSettings, productInfo);
 
-            this.amqpClientConnection = amqpClientConnectionManager.GetClientConnection(deviceClientEndpointIdentity);
-            this.amqpClientConnection.OnAmqpClientConnectionClosed += OnAmqpConnectionClose;
+            this.amqpClientConnection = AmqpClientConnectionManager.Instance.CreateClientConnection(deviceClientEndpointIdentity);
+            this.amqpClientConnection.OnAmqpClientConnectionClosed += OnAmqpClientConnectionClose;
         }
         #endregion
 
@@ -109,7 +104,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                     throw new Exception($"{nameof(AmqpTransportHandler)}.{nameof(OpenAsync)}: AmqpConnection is null");
                 }
 
-                await amqpClientConnection.OpenAsync(this.deviceClientEndpointIdentity, openTimeout).ConfigureAwait(false);
+                await amqpClientConnection.OpenAsync(deviceClientEndpointIdentity, openTimeout).ConfigureAwait(false);
             }
             catch (Exception exception) when (!exception.IsFatal() && !(exception is OperationCanceledException))
             {
@@ -130,14 +125,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
         
-        private void OnAmqpConnectionClose(object sender, EventArgs e)
+        private void OnAmqpClientConnectionClose(object sender, EventArgs e)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, $"{sender}", nameof(OnAmqpConnectionClose));
+            if (Logging.IsEnabled) Logging.Enter(this, $"{sender}", nameof(OnAmqpClientConnectionClose));
 
-            amqpClientConnectionManager.RemoveClientConnection(deviceClientEndpointIdentity);
             _transportShouldRetry.TrySetResult(true);
 
-            if (Logging.IsEnabled) Logging.Exit(this, $"{sender}", nameof(OnAmqpConnectionClose));
+            if (Logging.IsEnabled) Logging.Exit(this, $"{sender}", nameof(OnAmqpClientConnectionClose));
         }
 
         public override async Task CloseAsync(CancellationToken cancellationToken)
@@ -147,12 +141,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-
                 _transportShouldRetry.TrySetCanceled();
-
                 await amqpClientConnection.CloseAsync(deviceClientEndpointIdentity, openTimeout).ConfigureAwait(false);
-
-                amqpClientConnectionManager.RemoveClientConnection(deviceClientEndpointIdentity);
             }
             finally
             {

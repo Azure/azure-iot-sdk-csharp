@@ -4,9 +4,7 @@
 namespace Microsoft.Azure.Devices.Client.Transport
 {
     using System;
-    using System.Collections.Generic;
-    using System.Text;
-    using System.IO;
+    using Microsoft.Azure.Amqp;
 
     /// <summary>
     /// Define enum for all types of links used by IoTHub Client SDK
@@ -50,7 +48,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
     {
         AmqpClientLink Create(
             AmqpClientLinkType amqpClientLinkType,
-            AmqpClientSession amqpClientSession,
+            AmqpSession amqpSession,
             DeviceClientEndpointIdentity deviceClientEndpointIdentity,
             TimeSpan timeout,
             string correlationid = "",

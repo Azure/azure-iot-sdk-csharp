@@ -1,7 +1,6 @@
-﻿using Microsoft.Azure.Devices.Shared;
+using Microsoft.Azure.Amqp;
+using Microsoft.Azure.Devices.Shared;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
@@ -12,7 +11,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
     {
         public AmqpClientLink Create(
             AmqpClientLinkType amqpClientLinkType, 
-            AmqpClientSession amqpClientSession, 
+            AmqpSession amqpSession, 
             DeviceClientEndpointIdentity deviceClientEndpointIdentity, 
             TimeSpan timeout, 
             string correlationid = "",
@@ -27,25 +26,25 @@ namespace Microsoft.Azure.Devices.Client.Transport
             switch (amqpClientLinkType)
             {
                 case AmqpClientLinkType.TelemetrySender:
-                    amqpClientLink = new AmqpClientTelemetrySenderLink(amqpClientLinkType, amqpClientSession, deviceClientEndpointIdentity, timeout, correlationid, useTokenRefresher, amqpAuthenticationSession);
+                    amqpClientLink = new AmqpClientTelemetrySenderLink(amqpClientLinkType, amqpSession, deviceClientEndpointIdentity, timeout, correlationid, useTokenRefresher, amqpAuthenticationSession);
                     break;
                 case AmqpClientLinkType.C2D:
-                    amqpClientLink = new AmqpClientTelemetryReceiverLink(amqpClientLinkType, amqpClientSession, deviceClientEndpointIdentity, timeout, correlationid, useTokenRefresher, amqpAuthenticationSession);
+                    amqpClientLink = new AmqpClientTelemetryReceiverLink(amqpClientLinkType, amqpSession, deviceClientEndpointIdentity, timeout, correlationid, useTokenRefresher, amqpAuthenticationSession);
                     break;
                 case AmqpClientLinkType.MethodsSender:
-                    amqpClientLink = new AmqpClientMethodsSenderLink(amqpClientLinkType, amqpClientSession, deviceClientEndpointIdentity, timeout, correlationid, useTokenRefresher, amqpAuthenticationSession);
+                    amqpClientLink = new AmqpClientMethodsSenderLink(amqpClientLinkType, amqpSession, deviceClientEndpointIdentity, timeout, correlationid, useTokenRefresher, amqpAuthenticationSession);
                     break;
                 case AmqpClientLinkType.MethodsReceiver:
-                    amqpClientLink = new AmqpClientMethodsReceiverLink(amqpClientLinkType, amqpClientSession, deviceClientEndpointIdentity, timeout, correlationid, useTokenRefresher, amqpAuthenticationSession);
+                    amqpClientLink = new AmqpClientMethodsReceiverLink(amqpClientLinkType, amqpSession, deviceClientEndpointIdentity, timeout, correlationid, useTokenRefresher, amqpAuthenticationSession);
                     break;
                 case AmqpClientLinkType.TwinSender:
-                    amqpClientLink = new AmqpClientTwinSenderLink(amqpClientLinkType, amqpClientSession, deviceClientEndpointIdentity, timeout, correlationid, useTokenRefresher, amqpAuthenticationSession);
+                    amqpClientLink = new AmqpClientTwinSenderLink(amqpClientLinkType, amqpSession, deviceClientEndpointIdentity, timeout, correlationid, useTokenRefresher, amqpAuthenticationSession);
                     break;
                 case AmqpClientLinkType.TwinReceiver:
-                    amqpClientLink = new AmqpClientTwinReceiverLink(amqpClientLinkType, amqpClientSession, deviceClientEndpointIdentity, timeout, correlationid, useTokenRefresher, amqpAuthenticationSession);
+                    amqpClientLink = new AmqpClientTwinReceiverLink(amqpClientLinkType, amqpSession, deviceClientEndpointIdentity, timeout, correlationid, useTokenRefresher, amqpAuthenticationSession);
                     break;
                 case AmqpClientLinkType.EventsReceiver:
-                    amqpClientLink = new AmqpClientEventsReceiverLink(amqpClientLinkType, amqpClientSession, deviceClientEndpointIdentity, timeout, correlationid, useTokenRefresher, amqpAuthenticationSession);
+                    amqpClientLink = new AmqpClientEventsReceiverLink(amqpClientLinkType, amqpSession, deviceClientEndpointIdentity, timeout, correlationid, useTokenRefresher, amqpAuthenticationSession);
                     break;
                 default:
                     amqpClientLink = null;

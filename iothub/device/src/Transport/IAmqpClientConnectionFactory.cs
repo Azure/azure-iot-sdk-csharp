@@ -9,6 +9,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
     /// </summary>
     interface IAmqpClientConnectionFactory
     {
-        AmqpClientConnection Create(DeviceClientEndpointIdentity deviceClientEndpointIdentity, RemoveClientConnectionFromPool removeDelegate);
+        AmqpClientConnection Create(DeviceClientEndpointIdentity deviceClientEndpointIdentity, OnClientConnectionIdle removeDelegate);
     }
 }

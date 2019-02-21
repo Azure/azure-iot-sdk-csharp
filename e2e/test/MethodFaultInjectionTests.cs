@@ -34,7 +34,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [Ignore] // TODO #764 Disable test due to intermittent test failure
         public async Task Method_DeviceReceivesMethodAndResponseRecovery_MqttWs()
         {
             await SendMethodAndRespondRecovery(Client.TransportType.Mqtt_WebSocket_Only,

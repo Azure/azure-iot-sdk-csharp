@@ -15,7 +15,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         #region Members-Constructor
         internal event EventHandler OnAmqpClientSessionClosed;
 
-        internal AmqpClientConnection amqpClientConnection { get; private set; }
+        internal AmqpConnection amqpConnection { get; private set; }
 
         internal AmqpSession amqpSession { get; private set; }
 
@@ -38,11 +38,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         Func<MethodRequestInternal, Task> methodReceivedListener;
 
-        internal AmqpClientSession(AmqpClientConnection amqpClientConnection)
+        internal AmqpClientSession(AmqpConnection amqpConnection)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientSession)}");
 
-            this.amqpClientConnection = amqpClientConnection;
+            this.amqpConnection = amqpConnection;
             amqpSessionSettings = new AmqpSessionSettings()
             {
                 Properties = new Fields()
@@ -71,10 +71,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
             amqpLinkFactory.LinkCreated += OnLinkCreated;
 
             // Create Session
-            amqpSession = new AmqpSession(amqpClientConnection.amqpConnection, amqpSessionSettings, amqpLinkFactory);
+            amqpSession = new AmqpSession(amqpConnection, amqpSessionSettings, amqpLinkFactory);
 
             // Add Session to the Connection
-            amqpClientConnection.amqpConnection.AddSession(amqpSession, new ushort?());
+            amqpConnection.AddSession(amqpSession, new ushort?());
             amqpSession.Closed += OnSessionClosed;
 
             // Open Session
@@ -129,7 +129,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 if (cbsLink == null)
                 {
-                    cbsLink = new AmqpClientCbsLink(this);
+                    cbsLink = new AmqpClientCbsLink(amqpConnection);
                 }
             }
             else
@@ -155,14 +155,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 string correlationId = "";
                 if (telemetrySenderLink == null)
                 {
-                    telemetrySenderLink = amqpClientLinkFactory.Create(AmqpClientLinkType.TelemetrySender, this, deviceClientEndpointIdentity, timeout, correlationId, useTokenRefresher, amqpAuthenticationSession);
+                    telemetrySenderLink = amqpClientLinkFactory.Create(AmqpClientLinkType.TelemetrySender, amqpSession, deviceClientEndpointIdentity, timeout, correlationId, useTokenRefresher, amqpAuthenticationSession);
                     await telemetrySenderLink.OpenAsync(timeout).ConfigureAwait(false);
                     telemetrySenderLink.OnAmqpClientLinkClosed += TelemetrySendingLink_OnAmqpClientLinkClosed;
                 }
 
                 if (telemetryReceiverLink == null)
                 {
-                    telemetryReceiverLink = amqpClientLinkFactory.Create(AmqpClientLinkType.C2D, this, deviceClientEndpointIdentity, timeout, correlationId, useTokenRefresher, amqpAuthenticationSession);
+                    telemetryReceiverLink = amqpClientLinkFactory.Create(AmqpClientLinkType.C2D, amqpSession, deviceClientEndpointIdentity, timeout, correlationId, useTokenRefresher, amqpAuthenticationSession);
                     await telemetryReceiverLink.OpenAsync(timeout).ConfigureAwait(false);
                     telemetryReceiverLink.OnAmqpClientLinkClosed += TelemetryReceivingLink_OnAmqpClientLinkClosed;
                 }
@@ -237,14 +237,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 if (methodsSenderLink == null)
                 {
-                    methodsSenderLink = amqpClientLinkFactory.Create(AmqpClientLinkType.MethodsSender, this, deviceClientEndpointIdentity, timeout, correlationId, useTokenRefresher, amqpAuthenticationSession);
+                    methodsSenderLink = amqpClientLinkFactory.Create(AmqpClientLinkType.MethodsSender, amqpSession, deviceClientEndpointIdentity, timeout, correlationId, useTokenRefresher, amqpAuthenticationSession);
                     methodsSenderLink.OnAmqpClientLinkClosed += MethodsSendingLink_OnAmqpClientLinkClosed;
                     await methodsSenderLink.OpenAsync(timeout).ConfigureAwait(false);
                 }
 
                 if (methodsReceiverLink == null)
                 {
-                    methodsReceiverLink = amqpClientLinkFactory.Create(AmqpClientLinkType.MethodsReceiver, this, deviceClientEndpointIdentity, timeout, correlationId, useTokenRefresher, amqpAuthenticationSession);
+                    methodsReceiverLink = amqpClientLinkFactory.Create(AmqpClientLinkType.MethodsReceiver, amqpSession, deviceClientEndpointIdentity, timeout, correlationId, useTokenRefresher, amqpAuthenticationSession);
                     methodsReceiverLink.OnAmqpClientLinkClosed += MethodsReceivingLink_OnAmqpClientLinkClosed;
                     await methodsReceiverLink.OpenAsync(timeout).ConfigureAwait(false);
 
@@ -335,14 +335,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 if (twinSenderLink == null)
                 {
-                    twinSenderLink = amqpClientLinkFactory.Create(AmqpClientLinkType.TwinSender, this, deviceClientEndpointIdentity, timeout, correlationId, useTokenRefresher, amqpAuthenticationSession);
+                    twinSenderLink = amqpClientLinkFactory.Create(AmqpClientLinkType.TwinSender, amqpSession, deviceClientEndpointIdentity, timeout, correlationId, useTokenRefresher, amqpAuthenticationSession);
                     twinSenderLink.OnAmqpClientLinkClosed += TwinSendingLink_OnAmqpClientLinkClosed;
                     await twinSenderLink.OpenAsync(timeout).ConfigureAwait(false);
                 }
 
                 if (twinReceiverLink == null)
                 {
-                    twinReceiverLink = amqpClientLinkFactory.Create(AmqpClientLinkType.TwinReceiver, this, deviceClientEndpointIdentity, timeout, correlationId, useTokenRefresher, amqpAuthenticationSession);
+                    twinReceiverLink = amqpClientLinkFactory.Create(AmqpClientLinkType.TwinReceiver, amqpSession, deviceClientEndpointIdentity, timeout, correlationId, useTokenRefresher, amqpAuthenticationSession);
                     twinReceiverLink.OnAmqpClientLinkClosed += TwinReceivingLink_OnAmqpClientLinkClosed;
                     await twinReceiverLink.OpenAsync(timeout).ConfigureAwait(false);
 
@@ -424,7 +424,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 if (eventsReceiverLink == null)
                 {
                     string correlationId = "";
-                    eventsReceiverLink = amqpClientLinkFactory.Create(AmqpClientLinkType.EventsReceiver, this, deviceClientEndpointIdentity, timeout, correlationId, useTokenRefresher);
+                    eventsReceiverLink = amqpClientLinkFactory.Create(AmqpClientLinkType.EventsReceiver, amqpSession, deviceClientEndpointIdentity, timeout, correlationId, useTokenRefresher);
                     eventsReceiverLink.OnAmqpClientLinkClosed += EventsReceivingLink_OnAmqpClientLinkClosed;
                 }
                 await eventsReceiverLink.OpenAsync(timeout).ConfigureAwait(false);

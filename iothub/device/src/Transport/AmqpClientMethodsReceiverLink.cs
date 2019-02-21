@@ -21,14 +21,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         internal AmqpClientMethodsReceiverLink(
             AmqpClientLinkType amqpClientLinkType, 
-            AmqpClientSession amqpClientSession, 
+            AmqpSession amqpSession, 
             DeviceClientEndpointIdentity deviceClientEndpointIdentity, 
             TimeSpan timeout,
             string correlationId,
             bool useTokenRefresher,
             AmqpClientSession amqpAuthenticationSession
             )
-            : base(amqpClientLinkType, amqpClientSession, deviceClientEndpointIdentity, correlationId, useTokenRefresher, amqpAuthenticationSession)
+            : base(amqpClientLinkType, amqpSession, deviceClientEndpointIdentity, correlationId, useTokenRefresher, amqpAuthenticationSession)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientMethodsReceiverLink)}");
 
@@ -55,7 +55,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             amqpLinkSettings.AddProperty(IotHubAmqpProperty.ChannelCorrelationId, correlationIdPrefix + correlationId);
 
             amqpLink = new ReceivingAmqpLink(amqpLinkSettings);
-            amqpLink.AttachTo(this.amqpClientSession.amqpSession);
+            amqpLink.AttachTo(amqpSession);
 
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientMethodsReceiverLink)}");
         }

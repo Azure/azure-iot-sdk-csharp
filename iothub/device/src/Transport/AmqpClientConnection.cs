@@ -250,8 +250,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
         #endregion
 
         #region Helpers
-        internal abstract int GetNumberOfClients();
-
         private AmqpSettings CreateAmqpSettings()
         {
             var amqpSettings = new AmqpSettings();
