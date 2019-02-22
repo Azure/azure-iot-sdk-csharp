@@ -10,8 +10,7 @@ namespace Microsoft.Azure.Devices.Samples
         private RegistryManager _rm;
         private List<string> devicesToBeRetained =
             new List<string>{
-                "xdevice1",
-                "doNotDelete1"
+                "DoNotDelete1"
             };
 
         public CleanUpDevicesSample(RegistryManager rm)
@@ -29,7 +28,7 @@ namespace Microsoft.Azure.Devices.Samples
                 IQuery query = _rm.CreateQuery(sqlQueryString);
                 while (query.HasMoreResults)
                 {
-                    IEnumerable<Shared.Twin> result = await query.GetNextAsTwinAsync();                    
+                    IEnumerable<Shared.Twin> result = await query.GetNextAsTwinAsync();
                     foreach (var twinResult in result)
                     {
                         string deviceId = twinResult.DeviceId;
