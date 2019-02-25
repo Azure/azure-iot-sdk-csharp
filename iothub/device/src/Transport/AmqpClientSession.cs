@@ -119,7 +119,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         #endregion
 
         #region Authentication
-        internal async Task<DateTime> AuthenticateCbs(DeviceClientEndpointIdentity deviceClientEndpointIdentity, TimeSpan timeout)
+        internal async Task<DateTime> AuthenticateCbs(DeviceClientEndpointIdentity deviceClientEndpointIdentity, string audience, TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientSession)}.{nameof(AuthenticateCbs)}");
 
@@ -137,7 +137,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 throw new InvalidOperationException("Authentication session is not opened");
             }
 
-            expiresAtUtc = await cbsLink.AuthenticateCbsAsync(deviceClientEndpointIdentity, "", timeout).ConfigureAwait(false);
+            expiresAtUtc = await cbsLink.AuthenticateCbsAsync(deviceClientEndpointIdentity, audience, timeout).ConfigureAwait(false);
 
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientSession)}.{nameof(AuthenticateCbs)}");
 

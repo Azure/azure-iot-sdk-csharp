@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices.Client
                 if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(AmqpTokenRefresher)}.{nameof(RefreshTokenAsync)}");
 
                 // Send a Cbs Token right away and fork off a task to periodically renew it
-                var expiresAtUtc = await this.amqpClientSession.AuthenticateCbs(deviceClientEndpointIdentity, timeout).ConfigureAwait(false);
+                var expiresAtUtc = await this.amqpClientSession.AuthenticateCbs(deviceClientEndpointIdentity, audience, timeout).ConfigureAwait(false);
 
                 this.RefreshTokenLoopAsync(deviceClientEndpointIdentity, expiresAtUtc, timeout).ConfigureAwait(false);
             }
@@ -83,7 +83,7 @@ namespace Microsoft.Azure.Devices.Client
                         break;
                     }
 
-                    var expiresAtUtc = await this.amqpClientSession.AuthenticateCbs(deviceClientEndpointIdentity, timeout).ConfigureAwait(false);
+                    var expiresAtUtc = await this.amqpClientSession.AuthenticateCbs(deviceClientEndpointIdentity, audience, timeout).ConfigureAwait(false);
 
                     try
                     {
