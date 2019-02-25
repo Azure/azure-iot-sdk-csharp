@@ -62,7 +62,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             this.useAmqpTokenRefresher = useAmqpTokenRefresher;
             this.amqpAuthenticationSession = amqpAuthenticationSession;
 
-            audience = deviceClientEndpointIdentity.iotHubConnectionString.Audience + linkPath;
             amqpTokenRefresher = null;
 
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientLink)}");
@@ -75,6 +74,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientLink)}.{nameof(OpenAsync)}.{amqpClientLinkType.ToString()}.{audience}");
 
             var timeoutHelper = new TimeoutHelper(timeout);
+            audience = deviceClientEndpointIdentity.iotHubConnectionString.Audience + linkPath;
 
             try
             {

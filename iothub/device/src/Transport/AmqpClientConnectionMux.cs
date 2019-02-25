@@ -60,7 +60,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             MuxedDevices = new ConcurrentDictionary<DeviceClientEndpointIdentity, MuxedDevice>();
             Lock = new Semaphore(1, 1);
             OnClientConnectionIdle = removeDelegate;
-            useLinkBasedTokenRefresh = useLinkBasedTokenRefresh;
+            this.useLinkBasedTokenRefresh = useLinkBasedTokenRefresh;
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionMux)}");
         }
 
