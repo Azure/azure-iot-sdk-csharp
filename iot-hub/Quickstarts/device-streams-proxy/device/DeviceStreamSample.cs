@@ -51,12 +51,23 @@ namespace Microsoft.Azure.Devices.Client.Samples
 
         public async Task RunSampleAsync()
         {
-            await RunSampleAsync(true).ConfigureAwait(false);
+            while (true)
+            {
+                try
+                {
+                    await RunSampleAsync(true).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Got an exception: {0}", ex);
+                }
+                Console.WriteLine("Waiting again...");
+            }
         }
 
         public async Task RunSampleAsync(bool acceptDeviceStreamingRequest)
         {
-            using (var cancellationTokenSource = new CancellationTokenSource(new TimeSpan(0, 5, 0)))
+            using (var cancellationTokenSource = new CancellationTokenSource())
             {
                 DeviceStreamRequest streamRequest = await _deviceClient.WaitForDeviceStreamRequestAsync(cancellationTokenSource.Token).ConfigureAwait(false);
 

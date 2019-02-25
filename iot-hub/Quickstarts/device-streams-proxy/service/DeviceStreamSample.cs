@@ -65,7 +65,7 @@ namespace Microsoft.Azure.Devices.Samples
                 {
                     try
                     {
-                        using (var cancellationTokenSource = new CancellationTokenSource(new TimeSpan(0, 1, 0)))
+                        using (var cancellationTokenSource = new CancellationTokenSource())
                         using (var remoteStream = await DeviceStreamingCommon.GetStreamingClientAsync(result.Url, result.AuthorizationToken, cancellationTokenSource.Token).ConfigureAwait(false))
                         {
                             Console.WriteLine("Starting streaming");
