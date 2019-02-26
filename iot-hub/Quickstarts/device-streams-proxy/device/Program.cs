@@ -31,8 +31,8 @@ namespace Microsoft.Azure.Devices.Client.Samples
         private static string s_port = Environment.GetEnvironmentVariable("REMOTE_PORT");
 
         // Select one of the following transports used by DeviceClient to connect to IoT Hub.
-        private static TransportType s_transportType = TransportType.Amqp;
-        //private static TransportType s_transportType = TransportType.Mqtt;
+        //private static TransportType s_transportType = TransportType.Amqp;
+        private static TransportType s_transportType = TransportType.Mqtt;
         //private static TransportType s_transportType = TransportType.Amqp_WebSocket_Only;
         //private static TransportType s_transportType = TransportType.Mqtt_WebSocket_Only;
 
