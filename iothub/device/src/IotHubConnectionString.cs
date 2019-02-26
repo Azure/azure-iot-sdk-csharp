@@ -14,6 +14,7 @@ namespace Microsoft.Azure.Devices.Client
     using Microsoft.Azure.Devices.Client.Extensions;
     using Microsoft.Azure.Devices.Shared;
     using System.Diagnostics;
+    using System.Collections.Generic;
 
     internal sealed partial class IotHubConnectionString : IAuthorizationProvider
 #if !NETMF
@@ -135,6 +136,24 @@ namespace Microsoft.Azure.Devices.Client
         {
             get;
             private set;
+        }
+
+        public override bool Equals(object obj)
+        {
+            var @string = obj as IotHubConnectionString;
+            return @string != null &&
+                   DeviceId == @string.DeviceId &&
+                   ModuleId == @string.ModuleId &&
+                   HostName == @string.HostName;
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = -1466321742;
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(DeviceId);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(ModuleId);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(HostName);
+            return hashCode;
         }
     }
 }

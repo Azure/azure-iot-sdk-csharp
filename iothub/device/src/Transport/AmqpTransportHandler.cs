@@ -239,7 +239,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 message = await amqpClientConnection.ReceiveAsync(deviceClientEndpointIdentity, operationTimeout).ConfigureAwait(false);
 
             }
-            catch (Exception exception) when (!exception.IsFatal() && !(exception is OperationCanceledException))
+            catch (Exception exception) when (exception.IsFatal() && !(exception is OperationCanceledException))
             {
                 throw AmqpClientHelper.ToIotHubClientContract(exception);
             }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Azure.Devices.Shared;
+using System;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
@@ -47,12 +48,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 }
                 else
                 {
-                    deviceClientEndpointIdentity = null;
+                    throw new NotImplementedException("Unknown IotHubConnectionString format");
                 }
             }
             else
             {
-                deviceClientEndpointIdentity = null;
+                throw new ArgumentNullException(nameof(iotHubConnectionString));
             }
 
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(DeviceClientEndpointIdentityFactory)}.{nameof(Create)}");

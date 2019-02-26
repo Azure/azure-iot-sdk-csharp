@@ -11,12 +11,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
     delegate void OnClientConnectionIdle(AmqpClientConnection amqpClientConnection);
 
-    internal class AmqpClientConnectionPool
+    internal class AmqpClientConnectionPool : IDisposable
     {
         private static readonly TimeSpan TimeWait = TimeSpan.FromSeconds(10);
         private ISet<AmqpClientConnectionMux> AmqpClientSasConnections;
         private ISet<AmqpClientConnectionMux> AmqpClientIoTHubSasConnections;
         private readonly Semaphore Lock;
+        private bool disposed = false;
 
         internal AmqpClientConnectionPool()
         {
@@ -50,7 +51,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             else
             {
-                throw new NotImplementedException();
+                throw new ArgumentException("Unknown deviceClientEndpointIdentity");
             }
 
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionPool)}.{nameof(CreateClientConnection)}");
@@ -129,6 +130,25 @@ namespace Microsoft.Azure.Devices.Client.Transport
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionPool)}.{nameof(GetLeastUsedConnection)}");
 
             return amqpClientConnection;
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposed)
+            {
+                if (disposing)
+                {
+                    // called via myClass.Dispose(). 
+                    // OK to use any private object references
+                }
+                Lock.Dispose();
+                disposed = true;
+            }
+        }
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 }
