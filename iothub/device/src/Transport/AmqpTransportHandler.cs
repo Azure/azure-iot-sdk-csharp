@@ -88,6 +88,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
         }
         #endregion
 
+        public override bool IsUsable => 
+            amqpClientConnection is AmqpClientConnectionMux || 
+            (amqpClientConnection != null && amqpClientConnection.amqpConnection != null && !amqpClientConnection.amqpConnection.IsClosing());
+
         #region Open-Close
         public override async Task OpenAsync(CancellationToken cancellationToken)
         {
