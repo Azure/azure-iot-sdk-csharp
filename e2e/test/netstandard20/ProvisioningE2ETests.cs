@@ -348,36 +348,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        public async Task ProvisioningDeviceClient_ReprovisioningGeolatencyWorks_Http_SymmetricKey_RegisterOk_Individual()
-        {
-            await ProvisioningDeviceClient_ReprovisioningFlow_Geolatency(Client.TransportType.Http1, AttestationType.SymmetricKey, EnrollmentType.Individual, false).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task ProvisioningDeviceClient_ReprovisioningGeolatencyWorks_Mqtt_SymmetricKey_RegisterOk_Individual()
-        {
-            await ProvisioningDeviceClient_ReprovisioningFlow_Geolatency(Client.TransportType.Mqtt_Tcp_Only, AttestationType.SymmetricKey, EnrollmentType.Individual, false).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task ProvisioningDeviceClient_ReprovisioningGeolatencyWorks_Amqp_SymmetricKey_RegisterOk_Individual()
-        {
-            await ProvisioningDeviceClient_ReprovisioningFlow_Geolatency(Client.TransportType.Amqp_Tcp_Only, AttestationType.SymmetricKey, EnrollmentType.Individual, false).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task ProvisioningDeviceClient_ReprovisioningGeolatencyWorks_AmqpWs_SymmetricKey_RegisterOk_Individual()
-        {
-            await ProvisioningDeviceClient_ReprovisioningFlow_Geolatency(Client.TransportType.Amqp_WebSocket_Only, AttestationType.SymmetricKey, EnrollmentType.Individual, false).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task ProvisioningDeviceClient_ReprovisioningGeolatencyWorks_MqttWs_SymmetricKey_RegisterOk_Individual()
-        {
-            await ProvisioningDeviceClient_ReprovisioningFlow_Geolatency(Client.TransportType.Http1, AttestationType.SymmetricKey, EnrollmentType.Individual, false).ConfigureAwait(false);
-        }
-
-        [TestMethod]
         public async Task ProvisioningDeviceClient_CustomAllocationPolicy_Http_SymmetricKey_RegisterOk_Individual()
         {
             await ProvisioningDeviceClient_CustomAllocationPolicy(Client.TransportType.Http1, AttestationType.SymmetricKey, EnrollmentType.Individual, false).ConfigureAwait(false);
@@ -492,36 +462,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        public async Task ProvisioningDeviceClient_ReprovisioningGeolatencyWorks_Http_SymmetricKey_RegisterOk_Group()
-        {
-            await ProvisioningDeviceClient_ReprovisioningFlow_Geolatency(Client.TransportType.Http1, AttestationType.SymmetricKey, EnrollmentType.Group, false).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task ProvisioningDeviceClient_ReprovisioningGeolatencyWorks_Mqtt_SymmetricKey_RegisterOk_Group()
-        {
-            await ProvisioningDeviceClient_ReprovisioningFlow_Geolatency(Client.TransportType.Mqtt_Tcp_Only, AttestationType.SymmetricKey, EnrollmentType.Group, false).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task ProvisioningDeviceClient_ReprovisioningGeolatencyWorks_Amqp_SymmetricKey_RegisterOk_Group()
-        {
-            await ProvisioningDeviceClient_ReprovisioningFlow_Geolatency(Client.TransportType.Amqp_Tcp_Only, AttestationType.SymmetricKey, EnrollmentType.Group, false).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task ProvisioningDeviceClient_ReprovisioningGeolatencyWorks_AmqpWs_SymmetricKey_RegisterOk_Group()
-        {
-            await ProvisioningDeviceClient_ReprovisioningFlow_Geolatency(Client.TransportType.Amqp_WebSocket_Only, AttestationType.SymmetricKey, EnrollmentType.Group, false).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task ProvisioningDeviceClient_ReprovisioningGeolatencyWorks_MqttWs_SymmetricKey_RegisterOk_Group()
-        {
-            await ProvisioningDeviceClient_ReprovisioningFlow_Geolatency(Client.TransportType.Http1, AttestationType.SymmetricKey, EnrollmentType.Group, false).ConfigureAwait(false);
-        }
-
-        [TestMethod]
         public async Task ProvisioningDeviceClient_CustomAllocationPolicy_Http_SymmetricKey_RegisterOk_Group()
         {
             await ProvisioningDeviceClient_CustomAllocationPolicy(Client.TransportType.Http1, AttestationType.SymmetricKey, EnrollmentType.Group, false).ConfigureAwait(false);
@@ -579,19 +519,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
 
             await ProvisioningDeviceClient_ProvisioningFlow_CustomAllocation_AllocateToHubWithLongestHostName(transportProtocol, attestationType, enrollmentType, setCustomProxy, iotHubsToProvisionTo, expectedDestinationHub, customServerProxy).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// This test flow tests that the Geolatency allocation policy provisions a device to the nearest hub. The device starts out
-        /// in a far away hub, but then the enrollment is updated to reflect a closer hub being linked to it, and the expectation is that
-        /// the device reprovisions over to the closer hub
-        /// </summary>
-        private async Task ProvisioningDeviceClient_ReprovisioningFlow_Geolatency(Client.TransportType transportProtocol, AttestationType attestationType, EnrollmentType enrollmentType, bool setCustomProxy, string customServerProxy = null)
-        {
-            var connectionString = IotHubConnectionStringBuilder.Create(Configuration.IoTHub.ConnectionString);
-            ICollection<string> iotHubsToStartAt = new List<string>() { Configuration.Provisioning.FarAwayIotHubHostName };
-            ICollection<string> iotHubsToReprovisionTo = new List<string>() { connectionString.HostName, Configuration.Provisioning.FarAwayIotHubHostName };
-            await ProvisioningDeviceClient_ReprovisioningFlow(transportProtocol, attestationType, enrollmentType, setCustomProxy, new ReprovisionPolicy { MigrateDeviceData = false, UpdateHubAssignment = true }, AllocationPolicy.GeoLatency, null, iotHubsToStartAt, iotHubsToReprovisionTo, customServerProxy).ConfigureAwait(false);
         }
 
         /// <summary>
