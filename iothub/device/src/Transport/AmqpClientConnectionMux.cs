@@ -50,16 +50,19 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         OnClientConnectionIdle OnClientConnectionIdle;
 
+        OnAmqpDisconnected OnAmqpDisconnected;
+
         private readonly Semaphore Lock;
 
-        internal AmqpClientConnectionMux(DeviceClientEndpointIdentity deviceClientEndpointIdentity, OnClientConnectionIdle removeDelegate, bool useLinkBasedTokenRefresh)
+        internal AmqpClientConnectionMux(DeviceClientEndpointIdentity deviceClientEndpointIdentity, OnClientConnectionIdle idleDelegate, OnAmqpDisconnected disconnectDelegate,  bool useLinkBasedTokenRefresh)
             : base(deviceClientEndpointIdentity.amqpTransportSettings, deviceClientEndpointIdentity.iotHubConnectionString.HostName)
         {
            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionMux)}");
 
             MuxedDevices = new ConcurrentDictionary<DeviceClientEndpointIdentity, MuxedDevice>();
             Lock = new Semaphore(1, 1);
-            OnClientConnectionIdle = removeDelegate;
+            OnClientConnectionIdle = idleDelegate;
+            OnAmqpDisconnected = disconnectDelegate;
             this.useLinkBasedTokenRefresh = useLinkBasedTokenRefresh;
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionMux)}");
         }
@@ -183,15 +186,15 @@ namespace Microsoft.Azure.Devices.Client.Transport
             Lock.WaitOne();
             MuxedDevice muxedDevice;
             MuxedDevices.TryRemove(deviceClientEndpointIdentity, out muxedDevice);
+            Lock.Release();
+            if (muxedDevice != null && muxedDevice.DeviceSession != null)
+            {
+                await muxedDevice.DeviceSession.CloseAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+            }
             // Last device is removed
             if (MuxedDevices.Count == 0)
             {
                 OnClientConnectionIdle(this);
-            }
-            Lock.Release();
-            if (muxedDevice != null)
-            {
-                await muxedDevice.DeviceSession.CloseAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
             }
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionMux)}.{nameof(CloseAsync)}");
         }
@@ -207,6 +210,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 authenticationSession = null;
             }
             Lock.Release();
+            OnAmqpDisconnected(this);
             OnAmqpClientConnectionClosed?.Invoke(o, args);
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionMux)}.{nameof(OnConnectionClosed)}");
         }
@@ -515,5 +519,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return this;
         }
 
+        internal bool IsUsable()
+        {
+            return amqpConnection != null;
+        }
     }
 }

@@ -10,10 +10,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
     using System.Threading.Tasks;
 
     delegate void OnClientConnectionIdle(AmqpClientConnection amqpClientConnection);
-
+    delegate void OnAmqpDisconnected(AmqpClientConnection amqpClientConnection);
     internal class AmqpClientConnectionPool
     {
         private static readonly TimeSpan TimeWait = TimeSpan.FromSeconds(10);
+        private static readonly TimeSpan NoDelay = TimeSpan.FromSeconds(0);
         private ISet<AmqpClientConnectionMux> AmqpClientSasConnections;
         private ISet<AmqpClientConnectionMux> AmqpClientIoTHubSasConnections;
         private readonly Semaphore Lock;
@@ -34,7 +35,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             AmqpClientConnection amqpClientConnection;
             if (deviceClientEndpointIdentity is DeviceClientEndpointIdentitySasSingle)
             {
-                amqpClientConnection = new AmqpClientConnectionSasSingle(deviceClientEndpointIdentity);
+                amqpClientConnection = new AmqpClientConnectionMux(deviceClientEndpointIdentity, DisposeNow, DisposeNow, false).AppendMuxWorker(deviceClientEndpointIdentity);
             }
             else if (deviceClientEndpointIdentity is DeviceClientEndpointIdentityX509)
             {
@@ -57,11 +58,18 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return amqpClientConnection;
         }
 
-        internal void OnClientConnectionIdle(AmqpClientConnection amqpClientConnection)
+        internal void OnClientConnectionIdleDisposeLater(AmqpClientConnection amqpClientConnection)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionPool)}.{nameof(OnClientConnectionIdle)}");
-            DisposeEmptyClientConnectionAsync(amqpClientConnection).ConfigureAwait(true);
-            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionPool)}.{nameof(OnClientConnectionIdle)}");
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionPool)}.{nameof(OnClientConnectionIdleDisposeLater)}");
+            DisposeEmptyClientConnectionAsync(amqpClientConnection, TimeWait).ConfigureAwait(true);
+            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionPool)}.{nameof(OnClientConnectionIdleDisposeLater)}");
+        }
+
+        internal void DisposeNow(AmqpClientConnection amqpClientConnection)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnectionPool)}.{nameof(DisposeNow)}");
+            DisposeEmptyClientConnectionAsync(amqpClientConnection, NoDelay).ConfigureAwait(true);
+            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpClientConnectionPool)}.{nameof(DisposeNow)}");
         }
 
         private AmqpClientConnectionMux GetOrAllocateAmqpClientConnectionMux(ISet<AmqpClientConnectionMux> amqpClientMuxConnections, DeviceClientEndpointIdentity deviceClientEndpointIdentity, bool useLinkBasedTokenRefresh)
@@ -72,7 +80,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             AmqpClientConnectionMux amqpClientConnection;
             if (amqpClientMuxConnections.Count < deviceClientEndpointIdentity.amqpTransportSettings.AmqpConnectionPoolSettings.MaxPoolSize)
             {
-                amqpClientConnection = new AmqpClientConnectionMux(deviceClientEndpointIdentity, OnClientConnectionIdle, useLinkBasedTokenRefresh);
+                amqpClientConnection = new AmqpClientConnectionMux(deviceClientEndpointIdentity, OnClientConnectionIdleDisposeLater, DisposeNow, useLinkBasedTokenRefresh);
                 amqpClientMuxConnections.Add(amqpClientConnection);
             }
             else
@@ -85,10 +93,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return amqpClientConnection;
         }
         
-        private async Task DisposeEmptyClientConnectionAsync(AmqpClientConnection amqpClientConnection)
+        private async Task DisposeEmptyClientConnectionAsync(AmqpClientConnection amqpClientConnection, TimeSpan delay)
         {
             // wait before cleanup to get better performace by avoiding close AMQP connection
-            await Task.Delay(TimeWait).ConfigureAwait(false);
+            await Task.Delay(delay).ConfigureAwait(false);
             Lock.WaitOne();
             AmqpClientConnectionMux amqpClientConnectionMux = amqpClientConnection as AmqpClientConnectionMux;
             if (amqpClientConnectionMux != null)
