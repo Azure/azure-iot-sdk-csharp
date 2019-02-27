@@ -472,7 +472,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             AmqpConnection amqpConnection = null;
             AmqpTokenRefresher amqpTokenRefresher = null;
             Lock.WaitOne();
-            if (MuxedDevices.Count == 0 && amqpConnection != null)
+            if (MuxedDevices.Count == 0 && this.amqpConnection != null)
             {
                 amqpConnection = this.amqpConnection;
                 amqpTokenRefresher = this.amqpTokenRefresher;
