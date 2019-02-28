@@ -31,6 +31,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private const string InvalidIDScope = "0neFFFFFFFF";
         private const string InvalidGlobalAddress = "httpbin.org";
         private static string ProxyServerAddress = Configuration.IoTHub.ProxyServerAddress;
+        private readonly string IdPrefix = $"e2e-{nameof(ProvisioningE2ETests).ToLower()}-";
 
         private readonly VerboseTestLogging _verboseLog = VerboseTestLogging.GetInstance();
         private readonly TestLogging _log = TestLogging.GetInstance();
@@ -613,7 +614,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             ICollection<string> iothubs,
             string proxyServerAddress = null)
         {
-            string groupId = "some-valid-group-id-" + attestationTypeToString(attestationType) + "-" + Guid.NewGuid();
+            string groupId = IdPrefix + AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
             using (ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportType))
             using (SecurityProvider security = await CreateSecurityProviderFromName(attestationType, enrollmentType, groupId, reprovisionPolicy, allocationPolicy, customAllocationDefinition, iothubs).ConfigureAwait(false))
             {
@@ -669,7 +670,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             string proxyServerAddress = null)
         {
             ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService(ProxyServerAddress);
-            string groupId = "some-valid-group-id-" + attestationTypeToString(attestationType) + "-" + Guid.NewGuid();
+            string groupId = IdPrefix + AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
 
             bool twinOperationsAllowed = transportProtocol != Client.TransportType.Http1;
 
@@ -716,7 +717,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             string proxyServerAddress = null)
         {
             ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService(ProxyServerAddress);
-            string groupId = "some-valid-group-id-" + attestationTypeToString(attestationType) + "-" + Guid.NewGuid();
+            string groupId = IdPrefix + AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
 
             CustomAllocationDefinition customAllocationDefinition = new CustomAllocationDefinition() { WebhookUrl = Configuration.Provisioning.CustomAllocationPolicyWebhook, ApiVersion = "2018-11-01" };
 
@@ -1003,7 +1004,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 {
                     _log.WriteLine("DeviceClient updating desired properties.");
                     Twin twin = await iotClient.GetTwinAsync().ConfigureAwait(false);
-                    await iotClient.UpdateReportedPropertiesAsync(new TwinCollection("{someTwinProperty:\"someTwinPropertyValue\"}")).ConfigureAwait(false);
+                    await iotClient.UpdateReportedPropertiesAsync(new TwinCollection($"{{\"{new Guid()}\":\"{new Guid()}\"}}")).ConfigureAwait(false);
                 }
 
                 _log.WriteLine("DeviceClient CloseAsync.");
@@ -1020,7 +1021,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             switch (attestationType)
             {
                 case AttestationType.Tpm:
-                    string registrationId = attestationTypeToString(attestationType) + "-registration-id-" + Guid.NewGuid();
+                    string registrationId = AttestationTypeToString(attestationType) + "-registration-id-" + Guid.NewGuid();
                     var tpmSim = new SecurityProviderTpmSimulator(registrationId);
 
                     string base64Ek = Convert.ToBase64String(tpmSim.GetEndorsementKey());
@@ -1064,7 +1065,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                             EnrollmentGroup symmetricKeyEnrollmentGroup = await CreateEnrollmentGroup(provisioningServiceClient, AttestationType.SymmetricKey, groupId, reprovisionPolicy, allocationPolicy, customAllocationDefinition, iothubs).ConfigureAwait(false);
                             Assert.IsTrue(symmetricKeyEnrollmentGroup.Attestation is SymmetricKeyAttestation);
                             SymmetricKeyAttestation symmetricKeyAttestation = (SymmetricKeyAttestation)symmetricKeyEnrollmentGroup.Attestation;
-                            string registrationIdSymmetricKey = "someregistrationid-" + Guid.NewGuid();
+                            string registrationIdSymmetricKey = IdPrefix + Guid.NewGuid();
                             string primaryKeyEnrollmentGroup = symmetricKeyAttestation.PrimaryKey;
                             string secondaryKeyEnrollmentGroup = symmetricKeyAttestation.SecondaryKey;
 
