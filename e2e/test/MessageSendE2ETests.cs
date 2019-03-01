@@ -43,13 +43,13 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        public async Task SecurityMessage_DeviceSendMessage_Amqp()
+        public async Task SecurityMessage_DeviceSendSingleMessage_Amqp()
         {
             await TestSecurityMessage(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
         }
 
         [TestMethod]
-        public async Task SecurityMessage_ModuleSendMessage_Amqp()
+        public async Task SecurityMessage_ModuleSendSingleMessage_Amqp()
         {
             await TestSecurityMessageModule(TestDeviceType.Sasl, new Client.AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only)).ConfigureAwait(false);
         }
@@ -61,13 +61,13 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        public async Task SecurityMessage_DeviceSendMessage_AmqpWs()
+        public async Task SecurityMessage_DeviceSendSingleMessage_AmqpWs()
         {
             await TestSecurityMessage(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
         }
 
         [TestMethod]
-        public async Task SecurityMessage_ModuleSendMessage_AmqpWs()
+        public async Task SecurityMessage_ModuleSendSingleMessage_AmqpWs()
         {
             await TestSecurityMessageModule(TestDeviceType.Sasl, new Client.AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only)).ConfigureAwait(false);
         }
@@ -85,7 +85,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        public async Task SecurityMessage_ModuleSendMessage_Mqtt()
+        public async Task SecurityMessage_ModuleSendSingleMessage_Mqtt()
         {
             await TestSecurityMessageModule(TestDeviceType.Sasl, new Client.Transport.Mqtt.MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only)).ConfigureAwait(false);
         }
@@ -103,7 +103,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        public async Task SecurityMessage_ModuleSendMessage_MqttWs()
+        public async Task SecurityMessage_ModuleSendSingleMessage_MqttWs()
         {
             await TestSecurityMessageModule(TestDeviceType.Sasl, new Client.Transport.Mqtt.MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only)).ConfigureAwait(false);
         }
