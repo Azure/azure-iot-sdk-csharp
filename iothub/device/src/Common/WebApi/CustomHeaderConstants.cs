@@ -213,5 +213,10 @@ namespace Microsoft.Azure.Devices.Client
         /// Used to supply module ID of invoking module when used by module to invoke method on other modules/devices.
         /// </summary>
         public const string ModuleId = "x-ms-edge-moduleId";
+
+        /// <summary>
+        /// Used to indicate that the message is a security message
+        /// </summary>
+        public const string InterfaceId = "iothub-interface-id";
     }
 }

@@ -61,9 +61,25 @@ namespace Microsoft.Azure.Devices.Client.Test
                 Assert.AreEqual(connectionModuleId, message.ConnectionModuleId);
 
                 Assert.AreEqual(messageSchema, message.MessageSchema);
-            
+
                 Assert.AreEqual("Value1", message.Properties["Prop1"]);
                 Assert.AreEqual("Value2", message.Properties["Prop2"]);
+            }
+        }
+
+        [TestMethod]
+        public void UpdateAmqpMessageHeadersAndPropertiesSecurityMessagePropertyTest()
+        {
+            byte[] bytes = { 1, 2, 3, 4 };
+            using (AmqpMessage amqpMessage =
+                AmqpMessage.Create(new Amqp.Framing.Data { Value = new ArraySegment<byte>(bytes) }))
+            {
+                var message = new Message(bytes);
+                message.SetAsSecurityMessage();
+
+                MessageConverter.UpdateAmqpMessageHeadersAndProperties(amqpMessage, message, false);
+
+                Assert.AreEqual(CommonConstants.SecurityMessageInterfaceId, amqpMessage.MessageAnnotations.Map[MessageSystemPropertyNames.InterfaceId]);
             }
         }
     }

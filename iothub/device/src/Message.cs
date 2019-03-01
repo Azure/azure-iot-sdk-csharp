@@ -388,6 +388,21 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
+        /// True if the message is set as a security message
+        /// </summary>
+        public bool IsSecurityMessage
+        {
+            get
+            {
+#if NETMF
+                return CommonConstants.SecurityMessageInterfaceId.Equals(this.GetSystemProperty(MessageSystemPropertyNames.InterfaceId), StringComparison.Ordinal);
+#else
+                return CommonConstants.SecurityMessageInterfaceId.Equals(this.GetSystemProperty<String>(MessageSystemPropertyNames.InterfaceId), StringComparison.Ordinal);
+#endif
+            }
+        }
+
+        /// <summary>
         /// Used to specify the content type of the message.
         /// </summary>
         public string ContentType
@@ -681,6 +696,14 @@ namespace Microsoft.Azure.Devices.Client
                 throw Fx.Exception.AsError(new InvalidOperationException(ApiResources.MessageBodyConsumed));
 #endif
             }
+        }
+
+        /// <summary>
+        /// Sets the message as an security message
+        /// </summary>
+        public void SetAsSecurityMessage()
+        {
+            SystemProperties[MessageSystemPropertyNames.InterfaceId] = CommonConstants.SecurityMessageInterfaceId;
         }
 
         void SetSizeInBytesCalled()

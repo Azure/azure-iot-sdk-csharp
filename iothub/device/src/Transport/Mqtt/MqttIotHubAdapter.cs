@@ -992,6 +992,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             public const string ConnectionModuleId = "$.cmid";
             public const string MqttDiagIdKey = "$.diagid";
             public const string MqttDiagCorrelationContextKey = "$.diagctx";
+            public const string InterfaceId = "$.ifid";
         }
 
         static readonly Dictionary<string, string> ToSystemPropertiesMap = new Dictionary<string, string>
@@ -1010,7 +1011,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {IotHubWirePropertyNames.ConnectionDeviceId, MessageSystemPropertyNames.ConnectionDeviceId },
             {IotHubWirePropertyNames.ConnectionModuleId, MessageSystemPropertyNames.ConnectionModuleId },
             {IotHubWirePropertyNames.MqttDiagIdKey, MessageSystemPropertyNames.DiagId},
-            {IotHubWirePropertyNames.MqttDiagCorrelationContextKey, MessageSystemPropertyNames.DiagCorrelationContext}
+            {IotHubWirePropertyNames.MqttDiagCorrelationContextKey, MessageSystemPropertyNames.DiagCorrelationContext},
+            {IotHubWirePropertyNames.InterfaceId, MessageSystemPropertyNames.InterfaceId}
         };
 
         static readonly Dictionary<string, string> FromSystemPropertiesMap = new Dictionary<string, string>
@@ -1028,7 +1030,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {MessageSystemPropertyNames.Ack, MessageSystemPropertyNames.Ack},
             {MessageSystemPropertyNames.OutputName, IotHubWirePropertyNames.OutputName },
             {MessageSystemPropertyNames.DiagId, IotHubWirePropertyNames.MqttDiagIdKey},
-            {MessageSystemPropertyNames.DiagCorrelationContext, IotHubWirePropertyNames.MqttDiagCorrelationContextKey}
+            {MessageSystemPropertyNames.DiagCorrelationContext, IotHubWirePropertyNames.MqttDiagCorrelationContextKey},
+            {MessageSystemPropertyNames.InterfaceId, IotHubWirePropertyNames.InterfaceId}
         };
 
         static string ConvertFromSystemProperties(object systemProperty)
@@ -1150,7 +1153,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
                
-        static string PopulateMessagePropertiesFromMessage(string topicName, Message message)
+        internal static string PopulateMessagePropertiesFromMessage(string topicName, Message message)
         {
             var systemProperties = new Dictionary<string, string>();
             foreach (KeyValuePair<string, object> property in message.SystemProperties)
