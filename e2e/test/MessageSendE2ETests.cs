@@ -102,6 +102,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await TestSecurityMessage(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
         }
 
+        [TestMethod]
         public async Task SecurityMessage_ModuleSendMessage_MqttWs()
         {
             await TestSecurityMessageModule(TestDeviceType.Sasl, new Client.Transport.Mqtt.MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only)).ConfigureAwait(false);
