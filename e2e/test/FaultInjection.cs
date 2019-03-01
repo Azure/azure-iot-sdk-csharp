@@ -251,8 +251,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
             };
 
-            IList<DeviceClient> deviceClients = new List<DeviceClient>(devicesCount);
-            IList<TestDevice> deviceId = new List<TestDevice>(devicesCount);
+            IList<DeviceClient> deviceClients = new List<DeviceClient>();
+            IList<TestDevice> devices = new List<TestDevice>();
 
             try
             {
@@ -263,7 +263,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     TestDevice testDevice = await TestDevice.GetTestDeviceAsync($"{devicePrefix}_{i}_", type).ConfigureAwait(false);
                     DeviceClient deviceClient = testDevice.CreateDeviceClient(transportSettings, connectionStringLevel);
                     deviceClients.Add(deviceClient);
-                    deviceId.Add(testDevice);
+                    devices.Add(testDevice);
 
                     ConnectionStatus? lastConnectionStatus = null;
                     ConnectionStatusChangeReason? lastConnectionStatusChangeReason = null;
@@ -333,20 +333,28 @@ namespace Microsoft.Azure.Devices.E2ETests
                     }
                 }
             }
+            catch (Exception e)
+            {
+                s_log.WriteLine($"{nameof(FaultInjection)}: Total {deviceClients.Count} instances of device client initialized.");
+                s_log.WriteLine($"{nameof(FaultInjection)}: Exception thrown:  {e.Message}.");
+            }
             finally
             {
+                int count = 0;
+
                 // Close and dispose all of the device client instances here
                 foreach (DeviceClient deviceClient in deviceClients)
                 {
+                    count++;
                     //var deviceClient = deviceClients[i];
                     //var testDevice = deviceId[i];
 
                     //s_log.WriteLine($"{nameof(FaultInjection)}: Test baseline again deviceClient {TestLogging.GetHashCode(deviceClient)}");
                     //await testOperation(deviceClient, testDevice).ConfigureAwait(false);
 
-                    s_log.WriteLine($"{nameof(FaultInjection)}: Closing deviceClient {TestLogging.GetHashCode(deviceClient)}");
+                    s_log.WriteLine($"{nameof(FaultInjection)}: Count {count} - Closing deviceClient {TestLogging.GetHashCode(deviceClient)}");
                     await deviceClient.CloseAsync().ConfigureAwait(false);
-                    
+
                     await cleanupOperation().ConfigureAwait(false);
                     s_log.WriteLine($"{nameof(FaultInjection)}: Disposing deviceClient {TestLogging.GetHashCode(deviceClient)}");
                     deviceClient.Dispose();
