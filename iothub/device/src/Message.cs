@@ -395,7 +395,7 @@ namespace Microsoft.Azure.Devices.Client
             get
             {
 #if NETMF
-                return CommonConstants.SecurityMessageInterfaceId.Equals(this.GetSystemProperty(MessageSystemPropertyNames.InterfaceId), StringComparison.Ordinal);
+                return CommonConstants.SecurityMessageInterfaceId.Equals(this.GetSystemProperty(MessageSystemPropertyNames.InterfaceId));
 #else
                 return CommonConstants.SecurityMessageInterfaceId.Equals(this.GetSystemProperty<String>(MessageSystemPropertyNames.InterfaceId), StringComparison.Ordinal);
 #endif
