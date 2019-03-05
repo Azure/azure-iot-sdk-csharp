@@ -1146,7 +1146,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        internal string PopulateMessagePropertiesFromMessage(string topicName, Message message)
+        internal static string PopulateMessagePropertiesFromMessage(string topicName, Message message)
         {
             var systemProperties = new Dictionary<string, string>();
             foreach (KeyValuePair<string, object> property in message.SystemProperties)
