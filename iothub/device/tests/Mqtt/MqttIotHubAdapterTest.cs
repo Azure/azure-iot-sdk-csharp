@@ -101,6 +101,18 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
             await SendRequestAndAcknowledgementsInSpecificOrder(request, ackFactory, true).ConfigureAwait(false);
         }
 
+        [TestMethod]
+        public void PopulateMessagePropertiesFromMessageSecurityMessageTest()
+        {
+            byte[] bytes = { 1, 2, 3, 4 };
+
+            var message = new Message(bytes);
+            message.SetAsSecurityMessage();
+
+            var topicName = MqttIotHubAdapter.PopulateMessagePropertiesFromMessage("", message);
+            Assert.AreEqual("/%24.ifid=http%3A%2F%2Fsecurity.azureiot.com%2FSecurityAgent%2F1.0.0", topicName);
+        }
+
         private async Task SendRequestAndAcknowledgementsInSpecificOrder<T>(T requestPacket, Func<T, PacketWithId> ackFactory, bool receiveResponseBeforeSendingRequestContinues)
         {
             var passwordProvider = new Mock<IAuthorizationProvider>();

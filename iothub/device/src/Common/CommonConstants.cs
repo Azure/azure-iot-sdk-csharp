@@ -77,6 +77,10 @@ namespace Microsoft.Azure.Devices.Client
         public const string AdminUriFormat = "/$admin/{0}?{1}";
         public const string DefaultConfigurationKey = "_default_config_key";
 
+        // Security message constants
+        public const string SecurityMessageInterfaceId = "http://security.azureiot.com/SecurityAgent/1.0.0";
+
+
         public static class CloudToDevice
         {
             public const int DefaultMaxDeliveryCount = 10;

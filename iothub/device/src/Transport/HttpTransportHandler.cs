@@ -38,7 +38,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 { MessageSystemPropertyNames.MessageSchema, CustomHeaderConstants.MessageSchema },
                 { MessageSystemPropertyNames.CreationTimeUtc, CustomHeaderConstants.CreationTimeUtc },
                 { MessageSystemPropertyNames.ContentType, CustomHeaderConstants.ContentType },
-                { MessageSystemPropertyNames.ContentEncoding, CustomHeaderConstants.ContentEncoding }
+                { MessageSystemPropertyNames.ContentEncoding, CustomHeaderConstants.ContentEncoding },
+                { MessageSystemPropertyNames.InterfaceId, CustomHeaderConstants.InterfaceId }
             };
 
         readonly IHttpClientHelper httpClientHelper;

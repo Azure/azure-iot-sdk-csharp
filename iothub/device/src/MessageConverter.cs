@@ -200,6 +200,11 @@ namespace Microsoft.Azure.Devices.Client
                 amqpMessage.ApplicationProperties.Map[MessageSystemPropertyNames.OutputName] = (string)propertyValue;
             }
 
+            if (data.SystemProperties.TryGetValue(MessageSystemPropertyNames.InterfaceId, out propertyValue))
+            {
+                amqpMessage.MessageAnnotations.Map[MessageSystemPropertyNames.InterfaceId] = (string)propertyValue;
+            }
+
             if (copyUserProperties && data.Properties.Count > 0)
             {
                 foreach (var pair in data.Properties)
