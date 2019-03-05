@@ -22,7 +22,11 @@
   </PropertyGroup>
 
   <PropertyGroup>
+<<<<<<< HEAD
     <Version>1.29.0-preview-003</Version>
+=======
+    <Version>1.29.0-preview-002</Version>
+>>>>>>> a0017372... Bump versions for 3/5/2019 preview release for Send Security Messages (#826)
     <Title>Microsoft Azure IoT Device Client SDK</Title>
     <Authors>Microsoft</Authors>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
