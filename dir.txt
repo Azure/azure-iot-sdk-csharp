@@ -1,0 +1,37 @@
+ Volume in drive F is SRC
+ Volume Serial Number is 58B0-76FE
+
+ Directory of F:\repos\csharp
+
+03/06/2019  11:32 AM    <DIR>          .
+03/06/2019  11:32 AM    <DIR>          ..
+10/12/2018  01:53 PM               852 .gitattributes
+02/21/2019  07:25 PM    <DIR>          .github
+01/22/2019  10:19 AM             3,171 .gitignore
+02/27/2019  01:39 PM    <DIR>          .vscode
+10/12/2018  01:53 PM               160 35MSSharedLib1024.snk
+10/12/2018  01:53 PM            14,412 azureiot.sln
+10/12/2018  01:53 PM               468 build.cmd
+01/04/2019  07:28 PM            10,625 build.ps1
+10/12/2018  01:53 PM               375 build.sh
+10/12/2018  01:53 PM               332 CODE_OF_CONDUCT.md
+09/25/2018  01:54 PM    <DIR>          common
+10/12/2018  01:53 PM             2,480 CONTRIBUTING.md
+03/06/2019  11:32 AM                 0 dir.txt
+09/25/2018  01:54 PM    <DIR>          doc
+09/25/2018  01:54 PM    <DIR>          e2e
+09/25/2018  01:54 PM    <DIR>          iothub
+09/25/2018  01:54 PM    <DIR>          jenkins
+10/12/2018  01:53 PM             1,152 LICENSE
+10/12/2018  01:53 PM            63,572 lts_branches.png
+09/25/2018  01:54 PM    <DIR>          provisioning
+02/21/2019  07:25 PM            22,478 readme.md
+09/25/2018  01:54 PM    <DIR>          security
+09/25/2018  01:54 PM    <DIR>          shared
+10/12/2018  01:53 PM             8,702 thirdpartynotice.txt
+09/25/2018  01:54 PM    <DIR>          tools
+02/21/2019  07:25 PM               752 versions.csv
+10/12/2018  01:53 PM             1,950 versionupdate.ps1
+03/06/2019  01:45 AM    <DIR>          vsts
+              16 File(s)        131,481 bytes
+              14 Dir(s)  110,568,525,824 bytes free
