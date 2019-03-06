@@ -163,6 +163,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return InnerHandler?.DisableEventReceiveAsync(cancellationToken) ?? TaskHelpers.CompletedTask;
         }
 
+        public virtual bool IsUsable => InnerHandler?.IsUsable ?? true;
+
         protected void ThrowIfDisposed()
         {
             if (_disposed) throw new ObjectDisposedException("IoT Client");
