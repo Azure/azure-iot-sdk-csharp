@@ -15,12 +15,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
         protected TransportHandler(IPipelineContext context, ITransportSettings transportSettings)
             : base(context, innerHandler: null)
         {
-            this.TransportSettings = transportSettings;
+            TransportSettings = transportSettings;
         }
 
         public override Task<Message> ReceiveAsync(CancellationToken cancellationToken)
         {
-            return this.ReceiveAsync(this.TransportSettings.DefaultReceiveTimeout, cancellationToken);
+            return ReceiveAsync(TransportSettings.DefaultReceiveTimeout, cancellationToken);
         }
 
         public override Task WaitForTransportClosedAsync()
