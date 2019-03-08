@@ -21,9 +21,9 @@ namespace Microsoft.Azure.Devices.E2ETests
     {
         private readonly string DevicePrefix = $"E2E_{nameof(MessageSendE2ETests)}_";
         private readonly string ModulePrefix = $"E2E_{nameof(MessageSendE2ETests)}_";
-        private readonly int MuxDevicesCount = 10;
+        private readonly int MuxDevicesCount = 4;
         private readonly int MuxWithoutPoolingPoolSize = 1;
-        private readonly int MuxWithPoolingPoolSize = 5;
+        private readonly int MuxWithPoolingPoolSize = 2;
         private static string ProxyServerAddress = Configuration.IoTHub.ProxyServerAddress;
         private static TestLogging _log = TestLogging.GetInstance();
 
@@ -436,7 +436,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
             };
 
-            DeviceClient[] deviceClients = new DeviceClient[devicesCount];
+            ICollection<DeviceClient> deviceClients = new List<DeviceClient>(devicesCount);
 
             try
             {
@@ -446,7 +446,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 {
                     TestDevice testDevice = await TestDevice.GetTestDeviceAsync($"{DevicePrefix}_{i}_", type).ConfigureAwait(false);
                     DeviceClient deviceClient = testDevice.CreateDeviceClient(transportSettings, connectionStringLevel);
-                    deviceClients[i] = deviceClient;
+                    deviceClients.Add(deviceClient);
                     _log.WriteLine($"{nameof(MessageSendE2ETests)}: Preparing to send message for device {i}");
                     await SendSingleMessage(deviceClient, testDevice.Id).ConfigureAwait(false);
                 }
