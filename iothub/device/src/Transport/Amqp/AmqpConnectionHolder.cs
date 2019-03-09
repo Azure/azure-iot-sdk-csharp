@@ -64,19 +64,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             if (Logging.IsEnabled) Logging.Enter(this, deviceIdentity, timeout, $"{nameof(AuthenticationRefresherCreator)}");
             TimeoutHelper timeoutHelper = new TimeoutHelper(timeout);
-            try
+            if (AmqpConnection == null)
             {
-                await Lock.WaitAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
-                if (AmqpConnection == null)
-                {
-                    throw new IotHubCommunicationException();
-                }
-                AmqpCbsLink = AmqpCbsLink ?? new AmqpCbsLink(AmqpConnection);
+                throw new IotHubCommunicationException();
             }
-            finally
-            {
-                Lock.Release();
-            }
+            AmqpCbsLink = AmqpCbsLink ?? new AmqpCbsLink(AmqpConnection);
+            
             AmqpAuthenticationRefresher amqpAuthenticator = new AmqpAuthenticationRefresher(deviceIdentity, AmqpCbsLink);
             await amqpAuthenticator.InitLoopAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
             if (Logging.IsEnabled) Logging.Exit(this, deviceIdentity, timeout, $"{nameof(AuthenticationRefresherCreator)}");
@@ -202,17 +195,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private void RemoveDevice(DeviceIdentity deviceIdentity)
         {
             if (Logging.IsEnabled) Logging.Enter(this, deviceIdentity, $"{nameof(RemoveDevice)}");
-            bool idle = false;
             bool removed = AmqpDevices.Remove(deviceIdentity);
-            Lock.Wait();
             if (removed && !IdleNotified)
             {
                 IdleNotified = AmqpDevices.Count == 0 && IdleNotified;
-                idle = IdleNotified;
-            }
-            Lock.Release();
-            if (idle)
-            {
                 OnConnectionIdle(this, deviceIdentity);
             }
             if (Logging.IsEnabled) Logging.Exit(this, deviceIdentity, $"{nameof(RemoveDevice)}");

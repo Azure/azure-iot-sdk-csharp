@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
     {
         private const int MaxSpan = int.MaxValue;
         private static readonly TimeSpan TimeWait = TimeSpan.FromSeconds(10);
-        private static AmqpConnectionPool Instance = new AmqpConnectionPool();
+        private static readonly AmqpConnectionPool Instance = new AmqpConnectionPool();
         private ISet<IAmqpConnectionHolder> AmqpSasConnectionHolders;
         private IDictionary<string, ISet<IAmqpConnectionHolder>> AmqpSasGroupConnectionHolders;
         private readonly object Lock;
