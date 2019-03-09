@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             DateTime expiry = await AmqpCbsLink.SendTokenAsync(
                     ConnectionString,
                     ConnectionString.AmqpEndpoint,
-                    ConnectionString.Audience,
+                    ConnectionString.AmqpEndpoint.AbsoluteUri,
                     ConnectionString.AmqpEndpoint.AbsoluteUri,
                     AccessRightsHelper.AccessRightsToStringArray(AccessRights.DeviceConnect),
                     timeoutHelper.RemainingTime()
@@ -59,14 +59,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         private async Task RefreshLoopAsync(DateTime expiry, CancellationToken cancellationToken)
         {
+            TimeSpan waitTime = expiry - DateTime.UtcNow;
             while (expiry < DateTime.MaxValue && !cancellationToken.IsCancellationRequested)
             {
                 if (Logging.IsEnabled) Logging.Info(this, expiry, $"Before {nameof(RefreshLoopAsync)}");
-                TimeSpan waitTime = expiry - DateTime.UtcNow;
-                if (waitTime > BufferPeriod)
-                {
-                    waitTime -= BufferPeriod;
-                }
                 if (waitTime.Milliseconds > 0)
                 {
                     await Task.Delay(waitTime, cancellationToken).ConfigureAwait(false);
@@ -98,6 +94,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     if (expiry < DateTime.UtcNow)
                     {
                         throw new DeviceDisabledException();
+                    }
+                    else
+                    {
+                        waitTime = expiry - DateTime.UtcNow - BufferPeriod;
+                        if (waitTime < BufferPeriod)
+                        {
+                            waitTime = BufferPeriod;
+                        }
                     }
                 }
             }

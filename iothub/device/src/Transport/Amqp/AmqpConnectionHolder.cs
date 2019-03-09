@@ -16,9 +16,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private readonly Action<IAmqpConnectionHolder, DeviceIdentity> OnConnectionIdle;
         private readonly IAmqpConnector Connector;
         private readonly SemaphoreSlim Lock;
-        private readonly AmqpSessionSettings AmqpSessionSettings;
         private AmqpConnection AmqpConnection;
-        private IDictionary<DeviceIdentity, IAmqpSessionHolder> AmqpSessionHolders;
+        private IDictionary<DeviceIdentity, IAmqpDevice> AmqpDevices;
         private AmqpAuthenticationRefresher AmqpAuthenticationRefresher;
         private AmqpCbsLink AmqpCbsLink;
         private bool IdleNotified;
@@ -30,11 +29,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             Connector = new AmqpConnector(deviceIdentity.AmqpTransportSettings, deviceIdentity.IotHubConnectionString.HostName);
             Lock = new SemaphoreSlim(1, 1);
             IdleNotified = false;
-            AmqpSessionHolders = new ConcurrentDictionary<DeviceIdentity, IAmqpSessionHolder>();
-            AmqpSessionSettings = new AmqpSessionSettings()
-            {
-                Properties = new Fields()
-            };
+            AmqpDevices = new ConcurrentDictionary<DeviceIdentity, IAmqpDevice>();
             if (Logging.IsEnabled) Logging.Associate(this, DeviceIdentity, $"{nameof(DeviceIdentity)}");
         }
 
@@ -46,7 +41,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             AmqpAuthenticationRefresher amqpAuthenticationRefresher = null;
             AmqpCbsLink amqpCbsLink = null;
             Lock.Wait();
-            if (IdleNotified && AmqpSessionHolders.Count == 0)
+            if (IdleNotified && AmqpDevices.Count == 0)
             {
                 amqpCbsLink = AmqpCbsLink;
                 amqpAuthenticationRefresher = AmqpAuthenticationRefresher;
@@ -60,78 +55,78 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             Lock.Release();
             amqpCbsLink?.Close();
             amqpAuthenticationRefresher?.StopLoop();
-            amqpConnection?.SafeClose();
+            amqpConnection?.Abort();
             return result;
         }
 
         
-        private async Task<AmqpAuthenticationRefresher> StartAmqpAuthenticationRefresher(DeviceIdentity deviceIdentity, TimeSpan timeout)
+        private async Task<AmqpAuthenticationRefresher> AuthenticationRefresherCreator(DeviceIdentity deviceIdentity, TimeSpan timeout)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, deviceIdentity, $"{nameof(StartAmqpAuthenticationRefresher)}");
+            if (Logging.IsEnabled) Logging.Enter(this, deviceIdentity, timeout, $"{nameof(AuthenticationRefresherCreator)}");
             TimeoutHelper timeoutHelper = new TimeoutHelper(timeout);
-            await Lock.WaitAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
-            AmqpCbsLink = AmqpCbsLink ?? new AmqpCbsLink(AmqpConnection);
-            Lock.Release();
+            try
+            {
+                await Lock.WaitAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+                if (AmqpConnection == null)
+                {
+                    throw new IotHubCommunicationException();
+                }
+                AmqpCbsLink = AmqpCbsLink ?? new AmqpCbsLink(AmqpConnection);
+            }
+            finally
+            {
+                Lock.Release();
+            }
             AmqpAuthenticationRefresher amqpAuthenticator = new AmqpAuthenticationRefresher(deviceIdentity, AmqpCbsLink);
             await amqpAuthenticator.InitLoopAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
-            if (Logging.IsEnabled) Logging.Exit(this, deviceIdentity, $"{nameof(StartAmqpAuthenticationRefresher)}");
+            if (Logging.IsEnabled) Logging.Exit(this, deviceIdentity, timeout, $"{nameof(AuthenticationRefresherCreator)}");
             return amqpAuthenticator;
         }
 
-        public IAmqpSessionHolder CreateAmqpSessionHolder(
+        public IAmqpDevice CreateAmqpDevice(
             DeviceIdentity deviceIdentity, 
-            Action onAmqpSessionClosed, 
+            Action OnAmqpDeviceDisconnected, 
             Func<MethodRequestInternal, Task> methodHandler, 
             Action<AmqpMessage> twinMessageListener, 
             Func<string, Message, Task> eventListener)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, deviceIdentity, $"{nameof(CreateAmqpSessionHolder)}");
+            if (Logging.IsEnabled) Logging.Enter(this, deviceIdentity, $"{nameof(CreateAmqpDevice)}");
             Lock.Wait();
-            AmqpSessionHolders.TryGetValue(deviceIdentity, out IAmqpSessionHolder amqpSessionHolder);
-            if (amqpSessionHolder == null)
+            AmqpDevices.TryGetValue(deviceIdentity, out IAmqpDevice amqpDevice);
+            if (amqpDevice == null)
             {
-                amqpSessionHolder = new AmqpSessionHolder(
+                amqpDevice = new AmqpDevice(
                     deviceIdentity, 
-                    onAmqpSessionClosed, 
-                    OpenAmqpSession, 
-                    StartAmqpAuthenticationRefresher,
+                    OnAmqpDeviceDisconnected, 
+                    AmqpSessionCreator, 
+                    AuthenticationRefresherCreator,
                     RemoveDevice, 
                     methodHandler,
                     twinMessageListener, 
                     eventListener);
-                AmqpSessionHolders.Add(deviceIdentity, amqpSessionHolder);
+                AmqpDevices.Add(deviceIdentity, amqpDevice);
             }
             Lock.Release();
-            if (Logging.IsEnabled) Logging.Exit(this, deviceIdentity, $"{nameof(CreateAmqpSessionHolder)}");
-            return amqpSessionHolder;
+            if (Logging.IsEnabled) Logging.Exit(this, deviceIdentity, $"{nameof(CreateAmqpDevice)}");
+            return amqpDevice;
         }
 
-        private async Task<AmqpSession> OpenAmqpSession(DeviceIdentity deviceIdentity, ILinkFactory linkFactory, TimeSpan timeout)
+        private async Task<AmqpSession> AmqpSessionCreator(DeviceIdentity deviceIdentity, ILinkFactory linkFactory, AmqpSessionSettings amqpSessionSettings, TimeSpan timeout)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, deviceIdentity, $"{nameof(OpenAmqpSession)}");
+            if (Logging.IsEnabled) Logging.Enter(this, deviceIdentity, timeout, $"{nameof(AmqpSessionCreator)}");
             TimeoutHelper timeoutHelper = new TimeoutHelper(timeout);
             AmqpConnection amqpConnection = await EnsureConnection(timeoutHelper.RemainingTime()).ConfigureAwait(false);
-            await Lock.WaitAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
-            AmqpSessionHolders.TryGetValue(deviceIdentity, out IAmqpSessionHolder amqpSessionHolder);
-            Lock.Release();
-            AmqpSession amqpSession = null;
-            if (amqpSessionHolder != null)
-            {
-                amqpSession = new AmqpSession(amqpConnection, AmqpSessionSettings, linkFactory);
-                amqpConnection.AddSession(amqpSession, new ushort?());
-                await amqpSession.OpenAsync(timeout).ConfigureAwait(false);
-            }
-            if (Logging.IsEnabled) Logging.Exit(this, deviceIdentity, $"{nameof(OpenAmqpSession)}");
+            AmqpSession amqpSession = new AmqpSession(amqpConnection, amqpSessionSettings, linkFactory);
+            amqpConnection.AddSession(amqpSession, new ushort?());
+            if (Logging.IsEnabled) Logging.Associate(amqpConnection, amqpSession, $"{nameof(AmqpSessionCreator)}");
+            if (Logging.IsEnabled) Logging.Exit(this, deviceIdentity, timeout, $"{nameof(AmqpSessionCreator)}");
             return amqpSession;
         }
 
-        public int GetNumberOfSessions()
+        public int GetNumberOfDevices()
         {
-            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(GetNumberOfSessions)}");
-            Lock.Wait();
-            int count = AmqpSessionHolders.Count;
-            Lock.Release();
-            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(GetNumberOfSessions)}");
+            int count = AmqpDevices.Count;
+            if (Logging.IsEnabled) Logging.Info(this, count, $"{nameof(GetNumberOfDevices)}");
             return count;
         }
         private async Task<AmqpConnection> EnsureConnection(TimeSpan timeout)
@@ -151,7 +146,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
                     if (DeviceIdentity.AuthenticationModel != AuthenticationModel.X509)
                     {
-                        amqpCbsLink = amqpCbsLink ?? new AmqpCbsLink(amqpConnection);
+                        amqpCbsLink = AmqpCbsLink ?? new AmqpCbsLink(amqpConnection);
                         if (DeviceIdentity.AuthenticationModel == AuthenticationModel.SasGrouped)
                         {
                             // refresh
@@ -189,7 +184,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private void OnConnectionClosed(object o, EventArgs args)
         {
             if (Logging.IsEnabled) Logging.Enter(this, o, $"{nameof(OnConnectionClosed)}");
-            ICollection<IAmqpSessionHolder> amqpSessionHolders = null;
             Lock.Wait();
             if (AmqpConnection != null && ReferenceEquals(AmqpConnection, o))
             {
@@ -198,15 +192,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 AmqpCbsLink = null;
                 AmqpAuthenticationRefresher = null;
                 AmqpConnection = null;
-                amqpSessionHolders = AmqpSessionHolders.Values;
-                AmqpSessionHolders.Clear();
+                AmqpDevices.Clear();
                 IdleNotified = false;
             }
             Lock.Release();
-            foreach (IAmqpSessionHolder amqpSessionHolder in amqpSessionHolders)
-            {
-                amqpSessionHolder.OnConnectionClosed();
-            }
             if (Logging.IsEnabled) Logging.Exit(this, o, $"{nameof(OnConnectionClosed)}");
         }
 
@@ -214,11 +203,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             if (Logging.IsEnabled) Logging.Enter(this, deviceIdentity, $"{nameof(RemoveDevice)}");
             bool idle = false;
+            bool removed = AmqpDevices.Remove(deviceIdentity);
             Lock.Wait();
-            bool removed = AmqpSessionHolders.Remove(deviceIdentity);
             if (removed && !IdleNotified)
             {
-                IdleNotified = AmqpSessionHolders.Count == 0 && IdleNotified;
+                IdleNotified = AmqpDevices.Count == 0 && IdleNotified;
                 idle = IdleNotified;
             }
             Lock.Release();
@@ -242,9 +231,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             {
                 Lock?.Dispose();
                 Connector?.Dispose();
-                AmqpSessionHolders?.Clear();
+                AmqpDevices?.Clear();
                 AmqpAuthenticationRefresher?.Dispose();
-                AmqpSessionHolders = null;
             }
         }
     }

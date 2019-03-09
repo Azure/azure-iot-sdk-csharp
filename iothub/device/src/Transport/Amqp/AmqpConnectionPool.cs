@@ -31,14 +31,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             return Instance;
         }
 
-        internal IAmqpSessionHolder CreateAmqpSessionHolder(
+        internal IAmqpDevice CreateAmqpDevice(
             DeviceIdentity deviceIdentity, 
-            Action onSessionClose, 
+            Action onAmqpDeviceDisconnected, 
             Func<MethodRequestInternal, Task> methodHandler, 
             Action<AmqpMessage> twinMessageListener, 
             Func<string, Message, Task> eventListener)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, deviceIdentity, $"{nameof(CreateAmqpSessionHolder)}");
+            if (Logging.IsEnabled) Logging.Enter(this, deviceIdentity, $"{nameof(CreateAmqpDevice)}");
             if (deviceIdentity.AuthenticationModel != AuthenticationModel.X509 && (deviceIdentity.AmqpTransportSettings?.AmqpConnectionPoolSettings?.Pooling??false))
             {
                 lock (Lock)
@@ -54,15 +54,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     {
                         amqpConnectionHolder = GetLeastUsedConnection(amqpConnectionHolders);
                     }
-                    if (Logging.IsEnabled) Logging.Exit(this, deviceIdentity, $"{nameof(CreateAmqpSessionHolder)}");
-                    return amqpConnectionHolder.CreateAmqpSessionHolder(deviceIdentity, onSessionClose, methodHandler, twinMessageListener, eventListener);
+                    if (Logging.IsEnabled) Logging.Exit(this, deviceIdentity, $"{nameof(CreateAmqpDevice)}");
+                    return amqpConnectionHolder.CreateAmqpDevice(deviceIdentity, onAmqpDeviceDisconnected, methodHandler, twinMessageListener, eventListener);
                 }
             }
             else
             {
-                if (Logging.IsEnabled) Logging.Exit(this, deviceIdentity, $"{nameof(CreateAmqpSessionHolder)}");
+                if (Logging.IsEnabled) Logging.Exit(this, deviceIdentity, $"{nameof(CreateAmqpDevice)}");
                 return new AmqpConnectionHolder(deviceIdentity, OnConnectionIdle)
-                    .CreateAmqpSessionHolder(deviceIdentity, onSessionClose, methodHandler, twinMessageListener, eventListener);
+                    .CreateAmqpDevice(deviceIdentity, onAmqpDeviceDisconnected, methodHandler, twinMessageListener, eventListener);
             }
         }
 
@@ -105,6 +105,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 {
                     if (amqpConnectionHolder.DisposeOnIdle())
                     {
+                        if (Logging.IsEnabled) Logging.Info(this, amqpConnectionHolder, $"{nameof(DisposeIdleTransportAsync)}");
                         amqpConnectionHolders.Remove(amqpConnectionHolder);
                     }
                 }
@@ -126,7 +127,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
             foreach (IAmqpConnectionHolder value in amqpConnectionHolders)
             {
-                int clientCount = value.GetNumberOfSessions();
+                int clientCount = value.GetNumberOfDevices();
                 if (clientCount < count)
                 {
                     amqpConnectionHolder = value;
