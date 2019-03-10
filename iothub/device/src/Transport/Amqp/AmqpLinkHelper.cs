@@ -10,6 +10,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
     internal class AmqpLinkHelper
     {
+        private const string TelemetrySenderLinkSuffix = "_TelemetrySenderLink";
+        private const string TelemetryReceiveLinkSuffix = "_TelemetryReceiverLink";
+        private const string EventsReceiverLinkSuffix = "_EventsReceiverLink";
+        private const string MethodsSenderLinkSuffix = "_MethodsSenderLink";
+        private const string MethodsReceiverLinkSuffix = "_MethodsReceiverLink";
+        private const string MethodCorrelationIdPrefix = "methods:";
+        private const string TwinSenderLinkSuffix = "_TwinSenderLink";
+        private const string TwinReceiverLinkSuffix = "_TwinReceiverLink";
+        private const string TwinCorrelationIdPrefix = "twin:";
+
         #region SendingAmqpLink
         internal static async Task<SendingAmqpLink> OpenSendingAmqpLinkAsync(
             DeviceIdentity deviceIdentity,
@@ -119,6 +129,150 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             return amqpMessage;
         }
 
+        #endregion
+
+        #region TelemetryLink
+        internal static async Task<SendingAmqpLink> OpenTelemetrySenderLinkAsync(
+            DeviceIdentity deviceIdentity,
+            AmqpSession amqpSession,
+            TimeSpan timeout
+        )
+        {
+            return await OpenSendingAmqpLinkAsync(
+                deviceIdentity,
+                amqpSession,
+                null,
+                null,
+                CommonConstants.DeviceEventPathTemplate,
+                CommonConstants.ModuleEventPathTemplate,
+                TelemetrySenderLinkSuffix,
+                null,
+                timeout
+            ).ConfigureAwait(false);
+        }
+        internal static async Task<ReceivingAmqpLink> OpenTelemetryReceiverLinkAsync(
+            DeviceIdentity deviceIdentity,
+            AmqpSession amqpSession,
+            TimeSpan timeout
+        )
+        {
+            return await OpenReceivingAmqpLinkAsync(
+                deviceIdentity,
+                amqpSession, 
+                null,
+                (byte)ReceiverSettleMode.Second,
+                CommonConstants.DeviceBoundPathTemplate,
+                CommonConstants.ModuleBoundPathTemplate,
+                TelemetryReceiveLinkSuffix,
+                null,
+                timeout
+            ).ConfigureAwait(false);
+        }
+        #endregion
+
+        #region EventLink
+        internal static async Task<ReceivingAmqpLink> OpenEventsReceiverLinkAsync(
+            DeviceIdentity deviceIdentity,
+            AmqpSession amqpSession,
+            TimeSpan timeout
+        )
+        {
+            return await OpenReceivingAmqpLinkAsync(
+                deviceIdentity,
+                amqpSession,
+                null,
+                (byte)ReceiverSettleMode.First,
+                CommonConstants.DeviceEventPathTemplate,
+                CommonConstants.ModuleEventPathTemplate,
+                EventsReceiverLinkSuffix,
+                null,
+                timeout
+            ).ConfigureAwait(false);
+        }
+        #endregion
+
+        #region MethodLink
+        internal static async Task<ReceivingAmqpLink> OpenMethodsReceiverLinkAsync(
+            DeviceIdentity deviceIdentity,
+            AmqpSession amqpSession,
+            string correlationIdSuffix,
+            TimeSpan timeout
+        )
+        {
+            return await OpenReceivingAmqpLinkAsync(
+                deviceIdentity,
+                amqpSession,
+                (byte)SenderSettleMode.Settled,
+                (byte)ReceiverSettleMode.First,
+                CommonConstants.DeviceMethodPathTemplate,
+                CommonConstants.ModuleMethodPathTemplate,
+                MethodsReceiverLinkSuffix,
+                MethodCorrelationIdPrefix + correlationIdSuffix,
+                timeout
+            ).ConfigureAwait(false);
+        }
+
+        internal static async Task<SendingAmqpLink> OpenMethodsSenderLinkAsync(
+            DeviceIdentity deviceIdentity,
+            AmqpSession amqpSession,
+            string correlationIdSuffix,
+            TimeSpan timeout
+        )
+        {
+            return await OpenSendingAmqpLinkAsync(
+                    deviceIdentity,
+                    amqpSession,
+                    (byte)SenderSettleMode.Settled,
+                    (byte)ReceiverSettleMode.First,
+                    CommonConstants.DeviceMethodPathTemplate,
+                    CommonConstants.ModuleMethodPathTemplate,
+                    MethodsSenderLinkSuffix,
+                    MethodCorrelationIdPrefix + correlationIdSuffix,
+                    timeout
+            ).ConfigureAwait(false);
+        }
+        #endregion
+
+        #region TwinLink
+        internal static async Task<ReceivingAmqpLink> OpenTwinReceiverLinkAsync(
+            DeviceIdentity deviceIdentity,
+            AmqpSession amqpSession,
+            string correlationIdSuffix,
+            TimeSpan timeout
+        )
+        {
+            return await OpenReceivingAmqpLinkAsync(
+                deviceIdentity,
+                amqpSession,
+                (byte)SenderSettleMode.Settled,
+                (byte)ReceiverSettleMode.First,
+                CommonConstants.DeviceTwinPathTemplate,
+                CommonConstants.ModuleTwinPathTemplate,
+                TwinReceiverLinkSuffix,
+                TwinCorrelationIdPrefix + correlationIdSuffix,
+                timeout
+            ).ConfigureAwait(false);
+        }
+
+        internal static async Task<SendingAmqpLink> OpenTwinSenderLinkAsync(
+            DeviceIdentity deviceIdentity,
+            AmqpSession amqpSession,
+            string correlationIdSuffix,
+            TimeSpan timeout
+        )
+        {
+            return await OpenSendingAmqpLinkAsync(
+                    deviceIdentity,
+                    amqpSession,
+                    (byte)SenderSettleMode.Settled,
+                    (byte)ReceiverSettleMode.First,
+                    CommonConstants.DeviceTwinPathTemplate,
+                    CommonConstants.ModuleTwinPathTemplate,
+                    TwinSenderLinkSuffix,
+                    TwinCorrelationIdPrefix + correlationIdSuffix,
+                    timeout
+            ).ConfigureAwait(false);
+        }
         #endregion
 
         public static async Task<Outcome> DisposeMessageAsync(ReceivingAmqpLink receivingAmqpLink, string lockToken, Outcome outcome, TimeSpan timeout)
