@@ -6,13 +6,17 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
     internal interface IAmqpConnectionHolder
     {
-        IAmqpDevice CreateAmqpDevice(
-            DeviceIdentity deviceIdentity, 
-            Action retryTrigger, 
+        #region EventHandler
+        event EventHandler OnConnectionDisconnected;
+        #endregion
+
+        #region Manage Unit
+        IAmqpUnit CreateAmqpUnit(
+            DeviceIdentity deviceIdentity,
             Func<MethodRequestInternal, Task> methodHandler, 
             Action<AmqpMessage> desiredPropertyListener, 
             Func<string, Message, Task> messageListener);
-        bool DisposeOnIdle();
-        int GetNumberOfDevices();
+        int GetNumberOfUnits();
+        #endregion
     }
 }

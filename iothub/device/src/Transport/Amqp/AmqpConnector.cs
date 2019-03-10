@@ -78,7 +78,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 transportBase = await InitializeTransport(timeoutHelper.RemainingTime()).ConfigureAwait(false);
                 AmqpConnection amqpConnection = new AmqpConnection(transportBase, AmqpSettings, AmqpConnectionSettings);
                 await amqpConnection.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
-                if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(OpenConnectionAsync)}");
+                if (Logging.IsEnabled) Logging.Exit(this, timeoutHelper.RemainingTime(), $"{nameof(OpenConnectionAsync)}");
                 return amqpConnection;
             }
             catch(Exception)
@@ -133,7 +133,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 default:
                     throw new InvalidOperationException("AmqpTransportSettings must specify WebSocketOnly or TcpOnly");
             }
-            if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(InitializeTransport)}");
+            if (Logging.IsEnabled) Logging.Exit(this, timeoutHelper.RemainingTime(), $"{nameof(InitializeTransport)}");
             return transport;
         }
 
