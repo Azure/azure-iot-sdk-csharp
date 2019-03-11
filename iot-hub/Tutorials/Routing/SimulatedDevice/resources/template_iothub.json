@@ -3,6 +3,7 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "randomNumber": {
+            "comments": "Fill this in, then you can deploy the script w/o making further changes.", 
             "defaultValue": "1357",
             "type": "string", 
             "metadata": {
