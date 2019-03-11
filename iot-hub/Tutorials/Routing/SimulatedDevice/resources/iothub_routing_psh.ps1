@@ -1,9 +1,4 @@
-﻿#$psise.Options.FontSize=12
-
-# Log into Azure account. If using CloudShell, you've already logged in.
-#Login-AzAccount 
-
-# Set the values for the resource names that don't have to be globally unique.
+﻿# Set the values for the resource names that don't have to be globally unique.
 # The resources that have to have unique names are named in the script below
 #   with a random number concatenated to the name so you can probably just
 #   run this script, and it will work with no conflicts.
@@ -124,12 +119,6 @@ New-AzServiceBusAuthorizationRule `
   -Name "sbauthrule" `
   -Rights @("Manage","Listen","Send")
 
-# Show the rule. This is optional.
-#Get-AzServiceBusAuthorizationRule `
-#      -ResourceGroupName $resourceGroup `
-#      -Namespace $serviceBusNamespace `
-#      -Queue $serviceBusQueueName
-
 # Get the Service Bus Queue key. 
 $sbqkey = Get-AzServiceBusKey `
     -ResourceGroupName $resourceGroup `
@@ -157,9 +146,3 @@ Add-AzIotHubRoute `
    -EndpointName $endpointName `
    -Condition $condition `
    -Enabled 
-
-# Show the route. This is optional.
-#Get-AzIotHubRoute `
-#   -ResourceGroupName $resourceGroup `
-#   -Name $iotHubName `
-#   -RouteName $routeName 
