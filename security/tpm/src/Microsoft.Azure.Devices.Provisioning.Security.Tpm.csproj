@@ -41,6 +41,9 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.TSS" Version="2.0.1" />
+
+    <!-- FXCop -->
+    <PackageReference Condition=" '$(Configuration)' == 'Debug' " Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.6.1" />
   </ItemGroup>
 
   <ItemGroup>
