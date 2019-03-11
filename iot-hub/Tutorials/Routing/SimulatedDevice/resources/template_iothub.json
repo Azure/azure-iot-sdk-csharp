@@ -66,49 +66,49 @@
          },
         "storageAccountName_in": {
             "type": "string",
-            "default": "contosostorage",
+            "defaultValue": "contosostorage",
             "metadata": {
                 "description": "Name of storage account to be created."
             }
         },
         "storageContainerName": {
             "type": "string",
-            "default": "contosoresults",
+            "defaultValue": "contosoresults",
             "metadata": {
                 "description": "Name of the container in which to place the routed data."
             }
         },
         "storage_endpoint": {
             "type": "string",
-            "default": "ContosoStorageEndpoint",
+            "defaultValue": "ContosoStorageEndpoint",
             "metadata": {
                 "description": "Name of the endpoint for the storage account."
             }
         },
         "service_bus_namespace_in": {
             "type": "string",
-            "default": "ContosoSBNamespace",
+            "defaultValue": "ContosoSBNamespace",
             "metadata": {
                 "description": "Namespace of the service bus that has the queue to which messages are routed."
             }
         },
         "service_bus_queue_in": {
             "type": "string",
-            "default": "ContosoSBQueue", 
+            "defaultValue": "ContosoSBQueue", 
             "metadata": {
                 "description": "Name of the service bus queue to which to route messages."
             }
         },
         "service_bus_queue_endpoint": {
             "type": "string",
-            "default": "ContosoSBQueueEndpoint", 
+            "defaultValue": "ContosoSBQueueEndpoint", 
             "metadata": {
                 "description": "Endpoint to use for routing messages to the service bus queue."
             }
         },
         "AuthRules_sb_queue": {
-            "defaultValue": "AuthRules_sb_queue",
             "type": "string",
+            "defaultValue": "AuthRules_sb_queue",
             "metadata": {
                 "description": "Authorization rules for the service bus queue."
             }
