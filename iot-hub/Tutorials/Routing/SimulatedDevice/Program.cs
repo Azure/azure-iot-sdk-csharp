@@ -17,6 +17,7 @@ namespace SimulatedDevice
         // This is the primary key for the device. This is in the portal. 
         // Find your IoT hub in the portal > IoT devices > select your device > copy the key. 
         private readonly static string s_deviceKey = "{your device key}";
+
         private static void Main(string[] args)
         {
             Console.WriteLine("Routing Tutorial: Simulated device\n"); 
