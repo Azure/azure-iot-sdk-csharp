@@ -1,4 +1,15 @@
-﻿# Run this in Azure Cloud Shell, in Bash.
+﻿# Set your subscription Id and random number here,
+#   then you can run the rest of the script without changes.
+
+# Put your subscription ID here.
+# This is used to set up the routing rules.
+# It's here at the top so you can easily find it. 
+subscriptionID="YOURSUBSCRIPTIONID"
+
+# Concatenate this number onto the resources that have to be globally unique.
+# You can also use $RANDOM but it gives long numbers.
+#     randomNum=$RANDOM
+randomNum="1357"
 
 # This is the IOT Extension for Azure CLI.
 # You only need to install this the first time.
@@ -16,11 +27,6 @@ resourceGroup=ContosoResources
 iotHubConsumerGroup=ContosoConsumers
 containerName=contosoresults
 iotDeviceName=Contoso-Test-Device
-
-# Concatenate this number onto the resources that have to be globally unique.
-# You can also use $RANDOM but it gives long numbers.
-#     randomNum=$RANDOM
-randomNum="1357"
 
 # Create the resource group to be used
 #   for all the resources for this tutorial.
@@ -100,8 +106,6 @@ az iot hub device-identity show --device-id $iotDeviceName \
 
 ##### ROUTING FOR STORAGE ##### 
 
-# Put your subscription ID here.
-subscriptionID="YOURSUBSCRIPTIONID"
 endpointName="ContosoStorageEndpoint"
 endpointType="azurestoragecontainer"
 routeName="ContosoStorageRoute"

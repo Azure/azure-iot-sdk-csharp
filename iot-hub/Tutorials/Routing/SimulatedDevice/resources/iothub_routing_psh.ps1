@@ -1,4 +1,17 @@
-﻿# Set the values for the resource names that don't have to be globally unique.
+﻿# Set your subscription Id and random number here,
+#   then you can run the rest of the script without changes.
+
+# Put your subscription ID here.
+# This is used to set up the routing rules.
+# It's here at the top so you can easily find it. 
+subscriptionID = "YOURSUBSCRIPTIONID"
+
+# Concatenate this number onto the resources that have to be globally unique.
+# You can also use $(Get-Random) but it gives long numbers.
+#     randomNum=$(Get-Random)
+$randomNum = 1357
+
+# Set the values for the resource names that don't have to be globally unique.
 # The resources that have to have unique names are named in the script below
 #   with a random number concatenated to the name so you can probably just
 #   run this script, and it will work with no conflicts.
@@ -6,11 +19,6 @@ $location = "West US"
 $resourceGroup = "ContosoResources"
 $iotHubConsumerGroup = "ContosoConsumers"
 $containerName = "contosoresults"
-
-# Concatenate this number onto the resources that have to be globally unique.
-# You can also use $(Get-Random) but it gives long numbers.
-#     randomNum=$(Get-Random)
-$randomNum = 1357
 
 # Create the resource group to be used 
 #   for all resources for this tutorial.
@@ -76,8 +84,6 @@ New-AzServiceBusQueue -ResourceGroupName $resourceGroup `
 
 ##### ROUTING FOR STORAGE #####
 
-# Put your subscription ID here.
-$subscriptionID = "YOURSUBSCRIPTIONID"
 $endpointName = "ContosoStorageEndpoint"
 $endpointType = "azurestoragecontainer"
 $routeName = "ContosoStorageRoute"
