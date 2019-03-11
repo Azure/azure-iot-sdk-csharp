@@ -6,7 +6,7 @@ using Microsoft.Azure.Devices.Shared;
 namespace Microsoft.Azure.Devices.Client.Transport
 {
     /// <summary>
-    /// Base class of DeviceClientEndpointIdentity
+    /// Device configurations
     /// Stores the common attributes
     /// - connection string 
     /// - transport settings 

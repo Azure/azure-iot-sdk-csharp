@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
-    internal interface IAmqpUnit : IDisposable
+    internal interface IAmqpUnit : IDisposable, ILinkFactory
     {
         #region EventHandler
         event EventHandler OnUnitDisconnected;

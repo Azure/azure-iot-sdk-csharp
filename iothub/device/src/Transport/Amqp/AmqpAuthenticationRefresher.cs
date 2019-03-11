@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
-    internal class AmqpAuthenticationRefresher : IDisposable
+    internal class AmqpAuthenticationRefresher : IAmqpAuthenticationRefresher
     {
         static readonly TimeSpan BufferPeriod = TimeSpan.FromSeconds(120);
         private readonly AmqpCbsLink AmqpCbsLink;
@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             if (Logging.IsEnabled) Logging.Associate(this, amqpCbsLink, $"{nameof(AmqpCbsLink)}");
         }
 
-        internal async Task InitLoopAsync(TimeSpan timeout)
+        public async Task InitLoopAsync(TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(InitLoopAsync)}");
             TimeoutHelper timeoutHelper = new TimeoutHelper(timeout);
@@ -112,7 +112,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        internal void StopLoop()
+        public void StopLoop()
         {
             if (Logging.IsEnabled) Logging.Info(this, $"{nameof(StopLoop)}");
             CancellationTokenSource?.Cancel();

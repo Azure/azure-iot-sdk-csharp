@@ -17,7 +17,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private readonly SemaphoreSlim Lock;
         private readonly IDictionary<DeviceIdentity, IAmqpUnit> AmqpUnits;
         private AmqpConnection AmqpConnection;
-        private AmqpAuthenticationRefresher AmqpAuthenticationRefresher;
+        private IAmqpAuthenticationRefresher AmqpAuthenticationRefresher;
         private AmqpCbsLink AmqpCbsLink;
 
         public AmqpConnectionHolder(DeviceIdentity deviceIdentity)
@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             if (Logging.IsEnabled) Logging.Associate(this, DeviceIdentity, $"{nameof(DeviceIdentity)}");
         }
 
-        private async Task<AmqpAuthenticationRefresher> AuthenticationRefresherCreator(DeviceIdentity deviceIdentity, TimeSpan timeout)
+        private async Task<IAmqpAuthenticationRefresher> AuthenticationRefresherCreator(DeviceIdentity deviceIdentity, TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, deviceIdentity, timeout, $"{nameof(AuthenticationRefresherCreator)}");
             TimeoutHelper timeoutHelper = new TimeoutHelper(timeout);
@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
             AmqpCbsLink = AmqpCbsLink ?? new AmqpCbsLink(AmqpConnection);
             
-            AmqpAuthenticationRefresher amqpAuthenticator = new AmqpAuthenticationRefresher(deviceIdentity, AmqpCbsLink);
+            IAmqpAuthenticationRefresher amqpAuthenticator = new AmqpAuthenticationRefresher(deviceIdentity, AmqpCbsLink);
             await amqpAuthenticator.InitLoopAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
             if (Logging.IsEnabled) Logging.Exit(this, deviceIdentity, timeoutHelper.RemainingTime(), $"{nameof(AuthenticationRefresherCreator)}");
             return amqpAuthenticator;
@@ -88,7 +88,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(EnsureConnection)}");
             TimeoutHelper timeoutHelper = new TimeoutHelper(timeout);
             AmqpConnection amqpConnection = null;
-            AmqpAuthenticationRefresher amqpAuthenticationRefresher = null;
+            IAmqpAuthenticationRefresher amqpAuthenticationRefresher = null;
             AmqpCbsLink amqpCbsLink = null;
             await Lock.WaitAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
             try

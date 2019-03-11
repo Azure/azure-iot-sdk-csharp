@@ -8,10 +8,9 @@ using System.Threading.Tasks;
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
    
-    class AmqpConnectionPool
+    class AmqpConnectionPool : IAmqpUnitCreator
     {
         private const int MaxSpan = int.MaxValue;
-        private static readonly TimeSpan TimeWait = TimeSpan.FromSeconds(10);
         private ISet<IAmqpConnectionHolder> AmqpSasIndividualPool;
         private IDictionary<string, ISet<IAmqpConnectionHolder>> AmqpSasGroupedPool;
         private readonly object Lock;
@@ -23,7 +22,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             Lock = new object();
         }
 
-        internal IAmqpUnit CreateAmqpUnit(
+        public IAmqpUnit CreateAmqpUnit(
             DeviceIdentity deviceIdentity, 
             Func<MethodRequestInternal, Task> methodHandler, 
             Action<AmqpMessage> twinMessageListener, 

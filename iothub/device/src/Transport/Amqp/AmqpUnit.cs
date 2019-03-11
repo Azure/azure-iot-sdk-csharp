@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
-    internal class AmqpUnit : IAmqpUnit, ILinkFactory
+    internal class AmqpUnit : IAmqpUnit
     {
         public event EventHandler OnUnitDisconnected;
         
@@ -18,7 +18,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private readonly Action<AmqpMessage> TwinMessageListener;
         private readonly Func<string, Message, Task> EventListener;
         private readonly Func<DeviceIdentity, ILinkFactory, AmqpSessionSettings, TimeSpan, Task<AmqpSession>> AmqpSessionCreator;
-        private readonly Func<DeviceIdentity, TimeSpan, Task<AmqpAuthenticationRefresher>> AmqpAuthenticationRefresherCreator;
+        private readonly Func<DeviceIdentity, TimeSpan, Task<IAmqpAuthenticationRefresher>> AmqpAuthenticationRefresherCreator;
         private readonly SemaphoreSlim Lock;
         private ReceivingAmqpLink MessageReceivingLink;
         private ReceivingAmqpLink MethodReceivingLink;
@@ -29,14 +29,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private SendingAmqpLink TwinSendingLink;
         private SendingAmqpLink EventSendingLink;
         private AmqpSession AmqpSession;
-        private AmqpAuthenticationRefresher AmqpAuthenticationRefresher;
+        private IAmqpAuthenticationRefresher AmqpAuthenticationRefresher;
         private bool Closed;
         private AmqpSessionSettings AmqpSessionSettings;
 
         public AmqpUnit(
             DeviceIdentity deviceIdentity,
             Func<DeviceIdentity, ILinkFactory, AmqpSessionSettings, TimeSpan, Task<AmqpSession>> amqpSessionCrreator,
-            Func<DeviceIdentity, TimeSpan, Task<AmqpAuthenticationRefresher>> amqpAuthenticationRefresherCreator,
+            Func<DeviceIdentity, TimeSpan, Task<IAmqpAuthenticationRefresher>> amqpAuthenticationRefresherCreator,
             Func<MethodRequestInternal, Task> methodHandler, 
             Action<AmqpMessage> twinMessageListener, 
             Func<string, Message, Task> eventListener)

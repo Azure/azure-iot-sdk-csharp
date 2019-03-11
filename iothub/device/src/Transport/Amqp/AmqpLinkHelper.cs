@@ -279,7 +279,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             if (Logging.IsEnabled) Logging.Enter(receivingAmqpLink, timeout, $"{nameof(DisposeMessageAsync)}");
             ArraySegment<byte> deliveryTag = ConvertToDeliveryTag(lockToken);
-            Outcome disposeOutcome = await receivingAmqpLink.DisposeMessageAsync(deliveryTag, outcome, batchable: true, timeout).ConfigureAwait(false);
+            Outcome disposeOutcome = await receivingAmqpLink.DisposeMessageAsync(deliveryTag, outcome, batchable: true, timeout: timeout).ConfigureAwait(false);
             if (Logging.IsEnabled) Logging.Exit(receivingAmqpLink, timeout, $"{nameof(DisposeMessageAsync)}");
             return disposeOutcome;
         }
