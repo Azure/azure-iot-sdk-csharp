@@ -35,8 +35,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             protected set
             {
-                if (Logging.IsEnabled) Logging.Associate(this, _innerHandler, nameof(InnerHandler));
                 _innerHandler = value;
+                if (Logging.IsEnabled) Logging.Associate(this, _innerHandler, nameof(InnerHandler));
             }
         }
 

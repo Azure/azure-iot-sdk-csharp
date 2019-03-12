@@ -150,17 +150,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         private static async Task CreateLinksAsync(AmqpClientConnection connection, string linkEndpoint, string productInfo)
         {
-            var amqpDeviceSession = connection.CreateSession();
-            await amqpDeviceSession.OpenAsync(TimeoutConstant).ConfigureAwait(false);
+            var amqpClientSession = connection.CreateSession();
+            await amqpClientSession.OpenAsync(TimeoutConstant).ConfigureAwait(false);
 
-            var amqpReceivingLink = amqpDeviceSession.CreateReceivingLink(linkEndpoint);
+            var amqpReceivingLink = amqpClientSession.CreateReceivingLink(linkEndpoint);
 
             amqpReceivingLink.AddClientVersion(productInfo);
             amqpReceivingLink.AddApiVersion(ClientApiVersionHelper.ApiVersion);
 
             await amqpReceivingLink.OpenAsync(TimeoutConstant).ConfigureAwait(false);
 
-            var amqpSendingLink = amqpDeviceSession.CreateSendingLink(linkEndpoint);
+            var amqpSendingLink = amqpClientSession.CreateSendingLink(linkEndpoint);
 
             amqpSendingLink.AddClientVersion(productInfo);
             amqpSendingLink.AddApiVersion(ClientApiVersionHelper.ApiVersion);

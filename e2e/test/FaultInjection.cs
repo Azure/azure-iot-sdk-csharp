@@ -72,9 +72,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             return
                 (faultType != FaultType_Throttle) &&
-                (faultType != FaultType_QuotaExceeded) &&
-                (faultType != FaultType_AmqpC2D) &&
-                (faultType != FaultType_AmqpD2C);
+                (faultType != FaultType_QuotaExceeded);
         }
 
         // Fault timings:
@@ -219,6 +217,145 @@ namespace Microsoft.Azure.Devices.E2ETests
                 {
                     s_log.WriteLine($"{nameof(FaultInjection)}: Waiting {timeToFinishFaultInjection}ms to ensure that FaultInjection duration passed.");
                     await Task.Delay(timeToFinishFaultInjection).ConfigureAwait(false);
+                }
+            }
+        }
+
+        // Error injection template method (multiplexing over amqp).
+        public static async Task TestErrorInjectionMuxedOverAmqpAsync(
+            string devicePrefix,
+            ConnectionStringLevel connectionStringLevel,
+            TestDeviceType type,
+            Client.TransportType transport,
+            int poolSize,
+            int devicesCount,
+            string faultType,
+            string reason,
+            int delayInSec,
+            int durationInSec,
+            Func<DeviceClient, TestDevice, Task> initOperation,
+            Func<DeviceClient, TestDevice, Task> testOperation,
+            Func<Task> cleanupOperation)
+        {
+            var transportSettings = new ITransportSettings[]
+            {
+                new AmqpTransportSettings(transport)
+                {
+                    AmqpConnectionPoolSettings = new AmqpConnectionPoolSettings()
+                    {
+                        MaxPoolSize = unchecked((uint)poolSize),
+                        Pooling = true
+                    }
+                }
+            };
+
+            IList<DeviceClient> deviceClients = new List<DeviceClient>();
+            IList<TestDevice> devices = new List<TestDevice>();
+
+            try
+            {
+                s_log.WriteLine($"{nameof(FaultInjection)}: Starting the test execution for {devicesCount} devices");
+
+                for (int i = 0; i < devicesCount; i++)
+                {
+                    TestDevice testDevice = await TestDevice.GetTestDeviceAsync($"{devicePrefix}_{i}_", type).ConfigureAwait(false);
+                    DeviceClient deviceClient = testDevice.CreateDeviceClient(transportSettings, connectionStringLevel);
+                    deviceClients.Add(deviceClient);
+                    devices.Add(testDevice);
+
+                    ConnectionStatus? lastConnectionStatus = null;
+                    ConnectionStatusChangeReason? lastConnectionStatusChangeReason = null;
+                    int setConnectionStatusChangesHandlerCount = 0;
+
+                    deviceClient.SetConnectionStatusChangesHandler((status, statusChangeReason) =>
+                    {
+                        setConnectionStatusChangesHandlerCount++;
+                        lastConnectionStatus = status;
+                        lastConnectionStatusChangeReason = statusChangeReason;
+                        s_log.WriteLine($"{nameof(FaultInjection)}.{nameof(ConnectionStatusChangesHandler)}: {TestLogging.GetHashCode(deviceClient)}: status={status} statusChangeReason={statusChangeReason} count={setConnectionStatusChangesHandlerCount}");
+                    });
+
+                    var watch = new Stopwatch();
+
+                    await deviceClient.OpenAsync().ConfigureAwait(false);
+                    if (transport != Client.TransportType.Http1)
+                    {
+                        Assert.IsTrue(setConnectionStatusChangesHandlerCount >= 1); // Normally one connection but in some cases, due to network issues we might have already retried several times to connect.
+                        Assert.AreEqual(ConnectionStatus.Connected, lastConnectionStatus);
+                        Assert.AreEqual(ConnectionStatusChangeReason.Connection_Ok, lastConnectionStatusChangeReason);
+                    }
+
+                    await initOperation(deviceClient, testDevice).ConfigureAwait(false);
+
+                    s_log.WriteLine($">>> {nameof(FaultInjection)} Testing baseline");
+                    await testOperation(deviceClient, testDevice).ConfigureAwait(false);
+
+                    watch.Start();
+                    s_log.WriteLine($">>> {nameof(FaultInjection)} Testing fault handling");
+                    await ActivateFaultInjection(transport, faultType, reason, delayInSec, durationInSec, deviceClient).ConfigureAwait(false);
+
+                    int delay = FaultInjection.WaitForDisconnectMilliseconds - (int)watch.ElapsedMilliseconds;
+                    if (delay < 0) delay = 0;
+
+                    s_log.WriteLine($"{nameof(FaultInjection)}: Waiting for fault injection to be active: {delay}ms");
+                    await Task.Delay(delay).ConfigureAwait(false);
+
+                    await testOperation(deviceClient, testDevice).ConfigureAwait(false);
+
+                    if (transport != Client.TransportType.Http1)
+                    {
+                        s_log.WriteLine($"Current count of connection status for transport type {transport} is: {setConnectionStatusChangesHandlerCount}.");
+                        if (FaultShouldDisconnect(faultType))
+                        {
+                            // 3 is the minimum notification count: connect, fault, reconnect.
+                            // There are cases where the retry must be timed out (i.e. very likely for MQTT where otherwise 
+                            // we would attempt to send the fault injection forever.)
+                            Assert.IsTrue(setConnectionStatusChangesHandlerCount >= 3);
+                        }
+                        else
+                        {
+                            // 1 is the minimum notification count: connect.
+                            // We will monitor the test environment real network stability and switch to >=1 if necessary to 
+                            // account for real network issues.
+                            Assert.IsTrue(setConnectionStatusChangesHandlerCount == 1);
+                        }
+                    }
+
+                    watch.Stop();
+
+                    int timeToFinishFaultInjection = durationInSec * 1000 - (int)watch.ElapsedMilliseconds;
+                    if (timeToFinishFaultInjection > 0)
+                    {
+                        s_log.WriteLine($"{nameof(FaultInjection)}: Waiting {timeToFinishFaultInjection}ms to ensure that FaultInjection duration passed.");
+                        await Task.Delay(timeToFinishFaultInjection).ConfigureAwait(false);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                s_log.WriteLine($"{nameof(FaultInjection)}: Total {deviceClients.Count} instances of device client initialized.");
+                s_log.WriteLine($"{nameof(FaultInjection)}: Exception thrown:  {e.Message}.");
+            }
+            finally
+            {
+                int count = 0;
+
+                // Close and dispose all of the device client instances here
+                foreach (DeviceClient deviceClient in deviceClients)
+                {
+                    count++;
+                    //var deviceClient = deviceClients[i];
+                    //var testDevice = deviceId[i];
+
+                    //s_log.WriteLine($"{nameof(FaultInjection)}: Test baseline again deviceClient {TestLogging.GetHashCode(deviceClient)}");
+                    //await testOperation(deviceClient, testDevice).ConfigureAwait(false);
+
+                    s_log.WriteLine($"{nameof(FaultInjection)}: Count {count} - Closing deviceClient {TestLogging.GetHashCode(deviceClient)}");
+                    await deviceClient.CloseAsync().ConfigureAwait(false);
+
+                    await cleanupOperation().ConfigureAwait(false);
+                    s_log.WriteLine($"{nameof(FaultInjection)}: Disposing deviceClient {TestLogging.GetHashCode(deviceClient)}");
+                    deviceClient.Dispose();
                 }
             }
         }

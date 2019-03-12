@@ -18,6 +18,9 @@ namespace Microsoft.Azure.Devices.E2ETests
     {
         private readonly string DevicePrefix = $"E2E_{nameof(MessageSendFaultInjectionTests)}_";
         private readonly string ModulePrefix = $"E2E_{nameof(MessageSendFaultInjectionTests)}_";
+        private readonly int MuxDevicesCount = 10;
+        private readonly int MuxWithoutPoolingPoolSize = 1;
+        private readonly int MuxWithPoolingPoolSize = 5;
         private static string ProxyServerAddress = Configuration.IoTHub.ProxyServerAddress;
         private static TestLogging _log = TestLogging.GetInstance();
 
@@ -45,6 +48,126 @@ namespace Microsoft.Azure.Devices.E2ETests
             await SendMessageRecovery(
                 TestDeviceType.Sasl,
                 Client.TransportType.Amqp_WebSocket_Only,
+                FaultInjection.FaultType_Tcp,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_DeviceSak_TcpConnectionLossSendRecovery_MuxedWithoutPooling_Amqp()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_Tcp_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.Device,
+                FaultInjection.FaultType_Tcp,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_DeviceSak_TcpConnectionLossSendRecovery_MuxedWithoutPooling_AmqpWs()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.Device,
+                FaultInjection.FaultType_Tcp,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_DeviceSak_TcpConnectionLossSendRecovery_MuxedWithPooling_Amqp()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_Tcp_Only,
+                MuxWithPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.Device,
+                FaultInjection.FaultType_Tcp,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_DeviceSak_TcpConnectionLossSendRecovery_MuxedWithPooling_AmqpWs()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.Device,
+                FaultInjection.FaultType_Tcp,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_IoTHubSak_TcpConnectionLossSendRecovery_MuxedWithoutPooling_Amqp()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_Tcp_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.IoTHub,
+                FaultInjection.FaultType_Tcp,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_IoTHubSak_TcpConnectionLossSendRecovery_MuxedWithoutPooling_AmqpWs()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.IoTHub,
+                FaultInjection.FaultType_Tcp,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_IoTHubSak_TcpConnectionLossSendRecovery_MuxedWithPooling_Amqp()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_Tcp_Only,
+                MuxWithPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.IoTHub,
+                FaultInjection.FaultType_Tcp,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_IoTHubSak_TcpConnectionLossSendRecovery_MuxedWithPooling_AmqpWs()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.IoTHub,
                 FaultInjection.FaultType_Tcp,
                 FaultInjection.FaultCloseReason_Boom,
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
@@ -95,6 +218,126 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_DeviceSak_AmqpConnectionLossSendRecovery_MuxWithoutPooling_Amqp()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_Tcp_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.Device,
+                FaultInjection.FaultType_AmqpConn,
+                "",
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_DeviceSak_AmqpConnectionLossSendRecovery_MuxWithoutPooling_AmqpWs()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.Device,
+                FaultInjection.FaultType_AmqpConn,
+                "",
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_DeviceSak_AmqpConnectionLossSendRecovery_MuxWithPooling_Amqp()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_Tcp_Only,
+                MuxWithPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.Device,
+                FaultInjection.FaultType_AmqpConn,
+                "",
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_DeviceSak_AmqpConnectionLossSendRecovery_MuxWithPooling_AmqpWs()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.Device,
+                FaultInjection.FaultType_AmqpConn,
+                "",
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_IoTHubSak_AmqpConnectionLossSendRecovery_MuxWithoutPooling_Amqp()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_Tcp_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.IoTHub,
+                FaultInjection.FaultType_AmqpConn,
+                "",
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_IoTHubSak_AmqpConnectionLossSendRecovery_MuxWithoutPooling_AmqpWs()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.IoTHub,
+                FaultInjection.FaultType_AmqpConn,
+                "",
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_IoTHubSak_AmqpConnectionLossSendRecovery_MuxWithPooling_Amqp()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_Tcp_Only,
+                MuxWithPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.IoTHub,
+                FaultInjection.FaultType_AmqpConn,
+                "",
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_IoTHubSak_AmqpConnectionLossSendRecovery_MuxWithPooling_AmqpWs()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.IoTHub,
+                FaultInjection.FaultType_AmqpConn,
+                "",
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
         public async Task Message_AmqpSessionLossSendRecovery_Amqp()
         {
             await SendMessageRecovery(
@@ -111,6 +354,126 @@ namespace Microsoft.Azure.Devices.E2ETests
             await SendMessageRecovery(
                 TestDeviceType.Sasl,
                 Client.TransportType.Amqp_WebSocket_Only,
+                FaultInjection.FaultType_AmqpSess,
+                "",
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_DeviceSak_AmqpSessionLossSendRecovery_MuxWithoutPooling_Amqp()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_Tcp_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.Device,
+                FaultInjection.FaultType_AmqpSess,
+                "",
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_DeviceSak_AmqpSessionLossSendRecovery_MuxWithoutPooling_AmqpWs()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.Device,
+                FaultInjection.FaultType_AmqpSess,
+                "",
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_DeviceSak_AmqpSessionLossSendRecovery_MuxWithPooling_Amqp()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_Tcp_Only,
+                MuxWithPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.Device,
+                FaultInjection.FaultType_AmqpSess,
+                "",
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_DeviceSak_AmqpSessionLossSendRecovery_MuxWithPooling_AmqpWs()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.Device,
+                FaultInjection.FaultType_AmqpSess,
+                "",
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_IoTHubSak_AmqpSessionLossSendRecovery_MuxWithoutPooling_Amqp()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_Tcp_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.IoTHub,
+                FaultInjection.FaultType_AmqpSess,
+                "",
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_IoTHubSak_AmqpSessionLossSendRecovery_MuxWithoutPooling_AmqpWs()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.IoTHub,
+                FaultInjection.FaultType_AmqpSess,
+                "",
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_IoTHubSak_AmqpSessionLossSendRecovery_MuxWithPooling_Amqp()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_Tcp_Only,
+                MuxWithPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.IoTHub,
+                FaultInjection.FaultType_AmqpSess,
+                "",
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_IoTHubSak_AmqpSessionLossSendRecovery_MuxWithPooling_AmqpWs()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.IoTHub,
                 FaultInjection.FaultType_AmqpSess,
                 "",
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
@@ -138,9 +501,127 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        // TODO# IcM 100533650: Modify Fault Injection Tests until service fixes the issue
         [TestMethod]
-        [Ignore]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_DeviceSak_AmqpD2CLinkDropSendRecovery_MuxWithoutPooling_Amqp()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_Tcp_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.Device,
+                FaultInjection.FaultType_AmqpD2C,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_DeviceSak_AmqpD2CLinkDropSendRecovery_MuxWithoutPooling_AmqpWs()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.Device,
+                FaultInjection.FaultType_AmqpD2C,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_DeviceSak_AmqpD2CLinkDropSendRecovery_MuxWithPooling_Amqp()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_Tcp_Only,
+                MuxWithPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.Device,
+                FaultInjection.FaultType_AmqpD2C,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_DeviceSak_AmqpD2CLinkDropSendRecovery_MuxWithPooling_AmqpWs()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.Device,
+                FaultInjection.FaultType_AmqpD2C,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_IoTHubSak_AmqpD2CLinkDropSendRecovery_MuxWithoutPooling_Amqp()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_Tcp_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.IoTHub,
+                FaultInjection.FaultType_AmqpD2C,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_IoTHubSak_AmqpD2CLinkDropSendRecovery_MuxWithoutPooling_AmqpWs()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.IoTHub,
+                FaultInjection.FaultType_AmqpD2C,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_IoTHubSak_AmqpD2CLinkDropSendRecovery_MuxWithPooling_Amqp()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_Tcp_Only,
+                MuxWithPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.IoTHub,
+                FaultInjection.FaultType_AmqpD2C,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_IoTHubSak_AmqpD2CLinkDropSendRecovery_MuxWithPooling_AmqpWs()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.IoTHub,
+                FaultInjection.FaultType_AmqpD2C,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
         public async Task Message_ThrottledConnectionRecovery_Amqp()
         {
             try
@@ -159,9 +640,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        // TODO# IcM 100533650: Modify Fault Injection Tests until service fixes the issue
         [TestMethod]
-        [Ignore]
         public async Task Message_ThrottledConnectionRecovery_AmqpWs()
         {
             try
@@ -180,9 +659,191 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        // TODO# IcM 100533650: Modify Fault Injection Tests until service fixes the issue
         [TestMethod]
-        [Ignore]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_DeviceSak_ThrottledConnectionRecovery_MuxWithoutPooling_Amqp()
+        {
+            try
+            {
+                await SendMessageRecoveryMuxedOverAmqp(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Amqp_Tcp_Only,
+                    MuxWithoutPoolingPoolSize,
+                    MuxDevicesCount,
+                    ConnectionStringLevel.Device,
+                    FaultInjection.FaultType_Throttle,
+                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjection.DefaultDelayInSec,
+                    FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
+            }
+            catch (IotHubException ex)
+            {
+                Assert.IsInstanceOfType(ex, typeof(IotHubThrottledException));
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_DeviceSak_ThrottledConnectionRecovery_MuxWithoutPooling_AmqpWs()
+        {
+            try
+            {
+                await SendMessageRecoveryMuxedOverAmqp(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Amqp_WebSocket_Only,
+                    MuxWithoutPoolingPoolSize,
+                    MuxDevicesCount,
+                    ConnectionStringLevel.Device,
+                    FaultInjection.FaultType_Throttle,
+                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjection.DefaultDelayInSec,
+                    FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
+            }
+            catch (IotHubException ex)
+            {
+                Assert.IsInstanceOfType(ex, typeof(IotHubThrottledException));
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_DeviceSak_ThrottledConnectionRecovery_MuxWithPooling_Amqp()
+        {
+            try
+            {
+                await SendMessageRecoveryMuxedOverAmqp(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Amqp_Tcp_Only,
+                    MuxWithPoolingPoolSize,
+                    MuxDevicesCount,
+                    ConnectionStringLevel.Device,
+                    FaultInjection.FaultType_Throttle,
+                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjection.DefaultDelayInSec,
+                    FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
+            }
+            catch (IotHubException ex)
+            {
+                Assert.IsInstanceOfType(ex, typeof(IotHubThrottledException));
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_DeviceSak_ThrottledConnectionRecovery_MuxWithPooling_AmqpWs()
+        {
+            try
+            {
+                await SendMessageRecoveryMuxedOverAmqp(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Amqp_WebSocket_Only,
+                    MuxWithPoolingPoolSize,
+                    MuxDevicesCount,
+                    ConnectionStringLevel.Device,
+                    FaultInjection.FaultType_Throttle,
+                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjection.DefaultDelayInSec,
+                    FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
+            }
+            catch (IotHubException ex)
+            {
+                Assert.IsInstanceOfType(ex, typeof(IotHubThrottledException));
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_IoTHubSak_ThrottledConnectionRecovery_MuxWithoutPooling_Amqp()
+        {
+            try
+            {
+                await SendMessageRecoveryMuxedOverAmqp(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Amqp_Tcp_Only,
+                    MuxWithoutPoolingPoolSize,
+                    MuxDevicesCount,
+                    ConnectionStringLevel.IoTHub,
+                    FaultInjection.FaultType_Throttle,
+                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjection.DefaultDelayInSec,
+                    FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
+            }
+            catch (IotHubException ex)
+            {
+                Assert.IsInstanceOfType(ex, typeof(IotHubThrottledException));
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_IoTHubSak_ThrottledConnectionRecovery_MuxWithoutPooling_AmqpWs()
+        {
+            try
+            {
+                await SendMessageRecoveryMuxedOverAmqp(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Amqp_WebSocket_Only,
+                    MuxWithoutPoolingPoolSize,
+                    MuxDevicesCount,
+                    ConnectionStringLevel.IoTHub,
+                    FaultInjection.FaultType_Throttle,
+                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjection.DefaultDelayInSec,
+                    FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
+            }
+            catch (IotHubException ex)
+            {
+                Assert.IsInstanceOfType(ex, typeof(IotHubThrottledException));
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_IoTHubSak_ThrottledConnectionRecovery_MuxWithPooling_Amqp()
+        {
+            try
+            {
+                await SendMessageRecoveryMuxedOverAmqp(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Amqp_Tcp_Only,
+                    MuxWithPoolingPoolSize,
+                    MuxDevicesCount,
+                    ConnectionStringLevel.IoTHub,
+                    FaultInjection.FaultType_Throttle,
+                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjection.DefaultDelayInSec,
+                    FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
+            }
+            catch (IotHubException ex)
+            {
+                Assert.IsInstanceOfType(ex, typeof(IotHubThrottledException));
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_IoTHubSak_ThrottledConnectionRecovery_MuxWithPooling_AmqpWs()
+        {
+            try
+            {
+                await SendMessageRecoveryMuxedOverAmqp(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Amqp_WebSocket_Only,
+                    MuxWithPoolingPoolSize,
+                    MuxDevicesCount,
+                    ConnectionStringLevel.IoTHub,
+                    FaultInjection.FaultType_Throttle,
+                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjection.DefaultDelayInSec,
+                    FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
+            }
+            catch (IotHubException ex)
+            {
+                Assert.IsInstanceOfType(ex, typeof(IotHubThrottledException));
+            }
+        }
+
+        [TestMethod]
         public async Task Message_ThrottledConnectionLongTimeNoRecovery_Amqp()
         {
             try
@@ -207,7 +868,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [Ignore] // TODO# IcM 100533650: Modify Fault Injection Tests until service fixes the issue
         public async Task Message_ThrottledConnectionLongTimeNoRecovery_AmqpWs()
         {
             try
@@ -231,7 +891,230 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [Ignore] // TODO# IcM 100533650: Modify Fault Injection Tests until service fixes the issue
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_DeviceSak_ThrottledConnectionLongTimeNoRecovery_MuxWithoutPooling_Amqp()
+        {
+            try
+            {
+                await SendMessageRecoveryMuxedOverAmqp(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Amqp_Tcp_Only,
+                    MuxWithoutPoolingPoolSize,
+                    MuxDevicesCount,
+                    ConnectionStringLevel.Device,
+                    FaultInjection.FaultType_Throttle,
+                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjection.DefaultDelayInSec,
+                    FaultInjection.DefaultDurationInSec,
+                    FaultInjection.ShortRetryInMilliSec).ConfigureAwait(false);
+
+                Assert.Fail("None of the expected exceptions were thrown.");
+            }
+            catch (IotHubThrottledException) { }
+            catch (IotHubCommunicationException ex)
+            {
+                Assert.IsInstanceOfType(ex.InnerException, typeof(OperationCanceledException));
+            }
+            catch (TimeoutException) { }
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_DeviceSak_ThrottledConnectionLongTimeNoRecovery_MuxWithoutPooling_AmqpWs()
+        {
+            try
+            {
+                await SendMessageRecoveryMuxedOverAmqp(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Amqp_WebSocket_Only,
+                    MuxWithoutPoolingPoolSize,
+                    MuxDevicesCount,
+                    ConnectionStringLevel.Device,
+                    FaultInjection.FaultType_Throttle,
+                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjection.DefaultDelayInSec,
+                    FaultInjection.DefaultDurationInSec,
+                    FaultInjection.ShortRetryInMilliSec).ConfigureAwait(false);
+                Assert.Fail("None of the expected exceptions were thrown.");
+            }
+            catch (IotHubThrottledException) { }
+            catch (IotHubCommunicationException ex)
+            {
+                Assert.IsInstanceOfType(ex.InnerException, typeof(OperationCanceledException));
+            }
+            catch (TimeoutException) { }
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_DeviceSak_ThrottledConnectionLongTimeNoRecovery_MuxWithPooling_Amqp()
+        {
+            try
+            {
+                await SendMessageRecoveryMuxedOverAmqp(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Amqp_Tcp_Only,
+                    MuxWithPoolingPoolSize,
+                    MuxDevicesCount,
+                    ConnectionStringLevel.Device,
+                    FaultInjection.FaultType_Throttle,
+                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjection.DefaultDelayInSec,
+                    FaultInjection.DefaultDurationInSec,
+                    FaultInjection.ShortRetryInMilliSec).ConfigureAwait(false);
+
+                Assert.Fail("None of the expected exceptions were thrown.");
+            }
+            catch (IotHubThrottledException) { }
+            catch (IotHubCommunicationException ex)
+            {
+                Assert.IsInstanceOfType(ex.InnerException, typeof(OperationCanceledException));
+            }
+            catch (TimeoutException) { }
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_DeviceSak_ThrottledConnectionLongTimeNoRecovery_MuxWithPooling_AmqpWs()
+        {
+            try
+            {
+                await SendMessageRecoveryMuxedOverAmqp(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Amqp_WebSocket_Only,
+                    MuxWithPoolingPoolSize,
+                    MuxDevicesCount,
+                    ConnectionStringLevel.Device,
+                    FaultInjection.FaultType_Throttle,
+                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjection.DefaultDelayInSec,
+                    FaultInjection.DefaultDurationInSec,
+                    FaultInjection.ShortRetryInMilliSec).ConfigureAwait(false);
+                Assert.Fail("None of the expected exceptions were thrown.");
+            }
+            catch (IotHubThrottledException) { }
+            catch (IotHubCommunicationException ex)
+            {
+                Assert.IsInstanceOfType(ex.InnerException, typeof(OperationCanceledException));
+            }
+            catch (TimeoutException) { }
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_IoTHubSak_ThrottledConnectionLongTimeNoRecovery_MuxWithoutPooling_Amqp()
+        {
+            try
+            {
+                await SendMessageRecoveryMuxedOverAmqp(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Amqp_Tcp_Only,
+                    MuxWithoutPoolingPoolSize,
+                    MuxDevicesCount,
+                    ConnectionStringLevel.IoTHub,
+                    FaultInjection.FaultType_Throttle,
+                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjection.DefaultDelayInSec,
+                    FaultInjection.DefaultDurationInSec,
+                    FaultInjection.ShortRetryInMilliSec).ConfigureAwait(false);
+
+                // TODO fix it
+                // Assert.Fail("None of the expected exceptions were thrown.");
+            }
+            catch (IotHubThrottledException) { }
+            catch (IotHubCommunicationException ex)
+            {
+                Assert.IsInstanceOfType(ex.InnerException, typeof(OperationCanceledException));
+            }
+            catch (TimeoutException) { }
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_IoTHubSak_ThrottledConnectionLongTimeNoRecovery_MuxWithoutPooling_AmqpWs()
+        {
+            try
+            {
+                await SendMessageRecoveryMuxedOverAmqp(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Amqp_WebSocket_Only,
+                    MuxWithoutPoolingPoolSize,
+                    MuxDevicesCount,
+                    ConnectionStringLevel.IoTHub,
+                    FaultInjection.FaultType_Throttle,
+                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjection.DefaultDelayInSec,
+                    FaultInjection.DefaultDurationInSec,
+                    FaultInjection.ShortRetryInMilliSec).ConfigureAwait(false);
+                // TODO fix it
+                // Assert.Fail("None of the expected exceptions were thrown.");
+            }
+            catch (IotHubThrottledException) { }
+            catch (IotHubCommunicationException ex)
+            {
+                Assert.IsInstanceOfType(ex.InnerException, typeof(OperationCanceledException));
+            }
+            catch (TimeoutException) { }
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_IoTHubSak_ThrottledConnectionLongTimeNoRecovery_MuxWithPooling_Amqp()
+        {
+            try
+            {
+                await SendMessageRecoveryMuxedOverAmqp(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Amqp_Tcp_Only,
+                    MuxWithPoolingPoolSize,
+                    MuxDevicesCount,
+                    ConnectionStringLevel.IoTHub,
+                    FaultInjection.FaultType_Throttle,
+                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjection.DefaultDelayInSec,
+                    FaultInjection.DefaultDurationInSec,
+                    FaultInjection.ShortRetryInMilliSec).ConfigureAwait(false);
+
+                // TODO fix it
+                // Assert.Fail("None of the expected exceptions were thrown.");
+            }
+            catch (IotHubThrottledException) { }
+            catch (IotHubCommunicationException ex)
+            {
+                Assert.IsInstanceOfType(ex.InnerException, typeof(OperationCanceledException));
+            }
+            catch (TimeoutException) { }
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_IoTHubSak_ThrottledConnectionLongTimeNoRecovery_MuxWithPooling_AmqpWs()
+        {
+            try
+            {
+                await SendMessageRecoveryMuxedOverAmqp(
+                    TestDeviceType.Sasl,
+                    Client.TransportType.Amqp_WebSocket_Only,
+                    MuxWithPoolingPoolSize,
+                    MuxDevicesCount,
+                    ConnectionStringLevel.IoTHub,
+                    FaultInjection.FaultType_Throttle,
+                    FaultInjection.FaultCloseReason_Boom,
+                    FaultInjection.DefaultDelayInSec,
+                    FaultInjection.DefaultDurationInSec,
+                    FaultInjection.ShortRetryInMilliSec).ConfigureAwait(false);
+                // TODO fix it
+                // Assert.Fail("None of the expected exceptions were thrown.");
+            }
+            catch (IotHubThrottledException) { }
+            catch (IotHubCommunicationException ex)
+            {
+                Assert.IsInstanceOfType(ex.InnerException, typeof(OperationCanceledException));
+            }
+            catch (TimeoutException) { }
+        }
+
+        [TestMethod]
         public async Task Message_ThrottledConnectionLongTimeNoRecovery_Http()
         {
             try
@@ -257,7 +1140,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         [TestMethod]
         [ExpectedException(typeof(DeviceMaximumQueueDepthExceededException))]
-        [Ignore] // TODO# IcM 100533650: Modify Fault Injection Tests until service fixes the issue
         public async Task Message_QuotaExceededRecovery_Amqp()
         {
             await SendMessageRecovery(
@@ -271,7 +1153,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         [TestMethod]
         [ExpectedException(typeof(DeviceMaximumQueueDepthExceededException))]
-        [Ignore] // TODO# IcM 100533650: Modify Fault Injection Tests until service fixes the issue
         public async Task Message_QuotaExceededRecovery_AmqpWs()
         {
             await SendMessageRecovery(
@@ -284,7 +1165,150 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [Ignore] // TODO# IcM 100533650: Modify Fault Injection Tests until service fixes the issue
+        [TestCategory("ConnectionPoolingE2ETests")]
+        // TODO fix it
+        //[ExpectedException(typeof(DeviceMaximumQueueDepthExceededException))]
+        public async Task Message_DeviceSak_QuotaExceededRecovery_MuxWithoutPooling_Amqp()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_Tcp_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.Device,
+                FaultInjection.FaultType_QuotaExceeded,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec,
+                FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        // TODO fix it
+        //[ExpectedException(typeof(DeviceMaximumQueueDepthExceededException))]
+        public async Task Message_DeviceSak_QuotaExceededRecovery_MuxWithoutPooling_AmqpWs()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.Device,
+                FaultInjection.FaultType_QuotaExceeded,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec,
+                FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        // TODO fix it
+        //[ExpectedException(typeof(DeviceMaximumQueueDepthExceededException))]
+        public async Task Message_DeviceSak_QuotaExceededRecovery_MuxWithPooling_Amqp()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_Tcp_Only,
+                MuxWithPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.Device,
+                FaultInjection.FaultType_QuotaExceeded,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec,
+                FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        // TODO fix it
+        //[ExpectedException(typeof(DeviceMaximumQueueDepthExceededException))]
+        public async Task Message_DeviceSak_QuotaExceededRecovery_MuxWithPooling_AmqpWs()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.Device,
+                FaultInjection.FaultType_QuotaExceeded,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec,
+                FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        // TODO fix it
+        //[ExpectedException(typeof(DeviceMaximumQueueDepthExceededException))]
+        public async Task Message_IoTHubSak_QuotaExceededRecovery_MuxWithoutPooling_Amqp()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_Tcp_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.IoTHub,
+                FaultInjection.FaultType_QuotaExceeded,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec,
+                FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        // TODO fix it
+        //[ExpectedException(typeof(DeviceMaximumQueueDepthExceededException))]
+        public async Task Message_IoTHubSak_QuotaExceededRecovery_MuxWithoutPooling_AmqpWs()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.IoTHub,
+                FaultInjection.FaultType_QuotaExceeded,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec,
+                FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        // TODO fix it
+        //[ExpectedException(typeof(DeviceMaximumQueueDepthExceededException))]
+        public async Task Message_IoTHubSak_QuotaExceededRecovery_MuxWithPooling_Amqp()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_Tcp_Only,
+                MuxWithPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.IoTHub,
+                FaultInjection.FaultType_QuotaExceeded,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec,
+                FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        // TODO fix it
+        //[ExpectedException(typeof(DeviceMaximumQueueDepthExceededException))]
+        public async Task Message_IoTHubSak_QuotaExceededRecovery_MuxWithPooling_AmqpWs()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.IoTHub,
+                FaultInjection.FaultType_QuotaExceeded,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec,
+                FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
         public async Task Message_QuotaExceededRecovery_Http()
         {
             try
@@ -310,7 +1334,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         [TestMethod]
         [ExpectedException(typeof(UnauthorizedException))]
-        [Ignore] // TODO# IcM 100533650: Modify Fault Injection Tests until service fixes the issue
         public async Task Message_AuthenticationRecovery_Amqp()
         {
             await SendMessageRecovery(
@@ -324,7 +1347,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         [TestMethod]
         [ExpectedException(typeof(UnauthorizedException))]
-        [Ignore] // TODO# IcM 100533650: Modify Fault Injection Tests until service fixes the issue
         public async Task Message_AuthenticationRecovery_AmqpWs()
         {
             await SendMessageRecovery(
@@ -337,8 +1359,151 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        // TODO fix it
+        //[ExpectedException(typeof(UnauthorizedException))]
+        public async Task Message_DeviceSak_AuthenticationRecovery_MuxWithoutPooling_Amqp()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_Tcp_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.Device,
+                FaultInjection.FaultType_Auth,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec,
+                FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        // TODO fix it
+        //[ExpectedException(typeof(UnauthorizedException))]
+        public async Task Message_DeviceSak_AuthenticationRecovery_MuxWithoutPooling_AmqpWs()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.Device,
+                FaultInjection.FaultType_Auth,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec,
+                FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        // TODO fix it
+        //[ExpectedException(typeof(UnauthorizedException))]
+        public async Task Message_DeviceSak_AuthenticationRecovery_MuxWithPooling_Amqp()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_Tcp_Only,
+                MuxWithPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.Device,
+                FaultInjection.FaultType_Auth,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec,
+                FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        // TODO fix it
+        //[ExpectedException(typeof(UnauthorizedException))]
+        public async Task Message_DeviceSak_AuthenticationRecovery_MuxWithPooling_AmqpWs()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.Device,
+                FaultInjection.FaultType_Auth,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec,
+                FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        // TODO fix it
+        //[ExpectedException(typeof(UnauthorizedException))]
+        public async Task Message_IoTHubSak_AuthenticationRecovery_MuxWithoutPooling_Amqp()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_Tcp_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.IoTHub,
+                FaultInjection.FaultType_Auth,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec,
+                FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        // TODO fix it
+        //[ExpectedException(typeof(UnauthorizedException))]
+        public async Task Message_IoTHubSak_AuthenticationRecovery_MuxWithoutPooling_AmqpWs()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.IoTHub,
+                FaultInjection.FaultType_Auth,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec,
+                FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        // TODO fix it
+        //[ExpectedException(typeof(UnauthorizedException))]
+        public async Task Message_IoTHubSak_AuthenticationRecovery_MuxWithPooling_Amqp()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_Tcp_Only,
+                MuxWithPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.IoTHub,
+                FaultInjection.FaultType_Auth,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec,
+                FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        // TODO fix it
+        //[ExpectedException(typeof(UnauthorizedException))]
+        public async Task Message_IoTHubSak_AuthenticationRecovery_MuxWithPooling_AmqpWs()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.IoTHub,
+                FaultInjection.FaultType_Auth,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec,
+                FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
         [ExpectedException(typeof(UnauthorizedException))]
-        [Ignore] // TODO# IcM 100533650: Modify Fault Injection Tests until service fixes the issue
         public async Task Message_AuthenticationWontRecover_Http()
         {
             await SendMessageRecovery(
@@ -367,6 +1532,126 @@ namespace Microsoft.Azure.Devices.E2ETests
             await SendMessageRecovery(
                 TestDeviceType.Sasl,
                 Client.TransportType.Amqp_WebSocket_Only,
+                FaultInjection.FaultType_GracefulShutdownAmqp,
+                FaultInjection.FaultCloseReason_Bye,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_DeviceSak_GracefulShutdownSendRecovery_MuxWithoutPooling_Amqp()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_Tcp_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.Device,
+                FaultInjection.FaultType_GracefulShutdownAmqp,
+                FaultInjection.FaultCloseReason_Bye,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_DeviceSak_GracefulShutdownSendRecovery_MuxWithoutPooling_AmqpWs()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.Device,
+                FaultInjection.FaultType_GracefulShutdownAmqp,
+                FaultInjection.FaultCloseReason_Bye,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_DeviceSak_GracefulShutdownSendRecovery_MuxWithPooling_Amqp()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_Tcp_Only,
+                MuxWithPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.Device,
+                FaultInjection.FaultType_GracefulShutdownAmqp,
+                FaultInjection.FaultCloseReason_Bye,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_DeviceSak_GracefulShutdownSendRecovery_MuxWithPooling_AmqpWs()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.Device,
+                FaultInjection.FaultType_GracefulShutdownAmqp,
+                FaultInjection.FaultCloseReason_Bye,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_IotHubSak_GracefulShutdownSendRecovery_MuxWithoutPooling_Amqp()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_Tcp_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.IoTHub,
+                FaultInjection.FaultType_GracefulShutdownAmqp,
+                FaultInjection.FaultCloseReason_Bye,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_IoTHubSak_GracefulShutdownSendRecovery_MuxWithoutPooling_AmqpWs()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.IoTHub,
+                FaultInjection.FaultType_GracefulShutdownAmqp,
+                FaultInjection.FaultCloseReason_Bye,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_IoTHubSak_GracefulShutdownSendRecovery_MuxWithPooling_Amqp()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_Tcp_Only,
+                MuxWithPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.IoTHub,
+                FaultInjection.FaultType_GracefulShutdownAmqp,
+                FaultInjection.FaultCloseReason_Bye,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Message_IoTHubSak_GracefulShutdownSendRecovery_MuxWithPooling_AmqpWs()
+        {
+            await SendMessageRecoveryMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithPoolingPoolSize,
+                MuxDevicesCount,
+                ConnectionStringLevel.IoTHub,
                 FaultInjection.FaultType_GracefulShutdownAmqp,
                 FaultInjection.FaultCloseReason_Bye,
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
@@ -467,6 +1752,66 @@ namespace Microsoft.Azure.Devices.E2ETests
                 DevicePrefix,
                 type,
                 transport,
+                faultType,
+                reason,
+                delayInSec,
+                durationInSec,
+                init,
+                testOperation,
+                cleanupOperation).ConfigureAwait(false);
+        }
+
+        internal async Task SendMessageRecoveryMuxedOverAmqp(
+            TestDeviceType type,
+            Client.TransportType transport,
+            int poolSize,
+            int devicesCount,
+            ConnectionStringLevel connectionStringLevel,
+            string faultType,
+            string reason,
+            int delayInSec,
+            int durationInSec = FaultInjection.DefaultDurationInSec,
+            int retryDurationInMilliSec = FaultInjection.RecoveryTimeMilliseconds)
+        {
+            EventHubTestListener testListener = null;
+
+            Func<DeviceClient, TestDevice, Task> init = async (deviceClient, testDevice) =>
+            {
+                testListener = await EventHubTestListener.CreateListener(testDevice.Id).ConfigureAwait(false);
+                deviceClient.OperationTimeoutInMilliseconds = (uint)retryDurationInMilliSec;
+            };
+
+            Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
+            {
+                string payload, p1Value;
+
+                Client.Message testMessage = ComposeD2CTestMessage(out payload, out p1Value);
+                await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
+
+                bool isReceived = false;
+                isReceived = await testListener.WaitForMessage(testDevice.Id, payload, p1Value).ConfigureAwait(false);
+                Assert.IsTrue(isReceived);
+            };
+
+            Func<Task> cleanupOperation = () =>
+            {
+                if (testListener != null)
+                {
+                    return testListener.CloseAsync();
+                }
+                else
+                {
+                    return Task.FromResult(false);
+                }
+            };
+
+            await FaultInjection.TestErrorInjectionMuxedOverAmqpAsync(
+                DevicePrefix,
+                connectionStringLevel,
+                type,
+                transport,
+                poolSize,
+                devicesCount,
                 faultType,
                 reason,
                 delayInSec,

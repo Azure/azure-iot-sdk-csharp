@@ -12,6 +12,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Client.Transport;
     using Microsoft.Azure.Devices.Client.Test.ConnectionString;
+    using Microsoft.Azure.Devices.Client.Transport.Amqp;
 
     [TestClass]
     [TestCategory("Unit")]

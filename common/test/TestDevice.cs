@@ -16,6 +16,12 @@ namespace Microsoft.Azure.Devices.E2ETests
         X509
     }
 
+    public enum ConnectionStringLevel
+    {
+        Device,
+        IoTHub
+    }
+
     public class TestDevice
     {
         private const int DelayAfterDeviceCreationSeconds = 5;
@@ -163,6 +169,32 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 deviceClient = DeviceClient.Create(IoTHubHostName, AuthenticationMethod, transport);
                 s_log.WriteLine($"{nameof(CreateDeviceClient)}: Created {nameof(DeviceClient)} from IAuthenticationMethod: {transport} ID={TestLogging.IdOf(deviceClient)}");
+            }
+
+            return deviceClient;
+        }
+
+        public DeviceClient CreateDeviceClient(ITransportSettings[] transportSettings, ConnectionStringLevel connectionStringLevel = ConnectionStringLevel.Device)
+        {
+            DeviceClient deviceClient = null;
+
+            if (_authenticationMethod == null)
+            {
+                if (connectionStringLevel == ConnectionStringLevel.Device)
+                {
+                    deviceClient = DeviceClient.CreateFromConnectionString(ConnectionString, transportSettings);
+                    s_log.WriteLine($"{nameof(CreateDeviceClient)}: Created {nameof(DeviceClient)} from device connection string: {transportSettings} ID={TestLogging.IdOf(deviceClient)}");
+                }
+                else
+                {
+                    deviceClient = DeviceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString, _device.Id, transportSettings);
+                    s_log.WriteLine($"{nameof(CreateDeviceClient)}: Created {nameof(DeviceClient)} from iothub connection string: {transportSettings} ID={TestLogging.IdOf(deviceClient)}");
+                }
+            }
+            else
+            {
+                deviceClient = DeviceClient.Create(IoTHubHostName, AuthenticationMethod, transportSettings);
+                s_log.WriteLine($"{nameof(CreateDeviceClient)}: Created {nameof(DeviceClient)} from IAuthenticationMethod: {transportSettings} ID={TestLogging.IdOf(deviceClient)}");
             }
 
             return deviceClient;
