@@ -3,8 +3,7 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "randomNumber": {
-            "comments": "Fill this in, then you can deploy the script w/o making further changes.", 
-            "defaultValue": "1357",
+            "defaultValue": "[substring(uniqueString(utcNow()),0,8)]",
             "type": "string", 
             "metadata": {
                 "description": "Random text or numbers to make the assets have a unique name."
