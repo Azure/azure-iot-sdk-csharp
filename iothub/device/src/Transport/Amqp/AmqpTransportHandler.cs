@@ -140,7 +140,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        public override async Task SendEventsAsync(IEnumerable<Message> messages, CancellationToken cancellationToken)
+        public override async Task SendEventAsync(IEnumerable<Message> messages, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled) Logging.Enter(this, messages, cancellationToken, $"{nameof(SendEventAsync)}");
 
