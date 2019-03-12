@@ -226,9 +226,21 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        internal void OnEventsReceived(AmqpMessage message)
+        public async Task<Outcome> SendEventAsync(AmqpMessage message, TimeSpan timeout)
         {
-            throw new NotImplementedException();
+            if (Logging.IsEnabled) Logging.Enter(this, message, timeout, $"{nameof(SendEventAsync)}");
+            Outcome outcome = await SendMessageAsync(message, timeout).ConfigureAwait(false);
+            if (Logging.IsEnabled) Logging.Exit(this, message, timeout, $"{nameof(SendEventAsync)}");
+            return outcome;
+        }
+
+        internal void OnEventsReceived(AmqpMessage amqpMessage)
+        {
+            Message message = new Message(amqpMessage)
+            {
+                LockToken = new Guid(amqpMessage.DeliveryTag.Array).ToString()
+            };
+            EventListener?.Invoke(message.InputName, message);
         }
         #endregion
 

@@ -124,7 +124,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                Outcome outcome = await AmqpUnit.SendMessageAsync(message.ToAmqpMessage(), OperationTimeout).ConfigureAwait(false);
+                Outcome outcome = await AmqpUnit.SendEventAsync(message.ToAmqpMessage(), OperationTimeout).ConfigureAwait(false);
 
                 if (outcome != null)
                 {
@@ -140,7 +140,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        public override async Task SendEventAsync(IEnumerable<Message> messages, CancellationToken cancellationToken)
+        public override async Task SendEventsAsync(IEnumerable<Message> messages, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled) Logging.Enter(this, messages, cancellationToken, $"{nameof(SendEventAsync)}");
 
@@ -167,7 +167,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 using (AmqpMessage amqpMessage = AmqpMessage.Create(messageList))
                 {
                     amqpMessage.MessageFormat = AmqpConstants.AmqpBatchedMessageFormat;
-                    outcome = await AmqpUnit.SendMessageAsync(amqpMessage, OperationTimeout).ConfigureAwait(false);
+                    outcome = await AmqpUnit.SendEventAsync(amqpMessage, OperationTimeout).ConfigureAwait(false);
                 }
 
                 if (outcome != null)

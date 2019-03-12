@@ -28,6 +28,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         #region Event
         Task EnableEventReceiveAsync(TimeSpan timeout);
+
+        Task<Outcome> SendEventAsync(AmqpMessage message, TimeSpan timeout);
         #endregion
 
         #region Method
