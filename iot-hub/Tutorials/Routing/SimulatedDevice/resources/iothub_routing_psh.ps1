@@ -1,20 +1,14 @@
-﻿# Set your subscription Id and random number here,
-#   then you can run the rest of the script without changes.
-
-# Put your subscription ID here.
+﻿# This retrieves the subscription id of the account 
+#   in which you're logged in. 
 # This is used to set up the routing rules.
-# It's here at the top so you can easily find it. 
 subscriptionID = "YOURSUBSCRIPTIONID"
 
 # Concatenate this number onto the resources that have to be globally unique.
-# You can also use $(Get-Random) but it gives long numbers.
-#     randomNum=$(Get-Random)
-$randomNum = 1357
+# You can set this to "" or to a specific value if you don't want it to be random.
+# This retrieves the first 6 digits of a random value.
+$randomValue = "$(Get-Random)".Substring(0,6)
 
 # Set the values for the resource names that don't have to be globally unique.
-# The resources that have to have unique names are named in the script below
-#   with a random number concatenated to the name so you can probably just
-#   run this script, and it will work with no conflicts.
 $location = "West US"
 $resourceGroup = "ContosoResources"
 $iotHubConsumerGroup = "ContosoConsumers"
@@ -24,8 +18,9 @@ $containerName = "contosoresults"
 #   for all resources for this tutorial.
 New-AzResourceGroup -Name $resourceGroup -Location $location
 
-# The IoT hub name must be globally unique, so add a random number to the end.
-$iotHubName = "ContosoTestHub" + $randomNum
+# The IoT hub name must be globally unique, 
+#   so add a random value to the end.
+$iotHubName = "ContosoTestHub" + $randomValue
 Write-Host "IoT hub name is " $iotHubName
 
 # Create the IoT hub.
@@ -41,8 +36,9 @@ Add-AzIotHubEventHubConsumerGroup -ResourceGroupName $resourceGroup `
   -EventHubConsumerGroupName $iotHubConsumerGroup `
   -EventHubEndpointName "events"
 
-# The storage account name must be globally unique, so add a random number to the end.
-$storageAccountName = "contosostorage" + $randomNum
+# The storage account name must be globally unique, 
+#   so add a random value to the end.
+$storageAccountName = "contosostorage" + $randomValue
 Write-Host "storage account name is " $storageAccountName
 
 # Create the storage account to be used as a routing destination.
@@ -62,8 +58,8 @@ New-AzStorageContainer -Name $containerName `
     -Context $storageAccount.Context
 
 # The Service Bus namespace must be globally unique,
-#   so add a random number to the end.
-$serviceBusNamespace = "ContosoSBNamespace" + $randomNum
+#   so add a random value to the end.
+$serviceBusNamespace = "ContosoSBNamespace" + $randomValue
 Write-Host "Service Bus namespace is " $serviceBusNamespace
 
 # Create the Service Bus namespace.
@@ -72,8 +68,8 @@ New-AzServiceBusNamespace -ResourceGroupName $resourceGroup `
     -Name $serviceBusNamespace 
 
 # The Service Bus queue name must be globally unique,
-#  so add a random number to the end.
-$serviceBusQueueName  = "ContosoSBQueue" + $randomNum
+#  so add a random value to the end.
+$serviceBusQueueName  = "ContosoSBQueue" + $randomValue
 Write-Host "Service Bus queue name is " $serviceBusQueueName 
 
 # Create the Service Bus queue to be used as a routing destination.
@@ -112,11 +108,6 @@ Add-AzIotHubRoute `
 
 ##### ROUTING FOR SERVICE BUS QUEUE ##### 
 
-$endpointName = "ContosoSBQueueEndpoint"
-$endpointType = "ServiceBusQueue"
-$routeName = "ContosoSBQueueRoute"
-$condition = 'level="critical"'
-
 # Create the authorization rule for the Service Bus queue.
 New-AzServiceBusAuthorizationRule `
   -ResourceGroupName $resourceGroup `
@@ -132,8 +123,12 @@ $sbqkey = Get-AzServiceBusKey `
     -Queue $servicebusQueueName `
     -Name "sbauthrule"
 
-# Set up the routing endpoint for the Service Bus queue.
-# Get the connection string from the key.
+$endpointName = "ContosoSBQueueEndpoint"
+$endpointType = "ServiceBusQueue"
+$routeName = "ContosoSBQueueRoute"
+$condition = 'level="critical"'
+    
+# Add the routing endpoint, using the connection string property from the key. 
 Add-AzIotHubRoutingEndpoint `
   -ResourceGroupName $resourceGroup `
   -Name $iotHubName `
@@ -143,7 +138,7 @@ Add-AzIotHubRoutingEndpoint `
   -EndpointSubscriptionId $subscriptionId `
   -ConnectionString $sbqkey.PrimaryConnectionString
 
-# Set up the route for the Service Bus queue endpoint.
+# Set up the message route for the Service Bus queue endpoint.
 Add-AzIotHubRoute `
    -ResourceGroupName $resourceGroup `
    -Name $iotHubName `
