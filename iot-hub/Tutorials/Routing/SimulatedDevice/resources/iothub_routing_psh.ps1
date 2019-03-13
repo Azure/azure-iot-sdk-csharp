@@ -1,6 +1,6 @@
 ﻿# This retrieves the subscription id of the current Azure account 
 # This is used to set up the routing rules.
-$subscriptionID = az account show --query id
+$subscriptionID = (Get-AzureRmContext).Subscription.Id
 
 # Concatenate this number onto the resources that have to be globally unique.
 # You can set this to "" or to a specific value if you don't want it to be random.
