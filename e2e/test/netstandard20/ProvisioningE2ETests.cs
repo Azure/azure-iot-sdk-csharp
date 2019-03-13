@@ -31,6 +31,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private const string InvalidIDScope = "0neFFFFFFFF";
         private const string InvalidGlobalAddress = "httpbin.org";
         private static string ProxyServerAddress = Configuration.IoTHub.ProxyServerAddress;
+        private readonly string IdPrefix = $"e2e-{nameof(ProvisioningE2ETests).ToLower()}-";
 
         private readonly VerboseTestLogging _verboseLog = VerboseTestLogging.GetInstance();
         private readonly TestLogging _log = TestLogging.GetInstance();
@@ -348,36 +349,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        public async Task ProvisioningDeviceClient_ReprovisioningGeolatencyWorks_Http_SymmetricKey_RegisterOk_Individual()
-        {
-            await ProvisioningDeviceClient_ReprovisioningFlow_Geolatency(Client.TransportType.Http1, AttestationType.SymmetricKey, EnrollmentType.Individual, false).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task ProvisioningDeviceClient_ReprovisioningGeolatencyWorks_Mqtt_SymmetricKey_RegisterOk_Individual()
-        {
-            await ProvisioningDeviceClient_ReprovisioningFlow_Geolatency(Client.TransportType.Mqtt_Tcp_Only, AttestationType.SymmetricKey, EnrollmentType.Individual, false).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task ProvisioningDeviceClient_ReprovisioningGeolatencyWorks_Amqp_SymmetricKey_RegisterOk_Individual()
-        {
-            await ProvisioningDeviceClient_ReprovisioningFlow_Geolatency(Client.TransportType.Amqp_Tcp_Only, AttestationType.SymmetricKey, EnrollmentType.Individual, false).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task ProvisioningDeviceClient_ReprovisioningGeolatencyWorks_AmqpWs_SymmetricKey_RegisterOk_Individual()
-        {
-            await ProvisioningDeviceClient_ReprovisioningFlow_Geolatency(Client.TransportType.Amqp_WebSocket_Only, AttestationType.SymmetricKey, EnrollmentType.Individual, false).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task ProvisioningDeviceClient_ReprovisioningGeolatencyWorks_MqttWs_SymmetricKey_RegisterOk_Individual()
-        {
-            await ProvisioningDeviceClient_ReprovisioningFlow_Geolatency(Client.TransportType.Http1, AttestationType.SymmetricKey, EnrollmentType.Individual, false).ConfigureAwait(false);
-        }
-
-        [TestMethod]
         public async Task ProvisioningDeviceClient_CustomAllocationPolicy_Http_SymmetricKey_RegisterOk_Individual()
         {
             await ProvisioningDeviceClient_CustomAllocationPolicy(Client.TransportType.Http1, AttestationType.SymmetricKey, EnrollmentType.Individual, false).ConfigureAwait(false);
@@ -492,36 +463,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        public async Task ProvisioningDeviceClient_ReprovisioningGeolatencyWorks_Http_SymmetricKey_RegisterOk_Group()
-        {
-            await ProvisioningDeviceClient_ReprovisioningFlow_Geolatency(Client.TransportType.Http1, AttestationType.SymmetricKey, EnrollmentType.Group, false).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task ProvisioningDeviceClient_ReprovisioningGeolatencyWorks_Mqtt_SymmetricKey_RegisterOk_Group()
-        {
-            await ProvisioningDeviceClient_ReprovisioningFlow_Geolatency(Client.TransportType.Mqtt_Tcp_Only, AttestationType.SymmetricKey, EnrollmentType.Group, false).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task ProvisioningDeviceClient_ReprovisioningGeolatencyWorks_Amqp_SymmetricKey_RegisterOk_Group()
-        {
-            await ProvisioningDeviceClient_ReprovisioningFlow_Geolatency(Client.TransportType.Amqp_Tcp_Only, AttestationType.SymmetricKey, EnrollmentType.Group, false).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task ProvisioningDeviceClient_ReprovisioningGeolatencyWorks_AmqpWs_SymmetricKey_RegisterOk_Group()
-        {
-            await ProvisioningDeviceClient_ReprovisioningFlow_Geolatency(Client.TransportType.Amqp_WebSocket_Only, AttestationType.SymmetricKey, EnrollmentType.Group, false).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task ProvisioningDeviceClient_ReprovisioningGeolatencyWorks_MqttWs_SymmetricKey_RegisterOk_Group()
-        {
-            await ProvisioningDeviceClient_ReprovisioningFlow_Geolatency(Client.TransportType.Http1, AttestationType.SymmetricKey, EnrollmentType.Group, false).ConfigureAwait(false);
-        }
-
-        [TestMethod]
         public async Task ProvisioningDeviceClient_CustomAllocationPolicy_Http_SymmetricKey_RegisterOk_Group()
         {
             await ProvisioningDeviceClient_CustomAllocationPolicy(Client.TransportType.Http1, AttestationType.SymmetricKey, EnrollmentType.Group, false).ConfigureAwait(false);
@@ -579,19 +520,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
 
             await ProvisioningDeviceClient_ProvisioningFlow_CustomAllocation_AllocateToHubWithLongestHostName(transportProtocol, attestationType, enrollmentType, setCustomProxy, iotHubsToProvisionTo, expectedDestinationHub, customServerProxy).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// This test flow tests that the Geolatency allocation policy provisions a device to the nearest hub. The device starts out
-        /// in a far away hub, but then the enrollment is updated to reflect a closer hub being linked to it, and the expectation is that
-        /// the device reprovisions over to the closer hub
-        /// </summary>
-        private async Task ProvisioningDeviceClient_ReprovisioningFlow_Geolatency(Client.TransportType transportProtocol, AttestationType attestationType, EnrollmentType enrollmentType, bool setCustomProxy, string customServerProxy = null)
-        {
-            var connectionString = IotHubConnectionStringBuilder.Create(Configuration.IoTHub.ConnectionString);
-            ICollection<string> iotHubsToStartAt = new List<string>() { Configuration.Provisioning.FarAwayIotHubHostName };
-            ICollection<string> iotHubsToReprovisionTo = new List<string>() { connectionString.HostName, Configuration.Provisioning.FarAwayIotHubHostName };
-            await ProvisioningDeviceClient_ReprovisioningFlow(transportProtocol, attestationType, enrollmentType, setCustomProxy, new ReprovisionPolicy { MigrateDeviceData = false, UpdateHubAssignment = true }, AllocationPolicy.GeoLatency, null, iotHubsToStartAt, iotHubsToReprovisionTo, customServerProxy).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -686,7 +614,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             ICollection<string> iothubs,
             string proxyServerAddress = null)
         {
-            string groupId = "some-valid-group-id-" + attestationTypeToString(attestationType) + "-" + Guid.NewGuid();
+            string groupId = IdPrefix + AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
             using (ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportType))
             using (SecurityProvider security = await CreateSecurityProviderFromName(attestationType, enrollmentType, groupId, reprovisionPolicy, allocationPolicy, customAllocationDefinition, iothubs).ConfigureAwait(false))
             {
@@ -742,7 +670,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             string proxyServerAddress = null)
         {
             ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService(ProxyServerAddress);
-            string groupId = "some-valid-group-id-" + attestationTypeToString(attestationType) + "-" + Guid.NewGuid();
+            string groupId = IdPrefix + AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
 
             bool twinOperationsAllowed = transportProtocol != Client.TransportType.Http1;
 
@@ -789,7 +717,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             string proxyServerAddress = null)
         {
             ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService(ProxyServerAddress);
-            string groupId = "some-valid-group-id-" + attestationTypeToString(attestationType) + "-" + Guid.NewGuid();
+            string groupId = IdPrefix + AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
 
             CustomAllocationDefinition customAllocationDefinition = new CustomAllocationDefinition() { WebhookUrl = Configuration.Provisioning.CustomAllocationPolicyWebhook, ApiVersion = "2018-11-01" };
 
@@ -1076,7 +1004,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 {
                     _log.WriteLine("DeviceClient updating desired properties.");
                     Twin twin = await iotClient.GetTwinAsync().ConfigureAwait(false);
-                    await iotClient.UpdateReportedPropertiesAsync(new TwinCollection("{someTwinProperty:\"someTwinPropertyValue\"}")).ConfigureAwait(false);
+                    await iotClient.UpdateReportedPropertiesAsync(new TwinCollection($"{{\"{new Guid()}\":\"{new Guid()}\"}}")).ConfigureAwait(false);
                 }
 
                 _log.WriteLine("DeviceClient CloseAsync.");
@@ -1093,7 +1021,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             switch (attestationType)
             {
                 case AttestationType.Tpm:
-                    string registrationId = attestationTypeToString(attestationType) + "-registration-id-" + Guid.NewGuid();
+                    string registrationId = AttestationTypeToString(attestationType) + "-registration-id-" + Guid.NewGuid();
                     var tpmSim = new SecurityProviderTpmSimulator(registrationId);
 
                     string base64Ek = Convert.ToBase64String(tpmSim.GetEndorsementKey());
@@ -1137,7 +1065,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                             EnrollmentGroup symmetricKeyEnrollmentGroup = await CreateEnrollmentGroup(provisioningServiceClient, AttestationType.SymmetricKey, groupId, reprovisionPolicy, allocationPolicy, customAllocationDefinition, iothubs).ConfigureAwait(false);
                             Assert.IsTrue(symmetricKeyEnrollmentGroup.Attestation is SymmetricKeyAttestation);
                             SymmetricKeyAttestation symmetricKeyAttestation = (SymmetricKeyAttestation)symmetricKeyEnrollmentGroup.Attestation;
-                            string registrationIdSymmetricKey = "someregistrationid-" + Guid.NewGuid();
+                            string registrationIdSymmetricKey = IdPrefix + Guid.NewGuid();
                             string primaryKeyEnrollmentGroup = symmetricKeyAttestation.PrimaryKey;
                             string secondaryKeyEnrollmentGroup = symmetricKeyAttestation.SecondaryKey;
 
