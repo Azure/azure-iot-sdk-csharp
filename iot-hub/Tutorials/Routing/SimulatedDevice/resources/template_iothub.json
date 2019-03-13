@@ -2,11 +2,11 @@
     "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "randomNumber": {
+        "randomValue": {
             "defaultValue": "[substring(uniqueString(utcNow()),0,8)]",
             "type": "string", 
             "metadata": {
-                "description": "Random text or numbers to make the assets have a unique name."
+                "description": "Random alphanumeric string to make the assets have a unique name."
             }
         },
         "subscriptionId": {
@@ -116,10 +116,10 @@
     },
     "variables": {
         "queueAuthorizationRuleResourceId": "[resourceId('Microsoft.ServiceBus/namespaces/queues/authorizationRules', variables('service_bus_namespace'), variables('service_bus_queue'), parameters('AuthRules_sb_queue'))]",
-        "iotHubName": "[concat(parameters('IotHubName_in'),parameters('randomNumber'))]",
-        "storageAccountName": "[concat(parameters('storageAccountName_in'),parameters('randomNumber'))]",
-        "service_bus_namespace": "[concat(parameters('service_bus_namespace_in'),parameters('randomNumber'))]",
-        "service_bus_queue": "[concat(parameters('service_bus_queue_in'),parameters('randomNumber'))]",
+        "iotHubName": "[concat(parameters('IotHubName_in'),parameters('randomValue'))]",
+        "storageAccountName": "[concat(parameters('storageAccountName_in'),parameters('randomValue'))]",
+        "service_bus_namespace": "[concat(parameters('service_bus_namespace_in'),parameters('randomValue'))]",
+        "service_bus_queue": "[concat(parameters('service_bus_queue_in'),parameters('randomValue'))]",
         "sbVersion": "2017-04-01"
     },
     "resources": [
