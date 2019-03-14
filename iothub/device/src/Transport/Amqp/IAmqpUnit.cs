@@ -9,6 +9,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
     {
         #region EventHandler
         event EventHandler OnUnitDisconnected;
+        void OnConnectionDisconnected();
         #endregion
 
         #region Usability

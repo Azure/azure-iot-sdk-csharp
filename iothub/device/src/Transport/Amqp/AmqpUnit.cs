@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         public AmqpUnit(
             DeviceIdentity deviceIdentity,
-            Func<DeviceIdentity, ILinkFactory, AmqpSessionSettings, TimeSpan, Task<AmqpSession>> amqpSessionCrreator,
+            Func<DeviceIdentity, ILinkFactory, AmqpSessionSettings, TimeSpan, Task<AmqpSession>> amqpSessionCreator,
             Func<DeviceIdentity, TimeSpan, Task<IAmqpAuthenticationRefresher>> amqpAuthenticationRefresherCreator,
             Func<MethodRequestInternal, Task> methodHandler, 
             Action<AmqpMessage> twinMessageListener, 
@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             MethodHandler = methodHandler;
             TwinMessageListener = twinMessageListener;
             EventListener = eventListener;
-            AmqpSessionCreator = amqpSessionCrreator;
+            AmqpSessionCreator = amqpSessionCreator;
             AmqpAuthenticationRefresherCreator = amqpAuthenticationRefresherCreator;
             Closed = false;
             AmqpSessionSettings = new AmqpSessionSettings()
@@ -457,6 +457,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         #endregion
 
         #region Connectivity Event
+        public void OnConnectionDisconnected()
+        {
+            OnSessionDisconnected(AmqpSession, EventArgs.Empty);
+        }
+
         private void OnSessionDisconnected(object o, EventArgs args)
         {
             if (Logging.IsEnabled) Logging.Enter(this, o, $"{nameof(OnSessionDisconnected)}");

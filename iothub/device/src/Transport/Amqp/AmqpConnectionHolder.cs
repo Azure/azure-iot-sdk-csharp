@@ -127,7 +127,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 }
                 else
                 {
-                    amqpConnection = AmqpConnection;
+                    if (amqpConnection.IsClosing())
+                    {
+                        throw new IotHubCommunicationException();
+                    }
+                    else
+                    {
+                        amqpConnection = AmqpConnection;
+                    }
                 }
             }
             catch (Exception) // when (!ex.IsFatal())
@@ -148,11 +155,17 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private void OnConnectionClosed(object o, EventArgs args)
         {
             if (Logging.IsEnabled) Logging.Enter(this, o, $"{nameof(OnConnectionClosed)}");
+            ICollection<IAmqpUnit> units = null;
             if (AmqpConnection != null && ReferenceEquals(AmqpConnection, o))
             {
                 AmqpAuthenticationRefresher?.StopLoop();
+                units = AmqpUnits.Values;
                 AmqpUnits.Clear();
                 OnConnectionDisconnected?.Invoke(this, EventArgs.Empty);
+            }
+            foreach(IAmqpUnit unit in units)
+            {
+                unit.OnConnectionDisconnected();
             }
             if (Logging.IsEnabled) Logging.Exit(this, o, $"{nameof(OnConnectionClosed)}");
         }
