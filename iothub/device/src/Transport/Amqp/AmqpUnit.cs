@@ -35,7 +35,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         public AmqpUnit(
             DeviceIdentity deviceIdentity,
-            Func<DeviceIdentity, ILinkFactory, AmqpSessionSettings, TimeSpan, Task<AmqpSession>> amqpSessionCrreator,
+            Func<DeviceIdentity, ILinkFactory, AmqpSessionSettings, TimeSpan, Task<AmqpSession>> amqpSessionCreator,
             Func<DeviceIdentity, TimeSpan, Task<IAmqpAuthenticationRefresher>> amqpAuthenticationRefresherCreator,
             Func<MethodRequestInternal, Task> methodHandler, 
             Action<AmqpMessage> twinMessageListener, 
@@ -46,7 +46,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             MethodHandler = methodHandler;
             TwinMessageListener = twinMessageListener;
             EventListener = eventListener;
-            AmqpSessionCreator = amqpSessionCrreator;
+            AmqpSessionCreator = amqpSessionCreator;
             AmqpAuthenticationRefresherCreator = amqpAuthenticationRefresherCreator;
             Closed = false;
             AmqpSessionSettings = new AmqpSessionSettings()
@@ -466,8 +466,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             Lock.Release();
             if (wasOpen)
             {
-                AmqpAuthenticationRefresher?.StopLoop();
                 OnUnitDisconnected?.Invoke(this, EventArgs.Empty);
+                Dispose(true);
             }
             if (Logging.IsEnabled) Logging.Exit(this, o, $"{nameof(OnSessionDisconnected)}");
         }
@@ -488,9 +488,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             Lock.Release();
             if (wasOpen)
             {
-                AmqpSession?.Abort();
-                AmqpAuthenticationRefresher?.StopLoop();
                 OnUnitDisconnected?.Invoke(this, EventArgs.Empty);
+                Dispose(true);
             }
             if (Logging.IsEnabled) Logging.Exit(this, o, $"{nameof(OnLinkDisconnected)}");
         }
@@ -552,33 +551,26 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             if (disposing)
             {
                 if (Logging.IsEnabled) Logging.Enter(this, disposing, $"{nameof(Dispose)}");
-                try
+                Task.Run(() =>
                 {
-                    MessageReceivingLink?.Abort();
-                    MethodReceivingLink?.Abort();
-                    TwinReceivingLink?.Abort();
-                    EventReceivingLink?.Abort();
-                    MessageSendingLink?.Abort();
-                    MethodSendingLink?.Abort();
-                    TwinSendingLink?.Abort();
-                    EventSendingLink?.Abort();
-                    AmqpSession?.Abort();
-                    AmqpAuthenticationRefresher?.StopLoop();
-                    MessageReceivingLink = null;
-                    MethodReceivingLink = null;
-                    TwinReceivingLink = null;
-                    EventReceivingLink = null;
-                    MessageSendingLink = null;
-                    MethodSendingLink = null;
-                    TwinSendingLink = null;
-                    EventSendingLink = null;
-                    AmqpSession = null;
-                    AmqpAuthenticationRefresher = null;
-                }
-                catch (Exception)
-                {
-                    if (Logging.IsEnabled) Logging.Info(this, disposing, "Discard any exception during disposing.");
-                }
+                    try
+                    {
+                        MessageReceivingLink?.Close();
+                        MethodReceivingLink?.Close();
+                        TwinReceivingLink?.Close();
+                        EventReceivingLink?.Close();
+                        MessageSendingLink?.Close();
+                        MethodSendingLink?.Close();
+                        TwinSendingLink?.Close();
+                        EventSendingLink?.Close();
+                        AmqpSession?.Close();
+                        AmqpAuthenticationRefresher?.StopLoop();
+                    }
+                    catch (Exception)
+                    {
+                        if (Logging.IsEnabled) Logging.Info(this, disposing, "Discard any exception during disposing.");
+                    }
+                });
                 if (Logging.IsEnabled) Logging.Exit(this, disposing, $"{nameof(Dispose)}");
                 Lock.Dispose();
             }
