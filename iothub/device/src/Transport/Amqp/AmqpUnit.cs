@@ -457,11 +457,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         #endregion
 
         #region Connectivity Event
-        public void OnConnectionDisconnected()
-        {
-            OnSessionDisconnected(AmqpSession, EventArgs.Empty);
-        }
-
         private void OnSessionDisconnected(object o, EventArgs args)
         {
             if (Logging.IsEnabled) Logging.Enter(this, o, $"{nameof(OnSessionDisconnected)}");
