@@ -60,6 +60,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 twinMessageListener, 
                 eventListener);
             amqpUnit.OnUnitDisconnected += (o, args) => RemoveDevice(deviceIdentity);
+            AmqpUnits.Remove(deviceIdentity);
             AmqpUnits.Add(deviceIdentity, amqpUnit);
             if (Logging.IsEnabled) Logging.Exit(this, deviceIdentity, $"{nameof(CreateAmqpUnit)}");
             return amqpUnit;
@@ -127,7 +128,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 }
                 else
                 {
-                    if (amqpConnection.IsClosing())
+                    if (AmqpConnection.IsClosing())
                     {
                         throw new IotHubCommunicationException();
                     }
