@@ -21,9 +21,9 @@ namespace Microsoft.Azure.Devices.E2ETests
     {
         private readonly string DevicePrefix = $"E2E_{nameof(MessageSendE2ETests)}_";
         private readonly string ModulePrefix = $"E2E_{nameof(MessageSendE2ETests)}_";
-        private readonly int MuxDevicesCount = 2;
+        private readonly int MuxDevicesCount = 4;
         private readonly int MuxWithoutPoolingPoolSize = 1;
-        private readonly int MuxWithPoolingPoolSize = 1;
+        private readonly int MuxWithPoolingPoolSize = 2;
         private static string ProxyServerAddress = Configuration.IoTHub.ProxyServerAddress;
         private static TestLogging _log = TestLogging.GetInstance();
 
