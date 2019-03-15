@@ -1746,16 +1746,16 @@ namespace Microsoft.Azure.Devices.E2ETests
             int durationInSec = FaultInjection.DefaultDurationInSec,
             int retryDurationInMilliSec = FaultInjection.RecoveryTimeMilliseconds)
         {
-            EventHubTestListener testListener = null;
+            
 
             Func<DeviceClient, TestDevice, Task> init = async (deviceClient, testDevice) =>
             {
-                testListener = await EventHubTestListener.CreateListener(testDevice.Id).ConfigureAwait(false);
                 deviceClient.OperationTimeoutInMilliseconds = (uint)retryDurationInMilliSec;
             };
 
             Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
             {
+                EventHubTestListener testListener = await EventHubTestListener.CreateListener(testDevice.Id).ConfigureAwait(false);
                 string payload, p1Value;
 
                 Client.Message testMessage = ComposeD2CTestMessage(out payload, out p1Value);
@@ -1764,18 +1764,12 @@ namespace Microsoft.Azure.Devices.E2ETests
                 bool isReceived = false;
                 isReceived = await testListener.WaitForMessage(testDevice.Id, payload, p1Value).ConfigureAwait(false);
                 Assert.IsTrue(isReceived);
+                await testListener.CloseAsync().ConfigureAwait(false);
             };
 
             Func<Task> cleanupOperation = () =>
             {
-                if (testListener != null)
-                {
-                    return testListener.CloseAsync();
-                }
-                else
-                {
-                    return Task.FromResult(false);
-                }
+                return Task.FromResult(false);
             };
 
             await FaultInjection.TestErrorInjectionAsync(
@@ -1803,16 +1797,14 @@ namespace Microsoft.Azure.Devices.E2ETests
             int durationInSec = FaultInjection.DefaultDurationInSec,
             int retryDurationInMilliSec = FaultInjection.RecoveryTimeMilliseconds)
         {
-            EventHubTestListener testListener = null;
-
             Func<DeviceClient, TestDevice, Task> init = async (deviceClient, testDevice) =>
             {
-                testListener = await EventHubTestListener.CreateListener(testDevice.Id).ConfigureAwait(false);
                 deviceClient.OperationTimeoutInMilliseconds = (uint)retryDurationInMilliSec;
             };
 
             Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
             {
+                EventHubTestListener testListener = await EventHubTestListener.CreateListener(testDevice.Id).ConfigureAwait(false);
                 string payload, p1Value;
 
                 Client.Message testMessage = ComposeD2CTestMessage(out payload, out p1Value);
@@ -1821,18 +1813,12 @@ namespace Microsoft.Azure.Devices.E2ETests
                 bool isReceived = false;
                 isReceived = await testListener.WaitForMessage(testDevice.Id, payload, p1Value).ConfigureAwait(false);
                 Assert.IsTrue(isReceived);
+                await testListener.CloseAsync().ConfigureAwait(false);
             };
 
             Func<Task> cleanupOperation = () =>
             {
-                if (testListener != null)
-                {
-                    return testListener.CloseAsync();
-                }
-                else
-                {
-                    return Task.FromResult(false);
-                }
+                return Task.FromResult(false);
             };
 
             await FaultInjection.TestErrorInjectionMuxedOverAmqpAsync(

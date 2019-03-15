@@ -126,16 +126,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     if (Logging.IsEnabled) Logging.Associate(this, AmqpConnection, $"{nameof(AmqpConnection)}");
                     if (Logging.IsEnabled) Logging.Associate(this, AmqpCbsLink, $"{nameof(AmqpCbsLink)}");
                 }
+                else if (AmqpConnection.IsClosing())
+                {
+                    throw new IotHubCommunicationException();
+                }
                 else
                 {
-                    if (AmqpConnection.IsClosing())
-                    {
-                        throw new IotHubCommunicationException();
-                    }
-                    else
-                    {
-                        amqpConnection = AmqpConnection;
-                    }
+                    amqpConnection = AmqpConnection;
                 }
             }
             catch (Exception) // when (!ex.IsFatal())
@@ -159,6 +156,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             if (AmqpConnection != null && ReferenceEquals(AmqpConnection, o))
             {
                 AmqpAuthenticationRefresher?.StopLoop();
+                foreach (IAmqpUnit unit in AmqpUnits.Values)
+                {
+                    unit.OnConnectionDisconnected();
+                }
                 AmqpUnits.Clear();
                 OnConnectionDisconnected?.Invoke(this, EventArgs.Empty);
             }
@@ -180,7 +181,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             if (Logging.IsEnabled) Logging.Enter(this, AmqpConnection, $"{nameof(Shutdown)}");
             AmqpAuthenticationRefresher?.StopLoop();
-            AmqpConnection?.SafeClose();
+            AmqpLinkHelper.CloseAmqpObject(AmqpConnection);
             OnConnectionDisconnected?.Invoke(this, EventArgs.Empty);
             if (Logging.IsEnabled) Logging.Exit(this, AmqpConnection, $"{nameof(Shutdown)}");
         }

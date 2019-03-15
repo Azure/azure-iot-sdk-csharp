@@ -275,6 +275,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         }
         #endregion
 
+        public static void CloseAmqpObject(AmqpObject amqpObject)
+        {
+            if (amqpObject != null)
+            {
+                amqpObject.CloseAsync(TimeSpan.MaxValue).ConfigureAwait(false);
+            }
+        }
+
         public static async Task<Outcome> DisposeMessageAsync(ReceivingAmqpLink receivingAmqpLink, string lockToken, Outcome outcome, TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(receivingAmqpLink, timeout, $"{nameof(DisposeMessageAsync)}");
