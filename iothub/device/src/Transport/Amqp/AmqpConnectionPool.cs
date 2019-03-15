@@ -2,7 +2,6 @@
 using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
@@ -38,7 +37,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     if (amqpConnectionHolders.Count < deviceIdentity.AmqpTransportSettings.AmqpConnectionPoolSettings.MaxPoolSize)
                     {
                         amqpConnectionHolder = new AmqpConnectionHolder(deviceIdentity);
-                        amqpConnectionHolder.OnConnectionDisconnected += (o, args) => amqpConnectionHolders.Remove(amqpConnectionHolder);
+                        amqpConnectionHolder.OnConnectionDisconnected += (o, args) => {
+                            bool removed = amqpConnectionHolders.Remove(o as IAmqpConnectionHolder);
+                            if (Logging.IsEnabled) Logging.Info(this, $"Remove ConnectionHolder {o}: {removed}");
+                        };
                         amqpConnectionHolders.Add(amqpConnectionHolder);
                         if (Logging.IsEnabled) Logging.Associate(this, amqpConnectionHolder, "amqpConnectionHolders");
                     }

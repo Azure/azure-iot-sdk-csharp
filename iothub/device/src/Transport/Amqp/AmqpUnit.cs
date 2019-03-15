@@ -6,13 +6,11 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
     internal class AmqpUnit : IAmqpUnit
     {
         public event EventHandler OnUnitDisconnected;
-        
         private readonly DeviceIdentity DeviceIdentity;
         private readonly Func<MethodRequestInternal, Task> MethodHandler;
         private readonly Action<AmqpMessage> TwinMessageListener;
@@ -457,6 +455,21 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         #endregion
 
         #region Connectivity Event
+        public void OnConnectionDisconnected()
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(OnConnectionDisconnected)}");
+            Lock.Wait();
+            bool wasOpen = !Closed;
+            Closed = true;
+            Lock.Release();
+            if (wasOpen)
+            {
+                OnUnitDisconnected?.Invoke(this, EventArgs.Empty);
+                Dispose(true);
+            }
+            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(OnConnectionDisconnected)}");
+        }
+
         private void OnSessionDisconnected(object o, EventArgs args)
         {
             if (Logging.IsEnabled) Logging.Enter(this, o, $"{nameof(OnSessionDisconnected)}");
@@ -540,6 +553,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         #endregion
 
         #region IDisposable
+        
         public void Dispose()
         {
             Dispose(true);
@@ -551,31 +565,29 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             if (disposing)
             {
                 if (Logging.IsEnabled) Logging.Enter(this, disposing, $"{nameof(Dispose)}");
-                Task.Run(() =>
+                try
                 {
-                    try
-                    {
-                        MessageReceivingLink?.Close();
-                        MethodReceivingLink?.Close();
-                        TwinReceivingLink?.Close();
-                        EventReceivingLink?.Close();
-                        MessageSendingLink?.Close();
-                        MethodSendingLink?.Close();
-                        TwinSendingLink?.Close();
-                        EventSendingLink?.Close();
-                        AmqpSession?.Close();
-                        AmqpAuthenticationRefresher?.StopLoop();
-                    }
-                    catch (Exception)
-                    {
-                        if (Logging.IsEnabled) Logging.Info(this, disposing, "Discard any exception during disposing.");
-                    }
-                });
+                    AmqpLinkHelper.CloseAmqpObject(MessageReceivingLink);
+                    AmqpLinkHelper.CloseAmqpObject(MessageReceivingLink);
+                    AmqpLinkHelper.CloseAmqpObject(MethodReceivingLink);
+                    AmqpLinkHelper.CloseAmqpObject(TwinReceivingLink);
+                    AmqpLinkHelper.CloseAmqpObject(EventReceivingLink);
+                    AmqpLinkHelper.CloseAmqpObject(MessageSendingLink);
+                    AmqpLinkHelper.CloseAmqpObject(MethodSendingLink);
+                    AmqpLinkHelper.CloseAmqpObject(TwinSendingLink);
+                    AmqpLinkHelper.CloseAmqpObject(EventSendingLink);
+                    AmqpLinkHelper.CloseAmqpObject(AmqpSession);
+                    AmqpAuthenticationRefresher?.Dispose();
+                }
+                catch (Exception)
+                {
+                    if (Logging.IsEnabled) Logging.Info(this, disposing, "Discard any exception during disposing.");
+                }
                 if (Logging.IsEnabled) Logging.Exit(this, disposing, $"{nameof(Dispose)}");
                 Lock.Dispose();
             }
         }
-
+        
         public async Task<Outcome> DisposeMessageAsync(string lockToken, Outcome outcome, TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, lockToken, $"{nameof(DisposeMessageAsync)}");
