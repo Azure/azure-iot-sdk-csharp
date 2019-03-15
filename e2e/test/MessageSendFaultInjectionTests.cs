@@ -890,6 +890,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             catch (TimeoutException) { }
         }
 
+        // TODO: #839 - Disabling fault injection tests which expect an exception ( for multiplexed devices)
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
         public async Task Message_DeviceSak_ThrottledConnectionLongTimeNoRecovery_MuxWithoutPooling_Amqp()
@@ -918,6 +920,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             catch (TimeoutException) { }
         }
 
+        // TODO: #839 - Disabling fault injection tests which expect an exception ( for multiplexed devices)
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
         public async Task Message_DeviceSak_ThrottledConnectionLongTimeNoRecovery_MuxWithoutPooling_AmqpWs()
@@ -945,6 +949,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             catch (TimeoutException) { }
         }
 
+        // TODO: #839 - Disabling fault injection tests which expect an exception ( for multiplexed devices)
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
         public async Task Message_DeviceSak_ThrottledConnectionLongTimeNoRecovery_MuxWithPooling_Amqp()
@@ -973,6 +979,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             catch (TimeoutException) { }
         }
 
+        // TODO: #839 - Disabling fault injection tests which expect an exception ( for multiplexed devices)
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
         public async Task Message_DeviceSak_ThrottledConnectionLongTimeNoRecovery_MuxWithPooling_AmqpWs()
