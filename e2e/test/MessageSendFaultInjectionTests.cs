@@ -1000,6 +1000,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             catch (TimeoutException) { }
         }
 
+        // TODO: #839 - Disabling fault injection tests which expect an exception ( for multiplexed devices)
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
         public async Task Message_IoTHubSak_ThrottledConnectionLongTimeNoRecovery_MuxWithoutPooling_Amqp()
@@ -1018,8 +1020,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     FaultInjection.DefaultDurationInSec,
                     FaultInjection.ShortRetryInMilliSec).ConfigureAwait(false);
 
-                // TODO fix it
-                // Assert.Fail("None of the expected exceptions were thrown.");
+                Assert.Fail("None of the expected exceptions were thrown.");
             }
             catch (IotHubThrottledException) { }
             catch (IotHubCommunicationException ex)
@@ -1029,6 +1030,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             catch (TimeoutException) { }
         }
 
+        // TODO: #839 - Disabling fault injection tests which expect an exception ( for multiplexed devices)
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
         public async Task Message_IoTHubSak_ThrottledConnectionLongTimeNoRecovery_MuxWithoutPooling_AmqpWs()
@@ -1046,8 +1049,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                     FaultInjection.DefaultDelayInSec,
                     FaultInjection.DefaultDurationInSec,
                     FaultInjection.ShortRetryInMilliSec).ConfigureAwait(false);
-                // TODO fix it
-                // Assert.Fail("None of the expected exceptions were thrown.");
+
+                Assert.Fail("None of the expected exceptions were thrown.");
             }
             catch (IotHubThrottledException) { }
             catch (IotHubCommunicationException ex)
@@ -1057,6 +1060,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             catch (TimeoutException) { }
         }
 
+        // TODO: #839 - Disabling fault injection tests which expect an exception ( for multiplexed devices)
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
         public async Task Message_IoTHubSak_ThrottledConnectionLongTimeNoRecovery_MuxWithPooling_Amqp()
@@ -1075,8 +1080,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     FaultInjection.DefaultDurationInSec,
                     FaultInjection.ShortRetryInMilliSec).ConfigureAwait(false);
 
-                // TODO fix it
-                // Assert.Fail("None of the expected exceptions were thrown.");
+                Assert.Fail("None of the expected exceptions were thrown.");
             }
             catch (IotHubThrottledException) { }
             catch (IotHubCommunicationException ex)
@@ -1086,6 +1090,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             catch (TimeoutException) { }
         }
 
+        // TODO: #839 - Disabling fault injection tests which expect an exception ( for multiplexed devices)
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
         public async Task Message_IoTHubSak_ThrottledConnectionLongTimeNoRecovery_MuxWithPooling_AmqpWs()
@@ -1103,8 +1109,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                     FaultInjection.DefaultDelayInSec,
                     FaultInjection.DefaultDurationInSec,
                     FaultInjection.ShortRetryInMilliSec).ConfigureAwait(false);
-                // TODO fix it
-                // Assert.Fail("None of the expected exceptions were thrown.");
+
+                Assert.Fail("None of the expected exceptions were thrown.");
             }
             catch (IotHubThrottledException) { }
             catch (IotHubCommunicationException ex)
@@ -1164,10 +1170,11 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
         }
 
+        // TODO: #839 - Disabling fault injection tests which expect an exception ( for multiplexed devices)
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
-        // TODO fix it
-        //[ExpectedException(typeof(DeviceMaximumQueueDepthExceededException))]
+        [ExpectedException(typeof(DeviceMaximumQueueDepthExceededException))]
         public async Task Message_DeviceSak_QuotaExceededRecovery_MuxWithoutPooling_Amqp()
         {
             await SendMessageRecoveryMuxedOverAmqp(
@@ -1182,10 +1189,11 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
         }
 
+        // TODO: #839 - Disabling fault injection tests which expect an exception ( for multiplexed devices)
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
-        // TODO fix it
-        //[ExpectedException(typeof(DeviceMaximumQueueDepthExceededException))]
+        [ExpectedException(typeof(DeviceMaximumQueueDepthExceededException))]
         public async Task Message_DeviceSak_QuotaExceededRecovery_MuxWithoutPooling_AmqpWs()
         {
             await SendMessageRecoveryMuxedOverAmqp(
@@ -1200,10 +1208,11 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
         }
 
+        // TODO: #839 - Disabling fault injection tests which expect an exception ( for multiplexed devices)
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
-        // TODO fix it
-        //[ExpectedException(typeof(DeviceMaximumQueueDepthExceededException))]
+        [ExpectedException(typeof(DeviceMaximumQueueDepthExceededException))]
         public async Task Message_DeviceSak_QuotaExceededRecovery_MuxWithPooling_Amqp()
         {
             await SendMessageRecoveryMuxedOverAmqp(
@@ -1218,10 +1227,11 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
         }
 
+        // TODO: #839 - Disabling fault injection tests which expect an exception ( for multiplexed devices)
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
-        // TODO fix it
-        //[ExpectedException(typeof(DeviceMaximumQueueDepthExceededException))]
+        [ExpectedException(typeof(DeviceMaximumQueueDepthExceededException))]
         public async Task Message_DeviceSak_QuotaExceededRecovery_MuxWithPooling_AmqpWs()
         {
             await SendMessageRecoveryMuxedOverAmqp(
@@ -1236,10 +1246,11 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
         }
 
+        // TODO: #839 - Disabling fault injection tests which expect an exception ( for multiplexed devices)
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
-        // TODO fix it
-        //[ExpectedException(typeof(DeviceMaximumQueueDepthExceededException))]
+        [ExpectedException(typeof(DeviceMaximumQueueDepthExceededException))]
         public async Task Message_IoTHubSak_QuotaExceededRecovery_MuxWithoutPooling_Amqp()
         {
             await SendMessageRecoveryMuxedOverAmqp(
@@ -1254,10 +1265,11 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
         }
 
+        // TODO: #839 - Disabling fault injection tests which expect an exception ( for multiplexed devices)
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
-        // TODO fix it
-        //[ExpectedException(typeof(DeviceMaximumQueueDepthExceededException))]
+        [ExpectedException(typeof(DeviceMaximumQueueDepthExceededException))]
         public async Task Message_IoTHubSak_QuotaExceededRecovery_MuxWithoutPooling_AmqpWs()
         {
             await SendMessageRecoveryMuxedOverAmqp(
@@ -1272,10 +1284,11 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
         }
 
+        // TODO: #839 - Disabling fault injection tests which expect an exception ( for multiplexed devices)
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
-        // TODO fix it
-        //[ExpectedException(typeof(DeviceMaximumQueueDepthExceededException))]
+        [ExpectedException(typeof(DeviceMaximumQueueDepthExceededException))]
         public async Task Message_IoTHubSak_QuotaExceededRecovery_MuxWithPooling_Amqp()
         {
             await SendMessageRecoveryMuxedOverAmqp(
@@ -1290,10 +1303,11 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
         }
 
+        // TODO: #839 - Disabling fault injection tests which expect an exception ( for multiplexed devices)
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
-        // TODO fix it
-        //[ExpectedException(typeof(DeviceMaximumQueueDepthExceededException))]
+        [ExpectedException(typeof(DeviceMaximumQueueDepthExceededException))]
         public async Task Message_IoTHubSak_QuotaExceededRecovery_MuxWithPooling_AmqpWs()
         {
             await SendMessageRecoveryMuxedOverAmqp(
@@ -1358,10 +1372,11 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
         }
 
+        // TODO: #839 - Disabling fault injection tests which expect an exception ( for multiplexed devices)
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
-        // TODO fix it
-        //[ExpectedException(typeof(UnauthorizedException))]
+        [ExpectedException(typeof(UnauthorizedException))]
         public async Task Message_DeviceSak_AuthenticationRecovery_MuxWithoutPooling_Amqp()
         {
             await SendMessageRecoveryMuxedOverAmqp(
@@ -1376,10 +1391,11 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
         }
 
+        // TODO: #839 - Disabling fault injection tests which expect an exception ( for multiplexed devices)
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
-        // TODO fix it
-        //[ExpectedException(typeof(UnauthorizedException))]
+        [ExpectedException(typeof(UnauthorizedException))]
         public async Task Message_DeviceSak_AuthenticationRecovery_MuxWithoutPooling_AmqpWs()
         {
             await SendMessageRecoveryMuxedOverAmqp(
@@ -1394,10 +1410,11 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
         }
 
+        // TODO: #839 - Disabling fault injection tests which expect an exception ( for multiplexed devices)
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
-        // TODO fix it
-        //[ExpectedException(typeof(UnauthorizedException))]
+        [ExpectedException(typeof(UnauthorizedException))]
         public async Task Message_DeviceSak_AuthenticationRecovery_MuxWithPooling_Amqp()
         {
             await SendMessageRecoveryMuxedOverAmqp(
@@ -1412,10 +1429,11 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
         }
 
+        // TODO: #839 - Disabling fault injection tests which expect an exception ( for multiplexed devices)
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
-        // TODO fix it
-        //[ExpectedException(typeof(UnauthorizedException))]
+        [ExpectedException(typeof(UnauthorizedException))]
         public async Task Message_DeviceSak_AuthenticationRecovery_MuxWithPooling_AmqpWs()
         {
             await SendMessageRecoveryMuxedOverAmqp(
@@ -1430,10 +1448,11 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
         }
 
+        // TODO: #839 - Disabling fault injection tests which expect an exception ( for multiplexed devices)
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
-        // TODO fix it
-        //[ExpectedException(typeof(UnauthorizedException))]
+        [ExpectedException(typeof(UnauthorizedException))]
         public async Task Message_IoTHubSak_AuthenticationRecovery_MuxWithoutPooling_Amqp()
         {
             await SendMessageRecoveryMuxedOverAmqp(
@@ -1448,10 +1467,11 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
         }
 
+        // TODO: #839 - Disabling fault injection tests which expect an exception ( for multiplexed devices)
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
-        // TODO fix it
-        //[ExpectedException(typeof(UnauthorizedException))]
+        [ExpectedException(typeof(UnauthorizedException))]
         public async Task Message_IoTHubSak_AuthenticationRecovery_MuxWithoutPooling_AmqpWs()
         {
             await SendMessageRecoveryMuxedOverAmqp(
@@ -1466,10 +1486,11 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
         }
 
+        // TODO: #839 - Disabling fault injection tests which expect an exception ( for multiplexed devices)
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
-        // TODO fix it
-        //[ExpectedException(typeof(UnauthorizedException))]
+        [ExpectedException(typeof(UnauthorizedException))]
         public async Task Message_IoTHubSak_AuthenticationRecovery_MuxWithPooling_Amqp()
         {
             await SendMessageRecoveryMuxedOverAmqp(
@@ -1484,10 +1505,11 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
         }
 
+        // TODO: #839 - Disabling fault injection tests which expect an exception ( for multiplexed devices)
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
-        // TODO fix it
-        //[ExpectedException(typeof(UnauthorizedException))]
+        [ExpectedException(typeof(UnauthorizedException))]
         public async Task Message_IoTHubSak_AuthenticationRecovery_MuxWithPooling_AmqpWs()
         {
             await SendMessageRecoveryMuxedOverAmqp(
