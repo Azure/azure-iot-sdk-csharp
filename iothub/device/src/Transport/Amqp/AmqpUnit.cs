@@ -465,7 +465,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             if (wasOpen)
             {
                 OnUnitDisconnected?.Invoke(this, EventArgs.Empty);
-                Dispose(true);
+                Cleanup();
             }
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(OnConnectionDisconnected)}");
         }
@@ -480,7 +480,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             if (wasOpen)
             {
                 OnUnitDisconnected?.Invoke(this, EventArgs.Empty);
-                Dispose(true);
+                Cleanup();
             }
             if (Logging.IsEnabled) Logging.Exit(this, o, $"{nameof(OnSessionDisconnected)}");
         }
@@ -502,7 +502,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             if (wasOpen)
             {
                 OnUnitDisconnected?.Invoke(this, EventArgs.Empty);
-                Dispose(true);
+                Cleanup();
             }
             if (Logging.IsEnabled) Logging.Exit(this, o, $"{nameof(OnLinkDisconnected)}");
         }
@@ -560,29 +560,35 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             GC.SuppressFinalize(this);
         }
 
+        private void Cleanup()
+        {
+            try
+            {
+                AmqpLinkHelper.CloseAmqpObject(MessageReceivingLink);
+                AmqpLinkHelper.CloseAmqpObject(MessageReceivingLink);
+                AmqpLinkHelper.CloseAmqpObject(MethodReceivingLink);
+                AmqpLinkHelper.CloseAmqpObject(TwinReceivingLink);
+                AmqpLinkHelper.CloseAmqpObject(EventReceivingLink);
+                AmqpLinkHelper.CloseAmqpObject(MessageSendingLink);
+                AmqpLinkHelper.CloseAmqpObject(MethodSendingLink);
+                AmqpLinkHelper.CloseAmqpObject(TwinSendingLink);
+                AmqpLinkHelper.CloseAmqpObject(EventSendingLink);
+                AmqpLinkHelper.CloseAmqpObject(AmqpSession);
+                AmqpAuthenticationRefresher?.Dispose();
+            }
+            catch (Exception)
+            {
+                if (Logging.IsEnabled) Logging.Info(this, "Discard any exception during cleanup.");
+            }
+        }
+
         private void Dispose(bool disposing)
         {
             if (disposing)
             {
                 if (Logging.IsEnabled) Logging.Enter(this, disposing, $"{nameof(Dispose)}");
-                try
-                {
-                    AmqpLinkHelper.CloseAmqpObject(MessageReceivingLink);
-                    AmqpLinkHelper.CloseAmqpObject(MessageReceivingLink);
-                    AmqpLinkHelper.CloseAmqpObject(MethodReceivingLink);
-                    AmqpLinkHelper.CloseAmqpObject(TwinReceivingLink);
-                    AmqpLinkHelper.CloseAmqpObject(EventReceivingLink);
-                    AmqpLinkHelper.CloseAmqpObject(MessageSendingLink);
-                    AmqpLinkHelper.CloseAmqpObject(MethodSendingLink);
-                    AmqpLinkHelper.CloseAmqpObject(TwinSendingLink);
-                    AmqpLinkHelper.CloseAmqpObject(EventSendingLink);
-                    AmqpLinkHelper.CloseAmqpObject(AmqpSession);
-                    AmqpAuthenticationRefresher?.Dispose();
-                }
-                catch (Exception)
-                {
-                    if (Logging.IsEnabled) Logging.Info(this, disposing, "Discard any exception during disposing.");
-                }
+                Closed = true;
+                Cleanup();
                 if (Logging.IsEnabled) Logging.Exit(this, disposing, $"{nameof(Dispose)}");
                 Lock.Dispose();
             }
