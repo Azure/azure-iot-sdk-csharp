@@ -85,6 +85,7 @@ $routeName = "ContosoStorageRoute"
 $condition = 'level="storage"'
 
 # Create the routing endpoint for storage.
+# The encoding can be AVRO or JSON.
 Add-AzIotHubRoutingEndpoint `
   -ResourceGroupName $resourceGroup `
   -Name $iotHubName `
@@ -93,7 +94,8 @@ Add-AzIotHubRoutingEndpoint `
   -EndpointResourceGroup $resourceGroup `
   -EndpointSubscriptionId $subscriptionId `
   -ConnectionString $storageConnectionString  `
-  -ContainerName $containerName
+  -ContainerName $containerName `
+  -Encoding AVRO 
 
 # Create the route for the storage endpoint.
 Add-AzIotHubRoute `

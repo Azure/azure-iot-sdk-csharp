@@ -108,6 +108,7 @@ storageConnectionString=$(az storage account show-connection-string \
   --name $storageAccountName --query connectionString -o tsv)
 
 # Create the routing endpoint for storage.
+# Set the encoding format to either avro or json.
 az iot hub routing-endpoint create \
   --connection-string $storageConnectionString \
   --endpoint-name $endpointName \
@@ -116,7 +117,8 @@ az iot hub routing-endpoint create \
   --endpoint-type $endpointType \
   --hub-name $iotHubName \
   --container $containerName \
-  --resource-group $resourceGroup 
+  --resource-group $resourceGroup \
+  --encoding avro 
 
 # Create the route for the storage endpoint.
 az iot hub route create \
