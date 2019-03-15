@@ -7,7 +7,7 @@ subscriptionID=$(az account show --query id)
 # This retrieves a random value.
 randomValue=$RANDOM
 
-# This installs the IOT Extension for Azure CLI.
+# This command installs the IOT Extension for Azure CLI.
 # You only need to install this the first time.
 # You need it to create the device identity. 
 az extension add --name azure-cli-iot-ext
