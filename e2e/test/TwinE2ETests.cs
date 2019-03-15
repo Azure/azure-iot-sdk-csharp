@@ -17,9 +17,9 @@ namespace Microsoft.Azure.Devices.E2ETests
     public class TwinE2ETests : IDisposable
     {
         private readonly string DevicePrefix = $"E2E_{nameof(TwinE2ETests)}_";
-        private readonly int MuxDevicesCount = 10;
+        private readonly int MuxDevicesCount = 4;
         private readonly int MuxWithoutPoolingPoolSize = 1;
-        private readonly int MuxWithPoolingPoolSize = 5;
+        private readonly int MuxWithPoolingPoolSize = 2;
         private static TestLogging _log = TestLogging.GetInstance();
 
         private readonly ConsoleEventListener _listener;

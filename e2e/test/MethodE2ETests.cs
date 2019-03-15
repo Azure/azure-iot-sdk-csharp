@@ -18,9 +18,9 @@ namespace Microsoft.Azure.Devices.E2ETests
     public class MethodE2ETests : IDisposable
     {
         private readonly string DevicePrefix = $"E2E_{nameof(MethodE2ETests)}_";
-        private readonly int MuxDevicesCount = 10;
+        private readonly int MuxDevicesCount = 4;
         private readonly int MuxWithoutPoolingPoolSize = 1;
-        private readonly int MuxWithPoolingPoolSize = 5;
+        private readonly int MuxWithPoolingPoolSize = 2;
         private const string DeviceResponseJson = "{\"name\":\"e2e_test\"}";
         private const string ServiceRequestJson = "{\"a\":123}";
         private const string MethodName = "MethodE2ETest";
