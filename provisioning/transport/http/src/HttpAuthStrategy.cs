@@ -9,8 +9,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
     internal abstract class HttpAuthStrategy
     {
-        public static readonly TimeSpan TimeoutConstant = TimeSpan.FromSeconds(90);
-
         public abstract DeviceProvisioningServiceRuntimeClient CreateClient(Uri uri, HttpClientHandler httpClientHandler);
 
         public abstract DeviceRegistration CreateDeviceRegistration();

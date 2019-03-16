@@ -137,7 +137,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.FaultCloseReason_Boom,
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
-        
+
         [TestMethod]
         public async Task Message_ThrottledConnectionRecovery_Amqp()
         {
@@ -156,7 +156,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Assert.IsInstanceOfType(ex, typeof(IotHubThrottledException));
             }
         }
-        
+
         [TestMethod]
         public async Task Message_ThrottledConnectionRecovery_AmqpWs()
         {
@@ -175,7 +175,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Assert.IsInstanceOfType(ex, typeof(IotHubThrottledException));
             }
         }
-        
+
         [TestMethod]
         public async Task Message_ThrottledConnectionLongTimeNoRecovery_Amqp()
         {

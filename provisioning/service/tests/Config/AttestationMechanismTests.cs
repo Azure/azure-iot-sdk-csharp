@@ -5,7 +5,6 @@ using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 {
@@ -215,33 +214,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             Assert.IsNotNull(JsonConvert.DeserializeObject<AttestationMechanism>(typeNoneJson));
         }
 
-        [TestMethod]
-        public void AttestationMechanismConstructorJSONSucceedOnSymmetricKeyType()
-        {
-            // arrange
-            string samplePrimaryKey = Convert.ToBase64String(Encoding.UTF8.GetBytes("000000000000000000"));
-            string sampleSecondaryKey = Convert.ToBase64String(Encoding.UTF8.GetBytes("111111111111111111"));
-            string symmetricKeyJson =
-            "{\n" +
-            "   \"type\":\"symmetricKey\",\n" +
-            "   \"symmetricKey\":{\n" +
-            "       \"primaryKey\":\"" + samplePrimaryKey + "\",\n" +
-            "       \"secondaryKey\":\"" + sampleSecondaryKey + "\"\n" +
-            "   }\n" +
-            "}";
-
-            // act
-            AttestationMechanism attestationMechanism = JsonConvert.DeserializeObject<AttestationMechanism>(symmetricKeyJson);
-            
-            //assert
-            Assert.IsNotNull(attestationMechanism);
-            Assert.IsTrue(attestationMechanism.Type == AttestationMechanismType.SymmetricKey);
-            Assert.IsTrue(attestationMechanism.GetAttestation() is SymmetricKeyAttestation);
-            SymmetricKeyAttestation symmetricKeyAttestation = (SymmetricKeyAttestation) attestationMechanism.GetAttestation();
-
-            Assert.AreEqual(samplePrimaryKey, symmetricKeyAttestation.PrimaryKey);
-            Assert.AreEqual(sampleSecondaryKey, symmetricKeyAttestation.SecondaryKey);
-        }
 
     }
 }

@@ -24,25 +24,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             DateTime? lastUpdatedDateTimeUtc,
             int errorCode,
             string errorMessage,
-            string etag) : this(registrationId, createdDateTimeUtc, assignedHub, deviceId, status, ProvisioningRegistrationSubstatusType.InitialAssignment, generationId, lastUpdatedDateTimeUtc, errorCode, errorMessage, etag)
-        {
-        }
-
-            /// <summary>
-            /// Used internally by the SDK to create a new instance of the DeviceRegistrationResult class.
-            /// This constructor is exposed to allow serialization and unit testing of applications using this SDK.
-            /// </summary>
-            public DeviceRegistrationResult(
-            string registrationId,
-            DateTime? createdDateTimeUtc,
-            string assignedHub,
-            string deviceId,
-            ProvisioningRegistrationStatusType status,
-            ProvisioningRegistrationSubstatusType substatus,
-            string generationId,
-            DateTime? lastUpdatedDateTimeUtc,
-            int errorCode,
-            string errorMessage,
             string etag)
         {
             RegistrationId = registrationId;
@@ -50,7 +31,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             AssignedHub = assignedHub;
             DeviceId = deviceId;
             Status = status;
-            Substatus = substatus;
             GenerationId = generationId;
             LastUpdatedDateTimeUtc = lastUpdatedDateTimeUtc;
             ErrorCode = errorCode;
@@ -82,11 +62,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// The status of the operation.
         /// </summary>
         public ProvisioningRegistrationStatusType Status { get; protected set; }
-
-        /// <summary>
-        /// The substatus of the operation.
-        /// </summary>
-        public ProvisioningRegistrationSubstatusType Substatus { get; protected set; }
 
         /// <summary>
         /// The generation ID.

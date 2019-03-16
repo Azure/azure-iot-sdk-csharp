@@ -86,8 +86,6 @@ phases:
       IOTHUB_CONN_STRING_INVALIDCERT: $(IOTHUB-CONN-STRING-INVALIDCERT)
       DPS_GLOBALDEVICEENDPOINT_INVALIDCERT: $(DPS-GLOBALDEVICEENDPOINT-INVALIDCERT)
       PROVISIONING_CONNECTION_STRING_INVALIDCERT: $(PROVISIONING-CONNECTION-STRING-INVALIDCERT)
-      FAR_AWAY_IOTHUB_HOSTNAME: $(FAR-AWAY-IOTHUB-HOSTNAME)
-      CUSTOM_ALLOCATION_POLICY_WEBHOOK: $(CUSTOM-ALLOCATION-POLICY-WEBHOOK)
       IOTHUB_PROXY_SERVER_ADDRESS: 127.0.0.1:8888
 
   - task: CopyFiles@2
@@ -186,8 +184,6 @@ phases:
       IOTHUB_CONN_STRING_INVALIDCERT: $(IOTHUB-CONN-STRING-INVALIDCERT)
       DPS_GLOBALDEVICEENDPOINT_INVALIDCERT: $(DPS-GLOBALDEVICEENDPOINT-INVALIDCERT)
       PROVISIONING_CONNECTION_STRING_INVALIDCERT: $(PROVISIONING-CONNECTION-STRING-INVALIDCERT)
-      FAR_AWAY_IOTHUB_HOSTNAME: $(FAR-AWAY-IOTHUB-HOSTNAME)
-      CUSTOM_ALLOCATION_POLICY_WEBHOOK: $(CUSTOM-ALLOCATION-POLICY-WEBHOOK)
       IOTHUB_PROXY_SERVER_ADDRESS: 127.0.0.1:3128
 
   - task: CopyFiles@2
@@ -286,7 +282,6 @@ phases:
   - task: securedevelopmentteam.vss-secure-development-tools.build-task-credscan.CredScan@2
     displayName: 'Run CredScan'
     inputs:
-      suppressionsFile: vsts/CredScanSuppressions.json
       regexMatchTimeoutInSeconds: 5
 
     # TODO #181 Samples / tests fail the test due to fake connection strings.
@@ -399,7 +394,6 @@ phases:
   - task: securedevelopmentteam.vss-secure-development-tools.build-task-credscan.CredScan@2
     displayName: 'Run CredScan'
     inputs:
-      suppressionsFile: vsts/CredScanSuppressions.json
       regexMatchTimeoutInSeconds: 5
 
     # TODO #181 Samples / tests fail the test due to fake connection strings.

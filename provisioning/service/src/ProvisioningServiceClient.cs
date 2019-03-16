@@ -175,7 +175,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// // IndividualEnrollment information.
         /// private const string PROVISIONING_CONNECTION_STRING = "HostName=ContosoProvisioning.azure-devices-provisioning.net;" +
         ///                                                       "SharedAccessKeyName=contosoprovisioningserviceowner;" +
-        ///                                                       "SharedAccessKey=dGVzdFN0cmluZzE=";
+        ///                                                       "SharedAccessKey=0000000000000000000000000000000000000000000=";
         /// private const string TPM_ENDORSEMENT_KEY = "tpm-endorsement-key";
         /// private const string REGISTRATION_ID = "registrationid-1";
         ///
@@ -209,7 +209,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// // IndividualEnrollment information.
         /// private const string PROVISIONING_CONNECTION_STRING = "HostName=ContosoProvisioning.azure-devices-provisioning.net;" +
         ///                                                              "SharedAccessKeyName=contosoprovisioningserviceowner;" +
-        ///                                                              "SharedAccessKey=dGVzdFN0cmluZzE=";
+        ///                                                              "SharedAccessKey=0000000000000000000000000000000000000000000=";
         /// private const string REGISTRATION_ID = "registrationid-1";
         ///
         /// static void Main(string[] args)

@@ -8,12 +8,9 @@ using Microsoft.Azure.Devices.Provisioning.Client.Transport.Models;
 using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using System.Net;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -35,10 +32,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         private const string SubscribeFilter = "$dps/registrations/res/#";
         private const string RegisterTopic = "$dps/registrations/PUT/iotdps-register/?$rid={0}";
         private const string GetOperationsTopic = "$dps/registrations/GET/iotdps-get-operationstatus/?$rid={0}&operationId={1}";
-        private static readonly Regex RegistrationStatusTopicRegex = new Regex("^\\$dps/registrations/res/(.*?)/\\?\\$rid=(.*?)$", RegexOptions.Compiled);
-        private static readonly TimeSpan s_defaultOperationPoolingIntervalMilliseconds = TimeSpan.FromSeconds(2);
 
-        private const string Registration = "registration";
+        private static readonly TimeSpan s_defaultOperationPoolingIntervalMilliseconds = TimeSpan.FromSeconds(2);
+        private static readonly TimeSpan s_regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
+
+        private static readonly Regex s_registrationStatusTopicRegex =
+            new Regex("^\\$dps/registrations/res/(.*?)/\\?\\$rid=(.*?)$", RegexOptions.Compiled, s_regexTimeoutMilliseconds);
 
         private ProvisioningTransportRegisterMessage _message;
         private TaskCompletionSource<RegistrationOperationStatus> _taskCompletionSource;
@@ -142,15 +141,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             string registrationId = _message.Security.GetRegistrationID();
             string userAgent = _message.ProductInfo;
 
-            bool hasPassword = false;
-            string password = null;
-            if (_message.Security is SecurityProviderSymmetricKey)
-            {
-                hasPassword = true;
-                string key = ((SecurityProviderSymmetricKey)_message.Security).GetPrimaryKey();
-                password = ProvisioningSasBuilder.BuildSasSignature(Registration, key, string.Concat(_message.IdScope, '/', "registrations", '/', registrationId), TimeSpan.FromDays(1));
-            }
-
             var message = new ConnectPacket()
             {
                 CleanSession = true,
@@ -164,8 +154,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     registrationId,
                     ClientApiVersionHelper.ApiVersion,
                     Uri.EscapeDataString(userAgent)),
-                HasPassword = hasPassword,
-                Password = hasPassword ? password : null
+                HasPassword = false,
             };
 
             return context.WriteAndFlushAsync(message);
@@ -288,41 +277,76 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             }
         }
 
-        private async Task PublishRegisterAsync(IChannelHandlerContext context)
+        private Task PublishRegisterAsync(IChannelHandlerContext context)
         {
-            IByteBuffer packagePayload = Unpooled.Empty;
             int packetId = GetNextPacketId();
+
             var message = new PublishPacket(Qos, false, false)
             {
                 TopicName = string.Format(CultureInfo.InvariantCulture, RegisterTopic, packetId),
                 PacketId = packetId,
-                Payload = packagePayload
+                Payload = Unpooled.Empty,
             };
 
-            await context.WriteAndFlushAsync(message).ConfigureAwait(false);
+            return context.WriteAndFlushAsync(message);
         }
 
         private async Task VerifyPublishPacketTopicAsync(IChannelHandlerContext context, string topicName, string jsonData)
         {
-            Match match = RegistrationStatusTopicRegex.Match(topicName);
-            if (match.Groups.Count >= 2)
+            try
             {
-                if (Enum.TryParse(match.Groups[1].Value, out HttpStatusCode statusCode))
-                {
-                    if (statusCode >= HttpStatusCode.BadRequest)
-                    {
-                        var errorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetails>(jsonData);
+                Match match = s_registrationStatusTopicRegex.Match(topicName);
 
-                        bool isTransient = statusCode >= HttpStatusCode.InternalServerError || (int)statusCode == 429;
-                        await FailWithExceptionAsync(
-                             context,
-                             new ProvisioningTransportException(
-                                 jsonData,
-                                 null,
-                                 isTransient,
-                                 errorDetails)).ConfigureAwait(false);
+                if(match.Groups.Count >= 2)
+                {
+                    if(Enum.TryParse(match.Groups[1].Value, out HttpStatusCode statusCode))
+                    {
+                        if (statusCode >= HttpStatusCode.BadRequest)
+                        {
+                            try
+                            {
+                                var errorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetails>(jsonData);
+
+                                bool isTransient = statusCode >= HttpStatusCode.InternalServerError || (int)statusCode == 429;
+                                await FailWithExceptionAsync(
+                                     context,
+                                     new ProvisioningTransportException(
+                                         errorDetails.CreateMessage($"{ExceptionPrefix} Server Error: {match.Groups[1].Value}"),
+                                         null,
+                                         isTransient,
+                                         errorDetails.TrackingId)).ConfigureAwait(true);
+                            }
+                            catch (JsonException ex)
+                            {
+                                if (Logging.IsEnabled) Logging.Error(
+                                    this,
+                                    $"{nameof(ProvisioningTransportHandlerMqtt)} server returned malformed error response." +
+                                    $"Parsing error: {ex}. Server response: {jsonData}",
+                                    nameof(VerifyPublishPacketTopicAsync));
+
+                                await FailWithExceptionAsync(
+                                    context,
+                                    new ProvisioningTransportException(
+                                        $"{ExceptionPrefix} Malformed server error message: '{jsonData}'",
+                                        ex,
+                                        false)).ConfigureAwait(true);
+                            }
+                        }
                     }
                 }
+                else
+                {
+                    await FailWithExceptionAsync(
+                                 context,
+                                 new ProvisioningTransportException(
+                                     $"{ExceptionPrefix} Unexpected server response. TopicName invalid: '{topicName}'",
+                                     null,
+                                     false)).ConfigureAwait(true);
+                }
+            }
+            catch (RegexMatchTimeoutException e)
+            {
+                await FailWithExceptionAsync(context, e).ConfigureAwait(true);
             }
         }
 

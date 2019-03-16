@@ -33,7 +33,6 @@
 
   <PropertyGroup>
     <common>$(RootDir)\common\src</common>
-    <generated>..\..\generated\src</generated>
   </PropertyGroup>
 
   <ItemGroup>
@@ -61,14 +60,11 @@
     <Compile Include="$(Common)\device\provisioning\transport\X509RegistrationResult.cs">
       <Link>Common\device\provisioning\transport\X509RegistrationResult.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\device\provisioning\transport\ProvisioningSasBuilder.cs">
-      <Link>Common\device\provisioning\transport\ProvisioningSasBuilder.cs</Link>
+    <Compile Include="$(Common)\device\provisioning\transport\ProvisioingSasBuilder.cs">
+      <Link>Common\device\provisioning\transport\ProvisioingSasBuilder.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\device\provisioning\transport\SymmetricKeyRegistrationResult.cs">
-      <Link>Common\device\provisioning\transport\SymmetricKeyRegistrationResult.cs</Link>
-    </Compile>
-    <Compile Include="$(Generated)\Models\DeviceRegistration.cs">
-      <Link>Generated\Models\DeviceRegistration.cs</Link>
+    <Compile Include="$(Common)\device\provisioning\transport\ProvisioningErrorDetails.cs">
+      <Link>Common\device\provisioning\transport\ProvisioningErrorDetails.cs</Link>
     </Compile>
     <Compile Include="$(Common)\DefaultWebProxySettings.cs" />
   </ItemGroup>
@@ -79,7 +75,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Azure.Amqp" Version="2.4.1" />
+    <PackageReference Include="Microsoft.Azure.Amqp" Version="2.3.7" />
     <PackageReference Condition=" '$(Configuration)' == 'Debug' " Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.6.1" />
   </ItemGroup>
 </Project>
