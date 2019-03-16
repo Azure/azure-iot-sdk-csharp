@@ -28,21 +28,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        public async Task Message_ReceiveNoMessage_Amqp()
-        {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, TestDeviceType.Sasl).ConfigureAwait(false);
-            using (DeviceClient deviceClient = testDevice.CreateDeviceClient(Client.TransportType.Amqp_Tcp_Only))
-            {
-                await deviceClient.OpenAsync().ConfigureAwait(false);
-                TimeSpan wait = TimeSpan.FromSeconds(20);
-                DateTime begin = DateTime.Now;
-                Client.Message message = await deviceClient.ReceiveAsync(wait).ConfigureAwait(false);
-                Assert.IsTrue(DateTime.Now - begin >= wait);
-                Assert.IsNull(message);
-            }
-        }
-
-        [TestMethod]
         public async Task Message_DeviceReceiveSingleMessage_Amqp()
         {
             await ReceiveSingleMessage(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
