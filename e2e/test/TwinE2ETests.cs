@@ -5,7 +5,6 @@ using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,9 +16,6 @@ namespace Microsoft.Azure.Devices.E2ETests
     public class TwinE2ETests : IDisposable
     {
         private readonly string DevicePrefix = $"E2E_{nameof(TwinE2ETests)}_";
-        private readonly int MuxDevicesCount = 4;
-        private readonly int MuxWithoutPoolingPoolSize = 1;
-        private readonly int MuxWithPoolingPoolSize = 2;
         private static TestLogging _log = TestLogging.GetInstance();
 
         private readonly ConsoleEventListener _listener;
@@ -51,97 +47,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Twin_DeviceSetsReportedPropertyAndGetsItBack_AmqpWs()
         {
             await Twin_DeviceSetsReportedPropertyAndGetsItBack(Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        [TestCategory("ConnectionPoolingE2ETests")]
-        public async Task Twin_DeviceSak_DeviceSetsReportedPropertyAndGetsItBack_MuxWithoutPooling_Amqp()
-        {
-            await Twin_DeviceSetsReportedPropertyAndGetsItBackMuxedOverAmqp(
-                TestDeviceType.Sasl,
-                ConnectionStringLevel.Device,
-                Client.TransportType.Amqp_Tcp_Only,
-                MuxWithoutPoolingPoolSize,
-                MuxDevicesCount
-                ).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        [TestCategory("ConnectionPoolingE2ETests")]
-        public async Task Twin_DeviceSak_DeviceSetsReportedPropertyAndGetsItBack_MuxWithoutPooling_AmqpWs()
-        {
-            await Twin_DeviceSetsReportedPropertyAndGetsItBackMuxedOverAmqp(
-                TestDeviceType.Sasl,
-                ConnectionStringLevel.Device,
-                Client.TransportType.Amqp_WebSocket_Only,
-                MuxWithoutPoolingPoolSize,
-                MuxDevicesCount
-                ).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        [TestCategory("ConnectionPoolingE2ETests")]
-        public async Task Twin_IoTHubSak_DeviceSetsReportedPropertyAndGetsItBack_MuxWithoutPooling_Amqp()
-        {
-            await Twin_DeviceSetsReportedPropertyAndGetsItBackMuxedOverAmqp(
-                TestDeviceType.Sasl,
-                ConnectionStringLevel.IoTHub,
-                Client.TransportType.Amqp_Tcp_Only,
-                MuxWithoutPoolingPoolSize,
-                MuxDevicesCount
-                ).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        [TestCategory("ConnectionPoolingE2ETests")]
-        public async Task Twin_IotHubSak_DeviceSetsReportedPropertyAndGetsItBack_MuxWithoutPooling_AmqpWs()
-        {
-            await Twin_DeviceSetsReportedPropertyAndGetsItBackMuxedOverAmqp(
-                TestDeviceType.Sasl,
-                ConnectionStringLevel.IoTHub,
-                Client.TransportType.Amqp_WebSocket_Only,
-                MuxWithoutPoolingPoolSize,
-                MuxDevicesCount
-                ).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        [TestCategory("ConnectionPoolingE2ETests")]
-        public async Task Twin_DeviceSak_DeviceSetsReportedPropertyAndGetsItBack_MuxWithPooling_AmqpWs()
-        {
-            await Twin_DeviceSetsReportedPropertyAndGetsItBackMuxedOverAmqp(
-                TestDeviceType.Sasl,
-                ConnectionStringLevel.Device,
-                Client.TransportType.Amqp_WebSocket_Only,
-                MuxWithPoolingPoolSize,
-                MuxDevicesCount
-                ).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        [TestCategory("ConnectionPoolingE2ETests")]
-        public async Task Twin_IoTHubSak_DeviceSetsReportedPropertyAndGetsItBack_MuxWithPooling_Amqp()
-        {
-            await Twin_DeviceSetsReportedPropertyAndGetsItBackMuxedOverAmqp(
-                TestDeviceType.Sasl,
-                ConnectionStringLevel.IoTHub,
-                Client.TransportType.Amqp_Tcp_Only,
-                MuxWithPoolingPoolSize,
-                MuxDevicesCount
-                ).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        [TestCategory("ConnectionPoolingE2ETests")]
-        public async Task Twin_IotHubSak_DeviceSetsReportedPropertyAndGetsItBack_MuxWithPooling_AmqpWs()
-        {
-            await Twin_DeviceSetsReportedPropertyAndGetsItBackMuxedOverAmqp(
-                TestDeviceType.Sasl,
-                ConnectionStringLevel.IoTHub,
-                Client.TransportType.Amqp_WebSocket_Only,
-                MuxWithPoolingPoolSize,
-                MuxDevicesCount
-                ).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -311,59 +216,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Assert.AreEqual<String>(deviceTwin.Properties.Reported[propName].ToString(), propValue);
 
                 await deviceClient.CloseAsync().ConfigureAwait(false);
-            }
-        }
-
-        private async Task Twin_DeviceSetsReportedPropertyAndGetsItBackMuxedOverAmqp(
-            TestDeviceType type,
-            ConnectionStringLevel connectionStringLevel,
-            Client.TransportType transport,
-            int poolSize,
-            int devicesCount
-            )
-        {
-            var propName = Guid.NewGuid().ToString();
-            var propValue = Guid.NewGuid().ToString();
-
-            var transportSettings = new ITransportSettings[]
-            {
-                new AmqpTransportSettings(transport)
-                {
-                    AmqpConnectionPoolSettings = new AmqpConnectionPoolSettings()
-                    {
-                        MaxPoolSize = unchecked((uint)poolSize),
-                        Pooling = true
-                    }
-                }
-            };
-
-            DeviceClient[] deviceClients = new DeviceClient[devicesCount];
-
-            try
-            {
-                for (int i = 0; i < devicesCount; i++)
-                {
-                    TestDevice testDevice = await TestDevice.GetTestDeviceAsync($"{DevicePrefix}_{i}_", type).ConfigureAwait(false);
-                    DeviceClient deviceClient = testDevice.CreateDeviceClient(transportSettings, connectionStringLevel);
-                    deviceClients[i] = deviceClient;
-
-                    TwinCollection props = new TwinCollection();
-                    props[propName] = propValue;
-                    await deviceClient.UpdateReportedPropertiesAsync(props).ConfigureAwait(false);
-
-                    Twin deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
-                    Assert.AreEqual<String>(deviceTwin.Properties.Reported[propName].ToString(), propValue);
-                }
-            }
-            finally
-            {
-                // Close and dispose all of the device client instances here
-                foreach (DeviceClient deviceClient in deviceClients)
-                {
-                    await deviceClient.CloseAsync().ConfigureAwait(false);
-                    _log.WriteLine($"{nameof(TwinE2ETests)}: Disposing deviceClient {TestLogging.GetHashCode(deviceClient)}");
-                    deviceClient.Dispose();
-                }
             }
         }
 
