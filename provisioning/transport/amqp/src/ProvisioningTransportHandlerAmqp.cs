@@ -68,10 +68,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 {
                     authStrategy = new AmqpAuthStrategyX509((SecurityProviderX509)message.Security);
                 }
-                else if (message.Security is SecurityProviderSymmetricKey)
-                {
-                    authStrategy = new AmqpAuthStrategySymmetricKey((SecurityProviderSymmetricKey)message.Security);
-                }
                 else
                 {
                     throw new NotSupportedException(
@@ -97,10 +93,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 await authStrategy.OpenConnectionAsync(connection, TimeoutConstant, useWebSocket, Proxy).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await CreateLinksAsync(
-                    connection,
-                    linkEndpoint,
-                    message.ProductInfo).ConfigureAwait(false);
+                await CreateLinksAsync(connection, linkEndpoint, message.ProductInfo).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
 
                 string correlationId = Guid.NewGuid().ToString();
@@ -224,16 +217,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             var status = ProvisioningRegistrationStatusType.Failed;
             Enum.TryParse(result.Status, true, out status);
 
-            var substatus = ProvisioningRegistrationSubstatusType.InitialAssignment;
-            Enum.TryParse(result.Substatus, true, out substatus);
-
             return new DeviceRegistrationResult(
                 result.RegistrationId,
                 result.CreatedDateTimeUtc,
                 result.AssignedHub,
                 result.DeviceId,
                 status,
-                substatus,
                 result.GenerationId,
                 result.LastUpdatedDateTimeUtc,
                 result.ErrorCode == null ? 0 : (int)result.ErrorCode,
@@ -251,10 +240,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     int statusCode = errorDetails.ErrorCode / 1000;
                     bool isTransient = statusCode >= (int)HttpStatusCode.InternalServerError || statusCode == 429;
                     throw new ProvisioningTransportException(
-                        rejected.Error.Description,
+                        errorDetails.CreateMessage("AMQP transport exception: service error."),
                         null,
                         isTransient,
-                        errorDetails);
+                        errorDetails.TrackingId);
                 }
                 catch (JsonException ex)
                 {

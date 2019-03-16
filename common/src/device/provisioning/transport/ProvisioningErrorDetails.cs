@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
@@ -12,7 +13,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     /// Provisioning error details.
     /// </summary>
     [SuppressMessage("Microsoft.Performance", "CA1812", Justification = "Used by the JSon parser.")]
-    public class ProvisioningErrorDetails
+    internal class ProvisioningErrorDetails
     {
         /// <summary>
         /// Error code.
@@ -45,11 +46,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// </summary>
         public string TimestampUtc { get; set; }
 
-        /// <summary>
-        /// Create the error message with the saved error code, tracking id and timestamp
-        /// </summary>
-        /// <param name="message"></param>
-        /// <returns></returns>
         public string CreateMessage(string message)
         {
             var sb = new StringBuilder();

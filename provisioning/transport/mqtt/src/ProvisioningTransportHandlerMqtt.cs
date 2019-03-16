@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             TransportFallbackType transportFallbackType = TransportFallbackType.TcpWithWebSocketFallback)
         {
             FallbackType = transportFallbackType;
-            if (FallbackType == TransportFallbackType.WebSocketOnly)
+            if (FallbackType == TransportFallbackType.WebSocketOnly) 
             {
                 Port = WsPort;
             }
@@ -78,51 +78,36 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            RegistrationOperationStatus operation = null;
+            SecurityProviderX509 security;
 
             try
             {
                 if (message.Security is SecurityProviderX509)
                 {
-                    SecurityProviderX509 x509Security = (SecurityProviderX509)message.Security;
-                    if (FallbackType == TransportFallbackType.TcpWithWebSocketFallback || FallbackType == TransportFallbackType.TcpOnly)
-                    {
-                        // TODO: Fallback not implemented.
-                        operation = await ProvisionOverTcpUsingX509CertificateAsync(message, cancellationToken).ConfigureAwait(false);
-                    }
-                    else if (FallbackType == TransportFallbackType.WebSocketOnly)
-                    {
-                        operation = await ProvisionOverWssUsingX509CertificateAsync(message, cancellationToken).ConfigureAwait(false);
-                    }
-                    else
-                    {
-                        throw new NotSupportedException($"Not supported {nameof(FallbackType)} value: {FallbackType}");
-                    }
-                }
-                else if (message.Security is SecurityProviderSymmetricKey)
-                {
-                    SecurityProviderSymmetricKey symmetricKeySecurity = (SecurityProviderSymmetricKey)message.Security;
-
-                    if (FallbackType == TransportFallbackType.TcpWithWebSocketFallback ||
-                        FallbackType == TransportFallbackType.TcpOnly)
-                    {
-                        // TODO: Fallback not implemented.
-                        operation = await ProvisionOverTcpUsingSymmetricKeyAsync(message, cancellationToken).ConfigureAwait(false);
-                    }
-                    else if (FallbackType == TransportFallbackType.WebSocketOnly)
-                    {
-                        operation = await ProvisionOverWssUsingSymmetricKeyAsync(message, cancellationToken).ConfigureAwait(false);
-                    }
-                    else
-                    {
-                        throw new NotSupportedException($"Not supported {nameof(FallbackType)} value: {FallbackType}");
-                    }
+                    security = (SecurityProviderX509)message.Security;
                 }
                 else
                 {
                     if (Logging.IsEnabled) Logging.Error(this, $"Invalid {nameof(SecurityProvider)} type.");
                     throw new NotSupportedException(
                         $"{nameof(message.Security)} must be of type {nameof(SecurityProviderX509)}");
+                }
+
+                RegistrationOperationStatus operation = null;
+
+                if (FallbackType == TransportFallbackType.TcpWithWebSocketFallback ||
+                    FallbackType == TransportFallbackType.TcpOnly)
+                {
+                    // TODO: Fallback not implemented.
+                    operation = await ProvisionOverTcpUsingX509CertificateAsync(message, cancellationToken).ConfigureAwait(false);
+                }
+                else if (FallbackType == TransportFallbackType.WebSocketOnly)
+                {
+                    operation = await ProvisionOverWssUsingX509CertificateAsync(message, cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    throw new NotSupportedException($"Not supported {nameof(FallbackType)} value: {FallbackType}");
                 }
 
                 return ConvertToProvisioningRegistrationResult(operation.RegistrationState);
@@ -147,16 +132,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             var status = ProvisioningRegistrationStatusType.Failed;
             Enum.TryParse(result.Status, true, out status);
 
-            var substatus = ProvisioningRegistrationSubstatusType.InitialAssignment;
-            Enum.TryParse(result.Substatus, true, out substatus);
-
             return new DeviceRegistrationResult(
                 result.RegistrationId,
                 result.CreatedDateTimeUtc,
                 result.AssignedHub,
                 result.DeviceId,
                 status,
-                substatus,
                 result.GenerationId,
                 result.LastUpdatedDateTimeUtc,
                 result.ErrorCode == null ? 0 : (int)result.ErrorCode,
@@ -164,7 +145,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 result.Etag);
         }
 
-        private Task<RegistrationOperationStatus> ProvisionOverTcpUsingX509CertificateAsync(
+        private async Task<RegistrationOperationStatus> ProvisionOverTcpUsingX509CertificateAsync(
             ProvisioningTransportRegisterMessage message,
             CancellationToken cancellationToken)
         {
@@ -177,27 +158,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             var tlsSettings = new ClientTlsSettings(
                 message.GlobalDeviceEndpoint,
                 new List<X509Certificate> { clientCertificate });
-            return ProvisionOverTcpCommonAsync(message, tlsSettings, cancellationToken);
-        }
 
-        private Task<RegistrationOperationStatus> ProvisionOverTcpUsingSymmetricKeyAsync(
-            ProvisioningTransportRegisterMessage message,
-            CancellationToken cancellationToken)
-        {
-            Debug.Assert(message.Security is SecurityProviderSymmetricKey);
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var tlsSettings = new ClientTlsSettings(
-                message.GlobalDeviceEndpoint);
-
-            return ProvisionOverTcpCommonAsync(message, tlsSettings, cancellationToken);
-        }
-
-        private async Task<RegistrationOperationStatus> ProvisionOverTcpCommonAsync(
-            ProvisioningTransportRegisterMessage message,
-            ClientTlsSettings tlsSettings,
-            CancellationToken cancellationToken)
-        {
             var tcs = new TaskCompletionSource<RegistrationOperationStatus>();
 
             Bootstrap bootstrap = new Bootstrap()
@@ -262,7 +223,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             return await tcs.Task.ConfigureAwait(false);
         }
 
-        private Task<RegistrationOperationStatus> ProvisionOverWssUsingX509CertificateAsync(
+        private async Task<RegistrationOperationStatus> ProvisionOverWssUsingX509CertificateAsync(
             ProvisioningTransportRegisterMessage message,
             CancellationToken cancellationToken)
         {
@@ -272,24 +233,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             X509Certificate2 clientCertificate =
                 ((SecurityProviderX509)message.Security).GetAuthenticationCertificate();
 
-            return ProvisionOverWssCommonAsync(message, clientCertificate, cancellationToken);
-        }
-
-        private Task<RegistrationOperationStatus> ProvisionOverWssUsingSymmetricKeyAsync(
-            ProvisioningTransportRegisterMessage message,
-            CancellationToken cancellationToken)
-        {
-            Debug.Assert(message.Security is SecurityProviderSymmetricKey);
-            cancellationToken.ThrowIfCancellationRequested();
-
-            return ProvisionOverWssCommonAsync(message, null, cancellationToken);
-        }
-
-        private async Task<RegistrationOperationStatus> ProvisionOverWssCommonAsync(
-            ProvisioningTransportRegisterMessage message,
-            X509Certificate2 clientCertificate,
-            CancellationToken cancellationToken)
-        {
             var tcs = new TaskCompletionSource<RegistrationOperationStatus>();
 
             UriBuilder uriBuilder = new UriBuilder(WsScheme, message.GlobalDeviceEndpoint, Port);
@@ -298,10 +241,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             // TODO properly dispose of the ws.
             var websocket = new ClientWebSocket();
             websocket.Options.AddSubProtocol(WsMqttSubprotocol);
-            if (clientCertificate != null)
-            {
-                websocket.Options.ClientCertificates.Add(clientCertificate);
-            }
+            websocket.Options.ClientCertificates.Add(clientCertificate);
 
             //Check if we're configured to use a proxy server
             try
