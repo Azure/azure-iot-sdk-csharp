@@ -55,6 +55,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 {
                     authStrategy = new HttpAuthStrategyX509((SecurityProviderX509)message.Security);
                 }
+                else if (message.Security is SecurityProviderSymmetricKey)
+                {
+                    authStrategy = new HttpAuthStrategySymmetricKey((SecurityProviderSymmetricKey)message.Security);
+                }
                 else
                 {
                     if (Logging.IsEnabled) Logging.Error(this, $"Invalid {nameof(SecurityProvider)} type.");
@@ -157,11 +161,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 try
                 {
                     var errorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetails>(oe.Response.Content);
-                    throw new ProvisioningTransportException(
-                        errorDetails.CreateMessage("HTTP transport exception: service error."),
-                        oe,
-                        isTransient,
-                        errorDetails.TrackingId);
+                    throw new ProvisioningTransportException(oe.Response.Content, oe, isTransient, errorDetails);
                 }
                 catch (JsonException ex)
                 {
@@ -197,12 +197,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             var status = ProvisioningRegistrationStatusType.Failed;
             Enum.TryParse(result.Status, true, out status);
 
+            var substatus = ProvisioningRegistrationSubstatusType.InitialAssignment;
+            Enum.TryParse(result.Substatus, true, out substatus);
+
             return new DeviceRegistrationResult(
                 result.RegistrationId,
                 result.CreatedDateTimeUtc,
                 result.AssignedHub,
                 result.DeviceId,
                 status,
+                substatus,
                 result.GenerationId,
                 result.LastUpdatedDateTimeUtc,
                 result.ErrorCode == null ? 0 : (int)result.ErrorCode,
