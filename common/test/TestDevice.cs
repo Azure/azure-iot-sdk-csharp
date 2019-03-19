@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Threading;
+using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
@@ -14,6 +15,12 @@ namespace Microsoft.Azure.Devices.E2ETests
     {
         Sasl,
         X509
+    }
+
+    public enum ConnectionStringAuthScope
+    {
+        IoTHub,
+        Device
     }
 
     public class TestDevice
@@ -150,19 +157,34 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        public DeviceClient CreateDeviceClient(Client.TransportType transport)
+
+        public DeviceClient CreateDeviceClient(Client.TransportType transport, ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
+        {
+            ITransportSettings[] transportSettings = GetTransportSettings(transport);
+            return CreateDeviceClient(transportSettings, authScope);
+        }
+
+        public DeviceClient CreateDeviceClient(ITransportSettings[] transportSettings, ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
         {
             DeviceClient deviceClient = null;
 
             if (_authenticationMethod == null)
             {
-                deviceClient = DeviceClient.CreateFromConnectionString(ConnectionString, transport);
-                s_log.WriteLine($"{nameof(CreateDeviceClient)}: Created {nameof(DeviceClient)} from connection string: {transport} ID={TestLogging.IdOf(deviceClient)}");
+                if (authScope == ConnectionStringAuthScope.Device)
+                {
+                    deviceClient = DeviceClient.CreateFromConnectionString(ConnectionString, transportSettings);
+                    s_log.WriteLine($"{nameof(CreateDeviceClient)}: Created {nameof(DeviceClient)} from device connection string: ID={TestLogging.IdOf(deviceClient)}");
+                }
+                else
+                {
+                    deviceClient = DeviceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString, _device.Id, transportSettings);
+                    s_log.WriteLine($"{nameof(CreateDeviceClient)}: Created {nameof(DeviceClient)} from IoTHub connection string: ID={TestLogging.IdOf(deviceClient)}");
+                }
             }
             else
             {
-                deviceClient = DeviceClient.Create(IoTHubHostName, AuthenticationMethod, transport);
-                s_log.WriteLine($"{nameof(CreateDeviceClient)}: Created {nameof(DeviceClient)} from IAuthenticationMethod: {transport} ID={TestLogging.IdOf(deviceClient)}");
+                deviceClient = DeviceClient.Create(IoTHubHostName, AuthenticationMethod, transportSettings);
+                s_log.WriteLine($"{nameof(CreateDeviceClient)}: Created {nameof(DeviceClient)} from IAuthenticationMethod: ID={TestLogging.IdOf(deviceClient)}");
             }
 
             return deviceClient;
@@ -172,6 +194,32 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             Regex regex = new Regex("HostName=([^;]+)", RegexOptions.None);
             return regex.Match(iotHubConnectionString).Groups[1].Value;
+        }
+
+        public static ITransportSettings[] GetTransportSettings(Client.TransportType transportType)
+        {
+            switch (transportType)
+            {
+                case Client.TransportType.Amqp_WebSocket_Only:
+                case Client.TransportType.Amqp_Tcp_Only:
+                    return new ITransportSettings[]
+                    {
+                        new AmqpTransportSettings(transportType)
+                    };
+
+                case Client.TransportType.Mqtt_WebSocket_Only:
+                case Client.TransportType.Mqtt_Tcp_Only:
+                    return new ITransportSettings[]
+                    {
+                        new MqttTransportSettings(transportType)
+                    };
+
+                case Client.TransportType.Http1:
+                    return new ITransportSettings[] { new Http1TransportSettings() };
+
+                default:
+                    throw new InvalidOperationException($"Unsupported Transport Type {transportType}");
+            }
         }
     }
 }
