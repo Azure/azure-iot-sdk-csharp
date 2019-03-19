@@ -255,6 +255,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     var testDevice = testDevices[i];
 
                     s_log.WriteLine($"{nameof(FaultInjection)}: Test baseline again deviceClient {TestLogging.GetHashCode(deviceClient)}");
+                    await initOperation(deviceClient, testDevice).ConfigureAwait(false);
                     await testOperation(deviceClient, testDevice).ConfigureAwait(false);
 
                     s_log.WriteLine($"{nameof(FaultInjection)}: Count {count} - Closing deviceClient {TestLogging.GetHashCode(deviceClient)}");

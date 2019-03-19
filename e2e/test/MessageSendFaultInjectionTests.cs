@@ -222,6 +222,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
         public async Task Message_DeviceSak_AmqpConnectionLossSendRecovery_MuxWithoutPooling_Amqp()
@@ -237,6 +238,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
         public async Task Message_DeviceSak_AmqpConnectionLossSendRecovery_MuxWithoutPooling_AmqpWs()
@@ -252,6 +254,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
         public async Task Message_DeviceSak_AmqpConnectionLossSendRecovery_MuxWithPooling_Amqp()
@@ -267,6 +270,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
         public async Task Message_DeviceSak_AmqpConnectionLossSendRecovery_MuxWithPooling_AmqpWs()
@@ -282,6 +286,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
         public async Task Message_IoTHubSak_AmqpConnectionLossSendRecovery_MuxWithoutPooling_Amqp()
@@ -297,6 +302,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
         public async Task Message_IoTHubSak_AmqpConnectionLossSendRecovery_MuxWithoutPooling_AmqpWs()
@@ -312,6 +318,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
         public async Task Message_IoTHubSak_AmqpConnectionLossSendRecovery_MuxWithPooling_Amqp()
@@ -327,6 +334,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
         public async Task Message_IoTHubSak_AmqpConnectionLossSendRecovery_MuxWithPooling_AmqpWs()
@@ -364,6 +372,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
         public async Task Message_DeviceSak_AmqpSessionLossSendRecovery_MuxWithoutPooling_Amqp()
@@ -379,6 +388,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
         public async Task Message_DeviceSak_AmqpSessionLossSendRecovery_MuxWithoutPooling_AmqpWs()
@@ -394,6 +404,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
         public async Task Message_DeviceSak_AmqpSessionLossSendRecovery_MuxWithPooling_Amqp()
@@ -409,6 +420,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
         public async Task Message_DeviceSak_AmqpSessionLossSendRecovery_MuxWithPooling_AmqpWs()
@@ -424,6 +436,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
         public async Task Message_IoTHubSak_AmqpSessionLossSendRecovery_MuxWithoutPooling_Amqp()
@@ -439,6 +452,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
         public async Task Message_IoTHubSak_AmqpSessionLossSendRecovery_MuxWithoutPooling_AmqpWs()
@@ -454,6 +468,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
         public async Task Message_IoTHubSak_AmqpSessionLossSendRecovery_MuxWithPooling_Amqp()
@@ -469,6 +484,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
         public async Task Message_IoTHubSak_AmqpSessionLossSendRecovery_MuxWithPooling_AmqpWs()
@@ -506,6 +522,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
         public async Task Message_DeviceSak_AmqpD2CLinkDropSendRecovery_MuxWithoutPooling_Amqp()
@@ -521,6 +538,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
         public async Task Message_DeviceSak_AmqpD2CLinkDropSendRecovery_MuxWithoutPooling_AmqpWs()
@@ -536,6 +554,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
         public async Task Message_DeviceSak_AmqpD2CLinkDropSendRecovery_MuxWithPooling_Amqp()
@@ -551,6 +570,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
         public async Task Message_DeviceSak_AmqpD2CLinkDropSendRecovery_MuxWithPooling_AmqpWs()
@@ -566,6 +586,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
         public async Task Message_IoTHubSak_AmqpD2CLinkDropSendRecovery_MuxWithoutPooling_Amqp()
@@ -581,6 +602,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
         public async Task Message_IoTHubSak_AmqpD2CLinkDropSendRecovery_MuxWithoutPooling_AmqpWs()
@@ -596,6 +618,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
         public async Task Message_IoTHubSak_AmqpD2CLinkDropSendRecovery_MuxWithPooling_Amqp()
@@ -611,6 +634,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
         public async Task Message_IoTHubSak_AmqpD2CLinkDropSendRecovery_MuxWithPooling_AmqpWs()
@@ -652,6 +676,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
         // WIP: Exception handling
@@ -669,6 +694,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
         // WIP: Exception handling
@@ -686,6 +712,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
         // WIP: Exception handling
@@ -703,6 +730,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
         // WIP: Exception handling
@@ -720,6 +748,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
         // WIP: Exception handling
@@ -737,6 +766,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
         // WIP: Exception handling
@@ -754,6 +784,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
         // WIP: Exception handling
@@ -771,6 +802,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
         // WIP: Exception handling
@@ -1396,6 +1428,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
         public async Task Message_DeviceSak_GracefulShutdownSendRecovery_MuxWithoutPooling_Amqp()
@@ -1411,6 +1444,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
         public async Task Message_DeviceSak_GracefulShutdownSendRecovery_MuxWithoutPooling_AmqpWs()
@@ -1426,6 +1460,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
         public async Task Message_DeviceSak_GracefulShutdownSendRecovery_MuxWithPooling_Amqp()
@@ -1441,6 +1476,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
         public async Task Message_DeviceSak_GracefulShutdownSendRecovery_MuxWithPooling_AmqpWs()
@@ -1456,6 +1492,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
         public async Task Message_IotHubSak_GracefulShutdownSendRecovery_MuxWithoutPooling_Amqp()
@@ -1471,6 +1508,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
         public async Task Message_IoTHubSak_GracefulShutdownSendRecovery_MuxWithoutPooling_AmqpWs()
@@ -1486,6 +1524,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
         public async Task Message_IoTHubSak_GracefulShutdownSendRecovery_MuxWithPooling_Amqp()
@@ -1501,6 +1540,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("ConnectionPoolingE2ETests")]
         public async Task Message_IoTHubSak_GracefulShutdownSendRecovery_MuxWithPooling_AmqpWs()
