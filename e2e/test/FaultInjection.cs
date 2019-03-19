@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -75,6 +76,44 @@ namespace Microsoft.Azure.Devices.E2ETests
                 (faultType != FaultType_QuotaExceeded);
         }
 
+        public static bool FaultShouldRecover(string faultType)
+        {
+            return
+                (faultType != FaultType_Auth) &&
+                (faultType != FaultType_Throttle) &&
+                (faultType != FaultType_QuotaExceeded);
+        }
+
+        public static List<Type> GetExpectedExceptions(string faultType)
+        {
+            switch (faultType)
+            {
+                case FaultType_Auth: return new List<Type> { typeof(UnauthorizedException) };
+                case FaultType_Throttle: return new List<Type>
+                                                    {
+                                                        typeof(IotHubThrottledException),
+                                                        typeof(TimeoutException),
+                                                        typeof(IotHubCommunicationException)
+                                                    };
+                case FaultType_QuotaExceeded: return new List<Type> { typeof(DeviceMaximumQueueDepthExceededException) };
+                default: return new List<Type> { };
+            }
+        }
+
+        // WIP: che3ck if required
+        public static bool FaultShouldDisconnect_MODIFIED(string faultType)
+        {
+            return
+                (faultType != FaultType_Throttle) &&
+                (faultType != FaultType_QuotaExceeded) &&
+                (faultType != FaultType_AmqpC2D) &&
+                (faultType != FaultType_AmqpD2C) &&
+                // AMQP link/session disconnect will not disconnect the associated AMQP connection for non-X509 connections (sas single, sas mux)
+                (faultType != FaultType_AmqpSess) &&
+                (faultType != FaultType_AmqpMethodReq) &&
+                (faultType != FaultType_AmqpMethodResp);
+        }
+
         // Fault timings:
         // --------------------------------------------------------------------------------------------------------------------------------------------------------------------
         //  --- device in normal operation --- | FaultRequested | --- <delayInSec> --- | --- Device in fault mode for <durationInSec> --- | --- device in normal operation ---
@@ -124,8 +163,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        // Error injection template method.
-        public static async Task TestErrorInjectionAsync(
+        // Error injection template method (single device connection).
+        public static async Task TestErrorInjectionSingleDeviceAsync(
             string devicePrefix,
             TestDeviceType type,
             Client.TransportType transport,
@@ -140,6 +179,108 @@ namespace Microsoft.Azure.Devices.E2ETests
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(devicePrefix, type).ConfigureAwait(false);
             DeviceClient deviceClient = testDevice.CreateDeviceClient(transport);
 
+            try
+            {
+                await TestErrorInjection(deviceClient, testDevice, transport, faultType, reason, delayInSec, durationInSec, initOperation, testOperation).ConfigureAwait(false);
+            }
+            finally
+            {
+                await deviceClient.CloseAsync().ConfigureAwait(false);
+                await cleanupOperation().ConfigureAwait(false);
+
+                s_log.WriteLine($"{nameof(FaultInjection)}: Disposing deviceClient {TestLogging.GetHashCode(deviceClient)}");
+                deviceClient.Dispose();
+            }
+        }
+
+        // Error injection template method (multiplexing over amqp).
+        public static async Task TestErrorInjectionMuxedOverAmqpAsync(
+            string devicePrefix,
+            ConnectionStringAuthScope authScope,
+            TestDeviceType type,
+            Client.TransportType transport,
+            int poolSize,
+            int devicesCount,
+            string faultType,
+            string reason,
+            int delayInSec,
+            int durationInSec,
+            Func<DeviceClient, TestDevice, Task> initOperation,
+            Func<DeviceClient, TestDevice, Task> testOperation,
+            Func<Task> cleanupOperation)
+        {
+            var transportSettings = new ITransportSettings[]
+            {
+                new AmqpTransportSettings(transport)
+                {
+                    AmqpConnectionPoolSettings = new AmqpConnectionPoolSettings()
+                    {
+                        MaxPoolSize = unchecked((uint)poolSize),
+                        Pooling = true
+                    }
+                }
+            };
+
+            IList<DeviceClient> deviceClients = new List<DeviceClient>();
+            // WIP: Added to debug muxed devices recovery after fault
+            IList<TestDevice> testDevices = new List<TestDevice>();
+
+            try
+            {
+                s_log.WriteLine($"{nameof(FaultInjection)}: Starting the test execution for {devicesCount} devices");
+
+                for (int i = 0; i < devicesCount; i++)
+                {
+                    TestDevice testDevice = await TestDevice.GetTestDeviceAsync($"{devicePrefix}_{i}_", type).ConfigureAwait(false);
+                    DeviceClient deviceClient = testDevice.CreateDeviceClient(transportSettings, authScope);
+                    deviceClients.Add(deviceClient);
+                    // WIP: Added to debug muxed devices recovery after fault
+                    testDevices.Add(testDevice);
+
+                    await TestErrorInjection(deviceClient, testDevice, transport, faultType, reason, delayInSec, durationInSec, initOperation, testOperation).ConfigureAwait(false);
+                }
+            }
+            finally
+            {
+                int count = 0;
+
+                // Close and dispose all of the device client instances here
+                // WIP: Added to debug muxed devices recovery after fault
+                //foreach (DeviceClient deviceClient in deviceClients)
+                for (int i=0; i<deviceClients.Count; i++)
+                {
+                    // WIP: Added to debug muxed devices recovery after fault
+                    count++;
+                    var deviceClient = deviceClients[i];
+                    var testDevice = testDevices[i];
+
+                    s_log.WriteLine($"{nameof(FaultInjection)}: Test baseline again deviceClient {TestLogging.GetHashCode(deviceClient)}");
+                    await testOperation(deviceClient, testDevice).ConfigureAwait(false);
+
+                    s_log.WriteLine($"{nameof(FaultInjection)}: Count {count} - Closing deviceClient {TestLogging.GetHashCode(deviceClient)}");
+                    await deviceClient.CloseAsync().ConfigureAwait(false);
+                    await cleanupOperation().ConfigureAwait(false);
+
+                    s_log.WriteLine($"{nameof(FaultInjection)}: Disposing deviceClient {TestLogging.GetHashCode(deviceClient)}");
+                    deviceClient.Dispose();
+                }
+            }
+        }
+
+        // Error injection template method.
+        public static async Task TestErrorInjection(
+            DeviceClient deviceClient,
+            TestDevice testDevice,
+            Client.TransportType transport,
+            string faultType,
+            string reason,
+            int delayInSec,
+            int durationInSec,
+            Func<DeviceClient, TestDevice, Task> initOperation,
+            Func<DeviceClient, TestDevice, Task> testOperation)
+        {
+            List<Type> expectedExceptions = GetExpectedExceptions(faultType);
+
             ConnectionStatus? lastConnectionStatus = null;
             ConnectionStatusChangeReason? lastConnectionStatusChangeReason = null;
             int setConnectionStatusChangesHandlerCount = 0;
@@ -149,7 +290,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 setConnectionStatusChangesHandlerCount++;
                 lastConnectionStatus = status;
                 lastConnectionStatusChangeReason = statusChangeReason;
-                s_log.WriteLine($"{nameof(FaultInjection)}.{nameof(ConnectionStatusChangesHandler)}: status={status} statusChangeReason={statusChangeReason} count={setConnectionStatusChangesHandlerCount}");
+                s_log.WriteLine($"{nameof(FaultInjection)}.{nameof(ConnectionStatusChangesHandler)}: {TestLogging.GetHashCode(deviceClient)}: status={status} statusChangeReason={statusChangeReason} count={setConnectionStatusChangesHandlerCount}");
             });
 
             var watch = new Stopwatch();
@@ -179,36 +320,27 @@ namespace Microsoft.Azure.Devices.E2ETests
                 s_log.WriteLine($"{nameof(FaultInjection)}: Waiting for fault injection to be active: {delay}ms");
                 await Task.Delay(delay).ConfigureAwait(false);
 
+                s_log.WriteLine($">>> {nameof(FaultInjection)} Testing operation after fault recovery");
                 await testOperation(deviceClient, testDevice).ConfigureAwait(false);
-
-                await deviceClient.CloseAsync().ConfigureAwait(false);
 
                 if (transport != Client.TransportType.Http1)
                 {
+                    s_log.WriteLine($"Current count of connection status for transport type {transport} is: {setConnectionStatusChangesHandlerCount}.");
                     if (FaultShouldDisconnect(faultType))
                     {
-                        // 4 is the minimum notification count: connect, fault, reconnect, disable.
+                        // 3 is the minimum notification count: connect, fault, reconnect.
                         // There are cases where the retry must be timed out (i.e. very likely for MQTT where otherwise 
                         // we would attempt to send the fault injection forever.)
-                        Assert.IsTrue(setConnectionStatusChangesHandlerCount >= 4); 
+                        Assert.IsTrue(setConnectionStatusChangesHandlerCount >= 3);
                     }
                     else
                     {
-                        // 2 is the minimum notification count: connect, disable.
-                        // We will monitor the test environment real network stability and switch to >=2 if necessary to 
+                        // 1 is the minimum notification count: connect.
+                        // We will monitor the test environment real network stability and switch to >=1 if necessary to 
                         // account for real network issues.
-                        Assert.IsTrue(setConnectionStatusChangesHandlerCount == 2); 
+                        Assert.IsTrue(setConnectionStatusChangesHandlerCount == 1);
                     }
-
-                    Assert.AreEqual(ConnectionStatus.Disabled, lastConnectionStatus);
-                    Assert.AreEqual(ConnectionStatusChangeReason.Client_Close, lastConnectionStatusChangeReason);
                 }
-            }
-            finally
-            {
-                await cleanupOperation().ConfigureAwait(false);
-                s_log.WriteLine($"{nameof(FaultInjection)}: Disposing deviceClient {TestLogging.GetHashCode(deviceClient)}");
-                deviceClient.Dispose();
 
                 watch.Stop();
 
@@ -217,6 +349,27 @@ namespace Microsoft.Azure.Devices.E2ETests
                 {
                     s_log.WriteLine($"{nameof(FaultInjection)}: Waiting {timeToFinishFaultInjection}ms to ensure that FaultInjection duration passed.");
                     await Task.Delay(timeToFinishFaultInjection).ConfigureAwait(false);
+                }
+
+                // WIP: Assert that AuthError and MaxQuota ONLY are actually throwing exceptions
+                // throttling may or may not throw exception??
+                if (faultType == FaultType_Auth || faultType == FaultType_QuotaExceeded)
+                {
+                    throw new Exception($"Exception expected for deviceOd {testDevice.Id} with fault type {faultType}");
+                }
+            }
+            catch (Exception ex)
+            {
+                if (FaultShouldRecover(faultType))
+                {
+                    Assert.Fail($"Exception thrown for deviceId {testDevice.Id}: {ex}");
+                }
+                else
+                {
+                    if (!expectedExceptions.Contains(ex.GetType()))
+                    {
+                        Assert.Fail($"Expected exception for {faultType} was not thrown for deviceId {testDevice.Id}: {ex}");
+                    }
                 }
             }
         }

@@ -2,12 +2,9 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.Azure.Devices.Client;
-using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Diagnostics;
 using System.Diagnostics.Tracing;
-using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
@@ -194,73 +191,21 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await sender.SendAsync(testDevice.Id, new Message(Encoding.ASCII.GetBytes("Dummy Message")), timeout).ConfigureAwait(false);
             }
         }
-
-        private Client.Message ComposeD2CTestMessage(out string payload, out string p1Value)
-        {
-            payload = Guid.NewGuid().ToString();
-            p1Value = Guid.NewGuid().ToString();
-
-            _log.WriteLine($"{nameof(ComposeD2CTestMessage)}: payload='{payload}' p1Value='{p1Value}'");
-
-            return new Client.Message(Encoding.UTF8.GetBytes(payload))
-            {
-                Properties = { ["property1"] = p1Value }
-            };
-        }
-
-        private Message ComposeC2DTestMessage(out string payload, out string messageId, out string p1Value)
-        {
-            payload = Guid.NewGuid().ToString();
-            messageId = Guid.NewGuid().ToString();
-            p1Value = Guid.NewGuid().ToString();
-
-            _log.WriteLine($"{nameof(ComposeC2DTestMessage)}: payload='{payload}' messageId='{messageId}' p1Value='{p1Value}'");
-
-            return new Message(Encoding.UTF8.GetBytes(payload))
-            {
-                MessageId = messageId,
-                Properties = { ["property1"] = p1Value }
-            };
-        }
-
         private async Task SendSingleMessage(TestDeviceType type, Client.TransportType transport)
         {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, type).ConfigureAwait(false);
-            using (DeviceClient deviceClient = testDevice.CreateDeviceClient(transport))
-            {
-                await SendSingleMessage(deviceClient, testDevice.Id).ConfigureAwait(false);
-            }
+            ITransportSettings[] transportSettings = TestDevice.GetTransportSettings(transport);
+            await SendSingleMessage(type, transportSettings).ConfigureAwait(false);
         }
 
         private async Task SendSingleMessage(TestDeviceType type, ITransportSettings[] transportSettings)
         {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
-            using (DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transportSettings))
-            {
-                await SendSingleMessage(deviceClient, testDevice.Id).ConfigureAwait(false);
-            }
-        }
-        
-        private async Task SendSingleMessage(DeviceClient deviceClient, string deviceId)
-        {
-            EventHubTestListener testListener = await EventHubTestListener.CreateListener(deviceId).ConfigureAwait(false);
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, type).ConfigureAwait(false);
 
-            try
+            using (DeviceClient deviceClient = testDevice.CreateDeviceClient(transportSettings))
             {
                 await deviceClient.OpenAsync().ConfigureAwait(false);
-
-                string payload;
-                string p1Value;
-                Client.Message testMessage = ComposeD2CTestMessage(out payload, out p1Value);
-                await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
-
-                bool isReceived = await testListener.WaitForMessage(deviceId, payload, p1Value).ConfigureAwait(false);
-                Assert.IsTrue(isReceived, "Message is not received.");
-            }
-            finally
-            {
+                await MessageSendUtil.SendSingleMessage(deviceClient, testDevice.Id).ConfigureAwait(false);
                 await deviceClient.CloseAsync().ConfigureAwait(false);
-                await testListener.CloseAsync().ConfigureAwait(false);
             }
         }
 
@@ -273,7 +218,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 string payload;
                 string p1Value;
-                Client.Message testMessage = ComposeD2CTestMessage(out payload, out p1Value);
+                Client.Message testMessage = MessageSendUtil.ComposeD2CTestMessage(out payload, out p1Value);
                 await moduleClient.SendEventAsync(testMessage).ConfigureAwait(false);
                 await moduleClient.CloseAsync().ConfigureAwait(false);
             }
