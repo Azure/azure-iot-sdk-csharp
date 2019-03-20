@@ -1633,16 +1633,27 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
             {
-                EventHubTestListener testListener = await EventHubTestListener.CreateListener(testDevice.Id).ConfigureAwait(false);
+                EventHubTestListener testListener = null;
+
                 string payload, p1Value;
+                try
+                {
+                    testListener = await EventHubTestListener.CreateListener(testDevice.Id).ConfigureAwait(false);
 
-                Client.Message testMessage = ComposeD2CTestMessage(out payload, out p1Value);
-                await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
+                    Client.Message testMessage = ComposeD2CTestMessage(out payload, out p1Value);
+                    await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
 
-                bool isReceived = false;
-                isReceived = await testListener.WaitForMessage(testDevice.Id, payload, p1Value).ConfigureAwait(false);
-                Assert.IsTrue(isReceived);
-                await testListener.CloseAsync().ConfigureAwait(false);
+                    bool isReceived = false;
+                    isReceived = await testListener.WaitForMessage(testDevice.Id, payload, p1Value).ConfigureAwait(false);
+                    Assert.IsTrue(isReceived);
+                }
+                finally
+                {
+                    if (testListener != null)
+                    {
+                        await testListener.CloseAsync().ConfigureAwait(false);
+                    }
+                }
             };
 
             Func<Task> cleanupOperation = () =>
@@ -1687,16 +1698,27 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
             {
-                EventHubTestListener testListener = await EventHubTestListener.CreateListener(testDevice.Id).ConfigureAwait(false);
+                EventHubTestListener testListener = null;
+
                 string payload, p1Value;
+                try
+                {
+                    testListener = await EventHubTestListener.CreateListener(testDevice.Id).ConfigureAwait(false);
 
-                Client.Message testMessage = ComposeD2CTestMessage(out payload, out p1Value);
-                await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
+                    Client.Message testMessage = ComposeD2CTestMessage(out payload, out p1Value);
+                    await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
 
-                bool isReceived = false;
-                isReceived = await testListener.WaitForMessage(testDevice.Id, payload, p1Value).ConfigureAwait(false);
-                Assert.IsTrue(isReceived);
-                await testListener.CloseAsync().ConfigureAwait(false);
+                    bool isReceived = false;
+                    isReceived = await testListener.WaitForMessage(testDevice.Id, payload, p1Value).ConfigureAwait(false);
+                    Assert.IsTrue(isReceived);
+                }
+                finally
+                {
+                    if (testListener != null)
+                    {
+                        await testListener.CloseAsync().ConfigureAwait(false);
+                    }
+                }
             };
 
             Func<Task> cleanupOperation = () =>
