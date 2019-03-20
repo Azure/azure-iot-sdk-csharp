@@ -22,7 +22,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Version>1.27.0-preview-002</Version>
+    <Version>1.27.0-preview-003</Version>
     <Title>Microsoft Azure IoT Service Client SDK</Title>
     <Authors>Microsoft</Authors>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
@@ -151,6 +151,11 @@
     <Compile Include="net451\IotHubClientWebSocket.cs" />
     <Compile Include="net451\Common\Amqp\ClientWebSocketTransport.cs" />
     <Compile Include="net451\Common\Amqp\LegacyClientWebSocketTransport.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- FXCop -->
+    <PackageReference Condition=" '$(Configuration)' == 'Debug' " Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.6.1" />
   </ItemGroup>
 
 </Project>
