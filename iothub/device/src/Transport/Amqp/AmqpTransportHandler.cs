@@ -188,12 +188,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             if (Logging.IsEnabled) Logging.Enter(this, timeout, cancellationToken, $"{nameof(ReceiveAsync)}");
             Message message = null;
-            while (!cancellationToken.IsCancellationRequested)
+            while (true)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 try
                 {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    message = await AmqpUnit.ReceiveMessageAsync(OperationTimeout).ConfigureAwait(false);
+                    message = await AmqpUnit.ReceiveMessageAsync(timeout).ConfigureAwait(false);
                     if (message != null)
                     {
                         break;
