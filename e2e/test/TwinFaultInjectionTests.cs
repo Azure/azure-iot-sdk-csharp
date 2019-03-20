@@ -15,9 +15,18 @@ namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
     [TestCategory("IoTHub-E2E")]
+    [TestCategory("IoTHub-FaultInjection")]
     public class TwinFaultInjectionTests : IDisposable
     {
         private readonly string DevicePrefix = $"E2E_{nameof(TwinFaultInjectionTests)}_";
+
+        private readonly int MuxWithoutPoolingDevicesCount = 2;
+        // For enabling multiplexing without pooling, the pool size needs to be set to 1
+        private readonly int MuxWithoutPoolingPoolSize = 1;
+        // These values are configurable
+        private readonly int MuxWithPoolingDevicesCount = 4;
+        private readonly int MuxWithPoolingPoolSize = 2;
+
         private static TestLogging s_log = TestLogging.GetInstance();
 
         private readonly ConsoleEventListener _listener;
@@ -28,7 +37,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [TestCategory("IoTHub-FaultInjection")]
         public async Task Twin_DeviceReportedPropertiesTcpConnRecovery_Mqtt()
         {
             await Twin_DeviceReportedPropertiesRecovery(Client.TransportType.Mqtt_Tcp_Only,
@@ -38,7 +46,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [TestCategory("IoTHub-FaultInjection")]
         public async Task Twin_DeviceReportedPropertiesTcpConnRecovery_MqttWs()
         {
             await Twin_DeviceReportedPropertiesRecovery(Client.TransportType.Mqtt_WebSocket_Only,
@@ -48,7 +55,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [TestCategory("IoTHub-FaultInjection")]
         public async Task Twin_DeviceReportedPropertiesTcpConnRecovery_Amqp()
         {
             await Twin_DeviceReportedPropertiesRecovery(Client.TransportType.Amqp_Tcp_Only,
@@ -58,7 +64,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [TestCategory("IoTHub-FaultInjection")]
         public async Task Twin_DeviceReportedPropertiesTcpConnRecovery_AmqpWs()
         {
             await Twin_DeviceReportedPropertiesRecovery(Client.TransportType.Amqp_WebSocket_Only,
@@ -68,7 +73,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [TestCategory("IoTHub-FaultInjection")]
         public async Task Twin_DeviceReportedPropertiesGracefulShutdownRecovery_Mqtt()
         {
             await Twin_DeviceReportedPropertiesRecovery(Client.TransportType.Mqtt_Tcp_Only,
@@ -78,7 +82,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [TestCategory("IoTHub-FaultInjection")]
         public async Task Twin_DeviceReportedPropertiesGracefulShutdownRecovery_MqttWs()
         {
             await Twin_DeviceReportedPropertiesRecovery(Client.TransportType.Mqtt_WebSocket_Only,
@@ -88,7 +91,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [TestCategory("IoTHub-FaultInjection")]
         public async Task Twin_DeviceReportedPropertiesGracefulShutdownRecovery_Amqp()
         {
             await Twin_DeviceReportedPropertiesRecovery(Client.TransportType.Amqp_Tcp_Only,
@@ -98,7 +100,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [TestCategory("IoTHub-FaultInjection")]
         public async Task Twin_DeviceReportedPropertiesGracefulShutdownRecovery_AmqpWs()
         {
             await Twin_DeviceReportedPropertiesRecovery(Client.TransportType.Amqp_WebSocket_Only,
@@ -108,7 +109,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [TestCategory("IoTHub-FaultInjection")]
         public async Task Twin_DeviceDesiredPropertyUpdateTcpConnRecovery_Mqtt()
         {
             await Twin_DeviceDesiredPropertyUpdateRecovery(Client.TransportType.Mqtt_Tcp_Only,
@@ -118,7 +118,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [TestCategory("IoTHub-FaultInjection")]
         public async Task Twin_DeviceDesiredPropertyUpdateTcpConnRecovery_MqttWs()
         {
             await Twin_DeviceDesiredPropertyUpdateRecovery(Client.TransportType.Mqtt_WebSocket_Only,
@@ -128,7 +127,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [TestCategory("IoTHub-FaultInjection")]
         public async Task Twin_DeviceDesiredPropertyUpdateTcpConnRecovery_Amqp()
         {
             await Twin_DeviceDesiredPropertyUpdateRecovery(Client.TransportType.Amqp_Tcp_Only,
@@ -138,7 +136,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [TestCategory("IoTHub-FaultInjection")]
         public async Task Twin_DeviceDesiredPropertyUpdateTcpConnRecovery_AmqpWs()
         {
             await Twin_DeviceDesiredPropertyUpdateRecovery(Client.TransportType.Amqp_WebSocket_Only,
@@ -148,7 +145,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
         
         [TestMethod]
-        [TestCategory("IoTHub-FaultInjection")]
         public async Task Twin_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_Mqtt()
         {
             await Twin_DeviceDesiredPropertyUpdateRecovery(Client.TransportType.Mqtt_Tcp_Only,
@@ -158,7 +154,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [TestCategory("IoTHub-FaultInjection")]
         public async Task Twin_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_MqttWs()
         {
             await Twin_DeviceDesiredPropertyUpdateRecovery(Client.TransportType.Mqtt_WebSocket_Only,
@@ -168,7 +163,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [TestCategory("IoTHub-FaultInjection")]
         public async Task Twin_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_Amqp()
         {
             await Twin_DeviceDesiredPropertyUpdateRecovery(Client.TransportType.Amqp_Tcp_Only,
@@ -178,10 +172,457 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [TestCategory("IoTHub-FaultInjection")]
         public async Task Twin_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_AmqpWs()
         {
             await Twin_DeviceDesiredPropertyUpdateRecovery(Client.TransportType.Amqp_WebSocket_Only,
+                FaultInjection.FaultType_GracefulShutdownAmqp,
+                FaultInjection.FaultCloseReason_Bye,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [Ignore]
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Twin_DeviceSak_DeviceReportedPropertiesTcpConnRecovery_MuxWithoutPooling_Amqp()
+        {
+            await Twin_DeviceReportedPropertiesRecoveryMuxedOverAmqp(Client.TransportType.Amqp_Tcp_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxWithoutPoolingDevicesCount,
+                ConnectionStringAuthScope.Device,
+                FaultInjection.FaultType_Tcp,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [Ignore]
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Twin_DeviceSak_DeviceReportedPropertiesTcpConnRecovery_MuxWithoutPooling_AmqpWs()
+        {
+            await Twin_DeviceReportedPropertiesRecoveryMuxedOverAmqp(Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxWithoutPoolingDevicesCount,
+                ConnectionStringAuthScope.Device,
+                FaultInjection.FaultType_Tcp,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [Ignore]
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Twin_DeviceSak_DeviceReportedPropertiesTcpConnRecovery_MuxWithPooling_Amqp()
+        {
+            await Twin_DeviceReportedPropertiesRecoveryMuxedOverAmqp(Client.TransportType.Amqp_Tcp_Only,
+                MuxWithPoolingPoolSize,
+                MuxWithPoolingDevicesCount,
+                ConnectionStringAuthScope.Device,
+                FaultInjection.FaultType_Tcp,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [Ignore]
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Twin_DeviceSak_DeviceReportedPropertiesTcpConnRecovery_MuxWithPooling_AmqpWs()
+        {
+            await Twin_DeviceReportedPropertiesRecoveryMuxedOverAmqp(Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithPoolingPoolSize,
+                MuxWithPoolingDevicesCount,
+                ConnectionStringAuthScope.Device,
+                FaultInjection.FaultType_Tcp,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [Ignore]
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Twin_IoTHubSak_DeviceReportedPropertiesTcpConnRecovery_MuxWithoutPooling_Amqp()
+        {
+            await Twin_DeviceReportedPropertiesRecoveryMuxedOverAmqp(Client.TransportType.Amqp_Tcp_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxWithoutPoolingDevicesCount,
+                ConnectionStringAuthScope.IoTHub,
+                FaultInjection.FaultType_Tcp,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [Ignore]
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Twin_IoTHubSak_DeviceReportedPropertiesTcpConnRecovery_MuxWithoutPooling_AmqpWs()
+        {
+            await Twin_DeviceReportedPropertiesRecoveryMuxedOverAmqp(Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxWithoutPoolingDevicesCount,
+                ConnectionStringAuthScope.IoTHub,
+                FaultInjection.FaultType_Tcp,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [Ignore]
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Twin_IoTHubSak_DeviceReportedPropertiesTcpConnRecovery_MuxWithPooling_Amqp()
+        {
+            await Twin_DeviceReportedPropertiesRecoveryMuxedOverAmqp(Client.TransportType.Amqp_Tcp_Only,
+                MuxWithPoolingPoolSize,
+                MuxWithPoolingDevicesCount,
+                ConnectionStringAuthScope.IoTHub,
+                FaultInjection.FaultType_Tcp,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [Ignore]
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Twin_IoTHubSak_DeviceReportedPropertiesTcpConnRecovery_MuxWithPooling_AmqpWs()
+        {
+            await Twin_DeviceReportedPropertiesRecoveryMuxedOverAmqp(Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithPoolingPoolSize,
+                MuxWithPoolingDevicesCount,
+                ConnectionStringAuthScope.IoTHub,
+                FaultInjection.FaultType_Tcp,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [Ignore]
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Twin_DeviceSak_DeviceReportedPropertiesGracefulShutdownRecovery_MuxWithoutPooling_Amqp()
+        {
+            await Twin_DeviceReportedPropertiesRecoveryMuxedOverAmqp(Client.TransportType.Amqp_Tcp_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxWithoutPoolingDevicesCount,
+                ConnectionStringAuthScope.Device,
+                FaultInjection.FaultType_GracefulShutdownAmqp,
+                FaultInjection.FaultCloseReason_Bye,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [Ignore]
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Twin_DeviceSak_DeviceReportedPropertiesGracefulShutdownRecovery_MuxWithoutPooling_AmqpWs()
+        {
+            await Twin_DeviceReportedPropertiesRecoveryMuxedOverAmqp(Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxWithoutPoolingDevicesCount,
+                ConnectionStringAuthScope.Device,
+                FaultInjection.FaultType_GracefulShutdownAmqp,
+                FaultInjection.FaultCloseReason_Bye,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [Ignore]
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Twin_DeviceSak_DeviceReportedPropertiesGracefulShutdownRecovery_MuxWithPooling_Amqp()
+        {
+            await Twin_DeviceReportedPropertiesRecoveryMuxedOverAmqp(Client.TransportType.Amqp_Tcp_Only,
+                MuxWithPoolingPoolSize,
+                MuxWithPoolingDevicesCount,
+                ConnectionStringAuthScope.Device,
+                FaultInjection.FaultType_GracefulShutdownAmqp,
+                FaultInjection.FaultCloseReason_Bye,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [Ignore]
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Twin_DeviceSak_DeviceReportedPropertiesGracefulShutdownRecovery_MuxWithPooling_AmqpWs()
+        {
+            await Twin_DeviceReportedPropertiesRecoveryMuxedOverAmqp(Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithPoolingPoolSize,
+                MuxWithPoolingDevicesCount,
+                ConnectionStringAuthScope.Device,
+                FaultInjection.FaultType_GracefulShutdownAmqp,
+                FaultInjection.FaultCloseReason_Bye,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [Ignore]
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Twin_IoTHubSak_DeviceReportedPropertiesGracefulShutdownRecovery_MuxWithoutPooling_Amqp()
+        {
+            await Twin_DeviceReportedPropertiesRecoveryMuxedOverAmqp(Client.TransportType.Amqp_Tcp_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxWithoutPoolingDevicesCount,
+                ConnectionStringAuthScope.IoTHub,
+                FaultInjection.FaultType_GracefulShutdownAmqp,
+                FaultInjection.FaultCloseReason_Bye,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [Ignore]
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Twin_IoTHubSak_DeviceReportedPropertiesGracefulShutdownRecovery_MuxWithoutPooling_AmqpWs()
+        {
+            await Twin_DeviceReportedPropertiesRecoveryMuxedOverAmqp(Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxWithoutPoolingDevicesCount,
+                ConnectionStringAuthScope.IoTHub,
+                FaultInjection.FaultType_GracefulShutdownAmqp,
+                FaultInjection.FaultCloseReason_Bye,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [Ignore]
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Twin_IoTHubSak_DeviceReportedPropertiesGracefulShutdownRecovery_MuxWithPooling_Amqp()
+        {
+            await Twin_DeviceReportedPropertiesRecoveryMuxedOverAmqp(Client.TransportType.Amqp_Tcp_Only,
+                MuxWithPoolingPoolSize,
+                MuxWithPoolingDevicesCount,
+                ConnectionStringAuthScope.IoTHub,
+                FaultInjection.FaultType_GracefulShutdownAmqp,
+                FaultInjection.FaultCloseReason_Bye,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [Ignore]
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Twin_IoTHubSak_DeviceReportedPropertiesGracefulShutdownRecovery_MuxWithPooling_AmqpWs()
+        {
+            await Twin_DeviceReportedPropertiesRecoveryMuxedOverAmqp(Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithPoolingPoolSize,
+                MuxWithPoolingDevicesCount,
+                ConnectionStringAuthScope.IoTHub,
+                FaultInjection.FaultType_GracefulShutdownAmqp,
+                FaultInjection.FaultCloseReason_Bye,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [Ignore]
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateTcpConnRecovery_MuxWithoutPooling_Amqp()
+        {
+            await Twin_DeviceDesiredPropertyUpdateRecoveryMuxedOverAmqp(Client.TransportType.Amqp_Tcp_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxWithoutPoolingDevicesCount,
+                ConnectionStringAuthScope.Device,
+                FaultInjection.FaultType_Tcp,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [Ignore]
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateTcpConnRecovery_MuxWithoutPooling_AmqpWs()
+        {
+            await Twin_DeviceDesiredPropertyUpdateRecoveryMuxedOverAmqp(Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxWithoutPoolingDevicesCount,
+                ConnectionStringAuthScope.Device,
+                FaultInjection.FaultType_Tcp,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [Ignore]
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateTcpConnRecovery_MuxWithPooling_Amqp()
+        {
+            await Twin_DeviceDesiredPropertyUpdateRecoveryMuxedOverAmqp(Client.TransportType.Amqp_Tcp_Only,
+                MuxWithPoolingPoolSize,
+                MuxWithPoolingDevicesCount,
+                ConnectionStringAuthScope.Device,
+                FaultInjection.FaultType_Tcp,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [Ignore]
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateTcpConnRecovery_MuxWithPooling_AmqpWs()
+        {
+            await Twin_DeviceDesiredPropertyUpdateRecoveryMuxedOverAmqp(Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithPoolingPoolSize,
+                MuxWithPoolingDevicesCount,
+                ConnectionStringAuthScope.Device,
+                FaultInjection.FaultType_Tcp,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [Ignore]
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Twin_IoTHubSak_DeviceDesiredPropertyUpdateTcpConnRecovery_MuxWithoutPooling_Amqp()
+        {
+            await Twin_DeviceDesiredPropertyUpdateRecoveryMuxedOverAmqp(Client.TransportType.Amqp_Tcp_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxWithoutPoolingDevicesCount,
+                ConnectionStringAuthScope.IoTHub,
+                FaultInjection.FaultType_Tcp,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [Ignore]
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Twin_IoTHubSak_DeviceDesiredPropertyUpdateTcpConnRecovery_MuxWithoutPooling_AmqpWs()
+        {
+            await Twin_DeviceDesiredPropertyUpdateRecoveryMuxedOverAmqp(Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxWithoutPoolingDevicesCount,
+                ConnectionStringAuthScope.IoTHub,
+                FaultInjection.FaultType_Tcp,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [Ignore]
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Twin_IoTHubSak_DeviceDesiredPropertyUpdateTcpConnRecovery_MuxWithPooling_Amqp()
+        {
+            await Twin_DeviceDesiredPropertyUpdateRecoveryMuxedOverAmqp(Client.TransportType.Amqp_Tcp_Only,
+                MuxWithPoolingPoolSize,
+                MuxWithPoolingDevicesCount,
+                ConnectionStringAuthScope.IoTHub,
+                FaultInjection.FaultType_Tcp,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [Ignore]
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Twin_IoTHubSak_DeviceDesiredPropertyUpdateTcpConnRecovery_MuxWithPooling_AmqpWs()
+        {
+            await Twin_DeviceDesiredPropertyUpdateRecoveryMuxedOverAmqp(Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithPoolingPoolSize,
+                MuxWithPoolingDevicesCount,
+                ConnectionStringAuthScope.IoTHub,
+                FaultInjection.FaultType_Tcp,
+                FaultInjection.FaultCloseReason_Boom,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [Ignore]
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_MuxWithoutPooling_Amqp()
+        {
+            await Twin_DeviceDesiredPropertyUpdateRecoveryMuxedOverAmqp(Client.TransportType.Amqp_Tcp_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxWithoutPoolingDevicesCount,
+                ConnectionStringAuthScope.Device,
+                FaultInjection.FaultType_GracefulShutdownAmqp,
+                FaultInjection.FaultCloseReason_Bye,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [Ignore]
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_MuxWithoutPooling_AmqpWs()
+        {
+            await Twin_DeviceDesiredPropertyUpdateRecoveryMuxedOverAmqp(Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxWithoutPoolingDevicesCount,
+                ConnectionStringAuthScope.Device,
+                FaultInjection.FaultType_GracefulShutdownAmqp,
+                FaultInjection.FaultCloseReason_Bye,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [Ignore]
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_MuxWithPooling_Amqp()
+        {
+            await Twin_DeviceDesiredPropertyUpdateRecoveryMuxedOverAmqp(Client.TransportType.Amqp_Tcp_Only,
+                MuxWithPoolingPoolSize,
+                MuxWithPoolingDevicesCount,
+                ConnectionStringAuthScope.Device,
+                FaultInjection.FaultType_GracefulShutdownAmqp,
+                FaultInjection.FaultCloseReason_Bye,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [Ignore]
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Twin_DeviceSak_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_MuxWithPooling_AmqpWs()
+        {
+            await Twin_DeviceDesiredPropertyUpdateRecoveryMuxedOverAmqp(Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithPoolingPoolSize,
+                MuxWithPoolingDevicesCount,
+                ConnectionStringAuthScope.Device,
+                FaultInjection.FaultType_GracefulShutdownAmqp,
+                FaultInjection.FaultCloseReason_Bye,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [Ignore]
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Twin_IoTHubSak_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_MuxWithoutPooling_Amqp()
+        {
+            await Twin_DeviceDesiredPropertyUpdateRecoveryMuxedOverAmqp(Client.TransportType.Amqp_Tcp_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxWithoutPoolingDevicesCount,
+                ConnectionStringAuthScope.IoTHub,
+                FaultInjection.FaultType_GracefulShutdownAmqp,
+                FaultInjection.FaultCloseReason_Bye,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [Ignore]
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Twin_IoTHubSak_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_MuxWithoutPooling_AmqpWs()
+        {
+            await Twin_DeviceDesiredPropertyUpdateRecoveryMuxedOverAmqp(Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxWithoutPoolingDevicesCount,
+                ConnectionStringAuthScope.IoTHub,
+                FaultInjection.FaultType_GracefulShutdownAmqp,
+                FaultInjection.FaultCloseReason_Bye,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [Ignore]
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Twin_IoTHubSak_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_MuxWithPooling_Amqp()
+        {
+            await Twin_DeviceDesiredPropertyUpdateRecoveryMuxedOverAmqp(Client.TransportType.Amqp_Tcp_Only,
+                MuxWithPoolingPoolSize,
+                MuxWithPoolingDevicesCount,
+                ConnectionStringAuthScope.IoTHub,
+                FaultInjection.FaultType_GracefulShutdownAmqp,
+                FaultInjection.FaultCloseReason_Bye,
+                FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
+        }
+
+        [Ignore]
+        [TestMethod]
+        [TestCategory("ConnectionPoolingE2ETests")]
+        public async Task Twin_IoTHubSak_DeviceDesiredPropertyUpdateGracefulShutdownRecovery_MuxWithPooling_AmqpWs()
+        {
+            await Twin_DeviceDesiredPropertyUpdateRecoveryMuxedOverAmqp(Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithPoolingPoolSize,
+                MuxWithPoolingDevicesCount,
+                ConnectionStringAuthScope.IoTHub,
                 FaultInjection.FaultType_GracefulShutdownAmqp,
                 FaultInjection.FaultCloseReason_Bye,
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
@@ -261,20 +702,111 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Task serviceSendTask = RegistryManagerUpdateDesiredPropertyAsync(testDevice.Id, propName, propValue);
                 Task twinReceivedTask = testDeviceCallbackHandler.WaitForTwinCallbackAsync(cts.Token);
 
-                // var tasks = new List<Task>() { serviceSendTask, twinReceivedTask };
-                await Task.WhenAll(serviceSendTask, twinReceivedTask).ConfigureAwait(false);
-                //while (tasks.Count > 0)
-                //{
-                //    Task completedTask = await Task.WhenAny(tasks).ConfigureAwait(false);
-                //    completedTask.GetAwaiter().GetResult();
-                //    tasks.Remove(completedTask);
-                //}
+                var tasks = new List<Task>() { serviceSendTask, twinReceivedTask };
+                while (tasks.Count > 0)
+                {
+                    Task completedTask = await Task.WhenAny(tasks).ConfigureAwait(false);
+                    completedTask.GetAwaiter().GetResult();
+                    tasks.Remove(completedTask);
+                }
             };
 
             await FaultInjection.TestErrorInjectionSingleDeviceAsync(
                 DevicePrefix,
                 TestDeviceType.Sasl,
                 transport,
+                faultType,
+                reason,
+                delayInSec,
+                FaultInjection.DefaultDurationInSec,
+                false,
+                new List<Type> { },
+                initOperation,
+                testOperation,
+                () => { return Task.FromResult<bool>(false); }).ConfigureAwait(false);
+        }
+
+        private async Task Twin_DeviceReportedPropertiesRecoveryMuxedOverAmqp(Client.TransportType transport, int poolSize, int devicesCount, ConnectionStringAuthScope ConnectionStringAuthScope, string faultType, string reason, int delayInSec)
+        {
+            var propName = Guid.NewGuid().ToString();
+            var props = new TwinCollection();
+
+            Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
+            {
+                var propValue = Guid.NewGuid().ToString();
+                props[propName] = propValue;
+
+                await deviceClient.UpdateReportedPropertiesAsync(props).ConfigureAwait(false);
+
+                Twin deviceTwin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
+                Assert.IsNotNull(deviceTwin, $"{nameof(deviceTwin)} is null");
+                Assert.IsNotNull(deviceTwin.Properties, $"{nameof(deviceTwin)}.Properties is null");
+                Assert.IsNotNull(deviceTwin.Properties.Reported, $"{nameof(deviceTwin)}.Properties.Reported is null");
+                Assert.IsNotNull(deviceTwin.Properties.Reported[propName], $"{nameof(deviceTwin)}.Properties.Reported[{nameof(propName)}] is null");
+                Assert.AreEqual<String>(deviceTwin.Properties.Reported[propName].ToString(), propValue);
+            };
+
+            await FaultInjection.TestErrorInjectionMuxedOverAmqpAsync(
+                DevicePrefix,
+                ConnectionStringAuthScope,
+                TestDeviceType.Sasl,
+                transport,
+                poolSize,
+                devicesCount,
+                faultType,
+                reason,
+                delayInSec,
+                FaultInjection.DefaultDurationInSec,
+                false,
+                new List<Type> { },
+                (d, t) => { return Task.FromResult<bool>(false); },
+                testOperation,
+                () => { return Task.FromResult<bool>(false); }).ConfigureAwait(false);
+        }
+
+        private async Task Twin_DeviceDesiredPropertyUpdateRecoveryMuxedOverAmqp(Client.TransportType transport, int poolSize, int devicesCount, ConnectionStringAuthScope ConnectionStringAuthScope, string faultType, string reason, int delayInSec)
+        {
+            TestDeviceCallbackHandler testDeviceCallbackHandler = null;
+            RegistryManager registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+            var cts = new CancellationTokenSource(FaultInjection.RecoveryTimeMilliseconds);
+
+            var propName = Guid.NewGuid().ToString();
+            var props = new TwinCollection();
+
+            // Configure the callback and start accepting twin changes.
+            Func<DeviceClient, TestDevice, Task> initOperation = async (deviceClient, testDevice) =>
+            {
+                testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient);
+                await testDeviceCallbackHandler.SetTwinPropertyUpdateCallbackHandlerAsync(propName).ConfigureAwait(false);
+            };
+
+            // Change the twin from the service side and verify the device received it.
+            Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
+            {
+                var propValue = Guid.NewGuid().ToString();
+                testDeviceCallbackHandler.ExpectedTwinPropertyValue = propValue;
+
+                s_log.WriteLine($"{nameof(Twin_DeviceDesiredPropertyUpdateRecovery)}: name={propName}, value={propValue}");
+
+                Task serviceSendTask = RegistryManagerUpdateDesiredPropertyAsync(testDevice.Id, propName, propValue);
+                Task twinReceivedTask = testDeviceCallbackHandler.WaitForTwinCallbackAsync(cts.Token);
+
+                var tasks = new List<Task>() { serviceSendTask, twinReceivedTask };
+                while (tasks.Count > 0)
+                {
+                    Task completedTask = await Task.WhenAny(tasks).ConfigureAwait(false);
+                    completedTask.GetAwaiter().GetResult();
+                    tasks.Remove(completedTask);
+                }
+            };
+
+            await FaultInjection.TestErrorInjectionMuxedOverAmqpAsync(
+                DevicePrefix,
+                ConnectionStringAuthScope,
+                TestDeviceType.Sasl,
+                transport,
+                poolSize,
+                devicesCount,
                 faultType,
                 reason,
                 delayInSec,
