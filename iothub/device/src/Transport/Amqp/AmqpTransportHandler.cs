@@ -187,24 +187,24 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         public override async Task<Message> ReceiveAsync(TimeSpan timeout, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled) Logging.Enter(this, timeout, cancellationToken, $"{nameof(ReceiveAsync)}");
-
-            Message message;
-            try
+            Message message = null;
+            while (!cancellationToken.IsCancellationRequested)
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                message = await AmqpUnit.ReceiveMessageAsync(OperationTimeout).ConfigureAwait(false);
-
+                try
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    message = await AmqpUnit.ReceiveMessageAsync(OperationTimeout).ConfigureAwait(false);
+                    if (message != null)
+                    {
+                        break;
+                    }
+                }
+                catch (Exception exception) when (!exception.IsFatal() && !(exception is OperationCanceledException))
+                {
+                    throw AmqpClientHelper.ToIotHubClientContract(exception);
+                }
             }
-            catch (Exception exception) when (!exception.IsFatal() && !(exception is OperationCanceledException))
-            {
-                throw AmqpClientHelper.ToIotHubClientContract(exception);
-            }
-            finally
-            {
-                if (Logging.IsEnabled) Logging.Enter(this, timeout, cancellationToken, $"{nameof(ReceiveAsync)}");
-            }
-
+            if (Logging.IsEnabled) Logging.Enter(this, timeout, cancellationToken, $"{nameof(ReceiveAsync)}");
             return message;
         }
         #endregion
