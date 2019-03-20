@@ -4,7 +4,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Diagnostics.Tracing;
 
-[assembly: Parallelize(Workers = 32, Scope = ExecutionScope.ClassLevel)]
+[assembly: Parallelize(Workers = 1, Scope = ExecutionScope.ClassLevel)]
 
 namespace Microsoft.Azure.Devices.E2ETests
 {

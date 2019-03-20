@@ -4,6 +4,7 @@
 using Microsoft.Azure.Devices.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using System.Linq;
@@ -238,6 +239,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                     reason,
                     delayInSec,
                     FaultInjection.DefaultDurationInSec,
+                    false,
+                    new List<Type> { },
                     init,
                     testOperation,
                     cleanupOperation).ConfigureAwait(false);

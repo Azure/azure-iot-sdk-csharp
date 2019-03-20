@@ -5,6 +5,7 @@ using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 using System.Text;
 using System.Threading.Tasks;
@@ -1641,6 +1642,9 @@ namespace Microsoft.Azure.Devices.E2ETests
                 return Task.FromResult(false);
             };
 
+            bool shouldFaultNotRecover = ShouldFaultNotRecover(faultType, retryDurationInMilliSec);
+            List<Type> expectedExceptions = GetExpectedExceptions(faultType, transport, retryDurationInMilliSec);
+
             await FaultInjection.TestErrorInjectionSingleDeviceAsync(
                 DevicePrefix,
                 type,
@@ -1649,6 +1653,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 reason,
                 delayInSec,
                 durationInSec,
+                shouldFaultNotRecover,
+                expectedExceptions,
                 init,
                 testOperation,
                 cleanupOperation).ConfigureAwait(false);
@@ -1690,6 +1696,9 @@ namespace Microsoft.Azure.Devices.E2ETests
                 return Task.FromResult(false);
             };
 
+            bool shouldFaultNotRecover = ShouldFaultNotRecover(faultType, retryDurationInMilliSec);
+            List<Type> expectedExceptions = GetExpectedExceptions(faultType, transport, retryDurationInMilliSec);
+
             await FaultInjection.TestErrorInjectionMuxedOverAmqpAsync(
                 DevicePrefix,
                 authScope,
@@ -1701,9 +1710,50 @@ namespace Microsoft.Azure.Devices.E2ETests
                 reason,
                 delayInSec,
                 durationInSec,
+                shouldFaultNotRecover,
+                expectedExceptions,
                 init,
                 testOperation,
                 cleanupOperation).ConfigureAwait(false);
+        }
+
+        private static bool ShouldFaultNotRecover(string faultType, int retryDurationInMilliSec)
+        {
+            return 
+                (faultType == FaultInjection.FaultType_QuotaExceeded) ||
+                (faultType == FaultInjection.FaultType_Auth) ||
+                (faultType == FaultInjection.FaultType_Throttle && retryDurationInMilliSec == FaultInjection.ShortRetryInMilliSec);
+        }
+
+        private static List<Type> GetExpectedExceptions(string faultType, Client.TransportType transport, int retryDurationInMilliSec)
+        {
+            switch (faultType)
+            {
+                case FaultInjection.FaultType_Auth: return new List<Type> { typeof(UnauthorizedException) };
+                case FaultInjection.FaultType_Throttle:
+                    {
+                        if (retryDurationInMilliSec != FaultInjection.RecoveryTimeMilliseconds)
+                        {
+                            return new List<Type> { typeof(IotHubThrottledException), typeof(TimeoutException), typeof(IotHubCommunicationException) };
+                        }
+                        else
+                        {
+                            return new List<Type> { typeof(IotHubThrottledException) };
+                        }
+                    };
+                case FaultInjection.FaultType_QuotaExceeded:
+                    {
+                        if (transport == Client.TransportType.Http1)
+                        {
+                            return new List<Type> { typeof(QuotaExceededException), typeof(TimeoutException), typeof(IotHubCommunicationException) };
+                        }
+                        else
+                        {
+                            return new List<Type> { typeof(DeviceMaximumQueueDepthExceededException) };
+                        }
+                    }
+                default: return new List<Type> { };
+            }
         }
 
         public void Dispose()

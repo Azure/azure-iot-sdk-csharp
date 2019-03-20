@@ -76,44 +76,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 (faultType != FaultType_QuotaExceeded);
         }
 
-        public static bool FaultShouldRecover(string faultType)
-        {
-            return
-                (faultType != FaultType_Auth) &&
-                (faultType != FaultType_Throttle) &&
-                (faultType != FaultType_QuotaExceeded);
-        }
-
-        public static List<Type> GetExpectedExceptions(string faultType)
-        {
-            switch (faultType)
-            {
-                case FaultType_Auth: return new List<Type> { typeof(UnauthorizedException) };
-                case FaultType_Throttle: return new List<Type>
-                                                    {
-                                                        typeof(IotHubThrottledException),
-                                                        typeof(TimeoutException),
-                                                        typeof(IotHubCommunicationException)
-                                                    };
-                case FaultType_QuotaExceeded: return new List<Type> { typeof(DeviceMaximumQueueDepthExceededException) };
-                default: return new List<Type> { };
-            }
-        }
-
-        // WIP: che3ck if required
-        public static bool FaultShouldDisconnect_MODIFIED(string faultType)
-        {
-            return
-                (faultType != FaultType_Throttle) &&
-                (faultType != FaultType_QuotaExceeded) &&
-                (faultType != FaultType_AmqpC2D) &&
-                (faultType != FaultType_AmqpD2C) &&
-                // AMQP link/session disconnect will not disconnect the associated AMQP connection for non-X509 connections (sas single, sas mux)
-                (faultType != FaultType_AmqpSess) &&
-                (faultType != FaultType_AmqpMethodReq) &&
-                (faultType != FaultType_AmqpMethodResp);
-        }
-
         // Fault timings:
         // --------------------------------------------------------------------------------------------------------------------------------------------------------------------
         //  --- device in normal operation --- | FaultRequested | --- <delayInSec> --- | --- Device in fault mode for <durationInSec> --- | --- device in normal operation ---
@@ -172,6 +134,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             string reason,
             int delayInSec,
             int durationInSec,
+            bool shouldFaultRecover,
+            List<Type> expectedExceptions,
             Func<DeviceClient, TestDevice, Task> initOperation,
             Func<DeviceClient, TestDevice, Task> testOperation,
             Func<Task> cleanupOperation)
@@ -181,7 +145,19 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             try
             {
-                await TestErrorInjection(deviceClient, testDevice, transport, faultType, reason, delayInSec, durationInSec, initOperation, testOperation).ConfigureAwait(false);
+                await TestErrorInjection(
+                    deviceClient,
+                    testDevice,
+                    transport,
+                    faultType,
+                    reason,
+                    delayInSec,
+                    durationInSec,
+                    shouldFaultRecover,
+                    expectedExceptions,
+                    initOperation,
+                    testOperation
+                    ).ConfigureAwait(false);
             }
             finally
             {
@@ -205,6 +181,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             string reason,
             int delayInSec,
             int durationInSec,
+            bool shouldFaultRecover,
+            List<Type> expectedExceptions,
             Func<DeviceClient, TestDevice, Task> initOperation,
             Func<DeviceClient, TestDevice, Task> testOperation,
             Func<Task> cleanupOperation)
@@ -237,7 +215,19 @@ namespace Microsoft.Azure.Devices.E2ETests
                     // WIP: Added to debug muxed devices recovery after fault
                     testDevices.Add(testDevice);
 
-                    await TestErrorInjection(deviceClient, testDevice, transport, faultType, reason, delayInSec, durationInSec, initOperation, testOperation).ConfigureAwait(false);
+                    await TestErrorInjection(
+                        deviceClient,
+                        testDevice,
+                        transport,
+                        faultType,
+                        reason,
+                        delayInSec,
+                        durationInSec,
+                        shouldFaultRecover,
+                        expectedExceptions,
+                        initOperation,
+                        testOperation
+                        ).ConfigureAwait(false);
                 }
             }
             finally
@@ -277,11 +267,11 @@ namespace Microsoft.Azure.Devices.E2ETests
             string reason,
             int delayInSec,
             int durationInSec,
+            bool faultShouldNotRecover,
+            List<Type> expectedExceptions,
             Func<DeviceClient, TestDevice, Task> initOperation,
             Func<DeviceClient, TestDevice, Task> testOperation)
         {
-            List<Type> expectedExceptions = GetExpectedExceptions(faultType);
-
             ConnectionStatus? lastConnectionStatus = null;
             ConnectionStatusChangeReason? lastConnectionStatusChangeReason = null;
             int setConnectionStatusChangesHandlerCount = 0;
@@ -313,6 +303,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 watch.Start();
                 s_log.WriteLine($">>> {nameof(FaultInjection)} Testing fault handling");
+
                 await ActivateFaultInjection(transport, faultType, reason, delayInSec, durationInSec, deviceClient).ConfigureAwait(false);
 
                 int delay = FaultInjection.WaitForDisconnectMilliseconds - (int)watch.ElapsedMilliseconds;
@@ -320,6 +311,12 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 s_log.WriteLine($"{nameof(FaultInjection)}: Waiting for fault injection to be active: {delay}ms");
                 await Task.Delay(delay).ConfigureAwait(false);
+
+                // TODO: This needs to be changed - for recoverable faults we need to wait some more time for the client to know about fault and then retry
+                if (!faultShouldNotRecover)
+                {
+                    await Task.Delay(3000).ConfigureAwait(false);
+                }
 
                 s_log.WriteLine($">>> {nameof(FaultInjection)} Testing operation after fault recovery");
                 await testOperation(deviceClient, testDevice).ConfigureAwait(false);
@@ -354,23 +351,20 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 // WIP: Assert that AuthError and MaxQuota ONLY are actually throwing exceptions
                 // throttling may or may not throw exception??
-                if (faultType == FaultType_Auth || faultType == FaultType_QuotaExceeded)
+                if (faultShouldNotRecover)
                 {
-                    throw new Exception($"Exception expected for deviceOd {testDevice.Id} with fault type {faultType}");
+                    Assert.Fail($"Exception expected for deviceId {testDevice.Id} with fault type {faultType}");
                 }
             }
             catch (Exception ex)
             {
-                if (FaultShouldRecover(faultType))
+                if (!faultShouldNotRecover)
                 {
-                    Assert.Fail($"Exception thrown for deviceId {testDevice.Id}: {ex}");
+                    Assert.Fail($"Should recover for deviceId {testDevice.Id} fault type {faultType} but threw exception: {ex}");
                 }
-                else
+                else if (!expectedExceptions.Contains(ex.GetType()))
                 {
-                    if (!expectedExceptions.Contains(ex.GetType()))
-                    {
-                        Assert.Fail($"Expected exception for {faultType} was not thrown for deviceId {testDevice.Id}: {ex}");
-                    }
+                    Assert.Fail($"Exception for {faultType} was thrown for deviceId {testDevice.Id} was not expected: {ex}");
                 }
             }
         }

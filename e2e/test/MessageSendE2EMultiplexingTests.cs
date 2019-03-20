@@ -233,7 +233,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                     _log.WriteLine($"{nameof(MessageSendE2ETests)}: Preparing to send message for device {i}");
                     await deviceClient.OpenAsync().ConfigureAwait(false);
-                    await MessageSendUtil.SendSingleMessage(deviceClient, testDevice.Id).ConfigureAwait(false);
+                    await MessageSendUtil.SendSingleMessageAndVerify(deviceClient, testDevice.Id).ConfigureAwait(false);
                 }
             }
             finally

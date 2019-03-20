@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             };
         }
 
-        public static async Task SendSingleMessage(DeviceClient deviceClient, string deviceId)
+        public static async Task SendSingleMessageAndVerify(DeviceClient deviceClient, string deviceId)
         {
             EventHubTestListener testListener = await EventHubTestListener.CreateListener(deviceId).ConfigureAwait(false);
 

@@ -215,6 +215,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 reason,
                 delayInSec,
                 FaultInjection.DefaultDurationInSec,
+                false,
+                new List<Type> { },
                 (d, t) => { return Task.FromResult<bool>(false); },
                 testOperation,
                 () => { return Task.FromResult<bool>(false); }).ConfigureAwait(false);
@@ -258,14 +260,15 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 Task serviceSendTask = RegistryManagerUpdateDesiredPropertyAsync(testDevice.Id, propName, propValue);
                 Task twinReceivedTask = testDeviceCallbackHandler.WaitForTwinCallbackAsync(cts.Token);
-                
-                var tasks = new List<Task>() { serviceSendTask, twinReceivedTask };
-                while (tasks.Count > 0)
-                {
-                    Task completedTask = await Task.WhenAny(tasks).ConfigureAwait(false);
-                    completedTask.GetAwaiter().GetResult();
-                    tasks.Remove(completedTask);
-                }
+
+                // var tasks = new List<Task>() { serviceSendTask, twinReceivedTask };
+                await Task.WhenAll(serviceSendTask, twinReceivedTask).ConfigureAwait(false);
+                //while (tasks.Count > 0)
+                //{
+                //    Task completedTask = await Task.WhenAny(tasks).ConfigureAwait(false);
+                //    completedTask.GetAwaiter().GetResult();
+                //    tasks.Remove(completedTask);
+                //}
             };
 
             await FaultInjection.TestErrorInjectionSingleDeviceAsync(
@@ -276,6 +279,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 reason,
                 delayInSec,
                 FaultInjection.DefaultDurationInSec,
+                false,
+                new List<Type> { },
                 initOperation,
                 testOperation,
                 () => { return Task.FromResult<bool>(false); }).ConfigureAwait(false);

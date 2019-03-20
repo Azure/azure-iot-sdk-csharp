@@ -936,6 +936,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 reason,
                 delayInSec,
                 FaultInjection.DefaultDelayInSec,
+                false,
+                new List<Type> { },
                 initOperation,
                 testOperation,
                 () => { return Task.FromResult<bool>(false); }).ConfigureAwait(false);
@@ -989,6 +991,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 reason,
                 delayInSec,
                 FaultInjection.DefaultDelayInSec,
+                false,
+                new List<Type> { },
                 initOperation,
                 testOperation,
                 () => { return Task.FromResult<bool>(false); }).ConfigureAwait(false);
