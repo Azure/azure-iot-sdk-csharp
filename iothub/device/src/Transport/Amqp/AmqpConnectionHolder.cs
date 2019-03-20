@@ -91,7 +91,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             AmqpConnection amqpConnection = null;
             IAmqpAuthenticationRefresher amqpAuthenticationRefresher = null;
             AmqpCbsLink amqpCbsLink = null;
-            await Lock.WaitAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+            bool gain = await Lock.WaitAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+            if (!gain)
+            {
+                throw new TimeoutException();
+            }
             try
             {
                 if (AmqpConnection == null)

@@ -66,8 +66,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(OpenAsync)}");
             TimeoutHelper timeoutHelper = new TimeoutHelper(timeout);
-            await Lock.WaitAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
-           try
+            bool gain = await Lock.WaitAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+            if (!gain)
+            {
+                throw new TimeoutException();
+            }
+            try
             {
                 if (!Closed && AmqpSession == null)
                 { 
@@ -105,7 +109,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(CloseAsync)}");
             TimeoutHelper timeoutHelper = new TimeoutHelper(timeout);
-            await Lock.WaitAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+            bool gain = await Lock.WaitAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+            if (!gain)
+            {
+                throw new TimeoutException();
+            }
             bool wasOpen = !Closed;
             if (wasOpen)
             {
@@ -157,7 +165,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             if (Logging.IsEnabled) Logging.Enter(this, message, timeout, $"{nameof(SendMessageAsync)}");
             TimeoutHelper timeoutHelper = new TimeoutHelper(timeout);
-            await Lock.WaitAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+            bool gain = await Lock.WaitAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+            if (!gain)
+            {
+                throw new TimeoutException();
+            }
             SendingAmqpLink messageSendingLink = MessageSendingLink;
             Lock.Release();
             if (messageSendingLink == null)
@@ -176,7 +188,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(ReceiveMessageAsync)}");
             TimeoutHelper timeoutHelper = new TimeoutHelper(timeout);
-            await Lock.WaitAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+            bool gain = await Lock.WaitAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+            if (!gain)
+            {
+                throw new TimeoutException();
+            }
             try
             {
                 if (MessageSendingLink == null)
@@ -247,7 +263,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(EnableMethodsAsync)}");
             TimeoutHelper timeoutHelper = new TimeoutHelper(timeout);
-            await Lock.WaitAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+            bool gain = await Lock.WaitAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+            if (!gain)
+            {
+                throw new TimeoutException();
+            }
             ReceivingAmqpLink methodReceivingLink = null;
             SendingAmqpLink methodSendingLink = null;
             try
@@ -309,7 +329,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(DisableMethodsAsync)}");
             TimeoutHelper timeoutHelper = new TimeoutHelper(timeout);
-            await Lock.WaitAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+            bool gain = await Lock.WaitAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+            if (!gain)
+            {
+                throw new TimeoutException();
+            }
             ICollection<Task> tasks = new List<Task>();
             if (MethodReceivingLink != null)
             {
@@ -334,7 +358,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             if (Logging.IsEnabled) Logging.Enter(this, message, $"{nameof(SendMethodResponseAsync)}");
             TimeoutHelper timeoutHelper = new TimeoutHelper(timeout);
-            await Lock.WaitAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+            bool gain = await Lock.WaitAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+            if (!gain)
+            {
+                throw new TimeoutException();
+            }
             SendingAmqpLink methodSendingLink = MethodSendingLink;
             Lock.Release();
             if (methodSendingLink == null)
@@ -356,7 +384,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(EnableTwinPatchAsync)}");
             TimeoutHelper timeoutHelper = new TimeoutHelper(timeout);
             string correlationIdSuffix = Guid.NewGuid().ToString();
-            await Lock.WaitAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+            bool gain = await Lock.WaitAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+            if (!gain)
+            {
+                throw new TimeoutException();
+            }
             ReceivingAmqpLink twinReceivingLink = null;
             SendingAmqpLink twinSendingLink = null;
             try
@@ -413,7 +445,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(DisableTwinAsync)}");
             TimeoutHelper timeoutHelper = new TimeoutHelper(timeout);
-            await Lock.WaitAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+            bool gain = await Lock.WaitAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+            if (!gain)
+            {
+                throw new TimeoutException();
+            }
             ICollection<Task> tasks = new List<Task>();
             if (TwinReceivingLink != null)
             {
@@ -438,7 +474,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(SendTwinMessageAsync)}");
             TimeoutHelper timeoutHelper = new TimeoutHelper(timeout);
-            await Lock.WaitAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+            bool gain = await Lock.WaitAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+            if (!gain)
+            {
+                throw new TimeoutException();
+            }
             SendingAmqpLink twinSendingLink = TwinSendingLink;
             Lock.Release();
             if (twinSendingLink == null)
