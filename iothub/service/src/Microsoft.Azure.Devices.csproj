@@ -153,4 +153,9 @@
     <Compile Include="net451\Common\Amqp\LegacyClientWebSocketTransport.cs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- FXCop -->
+    <PackageReference Condition=" '$(Configuration)' == 'Debug' " Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.6.1" />
+  </ItemGroup>
+
 </Project>

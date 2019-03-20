@@ -43,4 +43,8 @@
     <ProjectReference Include="$(RootDir)\shared\src\Microsoft.Azure.Devices.Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- FXCop -->
+    <PackageReference Condition=" '$(Configuration)' == 'Debug' " Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.6.1" />
+  </ItemGroup>
 </Project>

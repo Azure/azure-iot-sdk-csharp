@@ -40,14 +40,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-<<<<<<< HEAD
     <PackageReference Include="Microsoft.TSS" Version="2.1.1" />
 
     <!-- FXCop -->
     <PackageReference Condition=" '$(Configuration)' == 'Debug' " Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.6.1" />
-=======
-    <PackageReference Include="Microsoft.TSS" Version="2.0.1" />
->>>>>>> 4ef83d1d... Fix Modules Streaming unauthorized failure and nullref ex(#788)
   </ItemGroup>
 
   <ItemGroup>
