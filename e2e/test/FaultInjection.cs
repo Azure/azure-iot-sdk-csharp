@@ -356,15 +356,15 @@ namespace Microsoft.Azure.Devices.E2ETests
                     Assert.Fail($"Exception expected for deviceId {testDevice.Id} with fault type {faultType}");
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex) when (!(ex is AssertFailedException))
             {
                 if (!faultShouldNotRecover)
                 {
-                    Assert.Fail($"Should recover for deviceId {testDevice.Id} fault type {faultType} but threw exception: {ex}");
+                    Assert.Fail($"Exception not expected for deviceId {testDevice.Id} with fault type {faultType} but threw exception: {ex}");
                 }
                 else if (!expectedExceptions.Contains(ex.GetType()))
                 {
-                    Assert.Fail($"Exception for {faultType} was thrown for deviceId {testDevice.Id} was not expected: {ex}");
+                    Assert.Fail($"Exception for {faultType} thrown for deviceId {testDevice.Id} was not expected: {ex}");
                 }
             }
         }
