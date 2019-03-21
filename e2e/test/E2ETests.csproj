@@ -8,7 +8,7 @@
     <RootNamespace>Microsoft.Azure.Devices.E2ETests</RootNamespace>
     <AssemblyName>Microsoft.Azure.Devices.E2ETests</AssemblyName>
     <!-- Don't auto-compile platform specific files: -->
-    <DefaultItemExcludes>netstandard13/**;netstandard20/**;net451/**;$(DefaultItemExcludes)</DefaultItemExcludes>
+    <DefaultItemExcludes>config/**;netstandard13/**;netstandard20/**;net451/**;$(DefaultItemExcludes)</DefaultItemExcludes>
     <RootDir>$(MSBuildProjectDirectory)\..\..</RootDir>
   </PropertyGroup>
   
@@ -79,6 +79,14 @@
   <!-- NetCore and .NET 4.7 -->
   <ItemGroup Condition=" '$(TargetFramework)' != 'net451' ">
     <PackageReference Include="Microsoft.Azure.EventHubs" Version="1.0.3" />
+  </ItemGroup>
+
+  <!-- Test configuration: parallelize Windows only until we get TPM driver fixes for Linux -->
+  <ItemGroup Condition="'$(OS)' != 'Windows_NT'">
+    <Compile Include="config\TestConfig.Linux.cs" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
+    <Compile Include="config\TestConfig.Windows.cs" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(AZURE_IOT_LOCALPACKAGES)' == '' ">
