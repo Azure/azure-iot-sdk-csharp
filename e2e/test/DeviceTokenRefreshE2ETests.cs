@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             } // Second release
         }
 
-        private async Task DeviceClient_TokenIsRefreshed_Internal(Client.TransportType transport, int ttl = 6)
+        private async Task DeviceClient_TokenIsRefreshed_Internal(Client.TransportType transport, int ttl = 20)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
 
