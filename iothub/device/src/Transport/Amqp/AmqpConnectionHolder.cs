@@ -32,7 +32,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private async Task<IAmqpAuthenticationRefresher> AuthenticationRefresherCreator(DeviceIdentity deviceIdentity, TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, deviceIdentity, timeout, $"{nameof(AuthenticationRefresherCreator)}");
-            TimeoutHelper timeoutHelper = new TimeoutHelper(timeout);
             if (AmqpConnection == null)
             {
                 throw new IotHubCommunicationException();
@@ -40,8 +39,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             AmqpCbsLink = AmqpCbsLink ?? new AmqpCbsLink(AmqpConnection);
             
             IAmqpAuthenticationRefresher amqpAuthenticator = new AmqpAuthenticationRefresher(deviceIdentity, AmqpCbsLink);
-            await amqpAuthenticator.InitLoopAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
-            if (Logging.IsEnabled) Logging.Exit(this, deviceIdentity, timeoutHelper.RemainingTime(), $"{nameof(AuthenticationRefresherCreator)}");
+            await amqpAuthenticator.InitLoopAsync(timeout).ConfigureAwait(false);
+            if (Logging.IsEnabled) Logging.Exit(this, deviceIdentity, timeout, $"{nameof(AuthenticationRefresherCreator)}");
             return amqpAuthenticator;
         }
 
@@ -69,12 +68,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private async Task<AmqpSession> AmqpSessionCreator(DeviceIdentity deviceIdentity, ILinkFactory linkFactory, AmqpSessionSettings amqpSessionSettings, TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, deviceIdentity, timeout, $"{nameof(AmqpSessionCreator)}");
-            TimeoutHelper timeoutHelper = new TimeoutHelper(timeout);
-            AmqpConnection amqpConnection = await EnsureConnection(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+            AmqpConnection amqpConnection = await EnsureConnection(timeout).ConfigureAwait(false);
             AmqpSession amqpSession = new AmqpSession(amqpConnection, amqpSessionSettings, linkFactory);
             amqpConnection.AddSession(amqpSession, new ushort?());
             if (Logging.IsEnabled) Logging.Associate(amqpConnection, amqpSession, $"{nameof(AmqpSessionCreator)}");
-            if (Logging.IsEnabled) Logging.Exit(this, deviceIdentity, timeoutHelper.RemainingTime(), $"{nameof(AmqpSessionCreator)}");
+            if (Logging.IsEnabled) Logging.Exit(this, deviceIdentity, timeout, $"{nameof(AmqpSessionCreator)}");
             return amqpSession;
         }
 
@@ -87,11 +85,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private async Task<AmqpConnection> EnsureConnection(TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(EnsureConnection)}");
-            TimeoutHelper timeoutHelper = new TimeoutHelper(timeout);
             AmqpConnection amqpConnection = null;
             IAmqpAuthenticationRefresher amqpAuthenticationRefresher = null;
             AmqpCbsLink amqpCbsLink = null;
-            bool gain = await Lock.WaitAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+            bool gain = await Lock.WaitAsync(timeout).ConfigureAwait(false);
             if (!gain)
             {
                 throw new TimeoutException();
@@ -102,7 +99,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 {
                     if (Logging.IsEnabled) Logging.Info(this, "Creating new AmqpConnection", $"{nameof(EnsureConnection)}");
                     // Create AmqpConnection
-                    amqpConnection = await Connector.OpenConnectionAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+                    amqpConnection = await Connector.OpenConnectionAsync(timeout).ConfigureAwait(false);
 
                     if (DeviceIdentity.AuthenticationModel != AuthenticationModel.X509)
                     {
@@ -120,7 +117,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                         {
                             if (Logging.IsEnabled) Logging.Info(this, "Creating connection width AmqpAuthenticationRefresher", $"{nameof(EnsureConnection)}");
                             amqpAuthenticationRefresher = new AmqpAuthenticationRefresher(DeviceIdentity, amqpCbsLink);
-                            await amqpAuthenticationRefresher.InitLoopAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+                            await amqpAuthenticationRefresher.InitLoopAsync(timeout).ConfigureAwait(false);
                         }
                     }
                     AmqpConnection = amqpConnection;
@@ -150,7 +147,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             {
                 Lock.Release();
             }
-            if (Logging.IsEnabled) Logging.Exit(this, timeoutHelper.RemainingTime(), $"{nameof(EnsureConnection)}");
+            if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(EnsureConnection)}");
             return amqpConnection;
         }
 
