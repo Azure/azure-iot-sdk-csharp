@@ -125,6 +125,7 @@ namespace Microsoft.Azure.Devices.Client
     internal class InternalClient : IDisposable
     {
         private uint _operationTimeoutInMilliseconds = DeviceClient.DefaultOperationTimeoutInMilliseconds;
+        private uint _retryTimeoutInMilliseconds = 0;
         private int _diagnosticSamplingPercentage = 0;
         private ITransportSettings[] transportSettings;
         private SemaphoreSlim methodsDictionarySemaphore = new SemaphoreSlim(1, 1);
@@ -233,11 +234,6 @@ namespace Microsoft.Azure.Devices.Client
             set
             {
                 _operationTimeoutInMilliseconds = value;
-                var retryDelegatingHandler = GetDelegateHandler<RetryDelegatingHandler>();
-                if (retryDelegatingHandler != null)
-                {
-                    retryDelegatingHandler.RetryTimeoutInMilliseconds = value;
-                }
             }
         }
 

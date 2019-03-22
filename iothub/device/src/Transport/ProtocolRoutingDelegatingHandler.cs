@@ -103,6 +103,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task WaitForTransportClosedAsync()
         {
+            // Will throw OperationCancelledException if CloseAsync() or Dispose() has been called by the application.
             await base.WaitForTransportClosedAsync().ConfigureAwait(false);
 
             if (Logging.IsEnabled) Logging.Info(this, "Client disconnected.", nameof(WaitForTransportClosedAsync));

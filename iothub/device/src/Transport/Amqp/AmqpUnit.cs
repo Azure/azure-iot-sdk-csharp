@@ -1,36 +1,50 @@
-﻿using Microsoft.Azure.Amqp;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
-    internal class AmqpUnit : IAmqpUnit
+    internal class AmqpUnit : IDisposable
     {
+        // If the first argument is set to true, we are disconnecting gracefully via CloseAsync.
         public event EventHandler OnUnitDisconnected;
-        private readonly DeviceIdentity DeviceIdentity;
-        private readonly Func<MethodRequestInternal, Task> MethodHandler;
-        private readonly Action<AmqpMessage> TwinMessageListener;
-        private readonly Func<string, Message, Task> EventListener;
-        private readonly Func<DeviceIdentity, ILinkFactory, AmqpSessionSettings, TimeSpan, Task<AmqpSession>> AmqpSessionCreator;
-        private readonly Func<DeviceIdentity, TimeSpan, Task<IAmqpAuthenticationRefresher>> AmqpAuthenticationRefresherCreator;
-        private readonly SemaphoreSlim Lock;
-        private ReceivingAmqpLink MessageReceivingLink;
-        private ReceivingAmqpLink MethodReceivingLink;
-        private ReceivingAmqpLink TwinReceivingLink;
-        private ReceivingAmqpLink EventReceivingLink;
-        private SendingAmqpLink MessageSendingLink;
-        private SendingAmqpLink MethodSendingLink;
-        private SendingAmqpLink TwinSendingLink;
-        private SendingAmqpLink EventSendingLink;
-        private AmqpSession AmqpSession;
-        private IAmqpAuthenticationRefresher AmqpAuthenticationRefresher;
-        private bool Closed;
-        private AmqpSessionSettings AmqpSessionSettings;
+        private readonly DeviceIdentity _deviceIdentity;
+        private readonly Func<MethodRequestInternal, Task> _methodHandler;
+        private readonly Action<AmqpMessage> _twinMessageListener;
+        private readonly Func<string, Message, Task> _eventListener;
+        private readonly Func<DeviceIdentity, ILinkFactory, AmqpSessionSettings, TimeSpan, Task<AmqpSession>> _amqpSessionCreator;
+        private readonly Func<DeviceIdentity, TimeSpan, Task<IAmqpAuthenticationRefresher>> _amqpAuthenticationRefresherCreator;
+        private int _isUsable;
+        private bool _disposed;
+
+        private SendingAmqpLink _messageSendingLink;
+        private ReceivingAmqpLink _messageReceivingLink;
+        private readonly SemaphoreSlim _messageReceivingLinkLock = new SemaphoreSlim(1, 1);
+
+        private SendingAmqpLink _methodSendingLink;
+        private ReceivingAmqpLink _methodReceivingLink;
+
+        private SendingAmqpLink _twinSendingLink;
+        private ReceivingAmqpLink _twinReceivingLink;
+        private bool _twinLinksOpened;
+        private readonly SemaphoreSlim _twinLinksLock = new SemaphoreSlim(1, 1);
+
+        // Note: By design, there is no equivalent Module eventSendingLink.
+        private ReceivingAmqpLink _eventReceivingLink;
+        
+        private AmqpSession _amqpSession;
+        private IAmqpAuthenticationRefresher _amqpAuthenticationRefresher;
+        private AmqpSessionSettings _amqpSessionSettings;
 
         public AmqpUnit(
             DeviceIdentity deviceIdentity,
@@ -40,25 +54,29 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             Action<AmqpMessage> twinMessageListener, 
             Func<string, Message, Task> eventListener)
         {
-            Lock = new SemaphoreSlim(1, 1);
-            DeviceIdentity = deviceIdentity;
-            MethodHandler = methodHandler;
-            TwinMessageListener = twinMessageListener;
-            EventListener = eventListener;
-            AmqpSessionCreator = amqpSessionCreator;
-            AmqpAuthenticationRefresherCreator = amqpAuthenticationRefresherCreator;
-            Closed = false;
-            AmqpSessionSettings = new AmqpSessionSettings()
+            _deviceIdentity = deviceIdentity;
+            _methodHandler = methodHandler;
+            _twinMessageListener = twinMessageListener;
+            _eventListener = eventListener;
+            _amqpSessionCreator = amqpSessionCreator;
+            _amqpAuthenticationRefresherCreator = amqpAuthenticationRefresherCreator;
+            _amqpSessionSettings = new AmqpSessionSettings()
              {
                  Properties = new Fields()
              };
-            if (Logging.IsEnabled) Logging.Associate(this, DeviceIdentity, $"{nameof(DeviceIdentity)}");
+
+            if (Logging.IsEnabled) Logging.Associate(this, _deviceIdentity, $"{nameof(_deviceIdentity)}");
         }
         
         #region Usability
         public bool IsUsable()
         {
-            return !Closed;
+            return Volatile.Read(ref _isUsable) == 0;
+        }
+
+        public void SetNotUsable()
+        {
+            Interlocked.Exchange(ref _isUsable, 1);
         }
         #endregion
 
@@ -66,184 +84,185 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         public async Task OpenAsync(TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(OpenAsync)}");
-            bool gain = await Lock.WaitAsync(timeout).ConfigureAwait(false);
-            if (!gain)
-            {
-                throw new TimeoutException();
-            }
+
             try
             {
-                if (!Closed && AmqpSession == null)
-                { 
-                    AmqpSession = await AmqpSessionCreator.Invoke(DeviceIdentity, this, AmqpSessionSettings, timeout).ConfigureAwait(false);
-                    if (Logging.IsEnabled) Logging.Associate(this, AmqpSession, $"{nameof(AmqpSession)}");
-                    await AmqpSession.OpenAsync(timeout).ConfigureAwait(false);
-                    if (DeviceIdentity.AuthenticationModel == AuthenticationModel.SasIndividual)
-                    {
-                        AmqpAuthenticationRefresher = await AmqpAuthenticationRefresherCreator.Invoke(DeviceIdentity, timeout).ConfigureAwait(false);
-                        if (Logging.IsEnabled) Logging.Associate(this, AmqpAuthenticationRefresher, $"{nameof(AmqpAuthenticationRefresher)}");
-                    }
-                    await OpenMessageLinksAsync(timeout).ConfigureAwait(false);
-                    AmqpSession.Closed += OnSessionDisconnected;
-                    if (Logging.IsEnabled) Logging.Info(this, $"Connected: {DeviceIdentity.GetHashCode()}<->DeviceId: {DeviceIdentity.IotHubConnectionString.DeviceId}<->AmqpSession[{AmqpSession.GetHashCode()}]");
-                }
-            }
-            catch(Exception)
-            {
-                Closed = true;
-                if (AmqpSession != null)
+                Debug.Assert(_amqpSession == null);
+                Debug.Assert(IsUsable());
+
+                _amqpSession = await _amqpSessionCreator.Invoke(
+                    _deviceIdentity, 
+                    AmqpLinkFactory.GetInstance(), 
+                    _amqpSessionSettings, 
+                    timeout).ConfigureAwait(false);
+
+                if (Logging.IsEnabled) Logging.Associate(this, _amqpSession, $"{nameof(_amqpSession)}");
+                await _amqpSession.OpenAsync(timeout).ConfigureAwait(false);
+                if (_deviceIdentity.AuthenticationModel == AuthenticationModel.SasIndividual)
                 {
-                    await AmqpSession.CloseAsync(timeout).ConfigureAwait(false);
+                    _amqpAuthenticationRefresher = await _amqpAuthenticationRefresherCreator.Invoke(_deviceIdentity, timeout).ConfigureAwait(false);
+                    if (Logging.IsEnabled) Logging.Associate(this, _amqpAuthenticationRefresher, $"{nameof(_amqpAuthenticationRefresher)}");
                 }
-                OnUnitDisconnected?.Invoke(this, EventArgs.Empty);
-                throw;
+
+                _amqpSession.Closed += OnSessionDisconnected;
+
+                _messageSendingLink = await AmqpLinkHelper.OpenTelemetrySenderLinkAsync(
+                    _deviceIdentity,
+                    _amqpSession,
+                    timeout).ConfigureAwait(false);
+                _messageSendingLink.Closed += OnLinkDisconnected;
+
+                if (Logging.IsEnabled) Logging.Associate(this, _messageSendingLink, $"{nameof(_messageSendingLink)}");
             }
             finally
             {
-                Lock.Release();
+                if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(OpenAsync)}");
             }
-            
-            if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(OpenAsync)}");
         }
 
         public async Task CloseAsync(TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(CloseAsync)}");
-            bool gain = await Lock.WaitAsync(timeout).ConfigureAwait(false);
-            if (!gain)
+
+            if (_amqpSession != null)
             {
-                throw new TimeoutException();
+                SetNotUsable();
+                await _amqpSession.CloseAsync(timeout).ConfigureAwait(false);
+                OnUnitDisconnected?.Invoke(true, EventArgs.Empty);
             }
-            bool wasOpen = !Closed;
-            if (wasOpen)
-            {
-                Closed = true;
-            }
-            Lock.Release();
-            if (wasOpen && AmqpSession != null)
-            {
-                try
-                {
-                    await AmqpSession.CloseAsync(timeout).ConfigureAwait(false);
-                }
-                catch (Exception)
-                {
-                    if (Logging.IsEnabled) Logging.Info(this, "Discard any exception.", $"{nameof(CloseAsync)}");
-                }
-                OnUnitDisconnected?.Invoke(this, EventArgs.Empty);
-            }
+
             if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(CloseAsync)}");
         }
         #endregion
 
         #region Message
-        private async Task OpenMessageLinksAsync(TimeSpan timeout)
-        {
-            if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(OpenMessageLinksAsync)}");
-            Task<SendingAmqpLink> sendingLinkCreator = AmqpLinkHelper.OpenTelemetrySenderLinkAsync(
-                DeviceIdentity,
-                AmqpSession,
-                timeout
-            );
-            Task<ReceivingAmqpLink> receiveLinkCreator = AmqpLinkHelper.OpenTelemetryReceiverLinkAsync(
-                DeviceIdentity,
-                AmqpSession, 
-                timeout
-            );
-            await Task.WhenAll(receiveLinkCreator, sendingLinkCreator).ConfigureAwait(false);
 
-            MessageReceivingLink = receiveLinkCreator.Result;
-            MessageSendingLink = sendingLinkCreator.Result;
-            MessageReceivingLink.Closed += OnLinkDisconnected;
-            MessageSendingLink.Closed += OnLinkDisconnected;
-            if (Logging.IsEnabled) Logging.Associate(this, MessageReceivingLink, $"{nameof(MessageReceivingLink)}");
-            if (Logging.IsEnabled) Logging.Associate(this, MessageSendingLink, $"{nameof(MessageSendingLink)}");
-            if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(OpenMessageLinksAsync)}");
+        private async Task EnsureReceivingLinkIsOpenedAsync(TimeSpan timeout)
+        {
+            if (Volatile.Read(ref _messageReceivingLink) != null) return;
+
+            if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(EnsureReceivingLinkIsOpenedAsync)}");
+
+            try
+            {
+                await _messageReceivingLinkLock.WaitAsync().ConfigureAwait(false);
+                if (_messageReceivingLink != null) return;
+
+                _messageReceivingLink = await AmqpLinkHelper.OpenTelemetryReceiverLinkAsync(
+                    _deviceIdentity,
+                    _amqpSession,
+                    timeout
+                ).ConfigureAwait(false);
+
+                _messageReceivingLink.Closed += OnLinkDisconnected;
+                if (Logging.IsEnabled) Logging.Associate(this, this, _messageReceivingLink, $"{nameof(EnsureReceivingLinkIsOpenedAsync)}");
+            }
+            finally
+            {
+                _messageReceivingLinkLock.Release();
+                if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(EnsureReceivingLinkIsOpenedAsync)}");
+            }
         }
 
         public async Task<Outcome> SendMessageAsync(AmqpMessage message, TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, message, timeout, $"{nameof(SendMessageAsync)}");
-            bool gain = await Lock.WaitAsync(timeout).ConfigureAwait(false);
-            if (!gain)
+
+            try
             {
-                throw new TimeoutException();
-            }
-            SendingAmqpLink messageSendingLink = MessageSendingLink;
-            Lock.Release();
-            if (messageSendingLink == null)
-            {
-                throw new IotHubCommunicationException();
-            }
-            else
-            {
-                Outcome outcome = await AmqpLinkHelper.SendAmqpMessageAsync(messageSendingLink, message, timeout).ConfigureAwait(false);
-                if (Logging.IsEnabled) Logging.Exit(this, message, timeout, $"{nameof(SendMessageAsync)}");
+                Debug.Assert(_messageSendingLink != null);
+                Outcome outcome = await AmqpLinkHelper.SendAmqpMessageAsync(_messageSendingLink, message, timeout).ConfigureAwait(false);
                 return outcome;
+            }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, message, timeout, $"{nameof(SendMessageAsync)}");
             }
         }
 
         public async Task<Message> ReceiveMessageAsync(TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(ReceiveMessageAsync)}");
-            bool gain = await Lock.WaitAsync(timeout).ConfigureAwait(false);
-            if (!gain)
-            {
-                throw new TimeoutException();
-            }
+
             try
             {
-                if (MessageSendingLink == null)
+                await EnsureReceivingLinkIsOpenedAsync(timeout).ConfigureAwait(false);
+                Debug.Assert(_messageSendingLink != null);
+
+                AmqpMessage amqpMessage = await AmqpLinkHelper.ReceiveAmqpMessageAsync(_messageReceivingLink, timeout).ConfigureAwait(false);
+                Message message = null;
+                if (amqpMessage != null)
                 {
-                    throw new IotHubCommunicationException();
-                }
-                else
-                {
-                    AmqpMessage amqpMessage = await AmqpLinkHelper.ReceiveAmqpMessageAsync(MessageReceivingLink, timeout).ConfigureAwait(false);
-                    Message message = null;
-                    if (amqpMessage != null)
+                    message = new Message(amqpMessage)
                     {
-                        message = new Message(amqpMessage)
-                        {
-                            LockToken = new Guid(amqpMessage.DeliveryTag.Array).ToString()
-                        };
-                    }
-                    if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(ReceiveMessageAsync)}");
-                    return message;
+                        LockToken = new Guid(amqpMessage.DeliveryTag.Array).ToString()
+                    };
                 }
+                return message;
             }
             finally
             {
-                Lock.Release();
+                if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(ReceiveMessageAsync)}");
             }
         }
+
+        public async Task<Outcome> DisposeMessageAsync(string lockToken, Outcome outcome, TimeSpan timeout)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, lockToken, $"{nameof(DisposeMessageAsync)}");
+
+            Outcome disposeOutcome;
+            if (DeviceIdentity.IotHubConnectionString.ModuleId.IsNullOrWhiteSpace())
+            {
+                disposeOutcome = await AmqpLinkHelper.DisposeMessageAsync(MessageReceivingLink, lockToken, outcome, timeout).ConfigureAwait(false);
+            }
+            else
+            {
+                disposeOutcome = await AmqpLinkHelper.DisposeMessageAsync(EventReceivingLink, lockToken, outcome, timeout).ConfigureAwait(false);
+            }
+
+            if (Logging.IsEnabled) Logging.Exit(this, lockToken, $"{nameof(DisposeMessageAsync)}");
+            return disposeOutcome;
+        }
+
         #endregion
 
         #region Event
         public async Task EnableEventReceiveAsync(TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(EnableEventReceiveAsync)}");
-            if (EventReceivingLink == null)
+
+            try
             {
-                EventReceivingLink = await AmqpLinkHelper.OpenEventsReceiverLinkAsync(
-                    DeviceIdentity,
-                    AmqpSession,
+                Debug.Assert(_eventReceivingLink == null);
+                _eventReceivingLink = await AmqpLinkHelper.OpenEventsReceiverLinkAsync(
+                    _deviceIdentity,
+                    _amqpSession,
                     timeout
                 ).ConfigureAwait(false);
-                EventReceivingLink.RegisterMessageListener(OnEventsReceived);
-                EventReceivingLink.Closed += OnLinkDisconnected;
-                if (Logging.IsEnabled) Logging.Associate(this, EventReceivingLink, $"{nameof(EventReceivingLink)}");
+
+                _eventReceivingLink.RegisterMessageListener(OnEventsReceived);
+                _eventReceivingLink.Closed += OnLinkDisconnected;
+
+                if (Logging.IsEnabled) Logging.Associate(this, this, _eventReceivingLink, $"{nameof(EnableEventReceiveAsync)}");
+            }
+            finally
+            {
                 if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(EnableEventReceiveAsync)}");
-                
             }
         }
 
         public async Task<Outcome> SendEventAsync(AmqpMessage message, TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, message, timeout, $"{nameof(SendEventAsync)}");
-            Outcome outcome = await SendMessageAsync(message, timeout).ConfigureAwait(false);
-            if (Logging.IsEnabled) Logging.Exit(this, message, timeout, $"{nameof(SendEventAsync)}");
-            return outcome;
+            try
+            {
+                Outcome outcome = await SendMessageAsync(message, timeout).ConfigureAwait(false);
+                return outcome;
+            }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, message, timeout, $"{nameof(SendEventAsync)}");
+            }
         }
 
         internal void OnEventsReceived(AmqpMessage amqpMessage)
@@ -252,7 +271,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             {
                 LockToken = new Guid(amqpMessage.DeliveryTag.Array).ToString()
             };
-            EventListener?.Invoke(message.InputName, message);
+
+            _eventListener?.Invoke(message.InputName, message);
         }
         #endregion
 
@@ -260,228 +280,208 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         public async Task EnableMethodsAsync(TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(EnableMethodsAsync)}");
-            bool gain = await Lock.WaitAsync(timeout).ConfigureAwait(false);
-            if (!gain)
-            {
-                throw new TimeoutException();
-            }
-            ReceivingAmqpLink methodReceivingLink = null;
-            SendingAmqpLink methodSendingLink = null;
+
             try
             {
-                
-                if (MethodReceivingLink == null)
-                {
-                    string correlationIdSuffix = Guid.NewGuid().ToString();
-                    Task<ReceivingAmqpLink> receiveLinkCreator = AmqpLinkHelper.OpenMethodsReceiverLinkAsync(
-                        DeviceIdentity,
-                        AmqpSession,
+                Debug.Assert(_methodSendingLink == null);
+                Debug.Assert(_methodReceivingLink == null);
+
+                string correlationIdSuffix = Guid.NewGuid().ToString();
+                Task<ReceivingAmqpLink> receiveLinkCreator = 
+                    AmqpLinkHelper.OpenMethodsReceiverLinkAsync(
+                        _deviceIdentity,
+                        _amqpSession,
                         correlationIdSuffix,
-                        timeout
-                    );
-                    Task<SendingAmqpLink> sendingLinkCreator = AmqpLinkHelper.OpenMethodsSenderLinkAsync(
-                        DeviceIdentity,
-                        AmqpSession,
+                        timeout);
+
+                Task<SendingAmqpLink> sendingLinkCreator = 
+                    AmqpLinkHelper.OpenMethodsSenderLinkAsync(
+                        _deviceIdentity,
+                        _amqpSession,
                         correlationIdSuffix,
-                        timeout
-                    );
+                        timeout);
+
                     await Task.WhenAll(receiveLinkCreator, sendingLinkCreator).ConfigureAwait(false);
 
-                    methodReceivingLink = receiveLinkCreator.Result;
-                    methodSendingLink = sendingLinkCreator.Result;
+                    _methodReceivingLink = receiveLinkCreator.Result;
+                    _methodSendingLink = sendingLinkCreator.Result;
 
-                    MethodSendingLink = methodSendingLink;
-                    MethodReceivingLink = methodReceivingLink;
+                    _methodReceivingLink.RegisterMessageListener(OnMethodReceived);
+                    _methodSendingLink.Closed += OnLinkDisconnected;
+                    _methodReceivingLink.Closed += OnLinkDisconnected;
 
-                    MethodReceivingLink.RegisterMessageListener(OnMethodReceived);
-                    MethodSendingLink.Closed += OnLinkDisconnected;
-                    MethodReceivingLink.Closed += OnLinkDisconnected;
-
-                    if (Logging.IsEnabled) Logging.Associate(this, MethodReceivingLink, $"{nameof(MethodReceivingLink)}");
-                    if (Logging.IsEnabled) Logging.Associate(this, MethodSendingLink, $"{nameof(MethodSendingLink)}");
-                }
-                if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(EnableMethodsAsync)}");
+                    if (Logging.IsEnabled) Logging.Associate(this, _methodReceivingLink, $"{nameof(_methodReceivingLink)}");
+                    if (Logging.IsEnabled) Logging.Associate(this, _methodSendingLink, $"{nameof(_methodSendingLink)}");
             }
             catch(Exception)
             {
-                methodReceivingLink?.Close();
-                methodSendingLink?.Close();
+                _methodReceivingLink?.Abort();
+                _methodReceivingLink = null;
+
+                _methodSendingLink?.Abort();
+                _methodSendingLink = null;
+
                 throw;
             }
             finally
             {
-                Lock.Release();
+                if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(EnableMethodsAsync)}");
             }
         }
         private void OnMethodReceived(AmqpMessage amqpMessage)
         {
             if (Logging.IsEnabled) Logging.Enter(this, amqpMessage, $"{nameof(OnMethodReceived)}");
-            MethodRequestInternal methodRequestInternal = MethodConverter.ConstructMethodRequestFromAmqpMessage(amqpMessage, new CancellationToken(false));
-            MethodReceivingLink?.DisposeDelivery(amqpMessage, true, AmqpConstants.AcceptedOutcome);
-            MethodHandler?.Invoke(methodRequestInternal);
-            if (Logging.IsEnabled) Logging.Exit(this, amqpMessage, $"{nameof(OnMethodReceived)}");
+            try
+            {
+                MethodRequestInternal methodRequestInternal = MethodConverter.ConstructMethodRequestFromAmqpMessage(amqpMessage, new CancellationToken(false));
+                _methodReceivingLink?.DisposeDelivery(amqpMessage, true, AmqpConstants.AcceptedOutcome);
+                _methodHandler?.Invoke(methodRequestInternal);
+            }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, amqpMessage, $"{nameof(OnMethodReceived)}");
+            }
         }
 
         public async Task DisableMethodsAsync(TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(DisableMethodsAsync)}");
-            bool gain = await Lock.WaitAsync(timeout).ConfigureAwait(false);
-            if (!gain)
-            {
-                throw new TimeoutException();
-            }
-            ICollection<Task> tasks = new List<Task>();
-            if (MethodReceivingLink != null)
-            {
-                tasks.Add(MethodReceivingLink.CloseAsync(timeout));
-                MethodReceivingLink = null;
 
-            }
-            if (MethodSendingLink != null)
+            Debug.Assert(_methodSendingLink != null);
+            Debug.Assert(_methodReceivingLink != null);
+
+            try
             {
-                tasks.Add(MethodSendingLink.CloseAsync(timeout));
-                MethodSendingLink = null;
+                ICollection<Task> tasks = new List<Task>();
+                if (_methodReceivingLink != null)
+                {
+                    tasks.Add(_methodReceivingLink.CloseAsync(timeout));
+                }
+
+                if (_methodSendingLink != null)
+                {
+                    tasks.Add(_methodSendingLink.CloseAsync(timeout));
+                }
+
+                if (tasks.Count > 0)
+                {
+                    await Task.WhenAll(tasks).ConfigureAwait(false);
+                    _methodReceivingLink = null;
+                    _methodSendingLink = null;
+                }
             }
-            Lock.Release();
-            if (tasks.Count > 0)
+            finally
             {
-                await Task.WhenAll(tasks).ConfigureAwait(false);
+                if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(DisableMethodsAsync)}");
             }
-            if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(DisableMethodsAsync)}");
         }
 
         public async Task<Outcome> SendMethodResponseAsync(AmqpMessage message, TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, message, $"{nameof(SendMethodResponseAsync)}");
-            bool gain = await Lock.WaitAsync(timeout).ConfigureAwait(false);
-            if (!gain)
+
+            Debug.Assert(_methodSendingLink != null);
+
+            try
             {
-                throw new TimeoutException();
-            }
-            SendingAmqpLink methodSendingLink = MethodSendingLink;
-            Lock.Release();
-            if (methodSendingLink == null)
-            {
-                throw new IotHubCommunicationException();
-            }
-            else
-            {
-                Outcome outcome = await AmqpLinkHelper.SendAmqpMessageAsync(methodSendingLink, message, timeout).ConfigureAwait(false);
-                if (Logging.IsEnabled) Logging.Exit(this, message, $"{nameof(SendMethodResponseAsync)}");
+                Outcome outcome = await AmqpLinkHelper.SendAmqpMessageAsync(_methodSendingLink, message, timeout).ConfigureAwait(false);
                 return outcome;
+            }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, message, $"{nameof(SendMethodResponseAsync)}");
             }
         }
         #endregion
 
         #region Twin
-        public async Task EnableTwinPatchAsync(TimeSpan timeout)
+        public async Task EnsureTwinLinksAreOpenedAsync(TimeSpan timeout)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(EnableTwinPatchAsync)}");
-            string correlationIdSuffix = Guid.NewGuid().ToString();
-            bool gain = await Lock.WaitAsync(timeout).ConfigureAwait(false);
-            if (!gain)
-            {
-                throw new TimeoutException();
-            }
-            ReceivingAmqpLink twinReceivingLink = null;
-            SendingAmqpLink twinSendingLink = null;
+            if (Volatile.Read(ref _twinLinksOpened) == true) return;
+            if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(EnsureTwinLinksAreOpenedAsync)}");
+
             try
             {
-                if (TwinReceivingLink == null)
-                {
-                    Task<ReceivingAmqpLink> receiveLinkCreator = AmqpLinkHelper.OpenTwinReceiverLinkAsync(
-                        DeviceIdentity,
-                        AmqpSession,
+                await _twinLinksLock.WaitAsync().ConfigureAwait(false);
+                if (_twinLinksOpened) return;
+
+                Debug.Assert(_twinSendingLink == null);
+                Debug.Assert(_twinReceivingLink == null);
+
+                string correlationIdSuffix = Guid.NewGuid().ToString();
+
+                Task<ReceivingAmqpLink> receiveLinkCreator = 
+                    AmqpLinkHelper.OpenTwinReceiverLinkAsync(
+                        _deviceIdentity,
+                        _amqpSession,
                         correlationIdSuffix,
-                        timeout
-                    );
-                    Task<SendingAmqpLink> sendingLinkCreator = AmqpLinkHelper.OpenTwinSenderLinkAsync(
-                        DeviceIdentity,
-                        AmqpSession,
+                        timeout);
+
+                Task<SendingAmqpLink> sendingLinkCreator = 
+                    AmqpLinkHelper.OpenTwinSenderLinkAsync(
+                        _deviceIdentity,
+                        _amqpSession,
                         correlationIdSuffix,
-                        timeout
-                    );
-                    await Task.WhenAll(receiveLinkCreator, sendingLinkCreator).ConfigureAwait(false);
-                    twinReceivingLink = receiveLinkCreator.Result;
-                    twinSendingLink = sendingLinkCreator.Result;
-                    TwinReceivingLink = twinReceivingLink;
-                    TwinSendingLink = twinSendingLink;
-                    TwinReceivingLink.RegisterMessageListener(OnDesiredPropertyReceived);
-                    TwinReceivingLink.Closed += OnLinkDisconnected;
-                    TwinSendingLink.Closed += OnLinkDisconnected;
-                    if (Logging.IsEnabled) Logging.Associate(this, TwinReceivingLink, $"{nameof(TwinReceivingLink)}");
-                    if (Logging.IsEnabled) Logging.Associate(this, TwinSendingLink, $"{nameof(TwinSendingLink)}");
-                }
+                        timeout);
+
+                await Task.WhenAll(receiveLinkCreator, sendingLinkCreator).ConfigureAwait(false);
+
+                _twinSendingLink = sendingLinkCreator.Result;
+                _twinSendingLink.Closed += OnLinkDisconnected;
+
+                _twinReceivingLink = receiveLinkCreator.Result;
+                _twinReceivingLink.RegisterMessageListener(OnDesiredPropertyReceived);
+                _twinReceivingLink.Closed += OnLinkDisconnected;
+
+                _twinLinksOpened = true;
+
+                if (Logging.IsEnabled) Logging.Associate(this, this, _twinReceivingLink, $"{nameof(EnsureTwinLinksAreOpenedAsync)}");
+                if (Logging.IsEnabled) Logging.Associate(this, this, _twinSendingLink, $"{nameof(EnsureTwinLinksAreOpenedAsync)}");
             }
-            catch (Exception)
+            catch (Exception ex) when (!ex.IsFatal())
             {
-                twinReceivingLink?.Close();
-                twinSendingLink?.Close();
+                _twinReceivingLink?.Abort();
+                _twinSendingLink?.Abort();
+                _twinReceivingLink = null;
+                _twinSendingLink = null;
+
                 throw;
             }
             finally
             {
-                Lock.Release();
+                _twinLinksLock.Release();
+                if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(EnsureTwinLinksAreOpenedAsync)}");
             }
-            
-            if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(EnableTwinPatchAsync)}");
         }
 
         private void OnDesiredPropertyReceived(AmqpMessage amqpMessage)
         {
             if (Logging.IsEnabled) Logging.Enter(this, amqpMessage, $"{nameof(OnDesiredPropertyReceived)}");
-            TwinReceivingLink?.DisposeDelivery(amqpMessage, true, AmqpConstants.AcceptedOutcome);
-            TwinMessageListener?.Invoke(amqpMessage);
-            if (Logging.IsEnabled) Logging.Exit(this, amqpMessage, $"{nameof(OnDesiredPropertyReceived)}");
-        }
-
-        public async Task DisableTwinAsync(TimeSpan timeout)
-        {
-            if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(DisableTwinAsync)}");
-            bool gain = await Lock.WaitAsync(timeout).ConfigureAwait(false);
-            if (!gain)
+            try
             {
-                throw new TimeoutException();
+                _twinReceivingLink?.DisposeDelivery(amqpMessage, true, AmqpConstants.AcceptedOutcome);
+                _twinMessageListener?.Invoke(amqpMessage);
             }
-            ICollection<Task> tasks = new List<Task>();
-            if (TwinReceivingLink != null)
+            finally
             {
-                tasks.Add(TwinReceivingLink.CloseAsync(timeout));
-                TwinReceivingLink = null;
-                
+                if (Logging.IsEnabled) Logging.Exit(this, amqpMessage, $"{nameof(OnDesiredPropertyReceived)}");
             }
-            if (TwinReceivingLink != null)
-            {
-                tasks.Add(TwinSendingLink.CloseAsync(timeout));
-                TwinSendingLink = null;
-            }
-            Lock.Release();
-            if (tasks.Count > 0)
-            {
-                await Task.WhenAll(tasks).ConfigureAwait(false);
-            }
-            if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(DisableTwinAsync)}");
         }
 
         public async Task<Outcome> SendTwinMessageAsync(AmqpMessage message, TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(SendTwinMessageAsync)}");
-            bool gain = await Lock.WaitAsync(timeout).ConfigureAwait(false);
-            if (!gain)
+
+            Debug.Assert(_twinSendingLink != null);
+
+            try
             {
-                throw new TimeoutException();
-            }
-            SendingAmqpLink twinSendingLink = TwinSendingLink;
-            Lock.Release();
-            if (twinSendingLink == null)
-            {
-                throw new IotHubCommunicationException();
-            }
-            else
-            {
-                Outcome outcome = await AmqpLinkHelper.SendAmqpMessageAsync(twinSendingLink, message, timeout).ConfigureAwait(false);
-                if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(SendTwinMessageAsync)}");
+                Outcome outcome = await AmqpLinkHelper.SendAmqpMessageAsync(_twinSendingLink, message, timeout).ConfigureAwait(false);
                 return outcome;
+            }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(SendTwinMessageAsync)}");
             }
         }
         #endregion
@@ -490,97 +490,39 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         public void OnConnectionDisconnected()
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(OnConnectionDisconnected)}");
-            Lock.Wait();
-            bool wasOpen = !Closed;
-            Closed = true;
-            Lock.Release();
-            if (wasOpen)
+            if (IsUsable())
             {
-                OnUnitDisconnected?.Invoke(this, EventArgs.Empty);
-                Cleanup();
+                SetNotUsable();
+                OnUnitDisconnected?.Invoke(false, EventArgs.Empty);
             }
+
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(OnConnectionDisconnected)}");
         }
 
         private void OnSessionDisconnected(object o, EventArgs args)
         {
             if (Logging.IsEnabled) Logging.Enter(this, o, $"{nameof(OnSessionDisconnected)}");
-            Lock.Wait();
-            bool wasOpen = !Closed && ReferenceEquals(o, AmqpSession);
-            Closed = true;
-            Lock.Release();
-            if (wasOpen)
+
+            if (IsUsable())
             {
-                OnUnitDisconnected?.Invoke(this, EventArgs.Empty);
-                Cleanup();
+                SetNotUsable();
+                OnUnitDisconnected?.Invoke(false, EventArgs.Empty);
             }
+
             if (Logging.IsEnabled) Logging.Exit(this, o, $"{nameof(OnSessionDisconnected)}");
         }
 
         private void OnLinkDisconnected(object o, EventArgs args)
         {
             if (Logging.IsEnabled) Logging.Enter(this, o, $"{nameof(OnLinkDisconnected)}");
-            Lock.Wait();
-            bool wasOpen = !Closed && (ReferenceEquals(o, MessageReceivingLink)
-                || ReferenceEquals(o, MethodReceivingLink)
-                || ReferenceEquals(o, TwinReceivingLink)
-                || ReferenceEquals(o, EventReceivingLink)
-                || ReferenceEquals(o, MessageSendingLink)
-                || ReferenceEquals(o, MethodSendingLink)
-                || ReferenceEquals(o, TwinSendingLink)
-            );
-            Closed = true;
-            Lock.Release();
-            if (wasOpen)
+
+            if (IsUsable())
             {
-                OnUnitDisconnected?.Invoke(this, EventArgs.Empty);
-                Cleanup();
+                SetNotUsable();
+                OnUnitDisconnected?.Invoke(false, EventArgs.Empty);
             }
+
             if (Logging.IsEnabled) Logging.Exit(this, o, $"{nameof(OnLinkDisconnected)}");
-        }
-        #endregion
-
-        #region ILinkFactory
-        public IAsyncResult BeginOpenLink(AmqpLink link, TimeSpan timeout, AsyncCallback callback, object state)
-        {
-            if (Logging.IsEnabled) Logging.Info(this, link, $"{nameof(BeginOpenLink)}");
-            return TaskHelpers.ToAsyncResult(OpenLinkAsync(link, timeout), callback, state);
-        }
-        public static Task<bool> OpenLinkAsync(AmqpLink link, TimeSpan timeout)
-        {
-            if (link == null)
-            {
-                throw new ArgumentNullException(nameof(link));
-            }
-
-            if (timeout.TotalMilliseconds > 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(timeout));
-            }
-
-            return Task.FromResult(true);
-        }
-
-        public AmqpLink CreateLink(AmqpSession session, AmqpLinkSettings settings)
-        {
-            if (Logging.IsEnabled) Logging.Info(this, session, $"{nameof(CreateLink)}");
-            if (settings.IsReceiver())
-            {
-                return new ReceivingAmqpLink(session, settings);
-            }
-            else
-            {
-                return new SendingAmqpLink(session, settings);
-            }
-        }
-
-        public void EndOpenLink(IAsyncResult result)
-        {
-            if (Logging.IsEnabled) Logging.Info(this, result, $"{nameof(EndOpenLink)}");
-            if (result as Task == null)
-            {
-                throw new ArgumentNullException(nameof(result));
-            }
         }
         #endregion
 
@@ -592,54 +534,18 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             GC.SuppressFinalize(this);
         }
 
-        private void Cleanup()
-        {
-            try
-            {
-                AmqpLinkHelper.CloseAmqpObject(MessageReceivingLink);
-                AmqpLinkHelper.CloseAmqpObject(MessageReceivingLink);
-                AmqpLinkHelper.CloseAmqpObject(MethodReceivingLink);
-                AmqpLinkHelper.CloseAmqpObject(TwinReceivingLink);
-                AmqpLinkHelper.CloseAmqpObject(EventReceivingLink);
-                AmqpLinkHelper.CloseAmqpObject(MessageSendingLink);
-                AmqpLinkHelper.CloseAmqpObject(MethodSendingLink);
-                AmqpLinkHelper.CloseAmqpObject(TwinSendingLink);
-                AmqpLinkHelper.CloseAmqpObject(EventSendingLink);
-                AmqpLinkHelper.CloseAmqpObject(AmqpSession);
-                AmqpAuthenticationRefresher?.Dispose();
-            }
-            catch (Exception)
-            {
-                if (Logging.IsEnabled) Logging.Info(this, "Discard any exception during cleanup.");
-            }
-        }
-
         private void Dispose(bool disposing)
         {
+            if (_disposed) return;
+
             if (disposing)
             {
                 if (Logging.IsEnabled) Logging.Enter(this, disposing, $"{nameof(Dispose)}");
-                Closed = true;
-                Cleanup();
+                _amqpSession?.Abort();
                 if (Logging.IsEnabled) Logging.Exit(this, disposing, $"{nameof(Dispose)}");
-                Lock.Dispose();
             }
-        }
-        
-        public async Task<Outcome> DisposeMessageAsync(string lockToken, Outcome outcome, TimeSpan timeout)
-        {
-            if (Logging.IsEnabled) Logging.Enter(this, lockToken, $"{nameof(DisposeMessageAsync)}");
-            Outcome disposeOutcome;
-            if (DeviceIdentity.IotHubConnectionString.ModuleId.IsNullOrWhiteSpace())
-            {
-                disposeOutcome = await AmqpLinkHelper.DisposeMessageAsync(MessageReceivingLink, lockToken, outcome, timeout).ConfigureAwait(false);
-            }
-            else
-            {
-                disposeOutcome = await AmqpLinkHelper.DisposeMessageAsync(EventReceivingLink, lockToken, outcome, timeout).ConfigureAwait(false);
-            }
-            if (Logging.IsEnabled) Logging.Exit(this, lockToken, $"{nameof(DisposeMessageAsync)}");
-            return disposeOutcome;
+
+            _disposed = true;
         }
         #endregion
     }

@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
 using System.Net;
 using System.Net.Security;
 using System.Net.WebSockets;
@@ -17,7 +20,7 @@ using System.Configuration;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
-    class AmqpConnector : IAmqpConnector
+    internal class AmqpConnector : IAmqpConnector
     {
         #region Members-Constructor
         const string DisableServerCertificateValidationKeyName = "Microsoft.Azure.Devices.DisableServerCertificateValidation";
@@ -32,6 +35,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         
         private TaskCompletionSource<TransportBase> TaskCompletionSource;
         private ProtocolHeader SentProtocolHeader;
+        private bool _disposed;
 
         internal AmqpConnector(AmqpTransportSettings amqpTransportSettings, string hostName)
         {
@@ -354,12 +358,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         private void Dispose(bool disposing)
         {
+            if (_disposed) return;
+
             if (disposing)
             {
                 TaskCompletionSource?.SetCanceled();
                 TaskCompletionSource = null;
                 SentProtocolHeader = null;
             }
+
+            _disposed = true;
         }
     }
 }

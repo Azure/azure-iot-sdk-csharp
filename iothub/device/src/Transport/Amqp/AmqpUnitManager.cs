@@ -1,30 +1,32 @@
-﻿using Microsoft.Azure.Amqp;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
-    class AmqpUnitManager : IAmqpUnitCreator, IDisposable
+    internal class AmqpUnitManager : IAmqpUnitCreator, IDisposable
     {
-        private static readonly AmqpUnitManager Instance = new AmqpUnitManager();
+        private static readonly AmqpUnitManager s_instance = new AmqpUnitManager();
 
-        private IDictionary<string, IAmqpUnitCreator> AmqpConnectionPools;
-        private readonly Semaphore Lock;
+        private IDictionary<string, IAmqpUnitCreator> _amqpConnectionPools;
+        private readonly object _lock = new object();
+        private bool _disposed;
 
         internal AmqpUnitManager()
         {
-            AmqpConnectionPools = new Dictionary<string, IAmqpUnitCreator>();
-            Lock = new Semaphore(1, 1);
+            _amqpConnectionPools = new Dictionary<string, IAmqpUnitCreator>();
         }
         internal static AmqpUnitManager GetInstance()
         {
-            return Instance;
+            return s_instance;
         }
 
-        public IAmqpUnit CreateAmqpUnit(
+        public AmqpUnit CreateAmqpUnit(
             DeviceIdentity deviceIdentity,
             Func<MethodRequestInternal, Task> methodHandler,
             Action<AmqpMessage> twinMessageListener,
@@ -38,18 +40,22 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 eventListener);
         }
 
+
+        // TODO: pool resolution
         private IAmqpUnitCreator ResolveConnectionPool(string host)
         {
-            Lock.WaitOne();
-            AmqpConnectionPools.TryGetValue(host, out IAmqpUnitCreator amqpConnectionPool);
-            if (amqpConnectionPool == null)
+            lock (_lock)
             {
-                amqpConnectionPool = new AmqpConnectionPool();
-                AmqpConnectionPools.Add(host, amqpConnectionPool);
+                _amqpConnectionPools.TryGetValue(host, out IAmqpUnitCreator amqpConnectionPool);
+                if (amqpConnectionPool == null)
+                {
+                    amqpConnectionPool = new AmqpConnectionPool();
+                    _amqpConnectionPools.Add(host, amqpConnectionPool);
+                }
+
+                if (Logging.IsEnabled) Logging.Associate(this, amqpConnectionPool, $"{nameof(ResolveConnectionPool)}");
+                return amqpConnectionPool;
             }
-            Lock.Release();
-            if (Logging.IsEnabled) Logging.Associate(this, amqpConnectionPool, $"{nameof(ResolveConnectionPool)}");
-            return amqpConnectionPool;
         }
 
         public void Dispose()
@@ -60,12 +66,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         private void Dispose(bool disposing)
         {
-            if (Logging.IsEnabled) Logging.Info(this, disposing, $"{nameof(Dispose)}");
+            if (_disposed) return;
+
             if (disposing)
             {
-                Lock?.Dispose();
-                AmqpConnectionPools.Clear();
+                if (Logging.IsEnabled) Logging.Info(this, disposing, $"{nameof(Dispose)}");
+                _amqpConnectionPools.Clear();
             }
+
+            _disposed = true;
         }
     }
 }

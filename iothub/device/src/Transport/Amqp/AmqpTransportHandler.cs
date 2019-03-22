@@ -1,4 +1,7 @@
-﻿using Microsoft.Azure.Amqp;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Extensions;
@@ -11,20 +14,17 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
     internal class AmqpTransportHandler : TransportHandler
     {
         #region Members-Constructor
-        const string ResponseStatusName = "status";
-        const int ResponseTimeoutInSeconds = 300;
-        private readonly TimeSpan OpenTimeout;
-        private readonly TimeSpan OperationTimeout;
-        private readonly IAmqpUnit AmqpUnit;
-        private readonly Action<TwinCollection> DesiredPropertyListener;
-        private ConcurrentDictionary<string, TaskCompletionSource<AmqpMessage>> TwinResponseCompletions = new ConcurrentDictionary<string, TaskCompletionSource<AmqpMessage>>();
-
+        private const string ResponseStatusName = "status";
+        private const int ResponseTimeoutInSeconds = 300;
+        private readonly TimeSpan _operationTimeout;
+        private readonly AmqpUnit _amqpUnit;
+        private readonly Action<TwinCollection> _desiredPropertyListener;
+        private ConcurrentDictionary<string, TaskCompletionSource<AmqpMessage>> _twinResponseCompletions = new ConcurrentDictionary<string, TaskCompletionSource<AmqpMessage>>();
 
 #pragma warning disable CA1810 // Initialize reference type static fields inline: We use the static ctor to have init-once semantics.
         static AmqpTransportHandler()
@@ -50,23 +50,35 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             Func<string, Message, Task> eventListener = null)
             : base(context, transportSettings)
         {
-            OpenTimeout = transportSettings.OpenTimeout;
-            OperationTimeout = transportSettings.OperationTimeout;
-            DesiredPropertyListener = desiredPropertyListener;
+            _operationTimeout = transportSettings.OperationTimeout;
+            _desiredPropertyListener = desiredPropertyListener;
             DeviceIdentity deviceIdentity = new DeviceIdentity(connectionString, transportSettings, context.Get<ProductInfo>());
-            AmqpUnit = AmqpUnitManager.GetInstance().CreateAmqpUnit(
+            _amqpUnit = AmqpUnitManager.GetInstance().CreateAmqpUnit(
                 deviceIdentity,
                 methodHandler,
                 TwinMessageListener, 
                 eventListener
             );
-            AmqpUnit.OnUnitDisconnected += (o, args) => _transportShouldRetry.TrySetResult(true);
-            if (Logging.IsEnabled) Logging.Associate(this, AmqpUnit, $"{nameof(AmqpUnit)}");
+
+            _amqpUnit.OnUnitDisconnected += (o, args) =>
+            {
+                bool gracefulDisconnect = (bool)o;
+                if (gracefulDisconnect)
+                {
+                    OnTransportClosedGracefully();
+                }
+                else
+                {
+                    OnTransportDisconnected();
+                }
+            };
+
+            if (Logging.IsEnabled) Logging.Associate(this, _amqpUnit, $"{nameof(_amqpUnit)}");
         }
 
         #endregion
 
-        public override bool IsUsable => AmqpUnit.IsUsable();
+        public override bool IsUsable => _amqpUnit.IsUsable();
 
         #region Open-Close
         public override async Task OpenAsync(CancellationToken cancellationToken)
@@ -77,7 +89,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await AmqpUnit.OpenAsync(OpenTimeout).ConfigureAwait(false);
+                await _amqpUnit.OpenAsync(_operationTimeout).ConfigureAwait(false);
             }
             catch (Exception exception) when (!exception.IsFatal() && !(exception is OperationCanceledException))
             {
@@ -105,8 +117,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                _transportShouldRetry.TrySetCanceled();
-                await AmqpUnit.CloseAsync(OpenTimeout).ConfigureAwait(false);
+                await _amqpUnit.CloseAsync(_operationTimeout).ConfigureAwait(false);
+                OnTransportClosedGracefully();
             }
             finally
             {
@@ -124,7 +136,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                Outcome outcome = await AmqpUnit.SendEventAsync(message.ToAmqpMessage(), OperationTimeout).ConfigureAwait(false);
+                Outcome outcome = await _amqpUnit.SendEventAsync(message.ToAmqpMessage(), _operationTimeout).ConfigureAwait(false);
 
                 if (outcome != null)
                 {
@@ -167,7 +179,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 using (AmqpMessage amqpMessage = AmqpMessage.Create(messageList))
                 {
                     amqpMessage.MessageFormat = AmqpConstants.AmqpBatchedMessageFormat;
-                    outcome = await AmqpUnit.SendEventAsync(amqpMessage, OperationTimeout).ConfigureAwait(false);
+                    outcome = await _amqpUnit.SendEventAsync(amqpMessage, _operationTimeout).ConfigureAwait(false);
                 }
 
                 if (outcome != null)
@@ -193,7 +205,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 cancellationToken.ThrowIfCancellationRequested();
                 try
                 {
-                    message = await AmqpUnit.ReceiveMessageAsync(timeout).ConfigureAwait(false);
+                    message = await _amqpUnit.ReceiveMessageAsync(timeout).ConfigureAwait(false);
                     if (message != null)
                     {
                         break;
@@ -218,7 +230,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await AmqpUnit.EnableMethodsAsync(OpenTimeout).ConfigureAwait(false);
+                await _amqpUnit.EnableMethodsAsync(_operationTimeout).ConfigureAwait(false);
 
             }
             catch (Exception exception) when (!exception.IsFatal() && !(exception is OperationCanceledException))
@@ -239,7 +251,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await AmqpUnit.DisableMethodsAsync(OpenTimeout).ConfigureAwait(false);
+                await _amqpUnit.DisableMethodsAsync(_operationTimeout).ConfigureAwait(false);
             }
             finally
             {
@@ -258,7 +270,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 Outcome outcome;
                 using (AmqpMessage amqpMessage = methodResponse.ToAmqpMessage())
                 {
-                    outcome = await AmqpUnit.SendMethodResponseAsync(amqpMessage, OperationTimeout).ConfigureAwait(false);
+                    outcome = await _amqpUnit.SendMethodResponseAsync(amqpMessage, _operationTimeout).ConfigureAwait(false);
                 }
                 if (outcome.DescriptorCode != Accepted.Code)
                 {
@@ -281,7 +293,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await AmqpUnit.EnableTwinPatchAsync(OpenTimeout).ConfigureAwait(false);
+                await _amqpUnit.EnsureTwinLinksAreOpenedAsync(_operationTimeout).ConfigureAwait(false);
 
             }
             catch (Exception exception) when (!exception.IsFatal() && !(exception is OperationCanceledException))
@@ -291,22 +303,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             finally
             {
                 if (Logging.IsEnabled) Logging.Exit(this, cancellationToken, $"{nameof(EnableTwinPatchAsync)}");
-            }
-        }
-
-        public async Task DisableTwinAsync(CancellationToken cancellationToken)
-        {
-            try
-            {
-                if (Logging.IsEnabled) Logging.Enter(this, cancellationToken, $"{nameof(DisableTwinAsync)}");
-
-                cancellationToken.ThrowIfCancellationRequested();
-
-                await AmqpUnit.DisableTwinAsync(OpenTimeout).ConfigureAwait(false);
-            }
-            finally
-            {
-                if (Logging.IsEnabled) Logging.Exit(this, cancellationToken, $"{nameof(DisableTwinAsync)}");
             }
         }
 
@@ -376,9 +372,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 amqpMessage.Properties.CorrelationId = correlationId;
 
                 var taskCompletionSource = new TaskCompletionSource<AmqpMessage>();
-                TwinResponseCompletions[correlationId] = taskCompletionSource;
+                _twinResponseCompletions[correlationId] = taskCompletionSource;
 
-                outcome = await AmqpUnit.SendTwinMessageAsync(amqpMessage, OperationTimeout).ConfigureAwait(false);
+                outcome = await _amqpUnit.SendTwinMessageAsync(amqpMessage, _operationTimeout).ConfigureAwait(false);
 
                 if (outcome.DescriptorCode != Accepted.Code)
                 {
@@ -401,7 +397,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
             finally
             {
-                TwinResponseCompletions.TryRemove(correlationId, out _);
+                _twinResponseCompletions.TryRemove(correlationId, out _);
                 if (Logging.IsEnabled) Logging.Exit(this, amqpMessage, cancellationToken, $"{nameof(RoundTripTwinMessage)}");
             }
 
@@ -418,7 +414,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await AmqpUnit.EnableEventReceiveAsync(OpenTimeout).ConfigureAwait(false);
+                await _amqpUnit.EnableEventReceiveAsync(_operationTimeout).ConfigureAwait(false);
             }
             finally
             {
@@ -485,7 +481,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 // the DeviceBoundReceivingLink or the EventsReceivingLink. 
                 // If this changes (i.e. modules are able to receive C2D messages, or devices are able to receive telemetry), this logic 
                 // will have to be updated.
-                disposeOutcome = await AmqpUnit.DisposeMessageAsync(lockToken, outcome, OperationTimeout).ConfigureAwait(false);
+                disposeOutcome = await _amqpUnit.DisposeMessageAsync(lockToken, outcome, _operationTimeout).ConfigureAwait(false);
             }
             catch (Exception exception) when (!exception.IsFatal() && !(exception is OperationCanceledException))
             {
@@ -541,7 +537,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             {
                 // If we have a correlation id, it must be a response, complete the task.
                 TaskCompletionSource<AmqpMessage> task;
-                if (TwinResponseCompletions.TryRemove(correlationId, out task))
+                if (_twinResponseCompletions.TryRemove(correlationId, out task))
                 {
                     task.SetResult(message);
                 }
@@ -549,13 +545,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             else
             {
                 // No correlation id? Must be a patch.
-                if (DesiredPropertyListener != null)
+                if (_desiredPropertyListener != null)
                 {
                     using (StreamReader reader = new StreamReader(message.BodyStream, System.Text.Encoding.UTF8))
                     {
                         string patch = reader.ReadToEnd();
                         var props = JsonConvert.DeserializeObject<TwinCollection>(patch);
-                        DesiredPropertyListener(props);
+                        _desiredPropertyListener(props);
                     }
                 }
             }

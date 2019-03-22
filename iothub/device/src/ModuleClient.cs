@@ -44,7 +44,7 @@ using System.Net.Http;
                 throw new ArgumentException("A valid module ID should be specified to create a ModuleClient");
             }
 
-            if (Logging.IsEnabled) Logging.Associate(this, this, internalClient, nameof(this.internalClient));
+            if (Logging.IsEnabled) Logging.Associate(this, this, internalClient, nameof(ModuleClient));
         }
 
         /// <summary>
