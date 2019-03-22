@@ -45,6 +45,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 && GetHashCode() == identity.GetHashCode()
                 && Equals(IotHubConnectionString.DeviceId, identity.IotHubConnectionString.DeviceId)
                 && Equals(IotHubConnectionString.HostName, identity.IotHubConnectionString.HostName)
+                && Equals(IotHubConnectionString.ModuleId, identity.IotHubConnectionString.ModuleId)
                 && Equals(AmqpTransportSettings.GetTransportType(), identity.AmqpTransportSettings.GetTransportType())
                 && Equals(AuthenticationModel.GetHashCode(), identity.AuthenticationModel.GetHashCode());
         }
@@ -53,6 +54,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             int hashCode = UpdateHashCode(620602339, IotHubConnectionString.DeviceId);
             hashCode = UpdateHashCode(hashCode, IotHubConnectionString.HostName);
+            hashCode = UpdateHashCode(hashCode, IotHubConnectionString.ModuleId);
             hashCode = UpdateHashCode(hashCode, AmqpTransportSettings.GetTransportType());
             hashCode = UpdateHashCode(hashCode, AuthenticationModel);
             return hashCode;

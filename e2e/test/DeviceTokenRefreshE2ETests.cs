@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             } // Second release
         }
 
-        private async Task DeviceClient_TokenIsRefreshed_Internal(Client.TransportType transport, int ttl = 20)
+        private async Task DeviceClient_TokenIsRefreshed_Internal(Client.TransportType transport, int ttl = 6)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
 
@@ -148,6 +148,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private class TestTokenRefresher : DeviceAuthenticationWithTokenRefresh
         {
+            private object _lock = new object();
             private int _callCount = 0;
             private string _key;
             private Client.TransportType _transport;
@@ -156,7 +157,10 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 get
                 {
-                    return _callCount;
+                    lock (_lock)
+                    {
+                        return _callCount;
+                    }
                 }
             }
 
@@ -197,7 +201,10 @@ namespace Microsoft.Azure.Devices.E2ETests
                         WebUtility.UrlEncode(DeviceId)),
                 };
 
-                _callCount++;
+                lock (_lock)
+                {
+                    _callCount++;
+                }
 
                 string token = builder.ToSignature();
                 Console.WriteLine($"Token: {token}");
