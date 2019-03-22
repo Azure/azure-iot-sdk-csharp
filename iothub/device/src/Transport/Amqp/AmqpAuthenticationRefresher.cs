@@ -49,7 +49,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         public async Task InitLoopAsync(TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(InitLoopAsync)}");
-            TimeoutHelper timeoutHelper = new TimeoutHelper(timeout);
             CancellationTokenSource oldTokenSource = CancellationTokenSource;
             CancellationTokenSource = new CancellationTokenSource();
             CancellationToken newToken = CancellationTokenSource.Token;
@@ -60,13 +59,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     Audience,
                     Audience,
                     AccessRightsHelper.AccessRightsToStringArray(AccessRights.DeviceConnect),
-                    timeoutHelper.RemainingTime()
+                    timeout
                 ).ConfigureAwait(false);
             if (expiry < DateTime.MaxValue)
             {
                 StartLoop(expiry, newToken);
             }
-            if (Logging.IsEnabled) Logging.Exit(this, timeoutHelper.RemainingTime(), $"{nameof(InitLoopAsync)}");
+
+            if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(InitLoopAsync)}");
         }
 
         private void StartLoop(DateTime expiry, CancellationToken cancellationToken)
