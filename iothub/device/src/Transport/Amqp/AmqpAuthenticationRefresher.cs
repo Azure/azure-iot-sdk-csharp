@@ -1,7 +1,7 @@
 ﻿using Microsoft.Azure.Amqp;
-using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Shared;
 using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -9,26 +9,41 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
     internal class AmqpAuthenticationRefresher : IAmqpAuthenticationRefresher
     {
-        static readonly TimeSpan BufferPeriod = TimeSpan.FromSeconds(120);
         private readonly AmqpCbsLink AmqpCbsLink;
         private readonly IotHubConnectionString ConnectionString;
         private readonly string Audience;
         private CancellationTokenSource CancellationTokenSource;
+        private TimeSpan OperationTimeout;
+        private Task RefreshLoop;
 
         internal AmqpAuthenticationRefresher(DeviceIdentity deviceIdentity, AmqpCbsLink amqpCbsLink)
         {
             AmqpCbsLink = amqpCbsLink;
             ConnectionString = deviceIdentity.IotHubConnectionString;
-            if (ConnectionString.SharedAccessKeyName == null)
+            OperationTimeout = deviceIdentity.AmqpTransportSettings.OperationTimeout;
+            Audience = CreateAudience(ConnectionString);
+            if (Logging.IsEnabled) Logging.Associate(this, deviceIdentity, $"{nameof(DeviceIdentity)}");
+            if (Logging.IsEnabled) Logging.Associate(this, amqpCbsLink, $"{nameof(AmqpCbsLink)}");
+        }
+
+        public static string CreateAudience(IotHubConnectionString connectionString)
+        {
+            if (connectionString.SharedAccessKeyName == null)
             {
-                Audience = $"{ConnectionString.AmqpEndpoint.AbsoluteUri}{ConnectionString.DeviceId}";
+                if (connectionString.ModuleId == null)
+                {
+                    return $"{connectionString.HostName}/devices/{connectionString.DeviceId}";
+                }
+                else
+                {
+                    return $"{connectionString.HostName}/devices/{connectionString.DeviceId}/modules/{connectionString.ModuleId}";
+                }
             }
             else
             {
-                Audience = $"{ConnectionString.AmqpEndpoint.AbsoluteUri}";
+                // this is a group shared key
+                return $"{connectionString.HostName}/{connectionString.SharedAccessKeyName}";
             }
-            if (Logging.IsEnabled) Logging.Associate(this, deviceIdentity, $"{nameof(DeviceIdentity)}");
-            if (Logging.IsEnabled) Logging.Associate(this, amqpCbsLink, $"{nameof(AmqpCbsLink)}");
         }
 
         public async Task InitLoopAsync(TimeSpan timeout)
@@ -43,35 +58,38 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     ConnectionString,
                     ConnectionString.AmqpEndpoint,
                     Audience,
-                    ConnectionString.AmqpEndpoint.AbsoluteUri,
+                    Audience,
                     AccessRightsHelper.AccessRightsToStringArray(AccessRights.DeviceConnect),
                     timeoutHelper.RemainingTime()
                 ).ConfigureAwait(false);
-            if (expiry < DateTime.UtcNow)
+            if (expiry < DateTime.MaxValue)
             {
-                throw new DeviceDisabledException();
+                StartLoop(expiry, newToken);
             }
-            StartLoop(expiry, newToken);
             if (Logging.IsEnabled) Logging.Exit(this, timeoutHelper.RemainingTime(), $"{nameof(InitLoopAsync)}");
         }
 
         private void StartLoop(DateTime expiry, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled) Logging.Enter(this, expiry, $"{nameof(StartLoop)}");
-            RefreshLoopAsync(expiry, cancellationToken).ConfigureAwait(false);
+            RefreshLoop = RefreshLoopAsync(expiry, cancellationToken);
             if (Logging.IsEnabled) Logging.Exit(this, expiry, $"{nameof(StartLoop)}");
         }
 
         private async Task RefreshLoopAsync(DateTime expiry, CancellationToken cancellationToken)
         {
             TimeSpan waitTime = expiry - DateTime.UtcNow;
-            while (expiry < DateTime.MaxValue && !cancellationToken.IsCancellationRequested)
+            Debug.Assert(ConnectionString.TokenRefresher != null);
+
+            while (!cancellationToken.IsCancellationRequested)
             {
                 if (Logging.IsEnabled) Logging.Info(this, expiry, $"Before {nameof(RefreshLoopAsync)}");
+
                 if (waitTime.Milliseconds > 0)
                 {
                     await Task.Delay(waitTime, cancellationToken).ConfigureAwait(false);
                 }
+
                 if (!cancellationToken.IsCancellationRequested)
                 {
                     try
@@ -80,34 +98,21 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                             ConnectionString,
                             ConnectionString.AmqpEndpoint,
                             Audience,
-                            ConnectionString.AmqpEndpoint.AbsoluteUri,
+                            Audience,
                             AccessRightsHelper.AccessRightsToStringArray(AccessRights.DeviceConnect),
-                            BufferPeriod
+                            OperationTimeout
                         ).ConfigureAwait(false);
                     }
-                    catch (AmqpException amqpException)
+                    catch (AmqpException ex)
                     {
-                        if (amqpException.Error.Condition.Equals(AmqpErrorCode.NotFound))
-                        {
-                            throw;
-                        }
+                        if (Logging.IsEnabled) Logging.Info(this, expiry, $"Refresh token failed {ex}");
                     }
                     finally
                     {
                         if (Logging.IsEnabled) Logging.Info(this, expiry, $"After {nameof(RefreshLoopAsync)}");
                     }
-                    if (expiry < DateTime.UtcNow)
-                    {
-                        throw new DeviceDisabledException();
-                    }
-                    else
-                    {
-                        waitTime = expiry - DateTime.UtcNow - BufferPeriod;
-                        if (waitTime < BufferPeriod)
-                        {
-                            waitTime = BufferPeriod;
-                        }
-                    }
+
+                    waitTime = ConnectionString.TokenRefresher.RefreshesOn - DateTime.UtcNow;
                 }
             }
         }

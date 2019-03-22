@@ -268,6 +268,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 var transport = provider.CreateTransport(args.Transport, true);
                 if (Logging.IsEnabled) Logging.Info(this, $"{nameof(OnReadHeaderComplete)}: Created SaslTransportHandler ");
                 TaskCompletionSource.TrySetResult(transport);
+                if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(OnReadHeaderComplete)}");
             }
             catch (Exception ex)
             {
@@ -288,6 +289,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 args.Transport = null;
                 TaskCompletionSource.TrySetException(args.Exception);
             }
+            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(CompleteOnException)}");
         }
 
         private void OnWriteHeaderComplete(TransportAsyncCallbackArgs args)

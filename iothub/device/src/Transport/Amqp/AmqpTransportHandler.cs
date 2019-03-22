@@ -204,7 +204,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     throw AmqpClientHelper.ToIotHubClientContract(exception);
                 }
             }
-            if (Logging.IsEnabled) Logging.Enter(this, timeout, cancellationToken, $"{nameof(ReceiveAsync)}");
+            if (Logging.IsEnabled) Logging.Exit(this, timeout, cancellationToken, $"{nameof(ReceiveAsync)}");
             return message;
         }
         #endregion
