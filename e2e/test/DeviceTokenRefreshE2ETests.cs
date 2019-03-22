@@ -82,7 +82,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             } // Second release
         }
 
-        private async Task DeviceClient_TokenIsRefreshed_Internal(Client.TransportType transport, int ttl = 6)
+        private async Task DeviceClient_TokenIsRefreshed_Internal(Client.TransportType transport, int ttl = 20)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
 
@@ -112,23 +112,23 @@ namespace Microsoft.Azure.Devices.E2ETests
                 // Create the first Token.
                 Console.WriteLine($"[{DateTime.UtcNow}] OpenAsync");
                 await deviceClient.OpenAsync().ConfigureAwait(false);
+
                 Console.WriteLine($"[{DateTime.UtcNow}] SendEventAsync (1)");
                 await deviceClient.SendEventAsync(message).ConfigureAwait(false);
 
-                int countAfterOpenAndFirstSend = refresher.SafeCreateNewTokenCallCount;
-                Assert.IsTrue(countAfterOpenAndFirstSend >= 1, $"[{DateTime.UtcNow}] Token should have been refreshed at least once.");
+                int countAfterOpen = refresher.SafeCreateNewTokenCallCount;
+                Assert.IsTrue(countAfterOpen >= 1, $"[{DateTime.UtcNow}] Token should have been refreshed at least once.");
 
                 Console.WriteLine($"[{DateTime.UtcNow}] Waiting {ttl} seconds.");
-
                 // Wait for the Token to expire.
-                await Task.Delay(ttl * 1000).ConfigureAwait(false);
+                await Task.Delay(TimeSpan.FromSeconds(ttl)).ConfigureAwait(false);
 
                 Console.WriteLine($"[{DateTime.UtcNow}] SendEventAsync (2)");
                 await deviceClient.SendEventAsync(message).ConfigureAwait(false);
 
                 // Ensure that the token was refreshed.
                 Assert.IsTrue(
-                    refresher.SafeCreateNewTokenCallCount >= countAfterOpenAndFirstSend + 1,
+                    refresher.SafeCreateNewTokenCallCount >= countAfterOpen + 1,
                     $"[{DateTime.UtcNow}] Token should have been refreshed after TTL expired.");
 
                 Console.WriteLine($"[{DateTime.UtcNow}] CloseAsync");

@@ -430,7 +430,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 Lock.Release();
             }
             
-            if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(EnableTwinPatchAsync)}");
+            if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(EnableTwinPatchAsync)}");
         }
 
         private void OnDesiredPropertyReceived(AmqpMessage amqpMessage)
@@ -467,7 +467,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             {
                 await Task.WhenAll(tasks).ConfigureAwait(false);
             }
-            if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(DisableTwinAsync)}");
+            if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(DisableTwinAsync)}");
         }
 
         public async Task<Outcome> SendTwinMessageAsync(AmqpMessage message, TimeSpan timeout)
@@ -488,7 +488,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             else
             {
                 Outcome outcome = await AmqpLinkHelper.SendAmqpMessageAsync(twinSendingLink, message, timeoutHelper.RemainingTime()).ConfigureAwait(false);
-                if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(SendTwinMessageAsync)}");
+                if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(SendTwinMessageAsync)}");
                 return outcome;
             }
         }

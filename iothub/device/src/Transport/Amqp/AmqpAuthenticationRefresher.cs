@@ -19,16 +19,29 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             AmqpCbsLink = amqpCbsLink;
             ConnectionString = deviceIdentity.IotHubConnectionString;
-            if (ConnectionString.SharedAccessKeyName == null)
+            Audience = CreateAudience(ConnectionString);
+            if (Logging.IsEnabled) Logging.Associate(this, deviceIdentity, $"{nameof(DeviceIdentity)}");
+            if (Logging.IsEnabled) Logging.Associate(this, amqpCbsLink, $"{nameof(AmqpCbsLink)}");
+        }
+
+        public static string CreateAudience(IotHubConnectionString connectionString)
+        {
+            if (connectionString.SharedAccessKeyName == null)
             {
-                Audience = $"{ConnectionString.AmqpEndpoint.AbsoluteUri}{ConnectionString.DeviceId}";
+                if (connectionString.ModuleId == null)
+                {
+                    return $"{connectionString.HostName}/devices/{connectionString.DeviceId}";
+                }
+                else
+                {
+                    return $"{connectionString.HostName}/devices/{connectionString.DeviceId}/modules/{connectionString.ModuleId}";
+                }
             }
             else
             {
-                Audience = $"{ConnectionString.AmqpEndpoint.AbsoluteUri}";
+                // this is a group shared key
+                return $"{connectionString.HostName}/{connectionString.SharedAccessKeyName}";
             }
-            if (Logging.IsEnabled) Logging.Associate(this, deviceIdentity, $"{nameof(DeviceIdentity)}");
-            if (Logging.IsEnabled) Logging.Associate(this, amqpCbsLink, $"{nameof(AmqpCbsLink)}");
         }
 
         public async Task InitLoopAsync(TimeSpan timeout)
@@ -43,7 +56,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     ConnectionString,
                     ConnectionString.AmqpEndpoint,
                     Audience,
-                    ConnectionString.AmqpEndpoint.AbsoluteUri,
+                    Audience,
                     AccessRightsHelper.AccessRightsToStringArray(AccessRights.DeviceConnect),
                     timeoutHelper.RemainingTime()
                 ).ConfigureAwait(false);
@@ -80,7 +93,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                             ConnectionString,
                             ConnectionString.AmqpEndpoint,
                             Audience,
-                            ConnectionString.AmqpEndpoint.AbsoluteUri,
+                            Audience,
                             AccessRightsHelper.AccessRightsToStringArray(AccessRights.DeviceConnect),
                             BufferPeriod
                         ).ConfigureAwait(false);
