@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.Azure.Devices.Shared;
+using System.Net;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
@@ -17,6 +18,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         internal AmqpTransportSettings AmqpTransportSettings { get; }
         internal ProductInfo ProductInfo { get; }
         internal AuthenticationModel AuthenticationModel { get; }
+        internal string Audience { get; }
         internal DeviceIdentity(IotHubConnectionString iotHubConnectionString, AmqpTransportSettings amqpTransportSettings, ProductInfo productInfo)
         {
             IotHubConnectionString = iotHubConnectionString;
@@ -24,6 +26,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             ProductInfo = productInfo;
             if (amqpTransportSettings.ClientCertificate == null)
             {
+                Audience = CreateAudience(IotHubConnectionString);
                 if (iotHubConnectionString.SharedAccessKeyName == null)
                 {
                     AuthenticationModel = AuthenticationModel.SasIndividual;
@@ -43,18 +46,34 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             return obj is DeviceIdentity identity
                 && GetHashCode() == identity.GetHashCode()
-                && Equals(IotHubConnectionString.DeviceId, identity.IotHubConnectionString.DeviceId)
-                && Equals(IotHubConnectionString.HostName, identity.IotHubConnectionString.HostName)
-                && Equals(IotHubConnectionString.ModuleId, identity.IotHubConnectionString.ModuleId)
+                && Equals(IotHubConnectionString.Audience, identity.IotHubConnectionString.Audience)
                 && Equals(AmqpTransportSettings.GetTransportType(), identity.AmqpTransportSettings.GetTransportType())
                 && Equals(AuthenticationModel.GetHashCode(), identity.AuthenticationModel.GetHashCode());
         }
 
+        private static string CreateAudience(IotHubConnectionString connectionString)
+        {
+            if (connectionString.SharedAccessKeyName == null)
+            {
+                if (connectionString.ModuleId == null)
+                {
+                    return $"{connectionString.HostName}/devices/{WebUtility.UrlEncode(connectionString.DeviceId)}";
+                }
+                else
+                {
+                    return $"{connectionString.HostName}/devices/{WebUtility.UrlEncode(connectionString.DeviceId)}/modules/{WebUtility.UrlEncode(connectionString.ModuleId)}";
+                }
+            }
+            else
+            {
+                // this is a group shared key
+                return $"{connectionString.HostName}";
+            }
+        }
+
         public override int GetHashCode()
         {
-            int hashCode = UpdateHashCode(620602339, IotHubConnectionString.DeviceId);
-            hashCode = UpdateHashCode(hashCode, IotHubConnectionString.HostName);
-            hashCode = UpdateHashCode(hashCode, IotHubConnectionString.ModuleId);
+            int hashCode = UpdateHashCode(620602339, IotHubConnectionString.Audience);
             hashCode = UpdateHashCode(hashCode, AmqpTransportSettings.GetTransportType());
             hashCode = UpdateHashCode(hashCode, AuthenticationModel);
             return hashCode;

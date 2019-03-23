@@ -21,35 +21,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             AmqpCbsLink = amqpCbsLink;
             ConnectionString = deviceIdentity.IotHubConnectionString;
             OperationTimeout = deviceIdentity.AmqpTransportSettings.OperationTimeout;
-            Audience = CreateAudience(ConnectionString);
+            Audience = deviceIdentity.Audience;
             if (Logging.IsEnabled) Logging.Associate(this, deviceIdentity, $"{nameof(DeviceIdentity)}");
             if (Logging.IsEnabled) Logging.Associate(this, amqpCbsLink, $"{nameof(AmqpCbsLink)}");
-        }
-
-        public static string CreateAudience(IotHubConnectionString connectionString)
-        {
-            if (connectionString.SharedAccessKeyName == null)
-            {
-                if (connectionString.ModuleId == null)
-                {
-                    return $"{connectionString.HostName}/devices/{connectionString.DeviceId}";
-                }
-                else
-                {
-                    return $"{connectionString.HostName}/devices/{connectionString.DeviceId}/modules/{connectionString.ModuleId}";
-                }
-            }
-            else
-            {
-                // this is a group shared key
-                return $"{connectionString.HostName}/{connectionString.SharedAccessKeyName}";
-            }
         }
 
         public async Task InitLoopAsync(TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(InitLoopAsync)}");
-            TimeoutHelper timeoutHelper = new TimeoutHelper(timeout);
             CancellationTokenSource oldTokenSource = CancellationTokenSource;
             CancellationTokenSource = new CancellationTokenSource();
             CancellationToken newToken = CancellationTokenSource.Token;
@@ -60,13 +39,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     Audience,
                     Audience,
                     AccessRightsHelper.AccessRightsToStringArray(AccessRights.DeviceConnect),
-                    timeoutHelper.RemainingTime()
+                    timeout
                 ).ConfigureAwait(false);
             if (expiry < DateTime.MaxValue)
             {
                 StartLoop(expiry, newToken);
             }
-            if (Logging.IsEnabled) Logging.Exit(this, timeoutHelper.RemainingTime(), $"{nameof(InitLoopAsync)}");
+            if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(InitLoopAsync)}");
         }
 
         private void StartLoop(DateTime expiry, CancellationToken cancellationToken)
