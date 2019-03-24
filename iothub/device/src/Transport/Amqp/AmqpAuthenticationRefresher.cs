@@ -2,6 +2,7 @@
 using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -9,12 +10,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
     internal class AmqpAuthenticationRefresher : IAmqpAuthenticationRefresher
     {
+        private readonly TimeSpan MinWaitTime = TimeSpan.FromSeconds(1);
         private readonly AmqpCbsLink AmqpCbsLink;
         private readonly IotHubConnectionString ConnectionString;
         private readonly string Audience;
         private CancellationTokenSource CancellationTokenSource;
         private TimeSpan OperationTimeout;
-        private Task RefreshLoop;
+        private ConfiguredTaskAwaitable RefreshLoop;
 
         internal AmqpAuthenticationRefresher(DeviceIdentity deviceIdentity, AmqpCbsLink amqpCbsLink)
         {
@@ -51,7 +53,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private void StartLoop(DateTime expiry, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled) Logging.Enter(this, expiry, $"{nameof(StartLoop)}");
-            RefreshLoop = RefreshLoopAsync(expiry, cancellationToken);
+            RefreshLoop = RefreshLoopAsync(expiry, cancellationToken).ConfigureAwait(false);
             if (Logging.IsEnabled) Logging.Exit(this, expiry, $"{nameof(StartLoop)}");
         }
 
@@ -64,7 +66,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             {
                 if (Logging.IsEnabled) Logging.Info(this, expiry, $"Before {nameof(RefreshLoopAsync)}");
 
-                if (waitTime.Milliseconds > 0)
+                if (waitTime < MinWaitTime)
+                {
+                    await Task.Delay(MinWaitTime, cancellationToken).ConfigureAwait(false);
+                }
+                else
                 {
                     await Task.Delay(waitTime, cancellationToken).ConfigureAwait(false);
                 }

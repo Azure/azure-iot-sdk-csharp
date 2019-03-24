@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Shared;
 using System.Net;
 
@@ -41,21 +42,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 AuthenticationModel = AuthenticationModel.X509;
             }
         }
-
-        public override bool Equals(object obj)
-        {
-            return obj is DeviceIdentity identity
-                && GetHashCode() == identity.GetHashCode()
-                && Equals(IotHubConnectionString.Audience, identity.IotHubConnectionString.Audience)
-                && Equals(AmqpTransportSettings.GetTransportType(), identity.AmqpTransportSettings.GetTransportType())
-                && Equals(AuthenticationModel.GetHashCode(), identity.AuthenticationModel.GetHashCode());
-        }
-
         private static string CreateAudience(IotHubConnectionString connectionString)
         {
-            if (connectionString.SharedAccessKeyName == null)
+            if (connectionString.SharedAccessKeyName.IsNullOrWhiteSpace())
             {
-                if (connectionString.ModuleId == null)
+                if (connectionString.ModuleId.IsNullOrWhiteSpace())
                 {
                     return $"{connectionString.HostName}/devices/{WebUtility.UrlEncode(connectionString.DeviceId)}";
                 }
@@ -71,9 +62,23 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
+        public override bool Equals(object obj)
+        {
+            return obj is DeviceIdentity identity
+                && GetHashCode() == identity.GetHashCode()
+                && Equals(IotHubConnectionString.DeviceId, identity.IotHubConnectionString.DeviceId)
+                && Equals(IotHubConnectionString.HostName, identity.IotHubConnectionString.HostName)
+                && Equals(IotHubConnectionString.ModuleId, identity.IotHubConnectionString.ModuleId)
+                && Equals(AmqpTransportSettings.GetTransportType(), identity.AmqpTransportSettings.GetTransportType())
+                && Equals(AuthenticationModel.GetHashCode(), identity.AuthenticationModel.GetHashCode());
+        }
+
+
         public override int GetHashCode()
         {
-            int hashCode = UpdateHashCode(620602339, IotHubConnectionString.Audience);
+            int hashCode = UpdateHashCode(620602339, IotHubConnectionString.DeviceId);
+            hashCode = UpdateHashCode(hashCode, IotHubConnectionString.HostName);
+            hashCode = UpdateHashCode(hashCode, IotHubConnectionString.ModuleId);
             hashCode = UpdateHashCode(hashCode, AmqpTransportSettings.GetTransportType());
             hashCode = UpdateHashCode(hashCode, AuthenticationModel);
             return hashCode;

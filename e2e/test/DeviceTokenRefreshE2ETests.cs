@@ -148,7 +148,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private class TestTokenRefresher : DeviceAuthenticationWithTokenRefresh
         {
-            private object _lock = new object();
             private int _callCount = 0;
             private string _key;
             private Client.TransportType _transport;
@@ -157,10 +156,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 get
                 {
-                    lock (_lock)
-                    {
-                        return _callCount;
-                    }
+                    return _callCount;
                 }
             }
 
@@ -201,11 +197,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                         WebUtility.UrlEncode(DeviceId)),
                 };
 
-                lock (_lock)
-                {
-                    _callCount++;
-                }
-
+                _callCount++;
+                
                 string token = builder.ToSignature();
                 Console.WriteLine($"Token: {token}");
                 return Task.FromResult(token);
