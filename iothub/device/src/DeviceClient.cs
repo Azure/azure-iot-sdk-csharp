@@ -34,6 +34,8 @@ namespace Microsoft.Azure.Devices.Client
             {
                 throw new ArgumentException("A module ID was specified in the connection string - please use ModuleClient for modules.");
             }
+
+            if (Logging.IsEnabled) Logging.Associate(this, this, internalClient, nameof(this.internalClient));
         }
 
         /// <summary>
