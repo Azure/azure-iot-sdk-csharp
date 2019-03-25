@@ -36,7 +36,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
 
         public static string BuildAudience(string iotHub, string deviceId, string moduleId)
         {
-            return $"{iotHub}/devices/{WebUtility.UrlEncode(deviceId)}/modules/{WebUtility.UrlEncode(moduleId)}";
+            return WebUtility.UrlEncode($"{iotHub}/devices/{WebUtility.UrlEncode(deviceId)}/modules/{WebUtility.UrlEncode(moduleId)}");
         }
     }
 }

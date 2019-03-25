@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             ProductInfo = productInfo;
             if (amqpTransportSettings.ClientCertificate == null)
             {
-                Audience = CreateAudience(IotHubConnectionString);
+                Audience = WebUtility.UrlEncode(CreateAudience(IotHubConnectionString));
                 if (iotHubConnectionString.SharedAccessKeyName == null)
                 {
                     AuthenticationModel = AuthenticationModel.SasIndividual;
