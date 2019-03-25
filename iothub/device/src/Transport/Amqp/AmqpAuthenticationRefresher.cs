@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private readonly string Audience;
         private CancellationTokenSource CancellationTokenSource;
         private TimeSpan OperationTimeout;
-        private ConfiguredTaskAwaitable RefreshLoop;
+        private Task RefreshLoop;
 
         internal AmqpAuthenticationRefresher(DeviceIdentity deviceIdentity, AmqpCbsLink amqpCbsLink)
         {
@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private void StartLoop(DateTime expiry, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled) Logging.Enter(this, expiry, $"{nameof(StartLoop)}");
-            RefreshLoop = RefreshLoopAsync(expiry, cancellationToken).ConfigureAwait(false);
+            RefreshLoop = RefreshLoopAsync(expiry, cancellationToken);
             if (Logging.IsEnabled) Logging.Exit(this, expiry, $"{nameof(StartLoop)}");
         }
 

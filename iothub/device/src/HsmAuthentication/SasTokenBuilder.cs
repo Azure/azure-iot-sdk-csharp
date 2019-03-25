@@ -38,8 +38,8 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
         {
             string audience = WebUtility.UrlEncode("{0}/devices/{1}/modules/{2}".FormatInvariant(
                 iotHub,
-                deviceId,
-                moduleId));
+                WebUtility.UrlEncode(deviceId),
+                WebUtility.UrlEncode(moduleId)));
 
             return audience;
         }

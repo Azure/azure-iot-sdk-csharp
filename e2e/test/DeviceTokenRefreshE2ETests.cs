@@ -151,12 +151,16 @@ namespace Microsoft.Azure.Devices.E2ETests
             private int _callCount = 0;
             private string _key;
             private Client.TransportType _transport;
+            private readonly object _lock = new object();
 
             public int SafeCreateNewTokenCallCount
             {
                 get
                 {
-                    return _callCount;
+                    lock (_lock)
+                    {
+                        return _callCount;
+                    }
                 }
             }
 
@@ -197,7 +201,10 @@ namespace Microsoft.Azure.Devices.E2ETests
                         WebUtility.UrlEncode(DeviceId)),
                 };
 
-                _callCount++;
+                lock (_lock)
+                {
+                    _callCount++;
+                }
                 
                 string token = builder.ToSignature();
                 Console.WriteLine($"Token: {token}");
