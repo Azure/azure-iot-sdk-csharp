@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     ConnectionString,
                     ConnectionString.AmqpEndpoint,
                     Audience,
-                    ConnectionString.AmqpEndpoint.AbsoluteUri,
+                    Audience,
                     AccessRightsStringArray,
                     timeout
                 ).ConfigureAwait(false);
@@ -84,7 +84,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                             ConnectionString,
                             ConnectionString.AmqpEndpoint,
                             Audience,
-                            ConnectionString.AmqpEndpoint.AbsoluteUri,
+                            Audience,
                             AccessRightsStringArray,
                             OperationTimeout
                         ).ConfigureAwait(false);
