@@ -39,8 +39,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 LinkName = CommonResources.GetNewStringGuid(linkSuffix),
                 Role = false,
                 InitialDeliveryCount = 0,
-                Target = new Target() { Address = BuildLinkAddress(deviceIdentity, deviceTemplate, moduleTemplate) },
-                Source = new Source() { Address = deviceIdentity.IotHubConnectionString.DeviceId }
+                Target = new Target() { Address = BuildLinkAddress(deviceIdentity, deviceTemplate, moduleTemplate) }
             };
             amqpLinkSettings.SndSettleMode = senderSettleMode;
             amqpLinkSettings.RcvSettleMode = receiverSettleMode;
@@ -97,7 +96,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 TotalLinkCredit = prefetchCount,
                 AutoSendFlow = prefetchCount > 0,
                 Source = new Source() { Address = BuildLinkAddress(deviceIdentity, deviceTemplate, moduleTemplate) },
-                Target = new Target() { Address = deviceIdentity.IotHubConnectionString.DeviceId }
             };
             amqpLinkSettings.SndSettleMode = senderSettleMode;
             amqpLinkSettings.RcvSettleMode = receiverSettleMode;

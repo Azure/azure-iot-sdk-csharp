@@ -14,7 +14,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private readonly TimeSpan MinWaitTime = TimeSpan.FromSeconds(1);
         private readonly AmqpCbsLink AmqpCbsLink;
         private readonly IotHubConnectionString ConnectionString;
-        private readonly string Audience;
         private CancellationTokenSource CancellationTokenSource;
         private TimeSpan OperationTimeout;
         private ConfiguredTaskAwaitable RefreshLoop;
@@ -24,7 +23,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             AmqpCbsLink = amqpCbsLink;
             ConnectionString = deviceIdentity.IotHubConnectionString;
             OperationTimeout = deviceIdentity.AmqpTransportSettings.OperationTimeout;
-            Audience = deviceIdentity.Audience;
             if (Logging.IsEnabled) Logging.Associate(this, deviceIdentity, $"{nameof(DeviceIdentity)}");
             if (Logging.IsEnabled) Logging.Associate(this, amqpCbsLink, $"{nameof(AmqpCbsLink)}");
         }
@@ -39,7 +37,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             DateTime expiry = await AmqpCbsLink.SendTokenAsync(
                     ConnectionString,
                     ConnectionString.AmqpEndpoint,
-                    Audience,
+                    ConnectionString.HostName,
                     ConnectionString.AmqpEndpoint.AbsoluteUri,
                     AccessRightsStringArray,
                     timeout
@@ -83,7 +81,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                         expiry = await AmqpCbsLink.SendTokenAsync(
                             ConnectionString,
                             ConnectionString.AmqpEndpoint,
-                            Audience,
+                            ConnectionString.HostName,
                             ConnectionString.AmqpEndpoint.AbsoluteUri,
                             AccessRightsStringArray,
                             OperationTimeout
