@@ -2,6 +2,7 @@
 using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Diagnostics;
+using System.Net;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -40,7 +41,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     ConnectionString,
                     ConnectionString.AmqpEndpoint,
                     Audience,
-                    Audience,
+                    WebUtility.UrlEncode(Audience),
                     AccessRightsStringArray,
                     timeout
                 ).ConfigureAwait(false);
@@ -84,7 +85,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                             ConnectionString,
                             ConnectionString.AmqpEndpoint,
                             Audience,
-                            Audience,
+                            WebUtility.UrlEncode(Audience),
                             AccessRightsStringArray,
                             OperationTimeout
                         ).ConfigureAwait(false);
