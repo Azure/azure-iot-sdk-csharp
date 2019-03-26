@@ -125,7 +125,7 @@ $sbqkey = Get-AzServiceBusKey `
     -Name "sbauthrule"
 
 $endpointName = "ContosoSBQueueEndpoint"
-$endpointType = "ServiceBusQueue"
+$endpointType = "servicebusqueue"
 $routeName = "ContosoSBQueueRoute"
 $condition = 'level="critical"'
     
