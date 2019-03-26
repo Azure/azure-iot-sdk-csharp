@@ -49,13 +49,13 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
         }
 
-        public async Task RunSampleAsync()
+        public async Task RunSampleAsync(CancellationTokenSource cancellationTokenSource)
         {
-            while (true)
+            while (!cancellationTokenSource.IsCancellationRequested)
             {
                 try
                 {
-                    await RunSampleAsync(true).ConfigureAwait(false);
+                    await RunSampleAsync(true, cancellationTokenSource).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -65,43 +65,40 @@ namespace Microsoft.Azure.Devices.Client.Samples
             }
         }
 
-        public async Task RunSampleAsync(bool acceptDeviceStreamingRequest)
+        public async Task RunSampleAsync(bool acceptDeviceStreamingRequest, CancellationTokenSource cancellationTokenSource)
         {
-            using (var cancellationTokenSource = new CancellationTokenSource())
+            DeviceStreamRequest streamRequest = await _deviceClient.WaitForDeviceStreamRequestAsync(cancellationTokenSource.Token).ConfigureAwait(false);
+
+            if (streamRequest != null)
             {
-                DeviceStreamRequest streamRequest = await _deviceClient.WaitForDeviceStreamRequestAsync(cancellationTokenSource.Token).ConfigureAwait(false);
-
-                if (streamRequest != null)
+                if (acceptDeviceStreamingRequest)
                 {
-                    if (acceptDeviceStreamingRequest)
-                    {
-                        await _deviceClient.AcceptDeviceStreamRequestAsync(streamRequest, cancellationTokenSource.Token).ConfigureAwait(false);
+                    await _deviceClient.AcceptDeviceStreamRequestAsync(streamRequest, cancellationTokenSource.Token).ConfigureAwait(false);
 
-                        using (ClientWebSocket webSocket = await DeviceStreamingCommon.GetStreamingClientAsync(streamRequest.Url, streamRequest.AuthorizationToken, cancellationTokenSource.Token).ConfigureAwait(false))
+                    using (ClientWebSocket webSocket = await DeviceStreamingCommon.GetStreamingClientAsync(streamRequest.Url, streamRequest.AuthorizationToken, cancellationTokenSource.Token).ConfigureAwait(false))
+                    {
+                        using (TcpClient tcpClient = new TcpClient())
                         {
-                            using (TcpClient tcpClient = new TcpClient())
+                            await tcpClient.ConnectAsync(_host, _port).ConfigureAwait(false);
+
+                            using (NetworkStream localStream = tcpClient.GetStream())
                             {
-                                await tcpClient.ConnectAsync(_host, _port).ConfigureAwait(false);
+                                Console.WriteLine("Starting streaming");
 
-                                using (NetworkStream localStream = tcpClient.GetStream())
-                                {
-                                    Console.WriteLine("Starting streaming");
+                                await Task.WhenAny(
+                                    HandleIncomingDataAsync(localStream, webSocket, cancellationTokenSource.Token),
+                                    HandleOutgoingDataAsync(localStream, webSocket, cancellationTokenSource.Token)).ConfigureAwait(false);
 
-                                    await Task.WhenAny(
-                                        HandleIncomingDataAsync(localStream, webSocket, cancellationTokenSource.Token),
-                                        HandleOutgoingDataAsync(localStream, webSocket, cancellationTokenSource.Token)).ConfigureAwait(false);
-
-                                    localStream.Close();
-                                }
+                                localStream.Close();
                             }
-
-                            await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, String.Empty, cancellationTokenSource.Token).ConfigureAwait(false);
                         }
+
+                        await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, String.Empty, cancellationTokenSource.Token).ConfigureAwait(false);
                     }
-                    else
-                    {
-                        await _deviceClient.RejectDeviceStreamRequestAsync(streamRequest, cancellationTokenSource.Token).ConfigureAwait(false);
-                    }
+                }
+                else
+                {
+                    await _deviceClient.RejectDeviceStreamRequestAsync(streamRequest, cancellationTokenSource.Token).ConfigureAwait(false);
                 }
             }
         }
