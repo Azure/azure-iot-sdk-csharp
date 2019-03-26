@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using System.Threading;
 
 namespace Microsoft.Azure.Devices.Client.Samples
 {
@@ -73,7 +74,7 @@ namespace Microsoft.Azure.Devices.Client.Samples
                 }
 
                 var sample = new DeviceStreamSample(deviceClient, s_hostName, port);
-                sample.RunSampleAsync().GetAwaiter().GetResult();
+                sample.RunSampleAsync(new CancellationTokenSource()).GetAwaiter().GetResult();
             }
 
             Console.WriteLine("Done.\n");
