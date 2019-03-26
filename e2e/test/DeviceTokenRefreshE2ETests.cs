@@ -205,7 +205,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 {
                     _callCount++;
                 }
-                
+
                 string token = builder.ToSignature();
                 Console.WriteLine($"Token: {token}");
                 return Task.FromResult(token);
