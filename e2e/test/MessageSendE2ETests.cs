@@ -224,7 +224,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 string payload;
                 string p1Value;
-                Client.Message testMessage = MessageSendUtil.ComposeD2CTestMessage(out payload, out p1Value);
+                Client.Message testMessage = MessageHelper.ComposeD2CTestMessage(out payload, out p1Value);
                 await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
 
                 bool isReceived = await testListener.WaitForMessage(deviceId, payload, p1Value).ConfigureAwait(false);
@@ -245,7 +245,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 string payload;
                 string p1Value;
-                Client.Message testMessage = MessageSendUtil.ComposeD2CTestMessage(out payload, out p1Value);
+                Client.Message testMessage = MessageHelper.ComposeD2CTestMessage(out payload, out p1Value);
                 await moduleClient.SendEventAsync(testMessage).ConfigureAwait(false);
                 await moduleClient.CloseAsync().ConfigureAwait(false);
             }

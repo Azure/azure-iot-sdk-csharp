@@ -13,9 +13,9 @@ namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
     [TestCategory("IoTHub-E2E")]
-    public class MessageSendE2EMultiplexingTests : IDisposable
+    public class MessageReceiveE2EMultiplexingTests : IDisposable
     {
-        private readonly string DevicePrefix = $"E2E_{nameof(MessageSendE2EMultiplexingTests)}_";
+        private readonly string DevicePrefix = $"E2E_{nameof(MessageReceiveE2EMultiplexingTests)}_";
         private readonly int MuxWithoutPoolingDevicesCount = 2;
         private readonly int MuxWithoutPoolingPoolSize = 1; // For enabling multiplexing without pooling, the pool size needs to be set to 1
         private readonly int MuxWithPoolingDevicesCount = 4;
@@ -27,15 +27,15 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private readonly ConsoleEventListener _listener;
 
-        public MessageSendE2EMultiplexingTests()
+        public MessageReceiveE2EMultiplexingTests()
         {
             _listener = TestConfig.StartEventListener();
         }
 
         [TestMethod]
-        public async Task Message_DeviceSak_DeviceSendSingleMessage_MuxWithoutPooling_Amqp()
+        public async Task Message_DeviceSak_DeviceReceiveSingleMessage_MuxedWithoutPooling_Amqp()
         {
-            await SendMessageMuxedOverAmqp(
+            await ReceiveMessageMuxedOverAmqp(
                 TestDeviceType.Sasl,
                 Client.TransportType.Amqp_Tcp_Only,
                 MuxWithoutPoolingPoolSize,
@@ -45,9 +45,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        public async Task Message_DeviceSak_DeviceSendSingleMessage_MuxWithoutPooling_AmqpWs()
+        public async Task Message_DeviceSak_DeviceReceiveSingleMessage_MuxedWithoutPooling_AmqpWs()
         {
-            await SendMessageMuxedOverAmqp(
+            await ReceiveMessageMuxedOverAmqp(
                 TestDeviceType.Sasl,
                 Client.TransportType.Amqp_WebSocket_Only,
                 MuxWithoutPoolingPoolSize,
@@ -57,9 +57,33 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        public async Task Message_IoTHubSak_DeviceSendSingleMessage_MuxWithoutPooling_Amqp()
+        public async Task Message_DeviceSak_DeviceReceiveSingleMessage_MuxedWithPooling_Amqp()
         {
-            await SendMessageMuxedOverAmqp(
+            await ReceiveMessageMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_Tcp_Only,
+                MuxWithPoolingPoolSize,
+                MuxWithPoolingDevicesCount,
+                ConnectionStringAuthScope.Device
+                ).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task Message_DeviceSak_DeviceReceiveSingleMessage_MuxedWithPooling_AmqpWs()
+        {
+            await ReceiveMessageMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithPoolingPoolSize,
+                MuxWithPoolingDevicesCount,
+                ConnectionStringAuthScope.Device
+                ).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task Message_IoTHubSak_DeviceReceiveSingleMessage_MuxedWithoutPooling_Amqp()
+        {
+            await ReceiveMessageMuxedOverAmqp(
                 TestDeviceType.Sasl,
                 Client.TransportType.Amqp_Tcp_Only,
                 MuxWithoutPoolingPoolSize,
@@ -69,9 +93,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        public async Task Message_IoTHubSak_DeviceSendSingleMessage_MuxWithoutPooling_AmqpWs()
+        public async Task Message_IoTHubSak_DeviceReceiveSingleMessage_MuxedWithoutPooling_AmqpWs()
         {
-            await SendMessageMuxedOverAmqp(
+            await ReceiveMessageMuxedOverAmqp(
                 TestDeviceType.Sasl,
                 Client.TransportType.Amqp_WebSocket_Only,
                 MuxWithoutPoolingPoolSize,
@@ -81,9 +105,33 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        public async Task Message_X509_DeviceSendSingleMessage_MuxWithoutPooling_Amqp()
+        public async Task Message_IoTHubSak_DeviceReceiveSingleMessage_MuxedWithPooling_Amqp()
         {
-            await SendMessageMuxedOverAmqp(
+            await ReceiveMessageMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_Tcp_Only,
+                MuxWithPoolingPoolSize,
+                MuxWithPoolingDevicesCount,
+                ConnectionStringAuthScope.IoTHub
+                ).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task Message_IoTHubSak_DeviceReceiveSingleMessage_MuxedWithPooling_AmqpWs()
+        {
+            await ReceiveMessageMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithPoolingPoolSize,
+                MuxWithPoolingDevicesCount,
+                ConnectionStringAuthScope.IoTHub
+                ).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task Message_X509_DeviceReceiveSingleMessage_MuxedWithoutPooling_Amqp()
+        {
+            await ReceiveMessageMuxedOverAmqp(
                 TestDeviceType.X509,
                 Client.TransportType.Amqp_Tcp_Only,
                 MuxWithoutPoolingPoolSize,
@@ -92,9 +140,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        public async Task Message_X509_DeviceSendSingleMessage_MuxWithoutPooling_AmqpWs()
+        public async Task Message_X509_DeviceReceiveSingleMessage_MuxedWithoutPooling_AmqpWs()
         {
-            await SendMessageMuxedOverAmqp(
+            await ReceiveMessageMuxedOverAmqp(
                 TestDeviceType.X509,
                 Client.TransportType.Amqp_WebSocket_Only,
                 MuxWithoutPoolingPoolSize,
@@ -103,57 +151,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        public async Task Message_DeviceSak_DeviceSendSingleMessage_MuxWithPooling_Amqp()
+        public async Task Message_X509_DeviceReceiveSingleMessage_MuxedWithPooling_Amqp()
         {
-            await SendMessageMuxedOverAmqp(
-                TestDeviceType.Sasl,
-                Client.TransportType.Amqp_Tcp_Only,
-                MuxWithPoolingPoolSize,
-                MuxWithPoolingDevicesCount,
-                ConnectionStringAuthScope.Device
-                ).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task Message_DeviceSak_DeviceSendSingleMessage_MuxWithPooling_AmqpWs()
-        {
-            await SendMessageMuxedOverAmqp(
-                TestDeviceType.Sasl,
-                Client.TransportType.Amqp_WebSocket_Only,
-                MuxWithPoolingPoolSize,
-                MuxWithPoolingDevicesCount,
-                ConnectionStringAuthScope.Device
-                ).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task Message_IoTHubSak_DeviceSendSingleMessage_MuxWithPooling_Amqp()
-        {
-            await SendMessageMuxedOverAmqp(
-                TestDeviceType.Sasl,
-                Client.TransportType.Amqp_Tcp_Only,
-                MuxWithPoolingPoolSize,
-                MuxWithPoolingDevicesCount,
-                ConnectionStringAuthScope.IoTHub
-                ).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task Message_IoTHubSak_DeviceSendSingleMessage_MuxWithPooling_AmqpWs()
-        {
-            await SendMessageMuxedOverAmqp(
-                TestDeviceType.Sasl,
-                Client.TransportType.Amqp_WebSocket_Only,
-                MuxWithPoolingPoolSize,
-                MuxWithPoolingDevicesCount,
-                ConnectionStringAuthScope.IoTHub
-                ).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task Message_X509_DeviceSendSingleMessage_MuxWithPooling_Amqp()
-        {
-            await SendMessageMuxedOverAmqp(
+            await ReceiveMessageMuxedOverAmqp(
                 TestDeviceType.X509,
                 Client.TransportType.Amqp_Tcp_Only,
                 MuxWithPoolingPoolSize,
@@ -162,9 +162,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        public async Task Message_X509_DeviceSendSingleMessage_MuxWithPooling_AmqpWs()
+        public async Task Message_X509_DeviceReceiveSingleMessage_MuxedWithPooling_AmqpWs()
         {
-            await SendMessageMuxedOverAmqp(
+            await ReceiveMessageMuxedOverAmqp(
                 TestDeviceType.X509,
                 Client.TransportType.Amqp_WebSocket_Only,
                 MuxWithPoolingPoolSize,
@@ -172,30 +172,10 @@ namespace Microsoft.Azure.Devices.E2ETests
                 ).ConfigureAwait(false);
         }
 
-        public static async Task SendSingleMessageAndVerify(DeviceClient deviceClient, string deviceId)
-        {
-            EventHubTestListener testListener = await EventHubTestListener.CreateListener(deviceId).ConfigureAwait(false);
-
-            try
-            {
-                string payload;
-                string p1Value;
-                Client.Message testMessage = MessageHelper.ComposeD2CTestMessage(out payload, out p1Value);
-                await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
-
-                bool isReceived = await testListener.WaitForMessage(deviceId, payload, p1Value).ConfigureAwait(false);
-                Assert.IsTrue(isReceived, "Message is not received.");
-            }
-            finally
-            {
-                await testListener.CloseAsync().ConfigureAwait(false);
-            }
-        }
-
-        private async Task SendMessageMuxedOverAmqp(
-            TestDeviceType type, 
-            Client.TransportType transport, 
-            int poolSize, 
+        private async Task ReceiveMessageMuxedOverAmqp(
+            TestDeviceType type,
+            Client.TransportType transport,
+            int poolSize,
             int devicesCount,
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
         {
@@ -212,10 +192,12 @@ namespace Microsoft.Azure.Devices.E2ETests
             };
 
             ICollection<DeviceClient> deviceClients = new List<DeviceClient>();
+            ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
 
             try
             {
-                _log.WriteLine($"{nameof(MessageSendE2EMultiplexingTests)}: Starting the test execution for {devicesCount} devices");
+                _log.WriteLine($"{nameof(MessageReceiveE2EMultiplexingTests)}: Starting the test execution for {devicesCount} devices");
+                await serviceClient.OpenAsync().ConfigureAwait(false);
 
                 for (int i = 0; i < devicesCount; i++)
                 {
@@ -232,18 +214,26 @@ namespace Microsoft.Azure.Devices.E2ETests
                     }
                     deviceClients.Add(deviceClient);
 
-                    _log.WriteLine($"{nameof(MessageSendE2EMultiplexingTests)}: Preparing to send message for device {i}");
+                    _log.WriteLine($"{nameof(MessageReceiveE2EMultiplexingTests)}: Preparing to receive message for device {i}");
                     await deviceClient.OpenAsync().ConfigureAwait(false);
-                    await SendSingleMessageAndVerify(deviceClient, testDevice.Id).ConfigureAwait(false);
+
+                    string payload, messageId, p1Value;
+
+                    Message msg = MessageHelper.ComposeC2DTestMessage(out payload, out messageId, out p1Value);
+                    await serviceClient.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
+                    await MessageHelper.VerifyReceivedC2DMessageAsync(transport, deviceClient, payload, p1Value).ConfigureAwait(false);
                 }
             }
             finally
             {
+                await serviceClient.CloseAsync().ConfigureAwait(false);
+                serviceClient.Dispose();
+
                 // Close and dispose all of the device client instances here
                 foreach (DeviceClient deviceClient in deviceClients)
                 {
                     await deviceClient.CloseAsync().ConfigureAwait(false);
-                    _log.WriteLine($"{nameof(MessageSendE2EMultiplexingTests)}: Disposing deviceClient {TestLogging.GetHashCode(deviceClient)}");
+                    _log.WriteLine($"{nameof(MessageReceiveE2EMultiplexingTests)}: Disposing deviceClient {TestLogging.GetHashCode(deviceClient)}");
                     deviceClient.Dispose();
                 }
             }
