@@ -1,6 +1,7 @@
 ﻿using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Azure.Devices.Client.Exceptions;
+using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Collections.Generic;
@@ -628,7 +629,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         public async Task<Outcome> DisposeMessageAsync(string lockToken, Outcome outcome, TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, lockToken, $"{nameof(DisposeMessageAsync)}");
-            Outcome disposeOutcome = await AmqpLinkHelper.DisposeMessageAsync(MessageReceivingLink, lockToken, outcome, timeout).ConfigureAwait(false);
+            Outcome disposeOutcome;
+            if (DeviceIdentity.IotHubConnectionString.ModuleId.IsNullOrWhiteSpace())
+            {
+                disposeOutcome = await AmqpLinkHelper.DisposeMessageAsync(MessageReceivingLink, lockToken, outcome, timeout).ConfigureAwait(false);
+            }
+            else
+            {
+                disposeOutcome = await AmqpLinkHelper.DisposeMessageAsync(EventReceivingLink, lockToken, outcome, timeout).ConfigureAwait(false);
+            }
             if (Logging.IsEnabled) Logging.Exit(this, lockToken, $"{nameof(DisposeMessageAsync)}");
             return disposeOutcome;
         }
