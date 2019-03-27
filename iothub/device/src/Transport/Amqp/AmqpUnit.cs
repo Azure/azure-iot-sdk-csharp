@@ -94,6 +94,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 {
                     await AmqpSession.CloseAsync(timeout).ConfigureAwait(false);
                 }
+                OnUnitDisconnected?.Invoke(this, EventArgs.Empty);
                 throw;
             }
             finally
