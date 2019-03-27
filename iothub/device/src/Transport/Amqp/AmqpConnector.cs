@@ -70,15 +70,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         public async Task<AmqpConnection> OpenConnectionAsync(TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(OpenConnectionAsync)}");
-            TimeoutHelper timeoutHelper = new TimeoutHelper(timeout);
             TransportBase transportBase = null;
 
             try
             {
-                transportBase = await InitializeTransport(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+                transportBase = await InitializeTransport(timeout).ConfigureAwait(false);
                 AmqpConnection amqpConnection = new AmqpConnection(transportBase, AmqpSettings, AmqpConnectionSettings);
-                await amqpConnection.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
-                if (Logging.IsEnabled) Logging.Exit(this, timeoutHelper.RemainingTime(), $"{nameof(OpenConnectionAsync)}");
+                await amqpConnection.OpenAsync(timeout).ConfigureAwait(false);
+                if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(OpenConnectionAsync)}");
                 return amqpConnection;
             }
             catch(Exception)
@@ -93,12 +92,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(InitializeTransport)}");
             TransportBase transport;
 
-            var timeoutHelper = new TimeoutHelper(timeout);
-
             switch (AmqpTransportSettings.GetTransportType())
             {
                 case TransportType.Amqp_WebSocket_Only:
-                    transport = await CreateClientWebSocketTransportAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+                    transport = await CreateClientWebSocketTransportAsync(timeout).ConfigureAwait(false);
                     SaslTransportProvider provider = AmqpSettings.GetTransportProvider<SaslTransportProvider>();
                     if (provider != null)
                     {
@@ -128,12 +125,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     break;
                 case TransportType.Amqp_Tcp_Only:
                     var amqpTransportInitiator = new AmqpTransportInitiator(AmqpSettings, TlsTransportSettings);
-                    transport = await amqpTransportInitiator.ConnectTaskAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+                    transport = await amqpTransportInitiator.ConnectTaskAsync(timeout).ConfigureAwait(false);
                     break;
                 default:
                     throw new InvalidOperationException("AmqpTransportSettings must specify WebSocketOnly or TcpOnly");
             }
-            if (Logging.IsEnabled) Logging.Exit(this, timeoutHelper.RemainingTime(), $"{nameof(InitializeTransport)}");
+            if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(InitializeTransport)}");
             return transport;
         }
 
@@ -152,7 +149,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             {
                 if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(CreateClientWebSocketTransportAsync)}");
 
-                var timeoutHelper = new TimeoutHelper(timeout);
                 string additionalQueryParams = "";
 #if NETSTANDARD1_3
                             // NETSTANDARD1_3 implementation doesn't set client certs, so we want to tell the IoT Hub to not ask for them
@@ -163,7 +159,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 #if NET451
                             if (Environment.OSVersion.Version.Major < 6 || (Environment.OSVersion.Version.Major == 6 && Environment.OSVersion.Version.Minor <= 1))
                             {
-                                var websocket = await CreateLegacyClientWebSocketAsync(websocketUri, this.AmqpTransportSettings.ClientCertificate, timeoutHelper.RemainingTime()).ConfigureAwait(false);
+                                var websocket = await CreateLegacyClientWebSocketAsync(websocketUri, this.AmqpTransportSettings.ClientCertificate, timeout).ConfigureAwait(false);
                                 return new LegacyClientWebSocketTransport(
                                     websocket,
                                     this.AmqpTransportSettings.OperationTimeout,
@@ -173,7 +169,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                             else
                             {
 #endif
-                var websocket = await CreateClientWebSocketAsync(websocketUri, timeoutHelper.RemainingTime()).ConfigureAwait(false);
+                var websocket = await CreateClientWebSocketAsync(websocketUri, timeout).ConfigureAwait(false);
                 return new ClientWebSocketTransport(
                     websocket,
                     null,
