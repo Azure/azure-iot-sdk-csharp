@@ -4,6 +4,7 @@
 using Microsoft.Azure.Devices.Common;
 using Microsoft.Azure.Devices.Provisioning.Security.Samples;
 using Microsoft.Azure.Devices.Provisioning.Service;
+using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
@@ -136,7 +137,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             using (ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService(proxyServerAddress))
             {
-                IndividualEnrollment individualEnrollment = await CreateIndividualEnrollment(provisioningServiceClient, attestationType, reprovisionPolicy, allocationPolicy, customAllocationDefinition, iotHubsToProvisionTo).ConfigureAwait(false);
+                IndividualEnrollment individualEnrollment = await CreateIndividualEnrollment(provisioningServiceClient, attestationType, reprovisionPolicy, allocationPolicy, customAllocationDefinition, iotHubsToProvisionTo, null).ConfigureAwait(false);
                 IndividualEnrollment individualEnrollmentResult = await provisioningServiceClient.GetIndividualEnrollmentAsync(individualEnrollment.RegistrationId).ConfigureAwait(false);
                 Assert.AreEqual(individualEnrollmentResult.ProvisioningStatus, ProvisioningStatus.Enabled);
 
@@ -169,7 +170,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             string groupId = IdPrefix + AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
             using (ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService(proxyServerAddress))
             {
-                EnrollmentGroup enrollmentGroup = await CreateEnrollmentGroup(provisioningServiceClient, attestationType, groupId, reprovisionPolicy, allocationPolicy, customAllocationDefinition, iothubs).ConfigureAwait(false);
+                EnrollmentGroup enrollmentGroup = await CreateEnrollmentGroup(provisioningServiceClient, attestationType, groupId, reprovisionPolicy, allocationPolicy, customAllocationDefinition, iothubs, null).ConfigureAwait(false);
                 EnrollmentGroup enrollmentGroupResult = await provisioningServiceClient.GetEnrollmentGroupAsync(enrollmentGroup.EnrollmentGroupId).ConfigureAwait(false);
                 Assert.AreEqual(enrollmentGroupResult.ProvisioningStatus, ProvisioningStatus.Enabled);
 
@@ -191,7 +192,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        public static async Task<IndividualEnrollment> CreateIndividualEnrollment(ProvisioningServiceClient provisioningServiceClient, AttestationType attestationType, ReprovisionPolicy reprovisionPolicy, AllocationPolicy allocationPolicy, CustomAllocationDefinition customAllocationDefinition, ICollection<string> iotHubsToProvisionTo)
+        public static async Task<IndividualEnrollment> CreateIndividualEnrollment(ProvisioningServiceClient provisioningServiceClient, AttestationType attestationType, ReprovisionPolicy reprovisionPolicy, AllocationPolicy allocationPolicy, CustomAllocationDefinition customAllocationDefinition, ICollection<string> iotHubsToProvisionTo, DeviceCapabilities capabilities)
         {
             string registrationId = AttestationTypeToString(attestationType) + "-registration-id-" + Guid.NewGuid();
             Attestation attestation;
@@ -204,7 +205,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                         string base64Ek = Convert.ToBase64String(tpmSim.GetEndorsementKey());
                         var provisioningService = ProvisioningServiceClient.CreateFromConnectionString(Configuration.Provisioning.ConnectionString);
                         individualEnrollment = new IndividualEnrollment(registrationId, new TpmAttestation(base64Ek));
-
+                        individualEnrollment.Capabilities = capabilities;
                         individualEnrollment.AllocationPolicy = allocationPolicy;
                         individualEnrollment.ReprovisionPolicy = reprovisionPolicy;
                         individualEnrollment.CustomAllocationDefinition = customAllocationDefinition;
@@ -226,7 +227,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
 
             individualEnrollment = new IndividualEnrollment(registrationId, attestation);
-
+            individualEnrollment.Capabilities = capabilities;
             individualEnrollment.CustomAllocationDefinition = customAllocationDefinition;
             individualEnrollment.ReprovisionPolicy = reprovisionPolicy;
             individualEnrollment.IotHubs = iotHubsToProvisionTo;
@@ -234,7 +235,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             return await provisioningServiceClient.CreateOrUpdateIndividualEnrollmentAsync(individualEnrollment).ConfigureAwait(false);
         }
 
-        public static async Task<EnrollmentGroup> CreateEnrollmentGroup(ProvisioningServiceClient provisioningServiceClient, AttestationType attestationType, string groupId, ReprovisionPolicy reprovisionPolicy, AllocationPolicy allocationPolicy, CustomAllocationDefinition customAllocationDefinition, ICollection<string> iothubs)
+        public static async Task<EnrollmentGroup> CreateEnrollmentGroup(ProvisioningServiceClient provisioningServiceClient, AttestationType attestationType, string groupId, ReprovisionPolicy reprovisionPolicy, AllocationPolicy allocationPolicy, CustomAllocationDefinition customAllocationDefinition, ICollection<string> iothubs, DeviceCapabilities capabilities)
         {
             Attestation attestation;
             switch (attestationType)
@@ -252,7 +253,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
 
             EnrollmentGroup enrollmentGroup = new EnrollmentGroup(groupId, attestation);
-
+            enrollmentGroup.Capabilities = capabilities;
             enrollmentGroup.ReprovisionPolicy = reprovisionPolicy;
             enrollmentGroup.AllocationPolicy = allocationPolicy;
             enrollmentGroup.CustomAllocationDefinition = customAllocationDefinition;
