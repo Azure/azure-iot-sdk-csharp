@@ -9,6 +9,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
     internal class AmqpAuthenticationRefresher : IAmqpAuthenticationRefresher
     {
+        private static readonly string[] AccessRightsStringArray = AccessRightsHelper.AccessRightsToStringArray(AccessRights.DeviceConnect);
         private readonly AmqpCbsLink AmqpCbsLink;
         private readonly IotHubConnectionString ConnectionString;
         private readonly string Audience;
@@ -21,35 +22,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             AmqpCbsLink = amqpCbsLink;
             ConnectionString = deviceIdentity.IotHubConnectionString;
             OperationTimeout = deviceIdentity.AmqpTransportSettings.OperationTimeout;
-            Audience = CreateAudience(ConnectionString);
+            Audience = deviceIdentity.Audience;
             if (Logging.IsEnabled) Logging.Associate(this, deviceIdentity, $"{nameof(DeviceIdentity)}");
             if (Logging.IsEnabled) Logging.Associate(this, amqpCbsLink, $"{nameof(AmqpCbsLink)}");
-        }
-
-        public static string CreateAudience(IotHubConnectionString connectionString)
-        {
-            if (connectionString.SharedAccessKeyName == null)
-            {
-                if (connectionString.ModuleId == null)
-                {
-                    return $"{connectionString.HostName}/devices/{connectionString.DeviceId}";
-                }
-                else
-                {
-                    return $"{connectionString.HostName}/devices/{connectionString.DeviceId}/modules/{connectionString.ModuleId}";
-                }
-            }
-            else
-            {
-                // this is a group shared key
-                return $"{connectionString.HostName}/{connectionString.SharedAccessKeyName}";
-            }
         }
 
         public async Task InitLoopAsync(TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(InitLoopAsync)}");
-            TimeoutHelper timeoutHelper = new TimeoutHelper(timeout);
             CancellationTokenSource oldTokenSource = CancellationTokenSource;
             CancellationTokenSource = new CancellationTokenSource();
             CancellationToken newToken = CancellationTokenSource.Token;
@@ -59,14 +39,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     ConnectionString.AmqpEndpoint,
                     Audience,
                     Audience,
-                    AccessRightsHelper.AccessRightsToStringArray(AccessRights.DeviceConnect),
-                    timeoutHelper.RemainingTime()
+                    AccessRightsStringArray,
+                    timeout
                 ).ConfigureAwait(false);
             if (expiry < DateTime.MaxValue)
             {
                 StartLoop(expiry, newToken);
             }
-            if (Logging.IsEnabled) Logging.Exit(this, timeoutHelper.RemainingTime(), $"{nameof(InitLoopAsync)}");
+            if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(InitLoopAsync)}");
         }
 
         private void StartLoop(DateTime expiry, CancellationToken cancellationToken)
@@ -85,7 +65,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             {
                 if (Logging.IsEnabled) Logging.Info(this, expiry, $"Before {nameof(RefreshLoopAsync)}");
 
-                if (waitTime.Milliseconds > 0)
+                if (waitTime.Seconds > 0)
                 {
                     await Task.Delay(waitTime, cancellationToken).ConfigureAwait(false);
                 }
@@ -99,8 +79,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                             ConnectionString.AmqpEndpoint,
                             Audience,
                             Audience,
-                            AccessRightsHelper.AccessRightsToStringArray(AccessRights.DeviceConnect),
-                            OperationTimeout
+		                    AccessRightsStringArray,
+		                    OperationTimeout
                         ).ConfigureAwait(false);
                     }
                     catch (AmqpException ex)

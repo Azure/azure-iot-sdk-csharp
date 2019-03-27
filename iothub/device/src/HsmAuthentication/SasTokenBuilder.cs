@@ -5,7 +5,6 @@ using System;
 using System.Globalization;
 using System.Net;
 using System.Text;
-using Microsoft.Azure.Devices.Common;
 
 namespace Microsoft.Azure.Devices.Client.HsmAuthentication
 {
@@ -36,12 +35,7 @@ namespace Microsoft.Azure.Devices.Client.HsmAuthentication
 
         public static string BuildAudience(string iotHub, string deviceId, string moduleId)
         {
-            string audience = WebUtility.UrlEncode("{0}/devices/{1}/modules/{2}".FormatInvariant(
-                iotHub,
-                deviceId,
-                moduleId));
-
-            return audience;
+            return WebUtility.UrlEncode($"{iotHub}/devices/{deviceId}/modules/{moduleId}");
         }
     }
 }
