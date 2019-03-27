@@ -10,7 +10,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -125,8 +124,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        // Error injection template method (single device connection).
-        public static async Task TestErrorInjectionSingleDeviceAsync(
+        // Error injection template method.
+        public static async Task TestErrorInjectionAsync(
             string devicePrefix,
             TestDeviceType type,
             Client.TransportType transport,
@@ -134,8 +133,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             string reason,
             int delayInSec,
             int durationInSec,
-            bool shouldFaultNotRecover,
-            List<Type> expectedExceptions,
             Func<DeviceClient, TestDevice, Task> initOperation,
             Func<DeviceClient, TestDevice, Task> testOperation,
             Func<Task> cleanupOperation)
@@ -143,138 +140,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(devicePrefix, type).ConfigureAwait(false);
             DeviceClient deviceClient = testDevice.CreateDeviceClient(transport);
 
-            try
-            {
-                await TestErrorInjection(
-                    deviceClient,
-                    testDevice,
-                    transport,
-                    faultType,
-                    reason,
-                    delayInSec,
-                    durationInSec,
-                    shouldFaultNotRecover,
-                    expectedExceptions,
-                    initOperation,
-                    testOperation
-                    ).ConfigureAwait(false);
-            }
-            finally
-            {
-                await deviceClient.CloseAsync().ConfigureAwait(false);
-                await cleanupOperation().ConfigureAwait(false);
-
-                s_log.WriteLine($"{nameof(FaultInjection)}: Disposing deviceClient {TestLogging.GetHashCode(deviceClient)}");
-                deviceClient.Dispose();
-            }
-        }
-
-        // Error injection template method (multiplexing over amqp).
-        public static async Task TestErrorInjectionMuxedOverAmqpAsync(
-            string devicePrefix,
-            ConnectionStringAuthScope authScope,
-            TestDeviceType type,
-            Client.TransportType transport,
-            int poolSize,
-            int devicesCount,
-            string faultType,
-            string reason,
-            int delayInSec,
-            int durationInSec,
-            bool shouldFaultNotRecover,
-            List<Type> expectedExceptions,
-            Func<DeviceClient, TestDevice, Task> initOperation,
-            Func<DeviceClient, TestDevice, Task> testOperation,
-            Func<Task> cleanupOperation)
-        {
-            var transportSettings = new ITransportSettings[]
-            {
-                new AmqpTransportSettings(transport)
-                {
-                    AmqpConnectionPoolSettings = new AmqpConnectionPoolSettings()
-                    {
-                        MaxPoolSize = unchecked((uint)poolSize),
-                        Pooling = true
-                    }
-                }
-            };
-
-            IList<DeviceClient> deviceClients = new List<DeviceClient>();
-            // TODO: #839 - Test that all multiplexed devices recover after fault injection duration
-            IList<TestDevice> testDevices = new List<TestDevice>();
-
-            try
-            {
-                s_log.WriteLine($"{nameof(FaultInjection)}: Starting the test execution for {devicesCount} devices");
-
-                for (int i = 0; i < devicesCount; i++)
-                {
-                    TestDevice testDevice = await TestDevice.GetTestDeviceAsync($"{devicePrefix}_{i}_", type).ConfigureAwait(false);
-                    DeviceClient deviceClient = testDevice.CreateDeviceClient(transportSettings, authScope);
-                    deviceClients.Add(deviceClient);
-                    // TODO: #839 - Test that all multiplexed devices recover after fault injection duration
-                    testDevices.Add(testDevice);
-
-                    await TestErrorInjection(
-                        deviceClient,
-                        testDevice,
-                        transport,
-                        faultType,
-                        reason,
-                        delayInSec,
-                        durationInSec,
-                        shouldFaultNotRecover,
-                        expectedExceptions,
-                        initOperation,
-                        testOperation
-                        ).ConfigureAwait(false);
-                }
-            }
-            finally
-            {
-                int count = 0;
-
-                // Close and dispose all of the device client instances here
-                // TODO: #839 - Test that all multiplexed devices recover after fault injection duration
-                //foreach (DeviceClient deviceClient in deviceClients)
-                for (int i=0; i<deviceClients.Count; i++)
-                {
-                    // TODO: #839 - Test that all multiplexed devices recover after fault injection duration
-                    count++;
-                    var deviceClient = deviceClients[i];
-                    var testDevice = testDevices[i];
-
-                    if (!MessageSendFaultInjectionTests.ShouldFaultNotRecover(faultType))
-                    {
-                        s_log.WriteLine($"{nameof(FaultInjection)}: Test baseline again deviceClient {TestLogging.GetHashCode(deviceClient)}");
-                        await initOperation(deviceClient, testDevice).ConfigureAwait(false);
-                        await testOperation(deviceClient, testDevice).ConfigureAwait(false);
-                    }
-
-                    s_log.WriteLine($"{nameof(FaultInjection)}: Count {count} - Closing deviceClient {TestLogging.GetHashCode(deviceClient)}");
-                    await deviceClient.CloseAsync().ConfigureAwait(false);
-                    await cleanupOperation().ConfigureAwait(false);
-
-                    s_log.WriteLine($"{nameof(FaultInjection)}: Disposing deviceClient {TestLogging.GetHashCode(deviceClient)}");
-                    deviceClient.Dispose();
-                }
-            }
-        }
-
-        // Error injection template method.
-        public static async Task TestErrorInjection(
-            DeviceClient deviceClient,
-            TestDevice testDevice,
-            Client.TransportType transport,
-            string faultType,
-            string reason,
-            int delayInSec,
-            int durationInSec,
-            bool shouldFaultNotRecover,
-            List<Type> expectedExceptions,
-            Func<DeviceClient, TestDevice, Task> initOperation,
-            Func<DeviceClient, TestDevice, Task> testOperation)
-        {
             ConnectionStatus? lastConnectionStatus = null;
             ConnectionStatusChangeReason? lastConnectionStatusChangeReason = null;
             int setConnectionStatusChangesHandlerCount = 0;
@@ -284,7 +149,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 setConnectionStatusChangesHandlerCount++;
                 lastConnectionStatus = status;
                 lastConnectionStatusChangeReason = statusChangeReason;
-                s_log.WriteLine($"{nameof(FaultInjection)}.{nameof(ConnectionStatusChangesHandler)}: {TestLogging.GetHashCode(deviceClient)}: status={status} statusChangeReason={statusChangeReason} count={setConnectionStatusChangesHandlerCount}");
+                s_log.WriteLine($"{nameof(FaultInjection)}.{nameof(ConnectionStatusChangesHandler)}: status={status} statusChangeReason={statusChangeReason} count={setConnectionStatusChangesHandlerCount}");
             });
 
             var watch = new Stopwatch();
@@ -306,7 +171,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 watch.Start();
                 s_log.WriteLine($">>> {nameof(FaultInjection)} Testing fault handling");
-
                 await ActivateFaultInjection(transport, faultType, reason, delayInSec, durationInSec, deviceClient).ConfigureAwait(false);
 
                 int delay = FaultInjection.WaitForDisconnectMilliseconds - (int)watch.ElapsedMilliseconds;
@@ -315,33 +179,36 @@ namespace Microsoft.Azure.Devices.E2ETests
                 s_log.WriteLine($"{nameof(FaultInjection)}: Waiting for fault injection to be active: {delay}ms");
                 await Task.Delay(delay).ConfigureAwait(false);
 
-                // TODO: #867 - Twin fault injection test does not check desired property update callback operation properly
-                if (!shouldFaultNotRecover)
-                {
-                    await Task.Delay(3000).ConfigureAwait(false);
-                }
-
-                s_log.WriteLine($">>> {nameof(FaultInjection)} Testing operation after fault recovery");
                 await testOperation(deviceClient, testDevice).ConfigureAwait(false);
+
+                await deviceClient.CloseAsync().ConfigureAwait(false);
 
                 if (transport != Client.TransportType.Http1)
                 {
-                    s_log.WriteLine($"Current count of connection status for {TestLogging.GetHashCode(deviceClient)} is: {setConnectionStatusChangesHandlerCount}.");
                     if (FaultShouldDisconnect(faultType))
                     {
-                        // 3 is the minimum notification count: connect, fault, reconnect.
+                        // 4 is the minimum notification count: connect, fault, reconnect, disable.
                         // There are cases where the retry must be timed out (i.e. very likely for MQTT where otherwise 
                         // we would attempt to send the fault injection forever.)
-                        Assert.IsTrue(setConnectionStatusChangesHandlerCount >= 3);
+                        Assert.IsTrue(setConnectionStatusChangesHandlerCount >= 4); 
                     }
                     else
                     {
-                        // 1 is the minimum notification count: connect.
-                        // We will monitor the test environment real network stability and switch to >=1 if necessary to 
+                        // 2 is the minimum notification count: connect, disable.
+                        // We will monitor the test environment real network stability and switch to >=2 if necessary to 
                         // account for real network issues.
-                        Assert.IsTrue(setConnectionStatusChangesHandlerCount == 1);
+                        Assert.IsTrue(setConnectionStatusChangesHandlerCount == 2); 
                     }
+
+                    Assert.AreEqual(ConnectionStatus.Disabled, lastConnectionStatus);
+                    Assert.AreEqual(ConnectionStatusChangeReason.Client_Close, lastConnectionStatusChangeReason);
                 }
+            }
+            finally
+            {
+                await cleanupOperation().ConfigureAwait(false);
+                s_log.WriteLine($"{nameof(FaultInjection)}: Disposing deviceClient {TestLogging.GetHashCode(deviceClient)}");
+                deviceClient.Dispose();
 
                 watch.Stop();
 
@@ -350,23 +217,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 {
                     s_log.WriteLine($"{nameof(FaultInjection)}: Waiting {timeToFinishFaultInjection}ms to ensure that FaultInjection duration passed.");
                     await Task.Delay(timeToFinishFaultInjection).ConfigureAwait(false);
-                }
-
-                // TODO: #839 - Check that expected exception is thrown for certain fault types.
-                if (shouldFaultNotRecover)
-                {
-                    Assert.Fail($"Exception expected for deviceId {testDevice.Id} with fault type {faultType}");
-                }
-            }
-            catch (Exception ex) when (!(ex is AssertFailedException))
-            {
-                if (!shouldFaultNotRecover)
-                {
-                    Assert.Fail($"Exception not expected for deviceId {testDevice.Id} with fault type {faultType} but threw exception: {ex}");
-                }
-                else if (!expectedExceptions.Contains(ex.GetType()))
-                {
-                    Assert.Fail($"Exception for {faultType} thrown for deviceId {testDevice.Id} was not expected: {ex}");
                 }
             }
         }
