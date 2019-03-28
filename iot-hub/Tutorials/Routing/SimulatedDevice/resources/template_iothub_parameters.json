@@ -20,9 +20,6 @@
         "d2c_partitions": {
             "value": "4"
         },
-        "features": {
-            "value": "None"
-        },
         "storageAccountName_in": {
             "value": "contosostorage"
         },
