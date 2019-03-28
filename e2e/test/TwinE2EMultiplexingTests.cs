@@ -241,14 +241,19 @@ namespace Microsoft.Azure.Devices.E2ETests
             };
 
             ICollection<DeviceClient> deviceClients = new List<DeviceClient>();
+            Dictionary<DeviceClient, int> deviceClientConnectionStatusChangeCount = new Dictionary<DeviceClient, int>();
 
             try
             {
-                _log.WriteLine($"{nameof(MessageSendE2ETests)}: Starting the test execution for {devicesCount} devices");
+                _log.WriteLine($"{nameof(TwinE2EMultiplexingTests)}: Starting the test execution for {devicesCount} devices");
 
                 for (int i = 0; i < devicesCount; i++)
                 {
                     DeviceClient deviceClient = null;
+                    ConnectionStatus? lastConnectionStatus = null;
+                    ConnectionStatusChangeReason? lastConnectionStatusChangeReason = null;
+                    int setConnectionStatusChangesHandlerCount = 0;
+
                     TestDevice testDevice = await TestDevice.GetTestDeviceAsync($"{DevicePrefix}_{i}_", type).ConfigureAwait(false);
 
                     if (type == TestDeviceType.Sasl)
@@ -261,6 +266,15 @@ namespace Microsoft.Azure.Devices.E2ETests
                     }
                     deviceClients.Add(deviceClient);
 
+                    deviceClient.SetConnectionStatusChangesHandler((status, statusChangeReason) =>
+                    {
+                        setConnectionStatusChangesHandlerCount++;
+                        lastConnectionStatus = status;
+                        lastConnectionStatusChangeReason = statusChangeReason;
+                        _log.WriteLine($"{nameof(TwinE2EMultiplexingTests)}.{nameof(ConnectionStatusChangesHandler)}: status={status} statusChangeReason={statusChangeReason} count={setConnectionStatusChangesHandlerCount}");
+                        deviceClientConnectionStatusChangeCount[deviceClient] = setConnectionStatusChangesHandlerCount;
+                    });
+
                     await TwinUtil.Twin_DeviceSetsReportedPropertyAndGetsItBack(deviceClient).ConfigureAwait(false);
                 }
             }
@@ -270,7 +284,11 @@ namespace Microsoft.Azure.Devices.E2ETests
                 foreach (DeviceClient deviceClient in deviceClients)
                 {
                     await deviceClient.CloseAsync().ConfigureAwait(false);
-                    _log.WriteLine($"{nameof(MessageSendE2ETests)}: Disposing deviceClient {TestLogging.GetHashCode(deviceClient)}");
+
+                    // The connection status change count should be 2: connect (open) and disabled (close)
+                    Assert.IsTrue(deviceClientConnectionStatusChangeCount[deviceClient] == 2);
+
+                    _log.WriteLine($"{nameof(TwinE2EMultiplexingTests)}: Disposing deviceClient {TestLogging.GetHashCode(deviceClient)}");
                     deviceClient.Dispose();
                 }
             }
@@ -301,14 +319,19 @@ namespace Microsoft.Azure.Devices.E2ETests
             };
 
             ICollection<DeviceClient> deviceClients = new List<DeviceClient>();
+            Dictionary<DeviceClient, int> deviceClientConnectionStatusChangeCount = new Dictionary<DeviceClient, int>();
 
             try
             {
-                _log.WriteLine($"{nameof(MessageSendE2ETests)}: Starting the test execution for {devicesCount} devices");
+                _log.WriteLine($"{nameof(TwinE2EMultiplexingTests)}: Starting the test execution for {devicesCount} devices");
 
                 for (int i = 0; i < devicesCount; i++)
                 {
                     DeviceClient deviceClient = null;
+                    ConnectionStatus? lastConnectionStatus = null;
+                    ConnectionStatusChangeReason? lastConnectionStatusChangeReason = null;
+                    int setConnectionStatusChangesHandlerCount = 0;
+
                     TestDevice testDevice = await TestDevice.GetTestDeviceAsync($"{DevicePrefix}_{i}_", type).ConfigureAwait(false);
 
                     if (type == TestDeviceType.Sasl)
@@ -320,6 +343,15 @@ namespace Microsoft.Azure.Devices.E2ETests
                         deviceClient = testDevice.CreateDeviceClient(transportSettings);
                     }
                     deviceClients.Add(deviceClient);
+
+                    deviceClient.SetConnectionStatusChangesHandler((status, statusChangeReason) =>
+                    {
+                        setConnectionStatusChangesHandlerCount++;
+                        lastConnectionStatus = status;
+                        lastConnectionStatusChangeReason = statusChangeReason;
+                        _log.WriteLine($"{nameof(TwinE2EMultiplexingTests)}.{nameof(ConnectionStatusChangesHandler)}: status={status} statusChangeReason={statusChangeReason} count={setConnectionStatusChangesHandlerCount}");
+                        deviceClientConnectionStatusChangeCount[deviceClient] = setConnectionStatusChangesHandlerCount;
+                    });
 
                     _log.WriteLine($"{nameof(Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventMuxedOverAmqp)}: name={propName}, value={propValue}");
                     Task updateReceivedTask = await setTwinPropertyUpdateCallbackAsync(deviceClient, propName, propValue).ConfigureAwait(false);
@@ -336,7 +368,11 @@ namespace Microsoft.Azure.Devices.E2ETests
                 foreach (DeviceClient deviceClient in deviceClients)
                 {
                     await deviceClient.CloseAsync().ConfigureAwait(false);
-                    _log.WriteLine($"{nameof(MessageSendE2ETests)}: Disposing deviceClient {TestLogging.GetHashCode(deviceClient)}");
+
+                    // The connection status change count should be 2: connect (open) and disabled (close)
+                    Assert.IsTrue(deviceClientConnectionStatusChangeCount[deviceClient] == 2);
+
+                    _log.WriteLine($"{nameof(TwinE2EMultiplexingTests)}: Disposing deviceClient {TestLogging.GetHashCode(deviceClient)}");
                     deviceClient.Dispose();
                 }
             }
