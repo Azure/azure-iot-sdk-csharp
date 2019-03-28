@@ -81,28 +81,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        public async Task Message_X509_DeviceSendSingleMessage_MuxWithoutPooling_Amqp()
-        {
-            await SendMessageMuxedOverAmqp(
-                TestDeviceType.X509,
-                Client.TransportType.Amqp_Tcp_Only,
-                MuxWithoutPoolingPoolSize,
-                MuxWithoutPoolingDevicesCount
-                ).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task Message_X509_DeviceSendSingleMessage_MuxWithoutPooling_AmqpWs()
-        {
-            await SendMessageMuxedOverAmqp(
-                TestDeviceType.X509,
-                Client.TransportType.Amqp_WebSocket_Only,
-                MuxWithoutPoolingPoolSize,
-                MuxWithoutPoolingDevicesCount
-                ).ConfigureAwait(false);
-        }
-
-        [TestMethod]
         public async Task Message_DeviceSak_DeviceSendSingleMessage_MuxWithPooling_Amqp()
         {
             await SendMessageMuxedOverAmqp(
@@ -147,28 +125,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 MuxWithPoolingPoolSize,
                 MuxWithPoolingDevicesCount,
                 ConnectionStringAuthScope.IoTHub
-                ).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task Message_X509_DeviceSendSingleMessage_MuxWithPooling_Amqp()
-        {
-            await SendMessageMuxedOverAmqp(
-                TestDeviceType.X509,
-                Client.TransportType.Amqp_Tcp_Only,
-                MuxWithPoolingPoolSize,
-                MuxWithPoolingDevicesCount
-                ).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task Message_X509_DeviceSendSingleMessage_MuxWithPooling_AmqpWs()
-        {
-            await SendMessageMuxedOverAmqp(
-                TestDeviceType.X509,
-                Client.TransportType.Amqp_WebSocket_Only,
-                MuxWithPoolingPoolSize,
-                MuxWithPoolingDevicesCount
                 ).ConfigureAwait(false);
         }
 
@@ -220,21 +176,12 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 for (int i = 0; i < devicesCount; i++)
                 {
-                    DeviceClient deviceClient = null;
                     ConnectionStatus? lastConnectionStatus = null;
                     ConnectionStatusChangeReason? lastConnectionStatusChangeReason = null;
                     int setConnectionStatusChangesHandlerCount = 0;
 
                     TestDevice testDevice = await TestDevice.GetTestDeviceAsync($"{DevicePrefix}_{i}_", type).ConfigureAwait(false);
-
-                    if (type == TestDeviceType.Sasl)
-                    {
-                        deviceClient = testDevice.CreateDeviceClient(transportSettings, authScope);
-                    }
-                    else
-                    {
-                        deviceClient = testDevice.CreateDeviceClient(transportSettings);
-                    }
+                    DeviceClient deviceClient = testDevice.CreateDeviceClient(transportSettings, authScope);
                     deviceClients.Add(deviceClient);
 
                     deviceClient.SetConnectionStatusChangesHandler((status, statusChangeReason) =>

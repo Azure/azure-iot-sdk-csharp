@@ -249,21 +249,12 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 for (int i = 0; i < devicesCount; i++)
                 {
-                    DeviceClient deviceClient = null;
                     ConnectionStatus? lastConnectionStatus = null;
                     ConnectionStatusChangeReason? lastConnectionStatusChangeReason = null;
                     int setConnectionStatusChangesHandlerCount = 0;
 
                     TestDevice testDevice = await TestDevice.GetTestDeviceAsync($"{DevicePrefix}_{i}_", type).ConfigureAwait(false);
-
-                    if (type == TestDeviceType.Sasl)
-                    {
-                        deviceClient = testDevice.CreateDeviceClient(transportSettings, authScope);
-                    }
-                    else
-                    {
-                        deviceClient = testDevice.CreateDeviceClient(transportSettings);
-                    }
+                    DeviceClient deviceClient = testDevice.CreateDeviceClient(transportSettings, authScope);
                     deviceClients.Add(deviceClient);
 
                     deviceClient.SetConnectionStatusChangesHandler((status, statusChangeReason) =>
@@ -327,21 +318,12 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 for (int i = 0; i < devicesCount; i++)
                 {
-                    DeviceClient deviceClient = null;
                     ConnectionStatus? lastConnectionStatus = null;
                     ConnectionStatusChangeReason? lastConnectionStatusChangeReason = null;
                     int setConnectionStatusChangesHandlerCount = 0;
 
                     TestDevice testDevice = await TestDevice.GetTestDeviceAsync($"{DevicePrefix}_{i}_", type).ConfigureAwait(false);
-
-                    if (type == TestDeviceType.Sasl)
-                    {
-                        deviceClient = testDevice.CreateDeviceClient(transportSettings, authScope);
-                    }
-                    else
-                    {
-                        deviceClient = testDevice.CreateDeviceClient(transportSettings);
-                    }
+                    DeviceClient deviceClient = testDevice.CreateDeviceClient(transportSettings, authScope);
                     deviceClients.Add(deviceClient);
 
                     deviceClient.SetConnectionStatusChangesHandler((status, statusChangeReason) =>

@@ -128,50 +128,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 ).ConfigureAwait(false);
         }
 
-        [TestMethod]
-        public async Task Message_X509_DeviceReceiveSingleMessage_MuxedWithoutPooling_Amqp()
-        {
-            await ReceiveMessageMuxedOverAmqp(
-                TestDeviceType.X509,
-                Client.TransportType.Amqp_Tcp_Only,
-                MuxWithoutPoolingPoolSize,
-                MuxWithoutPoolingDevicesCount
-                ).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task Message_X509_DeviceReceiveSingleMessage_MuxedWithoutPooling_AmqpWs()
-        {
-            await ReceiveMessageMuxedOverAmqp(
-                TestDeviceType.X509,
-                Client.TransportType.Amqp_WebSocket_Only,
-                MuxWithoutPoolingPoolSize,
-                MuxWithoutPoolingDevicesCount
-                ).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task Message_X509_DeviceReceiveSingleMessage_MuxedWithPooling_Amqp()
-        {
-            await ReceiveMessageMuxedOverAmqp(
-                TestDeviceType.X509,
-                Client.TransportType.Amqp_Tcp_Only,
-                MuxWithPoolingPoolSize,
-                MuxWithPoolingDevicesCount
-                ).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task Message_X509_DeviceReceiveSingleMessage_MuxedWithPooling_AmqpWs()
-        {
-            await ReceiveMessageMuxedOverAmqp(
-                TestDeviceType.X509,
-                Client.TransportType.Amqp_WebSocket_Only,
-                MuxWithPoolingPoolSize,
-                MuxWithPoolingDevicesCount
-                ).ConfigureAwait(false);
-        }
-
         private async Task ReceiveMessageMuxedOverAmqp(
             TestDeviceType type,
             Client.TransportType transport,
@@ -202,21 +158,12 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 for (int i = 0; i < devicesCount; i++)
                 {
-                    DeviceClient deviceClient = null;
                     ConnectionStatus? lastConnectionStatus = null;
                     ConnectionStatusChangeReason? lastConnectionStatusChangeReason = null;
                     int setConnectionStatusChangesHandlerCount = 0;
 
                     TestDevice testDevice = await TestDevice.GetTestDeviceAsync($"{DevicePrefix}_{i}_", type).ConfigureAwait(false);
-
-                    if (type == TestDeviceType.Sasl)
-                    {
-                        deviceClient = testDevice.CreateDeviceClient(transportSettings, authScope);
-                    }
-                    else
-                    {
-                        deviceClient = testDevice.CreateDeviceClient(transportSettings);
-                    }
+                    DeviceClient deviceClient = testDevice.CreateDeviceClient(transportSettings, authScope);
                     deviceClients.Add(deviceClient);
 
                     deviceClient.SetConnectionStatusChangesHandler((status, statusChangeReason) =>
