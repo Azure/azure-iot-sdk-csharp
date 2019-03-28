@@ -826,20 +826,16 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             if (capabilities != null)
             {
-                //hardcoding amqp since http does not support twin, but tests that call into this may use http
-                using (DeviceClient iotClient = DeviceClient.Create(result.AssignedHub, auth, Client.TransportType.Amqp))
+                RegistryManager registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+                Device device = await registryManager.GetDeviceAsync(result.DeviceId).ConfigureAwait(false);
+                if (capabilities.IotEdge)
                 {
-                    //Confirm that the device twin reflects what the enrollment dictated
-                    Twin twin = await iotClient.GetTwinAsync().ConfigureAwait(false);
-                    if (capabilities.IotEdge)
-                    {
-                        Assert.IsNotNull(twin.Capabilities);
-                        Assert.IsTrue(twin.Capabilities.IotEdge);
-                    }
-                    else
-                    {
-                        Assert.IsTrue(twin.Capabilities == null || !twin.Capabilities.IotEdge);
-                    }
+                    Assert.IsNotNull(device.Capabilities);
+                    Assert.IsTrue(device.Capabilities.IotEdge);
+                }
+                else
+                {
+                    Assert.IsTrue(device.Capabilities == null || !device.Capabilities.IotEdge);
                 }
             }
         }
