@@ -57,13 +57,6 @@
                 "description": "Partitions used for the event stream."
             }
         },
-         "features": {
-             "type": "string", 
-             "defaultValue": "None",
-             "metadata": {
-                "description": "Features of the IoT Hub."
-             }
-         },
         "storageAccountName_in": {
             "type": "string",
             "defaultValue": "contosostorage",
@@ -275,8 +268,7 @@
                     "ttlAsIso8601": "PT1H",
                     "maxDeliveryCount": 10
                 }
-            },
-            "features": "[parameters('features')]"
+            }
         },
         "sku": {
             "name": "[parameters('sku_name')]",
