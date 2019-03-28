@@ -135,6 +135,110 @@ namespace Microsoft.Azure.Devices.E2ETests
                 ).ConfigureAwait(false);
         }
 
+        [TestMethod]
+        public async Task Method_DeviceSak_DeviceReceivesMethodAndResponseWithDefaultHandler_MuxWithoutPooling_Amqp()
+        {
+            await SendMethodAndRespondMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                ConnectionStringAuthScope.Device,
+                Client.TransportType.Amqp_Tcp_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxWithoutPoolingDevicesCount,
+                MethodUtil.SetDeviceReceiveMethodDefaultHandler
+                ).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task Method_DeviceSak_DeviceReceivesMethodAndResponseWithDefaultHandler_MuxWithoutPooling_AmqpWs()
+        {
+            await SendMethodAndRespondMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                ConnectionStringAuthScope.Device,
+                Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxWithoutPoolingDevicesCount,
+                MethodUtil.SetDeviceReceiveMethodDefaultHandler
+                ).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task Method_DeviceSak_DeviceReceivesMethodAndResponseWithDefaultHandler_MuxWithPooling_Amqp()
+        {
+            await SendMethodAndRespondMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                ConnectionStringAuthScope.Device,
+                Client.TransportType.Amqp_Tcp_Only,
+                MuxWithPoolingPoolSize,
+                MuxWithPoolingDevicesCount,
+                MethodUtil.SetDeviceReceiveMethodDefaultHandler
+                ).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task Method_DeviceSak_DeviceReceivesMethodAndResponseWithDefaultHandler_MuxWithPooling_AmqpWs()
+        {
+            await SendMethodAndRespondMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                ConnectionStringAuthScope.Device,
+                Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithPoolingPoolSize,
+                MuxWithPoolingDevicesCount,
+                MethodUtil.SetDeviceReceiveMethodDefaultHandler
+                ).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task Method_IoTHubSak_DeviceReceivesMethodAndResponseWithDefaultHandler_MuxWithoutPooling_Amqp()
+        {
+            await SendMethodAndRespondMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                ConnectionStringAuthScope.IoTHub,
+                Client.TransportType.Amqp_Tcp_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxWithoutPoolingDevicesCount,
+                MethodUtil.SetDeviceReceiveMethodDefaultHandler
+                ).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task Method_IoTHubSak_DeviceReceivesMethodAndResponseWithDefaultHandler_MuxWithoutPooling_AmqpWs()
+        {
+            await SendMethodAndRespondMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                ConnectionStringAuthScope.IoTHub,
+                Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxWithoutPoolingDevicesCount,
+                MethodUtil.SetDeviceReceiveMethodDefaultHandler
+                ).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task Method_IoTHubSak_DeviceReceivesMethodAndResponseWithDefaultHandler_MuxWithPooling_Amqp()
+        {
+            await SendMethodAndRespondMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                ConnectionStringAuthScope.IoTHub,
+                Client.TransportType.Amqp_Tcp_Only,
+                MuxWithPoolingPoolSize,
+                MuxWithPoolingDevicesCount,
+                MethodUtil.SetDeviceReceiveMethodDefaultHandler
+                ).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task Method_IoTHubSak_DeviceReceivesMethodAndResponseWithDefaultHandler_MuxWithPooling_AmqpWs()
+        {
+            await SendMethodAndRespondMuxedOverAmqp(
+                TestDeviceType.Sasl,
+                ConnectionStringAuthScope.IoTHub,
+                Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithPoolingPoolSize,
+                MuxWithPoolingDevicesCount,
+                MethodUtil.SetDeviceReceiveMethodDefaultHandler
+                ).ConfigureAwait(false);
+        }
+
         private async Task SendMethodAndRespondMuxedOverAmqp(
             TestDeviceType type,
             ConnectionStringAuthScope authScope,
