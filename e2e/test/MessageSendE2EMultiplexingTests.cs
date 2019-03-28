@@ -128,26 +128,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 ).ConfigureAwait(false);
         }
 
-        public static async Task SendSingleMessageAndVerify(DeviceClient deviceClient, string deviceId)
-        {
-            EventHubTestListener testListener = await EventHubTestListener.CreateListener(deviceId).ConfigureAwait(false);
-
-            try
-            {
-                string payload;
-                string p1Value;
-                Client.Message testMessage = MessageHelper.ComposeD2CTestMessage(out payload, out p1Value);
-                await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
-
-                bool isReceived = await testListener.WaitForMessage(deviceId, payload, p1Value).ConfigureAwait(false);
-                Assert.IsTrue(isReceived, "Message is not received.");
-            }
-            finally
-            {
-                await testListener.CloseAsync().ConfigureAwait(false);
-            }
-        }
-
         private async Task SendMessageMuxedOverAmqp(
             TestDeviceType type, 
             Client.TransportType transport, 
@@ -195,7 +175,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                     _log.WriteLine($"{nameof(MessageSendE2EMultiplexingTests)}: Preparing to send message for device {i}");
                     await deviceClient.OpenAsync().ConfigureAwait(false);
-                    await SendSingleMessageAndVerify(deviceClient, testDevice.Id).ConfigureAwait(false);
+                    await MessageSend.SendSingleMessageAndVerifyAsync(deviceClient, testDevice.Id).ConfigureAwait(false);
                 }
             }
             finally

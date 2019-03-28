@@ -131,9 +131,9 @@ namespace Microsoft.Azure.Devices.E2ETests
                 string payload, messageId, p1Value;
                 await serviceClient.OpenAsync().ConfigureAwait(false);
 
-                Message msg = MessageHelper.ComposeC2DTestMessage(out payload, out messageId, out p1Value);
+                Message msg = MessageReceive.ComposeC2DTestMessage(out payload, out messageId, out p1Value);
                 await serviceClient.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
-                await MessageHelper.VerifyReceivedC2DMessageAsync(transport, deviceClient, payload, p1Value).ConfigureAwait(false);
+                await MessageReceive.VerifyReceivedC2DMessageAsync(transport, deviceClient, payload, p1Value).ConfigureAwait(false);
 
                 await deviceClient.CloseAsync().ConfigureAwait(false);
                 await serviceClient.CloseAsync().ConfigureAwait(false);

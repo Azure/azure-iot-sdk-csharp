@@ -12,22 +12,9 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
-    public static class MessageHelper
+    public static class MessageReceive
     {
         private static TestLogging s_log = TestLogging.GetInstance();
-
-        public static Client.Message ComposeD2CTestMessage(out string payload, out string p1Value)
-        {
-            payload = Guid.NewGuid().ToString();
-            p1Value = Guid.NewGuid().ToString();
-
-            s_log.WriteLine($"{nameof(ComposeD2CTestMessage)}: payload='{payload}' p1Value='{p1Value}'");
-
-            return new Client.Message(Encoding.UTF8.GetBytes(payload))
-            {
-                Properties = { ["property1"] = p1Value }
-            };
-        }
 
         public static Message ComposeC2DTestMessage(out string payload, out string messageId, out string p1Value)
         {
