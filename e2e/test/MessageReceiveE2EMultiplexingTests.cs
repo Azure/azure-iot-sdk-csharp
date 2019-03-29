@@ -36,7 +36,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_DeviceSak_DeviceReceiveSingleMessage_MuxedWithoutPooling_Amqp()
         {
             await ReceiveMessageMuxedOverAmqp(
-                TestDeviceType.Sasl,
                 Client.TransportType.Amqp_Tcp_Only,
                 MuxWithoutPoolingPoolSize,
                 MuxWithoutPoolingDevicesCount,
@@ -48,7 +47,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_DeviceSak_DeviceReceiveSingleMessage_MuxedWithoutPooling_AmqpWs()
         {
             await ReceiveMessageMuxedOverAmqp(
-                TestDeviceType.Sasl,
                 Client.TransportType.Amqp_WebSocket_Only,
                 MuxWithoutPoolingPoolSize,
                 MuxWithoutPoolingDevicesCount,
@@ -60,7 +58,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_DeviceSak_DeviceReceiveSingleMessage_MuxedWithPooling_Amqp()
         {
             await ReceiveMessageMuxedOverAmqp(
-                TestDeviceType.Sasl,
                 Client.TransportType.Amqp_Tcp_Only,
                 MuxWithPoolingPoolSize,
                 MuxWithPoolingDevicesCount,
@@ -72,7 +69,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_DeviceSak_DeviceReceiveSingleMessage_MuxedWithPooling_AmqpWs()
         {
             await ReceiveMessageMuxedOverAmqp(
-                TestDeviceType.Sasl,
                 Client.TransportType.Amqp_WebSocket_Only,
                 MuxWithPoolingPoolSize,
                 MuxWithPoolingDevicesCount,
@@ -84,7 +80,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_IoTHubSak_DeviceReceiveSingleMessage_MuxedWithoutPooling_Amqp()
         {
             await ReceiveMessageMuxedOverAmqp(
-                TestDeviceType.Sasl,
                 Client.TransportType.Amqp_Tcp_Only,
                 MuxWithoutPoolingPoolSize,
                 MuxWithoutPoolingDevicesCount,
@@ -96,7 +91,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_IoTHubSak_DeviceReceiveSingleMessage_MuxedWithoutPooling_AmqpWs()
         {
             await ReceiveMessageMuxedOverAmqp(
-                TestDeviceType.Sasl,
                 Client.TransportType.Amqp_WebSocket_Only,
                 MuxWithoutPoolingPoolSize,
                 MuxWithoutPoolingDevicesCount,
@@ -108,7 +102,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_IoTHubSak_DeviceReceiveSingleMessage_MuxedWithPooling_Amqp()
         {
             await ReceiveMessageMuxedOverAmqp(
-                TestDeviceType.Sasl,
                 Client.TransportType.Amqp_Tcp_Only,
                 MuxWithPoolingPoolSize,
                 MuxWithPoolingDevicesCount,
@@ -120,7 +113,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_IoTHubSak_DeviceReceiveSingleMessage_MuxedWithPooling_AmqpWs()
         {
             await ReceiveMessageMuxedOverAmqp(
-                TestDeviceType.Sasl,
                 Client.TransportType.Amqp_WebSocket_Only,
                 MuxWithPoolingPoolSize,
                 MuxWithPoolingDevicesCount,
@@ -129,7 +121,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         private async Task ReceiveMessageMuxedOverAmqp(
-            TestDeviceType type,
             Client.TransportType transport,
             int poolSize,
             int devicesCount,
@@ -162,7 +153,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     ConnectionStatusChangeReason? lastConnectionStatusChangeReason = null;
                     int setConnectionStatusChangesHandlerCount = 0;
 
-                    TestDevice testDevice = await TestDevice.GetTestDeviceAsync($"{DevicePrefix}_{i}_", type).ConfigureAwait(false);
+                    TestDevice testDevice = await TestDevice.GetTestDeviceAsync($"{DevicePrefix}_{i}_").ConfigureAwait(false);
                     DeviceClient deviceClient = testDevice.CreateDeviceClient(transportSettings, authScope);
                     deviceClients.Add(deviceClient);
 

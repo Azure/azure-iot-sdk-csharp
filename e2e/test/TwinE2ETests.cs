@@ -53,25 +53,25 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_Mqtt()
         {
-            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent(Client.TransportType.Mqtt_Tcp_Only, SetTwinPropertyUpdateCallbackHandlerAsync).ConfigureAwait(false);
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent(Client.TransportType.Mqtt_Tcp_Only, TwinUtil.SetTwinPropertyUpdateCallbackHandlerAsync).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_MqttWs()
         {
-            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent(Client.TransportType.Mqtt_WebSocket_Only, SetTwinPropertyUpdateCallbackHandlerAsync).ConfigureAwait(false);
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent(Client.TransportType.Mqtt_WebSocket_Only, TwinUtil.SetTwinPropertyUpdateCallbackHandlerAsync).ConfigureAwait(false);
         }
         
         [TestMethod]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_Amqp()
         {
-            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent(Client.TransportType.Amqp_Tcp_Only, SetTwinPropertyUpdateCallbackHandlerAsync).ConfigureAwait(false);
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent(Client.TransportType.Amqp_Tcp_Only, TwinUtil.SetTwinPropertyUpdateCallbackHandlerAsync).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_AmqpWs()
         {
-            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent(Client.TransportType.Amqp_WebSocket_Only, SetTwinPropertyUpdateCallbackHandlerAsync).ConfigureAwait(false);
+            await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent(Client.TransportType.Amqp_WebSocket_Only, TwinUtil.SetTwinPropertyUpdateCallbackHandlerAsync).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -210,36 +210,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await deviceClient.CloseAsync().ConfigureAwait(false);
             }
         }
-
-        private async Task<Task> SetTwinPropertyUpdateCallbackHandlerAsync(DeviceClient deviceClient, string expectedPropName, string expectedPropValue)
-        {
-            var propertyUpdateReceived = new TaskCompletionSource<bool>();
-            string userContext = "myContext";
-
-            await deviceClient.SetDesiredPropertyUpdateCallbackAsync(
-                (patch, context) =>
-                {
-                    _log.WriteLine($"{nameof(SetTwinPropertyUpdateCallbackHandlerAsync)}: DesiredProperty: {patch}, {context}");
-
-                    try
-                    {
-                        Assert.AreEqual(expectedPropValue, patch[expectedPropName].ToString());
-                        Assert.AreEqual(userContext, context, "Context");
-                    }
-                    catch (Exception e)
-                    {
-                        propertyUpdateReceived.SetException(e);
-                    }
-                    finally
-                    {
-                        propertyUpdateReceived.SetResult(true);
-                    }
-
-                    return Task.FromResult<bool>(true);
-                }, userContext).ConfigureAwait(false);
-
-            return propertyUpdateReceived.Task;
-        }
         
         private async Task<Task> SetTwinPropertyUpdateCallbackObsoleteHandlerAsync(DeviceClient deviceClient, string expectedPropName, string expectedPropValue)
         {
@@ -251,7 +221,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await deviceClient.SetDesiredPropertyUpdateCallback(
                 (patch, context) =>
                 {
-                    _log.WriteLine($"{nameof(SetTwinPropertyUpdateCallbackHandlerAsync)}: DesiredProperty: {patch}, {context}");
+                    _log.WriteLine($"{nameof(TwinUtil.SetTwinPropertyUpdateCallbackHandlerAsync)}: DesiredProperty: {patch}, {context}");
                     
                     try
                     {
@@ -274,18 +244,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             return propertyUpdateReceived.Task;
         }
 
-        private async Task RegistryManagerUpdateDesiredPropertyAsync(string deviceId, string propName, string propValue)
-        {
-            using (RegistryManager registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
-            {
-                var twinPatch = new Twin();
-                twinPatch.Properties.Desired[propName] = propValue;
-
-                await registryManager.UpdateTwinAsync(deviceId, twinPatch, "*").ConfigureAwait(false);
-                await registryManager.CloseAsync().ConfigureAwait(false);
-            }
-        }
-
         private async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEvent(Client.TransportType transport, Func<DeviceClient, string, string, Task<Task>> setTwinPropertyUpdateCallbackAsync)
         {
             var propName = Guid.NewGuid().ToString();
@@ -300,7 +258,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Task updateReceivedTask = await setTwinPropertyUpdateCallbackAsync(deviceClient, propName, propValue).ConfigureAwait(false);
 
                 await Task.WhenAll(
-                    RegistryManagerUpdateDesiredPropertyAsync(testDevice.Id, propName, propValue),
+                    TwinUtil.RegistryManagerUpdateDesiredPropertyAsync(testDevice.Id, propName, propValue),
                     updateReceivedTask).ConfigureAwait(false);
 
                 await deviceClient.CloseAsync().ConfigureAwait(false);

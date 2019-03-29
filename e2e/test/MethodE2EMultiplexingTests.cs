@@ -35,7 +35,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Method_DeviceSak_DeviceReceivesMethodAndResponse_MuxWithoutPooling_Amqp()
         {
             await SendMethodAndRespondMuxedOverAmqp(
-                TestDeviceType.Sasl,
                 ConnectionStringAuthScope.Device,
                 Client.TransportType.Amqp_Tcp_Only,
                 MuxWithoutPoolingPoolSize,
@@ -48,7 +47,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Method_DeviceSak_DeviceReceivesMethodAndResponse_MuxWithoutPooling_AmqpWs()
         {
             await SendMethodAndRespondMuxedOverAmqp(
-                TestDeviceType.Sasl,
                 ConnectionStringAuthScope.Device,
                 Client.TransportType.Amqp_WebSocket_Only,
                 MuxWithoutPoolingPoolSize,
@@ -61,7 +59,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Method_IoTHubSak_DeviceReceivesMethodAndResponse_MuxWithoutPooling_Amqp()
         {
             await SendMethodAndRespondMuxedOverAmqp(
-                TestDeviceType.Sasl,
                 ConnectionStringAuthScope.IoTHub,
                 Client.TransportType.Amqp_Tcp_Only,
                 MuxWithoutPoolingPoolSize,
@@ -74,7 +71,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Method_IoTHubSak_DeviceReceivesMethodAndResponse_MuxWithoutPooling_AmqpWs()
         {
             await SendMethodAndRespondMuxedOverAmqp(
-                TestDeviceType.Sasl,
                 ConnectionStringAuthScope.IoTHub,
                 Client.TransportType.Amqp_WebSocket_Only,
                 MuxWithoutPoolingPoolSize,
@@ -87,7 +83,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Method_DeviceSak_DeviceReceivesMethodAndResponse_MuxWithPooling_Amqp()
         {
             await SendMethodAndRespondMuxedOverAmqp(
-                TestDeviceType.Sasl,
                 ConnectionStringAuthScope.Device,
                 Client.TransportType.Amqp_Tcp_Only,
                 MuxWithPoolingPoolSize, 
@@ -100,7 +95,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Method_DeviceSak_DeviceReceivesMethodAndResponse_MuxWithPooling_AmqpWs()
         {
             await SendMethodAndRespondMuxedOverAmqp(
-                TestDeviceType.Sasl,
                 ConnectionStringAuthScope.Device,
                 Client.TransportType.Amqp_WebSocket_Only,
                 MuxWithPoolingPoolSize,
@@ -113,7 +107,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Method_IoTHubSak_DeviceReceivesMethodAndResponse_MuxWithPooling_Amqp()
         {
             await SendMethodAndRespondMuxedOverAmqp(
-                TestDeviceType.Sasl,
                 ConnectionStringAuthScope.IoTHub,
                 Client.TransportType.Amqp_Tcp_Only,
                 MuxWithPoolingPoolSize,
@@ -126,7 +119,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Method_IoTHubSak_DeviceReceivesMethodAndResponse_MuxWithPooling_AmqpWs()
         {
             await SendMethodAndRespondMuxedOverAmqp(
-                TestDeviceType.Sasl,
                 ConnectionStringAuthScope.IoTHub,
                 Client.TransportType.Amqp_WebSocket_Only,
                 MuxWithPoolingPoolSize,
@@ -139,7 +131,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Method_DeviceSak_DeviceReceivesMethodAndResponseWithDefaultHandler_MuxWithoutPooling_Amqp()
         {
             await SendMethodAndRespondMuxedOverAmqp(
-                TestDeviceType.Sasl,
                 ConnectionStringAuthScope.Device,
                 Client.TransportType.Amqp_Tcp_Only,
                 MuxWithoutPoolingPoolSize,
@@ -152,7 +143,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Method_DeviceSak_DeviceReceivesMethodAndResponseWithDefaultHandler_MuxWithoutPooling_AmqpWs()
         {
             await SendMethodAndRespondMuxedOverAmqp(
-                TestDeviceType.Sasl,
                 ConnectionStringAuthScope.Device,
                 Client.TransportType.Amqp_WebSocket_Only,
                 MuxWithoutPoolingPoolSize,
@@ -165,7 +155,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Method_DeviceSak_DeviceReceivesMethodAndResponseWithDefaultHandler_MuxWithPooling_Amqp()
         {
             await SendMethodAndRespondMuxedOverAmqp(
-                TestDeviceType.Sasl,
                 ConnectionStringAuthScope.Device,
                 Client.TransportType.Amqp_Tcp_Only,
                 MuxWithPoolingPoolSize,
@@ -178,7 +167,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Method_DeviceSak_DeviceReceivesMethodAndResponseWithDefaultHandler_MuxWithPooling_AmqpWs()
         {
             await SendMethodAndRespondMuxedOverAmqp(
-                TestDeviceType.Sasl,
                 ConnectionStringAuthScope.Device,
                 Client.TransportType.Amqp_WebSocket_Only,
                 MuxWithPoolingPoolSize,
@@ -191,7 +179,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Method_IoTHubSak_DeviceReceivesMethodAndResponseWithDefaultHandler_MuxWithoutPooling_Amqp()
         {
             await SendMethodAndRespondMuxedOverAmqp(
-                TestDeviceType.Sasl,
                 ConnectionStringAuthScope.IoTHub,
                 Client.TransportType.Amqp_Tcp_Only,
                 MuxWithoutPoolingPoolSize,
@@ -204,7 +191,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Method_IoTHubSak_DeviceReceivesMethodAndResponseWithDefaultHandler_MuxWithoutPooling_AmqpWs()
         {
             await SendMethodAndRespondMuxedOverAmqp(
-                TestDeviceType.Sasl,
                 ConnectionStringAuthScope.IoTHub,
                 Client.TransportType.Amqp_WebSocket_Only,
                 MuxWithoutPoolingPoolSize,
@@ -217,7 +203,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Method_IoTHubSak_DeviceReceivesMethodAndResponseWithDefaultHandler_MuxWithPooling_Amqp()
         {
             await SendMethodAndRespondMuxedOverAmqp(
-                TestDeviceType.Sasl,
                 ConnectionStringAuthScope.IoTHub,
                 Client.TransportType.Amqp_Tcp_Only,
                 MuxWithPoolingPoolSize,
@@ -230,7 +215,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Method_IoTHubSak_DeviceReceivesMethodAndResponseWithDefaultHandler_MuxWithPooling_AmqpWs()
         {
             await SendMethodAndRespondMuxedOverAmqp(
-                TestDeviceType.Sasl,
                 ConnectionStringAuthScope.IoTHub,
                 Client.TransportType.Amqp_WebSocket_Only,
                 MuxWithPoolingPoolSize,
@@ -240,7 +224,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         private async Task SendMethodAndRespondMuxedOverAmqp(
-            TestDeviceType type,
             ConnectionStringAuthScope authScope,
             Client.TransportType transport,
             int poolSize,
@@ -271,7 +254,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     ConnectionStatusChangeReason? lastConnectionStatusChangeReason = null;
                     int setConnectionStatusChangesHandlerCount = 0;
 
-                    TestDevice testDevice = await TestDevice.GetTestDeviceAsync($"{DevicePrefix}_{i}_", type).ConfigureAwait(false);
+                    TestDevice testDevice = await TestDevice.GetTestDeviceAsync($"{DevicePrefix}_{i}_").ConfigureAwait(false);
                     DeviceClient deviceClient = testDevice.CreateDeviceClient(transportSettings, authScope);
                     deviceClients.Add(deviceClient);
 

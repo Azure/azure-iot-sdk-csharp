@@ -37,7 +37,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Twin_DeviceSak_DeviceSetsReportedPropertyAndGetsItBack_MuxWithoutPooling_Amqp()
         {
             await Twin_DeviceSetsReportedPropertyAndGetsItBackMuxedOverAmqp(
-                TestDeviceType.Sasl,
                 ConnectionStringAuthScope.Device,
                 Client.TransportType.Amqp_Tcp_Only,
                 MuxWithoutPoolingPoolSize,
@@ -49,7 +48,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Twin_DeviceSak_DeviceSetsReportedPropertyAndGetsItBack_MuxWithoutPooling_AmqpWs()
         {
             await Twin_DeviceSetsReportedPropertyAndGetsItBackMuxedOverAmqp(
-                TestDeviceType.Sasl,
                 ConnectionStringAuthScope.Device,
                 Client.TransportType.Amqp_WebSocket_Only,
                 MuxWithoutPoolingPoolSize,
@@ -61,7 +59,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Twin_IoTHubSak_DeviceSetsReportedPropertyAndGetsItBack_MuxWithoutPooling_Amqp()
         {
             await Twin_DeviceSetsReportedPropertyAndGetsItBackMuxedOverAmqp(
-                TestDeviceType.Sasl,
                 ConnectionStringAuthScope.IoTHub,
                 Client.TransportType.Amqp_Tcp_Only,
                 MuxWithoutPoolingPoolSize,
@@ -73,7 +70,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Twin_IotHubSak_DeviceSetsReportedPropertyAndGetsItBack_MuxWithoutPooling_AmqpWs()
         {
             await Twin_DeviceSetsReportedPropertyAndGetsItBackMuxedOverAmqp(
-                TestDeviceType.Sasl,
                 ConnectionStringAuthScope.IoTHub,
                 Client.TransportType.Amqp_WebSocket_Only,
                 MuxWithoutPoolingPoolSize,
@@ -85,7 +81,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Twin_DeviceSak_DeviceSetsReportedPropertyAndGetsItBack_MuxWithPooling_AmqpWs()
         {
             await Twin_DeviceSetsReportedPropertyAndGetsItBackMuxedOverAmqp(
-                TestDeviceType.Sasl,
                 ConnectionStringAuthScope.Device,
                 Client.TransportType.Amqp_WebSocket_Only,
                 MuxWithPoolingPoolSize,
@@ -97,7 +92,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Twin_IoTHubSak_DeviceSetsReportedPropertyAndGetsItBack_MuxWithPooling_Amqp()
         {
             await Twin_DeviceSetsReportedPropertyAndGetsItBackMuxedOverAmqp(
-                TestDeviceType.Sasl,
                 ConnectionStringAuthScope.IoTHub,
                 Client.TransportType.Amqp_Tcp_Only,
                 MuxWithPoolingPoolSize,
@@ -109,7 +103,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Twin_IotHubSak_DeviceSetsReportedPropertyAndGetsItBack_MuxWithPooling_AmqpWs()
         {
             await Twin_DeviceSetsReportedPropertyAndGetsItBackMuxedOverAmqp(
-                TestDeviceType.Sasl,
                 ConnectionStringAuthScope.IoTHub,
                 Client.TransportType.Amqp_WebSocket_Only,
                 MuxWithPoolingPoolSize,
@@ -121,12 +114,11 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Twin_DeviceSak_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_MuxedWithoutPooling_Amqp()
         {
             await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventMuxedOverAmqp(
-                TestDeviceType.Sasl,
                 ConnectionStringAuthScope.Device,
                 Client.TransportType.Amqp_Tcp_Only,
                 MuxWithoutPoolingPoolSize,
                 MuxWithoutPoolingDevicesCount,
-                SetTwinPropertyUpdateCallbackHandlerAsync
+                TwinUtil.SetTwinPropertyUpdateCallbackHandlerAsync
                 ).ConfigureAwait(false);
         }
 
@@ -134,12 +126,11 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Twin_DeviceSak_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_MuxedWithoutPooling_AmqpWs()
         {
             await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventMuxedOverAmqp(
-                TestDeviceType.Sasl,
                 ConnectionStringAuthScope.Device,
                 Client.TransportType.Amqp_WebSocket_Only,
                 MuxWithoutPoolingPoolSize,
                 MuxWithoutPoolingDevicesCount,
-                SetTwinPropertyUpdateCallbackHandlerAsync
+                TwinUtil.SetTwinPropertyUpdateCallbackHandlerAsync
                 ).ConfigureAwait(false);
         }
 
@@ -147,12 +138,11 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Twin_DeviceSak_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_MuxedWithPooling_Amqp()
         {
             await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventMuxedOverAmqp(
-                TestDeviceType.Sasl,
                 ConnectionStringAuthScope.Device,
                 Client.TransportType.Amqp_Tcp_Only,
                 MuxWithPoolingPoolSize,
                 MuxWithPoolingDevicesCount,
-                SetTwinPropertyUpdateCallbackHandlerAsync
+                TwinUtil.SetTwinPropertyUpdateCallbackHandlerAsync
                 ).ConfigureAwait(false);
         }
 
@@ -160,12 +150,11 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Twin_DeviceSak_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_MuxedWithPooling_AmqpWs()
         {
             await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventMuxedOverAmqp(
-                TestDeviceType.Sasl,
                 ConnectionStringAuthScope.Device,
                 Client.TransportType.Amqp_WebSocket_Only,
                 MuxWithPoolingPoolSize,
                 MuxWithPoolingDevicesCount,
-                SetTwinPropertyUpdateCallbackHandlerAsync
+                TwinUtil.SetTwinPropertyUpdateCallbackHandlerAsync
                 ).ConfigureAwait(false);
         }
 
@@ -173,12 +162,11 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Twin_IoTHubSak_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_MuxedWithoutPooling_Amqp()
         {
             await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventMuxedOverAmqp(
-                TestDeviceType.Sasl,
                 ConnectionStringAuthScope.IoTHub,
                 Client.TransportType.Amqp_Tcp_Only,
                 MuxWithoutPoolingPoolSize,
                 MuxWithoutPoolingDevicesCount,
-                SetTwinPropertyUpdateCallbackHandlerAsync
+                TwinUtil.SetTwinPropertyUpdateCallbackHandlerAsync
                 ).ConfigureAwait(false);
         }
 
@@ -186,12 +174,11 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Twin_IoTHubSak_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_MuxedWithoutPooling_AmqpWs()
         {
             await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventMuxedOverAmqp(
-                TestDeviceType.Sasl,
                 ConnectionStringAuthScope.IoTHub,
                 Client.TransportType.Amqp_WebSocket_Only,
                 MuxWithoutPoolingPoolSize,
                 MuxWithoutPoolingDevicesCount,
-                SetTwinPropertyUpdateCallbackHandlerAsync
+                TwinUtil.SetTwinPropertyUpdateCallbackHandlerAsync
                 ).ConfigureAwait(false);
         }
 
@@ -199,12 +186,11 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Twin_IoTHubSak_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_MuxedWithPooling_Amqp()
         {
             await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventMuxedOverAmqp(
-                TestDeviceType.Sasl,
                 ConnectionStringAuthScope.IoTHub,
                 Client.TransportType.Amqp_Tcp_Only,
                 MuxWithPoolingPoolSize,
                 MuxWithPoolingDevicesCount,
-                SetTwinPropertyUpdateCallbackHandlerAsync
+                TwinUtil.SetTwinPropertyUpdateCallbackHandlerAsync
                 ).ConfigureAwait(false);
         }
 
@@ -212,17 +198,15 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Twin_IoTHubSak_ServiceSetsDesiredPropertyAndDeviceReceivesEvent_MuxedWithPooling_AmqpWs()
         {
             await Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventMuxedOverAmqp(
-                TestDeviceType.Sasl,
                 ConnectionStringAuthScope.IoTHub,
                 Client.TransportType.Amqp_WebSocket_Only,
                 MuxWithPoolingPoolSize,
                 MuxWithPoolingDevicesCount,
-                SetTwinPropertyUpdateCallbackHandlerAsync
+                TwinUtil.SetTwinPropertyUpdateCallbackHandlerAsync
                 ).ConfigureAwait(false);
         }
 
         private async Task Twin_DeviceSetsReportedPropertyAndGetsItBackMuxedOverAmqp(
-            TestDeviceType type,
             ConnectionStringAuthScope authScope,
             Client.TransportType transport,
             int poolSize,
@@ -253,7 +237,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     ConnectionStatusChangeReason? lastConnectionStatusChangeReason = null;
                     int setConnectionStatusChangesHandlerCount = 0;
 
-                    TestDevice testDevice = await TestDevice.GetTestDeviceAsync($"{DevicePrefix}_{i}_", type).ConfigureAwait(false);
+                    TestDevice testDevice = await TestDevice.GetTestDeviceAsync($"{DevicePrefix}_{i}_").ConfigureAwait(false);
                     DeviceClient deviceClient = testDevice.CreateDeviceClient(transportSettings, authScope);
                     deviceClients.Add(deviceClient);
 
@@ -286,7 +270,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         private async Task Twin_ServiceSetsDesiredPropertyAndDeviceReceivesEventMuxedOverAmqp(
-            TestDeviceType type,
             ConnectionStringAuthScope authScope,
             Client.TransportType transport,
             int poolSize,
@@ -322,7 +305,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     ConnectionStatusChangeReason? lastConnectionStatusChangeReason = null;
                     int setConnectionStatusChangesHandlerCount = 0;
 
-                    TestDevice testDevice = await TestDevice.GetTestDeviceAsync($"{DevicePrefix}_{i}_", type).ConfigureAwait(false);
+                    TestDevice testDevice = await TestDevice.GetTestDeviceAsync($"{DevicePrefix}_{i}_").ConfigureAwait(false);
                     DeviceClient deviceClient = testDevice.CreateDeviceClient(transportSettings, authScope);
                     deviceClients.Add(deviceClient);
 
@@ -339,7 +322,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     Task updateReceivedTask = await setTwinPropertyUpdateCallbackAsync(deviceClient, propName, propValue).ConfigureAwait(false);
 
                     await Task.WhenAll(
-                        RegistryManagerUpdateDesiredPropertyAsync(testDevice.Id, propName, propValue),
+                        TwinUtil.RegistryManagerUpdateDesiredPropertyAsync(testDevice.Id, propName, propValue),
                         updateReceivedTask).ConfigureAwait(false);
 
                 }
@@ -358,48 +341,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                     deviceClient.Dispose();
                 }
             }
-        }
-
-        private async Task RegistryManagerUpdateDesiredPropertyAsync(string deviceId, string propName, string propValue)
-        {
-            using (RegistryManager registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
-            {
-                var twinPatch = new Twin();
-                twinPatch.Properties.Desired[propName] = propValue;
-
-                await registryManager.UpdateTwinAsync(deviceId, twinPatch, "*").ConfigureAwait(false);
-                await registryManager.CloseAsync().ConfigureAwait(false);
-            }
-        }
-
-        private async Task<Task> SetTwinPropertyUpdateCallbackHandlerAsync(DeviceClient deviceClient, string expectedPropName, string expectedPropValue)
-        {
-            var propertyUpdateReceived = new TaskCompletionSource<bool>();
-            string userContext = "myContext";
-
-            await deviceClient.SetDesiredPropertyUpdateCallbackAsync(
-                (patch, context) =>
-                {
-                    _log.WriteLine($"{nameof(SetTwinPropertyUpdateCallbackHandlerAsync)}: DesiredProperty: {patch}, {context}");
-
-                    try
-                    {
-                        Assert.AreEqual(expectedPropValue, patch[expectedPropName].ToString());
-                        Assert.AreEqual(userContext, context, "Context");
-                    }
-                    catch (Exception e)
-                    {
-                        propertyUpdateReceived.SetException(e);
-                    }
-                    finally
-                    {
-                        propertyUpdateReceived.SetResult(true);
-                    }
-
-                    return Task.FromResult<bool>(true);
-                }, userContext).ConfigureAwait(false);
-
-            return propertyUpdateReceived.Task;
         }
 
         public void Dispose()
