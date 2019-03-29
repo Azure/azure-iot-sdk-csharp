@@ -41,6 +41,83 @@ namespace Microsoft.Azure.Devices.E2ETests
                 ).ConfigureAwait(false);
         }
 
+        [TestMethod]
+        public async Task Message_DeviceSak_DeviceCombinedClientOperations_MuxWithoutPooling_AmqpWs()
+        {
+            await DeviceCombinedClientOperations(
+                Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxWithoutPoolingDevicesCount,
+                ConnectionStringAuthScope.Device
+                ).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task Message_DeviceSak_DeviceCombinedClientOperations_MuxWithPooling_Amqp()
+        {
+            await DeviceCombinedClientOperations(
+                Client.TransportType.Amqp_Tcp_Only,
+                MuxWithPoolingPoolSize,
+                MuxWithPoolingDevicesCount,
+                ConnectionStringAuthScope.Device
+                ).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task Message_DeviceSak_DeviceCombinedClientOperations_MuxWithPooling_AmqpWs()
+        {
+            await DeviceCombinedClientOperations(
+                Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithPoolingPoolSize,
+                MuxWithPoolingDevicesCount,
+                ConnectionStringAuthScope.Device
+                ).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task Message_IoTHubSak_DeviceCombinedClientOperations_MuxWithoutPooling_Amqp()
+        {
+            await DeviceCombinedClientOperations(
+                Client.TransportType.Amqp_Tcp_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxWithoutPoolingDevicesCount,
+                ConnectionStringAuthScope.IoTHub
+                ).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task Message_IoTHubSak_DeviceCombinedClientOperations_MuxWithoutPooling_AmqpWs()
+        {
+            await DeviceCombinedClientOperations(
+                Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxWithoutPoolingDevicesCount,
+                ConnectionStringAuthScope.IoTHub
+                ).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task Message_IoTHubSak_DeviceCombinedClientOperations_MuxWithPooling_Amqp()
+        {
+            await DeviceCombinedClientOperations(
+                Client.TransportType.Amqp_Tcp_Only,
+                MuxWithPoolingPoolSize,
+                MuxWithPoolingDevicesCount,
+                ConnectionStringAuthScope.IoTHub
+                ).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task Message_IoTHubSak_DeviceCombinedClientOperations_MuxWithPooling_AmqpWs()
+        {
+            await DeviceCombinedClientOperations(
+                Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithPoolingPoolSize,
+                MuxWithPoolingDevicesCount,
+                ConnectionStringAuthScope.IoTHub
+                ).ConfigureAwait(false);
+        }
+
         private async Task DeviceCombinedClientOperations(
             Client.TransportType transport,
             int poolSize,
