@@ -20,6 +20,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private AmqpConnection AmqpConnection;
         private IAmqpAuthenticationRefresher AmqpAuthenticationRefresher;
         private AmqpCbsLink AmqpCbsLink;
+        private bool disposed;
 
         public AmqpConnectionHolder(DeviceIdentity deviceIdentity)
         {
@@ -183,7 +184,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             if (Logging.IsEnabled) Logging.Enter(this, AmqpConnection, $"{nameof(Shutdown)}");
             AmqpAuthenticationRefresher?.StopLoop();
-            AmqpLinkHelper.CloseAmqpObject(AmqpConnection);
+            AmqpLinkHelper.AbortAmqpObject(AmqpConnection);
             OnConnectionDisconnected?.Invoke(this, EventArgs.Empty);
             if (Logging.IsEnabled) Logging.Exit(this, AmqpConnection, $"{nameof(Shutdown)}");
         }
@@ -197,6 +198,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private void Dispose(bool disposing)
         {
             if (Logging.IsEnabled) Logging.Info(this, disposing, $"{nameof(Dispose)}");
+            if (disposed)
+            {
+                return;
+            }
+            disposed = true;
             if (disposing)
             {
                 Lock?.Dispose();

@@ -32,6 +32,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         
         private TaskCompletionSource<TransportBase> TaskCompletionSource;
         private ProtocolHeader SentProtocolHeader;
+        private bool disposed;
 
         internal AmqpConnector(AmqpTransportSettings amqpTransportSettings, string hostName)
         {
@@ -354,6 +355,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         private void Dispose(bool disposing)
         {
+            if (disposed)
+            {
+                return;
+            }
+
+            disposed = true;
             if (disposing)
             {
                 TaskCompletionSource?.SetCanceled();

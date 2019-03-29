@@ -275,11 +275,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         }
         #endregion
 
-        public static void CloseAmqpObject(AmqpObject amqpObject)
+        public static void AbortAmqpObject(AmqpObject amqpObject)
         {
             if (amqpObject != null)
             {
-                amqpObject.CloseAsync(TimeSpan.MaxValue).ConfigureAwait(false);
+                amqpObject.Abort();
             }
         }
 

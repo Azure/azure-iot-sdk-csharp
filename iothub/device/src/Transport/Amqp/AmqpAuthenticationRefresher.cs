@@ -16,6 +16,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private CancellationTokenSource CancellationTokenSource;
         private TimeSpan OperationTimeout;
         private Task RefreshLoop;
+        private bool disposed;
 
         internal AmqpAuthenticationRefresher(DeviceIdentity deviceIdentity, AmqpCbsLink amqpCbsLink)
         {
@@ -101,6 +102,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             if (Logging.IsEnabled) Logging.Info(this, $"{nameof(StopLoop)}");
             CancellationTokenSource?.Cancel();
+            RefreshLoop?.Wait();
         }
 
         public void Dispose()
@@ -112,6 +114,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private void Dispose(bool disposing)
         {
             if (Logging.IsEnabled) Logging.Info(this, disposing, $"{nameof(Dispose)}");
+            if (disposed)
+            {
+                return;
+            }
+            disposed = true;
             if (disposing)
             {
                 StopLoop();
