@@ -102,7 +102,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             if (Logging.IsEnabled) Logging.Info(this, $"{nameof(StopLoop)}");
             CancellationTokenSource?.Cancel();
-            RefreshLoop?.Wait();
+            try
+            {
+                RefreshLoop?.Wait();
+            }
+            catch (Exception)
+            {
+            }
         }
 
         public void Dispose()
