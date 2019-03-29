@@ -211,13 +211,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             if (Logging.IsEnabled) Logging.Enter(this, lockToken, $"{nameof(DisposeMessageAsync)}");
 
             Outcome disposeOutcome;
-            if (DeviceIdentity.IotHubConnectionString.ModuleId.IsNullOrWhiteSpace())
+            if (_deviceIdentity.IotHubConnectionString.ModuleId.IsNullOrWhiteSpace())
             {
-                disposeOutcome = await AmqpLinkHelper.DisposeMessageAsync(MessageReceivingLink, lockToken, outcome, timeout).ConfigureAwait(false);
+                disposeOutcome = await AmqpLinkHelper.DisposeMessageAsync(_messageReceivingLink, lockToken, outcome, timeout).ConfigureAwait(false);
             }
             else
             {
-                disposeOutcome = await AmqpLinkHelper.DisposeMessageAsync(EventReceivingLink, lockToken, outcome, timeout).ConfigureAwait(false);
+                disposeOutcome = await AmqpLinkHelper.DisposeMessageAsync(_eventReceivingLink, lockToken, outcome, timeout).ConfigureAwait(false);
             }
 
             if (Logging.IsEnabled) Logging.Exit(this, lockToken, $"{nameof(DisposeMessageAsync)}");
