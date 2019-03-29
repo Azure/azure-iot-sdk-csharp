@@ -73,6 +73,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         public override async void ChannelActive(IChannelHandlerContext context)
         {
+            await ChannelActiveAsync(context).ConfigureAwait(false);
+        }
+
+        private async Task ChannelActiveAsync(IChannelHandlerContext context)
+        {
             if (Logging.IsEnabled) Logging.Enter(this, context.Name, nameof(ChannelActive));
             await VerifyCancellationAsync(context).ConfigureAwait(true);
 
@@ -93,6 +98,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         }
 
         public override async void ChannelInactive(IChannelHandlerContext context)
+        {
+            await ChannelInactiveAsync(context).ConfigureAwait(false);
+        }
+
+        private async Task ChannelInactiveAsync(IChannelHandlerContext context)
         {
             if (Logging.IsEnabled) Logging.Enter(this, context.Name, nameof(ChannelInactive));
             base.ChannelInactive(context);
@@ -116,7 +126,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             if (Logging.IsEnabled) Logging.Exit(this, context.Name, nameof(ChannelRead));
         }
 
-        public async override void ChannelReadComplete(IChannelHandlerContext context)
+        public override async void ChannelReadComplete(IChannelHandlerContext context)
+        {
+            await ChannelReadCompleteAsync(context).ConfigureAwait(false);
+        }
+
+        private async Task ChannelReadCompleteAsync(IChannelHandlerContext context)
         {
             if (Logging.IsEnabled) Logging.Enter(this, context.Name, nameof(ChannelReadComplete));
             await VerifyCancellationAsync(context).ConfigureAwait(true);
@@ -127,6 +142,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         }
 
         public override async void ExceptionCaught(IChannelHandlerContext context, Exception exception)
+        {
+            await ExceptionCaughtAsync(context, exception).ConfigureAwait(false);
+        }
+
+        private async Task ExceptionCaughtAsync(IChannelHandlerContext context, Exception exception)
         {
             if (Logging.IsEnabled) Logging.Enter(this, context.Name, nameof(ExceptionCaught));
             base.ExceptionCaught(context, exception);

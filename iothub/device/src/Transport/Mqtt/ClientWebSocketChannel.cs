@@ -95,6 +95,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         protected override async void DoClose()
         {
+            await DoCloseAsync().ConfigureAwait(false);
+        }
+
+        private async Task DoCloseAsync()
+        {
             try
             {
                 WebSocketState webSocketState = this.webSocket.State;
@@ -106,7 +111,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                     using (var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30)))
                     {
-                        await this.webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, cancellationTokenSource.Token).ConfigureAwait(false);
+                        await this.webSocket
+                            .CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, cancellationTokenSource.Token)
+                            .ConfigureAwait(false);
                     }
                 }
             }
@@ -117,6 +124,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         }
 
         protected override async void DoBeginRead()
+        {
+            await DoBeginReadAsync().ConfigureAwait(false);
+        }
+
+        private async Task DoBeginReadAsync()
         {
             IByteBuffer byteBuffer = null;
             IRecvByteBufAllocatorHandle allocHandle = null;
@@ -147,8 +159,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                     this.Pipeline.FireChannelRead(byteBuffer);
                     allocHandle.IncMessagesRead(1);
-                }
-                while (allocHandle.ContinueReading());
+                } while (allocHandle.ContinueReading());
 
                 allocHandle.ReadComplete();
                 this.ReadPending = false;
@@ -176,6 +187,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         protected override async void DoWrite(ChannelOutboundBuffer channelOutboundBuffer)
         {
+            await DoWriteAsync(channelOutboundBuffer).ConfigureAwait(false);
+        }
+
+        private async Task DoWriteAsync(ChannelOutboundBuffer channelOutboundBuffer)
+        {
             try
             {
                 this.WriteInProgress = true;
@@ -197,7 +213,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                         continue;
                     }
 
-                    await this.webSocket.SendAsync(byteBuffer.GetIoBuffer(), WebSocketMessageType.Binary, true, this.writeCancellationTokenSource.Token).ConfigureAwait(false);
+                    await this.webSocket.SendAsync(byteBuffer.GetIoBuffer(), WebSocketMessageType.Binary, true,
+                        this.writeCancellationTokenSource.Token).ConfigureAwait(false);
                     channelOutboundBuffer.Remove();
                 }
 

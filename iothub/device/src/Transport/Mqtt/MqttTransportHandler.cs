@@ -154,6 +154,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             this.closeRetryPolicy = new RetryPolicy(new TransientErrorIgnoreStrategy(), 5, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
         }
 
+        public override bool IsUsable => this.State != TransportState.Closed && this.State != TransportState.Error;
+
 #region Client operations
 
         public override async Task OpenAsync(CancellationToken cancellationToken)
@@ -397,7 +399,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public async void OnMessageReceived(Message message)
         {
-            // Added Try-Catch to avoid unknown thread exception
+            await MessageReceivedAsync(message).ConfigureAwait(false);
+        }
+
+        private async Task MessageReceivedAsync(Message message)
+        {
+// Added Try-Catch to avoid unknown thread exception
             // after running for more than 24 hours
             try
             {
@@ -415,7 +422,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     {
                         await HandleIncomingMethodPost(message).ConfigureAwait(true);
                     }
-                    else if (message.MqttTopicName.StartsWith(this.receiveEventMessagePrefix, StringComparison.OrdinalIgnoreCase))
+                    else if (message.MqttTopicName.StartsWith(this.receiveEventMessagePrefix,
+                        StringComparison.OrdinalIgnoreCase))
                     {
                         await HandleIncomingEventMessage(message).ConfigureAwait(true);
                     }
@@ -426,7 +434,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     }
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 this.OnError(ex);
             }
@@ -461,6 +469,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         }
 
         public async void OnError(Exception exception)
+        {
+            await OnErrorAsync(exception).ConfigureAwait(false);
+        }
+
+        private async Task OnErrorAsync(Exception exception)
         {
             try
             {
@@ -499,7 +512,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 if (Logging.IsEnabled) Logging.Error(this, ex.ToString(), nameof(OnError));
             }
         }
-        
+
         TransportState MoveToStateIfPossible(TransportState destination, TransportState illegalStates)
         {
             TransportState previousState = this.State;
@@ -968,7 +981,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             };
         }
 
-        async void Cleanup()
+        async Task Cleanup()
         {
             try
             {

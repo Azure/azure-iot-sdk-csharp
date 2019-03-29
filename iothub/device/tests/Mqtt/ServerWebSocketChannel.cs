@@ -95,6 +95,11 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         protected override async void DoClose()
         {
+            await DoCloseAsync();
+        }
+
+        private async Task DoCloseAsync()
+        {
             try
             {
                 WebSocketState webSocketState = this.webSocket.State;
@@ -106,17 +111,24 @@ namespace Microsoft.Azure.Devices.Client.Test
 
                     using (var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30)))
                     {
-                        await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, cancellationTokenSource.Token).ConfigureAwait(false);
+                        await webSocket
+                            .CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, cancellationTokenSource.Token)
+                            .ConfigureAwait(false);
                     }
                 }
             }
-            catch (Exception)// when (!e.IsFatal())
+            catch (Exception) // when (!e.IsFatal())
             {
                 this.Abort();
             }
         }
 
         protected override async void DoBeginRead()
+        {
+            await DoBeginReadAsync();
+        }
+
+        private async Task DoBeginReadAsync()
         {
             IByteBuffer byteBuffer = null;
             IRecvByteBufAllocatorHandle allocHandle = null;
@@ -147,8 +159,7 @@ namespace Microsoft.Azure.Devices.Client.Test
 
                     this.Pipeline.FireChannelRead(byteBuffer);
                     allocHandle.IncMessagesRead(1);
-                }
-                while (allocHandle.ContinueReading());
+                } while (allocHandle.ContinueReading());
 
                 allocHandle.ReadComplete();
                 this.ReadPending = false;
@@ -176,6 +187,11 @@ namespace Microsoft.Azure.Devices.Client.Test
 
         protected override async void DoWrite(ChannelOutboundBuffer channelOutboundBuffer)
         {
+            await DoWriteAsync(channelOutboundBuffer);
+        }
+
+        private async Task DoWriteAsync(ChannelOutboundBuffer channelOutboundBuffer)
+        {
             try
             {
                 this.WriteInProgress = true;
@@ -197,7 +213,8 @@ namespace Microsoft.Azure.Devices.Client.Test
                         continue;
                     }
 
-                    await webSocket.SendAsync(byteBuffer.GetIoBuffer(), WebSocketMessageType.Binary, true, writeCancellationTokenSource.Token).ConfigureAwait(false);
+                    await webSocket.SendAsync(byteBuffer.GetIoBuffer(), WebSocketMessageType.Binary, true,
+                        writeCancellationTokenSource.Token).ConfigureAwait(false);
                     channelOutboundBuffer.Remove();
                 }
 

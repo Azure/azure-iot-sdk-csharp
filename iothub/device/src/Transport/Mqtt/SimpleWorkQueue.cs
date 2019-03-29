@@ -129,6 +129,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         async void StartWorkQueueProcessingAsync(IChannelHandlerContext context)
         {
+            await StartWorkQueueProcessingTaskAsync(context).ConfigureAwait(false);
+        }
+
+        private async Task StartWorkQueueProcessingTaskAsync(IChannelHandlerContext context)
+        {
             try
             {
                 Queue<TWork> queue = this.backlogQueue;

@@ -97,6 +97,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         protected override async void DoClose()
         {
+            await DoCloseAsync().ConfigureAwait(false);
+        }
+
+        private async Task DoCloseAsync()
+        {
             try
             {
                 WebSocketState webSocketState = _webSocket.State;
@@ -122,6 +127,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         }
 
         protected override async void DoBeginRead()
+        {
+            await DoBeginReadAsync().ConfigureAwait(false);
+        }
+
+        private async Task DoBeginReadAsync()
         {
             IByteBuffer byteBuffer = null;
             IRecvByteBufAllocatorHandle allocHandle = null;
@@ -152,8 +162,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                     Pipeline.FireChannelRead(byteBuffer);
                     allocHandle.IncMessagesRead(1);
-                }
-                while (allocHandle.ContinueReading());
+                } while (allocHandle.ContinueReading());
 
                 allocHandle.ReadComplete();
                 ReadPending = false;
@@ -180,6 +189,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         }
 
         protected override async void DoWrite(ChannelOutboundBuffer channelOutboundBuffer)
+        {
+            await DoWriteAsync(channelOutboundBuffer).ConfigureAwait(false);
+        }
+
+        private async Task DoWriteAsync(ChannelOutboundBuffer channelOutboundBuffer)
         {
             try
             {
