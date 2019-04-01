@@ -137,7 +137,9 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
             };
 
+            // Initialize service client for service-side operations
             ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+
             ICollection<DeviceClient> deviceClients = new List<DeviceClient>();
             Dictionary<DeviceClient, int> deviceClientConnectionStatusChangeCount = new Dictionary<DeviceClient, int>();
 
@@ -155,6 +157,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     DeviceClient deviceClient = testDevice.CreateDeviceClient(transportSettings, authScope);
                     deviceClients.Add(deviceClient);
 
+                    // Set the connection status change handler
                     deviceClient.SetConnectionStatusChangesHandler((status, statusChangeReason) =>
                     {
                         setConnectionStatusChangesHandlerCount++;
