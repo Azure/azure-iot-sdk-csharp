@@ -178,22 +178,22 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                     // Invoke direct methods
                     _log.WriteLine($"{nameof(CombinedClientOperationsMultiplexingTests)}: Testing direct methods for device {i}");
-                    Task methodReceivedTask = await MethodUtil.SetDeviceReceiveMethod(deviceClient).ConfigureAwait(false);
+                    Task methodReceivedTask = await MethodOperation.SetDeviceReceiveMethod(deviceClient).ConfigureAwait(false);
                     await Task.WhenAll(
-                        MethodUtil.ServiceSendMethodAndVerifyResponse(testDevice.Id),
+                        MethodOperation.ServiceSendMethodAndVerifyResponse(testDevice.Id),
                         methodReceivedTask).ConfigureAwait(false);
 
                     // Set reported twin properties
                     _log.WriteLine($"{nameof(CombinedClientOperationsMultiplexingTests)}: Setting reported Twin properties for device {i}");
-                    await TwinUtil.Twin_DeviceSetsReportedPropertyAndGetsItBack(deviceClient).ConfigureAwait(false);
+                    await TwinOperation.Twin_DeviceSetsReportedPropertyAndGetsItBack(deviceClient).ConfigureAwait(false);
 
                     // Receive set desired twin properties
                     _log.WriteLine($"{nameof(CombinedClientOperationsMultiplexingTests)}: Received set desired tein properties for device {i}");
                     var propName = Guid.NewGuid().ToString();
                     var propValue = Guid.NewGuid().ToString();
-                    Task updateReceivedTask = await TwinUtil.SetTwinPropertyUpdateCallbackHandlerAsync(deviceClient, propName, propValue).ConfigureAwait(false);
+                    Task updateReceivedTask = await TwinOperation.SetTwinPropertyUpdateCallbackHandlerAsync(deviceClient, propName, propValue).ConfigureAwait(false);
                     await Task.WhenAll(
-                        TwinUtil.RegistryManagerUpdateDesiredPropertyAsync(testDevice.Id, propName, propValue),
+                        TwinOperation.RegistryManagerUpdateDesiredPropertyAsync(testDevice.Id, propName, propValue),
                         updateReceivedTask).ConfigureAwait(false);
 
                 }

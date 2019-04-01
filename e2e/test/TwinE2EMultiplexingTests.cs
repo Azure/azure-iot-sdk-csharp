@@ -118,7 +118,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Client.TransportType.Amqp_Tcp_Only,
                 MuxWithoutPoolingPoolSize,
                 MuxWithoutPoolingDevicesCount,
-                TwinUtil.SetTwinPropertyUpdateCallbackHandlerAsync
+                TwinOperation.SetTwinPropertyUpdateCallbackHandlerAsync
                 ).ConfigureAwait(false);
         }
 
@@ -130,7 +130,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Client.TransportType.Amqp_WebSocket_Only,
                 MuxWithoutPoolingPoolSize,
                 MuxWithoutPoolingDevicesCount,
-                TwinUtil.SetTwinPropertyUpdateCallbackHandlerAsync
+                TwinOperation.SetTwinPropertyUpdateCallbackHandlerAsync
                 ).ConfigureAwait(false);
         }
 
@@ -142,7 +142,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Client.TransportType.Amqp_Tcp_Only,
                 MuxWithPoolingPoolSize,
                 MuxWithPoolingDevicesCount,
-                TwinUtil.SetTwinPropertyUpdateCallbackHandlerAsync
+                TwinOperation.SetTwinPropertyUpdateCallbackHandlerAsync
                 ).ConfigureAwait(false);
         }
 
@@ -154,7 +154,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Client.TransportType.Amqp_WebSocket_Only,
                 MuxWithPoolingPoolSize,
                 MuxWithPoolingDevicesCount,
-                TwinUtil.SetTwinPropertyUpdateCallbackHandlerAsync
+                TwinOperation.SetTwinPropertyUpdateCallbackHandlerAsync
                 ).ConfigureAwait(false);
         }
 
@@ -166,7 +166,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Client.TransportType.Amqp_Tcp_Only,
                 MuxWithoutPoolingPoolSize,
                 MuxWithoutPoolingDevicesCount,
-                TwinUtil.SetTwinPropertyUpdateCallbackHandlerAsync
+                TwinOperation.SetTwinPropertyUpdateCallbackHandlerAsync
                 ).ConfigureAwait(false);
         }
 
@@ -178,7 +178,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Client.TransportType.Amqp_WebSocket_Only,
                 MuxWithoutPoolingPoolSize,
                 MuxWithoutPoolingDevicesCount,
-                TwinUtil.SetTwinPropertyUpdateCallbackHandlerAsync
+                TwinOperation.SetTwinPropertyUpdateCallbackHandlerAsync
                 ).ConfigureAwait(false);
         }
 
@@ -190,7 +190,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Client.TransportType.Amqp_Tcp_Only,
                 MuxWithPoolingPoolSize,
                 MuxWithPoolingDevicesCount,
-                TwinUtil.SetTwinPropertyUpdateCallbackHandlerAsync
+                TwinOperation.SetTwinPropertyUpdateCallbackHandlerAsync
                 ).ConfigureAwait(false);
         }
 
@@ -202,7 +202,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Client.TransportType.Amqp_WebSocket_Only,
                 MuxWithPoolingPoolSize,
                 MuxWithPoolingDevicesCount,
-                TwinUtil.SetTwinPropertyUpdateCallbackHandlerAsync
+                TwinOperation.SetTwinPropertyUpdateCallbackHandlerAsync
                 ).ConfigureAwait(false);
         }
 
@@ -250,7 +250,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                         deviceClientConnectionStatusChangeCount[deviceClient] = setConnectionStatusChangesHandlerCount;
                     });
 
-                    await TwinUtil.Twin_DeviceSetsReportedPropertyAndGetsItBack(deviceClient).ConfigureAwait(false);
+                    await TwinOperation.Twin_DeviceSetsReportedPropertyAndGetsItBack(deviceClient).ConfigureAwait(false);
                 }
             }
             finally
@@ -322,7 +322,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     Task updateReceivedTask = await setTwinPropertyUpdateCallbackAsync(deviceClient, propName, propValue).ConfigureAwait(false);
 
                     await Task.WhenAll(
-                        TwinUtil.RegistryManagerUpdateDesiredPropertyAsync(testDevice.Id, propName, propValue),
+                        TwinOperation.RegistryManagerUpdateDesiredPropertyAsync(testDevice.Id, propName, propValue),
                         updateReceivedTask).ConfigureAwait(false);
 
                 }

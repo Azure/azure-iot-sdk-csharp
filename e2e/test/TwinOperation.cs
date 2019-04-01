@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
-    public static class TwinUtil
+    public static class TwinOperation
     {
         private static TestLogging s_log = TestLogging.GetInstance();
 

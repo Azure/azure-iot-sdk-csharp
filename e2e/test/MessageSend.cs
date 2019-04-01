@@ -48,5 +48,25 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await testListener.CloseAsync().ConfigureAwait(false);
             }
         }
+
+        public static async Task SendSingleMessageModuleAndVerifyAsync(ModuleClient moduleClient, string deviceId)
+        {
+            EventHubTestListener testListener = await EventHubTestListener.CreateListener(deviceId).ConfigureAwait(false);
+
+            try
+            {
+                string payload;
+                string p1Value;
+                Client.Message testMessage = ComposeD2CTestMessage(out payload, out p1Value);
+                await moduleClient.SendEventAsync(testMessage).ConfigureAwait(false);
+
+                bool isReceived = await testListener.WaitForMessage(deviceId, payload, p1Value).ConfigureAwait(false);
+                Assert.IsTrue(isReceived, "Message is not received.");
+            }
+            finally
+            {
+                await testListener.CloseAsync().ConfigureAwait(false);
+            }
+        }
     }
 }

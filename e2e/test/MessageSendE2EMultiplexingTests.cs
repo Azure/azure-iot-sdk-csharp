@@ -16,6 +16,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     public class MessageSendE2EMultiplexingTests : IDisposable
     {
         private readonly string DevicePrefix = $"E2E_{nameof(MessageSendE2EMultiplexingTests)}_";
+        private readonly string ModulePrefix = $"E2E_{nameof(MessageSendE2EMultiplexingTests)}_";
         private readonly int MuxWithoutPoolingDevicesCount = 2;
         private readonly int MuxWithoutPoolingPoolSize = 1; // For enabling multiplexing without pooling, the pool size needs to be set to 1
         private readonly int MuxWithPoolingDevicesCount = 4;
@@ -36,6 +37,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_DeviceSak_DeviceSendSingleMessage_MuxWithoutPooling_Amqp()
         {
             await SendMessageMuxedOverAmqp(
+                TestDeviceType.Sasl,
                 Client.TransportType.Amqp_Tcp_Only,
                 MuxWithoutPoolingPoolSize,
                 MuxWithoutPoolingDevicesCount,
@@ -47,6 +49,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_DeviceSak_DeviceSendSingleMessage_MuxWithoutPooling_AmqpWs()
         {
             await SendMessageMuxedOverAmqp(
+                TestDeviceType.Sasl,
                 Client.TransportType.Amqp_WebSocket_Only,
                 MuxWithoutPoolingPoolSize,
                 MuxWithoutPoolingDevicesCount,
@@ -58,6 +61,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_IoTHubSak_DeviceSendSingleMessage_MuxWithoutPooling_Amqp()
         {
             await SendMessageMuxedOverAmqp(
+                TestDeviceType.Sasl,
                 Client.TransportType.Amqp_Tcp_Only,
                 MuxWithoutPoolingPoolSize,
                 MuxWithoutPoolingDevicesCount,
@@ -69,6 +73,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_IoTHubSak_DeviceSendSingleMessage_MuxWithoutPooling_AmqpWs()
         {
             await SendMessageMuxedOverAmqp(
+                TestDeviceType.Sasl,
                 Client.TransportType.Amqp_WebSocket_Only,
                 MuxWithoutPoolingPoolSize,
                 MuxWithoutPoolingDevicesCount,
@@ -80,6 +85,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_DeviceSak_DeviceSendSingleMessage_MuxWithPooling_Amqp()
         {
             await SendMessageMuxedOverAmqp(
+                TestDeviceType.Sasl,
                 Client.TransportType.Amqp_Tcp_Only,
                 MuxWithPoolingPoolSize,
                 MuxWithPoolingDevicesCount,
@@ -91,6 +97,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_DeviceSak_DeviceSendSingleMessage_MuxWithPooling_AmqpWs()
         {
             await SendMessageMuxedOverAmqp(
+                TestDeviceType.Sasl,
                 Client.TransportType.Amqp_WebSocket_Only,
                 MuxWithPoolingPoolSize,
                 MuxWithPoolingDevicesCount,
@@ -102,6 +109,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_IoTHubSak_DeviceSendSingleMessage_MuxWithPooling_Amqp()
         {
             await SendMessageMuxedOverAmqp(
+                TestDeviceType.Sasl,
                 Client.TransportType.Amqp_Tcp_Only,
                 MuxWithPoolingPoolSize,
                 MuxWithPoolingDevicesCount,
@@ -113,6 +121,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_IoTHubSak_DeviceSendSingleMessage_MuxWithPooling_AmqpWs()
         {
             await SendMessageMuxedOverAmqp(
+                TestDeviceType.Sasl,
                 Client.TransportType.Amqp_WebSocket_Only,
                 MuxWithPoolingPoolSize,
                 MuxWithPoolingDevicesCount,
@@ -120,7 +129,59 @@ namespace Microsoft.Azure.Devices.E2ETests
                 ).ConfigureAwait(false);
         }
 
+        [TestMethod]
+        public async Task Message_DeviceSak_ModuleSendSingleMessage_MuxWithoutPooling_Amqp()
+        {
+            await SendMessageModuleMuxedOverAmqp(
+                Client.TransportType.Amqp_Tcp_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxWithoutPoolingDevicesCount
+                ).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task Message_DeviceSak_ModuleSendSingleMessage_MuxWithoutPooling_AmqpWs()
+        {
+            await SendMessageModuleMuxedOverAmqp(
+                Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxWithoutPoolingDevicesCount
+                ).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task Message_DeviceSak_ModuleSendSingleMessage_MuxWithPooling_Amqp()
+        {
+            await SendMessageModuleMuxedOverAmqp(
+                Client.TransportType.Amqp_Tcp_Only,
+                MuxWithPoolingPoolSize,
+                MuxWithPoolingDevicesCount
+                ).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task Message_DeviceSak_ModuleSendSingleMessage_MuxWithPooling_AmqpWs()
+        {
+            await SendMessageModuleMuxedOverAmqp(
+                Client.TransportType.Amqp_WebSocket_Only,
+                MuxWithPoolingPoolSize,
+                MuxWithPoolingDevicesCount
+                ).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task Message_DeviceSak_ModuleSendSingleMessageSameDevice_MuxWithoutPooling_Amqp()
+        {
+            await SendMessageModuleMuxedOverAmqp(
+                Client.TransportType.Amqp_Tcp_Only,
+                MuxWithoutPoolingPoolSize,
+                MuxWithoutPoolingDevicesCount,
+                true
+                ).ConfigureAwait(false);
+        }
+
         private async Task SendMessageMuxedOverAmqp(
+            TestDeviceType type, 
             Client.TransportType transport, 
             int poolSize, 
             int devicesCount,
@@ -151,7 +212,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     ConnectionStatusChangeReason? lastConnectionStatusChangeReason = null;
                     int setConnectionStatusChangesHandlerCount = 0;
 
-                    TestDevice testDevice = await TestDevice.GetTestDeviceAsync($"{DevicePrefix}_{i}_").ConfigureAwait(false);
+                    TestDevice testDevice = await TestDevice.GetTestDeviceAsync($"{DevicePrefix}_{i}_", type).ConfigureAwait(false);
                     DeviceClient deviceClient = testDevice.CreateDeviceClient(transportSettings, authScope);
                     deviceClients.Add(deviceClient);
 
@@ -181,6 +242,74 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                     _log.WriteLine($"{nameof(MessageSendE2EMultiplexingTests)}: Disposing deviceClient {TestLogging.GetHashCode(deviceClient)}");
                     deviceClient.Dispose();
+                }
+            }
+        }
+
+        private async Task SendMessageModuleMuxedOverAmqp(
+            Client.TransportType transport,
+            int poolSize,
+            int devicesCount,
+            bool useSameDevice = false)
+        {
+            var transportSettings = new ITransportSettings[]
+            {
+                new AmqpTransportSettings(transport)
+                {
+                    AmqpConnectionPoolSettings = new AmqpConnectionPoolSettings()
+                    {
+                        MaxPoolSize = unchecked((uint)poolSize),
+                        Pooling = true
+                    }
+                }
+            };
+
+            ICollection<ModuleClient> moduleClients = new List<ModuleClient>();
+            Dictionary<ModuleClient, int> moduleClientConnectionStatusChangeCount = new Dictionary<ModuleClient, int>();
+
+            try
+            {
+                _log.WriteLine($"{nameof(MessageSendE2EMultiplexingTests)}: Starting the test execution for {devicesCount} modules");
+
+                for (int i = 0; i < devicesCount; i++)
+                {
+                    ConnectionStatus? lastConnectionStatus = null;
+                    ConnectionStatusChangeReason? lastConnectionStatusChangeReason = null;
+                    int setConnectionStatusChangesHandlerCount = 0;
+
+                    string devicePrefix = useSameDevice ? DevicePrefix : $"{DevicePrefix}_{i}_";
+                    string modulePrefix = useSameDevice ? $"{ModulePrefix}_{i}_" : ModulePrefix;
+
+                    TestModule testModule = await TestModule.GetTestModuleAsync(devicePrefix, modulePrefix).ConfigureAwait(false);
+                    ModuleClient moduleClient = ModuleClient.CreateFromConnectionString(testModule.ConnectionString, transportSettings);
+                    moduleClients.Add(moduleClient);
+
+                    moduleClient.SetConnectionStatusChangesHandler((status, statusChangeReason) =>
+                    {
+                        setConnectionStatusChangesHandlerCount++;
+                        lastConnectionStatus = status;
+                        lastConnectionStatusChangeReason = statusChangeReason;
+                        _log.WriteLine($"{nameof(MessageSendE2EMultiplexingTests)}.{nameof(ConnectionStatusChangesHandler)}: status={status} statusChangeReason={statusChangeReason} count={setConnectionStatusChangesHandlerCount}");
+                        moduleClientConnectionStatusChangeCount[moduleClient] = setConnectionStatusChangesHandlerCount;
+                    });
+
+                    _log.WriteLine($"{nameof(MessageSendE2EMultiplexingTests)}: Preparing to send message for module {i}");
+                    await moduleClient.OpenAsync().ConfigureAwait(false);
+                    await MessageSend.SendSingleMessageModuleAndVerifyAsync(moduleClient, testModule.DeviceId).ConfigureAwait(false);
+                }
+            }
+            finally
+            {
+                // Close and dispose all of the module client instances here
+                foreach (ModuleClient moduleClient in moduleClients)
+                {
+                    await moduleClient.CloseAsync().ConfigureAwait(false);
+
+                    // The connection status change count should be 2: connect (open) and disabled (close)
+                    Assert.IsTrue(moduleClientConnectionStatusChangeCount[moduleClient] == 2);
+
+                    _log.WriteLine($"{nameof(MessageSendE2EMultiplexingTests)}: Disposing moduleClient {TestLogging.GetHashCode(moduleClient)}");
+                    moduleClient.Dispose();
                 }
             }
         }

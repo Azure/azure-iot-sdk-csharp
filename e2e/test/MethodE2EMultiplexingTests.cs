@@ -39,7 +39,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Client.TransportType.Amqp_Tcp_Only,
                 MuxWithoutPoolingPoolSize,
                 MuxWithoutPoolingDevicesCount,
-                MethodUtil.SetDeviceReceiveMethod
+                MethodOperation.SetDeviceReceiveMethod
                 ).ConfigureAwait(false);
         }
 
@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Client.TransportType.Amqp_WebSocket_Only,
                 MuxWithoutPoolingPoolSize,
                 MuxWithoutPoolingDevicesCount,
-                MethodUtil.SetDeviceReceiveMethod
+                MethodOperation.SetDeviceReceiveMethod
                 ).ConfigureAwait(false);
         }
 
@@ -63,7 +63,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Client.TransportType.Amqp_Tcp_Only,
                 MuxWithoutPoolingPoolSize,
                 MuxWithoutPoolingDevicesCount,
-                MethodUtil.SetDeviceReceiveMethod
+                MethodOperation.SetDeviceReceiveMethod
                 ).ConfigureAwait(false);
         }
 
@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Client.TransportType.Amqp_WebSocket_Only,
                 MuxWithoutPoolingPoolSize,
                 MuxWithoutPoolingDevicesCount,
-                MethodUtil.SetDeviceReceiveMethod
+                MethodOperation.SetDeviceReceiveMethod
                 ).ConfigureAwait(false);
         }
 
@@ -87,7 +87,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Client.TransportType.Amqp_Tcp_Only,
                 MuxWithPoolingPoolSize, 
                 MuxWithPoolingDevicesCount,
-                MethodUtil.SetDeviceReceiveMethod
+                MethodOperation.SetDeviceReceiveMethod
                 ).ConfigureAwait(false);
         }
 
@@ -99,7 +99,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Client.TransportType.Amqp_WebSocket_Only,
                 MuxWithPoolingPoolSize,
                 MuxWithPoolingDevicesCount,
-                MethodUtil.SetDeviceReceiveMethod
+                MethodOperation.SetDeviceReceiveMethod
                 ).ConfigureAwait(false);
         }
 
@@ -111,7 +111,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Client.TransportType.Amqp_Tcp_Only,
                 MuxWithPoolingPoolSize,
                 MuxWithPoolingDevicesCount,
-                MethodUtil.SetDeviceReceiveMethod
+                MethodOperation.SetDeviceReceiveMethod
                 ).ConfigureAwait(false);
         }
 
@@ -123,7 +123,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Client.TransportType.Amqp_WebSocket_Only,
                 MuxWithPoolingPoolSize,
                 MuxWithPoolingDevicesCount,
-                MethodUtil.SetDeviceReceiveMethod
+                MethodOperation.SetDeviceReceiveMethod
                 ).ConfigureAwait(false);
         }
 
@@ -135,7 +135,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Client.TransportType.Amqp_Tcp_Only,
                 MuxWithoutPoolingPoolSize,
                 MuxWithoutPoolingDevicesCount,
-                MethodUtil.SetDeviceReceiveMethodDefaultHandler
+                MethodOperation.SetDeviceReceiveMethodDefaultHandler
                 ).ConfigureAwait(false);
         }
 
@@ -147,7 +147,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Client.TransportType.Amqp_WebSocket_Only,
                 MuxWithoutPoolingPoolSize,
                 MuxWithoutPoolingDevicesCount,
-                MethodUtil.SetDeviceReceiveMethodDefaultHandler
+                MethodOperation.SetDeviceReceiveMethodDefaultHandler
                 ).ConfigureAwait(false);
         }
 
@@ -159,7 +159,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Client.TransportType.Amqp_Tcp_Only,
                 MuxWithPoolingPoolSize,
                 MuxWithPoolingDevicesCount,
-                MethodUtil.SetDeviceReceiveMethodDefaultHandler
+                MethodOperation.SetDeviceReceiveMethodDefaultHandler
                 ).ConfigureAwait(false);
         }
 
@@ -171,7 +171,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Client.TransportType.Amqp_WebSocket_Only,
                 MuxWithPoolingPoolSize,
                 MuxWithPoolingDevicesCount,
-                MethodUtil.SetDeviceReceiveMethodDefaultHandler
+                MethodOperation.SetDeviceReceiveMethodDefaultHandler
                 ).ConfigureAwait(false);
         }
 
@@ -183,7 +183,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Client.TransportType.Amqp_Tcp_Only,
                 MuxWithoutPoolingPoolSize,
                 MuxWithoutPoolingDevicesCount,
-                MethodUtil.SetDeviceReceiveMethodDefaultHandler
+                MethodOperation.SetDeviceReceiveMethodDefaultHandler
                 ).ConfigureAwait(false);
         }
 
@@ -195,7 +195,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Client.TransportType.Amqp_WebSocket_Only,
                 MuxWithoutPoolingPoolSize,
                 MuxWithoutPoolingDevicesCount,
-                MethodUtil.SetDeviceReceiveMethodDefaultHandler
+                MethodOperation.SetDeviceReceiveMethodDefaultHandler
                 ).ConfigureAwait(false);
         }
 
@@ -207,7 +207,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Client.TransportType.Amqp_Tcp_Only,
                 MuxWithPoolingPoolSize,
                 MuxWithPoolingDevicesCount,
-                MethodUtil.SetDeviceReceiveMethodDefaultHandler
+                MethodOperation.SetDeviceReceiveMethodDefaultHandler
                 ).ConfigureAwait(false);
         }
 
@@ -219,7 +219,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Client.TransportType.Amqp_WebSocket_Only,
                 MuxWithPoolingPoolSize,
                 MuxWithPoolingDevicesCount,
-                MethodUtil.SetDeviceReceiveMethodDefaultHandler
+                MethodOperation.SetDeviceReceiveMethodDefaultHandler
                 ).ConfigureAwait(false);
         }
 
@@ -269,7 +269,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                     Task methodReceivedTask = await setDeviceReceiveMethod(deviceClient).ConfigureAwait(false);
                     await Task.WhenAll(
-                        MethodUtil.ServiceSendMethodAndVerifyResponse(testDevice.Id),
+                        MethodOperation.ServiceSendMethodAndVerifyResponse(testDevice.Id),
                         methodReceivedTask).ConfigureAwait(false);
                 }
             }
