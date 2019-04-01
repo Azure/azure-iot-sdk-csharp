@@ -233,11 +233,6 @@ namespace Microsoft.Azure.Devices.Client
             set
             {
                 _operationTimeoutInMilliseconds = value;
-                var retryDelegatingHandler = GetDelegateHandler<RetryDelegatingHandler>();
-                if (retryDelegatingHandler != null)
-                {
-                    retryDelegatingHandler.RetryTimeoutInMilliseconds = value;
-                }
             }
         }
 

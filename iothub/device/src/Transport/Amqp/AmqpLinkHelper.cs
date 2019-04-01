@@ -1,4 +1,7 @@
-﻿using Microsoft.Azure.Amqp;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Azure.Devices.Shared;
 using System;
@@ -274,14 +277,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             ).ConfigureAwait(false);
         }
         #endregion
-
-        public static void CloseAmqpObject(AmqpObject amqpObject)
-        {
-            if (amqpObject != null)
-            {
-                amqpObject.CloseAsync(TimeSpan.MaxValue).ConfigureAwait(false);
-            }
-        }
 
         public static async Task<Outcome> DisposeMessageAsync(ReceivingAmqpLink receivingAmqpLink, string lockToken, Outcome outcome, TimeSpan timeout)
         {

@@ -10,7 +10,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
     abstract class TransportHandler : DefaultDelegatingHandler
     {
         protected ITransportSettings TransportSettings;
-        protected TaskCompletionSource<bool> _transportShouldRetry = new TaskCompletionSource<bool>();
+        private TaskCompletionSource<bool> _transportShouldRetry = new TaskCompletionSource<bool>();
+        private bool _disposed;
 
         protected TransportHandler(IPipelineContext context, ITransportSettings transportSettings)
             : base(context, innerHandler: null)
@@ -30,7 +31,24 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         protected override void Dispose(bool disposing)
         {
+            if (_disposed) return;
+
+            if (disposing)
+            {
+                OnTransportClosedGracefully();
+            }
+
+            _disposed = true;
+        }
+
+        protected void OnTransportClosedGracefully()
+        {
             _transportShouldRetry.TrySetCanceled();
+        }
+
+        protected void OnTransportDisconnected()
+        {
+            _transportShouldRetry.TrySetResult(true);
         }
     }
 }

@@ -27,6 +27,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private bool _eventsEnabled;
 
         private Task _transportClosedTask;
+        private CancellationTokenSource _handleDisconnectCts = new CancellationTokenSource();
 
         private readonly ConnectionStatusChangesHandler _onConnectionStatusChanged;
 
@@ -44,8 +45,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             
             if (Logging.IsEnabled) Logging.Associate(this, _internalRetryPolicy, nameof(SetRetryPolicy));
         }
-
-        public uint RetryTimeoutInMilliseconds { get; set; } = DeviceClient.DefaultOperationTimeoutInMilliseconds;
 
         private class TransientErrorStrategy : ITransientErrorDetectionStrategy
         {
@@ -446,12 +445,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 if (Logging.IsEnabled) Logging.Enter(this, cancellationToken, nameof(CloseAsync));
 
-                await _internalRetryPolicy.ExecuteAsync(async () =>
-                {
-                    await base.CloseAsync(cancellationToken).ConfigureAwait(false);
-                },
-                cancellationToken).ConfigureAwait(false);
-
+                _handleDisconnectCts.Cancel();
+                await base.CloseAsync(cancellationToken).ConfigureAwait(false);
                 Dispose(true);
             }
             finally
@@ -544,48 +539,45 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 {
                     _onConnectionStatusChanged(ConnectionStatus.Disconnected_Retrying, ConnectionStatusChangeReason.Communication_Error);
                 }
-                                
-                using (var cts = new CancellationTokenSource((int)RetryTimeoutInMilliseconds))
+
+                CancellationToken cancellationToken = _handleDisconnectCts.Token;
+                
+                // This will recover to the state before the disconnect.
+                await _internalRetryPolicy.ExecuteAsync(async () =>
                 {
-                    CancellationToken cancellationToken = cts.Token;
-
-                    // This will recover to the state before the disconnect.
-                    await _internalRetryPolicy.ExecuteAsync(async () =>
-                    {
-                        if (Logging.IsEnabled) Logging.Info(this, "Attempting to recover subscriptions.", nameof(HandleDisconnect));
+                    if (Logging.IsEnabled) Logging.Info(this, "Attempting to recover subscriptions.", nameof(HandleDisconnect));
                         
-                        await base.OpenAsync(cancellationToken).ConfigureAwait(false);
+                    await base.OpenAsync(cancellationToken).ConfigureAwait(false);
 
-                        List<Task> tasks = new List<Task>(3);
+                    List<Task> tasks = new List<Task>(3);
 
-                        if (_methodsEnabled)
-                        {
-                            tasks.Add(base.EnableMethodsAsync(cancellationToken));
-                        }
+                    if (_methodsEnabled)
+                    {
+                        tasks.Add(base.EnableMethodsAsync(cancellationToken));
+                    }
 
-                        if (_twinEnabled)
-                        {
-                            tasks.Add(base.EnableTwinPatchAsync(cancellationToken));
-                        }
+                    if (_twinEnabled)
+                    {
+                        tasks.Add(base.EnableTwinPatchAsync(cancellationToken));
+                    }
 
-                        if (_eventsEnabled)
-                        {
-                            tasks.Add(base.EnableEventReceiveAsync(cancellationToken));
-                        }
+                    if (_eventsEnabled)
+                    {
+                        tasks.Add(base.EnableEventReceiveAsync(cancellationToken));
+                    }
 
-                        Debug.Assert(tasks.Count > 0);
-                        await Task.WhenAll(tasks).ConfigureAwait(false);
+                    Debug.Assert(tasks.Count > 0);
+                    await Task.WhenAll(tasks).ConfigureAwait(false);
 
-                        // Send the request for transport close notification.
-                        _transportClosedTask = HandleDisconnect();
+                    // Send the request for transport close notification.
+                    _transportClosedTask = HandleDisconnect();
 
-                        _opened = true;
-                        _onConnectionStatusChanged(ConnectionStatus.Connected, ConnectionStatusChangeReason.Connection_Ok);
+                    _opened = true;
+                    _onConnectionStatusChanged(ConnectionStatus.Connected, ConnectionStatusChangeReason.Connection_Ok);
 
-                        if (Logging.IsEnabled) Logging.Info(this, "Subscriptions recovered.", nameof(HandleDisconnect));
-                    },
-                    cancellationToken).ConfigureAwait(false);
-                }
+                    if (Logging.IsEnabled) Logging.Info(this, "Subscriptions recovered.", nameof(HandleDisconnect));
+                },
+                cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -593,6 +585,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                 var hubException = ex as IotHubException;
                 if (hubException != null) HandleConnectionStatusExceptions(hubException);
+
+                // We were not able to recover the connection or subscriptions within the configured policy.
+                // The object will be placed in an unusable state.
+                Dispose(true);
             }
             finally
             {
@@ -618,6 +614,19 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
 
             _onConnectionStatusChanged(ConnectionStatus.Disconnected, status);
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (_disposed) return;
+
+            if (disposing)
+            {
+                _handleDisconnectCts.Cancel();
+                base.Dispose(disposing);
+            }
+
+            _disposed = true;
         }
     }
 }

@@ -1,4 +1,7 @@
-﻿using Microsoft.Azure.Amqp;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Diagnostics;
@@ -16,6 +19,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private CancellationTokenSource CancellationTokenSource;
         private TimeSpan OperationTimeout;
         private Task RefreshLoop;
+        private bool _disposed;
 
         internal AmqpAuthenticationRefresher(DeviceIdentity deviceIdentity, AmqpCbsLink amqpCbsLink)
         {
@@ -42,10 +46,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     AccessRightsStringArray,
                     timeout
                 ).ConfigureAwait(false);
+
             if (expiry < DateTime.MaxValue)
             {
                 StartLoop(expiry, newToken);
             }
+
             if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(InitLoopAsync)}");
         }
 
@@ -111,12 +117,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         private void Dispose(bool disposing)
         {
+            if (_disposed) return;
+
             if (Logging.IsEnabled) Logging.Info(this, disposing, $"{nameof(Dispose)}");
             if (disposing)
             {
                 StopLoop();
-                CancellationTokenSource?.Dispose();
             }
+
+            _disposed = true;
         }
     }
 }

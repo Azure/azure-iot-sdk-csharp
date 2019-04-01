@@ -1,4 +1,7 @@
-﻿using Microsoft.Azure.Amqp;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Collections.Generic;
@@ -6,8 +9,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
-   
-    class AmqpConnectionPool : IAmqpUnitCreator
+    internal class AmqpConnectionPool : IAmqpUnitCreator
     {
         private const int MaxSpan = int.MaxValue;
         private ISet<IAmqpConnectionHolder> AmqpSasIndividualPool;
@@ -21,7 +23,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             Lock = new object();
         }
 
-        public IAmqpUnit CreateAmqpUnit(
+        public AmqpUnit CreateAmqpUnit(
             DeviceIdentity deviceIdentity, 
             Func<MethodRequestInternal, Task> methodHandler, 
             Action<AmqpMessage> twinMessageListener, 
