@@ -123,7 +123,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             if (disposing)
             {
                 StopLoop();
-                CancellationTokenSource?.Cancel();
             }
 
             _disposed = true;
