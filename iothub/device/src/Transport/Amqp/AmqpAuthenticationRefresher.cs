@@ -123,8 +123,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             if (disposing)
             {
                 StopLoop();
-                // TODO: CancellationTokenSource?.Dispose();
-                // We cannot dispose here as the RefreshLoop is not awaited.
+                CancellationTokenSource?.Cancel();
             }
 
             _disposed = true;

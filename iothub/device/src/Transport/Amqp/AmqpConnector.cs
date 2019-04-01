@@ -360,11 +360,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             if (_disposed) return;
 
+            if (Logging.IsEnabled) Logging.Info(this, disposing, $"{nameof(Dispose)}");
             if (disposing)
             {
                 TaskCompletionSource?.SetCanceled();
-                TaskCompletionSource = null;
-                SentProtocolHeader = null;
             }
 
             _disposed = true;

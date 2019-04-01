@@ -25,7 +25,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
         private bool _methodsEnabled;
         private bool _twinEnabled;
         private bool _eventsEnabled;
-        private bool _disposed;
 
         private Task _transportClosedTask;
         private CancellationTokenSource _handleDisconnectCts = new CancellationTokenSource();
@@ -623,7 +622,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             if (disposing)
             {
-                _handleDisconnectCts.Dispose();
+                _handleDisconnectCts.Cancel();
                 base.Dispose(disposing);
             }
 

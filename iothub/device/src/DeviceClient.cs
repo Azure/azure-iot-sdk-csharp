@@ -238,7 +238,7 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Sets the retry policy used in the operation retries.
-        /// TODO : will take effect with the next retry
+        /// The change will take effect after any in-progress operations.
         /// </summary>
         /// <param name="retryPolicy">The retry policy. The default is new ExponentialBackoff(int.MaxValue, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100));</param>
         // Codes_SRS_DEVICECLIENT_28_001: [This property shall be defaulted to the exponential retry strategy with backoff 

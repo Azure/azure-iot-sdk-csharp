@@ -40,8 +40,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 eventListener);
         }
 
-
-        // TODO: pool resolution
         private IAmqpUnitCreator ResolveConnectionPool(string host)
         {
             lock (_lock)

@@ -184,7 +184,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             bool removed = AmqpUnits.Remove(deviceIdentity);
             if (removed && AmqpUnits.Count == 0)
             {
-                // TODO: handle gracefulDisconnect
+                // TODO #887: handle gracefulDisconnect
                 Shutdown();
             }
             if (Logging.IsEnabled) Logging.Exit(this, deviceIdentity, $"{nameof(RemoveDevice)}");
@@ -194,7 +194,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             if (Logging.IsEnabled) Logging.Enter(this, AmqpConnection, $"{nameof(Shutdown)}");
             AmqpAuthenticationRefresher?.StopLoop();
-            AmqpConnection.Abort();
+            AmqpConnection?.Abort();
             OnConnectionDisconnected?.Invoke(this, EventArgs.Empty);
             if (Logging.IsEnabled) Logging.Exit(this, AmqpConnection, $"{nameof(Shutdown)}");
         }
@@ -207,6 +207,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         private void Dispose(bool disposing)
         {
+            if (_disposed) return;
+
             if (Logging.IsEnabled) Logging.Info(this, disposing, $"{nameof(Dispose)}");
             if (disposing)
             {
