@@ -60,7 +60,7 @@ namespace Microsoft.Azure.Devices.Client
                     if (Logging.IsEnabled && (TokenRefresher == null)) Logging.Fail(this, $"Cannot create SAS Token: no provider.", nameof(ICbsTokenProvider.GetTokenAsync));
                     Debug.Assert(TokenRefresher != null);
                     tokenValue = await this.TokenRefresher.GetTokenAsync(this.Audience).ConfigureAwait(false);
-                    expiresOn = this.TokenRefresher.ExpiresOn;
+                    expiresOn = this.TokenRefresher.RefreshesOn;
                 }
 
                 return new CbsToken(tokenValue, CbsConstants.IotHubSasTokenType, expiresOn);

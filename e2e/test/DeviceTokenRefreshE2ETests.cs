@@ -4,10 +4,12 @@
 using Microsoft.Azure.Devices.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using System.Globalization;
 using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.E2ETests
@@ -91,8 +93,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
 
             int buffer = 50;
-
             Device device = testDevice.Identity;
+            SemaphoreSlim deviceDisconnected = new SemaphoreSlim(0);
 
             var refresher = new TestTokenRefresher(
                 device.Id, 
@@ -110,38 +112,64 @@ namespace Microsoft.Azure.Devices.E2ETests
                     deviceClient.SetConnectionStatusChangesHandler((ConnectionStatus status, ConnectionStatusChangeReason reason) =>
                     {
                         _log.WriteLine($"{nameof(ConnectionStatusChangesHandler)}: {status}; {reason}");
+                        if (status == ConnectionStatus.Disconnected) deviceDisconnected.Release();
                     });
                 }
 
                 var message = new Client.Message(Encoding.UTF8.GetBytes("Hello"));
 
-                // Create the first Token.
-                Console.WriteLine($"[{DateTime.UtcNow}] OpenAsync");
-                await deviceClient.OpenAsync().ConfigureAwait(false);
+                using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(ttl * 10)))
+                {
+                    try
+                    {
+                        // Create the first Token.
+                        Console.WriteLine($"[{DateTime.UtcNow}] OpenAsync");
+                        await deviceClient.OpenAsync(cts.Token).ConfigureAwait(false);
+                        
+                        Console.WriteLine($"[{DateTime.UtcNow}] SendEventAsync (1)");
+                        await deviceClient.SendEventAsync(message, cts.Token).ConfigureAwait(false);
+                        await refresher.WaitForTokenRefreshAsync(cts.Token).ConfigureAwait(false);
+                    }
+                    catch (OperationCanceledException ex)
+                    {
+                        Assert.Fail($"{TestLogging.IdOf(deviceClient)} did not get the initial token. {ex}");
+                        throw;
+                    }
 
-                Console.WriteLine($"[{DateTime.UtcNow}] SendEventAsync (1)");
-                await deviceClient.SendEventAsync(message).ConfigureAwait(false);
+                    // Wait for the Token to expire.
+                    if (transport == Client.TransportType.Http1)
+                    {
+                        float waitTime = (float)ttl * ((float)buffer / 100) + 1;
+                        Console.WriteLine($"[{DateTime.UtcNow}] Waiting {waitTime} seconds.");
+                        await Task.Delay(TimeSpan.FromSeconds(waitTime)).ConfigureAwait(false);
+                    }
+                    else if (transport == Client.TransportType.Mqtt)
+                    {
+                        Console.WriteLine($"[{DateTime.UtcNow}] Waiting for device disconnect.");
+                        await deviceDisconnected.WaitAsync(cts.Token).ConfigureAwait(false);
+                    }
 
-                int countAfterOpen = refresher.SafeCreateNewTokenCallCount;
-                Assert.IsTrue(countAfterOpen >= 1, $"[{DateTime.UtcNow}] Token should have been refreshed at least once.");
+                    try
+                    {
+                        Console.WriteLine($"[{DateTime.UtcNow}] SendEventAsync (2)");
+                        await deviceClient.SendEventAsync(message, cts.Token).ConfigureAwait(false);
+                        await refresher.WaitForTokenRefreshAsync(cts.Token).ConfigureAwait(false);
+                    }
+                    catch (OperationCanceledException ex)
+                    {
+                        Assert.Fail($"{TestLogging.IdOf(deviceClient)} did not refresh token after {refresher.DetectedRefreshInterval}. {ex}");
+                        throw;
+                    }
 
-                Console.WriteLine($"[{DateTime.UtcNow}] Waiting {ttl} seconds.");
-                // Wait for the Token to expire.
-                await Task.Delay(TimeSpan.FromSeconds(ttl)).ConfigureAwait(false);
+                    // Ensure that the token was refreshed.
+                    Console.WriteLine($"[{DateTime.UtcNow}] Token was refreshed after {refresher.DetectedRefreshInterval} (ttl = {ttl} seconds).");
+                    Assert.IsTrue(
+                        refresher.DetectedRefreshInterval.TotalSeconds < (float)ttl * (1 + (float)buffer/100), // Wait for more than what we expect.
+                        $"Token was refreshed after {refresher.DetectedRefreshInterval} although ttl={ttl} seconds.");
 
-                Console.WriteLine($"[{DateTime.UtcNow}] SendEventAsync (2)");
-                await deviceClient.SendEventAsync(message).ConfigureAwait(false);
-
-                int refresherCalled = refresher.SafeCreateNewTokenCallCount;
-                // Ensure that the token was refreshed.
-                Assert.IsTrue(
-                    refresherCalled >= countAfterOpen + 1,
-                    $"[{DateTime.UtcNow}] Token should have been refreshed after TTL expired (" +
-                    $"{nameof(refresherCalled)}={refresherCalled}" +
-                    $"{nameof(countAfterOpen)}={countAfterOpen}).");
-
-                Console.WriteLine($"[{DateTime.UtcNow}] CloseAsync");
-                await deviceClient.CloseAsync().ConfigureAwait(false);
+                    Console.WriteLine($"[{DateTime.UtcNow}] CloseAsync");
+                    await deviceClient.CloseAsync().ConfigureAwait(false);
+                }
             }
         }
 
@@ -157,22 +185,12 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private class TestTokenRefresher : DeviceAuthenticationWithTokenRefresh
         {
-            private object _lock = new object();
-            private int _callCount = 0;
             private string _key;
             private Client.TransportType _transport;
-
-            public int SafeCreateNewTokenCallCount
-            {
-                get
-                {
-                    lock (_lock)
-                    {
-                        return _callCount;
-                    }
-                }
-            }
-
+            private Stopwatch _stopwatch = new Stopwatch();
+            private SemaphoreSlim _tokenRefreshSemaphore = new SemaphoreSlim(0);
+            private int _counter;
+                       
             public TestTokenRefresher(string deviceId, string key) : base(deviceId)
             {
                 _key = key;
@@ -190,9 +208,19 @@ namespace Microsoft.Azure.Devices.E2ETests
                 _transport = transport;
             }
 
+            public TimeSpan DetectedRefreshInterval
+            {
+                get => _stopwatch.Elapsed;
+            }
+
+            public Task WaitForTokenRefreshAsync(CancellationToken cancellationToken)
+            {
+                return _tokenRefreshSemaphore.WaitAsync(cancellationToken);
+            }
+
             protected override Task<string> SafeCreateNewToken(string iotHub, int suggestedTimeToLive)
             {
-                Console.WriteLine($"[{DateTime.UtcNow}] Refresher: Creating new token {_callCount}");
+                Console.WriteLine($"[{DateTime.UtcNow}] Refresher: Creating new token.");
 
                 if (_transport == Client.TransportType.Mqtt)
                 {
@@ -210,13 +238,15 @@ namespace Microsoft.Azure.Devices.E2ETests
                         WebUtility.UrlEncode(DeviceId)),
                 };
 
-                lock (_lock)
-                {
-                    _callCount++;
-                }
-
                 string token = builder.ToSignature();
                 Console.WriteLine($"Token: {token}");
+
+                _tokenRefreshSemaphore.Release();
+                _counter++;
+
+                if (_counter == 1) _stopwatch.Start();
+                else _stopwatch.Stop();
+
                 return Task.FromResult(token);
             }
         }
