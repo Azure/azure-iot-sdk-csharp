@@ -38,6 +38,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
 
             _disposed = true;
+            base.Dispose(disposing);
         }
 
         protected void OnTransportClosedGracefully()
