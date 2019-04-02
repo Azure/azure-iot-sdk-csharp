@@ -38,7 +38,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             CancellationTokenSource = new CancellationTokenSource();
             CancellationToken newToken = CancellationTokenSource.Token;
             oldTokenSource?.Cancel();
-            DateTime expiry = await AmqpCbsLink.SendTokenAsync(
+            DateTime refreshOn = await AmqpCbsLink.SendTokenAsync(
                     ConnectionString,
                     ConnectionString.AmqpEndpoint,
                     Audience,
@@ -47,29 +47,29 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     timeout
                 ).ConfigureAwait(false);
 
-            if (expiry < DateTime.MaxValue)
+            if (refreshOn < DateTime.MaxValue)
             {
-                StartLoop(expiry, newToken);
+                StartLoop(refreshOn, newToken);
             }
 
             if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(InitLoopAsync)}");
         }
 
-        private void StartLoop(DateTime expiry, CancellationToken cancellationToken)
+        private void StartLoop(DateTime refreshOn, CancellationToken cancellationToken)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, expiry, $"{nameof(StartLoop)}");
-            RefreshLoop = RefreshLoopAsync(expiry, cancellationToken);
-            if (Logging.IsEnabled) Logging.Exit(this, expiry, $"{nameof(StartLoop)}");
+            if (Logging.IsEnabled) Logging.Enter(this, refreshOn, $"{nameof(StartLoop)}");
+            RefreshLoop = RefreshLoopAsync(refreshOn, cancellationToken);
+            if (Logging.IsEnabled) Logging.Exit(this, refreshOn, $"{nameof(StartLoop)}");
         }
 
-        private async Task RefreshLoopAsync(DateTime expiry, CancellationToken cancellationToken)
+        private async Task RefreshLoopAsync(DateTime refreshesOn, CancellationToken cancellationToken)
         {
-            TimeSpan waitTime = expiry - DateTime.UtcNow;
+            TimeSpan waitTime = refreshesOn - DateTime.UtcNow;
             Debug.Assert(ConnectionString.TokenRefresher != null);
 
             while (!cancellationToken.IsCancellationRequested)
             {
-                if (Logging.IsEnabled) Logging.Info(this, expiry, $"Before {nameof(RefreshLoopAsync)}");
+                if (Logging.IsEnabled) Logging.Info(this, refreshesOn, $"Before {nameof(RefreshLoopAsync)}");
 
                 if (waitTime.Seconds > 0)
                 {
@@ -80,7 +80,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 {
                     try
                     {
-                        expiry = await AmqpCbsLink.SendTokenAsync(
+                        refreshesOn = await AmqpCbsLink.SendTokenAsync(
                             ConnectionString,
                             ConnectionString.AmqpEndpoint,
                             Audience,
@@ -91,14 +91,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     }
                     catch (AmqpException ex)
                     {
-                        if (Logging.IsEnabled) Logging.Info(this, expiry, $"Refresh token failed {ex}");
+                        if (Logging.IsEnabled) Logging.Info(this, refreshesOn, $"Refresh token failed {ex}");
                     }
                     finally
                     {
-                        if (Logging.IsEnabled) Logging.Info(this, expiry, $"After {nameof(RefreshLoopAsync)}");
+                        if (Logging.IsEnabled) Logging.Info(this, refreshesOn, $"After {nameof(RefreshLoopAsync)}");
                     }
 
-                    waitTime = ConnectionString.TokenRefresher.RefreshesOn - DateTime.UtcNow;
+                    waitTime = refreshesOn - DateTime.UtcNow;
                 }
             }
         }
