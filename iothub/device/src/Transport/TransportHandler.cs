@@ -11,7 +11,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
     {
         protected ITransportSettings TransportSettings;
         private TaskCompletionSource<bool> _transportShouldRetry = new TaskCompletionSource<bool>();
-        private bool _disposed;
 
         protected TransportHandler(IPipelineContext context, ITransportSettings transportSettings)
             : base(context, innerHandler: null)
