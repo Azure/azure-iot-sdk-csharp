@@ -4,7 +4,6 @@
 using Microsoft.Azure.Devices.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using System.Linq;
@@ -222,8 +221,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                     string payload, messageId, p1Value;
                     await serviceClient.SendAsync(
                         testDevice.Id,
-                        MessageReceiveE2ETests.ComposeC2DTestMessage(out payload, out messageId, out p1Value)).ConfigureAwait(false);
-                    await MessageReceiveE2ETests.VerifyReceivedC2DMessageAsync(transport, deviceClient, payload, p1Value).ConfigureAwait(false);
+                        MessageReceive.ComposeC2DTestMessage(out payload, out messageId, out p1Value)).ConfigureAwait(false);
+                    await MessageReceive.VerifyReceivedC2DMessageAsync(transport, deviceClient, payload, p1Value).ConfigureAwait(false);
                 };
 
                 Func<Task> cleanupOperation = () =>
@@ -231,7 +230,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     return serviceClient.CloseAsync();
                 };
 
-                await FaultInjection.TestErrorInjectionSingleDeviceAsync(
+                await FaultInjection.TestErrorInjectionAsync(
                     DevicePrefix,
                     type,
                     transport,
@@ -239,8 +238,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                     reason,
                     delayInSec,
                     FaultInjection.DefaultDurationInSec,
-                    false,
-                    new List<Type> { },
                     init,
                     testOperation,
                     cleanupOperation).ConfigureAwait(false);

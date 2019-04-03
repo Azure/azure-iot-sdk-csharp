@@ -333,7 +333,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 if (this.TryStop())
                 {
-                    OnTransportDisconnected();
+                    OnTransportClosedGracefully();
 
                     await this.closeRetryPolicy.ExecuteAsync(this.CleanupAsync, cancellationToken).ConfigureAwait(true);
                 }

@@ -191,10 +191,17 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await sender.SendAsync(testDevice.Id, new Message(Encoding.ASCII.GetBytes("Dummy Message")), timeout).ConfigureAwait(false);
             }
         }
+
         private async Task SendSingleMessage(TestDeviceType type, Client.TransportType transport)
         {
-            ITransportSettings[] transportSettings = TestDevice.GetTransportSettings(transport);
-            await SendSingleMessage(type, transportSettings).ConfigureAwait(false);
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, type).ConfigureAwait(false);
+
+            using (DeviceClient deviceClient = testDevice.CreateDeviceClient(transport))
+            {
+                await deviceClient.OpenAsync().ConfigureAwait(false);
+                await MessageSend.SendSingleMessageAndVerifyAsync(deviceClient, testDevice.Id).ConfigureAwait(false);
+                await deviceClient.CloseAsync().ConfigureAwait(false);
+            }
         }
 
         private async Task SendSingleMessage(TestDeviceType type, ITransportSettings[] transportSettings)
@@ -204,7 +211,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             using (DeviceClient deviceClient = testDevice.CreateDeviceClient(transportSettings))
             {
                 await deviceClient.OpenAsync().ConfigureAwait(false);
-                await MessageSendUtil.SendSingleMessageAndVerify(deviceClient, testDevice.Id).ConfigureAwait(false);
+                await MessageSend.SendSingleMessageAndVerifyAsync(deviceClient, testDevice.Id).ConfigureAwait(false);
                 await deviceClient.CloseAsync().ConfigureAwait(false);
             }
         }
@@ -218,7 +225,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 string payload;
                 string p1Value;
-                Client.Message testMessage = MessageSendUtil.ComposeD2CTestMessage(out payload, out p1Value);
+                Client.Message testMessage = MessageSend.ComposeD2CTestMessage(out payload, out p1Value);
                 await moduleClient.SendEventAsync(testMessage).ConfigureAwait(false);
                 await moduleClient.CloseAsync().ConfigureAwait(false);
             }

@@ -5,12 +5,14 @@ using Microsoft.Azure.Devices.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
-    public static class MessageSendUtil
+    public static class MessageSend
     {
         private static TestLogging s_log = TestLogging.GetInstance();
 
@@ -27,7 +29,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             };
         }
 
-        public static async Task SendSingleMessageAndVerify(DeviceClient deviceClient, string deviceId)
+        public static async Task SendSingleMessageAndVerifyAsync(DeviceClient deviceClient, string deviceId)
         {
             EventHubTestListener testListener = await EventHubTestListener.CreateListener(deviceId).ConfigureAwait(false);
 
@@ -37,6 +39,26 @@ namespace Microsoft.Azure.Devices.E2ETests
                 string p1Value;
                 Client.Message testMessage = ComposeD2CTestMessage(out payload, out p1Value);
                 await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
+
+                bool isReceived = await testListener.WaitForMessage(deviceId, payload, p1Value).ConfigureAwait(false);
+                Assert.IsTrue(isReceived, "Message is not received.");
+            }
+            finally
+            {
+                await testListener.CloseAsync().ConfigureAwait(false);
+            }
+        }
+
+        public static async Task SendSingleMessageModuleAndVerifyAsync(ModuleClient moduleClient, string deviceId)
+        {
+            EventHubTestListener testListener = await EventHubTestListener.CreateListener(deviceId).ConfigureAwait(false);
+
+            try
+            {
+                string payload;
+                string p1Value;
+                Client.Message testMessage = ComposeD2CTestMessage(out payload, out p1Value);
+                await moduleClient.SendEventAsync(testMessage).ConfigureAwait(false);
 
                 bool isReceived = await testListener.WaitForMessage(deviceId, payload, p1Value).ConfigureAwait(false);
                 Assert.IsTrue(isReceived, "Message is not received.");

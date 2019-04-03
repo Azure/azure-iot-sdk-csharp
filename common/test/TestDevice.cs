@@ -157,11 +157,22 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-
-        public DeviceClient CreateDeviceClient(Client.TransportType transport, ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
+        public DeviceClient CreateDeviceClient(Client.TransportType transport)
         {
-            ITransportSettings[] transportSettings = GetTransportSettings(transport);
-            return CreateDeviceClient(transportSettings, authScope);
+            DeviceClient deviceClient = null;
+
+            if (_authenticationMethod == null)
+            {
+                deviceClient = DeviceClient.CreateFromConnectionString(ConnectionString, transport);
+                s_log.WriteLine($"{nameof(CreateDeviceClient)}: Created {nameof(DeviceClient)} from connection string: {transport} ID={TestLogging.IdOf(deviceClient)}");
+            }
+            else
+            {
+                deviceClient = DeviceClient.Create(IoTHubHostName, AuthenticationMethod, transport);
+                s_log.WriteLine($"{nameof(CreateDeviceClient)}: Created {nameof(DeviceClient)} from IAuthenticationMethod: {transport} ID={TestLogging.IdOf(deviceClient)}");
+            }
+
+            return deviceClient;
         }
 
         public DeviceClient CreateDeviceClient(ITransportSettings[] transportSettings, ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
@@ -194,32 +205,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             Regex regex = new Regex("HostName=([^;]+)", RegexOptions.None);
             return regex.Match(iotHubConnectionString).Groups[1].Value;
-        }
-
-        public static ITransportSettings[] GetTransportSettings(Client.TransportType transportType)
-        {
-            switch (transportType)
-            {
-                case Client.TransportType.Amqp_WebSocket_Only:
-                case Client.TransportType.Amqp_Tcp_Only:
-                    return new ITransportSettings[]
-                    {
-                        new AmqpTransportSettings(transportType)
-                    };
-
-                case Client.TransportType.Mqtt_WebSocket_Only:
-                case Client.TransportType.Mqtt_Tcp_Only:
-                    return new ITransportSettings[]
-                    {
-                        new MqttTransportSettings(transportType)
-                    };
-
-                case Client.TransportType.Http1:
-                    return new ITransportSettings[] { new Http1TransportSettings() };
-
-                default:
-                    throw new InvalidOperationException($"Unsupported Transport Type {transportType}");
-            }
         }
     }
 }
