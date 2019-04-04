@@ -114,6 +114,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
                 if (Logging.IsEnabled) Logging.Associate(this, _messageSendingLink, $"{nameof(_messageSendingLink)}");
             }
+            catch (Exception ex) when (!ex.IsFatal())
+            {
+                if (SetNotUsable() == 0)
+                {
+                    OnUnitDisconnected?.Invoke(false, EventArgs.Empty);
+                }
+
+            }
             finally
             {
                 if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(OpenAsync)}");
@@ -523,7 +531,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         #endregion
 
         #region IDisposable
-        
+
         public void Dispose()
         {
             Dispose(true);
