@@ -39,10 +39,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     if (amqpConnectionHolders.Count < deviceIdentity.AmqpTransportSettings.AmqpConnectionPoolSettings.MaxPoolSize)
                     {
                         amqpConnectionHolder = new AmqpConnectionHolder(deviceIdentity);
-                        amqpConnectionHolder.OnConnectionDisconnected += (o, args) => {
-                            bool removed = amqpConnectionHolders.Remove(o as IAmqpConnectionHolder);
-                            if (Logging.IsEnabled) Logging.Info(this, $"Remove ConnectionHolder {o}: {removed}");
-                        };
+                        amqpConnectionHolder.OnConnectionDisconnected += (o, args) => RemoveConnection(amqpConnectionHolders, o as IAmqpConnectionHolder);
                         amqpConnectionHolders.Add(amqpConnectionHolder);
                         if (Logging.IsEnabled) Logging.Associate(this, amqpConnectionHolder, "amqpConnectionHolders");
                     }
@@ -59,6 +56,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 if (Logging.IsEnabled) Logging.Exit(this, deviceIdentity, $"{nameof(CreateAmqpUnit)}");
                 return new AmqpConnectionHolder(deviceIdentity)
                     .CreateAmqpUnit(deviceIdentity, methodHandler, twinMessageListener, eventListener);
+            }
+        }
+
+        private void RemoveConnection(ISet<IAmqpConnectionHolder> amqpConnectionHolders, IAmqpConnectionHolder amqpConnectionHolder)
+        {
+            lock (Lock)
+            {
+                
+                bool removed = amqpConnectionHolder.GetNumberOfUnits() == 0 && amqpConnectionHolders.Remove(amqpConnectionHolder);
+                if (Logging.IsEnabled) Logging.Info(this, $"Remove ConnectionHolder {amqpConnectionHolder}: {removed}");
             }
         }
 

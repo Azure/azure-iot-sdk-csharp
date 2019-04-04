@@ -217,6 +217,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 Connector?.Dispose();
                 AmqpUnits?.Clear();
                 AmqpAuthenticationRefresher?.Dispose();
+                OnConnectionDisconnected?.Invoke(this, EventArgs.Empty);
             }
 
             _disposed = true;

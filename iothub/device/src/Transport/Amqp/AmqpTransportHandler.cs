@@ -569,5 +569,19 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         }
 
         #endregion
+
+        #region IDispose
+        protected override void Dispose(bool disposing)
+        {
+            if (_disposed) return;
+
+            if (disposing)
+            {
+                _amqpUnit?.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+        #endregion
+
     }
 }
