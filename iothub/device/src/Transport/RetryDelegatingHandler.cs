@@ -620,11 +620,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (_disposed) return;
 
+            base.Dispose(disposing);
             if (disposing)
             {
                 _handleDisconnectCts.Cancel();
             }
-            base.Dispose(disposing);
+
         }
     }
 }
