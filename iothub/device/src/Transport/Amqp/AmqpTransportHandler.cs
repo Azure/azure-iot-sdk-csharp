@@ -575,11 +575,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             if (_disposed) return;
 
+            base.Dispose(disposing);
             if (disposing)
             {
                 _amqpUnit?.Dispose();
             }
-            base.Dispose(disposing);
+
         }
         #endregion
 
