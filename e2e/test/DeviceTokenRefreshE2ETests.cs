@@ -37,8 +37,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             await DeviceClient_TokenIsRefreshed_Internal(Client.TransportType.Http1).ConfigureAwait(false);
         }
 
-        // TODO: #263 - Refactor AMQP token refresh test.
-        [Ignore]
         [TestMethod]
         public async Task DeviceClient_TokenIsRefreshed_Ok_Amqp()
         {
@@ -125,7 +123,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                         // Create the first Token.
                         Console.WriteLine($"[{DateTime.UtcNow}] OpenAsync");
                         await deviceClient.OpenAsync(cts.Token).ConfigureAwait(false);
-                        
+
                         Console.WriteLine($"[{DateTime.UtcNow}] SendEventAsync (1)");
                         await deviceClient.SendEventAsync(message, cts.Token).ConfigureAwait(false);
                         await refresher.WaitForTokenRefreshAsync(cts.Token).ConfigureAwait(false);
@@ -190,7 +188,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             private Stopwatch _stopwatch = new Stopwatch();
             private SemaphoreSlim _tokenRefreshSemaphore = new SemaphoreSlim(0);
             private int _counter;
-                       
+
             public TestTokenRefresher(string deviceId, string key) : base(deviceId)
             {
                 _key = key;
