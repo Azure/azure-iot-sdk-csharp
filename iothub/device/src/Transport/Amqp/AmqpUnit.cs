@@ -121,6 +121,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     OnUnitDisconnected?.Invoke(false, EventArgs.Empty);
                 }
 
+                throw;
             }
             finally
             {

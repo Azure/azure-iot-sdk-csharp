@@ -615,31 +615,20 @@ namespace Microsoft.Azure.Devices.Client
         internal AmqpMessage ToAmqpMessage(bool setBodyCalled = true)
         {
             this.ThrowIfDisposed();
-            if (this.serializedAmqpMessage == null)
+            lock (this.messageLock)
             {
-                lock (this.messageLock)
+                this.SetSizeInBytesCalled();
+                if (this.bodyStream == null)
                 {
-                    if (this.serializedAmqpMessage == null)
-                    {
-                        // Interlocked exchange two variable does allow for a small period 
-                        // where one is set while the other is not. Not sure if it is worth
-                        // correct this gap. The intention of setting this two variable is
-                        // so that GetBody should not be called and all Properties are
-                        // readonly because the amqpMessage has been serialized.
-
-                        this.SetSizeInBytesCalled();
-                        if (this.bodyStream == null)
-                        {
-                            this.serializedAmqpMessage = AmqpMessage.Create();
-                        }
-                        else
-                        {
-                            this.serializedAmqpMessage = AmqpMessage.Create(this.bodyStream, false);
-                            this.SetGetBodyCalled();
-                        }
-                        this.serializedAmqpMessage = this.PopulateAmqpMessageForSend(this.serializedAmqpMessage);
-                    }
+                    this.serializedAmqpMessage = AmqpMessage.Create();
                 }
+                else
+                {
+                    this.serializedAmqpMessage = AmqpMessage.Create(this.bodyStream, false);
+                    if (!this.bodyStream.CanSeek) this.SetGetBodyCalled();
+                }
+
+                this.serializedAmqpMessage = this.PopulateAmqpMessageForSend(this.serializedAmqpMessage);
             }
 
             return this.serializedAmqpMessage;
