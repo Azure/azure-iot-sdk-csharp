@@ -155,8 +155,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
                 string additionalQueryParams = "";
 #if NETSTANDARD1_3
-                            // NETSTANDARD1_3 implementation doesn't set client certs, so we want to tell the IoT Hub to not ask for them
-                            additionalQueryParams = "?iothub-no-client-cert=true";
+                // NETSTANDARD1_3 implementation doesn't set client certs, so we want to tell the IoT Hub to not ask for them
+                additionalQueryParams = "?iothub-no-client-cert=true";
 #endif
                 Uri websocketUri = new Uri(WebSocketConstants.Scheme + AmqpConnectionSettings.HostName + ":" + WebSocketConstants.SecurePort + WebSocketConstants.UriSuffix + additionalQueryParams);
                 // Use Legacy WebSocket if it is running on Windows 7 or older. Windows 7/Windows 2008 R2 is version 6.1
