@@ -74,9 +74,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             return Volatile.Read(ref _isUsable) == 0;
         }
 
-        public void SetNotUsable()
+        public int SetNotUsable()
         {
-            Interlocked.Exchange(ref _isUsable, 1);
+            return Interlocked.Exchange(ref _isUsable, 1);
         }
         #endregion
 
@@ -124,9 +124,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(CloseAsync)}");
 
-            if (_amqpSession != null)
+            if (SetNotUsable() == 0 && _amqpSession != null)
             {
-                SetNotUsable();
                 await _amqpSession.CloseAsync(timeout).ConfigureAwait(false);
                 OnUnitDisconnected?.Invoke(true, EventArgs.Empty);
             }
@@ -490,9 +489,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         public void OnConnectionDisconnected()
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(OnConnectionDisconnected)}");
-            if (IsUsable())
+            if (SetNotUsable() == 0)
             {
-                SetNotUsable();
                 OnUnitDisconnected?.Invoke(false, EventArgs.Empty);
             }
 
@@ -503,9 +501,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             if (Logging.IsEnabled) Logging.Enter(this, o, $"{nameof(OnSessionDisconnected)}");
 
-            if (IsUsable())
+            if (SetNotUsable() == 0)
             {
-                SetNotUsable();
                 OnUnitDisconnected?.Invoke(false, EventArgs.Empty);
             }
 
@@ -516,9 +513,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             if (Logging.IsEnabled) Logging.Enter(this, o, $"{nameof(OnLinkDisconnected)}");
 
-            if (IsUsable())
+            if (SetNotUsable() == 0)
             {
-                SetNotUsable();
                 OnUnitDisconnected?.Invoke(false, EventArgs.Empty);
             }
 
@@ -541,6 +537,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             if (disposing)
             {
                 if (Logging.IsEnabled) Logging.Enter(this, disposing, $"{nameof(Dispose)}");
+                if (SetNotUsable() == 0)
+                {
+                    OnUnitDisconnected?.Invoke(false, EventArgs.Empty);
+                }
                 _amqpSession?.Abort();
                 if (Logging.IsEnabled) Logging.Exit(this, disposing, $"{nameof(Dispose)}");
             }
