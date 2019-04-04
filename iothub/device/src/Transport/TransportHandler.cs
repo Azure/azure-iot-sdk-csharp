@@ -32,12 +32,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (_disposed) return;
 
+            base.Dispose(disposing);
             if (disposing)
             {
                 OnTransportClosedGracefully();
             }
 
-            base.Dispose(disposing);
         }
 
         protected void OnTransportClosedGracefully()

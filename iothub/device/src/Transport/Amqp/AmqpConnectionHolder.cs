@@ -182,7 +182,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             if (Logging.IsEnabled) Logging.Enter(this, deviceIdentity, $"{nameof(RemoveDevice)}");
             bool removed = AmqpUnits.Remove(deviceIdentity);
-            if (removed && AmqpUnits.Count == 0)
+            if (removed && GetNumberOfUnits() == 0)
             {
                 // TODO #887: handle gracefulDisconnect
                 Shutdown();
