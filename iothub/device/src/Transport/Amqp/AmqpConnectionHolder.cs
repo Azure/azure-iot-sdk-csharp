@@ -140,7 +140,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 }
                 else if (AmqpConnection.IsClosing())
                 {
-                    throw new IotHubCommunicationException();
+                    throw new IotHubCommunicationException("AMQP connection is closing.");
                 }
                 else
                 {
