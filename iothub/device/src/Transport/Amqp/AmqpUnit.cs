@@ -541,6 +541,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 {
                     OnUnitDisconnected?.Invoke(false, EventArgs.Empty);
                 }
+
                 _amqpSession?.Abort();
                 if (Logging.IsEnabled) Logging.Exit(this, disposing, $"{nameof(Dispose)}");
             }
