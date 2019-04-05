@@ -120,16 +120,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         protected override void Dispose(bool disposing)
         {
-            try
+            if (_disposed) return;
+
+            base.Dispose(disposing);
+            if (disposing)
             {
-                if (disposing)
-                {
-                    this.httpClientHelper?.Dispose();
-                }
-            }
-            finally
-            {
-                base.Dispose(disposing);
+                this.httpClientHelper?.Dispose();
             }
         }
 
