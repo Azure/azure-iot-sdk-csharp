@@ -241,12 +241,12 @@ namespace Microsoft.Azure.Devices.Client
                 else if (part.IndexOf("DeviceId") > -1)
                 {
                     // DeviceId
-                    this.DeviceId = WebUtility.UrlDecode(values[1]);
+                    this.DeviceId = WebUtility.UrlEncode(values[1]);
                 }
                 else if (part.IndexOf("ModuleId") > -1)
                 {
                     // ModuleId
-                    this.ModuleId = WebUtility.UrlDecode(values[1]);
+                    this.ModuleId = WebUtility.UrlEncode(values[1]);
                 }
                 else if (part.IndexOf("SharedAccessKeyName") > -1)
                 {
@@ -276,8 +276,8 @@ namespace Microsoft.Azure.Devices.Client
             IDictionary<string, string> map = iotHubConnectionString.ToDictionary(ValuePairDelimiter, ValuePairSeparator);
 
             this.HostName = GetConnectionStringValue(map, HostNamePropertyName);
-            this.DeviceId = WebUtility.UrlDecode(GetConnectionStringOptionalValue(map, DeviceIdPropertyName));
-            this.ModuleId = WebUtility.UrlDecode(GetConnectionStringOptionalValue(map, ModuleIdPropertyName));
+            this.DeviceId = WebUtility.UrlEncode(GetConnectionStringOptionalValue(map, DeviceIdPropertyName));
+            this.ModuleId = WebUtility.UrlEncode(GetConnectionStringOptionalValue(map, ModuleIdPropertyName));
             this.SharedAccessKeyName = GetConnectionStringOptionalValue(map, SharedAccessKeyNamePropertyName);
             this.SharedAccessKey = GetConnectionStringOptionalValue(map, SharedAccessKeyPropertyName);
             this.SharedAccessSignature = GetConnectionStringOptionalValue(map, SharedAccessSignaturePropertyName);

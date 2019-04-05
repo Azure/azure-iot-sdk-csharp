@@ -35,8 +35,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             protected set
             {
-                if (Logging.IsEnabled) Logging.Associate(this, _innerHandler, nameof(InnerHandler));
                 _innerHandler = value;
+                if (Logging.IsEnabled) Logging.Associate(this, _innerHandler, nameof(InnerHandler));
             }
         }
 
@@ -162,6 +162,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             ThrowIfDisposed();
             return InnerHandler?.DisableEventReceiveAsync(cancellationToken) ?? TaskHelpers.CompletedTask;
         }
+
+        public virtual bool IsUsable => InnerHandler?.IsUsable ?? true;
 
         protected void ThrowIfDisposed()
         {

@@ -33,6 +33,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         private readonly TestLogging _log = TestLogging.GetInstance();
         private readonly ConsoleEventListener _listener;
 
+        private static readonly string IdPrefix = $"e2e-{nameof(ProvisioningServiceClientE2ETests).ToLower()}-";
+
         public ProvisioningServiceClientE2ETests()
         {
             _listener = TestConfig.StartEventListener();
@@ -164,7 +166,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         public static async Task ProvisioningServiceClient_GroupEnrollments_Create_Ok(string proxyServerAddress, AttestationType attestationType, ReprovisionPolicy reprovisionPolicy, AllocationPolicy allocationPolicy, CustomAllocationDefinition customAllocationDefinition, ICollection<string> iothubs)
         {
-            string groupId = "some-valid-group-id-" + attestationTypeToString(attestationType) + "-" + Guid.NewGuid();
+            string groupId = IdPrefix + AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
             using (ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService(proxyServerAddress))
             {
                 EnrollmentGroup enrollmentGroup = await CreateEnrollmentGroup(provisioningServiceClient, attestationType, groupId, reprovisionPolicy, allocationPolicy, customAllocationDefinition, iothubs).ConfigureAwait(false);
@@ -191,7 +193,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         public static async Task<IndividualEnrollment> CreateIndividualEnrollment(ProvisioningServiceClient provisioningServiceClient, AttestationType attestationType, ReprovisionPolicy reprovisionPolicy, AllocationPolicy allocationPolicy, CustomAllocationDefinition customAllocationDefinition, ICollection<string> iotHubsToProvisionTo)
         {
-            string registrationId = attestationTypeToString(attestationType) + "-registration-id-" + Guid.NewGuid();
+            string registrationId = AttestationTypeToString(attestationType) + "-registration-id-" + Guid.NewGuid();
             Attestation attestation;
             IndividualEnrollment individualEnrollment;
             switch (attestationType)
@@ -289,7 +291,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         /// <summary>
         /// Returns the registrationId compliant name for the provided attestation type
         /// </summary>
-        public static string attestationTypeToString(AttestationType attestationType)
+        public static string AttestationTypeToString(AttestationType attestationType)
         {
             switch (attestationType)
             {
