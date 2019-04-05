@@ -226,7 +226,7 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
         [TestMethod]
         public void DeviceClientIotHubConnectionStringBuilderTest()
         {
-            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=device1;SharedAccessKey=dGVzdFN0cmluZzE=";
+            string connectionString = "HostName=acme.azure-devices.net;SharedAccessKeyName=AllAccessKey;DeviceId=device1-.+%_#*?!(),=@$';SharedAccessKey=dGVzdFN0cmluZzE=";
             var iotHubConnectionStringBuilder = IotHubConnectionStringBuilder.Create(connectionString);
             Assert.IsNotNull(iotHubConnectionStringBuilder.HostName);
             Assert.IsNotNull(iotHubConnectionStringBuilder.DeviceId);
@@ -290,11 +290,11 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
             }
 
             iotHubConnectionStringBuilder.HostName = "acme.azure-devices.net";
-            iotHubConnectionStringBuilder.AuthenticationMethod = new DeviceAuthenticationWithRegistrySymmetricKey("Device1", "dGVzdFN0cmluZzE=");
+            iotHubConnectionStringBuilder.AuthenticationMethod = new DeviceAuthenticationWithRegistrySymmetricKey("Device1-.+%_#*?!(),=@$'", "dGVzdFN0cmluZzE=");
             Assert.IsTrue(iotHubConnectionStringBuilder.AuthenticationMethod is DeviceAuthenticationWithRegistrySymmetricKey);
             Assert.IsTrue(iotHubConnectionStringBuilder.SharedAccessSignature == null);
             Assert.IsTrue(iotHubConnectionStringBuilder.SharedAccessKey == "dGVzdFN0cmluZzE=");
-            Assert.IsTrue(iotHubConnectionStringBuilder.DeviceId=="Device1");
+            Assert.IsTrue(iotHubConnectionStringBuilder.DeviceId== "Device1-.+%_#*?!(),=@$'");
 
             iotHubConnectionStringBuilder.AuthenticationMethod = new DeviceAuthenticationWithToken("Device2", "SharedAccessSignature sr=dh%3a%2f%2facme.azure-devices.net&sig=dGVzdFN0cmluZzU=&se=87824124985&skn=AllAccessKey");
             Assert.IsTrue(iotHubConnectionStringBuilder.AuthenticationMethod is DeviceAuthenticationWithToken);
@@ -338,24 +338,24 @@ namespace Microsoft.Azure.Devices.Client.Test.ConnectionString
             Assert.IsTrue(iotHubConnectionStringBuilder.SharedAccessKey == null);
             Assert.IsTrue(iotHubConnectionStringBuilder.DeviceId == "Device2");
 
-            authMethod = new DeviceAuthenticationWithRegistrySymmetricKey("Device1", "dGVzdFN0cmluZzE=");
+            authMethod = new DeviceAuthenticationWithRegistrySymmetricKey("Device1-.+%_#*?!(),=@$'", "dGVzdFN0cmluZzE=");
             iotHubConnectionStringBuilder = IotHubConnectionStringBuilder.Create("acme4.azure-devices.net", authMethod);
             Assert.IsTrue(iotHubConnectionStringBuilder.AuthenticationMethod is DeviceAuthenticationWithRegistrySymmetricKey);
             Assert.IsTrue(iotHubConnectionStringBuilder.HostName == "acme4.azure-devices.net");
             Assert.IsTrue(iotHubConnectionStringBuilder.SharedAccessSignature == null);
             Assert.IsTrue(iotHubConnectionStringBuilder.SharedAccessKey == "dGVzdFN0cmluZzE=");
-            Assert.IsTrue(iotHubConnectionStringBuilder.DeviceId == "Device1");
+            Assert.IsTrue(iotHubConnectionStringBuilder.DeviceId == "Device1-.+%_#*?!(),=@$'");
 
             string hostName = "acme.azure-devices.net";
             string gatewayHostname = "gateway.acme.azure-devices.net";
-            IAuthenticationMethod authenticationMethod = new DeviceAuthenticationWithRegistrySymmetricKey("Device1", "dGVzdFN0cmluZzE=");
+            IAuthenticationMethod authenticationMethod = new DeviceAuthenticationWithRegistrySymmetricKey("Device1-.+%_#*?!(),=@$'", "dGVzdFN0cmluZzE=");
             iotHubConnectionStringBuilder = IotHubConnectionStringBuilder.Create(hostName, gatewayHostname, authenticationMethod);
             Assert.AreEqual(gatewayHostname, iotHubConnectionStringBuilder.GatewayHostName);
             Assert.AreEqual(hostName, iotHubConnectionStringBuilder.HostName);
             Assert.IsTrue(iotHubConnectionStringBuilder.AuthenticationMethod is DeviceAuthenticationWithRegistrySymmetricKey);
 
             hostName = "acme.azure-devices.net";
-            authenticationMethod = new DeviceAuthenticationWithRegistrySymmetricKey("Device1", "dGVzdFN0cmluZzE=");
+            authenticationMethod = new DeviceAuthenticationWithRegistrySymmetricKey("Device1-.+%_#*?!(),=@$'", "dGVzdFN0cmluZzE=");
             iotHubConnectionStringBuilder = IotHubConnectionStringBuilder.Create(hostName, authenticationMethod);
             Assert.AreEqual(hostName, iotHubConnectionStringBuilder.HostName);
             Assert.IsTrue(iotHubConnectionStringBuilder.AuthenticationMethod is DeviceAuthenticationWithRegistrySymmetricKey);

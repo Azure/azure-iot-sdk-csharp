@@ -255,6 +255,8 @@ phases:
     displayName: 'Run MpCmdRun.exe'
     inputs:
       EnableServices: true
+      SignatureFreshness: OneDay
+
 
 
   - task: securedevelopmentteam.vss-secure-development-tools.build-task-autoapplicability.AutoApplicability@1
