@@ -529,7 +529,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService(ProxyServerAddress);
             string groupId = IdPrefix + AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
 
-            CustomAllocationDefinition customAllocationDefinition = new CustomAllocationDefinition() { WebhookUrl = Configuration.Provisioning.CustomAllocationPolicyWebhook, ApiVersion = "2018-11-01" };
+            CustomAllocationDefinition customAllocationDefinition = new CustomAllocationDefinition() { WebhookUrl = Configuration.Provisioning.CustomAllocationPolicyWebhook, ApiVersion = "2019-03-31" };
 
             using (ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportProtocol))
             using (SecurityProvider security = await CreateSecurityProviderFromName(attestationType, enrollmentType, groupId, null, AllocationPolicy.Custom, customAllocationDefinition, iotHubsToProvisionTo).ConfigureAwait(false))
