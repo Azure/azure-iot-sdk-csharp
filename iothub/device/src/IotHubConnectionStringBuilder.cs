@@ -24,10 +24,6 @@ namespace Microsoft.Azure.Devices.Client
         private const char ValuePairDelimiter = ';';
         private const char ValuePairSeparator = '=';
         private const string HostNameSeparator = ".";
-
-#if !NETMF
-        private const RegexOptions regexOptions = RegexOptions.Compiled | RegexOptions.IgnoreCase;
-        private static readonly TimeSpan regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
         private const string HostNamePropertyName = "HostName";
         private const string DeviceIdPropertyName = "DeviceId";
         private const string ModuleIdPropertyName = "ModuleId";
@@ -35,6 +31,10 @@ namespace Microsoft.Azure.Devices.Client
         private const string SharedAccessKeyPropertyName = "SharedAccessKey";
         private const string SharedAccessSignaturePropertyName = "SharedAccessSignature";
         private const string GatewayHostNamePropertyName = "GatewayHostName";
+
+#if !NETMF
+        private const RegexOptions regexOptions = RegexOptions.Compiled | RegexOptions.IgnoreCase;
+        private static readonly TimeSpan regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
         private const string X509CertPropertyName =  "X509Cert";
         private static readonly Regex HostNameRegex = new Regex(@"[a-zA-Z0-9_\-\.]+$", regexOptions, regexTimeoutMilliseconds);
         private static readonly Regex IdNameRegex = new Regex(@"^[A-Za-z0-9\-:.+%_#*?!(),=@;$']{1,128}$", regexOptions, regexTimeoutMilliseconds);
@@ -202,8 +202,8 @@ namespace Microsoft.Azure.Devices.Client
 
             StringBuilder stringBuilder = new StringBuilder();
             stringBuilder.AppendKeyValuePairIfNotEmpty(HostNamePropertyName, this.HostName);
-            stringBuilder.AppendKeyValuePairIfNotEmpty(DeviceIdPropertyName, WebUtility.UrlEncode(this.DeviceId));
-            stringBuilder.AppendKeyValuePairIfNotEmpty(ModuleIdPropertyName, WebUtility.UrlEncode(this.ModuleId));
+            stringBuilder.AppendKeyValuePairIfNotEmpty(DeviceIdPropertyName, this.DeviceId);
+            stringBuilder.AppendKeyValuePairIfNotEmpty(ModuleIdPropertyName, this.ModuleId);
             stringBuilder.AppendKeyValuePairIfNotEmpty(SharedAccessKeyNamePropertyName, this.SharedAccessKeyName);
             stringBuilder.AppendKeyValuePairIfNotEmpty(SharedAccessKeyPropertyName, this.SharedAccessKey);
             stringBuilder.AppendKeyValuePairIfNotEmpty(SharedAccessSignaturePropertyName, this.SharedAccessSignature);
@@ -227,57 +227,58 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             string[] parts = iotHubConnectionString.Split(ValuePairDelimiter);
-            string[] values;
-
+            
             foreach (string part in parts)
             {
-                values = part.Split(ValuePairSeparator);
+                string[] pair = part.Split(new char[] { ValuePairSeparator }, 2);
 
-                if (part.IndexOf("HostName") > -1)
+                if (pair.Length > 1)
                 {
-                    // Host Name
-                    this.HostName = values[1];
+                    if (string.Equals(pair[0].ToLower(), HostNamePropertyName.ToLower()))
+                    {
+                        // Host Name
+                        this.HostName = pair[1];
+                    }
+                    else if (string.Equals(pair[0].ToLower(), DeviceIdPropertyName.ToLower()))
+                    {
+                        // DeviceId
+                        this.DeviceId = pair[1];
+                    }
+                    else if (string.Equals(pair[0].ToLower(), ModuleIdPropertyName.ToLower()))
+                    {
+                        // ModuleId
+                        this.ModuleId = pair[1];
+                    }
+                    else if (string.Equals(pair[0].ToLower(), SharedAccessKeyNamePropertyName.ToLower()))
+                    {
+                        // Shared Access Key Name 
+                        this.SharedAccessKeyName = pair[1];
+                    }
+                    else if (string.Equals(pair[0].ToLower(), SharedAccessKeyPropertyName.ToLower()))
+                    {
+                        // Shared Access Key
+                        // need to handle this differently because shared access key may have special chars such as '=' which break the string split
+                        this.SharedAccessKey = pair[1];
+                    }
+                    else if (string.Equals(pair[0].ToLower(), SharedAccessSignaturePropertyName.ToLower()))
+                    {
+                        // Shared Access Signature
+                        // need to handle this differently because shared access key may have special chars such as '=' which break the string split
+                        this.SharedAccessSignature = pair[1];
+                    }
+                    else if (string.Equals(pair[0].ToLower(), GatewayHostNamePropertyName.ToLower()))
+                    {
+                        // Gateway host name
+                        this.GatewayHostName = pair[1];
+                    }
                 }
-                else if (part.IndexOf("DeviceId") > -1)
-                {
-                    // DeviceId
-                    this.DeviceId = WebUtility.UrlEncode(values[1]);
-                }
-                else if (part.IndexOf("ModuleId") > -1)
-                {
-                    // ModuleId
-                    this.ModuleId = WebUtility.UrlEncode(values[1]);
-                }
-                else if (part.IndexOf("SharedAccessKeyName") > -1)
-                {
-                    // Shared Access Key Name 
-                    this.SharedAccessKeyName = values[1];
-                }
-                else if (part.IndexOf("SharedAccessKey") > -1)
-                {
-                    // Shared Access Key
-                    // need to handle this differently because shared access key may have special chars such as '=' which break the string split
-                    this.SharedAccessKey = part.Substring(part.IndexOf('=') + 1);
-                }
-                else if (part.IndexOf("SharedAccessSignature") > -1)
-                {
-                    // Shared Access Signature
-                    // need to handle this differently because shared access key may have special chars such as '=' which break the string split
-                    this.SharedAccessSignature = part.Substring(part.IndexOf('=') + 1);
-                }
-                else if (part.IndexOf("GatewayHostName") > -1)
-                {
-                    // Gateway host name
-                    this.GatewayHostName = values[1];
-                }
-
             }
 #else
             IDictionary<string, string> map = iotHubConnectionString.ToDictionary(ValuePairDelimiter, ValuePairSeparator);
 
             this.HostName = GetConnectionStringValue(map, HostNamePropertyName);
-            this.DeviceId = WebUtility.UrlEncode(GetConnectionStringOptionalValue(map, DeviceIdPropertyName));
-            this.ModuleId = WebUtility.UrlEncode(GetConnectionStringOptionalValue(map, ModuleIdPropertyName));
+            this.DeviceId = GetConnectionStringOptionalValue(map, DeviceIdPropertyName);
+            this.ModuleId = GetConnectionStringOptionalValue(map, ModuleIdPropertyName);
             this.SharedAccessKeyName = GetConnectionStringOptionalValue(map, SharedAccessKeyNamePropertyName);
             this.SharedAccessKey = GetConnectionStringOptionalValue(map, SharedAccessKeyPropertyName);
             this.SharedAccessSignature = GetConnectionStringOptionalValue(map, SharedAccessSignaturePropertyName);
