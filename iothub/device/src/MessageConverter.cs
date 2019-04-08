@@ -222,10 +222,6 @@ namespace Microsoft.Azure.Devices.Client
         public static bool TryGetAmqpObjectFromNetObject(object netObject, MappingType mappingType, out object amqpObject)
         {
             amqpObject = null;
-            if (netObject == null)
-            {
-                return false;
-            }
 
             switch (SerializationUtilities.GetTypeId(netObject))
             {
@@ -288,6 +284,9 @@ namespace Microsoft.Azure.Devices.Client
                         amqpObject = new AmqpMap((IDictionary)netObject);
                     }
                     break;
+                case PropertyValueType.Null:
+                    amqpObject = string.Empty;
+                    break;
                 default:
                     break;
             }
@@ -298,10 +297,6 @@ namespace Microsoft.Azure.Devices.Client
         public static bool TryGetNetObjectFromAmqpObject(object amqpObject, MappingType mappingType, out object netObject)
         {
             netObject = null;
-            if (amqpObject == null)
-            {
-                return false;
-            }
 
             switch (SerializationUtilities.GetTypeId(amqpObject))
             {
@@ -381,6 +376,9 @@ namespace Microsoft.Azure.Devices.Client
                     {
                         netObject = amqpObject;
                     }
+                    break;
+                case PropertyValueType.Null:
+                    netObject = string.Empty;
                     break;
                 default:
                     break;

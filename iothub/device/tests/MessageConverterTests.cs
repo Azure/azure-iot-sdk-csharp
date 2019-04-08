@@ -44,6 +44,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             
                 amqpMessage.ApplicationProperties.Map["Prop1"] = "Value1";
                 amqpMessage.ApplicationProperties.Map["Prop2"] = "Value2";
+                amqpMessage.ApplicationProperties.Map["Prop3"] = null;
 
                 var message = new Message(bytes);
 
@@ -64,6 +65,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             
                 Assert.AreEqual("Value1", message.Properties["Prop1"]);
                 Assert.AreEqual("Value2", message.Properties["Prop2"]);
+                Assert.AreEqual(string.Empty, message.Properties["Prop3"]);
             }
         }
     }

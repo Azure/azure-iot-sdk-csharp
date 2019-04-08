@@ -91,7 +91,7 @@ namespace Microsoft.Azure.Devices
                     if (TryGetNetObjectFromAmqpObject(pair.Value, MappingType.ApplicationProperty, out netObject))
                     {
                         var stringObject = netObject as string;
-                        
+
                         if (stringObject != null)
                         {
                             switch (pair.Key.ToString())
@@ -115,7 +115,7 @@ namespace Microsoft.Azure.Devices
                             // TODO: RDBug 4093369 Handling of non-string property values in Amqp messages
                             // Drop non-string properties and log an error
                             Fx.Exception.TraceHandled(new InvalidDataException("IotHub does not accept non-string Amqp properties"), "MessageConverter.UpdateMessageHeaderAndProperties");
-                        }                        
+                        }
                     }
                 }
             }
@@ -195,10 +195,6 @@ namespace Microsoft.Azure.Devices
         public static bool TryGetAmqpObjectFromNetObject(object netObject, MappingType mappingType, out object amqpObject)
         {
             amqpObject = null;
-            if (netObject == null)
-            {
-                return false;
-            }
 
             switch (SerializationUtilities.GetTypeId(netObject))
             {
@@ -261,6 +257,9 @@ namespace Microsoft.Azure.Devices
                         amqpObject = new AmqpMap((IDictionary)netObject);
                     }
                     break;
+                case PropertyValueType.Null:
+                    amqpObject = string.Empty;
+                    break;
                 default:
                     break;
             }
@@ -271,10 +270,6 @@ namespace Microsoft.Azure.Devices
         public static bool TryGetNetObjectFromAmqpObject(object amqpObject, MappingType mappingType, out object netObject)
         {
             netObject = null;
-            if (amqpObject == null)
-            {
-                return false;
-            }
 
             switch (SerializationUtilities.GetTypeId(amqpObject))
             {
@@ -354,6 +349,9 @@ namespace Microsoft.Azure.Devices
                     {
                         netObject = amqpObject;
                     }
+                    break;
+                case PropertyValueType.Null:
+                    netObject = string.Empty;
                     break;
                 default:
                     break;
