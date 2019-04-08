@@ -238,7 +238,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     await deviceClient.CloseAsync().ConfigureAwait(false);
 
                     // The connection status change count should be 2: connect (open) and disabled (close)
-                    Assert.IsTrue(deviceClientConnectionStatusChangeCount[deviceClient] == 2);
+                    Assert.IsTrue(deviceClientConnectionStatusChangeCount[deviceClient] == 2, $"Connection status change count for deviceClient {TestLogging.GetHashCode(deviceClient)} is {deviceClientConnectionStatusChangeCount[deviceClient]}");
 
                     _log.WriteLine($"{nameof(MessageSendE2EMultiplexingTests)}: Disposing deviceClient {TestLogging.GetHashCode(deviceClient)}");
                     deviceClient.Dispose();
@@ -306,7 +306,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     await moduleClient.CloseAsync().ConfigureAwait(false);
 
                     // The connection status change count should be 2: connect (open) and disabled (close)
-                    Assert.IsTrue(moduleClientConnectionStatusChangeCount[moduleClient] == 2);
+                    Assert.IsTrue(moduleClientConnectionStatusChangeCount[moduleClient] == 2, $"Connection status change count for deviceClient {TestLogging.GetHashCode(moduleClient)} is {moduleClientConnectionStatusChangeCount[moduleClient]}");
 
                     _log.WriteLine($"{nameof(MessageSendE2EMultiplexingTests)}: Disposing moduleClient {TestLogging.GetHashCode(moduleClient)}");
                     moduleClient.Dispose();
