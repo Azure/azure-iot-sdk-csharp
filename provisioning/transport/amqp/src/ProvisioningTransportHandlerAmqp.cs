@@ -179,7 +179,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             AmqpClientConnection client,
             string correlationId)
         {
-            var amqpMessage = AmqpMessage.Create(new AmqpValue() { Value = DeviceOperations.Register });
+            var amqpMessage = AmqpMessage.Create(new MemoryStream(), true);
             amqpMessage.Properties.CorrelationId = correlationId;
             amqpMessage.ApplicationProperties.Map[MessageApplicationPropertyNames.OperationType] =
                 DeviceOperations.Register;
