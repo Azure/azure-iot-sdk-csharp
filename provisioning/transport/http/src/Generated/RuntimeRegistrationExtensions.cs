@@ -64,7 +64,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             using (var _result = await operations.OperationStatusLookupWithHttpMessagesAsync(
                                                         registrationId, 
                                                         operationId, 
-                                                        idScope, 
+                                                        idScope,
                                                         null, 
                                                         cancellationToken).ConfigureAwait(false))
             {
@@ -86,7 +86,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// <param name='deviceRegistration'>
         /// Device registration
         /// </param>
-        public static Models.DeviceRegistrationResult DeviceRegistrationStatusLookup(
+        public static DeviceRegistrationResult DeviceRegistrationStatusLookup(
             this IRuntimeRegistration operations, 
             string registrationId, 
             string idScope, 
@@ -112,7 +112,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// <param name='cancellationToken'>
         /// The cancellation token.
         /// </param>
-        public static async Task<Models.DeviceRegistrationResult> DeviceRegistrationStatusLookupAsync(
+        public static async Task<DeviceRegistrationResult> DeviceRegistrationStatusLookupAsync(
             this IRuntimeRegistration operations, 
             string registrationId, 
             string idScope, 

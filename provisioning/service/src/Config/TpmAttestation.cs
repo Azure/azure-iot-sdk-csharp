@@ -56,12 +56,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             }
             private set
             {
-                if (string.IsNullOrWhiteSpace(value))
-                {
-                    /* SRS_TPM_ATTESTATION_21_001: [The EndorsementKey setter shall throws ArgumentNullException if the provided 
-                                                endorsementKey is null or white space.] */
-                    throw new ArgumentNullException(nameof(value));
-                }
+                /* SRS_TPM_ATTESTATION_21_001: [The EndorsementKey setter shall throws ArgumentException if the provided 
+                                                endorsementKey is null or invalid.] */
+                ParserUtils.EnsureBase64String(value);
                 _endorsementKey = value;
             }
         }
@@ -79,7 +76,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             }
             private set
             {
-                /* SRS_TPM_ATTESTATION_21_002: [The StorageRootKey setter shall store the storageRootKey passed.] */
+                /* SRS_TPM_ATTESTATION_21_002: [The StorageRootKey setter shall throws ArgumentException if the provided 
+                                                storageRootKey is not null but invalid.] */
+                if (value != null)
+                {
+                    ParserUtils.EnsureBase64String(value);
+                }
                 _storageRootKey = value;
             }
         }

@@ -97,15 +97,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 await authStrategy.OpenConnectionAsync(connection, TimeoutConstant, useWebSocket, Proxy).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await CreateLinksAsync(
-                    connection,
-                    linkEndpoint,
-                    message.ProductInfo).ConfigureAwait(false);
+                await CreateLinksAsync(connection, linkEndpoint, message.ProductInfo, ClientApiVersionHelper.January2019ApiVersion).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
 
                 string correlationId = Guid.NewGuid().ToString();
-                RegistrationOperationStatus operation =
-                    await RegisterDeviceAsync(connection, correlationId).ConfigureAwait(false);
+                DeviceRegistration deviceRegistration = message.Data != null ? new DeviceRegistration { Data = message.Data } : null;
+
+                RegistrationOperationStatus operation = await RegisterDeviceAsync(connection, correlationId, deviceRegistration).ConfigureAwait(false);
 
                 // Poll with operationId until registration complete.
                 int attempts = 0;
@@ -138,7 +136,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
                 await connection.CloseAsync(TimeoutConstant).ConfigureAwait(false);
 
-                return ConvertToProvisioningRegistrationResult(operation.RegistrationState);
+                return DeviceRegistrationResultConvertor.ConvertToProvisioningRegistrationResult(operation.RegistrationState);
             }
             catch (Exception ex) when (!(ex is ProvisioningTransportException))
             {
@@ -155,7 +153,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             }
         }
 
-        private static async Task CreateLinksAsync(AmqpClientConnection connection, string linkEndpoint, string productInfo)
+        private static async Task CreateLinksAsync(AmqpClientConnection connection, string linkEndpoint, string productInfo, string apiVersion)
         {
             var amqpDeviceSession = connection.CreateSession();
             await amqpDeviceSession.OpenAsync(TimeoutConstant).ConfigureAwait(false);
@@ -163,23 +161,33 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             var amqpReceivingLink = amqpDeviceSession.CreateReceivingLink(linkEndpoint);
 
             amqpReceivingLink.AddClientVersion(productInfo);
-            amqpReceivingLink.AddApiVersion(ClientApiVersionHelper.ApiVersion);
+            amqpReceivingLink.AddApiVersion(apiVersion);
 
             await amqpReceivingLink.OpenAsync(TimeoutConstant).ConfigureAwait(false);
 
             var amqpSendingLink = amqpDeviceSession.CreateSendingLink(linkEndpoint);
 
             amqpSendingLink.AddClientVersion(productInfo);
-            amqpSendingLink.AddApiVersion(ClientApiVersionHelper.ApiVersion);
+            amqpSendingLink.AddApiVersion(apiVersion);
 
             await amqpSendingLink.OpenAsync(TimeoutConstant).ConfigureAwait(false);
         }
 
         private async Task<RegistrationOperationStatus> RegisterDeviceAsync(
             AmqpClientConnection client,
-            string correlationId)
+            string correlationId,
+            DeviceRegistration deviceRegistration)
         {
-            var amqpMessage = AmqpMessage.Create(new AmqpValue() { Value = DeviceOperations.Register });
+            AmqpMessage amqpMessage;
+            if (deviceRegistration == null)
+            {
+                amqpMessage = AmqpMessage.Create(new MemoryStream(), true);
+            }
+            else
+            {
+                var customContentStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(deviceRegistration)));
+                amqpMessage = AmqpMessage.Create(customContentStream, true);
+            }
             amqpMessage.Properties.CorrelationId = correlationId;
             amqpMessage.ApplicationProperties.Map[MessageApplicationPropertyNames.OperationType] =
                 DeviceOperations.Register;
@@ -218,29 +226,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             return JsonConvert.DeserializeObject<RegistrationOperationStatus>(jsonResponse);
         }
 
-        private static DeviceRegistrationResult ConvertToProvisioningRegistrationResult(
-            Models.DeviceRegistrationResult result)
-        {
-            var status = ProvisioningRegistrationStatusType.Failed;
-            Enum.TryParse(result.Status, true, out status);
-
-            var substatus = ProvisioningRegistrationSubstatusType.InitialAssignment;
-            Enum.TryParse(result.Substatus, true, out substatus);
-
-            return new DeviceRegistrationResult(
-                result.RegistrationId,
-                result.CreatedDateTimeUtc,
-                result.AssignedHub,
-                result.DeviceId,
-                status,
-                substatus,
-                result.GenerationId,
-                result.LastUpdatedDateTimeUtc,
-                result.ErrorCode == null ? 0 : (int)result.ErrorCode,
-                result.ErrorMessage,
-                result.Etag);
-        }
-
         private void ValidateOutcome(Outcome outcome)
         {
             if (outcome is Rejected rejected)
@@ -251,10 +236,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     int statusCode = errorDetails.ErrorCode / 1000;
                     bool isTransient = statusCode >= (int)HttpStatusCode.InternalServerError || statusCode == 429;
                     throw new ProvisioningTransportException(
-                        rejected.Error.Description,
+                        errorDetails.CreateDetails("AMQP transport exception: service error."),
                         null,
                         isTransient,
-                        errorDetails);
+                        errorDetails.TrackingId);
                 }
                 catch (JsonException ex)
                 {

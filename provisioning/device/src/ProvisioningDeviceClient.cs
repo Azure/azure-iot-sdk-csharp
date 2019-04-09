@@ -67,24 +67,29 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <summary>
         /// Registers the current device using the Device Provisioning Service and assigns it to an IoT Hub.
         /// </summary>
+        /// <param name="data">The custom content.</param>
         /// <returns>The registration result.</returns>
-        public Task<DeviceRegistrationResult> RegisterAsync()
+        public Task<DeviceRegistrationResult> RegisterAsync(byte[] data)
         {
-            return RegisterAsync(CancellationToken.None);
+            return RegisterAsync(data, CancellationToken.None);
         }
 
         /// <summary>
         /// Registers the current device using the Device Provisioning Service and assigns it to an IoT Hub.
         /// </summary>
+        /// <param name="data">The custom content.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The registration result.</returns>
-        public Task<DeviceRegistrationResult> RegisterAsync(CancellationToken cancellationToken)
+        public Task<DeviceRegistrationResult> RegisterAsync(byte[] data, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled) Logging.RegisterAsync(this, _globalDeviceEndpoint, _idScope, _transport, _security);
 
-            var request = new ProvisioningTransportRegisterMessage(_globalDeviceEndpoint, _idScope, _security);
-            request.ProductInfo = ProductInfo;
+            var request = new ProvisioningTransportRegisterMessage(_globalDeviceEndpoint, _idScope, _security, data)
+            {
+                ProductInfo = ProductInfo
+            };
             return _transport.RegisterAsync(request, cancellationToken);
         }
+
     }
 }

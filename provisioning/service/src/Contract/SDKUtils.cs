@@ -5,7 +5,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 {
     internal class SDKUtils
     {
-        private const string ApiVersionProvisioning = "2018-11-01";
-        public const string ApiVersionQueryString = CustomHeaderConstants.ApiVersion + "=" + ApiVersionProvisioning;
+        // TODO - Since there are breaking changes on Attestation and other data contracts in 2019-01-15 version, can't update to the latest api version until all these changes applied on.
+        private const string ApiVersionProvisioningPreview = "2019-02-15-preview";
+        public const string ApiVersionQueryString = CustomHeaderConstants.ApiVersion + "=" + ApiVersionProvisioningPreview;
     }
 }

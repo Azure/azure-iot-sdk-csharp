@@ -5,7 +5,6 @@ using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 
 namespace Microsoft.Azure.Devices.Provisioning.Service.Test
 {
@@ -199,11 +198,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             Assert.IsTrue(attestationMechanism.GetAttestation() is X509Attestation);
         }
 
+        /* SRS_ATTESTATION_MECHANISM_21_017: [The constructor shall throw ProvisioningServiceClientException if the provided 
+                                            AttestationMechanismType is not `TPM` or `x509`.] */
         [TestMethod]
-        public void AttestationMechanismConstructorJSONSucceedOnNoneType()
+        public void AttestationMechanismConstructorJSONThrowsOnNoneType()
         {
             // arrange
-            string typeNoneJson =
+            string invalidJsonMissingEtag =
             "{\n" +
             "   \"type\":\"none\",\n" +
             "   \"tpm\":{\n" +
@@ -212,36 +213,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             "}";
 
             // act - assert
-            Assert.IsNotNull(JsonConvert.DeserializeObject<AttestationMechanism>(typeNoneJson));
+            TestAssert.Throws<ProvisioningServiceClientException>(() => JsonConvert.DeserializeObject<AttestationMechanism>(invalidJsonMissingEtag));
         }
 
-        [TestMethod]
-        public void AttestationMechanismConstructorJSONSucceedOnSymmetricKeyType()
-        {
-            // arrange
-            string samplePrimaryKey = Convert.ToBase64String(Encoding.UTF8.GetBytes("000000000000000000"));
-            string sampleSecondaryKey = Convert.ToBase64String(Encoding.UTF8.GetBytes("111111111111111111"));
-            string symmetricKeyJson =
-            "{\n" +
-            "   \"type\":\"symmetricKey\",\n" +
-            "   \"symmetricKey\":{\n" +
-            "       \"primaryKey\":\"" + samplePrimaryKey + "\",\n" +
-            "       \"secondaryKey\":\"" + sampleSecondaryKey + "\"\n" +
-            "   }\n" +
-            "}";
-
-            // act
-            AttestationMechanism attestationMechanism = JsonConvert.DeserializeObject<AttestationMechanism>(symmetricKeyJson);
-            
-            //assert
-            Assert.IsNotNull(attestationMechanism);
-            Assert.IsTrue(attestationMechanism.Type == AttestationMechanismType.SymmetricKey);
-            Assert.IsTrue(attestationMechanism.GetAttestation() is SymmetricKeyAttestation);
-            SymmetricKeyAttestation symmetricKeyAttestation = (SymmetricKeyAttestation) attestationMechanism.GetAttestation();
-
-            Assert.AreEqual(samplePrimaryKey, symmetricKeyAttestation.PrimaryKey);
-            Assert.AreEqual(sampleSecondaryKey, symmetricKeyAttestation.SecondaryKey);
-        }
 
     }
 }

@@ -8,7 +8,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <OutputPath>.\bin\$(Configuration)</OutputPath>
     <DocumentationFile>$(OutputPath)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
-    <RootDir>$(MSBuildProjectDirectory)\..\..\..\..</RootDir>
+    <RootDir>$(MSBuildProjectDirectory)\..\..</RootDir>
   </PropertyGroup>
 
   <!-- delay sign the assembly for Release build -->
@@ -19,7 +19,7 @@
   </PropertyGroup>
   
   <PropertyGroup>
-    <Version>1.1.7</Version>
+    <Version>1.1.6</Version>
     <Title>Microsoft Azure IoT Provisioning Device Client MQTT Transport</Title>
     <Authors>Microsoft</Authors>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
@@ -32,64 +32,70 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <common>$(RootDir)\common\src</common>
-    <generated>..\..\generated\src</generated>
+    <shared>$(RootDir)\..\shared\src</shared>
+    <generated>$(RootDir)\generated\src</generated>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(Common)\Logging.Common.cs">
-      <Link>Common\Logging.Common.cs</Link>
+    <Compile Include="$(shared)\Logging.Common.cs">
+      <Link>shared\Logging.Common.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\Logging.ProvisioningTransport.Common.cs">
-      <Link>Common\Logging.ProvisioningTransport.Common.cs</Link>
+    <Compile Include="$(shared)\Logging.ProvisioningTransport.Common.cs">
+      <Link>shared\Logging.ProvisioningTransport.Common.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\device\provisioning\transport\ClientApiVersionHelper.cs"> 
-      <Link>Common\device\provisioning\transport\ClientApiVersionHelper.cs</Link>
+    <Compile Include="$(shared)\device\provisioning\transport\ClientApiVersionHelper.cs">
+      <Link>shared\device\provisioning\transport\ClientApiVersionHelper.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\device\provisioning\transport\DeviceRegistrationResult.cs">
-      <Link>Common\device\provisioning\transport\DeviceRegistrationResult.cs</Link>
+    <Compile Include="$(shared)\device\provisioning\transport\DeviceRegistrationResultConvertor.cs">
+      <Link>shared\device\provisioning\transport\DeviceRegistrationResultConvertor.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\device\provisioning\transport\RegistrationOperationStatus.cs">
-      <Link>Common\device\provisioning\transport\RegistrationOperationStatus.cs</Link>
+    <Compile Include="$(shared)\device\provisioning\transport\ProvisioingSasBuilder.cs">
+      <Link>shared\device\provisioning\transport\ProvisioingSasBuilder.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\device\provisioning\transport\TpmRegistrationResult.cs">
-      <Link>Common\device\provisioning\transport\TpmRegistrationResult.cs</Link>
-    </Compile>    
-    <Compile Include="$(Common)\device\provisioning\transport\X509CertificateInfo.cs">
-      <Link>Common\device\provisioning\transport\X509CertificateInfo.cs</Link>
+    <Compile Include="$(shared)\device\provisioning\transport\RegistrationOperationStatus.cs">
+      <Link>shared\device\provisioning\transport\RegistrationOperationStatus.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\device\provisioning\transport\X509RegistrationResult.cs">
-      <Link>Common\device\provisioning\transport\X509RegistrationResult.cs</Link>
+    <Compile Include="$(shared)\device\provisioning\transport\RegistrationState.cs">
+      <Link>shared\device\provisioning\transport\RegistrationState.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\device\transport\mqtt\ClientWebSocketChannel.cs">
-      <Link>Common\device\transport\mqtt\ClientWebSocketChannel.cs</Link>
+    <Compile Include="$(shared)\device\provisioning\transport\SecurityProviderSymmetricKey.cs">
+      <Link>shared\device\provisioning\transport\SecurityProviderSymmetricKey.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\device\transport\mqtt\ClientWebSocketChannelConfig.cs">
-      <Link>Common\device\transport\mqtt\ClientWebSocketChannelConfig.cs</Link>
+    <Compile Include="$(shared)\device\provisioning\transport\SymmetricKeyRegistrationResult.cs">
+      <Link>shared\device\provisioning\transport\SymmetricKeyRegistrationResult.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\device\provisioning\transport\ProvisioningSasBuilder.cs">
-      <Link>Common\device\provisioning\transport\ProvisioningSasBuilder.cs</Link>
+    <Compile Include="$(shared)\device\provisioning\transport\TpmRegistrationResult.cs">
+      <Link>shared\device\provisioning\transport\TpmRegistrationResult.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\device\provisioning\transport\SymmetricKeyRegistrationResult.cs">
-      <Link>Common\device\provisioning\transport\SymmetricKeyRegistrationResult.cs</Link>
+    <Compile Include="$(shared)\device\provisioning\transport\X509CertificateInfo.cs">
+      <Link>shared\device\provisioning\transport\X509CertificateInfo.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\DefaultWebProxySettings.cs" />
-    <Compile Include="$(Generated)\Models\DeviceRegistration.cs">
-      <Link>Generated\Models\DeviceRegistration.cs</Link>
+    <Compile Include="$(shared)\device\provisioning\transport\X509RegistrationResult.cs">
+      <Link>shared\device\provisioning\transport\X509RegistrationResult.cs</Link>
     </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="$(RootDir)\shared\src\Microsoft.Azure.Devices.Shared.csproj" />
-    <ProjectReference Include="$(RootDir)\provisioning\device\src\Microsoft.Azure.Devices.Provisioning.Client.csproj" />
+    <Compile Include="$(shared)\device\transport\mqtt\ClientWebSocketChannel.cs">
+      <Link>shared\device\transport\mqtt\ClientWebSocketChannel.cs</Link>
+    </Compile>
+    <Compile Include="$(shared)\device\transport\mqtt\ClientWebSocketChannelConfig.cs">
+      <Link>shared\device\transport\mqtt\ClientWebSocketChannelConfig.cs</Link>
+    </Compile>
+    <Compile Include="$(shared)\DefaultWebProxySettings.cs" />
+    <Compile Include="$(generated)\Models\DeviceRegistration.cs">
+      <Link>generated\Models\DeviceRegistration.cs</Link>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="DotNetty.Codecs.Mqtt" Version="0.6.0" />
     <PackageReference Include="DotNetty.Handlers" Version="0.6.0" />
+    <PackageReference Include="Microsoft.Azure.Devices.Shared" Version="1.15.1" />
 
     <!-- FXCop -->
     <PackageReference Condition=" '$(Configuration)' == 'Debug' " Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.6.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\device\src\Microsoft.Azure.Devices.Provisioning.Client.csproj" />
   </ItemGroup>
 
 </Project>

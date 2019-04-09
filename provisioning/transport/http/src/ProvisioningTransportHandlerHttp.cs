@@ -93,7 +93,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 if (Logging.IsEnabled) Logging.Info(this, $"Uri: {builder.Uri}; User-Agent: {message.ProductInfo}");
 
                 DeviceRegistration deviceRegistration = authStrategy.CreateDeviceRegistration();
-
+                deviceRegistration.Data = message.Data;
                 string registrationId = message.Security.GetRegistrationID();
 
                 RegistrationOperationStatus operation =
@@ -147,7 +147,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     authStrategy.SaveCredentials(operation);
                 }
 
-                return ConvertToProvisioningRegistrationResult(operation.RegistrationState);
+                return DeviceRegistrationResultConvertor.ConvertToProvisioningRegistrationResult(operation.RegistrationState);
             }
             catch (HttpOperationException oe)
             {
@@ -161,7 +161,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 try
                 {
                     var errorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetails>(oe.Response.Content);
-                    throw new ProvisioningTransportException(oe.Response.Content, oe, isTransient, errorDetails);
+                    throw new ProvisioningTransportException(
+                        errorDetails.CreateDetails("HTTP transport exception: service error."),
+                        oe,
+                        isTransient,
+                        errorDetails.TrackingId);
                 }
                 catch (JsonException ex)
                 {
@@ -190,28 +194,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             {
                 if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(ProvisioningTransportHandlerHttp)}.{nameof(RegisterAsync)}");
             }
-        }
-
-        private static DeviceRegistrationResult ConvertToProvisioningRegistrationResult(Models.DeviceRegistrationResult result)
-        {
-            var status = ProvisioningRegistrationStatusType.Failed;
-            Enum.TryParse(result.Status, true, out status);
-
-            var substatus = ProvisioningRegistrationSubstatusType.InitialAssignment;
-            Enum.TryParse(result.Substatus, true, out substatus);
-
-            return new DeviceRegistrationResult(
-                result.RegistrationId,
-                result.CreatedDateTimeUtc,
-                result.AssignedHub,
-                result.DeviceId,
-                status,
-                substatus,
-                result.GenerationId,
-                result.LastUpdatedDateTimeUtc,
-                result.ErrorCode == null ? 0 : (int)result.ErrorCode,
-                result.ErrorMessage,
-                result.Etag);
         }
     }
 }

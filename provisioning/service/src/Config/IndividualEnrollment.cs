@@ -22,8 +22,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
     /// The minimum information required by the provisioning service is the <code>RegistrationId</code> and the
     /// <code>Attestation</code>.
     ///
-    /// A new device can be provisioned by three attestation mechanisms, Trust Platform Module (see <see cref=
-    /// "TpmAttestation"/>), X509 (see <see cref="X509Attestation"/>) or Symmetric Key (see <see cref="SymmetricKeyAttestation"/>). The definition of each one you 
+    /// A new device can be provisioned by two attestation mechanisms, Trust Platform Module (see <see cref=
+    /// "TpmAttestation"/>) or X509 (see <see cref="X509Attestation"/>). The definition of each one you 
     /// should use depending on the physical authentication hardware that the device contains.
     ///
     /// The content of this class will be serialized in a JSON format and sent as a body of the rest API to the
@@ -75,7 +75,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// This constructor creates an instance of the IndividualEnrollment object with the minimum set of 
         /// information required by the provisioning service. A valid individualEnrollment must contain the 
         /// registrationId, which uniquely identify this enrollment, and the attestation mechanism, which can 
-        /// be TPM, X509, or Symmetric key.
+        /// be TPM or X509.
         ///
         /// Other parameters can be added by calling the setters on this object.
         /// </remarks>
@@ -330,12 +330,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         public ReprovisionPolicy ReprovisionPolicy { get; set; }
 
         /// <summary> 
-        /// Custom allocation definition.  
-        /// </summary>  
-        [JsonProperty(PropertyName = "customAllocationDefinition", DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public CustomAllocationDefinition CustomAllocationDefinition { get; set; }
-
-        /// <summary> 
         /// The allocation policy of this resource. Overrides the tenant level allocation policy.
         /// </summary>
         [JsonProperty(PropertyName = "allocationPolicy", DefaultValueHandling = DefaultValueHandling.Ignore)]
@@ -346,5 +340,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </summary>
         [JsonProperty(PropertyName = "iotHubs", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public ICollection<string> IotHubs { get; set; }
+
+        /// <summary> 
+        /// Custom allocation definition.  
+        /// </summary>  
+        [JsonProperty(PropertyName = "customAllocationDefinition", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public CustomAllocationDefinition CustomAllocationDefinition { get; set; }
     }
 }

@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         Task<HttpOperationResponse<RegistrationOperationStatus>> OperationStatusLookupWithHttpMessagesAsync(
             string registrationId, 
             string operationId, 
-            string idScope, 
+            string idScope,
             Dictionary<string, List<string>> customHeaders = null, 
             CancellationToken cancellationToken = default(CancellationToken));
 
@@ -73,7 +73,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         /// <exception cref="Microsoft.Rest.ValidationException">
         /// Thrown when a required parameter is null
         /// </exception>
-        Task<HttpOperationResponse<Models.DeviceRegistrationResult>> DeviceRegistrationStatusLookupWithHttpMessagesAsync(
+        Task<HttpOperationResponse<DeviceRegistrationResult>> DeviceRegistrationStatusLookupWithHttpMessagesAsync(
             string registrationId, 
             string idScope, 
             DeviceRegistration deviceRegistration = default(DeviceRegistration), 

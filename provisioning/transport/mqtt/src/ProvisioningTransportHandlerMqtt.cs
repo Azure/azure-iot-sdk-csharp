@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             TransportFallbackType transportFallbackType = TransportFallbackType.TcpWithWebSocketFallback)
         {
             FallbackType = transportFallbackType;
-            if (FallbackType == TransportFallbackType.WebSocketOnly)
+            if (FallbackType == TransportFallbackType.WebSocketOnly) 
             {
                 Port = WsPort;
             }
@@ -79,7 +79,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             cancellationToken.ThrowIfCancellationRequested();
 
             RegistrationOperationStatus operation = null;
-
             try
             {
                 if (message.Security is SecurityProviderX509)
@@ -125,7 +124,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                         $"{nameof(message.Security)} must be of type {nameof(SecurityProviderX509)}");
                 }
 
-                return ConvertToProvisioningRegistrationResult(operation.RegistrationState);
+                return DeviceRegistrationResultConvertor.ConvertToProvisioningRegistrationResult(operation.RegistrationState);
             }
             catch (Exception ex) when (!(ex is ProvisioningTransportException))
             {
@@ -141,29 +140,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(ProvisioningTransportHandlerMqtt)}.{nameof(RegisterAsync)}");
             }
         }
-
-        private static DeviceRegistrationResult ConvertToProvisioningRegistrationResult(Models.DeviceRegistrationResult result)
-        {
-            var status = ProvisioningRegistrationStatusType.Failed;
-            Enum.TryParse(result.Status, true, out status);
-
-            var substatus = ProvisioningRegistrationSubstatusType.InitialAssignment;
-            Enum.TryParse(result.Substatus, true, out substatus);
-
-            return new DeviceRegistrationResult(
-                result.RegistrationId,
-                result.CreatedDateTimeUtc,
-                result.AssignedHub,
-                result.DeviceId,
-                status,
-                substatus,
-                result.GenerationId,
-                result.LastUpdatedDateTimeUtc,
-                result.ErrorCode == null ? 0 : (int)result.ErrorCode,
-                result.ErrorMessage,
-                result.Etag);
-        }
-
+        
         private Task<RegistrationOperationStatus> ProvisionOverTcpUsingX509CertificateAsync(
             ProvisioningTransportRegisterMessage message,
             CancellationToken cancellationToken)
@@ -177,6 +154,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             var tlsSettings = new ClientTlsSettings(
                 message.GlobalDeviceEndpoint,
                 new List<X509Certificate> { clientCertificate });
+
             return ProvisionOverTcpCommonAsync(message, tlsSettings, cancellationToken);
         }
 
@@ -283,6 +261,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             cancellationToken.ThrowIfCancellationRequested();
 
             return ProvisionOverWssCommonAsync(message, null, cancellationToken);
+
         }
 
         private async Task<RegistrationOperationStatus> ProvisionOverWssCommonAsync(
@@ -298,10 +277,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             // TODO properly dispose of the ws.
             var websocket = new ClientWebSocket();
             websocket.Options.AddSubProtocol(WsMqttSubprotocol);
-            if (clientCertificate != null)
-            {
-                websocket.Options.ClientCertificates.Add(clientCertificate);
-            }
+            websocket.Options.ClientCertificates.Add(clientCertificate);
 
             //Check if we're configured to use a proxy server
             try

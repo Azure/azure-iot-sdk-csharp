@@ -23,6 +23,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
     {
         private static readonly TimeSpan DefaultTokenTimeToLive = TimeSpan.FromHours(1);
         private const string UserSeparator = "@";
+        private const int DefaultHttpsPort = 443;
 
         /// <summary>
         /// CONSTRUCOR
@@ -41,7 +42,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
             SharedAccessKey = builder.SharedAccessKey;
             SharedAccessSignature = builder.SharedAccessSignature;
             ServiceName = builder.ServiceName;
-            HttpsEndpoint = new UriBuilder("https", builder.HostName).Uri;
+            HttpsEndpoint = new UriBuilder("https", builder.HostName, builder.Port ?? DefaultHttpsPort).Uri;
         }
 
         public string ServiceName

@@ -35,11 +35,13 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         private const string SubscribeFilter = "$dps/registrations/res/#";
         private const string RegisterTopic = "$dps/registrations/PUT/iotdps-register/?$rid={0}";
         private const string GetOperationsTopic = "$dps/registrations/GET/iotdps-get-operationstatus/?$rid={0}&operationId={1}";
-        private static readonly Regex RegistrationStatusTopicRegex = new Regex("^\\$dps/registrations/res/(.*?)/\\?\\$rid=(.*?)$", RegexOptions.Compiled);
-        private static readonly TimeSpan s_defaultOperationPoolingIntervalMilliseconds = TimeSpan.FromSeconds(2);
 
+        private static readonly TimeSpan s_defaultOperationPoolingIntervalMilliseconds = TimeSpan.FromSeconds(2);
+        private static readonly TimeSpan s_regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
         private const string Registration = "registration";
 
+        private static readonly Regex s_registrationStatusTopicRegex = new Regex("^\\$dps/registrations/res/(.*?)/\\?\\$rid=(.*?)$", RegexOptions.Compiled, s_regexTimeoutMilliseconds);
+        
         private ProvisioningTransportRegisterMessage _message;
         private TaskCompletionSource<RegistrationOperationStatus> _taskCompletionSource;
         private CancellationToken _cancellationToken;
@@ -148,7 +150,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             {
                 hasPassword = true;
                 string key = ((SecurityProviderSymmetricKey)_message.Security).GetPrimaryKey();
-                password = ProvisioningSasBuilder.BuildSasSignature(Registration, key, string.Concat(_message.IdScope, '/', "registrations", '/', registrationId), TimeSpan.FromDays(1));
+                password = BuildSasSignature(Registration, key, string.Concat(_message.IdScope, '/', "registrations", '/', registrationId), TimeSpan.FromDays(1));
             }
 
             var message = new ConnectPacket()
@@ -162,7 +164,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     UsernameFormat,
                     _message.IdScope,
                     registrationId,
-                    ClientApiVersionHelper.ApiVersion,
+                    ClientApiVersionHelper.January2019ApiVersion,
                     Uri.EscapeDataString(userAgent)),
                 HasPassword = hasPassword,
                 Password = hasPassword ? password : null
@@ -288,9 +290,20 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             }
         }
 
-        private async Task PublishRegisterAsync(IChannelHandlerContext context)
+        private Task PublishRegisterAsync(IChannelHandlerContext context)
         {
             IByteBuffer packagePayload = Unpooled.Empty;
+            if (_message.Data != null)
+            {
+                var deviceRegistration = new DeviceRegistration { Data = _message.Data };
+                var customContentStream =
+                    new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(deviceRegistration)));
+                long streamLength = customContentStream.Length;
+                int length = (int)streamLength;
+                packagePayload = context.Channel.Allocator.Buffer(length, length);
+                packagePayload.WriteBytesAsync(customContentStream, length);
+            }
+
             int packetId = GetNextPacketId();
             var message = new PublishPacket(Qos, false, false)
             {
@@ -299,30 +312,65 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 Payload = packagePayload
             };
 
-            await context.WriteAndFlushAsync(message).ConfigureAwait(false);
+            return context.WriteAndFlushAsync(message);
         }
 
         private async Task VerifyPublishPacketTopicAsync(IChannelHandlerContext context, string topicName, string jsonData)
         {
-            Match match = RegistrationStatusTopicRegex.Match(topicName);
-            if (match.Groups.Count >= 2)
+            try
             {
-                if (Enum.TryParse(match.Groups[1].Value, out HttpStatusCode statusCode))
-                {
-                    if (statusCode >= HttpStatusCode.BadRequest)
-                    {
-                        var errorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetails>(jsonData);
+                Match match = s_registrationStatusTopicRegex.Match(topicName);
 
-                        bool isTransient = statusCode >= HttpStatusCode.InternalServerError || (int)statusCode == 429;
-                        await FailWithExceptionAsync(
-                             context,
-                             new ProvisioningTransportException(
-                                 jsonData,
-                                 null,
-                                 isTransient,
-                                 errorDetails)).ConfigureAwait(false);
+                if(match.Groups.Count >= 2)
+                {
+                    if(Enum.TryParse(match.Groups[1].Value, out HttpStatusCode statusCode))
+                    {
+                        if (statusCode >= HttpStatusCode.BadRequest)
+                        {
+                            try
+                            {
+                                var errorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetails>(jsonData);
+
+                                bool isTransient = statusCode >= HttpStatusCode.InternalServerError || (int)statusCode == 429;
+                                await FailWithExceptionAsync(
+                                     context,
+                                     new ProvisioningTransportException(
+                                         errorDetails.CreateDetails($"{ExceptionPrefix} Server Error: {match.Groups[1].Value}"),
+                                         null,
+                                         isTransient,
+                                         errorDetails.TrackingId)).ConfigureAwait(true);
+                            }
+                            catch (JsonException ex)
+                            {
+                                if (Logging.IsEnabled) Logging.Error(
+                                    this,
+                                    $"{nameof(ProvisioningTransportHandlerMqtt)} server returned malformed error response." +
+                                    $"Parsing error: {ex}. Server response: {jsonData}",
+                                    nameof(VerifyPublishPacketTopicAsync));
+
+                                await FailWithExceptionAsync(
+                                    context,
+                                    new ProvisioningTransportException(
+                                        $"{ExceptionPrefix} Malformed server error message: '{jsonData}'",
+                                        ex,
+                                        false)).ConfigureAwait(true);
+                            }
+                        }
                     }
                 }
+                else
+                {
+                    await FailWithExceptionAsync(
+                                 context,
+                                 new ProvisioningTransportException(
+                                     $"{ExceptionPrefix} Unexpected server response. TopicName invalid: '{topicName}'",
+                                     null,
+                                     false)).ConfigureAwait(true);
+                }
+            }
+            catch (RegexMatchTimeoutException e)
+            {
+                await FailWithExceptionAsync(context, e).ConfigureAwait(true);
             }
         }
 
@@ -519,6 +567,50 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             unchecked
             {
                 return (ushort)Volatile.Read(ref _packetId);
+            }
+        }
+
+        //TODO: merge with other Sas Token Builder in ProvisioningSasBuilder and in IotHubClient
+        private static string BuildSasSignature(string keyName, string key, string target, TimeSpan timeToLive)
+        {
+            string expiresOn = ProvisioningSasBuilder.BuildExpiresOn(timeToLive);
+            string audience = WebUtility.UrlEncode(target);
+            var fields = new List<string>
+            {
+                audience,
+                expiresOn
+            };
+
+            // Example string to be signed:
+            // dh://myiothub.azure-devices.net/a/b/c?myvalue1=a
+            // <Value for ExpiresOn>
+
+            string signature = Sign(string.Join("\n", fields), key);
+
+            // Example returned string:
+            // SharedAccessSignature sr=ENCODED(dh://myiothub.azure-devices.net/a/b/c?myvalue1=a)&sig=<Signature>&se=<ExpiresOnValue>[&skn=<KeyName>]
+
+            var buffer = new StringBuilder();
+            buffer.AppendFormat(CultureInfo.InvariantCulture, "{0} {1}={2}&{3}={4}&{5}={6}",
+                "SharedAccessSignature",
+                "sr", audience,
+                "sig", WebUtility.UrlEncode(signature),
+                "se", WebUtility.UrlEncode(expiresOn));
+
+            if (!string.IsNullOrEmpty(keyName))
+            {
+                buffer.AppendFormat(CultureInfo.InvariantCulture, "&{0}={1}",
+                    "skn", WebUtility.UrlEncode(keyName));
+            }
+
+            return buffer.ToString();
+        }
+
+        private static string Sign(string requestString, string key)
+        {
+            using (var hmac = new HMACSHA256(Convert.FromBase64String(key)))
+            {
+                return Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(requestString)));
             }
         }
     }

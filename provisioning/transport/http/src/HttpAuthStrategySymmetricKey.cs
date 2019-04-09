@@ -19,16 +19,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         public override DeviceProvisioningServiceRuntimeClient CreateClient(Uri uri, HttpClientHandler httpClientHandler)
         {
-            var serviceCredentials = new SymmetricKeyCredentials(_security.GetPrimaryKey());
-            var dpsClient = new DeviceProvisioningServiceRuntimeClient(
+            return new DeviceProvisioningServiceRuntimeClient(
                 uri,
-                serviceCredentials,
+                new SymmetricKeyCredentials(_security.GetPrimaryKey()),
                 httpClientHandler,
                 new ApiVersionDelegatingHandler());
-
-            dpsClient.HttpClient.Timeout = TimeoutConstant;
-
-            return dpsClient;
         }
 
         public override DeviceRegistration CreateDeviceRegistration()
@@ -38,7 +33,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         public override void SaveCredentials(RegistrationOperationStatus status)
         {
-            
         }
     }
 }

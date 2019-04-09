@@ -7,20 +7,27 @@ using Newtonsoft.Json;
 namespace Microsoft.Azure.Devices.Provisioning.Service
 {
     /// <summary>
-    /// Attestation using a symmetric key
+    /// Symmetric key
     /// </summary>
     public sealed class SymmetricKeyAttestation : Attestation
     {
         /// <summary>
-        /// Default json constructor
+        /// 
         /// </summary>
-        /// <param name="primaryKey">The primary key to use for attestation</param>
-        /// <param name="secondaryKey">The secondary key to use for attestation</param>
+        /// <param name="primaryKey">Symmetric primary key</param>
+        /// <param name="secondaryKey">Symmetric prsecondaryimary key</param>
         [JsonConstructor]
         public SymmetricKeyAttestation(string primaryKey, string secondaryKey)
         {
-            PrimaryKey = primaryKey;
-            SecondaryKey = secondaryKey;
+            try
+            {
+                PrimaryKey = primaryKey;
+                SecondaryKey = secondaryKey;
+            }
+            catch (ArgumentException e)
+            {
+                throw new ProvisioningServiceClientException(e);
+            }
         }
 
         /// <summary>
@@ -35,6 +42,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             }
             private set
             {
+                if (!string.IsNullOrEmpty(value))
+                {
+                    ParserUtils.EnsureBase64String(value);
+                }
                 _primaryKey = value;
             }
         }
@@ -52,6 +63,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             }
             private set
             {
+                if (!string.IsNullOrEmpty(value))
+                {
+                    ParserUtils.EnsureBase64String(value);
+                }
                 _secondaryKey = value;
             }
         }

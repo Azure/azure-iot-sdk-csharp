@@ -40,12 +40,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         [EnumMember(Value = "x509")]
         X509 = 2,
 
-        /// <summary>
-        /// Symmetric Key attestation mechanism
-        /// </summary>
-        /// <remarks>
-        /// Identify the attestation mechanism as <see cref="SymmetricKeyAttestation"/>
-        /// </remarks>
         [EnumMember(Value = "symmetricKey")]
         SymmetricKey = 3
     }

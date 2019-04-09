@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Reflection;
 using System.Runtime.InteropServices;
 
 namespace Microsoft.Azure.Devices.Provisioning.Client
@@ -16,12 +15,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         {
             const string Name = "Microsoft.Azure.Devices.Provisioning.Client";
 
-            string version = typeof(ProvisioningDeviceClient).GetTypeInfo().Assembly.GetName().Version.ToString(3);
+            // TODO: Replace with Assembly information.
+            // DO NOT EDIT the following line; it is updated by the bump_version script (https://github.com/Azure/iot-sdks-internals/blob/master/release/csharp/inputs.js)
+            const string Version = "1.0.2"; // CommonAssemblyVersion
+
             string runtime = RuntimeInformation.FrameworkDescription.Trim();
             string operatingSystem = RuntimeInformation.OSDescription.Trim();
             string processorArchitecture = RuntimeInformation.ProcessArchitecture.ToString().Trim();
 
-            string userAgent = $"{Name}/{version} ({runtime}; {operatingSystem}; {processorArchitecture})";
+            string userAgent = $"{Name}/{Version} ({runtime}; {operatingSystem}; {processorArchitecture})";
 
             if (!String.IsNullOrWhiteSpace(this.Extra))
             {

@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
         private static readonly string SharedAccessKeyNamePropertyName = ((MemberExpression)((Expression<Func<ServiceConnectionStringBuilder, string>>)(_ => _.SharedAccessKeyName)).Body).Member.Name; // todo: replace with nameof()
         private static readonly string SharedAccessKeyPropertyName = ((MemberExpression)((Expression<Func<ServiceConnectionStringBuilder, string>>)(_ => _.SharedAccessKey)).Body).Member.Name; // todo: replace with nameof()
         private static readonly string SharedAccessSignaturePropertyName = ((MemberExpression)((Expression<Func<ServiceConnectionStringBuilder, string>>)(_ => _.SharedAccessSignature)).Body).Member.Name; // todo: replace with nameof();
-
+        static readonly string PortPropertyName = ((MemberExpression)((Expression<Func<ServiceConnectionStringBuilder, int?>>)(_ => _.Port)).Body).Member.Name; // todo: replace with nameof();
         private static readonly TimeSpan regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
         private static readonly Regex HostNameRegex = new Regex(@"[a-zA-Z0-9_\-\.]+$", RegexOptions.Compiled | RegexOptions.IgnoreCase, regexTimeoutMilliseconds);
         private static readonly Regex SharedAccessKeyNameRegex = new Regex(@"^[a-zA-Z0-9_\-@\.]+$", RegexOptions.Compiled | RegexOptions.IgnoreCase, regexTimeoutMilliseconds);
@@ -83,6 +83,8 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
 
         public string SharedAccessSignature { get; internal set; }
 
+        public int? Port { get; internal set; }
+
         public string ServiceName
         {
             get { return _serviceName; }
@@ -103,6 +105,7 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
             stringBuilder.AppendKeyValuePairIfNotEmpty(SharedAccessKeyNamePropertyName, SharedAccessKeyName);
             stringBuilder.AppendKeyValuePairIfNotEmpty(SharedAccessKeyPropertyName, SharedAccessKey);
             stringBuilder.AppendKeyValuePairIfNotEmpty(SharedAccessSignaturePropertyName, SharedAccessSignature);
+            stringBuilder.AppendKeyValuePairIfNotEmpty(PortPropertyName, this.Port);
             if (stringBuilder.Length > 0)
             {
                 stringBuilder.Remove(stringBuilder.Length - 1, 1);
@@ -119,6 +122,18 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
             SharedAccessKeyName = GetConnectionStringOptionalValue(map, SharedAccessKeyNamePropertyName);
             SharedAccessKey = GetConnectionStringOptionalValue(map, SharedAccessKeyPropertyName);
             SharedAccessSignature = GetConnectionStringOptionalValue(map, SharedAccessSignaturePropertyName);
+
+            string portValue = GetConnectionStringOptionalValue(map, PortPropertyName);
+            if (!string.IsNullOrEmpty(portValue))
+            {
+                int port;
+                if (!Int32.TryParse(portValue, out port))
+
+                {
+                    throw new ArgumentException("Port should be a valid integer value");
+                }
+                this.Port = port;
+            }
 
             Validate();
         }
@@ -138,6 +153,11 @@ namespace Microsoft.Azure.Devices.Common.Service.Auth
             if (string.IsNullOrWhiteSpace(ServiceName))
             {
                 throw new FormatException("Missing service name");
+            }
+
+            if (this.Port.HasValue && this.Port.Value <= 0)
+            {
+                throw new ArgumentException("Port should be a valid positive integer");
             }
 
             if (!string.IsNullOrWhiteSpace(SharedAccessKey))

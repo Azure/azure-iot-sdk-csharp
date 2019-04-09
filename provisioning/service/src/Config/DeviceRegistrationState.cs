@@ -74,6 +74,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </summary>
         [JsonProperty(PropertyName = "etag", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string ETag { get; internal set; }
-    }
 
+
+        /// <summary>
+        /// Custom data returned from the webhook to the device..
+        /// </summary>
+        [JsonProperty(PropertyName = "returnData", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public TwinCollection ReturnData { get; internal set; }
+    }
 }

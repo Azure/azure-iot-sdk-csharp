@@ -12,12 +12,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 {
     internal class ApiVersionDelegatingHandler : DelegatingHandler
     {
+        string _apiVersion;
+
+        public ApiVersionDelegatingHandler(string apiVersion = ClientApiVersionHelper.January2019ApiVersion)
+        {
+            _apiVersion = apiVersion;
+        }
+
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{request.RequestUri}", nameof(SendAsync));
 
             var valueCollection = HttpUtility.ParseQueryString(request.RequestUri.Query);
-            valueCollection[ClientApiVersionHelper.ApiVersionName] = ClientApiVersionHelper.ApiVersion;
+            valueCollection[ClientApiVersionHelper.ApiVersionName] = _apiVersion;
 
             var builder = new UriBuilder(request.RequestUri)
             {

@@ -172,14 +172,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             AttestationMechanism attestation,
             string iotHubHostName,
             TwinState initialTwinState,
-            ProvisioningStatus? provisioningStatus,
+            ProvisioningStatus provisioningStatus,
             DateTime createdDateTimeUtc,
             DateTime lastUpdatedDateTimeUtc,
             string eTag)
         {
             /* SRS_ENROLLMENT_GROUP_21_003: [The constructor shall throws ProvisioningServiceClientException if one of the 
                                                     provided parameters in JSON is not valid.] */
-            if (attestation == null)
+            if(attestation == null)
             {
                 throw new ProvisioningServiceClientException("Service respond an enrollmentGroup without attestation.");
             }
@@ -259,21 +259,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             }
             set
             {
-                if (value == null)
+                if(!((value ?? throw new ArgumentNullException(nameof(value))) is X509Attestation))
                 {
-                    throw new ArgumentNullException(nameof(value));
-                }
-                else if (!(value is X509Attestation) && !(value is SymmetricKeyAttestation))
-                {
-                    throw new ArgumentException("Attestation for enrollmentGroup shall be X509 or symmetric key");
+                    throw new ArgumentException("Attestation for enrollmentGroup shall be X509");
                 }
 
-                if (value is X509Attestation)
+                if((((X509Attestation)value).RootCertificates == null) && (((X509Attestation)value).CAReferences == null))
                 {
-                    if ((((X509Attestation)value).RootCertificates == null) && (((X509Attestation)value).CAReferences == null))
-                    {
-                        throw new ArgumentException("Attestation mechanism does not contain a valid certificate");
-                    }
+                    throw new ArgumentException("Attestation mechanism do not contains a valid certificate.");
                 }
 
                 _attestation = new AttestationMechanism(value);
@@ -328,6 +321,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </summary>
         [JsonProperty(PropertyName = "allocationPolicy", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public AllocationPolicy? AllocationPolicy { get; set; }
+
         /// <summary> 
         /// The list of names of IoT hubs the device(s) in this resource can be allocated to. Must be a subset of tenant level list of IoT hubs
         /// </summary>
