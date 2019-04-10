@@ -33,15 +33,7 @@ namespace Microsoft.Azure.Devices.Client
         private const string GatewayHostNamePropertyName = "GatewayHostName";
 
 #if !NETMF
-        private const RegexOptions regexOptions = RegexOptions.Compiled | RegexOptions.IgnoreCase;
-        private static readonly TimeSpan regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
         private const string X509CertPropertyName =  "X509Cert";
-        private static readonly Regex HostNameRegex = new Regex(@"[a-zA-Z0-9_\-\.]+$", regexOptions, regexTimeoutMilliseconds);
-        private static readonly Regex IdNameRegex = new Regex(@"^[A-Za-z0-9\-:.+%_#*?!(),=@;$']{1,128}$", regexOptions, regexTimeoutMilliseconds);
-        private static readonly Regex SharedAccessKeyNameRegex = new Regex(@"^[a-zA-Z0-9_\-@\.]+$", regexOptions, regexTimeoutMilliseconds);
-        private static readonly Regex SharedAccessKeyRegex = new Regex(@"^.+$", regexOptions, regexTimeoutMilliseconds);
-        private static readonly Regex SharedAccessSignatureRegex = new Regex(@"^.+$", regexOptions, regexTimeoutMilliseconds);
-        private static readonly Regex X509CertRegex = new Regex(@"^[true|false]+$", regexOptions, regexTimeoutMilliseconds);
 #endif
 
         private string hostName;
@@ -342,19 +334,6 @@ namespace Microsoft.Azure.Devices.Client
                     throw new ArgumentException("Invalid SharedAccessSignature (SAS)");
                 }
             }
-
-            ValidateFormat(this.HostName, HostNamePropertyName, HostNameRegex);
-            ValidateFormat(this.DeviceId, DeviceIdPropertyName, IdNameRegex);
-            if (!string.IsNullOrEmpty(this.ModuleId))
-            {
-                ValidateFormat(this.ModuleId, DeviceIdPropertyName, IdNameRegex);
-            }
-
-            ValidateFormatIfSpecified(this.SharedAccessKeyName, SharedAccessKeyNamePropertyName, SharedAccessKeyNameRegex);
-            ValidateFormatIfSpecified(this.SharedAccessKey, SharedAccessKeyPropertyName, SharedAccessKeyRegex);
-            ValidateFormatIfSpecified(this.SharedAccessSignature, SharedAccessSignaturePropertyName, SharedAccessSignatureRegex);
-            ValidateFormatIfSpecified(this.GatewayHostName, GatewayHostNamePropertyName, HostNameRegex);
-            ValidateFormatIfSpecified(this.UsingX509Cert.ToString(), X509CertPropertyName, X509CertRegex);
 #endif
         }
 
@@ -364,10 +343,6 @@ namespace Microsoft.Azure.Devices.Client
             {
                 throw new ArgumentNullException("hostname");
             }
-#if !NETMF
-            ValidateFormat(hostname, HostNamePropertyName, HostNameRegex);
-#endif
-
             this.hostName = hostname;
             this.SetIotHubName();
         }
@@ -399,22 +374,6 @@ namespace Microsoft.Azure.Devices.Client
         }
 
 #if !NETMF
-        static void ValidateFormat(string value, string propertyName, Regex regex)
-        {
-            if (!regex.IsMatch(value))
-            {
-                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "The connection string has an invalid value for property: {0}", propertyName), "iotHubConnectionString");
-            }
-        }
-
-        static void ValidateFormatIfSpecified(string value, string propertyName, Regex regex)
-        {
-            if (!string.IsNullOrEmpty(value))
-            {
-                ValidateFormat(value, propertyName, regex);
-            }
-        }
-
         static string GetConnectionStringValue(IDictionary<string, string> map, string propertyName)
         {
             string value;

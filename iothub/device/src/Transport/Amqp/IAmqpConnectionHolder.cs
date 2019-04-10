@@ -7,19 +7,10 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
-    internal interface IAmqpConnectionHolder
+    internal interface IAmqpConnectionHolder : IStatusReportor, IDisposable
     {
-        #region EventHandler
-        event EventHandler OnConnectionDisconnected;
-        #endregion
-
-        #region Manage Unit
-        AmqpUnit CreateAmqpUnit(
-            DeviceIdentity deviceIdentity,
-            Func<MethodRequestInternal, Task> methodHandler, 
-            Action<AmqpMessage> desiredPropertyListener, 
-            Func<string, Message, Task> messageListener);
-        int GetNumberOfUnits();
-        #endregion
+        Task<IAmqpAuthenticationRefresher> StartAmqpAuthenticationRefresherAsync(DeviceIdentity deviceIdentity, TimeSpan timeout);
+        Task<AmqpSession> CreateAmqpSessionAsync(DeviceIdentity deviceIdentity, TimeSpan timeout);
+        void Close();
     }
 }

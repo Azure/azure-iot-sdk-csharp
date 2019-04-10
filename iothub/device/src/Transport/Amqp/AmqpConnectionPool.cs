@@ -1,118 +1,83 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
-    internal class AmqpConnectionPool : IAmqpUnitCreator
+    internal class AmqpConnectionPool : IAmqpConnectionManager
     {
-        private const int MaxSpan = int.MaxValue;
-        private ISet<IAmqpConnectionHolder> AmqpSasIndividualPool;
-        private IDictionary<string, ISet<IAmqpConnectionHolder>> AmqpSasGroupedPool;
-        private readonly object Lock;
+        private IAmqpConnectionHolder[] _amqpSasIndividualPool;
+        private IDictionary<string, IAmqpConnectionHolder[]> _amqpSasGroupedPool;
+        private readonly object _lock;
 
         internal AmqpConnectionPool()
         {
-            AmqpSasIndividualPool = new HashSet<IAmqpConnectionHolder>();
-            AmqpSasGroupedPool = new Dictionary<string, ISet<IAmqpConnectionHolder>>();
-            Lock = new object();
+            _lock = new object();
+            _amqpSasGroupedPool = new Dictionary<string, IAmqpConnectionHolder[]>();
         }
 
-        public AmqpUnit CreateAmqpUnit(
-            DeviceIdentity deviceIdentity, 
-            Func<MethodRequestInternal, Task> methodHandler, 
-            Action<AmqpMessage> twinMessageListener, 
-            Func<string, Message, Task> eventListener)
-        {
-            if (Logging.IsEnabled) Logging.Enter(this, deviceIdentity, $"{nameof(CreateAmqpUnit)}");
-            if (deviceIdentity.AuthenticationModel != AuthenticationModel.X509 && (deviceIdentity.AmqpTransportSettings?.AmqpConnectionPoolSettings?.Pooling??false))
-            {
-                IAmqpConnectionHolder amqpConnectionHolder;
-                lock (Lock)
-                {
-                    ISet<IAmqpConnectionHolder> amqpConnectionHolders = ResolveConnectionGroup(deviceIdentity, true);
-                    if (amqpConnectionHolders.Count < deviceIdentity.AmqpTransportSettings.AmqpConnectionPoolSettings.MaxPoolSize)
-                    {
-                        amqpConnectionHolder = new AmqpConnectionHolder(deviceIdentity);
-                        amqpConnectionHolder.OnConnectionDisconnected += (o, args) => RemoveConnection(amqpConnectionHolders, o as IAmqpConnectionHolder);
-                        amqpConnectionHolders.Add(amqpConnectionHolder);
-                        if (Logging.IsEnabled) Logging.Associate(this, amqpConnectionHolder, "amqpConnectionHolders");
-                    }
-                    else
-                    {
-                        amqpConnectionHolder = GetLeastUsedConnection(amqpConnectionHolders);
-                    }
-                }
-                if (Logging.IsEnabled) Logging.Exit(this, deviceIdentity, $"{nameof(CreateAmqpUnit)}");
-                return amqpConnectionHolder.CreateAmqpUnit(deviceIdentity, methodHandler, twinMessageListener, eventListener);
-            }
-            else
-            {
-                if (Logging.IsEnabled) Logging.Exit(this, deviceIdentity, $"{nameof(CreateAmqpUnit)}");
-                return new AmqpConnectionHolder(deviceIdentity)
-                    .CreateAmqpUnit(deviceIdentity, methodHandler, twinMessageListener, eventListener);
-            }
-        }
-
-        private void RemoveConnection(ISet<IAmqpConnectionHolder> amqpConnectionHolders, IAmqpConnectionHolder amqpConnectionHolder)
-        {
-            lock (Lock)
-            {
-                
-                bool removed = amqpConnectionHolder.GetNumberOfUnits() == 0 && amqpConnectionHolders.Remove(amqpConnectionHolder);
-                if (Logging.IsEnabled) Logging.Info(this, $"Remove ConnectionHolder {amqpConnectionHolder}: {removed}");
-            }
-        }
-
-        private ISet<IAmqpConnectionHolder> ResolveConnectionGroup(DeviceIdentity deviceIdentity, bool create)
+        private IAmqpConnectionHolder[] ResolveConnectionGroup(DeviceIdentity deviceIdentity)
         {
             if (deviceIdentity.AuthenticationModel == AuthenticationModel.SasIndividual)
             {
-                return AmqpSasIndividualPool;
+                if (_amqpSasIndividualPool == null)
+                {
+                    _amqpSasIndividualPool = new IAmqpConnectionHolder[deviceIdentity.AmqpTransportSettings.AmqpConnectionPoolSettings.MaxPoolSize];
+                }
+                return _amqpSasIndividualPool;
             }
             else
             {
                 string scope = deviceIdentity.IotHubConnectionString.SharedAccessKeyName;
-                AmqpSasGroupedPool.TryGetValue(scope, out ISet<IAmqpConnectionHolder>  amqpConnectionHolders);
-                if (create && amqpConnectionHolders == null)
+                _amqpSasGroupedPool.TryGetValue(scope, out IAmqpConnectionHolder[] connectionGroup);
+                if (connectionGroup == null)
                 {
-                    amqpConnectionHolders = new HashSet<IAmqpConnectionHolder>();
-                    AmqpSasGroupedPool.Add(scope, amqpConnectionHolders);
+                    connectionGroup = new IAmqpConnectionHolder[deviceIdentity.AmqpTransportSettings.AmqpConnectionPoolSettings.MaxPoolSize];
+                    _amqpSasGroupedPool.Add(scope, connectionGroup);
                 }
-                return amqpConnectionHolders;
+                return connectionGroup;
             }
         }
-        
-        private IAmqpConnectionHolder GetLeastUsedConnection(ISet<IAmqpConnectionHolder> amqpConnectionHolders)
+
+        private IAmqpConnectionHolder ResolveConnectionHolder(IAmqpConnectionHolder[] connectionGroup, DeviceIdentity deviceIdentity)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(GetLeastUsedConnection)}");
+            if (Logging.IsEnabled) Logging.Enter(this, deviceIdentity, $"{nameof(ResolveConnectionHolder)}");
+            int index = Math.Abs(deviceIdentity.GetHashCode()) % connectionGroup.Length;
+            IAmqpConnectionHolder connectionHolder = connectionGroup[index];
 
-            int count = MaxSpan;
-
-            IAmqpConnectionHolder amqpConnectionHolder = null;
-
-            foreach (IAmqpConnectionHolder value in amqpConnectionHolders)
+            if (connectionHolder == null)
             {
-                int clientCount = value.GetNumberOfUnits();
-                if (clientCount < count)
+                connectionHolder = new AmqpConnectionHolder();
+                connectionGroup[index] = connectionHolder;
+            }
+            
+            if (Logging.IsEnabled) Logging.Exit(this, deviceIdentity, $"{nameof(ResolveConnectionHolder)}");
+            return connectionHolder;
+        }
+
+        public IAmqpConnectionHolder AllocateAmqpConnectionHolder(DeviceIdentity deviceIdentity)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, deviceIdentity, $"{nameof(AllocateAmqpConnectionHolder)}");
+
+            IAmqpConnectionHolder amqpConnectionHolder;
+            if (deviceIdentity.AuthenticationModel != AuthenticationModel.X509 && (deviceIdentity.AmqpTransportSettings?.AmqpConnectionPoolSettings?.Pooling ?? false))
+            {
+                lock (_lock)
                 {
-                    amqpConnectionHolder = value;
-                    count = clientCount;
-                    if (count == 0)
-                    {
-                        break;
-                    }
+                    IAmqpConnectionHolder[] connectionGroup = ResolveConnectionGroup(deviceIdentity);
+                    amqpConnectionHolder = amqpConnectionHolder = ResolveConnectionHolder(connectionGroup, deviceIdentity);
                 }
             }
+            else
+            {
+                amqpConnectionHolder = new AmqpConnectionHolder();
+            }
 
-            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(GetLeastUsedConnection)}");
+            if (Logging.IsEnabled) Logging.Exit(deviceIdentity, amqpConnectionHolder, $"{nameof(AllocateAmqpConnectionHolder)}");
             return amqpConnectionHolder;
         }
-
     }
 }

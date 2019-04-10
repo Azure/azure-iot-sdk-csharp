@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private const string ResponseStatusName = "status";
         private const int ResponseTimeoutInSeconds = 300;
         private readonly TimeSpan _operationTimeout;
-        private readonly AmqpUnit _amqpUnit;
+        private readonly IAmqpUnit _amqpUnit;
         private readonly Action<TwinCollection> _desiredPropertyListener;
         private ConcurrentDictionary<string, TaskCompletionSource<AmqpMessage>> _twinResponseCompletions = new ConcurrentDictionary<string, TaskCompletionSource<AmqpMessage>>();
 
@@ -53,29 +53,29 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             _operationTimeout = transportSettings.OperationTimeout;
             _desiredPropertyListener = desiredPropertyListener;
             DeviceIdentity deviceIdentity = new DeviceIdentity(connectionString, transportSettings, context.Get<ProductInfo>());
+
             _amqpUnit = AmqpUnitManager.GetInstance().CreateAmqpUnit(
                 deviceIdentity,
                 methodHandler,
                 TwinMessageListener, 
-                eventListener
+                eventListener,
+                OnUnitDisconnected
             );
-
-            _amqpUnit.OnUnitDisconnected += (o, args) =>
-            {
-                bool gracefulDisconnect = (bool)o;
-                if (gracefulDisconnect)
-                {
-                    OnTransportClosedGracefully();
-                }
-                else
-                {
-                    OnTransportDisconnected();
-                }
-            };
 
             if (Logging.IsEnabled) Logging.Associate(this, _amqpUnit, $"{nameof(_amqpUnit)}");
         }
 
+        private void OnUnitDisconnected(bool gracefulDisconnect)
+        {
+            if (gracefulDisconnect)
+            {
+                OnTransportClosedGracefully();
+            }
+            else
+            {
+                OnTransportDisconnected();
+            }
+        }
         #endregion
 
         public override bool IsUsable => _amqpUnit.IsUsable();
@@ -93,7 +93,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
             catch (Exception exception) when (!exception.IsFatal() && !(exception is OperationCanceledException))
             {
-                Exception newException = AmqpClientHelper.ToIotHubClientContract(exception);
+                Exception newException = AmqpExceptionMapper.MapAmqpException(exception);
                 if (newException != exception)
                 {
                     throw newException;
@@ -136,7 +136,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                Outcome outcome = await _amqpUnit.SendEventAsync(message.ToAmqpMessage(), _operationTimeout).ConfigureAwait(false);
+                Outcome outcome = await _amqpUnit.SendMessageAsync(message.ToAmqpMessage(), _operationTimeout).ConfigureAwait(false);
 
                 if (outcome != null)
                 {
@@ -179,7 +179,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 using (AmqpMessage amqpMessage = AmqpMessage.Create(messageList))
                 {
                     amqpMessage.MessageFormat = AmqpConstants.AmqpBatchedMessageFormat;
-                    outcome = await _amqpUnit.SendEventAsync(amqpMessage, _operationTimeout).ConfigureAwait(false);
+                    outcome = await _amqpUnit.SendMessageAsync(amqpMessage, _operationTimeout).ConfigureAwait(false);
                 }
 
                 if (outcome != null)
@@ -200,20 +200,20 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             if (Logging.IsEnabled) Logging.Enter(this, timeout, cancellationToken, $"{nameof(ReceiveAsync)}");
             Message message = null;
-            while (true)
+            while (message == null)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 try
                 {
                     message = await _amqpUnit.ReceiveMessageAsync(timeout).ConfigureAwait(false);
-                    if (message != null)
+                    if (message == null)
                     {
-                        break;
+                        if (Logging.IsEnabled) Logging.Info(this, "Null message received, looping...");
                     }
                 }
                 catch (Exception exception) when (!exception.IsFatal() && !(exception is OperationCanceledException))
                 {
-                    throw AmqpClientHelper.ToIotHubClientContract(exception);
+                    throw AmqpExceptionMapper.MapAmqpException(exception);
                 }
             }
             if (Logging.IsEnabled) Logging.Exit(this, timeout, cancellationToken, $"{nameof(ReceiveAsync)}");
@@ -235,7 +235,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
             catch (Exception exception) when (!exception.IsFatal() && !(exception is OperationCanceledException))
             {
-                throw AmqpClientHelper.ToIotHubClientContract(exception);
+                throw AmqpExceptionMapper.MapAmqpException(exception);
             }
             finally
             {
@@ -293,12 +293,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await _amqpUnit.EnsureTwinLinksAreOpenedAsync(_operationTimeout).ConfigureAwait(false);
+                await _amqpUnit.EnableTwinPatchAsync(_operationTimeout).ConfigureAwait(false);
 
             }
             catch (Exception exception) when (!exception.IsFatal() && !(exception is OperationCanceledException))
             {
-                throw AmqpClientHelper.ToIotHubClientContract(exception);
+                throw AmqpExceptionMapper.MapAmqpException(exception);
             }
             finally
             {
@@ -321,7 +321,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
             catch (Exception exception) when (!exception.IsFatal() && !(exception is OperationCanceledException))
             {
-                throw AmqpClientHelper.ToIotHubClientContract(exception);
+                throw AmqpExceptionMapper.MapAmqpException(exception);
             }
             finally
             {
@@ -350,7 +350,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
             catch (Exception exception) when (!exception.IsFatal() && !(exception is OperationCanceledException))
             {
-                throw AmqpClientHelper.ToIotHubClientContract(exception);
+                throw AmqpExceptionMapper.MapAmqpException(exception);
             }
             finally
             {
@@ -485,7 +485,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
             catch (Exception exception) when (!exception.IsFatal() && !(exception is OperationCanceledException))
             {
-                throw AmqpClientHelper.ToIotHubClientContract(exception);
+                throw AmqpExceptionMapper.MapAmqpException(exception);
             }
 
             if (disposeOutcome.DescriptorCode != Accepted.Code)

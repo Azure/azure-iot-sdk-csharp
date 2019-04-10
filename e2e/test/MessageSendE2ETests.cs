@@ -201,6 +201,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await deviceClient.OpenAsync().ConfigureAwait(false);
                 await MessageSend.SendSingleMessageAndVerifyAsync(deviceClient, testDevice.Id).ConfigureAwait(false);
                 await deviceClient.CloseAsync().ConfigureAwait(false);
+                Console.WriteLine("Please check TCP port");
+                await Task.Delay(TimeSpan.FromSeconds(20)).ConfigureAwait(false);
             }
         }
 

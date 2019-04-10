@@ -7,9 +7,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
     using Microsoft.Azure.Devices.Client.Exceptions;
     using System;
 
-    class AmqpClientHelper
+    class AmqpExceptionMapper
     {
-        public static Exception ToIotHubClientContract(Exception exception)
+        public static Exception MapAmqpException(Exception exception)
         {
             if (exception is TimeoutException)
             {
@@ -19,14 +19,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             {
                 return new UnauthorizedException(exception.Message, exception);
             }
+            else if (exception is AmqpException)
+            {
+                return AmqpErrorMapper.ToIotHubClientContract((exception as AmqpException).Error);
+            }
             else
             {
-                var amqpException = exception as AmqpException;
-                if (amqpException != null)
-                {
-                    return AmqpErrorMapper.ToIotHubClientContract(amqpException.Error);
-                }
-
                 return exception;
             }
         }

@@ -33,39 +33,44 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         public static async Task VerifyReceivedC2DMessageAsync(Client.TransportType transport, DeviceClient dc, string payload, string p1Value)
         {
-            var wait = true;
+            bool received;
 
             Stopwatch sw = new Stopwatch();
             sw.Start();
-            while (wait)
+
+            Client.Message receivedMessage;
+            do
             {
-                Client.Message receivedMessage = null;
+                receivedMessage = await dc.ReceiveAsync(TimeSpan.FromSeconds(30)).ConfigureAwait(false);
+                received = MatchMessage(receivedMessage, payload, p1Value);
+            }
+            while (receivedMessage != null && !received);
 
-                receivedMessage = await dc.ReceiveAsync(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
+            Assert.IsTrue(received, $"No message was recevied with payload: {payload}");
 
-                if (receivedMessage != null)
-                {
-                    string messageData = Encoding.ASCII.GetString(receivedMessage.GetBytes());
-                    s_log.WriteLine($"{nameof(VerifyReceivedC2DMessageAsync)}: Received message: {receivedMessage}");
-
-                    Assert.AreEqual(payload, messageData);
-
-                    Assert.AreEqual(1, receivedMessage.Properties.Count);
-                    var prop = receivedMessage.Properties.Single();
-                    Assert.AreEqual("property1", prop.Key);
-                    Assert.AreEqual(p1Value, prop.Value);
-
-                    await dc.CompleteAsync(receivedMessage).ConfigureAwait(false);
-                    break;
-                }
-
-                if (sw.Elapsed.TotalMilliseconds > FaultInjection.RecoveryTimeMilliseconds)
-                {
-                    throw new TimeoutException("Test is running longer than expected.");
-                }
+            if (sw.Elapsed.TotalMilliseconds > FaultInjection.RecoveryTimeMilliseconds)
+            {
+                throw new TimeoutException("Test is running longer than expected.");
             }
 
             sw.Stop();
+           
+        }
+
+        private static bool MatchMessage(Client.Message message, string payload, string p1Value)
+        {
+            if (message != null)
+            {
+                s_log.WriteLine($"{nameof(MatchMessage)}: {message} with expected payload = {payload} and property[property1] = {p1Value}");
+                string messageData = Encoding.ASCII.GetString(message.GetBytes());
+                if (Equals(payload, messageData) && message.Properties.Count == 1)
+                {
+                    var prop = message.Properties.Single();
+                    return Equals("property1", prop.Key) && Equals(p1Value, prop.Value);
+
+                }
+            }
+            return false;
         }
     }
 }

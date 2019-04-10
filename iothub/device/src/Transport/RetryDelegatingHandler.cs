@@ -490,8 +490,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 {
                     if (Logging.IsEnabled) Logging.Enter(this, cancellationToken, nameof(OpenAsync));
 
+                    ThrowIfDisposed();
                     // Will throw on error.
                     await base.OpenAsync(cancellationToken).ConfigureAwait(false);
+                    if (_disposed)
+                    {
+                        Dispose();
+                        ThrowIfDisposed();
+                    }
                     _onConnectionStatusChanged(ConnectionStatus.Connected, ConnectionStatusChangeReason.Connection_Ok);
                 }
                 catch (IotHubException ex)

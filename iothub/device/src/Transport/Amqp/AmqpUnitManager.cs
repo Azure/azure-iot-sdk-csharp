@@ -9,42 +9,88 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
-    internal class AmqpUnitManager : IAmqpUnitCreator, IDisposable
+    internal class AmqpUnitManager : IAmqpUnitManager
     {
         private static readonly AmqpUnitManager s_instance = new AmqpUnitManager();
-
-        private IDictionary<string, IAmqpUnitCreator> _amqpConnectionPools;
+        private IDictionary<string, IAmqpConnectionManager> _amqpConnectionPools;
         private readonly object _lock = new object();
-        private bool _disposed;
 
         internal AmqpUnitManager()
         {
-            _amqpConnectionPools = new Dictionary<string, IAmqpUnitCreator>();
+            _amqpConnectionPools = new Dictionary<string, IAmqpConnectionManager>();
         }
+
         internal static AmqpUnitManager GetInstance()
         {
             return s_instance;
         }
 
-        public AmqpUnit CreateAmqpUnit(
+        public IAmqpUnit CreateAmqpUnit(
             DeviceIdentity deviceIdentity,
             Func<MethodRequestInternal, Task> methodHandler,
             Action<AmqpMessage> twinMessageListener,
-            Func<string, Message, Task> eventListener)
+            Func<string, Message, Task> eventListener,
+            Action<bool> onUnitDisconnected)
         {
-            IAmqpUnitCreator amqpConnectionPool = ResolveConnectionPool(deviceIdentity.IotHubConnectionString.HostName);
-            return amqpConnectionPool.CreateAmqpUnit(
+            if (Logging.IsEnabled) Logging.Enter(this, deviceIdentity, $"{nameof(CreateAmqpUnit)}");
+            IAmqpConnectionManager amqpConnectionManager = ResolveConnectionPool(deviceIdentity.IotHubConnectionString.HostName);
+            if (Logging.IsEnabled) Logging.Associate(deviceIdentity, amqpConnectionManager, $"{nameof(CreateAmqpUnit)}");
+            IAmqpConnectionHolder amqpConnectionHolder = amqpConnectionManager.AllocateAmqpConnectionHolder(deviceIdentity);
+            if (Logging.IsEnabled) Logging.Associate(deviceIdentity, amqpConnectionHolder, $"{nameof(CreateAmqpUnit)}");
+            IAmqpSessionHolder amqpSessionHolder = new AmqpSessionHolder(deviceIdentity, amqpConnectionHolder);
+            if (Logging.IsEnabled) Logging.Associate(deviceIdentity, amqpSessionHolder, $"{nameof(CreateAmqpUnit)}");
+            bool isPooling = deviceIdentity?.AmqpTransportSettings?.AmqpConnectionPoolSettings?.Pooling ?? false;
+
+            Action<bool> onDeviceDisconnected = gracefulDisconnect =>
+            {
+                if (Logging.IsEnabled) Logging.Enter(deviceIdentity, $"Notify connection device with pooling {isPooling} is disconnected with graceful {gracefulDisconnect}.", $"{nameof(onDeviceDisconnected)}");
+                if (!isPooling && gracefulDisconnect)
+                {
+                    amqpConnectionHolder.Close();
+                }
+
+                if (Logging.IsEnabled) Logging.Exit(deviceIdentity, $"Notify connection device is with pooling {isPooling} disconnected with graceful {gracefulDisconnect}.", $"{nameof(onDeviceDisconnected)}");
+            };
+
+            Action<IStatusMonitor> onDeviceDisposed = statusMonitor =>
+            {
+                if (Logging.IsEnabled) Logging.Enter(deviceIdentity, $"Notify connection device with pooling {isPooling} is disposed.", $"{nameof(onDeviceDisposed)}");
+
+                amqpConnectionHolder.DetachStatusMonitor(statusMonitor);
+                if (!isPooling)
+                {
+                    amqpConnectionHolder.Dispose();
+                }
+
+
+                if (Logging.IsEnabled) Logging.Exit(deviceIdentity, $"Notify connection device with pooling {isPooling} is disposed.", $"{nameof(onDeviceDisposed)}");
+            };
+
+            IAmqpUnit amqpUnit = new AmqpUnit(
                 deviceIdentity,
+                amqpSessionHolder,
                 methodHandler,
                 twinMessageListener,
-                eventListener);
+                eventListener,
+                onDeviceDisconnected,
+                onDeviceDisposed
+            );
+
+            // Connection directly report to AmqpUnit it's status to trigger pipeline to reconnect
+            amqpConnectionHolder.AddStatusMonitor(amqpUnit);
+            // Session directly report to AmqpUnit it's status to trigger pipeline to reconnect
+            amqpSessionHolder.AddStatusMonitor(amqpUnit);
+            
+            if (Logging.IsEnabled) Logging.Exit(deviceIdentity, amqpUnit, $"{nameof(CreateAmqpUnit)}");
+            return amqpUnit;
+            
         }
 
-        private IAmqpUnitCreator ResolveConnectionPool(string host)
+        private IAmqpConnectionManager ResolveConnectionPool(string host)
         {
             lock (_lock)
             {
-                _amqpConnectionPools.TryGetValue(host, out IAmqpUnitCreator amqpConnectionPool);
+                _amqpConnectionPools.TryGetValue(host, out IAmqpConnectionManager amqpConnectionPool);
                 if (amqpConnectionPool == null)
                 {
                     amqpConnectionPool = new AmqpConnectionPool();
@@ -56,23 +102,5 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        private void Dispose(bool disposing)
-        {
-            if (_disposed) return;
-
-            if (disposing)
-            {
-                if (Logging.IsEnabled) Logging.Info(this, disposing, $"{nameof(Dispose)}");
-                _amqpConnectionPools.Clear();
-            }
-
-            _disposed = true;
-        }
     }
 }

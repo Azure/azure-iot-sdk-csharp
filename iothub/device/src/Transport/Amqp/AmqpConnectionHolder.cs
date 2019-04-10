@@ -2,201 +2,152 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.Azure.Amqp;
+using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Shared;
 using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
-    internal class AmqpConnectionHolder : IAmqpConnectionHolder, IDisposable
+    class AmqpResource : IDisposable
     {
-        public event EventHandler OnConnectionDisconnected;
-        private readonly DeviceIdentity DeviceIdentity;
-        private readonly IAmqpConnector Connector;
-        private readonly SemaphoreSlim Lock;
-        private readonly IDictionary<DeviceIdentity, AmqpUnit> AmqpUnits;
-        private AmqpConnection AmqpConnection;
-        private IAmqpAuthenticationRefresher AmqpAuthenticationRefresher;
-        private AmqpCbsLink AmqpCbsLink;
+        private readonly Action<AmqpResource> _onDiconnected;
+        private readonly AmqpConnection _amqpConnection;
+        private readonly AmqpCbsLink _amqpCbsLink;
+        private readonly IAmqpAuthenticationRefresher _amqpAuthenticationRefresher;
+        private readonly IAmqpConnector _amqpConnector;
         private bool _disposed;
 
-        public AmqpConnectionHolder(DeviceIdentity deviceIdentity)
+        AmqpResource(AmqpConnection amqpConnection, AmqpCbsLink amqpCbsLink, IAmqpAuthenticationRefresher amqpAuthenticationRefresher, Action<AmqpResource> onDiconnected)
         {
-            DeviceIdentity = deviceIdentity;
-            Connector = new AmqpConnector(deviceIdentity.AmqpTransportSettings, deviceIdentity.IotHubConnectionString.HostName);
-            Lock = new SemaphoreSlim(1, 1);
-            AmqpUnits = new ConcurrentDictionary<DeviceIdentity, AmqpUnit>();
-            if (Logging.IsEnabled) Logging.Associate(this, DeviceIdentity, $"{nameof(DeviceIdentity)}");
+            _amqpConnection = amqpConnection;
+            _amqpCbsLink = amqpCbsLink;
+            _amqpAuthenticationRefresher = amqpAuthenticationRefresher;
+            _onDiconnected = onDiconnected;
+            _amqpConnection.Closed += OnDisconnected;
         }
 
-        private async Task<IAmqpAuthenticationRefresher> AuthenticationRefresherCreator(DeviceIdentity deviceIdentity, TimeSpan timeout)
+        internal static async Task<AmqpResource> AllocateAsync(DeviceIdentity deviceIdentity, Action<AmqpResource> diconnectionNotification, TimeSpan timeout)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, deviceIdentity, timeout, $"{nameof(AuthenticationRefresherCreator)}");
-            if (AmqpConnection == null)
-            {
-                throw new IotHubCommunicationException();
-            }
-            AmqpCbsLink = AmqpCbsLink ?? new AmqpCbsLink(AmqpConnection);
-            
-            IAmqpAuthenticationRefresher amqpAuthenticator = new AmqpAuthenticationRefresher(deviceIdentity, AmqpCbsLink);
-            await amqpAuthenticator.InitLoopAsync(timeout).ConfigureAwait(false);
-            if (Logging.IsEnabled) Logging.Exit(this, deviceIdentity, timeout, $"{nameof(AuthenticationRefresherCreator)}");
-            return amqpAuthenticator;
-        }
-
-        public AmqpUnit CreateAmqpUnit(
-            DeviceIdentity deviceIdentity, 
-            Func<MethodRequestInternal, Task> methodHandler, 
-            Action<AmqpMessage> twinMessageListener, 
-            Func<string, Message, Task> eventListener)
-        {
-            if (Logging.IsEnabled) Logging.Enter(this, deviceIdentity, $"{nameof(CreateAmqpUnit)}");
-            AmqpUnit amqpUnit = new AmqpUnit(
-                deviceIdentity, 
-                AmqpSessionCreator, 
-                AuthenticationRefresherCreator,
-                methodHandler,
-                twinMessageListener, 
-                eventListener);
-            amqpUnit.OnUnitDisconnected += (o, args) =>
-            {
-                bool gracefulDisconnect = (bool)o;
-                RemoveDevice(deviceIdentity, gracefulDisconnect);
-            };
-
-            AmqpUnits.Remove(deviceIdentity);
-            AmqpUnits.Add(deviceIdentity, amqpUnit);
-            if (Logging.IsEnabled) Logging.Exit(this, deviceIdentity, $"{nameof(CreateAmqpUnit)}");
-            return amqpUnit;
-        }
-
-        private async Task<AmqpSession> AmqpSessionCreator(DeviceIdentity deviceIdentity, ILinkFactory linkFactory, AmqpSessionSettings amqpSessionSettings, TimeSpan timeout)
-        {
-            if (Logging.IsEnabled) Logging.Enter(this, deviceIdentity, timeout, $"{nameof(AmqpSessionCreator)}");
-            AmqpConnection amqpConnection = await EnsureConnection(timeout).ConfigureAwait(false);
-            AmqpSession amqpSession = new AmqpSession(amqpConnection, amqpSessionSettings, linkFactory);
-            amqpConnection.AddSession(amqpSession, new ushort?());
-            if (Logging.IsEnabled) Logging.Associate(amqpConnection, amqpSession, $"{nameof(AmqpSessionCreator)}");
-            if (Logging.IsEnabled) Logging.Exit(this, deviceIdentity, timeout, $"{nameof(AmqpSessionCreator)}");
-            return amqpSession;
-        }
-
-        public int GetNumberOfUnits()
-        {
-            int count = AmqpUnits.Count;
-            if (Logging.IsEnabled) Logging.Info(this, count, $"{nameof(GetNumberOfUnits)}");
-            return count;
-        }
-        private async Task<AmqpConnection> EnsureConnection(TimeSpan timeout)
-        {
-            if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(EnsureConnection)}");
+            if (Logging.IsEnabled) Logging.Enter(typeof(AmqpResource), deviceIdentity, timeout, $"{nameof(AllocateAsync)}");
+            IAmqpConnector amqpConnector = null;
             AmqpConnection amqpConnection = null;
             IAmqpAuthenticationRefresher amqpAuthenticationRefresher = null;
-            AmqpCbsLink amqpCbsLink = null;
-            bool gain = await Lock.WaitAsync(timeout).ConfigureAwait(false);
-            if (!gain)
-            {
-                throw new TimeoutException();
-            }
             try
             {
-                if (AmqpConnection == null)
+                amqpConnector = new AmqpConnector(deviceIdentity.AmqpTransportSettings, deviceIdentity.IotHubConnectionString.HostName);
+                amqpConnection = await amqpConnector.OpenConnectionAsync(timeout).ConfigureAwait(false);
+                AmqpCbsLink amqpCbsLink = new AmqpCbsLink(amqpConnection);
+                if (deviceIdentity.AuthenticationModel != AuthenticationModel.X509 && deviceIdentity.AuthenticationModel == AuthenticationModel.SasGrouped)
                 {
-                    if (Logging.IsEnabled) Logging.Info(this, "Creating new AmqpConnection", $"{nameof(EnsureConnection)}");
-                    // Create AmqpConnection
-                    amqpConnection = await Connector.OpenConnectionAsync(timeout).ConfigureAwait(false);
+                    amqpAuthenticationRefresher = await StartAmqpAuthenticationRefresherAsync(deviceIdentity, amqpCbsLink, timeout).ConfigureAwait(false);
+                }
+                AmqpResource amqpResource = new AmqpResource(amqpConnection, amqpCbsLink, amqpAuthenticationRefresher, diconnectionNotification);
+                if (Logging.IsEnabled) Logging.Associate(amqpResource, amqpConnection, $"{nameof(AllocateAsync)}");
+                if (Logging.IsEnabled) Logging.Associate(amqpResource, amqpCbsLink, $"{nameof(AllocateAsync)}");
+                if (Logging.IsEnabled)Logging.Associate(amqpResource, amqpAuthenticationRefresher, $"{nameof(AllocateAsync)}");
+                if (Logging.IsEnabled) Logging.Exit(typeof(AmqpResource), timeout, $"{nameof(AllocateAsync)}");
+                return amqpResource;
+            }
+            catch (Exception ex) when(!ex.IsFatal())
+            {
+                amqpConnector?.Dispose();
+                amqpAuthenticationRefresher?.StopLoop();
+                if (amqpConnection?.IsClosing() ?? false && ex is InvalidOperationException)
+                {
+                    throw new IotHubCommunicationException("Amqp connection is closed.");
+                }
+                AmqpHelper.AbortAmqpObject(amqpConnection);
+                throw;
+            }
+        }
 
-                    if (DeviceIdentity.AuthenticationModel != AuthenticationModel.X509)
-                    {
-                        if (AmqpCbsLink == null)
-                        {
-                            if (Logging.IsEnabled) Logging.Info(this, "Creating new AmqpCbsLink", $"{nameof(EnsureConnection)}");
-                            amqpCbsLink = new AmqpCbsLink(amqpConnection);
-                        }
-                        else
-                        {
-                            amqpCbsLink = AmqpCbsLink;
-                        }
+        internal static async Task<IAmqpAuthenticationRefresher> StartAmqpAuthenticationRefresherAsync(DeviceIdentity deviceIdentity, AmqpCbsLink amqpCbsLink, TimeSpan timeout)
+        {
+            if (Logging.IsEnabled) Logging.Enter(typeof(AmqpResource), deviceIdentity, timeout, $"{nameof(StartAmqpAuthenticationRefresherAsync)}");
+            AmqpAuthenticationRefresher amqpAuthenticationRefresher = new AmqpAuthenticationRefresher(deviceIdentity, amqpCbsLink);
+            await amqpAuthenticationRefresher.InitLoopAsync(timeout).ConfigureAwait(false);
+            if (Logging.IsEnabled) Logging.Exit(typeof(AmqpResource), deviceIdentity, timeout, $"{nameof(StartAmqpAuthenticationRefresherAsync)}");
+            return amqpAuthenticationRefresher;
+        }
 
-                        if (DeviceIdentity.AuthenticationModel == AuthenticationModel.SasGrouped)
-                        {
-                            if (Logging.IsEnabled) Logging.Info(this, "Creating connection width AmqpAuthenticationRefresher", $"{nameof(EnsureConnection)}");
-                            amqpAuthenticationRefresher = new AmqpAuthenticationRefresher(DeviceIdentity, amqpCbsLink);
-                            await amqpAuthenticationRefresher.InitLoopAsync(timeout).ConfigureAwait(false);
-                        }
-                    }
-                    AmqpConnection = amqpConnection;
-                    AmqpCbsLink = amqpCbsLink;
-                    AmqpAuthenticationRefresher = amqpAuthenticationRefresher;
-                    AmqpConnection.Closed += OnConnectionClosed;
-                    if (Logging.IsEnabled) Logging.Associate(this, AmqpConnection, $"{nameof(AmqpConnection)}");
-                    if (Logging.IsEnabled) Logging.Associate(this, AmqpCbsLink, $"{nameof(AmqpCbsLink)}");
-                }
-                else if (AmqpConnection.IsClosing())
+        internal async Task<IAmqpAuthenticationRefresher> StartAmqpAuthenticationRefresherAsync(DeviceIdentity deviceIdentity, TimeSpan timeout)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, deviceIdentity, timeout, $"{nameof(StartAmqpAuthenticationRefresherAsync)}");
+            try
+            {
+                IAmqpAuthenticationRefresher amqpAuthenticationRefresher = await StartAmqpAuthenticationRefresherAsync(deviceIdentity, _amqpCbsLink, timeout).ConfigureAwait(false);
+                if (Logging.IsEnabled) Logging.Associate(deviceIdentity, amqpAuthenticationRefresher, $"{nameof(StartAmqpAuthenticationRefresherAsync)}");
+                if (Logging.IsEnabled) Logging.Exit(this, deviceIdentity, timeout, $"{nameof(StartAmqpAuthenticationRefresherAsync)}");
+                return amqpAuthenticationRefresher;
+
+            }
+            catch(Exception ex) when(!ex.IsFatal())
+            {
+                if (_amqpConnection.IsClosing())
                 {
-                    throw new IotHubCommunicationException("AMQP connection is closing.");
+                    throw new IotHubCommunicationException("Amqp connection is closed."); 
                 }
-                else
-                {
-                    amqpConnection = AmqpConnection;
-                }
+                throw;
+            }
+        }
+
+        public async Task<AmqpSession> CreateAmqpSessionAsync(DeviceIdentity deviceIdentity, TimeSpan timeout)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, deviceIdentity, timeout, $"{nameof(CreateAmqpSessionAsync)}");
+            try
+            {
+                AmqpSession amqpSession = new AmqpSession(
+                    _amqpConnection, 
+                    new AmqpSessionSettings()
+                     {
+                         Properties = new Fields()
+                     }, 
+                    AmqpLinkFactory.GetInstance()
+                );
+                _amqpConnection.AddSession(amqpSession, new ushort?());
+                await amqpSession.OpenAsync(timeout).ConfigureAwait(false);
+                if (Logging.IsEnabled) Logging.Associate(this, amqpSession, $"{nameof(CreateAmqpSessionAsync)}");
+                if (Logging.IsEnabled) Logging.Associate(deviceIdentity, amqpSession, $"{nameof(CreateAmqpSessionAsync)}");
+                if (Logging.IsEnabled) Logging.Exit(this, deviceIdentity, timeout, $"{nameof(CreateAmqpSessionAsync)}");
+                return amqpSession;
             }
             catch (Exception ex) when (!ex.IsFatal())
             {
-                amqpCbsLink?.Close();
-                amqpAuthenticationRefresher?.StopLoop();
-                amqpConnection?.SafeClose();
-                throw;
-            }
-            finally
-            {
-                Lock.Release();
-            }
-            if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(EnsureConnection)}");
-            return amqpConnection;
-        }
-
-        private void OnConnectionClosed(object o, EventArgs args)
-        {
-            if (Logging.IsEnabled) Logging.Enter(this, o, $"{nameof(OnConnectionClosed)}");
-            if (AmqpConnection != null && ReferenceEquals(AmqpConnection, o))
-            {
-                AmqpAuthenticationRefresher?.StopLoop();
-                foreach (AmqpUnit unit in AmqpUnits.Values)
+                if (_amqpConnection.IsClosing() && ex is InvalidOperationException)
                 {
-                    unit.OnConnectionDisconnected();
+                    // AMQP will throw InvalidOperationException if amqpConnection is closed anyhow, retry in this case.
+                    throw new IotHubCommunicationException("Amqp connection is closed.");
                 }
-                AmqpUnits.Clear();
-                OnConnectionDisconnected?.Invoke(this, EventArgs.Empty);
+                else
+                {
+                    throw;
+                }
             }
-            if (Logging.IsEnabled) Logging.Exit(this, o, $"{nameof(OnConnectionClosed)}");
         }
 
-        private void RemoveDevice(DeviceIdentity deviceIdentity, bool gracefulDisconnect)
+        internal bool IsInvalid()
         {
-            if (Logging.IsEnabled) Logging.Enter(this, deviceIdentity, $"{nameof(RemoveDevice)}");
-            bool removed = AmqpUnits.Remove(deviceIdentity);
-            if (removed && GetNumberOfUnits() == 0)
-            {
-                // TODO #887: handle gracefulDisconnect
-                Shutdown();
-            }
-            if (Logging.IsEnabled) Logging.Exit(this, deviceIdentity, $"{nameof(RemoveDevice)}");
+            return _amqpConnection?.IsClosing() ?? true;
         }
 
-        private void Shutdown()
+        internal bool IsValid()
         {
-            if (Logging.IsEnabled) Logging.Enter(this, AmqpConnection, $"{nameof(Shutdown)}");
-            AmqpAuthenticationRefresher?.StopLoop();
-            AmqpConnection?.Abort();
-            OnConnectionDisconnected?.Invoke(this, EventArgs.Empty);
-            if (Logging.IsEnabled) Logging.Exit(this, AmqpConnection, $"{nameof(Shutdown)}");
+            return !IsInvalid();
+        }
+
+        internal bool IsDisposed()
+        {
+            return _disposed;
+        }
+
+        private void OnDisconnected(object o, EventArgs args)
+        {
+            _amqpAuthenticationRefresher?.StopLoop();
+            _onDiconnected?.Invoke(this);
         }
 
         public void Dispose()
@@ -212,15 +163,143 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             if (Logging.IsEnabled) Logging.Info(this, disposing, $"{nameof(Dispose)}");
             if (disposing)
             {
-                AmqpConnection?.Abort();
-                Lock?.Dispose();
-                Connector?.Dispose();
-                AmqpUnits?.Clear();
-                AmqpAuthenticationRefresher?.Dispose();
-                OnConnectionDisconnected?.Invoke(this, EventArgs.Empty);
+                _amqpConnector?.Dispose();
+                _amqpAuthenticationRefresher?.Dispose();
+                _amqpConnection?.Abort();
             }
 
             _disposed = true;
+            
+        }
+    }
+
+    internal class AmqpConnectionHolder : AbstractStatusWatcher, IAmqpConnectionHolder
+    {
+        private readonly SemaphoreSlim _connectionLock;
+
+        private AmqpResource _amqpResource;
+
+        public AmqpConnectionHolder() : base()
+        {
+            _connectionLock = new SemaphoreSlim(1, 1);
+        }
+
+        private async Task<AmqpResource> EnsureAmqpResource(DeviceIdentity deviceIdentity, TimeSpan timeout)
+        {
+
+            bool gain = await _connectionLock.WaitAsync(timeout).ConfigureAwait(false);
+            if (!gain)
+            {
+                throw new TimeoutException();
+            }
+
+            if (Logging.IsEnabled) Logging.Enter(this, deviceIdentity, timeout, $"{nameof(EnsureAmqpResource)}");
+            AmqpResource amqpResource = GetAmqpResource();
+            try
+            {
+                if (amqpResource?.IsInvalid() ?? true)
+                {
+                    amqpResource = await AmqpResource.AllocateAsync(deviceIdentity, OnDisconnected, timeout).ConfigureAwait(false);
+                    lock (_stateLock)
+                    {
+                        if (_disposed)
+                        {
+                            // release resource
+                            amqpResource?.Dispose();
+                            throw new ObjectDisposedException("AmqpConnectionHolder is disposed.");
+                        }
+                        else
+                        {
+                            if (Logging.IsEnabled) Logging.Associate(deviceIdentity, _amqpResource, $"{nameof(EnsureAmqpResource)}");
+                            _amqpResource = amqpResource;
+                        }
+
+                    }
+                }
+            }
+            finally
+            {
+                _connectionLock.Release();
+            }
+
+            ThrowExceptionIfClosedOrDisposed();
+            if (Logging.IsEnabled) Logging.Exit(this, deviceIdentity, timeout, $"{nameof(EnsureAmqpResource)}");
+            return amqpResource;
+        }
+
+        public async Task<IAmqpAuthenticationRefresher> AllocateAuthenticationRefresher(DeviceIdentity deviceIdentity, TimeSpan timeout)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, deviceIdentity, timeout, $"{nameof(AllocateAuthenticationRefresher)}");
+            AmqpResource amqpResource = await EnsureAmqpResource(deviceIdentity, timeout).ConfigureAwait(false);
+            IAmqpAuthenticationRefresher amqpAuthenticator = await amqpResource.StartAmqpAuthenticationRefresherAsync(deviceIdentity, timeout).ConfigureAwait(false);
+            if (Logging.IsEnabled) Logging.Exit(this, deviceIdentity, timeout, $"{nameof(AllocateAuthenticationRefresher)}");
+            return amqpAuthenticator;
+        }
+
+        private void OnDisconnected(AmqpResource amqpResource)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, amqpResource, $"{nameof(OnDisconnected)}");
+            ChangeStatus(Status.Closed);
+            if (Logging.IsEnabled) Logging.Exit(this, amqpResource, $"{nameof(OnDisconnected)}");
+        }
+
+        private AmqpResource GetAmqpResource()
+        {
+            lock (_stateLock)
+            {
+                if (_disposed)
+                {
+                    throw new ObjectDisposedException("AmqpConnectionHolder is disposed.");
+                }
+                return _amqpResource;
+            }
+        }
+
+        public async Task<IAmqpAuthenticationRefresher> StartAmqpAuthenticationRefresherAsync(DeviceIdentity deviceIdentity, TimeSpan timeout)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, deviceIdentity, $"{nameof(StartAmqpAuthenticationRefresherAsync)}");
+            AmqpResource amqpResource = await EnsureAmqpResource(deviceIdentity, timeout).ConfigureAwait(false);
+            IAmqpAuthenticationRefresher amqpAuthenticationRefresher = await amqpResource.StartAmqpAuthenticationRefresherAsync(deviceIdentity, timeout).ConfigureAwait(false);
+            ThrowExceptionIfClosedOrDisposed();
+            if (Logging.IsEnabled) Logging.Exit(this, deviceIdentity, $"{nameof(StartAmqpAuthenticationRefresherAsync)}");
+            return amqpAuthenticationRefresher;
+        }
+
+        public async Task<AmqpSession> CreateAmqpSessionAsync(DeviceIdentity deviceIdentity, TimeSpan timeout)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, deviceIdentity, $"{nameof(CreateAmqpSessionAsync)}");
+            AmqpResource amqpResource = await EnsureAmqpResource(deviceIdentity, timeout).ConfigureAwait(false);
+            AmqpSession amqpSession = await amqpResource.CreateAmqpSessionAsync(deviceIdentity, timeout).ConfigureAwait(false);
+            ThrowExceptionIfClosedOrDisposed();
+            if (Logging.IsEnabled) Logging.Exit(this, deviceIdentity, $"{nameof(CreateAmqpSessionAsync)}");
+            return amqpSession;
+        }
+
+        public void Close()
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, "Close Amqp connection.", $"{nameof(Close)}");
+            _connectionLock.Wait();
+            try
+            {
+                ChangeStatus(Status.Closed);
+            }
+            finally
+            {
+                _connectionLock.Release();
+                if (Logging.IsEnabled) Logging.Exit(this, "Close Amqp connection.", $"{nameof(Close)}");
+            }
+        }
+
+        protected override void CleanupResource()
+        {
+            if (Logging.IsEnabled) Logging.Info(this, $"{nameof(CleanupResource)}");
+            _amqpResource?.Dispose();
+        }
+
+        protected override void DisposeResource()
+        {
+            if (Logging.IsEnabled) Logging.Info(this, $"{nameof(DisposeResource)}");
+            CleanupResource();
         }
     }
 }

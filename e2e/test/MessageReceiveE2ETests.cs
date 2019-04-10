@@ -19,12 +19,96 @@ namespace Microsoft.Azure.Devices.E2ETests
     {
         private readonly string DevicePrefix = $"E2E_{nameof(MessageReceiveE2ETests)}_";
         private static TestLogging _log = TestLogging.GetInstance();
+        private static TimeSpan S_ReceiveTimeout = TimeSpan.FromSeconds(20);
 
         private readonly ConsoleEventListener _listener;
 
         public MessageReceiveE2ETests()
         {
             _listener = TestConfig.StartEventListener();
+        }
+
+        [TestMethod]
+        public async Task Message_CloseWhileDeviceReceiving_Amqp()
+        {
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, TestDeviceType.Sasl).ConfigureAwait(false);
+            using (DeviceClient deviceClient = testDevice.CreateDeviceClient(Client.TransportType.Amqp_Tcp_Only))
+            {
+                try
+                {
+                    Task<Client.Message> receiveTask = deviceClient.ReceiveAsync(S_ReceiveTimeout);
+                    Task closeTask = Task.Run(async () =>
+                    {
+                        await Task.Delay(TimeSpan.FromSeconds(5)).ConfigureAwait(false);
+                        await deviceClient.CloseAsync().ConfigureAwait(false);
+                    });
+                    await Task.WhenAll(receiveTask, closeTask).ConfigureAwait(false);
+                    Client.Message message = receiveTask.Result;
+                }
+                catch (ObjectDisposedException ex)
+                {
+                    _log.WriteLine($"ReceiveAsync throws ObjectDisposedException: {ex}");
+                }
+            }
+
+            Assert.IsTrue(sw.Elapsed < S_ReceiveTimeout, $"Operation time should much less than {S_ReceiveTimeout}");
+            sw.Stop();
+        }
+
+        [TestMethod]
+        public async Task Message_DisposeWhileDeviceReceiving_Amqp()
+        {
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, TestDeviceType.Sasl).ConfigureAwait(false);
+            using (DeviceClient deviceClient = testDevice.CreateDeviceClient(Client.TransportType.Amqp_Tcp_Only))
+            {
+                try
+                {
+                    Task<Client.Message> receiveTask = deviceClient.ReceiveAsync(S_ReceiveTimeout);
+                    Task closeTask = Task.Run(async () =>
+                    {
+                        await Task.Delay(TimeSpan.FromSeconds(5)).ConfigureAwait(false);
+                        deviceClient.Dispose();
+                    });
+                    await Task.WhenAll(receiveTask, closeTask).ConfigureAwait(false);
+                    Client.Message message = receiveTask.Result;
+                }
+                catch (ObjectDisposedException ex)
+                {
+                    _log.WriteLine($"ReceiveAsync throws ObjectDisposedException: {ex}");
+                }
+            }
+
+            Assert.IsTrue(sw.Elapsed < S_ReceiveTimeout, $"Operation time should much less than {S_ReceiveTimeout}");
+            sw.Stop();
+        }
+
+        [TestMethod]
+        public async Task Message_CloseBeforeDeviceReceiving_Amqp()
+        {
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, TestDeviceType.Sasl).ConfigureAwait(false);
+            using (DeviceClient deviceClient = testDevice.CreateDeviceClient(Client.TransportType.Amqp_Tcp_Only))
+            {
+                try
+                {
+                    Task<Client.Message> receiveTask = deviceClient.ReceiveAsync(S_ReceiveTimeout);
+                    Task closeTask = deviceClient.CloseAsync();
+                    await Task.WhenAll(receiveTask, closeTask).ConfigureAwait(false);
+                    Client.Message message = receiveTask.Result;
+                }
+                catch (InvalidOperationException ex)
+                {
+                    _log.WriteLine($"ReceiveAsync throws InvalidOperationException: {ex}");
+                }
+            }
+
+            Assert.IsTrue(sw.Elapsed < S_ReceiveTimeout, $"Operation time should much less than {S_ReceiveTimeout}");
+            sw.Stop();
         }
 
         [TestMethod]

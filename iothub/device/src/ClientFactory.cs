@@ -4,7 +4,6 @@
 namespace Microsoft.Azure.Devices.Client
 {
     using System;
-    using System.Text.RegularExpressions;
     using Microsoft.Azure.Devices.Client.Extensions;
     using Microsoft.Azure.Devices.Client.Transport;
     using Microsoft.Azure.Devices.Client.Transport.Mqtt;
@@ -13,10 +12,6 @@ namespace Microsoft.Azure.Devices.Client
     internal class ClientFactory
     {
         private const string DeviceId = "DeviceId";
-        private const string DeviceIdParameterPattern = @"(^\s*?|.*;\s*?)" + DeviceId + @"\s*?=.*";
-        private static readonly TimeSpan regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
-        private static readonly Regex DeviceIdParameterRegex =
-            new Regex(DeviceIdParameterPattern, RegexOptions.Compiled | RegexOptions.IgnoreCase, regexTimeoutMilliseconds);
         
         /// <summary>
         /// Create an Amqp InternalClient from individual parameters
@@ -209,11 +204,6 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentNullException(nameof(deviceId));
             }
 
-            if (DeviceIdParameterRegex.IsMatch(connectionString))
-            {
-                throw new ArgumentException("Connection string must not contain DeviceId keyvalue parameter", nameof(connectionString));
-            }
-
             return CreateFromConnectionString(connectionString + ";" + DeviceId + "=" + deviceId, transportType);
         }
 
@@ -248,11 +238,6 @@ namespace Microsoft.Azure.Devices.Client
             if (deviceId == null)
             {
                 throw new ArgumentNullException(nameof(deviceId));
-            }
-
-            if (DeviceIdParameterRegex.IsMatch(connectionString))
-            {
-                throw new ArgumentException("Connection string must not contain DeviceId keyvalue parameter", nameof(connectionString));
             }
 
             return CreateFromConnectionString(connectionString + ";" + DeviceId + "=" + deviceId, transportSettings);
