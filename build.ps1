@@ -209,8 +209,12 @@ try {
 
     if (-not $nobuild)
     {
+        # We must disable package testing here as the E2E csproj may reference new APIs that are not available in existing NuGet packages.
+        $packageTempPath = $env:AZURE_IOT_LOCALPACKAGES
+        $env:AZURE_IOT_LOCALPACKAGES = ""
         # SDK binaries
         BuildProject . "Azure IoT C# SDK Solution"
+        $env:AZURE_IOT_LOCALPACKAGES = $packageTempPath
     }
 
     # Unit Tests require InternalsVisibleTo and can only run in Debug builds.
@@ -268,6 +272,11 @@ try {
         Write-Host -ForegroundColor Cyan "End-to-end Test execution"
         Write-Host
 
+        if ($env:AZURE_IOT_LOCALPACKAGES -ne "")
+        {
+            Write-Host -ForegroundColor Magenta "IMPORTANT: Using local packages."
+        }
+
         # Override verbosity to display individual test execution.
         $oldVerbosity = $verbosity
         $verbosity = "normal"
@@ -276,7 +285,7 @@ try {
         {
             RunTests e2e\test "End-to-end tests (NetCoreApp2.1, NET47, NET451)"
         }
-        else 
+        else
         {
             RunTests e2e\test "End-to-end tests (NetCoreApp2.1)" "netcoreapp2.1"
         }
