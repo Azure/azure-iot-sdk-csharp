@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             sw.Start();
             while (!isEventExist && sw.Elapsed.TotalMinutes < 30)
             {
-                isEventExist = await QueryMessage(query).ConfigureAwait(false);
+                isEventExist = await DoQuery(query).ConfigureAwait(false);
                 await Task.Delay(TimeSpan.FromMinutes(1)).ConfigureAwait(false);
             }
 
@@ -57,7 +57,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             return isEventExist;
         }
 
-        private async Task<bool> QueryMessage(string query)
+        private async Task<bool> DoQuery(string query)
         {
             using (HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, _queryUri))
             {
