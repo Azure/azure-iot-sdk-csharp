@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         public static Task<EventHubTestListener> CreateListener(string deviceName)
         {
-            return CreateListenerPal(deviceName);
+            return GetListenerAsync(deviceName);
         }
 
         public async Task<bool> WaitForMessage(string deviceId, string payload, string p1Value)
