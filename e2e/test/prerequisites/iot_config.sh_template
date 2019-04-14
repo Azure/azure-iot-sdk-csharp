@@ -44,16 +44,16 @@ export IOTHUB_EVENTHUB_CONSUMER_GROUP=
 @REM with the feature export raw events set to on
 
 @REM the ASC for IoT OMS workspace that connected to the hub
-set OMS_WORKSPACE_ID=""
+export OMS_WORKSPACE_ID=""
 
 @REM the Azure Active Directory tenant of the OMS workspace
-set OMS_AAD_TENANT=""
+export OMS_AAD_TENANT=""
 
 @REM the Azure Active Directory app id that has reader role on the workspace
-set OMS_AAD_APP_ID=""
+export OMS_AAD_APP_ID=""
 
 @REM the key for the given app
-set OMS_AAD_APP_KEY=""
+export OMS_AAD_APP_KEY=""
 
 
 # ---------- Device Provisioning Service Configuration ----------
