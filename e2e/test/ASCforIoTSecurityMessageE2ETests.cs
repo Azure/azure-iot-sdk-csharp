@@ -3,9 +3,9 @@
 
 using Microsoft.Azure.Devices.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Diagnostics.Tracing;
-using System.Globalization;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -15,24 +15,6 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestCategory("IoTHub-E2E")]
     public partial class ASCforIoTSecurityMessageE2ETests : IDisposable
     {
-        const string SecurityMessageTemplate =
-@"{{
-        ""AgentVersion"": ""0.0.1.21507"",
-        ""AgentId"": ""{0}"",
-        ""MessageSchemaVersion"": ""1.0"",
-        ""Events"": [{{
-            ""EventType"": ""Security"",
-            ""Category"": ""Periodic"",
-            ""Name"": ""ListeningPorts"",
-            ""IsEmpty"": true,
-            ""PayloadSchemaVersion"": ""1.0"",
-            ""Id"": ""{0}"",
-            ""TimestampLocal"": ""{1}"",
-            ""TimestampUTC"": ""{1}"",
-            ""Payload"": []
-          }}]
-        }}";
-
         private readonly string DevicePrefix = $"E2E_{nameof(ASCforIoTSecurityMessageE2ETests)}_";
         private readonly string ModulePrefix = $"E2E_{nameof(ASCforIoTSecurityMessageE2ETests)}_";
         private static string ProxyServerAddress = Configuration.IoTHub.ProxyServerAddress;
@@ -104,8 +86,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private Client.Message ComposeD2CSecurityTestMessage(out string eventId, out string payload, out string p1Value)
         {
             eventId = p1Value = Guid.NewGuid().ToString();
-            var now = DateTime.UtcNow;
-            payload = string.Format(CultureInfo.InvariantCulture, SecurityMessageTemplate, eventId, now);
+            payload = ComposeASCforIoTSecurityMessagePayload(eventId).ToString(Newtonsoft.Json.Formatting.None);
 
             Client.Message message = new Client.Message(Encoding.UTF8.GetBytes(payload))
             {
@@ -114,6 +95,32 @@ namespace Microsoft.Azure.Devices.E2ETests
             message.SetAsSecurityMessage();
 
             return message;
+        }
+
+        private JObject ComposeASCforIoTSecurityMessagePayload(string eventId)
+        {
+            var now = DateTime.UtcNow;
+            return new JObject
+            {
+                { "AgentVersion", "0.0.1" },
+                { "AgentId" , Guid.NewGuid().ToString() },
+                { "MessageSchemaVersion", "1.0" },
+                { "Events", new JArray
+                    { new JObject
+                        {
+                            { "EventType", "Security" },
+                            { "Category", "Periodic" },
+                            { "Name", "ListeningPorts" },
+                            { "IsEmpty", true },
+                            { "PayloadSchemaVersion", "1.0" },
+                            { "Id", eventId },
+                            { "TimestampLocal", now },
+                            { "TimestampUTC", now },
+                            { "Payload", new JArray() }
+                        }
+                    }
+                }
+            };
         }
 
         private async Task TestSecurityMessage(TestDeviceType type, Client.TransportType transport)

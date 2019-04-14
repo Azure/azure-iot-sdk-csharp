@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.Net.Http;
@@ -12,6 +15,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 {
     public class ASCforIoTOmsClient : IDisposable
     {
+        private const string AuthenticationAuthorityTemplate = "https://login.windows.net/{0}";
         private const string Audience =  "https://api.loganalytics.io/";
         private const string QueryUriTemplate = "https://api.loganalytics.io/{0}/workspaces/{1}/query";
         private const string LogAnalyticsApiVersion = "v1";
@@ -37,7 +41,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         private ASCforIoTOmsClient()
         {
             _client = new HttpClient();
-            _authenticationContext = new AuthenticationContext("https://login.windows.net/" + _aadTenant);
+            string authority = string.Format(CultureInfo.InvariantCulture, AuthenticationAuthorityTemplate, _aadTenant);
+            _authenticationContext = new AuthenticationContext(authority);
             _queryUri = string.Format(CultureInfo.InvariantCulture, QueryUriTemplate, LogAnalyticsApiVersion, _workspaceId);
         }
 
@@ -50,7 +55,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             while (!isEventExist && sw.Elapsed.TotalMinutes < 30)
             {
                 isEventExist = await DoQuery(query).ConfigureAwait(false);
-                await Task.Delay(TimeSpan.FromMinutes(1)).ConfigureAwait(false);
+                await Task.Delay(TimeSpan.FromSeconds(20)).ConfigureAwait(false);
             }
 
             sw.Stop();
@@ -96,7 +101,16 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         public void Dispose()
         {
-            _client.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _client.Dispose();
+            }
         }
     }
 }
