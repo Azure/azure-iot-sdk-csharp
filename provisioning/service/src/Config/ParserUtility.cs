@@ -45,48 +45,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         }
 
         /// <summary>
-        /// Helper to validate RegistrationId.
-        /// </summary>
-        /// <remarks>
-        /// A valid registration Id shall be alphanumeric, lowercase, and may contain hyphens. Max characters 128.
-        /// </remarks>
-        /// <param name="input">the <code>string</code> to be validated</param>
-        /// <exception cref="ArgumentException">if the provided <code>string</code> do not fits the criteria</exception>
-        public static void EnsureRegistrationId(string input)
-        {
-            /* Codes_SRS_PARSER_UTILITY_21_008: [The IsValidRegistrationId shall throw ArgumentException if the provided 
-                                                string is null or empty.] */
-            try
-            {
-                EnsureUTF8String(input);
-            }
-            catch(ArgumentException)
-            {
-                throw new ArgumentException("The provided ID contains non UTF-8 character");
-            }
-
-            /* Codes_SRS_PARSER_UTILITY_21_009: [The IsValidRegistrationId shall throw ArgumentException if the provided string 
-                                                contains more than 128 characters.] */
-            if (input.Length > 128)
-            {
-                throw new ArgumentException("The provided ID is bigger than 128 characters");
-            }
-
-            /* Codes_SRS_PARSER_UTILITY_21_010: [The IsValidRegistrationId shall throw ArgumentException if the provided string 
-                                                contains an illegal character.] */
-            char[] chars = input.ToCharArray();
-            foreach (char c in chars)
-            {
-                if (!(((c >= 'a') && (c <= 'z')) || ((c >= '0') && (c <= '9')) || (c == '-')))
-                {
-                    throw new ArgumentException("The provided ID contains non valid character");
-                }
-            }
-
-            /* Codes_SRS_PARSER_UTILITY_21_007: [The IsValidRegistrationId shall do nothing if the string is a valid ID.] */
-        }
-
-        /// <summary>
         /// Helper to validate if the provided string is not null, empty, or invalid Id.
         /// </summary>
         /// <param name="input">the <code>string</code> to be validated</param>

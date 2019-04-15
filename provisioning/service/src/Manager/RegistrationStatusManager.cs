@@ -24,9 +24,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             string id,
             CancellationToken cancellationToken)
         {
-            /* SRS_REGISTRATION_STATUS_MANAGER_28_001: [The GetAsync shall throw ArgumentException if the provided ID is null or empty.] */
-            ParserUtils.EnsureRegistrationId(id);
-
             /* SRS_REGISTRATION_STATUS_MANAGER_28_002: [The GetAsync shall sent the Get HTTP request to get the deviceRegistrationState information.] */
             ContractApiResponse contractApiResponse = await contractApiHttp.RequestAsync(
                 HttpMethod.Get,
@@ -72,9 +69,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             CancellationToken cancellationToken,
             string eTag = null)
         {
-            /* SRS_REGISTRATION_STATUS_MANAGER_28_006: [The DeleteAsync shall throw ArgumentException if the provided id is null or empty.] */
-            ParserUtils.EnsureRegistrationId(id);
-
             /* SRS_REGISTRATION_STATUS_MANAGER_28_007: [The DeleteAsync shall sent the Delete HTTP request to remove the deviceRegistrationState.] */
             await contractApiHttp.RequestAsync(
                 HttpMethod.Delete,
@@ -105,9 +99,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             {
                 throw new ArgumentException($"{nameof(pageSize)} cannot be negative");
             }
-
-            /* SRS_REGISTRATION_STATUS_MANAGER_28_009: [The CreateQuery shall throw ArgumentException if the provided enrollmentGroupId is not valid.]] */
-            ParserUtils.EnsureRegistrationId(enrollmentGroupId);
 
             /* SRS_REGISTRATION_STATUS_MANAGER_28_010: [The CreateQuery shall return a new Query for DeviceRegistrationState.] */
             return new Query(

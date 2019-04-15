@@ -30,43 +30,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
             TestAssert.Throws<ArgumentException>(() => ParserUtils.EnsureUTF8String("this is not a valid UTF8 \u1234"));
         }
 
-        /* Codes_SRS_PARSER_UTILITY_21_007: [The IsValidRegistrationId shall do nothing if the string is a valid ID.] */
-        [TestMethod]
-        public void ParserUtilsIsValidRegistrationIdSucceedOnValidId()
-        {
-            // arrange - act - assert
-            ParserUtils.EnsureRegistrationId("this-is-a-valid-registration-id");
-        }
-
-        [TestMethod]
-        public void ParserUtilsIsValidRegistrationIdSucceedSizeLimitedTo128Chars()
-        {
-            // arrange - act - assert
-            ParserUtils.EnsureRegistrationId(
-                "12345678901234567890123456789012345678901234567890" +
-                "12345678901234567890123456789012345678901234567890" +
-                "1234567890123456789012345678");
-        }
-
-        /* Codes_SRS_PARSER_UTILITY_21_008: [The IsValidRegistrationId shall throw ArgumentException if the provided string is null or empty.] */
-        /* Codes_SRS_PARSER_UTILITY_21_009: [The IsValidRegistrationId shall throw ArgumentException if the provided string contains more than 128 characters.] */
-        /* Codes_SRS_PARSER_UTILITY_21_010: [The IsValidRegistrationId shall throw ArgumentException if the provided string contains an illegal character.] */
-        [TestMethod]
-        public void ParserUtilsIsValidRegistrationIdThrowsOnInvalidId()
-        {
-            // arrange - act - assert
-            TestAssert.Throws<ArgumentException>(() => ParserUtils.EnsureRegistrationId(null));
-            TestAssert.Throws<ArgumentException>(() => ParserUtils.EnsureRegistrationId(""));
-            TestAssert.Throws<ArgumentException>(() => ParserUtils.EnsureRegistrationId("  "));
-            TestAssert.Throws<ArgumentException>(() => ParserUtils.EnsureRegistrationId("invalid spaces"));
-            TestAssert.Throws<ArgumentException>(() => ParserUtils.EnsureRegistrationId("Invalid-Uppercase"));
-            TestAssert.Throws<ArgumentException>(() => ParserUtils.EnsureRegistrationId("invalidnonutf8\u1234"));
-            TestAssert.Throws<ArgumentException>(() => ParserUtils.EnsureRegistrationId(
-                "invalid-size-4567890123456789012345678901234567890" +
-                "12345678901234567890123456789012345678901234567890" +
-                "12345678901234567890123456789"));
-        }
-
         /* Codes_SRS_PARSER_UTILITY_21_011: [The IsValidId shall do nothing if the string is a valid ID.] */
         [TestMethod]
         public void ParserUtilsIsValidIdSucceedOnValidId()

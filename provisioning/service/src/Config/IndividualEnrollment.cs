@@ -210,7 +210,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
             private set
             {
-                ParserUtils.EnsureRegistrationId(value);
                 _registrationId = value;
             }
         }
