@@ -1,0 +1,30 @@
+@startuml csharpDeviceClientDisconnect
+RetryDelegatingHandler->Pipeline: OpenAsync
+Pipeline->Network: Connection established
+RetryDelegatingHandler<-Pipeline: OpenAsync complete
+note right of RetryDelegatingHandler
+    If open succeeded, 
+    Post the disconnect 
+    notification request.
+end note
+RetryDelegatingHandler->Pipeline : **WaitForTransportClosedAsync [1]**
+RetryDelegatingHandler->Pipeline: [operations]
+RetryDelegatingHandler<-Pipeline: [operations]
+Pipeline<-Network: Disconnected
+RetryDelegatingHandler<-Pipeline: **WaitForTransportClosedAsync [1]** //completed//
+RetryDelegatingHandler->Pipeline: OpenAsync
+RetryDelegatingHandler<-Pipeline: OpenAsync complete
+RetryDelegatingHandler->Pipeline : **WaitForTransportClosedAsync [2]**
+RetryDelegatingHandler->Pipeline: [operations]
+RetryDelegatingHandler<-Pipeline: [operations]
+RetryDelegatingHandler->Pipeline: CloseAsync
+RetryDelegatingHandler<-Pipeline: **WaitForTransportClosedAsync [2]** //cancelled//
+Pipeline<->Network: Graceful close
+note right of Pipeline
+    RetryDelegatingHandler.Dispose 
+    will trigger an immediate
+    network disconnect (RST).
+    WaitForTransportClosedAsync will
+    still be cancelled.
+end note
+@enduml
