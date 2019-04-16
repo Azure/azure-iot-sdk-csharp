@@ -266,39 +266,15 @@ namespace Microsoft.Azure.Devices.E2ETests
         #region DeviceCapabilities
 
         [TestMethod]
-        public async Task ProvisioningDeviceClient_ValidRegistrationId_Http_SymmetricKey_RegisterOk_EdgeEnabled_GroupEnrollment()
-        {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Http1, AttestationType.SymmetricKey, EnrollmentType.Group, false, new DeviceCapabilities() { IotEdge = true }).ConfigureAwait(false);
-        }
-
-        [TestMethod]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_Amqp_SymmetricKey_RegisterOk_EdgeEnabled_GroupEnrollment()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Amqp, AttestationType.SymmetricKey, EnrollmentType.Group, false, new DeviceCapabilities() { IotEdge = true }).ConfigureAwait(false);
         }
 
         [TestMethod]
-        public async Task ProvisioningDeviceClient_ValidRegistrationId_Mqtt_SymmetricKey_RegisterOk_EdgeEnabled_GroupEnrollment()
-        {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Mqtt, AttestationType.SymmetricKey, EnrollmentType.Group, false, new DeviceCapabilities() { IotEdge = true }).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task ProvisioningDeviceClient_ValidRegistrationId_Http_SymmetricKey_RegisterOk_EdgeEnabled_IndividualEnrollment()
-        {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Http1, AttestationType.SymmetricKey, EnrollmentType.Individual, false, new DeviceCapabilities() { IotEdge = true }).ConfigureAwait(false);
-        }
-
-        [TestMethod]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_Amqp_SymmetricKey_RegisterOk_EdgeEnabled_IndividualEnrollment()
         {
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Amqp, AttestationType.SymmetricKey, EnrollmentType.Individual, false, new DeviceCapabilities() { IotEdge = true }).ConfigureAwait(false);
-        }
-                
-        [TestMethod]
-        public async Task ProvisioningDeviceClient_ValidRegistrationId_Mqtt_SymmetricKey_RegisterOk_EdgeEnabled_IndividualEnrollment()
-        {
-            await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Mqtt, AttestationType.SymmetricKey, EnrollmentType.Individual, false, new DeviceCapabilities() { IotEdge = true }).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -824,19 +800,13 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private async Task ConfirmExpectedDeviceCapabilities(DeviceRegistrationResult result, Client.IAuthenticationMethod auth, DeviceCapabilities capabilities)
         {
-            if (capabilities != null)
+            if (capabilities != null && capabilities.IotEdge)
             {
-                RegistryManager registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
-                Device device = await registryManager.GetDeviceAsync(result.DeviceId).ConfigureAwait(false);
-                if (capabilities.IotEdge)
-                {
-                    Assert.IsNotNull(device.Capabilities);
-                    Assert.IsTrue(device.Capabilities.IotEdge);
-                }
-                else
-                {
-                    Assert.IsTrue(device.Capabilities == null || !device.Capabilities.IotEdge);
-                }
+                //If device is edge device, it should be able to connect to iot hub as its edgehub module identity
+                Client.IotHubConnectionStringBuilder connectionStringBuilder = Client.IotHubConnectionStringBuilder.Create(result.AssignedHub, auth);
+                string edgehubConnectionString = connectionStringBuilder.ToString() + ";ModuleId=$edgeHub";
+                ModuleClient moduleClient = ModuleClient.CreateFromConnectionString(edgehubConnectionString);
+                await moduleClient.OpenAsync().ConfigureAwait(false);
             }
         }
         
