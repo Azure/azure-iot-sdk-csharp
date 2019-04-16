@@ -46,6 +46,11 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Samples
                 Console.WriteLine("Creating X509 DeviceClient authentication.");
                 auth = new DeviceAuthenticationWithX509Certificate(result.DeviceId, (_security as SecurityProviderX509).GetAuthenticationCertificate());
             }
+            else if (_security is SecurityProviderSymmetricKey)
+            {
+                Console.WriteLine("Creating Symmetric Key DeviceClient authenication");
+                auth = new DeviceAuthenticationWithRegistrySymmetricKey(result.DeviceId, (_security as SecurityProviderSymmetricKey).GetPrimaryKey());
+            }
             else
             {
                 throw new NotSupportedException("Unknown authentication type.");
