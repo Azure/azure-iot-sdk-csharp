@@ -10,6 +10,7 @@ var associateEvents = from x in xml.Elements()
 // Find all devices
 var devices = from x in associateEvents
 			  where x.Attribute("first").Value.Contains("DeviceClient")
+
 			  select x.Attribute("first").Value;
 
 // Find all modules

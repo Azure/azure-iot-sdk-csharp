@@ -1,7 +1,7 @@
 <Query Kind="Statements" />
 
 var xml = XElement.Load(@"<FILENAME>");
-string entity = "<objectHash>"; // E.g. ErrorDelegatingHandler#62748590
+string entity = "<OBJECT_HASH>"; //e.g. ErrorDelegatingHandler#24710082
 
 // All associate events
 var associateEvents = from x in xml.Elements()
