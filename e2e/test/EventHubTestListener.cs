@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         public static Task<EventHubTestListener> CreateListener(string deviceName)
         {
-            return GetListenerAsync(deviceName);
+            return CreateListenerPal(deviceName);
         }
 
         public async Task<bool> WaitForMessage(string deviceId, string payload, string p1Value)
@@ -81,7 +81,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                         read = bodyStream.Read(bodyBytes, totalRead, bodyBytes.Length - totalRead);
                         totalRead += read;
                     } while (read > 0 && (bodyBytes.Length - totalRead > 0));
-                    
+
                     if (read > 0)
                     {
                         throw new InternalBufferOverflowException("EventHub message exceeded internal buffer.");
