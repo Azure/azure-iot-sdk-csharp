@@ -35,8 +35,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             Client.TransportType transport,
             int poolSize,
             int devicesCount,
-            Func<DeviceClient, Task> testOperation,
-            Func<DeviceClient, Task> cleanupOperation,
+            Func<DeviceClient, TestDevice, Task> testOperation,
+            Func<IList<DeviceClient>, Task> cleanupOperation,
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
         {
             var transportSettings = new ITransportSettings[]
@@ -51,7 +51,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
             };
 
-            ICollection<DeviceClient> deviceClients = new List<DeviceClient>();
+            IList<TestDevice> testDevices = new List<TestDevice>();
+            IList<DeviceClient> deviceClients = new List<DeviceClient>();
 
             // Arrange
             // Initialize the test device client instances
@@ -62,8 +63,11 @@ namespace Microsoft.Azure.Devices.E2ETests
                 TestDevice testDevice = await TestDevice.GetTestDeviceAsync($"{devicePrefix}_{i}_").ConfigureAwait(false);
                 DeviceClient deviceClient = testDevice.CreateDeviceClient(transportSettings, authScope);
                 // WIP: set connection status change handler
-                deviceClient.SetConnectionStatusChangesHandler(ConnectionStatusChangesHandler);
+                // Commented out - needs to be per client + understand depedence on other 
+                // single device test running in parallel at the same time
+                //deviceClient.SetConnectionStatusChangesHandler(ConnectionStatusChangesHandler);
 
+                testDevices.Add(testDevice);
                 deviceClients.Add(deviceClient);
             }
 
@@ -71,9 +75,9 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 // Act-Assert
                 // Perform the test operation and verify the operation is successful
-                foreach (DeviceClient deviceClient in deviceClients)
+                for (int i = 0; i < devicesCount; i++)
                 {
-                    await testOperation(deviceClient).ConfigureAwait(false);
+                    await testOperation(deviceClients[i], testDevices[i]).ConfigureAwait(false);
                 }
 
                 // Close the device client instances and verify the connection status change checks
@@ -90,10 +94,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             finally
             {
                 // Close the service-side components and dispose the device client instances.
-                foreach (DeviceClient deviceClient in deviceClients)
-                {
-                    await cleanupOperation(deviceClient).ConfigureAwait(false);
-                }
+                await cleanupOperation(deviceClients).ConfigureAwait(false);
             }
         }
     }
