@@ -234,7 +234,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 }
                 else
                 {
-                    ParserUtils.EnsureValidId(value);
                     _deviceId = value;
                 }
             }
