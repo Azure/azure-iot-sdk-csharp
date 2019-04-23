@@ -91,55 +91,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         public void EnrollmentGroupConstructorThrowsOnInvalidParameters()
         {
             // arrange - act - assert
-            TestAssert.Throws<ArgumentException>(() => new EnrollmentGroup(null, SampleX509RootAttestation));
-            TestAssert.Throws<ArgumentException>(() => new EnrollmentGroup("", SampleX509RootAttestation));
-            TestAssert.Throws<ArgumentException>(() => new EnrollmentGroup("Invalid Registration Id", SampleX509RootAttestation));
             TestAssert.Throws<ArgumentException>(() => new EnrollmentGroup(SampleEnrollmentGroupId, null));
             TestAssert.Throws<ArgumentException>(() => new EnrollmentGroup(SampleEnrollmentGroupId, SampleTpmAttestation));
             TestAssert.Throws<ArgumentException>(() => new EnrollmentGroup(SampleEnrollmentGroupId, SampleX509ClientAttestation));
-        }
-
-        /* SRS_ENROLLMENT_GROUP_21_003: [The constructor shall throws ProvisioningServiceClientException if one of the 
-                                                provided parameters in JSON is not valid.] */
-        [TestMethod]
-        public void EnrollmentGroupConstructorJSONThrowsOnNonEnrollmentGroupID()
-        {
-            // arrange
-            string invalidJson =
-                "{\n" +
-                "   \"attestation\":{\n" +
-                "       \"type\":\"x509\",\n" +
-                "       \"x509\":{\n" +
-                "           \"signingCertificates\":{\n" +
-                "               \"primary\":{\n" +
-                "                   \"info\": {\n" +
-                "                       \"subjectName\": \"CN=ROOT_00000000-0000-0000-0000-000000000000, OU=Azure IoT, O=MSFT, C=US\",\n" +
-                "                       \"sha1Thumbprint\": \"0000000000000000000000000000000000\",\n" +
-                "                       \"sha256Thumbprint\": \"" + SampleEnrollmentGroupId + "\",\n" +
-                "                       \"issuerName\": \"CN=ROOT_00000000-0000-0000-0000-000000000000, OU=Azure IoT, O=MSFT, C=US\",\n" +
-                "                       \"notBeforeUtc\": \"2017-11-14T12:34:18Z\",\n" +
-                "                       \"notAfterUtc\": \"2017-11-20T12:34:18Z\",\n" +
-                "                       \"serialNumber\": \"000000000000000000\",\n" +
-                "                       \"version\": 3\n" +
-                "                   }\n" +
-                "               }\n" +
-                "           }\n" +
-                "       }\n" +
-                "   },\n" +
-                "   \"iotHubHostName\":\"" + SampleIotHubHostName + "\",\n" +
-                "   \"initialTwin\":{\n" +
-                "       \"tags\":{\n" +
-                "           \"tag1\":\"val1\",\n" +
-                "       },\n" +
-                "   },\n" +
-                "   \"provisioningStatus\":\"" + SampleProvisioningStatus + "\",\n" +
-                "   \"createdDateTimeUtc\": \"" + SampleCreateDateTimeUTCString + "\",\n" +
-                "   \"lastUpdatedDateTimeUtc\": \"" + SampleLastUpdatedDateTimeUTCString + "\",\n" +
-                "   \"etag\": \"" + SampleEtag + "\"\n" +
-                "}";
-
-            // act - assert
-            TestAssert.Throws<ProvisioningServiceClientException>(() => Newtonsoft.Json.JsonConvert.DeserializeObject<EnrollmentGroup>(invalidJson));
         }
 
         [TestMethod]
