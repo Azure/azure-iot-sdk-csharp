@@ -165,6 +165,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// <param name="createdDateTimeUtc">the <code>DateTime</code> with the date and time that the enrollment was created. This is optional and can be <code>null</code>.</param>
         /// <param name="lastUpdatedDateTimeUtc">the <code>DateTime</code> with the date and time that the enrollment was updated. This is optional and can be <code>null</code>.</param>
         /// <param name="eTag">the <code>string</code> with the eTag that identify the correct instance of the enrollment in the service. It cannot be <code>null</code> or empty.</param>
+        /// <param name="capabilities">The capabilities of the device (ie: is it an edge device?)</param>
         /// <exception cref="ProvisioningServiceClientException">if the received JSON is invalid.</exception>
         [JsonConstructor]
         internal EnrollmentGroup(
@@ -175,7 +176,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             ProvisioningStatus? provisioningStatus,
             DateTime createdDateTimeUtc,
             DateTime lastUpdatedDateTimeUtc,
-            string eTag)
+            string eTag,
+            DeviceCapabilities capabilities)
         {
             /* SRS_ENROLLMENT_GROUP_21_003: [The constructor shall throws ProvisioningServiceClientException if one of the 
                                                     provided parameters in JSON is not valid.] */
@@ -195,6 +197,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                 CreatedDateTimeUtc = createdDateTimeUtc;
                 LastUpdatedDateTimeUtc = lastUpdatedDateTimeUtc;
                 ETag = eTag;
+                Capabilities = capabilities;
             }
             catch (ArgumentException e)
             {
@@ -316,6 +319,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
         /// </summary>
         [JsonProperty(PropertyName = "etag", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string ETag { get; set; }
+
+        /// <summary>
+        /// Capabilities of the device
+        /// </summary>
+        [JsonProperty(PropertyName = "capabilities", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public DeviceCapabilities Capabilities { get; set; }
 
         /// <summary> 
         /// The behavior when a device is re-provisioned to an IoT hub.
