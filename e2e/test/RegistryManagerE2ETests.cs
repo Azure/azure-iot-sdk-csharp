@@ -19,28 +19,22 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             using (RegistryManager registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
             {
-                try
+                var twin = new Twin
                 {
-                    var twin = new Twin
-                    {
-                        Tags = new TwinCollection(@"{ companyId: 1234 }"),
-                    };
+                    Tags = new TwinCollection(@"{ companyId: 1234 }"),
+                };
 
-                    var iotEdgeDevice = new Device(deviceId)
-                    {
-                        Capabilities = new DeviceCapabilities { IotEdge = true }
-                    };
-
-                    await registryManager.AddDeviceWithTwinAsync(iotEdgeDevice, twin).ConfigureAwait(false);
-
-                    Device actual = await registryManager.GetDeviceAsync(deviceId).ConfigureAwait(false);
-
-                    Assert.IsTrue(actual.Capabilities != null && actual.Capabilities.IotEdge);
-                }
-                finally
+                var iotEdgeDevice = new Device(deviceId)
                 {
-                    await registryManager.RemoveDeviceAsync(deviceId).ConfigureAwait(false);
-                }
+                    Capabilities = new DeviceCapabilities { IotEdge = true }
+                };
+
+                await registryManager.AddDeviceWithTwinAsync(iotEdgeDevice, twin).ConfigureAwait(false);
+
+                Device actual = await registryManager.GetDeviceAsync(deviceId).ConfigureAwait(false);
+                await registryManager.RemoveDeviceAsync(deviceId).ConfigureAwait(false);
+
+                Assert.IsTrue(actual.Capabilities != null && actual.Capabilities.IotEdge);
             }
         }
     }
