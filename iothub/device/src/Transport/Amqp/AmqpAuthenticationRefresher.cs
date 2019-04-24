@@ -52,6 +52,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         private async Task<DateTime> RefreshTokenAsync(TimeSpan timeout)
         {
+            EventCounterLogger.GetInstance().OnAmqpTokenRefreshed();
             return await AmqpCbsLink.SendTokenAsync(
                     ConnectionString,
                     ConnectionString.AmqpEndpoint,
@@ -60,7 +61,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     AccessRightsStringArray,
                     timeout
                 ).ConfigureAwait(false);
-            EventCounterLogger.GetInstance().OnAmqpTokenRefreshed();
         }
 
         private void StartLoop(DateTime refreshOn, CancellationToken cancellationToken)
