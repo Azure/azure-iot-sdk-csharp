@@ -59,9 +59,9 @@ namespace Microsoft.Azure.Devices.Client.Logger
         /// Enable logger and start logging
         /// </summary>
         /// <param name="interval">The interval of each logging period.</param>
-        /// <param name="cancellationToken">Cancel the loop.</param>
         /// <param name="redirectToConsole">Dump log to file.</param>
-        Task StartLoggerAsync(TimeSpan interval, CancellationToken cancellationToken, bool redirectToConsole);
+        /// <param name="cancellationToken">Cancel the loop.</param>
+        Task StartLoggerAsync(TimeSpan interval, bool redirectToConsole, CancellationToken cancellationToken);
     }
 
 #if NETSTANDARD2_0
@@ -226,9 +226,9 @@ namespace Microsoft.Azure.Devices.Client.Logger
         /// Enable logger and start logging
         /// </summary>
         /// <param name="interval">The interval of each logging period.</param>
-        /// <param name="cancellationToken">Cancel the loop.</param>
         /// <param name="redirectToConsole">Redirect log to console.</param>
-        public async Task StartLoggerAsync(TimeSpan interval, CancellationToken cancellationToken, bool redirectToConsole)
+        /// <param name="cancellationToken">Cancel the loop.</param>
+        public async Task StartLoggerAsync(TimeSpan interval, bool redirectToConsole, CancellationToken cancellationToken)
         {
             if (_started) return;
 
@@ -327,7 +327,7 @@ namespace Microsoft.Azure.Devices.Client.Logger
         {
         }
 
-        public async Task StartLoggerAsync(TimeSpan interval, CancellationToken cancellationToken, bool redirectToConsole)
+        public async Task StartLoggerAsync(TimeSpan interval, bool redirectToConsole, CancellationToken cancellationToken)
         {
         }
 
