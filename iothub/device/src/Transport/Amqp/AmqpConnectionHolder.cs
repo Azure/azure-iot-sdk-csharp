@@ -4,11 +4,11 @@
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Extensions;
+using Microsoft.Azure.Devices.Client.Logger;
 using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -137,6 +137,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     AmqpConnection.Closed += OnConnectionClosed;
                     if (Logging.IsEnabled) Logging.Associate(this, AmqpConnection, $"{nameof(AmqpConnection)}");
                     if (Logging.IsEnabled) Logging.Associate(this, AmqpCbsLink, $"{nameof(AmqpCbsLink)}");
+                    EventCounterLogger.GetInstance().OnAmqpConnectionEstablished();
                 }
                 else if (AmqpConnection.IsClosing())
                 {
@@ -174,6 +175,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 }
                 AmqpUnits.Clear();
                 OnConnectionDisconnected?.Invoke(this, EventArgs.Empty);
+                EventCounterLogger.GetInstance().OnAmqpConnectionDisconnected();
             }
             if (Logging.IsEnabled) Logging.Exit(this, o, $"{nameof(OnConnectionClosed)}");
         }

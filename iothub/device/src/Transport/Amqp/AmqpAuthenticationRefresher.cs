@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.Azure.Amqp;
+using Microsoft.Azure.Devices.Client.Logger;
 using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Diagnostics;
@@ -29,6 +30,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             Audience = deviceIdentity.Audience;
             if (Logging.IsEnabled) Logging.Associate(this, deviceIdentity, $"{nameof(DeviceIdentity)}");
             if (Logging.IsEnabled) Logging.Associate(this, amqpCbsLink, $"{nameof(AmqpCbsLink)}");
+
+            EventCounterLogger.GetInstance().OnAmqpTokenRefresherCreated();
         }
 
         public async Task InitLoopAsync(TimeSpan timeout)
@@ -46,6 +49,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     AccessRightsStringArray,
                     timeout
                 ).ConfigureAwait(false);
+
+            EventCounterLogger.GetInstance().OnAmqpTokenRefreshed();
 
             if (refreshOn < DateTime.MaxValue)
             {
@@ -73,7 +78,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
                 if (waitTime > TimeSpan.Zero)
                 {
-                    await Task.Delay(waitTime, cancellationToken).ConfigureAwait(false);
+                    try
+                    {
+                        await Task.Delay(waitTime, cancellationToken).ConfigureAwait(false);
+                    }
+                    catch(TaskCanceledException)
+                    {
+                        if (Logging.IsEnabled) Logging.Info(this, "Refresher task is cancelled.", $"{nameof(StartLoop)}");
+                    }
                 }
 
                 if (!cancellationToken.IsCancellationRequested)
@@ -95,12 +107,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     }
                     finally
                     {
+                        EventCounterLogger.GetInstance().OnAmqpTokenRefreshed();
                         if (Logging.IsEnabled) Logging.Info(this, refreshesOn, $"After {nameof(RefreshLoopAsync)}");
                     }
 
                     waitTime = refreshesOn - DateTime.UtcNow;
                 }
             }
+
+            EventCounterLogger.GetInstance().OnAmqpTokenRefresherDisposed();
         }
 
         public void StopLoop()
