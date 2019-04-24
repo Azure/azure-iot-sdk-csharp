@@ -44,13 +44,13 @@ namespace Microsoft.Azure.Devices.Client.Logger
         /// </summary>
         void OnAmqpSessionDisconnected();
         /// <summary>
-        /// When AMQP token refresher was created.
+        /// When AMQP token refresher was started.
         /// </summary>
-        void OnAmqpTokenRefresherCreated();
+        void OnAmqpTokenRefresherStarted();
         /// <summary>
-        /// When AMQP token refresher was disposed.
+        /// When AMQP token refresher was stopped.
         /// </summary>
-        void OnAmqpTokenRefresherDisposed();
+        void OnAmqpTokenRefresherStopped();
         /// <summary>
         /// When AMQP token was refreshed.
         /// </summary>
@@ -84,8 +84,8 @@ namespace Microsoft.Azure.Devices.Client.Logger
         private int _amqpConnectionDisconnectionCounts;
         private int _amqpSessionEstablishCounts;
         private int _amqpSessionDisconnectionCounts;
-        private int _amqpTokenRefresherCreationCounts;
-        private int _amqpTokenRefresherDisposeCounts;
+        private int _amqpTokenRefreshStartCounts;
+        private int _amqpTokenRefreshStopCounts;
         private int _amqpTokenRefreshCounts;
 
         /// <summary>
@@ -192,22 +192,22 @@ namespace Microsoft.Azure.Devices.Client.Logger
         /// <summary>
         /// When AMQP token refresher was created.
         /// </summary>
-        public void OnAmqpTokenRefresherCreated()
+        public void OnAmqpTokenRefresherStarted()
         {
             if (_started)
             {
-                Interlocked.Increment(ref _amqpTokenRefresherCreationCounts);
+                Interlocked.Increment(ref _amqpTokenRefreshStartCounts);
             }
         }
 
         /// <summary>
         /// When AMQP token refresher was disposed.
         /// </summary>
-        public void OnAmqpTokenRefresherDisposed()
+        public void OnAmqpTokenRefresherStopped()
         {
             if (_started)
             {
-                Interlocked.Increment(ref _amqpTokenRefresherDisposeCounts);
+                Interlocked.Increment(ref _amqpTokenRefreshStopCounts);
             }
         }
 
@@ -244,6 +244,8 @@ namespace Microsoft.Azure.Devices.Client.Logger
                 EventCounter amqpConnectionDisconnectionEventCounter = new EventCounter("AMQP-Connection-Disconnection", this);
                 EventCounter amqpSessionEstablishEventCounter = new EventCounter("AMQP-Session-Establish", this);
                 EventCounter amqpSessionDisconnectionEventCounter = new EventCounter("AMQP-Session-Disconnection", this);
+                EventCounter amqpTokenRefreshStartEventCounter = new EventCounter("AMQP-Token-Refresh-Start", this);
+                EventCounter amqpTokenRefreshStopEventCounter = new EventCounter("AMQP-Token-Refresh-Stop", this);
                 EventCounter amqpTokenRefreshEventCounter = new EventCounter("AMQP-Token-Refresh", this);
 
                 while (!cancellationToken.IsCancellationRequested)
@@ -256,17 +258,19 @@ namespace Microsoft.Azure.Devices.Client.Logger
                     amqpConnectionDisconnectionEventCounter.WriteMetric(_amqpConnectionDisconnectionCounts);
                     amqpSessionEstablishEventCounter.WriteMetric(_amqpSessionEstablishCounts);
                     amqpSessionDisconnectionEventCounter.WriteMetric(_amqpSessionDisconnectionCounts);
+                    amqpTokenRefreshStartEventCounter.WriteMetric(_amqpTokenRefreshStartCounts);
+                    amqpTokenRefreshStopEventCounter.WriteMetric(_amqpTokenRefreshStopCounts);
                     amqpTokenRefreshEventCounter.WriteMetric(_amqpTokenRefreshCounts);
-                    await Task.Delay(interval);
+                    await Task.Delay(interval).ConfigureAwait(false);
                 }
             }
             if (redirectToConsole)
             {
-                Console.WriteLine("Time,Device-Client-Creation,Device-Client-Dispose,AMQP-Unit-Creation,AMQP-Unit-Dispose,AMQP-Connection-Establish,AMQP-Connection-Disconnection,AMQP-Session-Establish,AMQP-Session-Disconnection,AMQP-Token-Refresher-Creation,AMQP-Token-Refresher-Dispose,AMQP-Token-Refresh");
+                Console.WriteLine("Time,Device-Client-Creation,Device-Client-Dispose,AMQP-Unit-Creation,AMQP-Unit-Dispose,AMQP-Connection-Establish,AMQP-Connection-Disconnection,AMQP-Session-Establish,AMQP-Session-Disconnection,AMQP-Token-Refresher-Started,AMQP-Token-Refresher-Stopped,AMQP-Token-Refreshes");
                 while (!cancellationToken.IsCancellationRequested)
                 {
-                    Console.WriteLine($"{DateTime.Now},{_deviceClientCreationCounts},{_deviceClientDisposeCounts},{_amqpUnitCreationCounts},{_amqpUnitDisposeCounts},{_amqpConnectionEstablishCounts},{_amqpConnectionDisconnectionCounts},{_amqpSessionEstablishCounts},{_amqpSessionDisconnectionCounts},{_amqpTokenRefresherCreationCounts},{_amqpTokenRefresherDisposeCounts},{_amqpTokenRefreshCounts}");
-                    await Task.Delay(interval);
+                    Console.WriteLine($"{DateTime.Now},{_deviceClientCreationCounts},{_deviceClientDisposeCounts},{_amqpUnitCreationCounts},{_amqpUnitDisposeCounts},{_amqpConnectionEstablishCounts},{_amqpConnectionDisconnectionCounts},{_amqpSessionEstablishCounts},{_amqpSessionDisconnectionCounts},{_amqpTokenRefreshStartCounts},{_amqpTokenRefreshStopCounts},{_amqpTokenRefreshCounts}");
+                    await Task.Delay(interval).ConfigureAwait(false);
                }
             }
 
@@ -323,6 +327,13 @@ namespace Microsoft.Azure.Devices.Client.Logger
         {
         }
 
+        public void OnAmqpTokenRefresherStarted()
+        {
+        }
+
+        public void OnAmqpTokenRefresherStopped()
+        {
+        }
         public void OnAmqpTokenRefreshed()
         {
         }
@@ -330,7 +341,6 @@ namespace Microsoft.Azure.Devices.Client.Logger
         public async Task StartLoggerAsync(TimeSpan interval, bool redirectToConsole, CancellationToken cancellationToken)
         {
         }
-
     }
 
 #endif
