@@ -5,7 +5,6 @@ using Microsoft.Azure.Devices.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.E2ETests
@@ -18,23 +17,13 @@ namespace Microsoft.Azure.Devices.E2ETests
         public const int MuxWithPoolingPoolSize = 2;
 
         private static TestLogging s_log = TestLogging.GetInstance();
-        private static int connectionStatusChangesHandlerCount = 0;
-        private static ConnectionStatus lastConnectionStatus;
-        private static ConnectionStatusChangeReason lastConnectionStatusChangeReason;
-
-        private static void ConnectionStatusChangesHandler(ConnectionStatus status, ConnectionStatusChangeReason reason)
-        {
-            connectionStatusChangesHandlerCount++;
-            lastConnectionStatus = status;
-            lastConnectionStatusChangeReason = reason;
-            s_log.WriteLine($"{nameof(MultiplexingOverAmqp)}.{nameof(ConnectionStatusChangesHandler)}: status={status} statusChangeReason={reason} count={connectionStatusChangesHandlerCount}");
-        }
 
         public static async Task TestMultiplexingOperationAsync(
             string devicePrefix,
             Client.TransportType transport,
             int poolSize,
             int devicesCount,
+            Func<DeviceClient, TestDevice, Task> initOperation,
             Func<DeviceClient, TestDevice, Task> testOperation,
             Func<IList<DeviceClient>, Task> cleanupOperation,
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
@@ -53,6 +42,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             IList<TestDevice> testDevices = new List<TestDevice>();
             IList<DeviceClient> deviceClients = new List<DeviceClient>();
+            IList<AmqpConnectionStatusChange> amqpConnectionStatuses = new List<AmqpConnectionStatusChange>();
 
             // Arrange
             // Initialize the test device client instances
@@ -62,32 +52,37 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 TestDevice testDevice = await TestDevice.GetTestDeviceAsync($"{devicePrefix}_{i}_").ConfigureAwait(false);
                 DeviceClient deviceClient = testDevice.CreateDeviceClient(transportSettings, authScope);
-                // WIP: set connection status change handler
-                // Commented out - needs to be per client + understand depedence on other 
-                // single device test running in parallel at the same time
-                //deviceClient.SetConnectionStatusChangesHandler(ConnectionStatusChangesHandler);
+
+                var amqpConnectionStatusChange = new AmqpConnectionStatusChange();
+                deviceClient.SetConnectionStatusChangesHandler(amqpConnectionStatusChange.ConnectionStatusChangesHandler);
 
                 testDevices.Add(testDevice);
                 deviceClients.Add(deviceClient);
+                amqpConnectionStatuses.Add(amqpConnectionStatusChange);
+
+                await initOperation(deviceClient, testDevice).ConfigureAwait(false);
             }
 
             try
             {
                 // Act-Assert
                 // Perform the test operation and verify the operation is successful
+
                 for (int i = 0; i < devicesCount; i++)
                 {
                     await testOperation(deviceClients[i], testDevices[i]).ConfigureAwait(false);
                 }
 
                 // Close the device client instances and verify the connection status change checks
-                foreach (DeviceClient deviceClient in deviceClients)
+                for (int i = 0; i < devicesCount; i++)
                 {
-                    await deviceClient.CloseAsync().ConfigureAwait(false);
+                    await deviceClients[i].CloseAsync().ConfigureAwait(false);
 
-                    // WIP: set connection status change handler
                     // The connection status change count should be 2: connect (open) and disabled (close)
                     // The connection status should be "Disabled", with connection status change reason "Client_close"
+                    Assert.IsTrue(amqpConnectionStatuses[i].ConnectionStatusChangesHandlerCount == 2, $"The actual connection status change count is = {amqpConnectionStatuses[i].ConnectionStatusChangesHandlerCount}");
+                    Assert.AreEqual(ConnectionStatus.Disabled, amqpConnectionStatuses[i].LastConnectionStatus, $"The actual connection status is = {amqpConnectionStatuses[i].LastConnectionStatus}");
+                    Assert.AreEqual(ConnectionStatusChangeReason.Client_Close, amqpConnectionStatuses[i].LastConnectionStatusChangeReason, $"The actual connection status change reason is = {amqpConnectionStatuses[i].LastConnectionStatusChangeReason}");
                 }
 
             }
@@ -96,6 +91,36 @@ namespace Microsoft.Azure.Devices.E2ETests
                 // Close the service-side components and dispose the device client instances.
                 await cleanupOperation(deviceClients).ConfigureAwait(false);
             }
+        }
+
+        private class AmqpConnectionStatusChange
+        {
+            private int _connectionStatusChangesHandlerCount;
+
+            public AmqpConnectionStatusChange()
+            {
+                LastConnectionStatus = null;
+                LastConnectionStatusChangeReason = null;
+                _connectionStatusChangesHandlerCount = 0;
+            }
+
+            public void ConnectionStatusChangesHandler(ConnectionStatus status, ConnectionStatusChangeReason reason)
+            {
+                _connectionStatusChangesHandlerCount++;
+                LastConnectionStatus = status;
+                LastConnectionStatusChangeReason = reason;
+                s_log.WriteLine($"{nameof(MultiplexingOverAmqp)}.{nameof(ConnectionStatusChangesHandler)}: status={status} statusChangeReason={reason} count={_connectionStatusChangesHandlerCount}");
+            }
+
+            public int ConnectionStatusChangesHandlerCount
+            {
+                get => _connectionStatusChangesHandlerCount;
+                set => _connectionStatusChangesHandlerCount = value;
+            }
+
+            public ConnectionStatus? LastConnectionStatus { get; set; }
+
+            public ConnectionStatusChangeReason? LastConnectionStatusChangeReason { get; set; }
         }
     }
 }
