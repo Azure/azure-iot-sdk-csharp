@@ -1,15 +1,32 @@
 ﻿using System;
 using System.Diagnostics.Tracing;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Client.Logger
 {
     /// <summary>
-    /// Logger for device client events.
+    /// Event logger interface.
     /// </summary>
-    public interface IEventCounterLogger
+    public interface IEventCountLogger
+    {
+        /// <summary>
+        /// Write event names
+        /// </summary>
+        /// <param name="eventNames">Event names.</param>
+        void WriteEventNames(params string[] eventNames);
+
+        /// <summary>
+        /// Write event counts
+        /// </summary>
+        /// <param name="eventCounts">Event counts.</param>
+        void WriteEventCounts(params int[] eventCounts);
+    }
+
+    /// <summary>
+    /// Device client event counter interface.
+    /// </summary>
+    public interface IDeviceEventCounter
     {
         /// <summary>
         /// When device client was created.
@@ -59,23 +76,36 @@ namespace Microsoft.Azure.Devices.Client.Logger
         /// Enable logger and start logging
         /// </summary>
         /// <param name="interval">The interval of each logging period.</param>
-        /// <param name="redirectToConsole">Dump log to file.</param>
+        /// <param name="logger">The logger to accept records.</param>
         /// <param name="cancellationToken">Cancel the loop.</param>
-        Task StartLoggerAsync(TimeSpan interval, bool redirectToConsole, CancellationToken cancellationToken);
+        Task StartLoggerAsync(TimeSpan interval, IEventCountLogger logger, CancellationToken cancellationToken);
     }
 
-#if NETSTANDARD2_0
     /// <summary>
-    /// Logger for device client events.
+    /// Device client event counter implemetation.
     /// </summary>
+#if NETSTANDARD2_0
     [EventSource(Name = "Microsoft-Azure-Devices-Client-Logger-Event-Counter")]
-    public class EventCounterLogger : EventSource, IEventCounterLogger
+    public class DeviceEventCounter : EventSource, IDeviceEventCounter
+#else
+    public class DeviceEventCounter : IDeviceEventCounter
+#endif
     {
-        private static EventCounterLogger s_instance = new EventCounterLogger();
+        private readonly static DeviceEventCounter s_instance = new DeviceEventCounter();
+        internal readonly static string[] s_event_names = {
+            "Device-Client-Creation",
+            "Device-Client-Dispose",
+            "AMQP-Unit-Creation",
+            "AMQP-Unit-Dispose",
+            "AMQP-Connection-Establish",
+            "AMQP-Connection-Disconnection",
+            "AMQP-Session-Establish",
+            "AMQP-Session-Disconnection",
+            "AMQP-Token-Refresher-Started",
+            "AMQP-Token-Refresher-Stopped",
+            "AMQP-Token-Refreshes"
+        };
 
-        
-
-        private bool _started;
         private int _deviceClientCreationCounts;
         private int _deviceClientDisposeCounts;
         private int _amqpUnitCreationCounts;
@@ -88,15 +118,17 @@ namespace Microsoft.Azure.Devices.Client.Logger
         private int _amqpTokenRefreshStopCounts;
         private int _amqpTokenRefreshCounts;
 
+        private bool _started;
+
         /// <summary>
         /// Return the instance.
         /// </summary>
-        public static IEventCounterLogger GetInstance()
+        public static IDeviceEventCounter GetInstance()
         {
             return s_instance;
         }
 
-        private EventCounterLogger() : base()
+        private DeviceEventCounter() : base()
         {
         }
 
@@ -226,122 +258,125 @@ namespace Microsoft.Azure.Devices.Client.Logger
         /// Enable logger and start logging
         /// </summary>
         /// <param name="interval">The interval of each logging period.</param>
-        /// <param name="redirectToConsole">Redirect log to console.</param>
+        /// <param name="logger">The logger to accept records.</param>
         /// <param name="cancellationToken">Cancel the loop.</param>
-        public async Task StartLoggerAsync(TimeSpan interval, bool redirectToConsole, CancellationToken cancellationToken)
+        public async Task StartLoggerAsync(TimeSpan interval, IEventCountLogger logger, CancellationToken cancellationToken)
         {
-            if (_started) return;
+            if (_started) throw new InvalidOperationException("EventCounterLogger is already running."); ;
 
             _started = true;
 
-            if (IsEnabled())
-            {
-                EventCounter deviceClientCreationEventCounter = new EventCounter("Device-Client-Creation", this);
-                EventCounter deviceClientDisposeEventCounter = new EventCounter("Device-Client-Dispose", this);
-                EventCounter amqpUnitCreationEventCounter = new EventCounter("AMQP-Unit-Creation", this);
-                EventCounter amqpUnitDisposeEventCounter = new EventCounter("AMQP-Unit-Dispose", this);
-                EventCounter amqpConnectionEstablishEventCounter = new EventCounter("AMQP-Connection-Establish", this);
-                EventCounter amqpConnectionDisconnectionEventCounter = new EventCounter("AMQP-Connection-Disconnection", this);
-                EventCounter amqpSessionEstablishEventCounter = new EventCounter("AMQP-Session-Establish", this);
-                EventCounter amqpSessionDisconnectionEventCounter = new EventCounter("AMQP-Session-Disconnection", this);
-                EventCounter amqpTokenRefreshStartEventCounter = new EventCounter("AMQP-Token-Refresh-Start", this);
-                EventCounter amqpTokenRefreshStopEventCounter = new EventCounter("AMQP-Token-Refresh-Stop", this);
-                EventCounter amqpTokenRefreshEventCounter = new EventCounter("AMQP-Token-Refresh", this);
+            IEventCountLogger eventCountLogger = CreateLogger(logger);
 
-                while (!cancellationToken.IsCancellationRequested)
-                {
-                    deviceClientCreationEventCounter.WriteMetric(_deviceClientCreationCounts);
-                    deviceClientDisposeEventCounter.WriteMetric(_deviceClientDisposeCounts);
-                    amqpUnitCreationEventCounter.WriteMetric(_amqpUnitCreationCounts);
-                    amqpUnitDisposeEventCounter.WriteMetric(_amqpUnitDisposeCounts);
-                    amqpConnectionEstablishEventCounter.WriteMetric(_amqpConnectionEstablishCounts);
-                    amqpConnectionDisconnectionEventCounter.WriteMetric(_amqpConnectionDisconnectionCounts);
-                    amqpSessionEstablishEventCounter.WriteMetric(_amqpSessionEstablishCounts);
-                    amqpSessionDisconnectionEventCounter.WriteMetric(_amqpSessionDisconnectionCounts);
-                    amqpTokenRefreshStartEventCounter.WriteMetric(_amqpTokenRefreshStartCounts);
-                    amqpTokenRefreshStopEventCounter.WriteMetric(_amqpTokenRefreshStopCounts);
-                    amqpTokenRefreshEventCounter.WriteMetric(_amqpTokenRefreshCounts);
-                    await Task.Delay(interval).ConfigureAwait(false);
-                }
-            }
-            if (redirectToConsole)
+            eventCountLogger.WriteEventNames(s_event_names);
+            while (!cancellationToken.IsCancellationRequested)
             {
-                Console.WriteLine("Time,Device-Client-Creation,Device-Client-Dispose,AMQP-Unit-Creation,AMQP-Unit-Dispose,AMQP-Connection-Establish,AMQP-Connection-Disconnection,AMQP-Session-Establish,AMQP-Session-Disconnection,AMQP-Token-Refresher-Started,AMQP-Token-Refresher-Stopped,AMQP-Token-Refreshes");
-                while (!cancellationToken.IsCancellationRequested)
-                {
-                    Console.WriteLine($"{DateTime.Now},{_deviceClientCreationCounts},{_deviceClientDisposeCounts},{_amqpUnitCreationCounts},{_amqpUnitDisposeCounts},{_amqpConnectionEstablishCounts},{_amqpConnectionDisconnectionCounts},{_amqpSessionEstablishCounts},{_amqpSessionDisconnectionCounts},{_amqpTokenRefreshStartCounts},{_amqpTokenRefreshStopCounts},{_amqpTokenRefreshCounts}");
-                    await Task.Delay(interval).ConfigureAwait(false);
-               }
+                eventCountLogger.WriteEventCounts(
+                    _deviceClientCreationCounts,
+                    _deviceClientDisposeCounts,
+                    _amqpUnitCreationCounts,
+                    _amqpUnitDisposeCounts,
+                    _amqpConnectionEstablishCounts,
+                    _amqpConnectionDisconnectionCounts,
+                    _amqpSessionEstablishCounts,
+                    _amqpSessionDisconnectionCounts,
+                    _amqpTokenRefreshStartCounts,
+                    _amqpTokenRefreshStopCounts,
+                    _amqpTokenRefreshCounts
+                );
+                await Task.Delay(interval).ConfigureAwait(false);
             }
 
             _started = false;
         }
-    }
-# else
-    internal class EventCounterLogger : IEventCounterLogger
-    {
-        private static EventCounterLogger s_instance = new EventCounterLogger();
 
-        public static IEventCounterLogger GetInstance()
+        private IEventCountLogger CreateLogger(IEventCountLogger logger)
+        {
+#if NETSTANDARD2_0
+            return new EventCounterLogger(this, logger);
+#else
+            return logger?? ConsoleCounterLogger.GetInstance();
+# endif
+       }
+
+    }
+
+    /// <summary>
+    /// Event logger implematation with console output in CSV format.
+    /// </summary>
+    public class ConsoleCounterLogger : IEventCountLogger
+    {
+        private readonly static ConsoleCounterLogger s_instance = new ConsoleCounterLogger();
+
+        private ConsoleCounterLogger()
+        {
+        }
+
+        /// <summary>
+        /// Return instance
+        /// </summary>
+        /// <returns></returns>
+        public static IEventCountLogger GetInstance()
         {
             return s_instance;
         }
 
-        public void OnDeviceClientCreated()
+        /// <summary>
+        /// Write event names
+        /// </summary>
+        /// <param name="eventNames">Event names.</param>
+        
+        public void WriteEventNames(params string[] eventNames)
         {
+            Console.WriteLine($"Time,{string.Join(",", eventNames)}");
         }
 
-        public void OnDeviceClientDisposed()
+        /// <summary>
+        /// Write event counts
+        /// </summary>
+        /// <param name="eventCounts">Event counts.</param>
+        public void WriteEventCounts(params int[] eventCounts)
         {
-        }
-    
-        public void OnAmqpUnitCreated()
-        {
-        }
-
-        public void OnAmqpUnitDisposed()
-        {
-        }
-
-        public void OnAmqpConnectionEstablished()
-        {
-        }
-
-        public void OnAmqpConnectionDisconnected()
-        {
-        }
-
-        public void OnAmqpSessionEstablished()
-        {
-        }
-
-        public void OnAmqpSessionDisconnected()
-        {
-        }
-
-        public void OnAmqpTokenRefresherCreated()
-        {
-        }
-
-        public void OnAmqpTokenRefresherDisposed()
-        {
-        }
-
-        public void OnAmqpTokenRefresherStarted()
-        {
-        }
-
-        public void OnAmqpTokenRefresherStopped()
-        {
-        }
-        public void OnAmqpTokenRefreshed()
-        {
-        }
-
-        public async Task StartLoggerAsync(TimeSpan interval, bool redirectToConsole, CancellationToken cancellationToken)
-        {
+            Console.WriteLine($"{DateTime.Now},{string.Join(",", eventCounts)}");
         }
     }
 
+#if NETSTANDARD2_0
+    internal class EventCounterLogger : IEventCountLogger
+    {
+        EventCounter[] _eventCounters;
+        IEventCountLogger _logger;
+
+        internal EventCounterLogger(EventSource eventSource, IEventCountLogger logger)
+        {
+            _logger = logger;
+            if (eventSource.IsEnabled())
+            {
+                int length = DeviceEventCounter.s_event_names.Length;
+                _eventCounters = new EventCounter[length];
+                for (int i = 0; i < length; i++)
+                {
+                    _eventCounters[i] = new EventCounter(DeviceEventCounter.s_event_names[i], eventSource);
+                }
+            }
+        }
+
+        public void WriteEventNames(string[] eventNames)
+        {
+            _logger?.WriteEventNames(eventNames);
+        }
+
+        public void WriteEventCounts(params int[] eventCounts)
+        {
+            if (_eventCounters != null)
+            {
+                for (int i = 0; i < _eventCounters.Length && i < eventCounts.Length; i++)
+                {
+                    _eventCounters[i].WriteMetric(eventCounts[i]);
+                }
+            }
+            _logger?.WriteEventCounts(eventCounts);
+        }
+    }
 #endif
 }

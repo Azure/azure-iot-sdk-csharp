@@ -956,7 +956,7 @@ namespace Microsoft.Azure.Devices.Client
         public void Dispose()
         {
             this.InnerHandler?.Dispose();
-            EventCounterLogger.GetInstance().OnDeviceClientDisposed();
+            DeviceEventCounter.GetInstance().OnDeviceClientDisposed();
         }
 
         /// <summary>

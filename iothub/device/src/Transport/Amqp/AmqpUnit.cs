@@ -66,7 +66,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                  Properties = new Fields()
              };
 
-            EventCounterLogger.GetInstance().OnAmqpUnitCreated();
+            DeviceEventCounter.GetInstance().OnAmqpUnitCreated();
             if (Logging.IsEnabled) Logging.Associate(this, _deviceIdentity, $"{nameof(_deviceIdentity)}");
         }
         
@@ -101,7 +101,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 if (Logging.IsEnabled) Logging.Associate(this, _amqpSession, $"{nameof(_amqpSession)}");
                 await _amqpSession.OpenAsync(timeout).ConfigureAwait(false);
 
-                EventCounterLogger.GetInstance().OnAmqpSessionEstablished();
+                DeviceEventCounter.GetInstance().OnAmqpSessionEstablished();
 
                 if (_deviceIdentity.AuthenticationModel == AuthenticationModel.SasIndividual)
                 {
@@ -519,7 +519,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             {
                 OnUnitDisconnected?.Invoke(false, EventArgs.Empty);
             }
-            EventCounterLogger.GetInstance().OnAmqpSessionDisconnected();
+            DeviceEventCounter.GetInstance().OnAmqpSessionDisconnected();
 
             if (Logging.IsEnabled) Logging.Exit(this, o, $"{nameof(OnSessionDisconnected)}");
         }
@@ -559,7 +559,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
                 _amqpSession?.Abort();
                 if (Logging.IsEnabled) Logging.Exit(this, disposing, $"{nameof(Dispose)}");
-                EventCounterLogger.GetInstance().OnAmqpUnitDisposed();
+                DeviceEventCounter.GetInstance().OnAmqpUnitDisposed();
             }
 
             _disposed = true;

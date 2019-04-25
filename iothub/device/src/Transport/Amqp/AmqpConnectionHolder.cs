@@ -137,7 +137,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     AmqpConnection.Closed += OnConnectionClosed;
                     if (Logging.IsEnabled) Logging.Associate(this, AmqpConnection, $"{nameof(AmqpConnection)}");
                     if (Logging.IsEnabled) Logging.Associate(this, AmqpCbsLink, $"{nameof(AmqpCbsLink)}");
-                    EventCounterLogger.GetInstance().OnAmqpConnectionEstablished();
+                    DeviceEventCounter.GetInstance().OnAmqpConnectionEstablished();
                 }
                 else if (AmqpConnection.IsClosing())
                 {
@@ -175,7 +175,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 }
                 AmqpUnits.Clear();
                 OnConnectionDisconnected?.Invoke(this, EventArgs.Empty);
-                EventCounterLogger.GetInstance().OnAmqpConnectionDisconnected();
+                DeviceEventCounter.GetInstance().OnAmqpConnectionDisconnected();
             }
             if (Logging.IsEnabled) Logging.Exit(this, o, $"{nameof(OnConnectionClosed)}");
         }
