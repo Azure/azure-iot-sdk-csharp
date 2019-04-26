@@ -6,7 +6,6 @@ namespace Microsoft.Azure.Devices.Client
     using System;
     using System.Text.RegularExpressions;
     using Microsoft.Azure.Devices.Client.Extensions;
-    using Microsoft.Azure.Devices.Client.Logger;
     using Microsoft.Azure.Devices.Client.Transport;
     using Microsoft.Azure.Devices.Client.Transport.Mqtt;
     using Microsoft.Azure.Devices.Shared;
@@ -372,7 +371,7 @@ namespace Microsoft.Azure.Devices.Client
             var client = new InternalClient(iotHubConnectionString, transportSettings, pipelineBuilder);
 
             if (Logging.IsEnabled) Logging.CreateFromConnectionString(client, $"HostName={iotHubConnectionString.HostName};DeviceId={iotHubConnectionString.DeviceId};ModuleId={iotHubConnectionString.ModuleId}", transportSettings);
-            DeviceEventCounter.GetInstance().OnDeviceClientCreated();
+            if (DeviceEventCounter.IsEnabled) DeviceEventCounter.OnDeviceClientCreated();
             return client;
         }
         

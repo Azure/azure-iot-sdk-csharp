@@ -3,9 +3,7 @@
 
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
-using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Extensions;
-using Microsoft.Azure.Devices.Client.Logger;
 using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Collections.Generic;
@@ -66,7 +64,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                  Properties = new Fields()
              };
 
-            DeviceEventCounter.GetInstance().OnAmqpUnitCreated();
+            if (DeviceEventCounter.IsEnabled)  DeviceEventCounter.OnAmqpUnitCreated();
             if (Logging.IsEnabled) Logging.Associate(this, _deviceIdentity, $"{nameof(_deviceIdentity)}");
         }
         
@@ -101,7 +99,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 if (Logging.IsEnabled) Logging.Associate(this, _amqpSession, $"{nameof(_amqpSession)}");
                 await _amqpSession.OpenAsync(timeout).ConfigureAwait(false);
 
-                DeviceEventCounter.GetInstance().OnAmqpSessionEstablished();
+                if (DeviceEventCounter.IsEnabled) DeviceEventCounter.OnAmqpSessionEstablished();
 
                 if (_deviceIdentity.AuthenticationModel == AuthenticationModel.SasIndividual)
                 {
@@ -519,7 +517,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             {
                 OnUnitDisconnected?.Invoke(false, EventArgs.Empty);
             }
-            DeviceEventCounter.GetInstance().OnAmqpSessionDisconnected();
+            if (DeviceEventCounter.IsEnabled) DeviceEventCounter.OnAmqpSessionDisconnected();
 
             if (Logging.IsEnabled) Logging.Exit(this, o, $"{nameof(OnSessionDisconnected)}");
         }
@@ -559,7 +557,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
                 _amqpSession?.Abort();
                 if (Logging.IsEnabled) Logging.Exit(this, disposing, $"{nameof(Dispose)}");
-                DeviceEventCounter.GetInstance().OnAmqpUnitDisposed();
+                if (DeviceEventCounter.IsEnabled) DeviceEventCounter.OnAmqpUnitDisposed();
             }
 
             _disposed = true;

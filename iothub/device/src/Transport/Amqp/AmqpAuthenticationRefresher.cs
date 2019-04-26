@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.Azure.Amqp;
-using Microsoft.Azure.Devices.Client.Logger;
 using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Diagnostics;
@@ -40,20 +39,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             CancellationTokenSource = new CancellationTokenSource();
             CancellationToken newToken = CancellationTokenSource.Token;
             oldTokenSource?.Cancel();
-
-            DateTime refreshOn = await RefreshTokenAsync(timeout).ConfigureAwait(false);
-            if (refreshOn < DateTime.MaxValue)
-            {
-                StartLoop(refreshOn, newToken);
-            }
-
-            if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(InitLoopAsync)}");
-        }
-
-        private async Task<DateTime> RefreshTokenAsync(TimeSpan timeout)
-        {
-            DeviceEventCounter.GetInstance().OnAmqpTokenRefreshed();
-            return await AmqpCbsLink.SendTokenAsync(
+            DateTime refreshOn = await AmqpCbsLink.SendTokenAsync(
                     ConnectionString,
                     ConnectionString.AmqpEndpoint,
                     Audience,
@@ -61,6 +47,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     AccessRightsStringArray,
                     timeout
                 ).ConfigureAwait(false);
+
+            if (refreshOn < DateTime.MaxValue)
+            {
+                StartLoop(refreshOn, newToken);
+            }
+
+            if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(InitLoopAsync)}");
         }
 
         private void StartLoop(DateTime refreshOn, CancellationToken cancellationToken)
@@ -72,7 +65,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         private async Task RefreshLoopAsync(DateTime refreshesOn, CancellationToken cancellationToken)
         {
-            DeviceEventCounter.GetInstance().OnAmqpTokenRefresherStarted();
+            if (DeviceEventCounter.IsEnabled)  DeviceEventCounter.OnAmqpTokenRefresherStarted();
             TimeSpan waitTime = refreshesOn - DateTime.UtcNow;
             Debug.Assert(ConnectionString.TokenRefresher != null);
 
@@ -82,21 +75,21 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
                 if (waitTime > TimeSpan.Zero)
                 {
-                    try
-                    {
-                        await Task.Delay(waitTime, cancellationToken).ConfigureAwait(false);
-                    }
-                    catch(TaskCanceledException)
-                    {
-                        if (Logging.IsEnabled) Logging.Info(this, "Refresher task is cancelled.", $"{nameof(StartLoop)}");
-                    }
+                    await Task.Delay(waitTime, cancellationToken).ConfigureAwait(false);
                 }
 
                 if (!cancellationToken.IsCancellationRequested)
                 {
                     try
                     {
-                        refreshesOn = await RefreshTokenAsync(OperationTimeout).ConfigureAwait(false);
+                        refreshesOn = await AmqpCbsLink.SendTokenAsync(
+                            ConnectionString,
+                            ConnectionString.AmqpEndpoint,
+                            Audience,
+                            Audience,
+		                    AccessRightsStringArray,
+		                    OperationTimeout
+                        ).ConfigureAwait(false);
                     }
                     catch (AmqpException ex)
                     {
@@ -110,7 +103,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     waitTime = refreshesOn - DateTime.UtcNow;
                 }
             }
-            DeviceEventCounter.GetInstance().OnAmqpTokenRefresherStopped();
+            if (DeviceEventCounter.IsEnabled) DeviceEventCounter.OnAmqpTokenRefresherStopped();
         }
 
         public void StopLoop()
