@@ -12,9 +12,11 @@ using DotNetty.Transport.Channels.Sockets;
 using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using Microsoft.Azure.Devices.Provisioning.Client.Transport.Models;
 using Microsoft.Azure.Devices.Shared;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Net;
 using System.Net.WebSockets;
 using System.Runtime.ExceptionServices;
@@ -82,6 +84,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
             try
             {
+
                 if (message.Security is SecurityProviderX509)
                 {
                     SecurityProviderX509 x509Security = (SecurityProviderX509)message.Security;
@@ -161,7 +164,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 result.LastUpdatedDateTimeUtc,
                 result.ErrorCode == null ? 0 : (int)result.ErrorCode,
                 result.ErrorMessage,
-                result.Etag);
+                result.Etag,
+                result?.Payload?.ToString(CultureInfo.InvariantCulture));
         }
 
         private Task<RegistrationOperationStatus> ProvisionOverTcpUsingX509CertificateAsync(
