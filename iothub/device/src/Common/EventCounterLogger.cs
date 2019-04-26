@@ -184,7 +184,6 @@ namespace Microsoft.Azure.Devices.Shared
 
         private void WriteMetric(int index, int count)
         {
-            Console.WriteLine($"{DateTime.Now}: {DeviceEventCounter.s_eventNames[index]}: {count}");
             s_eventCounters[index].WriteMetric(count);
         }
 
