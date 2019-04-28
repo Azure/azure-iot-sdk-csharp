@@ -13,32 +13,39 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
-    public class ASCforIoTOmsClient : IDisposable
+    public class ASCforIoTLogAnalyticsClient : IDisposable
     {
+        //Azure Active Directory authentication authority for public cloud
         private const string AuthenticationAuthorityTemplate = "https://login.windows.net/{0}";
+        //Azure Log Analytics Authentication token audience
         private const string Audience =  "https://api.loganalytics.io/";
+        //Azure Log Analytics query URL
         private const string QueryUriTemplate = "https://api.loganalytics.io/{0}/workspaces/{1}/query";
+        //Azure Log Analytics API version
         private const string LogAnalyticsApiVersion = "v1";
+        //Query template for querying a SecurityIoTRawEvent by device id and raw event id
         private const string RawEventQueryTemplate =
             @"SecurityIoTRawEvent
     | where DeviceId == ""{0}""
     | where IoTRawEventId == ""{1}""";
         
-        private readonly string _workspaceId = Configuration.Oms.WorkspacedId;
-        private readonly string _aadTenant = Configuration.Oms.AadTenant;
-        private readonly string _appId = Configuration.Oms.AadAppId;
-        private readonly string _appKey = Configuration.Oms.AadAppKey;
+        private readonly string _workspaceId = Configuration.ASCforIoTLogAnalytics.WorkspacedId;
+        private readonly string _aadTenant = Configuration.ASCforIoTLogAnalytics.AadTenant;
+        private readonly string _appId = Configuration.ASCforIoTLogAnalytics.AadAppId;
+        private readonly string _appKey = Configuration.ASCforIoTLogAnalytics.AadAppKey;
+
+        private readonly TimeSpan _polingInterval = TimeSpan.FromSeconds(20);
 
         private readonly HttpClient _client;
         private readonly AuthenticationContext _authenticationContext;
         private readonly string _queryUri;
 
-        public static ASCforIoTOmsClient CreateClient()
+        public static ASCforIoTLogAnalyticsClient CreateClient()
         {
-            return new ASCforIoTOmsClient();
+            return new ASCforIoTLogAnalyticsClient();
         }
 
-        private ASCforIoTOmsClient()
+        private ASCforIoTLogAnalyticsClient()
         {
             _client = new HttpClient();
             string authority = string.Format(CultureInfo.InvariantCulture, AuthenticationAuthorityTemplate, _aadTenant);
@@ -55,7 +62,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             while (!isEventExist && sw.Elapsed.TotalMinutes < 30)
             {
                 isEventExist = await DoQuery(query).ConfigureAwait(false);
-                await Task.Delay(TimeSpan.FromSeconds(20)).ConfigureAwait(false);
+                await Task.Delay(_polingInterval).ConfigureAwait(false);
             }
 
             sw.Stop();

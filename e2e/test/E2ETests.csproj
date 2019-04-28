@@ -27,8 +27,8 @@
     <Compile Include="$(CommonTest)\Configuration.IoTHub.cs">
       <Link>Common\Configuration.IoTHub.cs</Link>
     </Compile>
-    <Compile Include="$(CommonTest)\Configuration.Oms.cs">
-      <Link>Common\Configuration.Oms.cs</Link>
+    <Compile Include="$(CommonTest)\Configuration.ASCforIoTLogAnalytics.cs">
+      <Link>Common\Configuration.ASCforIoTLogAnalytics.cs</Link>
     </Compile>
     <Compile Include="$(CommonTest)\EventSourceTestLogging.cs">
       <Link>Common\EventSourceTestLogging.cs</Link>

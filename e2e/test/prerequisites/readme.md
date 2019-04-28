@@ -34,14 +34,55 @@ Alternatives:
 
 ### ASC for IoT Security Message E2E Tests
 
+The ASC for IoT Security Message E2E tests validates that messages marked with SetAsSecurityMessage and have ASC for IoT security message payload are sent correctly and ingested to the customer Log Analytics workspace. [ASC for IoT architecture](https://docs.microsoft.com/en-us/azure/asc-for-iot/architecture)
+
+Important Note:
+
+ASC for IoT is currently available in limited regions.
+Please make sure the tested IoT Hub is in the supported regions
+
+Test Flow:
+
+- Generate fake message payload that complies with ASC for IoT security message schemas. reference: [Send security messages SDK](https://docs.microsoft.com/en-us/azure/asc-for-iot/how-to-send-security-messages)
+- Mark the message as a security message with the method SetAsSecurityMessage
+- Send the message in one of the supported Device SDK protocols
+- Validate the message has arrived and ingested to the customer Log Analytics workspace
+
 Prerequisites:
 
-- The IoT hub configured in `Configuration.IoTHub` must be onboarded to ASC for IoT security, with the feature “Store raw device security events in LogAnalytics.” set to on.
-- The tests authenticate with OMS with an Azure Active Directory app, thus an AAD app with a reader role on the OMS workspace must be created for the tests.
+- Log Analytics workspace - Where ASC for IoT stores its data.
+- Enable ASC for IoT - ASC for IoT should be enabled on the hub found in `Configuration.IoTHub` with the feature “Store raw device security events in LogAnalytics.” set to on, for instructions, please see: [onboard IoT hub](https://docs.microsoft.com/en-us/azure/asc-for-iot/quickstart-onboard-iot-hub) 
+- Azure Active Directory application with a reader role on the Log Analytics workspace - The tests uses Azure Active Directory Application to authenticate against Log Analytics. The service principal created by the Active Directory application must be assigned with a reader role on the Log Analytics workspace. Follow this link for instructions [Creating Azure Active Directory application and a service principal](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal#assign-the-application-to-a-role)
+
+Note on Central US EUAP region:
+
+ASC for IoT UI is currently not available in Central US EUAP.
+To enable ASC for IoT in this region, please use the follwoing REST command:
+
+```
+URL: https://management.azure.com/subscriptions/<SubscriptionID>/resourceGroups/<ResourceGroup>/providers/Microsoft.Security/IoTSecuritySolutions/<SecuritySolutionName>?api-version=2017-08-01-preview
+Method: PUT
+Headers:
+Content-Type - application/json
+Authorization - bearer token
+Body:
+{   "location": "North Europe",
+    "properties": {        
+        "displayName": "<DisplayName>",
+        "status": "Enabled",
+        "export": ["RawEvents"],
+        "disabledDataSources": [],
+        "workspace": "<Log Analytics Resource ID>",
+        "iotHubs": [
+            "<IoT hub Resource ID>"
+        ]
+    }
+}
+```
 
 Test configuration:
 
-- `OMS_AAD_TENANT` – The AAD tenant GUID of the OMS workspace Active Directory
-- `OMS_AAD_APP_ID` – The application id of the AAD app that will be used to authenticate with oms
-- `OMS_AAD_APP_KEY` – The key for the given app
-- `OMS_WORKSPACE_ID` – The OMS workspace Id of the OMS workspace that connected to the ASC for IoT security solution
+- `LA_AAD_TENANT` – The Azure Active Directory tenant, can be found [here](https://portal.azure.com/#blade/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/Properties)  under Directory ID
+- `LA_AAD_APP_ID` – The Azure Active Directory application ID. How to [Get application ID and authentication key](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal#get-application-id-and-authentication-key)
+- `LA_AAD_APP_KEY` – The key for the given app
+- `LA_WORKSPACE_ID` – The Log Analytics workspace Id of the Log Analytics workspace that connected to the ASC for IoT security solution

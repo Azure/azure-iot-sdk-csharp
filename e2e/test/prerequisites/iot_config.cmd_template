@@ -38,21 +38,22 @@ set IOTHUB_EVENTHUB_COMPATIBLE_NAME=
 @REM EventHub consumer group:
 set IOTHUB_EVENTHUB_CONSUMER_GROUP=
 
-@REM ---------- ASCforIoT Oms Configuration ----------
+@REM ---------- ASCforIoT Log Analytics Configuration ----------
 @REM the iot hub above must be registered to ASC for IoT security solution
 @REM with the feature export raw events set to on
 
-@REM the ASC for IoT OMS workspace that connected to the hub
-set OMS_WORKSPACE_ID=
+@REM the ASC for IoT Log Analytics workspace that connected to the hub
+set LA_WORKSPACE_ID=
 
-@REM the Azure Active Directory tenant of the OMS workspace
-set OMS_AAD_TENANT=
+@REM the Azure Active Directory tenant of the Log Analytics workspace
+set LA_AAD_TENANT=
 
 @REM the Azure Active Directory app id that has reader role on the workspace
-set OMS_AAD_APP_ID=
+set LA_AAD_APP_ID=
 
 @REM the key for the given app
-set OMS_AAD_APP_KEY=
+set LA_AAD_APP_KEY=
+
 
 @REM ---------- Device Provisioning Service Configuration ----------
 @REM See Configuration.Provisioning.cs for usage details.
