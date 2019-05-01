@@ -559,7 +559,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     OnUnitDisconnected?.Invoke(false, EventArgs.Empty);
                 }
 
-                _amqpAuthenticationRefresher?.StopLoop();
+                _amqpAuthenticationRefresher?.Dispose();
                 _amqpSession?.Abort();
                 if (Logging.IsEnabled) Logging.Exit(this, disposing, $"{nameof(Dispose)}");
                 if (DeviceEventCounter.IsEnabled) DeviceEventCounter.OnAmqpUnitDisposed();

@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Copyright(c) Microsoft.All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 
@@ -7,7 +9,7 @@ namespace Microsoft.Azure.Devices.Shared
     /// <summary>
     /// Device event monitor
     /// </summary>
-    public interface IDeviceEventMonitor
+    internal interface IDeviceEventMonitor
     {
         /// <summary>
         /// When device event occurs 
@@ -19,7 +21,7 @@ namespace Microsoft.Azure.Devices.Shared
     /// <summary>
     /// Start or stop customized event counter monitor
     /// </summary>
-    public static class DeviceEventMonitor
+    internal static class DeviceEventMonitor
     {
         /// <summary>
         /// Attach device event monitor
@@ -59,7 +61,7 @@ namespace Microsoft.Azure.Devices.Shared
 #if NETSTANDARD2_0
     internal sealed class DeviceEventCounterListener : EventSource, IDeviceEventListener
     {
-        private const string s_eventSourceName = "Microsoft-Azure-Devices-Shared-Device-Event-Counter";
+        private const string s_eventSourceName = "Microsoft-Azure-Devices-Device-Client-Event-Counters";
 
         private readonly static IDeviceEventListener s_instance = new DeviceEventCounterListener();
 
