@@ -1,121 +1,237 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 
-#if NETSTANDARD2_0   
-    internal sealed class DeviceEventCounter : EventSource
+namespace Microsoft.Azure.Devices.Shared
+{
+    /// <summary>
+    /// Device event monitor
+    /// </summary>
+    public interface IDeviceEventMonitor
     {
-        private readonly static DeviceEventCounter s_instance = new DeviceEventCounter();
+        /// <summary>
+        /// When device event occurs 
+        /// </summary>
+        /// <param name="deviceEventName">Name of device event</param>
+        void OnEvent(string deviceEventName);
+    }
 
-        private readonly EventCounter _deviceClientCreation;
-        private readonly EventCounter _deviceClientDisposal;
-        private readonly EventCounter _amqpUnitCreation;
-        private readonly EventCounter _amqpUnitDisposal;
-        private readonly EventCounter _amqpConnectionEstablishment;
-        private readonly EventCounter _amqpConnectionDisconnection;
-        private readonly EventCounter _amqpSessionEstablishment;
-        private readonly EventCounter _amqpSessionDisconnection;
-        private readonly EventCounter _amqpTokenRefresherInitiation;
-        private readonly EventCounter _amqpTokenRefresherTermination;
-        private readonly EventCounter _amqpTokenRefresh;
-
-        private DeviceEventCounter() : base("Microsoft-Azure-Devices-Shared-Device-Event-Counter")
+    /// <summary>
+    /// Start or stop customized event counter monitor
+    /// </summary>
+    public static class DeviceEventMonitor
+    {
+        /// <summary>
+        /// Attach device event monitor
+        /// </summary>
+        /// <param name="deviceEventMonitor">Customized device event monitor</param>
+        public static List<string> Attach(IDeviceEventMonitor deviceEventMonitor)
         {
-            _deviceClientCreation = new EventCounter("Device-Client-Creation", this);
-            _deviceClientDisposal = new EventCounter("Device-Client-Disposal", this);
-            _amqpUnitCreation = new EventCounter("AMQP-Unit-Creation", this);
-            _amqpUnitDisposal = new EventCounter("AMQP-Unit-Disposal", this);
-            _amqpConnectionEstablishment = new EventCounter("AMQP-Connection-Establishment", this);
-            _amqpConnectionDisconnection = new EventCounter("AMQP-Connection-Disconnection", this);
-            _amqpSessionEstablishment = new EventCounter("AMQP-Session-Establishment", this);
-            _amqpSessionDisconnection = new EventCounter("AMQP-Session-Disconnection", this);
-            _amqpTokenRefresherInitiation = new EventCounter("AMQP-Token-Refresher-Initiation", this);
-            _amqpTokenRefresherTermination = new EventCounter("AMQP-Token-Refresher-Termination", this);
-            _amqpTokenRefresh = new EventCounter("AMQP-Token-Refreshes", this);
+            DeviceEventCounter.s_deviceEventMonitor = deviceEventMonitor;
+            return DeviceEventCounter.s_deviceEventNames;
         }
+
+        /// <summary>
+        /// Detach device event monitor
+        /// </summary>
+        public static void Detach()
+        {
+            DeviceEventCounter.s_deviceEventMonitor = null;
+        }
+    }
+
+    internal interface IDeviceEventListener
+    {
+        void OnDeviceClientCreated();
+        void OnDeviceClientDisposed();
+        void OnAmqpUnitCreated();
+        void OnAmqpUnitDisposed();
+        void OnAmqpConnectionEstablished();
+        void OnAmqpConnectionDisconnected();
+        void OnAmqpSessionEstablished();
+        void OnAmqpSessionDisconnected();
+        void OnAmqpTokenRefresherStarted();
+        void OnAmqpTokenRefresherStopped();
+        void OnAmqpTokenRefreshed();
+        bool IsEnabled();
+    }
+
+#if NETSTANDARD2_0
+    internal sealed class DeviceEventCounterListener : EventSource, IDeviceEventListener
+    {
+        private const string s_eventSourceName = "Microsoft-Azure-Devices-Shared-Device-Event-Counter";
+
+        private readonly static IDeviceEventListener s_instance = new DeviceEventCounterListener();
+
+        private readonly List<EventCounter> _deviceEventCounters;
+
+        internal static IDeviceEventListener GetInstance()
+        {
+            return s_instance;
+        }
+
+        private DeviceEventCounterListener() : base(s_eventSourceName)
+        {
+            _deviceEventCounters = new List<EventCounter>();
+            foreach (string deviceEventName in DeviceEventCounter.s_deviceEventNames)
+            {
+                _deviceEventCounters.Add(new EventCounter(deviceEventName, this));
+            }
+        }
+
+        public void OnDeviceClientCreated()
+        {
+            _deviceEventCounters[0].WriteMetric(1);
+        }
+
+        public void OnDeviceClientDisposed()
+        {
+            _deviceEventCounters[1].WriteMetric(1);
+        }
+
+        public void OnAmqpUnitCreated()
+        {
+            _deviceEventCounters[2].WriteMetric(1);
+        }
+
+        public void OnAmqpUnitDisposed()
+        {
+            _deviceEventCounters[3].WriteMetric(1);
+        }
+
+        public void OnAmqpConnectionEstablished()
+        {
+            _deviceEventCounters[4].WriteMetric(1);
+        }
+
+        public void OnAmqpConnectionDisconnected()
+        {
+            _deviceEventCounters[5].WriteMetric(1);
+        }
+
+        public void OnAmqpSessionEstablished()
+        {
+            _deviceEventCounters[6].WriteMetric(1);
+        }
+
+        public void OnAmqpSessionDisconnected()
+        {
+            _deviceEventCounters[7].WriteMetric(1);
+        }
+
+        public void OnAmqpTokenRefresherStarted()
+        {
+            _deviceEventCounters[8].WriteMetric(1);
+        }
+
+        public void OnAmqpTokenRefresherStopped()
+        {
+            _deviceEventCounters[9].WriteMetric(1);
+        }
+
+        public void OnAmqpTokenRefreshed()
+        {
+            _deviceEventCounters[10].WriteMetric(1);
+        }
+
+    }
+#endif
+    internal static class DeviceEventCounter
+    {
+        internal readonly static List<string> s_deviceEventNames = new List<string>
+        {
+            "Device-Client-Creation",
+            "Device-Client-Disposal",
+            "AMQP-Unit-Creation",
+            "AMQP-Unit-Disposal",
+            "AMQP-Connection-Establishment",
+            "AMQP-Connection-Disconnection",
+            "AMQP-Session-Establishment",
+            "AMQP-Session-Disconnection",
+            "AMQP-Token-Refresher-Initiation",
+            "AMQP-Token-Refresher-Termination",
+            "AMQP-Token-Refreshes",
+        };
+
+#if NETSTANDARD2_0
+        private static IDeviceEventListener s_deviceEventCounterListener = DeviceEventCounterListener.GetInstance();
+#else
+        private static IDeviceEventListener s_deviceEventCounterListener = null;
+#endif
+        internal static IDeviceEventMonitor s_deviceEventMonitor;
 
         internal static void OnDeviceClientCreated()
         {
-            s_instance._deviceClientCreation.WriteMetric(1);
+            if (IsDeviceEventListenerEnabled(s_deviceEventCounterListener)) s_deviceEventCounterListener.OnDeviceClientCreated();
+            s_deviceEventMonitor?.OnEvent(s_deviceEventNames[0]);
         }
 
         internal static void OnDeviceClientDisposed()
         {
-            s_instance._deviceClientDisposal.WriteMetric(1);
+            if (IsDeviceEventListenerEnabled(s_deviceEventCounterListener)) s_deviceEventCounterListener.OnDeviceClientDisposed();
+            s_deviceEventMonitor?.OnEvent(s_deviceEventNames[1]);
         }
 
         internal static void OnAmqpUnitCreated()
         {
-            s_instance._amqpUnitCreation.WriteMetric(1);
+            if (IsDeviceEventListenerEnabled(s_deviceEventCounterListener)) s_deviceEventCounterListener.OnAmqpUnitCreated();
+            s_deviceEventMonitor?.OnEvent(s_deviceEventNames[2]);
         }
 
         internal static void OnAmqpUnitDisposed()
         {
-            s_instance._amqpUnitDisposal.WriteMetric(1);
+            if (IsDeviceEventListenerEnabled(s_deviceEventCounterListener)) s_deviceEventCounterListener.OnAmqpUnitDisposed();
+            s_deviceEventMonitor?.OnEvent(s_deviceEventNames[3]);
         }
 
         internal static void OnAmqpConnectionEstablished()
         {
-            s_instance._amqpConnectionEstablishment.WriteMetric(1);
+            if (IsDeviceEventListenerEnabled(s_deviceEventCounterListener)) s_deviceEventCounterListener.OnAmqpConnectionEstablished();
+            s_deviceEventMonitor?.OnEvent(s_deviceEventNames[4]);
         }
 
         internal static void OnAmqpConnectionDisconnected()
         {
-            s_instance._amqpConnectionDisconnection.WriteMetric(1);
+            if (IsDeviceEventListenerEnabled(s_deviceEventCounterListener)) s_deviceEventCounterListener.OnAmqpConnectionDisconnected();
+            s_deviceEventMonitor?.OnEvent(s_deviceEventNames[5]);
         }
 
         internal static void OnAmqpSessionEstablished()
         {
-            s_instance._amqpSessionEstablishment.WriteMetric(1);
+            if (IsDeviceEventListenerEnabled(s_deviceEventCounterListener)) s_deviceEventCounterListener.OnAmqpSessionEstablished();
+            s_deviceEventMonitor?.OnEvent(s_deviceEventNames[6]);
         }
 
         internal static void OnAmqpSessionDisconnected()
         {
-            s_instance._amqpSessionDisconnection.WriteMetric(1);
+            if (IsDeviceEventListenerEnabled(s_deviceEventCounterListener)) s_deviceEventCounterListener.OnAmqpSessionDisconnected();
+            s_deviceEventMonitor?.OnEvent(s_deviceEventNames[7]);
         }
 
         internal static void OnAmqpTokenRefresherStarted()
         {
-            s_instance._amqpTokenRefresherInitiation.WriteMetric(1);
+            if (IsDeviceEventListenerEnabled(s_deviceEventCounterListener)) s_deviceEventCounterListener.OnAmqpTokenRefresherStarted();
+            s_deviceEventMonitor?.OnEvent(s_deviceEventNames[8]);
         }
 
         internal static void OnAmqpTokenRefresherStopped()
         {
-            s_instance._amqpTokenRefresherTermination.WriteMetric(1);
+            if (IsDeviceEventListenerEnabled(s_deviceEventCounterListener)) s_deviceEventCounterListener.OnAmqpTokenRefresherStopped();
+            s_deviceEventMonitor?.OnEvent(s_deviceEventNames[9]);
         }
 
         internal static void OnAmqpTokenRefreshed()
         {
-            s_instance._amqpTokenRefresh.WriteMetric(1);
+            if (IsDeviceEventListenerEnabled(s_deviceEventCounterListener)) s_deviceEventCounterListener.OnAmqpTokenRefreshed();
+            s_deviceEventMonitor?.OnEvent(s_deviceEventNames[10]);
         }
 
-        internal static bool IsEnabled => s_instance.IsEnabled();
+        internal static bool IsEnabled => IsDeviceEventListenerEnabled(s_deviceEventCounterListener) || s_deviceEventMonitor != null;
 
+        private static bool IsDeviceEventListenerEnabled(IDeviceEventListener deviceEventListener)
+        {
+            return deviceEventListener?.IsEnabled() ?? false;
+        }
     }
-#else
-    internal sealed class DeviceEventCounter
-    {
-        internal static void OnDeviceClientCreated() {}
+}
 
-        internal static void OnDeviceClientDisposed() {}
-
-        internal static void OnAmqpUnitCreated() {}
-
-        internal static void OnAmqpUnitDisposed() { }
-
-        internal static void OnAmqpConnectionEstablished() { }
-
-        internal static void OnAmqpConnectionDisconnected() { }
-
-        internal static void OnAmqpSessionEstablished() { }
-
-        internal static void OnAmqpSessionDisconnected() { }
-
-        internal static void OnAmqpTokenRefresherStarted() { }
-
-        internal static void OnAmqpTokenRefresherStopped() { }
-
-        internal static void OnAmqpTokenRefreshed() { }
-
-        internal static bool IsEnabled => false;
-    }
-#endif
