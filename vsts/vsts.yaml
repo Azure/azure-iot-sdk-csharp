@@ -156,9 +156,19 @@ phases:
        
        rem List active docker containers
        docker ps -a
+
+       rem Start 
+
+       rem Start ETL logging
+       logman create trace IotTrace -o iot.etl -pf tools/CaptureLogs/iot_providers.txt
+       logman start IotTrace
        
        rem Start build
        vsts/windows_csharp.cmd
+
+       ren Stop ETL logging
+       logman stop IotTrace
+       logman delete IotTrace
         
     displayName: build
     env:
@@ -191,11 +201,11 @@ phases:
       IOTHUB_PROXY_SERVER_ADDRESS: 127.0.0.1:3128
 
   - task: CopyFiles@2
-    displayName: 'Copy files to the artifacts folder'
+    displayName: 'Copy ETL files to the artifacts folder'
     inputs:
       SourceFolder: '$(Build.SourcesDirectory)'
 
-      Contents: '**/*.trx'
+      Contents: '**/*.etl'
 
       TargetFolder: '$(Build.ArtifactStagingDirectory)'
 

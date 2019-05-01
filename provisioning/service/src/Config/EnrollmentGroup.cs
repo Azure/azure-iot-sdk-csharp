@@ -232,7 +232,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
             private set
             {
-                ParserUtils.EnsureRegistrationId(value);
                 _enrollmentGroupId = value;
             }
         }

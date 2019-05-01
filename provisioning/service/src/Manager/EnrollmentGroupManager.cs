@@ -51,9 +51,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             string enrollmentGroupId,
             CancellationToken cancellationToken)
         {
-            /* SRS_ENROLLMENT_GROUP_MANAGER_28_007: [The GetAsync shall throw ArgumentException if the provided enrollmentGroupId is null or empty.] */
-            ParserUtils.EnsureValidId(enrollmentGroupId);
-
             /* SRS_ENROLLMENT_GROUP_MANAGER_28_008: [The GetAsync shall sent the Get HTTP request to get the enrollmentGroup information.] */
             ContractApiResponse contractApiResponse = await contractApiHttp.RequestAsync(
                 HttpMethod.Get,
@@ -99,9 +96,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             CancellationToken cancellationToken,
             string eTag = null)
         {
-            /* SRS_ENROLLMENT_GROUP_MANAGER_28_012: [The DeleteAsync shall throw ArgumentException if the provided enrollmentGroupId is null or empty.] */
-            ParserUtils.EnsureValidId(enrollmentGroupId);
-
             /* SRS_ENROLLMENT_GROUP_MANAGER_28_013: [The DeleteAsync shall sent the Delete HTTP request to remove the EnrollmentGroup.] */
             await contractApiHttp.RequestAsync(
                 HttpMethod.Delete,
