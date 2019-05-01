@@ -1117,7 +1117,7 @@ namespace DeviceExplorer
 
         private void devicesGridView_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if (DateTime.Now.Subtract(deviceIDSearchPatternLastUpdateTime).Seconds > deviceIDSearchPatternMaxUpdateDelayInSecs)
+            if (DateTime.Now.Subtract(deviceIDSearchPatternLastUpdateTime).TotalSeconds > deviceIDSearchPatternMaxUpdateDelayInSecs)
             {
                 deviceIDSearchPattern = String.Empty;
             }
