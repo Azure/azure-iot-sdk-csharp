@@ -138,6 +138,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
             if (SetNotUsable() == 0 && _amqpSession != null)
             {
+                _amqpAuthenticationRefresher?.StopLoop();
                 await _amqpSession.CloseAsync(timeout).ConfigureAwait(false);
                 OnUnitDisconnected?.Invoke(true, EventArgs.Empty);
             }
@@ -503,6 +504,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(OnConnectionDisconnected)}");
             if (SetNotUsable() == 0)
             {
+                _amqpAuthenticationRefresher?.StopLoop();
                 OnUnitDisconnected?.Invoke(false, EventArgs.Empty);
             }
 
@@ -515,6 +517,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
             if (SetNotUsable() == 0)
             {
+                _amqpAuthenticationRefresher?.StopLoop();
                 OnUnitDisconnected?.Invoke(false, EventArgs.Empty);
             }
             if (DeviceEventCounter.IsEnabled) DeviceEventCounter.OnAmqpSessionDisconnected();
@@ -528,6 +531,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
             if (SetNotUsable() == 0)
             {
+                _amqpAuthenticationRefresher?.StopLoop();
                 OnUnitDisconnected?.Invoke(false, EventArgs.Empty);
             }
 
@@ -555,6 +559,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     OnUnitDisconnected?.Invoke(false, EventArgs.Empty);
                 }
 
+                _amqpAuthenticationRefresher?.StopLoop();
                 _amqpSession?.Abort();
                 if (Logging.IsEnabled) Logging.Exit(this, disposing, $"{nameof(Dispose)}");
                 if (DeviceEventCounter.IsEnabled) DeviceEventCounter.OnAmqpUnitDisposed();
