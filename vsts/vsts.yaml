@@ -201,6 +201,17 @@ phases:
       IOTHUB_PROXY_SERVER_ADDRESS: 127.0.0.1:3128
 
   - task: CopyFiles@2
+    displayName: 'Copy TRX files to the artifacts folder'
+    inputs:
+      SourceFolder: '$(Build.SourcesDirectory)'
+
+      Contents: '**/*.trx'
+
+      TargetFolder: '$(Build.ArtifactStagingDirectory)'
+
+    condition: always()
+
+  - task: CopyFiles@2
     displayName: 'Copy ETL files to the artifacts folder'
     inputs:
       SourceFolder: '$(Build.SourcesDirectory)'
