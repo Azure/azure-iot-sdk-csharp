@@ -1,6 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+//This is the code that sends messages to the IoT Hub for testing the routing as defined
+//  in this article: https://docs.microsoft.com/en-us/azure/iot-hub/tutorial-routing
+//The scripts for creating the resources are included in the resources folder in this
+//  Visual Studio solution. 
+
 using Microsoft.Azure.Devices.Client;
 using Newtonsoft.Json;
 using System;
@@ -17,6 +22,7 @@ namespace SimulatedDevice
         // This is the primary key for the device. This is in the portal. 
         // Find your IoT hub in the portal > IoT devices > select your device > copy the key. 
         private readonly static string s_deviceKey = "{your device key}";
+
         private static void Main(string[] args)
         {
             Console.WriteLine("Routing Tutorial: Simulated device\n"); 

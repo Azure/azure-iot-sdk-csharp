@@ -1,0 +1,309 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "randomValue": {
+            "defaultValue": "[substring(uniqueString(utcNow()),0,8)]",
+            "type": "string", 
+            "metadata": {
+                "description": "Random alphanumeric string to make the assets have a unique name."
+            }
+        },
+        "subscriptionId": {
+            "type": "string",
+            "defaultValue": "[subscription().subscriptionid]",
+            "metadata": {
+                "description": "The subscription ID of the Azure subscription to deploy into."                
+            }
+        },
+        "IoTHubName_in": {
+            "type": "string",
+            "defaultValue": "ContosoTestHub",
+            "metadata": {
+                "description": "The name of the IoT Hub to create."                
+            }
+        },
+        "location": {
+            "type": "string",
+            "defaultValue": "westus",
+            "metadata": {
+                "description": "The datacenter to use for the deployment."
+            }
+        },
+        "consumer_group":{
+            "type": "string",
+            "defaultValue": "ContosoConsumers",
+            "metadata": {
+                "description": "The consumer group to assign to the messages for use in ASA."
+            }
+        },
+        "sku_name": {
+            "type": "string",
+            "defaultValue": "S1",
+            "metadata": {
+                "description": "The SKU to use for the IoT Hub."
+            }
+        },
+        "sku_units": {
+            "type": "string",
+            "defaultValue": "1",
+            "metadata": {
+                "description": "The number of IoT Hub units."
+            }
+        },
+        "d2c_partitions": {
+            "type": "string",
+            "metadata": {
+                "description": "Partitions used for the event stream."
+            }
+        },
+        "storageAccountName_in": {
+            "type": "string",
+            "defaultValue": "contosostorage",
+            "metadata": {
+                "description": "Name of storage account to be created."
+            }
+        },
+        "storageContainerName": {
+            "type": "string",
+            "defaultValue": "contosoresults",
+            "metadata": {
+                "description": "Name of the container in which to place the routed data."
+            }
+        },
+        "storage_endpoint": {
+            "type": "string",
+            "defaultValue": "ContosoStorageEndpoint",
+            "metadata": {
+                "description": "Name of the endpoint for the storage account."
+            }
+        },
+        "service_bus_namespace_in": {
+            "type": "string",
+            "defaultValue": "ContosoSBNamespace",
+            "metadata": {
+                "description": "Namespace of the service bus that has the queue to which messages are routed."
+            }
+        },
+        "service_bus_queue_in": {
+            "type": "string",
+            "defaultValue": "ContosoSBQueue", 
+            "metadata": {
+                "description": "Name of the service bus queue to which to route messages."
+            }
+        },
+        "service_bus_queue_endpoint": {
+            "type": "string",
+            "defaultValue": "ContosoSBQueueEndpoint", 
+            "metadata": {
+                "description": "Endpoint to use for routing messages to the service bus queue."
+            }
+        },
+        "AuthRules_sb_queue": {
+            "type": "string",
+            "defaultValue": "AuthRules_sb_queue",
+            "metadata": {
+                "description": "Authorization rules for the service bus queue."
+            }
+        }
+    },
+    "variables": {
+        "queueAuthorizationRuleResourceId": "[resourceId('Microsoft.ServiceBus/namespaces/queues/authorizationRules', variables('service_bus_namespace'), variables('service_bus_queue'), parameters('AuthRules_sb_queue'))]",
+        "iotHubName": "[concat(parameters('IotHubName_in'),parameters('randomValue'))]",
+        "storageAccountName": "[concat(parameters('storageAccountName_in'),parameters('randomValue'))]",
+        "service_bus_namespace": "[concat(parameters('service_bus_namespace_in'),parameters('randomValue'))]",
+        "service_bus_queue": "[concat(parameters('service_bus_queue_in'),parameters('randomValue'))]",
+        "sbVersion": "2017-04-01"
+    },
+    "resources": [
+    {       
+        "type": "Microsoft.Storage/storageAccounts",
+        "name": "[variables('storageAccountName')]",
+        "apiVersion": "2018-07-01",
+        "location": "[parameters('location')]",
+        "sku": {
+            "name": "Standard_LRS",
+            "tier": "Standard"
+        },
+        "kind": "Storage",
+        "properties": {},
+        "resources": [
+            {
+            "type": "blobServices/containers",
+            "apiVersion": "2018-07-01",
+            "name": "[concat('default/', parameters('storageContainerName'))]",
+            "properties": {
+                "publicAccess": "None"
+                } ,
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+                ]        
+            }   
+        ]
+    },
+    {
+        "type": "Microsoft.ServiceBus/namespaces",
+        "comments": "The Sku should be 'Standard' for this tutorial.",
+        "sku": {
+            "name": "Standard",
+            "tier": "Standard"
+        },
+        "name": "[variables('service_bus_namespace')]",
+        "apiVersion": "[variables('sbVersion')]",
+        "location": "[parameters('location')]",
+        "properties": {
+            "provisioningState": "Succeeded",
+            "metricId": "[concat('a4295411-5eff-4f81-b77e-276ab1ccda12:', variables('service_bus_namespace'))]",
+            "serviceBusEndpoint": "[concat('https://', variables('service_bus_namespace'),'.servicebus.windows.net:443/')]",
+            "status": "Active"
+        },
+        "dependsOn": []
+    },
+    {
+        "type": "Microsoft.ServiceBus/namespaces/queues",
+        "name": "[concat(variables('service_bus_namespace'), '/', variables('service_bus_queue'))]",
+        "apiVersion": "[variables('sbVersion')]",
+        "location": "[parameters('location')]",
+        "scale": null,
+        "properties": {},
+        "dependsOn": [
+            "[resourceId('Microsoft.ServiceBus/namespaces', variables('service_bus_namespace'))]"
+        ]
+    },
+    {
+        "apiVersion": "2018-04-01",
+        "type": "Microsoft.Devices/IotHubs",
+        "name": "[variables('IoTHubName')]",
+        "location": "[parameters('location')]",
+        "dependsOn": [
+            "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+            "[resourceId('Microsoft.ServiceBus/namespaces', variables('service_bus_namespace'))]",
+            "[resourceId('Microsoft.ServiceBus/namespaces/queues', variables('service_bus_namespace'), variables('service_bus_queue'))]"
+        ],
+        "properties": {
+            "eventHubEndpoints": {                
+                "events": {
+                    "retentionTimeInDays": 1,
+                    "partitionCount": "[parameters('d2c_partitions')]"
+                    }                    
+                },
+            "routing": {
+                "endpoints": {
+                    "serviceBusQueues": [
+                    {
+                        "connectionString": "[Concat('Endpoint=sb://',variables('service_bus_namespace'),'.servicebus.windows.net/;SharedAccessKeyName=',parameters('AuthRules_sb_queue'),';SharedAccessKey=',listkeys(variables('queueAuthorizationRuleResourceId'),variables('sbVersion')).primaryKey,';EntityPath=',variables('service_bus_queue'))]",
+                        "name": "[parameters('service_bus_queue_endpoint')]",
+                        "subscriptionId": "[parameters('subscriptionId')]", 
+                        "resourceGroup": "[resourceGroup().Name]"
+                    }
+                    ],
+                    "serviceBusTopics": [],
+                    "eventHubs": [],
+                    "storageContainers": [
+                        {
+                            "connectionString": 
+                            "[Concat('DefaultEndpointsProtocol=https;AccountName=',variables('storageAccountName'),';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value)]",
+                            "containerName": "[parameters('storageContainerName')]",
+                            "fileNameFormat": "{iothub}/{partition}/{YYYY}/{MM}/{DD}/{HH}/{mm}",
+                            "batchFrequencyInSeconds": 100,
+                            "maxChunkSizeInBytes": 104857600,
+                            "encoding": "avro",
+                            "name": "[parameters('storage_endpoint')]",
+                            "subscriptionId": "[parameters('subscriptionId')]",
+                            "resourceGroup": "[resourceGroup().Name]"
+                        }
+                    ]
+                },
+                "routes": [
+                    {
+                        "name": "ContosoStorageRoute",
+                        "source": "DeviceMessages",
+                        "condition": "level=\"storage\"",
+                        "endpointNames": [
+                            "[parameters('storage_endpoint')]"
+                            ],
+                        "isEnabled": true
+                    },
+                    {
+                        "name": "ContosoSBQueueRoute",
+                        "source": "DeviceMessages",
+                        "condition": "level=\"critical\"",
+                        "endpointNames": [
+                            "[parameters('service_bus_queue_endpoint')]"
+                            ],
+                        "isEnabled": true
+                    }
+                        
+                ],
+                "fallbackRoute": {
+                    "name": "$fallback",
+                    "source": "DeviceMessages",
+                    "condition": "true",
+                    "endpointNames": [
+                        "events" 
+                    ],
+                    "isEnabled": true
+                }
+            },
+            "storageEndpoints": {
+                "$default": {
+                    "sasTtlAsIso8601": "PT1H",
+                    "connectionString": "",
+                    "containerName": ""
+                }
+            },
+            "messagingEndpoints": {
+                "fileNotifications": {
+                    "lockDurationAsIso8601": "PT1M",
+                    "ttlAsIso8601": "PT1H",
+                    "maxDeliveryCount": 10
+                }
+            },
+            "enableFileUploadNotifications": false,
+            "cloudToDevice": {
+                "maxDeliveryCount": 10,
+                "defaultTtlAsIso8601": "PT1H",
+                "feedback": {
+                    "lockDurationAsIso8601": "PT1M",
+                    "ttlAsIso8601": "PT1H",
+                    "maxDeliveryCount": 10
+                }
+            }
+        },
+        "sku": {
+            "name": "[parameters('sku_name')]",
+            "capacity": "[parameters('sku_units')]"
+        }
+    },
+    {
+        "type": "Microsoft.ServiceBus/namespaces/queues/authorizationRules",
+        "name": "[concat(variables('service_bus_namespace'), '/', variables('service_bus_queue'), '/', parameters('AuthRules_sb_queue'))]",
+        "apiVersion": "[variables('sbVersion')]",
+        "location": "[parameters('location')]",
+        "scale": null,
+        "properties": {
+            "rights": [
+                "Send"
+            ]
+        },
+        "dependsOn": [
+            "[resourceId('Microsoft.ServiceBus/namespaces', variables('service_bus_namespace'))]",
+            "[resourceId('Microsoft.ServiceBus/namespaces/queues', variables('service_bus_namespace'), variables('service_bus_queue'))]"
+        ]
+    },
+    {
+        "type": "Microsoft.Devices/IotHubs/eventHubEndpoints/ConsumerGroups",
+        "name": "[concat(variables('iotHubName'), '/events/',parameters('consumer_group'))]",
+        "apiVersion": "2018-04-01",
+        "dependsOn": [
+            "[concat('Microsoft.Devices/Iothubs/', variables('iotHubName'))]"
+        ]
+    }
+    ],
+    "outputs": {
+        "sbq_connectionString": {
+          "type": "string",
+          "value": "[Concat('Endpoint=sb://',variables('service_bus_namespace'),'.servicebus.windows.net/;SharedAccessKeyName=',parameters('AuthRules_sb_queue'),';SharedAccessKey=',listkeys(variables('queueAuthorizationRuleResourceId'),variables('sbVersion')).primaryKey,';EntityPath=',variables('service_bus_queue'))]"
+        }
+      }    
+}
