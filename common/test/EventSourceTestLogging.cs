@@ -5,6 +5,7 @@ using System.Diagnostics.Tracing;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
+    // f7ac322b-77f1-5a2d-0b56-ec79a41e82a2
     [EventSource(Name = "Microsoft-Azure-Devices-TestLogging")]
     internal class EventSourceTestLogging : EventSource
     {
