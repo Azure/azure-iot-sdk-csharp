@@ -290,9 +290,10 @@ namespace Microsoft.Azure.Devices.E2ETests
             return propertyUpdateReceived.Task;
         }
 
-        public static async Task RegistryManagerUpdateDesiredPropertyAsync(string deviceId, string propName, string propValue)
+        public static async Task RegistryManagerUpdateDesiredPropertyAsync(string deviceId, string propName, string propValue, bool usePrimaryHub = true)
         {
-            using (RegistryManager registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
+            var connectionString = usePrimaryHub ? Configuration.IoTHub.ConnectionString : Configuration.IoTHub.ConnectionStringSecondary;
+            using (RegistryManager registryManager = RegistryManager.CreateFromConnectionString(connectionString))
             {
                 var twinPatch = new Twin();
                 twinPatch.Properties.Desired[propName] = propValue;

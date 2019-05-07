@@ -28,9 +28,9 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private static TestLogging s_log = TestLogging.GetInstance();
 
-        public static Task<EventHubTestListener> CreateListener(string deviceName)
+        public static Task<EventHubTestListener> CreateListener(string deviceName, bool usePrimaryHub = true)
         {
-            return CreateListenerPal(deviceName);
+            return CreateListenerPal(deviceName, usePrimaryHub);
         }
 
         public async Task<bool> WaitForMessage(string deviceId, string payload, string p1Value)

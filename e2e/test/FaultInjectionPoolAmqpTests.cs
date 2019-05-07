@@ -1,0 +1,33 @@
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.Tracing;
+using System.Text;
+
+namespace Microsoft.Azure.Devices.E2ETests
+{
+    [TestClass]
+    [TestCategory("IoTHub-E2E")]
+    [TestCategory("IoTHub-FaultInjection-PoolAmqp")]
+    public partial class FaultInjectionPoolAmqpTests : IDisposable
+    {
+        private static TestLogging _log = TestLogging.GetInstance();
+
+        private readonly ConsoleEventListener _listener;
+
+        public FaultInjectionPoolAmqpTests()
+        {
+            _listener = TestConfig.StartEventListener();
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+        }
+    }
+}

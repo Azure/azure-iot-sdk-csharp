@@ -11,14 +11,6 @@
 # IoT Hub Owner connection string:
 export IOTHUB_CONN_STRING_CSHARP=""
 
-# Device primary and secondary connection strings:
-export IOTHUB_DEVICE_CONN_STRING=""
-export IOTHUB_DEVICE_CONN_STRING2=""
-
-# IoT Hub Module connection string:
-export IOTHUB_MODULE_CONN_STRING=""
-export IOTHUB_MODULE_CONN_STRING2=""
-
 # Use the following Powershell command to retrieve the Base64 encoding of a file:
 # Use Powershell: [Convert]::ToBase64String((Get-Content myFileName -Encoding Byte)) to generate.
 
@@ -26,9 +18,6 @@ export IOTHUB_MODULE_CONN_STRING2=""
 export IOTHUB_PFX_X509_THUMBPRINT=
 # X509 PFX Base64 encoded Certificate 1 (empty password):
 export IOTHUB_X509_PFX_CERTIFICATE=
-
-# X509 Certificate 2 thumbprint:
-export IOTHUB_PFX_X509_THUMBPRINT2=
 
 # EventHub connection string for the messages/events endpoint:
 export IOTHUB_EVENTHUB_CONN_STRING_CSHARP=
@@ -38,6 +27,20 @@ export IOTHUB_EVENTHUB_COMPATIBLE_NAME=
 
 # EventHub consumer group:
 export IOTHUB_EVENTHUB_CONSUMER_GROUP=
+
+# ---------- Secondary IoTHub configuration for running Polling Fault Injection tests ----------
+# Set this only if you want to run the Pooling Fault Injection E2E tests.
+# IoT Hub Owner connection string:
+export IOTHUB_CONN_STRING_SECONDARY_CSHARP=
+
+# EventHub connection string for the messages/events endpoint:
+export IOTHUB_EVENTHUB_CONN_STRING_SECONDARY_CSHARP=
+
+# EventHub compatible name:
+export IOTHUB_EVENTHUB_COMPATIBLE_NAME_SECONDARY=
+
+# Secondary EventHub consumer group:
+export IOTHUB_EVENTHUB_CONSUMER_GROUP_SECONDARY=
 
 # ---------- Device Provisioning Service Configuration ----------
 # See Configuration.Provisioning.cs for usage details.
