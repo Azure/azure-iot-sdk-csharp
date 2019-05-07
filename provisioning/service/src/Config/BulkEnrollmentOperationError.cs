@@ -47,7 +47,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             {
                 /* SRS_BULK_ENROLLMENT_OPERATION_ERRO_21_001: [The BulkEnrollmentOperationError shall throws JsonSerializationException if the 
                                                     provided registrationId is null, empty, or invalid.] */
-                ParserUtils.EnsureRegistrationId(value);
                 _registrationId = value;
             }
         }
