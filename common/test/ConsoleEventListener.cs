@@ -2,44 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-/*
- * To read colorized logs, analyze timings use https://marketplace.visualstudio.com/items?itemName=emilast.LogFileHighlighter 
- * 
- * Suggested color configuration :
-
-   "logFileHighlighter.customPatterns": [
-        {
-            "pattern": ".*-Enter]",
-            "foreground": "#42adf4"
-        },
-        {
-            "pattern": ".*-Exit]",
-            "foreground": "#cc99ff"
-        },
-        {
-            "pattern": ".*-Associate]",
-            "foreground": "magenta"
-        },
-        {
-            "pattern": ".*-Info]",
-            "foreground": "#11a046"
-        },
-        {
-            "pattern": ".*-ErrorMessage]",
-            "foreground": "red"
-        },
-        {
-            "pattern": ".*-Critical]",
-            "foreground": "#ea4112"
-        },
-        {
-            "pattern": ".*-TestMessage]",
-            "foreground": "gray"
-        },
-    ]
- *
- */
-
 namespace System.Diagnostics.Tracing
 {
     public sealed class ConsoleEventListener : EventListener

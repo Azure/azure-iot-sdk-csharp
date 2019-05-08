@@ -199,7 +199,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             using (DeviceClient deviceClient = testDevice.CreateDeviceClient(transport))
             {
                 await deviceClient.OpenAsync().ConfigureAwait(false);
-                await MessageSend.SendSingleMessageAndVerifyAsync(deviceClient, testDevice.Id).ConfigureAwait(false);
+                await SendSingleMessageAndVerifyAsync(deviceClient, testDevice.Id).ConfigureAwait(false);
                 await deviceClient.CloseAsync().ConfigureAwait(false);
             }
         }
@@ -211,7 +211,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             using (DeviceClient deviceClient = testDevice.CreateDeviceClient(transportSettings))
             {
                 await deviceClient.OpenAsync().ConfigureAwait(false);
-                await MessageSend.SendSingleMessageAndVerifyAsync(deviceClient, testDevice.Id).ConfigureAwait(false);
+                await SendSingleMessageAndVerifyAsync(deviceClient, testDevice.Id).ConfigureAwait(false);
                 await deviceClient.CloseAsync().ConfigureAwait(false);
             }
         }
@@ -222,15 +222,64 @@ namespace Microsoft.Azure.Devices.E2ETests
             using (ModuleClient moduleClient = ModuleClient.CreateFromConnectionString(testModule.ConnectionString, transportSettings))
             {
                 await moduleClient.OpenAsync().ConfigureAwait(false);
-
-                string payload;
-                string p1Value;
-                Client.Message testMessage = MessageSend.ComposeD2CTestMessage(out payload, out p1Value);
-                await moduleClient.SendEventAsync(testMessage).ConfigureAwait(false);
+                await SendSingleMessageModuleAndVerifyAsync(moduleClient, testModule.DeviceId).ConfigureAwait(false);
                 await moduleClient.CloseAsync().ConfigureAwait(false);
             }
         }
-        
+
+        public static async Task SendSingleMessageAndVerifyAsync(DeviceClient deviceClient, string deviceId)
+        {
+            EventHubTestListener testListener = await EventHubTestListener.CreateListener(deviceId).ConfigureAwait(false);
+
+            try
+            {
+                string payload;
+                string p1Value;
+                Client.Message testMessage = ComposeD2CTestMessage(out payload, out p1Value);
+                await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
+
+                bool isReceived = await testListener.WaitForMessage(deviceId, payload, p1Value).ConfigureAwait(false);
+                Assert.IsTrue(isReceived, "Message is not received.");
+            }
+            finally
+            {
+                await testListener.CloseAsync().ConfigureAwait(false);
+            }
+        }
+
+        private async Task SendSingleMessageModuleAndVerifyAsync(ModuleClient moduleClient, string deviceId)
+        {
+            EventHubTestListener testListener = await EventHubTestListener.CreateListener(deviceId).ConfigureAwait(false);
+
+            try
+            {
+                string payload;
+                string p1Value;
+                Client.Message testMessage = ComposeD2CTestMessage(out payload, out p1Value);
+                await moduleClient.SendEventAsync(testMessage).ConfigureAwait(false);
+
+                bool isReceived = await testListener.WaitForMessage(deviceId, payload, p1Value).ConfigureAwait(false);
+                Assert.IsTrue(isReceived, "Message is not received.");
+            }
+            finally
+            {
+                await testListener.CloseAsync().ConfigureAwait(false);
+            }
+        }
+
+        public static Client.Message ComposeD2CTestMessage(out string payload, out string p1Value)
+        {
+            payload = Guid.NewGuid().ToString();
+            p1Value = Guid.NewGuid().ToString();
+
+            _log.WriteLine($"{nameof(ComposeD2CTestMessage)}: payload='{payload}' p1Value='{p1Value}'");
+
+            return new Client.Message(Encoding.UTF8.GetBytes(payload))
+            {
+                Properties = { ["property1"] = p1Value }
+            };
+        }
+
         public void Dispose()
         {
             Dispose(true);

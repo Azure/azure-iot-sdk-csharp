@@ -26,6 +26,10 @@ Logging can be added to console. Note that this method will substantially slow d
 * `*Microsoft-Azure-Devices-Provisioning-Transport-Mqtt {2143dadd-f500-5ff9-12b3-9afacae4d54c}`: ProvisioningTransportHandlerMqtt related traces.
 * `*Microsoft-Azure-Devices-Security-Tpm {06e3e7c9-2cd0-57c7-e3b3-c5965ff2736e}`: SecurityProviderTpmHsm related traces.
 
+## Azure IoT SDK test providers
+
+* `*Microsoft-Azure-Devices-TestLogging {f7ac322b-77f1-5a2d-0b56-ec79a41e82a2}`: E2E Test logging related traces
+
 ## Dependency providers
 
 * `*DotNetty-Default {d079e771-0495-4124-bd2f-ab63c2b50525}`: DotNetty related traces (used by the MQTT handlers)
