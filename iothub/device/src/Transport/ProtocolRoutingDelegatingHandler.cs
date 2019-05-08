@@ -89,7 +89,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private void CreateNewTransportIfNotReady()
         {
-            if (!(InnerHandler?.IsUsable ?? false))
+            if (InnerHandler == null || !InnerHandler.IsUsable)
             {
                 CreateNewTransportHandler();
             }
@@ -114,6 +114,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             await _handlerLock.WaitAsync().ConfigureAwait(false);
             Debug.Assert(InnerHandler != null);
+
+            // We don't need to double check since it's being handled in OpenAsync
             CreateNewTransportHandler();
 
             // Operations above should never throw. If they do, it's not safe to continue.
