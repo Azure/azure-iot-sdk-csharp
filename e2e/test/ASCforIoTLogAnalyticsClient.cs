@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Newtonsoft.Json;
@@ -32,7 +33,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private readonly string _workspaceId = Configuration.ASCforIoTLogAnalytics.WorkspacedId;
         private readonly string _aadTenant = Configuration.ASCforIoTLogAnalytics.AadTenant;
         private readonly string _appId = Configuration.ASCforIoTLogAnalytics.AadAppId;
-        private readonly string _appKey = Configuration.ASCforIoTLogAnalytics.AadAppKey;
+        private readonly string _appCertificate = Configuration.ASCforIoTLogAnalytics.AadAppCertificate;
 
         private readonly TimeSpan _polingInterval = TimeSpan.FromSeconds(20);
 
@@ -88,9 +89,9 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private async Task<string> GetAccessToken()
         {
-            ClientCredential cc = new ClientCredential(_appId, _appKey);
-            AuthenticationResult result = await _authenticationContext.AcquireTokenAsync(Audience, cc).ConfigureAwait(false);
-
+            var cert = new X509Certificate2(Convert.FromBase64String(_appCertificate));
+            IClientAssertionCertificate ca = new ClientAssertionCertificate(_appId, cert);
+            AuthenticationResult result = await _authenticationContext.AcquireTokenAsync(Audience, ca).ConfigureAwait(false);
             return result.AccessToken;
         }
 

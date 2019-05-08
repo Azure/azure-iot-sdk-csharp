@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             public static string AadAppId => GetValue("LA_AAD_APP_ID");
 
-            public static string AadAppKey => GetValue("LA_AAD_APP_KEY");
+            public static string AadAppCertificate => GetValue("LA_AAD_APP_CERT_BASE64");
 
             public static string WorkspacedId => GetValue("LA_WORKSPACE_ID");
         }
