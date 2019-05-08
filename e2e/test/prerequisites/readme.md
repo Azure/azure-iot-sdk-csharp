@@ -34,7 +34,8 @@ Alternatives:
 
 ### ASC for IoT Security Message E2E Tests
 
-The ASC for IoT Security Message E2E tests validates that messages marked with SetAsSecurityMessage and have ASC for IoT security message payload are sent correctly and ingested to the customer Log Analytics workspace. [ASC for IoT architecture](https://docs.microsoft.com/en-us/azure/asc-for-iot/architecture)
+The ASC for IoT Security Message E2E tests validates that messages marked with SetAsSecurityMessage and have ASC for IoT security message payload are sent correctly and ingested to the customer Log Analytics workspace. 
+For more information about ASC for IoT please visit: [ASC for IoT architecture](https://docs.microsoft.com/en-us/azure/asc-for-iot/architecture)
 
 Important Note:
 
@@ -51,8 +52,8 @@ Test Flow:
 Prerequisites:
 
 - Log Analytics workspace - Where ASC for IoT stores its data.
-- Enable ASC for IoT - ASC for IoT should be enabled on the hub found in `Configuration.IoTHub` with the feature “Store raw device security events in LogAnalytics.” set to on, for instructions, please see: [onboard IoT hub](https://docs.microsoft.com/en-us/azure/asc-for-iot/quickstart-onboard-iot-hub) 
-- Azure Active Directory application with a reader role on the Log Analytics workspace - The tests uses Azure Active Directory Application to authenticate against Log Analytics. The service principal created by the Active Directory application must be assigned with a reader role on the Log Analytics workspace. Follow this link for instructions [Creating Azure Active Directory application and a service principal](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal#assign-the-application-to-a-role)
+- Enable ASC for IoT - ASC for IoT should be enabled on the hub found in `Configuration.IoTHub` with the feature “Store raw device security events in LogAnalytics.” set to on, for onboarding instructions, please see: [ASC for IoT Quickstart](https://docs.microsoft.com/en-us/azure/asc-for-iot/quickstart-onboard-iot-hub) 
+- Azure Active Directory application with a reader role on the Log Analytics workspace - The tests uses Azure Active Directory Application to authenticate against the Log Analytics workspace. The service principal created by the Active Directory application must be assigned with a reader role on the Log Analytics workspace. Follow this link for instructions [Creating Azure Active Directory application and a service principal](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal#assign-the-application-to-a-role)
 - Self signed certificate - for authenticating with the Active Directory app
 
 Note on Central US EUAP region:
