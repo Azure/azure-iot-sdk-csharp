@@ -69,6 +69,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 {
                     CreateNewTransportIfNotReady();
                     await base.OpenAsync(cancellationToken).ConfigureAwait(false);
+
+                    // since Dispose is not synced with _handlerLock, double check if disposed.
                     if (_disposed)
                     {
                         InnerHandler?.Dispose();
