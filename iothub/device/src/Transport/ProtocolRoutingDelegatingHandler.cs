@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.Azure.Devices.Shared;
+using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -68,6 +69,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 {
                     CreateNewTransportIfNotReady();
                     await base.OpenAsync(cancellationToken).ConfigureAwait(false);
+
+                    // since Dispose is not synced with _handlerLock, double check if disposed.
+                    if (_disposed)
+                    {
+                        InnerHandler?.Dispose();
+                        ThrowIfDisposed();
+                    }
                     _transportSelectionComplete = true;
                 }
                 finally
@@ -91,14 +99,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private void CreateNewTransportHandler()
         {
-            if (InnerHandler != null)
-            {
-                InnerHandler.Dispose();
-                InnerHandler = null;
-            }
+            IDelegatingHandler innerHandler = InnerHandler;
 
             // Ask the ContinuationFactory to attach the proper handler given the Context's ITransportSettings.
             InnerHandler = ContinuationFactory(Context, null);
+
+            innerHandler?.Dispose();
         }
 
         public override async Task WaitForTransportClosedAsync()
@@ -110,6 +116,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             await _handlerLock.WaitAsync().ConfigureAwait(false);
             Debug.Assert(InnerHandler != null);
+
+            // We don't need to double check since it's being handled in OpenAsync
             CreateNewTransportHandler();
 
             // Operations above should never throw. If they do, it's not safe to continue.

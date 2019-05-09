@@ -373,7 +373,7 @@ phases:
   condition: succeeded()
   queue:
     name: win
-    timeoutInMinutes: 5
+    timeoutInMinutes: 15
 
   steps:
   - powershell: ./vsts/manual_checkout.ps1 
