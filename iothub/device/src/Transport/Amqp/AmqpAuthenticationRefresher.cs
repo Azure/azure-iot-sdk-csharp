@@ -71,7 +71,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             {
                 if (Logging.IsEnabled) Logging.Info(this, refreshesOn, $"Before {nameof(RefreshLoopAsync)}");
 
-                if (waitTime.Seconds > 0)
+                if (waitTime > TimeSpan.Zero)
                 {
                     await Task.Delay(waitTime, cancellationToken).ConfigureAwait(false);
                 }

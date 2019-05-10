@@ -6,9 +6,12 @@ using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Azure.Devices.Provisioning.Client.Transport.Models;
 using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
+using System.Globalization;
 using System.IO;
 using System.Net;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -104,8 +107,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 cancellationToken.ThrowIfCancellationRequested();
 
                 string correlationId = Guid.NewGuid().ToString();
-                RegistrationOperationStatus operation =
-                    await RegisterDeviceAsync(connection, correlationId).ConfigureAwait(false);
+                DeviceRegistration deviceRegistration = (message.Payload != null && message.Payload.Length > 0) ? new DeviceRegistration { Payload = new JRaw(message.Payload) } : null;
+
+                RegistrationOperationStatus operation = await RegisterDeviceAsync(connection, correlationId, deviceRegistration).ConfigureAwait(false);
 
                 // Poll with operationId until registration complete.
                 int attempts = 0;
@@ -177,9 +181,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         private async Task<RegistrationOperationStatus> RegisterDeviceAsync(
             AmqpClientConnection client,
-            string correlationId)
+            string correlationId,
+            DeviceRegistration deviceRegistration)
         {
-            var amqpMessage = AmqpMessage.Create(new MemoryStream(), true);
+            AmqpMessage amqpMessage;
+            if (deviceRegistration == null)
+            {
+                amqpMessage = AmqpMessage.Create(new MemoryStream(), true);
+            }
+            else
+            {
+                var customContentStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(deviceRegistration)));
+                amqpMessage = AmqpMessage.Create(customContentStream, true);
+            }
             amqpMessage.Properties.CorrelationId = correlationId;
             amqpMessage.ApplicationProperties.Map[MessageApplicationPropertyNames.OperationType] =
                 DeviceOperations.Register;
@@ -238,7 +252,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 result.LastUpdatedDateTimeUtc,
                 result.ErrorCode == null ? 0 : (int)result.ErrorCode,
                 result.ErrorMessage,
-                result.Etag);
+                result.Etag,
+                result?.Payload?.ToString(CultureInfo.InvariantCulture));
         }
 
         private void ValidateOutcome(Outcome outcome)

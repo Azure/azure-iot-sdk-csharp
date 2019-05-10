@@ -5,7 +5,9 @@ using Microsoft.Azure.Devices.Provisioning.Client.Transport.Models;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.Rest;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
+using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -93,7 +95,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 if (Logging.IsEnabled) Logging.Info(this, $"Uri: {builder.Uri}; User-Agent: {message.ProductInfo}");
 
                 DeviceRegistration deviceRegistration = authStrategy.CreateDeviceRegistration();
-
+                if (message.Payload != null && message.Payload.Length > 0)
+                {
+                    deviceRegistration.Payload = new JRaw(message.Payload);
+                }
                 string registrationId = message.Security.GetRegistrationID();
 
                 RegistrationOperationStatus operation =
@@ -211,7 +216,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 result.LastUpdatedDateTimeUtc,
                 result.ErrorCode == null ? 0 : (int)result.ErrorCode,
                 result.ErrorMessage,
-                result.Etag);
+                result.Etag,
+                result?.Payload?.ToString(CultureInfo.InvariantCulture));
         }
     }
 }
