@@ -166,7 +166,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                this.EnsureValidState();
+                this.EnsureValidState(throwIfNotOpen: false);
 
                 await this.OpenAsyncInternal(cancellationToken).ConfigureAwait(true);
             }
@@ -992,7 +992,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             return (TransportState)Interlocked.CompareExchange(ref this.state, (int)toState, (int)fromState) == fromState;
         }
 
-        void EnsureValidState()
+        private void EnsureValidState(bool throwIfNotOpen = true)
         {
             if (this.State == TransportState.Error)
             {
@@ -1002,6 +1002,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 Debug.Fail($"{nameof(MqttTransportHandler)}.{nameof(EnsureValidState)}: Attempting to reuse transport after it was closed.");
                 throw new InvalidOperationException($"Invalid transport state: {this.State}");
+            }
+            if (throwIfNotOpen && (State & TransportState.Open) == 0)
+            {
+                throw new IotHubCommunicationException("MQTT connection is not established. Please retry later.");
             }
         }
 

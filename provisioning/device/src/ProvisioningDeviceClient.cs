@@ -76,6 +76,15 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
         /// <summary>
         /// Registers the current device using the Device Provisioning Service and assigns it to an IoT Hub.
         /// </summary>
+        /// <param name="data">The optional additional data.</param>
+        /// <returns>The registration result.</returns>
+        public Task<DeviceRegistrationResult> RegisterAsync(ProvisioningRegistrationAdditionalData data)
+        {
+            return RegisterAsync(data, CancellationToken.None);
+        }
+        /// <summary>
+        /// Registers the current device using the Device Provisioning Service and assigns it to an IoT Hub.
+        /// </summary>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The registration result.</returns>
         public Task<DeviceRegistrationResult> RegisterAsync(CancellationToken cancellationToken)
@@ -83,6 +92,21 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
             if (Logging.IsEnabled) Logging.RegisterAsync(this, _globalDeviceEndpoint, _idScope, _transport, _security);
 
             var request = new ProvisioningTransportRegisterMessage(_globalDeviceEndpoint, _idScope, _security);
+            request.ProductInfo = ProductInfo;
+            return _transport.RegisterAsync(request, cancellationToken);
+        }
+
+        /// <summary>
+        /// Registers the current device using the Device Provisioning Service and assigns it to an IoT Hub.
+        /// </summary>
+        /// <param name="data">The custom content.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The registration result.</returns>
+        public Task<DeviceRegistrationResult> RegisterAsync(ProvisioningRegistrationAdditionalData data, CancellationToken cancellationToken)
+        {
+            if (Logging.IsEnabled) Logging.RegisterAsync(this, _globalDeviceEndpoint, _idScope, _transport, _security);
+
+            var request = new ProvisioningTransportRegisterMessage(_globalDeviceEndpoint, _idScope, _security, data?.JsonData);
             request.ProductInfo = ProductInfo;
             return _transport.RegisterAsync(request, cancellationToken);
         }

@@ -31,6 +31,8 @@ public static async Task<HttpResponseMessage> Run(HttpRequestMessage req, TraceW
     {
         string[] hubs = data?.linkedHubs.ToObject<string[]>();
 
+        obj.payload = data?.deviceRuntimeContext?.payload;
+
         // Must have hubs selected on the enrollment
         if (hubs == null)
         {
@@ -78,4 +80,5 @@ public class ResponseObj
     public DeviceTwinObj initialTwin {get; set;}
     public string[] linkedHubs {get; set;}
     public string enrollment {get; set;}
+    public dynamic payload {get; set;}
 }

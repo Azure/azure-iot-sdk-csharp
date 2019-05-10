@@ -7,6 +7,7 @@ using DotNetty.Transport.Channels;
 using Microsoft.Azure.Devices.Provisioning.Client.Transport.Models;
 using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -291,6 +292,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         private async Task PublishRegisterAsync(IChannelHandlerContext context)
         {
             IByteBuffer packagePayload = Unpooled.Empty;
+            if (_message.Payload != null && _message.Payload.Length > 0)
+            {
+                var deviceRegistration = new DeviceRegistration { Payload = new JRaw(_message.Payload) };
+                var customContentStream =
+                    new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(deviceRegistration)));
+                long streamLength = customContentStream.Length;
+                int length = (int)streamLength;
+                packagePayload = context.Channel.Allocator.Buffer(length, length);
+                await packagePayload.WriteBytesAsync(customContentStream, length).ConfigureAwait(false);
+            }
+
             int packetId = GetNextPacketId();
             var message = new PublishPacket(Qos, false, false)
             {

@@ -29,6 +29,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private const int FailingTimeoutMiliseconds = 10 * 1000;
         private static string s_globalDeviceEndpoint = Configuration.Provisioning.GlobalDeviceEndpoint;
         private const string InvalidIDScope = "0neFFFFFFFF";
+        private const string payloadJsonData = "{\"testKey\":\"testValue\"}";
         private const string InvalidGlobalAddress = "httpbin.org";
         private static string ProxyServerAddress = Configuration.IoTHub.ProxyServerAddress;
         private readonly string IdPrefix = $"e2e-{nameof(ProvisioningE2ETests).ToLower()}-";
@@ -479,7 +480,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 _log.WriteLine("ProvisioningDeviceClient RegisterAsync . . . ");
                 DeviceRegistrationResult result = await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
 
-                ValidateDeviceRegistrationResult(result);
+                ValidateDeviceRegistrationResult(false, result);
 
                 Client.IAuthenticationMethod auth = CreateAuthenticationMethodFromSecurityProvider(security, result.DeviceId);
 
@@ -523,9 +524,14 @@ namespace Microsoft.Azure.Devices.E2ETests
                     transport);
                 var cts = new CancellationTokenSource(PassingTimeoutMiliseconds);
 
-                DeviceRegistrationResult result = await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
-                ValidateDeviceRegistrationResult(result);
+                //Test registering with valid additional data payload
+                DeviceRegistrationResult result = await provClient.RegisterAsync(new ProvisioningRegistrationAdditionalData { JsonData = payloadJsonData}, cts.Token).ConfigureAwait(false);
+                ValidateDeviceRegistrationResult(true, result);
                 Assert.AreEqual(expectedDestinationHub, result.AssignedHub);
+
+                //Test registering without additional data
+                result = await provClient.RegisterAsync(cts.Token).ConfigureAwait(false);
+                ValidateDeviceRegistrationResult(false, result);
 
                 if (attestationType != AttestationType.x509) //x509 enrollments are hardcoded, should never be deleted
                 {
@@ -922,7 +928,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         /// <summary>
         /// Assert that the device registration result has not errors, and that it was assigned to a hub and has a device id
         /// </summary>
-        private void ValidateDeviceRegistrationResult(DeviceRegistrationResult result)
+        private void ValidateDeviceRegistrationResult(bool validatePayload, DeviceRegistrationResult result)
         {
             Assert.IsNotNull(result);
             _log.WriteLine($"{result.Status} (Error Code: {result.ErrorCode}; Error Message: {result.ErrorMessage})");
@@ -931,6 +937,22 @@ namespace Microsoft.Azure.Devices.E2ETests
             Assert.AreEqual(ProvisioningRegistrationStatusType.Assigned, result.Status);
             Assert.IsNotNull(result.AssignedHub);
             Assert.IsNotNull(result.DeviceId);
+            if (validatePayload)
+            {
+                if (payloadJsonData != null)
+                {
+                    Assert.IsNotNull(result.JsonPayload);
+                    Assert.AreEqual(payloadJsonData, result.JsonPayload);
+                }
+                else
+                {
+                    Assert.IsNull(result.JsonPayload);
+                }
+            }
+            else
+            {
+                Assert.IsNull(result.JsonPayload);
+            }
         }
       
         public static async Task DeleteCreatedEnrollment(EnrollmentType? enrollmentType, ProvisioningServiceClient provisioningServiceClient, SecurityProvider security, string groupId)
