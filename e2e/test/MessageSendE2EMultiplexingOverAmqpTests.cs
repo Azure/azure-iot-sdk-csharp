@@ -157,11 +157,13 @@ namespace Microsoft.Azure.Devices.E2ETests
                 {
                     await listener.Value.CloseAsync().ConfigureAwait(false);
                 }
-                eventHubListeners.Clear();
+
                 foreach (DeviceClient deviceClient in deviceClients)
                 {
                     deviceClient.Dispose();
                 }
+
+                eventHubListeners.Clear();
             };
 
             await MultiplexingOverAmqp.TestMultiplexingOperationAsync(

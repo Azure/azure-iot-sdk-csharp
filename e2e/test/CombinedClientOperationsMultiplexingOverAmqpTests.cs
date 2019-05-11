@@ -197,6 +197,9 @@ namespace Microsoft.Azure.Devices.E2ETests
                 {
                     deviceClient.Dispose();
                 }
+
+                messagesSent.Clear();
+                twinPropertyMap.Clear();
             };
 
             await MultiplexingOverAmqp.TestMultiplexingOperationAsync(
