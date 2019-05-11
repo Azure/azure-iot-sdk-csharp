@@ -124,11 +124,10 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             // Initialize the service client
             ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
-            string payload, messageId, p1Value;
 
             Func<DeviceClient, TestDevice, Task> initOperation = async (deviceClient, testDevice) =>
             {
-                Message msg = MessageReceiveE2ETests.ComposeC2DTestMessage(out payload, out messageId, out p1Value);
+                (Message msg, string messageId, string payload, string p1Value) = MessageReceiveE2ETests.ComposeC2DTestMessage();
                 messagesSent.Add(testDevice.Id, new List<string> { payload, p1Value });
 
                 await serviceClient.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
@@ -140,8 +139,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await deviceClient.OpenAsync().ConfigureAwait(false);
 
                 List<string> msgSent = messagesSent[testDevice.Id];
-                payload = msgSent[0];
-                p1Value = msgSent[1];
+                string payload = msgSent[0];
+                string p1Value = msgSent[1];
 
                 await MessageReceiveE2ETests.VerifyReceivedC2DMessageAsync(transport, deviceClient, payload, p1Value).ConfigureAwait(false);
             };

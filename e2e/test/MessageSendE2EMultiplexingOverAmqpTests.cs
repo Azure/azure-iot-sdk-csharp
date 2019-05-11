@@ -141,9 +141,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 _log.WriteLine($"{nameof(MessageSendE2EMultiplexingOverAmqpTests)}: Preparing to send message for device {testDevice.Id}");
                 await deviceClient.OpenAsync().ConfigureAwait(false);
 
-                string payload;
-                string p1Value;
-                Client.Message testMessage = MessageSendE2ETests.ComposeD2CTestMessage(out payload, out p1Value);
+                (Client.Message testMessage, string messageId, string payload, string p1Value) = MessageSendE2ETests.ComposeD2CTestMessage();
                 await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
 
                 EventHubTestListener testListener = eventHubListeners[testDevice.Id];
