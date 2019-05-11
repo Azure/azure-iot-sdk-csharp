@@ -128,19 +128,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(TimeoutException))]
-        public async Task Message_TimeOutReachedResponse()
-        {
-            await FastTimeout().ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task Message_NoTimeoutPassed()
-        {
-            await DefaultTimeout().ConfigureAwait(false);
-        }
-
-        [TestMethod]
         public async Task X509_DeviceSendSingleMessage_Amqp()
         {
             await SendSingleMessage(TestDeviceType.X509, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
@@ -168,28 +155,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task X509_DeviceSendSingleMessage_Http()
         {
             await SendSingleMessage(TestDeviceType.X509, Client.TransportType.Http1).ConfigureAwait(false);
-        }
-
-        private async Task FastTimeout()
-        {
-            TimeSpan? timeout = TimeSpan.FromTicks(1);
-            await TestTimeout(timeout).ConfigureAwait(false);
-        }
-
-        private async Task DefaultTimeout()
-        {
-            TimeSpan? timeout = null;
-            await TestTimeout(timeout).ConfigureAwait(false);
-        }
-
-        private async Task TestTimeout(TimeSpan? timeout)
-        {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
-            using (ServiceClient sender = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
-            using (DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, Client.TransportType.Amqp))
-            {
-                await sender.SendAsync(testDevice.Id, new Message(Encoding.ASCII.GetBytes("Dummy Message")), timeout).ConfigureAwait(false);
-            }
         }
 
         private async Task SendSingleMessage(TestDeviceType type, Client.TransportType transport)
