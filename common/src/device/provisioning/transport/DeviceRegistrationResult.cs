@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Diagnostics.CodeAnalysis;
 
@@ -32,7 +33,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
             DateTime? lastUpdatedDateTimeUtc = default(DateTime?),
             int? errorCode = default(int?),
             string errorMessage = default(string),
-            string etag = default(string))
+            string etag = default(string),
+            JRaw payload = default(JRaw))
         {
             Tpm = tpm;
             X509 = x509;
@@ -48,6 +50,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
             ErrorCode = errorCode;
             ErrorMessage = errorMessage;
             Etag = etag;
+            Payload = payload;
             CustomInit();
         }
 
@@ -130,5 +133,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
         [JsonProperty(PropertyName = "etag")]
         public string Etag { get; set; }
 
+        /// <summary>
+        /// </summary>
+        [JsonProperty(PropertyName = "payload")]
+        public JRaw Payload { get; set; }
     }
 }

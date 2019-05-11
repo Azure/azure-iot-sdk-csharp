@@ -198,9 +198,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             try
             {
-                string payload;
-                string p1Value;
-                Client.Message testMessage = ComposeD2CTestMessage(out payload, out p1Value);
+                (Client.Message testMessage, string messageId, string payload, string p1Value) = ComposeD2CTestMessage();
                 await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
 
                 bool isReceived = await testListener.WaitForMessage(deviceId, payload, p1Value).ConfigureAwait(false);
@@ -218,9 +216,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             try
             {
-                string payload;
-                string p1Value;
-                Client.Message testMessage = ComposeD2CTestMessage(out payload, out p1Value);
+                (Client.Message testMessage, string messageId, string payload, string p1Value) = ComposeD2CTestMessage();
                 await moduleClient.SendEventAsync(testMessage).ConfigureAwait(false);
 
                 bool isReceived = await testListener.WaitForMessage(deviceId, payload, p1Value).ConfigureAwait(false);
@@ -232,17 +228,20 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        public static Client.Message ComposeD2CTestMessage(out string payload, out string p1Value)
+        public static (Client.Message message, string messageId, string payload, string p1Value) ComposeD2CTestMessage()
         {
-            payload = Guid.NewGuid().ToString();
-            p1Value = Guid.NewGuid().ToString();
+            var messageId = Guid.NewGuid().ToString();
+            var payload = Guid.NewGuid().ToString();
+            var p1Value = Guid.NewGuid().ToString();
 
-            _log.WriteLine($"{nameof(ComposeD2CTestMessage)}: payload='{payload}' p1Value='{p1Value}'");
-
-            return new Client.Message(Encoding.UTF8.GetBytes(payload))
+            _log.WriteLine($"{nameof(ComposeD2CTestMessage)}: messageId='{messageId}' payload='{payload}' p1Value='{p1Value}'");
+            var message = new Client.Message(Encoding.UTF8.GetBytes(payload))
             {
+                MessageId = messageId,
                 Properties = { ["property1"] = p1Value }
             };
+
+            return (message, messageId, payload, p1Value);
         }
 
         public void Dispose()

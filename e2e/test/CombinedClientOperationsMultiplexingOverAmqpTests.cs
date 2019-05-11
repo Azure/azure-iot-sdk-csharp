@@ -26,105 +26,95 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        public async Task Message_DeviceSak_DeviceCombinedClientOperations_MuxWithoutPooling_Amqp()
+        public async Task DeviceSak_DeviceCombinedClientOperations_MuxWithoutPooling_Amqp()
         {
             await DeviceCombinedClientOperations(
                 Client.TransportType.Amqp_Tcp_Only,
                 MultiplexingOverAmqp.MuxWithoutPoolingPoolSize,
                 MultiplexingOverAmqp.MuxWithoutPoolingDevicesCount,
-                ConnectionStringAuthScope.Device
-                ).ConfigureAwait(false);
+                ConnectionStringAuthScope.Device).ConfigureAwait(false);
         }
 
         [TestMethod]
-        public async Task Message_DeviceSak_DeviceCombinedClientOperations_MuxWithoutPooling_AmqpWs()
+        public async Task DeviceSak_DeviceCombinedClientOperations_MuxWithoutPooling_AmqpWs()
         {
             await DeviceCombinedClientOperations(
                 Client.TransportType.Amqp_WebSocket_Only,
                 MultiplexingOverAmqp.MuxWithoutPoolingPoolSize,
                 MultiplexingOverAmqp.MuxWithoutPoolingDevicesCount,
-                ConnectionStringAuthScope.Device
-                ).ConfigureAwait(false);
+                ConnectionStringAuthScope.Device).ConfigureAwait(false);
         }
 
         [TestMethod]
-        public async Task Message_DeviceSak_DeviceCombinedClientOperations_MuxWithPooling_Amqp()
+        public async Task DeviceSak_DeviceCombinedClientOperations_MuxWithPooling_Amqp()
         {
             await DeviceCombinedClientOperations(
                 Client.TransportType.Amqp_Tcp_Only,
                 MultiplexingOverAmqp.MuxWithPoolingPoolSize,
                 MultiplexingOverAmqp.MuxWithPoolingDevicesCount,
-                ConnectionStringAuthScope.Device
-                ).ConfigureAwait(false);
+                ConnectionStringAuthScope.Device).ConfigureAwait(false);
         }
 
         [TestMethod]
-        public async Task Message_DeviceSak_DeviceCombinedClientOperations_MuxWithPooling_AmqpWs()
+        public async Task DeviceSak_DeviceCombinedClientOperations_MuxWithPooling_AmqpWs()
         {
             await DeviceCombinedClientOperations(
                 Client.TransportType.Amqp_WebSocket_Only,
                 MultiplexingOverAmqp.MuxWithPoolingPoolSize,
                 MultiplexingOverAmqp.MuxWithPoolingDevicesCount,
-                ConnectionStringAuthScope.Device
-                ).ConfigureAwait(false);
+                ConnectionStringAuthScope.Device).ConfigureAwait(false);
         }
 
         [TestMethod]
-        public async Task Message_IoTHubSak_DeviceCombinedClientOperations_MuxWithoutPooling_Amqp()
+        public async Task IoTHubSak_DeviceCombinedClientOperations_MuxWithoutPooling_Amqp()
         {
             await DeviceCombinedClientOperations(
                 Client.TransportType.Amqp_Tcp_Only,
                 MultiplexingOverAmqp.MuxWithoutPoolingPoolSize,
                 MultiplexingOverAmqp.MuxWithoutPoolingDevicesCount,
-                ConnectionStringAuthScope.IoTHub
-                ).ConfigureAwait(false);
+                ConnectionStringAuthScope.IoTHub).ConfigureAwait(false);
         }
 
         [TestMethod]
-        public async Task Message_IoTHubSak_DeviceCombinedClientOperations_MuxWithoutPooling_AmqpWs()
+        public async Task IoTHubSak_DeviceCombinedClientOperations_MuxWithoutPooling_AmqpWs()
         {
             await DeviceCombinedClientOperations(
                 Client.TransportType.Amqp_WebSocket_Only,
                 MultiplexingOverAmqp.MuxWithoutPoolingPoolSize,
                 MultiplexingOverAmqp.MuxWithoutPoolingDevicesCount,
-                ConnectionStringAuthScope.IoTHub
-                ).ConfigureAwait(false);
+                ConnectionStringAuthScope.IoTHub).ConfigureAwait(false);
         }
 
         [TestMethod]
-        public async Task Message_IoTHubSak_DeviceCombinedClientOperations_MuxWithPooling_Amqp()
+        public async Task IoTHubSak_DeviceCombinedClientOperations_MuxWithPooling_Amqp()
         {
             await DeviceCombinedClientOperations(
                 Client.TransportType.Amqp_Tcp_Only,
                 MultiplexingOverAmqp.MuxWithPoolingPoolSize,
                 MultiplexingOverAmqp.MuxWithPoolingDevicesCount,
-                ConnectionStringAuthScope.IoTHub
-                ).ConfigureAwait(false);
+                ConnectionStringAuthScope.IoTHub).ConfigureAwait(false);
         }
 
         [TestMethod]
-        public async Task Message_IoTHubSak_DeviceCombinedClientOperations_MuxWithPooling_AmqpWs()
+        public async Task IoTHubSak_DeviceCombinedClientOperations_MuxWithPooling_AmqpWs()
         {
             await DeviceCombinedClientOperations(
                 Client.TransportType.Amqp_WebSocket_Only,
                 MultiplexingOverAmqp.MuxWithPoolingPoolSize,
                 MultiplexingOverAmqp.MuxWithPoolingDevicesCount,
-                ConnectionStringAuthScope.IoTHub
-                ).ConfigureAwait(false);
+                ConnectionStringAuthScope.IoTHub).ConfigureAwait(false);
         }
 
         private async Task DeviceCombinedClientOperations(
             Client.TransportType transport,
             int poolSize,
             int devicesCount,
-            ConnectionStringAuthScope authScope
-            )
+            ConnectionStringAuthScope authScope)
         {
             // Initialize service client for service-side operations
             ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
 
             // Message payload for C2D operation
-            string payload, messageId, p1Value;
             Dictionary<string, List<string>> messagesSent = new Dictionary<string, List<string>>();
 
             // Twin properties
@@ -136,7 +126,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 // Send C2D Message
                 _log.WriteLine($"{nameof(CombinedClientOperationsMultiplexingOverAmqpTests)}: Send C2D for device={testDevice.Id}");
-                Message msg = MessageReceiveE2ETests.ComposeC2DTestMessage(out payload, out messageId, out p1Value);
+                (Message msg, string messageId, string payload, string p1Value) = MessageReceiveE2ETests.ComposeC2DTestMessage();
                 messagesSent.Add(testDevice.Id, new List<string> { payload, p1Value });
                 var sendC2DMessage = serviceClient.SendAsync(testDevice.Id, msg);
                 initOperations.Add(sendC2DMessage);
@@ -170,8 +160,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 // C2D Operation
                 _log.WriteLine($"{nameof(CombinedClientOperationsMultiplexingOverAmqpTests)}: Operation 2: Receive C2D for device={testDevice.Id}");
                 List<string> msgSent = messagesSent[testDevice.Id];
-                payload = msgSent[0];
-                p1Value = msgSent[1];
+                var payload = msgSent[0];
+                var p1Value = msgSent[1];
                 var verifyDeviceClientReceivesMessage = MessageReceiveE2ETests.VerifyReceivedC2DMessageAsync(transport, deviceClient, payload, p1Value);
                 clientOperations.Add(verifyDeviceClientReceivesMessage);
 
@@ -206,6 +196,9 @@ namespace Microsoft.Azure.Devices.E2ETests
                 {
                     deviceClient.Dispose();
                 }
+
+                messagesSent.Clear();
+                twinPropertyMap.Clear();
             };
 
             await MultiplexingOverAmqp.TestMultiplexingOperationAsync(
@@ -215,8 +208,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 devicesCount,
                 initOperation,
                 testOperation,
-                cleanupOperation
-                ).ConfigureAwait(false);
+                cleanupOperation).ConfigureAwait(false);
         }
 
         public void Dispose()

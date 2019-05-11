@@ -87,19 +87,20 @@ namespace Microsoft.Azure.Devices.E2ETests
             await ReceiveSingleMessage(TestDeviceType.X509, Client.TransportType.Http1).ConfigureAwait(false);
         }
 
-        public static Message ComposeC2DTestMessage(out string payload, out string messageId, out string p1Value)
+        public static (Message message, string messageId, string payload, string p1Value) ComposeC2DTestMessage()
         {
-            payload = Guid.NewGuid().ToString();
-            messageId = Guid.NewGuid().ToString();
-            p1Value = Guid.NewGuid().ToString();
+            var payload = Guid.NewGuid().ToString();
+            var messageId = Guid.NewGuid().ToString();
+            var p1Value = Guid.NewGuid().ToString();
 
-            _log.WriteLine($"{nameof(ComposeC2DTestMessage)}: payload='{payload}' messageId='{messageId}' p1Value='{p1Value}'");
-
-            return new Message(Encoding.UTF8.GetBytes(payload))
+            _log.WriteLine($"{nameof(ComposeC2DTestMessage)}: messageId='{messageId}' payload='{payload}' p1Value='{p1Value}'");
+            var message = new Message(Encoding.UTF8.GetBytes(payload))
             {
                 MessageId = messageId,
                 Properties = { ["property1"] = p1Value }
             };
+
+            return (message, messageId, payload, p1Value);
         }
 
         public static async Task VerifyReceivedC2DMessageAsync(Client.TransportType transport, DeviceClient dc, string payload, string p1Value)
@@ -154,10 +155,9 @@ namespace Microsoft.Azure.Devices.E2ETests
                     await deviceClient.ReceiveAsync(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
                 }
 
-                string payload, messageId, p1Value;
                 await serviceClient.OpenAsync().ConfigureAwait(false);
 
-                Message msg = ComposeC2DTestMessage(out payload, out messageId, out p1Value);
+                (Message msg, string messageId, string payload, string p1Value) = ComposeC2DTestMessage();
                 await serviceClient.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
                 await VerifyReceivedC2DMessageAsync(transport, deviceClient, payload, p1Value).ConfigureAwait(false);
 
