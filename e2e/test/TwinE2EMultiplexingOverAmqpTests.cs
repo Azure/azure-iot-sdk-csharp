@@ -283,6 +283,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 {
                     deviceClient.Dispose();
                 }
+
+                twinPropertyMap.Clear();
                 await Task.FromResult<bool>(false).ConfigureAwait(false);
             };
 
