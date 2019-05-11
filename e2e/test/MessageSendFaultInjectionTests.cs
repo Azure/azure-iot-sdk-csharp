@@ -380,34 +380,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        private Client.Message ComposeD2CTestMessage(out string payload, out string p1Value)
-        {
-            payload = Guid.NewGuid().ToString();
-            p1Value = Guid.NewGuid().ToString();
-
-            _log.WriteLine($"{nameof(ComposeD2CTestMessage)}: payload='{payload}' p1Value='{p1Value}'");
-
-            return new Client.Message(Encoding.UTF8.GetBytes(payload))
-            {
-                Properties = { ["property1"] = p1Value }
-            };
-        }
-
-        private Message ComposeC2DTestMessage(out string payload, out string messageId, out string p1Value)
-        {
-            payload = Guid.NewGuid().ToString();
-            messageId = Guid.NewGuid().ToString();
-            p1Value = Guid.NewGuid().ToString();
-
-            _log.WriteLine($"{nameof(ComposeC2DTestMessage)}: payload='{payload}' messageId='{messageId}' p1Value='{p1Value}'");
-
-            return new Message(Encoding.UTF8.GetBytes(payload))
-            {
-                MessageId = messageId,
-                Properties = { ["property1"] = p1Value }
-            };
-        }
-
         internal async Task SendMessageRecovery(
             TestDeviceType type,
             Client.TransportType transport,
@@ -427,9 +399,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
             {
-                string payload, p1Value;
-
-                Client.Message testMessage = ComposeD2CTestMessage(out payload, out p1Value);
+                (Client.Message testMessage, string messageId, string payload, string p1Value) = MessageSendE2ETests.ComposeD2CTestMessage();
                 await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
 
                 bool isReceived = false;
