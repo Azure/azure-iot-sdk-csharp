@@ -12,13 +12,13 @@ namespace Microsoft.Azure.Devices.E2ETests
 {
     public class DeviceTelemetryTest
     {
-        int _messageSize;
-        int _messageCount;
-        int _parallelCount;
-        TransportType _protocol;
-        ResultWriter _writer;
-        DeviceClient _client;
-        Stopwatch _wall = new Stopwatch();
+        private int _messageSize;
+        private int _messageCount;
+        private int _parallelCount;
+        private TransportType _protocol;
+        private ResultWriter _writer;
+        private DeviceClient _client;
+        private Stopwatch _wall = new Stopwatch();
 
         public DeviceTelemetryTest(
             TransportType protocol,
