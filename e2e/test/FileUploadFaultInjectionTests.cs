@@ -44,7 +44,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [Ignore] // TODO# IcM 100533650: Modify Fault Injection Tests until service fixes the issue
         public async Task FileUploadSuccess_Throttled_Amqp()
         {
             string smallFile = await GetTestFileNameAsync(FileSizeSmall).ConfigureAwait(false);
@@ -59,7 +58,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [Ignore] // TODO# IcM 100533650: Modify Fault Injection Tests until service fixes the issue
         public async Task FileUploadSuccess_QuotaExceed_Amqp()
         {
             string smallFile = await GetTestFileNameAsync(FileSizeSmall).ConfigureAwait(false);

@@ -81,7 +81,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                         read = bodyStream.Read(bodyBytes, totalRead, bodyBytes.Length - totalRead);
                         totalRead += read;
                     } while (read > 0 && (bodyBytes.Length - totalRead > 0));
-                    
+
                     if (read > 0)
                     {
                         throw new InternalBufferOverflowException("EventHub message exceeded internal buffer.");

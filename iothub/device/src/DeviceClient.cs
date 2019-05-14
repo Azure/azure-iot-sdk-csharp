@@ -34,6 +34,8 @@ namespace Microsoft.Azure.Devices.Client
             {
                 throw new ArgumentException("A module ID was specified in the connection string - please use ModuleClient for modules.");
             }
+
+            if (Logging.IsEnabled) Logging.Associate(this, this, internalClient, nameof(DeviceClient));
         }
 
         /// <summary>
@@ -166,7 +168,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             return Create(() => ClientFactory.CreateFromConnectionString(connectionString, transportSettings));
         }
-        
+
         /// <summary>
         /// Create DeviceClient from the specified connection string using the prioritized list of transports
         /// </summary>
@@ -236,6 +238,7 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Sets the retry policy used in the operation retries.
+        /// The change will take effect after any in-progress operations.
         /// </summary>
         /// <param name="retryPolicy">The retry policy. The default is new ExponentialBackoff(int.MaxValue, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100));</param>
         // Codes_SRS_DEVICECLIENT_28_001: [This property shall be defaulted to the exponential retry strategy with backoff 

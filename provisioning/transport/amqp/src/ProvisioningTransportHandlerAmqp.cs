@@ -6,9 +6,12 @@ using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Azure.Devices.Provisioning.Client.Transport.Models;
 using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
+using System.Globalization;
 using System.IO;
 using System.Net;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -68,6 +71,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 {
                     authStrategy = new AmqpAuthStrategyX509((SecurityProviderX509)message.Security);
                 }
+                else if (message.Security is SecurityProviderSymmetricKey)
+                {
+                    authStrategy = new AmqpAuthStrategySymmetricKey((SecurityProviderSymmetricKey)message.Security);
+                }
                 else
                 {
                     throw new NotSupportedException(
@@ -93,12 +100,16 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 await authStrategy.OpenConnectionAsync(connection, TimeoutConstant, useWebSocket, Proxy).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
 
-                await CreateLinksAsync(connection, linkEndpoint, message.ProductInfo).ConfigureAwait(false);
+                await CreateLinksAsync(
+                    connection,
+                    linkEndpoint,
+                    message.ProductInfo).ConfigureAwait(false);
                 cancellationToken.ThrowIfCancellationRequested();
 
                 string correlationId = Guid.NewGuid().ToString();
-                RegistrationOperationStatus operation =
-                    await RegisterDeviceAsync(connection, correlationId).ConfigureAwait(false);
+                DeviceRegistration deviceRegistration = (message.Payload != null && message.Payload.Length > 0) ? new DeviceRegistration { Payload = new JRaw(message.Payload) } : null;
+
+                RegistrationOperationStatus operation = await RegisterDeviceAsync(connection, correlationId, deviceRegistration).ConfigureAwait(false);
 
                 // Poll with operationId until registration complete.
                 int attempts = 0;
@@ -170,9 +181,19 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
         private async Task<RegistrationOperationStatus> RegisterDeviceAsync(
             AmqpClientConnection client,
-            string correlationId)
+            string correlationId,
+            DeviceRegistration deviceRegistration)
         {
-            var amqpMessage = AmqpMessage.Create(new AmqpValue() { Value = DeviceOperations.Register });
+            AmqpMessage amqpMessage;
+            if (deviceRegistration == null)
+            {
+                amqpMessage = AmqpMessage.Create(new MemoryStream(), true);
+            }
+            else
+            {
+                var customContentStream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(deviceRegistration)));
+                amqpMessage = AmqpMessage.Create(customContentStream, true);
+            }
             amqpMessage.Properties.CorrelationId = correlationId;
             amqpMessage.ApplicationProperties.Map[MessageApplicationPropertyNames.OperationType] =
                 DeviceOperations.Register;
@@ -217,17 +238,22 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             var status = ProvisioningRegistrationStatusType.Failed;
             Enum.TryParse(result.Status, true, out status);
 
+            var substatus = ProvisioningRegistrationSubstatusType.InitialAssignment;
+            Enum.TryParse(result.Substatus, true, out substatus);
+
             return new DeviceRegistrationResult(
                 result.RegistrationId,
                 result.CreatedDateTimeUtc,
                 result.AssignedHub,
                 result.DeviceId,
                 status,
+                substatus,
                 result.GenerationId,
                 result.LastUpdatedDateTimeUtc,
                 result.ErrorCode == null ? 0 : (int)result.ErrorCode,
                 result.ErrorMessage,
-                result.Etag);
+                result.Etag,
+                result?.Payload?.ToString(CultureInfo.InvariantCulture));
         }
 
         private void ValidateOutcome(Outcome outcome)
@@ -240,10 +266,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     int statusCode = errorDetails.ErrorCode / 1000;
                     bool isTransient = statusCode >= (int)HttpStatusCode.InternalServerError || statusCode == 429;
                     throw new ProvisioningTransportException(
-                        errorDetails.CreateMessage("AMQP transport exception: service error."),
+                        rejected.Error.Description,
                         null,
                         isTransient,
-                        errorDetails.TrackingId);
+                        errorDetails);
                 }
                 catch (JsonException ex)
                 {

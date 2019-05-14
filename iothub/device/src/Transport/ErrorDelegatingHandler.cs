@@ -17,6 +17,7 @@ using System.Net.WebSockets;
 using System.Net;
 using System.Net.Http;
 using Microsoft.Azure.Amqp;
+using DotNetty.Transport.Channels;
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
@@ -30,6 +31,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             typeof(IOException),
             typeof(SocketException),
+            typeof(ClosedChannelException),
             typeof(TimeoutException),
             typeof(OperationCanceledException),
             typeof(HttpRequestException),

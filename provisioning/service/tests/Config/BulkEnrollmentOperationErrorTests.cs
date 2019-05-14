@@ -15,31 +15,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Test
         private const int SampleErrorCode = 400;
         private const string SampleErrorStatus = "Bad message format exception.";
 
-        /* SRS_BULK_ENROLLMENT_OPERATION_ERRO_21_001: [The BulkEnrollmentOperationError shall throws JsonSerializationException if the 
-                                            provided registrationId is null, empty, or invalid.] */
-        [TestMethod]
-        public void BulkEnrollmentOperationErrorConstructoThrowsOnInvalidParameters()
-        {
-            // arrange
-            string nonRegistrationId = 
-                "{" +
-                $"  \"errorCode\": {SampleErrorCode}, \"errorStatus\": \"{SampleErrorStatus}\"" +
-                "}";
-            string emptyRegistrationId = 
-                "{" +
-                $"  \"registrationId\":\"\", \"errorCode\": {SampleErrorCode}, \"errorStatus\": \"{SampleErrorStatus}\"" +
-                "}";
-            string invalidRegistrationId = 
-                "{" +
-                $"  \"registrationId\":\"valid Registration Id\", \"errorCode\":{SampleErrorCode}, \"errorStatus\": \"{SampleErrorStatus}\"" +
-                "}";
-
-            // act - assert
-            TestAssert.Throws<JsonSerializationException>(() => JsonConvert.DeserializeObject<BulkEnrollmentOperationError>(nonRegistrationId));
-            TestAssert.Throws<JsonSerializationException>(() => JsonConvert.DeserializeObject<BulkEnrollmentOperationError>(emptyRegistrationId));
-            TestAssert.Throws<JsonSerializationException>(() => JsonConvert.DeserializeObject<BulkEnrollmentOperationError>(invalidRegistrationId));
-        }
-
         /* SRS_BULK_ENROLLMENT_OPERATION_ERRO_21_002: [The BulkEnrollmentOperationError shall store the provided information.] */
         [TestMethod]
         public void BulkEnrollmentOperationErrorConstructorSucceed()

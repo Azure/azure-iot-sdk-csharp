@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Diagnostics.CodeAnalysis;
 
@@ -15,35 +16,41 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
     {
         public DeviceRegistrationResult()
         {
-          CustomInit();
+            CustomInit();
         }
 
         internal DeviceRegistrationResult(
-            TpmRegistrationResult tpm = default(TpmRegistrationResult), 
-            X509RegistrationResult x509 = default(X509RegistrationResult), 
-            string registrationId = default(string), 
-            DateTime? createdDateTimeUtc = default(DateTime?), 
-            string assignedHub = default(string), 
-            string deviceId = default(string), 
-            string status = default(string), 
-            string generationId = default(string), 
-            DateTime? lastUpdatedDateTimeUtc = default(DateTime?), 
-            int? errorCode = default(int?), 
-            string errorMessage = default(string), 
-            string etag = default(string))
+            TpmRegistrationResult tpm = default(TpmRegistrationResult),
+            X509RegistrationResult x509 = default(X509RegistrationResult),
+            SymmetricKeyRegistrationResult symmetricKey = default(SymmetricKeyRegistrationResult),
+            string registrationId = default(string),
+            DateTime? createdDateTimeUtc = default(DateTime?),
+            string assignedHub = default(string),
+            string deviceId = default(string),
+            string status = default(string),
+            string substatus = default(string),
+            string generationId = default(string),
+            DateTime? lastUpdatedDateTimeUtc = default(DateTime?),
+            int? errorCode = default(int?),
+            string errorMessage = default(string),
+            string etag = default(string),
+            JRaw payload = default(JRaw))
         {
             Tpm = tpm;
             X509 = x509;
+            SymmetricKey = symmetricKey;
             RegistrationId = registrationId;
             CreatedDateTimeUtc = createdDateTimeUtc;
             AssignedHub = assignedHub;
             DeviceId = deviceId;
             Status = status;
+            Substatus = substatus;
             GenerationId = generationId;
             LastUpdatedDateTimeUtc = lastUpdatedDateTimeUtc;
             ErrorCode = errorCode;
             ErrorMessage = errorMessage;
             Etag = etag;
+            Payload = payload;
             CustomInit();
         }
 
@@ -61,6 +68,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
         /// </summary>
         [JsonProperty(PropertyName = "x509")]
         public X509RegistrationResult X509 { get; set; }
+
+        /// <summary>
+        /// </summary>
+        [JsonProperty(PropertyName = "symmetricKey")]
+        public SymmetricKeyRegistrationResult SymmetricKey { get; set; }
+
 
         /// <summary>
         /// </summary>
@@ -90,6 +103,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
         public string Status { get; set; }
 
         /// <summary>
+        /// Possible values include: 'initialAssignment', 'deviceDataMigrated', 'deviceDataReset'
+        /// </summary>
+        [JsonProperty(PropertyName = "substatus")]
+        public string Substatus { get; set; }
+
+        /// <summary>
         /// </summary>
         [JsonProperty(PropertyName = "generationId")]
         public string GenerationId { get; set; }
@@ -114,5 +133,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport.Models
         [JsonProperty(PropertyName = "etag")]
         public string Etag { get; set; }
 
+        /// <summary>
+        /// </summary>
+        [JsonProperty(PropertyName = "payload")]
+        public JRaw Payload { get; set; }
     }
 }

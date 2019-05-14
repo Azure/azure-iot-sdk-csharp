@@ -1,0 +1,98 @@
+@startuml csharpDeviceClientSDKArchitecture
+class ClientFactory 
+{ 
+}
+
+class InternalClient 
+{
+  + pipelineContext
+  + IDelegatingHandler innerHandler
+}
+
+class DeviceClient 
+{ 
+}
+
+class ModuleClient 
+{
+}
+
+ClientFactory --> InternalClient
+InternalClient --* DeviceClient
+InternalClient --* ModuleClient
+InternalClient -> "Transport Pipeline"
+
+package "Transport Pipeline" 
+{
+  interface IDelegatingHandler 
+  {
+    ..Transport State..
+    + OpenAsync
+    + CloseAsync
+    + WaitForTransportClosedAsync
+    + IsUsable
+    ..Device to Cloud (D2C)..
+    + SendEventAsync
+    ..Cloud to Device (C2D)..
+    + ReceiveAsync
+    + AbandonAsync
+    + CompleteAsync
+    ..Module to Module (M2M)..
+    + EnableEventReceiveAsync
+    ..Methods..
+    + EnableMethodsAsync
+    + SendMethodResponseAsync
+    ..Twin..
+    + SendTwinGetAsync
+    + SendTwinPatchAsync
+    + EnableTwinPatchAsync
+  }
+
+  abstract class DefaultDelegatingHandler 
+  {
+  }
+
+  class RetryDelegatingHandler 
+  {
+  }
+
+  class ErrorDelegatingHandler 
+  {
+  }
+
+  class ProtocolRoutingDelegatingHandler 
+  {
+  }
+
+  abstract class TransportHandler 
+  {
+    + OnTransportClosedGracefully
+    + OnTransportDisconnected
+  }
+
+  class AmqpTransportHandler 
+  {
+  }
+
+  class MqttTransportHandler 
+  {
+  }
+
+  class HttpTransportHandler 
+  {
+  }
+
+  IDelegatingHandler <|-- DefaultDelegatingHandler
+  DefaultDelegatingHandler <|-- RetryDelegatingHandler
+  DefaultDelegatingHandler <|-- ErrorDelegatingHandler
+  DefaultDelegatingHandler <|-- ProtocolRoutingDelegatingHandler
+  DefaultDelegatingHandler <|-- TransportHandler
+  TransportHandler <|-- AmqpTransportHandler
+  TransportHandler <|-- MqttTransportHandler
+  TransportHandler <|-- HttpTransportHandler
+  RetryDelegatingHandler -> ErrorDelegatingHandler
+  ErrorDelegatingHandler -> ProtocolRoutingDelegatingHandler
+  ProtocolRoutingDelegatingHandler -> TransportHandler
+}
+
+@enduml

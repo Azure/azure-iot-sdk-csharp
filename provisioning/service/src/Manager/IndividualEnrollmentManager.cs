@@ -92,9 +92,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             string registrationId,
             CancellationToken cancellationToken)
         {
-            /* SRS_INDIVIDUAL_ENROLLMENT_MANAGER_21_007: [The GetAsync shall throw ArgumentException if the provided registrationId is null or empty.] */
-            ParserUtils.EnsureRegistrationId(registrationId);
-
             /* SRS_INDIVIDUAL_ENROLLMENT_MANAGER_21_008: [The GetAsync shall sent the Get HTTP request to get the individualEnrollment information.] */
             ContractApiResponse contractApiResponse = await contractApiHttp.RequestAsync(
                 HttpMethod.Get,
@@ -140,9 +137,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             CancellationToken cancellationToken,
             string eTag = null)
         {
-            /* SRS_INDIVIDUAL_ENROLLMENT_MANAGER_21_012: [The DeleteAsync shall throw ArgumentException if the provided registrationId is null or empty.] */
-            ParserUtils.EnsureRegistrationId(registrationId);
-
             /* SRS_INDIVIDUAL_ENROLLMENT_MANAGER_21_013: [The DeleteAsync shall sent the Delete HTTP request to remove the individualEnrollment.] */
             await contractApiHttp.RequestAsync(
                 HttpMethod.Delete,

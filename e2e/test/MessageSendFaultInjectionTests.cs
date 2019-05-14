@@ -62,7 +62,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [Ignore] // TODO #764 Disable test due to intermittent test failure
         public async Task Message_TcpConnectionLossSendRecovery_MqttWs()
         {
             await SendMessageRecovery(
@@ -138,10 +137,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.FaultCloseReason_Boom,
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
-
-        // TODO# IcM 100533650: Modify Fault Injection Tests until service fixes the issue
+        
         [TestMethod]
-        [Ignore]
         public async Task Message_ThrottledConnectionRecovery_Amqp()
         {
             try
@@ -159,10 +156,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Assert.IsInstanceOfType(ex, typeof(IotHubThrottledException));
             }
         }
-
-        // TODO# IcM 100533650: Modify Fault Injection Tests until service fixes the issue
+        
         [TestMethod]
-        [Ignore]
         public async Task Message_ThrottledConnectionRecovery_AmqpWs()
         {
             try
@@ -180,10 +175,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Assert.IsInstanceOfType(ex, typeof(IotHubThrottledException));
             }
         }
-
-        // TODO# IcM 100533650: Modify Fault Injection Tests until service fixes the issue
+        
         [TestMethod]
-        [Ignore]
         public async Task Message_ThrottledConnectionLongTimeNoRecovery_Amqp()
         {
             try
@@ -208,7 +201,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [Ignore] // TODO# IcM 100533650: Modify Fault Injection Tests until service fixes the issue
         public async Task Message_ThrottledConnectionLongTimeNoRecovery_AmqpWs()
         {
             try
@@ -232,7 +224,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [Ignore] // TODO# IcM 100533650: Modify Fault Injection Tests until service fixes the issue
         public async Task Message_ThrottledConnectionLongTimeNoRecovery_Http()
         {
             try
@@ -258,7 +249,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         [TestMethod]
         [ExpectedException(typeof(DeviceMaximumQueueDepthExceededException))]
-        [Ignore] // TODO# IcM 100533650: Modify Fault Injection Tests until service fixes the issue
         public async Task Message_QuotaExceededRecovery_Amqp()
         {
             await SendMessageRecovery(
@@ -272,7 +262,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         [TestMethod]
         [ExpectedException(typeof(DeviceMaximumQueueDepthExceededException))]
-        [Ignore] // TODO# IcM 100533650: Modify Fault Injection Tests until service fixes the issue
         public async Task Message_QuotaExceededRecovery_AmqpWs()
         {
             await SendMessageRecovery(
@@ -285,7 +274,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [Ignore] // TODO# IcM 100533650: Modify Fault Injection Tests until service fixes the issue
         public async Task Message_QuotaExceededRecovery_Http()
         {
             try
@@ -311,7 +299,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         [TestMethod]
         [ExpectedException(typeof(UnauthorizedException))]
-        [Ignore] // TODO# IcM 100533650: Modify Fault Injection Tests until service fixes the issue
         public async Task Message_AuthenticationRecovery_Amqp()
         {
             await SendMessageRecovery(
@@ -325,7 +312,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         [TestMethod]
         [ExpectedException(typeof(UnauthorizedException))]
-        [Ignore] // TODO# IcM 100533650: Modify Fault Injection Tests until service fixes the issue
         public async Task Message_AuthenticationRecovery_AmqpWs()
         {
             await SendMessageRecovery(
@@ -339,7 +325,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         [TestMethod]
         [ExpectedException(typeof(UnauthorizedException))]
-        [Ignore] // TODO# IcM 100533650: Modify Fault Injection Tests until service fixes the issue
         public async Task Message_AuthenticationWontRecover_Http()
         {
             await SendMessageRecovery(
@@ -395,34 +380,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.DefaultDelayInSec).ConfigureAwait(false);
         }
 
-        private Client.Message ComposeD2CTestMessage(out string payload, out string p1Value)
-        {
-            payload = Guid.NewGuid().ToString();
-            p1Value = Guid.NewGuid().ToString();
-
-            _log.WriteLine($"{nameof(ComposeD2CTestMessage)}: payload='{payload}' p1Value='{p1Value}'");
-
-            return new Client.Message(Encoding.UTF8.GetBytes(payload))
-            {
-                Properties = { ["property1"] = p1Value }
-            };
-        }
-
-        private Message ComposeC2DTestMessage(out string payload, out string messageId, out string p1Value)
-        {
-            payload = Guid.NewGuid().ToString();
-            messageId = Guid.NewGuid().ToString();
-            p1Value = Guid.NewGuid().ToString();
-
-            _log.WriteLine($"{nameof(ComposeC2DTestMessage)}: payload='{payload}' messageId='{messageId}' p1Value='{p1Value}'");
-
-            return new Message(Encoding.UTF8.GetBytes(payload))
-            {
-                MessageId = messageId,
-                Properties = { ["property1"] = p1Value }
-            };
-        }
-
         internal async Task SendMessageRecovery(
             TestDeviceType type,
             Client.TransportType transport,
@@ -442,9 +399,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
             {
-                string payload, p1Value;
-
-                Client.Message testMessage = ComposeD2CTestMessage(out payload, out p1Value);
+                (Client.Message testMessage, string messageId, string payload, string p1Value) = MessageSendE2ETests.ComposeD2CTestMessage();
                 await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
 
                 bool isReceived = false;
