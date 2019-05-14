@@ -52,8 +52,8 @@ export LA_AAD_TENANT=""
 @REM the Azure Active Directory app id that has reader role on the workspace
 export LA_AAD_APP_ID=""
 
-@REM the key for the given app
-export LA_AAD_APP_KEY=""
+@REM the certificate credentials for the given app
+export LA_AAD_APP_CERT_BASE64=""
 
 # ---------- Device Provisioning Service Configuration ----------
 # See Configuration.Provisioning.cs for usage details.
