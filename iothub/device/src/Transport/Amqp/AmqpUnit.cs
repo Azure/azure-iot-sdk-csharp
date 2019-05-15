@@ -506,7 +506,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         }
         #endregion
 
-        #region DEVICE STREAMING
+        #region Device streaming
         public async Task EnableStreamsAsync(TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(EnableStreamsAsync)}");
@@ -603,6 +603,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     if (amqpMessage != null)
                     {
                         deviceStreamRequest = ConstructStreamRequestFromAmqpMessage(amqpMessage);
+                        _streamReceivingLink?.DisposeDelivery(amqpMessage, true, AmqpConstants.AcceptedOutcome);
                     }
                     return deviceStreamRequest;
                 }
