@@ -490,6 +490,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         public override async Task AcceptDeviceStreamRequestAsync(DeviceStreamRequest request, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled) Logging.Enter(this, request, cancellationToken, $"{nameof(AcceptDeviceStreamRequestAsync)}");
+            cancellationToken.ThrowIfCancellationRequested();
             try
             {
                 await _amqpUnit.AcceptDeviceStreamRequestAsync(request, _operationTimeout).ConfigureAwait(false);
@@ -503,6 +504,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         public override async Task RejectDeviceStreamRequestAsync(DeviceStreamRequest request, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled) Logging.Enter(this, request, cancellationToken, $"{nameof(RejectDeviceStreamRequestAsync)}");
+            cancellationToken.ThrowIfCancellationRequested();
             try
             {
                 await _amqpUnit.RejectDeviceStreamRequestAsync(request, _operationTimeout).ConfigureAwait(false);
