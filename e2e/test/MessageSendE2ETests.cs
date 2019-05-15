@@ -128,19 +128,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(TimeoutException))]
-        public async Task Message_TimeOutReachedResponse()
-        {
-            await FastTimeout().ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task Message_NoTimeoutPassed()
-        {
-            await DefaultTimeout().ConfigureAwait(false);
-        }
-
-        [TestMethod]
         public async Task X509_DeviceSendSingleMessage_Amqp()
         {
             await SendSingleMessage(TestDeviceType.X509, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
@@ -168,28 +155,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task X509_DeviceSendSingleMessage_Http()
         {
             await SendSingleMessage(TestDeviceType.X509, Client.TransportType.Http1).ConfigureAwait(false);
-        }
-
-        private async Task FastTimeout()
-        {
-            TimeSpan? timeout = TimeSpan.FromTicks(1);
-            await TestTimeout(timeout).ConfigureAwait(false);
-        }
-
-        private async Task DefaultTimeout()
-        {
-            TimeSpan? timeout = null;
-            await TestTimeout(timeout).ConfigureAwait(false);
-        }
-
-        private async Task TestTimeout(TimeSpan? timeout)
-        {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
-            using (ServiceClient sender = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
-            using (DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, Client.TransportType.Amqp))
-            {
-                await sender.SendAsync(testDevice.Id, new Message(Encoding.ASCII.GetBytes("Dummy Message")), timeout).ConfigureAwait(false);
-            }
         }
 
         private async Task SendSingleMessage(TestDeviceType type, Client.TransportType transport)
@@ -233,9 +198,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             try
             {
-                string payload;
-                string p1Value;
-                Client.Message testMessage = ComposeD2CTestMessage(out payload, out p1Value);
+                (Client.Message testMessage, string messageId, string payload, string p1Value) = ComposeD2CTestMessage();
                 await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
 
                 bool isReceived = await testListener.WaitForMessage(deviceId, payload, p1Value).ConfigureAwait(false);
@@ -253,9 +216,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             try
             {
-                string payload;
-                string p1Value;
-                Client.Message testMessage = ComposeD2CTestMessage(out payload, out p1Value);
+                (Client.Message testMessage, string messageId, string payload, string p1Value) = ComposeD2CTestMessage();
                 await moduleClient.SendEventAsync(testMessage).ConfigureAwait(false);
 
                 bool isReceived = await testListener.WaitForMessage(deviceId, payload, p1Value).ConfigureAwait(false);
@@ -267,17 +228,20 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        public static Client.Message ComposeD2CTestMessage(out string payload, out string p1Value)
+        public static (Client.Message message, string messageId, string payload, string p1Value) ComposeD2CTestMessage()
         {
-            payload = Guid.NewGuid().ToString();
-            p1Value = Guid.NewGuid().ToString();
+            var messageId = Guid.NewGuid().ToString();
+            var payload = Guid.NewGuid().ToString();
+            var p1Value = Guid.NewGuid().ToString();
 
-            _log.WriteLine($"{nameof(ComposeD2CTestMessage)}: payload='{payload}' p1Value='{p1Value}'");
-
-            return new Client.Message(Encoding.UTF8.GetBytes(payload))
+            _log.WriteLine($"{nameof(ComposeD2CTestMessage)}: messageId='{messageId}' payload='{payload}' p1Value='{p1Value}'");
+            var message = new Client.Message(Encoding.UTF8.GetBytes(payload))
             {
+                MessageId = messageId,
                 Properties = { ["property1"] = p1Value }
             };
+
+            return (message, messageId, payload, p1Value);
         }
 
         public void Dispose()

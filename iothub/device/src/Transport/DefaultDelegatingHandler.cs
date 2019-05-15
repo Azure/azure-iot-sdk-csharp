@@ -13,8 +13,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
     internal abstract class DefaultDelegatingHandler : IDelegatingHandler
     {
         private static readonly Task<Message> s_dummyResultObject = Task.FromResult((Message)null);
-        private IDelegatingHandler _innerHandler;
-        protected bool _disposed;
+        private volatile IDelegatingHandler _innerHandler;
+        protected volatile bool _disposed;
 
         protected DefaultDelegatingHandler(IPipelineContext context, IDelegatingHandler innerHandler)
         {

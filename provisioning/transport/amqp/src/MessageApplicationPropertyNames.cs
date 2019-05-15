@@ -9,6 +9,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
         public const string OperationType = Prefix + "operation-type";
         public const string OperationId = Prefix + "operation-id";
         public const string Status = Prefix + "status";
+        public const string StatusCode = "statusCode"; // Is this needed?
         public const string ForceRegistration = Prefix + "forceRegistration";
     }
 }
