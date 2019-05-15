@@ -199,7 +199,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         public override async Task<Message> ReceiveAsync(TimeSpan timeout, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled) Logging.Enter(this, timeout, cancellationToken, $"{nameof(ReceiveAsync)}");
-            Message message = null;
+            Message message;
             while (true)
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -421,7 +421,97 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 if (Logging.IsEnabled) Logging.Exit(this, cancellationToken, $"{nameof(EnableEventReceiveAsync)}");
             }
         }
-        
+
+        #endregion
+
+        #region Device streaming
+        public override async Task EnableStreamsAsync(CancellationToken cancellationToken)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, cancellationToken, $"{nameof(EnableStreamsAsync)}");
+
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                await _amqpUnit.EnableStreamsAsync(_operationTimeout).ConfigureAwait(false);
+            }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, cancellationToken, $"{nameof(EnableStreamsAsync)}");
+            }
+        }
+
+        public override async Task DisableStreamsAsync(CancellationToken cancellationToken)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, cancellationToken, $"{nameof(DisableStreamsAsync)}");
+
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                await _amqpUnit.DisableStreamsAsync(_operationTimeout).ConfigureAwait(false);
+            }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, cancellationToken, $"{nameof(DisableStreamsAsync)}");
+            }
+        }
+
+        public override async Task<DeviceStreamRequest> WaitForDeviceStreamRequestAsync(CancellationToken cancellationToken)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, cancellationToken, $"{nameof(WaitForDeviceStreamRequestAsync)}");
+
+            try
+            {
+                DeviceStreamRequest deviceStreamRequest;
+                while (true)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    try
+                    {
+                        deviceStreamRequest = await _amqpUnit.WaitForDeviceStreamRequestAsync(_operationTimeout).ConfigureAwait(false);
+                        if (deviceStreamRequest != null)
+                        {
+                            break;
+                        }
+                    }
+                    catch (Exception exception) when (!exception.IsFatal() && !(exception is OperationCanceledException))
+                    {
+                        throw AmqpClientHelper.ToIotHubClientContract(exception);
+                    }
+                }
+
+                return deviceStreamRequest;
+            }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, cancellationToken, $"{nameof(WaitForDeviceStreamRequestAsync)}");
+            }
+        }
+
+        public override async Task AcceptDeviceStreamRequestAsync(DeviceStreamRequest request, CancellationToken cancellationToken)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, request, cancellationToken, $"{nameof(AcceptDeviceStreamRequestAsync)}");
+            try
+            {
+                await _amqpUnit.AcceptDeviceStreamRequestAsync(request, _operationTimeout).ConfigureAwait(false);
+            }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, request, cancellationToken, $"{nameof(AcceptDeviceStreamRequestAsync)}");
+            }
+        }
+
+        public override async Task RejectDeviceStreamRequestAsync(DeviceStreamRequest request, CancellationToken cancellationToken)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, request, cancellationToken, $"{nameof(RejectDeviceStreamRequestAsync)}");
+            try
+            {
+                await _amqpUnit.RejectDeviceStreamRequestAsync(request, _operationTimeout).ConfigureAwait(false);
+            }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, request, cancellationToken, $"{nameof(RejectDeviceStreamRequestAsync)}");
+            }
+        }
         #endregion
 
         #region Accept-Dispose

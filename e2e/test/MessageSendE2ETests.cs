@@ -21,9 +21,9 @@ namespace Microsoft.Azure.Devices.E2ETests
             Security
         }
 
-        private readonly string DevicePrefix = $"E2E_{nameof(MessageSendE2ETests)}_";
-        private readonly string ModulePrefix = $"E2E_{nameof(MessageSendE2ETests)}_";
-        private static string ProxyServerAddress = Configuration.IoTHub.ProxyServerAddress;
+        private readonly static string DevicePrefix = $"E2E_{nameof(MessageSendE2ETests)}_";
+        private readonly static string ModulePrefix = $"E2E_{nameof(MessageSendE2ETests)}_";
+        private readonly static string ProxyServerAddress = Configuration.IoTHub.ProxyServerAddress;
         private static TestLogging _log = TestLogging.GetInstance();
 
         private readonly ConsoleEventListener _listener;
@@ -40,33 +40,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        public async Task SecurityMessage_DeviceSendSingleMessage_Amqp()
-        {
-            await TestSecurityMessage(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task SecurityMessage_ModuleSendSingleMessage_Amqp()
-        {
-            await TestSecurityMessageModule(TestDeviceType.Sasl, new Client.AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only)).ConfigureAwait(false);
-        }
-
-        [TestMethod]
         public async Task Message_DeviceSendSingleMessage_AmqpWs()
         {
             await SendSingleMessage(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task SecurityMessage_DeviceSendSingleMessage_AmqpWs()
-        {
-            await TestSecurityMessage(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task SecurityMessage_ModuleSendSingleMessage_AmqpWs()
-        {
-            await TestSecurityMessageModule(TestDeviceType.Sasl, new Client.AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only)).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -76,33 +52,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        public async Task SecurityMessage_DeviceSendSingleMessage_Mqtt()
-        {
-            await TestSecurityMessage(TestDeviceType.Sasl, Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task SecurityMessage_ModuleSendSingleMessage_Mqtt()
-        {
-            await TestSecurityMessageModule(TestDeviceType.Sasl, new Client.Transport.Mqtt.MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only)).ConfigureAwait(false);
-        }
-
-        [TestMethod]
         public async Task Message_DeviceSendSingleMessage_MqttWs()
         {
             await SendSingleMessage(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task SecurityMessage_DeviceSendSingleMessage_MqttWs()
-        {
-            await TestSecurityMessage(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task SecurityMessage_ModuleSendSingleMessage_MqttWs()
-        {
-            await TestSecurityMessageModule(TestDeviceType.Sasl, new Client.Transport.Mqtt.MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only)).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -112,9 +64,33 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        public async Task SecurityMessage_DeviceSendSingleMessage_Http()
+        public async Task X509_DeviceSendSingleMessage_Amqp()
         {
-            await TestSecurityMessage(TestDeviceType.Sasl, Client.TransportType.Http1).ConfigureAwait(false);
+            await SendSingleMessage(TestDeviceType.X509, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task X509_DeviceSendSingleMessage_AmqpWs()
+        {
+            await SendSingleMessage(TestDeviceType.X509, Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task X509_DeviceSendSingleMessage_Mqtt()
+        {
+            await SendSingleMessage(TestDeviceType.X509, Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task X509_DeviceSendSingleMessage_MqttWs()
+        {
+            await SendSingleMessage(TestDeviceType.X509, Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task X509_DeviceSendSingleMessage_Http()
+        {
+            await SendSingleMessage(TestDeviceType.X509, Client.TransportType.Http1).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -156,7 +132,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("ProxyE2ETests")]
         public async Task Message_DeviceSendSingleMessage_MqttWs_WithProxy()
         {
-            Client.Transport.Mqtt.MqttTransportSettings mqttTransportSettings = 
+            Client.Transport.Mqtt.MqttTransportSettings mqttTransportSettings =
                 new Client.Transport.Mqtt.MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only);
             mqttTransportSettings.Proxy = new WebProxy(ProxyServerAddress);
             ITransportSettings[] transportSettings = new ITransportSettings[] { mqttTransportSettings };
@@ -172,97 +148,144 @@ namespace Microsoft.Azure.Devices.E2ETests
             amqpTransportSettings.Proxy = new WebProxy(ProxyServerAddress);
             ITransportSettings[] transportSettings = new ITransportSettings[] { amqpTransportSettings };
 
-            await SendSingleMessageModule(TestDeviceType.Sasl, transportSettings).ConfigureAwait(false);
+            await SendSingleMessageModule(transportSettings).ConfigureAwait(false);
         }
 
         [TestMethod]
         [TestCategory("ProxyE2ETests")]
         public async Task Message_ModuleSendSingleMessage_MqttWs_WithProxy()
         {
-            Client.Transport.Mqtt.MqttTransportSettings mqttTransportSettings = 
+            Client.Transport.Mqtt.MqttTransportSettings mqttTransportSettings =
                 new Client.Transport.Mqtt.MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only);
             mqttTransportSettings.Proxy = new WebProxy(ProxyServerAddress);
             ITransportSettings[] transportSettings = new ITransportSettings[] { mqttTransportSettings };
 
-            await SendSingleMessageModule(TestDeviceType.Sasl, transportSettings).ConfigureAwait(false);
+            await SendSingleMessageModule(transportSettings).ConfigureAwait(false);
         }
 
         [TestMethod]
-        public async Task X509_DeviceSendSingleMessage_Amqp()
+        public async Task SecurityMessage_DeviceSendSingleMessage_Amqp()
         {
-            await SendSingleMessage(TestDeviceType.X509, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
+            await SendSingleMessage(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only, true).ConfigureAwait(false);
         }
 
         [TestMethod]
-        public async Task X509_DeviceSendSingleMessage_AmqpWs()
+        public async Task SecurityMessage_DeviceSendSingleMessage_AmqpWs()
         {
-            await SendSingleMessage(TestDeviceType.X509, Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
+            await SendSingleMessage(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only, true).ConfigureAwait(false);
         }
 
         [TestMethod]
-        public async Task X509_DeviceSendSingleMessage_Mqtt()
+        public async Task SecurityMessage_DeviceSendSingleMessage_Mqtt()
         {
-            await SendSingleMessage(TestDeviceType.X509, Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
+            await SendSingleMessage(TestDeviceType.Sasl, Client.TransportType.Mqtt_Tcp_Only, true).ConfigureAwait(false);
         }
 
         [TestMethod]
-        public async Task X509_DeviceSendSingleMessage_MqttWs()
+        public async Task SecurityMessage_DeviceSendSingleMessage_MqttWs()
         {
-            await SendSingleMessage(TestDeviceType.X509, Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
+            await SendSingleMessage(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only, true).ConfigureAwait(false);
         }
 
         [TestMethod]
-        public async Task X509_DeviceSendSingleMessage_Http()
+        public async Task SecurityMessage_DeviceSendSingleMessage_Http()
         {
-            await SendSingleMessage(TestDeviceType.X509, Client.TransportType.Http1).ConfigureAwait(false);
+            await SendSingleMessage(TestDeviceType.Sasl, Client.TransportType.Http1, true).ConfigureAwait(false);
         }
 
-        private async Task SendSingleMessage(TestDeviceType type, Client.TransportType transport)
+        [TestMethod]
+        public async Task SecurityMessage_ModuleSendSingleMessage_Amqp()
+        {
+            await SendSingleMessageModule(Client.TransportType.Amqp_Tcp_Only, true).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task SecurityMessage_ModuleSendSingleMessage_AmqpWs()
+        {
+            await SendSingleMessageModule(Client.TransportType.Amqp_WebSocket_Only, true).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task SecurityMessage_ModuleSendSingleMessage_Mqtt()
+        {
+            await SendSingleMessageModule(Client.TransportType.Mqtt_Tcp_Only, true).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task SecurityMessage_ModuleSendSingleMessage_MqttWs()
+        {
+            await SendSingleMessageModule(Client.TransportType.Mqtt_WebSocket_Only, true).ConfigureAwait(false);
+        }
+
+        private static async Task SendSingleMessage(TestDeviceType type, Client.TransportType transport, bool secured = false)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, type).ConfigureAwait(false);
 
             using (DeviceClient deviceClient = testDevice.CreateDeviceClient(transport))
             {
                 await deviceClient.OpenAsync().ConfigureAwait(false);
-                await SendSingleMessageAndVerifyAsync(deviceClient, testDevice.Id).ConfigureAwait(false);
+                await SendSingleMessageAndVerifyAsync(deviceClient, testDevice.Id, secured).ConfigureAwait(false);
                 await deviceClient.CloseAsync().ConfigureAwait(false);
             }
         }
 
-        private async Task SendSingleMessage(TestDeviceType type, ITransportSettings[] transportSettings)
+        private static async Task SendSingleMessage(TestDeviceType type, ITransportSettings[] transportSettings, bool secured = false)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, type).ConfigureAwait(false);
 
             using (DeviceClient deviceClient = testDevice.CreateDeviceClient(transportSettings))
             {
                 await deviceClient.OpenAsync().ConfigureAwait(false);
-                await SendSingleMessageAndVerifyAsync(deviceClient, testDevice.Id).ConfigureAwait(false);
+                await SendSingleMessageAndVerifyAsync(deviceClient, testDevice.Id, secured).ConfigureAwait(false);
                 await deviceClient.CloseAsync().ConfigureAwait(false);
             }
         }
 
-        private async Task SendSingleMessageModule(TestDeviceType type, ITransportSettings[] transportSettings)
+        private static async Task SendSingleMessageModule(Client.TransportType transport, bool secured = false)
+        {
+            TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix, ModulePrefix).ConfigureAwait(false);
+            using (ModuleClient moduleClient = ModuleClient.CreateFromConnectionString(testModule.ConnectionString, transport))
+            {
+                await moduleClient.OpenAsync().ConfigureAwait(false);
+                await SendSingleMessageModuleAndVerifyAsync(moduleClient, testModule.DeviceId, secured).ConfigureAwait(false);
+                await moduleClient.CloseAsync().ConfigureAwait(false);
+            }
+        }
+
+        private static async Task SendSingleMessageModule(ITransportSettings[] transportSettings, bool secured = false)
         {
             TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix, ModulePrefix).ConfigureAwait(false);
             using (ModuleClient moduleClient = ModuleClient.CreateFromConnectionString(testModule.ConnectionString, transportSettings))
             {
                 await moduleClient.OpenAsync().ConfigureAwait(false);
-                await SendSingleMessageModuleAndVerifyAsync(moduleClient, testModule.DeviceId).ConfigureAwait(false);
+                await SendSingleMessageModuleAndVerifyAsync(moduleClient, testModule.DeviceId, secured).ConfigureAwait(false);
                 await moduleClient.CloseAsync().ConfigureAwait(false);
             }
         }
 
-        public static async Task SendSingleMessageAndVerifyAsync(DeviceClient deviceClient, string deviceId)
+        public static async Task SendSingleMessageAndVerifyAsync(DeviceClient deviceClient, string deviceId, bool secured = false)
         {
             EventHubTestListener testListener = await EventHubTestListener.CreateListener(deviceId).ConfigureAwait(false);
 
             try
             {
                 (Client.Message testMessage, string messageId, string payload, string p1Value) = ComposeD2CTestMessage();
-                await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
+                if (secured)
+                {
+                    testMessage.SetAsSecurityMessage();
+                }
 
+                await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
                 bool isReceived = await testListener.WaitForMessage(deviceId, payload, p1Value).ConfigureAwait(false);
-                Assert.IsTrue(isReceived, "Message is not received.");
+
+                if (secured)
+                {
+                    Assert.IsFalse(isReceived, "Secured essage should not be received.");
+                }
+                else
+                {
+                    Assert.IsTrue(isReceived, "Message is not received.");
+                }
             }
             finally
             {
@@ -270,22 +293,32 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        private async Task SendSingleMessageModuleAndVerifyAsync(ModuleClient moduleClient, string deviceId)
+        private static async Task SendSingleMessageModuleAndVerifyAsync(ModuleClient moduleClient, string deviceId, bool secured = false)
         {
-            await deviceClient.OpenAsync().ConfigureAwait(false);
-                
-            Client.Message testMessage = ComposeD2CTestMessage(out string payload, out string p1Value);
+            EventHubTestListener testListener = await EventHubTestListener.CreateListener(deviceId).ConfigureAwait(false);
+
             try
             {
                 (Client.Message testMessage, string messageId, string payload, string p1Value) = ComposeD2CTestMessage();
+                if (secured)
+                {
+                    testMessage.SetAsSecurityMessage();
+                }
+
                 await moduleClient.SendEventAsync(testMessage).ConfigureAwait(false);
 
-            bool isReceived = await testListener.WaitForMessage(deviceId, payload, p1Value).ConfigureAwait(false);
-            if (msgType == MessageType.Security)
-            {
-                Assert.IsFalse(isReceived, "Security message received in customer event hub.");
+                bool isReceived = await testListener.WaitForMessage(deviceId, payload, p1Value).ConfigureAwait(false);
+
+                if (secured)
+                {
+                    Assert.IsFalse(isReceived, "Secured essage should not be received.");
+                }
+                else
+                {
+                    Assert.IsTrue(isReceived, "Message is not received.");
+                }
             }
-            else
+            finally
             {
                 await testListener.CloseAsync().ConfigureAwait(false);
             }

@@ -294,8 +294,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 amqpSession,
                 (byte)SenderSettleMode.Settled,
                 (byte)ReceiverSettleMode.First,
-                CommonConstants.DeviceEventPathTemplate,
-                CommonConstants.ModuleEventPathTemplate,
+                CommonConstants.DeviceStreamsPathTemplate,
+                CommonConstants.ModuleStreamsPathTemplate,
                 StreamsSenderLinkSuffix,
                 StreamsCorrelationIdPrefix + correlationIdSuffix,
                 timeout
@@ -313,8 +313,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 amqpSession,
                 (byte)SenderSettleMode.Settled,
                 (byte)ReceiverSettleMode.First,
-                CommonConstants.DeviceEventPathTemplate,
-                CommonConstants.ModuleEventPathTemplate,
+                CommonConstants.DeviceStreamsPathTemplate,
+                CommonConstants.ModuleStreamsPathTemplate,
                 StreamsReceiverLinkSuffix,
                 StreamsCorrelationIdPrefix + correlationIdSuffix,
                 timeout
