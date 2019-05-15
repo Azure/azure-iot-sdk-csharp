@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnrollmentSample", "Enrollm
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnrollmentGroupSample", "EnrollmentGroupSample\EnrollmentGroupSample.csproj", "{844A3605-C7DA-4E5B-A89A-4EF2DD2DBD21}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanupEnrollmentsSample", "CleanupEnrollments\CleanupEnrollmentsSample.csproj", "{CA5D3AAF-2E72-46DA-87C8-75137D7D701C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -55,6 +57,18 @@ Global
 		{844A3605-C7DA-4E5B-A89A-4EF2DD2DBD21}.Release|x64.Build.0 = Release|Any CPU
 		{844A3605-C7DA-4E5B-A89A-4EF2DD2DBD21}.Release|x86.ActiveCfg = Release|Any CPU
 		{844A3605-C7DA-4E5B-A89A-4EF2DD2DBD21}.Release|x86.Build.0 = Release|Any CPU
+		{CA5D3AAF-2E72-46DA-87C8-75137D7D701C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CA5D3AAF-2E72-46DA-87C8-75137D7D701C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CA5D3AAF-2E72-46DA-87C8-75137D7D701C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{CA5D3AAF-2E72-46DA-87C8-75137D7D701C}.Debug|x64.Build.0 = Debug|Any CPU
+		{CA5D3AAF-2E72-46DA-87C8-75137D7D701C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{CA5D3AAF-2E72-46DA-87C8-75137D7D701C}.Debug|x86.Build.0 = Debug|Any CPU
+		{CA5D3AAF-2E72-46DA-87C8-75137D7D701C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CA5D3AAF-2E72-46DA-87C8-75137D7D701C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CA5D3AAF-2E72-46DA-87C8-75137D7D701C}.Release|x64.ActiveCfg = Release|Any CPU
+		{CA5D3AAF-2E72-46DA-87C8-75137D7D701C}.Release|x64.Build.0 = Release|Any CPU
+		{CA5D3AAF-2E72-46DA-87C8-75137D7D701C}.Release|x86.ActiveCfg = Release|Any CPU
+		{CA5D3AAF-2E72-46DA-87C8-75137D7D701C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
