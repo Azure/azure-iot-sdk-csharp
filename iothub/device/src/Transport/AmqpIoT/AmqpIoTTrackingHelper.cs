@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace Microsoft.Azure.Devices.Client
+namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 {
     using System;
     using System.Linq;
@@ -9,7 +9,7 @@ namespace Microsoft.Azure.Devices.Client
     using Microsoft.Azure.Amqp.Framing;
     using Microsoft.Azure.Devices.Client.Extensions;
 
-    internal static class TrackingHelper
+    internal static class AmqpIoTTrackingHelper
     {
         // TODO: GatewayId is not assigned to anywhere in this class. Likely a bug!
         static string GatewayId = string.Empty;
@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.Client
 
         public static string GenerateTrackingId(string backendId, string partitionId)
         {
-            string gatewayId = TrackingHelper.GatewayId;
+            string gatewayId = AmqpIoTTrackingHelper.GatewayId;
             return GenerateTrackingId(gatewayId, backendId, partitionId);
         }
 
@@ -53,12 +53,12 @@ namespace Microsoft.Azure.Devices.Client
 
         public static string GenerateTrackingId(this AmqpException exception)
         {
-            return exception.GenerateTrackingId(TrackingHelper.GatewayId, string.Empty, string.Empty);
+            return exception.GenerateTrackingId(AmqpIoTTrackingHelper.GatewayId, string.Empty, string.Empty);
         }
 
         public static string GenerateTrackingId(this AmqpException exception, string backendId, string partitionId)
         {
-            return exception.GenerateTrackingId(TrackingHelper.GatewayId, backendId, partitionId);
+            return exception.GenerateTrackingId(AmqpIoTTrackingHelper.GatewayId, backendId, partitionId);
         }
 
         public static string GenerateTrackingId(this AmqpException exception,string gatewayId, string backendId, string partitionId)
@@ -69,10 +69,10 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             string trackingId;
-            if (!exception.Error.Info.Any() || !exception.Error.Info.TryGetValue(IotHubAmqpProperty.TrackingId, out trackingId))
+            if (!exception.Error.Info.Any() || !exception.Error.Info.TryGetValue(AmqpIoTErrorAdapter.TrackingId, out trackingId))
             {
                 trackingId = GenerateTrackingId(gatewayId, backendId, partitionId);
-                exception.Error.Info.Add(IotHubAmqpProperty.TrackingId, trackingId);
+                exception.Error.Info.Add(AmqpIoTErrorAdapter.TrackingId, trackingId);
             }
             return trackingId;
         }
@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.Client
             string trackingId = null;
             if (errorObj.Info != null)
             {
-                errorObj.Info.TryGetValue(IotHubAmqpProperty.TrackingId, out trackingId);
+                errorObj.Info.TryGetValue(AmqpIoTErrorAdapter.TrackingId, out trackingId);
             }
             return trackingId;
         }

@@ -1,12 +1,11 @@
-﻿using Microsoft.Azure.Amqp;
-using Microsoft.Azure.Devices.Shared;
+﻿
 using System;
-using System.Collections.Generic;
-using System.Text;
+using Microsoft.Azure.Devices.Shared;
+using Microsoft.Azure.Amqp;
 
-namespace Microsoft.Azure.Devices.Client.Transport
+namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 {
-    public class AmqpTransportLog : AmqpTrace
+    internal class AmqpIoTTransportLog : AmqpTrace
     {
         public override void AmqpAbortThrowingException(string exception)
         {

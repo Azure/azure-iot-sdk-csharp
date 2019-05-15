@@ -8,19 +8,19 @@ using System.Net.WebSockets;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Shared;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Azure.Amqp.Sasl;
 using Microsoft.Azure.Amqp.Transport;
-using Microsoft.Azure.Devices.Shared;
 
 #if !NETSTANDARD1_3
 using System.Configuration;
 #endif
 
-namespace Microsoft.Azure.Devices.Client.Transport.Amqp
+namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 {
-    internal class AmqpConnector : IAmqpConnector
+    internal class AmqpIoTConnector : IAmqpIoTConnector
     {
         #region Members-Constructor
         const string DisableServerCertificateValidationKeyName = "Microsoft.Azure.Devices.DisableServerCertificateValidation";
@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private ProtocolHeader SentProtocolHeader;
         private bool _disposed;
 
-        internal AmqpConnector(AmqpTransportSettings amqpTransportSettings, string hostName)
+        internal AmqpIoTConnector(AmqpTransportSettings amqpTransportSettings, string hostName)
         {
             AmqpTransportSettings = amqpTransportSettings;
             AmqpSettings = new AmqpSettings();

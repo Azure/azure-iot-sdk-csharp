@@ -1,45 +1,44 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Amqp;
-using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Shared;
 
-namespace Microsoft.Azure.Devices.Client.Transport.Amqp
+namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 {
-    internal class AmqpConnectionPool : IAmqpUnitCreator
+    internal class AmqpIoTConnectionPool : IAmqpIoTUnitManager
     {
         private const int MaxSpan = int.MaxValue;
-        private ISet<IAmqpConnectionHolder> AmqpSasIndividualPool;
-        private IDictionary<string, ISet<IAmqpConnectionHolder>> AmqpSasGroupedPool;
+        private ISet<IAmqpIoTConnectionHolder> AmqpSasIndividualPool;
+        private IDictionary<string, ISet<IAmqpIoTConnectionHolder>> AmqpSasGroupedPool;
         private readonly object Lock;
 
-        internal AmqpConnectionPool()
+        internal AmqpIoTConnectionPool()
         {
-            AmqpSasIndividualPool = new HashSet<IAmqpConnectionHolder>();
-            AmqpSasGroupedPool = new Dictionary<string, ISet<IAmqpConnectionHolder>>();
+            AmqpSasIndividualPool = new HashSet<IAmqpIoTConnectionHolder>();
+            AmqpSasGroupedPool = new Dictionary<string, ISet<IAmqpIoTConnectionHolder>>();
             Lock = new object();
         }
 
-        public AmqpUnit CreateAmqpUnit(
+        public AmqpIoTUnit CreateAmqpUnit(
             DeviceIdentity deviceIdentity, 
             Func<MethodRequestInternal, Task> methodHandler, 
-            Action<AmqpMessage> twinMessageListener, 
+            Action<AmqpIoTMessage> twinMessageListener, 
             Func<string, Message, Task> eventListener)
         {
             if (Logging.IsEnabled) Logging.Enter(this, deviceIdentity, $"{nameof(CreateAmqpUnit)}");
             if (deviceIdentity.AuthenticationModel != AuthenticationModel.X509 && (deviceIdentity.AmqpTransportSettings?.AmqpConnectionPoolSettings?.Pooling??false))
             {
-                IAmqpConnectionHolder amqpConnectionHolder;
+                IAmqpIoTConnectionHolder amqpConnectionHolder;
                 lock (Lock)
                 {
-                    ISet<IAmqpConnectionHolder> amqpConnectionHolders = ResolveConnectionGroup(deviceIdentity, true);
+                    ISet<IAmqpIoTConnectionHolder> amqpConnectionHolders = ResolveConnectionGroup(deviceIdentity, true);
                     if (amqpConnectionHolders.Count < deviceIdentity.AmqpTransportSettings.AmqpConnectionPoolSettings.MaxPoolSize)
                     {
-                        amqpConnectionHolder = new AmqpConnectionHolder(deviceIdentity);
-                        amqpConnectionHolder.OnConnectionDisconnected += (o, args) => RemoveConnection(amqpConnectionHolders, o as IAmqpConnectionHolder);
+                        amqpConnectionHolder = new AmqpIoTConnectionHolder(deviceIdentity);
+                        amqpConnectionHolder.OnConnectionDisconnected += (o, args) => RemoveConnection(amqpConnectionHolders, o as IAmqpIoTConnectionHolder);
                         amqpConnectionHolders.Add(amqpConnectionHolder);
                         if (Logging.IsEnabled) Logging.Associate(this, amqpConnectionHolder, "amqpConnectionHolders");
                     }
@@ -54,12 +53,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             else
             {
                 if (Logging.IsEnabled) Logging.Exit(this, deviceIdentity, $"{nameof(CreateAmqpUnit)}");
-                return new AmqpConnectionHolder(deviceIdentity)
+                return new AmqpIoTConnectionHolder(deviceIdentity)
                     .CreateAmqpUnit(deviceIdentity, methodHandler, twinMessageListener, eventListener);
             }
         }
 
-        private void RemoveConnection(ISet<IAmqpConnectionHolder> amqpConnectionHolders, IAmqpConnectionHolder amqpConnectionHolder)
+        private void RemoveConnection(ISet<IAmqpIoTConnectionHolder> amqpConnectionHolders, IAmqpIoTConnectionHolder amqpConnectionHolder)
         {
             lock (Lock)
             {
@@ -69,7 +68,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        private ISet<IAmqpConnectionHolder> ResolveConnectionGroup(DeviceIdentity deviceIdentity, bool create)
+        private ISet<IAmqpIoTConnectionHolder> ResolveConnectionGroup(DeviceIdentity deviceIdentity, bool create)
         {
             if (deviceIdentity.AuthenticationModel == AuthenticationModel.SasIndividual)
             {
@@ -78,25 +77,25 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             else
             {
                 string scope = deviceIdentity.IotHubConnectionString.SharedAccessKeyName;
-                AmqpSasGroupedPool.TryGetValue(scope, out ISet<IAmqpConnectionHolder>  amqpConnectionHolders);
+                AmqpSasGroupedPool.TryGetValue(scope, out ISet<IAmqpIoTConnectionHolder>  amqpConnectionHolders);
                 if (create && amqpConnectionHolders == null)
                 {
-                    amqpConnectionHolders = new HashSet<IAmqpConnectionHolder>();
+                    amqpConnectionHolders = new HashSet<IAmqpIoTConnectionHolder>();
                     AmqpSasGroupedPool.Add(scope, amqpConnectionHolders);
                 }
                 return amqpConnectionHolders;
             }
         }
         
-        private IAmqpConnectionHolder GetLeastUsedConnection(ISet<IAmqpConnectionHolder> amqpConnectionHolders)
+        private IAmqpIoTConnectionHolder GetLeastUsedConnection(ISet<IAmqpIoTConnectionHolder> amqpConnectionHolders)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(GetLeastUsedConnection)}");
 
             int count = MaxSpan;
 
-            IAmqpConnectionHolder amqpConnectionHolder = null;
+            IAmqpIoTConnectionHolder amqpConnectionHolder = null;
 
-            foreach (IAmqpConnectionHolder value in amqpConnectionHolders)
+            foreach (IAmqpIoTConnectionHolder value in amqpConnectionHolders)
             {
                 int clientCount = value.GetNumberOfUnits();
                 if (clientCount < count)

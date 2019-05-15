@@ -1,63 +1,62 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Amqp;
-using Microsoft.Azure.Devices.Client.Exceptions;
-using Microsoft.Azure.Devices.Client.Extensions;
-using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Shared;
+using Microsoft.Azure.Devices.Client.Exceptions;
+using Microsoft.Azure.Devices.Client.Extensions;
+using Microsoft.Azure.Amqp;
 
-namespace Microsoft.Azure.Devices.Client.Transport.Amqp
+namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 {
-    internal class AmqpConnectionHolder : IAmqpConnectionHolder, IDisposable
+    internal class AmqpIoTConnectionHolder : IAmqpIoTConnectionHolder, IDisposable
     {
         public event EventHandler OnConnectionDisconnected;
         private readonly DeviceIdentity DeviceIdentity;
-        private readonly IAmqpConnector Connector;
+        private readonly IAmqpIoTConnector Connector;
         private readonly SemaphoreSlim Lock;
-        private readonly IDictionary<DeviceIdentity, AmqpUnit> AmqpUnits;
+        private readonly IDictionary<DeviceIdentity, AmqpIoTUnit> AmqpUnits;
         private AmqpConnection AmqpConnection;
-        private IAmqpAuthenticationRefresher AmqpAuthenticationRefresher;
-        private AmqpCbsLink AmqpCbsLink;
+        private IAmqpIoTAuthenticationRefresher AmqpAuthenticationRefresher;
+        private AmqpIoTCbsLink AmqpIoTCbsLink;
         private bool _disposed;
 
-        public AmqpConnectionHolder(DeviceIdentity deviceIdentity)
+        public AmqpIoTConnectionHolder(DeviceIdentity deviceIdentity)
         {
             DeviceIdentity = deviceIdentity;
-            Connector = new AmqpConnector(deviceIdentity.AmqpTransportSettings, deviceIdentity.IotHubConnectionString.HostName);
+            Connector = new AmqpIoTConnector(deviceIdentity.AmqpTransportSettings, deviceIdentity.IotHubConnectionString.HostName);
             Lock = new SemaphoreSlim(1, 1);
-            AmqpUnits = new ConcurrentDictionary<DeviceIdentity, AmqpUnit>();
+            AmqpUnits = new ConcurrentDictionary<DeviceIdentity, AmqpIoTUnit>();
             if (Logging.IsEnabled) Logging.Associate(this, DeviceIdentity, $"{nameof(DeviceIdentity)}");
         }
 
-        private async Task<IAmqpAuthenticationRefresher> AuthenticationRefresherCreator(DeviceIdentity deviceIdentity, TimeSpan timeout)
+        private async Task<IAmqpIoTAuthenticationRefresher> AuthenticationRefresherCreator(DeviceIdentity deviceIdentity, TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, deviceIdentity, timeout, $"{nameof(AuthenticationRefresherCreator)}");
             if (AmqpConnection == null)
             {
                 throw new IotHubCommunicationException();
             }
-            AmqpCbsLink = AmqpCbsLink ?? new AmqpCbsLink(AmqpConnection);
+            AmqpIoTCbsLink = AmqpIoTCbsLink ?? new AmqpIoTCbsLink(AmqpConnection);
             
-            IAmqpAuthenticationRefresher amqpAuthenticator = new AmqpAuthenticationRefresher(deviceIdentity, AmqpCbsLink);
+            IAmqpIoTAuthenticationRefresher amqpAuthenticator = new AmqpIoTAuthenticationRefresher(deviceIdentity, AmqpIoTCbsLink);
             await amqpAuthenticator.InitLoopAsync(timeout).ConfigureAwait(false);
             if (Logging.IsEnabled) Logging.Exit(this, deviceIdentity, timeout, $"{nameof(AuthenticationRefresherCreator)}");
             return amqpAuthenticator;
         }
 
-        public AmqpUnit CreateAmqpUnit(
+        public AmqpIoTUnit CreateAmqpUnit(
             DeviceIdentity deviceIdentity, 
             Func<MethodRequestInternal, Task> methodHandler, 
-            Action<AmqpMessage> twinMessageListener, 
+            Action<AmqpIoTMessage> twinMessageListener, 
             Func<string, Message, Task> eventListener)
         {
             if (Logging.IsEnabled) Logging.Enter(this, deviceIdentity, $"{nameof(CreateAmqpUnit)}");
-            AmqpUnit amqpUnit = new AmqpUnit(
+            AmqpIoTUnit amqpUnit = new AmqpIoTUnit(
                 deviceIdentity, 
                 AmqpSessionCreator, 
                 AuthenticationRefresherCreator,
@@ -97,8 +96,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(EnsureConnection)}");
             AmqpConnection amqpConnection = null;
-            IAmqpAuthenticationRefresher amqpAuthenticationRefresher = null;
-            AmqpCbsLink amqpCbsLink = null;
+            IAmqpIoTAuthenticationRefresher amqpAuthenticationRefresher = null;
+            AmqpIoTCbsLink amqpIoTCbsLink = null;
             bool gain = await Lock.WaitAsync(timeout).ConfigureAwait(false);
             if (!gain)
             {
@@ -114,29 +113,29 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
                     if (DeviceIdentity.AuthenticationModel != AuthenticationModel.X509)
                     {
-                        if (AmqpCbsLink == null)
+                        if (AmqpIoTCbsLink == null)
                         {
                             if (Logging.IsEnabled) Logging.Info(this, "Creating new AmqpCbsLink", $"{nameof(EnsureConnection)}");
-                            amqpCbsLink = new AmqpCbsLink(amqpConnection);
+                            amqpIoTCbsLink = new AmqpIoTCbsLink(amqpConnection);
                         }
                         else
                         {
-                            amqpCbsLink = AmqpCbsLink;
+                            amqpIoTCbsLink = AmqpIoTCbsLink;
                         }
 
                         if (DeviceIdentity.AuthenticationModel == AuthenticationModel.SasGrouped)
                         {
                             if (Logging.IsEnabled) Logging.Info(this, "Creating connection width AmqpAuthenticationRefresher", $"{nameof(EnsureConnection)}");
-                            amqpAuthenticationRefresher = new AmqpAuthenticationRefresher(DeviceIdentity, amqpCbsLink);
+                            amqpAuthenticationRefresher = new AmqpIoTAuthenticationRefresher(DeviceIdentity, amqpIoTCbsLink);
                             await amqpAuthenticationRefresher.InitLoopAsync(timeout).ConfigureAwait(false);
                         }
                     }
                     AmqpConnection = amqpConnection;
-                    AmqpCbsLink = amqpCbsLink;
+                    AmqpIoTCbsLink = amqpIoTCbsLink;
                     AmqpAuthenticationRefresher = amqpAuthenticationRefresher;
                     AmqpConnection.Closed += OnConnectionClosed;
                     if (Logging.IsEnabled) Logging.Associate(this, AmqpConnection, $"{nameof(AmqpConnection)}");
-                    if (Logging.IsEnabled) Logging.Associate(this, AmqpCbsLink, $"{nameof(AmqpCbsLink)}");
+                    if (Logging.IsEnabled) Logging.Associate(this, AmqpIoTCbsLink, $"{nameof(AmqpIoTCbsLink)}");
                 }
                 else if (AmqpConnection.IsClosing())
                 {
@@ -149,7 +148,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
             catch (Exception ex) when (!ex.IsFatal())
             {
-                amqpCbsLink?.Close();
+                amqpIoTCbsLink?.Close();
                 amqpAuthenticationRefresher?.StopLoop();
                 amqpConnection?.SafeClose();
                 throw;
@@ -168,7 +167,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             if (AmqpConnection != null && ReferenceEquals(AmqpConnection, o))
             {
                 AmqpAuthenticationRefresher?.StopLoop();
-                foreach (AmqpUnit unit in AmqpUnits.Values)
+                foreach (AmqpIoTUnit unit in AmqpUnits.Values)
                 {
                     unit.OnConnectionDisconnected();
                 }

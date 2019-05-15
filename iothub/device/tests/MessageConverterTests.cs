@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.Azure.Amqp;
+using Microsoft.Azure.Devices.Client.Transport.AmqpIoT;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Azure.Devices.Client.Test
@@ -26,28 +27,28 @@ namespace Microsoft.Azure.Devices.Client.Test
             string connectionDeviceId = "connD1";
             string connectionModuleId = "connM1";
 
-            using (AmqpMessage amqpMessage =
-                AmqpMessage.Create(new Amqp.Framing.Data { Value = new ArraySegment<byte>(bytes) }))
+            using (AmqpIoTMessage amqpIoTMessage =
+                 new AmqpIoTMessage(new Amqp.Framing.Data { Value = new ArraySegment<byte>(bytes) }))
             {
-                amqpMessage.Properties.MessageId = messageId;
-                amqpMessage.Properties.CorrelationId = correlationId;
-                amqpMessage.Properties.ContentType = contentType;
-                amqpMessage.Properties.ContentEncoding = contentEncoding;
-                amqpMessage.Properties.To = to;
+                amqpIoTMessage.SetMessageId(messageId);
+                amqpIoTMessage.SetCorrelationId(correlationId);
+                amqpIoTMessage.SetContentType(contentType);
+                amqpIoTMessage.SetContentEncoding(contentEncoding);
+                amqpIoTMessage.SetTo(to);
 
-                amqpMessage.MessageAnnotations.Map[MessageSystemPropertyNames.EnqueuedTime] = enqueuedTime;
-                amqpMessage.MessageAnnotations.Map[MessageSystemPropertyNames.DeliveryCount] = deliveryCount;
-                amqpMessage.MessageAnnotations.Map[MessageSystemPropertyNames.ConnectionDeviceId] = connectionDeviceId;
-                amqpMessage.MessageAnnotations.Map[MessageSystemPropertyNames.ConnectionModuleId] = connectionModuleId;
+                amqpIoTMessage.SetMessageAnnotations(MessageSystemPropertyNames.EnqueuedTime, enqueuedTime);
+                amqpIoTMessage.SetMessageAnnotations(MessageSystemPropertyNames.DeliveryCount, deliveryCount);
+                amqpIoTMessage.SetMessageAnnotations(MessageSystemPropertyNames.ConnectionDeviceId, connectionDeviceId);
+                amqpIoTMessage.SetMessageAnnotations(MessageSystemPropertyNames.ConnectionModuleId, connectionModuleId);
 
-                amqpMessage.ApplicationProperties.Map[MessageSystemPropertyNames.MessageSchema] = messageSchema;
+                amqpIoTMessage.SetApplicationProperty(MessageSystemPropertyNames.MessageSchema, messageSchema);
             
-                amqpMessage.ApplicationProperties.Map["Prop1"] = "Value1";
-                amqpMessage.ApplicationProperties.Map["Prop2"] = "Value2";
+                amqpIoTMessage.SetApplicationProperty("Prop1", "Value1");
+                amqpIoTMessage.SetApplicationProperty("Prop2", "Value2");
 
                 var message = new Message(bytes);
 
-                MessageConverter.UpdateMessageHeaderAndProperties(amqpMessage, message);
+                AmqpIoTMessage.UpdateMessageHeaderAndProperties(amqpIoTMessage, message);
 
                 Assert.AreEqual(messageId, message.MessageId);
                 Assert.AreEqual(correlationId, message.CorrelationId);

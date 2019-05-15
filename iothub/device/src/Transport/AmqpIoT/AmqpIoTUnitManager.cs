@@ -1,38 +1,37 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Microsoft.Azure.Devices.Client.Transport.Amqp
+namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 {
-    internal class AmqpUnitManager : IAmqpUnitCreator, IDisposable
+    internal class AmqpIoTUnitManager : IAmqpIoTUnitManager, IDisposable
     {
-        private static readonly AmqpUnitManager s_instance = new AmqpUnitManager();
+        private static readonly AmqpIoTUnitManager s_instance = new AmqpIoTUnitManager();
 
-        private IDictionary<string, IAmqpUnitCreator> _amqpConnectionPools;
+        private IDictionary<string, IAmqpIoTUnitManager> _amqpConnectionPools;
         private readonly object _lock = new object();
         private bool _disposed;
 
-        internal AmqpUnitManager()
+        internal AmqpIoTUnitManager()
         {
-            _amqpConnectionPools = new Dictionary<string, IAmqpUnitCreator>();
+            _amqpConnectionPools = new Dictionary<string, IAmqpIoTUnitManager>();
         }
-        internal static AmqpUnitManager GetInstance()
+        internal static AmqpIoTUnitManager GetInstance()
         {
             return s_instance;
         }
 
-        public AmqpUnit CreateAmqpUnit(
+        public AmqpIoTUnit CreateAmqpUnit(
             DeviceIdentity deviceIdentity,
             Func<MethodRequestInternal, Task> methodHandler,
-            Action<AmqpMessage> twinMessageListener,
+            Action<AmqpIoTMessage> twinMessageListener,
             Func<string, Message, Task> eventListener)
         {
-            IAmqpUnitCreator amqpConnectionPool = ResolveConnectionPool(deviceIdentity.IotHubConnectionString.HostName);
+            IAmqpIoTUnitManager amqpConnectionPool = ResolveConnectionPool(deviceIdentity.IotHubConnectionString.HostName);
             return amqpConnectionPool.CreateAmqpUnit(
                 deviceIdentity,
                 methodHandler,
@@ -40,14 +39,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 eventListener);
         }
 
-        private IAmqpUnitCreator ResolveConnectionPool(string host)
+        private IAmqpIoTUnitManager ResolveConnectionPool(string host)
         {
             lock (_lock)
             {
-                _amqpConnectionPools.TryGetValue(host, out IAmqpUnitCreator amqpConnectionPool);
+                _amqpConnectionPools.TryGetValue(host, out IAmqpIoTUnitManager amqpConnectionPool);
                 if (amqpConnectionPool == null)
                 {
-                    amqpConnectionPool = new AmqpConnectionPool();
+                    amqpConnectionPool = new AmqpIoTConnectionPool();
                     _amqpConnectionPools.Add(host, amqpConnectionPool);
                 }
 

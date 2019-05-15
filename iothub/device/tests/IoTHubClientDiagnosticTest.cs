@@ -8,6 +8,7 @@
     using System.Text.RegularExpressions;
     using System.Web;
     using Microsoft.Azure.Amqp;
+    using Microsoft.Azure.Devices.Client.Transport.AmqpIoT;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
@@ -41,10 +42,10 @@
             const int DiagPercentageWithDiagnostic = 100;
             int messageCount = 0;
             IoTHubClientDiagnostic.AddDiagnosticInfoIfNecessary(message, DiagPercentageWithDiagnostic, ref messageCount);
-            AmqpMessage amqpMessage = message.ToAmqpMessage();
+            AmqpIoTMessage amqpMessage = message.ToAmqpIoTMessage();
 
-            Assert.IsTrue(message.SystemProperties[MessageSystemPropertyNames.DiagId] == amqpMessage.MessageAnnotations.Map["Diagnostic-Id"]);
-            Assert.IsTrue(message.SystemProperties[MessageSystemPropertyNames.DiagCorrelationContext] == amqpMessage.MessageAnnotations.Map["Correlation-Context"]);
+            Assert.IsTrue(message.SystemProperties[MessageSystemPropertyNames.DiagId] == amqpMessage.GetMessageAnnotation("Diagnostic-Id"));
+            Assert.IsTrue(message.SystemProperties[MessageSystemPropertyNames.DiagCorrelationContext] == amqpMessage.GetMessageAnnotation("Correlation-Context"));
         }
 
         [TestMethod]

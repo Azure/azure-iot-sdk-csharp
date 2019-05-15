@@ -12,10 +12,10 @@ namespace Microsoft.Azure.Devices.Client
 #else
     using Microsoft.Azure.Devices.Client.Common.Api;
     using System.Collections.Generic;
-    using Microsoft.Azure.Amqp;
 #endif
 
     using DateTimeT = System.DateTime;
+    using Microsoft.Azure.Devices.Client.Transport.AmqpIoT;
 
     /// <summary>
     /// The data structure represent the message that is used for interacting with IotHub.
@@ -47,7 +47,7 @@ namespace Microsoft.Azure.Devices.Client
 #endif
 
 #if !NETMF
-        AmqpMessage serializedAmqpMessage;
+        AmqpIoTMessage serializedAmqpMessage;
 #endif
 
         /// <summary>
@@ -106,17 +106,17 @@ namespace Microsoft.Azure.Devices.Client
         /// This constructor is only used in the receive path from Amqp path, 
         /// or in Cloning from a Message that has serialized.
         /// </summary>
-        /// <param name="amqpMessage"></param>
-        internal Message(AmqpMessage amqpMessage)
+        /// <param name="amqpIoTMessage"></param>
+        internal Message(AmqpIoTMessage amqpIoTMessage)
             : this()
         {
-            if (amqpMessage == null)
+            if (amqpIoTMessage == null)
             {
                 throw Fx.Exception.ArgumentNull("amqpMessage");
             }
 
-            MessageConverter.UpdateMessageHeaderAndProperties(amqpMessage, this);
-            Stream stream = amqpMessage.BodyStream;
+            AmqpIoTMessage.UpdateMessageHeaderAndProperties(amqpIoTMessage, this);
+            Stream stream = amqpIoTMessage.BodyStream;
             this.InitializeWithStream(stream, true);
         }
 #endif
@@ -524,7 +524,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
 #if !NETMF
-        internal AmqpMessage SerializedAmqpMessage
+        internal AmqpIoTMessage SerializedAmqpMessage
         {
             get
             {
@@ -594,8 +594,8 @@ namespace Microsoft.Azure.Devices.Client
 
             byte[] result;
 #if !NETMF
-            BufferListStream listStream;
-            if ((listStream = this.bodyStream as BufferListStream) != null)
+            AmqpIoTBufferListStream listStream;
+            if ((listStream = this.bodyStream as AmqpIoTBufferListStream) != null)
             {
                 // We can trust Amqp bufferListStream.Length;
                 result = new byte[listStream.Length];
@@ -612,7 +612,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 
 #if !NETMF
-        internal AmqpMessage ToAmqpMessage(bool setBodyCalled = true)
+        internal AmqpIoTMessage ToAmqpIoTMessage(bool setBodyCalled = true)
         {
             this.ThrowIfDisposed();
             if (this.serializedAmqpMessage == null)
@@ -630,11 +630,11 @@ namespace Microsoft.Azure.Devices.Client
                         this.SetSizeInBytesCalled();
                         if (this.bodyStream == null)
                         {
-                            this.serializedAmqpMessage = AmqpMessage.Create();
+                            this.serializedAmqpMessage = new AmqpIoTMessage();
                         }
                         else
                         {
-                            this.serializedAmqpMessage = AmqpMessage.Create(this.bodyStream, false);
+                            this.serializedAmqpMessage = new AmqpIoTMessage(this.bodyStream, false);
                             this.SetGetBodyCalled();
                         }
                         this.serializedAmqpMessage = this.PopulateAmqpMessageForSend(this.serializedAmqpMessage);
@@ -720,10 +720,10 @@ namespace Microsoft.Azure.Devices.Client
         }
 
 #if !NETMF
-        AmqpMessage PopulateAmqpMessageForSend(AmqpMessage message)
+        AmqpIoTMessage PopulateAmqpMessageForSend(AmqpIoTMessage amqpIoTMessage)
         {
-            MessageConverter.UpdateAmqpMessageHeadersAndProperties(message, this);
-            return message;
+            AmqpIoTMessage.UpdateAmqpMessageHeadersAndProperties(amqpIoTMessage, this);
+            return amqpIoTMessage;
         }
 #endif
 

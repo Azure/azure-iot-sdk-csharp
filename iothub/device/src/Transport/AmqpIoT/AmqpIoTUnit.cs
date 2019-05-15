@@ -1,29 +1,29 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Amqp;
-using Microsoft.Azure.Amqp.Framing;
-using Microsoft.Azure.Devices.Client.Exceptions;
-using Microsoft.Azure.Devices.Client.Extensions;
-using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Amqp;
+using Microsoft.Azure.Amqp.Framing;
+using Microsoft.Azure.Devices.Client.Extensions;
+using Microsoft.Azure.Devices.Shared;
+using Microsoft.Azure.Devices.Client.Transport.AmqpIoT;
 
-namespace Microsoft.Azure.Devices.Client.Transport.Amqp
+namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 {
-    internal class AmqpUnit : IDisposable
+    internal class AmqpIoTUnit : IDisposable, IAmqpIoTUnit
     {
         // If the first argument is set to true, we are disconnecting gracefully via CloseAsync.
         public event EventHandler OnUnitDisconnected;
         private readonly DeviceIdentity _deviceIdentity;
         private readonly Func<MethodRequestInternal, Task> _methodHandler;
-        private readonly Action<AmqpMessage> _twinMessageListener;
+        private readonly Action<AmqpIoTMessage> _twinMessageListener;
         private readonly Func<string, Message, Task> _eventListener;
         private readonly Func<DeviceIdentity, ILinkFactory, AmqpSessionSettings, TimeSpan, Task<AmqpSession>> _amqpSessionCreator;
-        private readonly Func<DeviceIdentity, TimeSpan, Task<IAmqpAuthenticationRefresher>> _amqpAuthenticationRefresherCreator;
+        private readonly Func<DeviceIdentity, TimeSpan, Task<IAmqpIoTAuthenticationRefresher>> _amqpAuthenticationRefresherCreator;
         private int _isUsable;
         private bool _disposed;
 
@@ -43,15 +43,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private ReceivingAmqpLink _eventReceivingLink;
         
         private AmqpSession _amqpSession;
-        private IAmqpAuthenticationRefresher _amqpAuthenticationRefresher;
+        private IAmqpIoTAuthenticationRefresher _amqpAuthenticationRefresher;
         private AmqpSessionSettings _amqpSessionSettings;
 
-        public AmqpUnit(
+        public AmqpIoTUnit(
             DeviceIdentity deviceIdentity,
             Func<DeviceIdentity, ILinkFactory, AmqpSessionSettings, TimeSpan, Task<AmqpSession>> amqpSessionCreator,
-            Func<DeviceIdentity, TimeSpan, Task<IAmqpAuthenticationRefresher>> amqpAuthenticationRefresherCreator,
+            Func<DeviceIdentity, TimeSpan, Task<IAmqpIoTAuthenticationRefresher>> amqpAuthenticationRefresherCreator,
             Func<MethodRequestInternal, Task> methodHandler, 
-            Action<AmqpMessage> twinMessageListener, 
+            Action<AmqpIoTMessage> twinMessageListener, 
             Func<string, Message, Task> eventListener)
         {
             _deviceIdentity = deviceIdentity;
@@ -92,7 +92,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
                 _amqpSession = await _amqpSessionCreator.Invoke(
                     _deviceIdentity, 
-                    AmqpLinkFactory.GetInstance(), 
+                    AmqpIoTLinkFactory.GetInstance(), 
                     _amqpSessionSettings, 
                     timeout).ConfigureAwait(false);
 
@@ -106,7 +106,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
                 _amqpSession.Closed += OnSessionDisconnected;
 
-                _messageSendingLink = await AmqpLinkHelper.OpenTelemetrySenderLinkAsync(
+                _messageSendingLink = await AmqpIoTLinkHelper.OpenTelemetrySenderLinkAsync(
                     _deviceIdentity,
                     _amqpSession,
                     timeout).ConfigureAwait(false);
@@ -156,7 +156,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 await _messageReceivingLinkLock.WaitAsync().ConfigureAwait(false);
                 if (_messageReceivingLink != null) return;
 
-                _messageReceivingLink = await AmqpLinkHelper.OpenTelemetryReceiverLinkAsync(
+                _messageReceivingLink = await AmqpIoTLinkHelper.OpenTelemetryReceiverLinkAsync(
                     _deviceIdentity,
                     _amqpSession,
                     timeout
@@ -172,15 +172,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        public async Task<Outcome> SendMessageAsync(AmqpMessage message, TimeSpan timeout)
+        public async Task<AmqpIoTOutcome> SendMessageAsync(AmqpMessage message, TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, message, timeout, $"{nameof(SendMessageAsync)}");
 
             try
             {
                 Debug.Assert(_messageSendingLink != null);
-                Outcome outcome = await AmqpLinkHelper.SendAmqpMessageAsync(_messageSendingLink, message, timeout).ConfigureAwait(false);
-                return outcome;
+                Outcome outcome = await AmqpIoTLinkHelper.SendAmqpMessageAsync(_messageSendingLink, message, timeout).ConfigureAwait(false);
+                return new AmqpIoTOutcome(outcome);
             }
             finally
             {
@@ -197,13 +197,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 await EnsureReceivingLinkIsOpenedAsync(timeout).ConfigureAwait(false);
                 Debug.Assert(_messageSendingLink != null);
 
-                AmqpMessage amqpMessage = await AmqpLinkHelper.ReceiveAmqpMessageAsync(_messageReceivingLink, timeout).ConfigureAwait(false);
+                AmqpIoTMessage amqpMessage = await AmqpIoTLinkHelper.ReceiveAmqpMessageAsync(_messageReceivingLink, timeout).ConfigureAwait(false);
                 Message message = null;
                 if (amqpMessage != null)
                 {
                     message = new Message(amqpMessage)
                     {
-                        LockToken = new Guid(amqpMessage.DeliveryTag.Array).ToString()
+                        LockToken = new Guid(amqpMessage.GetDeliveryTag().Array).ToString()
                     };
                 }
                 return message;
@@ -214,18 +214,18 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        public async Task<Outcome> DisposeMessageAsync(string lockToken, Outcome outcome, TimeSpan timeout)
+        public async Task<AmqpIoTOutcome> DisposeMessageAsync(string lockToken, AmqpIoTDisposeActions disposeAction, TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, lockToken, $"{nameof(DisposeMessageAsync)}");
 
-            Outcome disposeOutcome;
+            AmqpIoTOutcome disposeOutcome;
             if (_deviceIdentity.IotHubConnectionString.ModuleId.IsNullOrWhiteSpace())
             {
-                disposeOutcome = await AmqpLinkHelper.DisposeMessageAsync(_messageReceivingLink, lockToken, outcome, timeout).ConfigureAwait(false);
+                disposeOutcome = await AmqpIoTLinkHelper.DisposeMessageAsync(_messageReceivingLink, lockToken, AmqpIoTResultAdapter.GetResult(disposeAction), timeout).ConfigureAwait(false);
             }
             else
             {
-                disposeOutcome = await AmqpLinkHelper.DisposeMessageAsync(_eventReceivingLink, lockToken, outcome, timeout).ConfigureAwait(false);
+                disposeOutcome = await AmqpIoTLinkHelper.DisposeMessageAsync(_eventReceivingLink, lockToken, AmqpIoTResultAdapter.GetResult(disposeAction), timeout).ConfigureAwait(false);
             }
 
             if (Logging.IsEnabled) Logging.Exit(this, lockToken, $"{nameof(DisposeMessageAsync)}");
@@ -242,7 +242,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             try
             {
                 Debug.Assert(_eventReceivingLink == null);
-                _eventReceivingLink = await AmqpLinkHelper.OpenEventsReceiverLinkAsync(
+                _eventReceivingLink = await AmqpIoTLinkHelper.OpenEventsReceiverLinkAsync(
                     _deviceIdentity,
                     _amqpSession,
                     timeout
@@ -259,12 +259,39 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        public async Task<Outcome> SendEventAsync(AmqpMessage message, TimeSpan timeout)
+        public async Task SendEventsAsync(IEnumerable<Message> messages, TimeSpan operationTimeout)
+        {
+            // List to hold messages in Amqp friendly format
+            var messageList = new List<Data>();
+
+            foreach (Message message in messages)
+            {
+                using (AmqpIoTMessage amqpIoTMessage = message.ToAmqpIoTMessage())
+                {
+                    var data = new Data()
+                    {
+                        Value = amqpIoTMessage.ReadStream(amqpIoTMessage.ToStream())
+                    };
+                    messageList.Add(data);
+                }
+            }
+
+            AmqpIoTOutcome amqpIoTOutcome;
+            using (AmqpIoTMessage amqpIoTMessage = new AmqpIoTMessage(messageList))
+            {
+                amqpIoTMessage.SetMessageFormat(AmqpConstants.AmqpBatchedMessageFormat);
+                amqpIoTOutcome = await SendEventAsync(amqpIoTMessage, operationTimeout).ConfigureAwait(false);
+            }
+
+            amqpIoTOutcome.ThrowIfNotAccepted();
+        }
+
+        public async Task<AmqpIoTOutcome> SendEventAsync(AmqpIoTMessage message, TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, message, timeout, $"{nameof(SendEventAsync)}");
             try
             {
-                Outcome outcome = await SendMessageAsync(message, timeout).ConfigureAwait(false);
+                AmqpIoTOutcome outcome = await SendMessageAsync(message.GetMessage(), timeout).ConfigureAwait(false);
                 return outcome;
             }
             finally
@@ -273,9 +300,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        internal void OnEventsReceived(AmqpMessage amqpMessage)
+        public void OnEventsReceived(AmqpMessage amqpMessage)
         {
-            Message message = new Message(amqpMessage)
+
+            Message message = new Message(new AmqpIoTMessage(amqpMessage))
             {
                 LockToken = new Guid(amqpMessage.DeliveryTag.Array).ToString()
             };
@@ -296,14 +324,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
                 string correlationIdSuffix = Guid.NewGuid().ToString();
                 Task<ReceivingAmqpLink> receiveLinkCreator = 
-                    AmqpLinkHelper.OpenMethodsReceiverLinkAsync(
+                    AmqpIoTLinkHelper.OpenMethodsReceiverLinkAsync(
                         _deviceIdentity,
                         _amqpSession,
                         correlationIdSuffix,
                         timeout);
 
                 Task<SendingAmqpLink> sendingLinkCreator = 
-                    AmqpLinkHelper.OpenMethodsSenderLinkAsync(
+                    AmqpIoTLinkHelper.OpenMethodsSenderLinkAsync(
                         _deviceIdentity,
                         _amqpSession,
                         correlationIdSuffix,
@@ -341,7 +369,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             if (Logging.IsEnabled) Logging.Enter(this, amqpMessage, $"{nameof(OnMethodReceived)}");
             try
             {
-                MethodRequestInternal methodRequestInternal = MethodConverter.ConstructMethodRequestFromAmqpMessage(amqpMessage, new CancellationToken(false));
+                AmqpIoTMessage amqpIoTMessage = new AmqpIoTMessage(amqpMessage);
+                MethodRequestInternal methodRequestInternal = amqpIoTMessage.ConstructMethodRequestFromAmqpIoTMessage(new CancellationToken(false));
                 _methodReceivingLink?.DisposeDelivery(amqpMessage, true, AmqpConstants.AcceptedOutcome);
                 _methodHandler?.Invoke(methodRequestInternal);
             }
@@ -384,20 +413,20 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        public async Task<Outcome> SendMethodResponseAsync(AmqpMessage message, TimeSpan timeout)
+        public async Task<AmqpIoTOutcome> SendMethodResponseAsync(AmqpIoTMessage amqpIoTMessage, TimeSpan timeout)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, message, $"{nameof(SendMethodResponseAsync)}");
+            if (Logging.IsEnabled) Logging.Enter(this, amqpIoTMessage, $"{nameof(SendMethodResponseAsync)}");
 
             Debug.Assert(_methodSendingLink != null);
 
             try
             {
-                Outcome outcome = await AmqpLinkHelper.SendAmqpMessageAsync(_methodSendingLink, message, timeout).ConfigureAwait(false);
-                return outcome;
+                Outcome outcome = await AmqpIoTLinkHelper.SendAmqpMessageAsync(_methodSendingLink, amqpIoTMessage.GetMessage(), timeout).ConfigureAwait(false);
+                return new AmqpIoTOutcome(outcome);
             }
             finally
             {
-                if (Logging.IsEnabled) Logging.Exit(this, message, $"{nameof(SendMethodResponseAsync)}");
+                if (Logging.IsEnabled) Logging.Exit(this, amqpIoTMessage, $"{nameof(SendMethodResponseAsync)}");
             }
         }
         #endregion
@@ -419,14 +448,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 string correlationIdSuffix = Guid.NewGuid().ToString();
 
                 Task<ReceivingAmqpLink> receiveLinkCreator = 
-                    AmqpLinkHelper.OpenTwinReceiverLinkAsync(
+                    AmqpIoTLinkHelper.OpenTwinReceiverLinkAsync(
                         _deviceIdentity,
                         _amqpSession,
                         correlationIdSuffix,
                         timeout);
 
                 Task<SendingAmqpLink> sendingLinkCreator = 
-                    AmqpLinkHelper.OpenTwinSenderLinkAsync(
+                    AmqpIoTLinkHelper.OpenTwinSenderLinkAsync(
                         _deviceIdentity,
                         _amqpSession,
                         correlationIdSuffix,
@@ -468,7 +497,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             try
             {
                 _twinReceivingLink?.DisposeDelivery(amqpMessage, true, AmqpConstants.AcceptedOutcome);
-                _twinMessageListener?.Invoke(amqpMessage);
+                _twinMessageListener?.Invoke(new AmqpIoTMessage(amqpMessage));
             }
             finally
             {
@@ -476,7 +505,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        public async Task<Outcome> SendTwinMessageAsync(AmqpMessage message, TimeSpan timeout)
+        public async Task<AmqpIoTOutcome> SendTwinMessageAsync(AmqpIoTMessage amqpIoTmessage, TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(SendTwinMessageAsync)}");
 
@@ -484,8 +513,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
             try
             {
-                Outcome outcome = await AmqpLinkHelper.SendAmqpMessageAsync(_twinSendingLink, message, timeout).ConfigureAwait(false);
-                return outcome;
+                Outcome outcome = await AmqpIoTLinkHelper.SendAmqpMessageAsync(_twinSendingLink, amqpIoTmessage.GetMessage(), timeout).ConfigureAwait(false);
+                return new AmqpIoTOutcome(outcome);
             }
             finally
             {

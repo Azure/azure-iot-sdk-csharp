@@ -3,15 +3,16 @@
 
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
+using Microsoft.Azure.Devices.Client.Transport.AmqpIoT;
 using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Globalization;
 using System.Net;
 using System.Threading.Tasks;
 
-namespace Microsoft.Azure.Devices.Client.Transport.Amqp
+namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 {
-    internal class AmqpLinkHelper
+    internal class AmqpIoTLinkHelper
     {
         private const string TelemetrySenderLinkSuffix = "_TelemetrySenderLink";
         private const string TelemetryReceiveLinkSuffix = "_TelemetryReceiverLink";
@@ -36,7 +37,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             TimeSpan timeout
         )
         {
-            if (Logging.IsEnabled) Logging.Enter(typeof(AmqpLinkHelper), deviceIdentity, $"{nameof(OpenSendingAmqpLinkAsync)}");
+            if (Logging.IsEnabled) Logging.Enter(typeof(AmqpIoTLinkHelper), deviceIdentity, $"{nameof(OpenSendingAmqpLinkAsync)}");
             AmqpLinkSettings amqpLinkSettings = new AmqpLinkSettings
             {
                 LinkName = CommonResources.GetNewStringGuid(linkSuffix),
@@ -47,18 +48,18 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             };
             amqpLinkSettings.SndSettleMode = senderSettleMode;
             amqpLinkSettings.RcvSettleMode = receiverSettleMode;
-            amqpLinkSettings.AddProperty(IotHubAmqpProperty.TimeoutName, timeout.TotalMilliseconds);
-            amqpLinkSettings.AddProperty(IotHubAmqpProperty.ClientVersion, deviceIdentity.ProductInfo.ToString());
-            amqpLinkSettings.AddProperty(IotHubAmqpProperty.ApiVersion, ClientApiVersionHelper.ApiVersionString);
+            amqpLinkSettings.AddProperty(AmqpIoTErrorAdapter.TimeoutName, timeout.TotalMilliseconds);
+            amqpLinkSettings.AddProperty(AmqpIoTErrorAdapter.ClientVersion, deviceIdentity.ProductInfo.ToString());
+            amqpLinkSettings.AddProperty(AmqpIoTErrorAdapter.ApiVersion, ClientApiVersionHelper.ApiVersionString);
             if (CorrelationId != null)
             {
-                amqpLinkSettings.AddProperty(IotHubAmqpProperty.ChannelCorrelationId, CorrelationId);
+                amqpLinkSettings.AddProperty(AmqpIoTErrorAdapter.ChannelCorrelationId, CorrelationId);
             }
 
             SendingAmqpLink sendingLink = new SendingAmqpLink(amqpLinkSettings);
             sendingLink.AttachTo(amqpSession);
             await sendingLink.OpenAsync(timeout).ConfigureAwait(false);
-            if (Logging.IsEnabled) Logging.Exit(typeof(AmqpLinkHelper), deviceIdentity, $"{nameof(OpenSendingAmqpLinkAsync)}");
+            if (Logging.IsEnabled) Logging.Exit(typeof(AmqpIoTLinkHelper), deviceIdentity, $"{nameof(OpenSendingAmqpLinkAsync)}");
             return sendingLink;
         }
         
@@ -89,7 +90,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             TimeSpan timeout
         )
         {
-            if (Logging.IsEnabled) Logging.Enter(typeof(AmqpLinkHelper), deviceIdentity, $"{nameof(OpenReceivingAmqpLinkAsync)}");
+            if (Logging.IsEnabled) Logging.Enter(typeof(AmqpIoTLinkHelper), deviceIdentity, $"{nameof(OpenReceivingAmqpLinkAsync)}");
 
             uint prefetchCount = deviceIdentity.AmqpTransportSettings.PrefetchCount;
 
@@ -104,22 +105,22 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             };
             amqpLinkSettings.SndSettleMode = senderSettleMode;
             amqpLinkSettings.RcvSettleMode = receiverSettleMode;
-            amqpLinkSettings.AddProperty(IotHubAmqpProperty.TimeoutName, timeout.TotalMilliseconds);
-            amqpLinkSettings.AddProperty(IotHubAmqpProperty.ClientVersion, deviceIdentity.ProductInfo.ToString());
-            amqpLinkSettings.AddProperty(IotHubAmqpProperty.ApiVersion, ClientApiVersionHelper.ApiVersionString);
+            amqpLinkSettings.AddProperty(AmqpIoTErrorAdapter.TimeoutName, timeout.TotalMilliseconds);
+            amqpLinkSettings.AddProperty(AmqpIoTErrorAdapter.ClientVersion, deviceIdentity.ProductInfo.ToString());
+            amqpLinkSettings.AddProperty(AmqpIoTErrorAdapter.ApiVersion, ClientApiVersionHelper.ApiVersionString);
             if (CorrelationId != null)
             {
-                amqpLinkSettings.AddProperty(IotHubAmqpProperty.ChannelCorrelationId, CorrelationId);
+                amqpLinkSettings.AddProperty(AmqpIoTErrorAdapter.ChannelCorrelationId, CorrelationId);
             }
 
             ReceivingAmqpLink receivingLink = new ReceivingAmqpLink(amqpLinkSettings);
             receivingLink.AttachTo(amqpSession);
             await receivingLink.OpenAsync(timeout).ConfigureAwait(false);
-            if (Logging.IsEnabled) Logging.Exit(typeof(AmqpLinkHelper), deviceIdentity, $"{nameof(OpenReceivingAmqpLinkAsync)}");
+            if (Logging.IsEnabled) Logging.Exit(typeof(AmqpIoTLinkHelper), deviceIdentity, $"{nameof(OpenReceivingAmqpLinkAsync)}");
             return receivingLink;
         }
 
-        internal static async Task<AmqpMessage> ReceiveAmqpMessageAsync(ReceivingAmqpLink receivingAmqpLink, TimeSpan timeout)
+        internal static async Task<AmqpIoTMessage> ReceiveAmqpMessageAsync(ReceivingAmqpLink receivingAmqpLink, TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(receivingAmqpLink, timeout, $"{nameof(DisposeMessageAsync)}");
 
@@ -129,7 +130,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 amqpMessage = await receivingAmqpLink.ReceiveMessageAsync(timeout).ConfigureAwait(false);
             }
             if (Logging.IsEnabled) Logging.Exit(receivingAmqpLink, timeout, $"{nameof(DisposeMessageAsync)}");
-            return amqpMessage;
+            return new AmqpIoTMessage(amqpMessage);
         }
 
         #endregion
@@ -278,13 +279,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         }
         #endregion
 
-        public static async Task<Outcome> DisposeMessageAsync(ReceivingAmqpLink receivingAmqpLink, string lockToken, Outcome outcome, TimeSpan timeout)
+        public static async Task<AmqpIoTOutcome> DisposeMessageAsync(ReceivingAmqpLink receivingAmqpLink, string lockToken, Outcome outcome, TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(receivingAmqpLink, timeout, $"{nameof(DisposeMessageAsync)}");
             ArraySegment<byte> deliveryTag = ConvertToDeliveryTag(lockToken);
             Outcome disposeOutcome = await receivingAmqpLink.DisposeMessageAsync(deliveryTag, outcome, batchable: true, timeout: timeout).ConfigureAwait(false);
             if (Logging.IsEnabled) Logging.Exit(receivingAmqpLink, timeout, $"{nameof(DisposeMessageAsync)}");
-            return disposeOutcome;
+            return new AmqpIoTOutcome(disposeOutcome);
         }
 
         private static string BuildLinkAddress(DeviceIdentity deviceIdentity, string deviceTemplate, string moduleTemplate)

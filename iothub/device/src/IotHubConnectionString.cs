@@ -7,18 +7,15 @@ namespace Microsoft.Azure.Devices.Client
     using System.Net;
 
 #if !NETMF
-    using Microsoft.Azure.Amqp;
     using System.Threading.Tasks;
 #endif
 
     using Microsoft.Azure.Devices.Client.Extensions;
     using Microsoft.Azure.Devices.Shared;
     using System.Diagnostics;
+    using Microsoft.Azure.Devices.Client.Transport.AmqpIoT;
 
     internal sealed partial class IotHubConnectionString : IAuthorizationProvider
-#if !NETMF
-        , ICbsTokenProvider
-#endif
     {
         const string UserSeparator = "@";
 
@@ -30,7 +27,7 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             this.Audience = builder.HostName;
-            this.HostName = builder.GatewayHostName == null || builder.GatewayHostName == "" ? builder.HostName : builder.GatewayHostName;
+            this.HostName = builder.GatewayHostName == null || String.IsNullOrEmpty(builder.GatewayHostName) ? builder.HostName : builder.GatewayHostName;
             this.SharedAccessKeyName = builder.SharedAccessKeyName;
             this.SharedAccessKey = builder.SharedAccessKey;
             this.SharedAccessSignature = builder.SharedAccessSignature;
@@ -47,7 +44,7 @@ namespace Microsoft.Azure.Devices.Client
 #endif
 
 #if !NETMF
-            this.AmqpEndpoint = new UriBuilder(CommonConstants.AmqpsScheme, this.HostName, AmqpConstants.DefaultSecurePort).Uri;
+            this.AmqpEndpoint = new UriBuilder(CommonConstants.AmqpsScheme, this.HostName, AmqpIoTConstants.DefaultSecurePort).Uri;
 
             if (builder.AuthenticationMethod is AuthenticationWithTokenRefresh)
             {
