@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
             };
         private List<string> groupEnrollmentsToBeRetained =
             new List<string>{
-                "group-cert-x509"
+                "group-certificate-x509"
             };
 
         public CleanupEnrollmentsSample(ProvisioningServiceClient provisioningServiceClient)
@@ -82,9 +82,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
                     var items = queryResult.Items;
                     foreach (EnrollmentGroup enrollment in items)
                     {
-                        Console.WriteLine($"EnrollmentGroup to be deleted: {enrollment.EnrollmentGroupId}");
-                        _enrollmentGroupsDeleted++;
-                        await _provisioningServiceClient.DeleteEnrollmentGroupAsync(enrollment.EnrollmentGroupId).ConfigureAwait(false);
+                        if (!groupEnrollmentsToBeRetained.Contains(enrollment.EnrollmentGroupId))
+                        {
+                            Console.WriteLine($"EnrollmentGroup to be deleted: {enrollment.EnrollmentGroupId}");
+                            _enrollmentGroupsDeleted++;
+                            await _provisioningServiceClient.DeleteEnrollmentGroupAsync(enrollment.EnrollmentGroupId).ConfigureAwait(false);
+                        }
                     }
                 }
             }
