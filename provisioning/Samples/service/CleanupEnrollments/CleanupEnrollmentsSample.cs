@@ -16,6 +16,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         private const int QueryPageSize = 10;
         private static int _individualEnrollmentsDeleted;
         private static int _enrollmentGroupsDeleted;
+        private List<string> individualEnrollmentsToBeRetained =
+            new List<string>{
+                "iothubx509device1"
+            };
+        private List<string> groupEnrollmentsToBeRetained =
+            new List<string>{
+                "group-cert-x509"
+            };
 
         public CleanupEnrollmentsSample(ProvisioningServiceClient provisioningServiceClient)
         {
@@ -46,9 +54,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
                     List<IndividualEnrollment> individualEnrollments = new List<IndividualEnrollment>();
                     foreach (IndividualEnrollment enrollment in items)
                     {
-                        individualEnrollments.Add(enrollment);
-                        Console.WriteLine($"Individual Enrollment to be deleted: {enrollment.RegistrationId}");
-                        _individualEnrollmentsDeleted++;
+                        if (!individualEnrollmentsToBeRetained.Contains(enrollment.RegistrationId))
+                        {
+                            individualEnrollments.Add(enrollment);
+                            Console.WriteLine($"Individual Enrollment to be deleted: {enrollment.RegistrationId}");
+                            _individualEnrollmentsDeleted++;
+                        }
                     }
                     if (individualEnrollments.Count > 0)
                     {
