@@ -1,0 +1,29 @@
+@startuml csharpDeviceClientOpenAsync
+DeviceClient->RetryDelegatingHandler : SendAsync [1]
+note left
+    SendAsync with implicit 
+    open semantics.
+end note
+RetryDelegatingHandler->Pipeline: OpenAsync
+DeviceClient->RetryDelegatingHandler : ReceiveAsync [2]
+note left of RetryDelegatingHandler
+    Operations are enqueued 
+    behind a semaphore.
+    Execution order after 
+    open completes is not 
+    guaranteed.
+end note
+DeviceClient->RetryDelegatingHandler : SendAsync [3]
+Pipeline->RetryDelegatingHandler: OpenAsync complete
+RetryDelegatingHandler->Pipeline: SendAsync [1]
+RetryDelegatingHandler->Pipeline: SendAsync [3]
+RetryDelegatingHandler->Pipeline: ReceiveAsync [2]
+Pipeline->RetryDelegatingHandler: ReceiveAsync [2] complete
+note right of Pipeline
+    Operations completions 
+    are not ordered if 
+    pipelined.
+end note
+Pipeline->RetryDelegatingHandler: SendAsync [1] complete
+Pipeline->RetryDelegatingHandler: SendAsync [3] complete
+@enduml
