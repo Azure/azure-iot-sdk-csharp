@@ -1,0 +1,102 @@
+# update .csproj file versions and create a release branch/commit
+name: BumpVersion_$(BuildID)_$(Date:yyyyMMdd)$(Rev:.r)
+
+phases:
+
+- phase: Phase_1
+
+  steps:
+
+  - task: EsrpClientTool@1
+
+  - task: DownloadBuildArtifacts@0
+    inputs:
+      buildType: 'specific'
+      project: 'f9b79625-2860-4d92-a4ee-57b03fabfd10'
+      pipeline: '296'
+      buildVersionToDownload: 'latest'
+      downloadType: 'single'
+      downloadPath: '$(System.ArtifactsDirectory)/build-tools'
+      artifactName: 'csharp'
+
+  - checkout: self  # self represents the repo where the initial Pipelines YAML file was found
+    persistCredentials: 'true'  # set to 'true' to leave the OAuth token in the Git config after the initial fetch
+    clean: 'resources'
+
+  - task: DownloadSecureFile@1
+    displayName: 'Download secure file - iothubsdksign-auth-base64.pfx'
+    inputs:
+      secureFile: 'iothubsdksign-auth-base64.pfx'
+
+  - task: DownloadSecureFile@1
+    displayName: 'Download secure file - iothubsdksign-req-base64.pfx'
+    inputs:
+      secureFile: 'iothubsdksign-req-base64.pfx'
+
+  - task: CmdLine@2
+    displayName: 'env vars'
+    inputs:
+        script: 'set'
+
+# install signing certificates
+
+  - powershell: |
+        function Import-Certificate($Cert, [System.Security.SecureString]$Passphrase, $Store) {
+            
+            $found = Test-Path $Cert -PathType Leaf
+            if ($found -eq $false) { throw "File not found '$Cert'" }
+            Write-Host "Importing cert from '$Cert' into store '$Store'"
+        
+            Import-PfxCertificate `
+                -FilePath $Cert `
+                -CertStoreLocation $Store `
+                -Password $Passphrase
+        }
+        
+        $certpwd = $env:certpwd
+        
+        if ([System.String]::IsNullOrWhiteSpace($certpwd) -eq $true) {
+            throw "Empty passphrase. Make sure it's hooked up."
+        }
+        
+        $passphrase = ConvertTo-SecureString -String $certpwd -AsPlainText -Force
+        $store = 'Cert:\LocalMachine\My'
+        $location = $env:agent_tempdirectory
+        $authcert = Join-Path $location 'iothubsdksign-auth-base64.pfx'
+        $reqcert = Join-Path $location 'iothubsdksign-req-base64.pfx'
+        
+        Import-Certificate `
+            -Cert $authcert `
+            -Passphrase $passphrase `
+            -Store $store
+        
+        Import-Certificate `
+            -Cert $reqcert `
+            -Passphrase $passphrase `
+            -Store $store
+
+    displayName: 'Install Signing Certificates'
+    env:
+        certpwd: $(certpassphrase)
+
+  - powershell: |
+      . $(Build.StagingDirectory)/build-tools/csharp/new/SignTools.ps1
+      md $env:ESRP_LOG_DIR
+      md $env:AZURE_IOT_LOCALPACKAGES
+      Set-Location $(Build.SourcesDirectory)
+      $(Build.SourcesDirectory)/build.ps1 -configuration Release -nounittests -sign -verbosity d
+
+    displayName: 'Build, Package, Sign'
+    env:
+        ESRP_AUTH_CONFIG: $(Build.StagingDirectory)/build-tools/csharp/new/json/Auth.json
+        ESRP_POLICY_CONFIG: $(Build.StagingDirectory)/build-tools/csharp/new/json/Policy.json
+        ESRP_INPUT_JSON_DIR: $(Build.StagingDirectory)/build-tools/csharp/new/json
+        ESRP_LOG_DIR: $(Build.StagingDirectory)/build-tools/csharp/new/logs
+        AZURE_IOT_LOCALPACKAGES: $(Build.StagingDirectory)/build-tools/csharp/nuget_local
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Signed Nuget Packages'
+    inputs:
+        PathtoPublish: '$(Build.SourcesDirectory)/bin/pkg'
+        ArtifactName: 'nuget'
+        publishLocation: 'Container'
