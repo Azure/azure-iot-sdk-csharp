@@ -22,7 +22,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
     /// </summary>
     public class ProvisioningTransportHandlerAmqp : ProvisioningTransportHandler
     {
-        private static readonly TimeSpan DefaultOperationPoolingIntervalMilliseconds = TimeSpan.FromSeconds(2);
+        private static readonly TimeSpan DefaultOperationPoolingInterval = TimeSpan.FromSeconds(2);
         private static readonly TimeSpan TimeoutConstant = TimeSpan.FromMinutes(1);
 
         /// <summary>
@@ -123,15 +123,22 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
                     await Task.Delay(
                         operation.RetryAfter ??
-                        DefaultOperationPoolingIntervalMilliseconds).ConfigureAwait(false);
+                        RetryJitter.GenerateDelayWithJitterForRetry(DefaultOperationPoolingInterval)).ConfigureAwait(false);
 
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    operation = await OperationStatusLookupAsync(
+                    try
+                    {
+                        operation = await OperationStatusLookupAsync(
                         connection,
                         operationId,
                         correlationId).ConfigureAwait(false);
-
+                    }
+                    catch (ProvisioningTransportException e) when (e.ErrorDetails is ProvisioningErrorDetailsAmqp &&  e.IsTransient)
+                    {
+                        operation.RetryAfter = ((ProvisioningErrorDetailsAmqp) e.ErrorDetails).RetryAfter;
+                    }
+                    
                     attempts++;
                 }
 
@@ -207,7 +214,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             client.AmqpSession.ReceivingLink.AcceptMessage(amqpResponse);
             string jsonResponse = await new StreamReader(amqpResponse.BodyStream).ReadToEndAsync()
                 .ConfigureAwait(false);
-            return JsonConvert.DeserializeObject<RegistrationOperationStatus>(jsonResponse);
+            RegistrationOperationStatus status = JsonConvert.DeserializeObject<RegistrationOperationStatus>(jsonResponse);
+            status.RetryAfter = ProvisioningErrorDetailsAmqp.GetRetryAfterFromApplicationProperties(amqpResponse, DefaultOperationPoolingInterval);
+            return status;
         }
 
         private async Task<RegistrationOperationStatus> OperationStatusLookupAsync(
@@ -229,7 +238,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             client.AmqpSession.ReceivingLink.AcceptMessage(amqpResponse);
             string jsonResponse = await new StreamReader(amqpResponse.BodyStream).ReadToEndAsync()
                 .ConfigureAwait(false);
-            return JsonConvert.DeserializeObject<RegistrationOperationStatus>(jsonResponse);
+            RegistrationOperationStatus status = JsonConvert.DeserializeObject<RegistrationOperationStatus>(jsonResponse);
+            status.RetryAfter = ProvisioningErrorDetailsAmqp.GetRetryAfterFromApplicationProperties(amqpResponse, DefaultOperationPoolingInterval);
+            return status;
         }
 
         private static DeviceRegistrationResult ConvertToProvisioningRegistrationResult(
@@ -262,9 +273,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             {
                 try
                 {
-                    var errorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetails>(rejected.Error.Description);
+                    var errorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetailsAmqp>(rejected.Error.Description);
                     int statusCode = errorDetails.ErrorCode / 1000;
                     bool isTransient = statusCode >= (int)HttpStatusCode.InternalServerError || statusCode == 429;
+                    if (isTransient)
+                    {
+                        errorDetails.RetryAfter = ProvisioningErrorDetailsAmqp.GetRetryAfterFromRejection(rejected, DefaultOperationPoolingInterval);
+                    }
+
                     throw new ProvisioningTransportException(
                         rejected.Error.Description,
                         null,
