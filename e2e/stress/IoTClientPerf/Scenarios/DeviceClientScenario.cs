@@ -165,6 +165,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 _swRecv.Restart();
                 Client.Message msg = await t.ConfigureAwait(false);
+                await _dc.CompleteAsync(msg).ConfigureAwait(false);
 
                 int deviceIdFromMessage = BitConverter.ToInt32(msg.GetBytes());
                 if (_id != deviceIdFromMessage) throw new InvalidOperationException($"DeviceId mismatch: Expected {_id} actual {deviceIdFromMessage}.");
