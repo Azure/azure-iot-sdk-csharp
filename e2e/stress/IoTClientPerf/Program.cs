@@ -69,6 +69,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             Console.WriteLine(
                 "Usage: \n\n" +
+                "   dotnet run -- [-topslna] -f <scenario>\n" +
                 "   iotclientperf [-topslna] -f <scenario>\n" +
                 "       -t <seconds>    : Execution time (default 10 seconds).\n" +
                 "       -o <path>       : Output path (default outputs to console).\n" +

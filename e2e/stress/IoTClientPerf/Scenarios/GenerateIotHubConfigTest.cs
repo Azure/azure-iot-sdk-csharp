@@ -14,8 +14,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         // - SAS key devices generated will have the same key as the device specified in the IOTHUB_DEVICE_CONN_STRING/IOTHUB_DEVICE_CONN_STRING2.
         // - X509 key devices generated will have the same certificate as specified in IOTHUB_X509_PFX_CERTIFICATE
         private static StreamWriter s_outputFile = new StreamWriter("devices.txt");
-
-        private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1);
+        private static SemaphoreSlim s_semaphore = new SemaphoreSlim(1);
 
         static GenerateIotHubConfigTest()
         {
@@ -64,9 +63,9 @@ namespace Microsoft.Azure.Devices.E2ETests
                 throw new NotSupportedException($"Authentication type {_authType} cannot be used to generate devices.");
             }
 
-            await _semaphore.WaitAsync().ConfigureAwait(false);
+            await s_semaphore.WaitAsync().ConfigureAwait(false);
             await s_outputFile.WriteLineAsync(deviceExport).ConfigureAwait(false);
-            _semaphore.Release();
+            s_semaphore.Release();
         }
 
         public override async Task TeardownAsync(CancellationToken ct)

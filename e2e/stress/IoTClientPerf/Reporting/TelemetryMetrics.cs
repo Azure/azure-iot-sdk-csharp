@@ -92,7 +92,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             Add(sb, tcpConn);
 
             Add(sb, s_configString);
-            Add(sb, ErrorMessage);
+            Add(sb, ErrorMessage?.Replace('\n', ' ').Replace('\r', ' ').Replace('"', ' ').Replace(',', ' '));
 
             return sb.ToString();
         }
