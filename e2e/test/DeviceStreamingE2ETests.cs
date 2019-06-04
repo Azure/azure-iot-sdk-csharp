@@ -415,8 +415,10 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }, TaskScheduler.Current)
             ).ConfigureAwait(false);
 
-            await deviceWSClient.CloseAsync(WebSocketCloseStatus.NormalClosure, "End of test", cts.Token).ConfigureAwait(false);
-            await serviceWSClient.CloseAsync(WebSocketCloseStatus.NormalClosure, "End of test", cts.Token).ConfigureAwait(false);
+            await Task.WhenAll(
+                deviceWSClient.CloseAsync(WebSocketCloseStatus.NormalClosure, "End of test", cts.Token),
+                serviceWSClient.CloseAsync(WebSocketCloseStatus.NormalClosure, "End of test", cts.Token)
+            ).ConfigureAwait(false);
 
             deviceWSClient.Dispose();
             serviceWSClient.Dispose();
