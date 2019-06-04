@@ -7,10 +7,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.Azure.Devices.Client.Exceptions;
+using Microsoft.Azure.Devices.Client.Transport.AmqpIoT;
 
-namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
+namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
-    internal class AmqpIoTAuthenticationRefresher : IAmqpIoTAuthenticationRefresher, IDisposable
+    internal class AmqpAuthenticationRefresher : IAmqpIoTAuthenticationRefresher, IDisposable
     {
         private static readonly string[] AccessRightsStringArray = AccessRightsHelper.AccessRightsToStringArray(AccessRights.DeviceConnect);
         private readonly AmqpIoTCbsLink AmqpIoTCbsLink;
@@ -22,7 +23,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         private Task RefreshLoop;
         private bool _disposed;
 
-        internal AmqpIoTAuthenticationRefresher(DeviceIdentity deviceIdentity, AmqpIoTCbsLink amqpCbsLink)
+        internal AmqpAuthenticationRefresher(DeviceIdentity deviceIdentity, AmqpIoTCbsLink amqpCbsLink)
         {
             AmqpIoTCbsLink = amqpCbsLink;
             ConnectionString = deviceIdentity.IotHubConnectionString;
@@ -59,7 +60,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(InitLoopAsync)}");
         }
 
-        private void StartLoop(DateTime refreshOn, CancellationToken cancellationToken)
+        public void StartLoop(DateTime refreshOn, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled) Logging.Enter(this, refreshOn, $"{nameof(StartLoop)}");
             RefreshLoop = RefreshLoopAsync(refreshOn, cancellationToken);

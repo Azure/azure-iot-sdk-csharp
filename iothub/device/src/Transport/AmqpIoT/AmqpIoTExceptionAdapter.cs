@@ -1,15 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using Microsoft.Azure.Devices.Client.Exceptions;
+using Microsoft.Azure.Amqp;
+
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 {
-    using System;
-    using Microsoft.Azure.Devices.Client.Exceptions;
-    using Microsoft.Azure.Amqp;
-
     internal class AmqpIoTExceptionAdapter
     {
-        public static Exception ToIotHubClientContract(Exception exception)
+        public static Exception ConvertToIoTHubException(Exception exception)
         {
             if (exception is TimeoutException)
             {

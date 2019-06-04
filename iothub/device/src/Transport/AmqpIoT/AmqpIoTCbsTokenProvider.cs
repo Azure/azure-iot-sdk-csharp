@@ -9,7 +9,7 @@ using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 {
-    internal class AmqpIoTCbsTokenProvider : ICbsTokenProvider, IAmqpIoTCbsTokenProvider
+    internal class AmqpIoTCbsTokenProvider : ICbsTokenProvider
     {
         private readonly IotHubConnectionString _connectionString;
 

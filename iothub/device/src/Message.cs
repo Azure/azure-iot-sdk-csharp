@@ -15,7 +15,6 @@ namespace Microsoft.Azure.Devices.Client
 #endif
 
     using DateTimeT = System.DateTime;
-    using Microsoft.Azure.Devices.Client.Transport.AmqpIoT;
 
     /// <summary>
     /// The data structure represent the message that is used for interacting with IotHub.
@@ -46,10 +45,6 @@ namespace Microsoft.Azure.Devices.Client
         long sizeInBytesCalled;
 #endif
 
-#if !NETMF
-        AmqpIoTMessage serializedAmqpMessage;
-#endif
-
         /// <summary>
         /// Default constructor with no body data
         /// </summary>
@@ -62,7 +57,6 @@ namespace Microsoft.Azure.Devices.Client
             this.Properties = new ReadOnlyDictionary45<string, string>(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase), this);
             this.SystemProperties = new ReadOnlyDictionary45<string, object>(new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase), this);
             this.InitializeWithStream(Stream.Null, true);
-            this.serializedAmqpMessage = null;
 #endif
         }
 
@@ -101,25 +95,6 @@ namespace Microsoft.Azure.Devices.Client
             this.ownsBodyStream = true;
         }
 
-#if !NETMF
-        /// <summary>
-        /// This constructor is only used in the receive path from Amqp path, 
-        /// or in Cloning from a Message that has serialized.
-        /// </summary>
-        /// <param name="amqpIoTMessage"></param>
-        internal Message(AmqpIoTMessage amqpIoTMessage)
-            : this()
-        {
-            if (amqpIoTMessage == null)
-            {
-                throw Fx.Exception.ArgumentNull("amqpMessage");
-            }
-
-            AmqpIoTMessage.UpdateMessageHeaderAndProperties(amqpIoTMessage, this);
-            Stream stream = amqpIoTMessage.BodyStream;
-            this.InitializeWithStream(stream, true);
-        }
-#endif
         /// <summary>
         /// This constructor is only used on the Gateway http path so that 
         /// we can clean up the stream.
@@ -524,19 +499,6 @@ namespace Microsoft.Azure.Devices.Client
         }
 
 #if !NETMF
-        internal AmqpIoTMessage SerializedAmqpMessage
-        {
-            get
-            {
-                lock (this.messageLock)
-                {
-                    return this.serializedAmqpMessage;
-                }
-            }
-        }
-#endif
-
-#if !NETMF
         /// <summary>
         /// Gets or sets the deliveryTag which is used for server side checkpointing.
         /// </summary>
@@ -592,59 +554,8 @@ namespace Microsoft.Azure.Devices.Client
 #endif
             }
 
-            byte[] result;
-#if !NETMF
-            AmqpIoTBufferListStream listStream;
-            if ((listStream = this.bodyStream as AmqpIoTBufferListStream) != null)
-            {
-                // We can trust Amqp bufferListStream.Length;
-                result = new byte[listStream.Length];
-                listStream.Read(result, 0, result.Length);
-            }
-            else
-#endif
-            {
-                // This is just fail safe code in case we are not using the Amqp protocol.
-                result = ReadFullStream(this.bodyStream);
-            }
-
-            return result;
+            return ReadFullStream(this.bodyStream);
         }
-
-#if !NETMF
-        internal AmqpIoTMessage ToAmqpIoTMessage(bool setBodyCalled = true)
-        {
-            this.ThrowIfDisposed();
-            if (this.serializedAmqpMessage == null)
-            {
-                lock (this.messageLock)
-                {
-                    if (this.serializedAmqpMessage == null)
-                    {
-                        // Interlocked exchange two variable does allow for a small period 
-                        // where one is set while the other is not. Not sure if it is worth
-                        // correct this gap. The intention of setting this two variable is
-                        // so that GetBody should not be called and all Properties are
-                        // readonly because the amqpMessage has been serialized.
-
-                        this.SetSizeInBytesCalled();
-                        if (this.bodyStream == null)
-                        {
-                            this.serializedAmqpMessage = new AmqpIoTMessage();
-                        }
-                        else
-                        {
-                            this.serializedAmqpMessage = new AmqpIoTMessage(this.bodyStream, false);
-                            this.SetGetBodyCalled();
-                        }
-                        this.serializedAmqpMessage = this.PopulateAmqpMessageForSend(this.serializedAmqpMessage);
-                    }
-                }
-            }
-
-            return this.serializedAmqpMessage;
-        }
-#endif
 
         internal void ResetBody()
         {
@@ -655,10 +566,6 @@ namespace Microsoft.Azure.Devices.Client
 
             this.bodyStream.Seek(this.originalStreamPosition, SeekOrigin.Begin);
             Interlocked.Exchange(ref this.getBodyCalled, 0);
-
-#if !NETMF
-            this.serializedAmqpMessage = null;
-#endif
         }
 
 #if NETMF
@@ -719,14 +626,6 @@ namespace Microsoft.Azure.Devices.Client
 #endif
         }
 
-#if !NETMF
-        AmqpIoTMessage PopulateAmqpMessageForSend(AmqpIoTMessage amqpIoTMessage)
-        {
-            AmqpIoTMessage.UpdateAmqpMessageHeadersAndProperties(amqpIoTMessage, this);
-            return amqpIoTMessage;
-        }
-#endif
-
 #if NETMF
         object GetSystemProperty(string key)
         {
@@ -745,7 +644,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 #endif
 
-        void ThrowIfDisposed()
+        internal void ThrowIfDisposed()
         {
             if (this.disposed)
             {
@@ -763,18 +662,6 @@ namespace Microsoft.Azure.Devices.Client
             {
                 if (disposing)
                 {
-#if !NETMF
-                    if (this.serializedAmqpMessage != null)
-                    {
-                        // in the receive scenario, this.bodyStream is a reference
-                        // to serializedAmqpMessage.BodyStream, and we assume disposing
-                        // the amqpMessage will dispose the body stream so we don't
-                        // need to dispose bodyStream twice.
-                        this.serializedAmqpMessage.Dispose();
-                        this.bodyStream = null;
-                    }
-                    else
-#endif
                     if (this.bodyStream != null && this.ownsBodyStream)
                     {
                         this.bodyStream.Dispose();

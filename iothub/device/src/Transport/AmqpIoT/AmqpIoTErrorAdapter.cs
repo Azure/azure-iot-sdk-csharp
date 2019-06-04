@@ -1,15 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using Microsoft.Azure.Devices.Common;
+using Microsoft.Azure.Devices.Client.Exceptions;
+using Microsoft.Azure.Amqp;
+using Microsoft.Azure.Amqp.Encoding;
+using Microsoft.Azure.Amqp.Framing;
+
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 {
-    using System;
-    using Microsoft.Azure.Devices.Common;
-    using Microsoft.Azure.Devices.Client.Exceptions;
-    using Microsoft.Azure.Amqp;
-    using Microsoft.Azure.Amqp.Encoding;
-    using Microsoft.Azure.Amqp.Framing;
-
     static class AmqpIoTErrorAdapter
     {
         public static readonly AmqpSymbol TimeoutName = AmqpIoTConstants.Vendor + ":timeout";

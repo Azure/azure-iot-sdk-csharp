@@ -42,10 +42,25 @@
             const int DiagPercentageWithDiagnostic = 100;
             int messageCount = 0;
             IoTHubClientDiagnostic.AddDiagnosticInfoIfNecessary(message, DiagPercentageWithDiagnostic, ref messageCount);
-            AmqpIoTMessage amqpMessage = message.ToAmqpIoTMessage();
+            AmqpMessage amqpMessage = AmqpIoTMessageConverter.MessageToAmqpMessage(message);
 
-            Assert.IsTrue(message.SystemProperties[MessageSystemPropertyNames.DiagId] == amqpMessage.GetMessageAnnotation("Diagnostic-Id"));
-            Assert.IsTrue(message.SystemProperties[MessageSystemPropertyNames.DiagCorrelationContext] == amqpMessage.GetMessageAnnotation("Correlation-Context"));
+            if (amqpMessage.MessageAnnotations.Map.TryGetValue("Diagnostic-Id", out string diagId))
+            {
+                Assert.IsTrue(message.SystemProperties[MessageSystemPropertyNames.DiagId] as string == diagId);
+            }
+            else
+            {
+                throw new AssertFailedException("Diagnostic-Id mismatch");
+            }
+
+            if (amqpMessage.MessageAnnotations.Map.TryGetValue("Correlation-Context", out string diagCorrelationContext))
+            {
+                Assert.IsTrue(message.SystemProperties[MessageSystemPropertyNames.DiagCorrelationContext] as string == diagCorrelationContext);
+            }
+            else
+            {
+                throw new AssertFailedException("Correlation-Context mismatch");
+            }
         }
 
         [TestMethod]
