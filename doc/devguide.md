@@ -71,6 +71,9 @@ Contains development instructions for building and changing the Azure IoT SDK fo
 
 If you would like to develop an application using the Azure IoT SDK for C# (using pre-built binaries), please follow the dev-guide here: https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-sdks 
 
+### Package architecture
+![packages](https://www.plantuml.com/plantuml/png/0/jLLRRi8m4Fn7oXtyNv4J80G2LLMbI2tG0xZs9bWuSLYlaTAAkpSXK48W9PJWtvsTcNtO7bdYI2xMNi_hQGY9aM6eeYKngH04APCKePIB5O-01KgWiIOaV_pb4FmfR9G0wy-N746omU3PQ0au7B9lhxTjaLbBOVaHcblBve05OA8L97G85UU9JRHniZ1QSfIXdTWnVGQHieHPm9DS7Mi4iuyf2mqoMPgeniQEJCn9YPAyp8zp3nTbNisdFRMuRLUt_uPcespUNfL4_hxOncPKmMUD-TKzujyTO7OIQ-LfpzdaeeITbLk514Ow3Hrqv8gLAhR1rksQ2-I9JGtce7YT_cEPc-Y2DL67T2z4zxkRWt2eAFCNQLmZszCrtTX-VtZb7MZCFOpr7efBQz8Pt-4YTaPOczfVl1SAkrbajxYF5jcjysD4JhQopH16aCZy-_e1 "packages")
+
 ### /iothub/device
 
 Contains the IoT Hub Device SDK source, unit-tests and samples. 
@@ -119,9 +122,9 @@ Contains common code shared between multiple components. This doesn't generate a
 `/test` contains end-to-end tests run before each PR integration by our internal CI system.
 `/stress` contains SDK stress-test applications.
 
-### /jenkins
+### /vsts
 
-Contains scripts used by our internal Continuous Integration system (Jenkins).
+Contains scripts used by our internal Continuous Integration system (Azure DevOps).
 
 ### /tools
 

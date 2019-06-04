@@ -1,0 +1,14 @@
+@startuml csharpDeviceClientAmqpConnectionSelection
+AmqpTransportHandler->AmqpIoTSessionFactory: Request //AmqpIoTSession//
+AmqpIoTSessionFactory->AmqpIoTSessionFactory: Find or Create the correct //AmqpIoTConnectionPool//
+AmqpIoTSessionFactory->AmqpIoTConnectionPool: Get //AmqpIoTConnection//
+AmqpIoTConnectionPool->AmqpIoTConnectionPool: Find or Create the correct //AmqpIoTConnection//
+AmqpIoTConnectionPool->AmqpIoTSessionFactory: //AmqpIoTConnection//
+AmqpIoTSessionFactory->AmqpIoTConnection: Create a new //AmqpIoTSession//
+AmqpIoTConnection->AmqpIoTConnection: session_count++
+AmqpIoTSessionFactory<-AmqpIoTConnection: Return the //AmqpIoTSession//
+AmqpIoTSessionFactory->AmqpTransportHandler: Return //AmqpIoTSession//
+AmqpTransportHandler->AmqpTransportHandler: perform operations
+AmqpTransportHandler->AmqpTransportHandler: session closed/disconnected
+AmqpIoTConnection->AmqpIoTConnection: session_count--
+@enduml

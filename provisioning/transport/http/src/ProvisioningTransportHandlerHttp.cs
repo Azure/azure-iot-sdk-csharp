@@ -124,10 +124,14 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                        string.CompareOrdinal(operation.Status, RegistrationOperationStatus.OperationStatusUnassigned) == 0)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
+                    TimeSpan? serviceRecommendedDelay = operation.RetryAfter;
+                    if (serviceRecommendedDelay != null && serviceRecommendedDelay?.TotalSeconds < s_defaultOperationPoolingIntervalMilliseconds.TotalSeconds)
+                    {
+                        if (Logging.IsEnabled) Logging.Error(this, $"Service recommended unexpected retryAfter of {operation.RetryAfter?.TotalSeconds}, defaulting to delay of {s_defaultOperationPoolingIntervalMilliseconds.ToString()}", nameof(RegisterAsync));
+                        serviceRecommendedDelay = s_defaultOperationPoolingIntervalMilliseconds;
+                    }
 
-                    await Task.Delay(
-                        operation.RetryAfter ??
-                        s_defaultOperationPoolingIntervalMilliseconds).ConfigureAwait(false);
+                    await Task.Delay(serviceRecommendedDelay ?? RetryJitter.GenerateDelayWithJitterForRetry(s_defaultOperationPoolingIntervalMilliseconds)).ConfigureAwait(false);
 
                     cancellationToken.ThrowIfCancellationRequested();
 
@@ -165,7 +169,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
 
                 try
                 {
-                    var errorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetails>(oe.Response.Content);
+                    var errorDetails = JsonConvert.DeserializeObject<ProvisioningErrorDetailsHttp>(oe.Response.Content);
                     throw new ProvisioningTransportException(oe.Response.Content, oe, isTransient, errorDetails);
                 }
                 catch (JsonException ex)
