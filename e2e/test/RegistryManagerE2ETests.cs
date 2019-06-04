@@ -4,6 +4,7 @@
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Diagnostics.Tracing;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.E2ETests
@@ -12,10 +13,41 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestCategory("IoTHub-E2E")]
     public class RegistryManagerE2ETests
     {
-        [TestMethod]
-        public async Task AddDeviceWithTwinWithDeviceCapabilities()
+        private readonly string DevicePrefix = $"E2E_{nameof(RegistryManagerE2ETests)}_";
+        private readonly ConsoleEventListener _listener;
+
+        public RegistryManagerE2ETests()
         {
-            string deviceId = "some-device-" + Guid.NewGuid().ToString();
+            _listener = TestConfig.StartEventListener();
+        }
+
+        [TestMethod]
+        public async Task RegistryManager_AddAndRemoveDeviceWithScope()
+        {
+            RegistryManager registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+
+            string deviceId = DevicePrefix + Guid.NewGuid();
+
+            var edgeDevice = new Device(deviceId)
+            {
+                Capabilities = new DeviceCapabilities { IotEdge = true }
+            };
+            edgeDevice = await registryManager.AddDeviceAsync(edgeDevice).ConfigureAwait(false);
+
+            var leafDevice = new Device(Guid.NewGuid().ToString()) { Scope = edgeDevice.Scope };
+            Device receivedDevice = await registryManager.AddDeviceAsync(leafDevice).ConfigureAwait(false);
+
+            Assert.IsNotNull(receivedDevice);
+            Assert.AreEqual(leafDevice.Id, receivedDevice.Id, $"Expected Device ID={leafDevice.Id}; Actual Device ID={receivedDevice.Id}");
+            Assert.AreEqual(leafDevice.Scope, receivedDevice.Scope, $"Expected Device Scope={leafDevice.Scope}; Actual Device Scope={receivedDevice.Scope}");
+            await registryManager.RemoveDeviceAsync(leafDevice.Id).ConfigureAwait(false);
+            await registryManager.RemoveDeviceAsync(edgeDevice.Id).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task RegistryManager_AddDeviceWithTwinWithDeviceCapabilities()
+        {
+            string deviceId = DevicePrefix + Guid.NewGuid();
 
             using (RegistryManager registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
             {
