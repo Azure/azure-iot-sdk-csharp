@@ -38,11 +38,11 @@ set IOTHUB_EVENTHUB_COMPATIBLE_NAME=
 @REM EventHub consumer group:
 set IOTHUB_EVENTHUB_CONSUMER_GROUP=
 
-@REM ---------- ASCforIoT Log Analytics Configuration ----------
-@REM the iot hub above must be registered to ASC for IoT security solution
+@REM ---------- Azure Security Center For IoT - Log Analytics Configuration ----------
+@REM the iot hub above must be registered to Azure Security Center for IoT security solution
 @REM with the feature export raw events set to on
 
-@REM the ASC for IoT Log Analytics workspace that connected to the hub
+@REM the Azure Security Center for IoT Log Analytics workspace that connected to the hub
 set LA_WORKSPACE_ID=
 
 @REM the Azure Active Directory tenant of the Log Analytics workspace

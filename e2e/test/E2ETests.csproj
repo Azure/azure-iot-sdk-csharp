@@ -27,8 +27,8 @@
     <Compile Include="$(CommonTest)\Configuration.IoTHub.cs">
       <Link>Common\Configuration.IoTHub.cs</Link>
     </Compile>
-    <Compile Include="$(CommonTest)\Configuration.ASCforIoTLogAnalytics.cs">
-      <Link>Common\Configuration.ASCforIoTLogAnalytics.cs</Link>
+    <Compile Include="$(CommonTest)\Configuration.AzureSecurityCenterForIoTLogAnalytics.cs">
+      <Link>Common\Configuration.AzureSecurityCenterForIoTLogAnalytics.cs</Link>
     </Compile>
     <Compile Include="$(CommonTest)\EventSourceTestLogging.cs">
       <Link>Common\EventSourceTestLogging.cs</Link>
@@ -113,6 +113,19 @@
     <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Security.Tpm" Version="1.*" />
     <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Service" Version="1.*" />
     <ProjectReference Include="$(RootDir)\security\tpm\samples\SecurityProviderTpmSimulator\SecurityProviderTpmSimulator.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net47'">
+    <PackageReference Include="Microsoft.Azure.OperationalInsights">
+      <Version>0.10.0-preview</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Rest.ClientRuntime.Azure.Authentication">
+      <Version>2.4.0</Version>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.1'">
+    <PackageReference Include="Microsoft.Azure.OperationalInsights">
+      <Version>0.10.0-preview</Version>
+    </PackageReference>
   </ItemGroup>
 
 </Project>

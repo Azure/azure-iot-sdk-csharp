@@ -32,34 +32,34 @@ Alternatives:
  - TinyProxy for Linux/Mac: https://tinyproxy.github.io/
  - Squid for Windows: https://chocolatey.org/packages/squid
 
-### ASC for IoT Security Message E2E Tests
+### Azure Security Center for IoT Security Message E2E Tests
 
-The ASC for IoT Security Message E2E tests validates that messages marked with SetAsSecurityMessage and have ASC for IoT security message payload are sent correctly and ingested to the customer Log Analytics workspace. 
-For more information about ASC for IoT please visit: [ASC for IoT architecture](https://docs.microsoft.com/en-us/azure/asc-for-iot/architecture)
+The Azure Security Center for IoT Security Message E2E tests validates that messages marked with SetAsSecurityMessage and have Azure Security Center for IoT security message payload are sent correctly and ingested to the customer Log Analytics workspace. 
+For more information about Azure Security Center for IoT please visit: [Azure Security Center for IoT architecture](https://docs.microsoft.com/en-us/azure/asc-for-iot/architecture)
 
 Important Note:
 
-ASC for IoT is currently available in limited regions.
+Azure Security Center for IoT is currently available in limited regions.
 Please make sure the tested IoT Hub is in the supported regions
 
 Test Flow:
 
-- Generate fake message payload that complies with ASC for IoT security message schemas. reference: [Send security messages SDK](https://docs.microsoft.com/en-us/azure/asc-for-iot/how-to-send-security-messages)
+- Generate fake message payload that complies with Azure Security Center for IoT security message schemas. reference: [Send security messages SDK](https://docs.microsoft.com/en-us/azure/asc-for-iot/how-to-send-security-messages)
 - Mark the message as a security message with the method SetAsSecurityMessage
 - Send the message in one of the supported Device SDK protocols
 - Validate the message has arrived and ingested to the customer Log Analytics workspace
 
 Prerequisites:
 
-- Log Analytics workspace - Where ASC for IoT stores its data.
-- Enable ASC for IoT - ASC for IoT should be enabled on the hub found in `Configuration.IoTHub` with the feature “Store raw device security events in LogAnalytics.” set to on, for onboarding instructions, please see: [ASC for IoT Quickstart](https://docs.microsoft.com/en-us/azure/asc-for-iot/quickstart-onboard-iot-hub) 
+- Log Analytics workspace - Where Azure Security Center for IoT stores its data.
+- Enable Azure Security Center for IoT - Azure Security Center for IoT should be enabled on the hub found in `Configuration.IoTHub` with the feature “Store raw device security events in LogAnalytics.” set to on, for onboarding instructions, please see: [ASC for IoT Quickstart](https://docs.microsoft.com/en-us/azure/asc-for-iot/quickstart-onboard-iot-hub) 
 - Azure Active Directory application with a reader role on the Log Analytics workspace - The tests uses Azure Active Directory Application to authenticate against the Log Analytics workspace. The service principal created by the Active Directory application must be assigned with a reader role on the Log Analytics workspace. Follow this link for instructions [Creating Azure Active Directory application and a service principal](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal#assign-the-application-to-a-role)
 - Self signed certificate - for authenticating with the Active Directory app
 
 Note on Central US EUAP region:
 
-ASC for IoT UI is currently not available in Central US EUAP.
-To enable ASC for IoT in this region, please use the follwoing REST command:
+Azure Security Center for IoT UI is currently not available in Central US EUAP.
+To enable Azure Security Center for IoT in this region, please use the follwoing REST command:
 
 ```
 URL: https://management.azure.com/subscriptions/<SubscriptionID>/resourceGroups/<ResourceGroup>/providers/Microsoft.Security/IoTSecuritySolutions/<SecuritySolutionName>?api-version=2017-08-01-preview

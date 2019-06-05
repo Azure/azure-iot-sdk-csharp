@@ -5,7 +5,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 {
     public static partial class Configuration
     {
-        public static class ASCforIoTLogAnalytics
+        public static class AzureSecurityCenterForIoTLogAnalytics
         {
             public static string AadTenant => GetValue("LA_AAD_TENANT");
 

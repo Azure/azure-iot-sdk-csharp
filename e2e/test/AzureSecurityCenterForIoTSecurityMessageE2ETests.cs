@@ -13,20 +13,19 @@ namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
     [TestCategory("IoTHub-E2E")]
-    public partial class ASCforIoTSecurityMessageE2ETests : IDisposable
+    public partial class AzureSecurityCenterForIoTSecurityMessageE2ETests : IDisposable
     {
-        private readonly string DevicePrefix = $"E2E_{nameof(ASCforIoTSecurityMessageE2ETests)}_";
-        private readonly string ModulePrefix = $"E2E_{nameof(ASCforIoTSecurityMessageE2ETests)}_";
-        private static string ProxyServerAddress = Configuration.IoTHub.ProxyServerAddress;
+        private readonly string DevicePrefix = $"E2E_{nameof(AzureSecurityCenterForIoTSecurityMessageE2ETests)}_";
+        private readonly string ModulePrefix = $"E2E_{nameof(AzureSecurityCenterForIoTSecurityMessageE2ETests)}_";
         private static TestLogging _log = TestLogging.GetInstance();
 
         private readonly ConsoleEventListener _listener;
-        private readonly ASCforIoTLogAnalyticsClient _logAnalyticsClient;
+        private readonly AzureSecurityCenterForIoTLogAnalyticsClient _logAnalyticsClient;
 
-        public ASCforIoTSecurityMessageE2ETests()
+        public AzureSecurityCenterForIoTSecurityMessageE2ETests()
         {
             _listener = TestConfig.StartEventListener();
-            _logAnalyticsClient = ASCforIoTLogAnalyticsClient.CreateClient();
+            _logAnalyticsClient = AzureSecurityCenterForIoTLogAnalyticsClient.CreateClient();
         }
 
         [TestMethod]
@@ -86,7 +85,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private Client.Message ComposeD2CSecurityTestMessage(out string eventId, out string payload, out string p1Value)
         {
             eventId = p1Value = Guid.NewGuid().ToString();
-            payload = ComposeASCforIoTSecurityMessagePayload(eventId).ToString(Newtonsoft.Json.Formatting.None);
+            payload = ComposeAzureSecurityCenterForIoTSecurityMessagePayload(eventId).ToString(Newtonsoft.Json.Formatting.None);
 
             Client.Message message = new Client.Message(Encoding.UTF8.GetBytes(payload))
             {
@@ -97,7 +96,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             return message;
         }
 
-        private JObject ComposeASCforIoTSecurityMessagePayload(string eventId)
+        private JObject ComposeAzureSecurityCenterForIoTSecurityMessagePayload(string eventId)
         {
             var now = DateTime.UtcNow;
             return new JObject
@@ -161,7 +160,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        private async Task SendSingleSecurityMessage(DeviceClient deviceClient, string deviceId, EventHubTestListener testListener, ASCforIoTLogAnalyticsClient logAnalticsTestClient)
+        private async Task SendSingleSecurityMessage(DeviceClient deviceClient, string deviceId, EventHubTestListener testListener, AzureSecurityCenterForIoTLogAnalyticsClient logAnalticsTestClient)
         {
             await deviceClient.OpenAsync().ConfigureAwait(false);
 
@@ -171,7 +170,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await ValidateEvent(deviceId, eventId, payload, p1Value, testListener, logAnalticsTestClient).ConfigureAwait(false);
         }
 
-        private async Task SendSingleSecurityMessageModule(ModuleClient moduleClient, string deviceId, EventHubTestListener testListener, ASCforIoTLogAnalyticsClient logAnalticsTestClient)
+        private async Task SendSingleSecurityMessageModule(ModuleClient moduleClient, string deviceId, EventHubTestListener testListener, AzureSecurityCenterForIoTLogAnalyticsClient logAnalticsTestClient)
         {
             await moduleClient.OpenAsync().ConfigureAwait(false);
 
@@ -182,7 +181,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         private async Task ValidateEvent(string deviceId, string eventId, string payload, string p1Value,
-            EventHubTestListener testListener, ASCforIoTLogAnalyticsClient logAnalticsTestClient)
+            EventHubTestListener testListener, AzureSecurityCenterForIoTLogAnalyticsClient logAnalticsTestClient)
         {
             bool isReceivedEventHub = await testListener.WaitForMessage(deviceId, payload, p1Value).ConfigureAwait(false);
             Assert.IsFalse(isReceivedEventHub, "Security message received in customer event hub.");
