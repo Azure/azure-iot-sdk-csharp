@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     public abstract class DeviceClientScenario : PerfScenario
     {
         private DeviceClient _dc;
-        
+
         // Shared by Create, Open and Send
         private TelemetryMetrics _m = new TelemetryMetrics();
         private Stopwatch _sw = new Stopwatch();
@@ -61,7 +61,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 transportSettings = new AmqpTransportSettings(
                     _transport,
-                    50,     // Prefetch Count.
+                    100,     // Prefetch Count.
                     new AmqpConnectionPoolSettings()
                     {
                         Pooling = true,

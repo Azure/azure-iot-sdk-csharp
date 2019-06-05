@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 {
     public abstract class ServiceClientScenario : PerfScenario
     {
-        private ServiceClient _sc;
+        private static ServiceClient s_sc;
 
         // Shared by Create, Open and Send
         private TelemetryMetrics _m = new TelemetryMetrics();
@@ -34,16 +34,9 @@ namespace Microsoft.Azure.Devices.E2ETests
             BitConverter.TryWriteBytes(_messageBytes, _id);
         }
 
-        protected async Task CreateServiceClientAsync()
+        protected void CreateServiceClient()
         {
-            _sw.Restart();
-            _m.OperationType = TelemetryMetrics.ServiceOperationCreate;
-
-            _sc = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
-
-            _m.ExecuteTime = _sw.ElapsedMilliseconds;
-            _m.ScheduleTime = null; // sync operation
-            await _writer.WriteAsync(_m).ConfigureAwait(false);
+            if (_id == 0) s_sc = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
         }
 
         protected async Task OpenServiceClientAsync(CancellationToken ct)
@@ -54,7 +47,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             _sw.Restart();
             try
             {
-                Task t = _sc.OpenAsync();
+                Task t = s_sc.OpenAsync();
                 _m.ScheduleTime = _sw.ElapsedMilliseconds;
 
                 _sw.Restart();
@@ -82,7 +75,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             try
             {
                 var message = new Message(_messageBytes);
-                Task t = _sc.SendAsync(Configuration.Stress.GetDeviceNameById(_id, _authType), message);
+                Task t = s_sc.SendAsync(Configuration.Stress.GetDeviceNameById(_id, _authType), message);
                 _m.ScheduleTime = _sw.ElapsedMilliseconds;
 
                 _sw.Restart();
@@ -109,7 +102,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             try
             {
                 var methodCall = new CloudToDeviceMethod(TestMethodName);
-                Task t = _sc.InvokeDeviceMethodAsync(Configuration.Stress.GetDeviceNameById(_id, _authType), methodCall);
+                Task t = s_sc.InvokeDeviceMethodAsync(Configuration.Stress.GetDeviceNameById(_id, _authType), methodCall);
                 _mMethod.ScheduleTime = _swMethod.ElapsedMilliseconds;
 
                 _swMethod.Restart();
@@ -128,7 +121,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         protected Task CloseAsync(CancellationToken ct)
         {
-            return _sc.CloseAsync();
+            return s_sc.CloseAsync();
         }
     }
 }

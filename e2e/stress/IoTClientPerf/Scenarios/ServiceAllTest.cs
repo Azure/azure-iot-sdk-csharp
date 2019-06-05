@@ -13,11 +13,11 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         public ServiceAllTest(PerfScenarioConfig config) : base(config)
         {
+            CreateServiceClient();
         }
 
         public override async Task SetupAsync(CancellationToken ct)
         {
-            await CreateServiceClientAsync().ConfigureAwait(false);
             await OpenServiceClientAsync(ct).ConfigureAwait(false);
         }
 

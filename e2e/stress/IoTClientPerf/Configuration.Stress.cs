@@ -24,7 +24,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             });
 
             private static Lazy<X509Certificate2> s_cert = new Lazy<X509Certificate2>(() => { return Configuration.IoTHub.GetCertificateWithPrivateKey(); });
-            
+
             public static string GetDeviceNameById(int id, string authType)
             {
                 return $"{NamePrefix}_{authType}_{id}";

@@ -40,12 +40,12 @@ namespace Microsoft.Azure.Devices.E2ETests
                 "ExecuteTimeMs," +
 
                 "CPU," +            // System metrics.
-                "TotalMemoryBytes," + 
+                "TotalMemoryBytes," +
                 "GCMemoryBytes," +
                 "TCPConnections," +
 
-                "RunId," +
-                "ConfigScenario," +     // Config (for filtering purposes).
+                "RunId," + // The following are for reporting / filtering purposes.
+                "ConfigScenario," +
                 "ConfigTimeSeconds," +
                 "ConfigTransportType," +
                 "ConfigMessageSizeBytes," +
@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 "ConfigScenarioInstances," +
                 "ConfigAuthType," +
                 "ConfigPoolSize," +
-                
+
                 "ErrorMessage, ";
         }
 
@@ -73,9 +73,9 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         public override string ToString()
         {
-            var sb = new StringBuilder(); 
+            var sb = new StringBuilder();
             Add(
-                sb, 
+                sb,
                 DateTime.Now.ToString(
                     "yyyy-MM-dd HH:mm:ss.ffffff",
                     CultureInfo.InvariantCulture));

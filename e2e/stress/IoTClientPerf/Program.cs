@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 new Tuple<string, Func<PerfScenarioConfig, PerfScenario>>(
                     "ServiceClient calling methods on devices through IoT Hub.",
                     (c) => {return new ServiceMethodTest(c);}) },
-            
+
             {"single_device_d2c",
                 new Tuple<string, Func<PerfScenarioConfig, PerfScenario>>(
                     "A single device sending many events to IoT Hub.",
@@ -211,7 +211,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 resultWriter = new ResultWriterFile(o);
             }
-            
+
             var runner = new PerfTestRunner(
                 resultWriter,
                 t,

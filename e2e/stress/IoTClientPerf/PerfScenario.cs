@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         protected string _authType;
         protected Client.TransportType _transport;
         protected int _id;
-        
+
         protected PerfScenario(PerfScenarioConfig config)
         {
             _writer = config.Writer;
