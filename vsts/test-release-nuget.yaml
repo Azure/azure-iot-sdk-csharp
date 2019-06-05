@@ -65,7 +65,7 @@ phases:
        docker ps -a
        
        # Start build
-       build.sh -nobuild -nounittests -nopackage -e2etests
+       pwsh -NoProfile -command ".\build.ps1 -nobuild -nounittests -nopackage -e2etests" $@ "; exit \$LASTEXITCODE"
     displayName: build
     env:
       IOTHUB_CONN_STRING_CSHARP: $(IOTHUB-CONN-STRING-CSHARP)
