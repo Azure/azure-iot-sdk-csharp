@@ -172,6 +172,8 @@ phases:
        echo "start tmp sim"
 
        start /D .\vsts\TpmSimulator Simulator.exe
+
+       build.cmd -nobuild -nounittests -nopackage -e2etests
         
     displayName: build
     env:
