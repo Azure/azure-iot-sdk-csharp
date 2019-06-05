@@ -89,7 +89,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             _sw.Restart();
             Console.WriteLine();
-            
+
             await TeardownAllAsync().ConfigureAwait(false);
             Console.WriteLine("Done.                                    ");
         }
@@ -130,7 +130,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                         double avgBps = avgRps * _messageSizeBytes;
                         double stdDevBps = stdDevRps * _messageSizeBytes;
                         SystemMetrics.GetMetrics(out int cpuPercent, out long memoryBytes, out long gcBytes, out long tcpConn);
-                        
+
                         Console.WriteLine($"[{_sw.Elapsed}] Loop Statistics:");
                         Console.WriteLine($"RPS       : {requestsPerSec,10:N2} R/s Avg: {avgRps,10:N2} R/s +/-StdDev: {stdDevRps,10:N2} R/s");
                         Console.WriteLine($"Throughput: {GetHumanReadableBytes(transferPerSec)}/s Avg: {GetHumanReadableBytes(avgBps)}/s +/-StdDev: {GetHumanReadableBytes(avgRps)}/s         ");
@@ -249,7 +249,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await runner.RunAsync(runOnce: true, ct: cts.Token).ConfigureAwait(false);
             }
         }
-        
+
         private static string GetHumanReadableBytes(double bytes)
         {
             if (bytes < 1024)
@@ -264,7 +264,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 return $"{bytes / (1024 * 1024),10:N2}MB";
             }
-                
+
             return $"{bytes / (1024 * 1024 * 1024),10:N2}GB";
         }
 

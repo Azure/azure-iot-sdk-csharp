@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public GenerateIotHubConfigTest(PerfScenarioConfig config) : base(config)
         {
         }
-        
+
         public override async Task SetupAsync(CancellationToken ct)
         {
             /*
