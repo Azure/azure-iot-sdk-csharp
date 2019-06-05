@@ -15,15 +15,23 @@ phases:
     timeoutInMinutes: 180
 
   steps:
+
   - task: DownloadBuildArtifacts@0
     inputs:
       buildType: 'specific'
       project: 'f9b79625-2860-4d92-a4ee-57b03fabfd10'
-      pipeline: '296'
+      pipeline: '278'
       buildVersionToDownload: 'latest'
       downloadType: 'single'
-      downloadPath: '$(System.ArtifactsDirectory)/build-tools'
-      artifactName: 'csharp'
+      downloadPath: '$(System.ArtifactsDirectory)'
+      artifactName: 'nuget'
+      
+  - task: CopyFiles@2
+    inputs:
+      SourceFolder: '$(System.ArtifactsDirectory)'
+      Contents: '**'
+      TargetFolder: '$(Build.SourcesDirectory)/bin/pkg'
+      OverWrite: true
 
   - task: Docker@1
     displayName: 'Start TPM Simulator'
@@ -140,11 +148,18 @@ phases:
     inputs:
       buildType: 'specific'
       project: 'f9b79625-2860-4d92-a4ee-57b03fabfd10'
-      pipeline: '296'
+      pipeline: '278'
       buildVersionToDownload: 'latest'
       downloadType: 'single'
-      downloadPath: '$(System.ArtifactsDirectory)/build-tools'
-      artifactName: 'csharp'
+      downloadPath: '$(System.ArtifactsDirectory)'
+      artifactName: 'nuget'
+
+  - task: CopyFiles@2
+    inputs:
+      SourceFolder: '$(System.ArtifactsDirectory)'
+      Contents: '**'
+      TargetFolder: '$(Build.SourcesDirectory)/bin/pkg'
+      OverWrite: true
 
   - script: |  
        call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
