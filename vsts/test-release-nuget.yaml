@@ -188,7 +188,7 @@ phases:
 
        start /D .\vsts\TpmSimulator Simulator.exe
 
-       build.cmd -nobuild -nounittests -nopackage -e2etests
+       build.cmd -configuration Release -nobuild -nounittests -nopackage -e2etests
         
     displayName: build
     env:
