@@ -73,7 +73,7 @@ phases:
        docker ps -a
        
        # Start build
-       pwsh -NoProfile -command ".\build.ps1 -nobuild -nounittests -nopackage -e2etests" $@ "; exit \$LASTEXITCODE"
+       pwsh -NoProfile -command ".\build.ps1 -configuration Release -nobuild -nounittests -nopackage -e2etests" $@ "; exit \$LASTEXITCODE"
     displayName: build
     env:
       IOTHUB_CONN_STRING_CSHARP: $(IOTHUB-CONN-STRING-CSHARP)
@@ -147,8 +147,8 @@ phases:
   - task: DownloadBuildArtifacts@0
     inputs:
       buildType: 'specific'
-      project: 'f9b79625-2860-4d92-a4ee-57b03fabfd10'
-      pipeline: '278'
+      project: 'f9b79625-2860-4d92-a4ee-57b03fabfd10' # azure-iot-sdk
+      pipeline: '278' # csharp-release-build
       buildVersionToDownload: 'latest'
       downloadType: 'single'
       downloadPath: '$(System.ArtifactsDirectory)'
