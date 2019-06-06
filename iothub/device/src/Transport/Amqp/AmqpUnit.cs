@@ -3,7 +3,6 @@
 
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
-using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Shared;
 using System;
@@ -41,7 +40,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         // Note: By design, there is no equivalent Module eventSendingLink.
         private ReceivingAmqpLink _eventReceivingLink;
-        
+
         private AmqpSession _amqpSession;
         private IAmqpAuthenticationRefresher _amqpAuthenticationRefresher;
         private AmqpSessionSettings _amqpSessionSettings;
@@ -50,8 +49,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             DeviceIdentity deviceIdentity,
             Func<DeviceIdentity, ILinkFactory, AmqpSessionSettings, TimeSpan, Task<AmqpSession>> amqpSessionCreator,
             Func<DeviceIdentity, TimeSpan, Task<IAmqpAuthenticationRefresher>> amqpAuthenticationRefresherCreator,
-            Func<MethodRequestInternal, Task> methodHandler, 
-            Action<AmqpMessage> twinMessageListener, 
+            Func<MethodRequestInternal, Task> methodHandler,
+            Action<AmqpMessage> twinMessageListener,
             Func<string, Message, Task> eventListener)
         {
             _deviceIdentity = deviceIdentity;
@@ -61,13 +60,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             _amqpSessionCreator = amqpSessionCreator;
             _amqpAuthenticationRefresherCreator = amqpAuthenticationRefresherCreator;
             _amqpSessionSettings = new AmqpSessionSettings()
-             {
-                 Properties = new Fields()
-             };
+            {
+                Properties = new Fields()
+            };
 
             if (Logging.IsEnabled) Logging.Associate(this, _deviceIdentity, $"{nameof(_deviceIdentity)}");
         }
-        
+
         #region Usability
         public bool IsUsable()
         {
@@ -91,13 +90,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 Debug.Assert(IsUsable());
 
                 _amqpSession = await _amqpSessionCreator.Invoke(
-                    _deviceIdentity, 
-                    AmqpLinkFactory.GetInstance(), 
-                    _amqpSessionSettings, 
+                    _deviceIdentity,
+                    AmqpLinkFactory.GetInstance(),
+                    _amqpSessionSettings,
                     timeout).ConfigureAwait(false);
 
                 if (Logging.IsEnabled) Logging.Associate(this, _amqpSession, $"{nameof(_amqpSession)}");
                 await _amqpSession.OpenAsync(timeout).ConfigureAwait(false);
+
                 if (_deviceIdentity.AuthenticationModel == AuthenticationModel.SasIndividual)
                 {
                     _amqpAuthenticationRefresher = await _amqpAuthenticationRefresherCreator.Invoke(_deviceIdentity, timeout).ConfigureAwait(false);
@@ -135,6 +135,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
             if (SetNotUsable() == 0 && _amqpSession != null)
             {
+                _amqpAuthenticationRefresher?.StopLoop();
                 await _amqpSession.CloseAsync(timeout).ConfigureAwait(false);
                 OnUnitDisconnected?.Invoke(true, EventArgs.Empty);
             }
@@ -295,33 +296,33 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 Debug.Assert(_methodReceivingLink == null);
 
                 string correlationIdSuffix = Guid.NewGuid().ToString();
-                Task<ReceivingAmqpLink> receiveLinkCreator = 
+                Task<ReceivingAmqpLink> receiveLinkCreator =
                     AmqpLinkHelper.OpenMethodsReceiverLinkAsync(
                         _deviceIdentity,
                         _amqpSession,
                         correlationIdSuffix,
                         timeout);
 
-                Task<SendingAmqpLink> sendingLinkCreator = 
+                Task<SendingAmqpLink> sendingLinkCreator =
                     AmqpLinkHelper.OpenMethodsSenderLinkAsync(
                         _deviceIdentity,
                         _amqpSession,
                         correlationIdSuffix,
                         timeout);
 
-                    await Task.WhenAll(receiveLinkCreator, sendingLinkCreator).ConfigureAwait(false);
+                await Task.WhenAll(receiveLinkCreator, sendingLinkCreator).ConfigureAwait(false);
 
-                    _methodReceivingLink = receiveLinkCreator.Result;
-                    _methodSendingLink = sendingLinkCreator.Result;
+                _methodReceivingLink = receiveLinkCreator.Result;
+                _methodSendingLink = sendingLinkCreator.Result;
 
-                    _methodReceivingLink.RegisterMessageListener(OnMethodReceived);
-                    _methodSendingLink.Closed += OnLinkDisconnected;
-                    _methodReceivingLink.Closed += OnLinkDisconnected;
+                _methodReceivingLink.RegisterMessageListener(OnMethodReceived);
+                _methodSendingLink.Closed += OnLinkDisconnected;
+                _methodReceivingLink.Closed += OnLinkDisconnected;
 
-                    if (Logging.IsEnabled) Logging.Associate(this, _methodReceivingLink, $"{nameof(_methodReceivingLink)}");
-                    if (Logging.IsEnabled) Logging.Associate(this, _methodSendingLink, $"{nameof(_methodSendingLink)}");
+                if (Logging.IsEnabled) Logging.Associate(this, _methodReceivingLink, $"{nameof(_methodReceivingLink)}");
+                if (Logging.IsEnabled) Logging.Associate(this, _methodSendingLink, $"{nameof(_methodSendingLink)}");
             }
-            catch(Exception)
+            catch (Exception)
             {
                 _methodReceivingLink?.Abort();
                 _methodReceivingLink = null;
@@ -418,14 +419,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
                 string correlationIdSuffix = Guid.NewGuid().ToString();
 
-                Task<ReceivingAmqpLink> receiveLinkCreator = 
+                Task<ReceivingAmqpLink> receiveLinkCreator =
                     AmqpLinkHelper.OpenTwinReceiverLinkAsync(
                         _deviceIdentity,
                         _amqpSession,
                         correlationIdSuffix,
                         timeout);
 
-                Task<SendingAmqpLink> sendingLinkCreator = 
+                Task<SendingAmqpLink> sendingLinkCreator =
                     AmqpLinkHelper.OpenTwinSenderLinkAsync(
                         _deviceIdentity,
                         _amqpSession,
@@ -500,6 +501,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(OnConnectionDisconnected)}");
             if (SetNotUsable() == 0)
             {
+                _amqpAuthenticationRefresher?.StopLoop();
                 OnUnitDisconnected?.Invoke(false, EventArgs.Empty);
             }
 
@@ -512,6 +514,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
             if (SetNotUsable() == 0)
             {
+                _amqpAuthenticationRefresher?.StopLoop();
                 OnUnitDisconnected?.Invoke(false, EventArgs.Empty);
             }
 
@@ -524,6 +527,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
             if (SetNotUsable() == 0)
             {
+                _amqpAuthenticationRefresher?.StopLoop();
                 OnUnitDisconnected?.Invoke(false, EventArgs.Empty);
             }
 
@@ -551,6 +555,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     OnUnitDisconnected?.Invoke(false, EventArgs.Empty);
                 }
 
+                _amqpAuthenticationRefresher?.Dispose();
                 _amqpSession?.Abort();
                 if (Logging.IsEnabled) Logging.Exit(this, disposing, $"{nameof(Dispose)}");
             }
