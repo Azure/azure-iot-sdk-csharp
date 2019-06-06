@@ -16,7 +16,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public const int MultipleConnections_DevicesCount = 4;
         public const int MultipleConnections_PoolSize = 2;
         public const int maxTestRunCount = 5;
-        public const double testSuccessRate = 0.8d; // 4 out of 5 test runs should pass (even after accounting for network instability issues).
+        public const int testSuccessRate = 80; // 4 out of 5 (80%) test runs should pass (even after accounting for network instability issues).
 
         private static TestLogging s_log = TestLogging.GetInstance();
 
@@ -44,6 +44,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             int totalRuns = 0;
             int successfulRuns = 0;
+            int currentSuccessRate = 0;
             bool reRunTest = false;
 
             IList<TestDevice> testDevices = new List<TestDevice>();
@@ -102,7 +103,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                         Assert.AreEqual(ConnectionStatusChangeReason.Client_Close, amqpConnectionStatuses[i].LastConnectionStatusChangeReason, $"The actual connection status change reason is = {amqpConnectionStatuses[i].LastConnectionStatusChangeReason}");
                     }
                     if (deviceConnectionStatusAsExpected) successfulRuns++;
-                    reRunTest = (((double)successfulRuns / totalRuns) * 100) < (testSuccessRate * 100);
+                    currentSuccessRate = (int)((double)successfulRuns / totalRuns * 100);
+                    reRunTest = currentSuccessRate < testSuccessRate;
                 }
                 finally
                 {
@@ -116,7 +118,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
             } while (reRunTest && totalRuns < maxTestRunCount);
 
-            Assert.IsFalse(reRunTest, $"Device client instances got disconnected in {totalRuns - successfulRuns} runs out of {totalRuns}; current testSuccessRate = {successfulRuns/totalRuns}.");
+            Assert.IsFalse(reRunTest, $"Device client instances got disconnected in {totalRuns - successfulRuns} runs out of {totalRuns}; current testSuccessRate = {currentSuccessRate}%.");
         }
 
         private class AmqpConnectionStatusChange

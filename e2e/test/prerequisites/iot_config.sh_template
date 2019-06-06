@@ -28,20 +28,6 @@ export IOTHUB_EVENTHUB_COMPATIBLE_NAME=
 # EventHub consumer group:
 export IOTHUB_EVENTHUB_CONSUMER_GROUP=
 
-# ---------- Secondary IoTHub configuration for running Polling Fault Injection tests ----------
-# Set this only if you want to run the Pooling Fault Injection E2E tests.
-# IoT Hub Owner connection string:
-export IOTHUB_CONN_STRING_SECONDARY_CSHARP=
-
-# EventHub connection string for the messages/events endpoint:
-export IOTHUB_EVENTHUB_CONN_STRING_SECONDARY_CSHARP=
-
-# EventHub compatible name:
-export IOTHUB_EVENTHUB_COMPATIBLE_NAME_SECONDARY=
-
-# Secondary EventHub consumer group:
-export IOTHUB_EVENTHUB_CONSUMER_GROUP_SECONDARY=
-
 # ---------- Device Provisioning Service Configuration ----------
 # See Configuration.Provisioning.cs for usage details.
 

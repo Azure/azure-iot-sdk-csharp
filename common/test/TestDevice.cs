@@ -32,13 +32,11 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private Device _device;
         private Client.IAuthenticationMethod _authenticationMethod;
-        private string _iotHubConnectionString;
 
-        private TestDevice(Device device, Client.IAuthenticationMethod authenticationMethod, string iotHubConnectionString)
+        private TestDevice(Device device, Client.IAuthenticationMethod authenticationMethod)
         {
             _device = device;
             _authenticationMethod = authenticationMethod;
-            _iotHubConnectionString = iotHubConnectionString;
         }
 
         /// <summary>
@@ -46,7 +44,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         /// </summary>
         /// <param name="namePrefix"></param>
         /// <param name="type"></param>
-        public static async Task<TestDevice> GetTestDeviceAsync(string namePrefix, TestDeviceType type = TestDeviceType.Sasl, bool usePrimaryHub = true)
+        public static async Task<TestDevice> GetTestDeviceAsync(string namePrefix, TestDeviceType type = TestDeviceType.Sasl)
         {
             string prefix = namePrefix + type + "_";
 
@@ -55,7 +53,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await s_semaphore.WaitAsync().ConfigureAwait(false);
                 if (!s_deviceCache.TryGetValue(prefix, out TestDevice testDevice))
                 {
-                    await CreateDeviceAsync(type, prefix, usePrimaryHub).ConfigureAwait(false);
+                    await CreateDeviceAsync(type, prefix).ConfigureAwait(false);
                 }
 
                 TestDevice ret = s_deviceCache[prefix];
@@ -69,15 +67,13 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        private static async Task CreateDeviceAsync(TestDeviceType type, string prefix, bool usePrimaryHub)
+        private static async Task CreateDeviceAsync(TestDeviceType type, string prefix)
         {
             string deviceName = prefix + Guid.NewGuid();
             s_log.WriteLine($"{nameof(GetTestDeviceAsync)}: Device with prefix {prefix} not found.");
 
-            var iotHubConnectionString = usePrimaryHub ? Configuration.IoTHub.ConnectionString : Configuration.IoTHub.ConnectionStringSecondary;
-
             // Delete existing devices named this way and create a new one.
-            using (RegistryManager rm = RegistryManager.CreateFromConnectionString(iotHubConnectionString))
+            using (RegistryManager rm = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
             {
                 s_log.WriteLine($"{nameof(GetTestDeviceAsync)}: Creating device {deviceName} with type {type}.");
 
@@ -102,7 +98,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 s_log.WriteLine($"{nameof(GetTestDeviceAsync)}: Pausing for {DelayAfterDeviceCreationSeconds}s after device was created.");
                 await Task.Delay(DelayAfterDeviceCreationSeconds * 1000).ConfigureAwait(false);
 
-                s_deviceCache[prefix] = new TestDevice(device, auth, iotHubConnectionString);
+                s_deviceCache[prefix] = new TestDevice(device, auth);
 
                 await rm.CloseAsync().ConfigureAwait(false);
             }
@@ -115,7 +111,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             get
             {
-                string iotHubHostName = GetHostName(_iotHubConnectionString);
+                string iotHubHostName = GetHostName(Configuration.IoTHub.ConnectionString);
                 return $"HostName={iotHubHostName};DeviceId={_device.Id};SharedAccessKey={_device.Authentication.SymmetricKey.PrimaryKey}";
             }
         }
@@ -127,7 +123,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             get
             {
-                return GetHostName(_iotHubConnectionString);
+                return GetHostName(Configuration.IoTHub.ConnectionString);
             }
         }
 
@@ -192,7 +188,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
                 else
                 {
-                    deviceClient = DeviceClient.CreateFromConnectionString(_iotHubConnectionString, _device.Id, transportSettings);
+                    deviceClient = DeviceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString, _device.Id, transportSettings);
                     s_log.WriteLine($"{nameof(CreateDeviceClient)}: Created {nameof(DeviceClient)} {_device.Id} from IoTHub connection string: ID={TestLogging.IdOf(deviceClient)}");
                 }
             }

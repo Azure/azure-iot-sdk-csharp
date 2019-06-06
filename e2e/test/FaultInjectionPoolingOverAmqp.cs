@@ -51,7 +51,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             s_log.WriteLine($">>> {nameof(FaultInjectionPoolingOverAmqp)} Initializing Device Clients for multiplexing test.");
             for (int i = 0; i < devicesCount; i++)
             {
-                TestDevice testDevice = await TestDevice.GetTestDeviceAsync($"{devicePrefix}_{i}_", usePrimaryHub: false).ConfigureAwait(false);
+                TestDevice testDevice = await TestDevice.GetTestDeviceAsync($"{devicePrefix}_{i}_").ConfigureAwait(false);
                 DeviceClient deviceClient = testDevice.CreateDeviceClient(transportSettings, authScope);
 
                 var amqpConnectionStatusChange = new AmqpConnectionStatusChange(testDevice.Id);

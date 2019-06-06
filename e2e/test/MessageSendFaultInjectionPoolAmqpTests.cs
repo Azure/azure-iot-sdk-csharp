@@ -693,7 +693,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             Func<DeviceClient, TestDevice, Task> initOperation = async (deviceClient, testDevice) =>
             {
-                EventHubTestListener testListener = await EventHubTestListener.CreateListener(testDevice.Id, usePrimaryHub: false).ConfigureAwait(false);
+                EventHubTestListener testListener = await EventHubTestListener.CreateListener(testDevice.Id).ConfigureAwait(false);
                 eventHubListeners.Add(testDevice.Id, testListener);
             };
 

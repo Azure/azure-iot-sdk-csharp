@@ -31,14 +31,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             public static string ProxyServerAddress => GetValue("IOTHUB_PROXY_SERVER_ADDRESS");
 
-            public static string ConnectionStringSecondary => GetValue("IOTHUB_CONN_STRING_SECONDARY_CSHARP", string.Empty);
-
-            public static string EventHubStringSecondary => GetValue("IOTHUB_EVENTHUB_CONN_STRING_SECONDARY_CSHARP", string.Empty);
-
-            public static string EventHubCompatibleNameSecondary => GetValue("IOTHUB_EVENTHUB_COMPATIBLE_NAME_SECONDARY", string.Empty);
-
-            public static string EventHubConsumerGroupSecondary => GetValue("IOTHUB_EVENTHUB_CONSUMER_GROUP_SECONDARY", "$Default");
-
             public class DeviceConnectionStringParser
             {
                 public DeviceConnectionStringParser(string connectionString)

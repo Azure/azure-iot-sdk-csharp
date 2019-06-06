@@ -102,10 +102,9 @@ namespace Microsoft.Azure.Devices.E2ETests
             await SendMethodAndRespond(Client.TransportType.Amqp_WebSocket_Only, SetDeviceReceiveMethodDefaultHandler).ConfigureAwait(false);
         }
 
-        public static async Task ServiceSendMethodAndVerifyResponse(string deviceName, string methodName, string respJson, string reqJson, bool usePrimaryHub = true)
+        public static async Task ServiceSendMethodAndVerifyResponse(string deviceName, string methodName, string respJson, string reqJson)
         {
-            var connectionString = usePrimaryHub ? Configuration.IoTHub.ConnectionString : Configuration.IoTHub.ConnectionStringSecondary;
-            using (ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(connectionString))
+            using (ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
             {
                 _log.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponse)}: Invoke method {methodName}.");
                 CloudToDeviceMethodResult response =

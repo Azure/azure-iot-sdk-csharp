@@ -27,20 +27,6 @@ set IOTHUB_EVENTHUB_COMPATIBLE_NAME=
 @REM EventHub consumer group:
 set IOTHUB_EVENTHUB_CONSUMER_GROUP=
 
-@REM ---------- Secondary IoTHub configuration for running Polling Fault Injection tests ----------
-@REM Set this only if you want to run the Pooling Fault Injection E2E tests.
-@REM Secondary IoT Hub Owner connection string:
-set IOTHUB_CONN_STRING_SECONDARY_CSHARP=
-
-@REM Secondary EventHub connection string for the messages/events endpoint:
-set IOTHUB_EVENTHUB_CONN_STRING_SECONDARY_CSHARP=
-
-@REM Secondary EventHub compatible name:
-set IOTHUB_EVENTHUB_COMPATIBLE_NAME_SECONDARY=
-
-@REM Secondary EventHub consumer group:
-set IOTHUB_EVENTHUB_CONSUMER_GROUP_SECONDARY=
-
 @REM ---------- Device Provisioning Service Configuration ----------
 @REM See Configuration.Provisioning.cs for usage details.
 

@@ -1501,7 +1501,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 _log.WriteLine($"{nameof(FaultInjectionPoolAmqpTests)}: Updating the desired properties for device {testDevice.Id}");
 
-                Task serviceSendTask = TwinE2ETests.RegistryManagerUpdateDesiredPropertyAsync(testDevice.Id, propName, propValue, usePrimaryHub: false);
+                Task serviceSendTask = TwinE2ETests.RegistryManagerUpdateDesiredPropertyAsync(testDevice.Id, propName, propValue);
                 Task twinReceivedTask = testDeviceCallbackHandler.WaitForTwinCallbackAsync(cts.Token);
 
                 await Task.WhenAll(serviceSendTask, twinReceivedTask).ConfigureAwait(false);

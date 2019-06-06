@@ -598,7 +598,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
         {
             // Initialize the service client
-            ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionStringSecondary);
+            ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
 
             Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>
             {

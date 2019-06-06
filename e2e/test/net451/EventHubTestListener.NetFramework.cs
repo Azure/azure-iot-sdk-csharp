@@ -26,18 +26,16 @@ namespace Microsoft.Azure.Devices.E2ETests
             _receiver = receiver;
         }
 
-        public static Task<EventHubTestListener> CreateListenerPal(string deviceName, bool usePrimaryHub)
+        public static Task<EventHubTestListener> CreateListenerPal(string deviceName)
         {
             EventHubReceiver receiver = null;
             Stopwatch sw = new Stopwatch();
             sw.Start();
 
-            var iotHubString = usePrimaryHub ? Configuration.IoTHub.ConnectionString : Configuration.IoTHub.ConnectionStringSecondary;
-            string consumerGroupName = usePrimaryHub ? Configuration.IoTHub.EventHubConsumerGroup : Configuration.IoTHub.EventHubConsumerGroupSecondary;
-
-            EventHubClient eventHubClient = EventHubClient.CreateFromConnectionString(iotHubString, "messages/events");
+            EventHubClient eventHubClient = EventHubClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString, "messages/events");
             var eventHubPartitionsCount = eventHubClient.GetRuntimeInformation().PartitionCount;
             string partition = EventHubPartitionKeyResolver.ResolveToPartition(deviceName, eventHubPartitionsCount);
+            string consumerGroupName = Configuration.IoTHub.EventHubConsumerGroup;
 
             while (receiver == null && sw.Elapsed.TotalMinutes < MaximumWaitTimeInMinutes)
             {
