@@ -122,12 +122,12 @@ namespace Microsoft.Azure.Devices
         {
             if (string.IsNullOrWhiteSpace(deviceId))
             {
-                throw new ArgumentException("Value should be non null and non empty", "deviceId");
+                throw new ArgumentNullException(nameof(deviceId));
             }
 
             if (message == null)
             {
-                throw new ArgumentNullException("message");
+                throw new ArgumentNullException(nameof(message));
             }
             Outcome outcome;
 
@@ -235,6 +235,16 @@ namespace Microsoft.Azure.Devices
 
         public override Task<CloudToDeviceMethodResult> InvokeDeviceMethodAsync(string deviceId, string moduleId, CloudToDeviceMethod cloudToDeviceMethod, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrWhiteSpace(deviceId))
+            {
+                throw new ArgumentNullException(nameof(deviceId));
+            }
+
+            if (string.IsNullOrWhiteSpace(moduleId))
+            {
+                throw new ArgumentNullException(nameof(moduleId));
+            }
+
             return InvokeDeviceMethodAsync(GetModuleMethodUri(deviceId, moduleId), cloudToDeviceMethod, cancellationToken);
         }
 
@@ -242,12 +252,12 @@ namespace Microsoft.Azure.Devices
         {
             if (string.IsNullOrWhiteSpace(deviceId))
             {
-                throw new ArgumentException("Value should be non null and non empty", nameof(deviceId));
+                throw new ArgumentNullException(nameof(deviceId));
             }
 
             if (string.IsNullOrWhiteSpace(moduleId))
             {
-                throw new ArgumentException("Value should be non null and non empty", nameof(moduleId));
+                throw new ArgumentNullException(nameof(moduleId));
             }
 
             if (message == null)
