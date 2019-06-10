@@ -22,18 +22,20 @@ Param(
     $durationSeconds = 300
 )
 
+$host.ui.RawUI.WindowTitle = "Azure IoT SDK: Device Stress"
 
-Write-Host "DEVICE: C2D"
+
+Write-Host -ForegroundColor Cyan "`nDEVICE: C2D`n"
 & dotnet run --no-build -c Release -- -t $durationSeconds -o $outputFile -p $protocol -n $clients -c $connections -f device_c2d
 
 
-Write-Host "DEVICE: Methods"
+Write-Host -ForegroundColor Cyan  "`nDEVICE: Methods`n"
 & dotnet run --no-build -c Release -- -t $durationSeconds -o $outputFile -p $protocol -n $clients -c $connections -f device_method
 
 
-Write-Host "DEVICE: All"
+Write-Host -ForegroundColor Cyan "`nDEVICE: All`n"
 & dotnet run --no-build -c Release -- -t $durationSeconds -o $outputFile -p $protocol -n $clients -c $connections -f device_all
 
 
-Write-Host "DEVICE: D2C"
+Write-Host -ForegroundColor Cyan "`nDEVICE: D2C`n"
 & dotnet run --no-build -c Release -- -t $durationSeconds -o $outputFile -p $protocol -n $clients -c $connections -f device_d2c
