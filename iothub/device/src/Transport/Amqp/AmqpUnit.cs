@@ -313,7 +313,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 if (Logging.IsEnabled) Logging.Associate(this, _methodReceivingLink, $"{nameof(_methodReceivingLink)}");
                 if (Logging.IsEnabled) Logging.Associate(this, _methodSendingLink, $"{nameof(_methodSendingLink)}");
             }
-            catch(Exception)
+            catch (Exception)
             {
                 _methodReceivingLink?.Abort();
                 _methodReceivingLink = null;
@@ -489,6 +489,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(OnConnectionDisconnected)}");
             if (SetNotUsable() == 0)
             {
+                _amqpAuthenticationRefresher?.StopLoop();
                 OnUnitDisconnected?.Invoke(false, EventArgs.Empty);
             }
 
@@ -501,6 +502,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
             if (SetNotUsable() == 0)
             {
+                _amqpAuthenticationRefresher?.StopLoop();
                 OnUnitDisconnected?.Invoke(false, EventArgs.Empty);
             }
 
@@ -513,6 +515,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
             if (SetNotUsable() == 0)
             {
+                _amqpAuthenticationRefresher?.StopLoop();
                 OnUnitDisconnected?.Invoke(false, EventArgs.Empty);
             }
 
