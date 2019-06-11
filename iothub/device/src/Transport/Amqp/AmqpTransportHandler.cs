@@ -166,17 +166,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             while (true)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                try
+                message = await _amqpUnit.ReceiveMessageAsync(timeout).ConfigureAwait(false);
+                if (message != null)
                 {
-                    message = await _amqpUnit.ReceiveMessageAsync(timeout).ConfigureAwait(false);
-                    if (message != null)
-                    {
-                        break;
-                    }
-                }
-                catch (Exception exception) when (!exception.IsFatal() && !(exception is OperationCanceledException))
-                {
-                    throw AmqpIoTExceptionAdapter.ConvertToIoTHubException(exception);
+                    break;
                 }
             }
             if (Logging.IsEnabled) Logging.Exit(this, timeout, cancellationToken, $"{nameof(ReceiveAsync)}");
@@ -294,10 +287,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             {
                 await EnableTwinPatchAsync(cancellationToken).ConfigureAwait(false);
                 Twin twin = await RoundTripTwinMessage(AmqpTwinMessageType.Patch, reportedProperties, cancellationToken).ConfigureAwait(false);
-                if (twin == null)
-                {
-                    throw new InvalidOperationException("Service rejected the message");
-                }
             }
             catch (Exception exception) when (!exception.IsFatal() && !(exception is OperationCanceledException))
             {
@@ -329,6 +318,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     // Consider that the task may have faulted or been canceled.
                     // We re-await the task so that any exceptions/cancellation is rethrown.
                     response = await receivingTask.ConfigureAwait(false);
+                    if (response == null)
+                    {
+                        throw new InvalidOperationException("Service response is null");
+                    }
                 }
                 else
                 {

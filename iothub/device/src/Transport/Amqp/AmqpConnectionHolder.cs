@@ -37,7 +37,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         public AmqpUnit CreateAmqpUnit(
             DeviceIdentity deviceIdentity, 
             Func<MethodRequestInternal, Task> methodHandler, 
-            Action<Twin, String, TwinCollection> twinMessageListener, 
+            Action<Twin, string, TwinCollection> twinMessageListener, 
             Func<string, Message, Task> eventListener)
         {
             if (Logging.IsEnabled) Logging.Enter(this, deviceIdentity, $"{nameof(CreateAmqpUnit)}");

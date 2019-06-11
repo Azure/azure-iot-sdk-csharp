@@ -40,7 +40,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                     expiresOn = _connectionString.TokenRefresher.RefreshesOn;
                 }
 
-                return new CbsToken(tokenValue, AmqpIoTCbsConstants.IotHubSasTokenType, expiresOn);
+                return new CbsToken(tokenValue, AmqpIoTConstants.IotHubSasTokenType, expiresOn);
             }
             finally
             {

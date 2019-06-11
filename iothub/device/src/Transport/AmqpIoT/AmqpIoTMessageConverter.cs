@@ -276,7 +276,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 amqpMessage = AmqpMessage.Create(methodResponseInternal.BodyStream, false);
             }
             PopulateAmqpMessageFromMethodResponse(amqpMessage, methodResponseInternal);
-
             return amqpMessage;
         }
 
@@ -287,7 +286,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         {
             if (amqpMessage == null)
             {
-                throw Fx.Exception.ArgumentNull("amqpMessage");
+                throw Fx.Exception.ArgumentNull(nameof(AmqpMessage));
             }
 
             string methodRequestId = string.Empty;

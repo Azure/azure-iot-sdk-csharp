@@ -43,7 +43,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         private AmqpIoTSession _amqpIoTSession;
         private IAmqpIoTAuthenticationRefresher _amqpAuthenticationRefresher;
 
-        private readonly SemaphoreSlim _lock;
+        private readonly SemaphoreSlim _lock = new SemaphoreSlim(1, 1);
 
         public AmqpUnit(
             DeviceIdentity deviceIdentity,
@@ -59,7 +59,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             _eventListener = eventListener;
             _amqpSessionCreator = amqpIoTSessionCreator;
             _amqpAuthenticationRefresherCreator = amqpTokenRefresherCreator;
-            _lock = new SemaphoreSlim(1, 1);
 
             if (Logging.IsEnabled) Logging.Associate(this, _deviceIdentity, $"{nameof(_deviceIdentity)}");
         }
@@ -204,6 +203,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 Debug.Assert(_messageSendingLink != null);
 
                 return await _messageReceivingLink.ReceiveAmqpMessageAsync(timeout).ConfigureAwait(false);
+            }
+            catch (Exception exception) when (!exception.IsFatal() && !(exception is OperationCanceledException))
+            {
+                throw AmqpIoTExceptionAdapter.ConvertToIoTHubException(exception);
             }
             finally
             {
@@ -375,19 +378,19 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
         }
 
-        public async Task<AmqpIoTOutcome> SendMethodResponseAsync(MethodResponseInternal methodRespone, TimeSpan timeout)
+        public async Task<AmqpIoTOutcome> SendMethodResponseAsync(MethodResponseInternal methodResponse, TimeSpan timeout)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, methodRespone, $"{nameof(SendMethodResponseAsync)}");
+            if (Logging.IsEnabled) Logging.Enter(this, methodResponse, $"{nameof(SendMethodResponseAsync)}");
 
             Debug.Assert(_methodSendingLink != null);
 
             try
             {
-                return await _methodSendingLink.SendMethodResponseAsync(methodRespone, timeout).ConfigureAwait(false);
+                return await _methodSendingLink.SendMethodResponseAsync(methodResponse, timeout).ConfigureAwait(false);
             }
             finally
             {
-                if (Logging.IsEnabled) Logging.Exit(this, methodRespone, $"{nameof(SendMethodResponseAsync)}");
+                if (Logging.IsEnabled) Logging.Exit(this, methodResponse, $"{nameof(SendMethodResponseAsync)}");
             }
         }
         #endregion

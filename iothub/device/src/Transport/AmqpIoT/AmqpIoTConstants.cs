@@ -37,5 +37,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
         internal const string MethodName = "IoThub-methodname";
         internal const string Status = "IoThub-status";
+
+        internal const string IotHubSasTokenType = CbsConstants.IotHubSasTokenType;
     }
 }

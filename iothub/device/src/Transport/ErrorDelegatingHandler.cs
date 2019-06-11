@@ -12,7 +12,6 @@ using Microsoft.Azure.Devices.Shared;
 using System.Security.Authentication;
 using System.Runtime.InteropServices;
 using System.Net.Sockets;
-using System.Diagnostics;
 using System.Net.WebSockets;
 using System.Net;
 using System.Net.Http;
@@ -35,7 +34,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             typeof(OperationCanceledException),
             typeof(HttpRequestException),
             typeof(WebException),
-            typeof(IotHubCommunicationException),
             typeof(WebSocketException),
         };
 
