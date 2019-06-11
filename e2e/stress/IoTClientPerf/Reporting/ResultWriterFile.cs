@@ -21,7 +21,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 _needsHeader = true;
             }
 
-            _writer = new StreamWriter(fileName, append: true, encoding: Encoding.UTF8, 100 * 1024 * 1024);
+            _writer = new StreamWriter(fileName, true, Encoding.UTF8, 100 * 1024 * 1024);
         }
 
         protected override Task<bool> NeedsHeader()

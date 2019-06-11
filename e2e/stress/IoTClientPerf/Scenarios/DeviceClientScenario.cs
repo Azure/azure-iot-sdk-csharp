@@ -241,6 +241,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         protected Task CloseAsync(CancellationToken ct)
         {
+            if (_dc == null) return Task.CompletedTask;
             return _dc.CloseAsync(ct);
         }
     }
