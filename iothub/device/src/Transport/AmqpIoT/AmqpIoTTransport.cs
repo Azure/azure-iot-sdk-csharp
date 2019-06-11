@@ -48,15 +48,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
         }
 
-        //STATIC
         internal async Task<TransportBase> Initialize(TimeSpan timeout)
         {
-            return await InitializeTransport(timeout).ConfigureAwait(false);
-        }
-
-        private async Task<TransportBase> InitializeTransport(TimeSpan timeout)
-        {
-            if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(InitializeTransport)}");
+            if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(Initialize)}");
             TransportBase transport;
 
             switch (_amqpTransportSettings.GetTransportType())
@@ -71,7 +65,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 default:
                     throw new InvalidOperationException("AmqpTransportSettings must specify WebSocketOnly or TcpOnly");
             }
-            if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(InitializeTransport)}");
+            if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(Initialize)}");
             return transport;
         }
 
