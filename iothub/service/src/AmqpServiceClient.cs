@@ -271,8 +271,8 @@ namespace Microsoft.Azure.Devices
                 amqpMessage.Properties.To = "/devices/" + WebUtility.UrlEncode(deviceId) + "/modules/" + WebUtility.UrlEncode(moduleId) + "/messages/deviceBound";
                 try
                 {
-                    SendingAmqpLink sendingLink = await this.GetSendingLinkAsync();
-                    outcome = await sendingLink.SendMessageAsync(amqpMessage, IotHubConnection.GetNextDeliveryTag(ref this.sendingDeliveryTag), AmqpConstants.NullBinary, this.OperationTimeout);
+                    SendingAmqpLink sendingLink = await this.GetSendingLinkAsync().ConfigureAwait(false);
+                    outcome = await sendingLink.SendMessageAsync(amqpMessage, IotHubConnection.GetNextDeliveryTag(ref this.sendingDeliveryTag), AmqpConstants.NullBinary, this.OperationTimeout).ConfigureAwait(false);
                 }
                 catch (Exception exception)
                 {
