@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
     internal class AmqpIoTSession
     {
         public event EventHandler Closed;
-        private AmqpSession _amqpSession;
+        private AmqpSession AmqpSession;
 
         public AmqpIoTSession(AmqpConnection amqpConnection)
         {
@@ -22,30 +22,30 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             {
                 Properties = new Fields()
             };
-            _amqpSession = new AmqpSession(amqpConnection, amqpSessionSettings, AmqpIoTLinkFactory.GetInstance());
-            amqpConnection.AddSession(_amqpSession, new ushort?());
+            AmqpSession = new AmqpSession(amqpConnection, amqpSessionSettings, AmqpIoTLinkFactory.GetInstance());
+            amqpConnection.AddSession(AmqpSession, new ushort?());
 
-            _amqpSession.Closed += _amqpSessionClosed;
+            AmqpSession.Closed += _amqpSessionClosed;
         }
 
         private void _amqpSessionClosed(object sender, EventArgs e)
         {
-            Closed.Invoke(sender, e);
+            Closed?.Invoke(sender, e);
         }
 
         internal Task OpenAsync(TimeSpan timeout)
         {
-            return _amqpSession.OpenAsync(timeout);
+            return AmqpSession.OpenAsync(timeout);
         }
 
         internal Task CloseAsync(TimeSpan timeout)
         {
-            return _amqpSession.CloseAsync(timeout);
+            return AmqpSession.CloseAsync(timeout);
         }
 
         internal void Abort()
         {
-            _amqpSession.Abort();
+            AmqpSession.Abort();
         }
 
         #region Telemetry links
@@ -56,7 +56,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         {
             return await OpenSendingAmqpLinkAsync(
                 deviceIdentity,
-                _amqpSession,
+                AmqpSession,
                 null,
                 null,
                 CommonConstants.DeviceEventPathTemplate,
@@ -74,7 +74,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         {
             return await OpenReceivingAmqpLinkAsync(
                 deviceIdentity,
-                _amqpSession,
+                AmqpSession,
                 null,
                 (byte)ReceiverSettleMode.Second,
                 CommonConstants.DeviceBoundPathTemplate,
@@ -94,7 +94,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         {
             return await OpenReceivingAmqpLinkAsync(
                 deviceIdentity,
-                _amqpSession,
+                AmqpSession,
                 null,
                 (byte)ReceiverSettleMode.First,
                 CommonConstants.DeviceEventPathTemplate,
@@ -115,7 +115,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         {
             return await OpenSendingAmqpLinkAsync(
                     deviceIdentity,
-                    _amqpSession,
+                    AmqpSession,
                     (byte)SenderSettleMode.Settled,
                     (byte)ReceiverSettleMode.First,
                     CommonConstants.DeviceMethodPathTemplate,
@@ -134,7 +134,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         {
             return await OpenReceivingAmqpLinkAsync(
                 deviceIdentity,
-                _amqpSession,
+                AmqpSession,
                 (byte)SenderSettleMode.Settled,
                 (byte)ReceiverSettleMode.First,
                 CommonConstants.DeviceMethodPathTemplate,
@@ -155,7 +155,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         {
             return await OpenReceivingAmqpLinkAsync(
                 deviceIdentity,
-                _amqpSession,
+                AmqpSession,
                 (byte)SenderSettleMode.Settled,
                 (byte)ReceiverSettleMode.First,
                 CommonConstants.DeviceTwinPathTemplate,
@@ -174,7 +174,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         {
             return await OpenSendingAmqpLinkAsync(
                     deviceIdentity,
-                    _amqpSession,
+                    AmqpSession,
                     (byte)SenderSettleMode.Settled,
                     (byte)ReceiverSettleMode.First,
                     CommonConstants.DeviceTwinPathTemplate,
