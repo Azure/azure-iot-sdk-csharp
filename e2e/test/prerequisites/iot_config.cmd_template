@@ -10,14 +10,6 @@
 @REM IoT Hub Owner connection string:
 set IOTHUB_CONN_STRING_CSHARP=
 
-@REM Device primary and secondary connection strings:
-set IOTHUB_DEVICE_CONN_STRING=
-set IOTHUB_DEVICE_CONN_STRING2=
-
-@REM IoT Hub Module connection string:
-set IOTHUB_MODULE_CONN_STRING=
-set IOTHUB_MODULE_CONN_STRING2=
-
 @REM Use the following Powershell command to retrieve the Base64 encoding of a file:
 @REM Use Powershell: [Convert]::ToBase64String((Get-Content myFileName -Encoding Byte)) to generate.
 
@@ -25,9 +17,6 @@ set IOTHUB_MODULE_CONN_STRING2=
 set IOTHUB_PFX_X509_THUMBPRINT=
 @REM X509 PFX Base64 encoded Certificate 1 (empty password):
 set IOTHUB_X509_PFX_CERTIFICATE=
-
-@REM X509 Certificate 2 thumbprint:
-set IOTHUB_PFX_X509_THUMBPRINT2=
 
 @REM EventHub connection string for the messages/events endpoint:
 set IOTHUB_EVENTHUB_CONN_STRING_CSHARP=
