@@ -78,7 +78,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
 
             AmqpIoTOutcome amqpIoTOutcome = new AmqpIoTOutcome(outcome);
-            amqpIoTOutcome.ThrowIfNotAccepted();
+            if (amqpIoTOutcome != null)
+            {
+                amqpIoTOutcome.ThrowIfNotAccepted();
+            }
 
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(SendMessagesAsync)}");
 

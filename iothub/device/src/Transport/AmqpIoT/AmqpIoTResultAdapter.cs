@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
 using Microsoft.Azure.Amqp.Framing;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
@@ -25,7 +26,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 case AmqpIoTDisposeActions.Rejected:
                     return new Rejected();
                 default:
-                    return null;
+                    throw new ArgumentOutOfRangeException(nameof(amqpIoTConstants));
             }
         }
     }

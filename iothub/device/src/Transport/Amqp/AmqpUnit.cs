@@ -469,11 +469,17 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 {
                     case AmqpTwinMessageType.Get:
                         amqpIoTOutcome = await _twinSendingLink.SendTwinGetMessageAsync(correlationId, reportedProperties, timeout).ConfigureAwait(false);
-                        amqpIoTOutcome.ThrowIfNotAccepted();
+                        if (amqpIoTOutcome != null)
+                        {
+                            amqpIoTOutcome.ThrowIfNotAccepted();
+                        }
                         break;
                     case AmqpTwinMessageType.Patch:
                         amqpIoTOutcome = await _twinSendingLink.SendTwinPatchMessageAsync(correlationId, reportedProperties, timeout).ConfigureAwait(false);
-                        amqpIoTOutcome.ThrowIfNotAccepted();
+                        if (amqpIoTOutcome != null)
+                        {
+                            amqpIoTOutcome.ThrowIfNotAccepted();
+                        }
                         break;
                     default:
                         break;

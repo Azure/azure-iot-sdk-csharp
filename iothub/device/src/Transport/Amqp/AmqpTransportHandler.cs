@@ -130,11 +130,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                AmqpIoTOutcome outcome = await _amqpUnit.SendEventAsync(message, _operationTimeout).ConfigureAwait(false);
+                AmqpIoTOutcome amqpIoTOutcome = await _amqpUnit.SendEventAsync(message, _operationTimeout).ConfigureAwait(false);
 
-                if (outcome != null)
+                if (amqpIoTOutcome != null)
                 {
-                    outcome.ThrowIfNotAccepted();
+                    amqpIoTOutcome.ThrowIfNotAccepted();
                 }
             }
             finally
@@ -225,7 +225,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
                 AmqpIoTOutcome amqpIoTOutcome = await _amqpUnit.SendMethodResponseAsync(methodResponse, _operationTimeout).ConfigureAwait(false);
 
-                amqpIoTOutcome.ThrowIfNotAccepted();
+                if (amqpIoTOutcome != null)
+                {
+                    amqpIoTOutcome.ThrowIfNotAccepted();
+                }
             }
             finally
             {
