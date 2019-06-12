@@ -13,11 +13,11 @@ namespace Microsoft.Azure.Devices.Client
     using Microsoft.Azure.Devices.Client.Extensions;
     using Microsoft.Azure.Devices.Shared;
     using System.Diagnostics;
-    using Microsoft.Azure.Devices.Client.Transport.AmqpIoT;
 
     internal sealed partial class IotHubConnectionString : IAuthorizationProvider
     {
         const string UserSeparator = "@";
+        const int DefaultSecurePort = 5671;
 
         public IotHubConnectionString(IotHubConnectionStringBuilder builder)
         {
@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.Client
 #endif
 
 #if !NETMF
-            this.AmqpEndpoint = new UriBuilder(CommonConstants.AmqpsScheme, this.HostName, AmqpIoTConstants.DefaultSecurePort).Uri;
+            this.AmqpEndpoint = new UriBuilder(CommonConstants.AmqpsScheme, this.HostName, DefaultSecurePort).Uri;
 
             if (builder.AuthenticationMethod is AuthenticationWithTokenRefresh)
             {
