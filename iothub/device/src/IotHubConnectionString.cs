@@ -27,7 +27,7 @@ namespace Microsoft.Azure.Devices.Client
             }
 
             this.Audience = builder.HostName;
-            this.HostName = builder.GatewayHostName == null || String.IsNullOrEmpty(builder.GatewayHostName) ? builder.HostName : builder.GatewayHostName;
+            this.HostName = builder.GatewayHostName == null || builder.GatewayHostName == "" ? builder.HostName : builder.GatewayHostName;
             this.SharedAccessKeyName = builder.SharedAccessKeyName;
             this.SharedAccessKey = builder.SharedAccessKey;
             this.SharedAccessSignature = builder.SharedAccessSignature;
