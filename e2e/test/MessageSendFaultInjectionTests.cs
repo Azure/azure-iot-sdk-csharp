@@ -139,6 +139,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
         
         [TestMethod]
+        [Ignore] // TODO 588
         public async Task Message_ThrottledConnectionRecovery_Amqp()
         {
             try
@@ -158,6 +159,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
         
         [TestMethod]
+        [Ignore] // TODO 588
         public async Task Message_ThrottledConnectionRecovery_AmqpWs()
         {
             try
