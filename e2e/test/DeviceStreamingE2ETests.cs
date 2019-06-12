@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             _listener = TestConfig.StartEventListener();
         }
-
+        /*
 #region Device Client Tests
         [TestMethod]
         public async Task DeviceStreaming_RequestAccepted_Sas_Amqp()
@@ -424,7 +424,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             serviceWSClient.Dispose();
         }
 #endregion Private Methods
-
+*/
         public void Dispose()
         {
             Dispose(true);
