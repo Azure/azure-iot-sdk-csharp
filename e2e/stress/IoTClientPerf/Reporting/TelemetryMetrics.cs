@@ -33,7 +33,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public static string GetHeader()
         {
             return
-                "@timestamp," + // @timestamp to match ELK standard naming.
+                "TimeStamp," +
                 "Id," + // Application metrics.
                 "Operation," +
                 "ScheduleTimeMs," +
@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 "ConfigAuthType," +
                 "ConfigPoolSize," +
 
-                "ErrorMessage, ";
+                "ErrorMessage";
         }
 
         public static void SetStaticConfigParameters(
@@ -73,12 +73,10 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         public override string ToString()
         {
-            var sb = new StringBuilder();
-            Add(
-                sb,
-                DateTime.Now.ToString(
-                    "yyyy-MM-dd HH:mm:ss.ffffff",
-                    CultureInfo.InvariantCulture));
+            var sb = new StringBuilder(
+                            DateTime.Now.ToUniversalTime()
+                            .ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss'.'fff'Z'"));
+
             Add(sb, Id);
             Add(sb, OperationType);
             Add(sb, ScheduleTime);
@@ -99,12 +97,11 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private void Add(StringBuilder sb, object data)
         {
+            sb.Append(',');
             if (data != null)
             {
                 sb.Append(data.ToString());
             }
-
-            sb.Append(',');
         }
     }
 }
