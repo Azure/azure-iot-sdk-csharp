@@ -22,8 +22,19 @@ namespace Microsoft.Azure.Devices.Samples
         {
             try
             {
+                string countSqlQuery = "SELECT COUNT() AS numberOfDevices FROM devices";
+                IQuery countQuery = _rm.CreateQuery(countSqlQuery);
+                while (countQuery.HasMoreResults)
+                {
+                    IEnumerable<string> result = await countQuery.GetNextAsJsonAsync().ConfigureAwait(false);
+                    foreach (var item in result)
+                    {
+                        Console.WriteLine($"Total no of devices on the hub: \n{item}");
+                    }
+                }
+
                 int devicesDeleted = 0;
-                Console.WriteLine("Get devices");
+                Console.WriteLine("Clean up devices:");
                 string sqlQueryString = "select * from devices";
                 IQuery query = _rm.CreateQuery(sqlQueryString);
                 while (query.HasMoreResults)
