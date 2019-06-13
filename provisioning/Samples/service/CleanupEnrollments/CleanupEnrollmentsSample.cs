@@ -22,7 +22,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
             };
         private List<string> groupEnrollmentsToBeRetained =
             new List<string>{
-                "group-certificate-x509"
+                "group-certificate-x509",
+                "group1"
             };
 
         public CleanupEnrollmentsSample(ProvisioningServiceClient provisioningServiceClient)
