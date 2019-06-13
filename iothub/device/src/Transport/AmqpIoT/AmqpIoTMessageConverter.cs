@@ -53,13 +53,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
             AmqpMessage amqpMessage = null;
 
-            if (message.BodyStream == null)
+            if (message.HasBodyStream())
             {
-                amqpMessage = AmqpMessage.Create();
+                amqpMessage = AmqpMessage.Create(message.GetBodyStream(), false);
             }
             else
             {
-                amqpMessage = AmqpMessage.Create(message.BodyStream, false);
+                amqpMessage = AmqpMessage.Create();
+
             }
             UpdateAmqpMessageHeadersAndProperties(amqpMessage, message);
 

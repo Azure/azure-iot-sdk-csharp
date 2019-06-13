@@ -490,7 +490,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 #endif
 
-        public Stream BodyStream
+        private Stream BodyStream
         {
             get
             {
@@ -511,6 +511,11 @@ namespace Microsoft.Azure.Devices.Client
         public void Dispose()
         {
             this.Dispose(true);
+        }
+
+        internal bool HasBodyStream()
+        {
+            return this.bodyStream != null;
         }
 
         /// <summary>
