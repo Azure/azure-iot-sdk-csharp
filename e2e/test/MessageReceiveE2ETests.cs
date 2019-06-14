@@ -103,7 +103,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             return (message, messageId, payload, p1Value);
         }
 
-        public static async Task VerifyReceivedC2DMessageAsync(Client.TransportType transport, DeviceClient dc, string payload, string p1Value)
+        public static async Task VerifyReceivedC2DMessageAsync(Client.TransportType transport, DeviceClient dc, string deviceId, string payload, string p1Value)
         {
             var wait = true;
 
@@ -113,19 +113,20 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 Client.Message receivedMessage = null;
 
+                _log.WriteLine($"Receiving messages for device {deviceId}.");
                 receivedMessage = await dc.ReceiveAsync(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
 
                 if (receivedMessage != null)
                 {
                     string messageData = Encoding.ASCII.GetString(receivedMessage.GetBytes());
-                    _log.WriteLine($"{nameof(VerifyReceivedC2DMessageAsync)}: Received message: {receivedMessage}");
+                    _log.WriteLine($"{nameof(VerifyReceivedC2DMessageAsync)}: Received message: for {deviceId}: {messageData}");
 
-                    Assert.AreEqual(payload, messageData);
+                    Assert.AreEqual(payload, messageData, $"The payload did not match for device {deviceId}");
 
-                    Assert.AreEqual(1, receivedMessage.Properties.Count);
+                    Assert.AreEqual(1, receivedMessage.Properties.Count, $"The count of received properties did not match for device {deviceId}");
                     var prop = receivedMessage.Properties.Single();
-                    Assert.AreEqual("property1", prop.Key);
-                    Assert.AreEqual(p1Value, prop.Value);
+                    Assert.AreEqual("property1", prop.Key, $"The key \"property1\" did not match for device {deviceId}");
+                    Assert.AreEqual(p1Value, prop.Value, $"The value of \"property1\" did not match for device {deviceId}");
 
                     await dc.CompleteAsync(receivedMessage).ConfigureAwait(false);
                     break;
@@ -159,7 +160,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 (Message msg, string messageId, string payload, string p1Value) = ComposeC2DTestMessage();
                 await serviceClient.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
-                await VerifyReceivedC2DMessageAsync(transport, deviceClient, payload, p1Value).ConfigureAwait(false);
+                await VerifyReceivedC2DMessageAsync(transport, deviceClient, testDevice.Id, payload, p1Value).ConfigureAwait(false);
 
                 await deviceClient.CloseAsync().ConfigureAwait(false);
                 await serviceClient.CloseAsync().ConfigureAwait(false);
