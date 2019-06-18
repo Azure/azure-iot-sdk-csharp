@@ -21,11 +21,11 @@ namespace Microsoft.Azure.Devices.E2ETests
             Console.WriteLine("----------------------");
             Console.WriteLine("To import the generated file:");
             Console.WriteLine("1. Create an Azure Storage Container");
-            Console.WriteLine("2. Get a container SAS key:");
+            Console.WriteLine("2. Manually upload the `devices.txt` file to the BLOB. (One way is to use the Azure Portal.)");
+            Console.WriteLine("3. Get a container SAS key:");
             Console.WriteLine($"\taz storage container generate-sas -n <BLOB_NAME> --account-name <STORAGE_ACCOUNT> --account-key <STORAGE_ACCOUNT_ACCESS_KEY> --permissions dlrw --expiry {(DateTime.Now.AddDays(1)).ToString("yyyy-MM-dd")} ");
-            Console.WriteLine("3. Manually upload the `devices.txt` file to the BLOB.");
             Console.WriteLine("4. Import into IoT Hub:");
-            Console.WriteLine("\taz iot hub device-identity import --hub-name <IOT_HUB_NAME> --input-blob-container-uri \"https://<STORAGE_NAME>.blob.core.windows.net/<BLOB_NAME>?(KEY_GENERATED_STEP_2)\" --output-blob-container-uri <SAME_AS_INPUT>");
+            Console.WriteLine("\taz iot hub device-identity import --hub-name <IOT_HUB_NAME> --input-blob-container-uri \"https://<STORAGE_NAME>.blob.core.windows.net/<BLOB_NAME>?(KEY_GENERATED_STEP_3)\" --output-blob-container-uri <SAME_AS_input-blob-container-uri>");
             Console.WriteLine("5. Monitor job progress:");
             Console.WriteLine("\taz iot hub job list --hub-name <HUB_NAME>");
             Console.WriteLine("----------------------");

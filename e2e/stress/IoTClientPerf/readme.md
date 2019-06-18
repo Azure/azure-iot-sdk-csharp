@@ -20,6 +20,7 @@ IOTHUB_X509_PFX_CERTIFICATE=
 `dotnet run -- -a sas -n 100 -o out.csv -f generate_iothub_config`
 
 Follow the instructions in the output for how to import the `devices.txt` file into your hub.
+Note: You will need the [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest) and the [IoT extension for Azure CLI](https://github.com/Azure/azure-iot-cli-extension#installation).
 
 ## Examples
 
