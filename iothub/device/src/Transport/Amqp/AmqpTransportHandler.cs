@@ -409,6 +409,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         private async Task DisposeMessageAsync(string lockToken, AmqpIoTDisposeActions outcome, CancellationToken cancellationToken)
         {
+            if (Logging.IsEnabled) Logging.Enter(this, outcome, $"{nameof(DisposeMessageAsync)}");
+
             AmqpIoTOutcome disposeOutcome;
             try
             {
@@ -426,6 +428,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
 
             disposeOutcome.ThrowIfError();
+
+            if (Logging.IsEnabled) Logging.Exit(this, outcome, $"{nameof(DisposeMessageAsync)}");
         }
         #endregion
 
