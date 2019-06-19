@@ -70,73 +70,73 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         /// <summary>
         /// Copies the properties from the amqp message to the Message instance.
         /// </summary>
-        public static void UpdateMessageHeaderAndProperties(AmqpMessage amqpMessage, Message data)
+        public static void UpdateMessageHeaderAndProperties(AmqpMessage amqpMessage, Message message)
         {
             Fx.AssertAndThrow(amqpMessage.DeliveryTag != null, "AmqpMessage should always contain delivery tag.");
-            data.DeliveryTag = amqpMessage.DeliveryTag;
+            message.DeliveryTag = amqpMessage.DeliveryTag;
 
             SectionFlag sections = amqpMessage.Sections;
             if ((sections & SectionFlag.Properties) != 0)
             {
                 // Extract only the Properties that we support
-                data.MessageId = amqpMessage.Properties.MessageId != null ? amqpMessage.Properties.MessageId.ToString() : null;
-                data.To = amqpMessage.Properties.To != null ? amqpMessage.Properties.To.ToString() : null;
+                message.MessageId = amqpMessage.Properties.MessageId != null ? amqpMessage.Properties.MessageId.ToString() : null;
+                message.To = amqpMessage.Properties.To != null ? amqpMessage.Properties.To.ToString() : null;
 
                 if (amqpMessage.Properties.AbsoluteExpiryTime.HasValue)
                 {
-                    data.ExpiryTimeUtc = amqpMessage.Properties.AbsoluteExpiryTime.Value;
+                    message.ExpiryTimeUtc = amqpMessage.Properties.AbsoluteExpiryTime.Value;
                 }
 
-                data.CorrelationId = amqpMessage.Properties.CorrelationId != null ? amqpMessage.Properties.CorrelationId.ToString() : null;
+                message.CorrelationId = amqpMessage.Properties.CorrelationId != null ? amqpMessage.Properties.CorrelationId.ToString() : null;
 
                 if (!string.IsNullOrWhiteSpace(amqpMessage.Properties.ContentType.Value))
                 {
-                    data.ContentType = amqpMessage.Properties.ContentType.Value;
+                    message.ContentType = amqpMessage.Properties.ContentType.Value;
                 }
 
                 if (!string.IsNullOrWhiteSpace(amqpMessage.Properties.ContentEncoding.Value))
                 {
-                    data.ContentEncoding = amqpMessage.Properties.ContentEncoding.Value;
+                    message.ContentEncoding = amqpMessage.Properties.ContentEncoding.Value;
                 }
 
-                data.UserId = amqpMessage.Properties.UserId.Array != null ? Encoding.UTF8.GetString(amqpMessage.Properties.UserId.Array, 0 /*index*/, amqpMessage.Properties.UserId.Array.Length) : null;
+                message.UserId = amqpMessage.Properties.UserId.Array != null ? Encoding.UTF8.GetString(amqpMessage.Properties.UserId.Array, 0 /*index*/, amqpMessage.Properties.UserId.Array.Length) : null;
             }
 
             if ((sections & SectionFlag.MessageAnnotations) != 0)
             {
                 if (amqpMessage.MessageAnnotations.Map.TryGetValue(LockTokenName, out string lockToken))
                 {
-                    data.LockToken = lockToken;
+                    message.LockToken = lockToken;
                 }
 
                 if (amqpMessage.MessageAnnotations.Map.TryGetValue(SequenceNumberName, out ulong sequenceNumber))
                 {
-                    data.SequenceNumber = sequenceNumber;
+                    message.SequenceNumber = sequenceNumber;
                 }
 
                 if (amqpMessage.MessageAnnotations.Map.TryGetValue(MessageSystemPropertyNames.EnqueuedTime, out DateTime enqueuedTime))
                 {
-                    data.EnqueuedTimeUtc = enqueuedTime;
+                    message.EnqueuedTimeUtc = enqueuedTime;
                 }
 
                 if (amqpMessage.MessageAnnotations.Map.TryGetValue(MessageSystemPropertyNames.DeliveryCount, out byte deliveryCount))
                 {
-                    data.DeliveryCount = deliveryCount;
+                    message.DeliveryCount = deliveryCount;
                 }
 
                 if (amqpMessage.MessageAnnotations.Map.TryGetValue(InputName, out string inputName))
                 {
-                    data.InputName = inputName;
+                    message.InputName = inputName;
                 }
 
                 if (amqpMessage.MessageAnnotations.Map.TryGetValue(MessageSystemPropertyNames.ConnectionDeviceId, out string connectionDeviceId))
                 {
-                    data.ConnectionDeviceId = connectionDeviceId;
+                    message.ConnectionDeviceId = connectionDeviceId;
                 }
 
                 if (amqpMessage.MessageAnnotations.Map.TryGetValue(MessageSystemPropertyNames.ConnectionModuleId, out string connectionModuleId))
                 {
-                    data.ConnectionModuleId = connectionModuleId;
+                    message.ConnectionModuleId = connectionModuleId;
                 }
             }
 
@@ -154,16 +154,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                             switch (pair.Key.ToString())
                             {
                                 case MessageSystemPropertyNames.Operation:
-                                    data.SystemProperties[pair.Key.ToString()] = stringObject;
+                                    message.SystemProperties[pair.Key.ToString()] = stringObject;
                                     break;
                                 case MessageSystemPropertyNames.MessageSchema:
-                                    data.MessageSchema = stringObject;
+                                    message.MessageSchema = stringObject;
                                     break;
                                 case MessageSystemPropertyNames.CreationTimeUtc:
-                                    data.CreationTimeUtc = DateTime.Parse(stringObject);
+                                    message.CreationTimeUtc = DateTime.Parse(stringObject);
                                     break;
                                 default:
-                                    data.Properties[pair.Key.ToString()] = stringObject;
+                                    message.Properties[pair.Key.ToString()] = stringObject;
                                     break;
                             }
                         }

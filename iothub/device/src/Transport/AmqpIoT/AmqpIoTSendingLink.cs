@@ -48,6 +48,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
             AmqpMessage amqpMessage = AmqpIoTMessageConverter.MessageToAmqpMessage(message);
             Outcome outcome = await SendAmqpMessageAsync(amqpMessage, timeout).ConfigureAwait(false);
+
+            if (Logging.IsEnabled) Logging.Exit(this, message, $"{nameof(SendMessageAsync)}");
+
             return new AmqpIoTOutcome(outcome);
         }
 
