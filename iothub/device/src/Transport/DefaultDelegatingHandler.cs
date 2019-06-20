@@ -75,13 +75,33 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public virtual Task<Message> ReceiveAsync(CancellationToken cancellationToken)
         {
-            ThrowIfDisposed();
+            bool isObjectDisposedExceptionDisabled = false;
+
+#if !NET451
+            AppContext.TryGetSwitch(AppContextConstants.DisableObjectDisposedExceptionForReceiveAsync, out isObjectDisposedExceptionDisabled);
+#endif
+
+            if (!isObjectDisposedExceptionDisabled)
+            {
+                ThrowIfDisposed();
+            }
+
             return InnerHandler?.ReceiveAsync(cancellationToken) ?? s_dummyResultObject;
         }
 
         public virtual Task<Message> ReceiveAsync(TimeSpan timeout, CancellationToken cancellationToken)
         {
-            ThrowIfDisposed();
+            bool isObjectDisposedExceptionDisabled = false;
+
+#if !NET451
+            AppContext.TryGetSwitch(AppContextConstants.DisableObjectDisposedExceptionForReceiveAsync, out isObjectDisposedExceptionDisabled);
+#endif
+
+            if (!isObjectDisposedExceptionDisabled)
+            {
+                ThrowIfDisposed();
+            }
+
             return InnerHandler?.ReceiveAsync(timeout, cancellationToken) ?? s_dummyResultObject;
         }
 

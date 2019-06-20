@@ -131,3 +131,17 @@ Contains scripts used by our internal Continuous Integration system (Azure DevOp
 `/DeviceExplorer` contains the source code for the Azure IoT Device Explorer tool. Please see further dev documentation within this folder on how to build and debug.
 
 `/CaptureLogs` contains scripts for capturing SDK traces.
+
+
+## 7. DeviceClient Runtime Flags
+
+If desired, the behaviour of the DeviceClient can be controlled AppContext flags.
+By default, not setting such flags results in the behavior change to be disabled (same as flag set to false).
+
+Please read more about how to use AppContext in the [DotNet Documentation](https://docs.microsoft.com/en-us/dotnet/api/system.appcontext?view=netframework-4.8). 
+
+Here is a list of flags currently supported by the Azure IoT C# SDK Device Client:
+
+|Flag|Description|
+|-|-|
+|Microsoft.Azure.Devices.Client.DisableObjectDisposedExceptionForReceiveAsync|This affects the behavior of DeviceClient.ReceiveAsync if CloseAsync or Dispose is called previously on the DeviceClient instance. If defined and set to true, this flag causes the DeviceClient.ReceiveAsync method to return null if the DeviceClient instance has been explicitly closed or disposed (behavior in (nuget) release version 1.18 and earlier). Otherwise calling DeviceClient.ReceiveAsync on a DeviceClient instance has been explicitly closed or disposed raises an ObjectDisposedException. |

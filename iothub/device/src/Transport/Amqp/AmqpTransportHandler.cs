@@ -171,6 +171,24 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 {
                     break;
                 }
+                catch (OperationCanceledException)
+                {
+                    bool isObjectDisposedExceptionDisabled = false;
+#if !NET451
+                    AppContext.TryGetSwitch(AppContextConstants.DisableObjectDisposedExceptionForReceiveAsync, out isObjectDisposedExceptionDisabled);
+#endif
+                    // If cancellationToken.IsCancellationRequested is false, then this OperationCanceledException comes from 
+                    //  _amqpUnit.ReceiveMessageAsync, which then should be optionally suppresed by isObjectDisposedExceptionDisabled 
+                    // to match the behavior of Azure IoT C# SDK released on 2018-08-17 (nuget 1.18.0).
+                    if (cancellationToken.IsCancellationRequested || !isObjectDisposedExceptionDisabled)
+                    {
+                        throw;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
             }
             if (Logging.IsEnabled) Logging.Exit(this, timeout, cancellationToken, $"{nameof(ReceiveAsync)}");
             return message;
