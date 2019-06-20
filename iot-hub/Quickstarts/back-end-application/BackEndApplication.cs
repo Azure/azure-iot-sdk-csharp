@@ -14,7 +14,7 @@ namespace back_end_application
         private static ServiceClient s_serviceClient;
         
         // Connection string for your IoT Hub
-        // az iot hub show-connection-string --hub-name {your iot hub name}
+        // az iot hub show-connection-string --hub-name {your iot hub name} --policy-name service
         private readonly static string s_connectionString = "{Your service connection string here}";
 
         // Invoke the direct method on the device, passing the payload
