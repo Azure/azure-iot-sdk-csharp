@@ -1,31 +1,30 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Amqp;
-using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Diagnostics;
-using System.Threading.Tasks;
+using Microsoft.Azure.Amqp;
+using Microsoft.Azure.Devices.Shared;
 
-namespace Microsoft.Azure.Devices.Client.Transport.Amqp
+namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 {
-    internal class AmqpLinkFactory : ILinkFactory
+    internal class AmqpIoTLinkFactory : ILinkFactory
     {
-        private static AmqpLinkFactory s_instance = new AmqpLinkFactory();
+        private static AmqpIoTLinkFactory s_instance = new AmqpIoTLinkFactory();
 
-        private AmqpLinkFactory()
+        private AmqpIoTLinkFactory()
         {
             // Important: must not throw as it's used within the static ctor.
         }
 
-        public static AmqpLinkFactory GetInstance()
+        public static AmqpIoTLinkFactory GetInstance()
         {
             return s_instance;
         }
 
         public IAsyncResult BeginOpenLink(AmqpLink link, TimeSpan timeout, AsyncCallback callback, object state)
         {
-            Debug.Fail($"{nameof(AmqpLinkFactory)} open link should not be used.");
+            Debug.Fail($"{nameof(AmqpIoTLinkFactory)} open link should not be used.");
             throw new NotImplementedException();
         }
 
@@ -44,7 +43,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         public void EndOpenLink(IAsyncResult result)
         {
-            Debug.Fail($"{nameof(AmqpLinkFactory)} open link should not be used.");
+            Debug.Fail($"{nameof(AmqpIoTLinkFactory)} open link should not be used.");
             throw new NotImplementedException();
         }
     }

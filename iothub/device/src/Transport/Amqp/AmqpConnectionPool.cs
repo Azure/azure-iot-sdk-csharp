@@ -1,15 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Amqp;
-using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Shared;
+using Microsoft.Azure.Devices.Client.Transport.AmqpIoT;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
-    internal class AmqpConnectionPool : IAmqpUnitCreator
+    internal class AmqpConnectionPool : IAmqpUnitManager
     {
         private const int MaxSpan = int.MaxValue;
         private ISet<IAmqpConnectionHolder> AmqpSasIndividualPool;
@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         public AmqpUnit CreateAmqpUnit(
             DeviceIdentity deviceIdentity, 
             Func<MethodRequestInternal, Task> methodHandler, 
-            Action<AmqpMessage> twinMessageListener, 
+            Action<Twin, string, TwinCollection> twinMessageListener, 
             Func<string, Message, Task> eventListener)
         {
             if (Logging.IsEnabled) Logging.Enter(this, deviceIdentity, $"{nameof(CreateAmqpUnit)}");

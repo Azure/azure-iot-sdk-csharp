@@ -1,12 +1,13 @@
-﻿using Microsoft.Azure.Amqp;
-using Microsoft.Azure.Devices.Shared;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace Microsoft.Azure.Devices.Client.Transport
+using System;
+using Microsoft.Azure.Devices.Shared;
+using Microsoft.Azure.Amqp;
+
+namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 {
-    public class AmqpTransportLog : AmqpTrace
+    internal class AmqpIoTTransportLog : AmqpTrace
     {
         public override void AmqpAbortThrowingException(string exception)
         {

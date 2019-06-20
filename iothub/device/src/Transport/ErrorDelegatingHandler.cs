@@ -12,11 +12,9 @@ using Microsoft.Azure.Devices.Shared;
 using System.Security.Authentication;
 using System.Runtime.InteropServices;
 using System.Net.Sockets;
-using System.Diagnostics;
 using System.Net.WebSockets;
 using System.Net;
 using System.Net.Http;
-using Microsoft.Azure.Amqp;
 using DotNetty.Transport.Channels;
 
 namespace Microsoft.Azure.Devices.Client.Transport
@@ -36,7 +34,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             typeof(OperationCanceledException),
             typeof(HttpRequestException),
             typeof(WebException),
-            typeof(AmqpException),
             typeof(WebSocketException),
         };
 

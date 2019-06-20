@@ -8,16 +8,12 @@ using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
-    internal interface IAmqpConnectionHolder
+    internal interface IAmqpUnitManager
     {
-        event EventHandler OnConnectionDisconnected;
-
         AmqpUnit CreateAmqpUnit(
             DeviceIdentity deviceIdentity, 
             Func<MethodRequestInternal, Task> methodHandler, 
             Action<Twin, string, TwinCollection> twinMessageListener, 
             Func<string, Message, Task> eventListener);
-        void Dispose();
-        int GetNumberOfUnits();
     }
 }

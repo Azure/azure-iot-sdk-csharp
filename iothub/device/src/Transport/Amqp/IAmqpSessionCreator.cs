@@ -1,14 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Amqp;
 using System;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Client.Transport.AmqpIoT;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
-    internal interface IAmqpUnitCreator
+    internal interface IAmqpSessionCreator
     {
-        AmqpUnit CreateAmqpUnit(DeviceIdentity deviceIdentity, Func<MethodRequestInternal, Task> methodHandler, Action<AmqpMessage> twinMessageListener, Func<string, Message, Task> eventListener);
+        Task<AmqpIoTSession> CreateSession(DeviceIdentity deviceIdentity, TimeSpan timeout);
+        Task<AmqpIoTConnection> EnsureConnection(TimeSpan timeout);
     }
 }
