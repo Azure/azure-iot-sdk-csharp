@@ -13,7 +13,6 @@ namespace Microsoft.Azure.Devices.Client.Test
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Azure.Amqp;
-    using Microsoft.Azure.Devices.Client.Common;
     using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Azure.Devices.Client.Transport;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -75,7 +74,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             typeof(OperationCanceledException),
             typeof(HttpRequestException),
             typeof(WebException),
-            typeof(AmqpException),
+            typeof(IotHubCommunicationException),
             typeof(WebSocketException),
         };
 

@@ -111,7 +111,7 @@ namespace Microsoft.Azure.Devices.Client
                 customHeaders.Add(CustomHeaderConstants.HttpAppPropertyPrefix + property as string, message.Properties[property] as string);
             }
 
-            this.httpClientHelper.Post(GetRequestUri(this.deviceId, CommonConstants.DeviceEventPathTemplate, null), message.BodyStream, customHeaders);
+            this.httpClientHelper.Post(GetRequestUri(this.deviceId, CommonConstants.DeviceEventPathTemplate, null), message.GetBodyStream(), customHeaders);
         }
 
         protected override Message OnReceive(TimeSpan timeout)

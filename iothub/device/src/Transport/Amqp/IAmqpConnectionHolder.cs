@@ -1,25 +1,23 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Amqp;
 using System;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Client.Transport.AmqpIoT;
+using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
     internal interface IAmqpConnectionHolder
     {
-        #region EventHandler
         event EventHandler OnConnectionDisconnected;
-        #endregion
 
-        #region Manage Unit
         AmqpUnit CreateAmqpUnit(
-            DeviceIdentity deviceIdentity,
+            DeviceIdentity deviceIdentity, 
             Func<MethodRequestInternal, Task> methodHandler, 
-            Action<AmqpMessage> desiredPropertyListener, 
-            Func<string, Message, Task> messageListener);
+            Action<Twin, string, TwinCollection> twinMessageListener, 
+            Func<string, Message, Task> eventListener);
+        void Dispose();
         int GetNumberOfUnits();
-        #endregion
     }
 }

@@ -6,6 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Diagnostics;
 using Microsoft.Azure.Amqp;
+using Microsoft.Azure.Devices.Client.Transport.AmqpIoT;
 
 namespace Microsoft.Azure.Devices.Client.Test
 {
@@ -184,7 +185,7 @@ namespace Microsoft.Azure.Devices.Client.Test
             Assert.IsInstanceOfType(cs.TokenRefresher, typeof(DeviceAuthenticationWithSakRefresh));
 
             var auth = (IAuthorizationProvider)cs;
-            var cbsAuth = (ICbsTokenProvider)cs;
+            var cbsAuth = new AmqpIoTCbsTokenProvider(cs);
 
             string token1 = await auth.GetPasswordAsync().ConfigureAwait(false);
             CbsToken token2 = await cbsAuth.GetTokenAsync(new Uri("amqp://" + TestIoTHubName), "testAppliesTo", null).ConfigureAwait(false);
