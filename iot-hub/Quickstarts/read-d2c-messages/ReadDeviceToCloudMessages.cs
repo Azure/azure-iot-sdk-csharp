@@ -23,9 +23,9 @@ namespace read_d2c_messages
         // az iot hub show --query properties.eventHubEndpoints.events.path --name {your IoT Hub name}
         private readonly static string s_eventHubsCompatiblePath = "{your Event Hubs compatible name}";
         
-        // az iot hub policy show --name iothubowner --query primaryKey --hub-name {your IoT Hub name}
-        private readonly static string s_iotHubSasKey = "{your iothubowner primary key}";
-        private readonly static string s_iotHubSasKeyName = "iothubowner";
+        // az iot hub policy show --name service --query primaryKey --hub-name {your IoT Hub name}
+        private readonly static string s_iotHubSasKey = "{your service primary key}";
+        private readonly static string s_iotHubSasKeyName = "service";
         private static EventHubClient s_eventHubClient;
 
         // Asynchronously create a PartitionReceiver for a partition and then start 
