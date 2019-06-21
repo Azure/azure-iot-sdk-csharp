@@ -103,6 +103,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Amqp_WebSocket_Only, AttestationType.x509, EnrollmentType.Group, false).ConfigureAwait(false);
         }
 
+        // TODO: #976 - [Service] Previously created enrollments are unable to perform IoTHub operations on Mqtt/ Mqtt_WS
+        [Ignore]
         [TestMethod]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_Mqtt_X509Individual_RegisterOk()
         {
@@ -115,6 +117,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Mqtt_Tcp_Only, AttestationType.x509, EnrollmentType.Group, false).ConfigureAwait(false);
         }
 
+        // TODO: #976 - [Service] Previously created enrollments are unable to perform IoTHub operations on Mqtt/ Mqtt_WS
+        [Ignore]
         [TestMethod]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_MqttWs_X509Individual_RegisterOk()
         {
@@ -155,6 +159,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Amqp_WebSocket_Only, AttestationType.x509, EnrollmentType.Individual, true).ConfigureAwait(false);
         }
 
+        // TODO: #976 - [Service] Previously created enrollments are unable to perform IoTHub operations on Mqtt/ Mqtt_WS
+        [Ignore]
         [TestMethod]
         [TestCategory("ProxyE2ETests")]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_MqttWsWithProxy_X509Individual_RegisterOk()
@@ -162,6 +168,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             await ProvisioningDeviceClient_ValidRegistrationId_Register_Ok(Client.TransportType.Mqtt_WebSocket_Only, AttestationType.x509, EnrollmentType.Individual, true, ProxyServerAddress).ConfigureAwait(false);
         }
 
+        // TODO: #976 - [Service] Previously created enrollments are unable to perform IoTHub operations on Mqtt/ Mqtt_WS
+        [Ignore]
         [TestMethod]
         [TestCategory("ProxyE2ETests")]
         public async Task ProvisioningDeviceClient_ValidRegistrationId_MqttWsWithNullProxy_X509Individual_RegisterOk()
