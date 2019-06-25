@@ -36,6 +36,7 @@ namespace Microsoft.Azure.Devices
             this.Status = device.Status;
             this.StatusReason = device.StatusReason;
             this.Authentication = device.Authentication;
+            this.Capabilities = device.Capabilities;
         }
 
         /// <summary>
@@ -101,6 +102,9 @@ namespace Microsoft.Azure.Devices
 
         [JsonProperty(PropertyName = "properties", NullValueHandling = NullValueHandling.Ignore)]
         public PropertyContainer Properties { get; set; }
+
+        [JsonProperty(PropertyName = "capabilities", NullValueHandling = NullValueHandling.Ignore)]
+        public DeviceCapabilities Capabilities { get; set; }
 
         public sealed class PropertyContainer
         {

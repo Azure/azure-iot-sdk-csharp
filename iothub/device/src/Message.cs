@@ -804,9 +804,9 @@ namespace Microsoft.Azure.Devices.Client
                         this.bodyStream = null;
                     }
                 }
-
-                this.disposed = true;
             }
+
+            this.disposed = true;
         }
     }
 }

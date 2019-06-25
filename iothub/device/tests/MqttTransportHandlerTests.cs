@@ -29,8 +29,8 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
     [TestCategory("Unit")]
     public class MqttTransportHandlerTests
     {
-        const string DummyConnectionString = "HostName=127.0.0.1;SharedAccessKeyName=AllAccessKey;DeviceId=FakeDevice;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
-        const string DummyModuleConnectionString = "HostName=127.0.0.1;SharedAccessKeyName=AllAccessKey;DeviceId=FakeDevice;ModuleId=FakeModule;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
+        const string DummyConnectionString = "HostName=127.0.0.1;SharedAccessKeyName=AllAccessKey;DeviceId=FakeDevice;SharedAccessKey=dGVzdFN0cmluZzE=";
+        const string DummyModuleConnectionString = "HostName=127.0.0.1;SharedAccessKeyName=AllAccessKey;DeviceId=FakeDevice;ModuleId=FakeModule;SharedAccessKey=dGVzdFN0cmluZzE=";
         const string fakeMethodResponseBody = "{ \"foo\" : \"bar\" }";
         const string methodPostTopicFilter = "$iothub/methods/POST/#";
         const string twinPatchDesiredTopicFilter = "$iothub/twin/PATCH/properties/desired/#";

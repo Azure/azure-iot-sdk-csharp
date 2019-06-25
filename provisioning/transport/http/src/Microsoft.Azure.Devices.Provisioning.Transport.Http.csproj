@@ -19,7 +19,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Version>1.1.4</Version>
+    <Version>1.1.5</Version>
     <Title>Microsoft Azure IoT Provisioning Device Client HTTP Transport</Title>
     <Authors>Microsoft</Authors>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
@@ -33,6 +33,7 @@
 
   <PropertyGroup>
     <common>$(RootDir)\common\src</common>
+    <generated>..\..\generated\src</generated>
   </PropertyGroup>
 
   <ItemGroup>
@@ -60,13 +61,16 @@
     <Compile Include="$(Common)\device\provisioning\transport\X509RegistrationResult.cs">
       <Link>Common\device\provisioning\transport\X509RegistrationResult.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\device\provisioning\transport\ProvisioingSasBuilder.cs">
-      <Link>Common\device\provisioning\transport\ProvisioingSasBuilder.cs</Link>
+    <Compile Include="$(Common)\device\provisioning\transport\ProvisioningSasBuilder.cs">
+      <Link>Common\device\provisioning\transport\ProvisioningSasBuilder.cs</Link>
     </Compile>
-    <Compile Include="$(Common)\device\provisioning\transport\ProvisioningErrorDetails.cs">
-      <Link>Common\device\provisioning\transport\ProvisioningErrorDetails.cs</Link>
+    <Compile Include="$(Common)\device\provisioning\transport\SymmetricKeyRegistrationResult.cs">
+      <Link>Common\device\provisioning\transport\SymmetricKeyRegistrationResult.cs</Link>
     </Compile>
     <Compile Include="$(Common)\DefaultWebProxySettings.cs" />
+    <Compile Include="$(Generated)\Models\DeviceRegistration.cs">
+      <Link>Generated\Models\DeviceRegistration.cs</Link>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>

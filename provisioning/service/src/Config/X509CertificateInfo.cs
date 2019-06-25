@@ -52,19 +52,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             string issuerName, DateTime? notBeforeUtc, DateTime? notAfterUtc, string serialNumber, int? version)
         {
             /* SRS_X509_CERTIFICATE_INFO_21_001: [The X509CertificateInfo shall provide means to deserialization.] */
-            try
-            {
-                ParserUtils.EnsureUTF8String(subjectName);
-                ParserUtils.EnsureUTF8String(sha1Thumbprint);
-                ParserUtils.EnsureUTF8String(sha256Thumbprint);
-                ParserUtils.EnsureUTF8String(issuerName);
-                ParserUtils.EnsureUTF8String(serialNumber);
-            }
-            catch (ArgumentException e)
-            {
-                throw new ProvisioningServiceClientException(e);
-            }
-
             if ((notBeforeUtc == null) || (notAfterUtc == null) || (version == null))
             {
                 throw new ProvisioningServiceClientException("DateTime cannot be null");

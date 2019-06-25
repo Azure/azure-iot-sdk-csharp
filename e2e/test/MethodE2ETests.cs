@@ -16,9 +16,10 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestCategory("IoTHub-E2E")]
     public class MethodE2ETests : IDisposable
     {
+        public const string DeviceResponseJson = "{\"name\":\"e2e_test\"}";
+        public const string ServiceRequestJson = "{\"a\":123}";
+
         private readonly string DevicePrefix = $"E2E_{nameof(MethodE2ETests)}_";
-        private const string DeviceResponseJson = "{\"name\":\"e2e_test\"}";
-        private const string ServiceRequestJson = "{\"a\":123}";
         private const string MethodName = "MethodE2ETest";
         private static TestLogging _log = TestLogging.GetInstance();
 
@@ -101,7 +102,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await SendMethodAndRespond(Client.TransportType.Amqp_WebSocket_Only, SetDeviceReceiveMethodDefaultHandler).ConfigureAwait(false);
         }
 
-        private async Task ServiceSendMethodAndVerifyResponse(string deviceName, string methodName, string respJson, string reqJson)
+        public static async Task ServiceSendMethodAndVerifyResponse(string deviceName, string methodName, string respJson, string reqJson)
         {
             using (ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
             {
@@ -119,18 +120,18 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        private async Task<Task> SetDeviceReceiveMethod(DeviceClient deviceClient)
+        public static async Task<Task> SetDeviceReceiveMethod(DeviceClient deviceClient, string methodName)
         {
             var methodCallReceived = new TaskCompletionSource<bool>();
 
-            await deviceClient.SetMethodHandlerAsync(MethodName,
+            await deviceClient.SetMethodHandlerAsync(methodName,
                 (request, context) =>
                 {
                     _log.WriteLine($"{nameof(SetDeviceReceiveMethod)}: DeviceClient method: {request.Name} {request.ResponseTimeout}.");
 
                     try
                     {
-                        Assert.AreEqual(MethodName, request.Name);
+                        Assert.AreEqual(methodName, request.Name);
                         Assert.AreEqual(ServiceRequestJson, request.DataAsJson);
 
                         methodCallReceived.SetResult(true);
@@ -139,16 +140,16 @@ namespace Microsoft.Azure.Devices.E2ETests
                     {
                         methodCallReceived.SetException(ex);
                     }
-                    
+
                     return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(DeviceResponseJson), 200));
                 },
                 null).ConfigureAwait(false);
-            
+
             // Return the task that tells us we have received the callback.
             return methodCallReceived.Task;
         }
 
-        private async Task<Task> SetDeviceReceiveMethodDefaultHandler(DeviceClient deviceClient)
+        public static async Task<Task> SetDeviceReceiveMethodDefaultHandler(DeviceClient deviceClient, string methodName)
         {
             var methodCallReceived = new TaskCompletionSource<bool>();
 
@@ -159,7 +160,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                     try
                     {
-                        Assert.AreEqual(MethodName, request.Name);
+                        Assert.AreEqual(methodName, request.Name);
                         Assert.AreEqual(ServiceRequestJson, request.DataAsJson);
 
                         methodCallReceived.SetResult(true);
@@ -176,18 +177,18 @@ namespace Microsoft.Azure.Devices.E2ETests
             return methodCallReceived.Task;
         }
 
-        private Task<Task> SetDeviceReceiveMethodObsoleteHandler(DeviceClient deviceClient)
+        private Task<Task> SetDeviceReceiveMethodObsoleteHandler(DeviceClient deviceClient, string methodName)
         {
             var methodCallReceived = new TaskCompletionSource<bool>();
 
 #pragma warning disable CS0618
-            deviceClient.SetMethodHandler(MethodName, (request, context) =>
+            deviceClient.SetMethodHandler(methodName, (request, context) =>
             {
                 _log.WriteLine($"{nameof(SetDeviceReceiveMethodObsoleteHandler)}: DeviceClient method: {request.Name} {request.ResponseTimeout}.");
 
                 try
                 {
-                    Assert.AreEqual(MethodName, request.Name);
+                    Assert.AreEqual(methodName, request.Name);
                     Assert.AreEqual(ServiceRequestJson, request.DataAsJson);
 
                     methodCallReceived.SetResult(true);
@@ -204,13 +205,13 @@ namespace Microsoft.Azure.Devices.E2ETests
             return Task.FromResult<Task>(methodCallReceived.Task);
         }
 
-        private async Task SendMethodAndRespond(Client.TransportType transport, Func<DeviceClient, Task<Task>> setDeviceReceiveMethod)
+        private async Task SendMethodAndRespond(Client.TransportType transport, Func<DeviceClient, string, Task<Task>> setDeviceReceiveMethod)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
 
             using (DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport))
             {
-                Task methodReceivedTask = await setDeviceReceiveMethod(deviceClient).ConfigureAwait(false);
+                Task methodReceivedTask = await setDeviceReceiveMethod(deviceClient, MethodName).ConfigureAwait(false);
 
                 await Task.WhenAll(
                     ServiceSendMethodAndVerifyResponse(testDevice.Id, MethodName, DeviceResponseJson, ServiceRequestJson),

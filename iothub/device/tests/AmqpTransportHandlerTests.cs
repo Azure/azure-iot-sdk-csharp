@@ -12,12 +12,13 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Client.Transport;
     using Microsoft.Azure.Devices.Client.Test.ConnectionString;
+    using Microsoft.Azure.Devices.Client.Transport.Amqp;
 
     [TestClass]
     [TestCategory("Unit")]
     public class AmqpTransportHandlerTests
     {
-        const string DumpyConnectionString = "HostName=Do.Not.Exist;SharedAccessKeyName=AllAccessKey;DeviceId=FakeDevice;SharedAccessKey=CQN2K33r45/0WeIjpqmErV5EIvX8JZrozt3NEHCEkG8=";
+        const string DumpyConnectionString = "HostName=Do.Not.Exist;SharedAccessKeyName=AllAccessKey;DeviceId=FakeDevice;SharedAccessKey=dGVzdFN0cmluZzE=";
 
         [TestMethod]
         public async Task AmqpTransportHandlerOpenAsyncTokenCancellationRequested()

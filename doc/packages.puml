@@ -1,0 +1,65 @@
+@startuml
+
+left to right direction
+
+package Microsoft.Azure.Devices.Shared <<Folder>> {
+}
+
+package Microsoft.Azure.Devices <<Folder>> {
+    class ServiceClient {
+        + Cloud to Device
+    }
+
+    class RegistryManager {
+        + CRUD for devices
+        + AutomaticDeviceManagement
+    }
+
+    class JobsClient {
+    }
+}
+
+package Microsoft.Azure.Devices.Provisioning.Service <<Folder>> {
+    class ProvisioningServiceClient {
+
+    }
+    class Query {
+
+    }
+}
+
+package Microsoft.Azure.Devices.Client <<Folder>> {
+    class DeviceClient {
+    }
+
+    class ModuleClient {
+    }
+}
+
+package Microsoft.Azure.Devices.Provisioning.Client <<Folder>> {
+    class ProvisioningDeviceClient {
+    }
+}
+
+package Microsoft.Azure.Devices.Provisioning.Transport.Amqp <<Folder>> {
+}
+
+package Microsoft.Azure.Devices.Provisioning.Transport.Mqtt <<Folder>> {
+}
+
+package Microsoft.Azure.Devices.Provisioning.Transport.Http <<Folder>> {
+}
+
+package Microsoft.Azure.Devices.Provisioning.Security.Tpm <<Folder>> {
+
+}
+
+Microsoft.Azure.Devices --> Microsoft.Azure.Devices.Shared
+Microsoft.Azure.Devices.Client --> Microsoft.Azure.Devices.Shared
+Microsoft.Azure.Devices.Provisioning.Client --> Microsoft.Azure.Devices.Shared
+Microsoft.Azure.Devices.Provisioning.Service --> Microsoft.Azure.Devices.Shared
+Microsoft.Azure.Devices.Provisioning.Transport.Http --> Microsoft.Azure.Devices.Provisioning.Client
+Microsoft.Azure.Devices.Provisioning.Transport.Amqp --> Microsoft.Azure.Devices.Provisioning.Client
+Microsoft.Azure.Devices.Provisioning.Transport.Mqtt --> Microsoft.Azure.Devices.Provisioning.Client
+Microsoft.Azure.Devices.Provisioning.Security.Tpm --> Microsoft.Azure.Devices.Shared
+@enduml
