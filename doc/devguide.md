@@ -4,9 +4,13 @@
 
 Before starting development on the Azure IoT SDK for C# you will need to install a few frameworks and tools. Please follow the instructions within [devbox_setup](devbox_setup.md).
 
-## 2. Coding style
+## 2. Design Guidelines and Coding Style
 
-Please read and apply our [coding style](coding-style.md) when proposing PRs against the Azure repository.
+### Design
+We are following the [Azure SDK design specification for C#](https://azuresdkspecs.z5.web.core.windows.net/DotNetSpec.html). To preserve backward compatibility, existing code will not change to follow these rules.
+
+### Code style
+Please read and apply our [coding style](coding-style.md) when proposing PRs against the Azure repository. When changing existing files, please apply changes to the entire file. Otherwise, maintain the same style.
 
 ## 3. Cloning the repository
 
