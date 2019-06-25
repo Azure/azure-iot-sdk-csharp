@@ -166,11 +166,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public override bool IsUsable => this.State != TransportState.Closed && this.State != TransportState.Error;
 
+<<<<<<< HEAD
         #region Client operations
         public override Task OpenAsync(TimeoutHelper timeoutHelper)
         {
             return OpenAsync(new CancellationTokenSource(timeoutHelper.RemainingTime()).Token);
         }
+=======
+#region Client operations
+>>>>>>> 75688c69... Preview update from David Lu + DS e2e test fixes (#971)
 
         public override async Task OpenAsync(CancellationToken cancellationToken)
         {
@@ -518,7 +522,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             catch (Exception exception) when (!exception.IsFatal())
             {
-                throw AmqpClientHelper.ToIotHubClientContract(exception);
+                throw MqttClientHelper.ToIotHubClientContract(exception);
             }
             finally
             {
@@ -861,7 +865,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             catch (Exception exception) when (!exception.IsFatal())
             {
-                throw AmqpClientHelper.ToIotHubClientContract(exception);
+                throw MqttClientHelper.ToIotHubClientContract(exception);
             }
             finally
             {
@@ -888,7 +892,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             catch (Exception exception) when (!exception.IsFatal())
             {
-                throw AmqpClientHelper.ToIotHubClientContract(exception);
+                throw MqttClientHelper.ToIotHubClientContract(exception);
             }
             finally
             {

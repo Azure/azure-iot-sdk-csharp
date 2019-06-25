@@ -16,7 +16,11 @@
   </ItemGroup>
 
   <ItemGroup>
+<<<<<<< HEAD
     <PackageReference Include="Microsoft.Azure.Amqp" Version="2.4.2" />
+=======
+    <PackageReference Include="Microsoft.Azure.Amqp" Version="2.4.1" />
+>>>>>>> 75688c69... Preview update from David Lu + DS e2e test fixes (#971)
     <PackageReference Include="Moq" Version="4.8.2" />
   </ItemGroup>
 

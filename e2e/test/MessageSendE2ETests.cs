@@ -96,7 +96,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("ProxyE2ETests")]
         public async Task Message_DeviceSendSingleMessage_MqttWs_WithProxy()
         {
-            Client.Transport.Mqtt.MqttTransportSettings mqttTransportSettings =
+            Client.Transport.Mqtt.MqttTransportSettings mqttTransportSettings = 
                 new Client.Transport.Mqtt.MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only);
             mqttTransportSettings.Proxy = new WebProxy(ProxyServerAddress);
             ITransportSettings[] transportSettings = new ITransportSettings[] { mqttTransportSettings };
@@ -119,7 +119,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestCategory("ProxyE2ETests")]
         public async Task Message_ModuleSendSingleMessage_MqttWs_WithProxy()
         {
-            Client.Transport.Mqtt.MqttTransportSettings mqttTransportSettings =
+            Client.Transport.Mqtt.MqttTransportSettings mqttTransportSettings = 
                 new Client.Transport.Mqtt.MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only);
             mqttTransportSettings.Proxy = new WebProxy(ProxyServerAddress);
             ITransportSettings[] transportSettings = new ITransportSettings[] { mqttTransportSettings };

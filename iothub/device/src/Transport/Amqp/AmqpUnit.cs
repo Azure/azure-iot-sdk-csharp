@@ -579,6 +579,259 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
         }
         #endregion
+        
+        #region Device streaming
+        public async Task EnableStreamsAsync(TimeSpan timeout)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(EnableStreamsAsync)}");
+
+            try
+            {
+                Debug.Assert(_streamReceivingLink == null);
+                Debug.Assert(_streamSendingLink == null);
+
+                string correlationIdSuffix = Guid.NewGuid().ToString();
+                Task<ReceivingAmqpLink> receiveLinkCreator =
+                    AmqpLinkHelper.OpenStreamsReceiverLinkAsync(
+                        _deviceIdentity,
+                        _amqpSession,
+                        correlationIdSuffix,
+                        timeout);
+
+                Task<SendingAmqpLink> sendingLinkCreator =
+                    AmqpLinkHelper.OpenStreamsSenderLinkAsync(
+                        _deviceIdentity,
+                        _amqpSession,
+                        correlationIdSuffix,
+                        timeout);
+
+                await Task.WhenAll(receiveLinkCreator, sendingLinkCreator).ConfigureAwait(false);
+
+                _streamReceivingLink = receiveLinkCreator.Result;
+                _streamSendingLink = sendingLinkCreator.Result;
+
+                _streamReceivingLink.Closed += OnLinkDisconnected;
+                _streamSendingLink.Closed += OnLinkDisconnected;
+
+                if (Logging.IsEnabled) Logging.Associate(this, _streamReceivingLink, $"{nameof(_streamReceivingLink)}");
+                if (Logging.IsEnabled) Logging.Associate(this, _streamSendingLink, $"{nameof(_streamSendingLink)}");
+            }
+            catch (Exception)
+            {
+                _streamReceivingLink?.Abort();
+                _streamReceivingLink = null;
+
+                _streamReceivingLink?.Abort();
+                _streamReceivingLink = null;
+
+                throw;
+            }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(EnableStreamsAsync)}");
+            }
+        }
+
+        public async Task DisableStreamsAsync(TimeSpan timeout)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(DisableStreamsAsync)}");
+
+            Debug.Assert(_streamSendingLink != null);
+            Debug.Assert(_streamReceivingLink != null);
+
+            try
+            {
+                ICollection<Task> tasks = new List<Task>();
+                if (_streamSendingLink != null)
+                {
+                    tasks.Add(_streamSendingLink.CloseAsync(timeout));
+                }
+
+                if (_streamReceivingLink != null)
+                {
+                    tasks.Add(_streamReceivingLink.CloseAsync(timeout));
+                }
+
+                if (tasks.Count > 0)
+                {
+                    await Task.WhenAll(tasks).ConfigureAwait(false);
+                    _streamSendingLink = null;
+                    _streamReceivingLink = null;
+                }
+            }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(DisableStreamsAsync)}");
+            }
+        }
+
+        public async Task<DeviceStreamRequest> WaitForDeviceStreamRequestAsync(TimeSpan timeout)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(WaitForDeviceStreamRequestAsync)}");
+
+            try
+            {
+                DeviceStreamRequest deviceStreamRequest = null;
+                using (AmqpMessage amqpMessage = await AmqpLinkHelper.ReceiveAmqpMessageAsync(_streamReceivingLink, timeout).ConfigureAwait(false))
+                {
+                    if (amqpMessage != null)
+                    {
+                        deviceStreamRequest = ConstructStreamRequestFromAmqpMessage(amqpMessage);
+                        _streamReceivingLink?.DisposeDelivery(amqpMessage, true, AmqpConstants.AcceptedOutcome);
+                    }
+                    return deviceStreamRequest;
+                }
+            }
+            catch (Exception exception) when (!exception.IsFatal())
+            {
+                throw AmqpClientHelper.ToIotHubClientContract(exception);
+            }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(WaitForDeviceStreamRequestAsync)}");
+            }
+        }
+
+        public async Task AcceptDeviceStreamRequestAsync(DeviceStreamRequest request, TimeSpan timeout)
+        {
+            if (request == null || request.RequestId == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            try
+            {
+                if (Logging.IsEnabled) Logging.Enter(this, request, timeout, $"{nameof(AcceptDeviceStreamRequestAsync)}");
+
+                DeviceStreamResponse response = new DeviceStreamResponse(request.RequestId, true);
+
+                await SendDeviceStreamResponseAsync(response, timeout).ConfigureAwait(false);
+            }
+            catch (Exception exception) when (!exception.IsFatal())
+            {
+                throw AmqpClientHelper.ToIotHubClientContract(exception);
+            }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, request, timeout, $"{nameof(AcceptDeviceStreamRequestAsync)}");
+            }
+        }
+
+        public async Task RejectDeviceStreamRequestAsync(DeviceStreamRequest request, TimeSpan timeout)
+        {
+            if (request == null || request.RequestId == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            try
+            {
+                if (Logging.IsEnabled) Logging.Enter(this, request, timeout, $"{nameof(RejectDeviceStreamRequestAsync)}");
+
+                DeviceStreamResponse response = new DeviceStreamResponse(request.RequestId, false);
+
+                await SendDeviceStreamResponseAsync(response, timeout).ConfigureAwait(false);
+            }
+            catch (Exception exception) when (!exception.IsFatal())
+            {
+                throw AmqpClientHelper.ToIotHubClientContract(exception);
+            }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, request, timeout, $"{nameof(RejectDeviceStreamRequestAsync)}");
+            }
+        }
+
+        public async Task SendDeviceStreamResponseAsync(DeviceStreamResponse streamResponse, TimeSpan timeout)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, streamResponse, timeout, $"{nameof(SendDeviceStreamResponseAsync)}");
+
+            try
+            {
+                Outcome outcome;
+                using (AmqpMessage amqpMessage = CreateAmqpMessageFromStreamResponse(streamResponse))
+                {
+                    outcome = await _streamSendingLink.SendMessageAsync(amqpMessage, new ArraySegment<byte>(Guid.NewGuid().ToByteArray()), AmqpConstants.NullBinary, timeout).ConfigureAwait(false);
+                }
+
+                if (outcome.DescriptorCode != Accepted.Code)
+                {
+                    throw AmqpErrorMapper.GetExceptionFromOutcome(outcome);
+                }
+            }
+            catch (Exception exception) when (!exception.IsFatal())
+            {
+                throw AmqpClientHelper.ToIotHubClientContract(exception);
+            }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, streamResponse, timeout, $"{nameof(SendDeviceStreamResponseAsync)}");
+            }
+        }
+
+        private DeviceStreamRequest ConstructStreamRequestFromAmqpMessage(AmqpMessage amqpMessage)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, amqpMessage, $"{nameof(ConstructStreamRequestFromAmqpMessage)}");
+
+            if (amqpMessage == null)
+            {
+                throw new ArgumentNullException(nameof(amqpMessage));
+            }
+
+            string streamRequestId = string.Empty;
+            string streamName = string.Empty;
+            string proxyUri = string.Empty;
+            string authorizationToken = string.Empty;
+
+            SectionFlag sections = amqpMessage.Sections;
+            if ((sections & SectionFlag.Properties) != 0)
+            {
+                streamRequestId = amqpMessage.Properties.CorrelationId != null ? amqpMessage.Properties.CorrelationId.ToString() : null;
+            }
+
+            if ((sections & SectionFlag.ApplicationProperties) != 0)
+            {
+                if (!(amqpMessage.ApplicationProperties?.Map.TryGetValue(new MapKey(DeviceStreamingFieldStreamName), out streamName) ?? false))
+                {
+                    throw new InvalidDataException("Stream name is missing");
+                }
+
+                if (!(amqpMessage.ApplicationProperties?.Map.TryGetValue(new MapKey(DeviceStreamingFieldProxyUri), out proxyUri) ?? false))
+                {
+                    throw new InvalidDataException("Proxy URI is missing");
+                }
+
+                if (!(amqpMessage.ApplicationProperties?.Map.TryGetValue(new MapKey(DeviceStreamingFieldAuthorizationToken), out authorizationToken) ?? false))
+                {
+                    throw new InvalidDataException("Authorization Token is missing");
+                }
+            }
+
+            if (Logging.IsEnabled) Logging.Exit(this, amqpMessage, $"{nameof(ConstructStreamRequestFromAmqpMessage)}");
+
+            return new DeviceStreamRequest(streamRequestId, streamName, new Uri(proxyUri), authorizationToken);
+        }
+
+        private AmqpMessage CreateAmqpMessageFromStreamResponse(DeviceStreamResponse streamResponseInternal)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, streamResponseInternal, $"{nameof(CreateAmqpMessageFromStreamResponse)}");
+
+            AmqpMessage amqpMessage = AmqpMessage.Create();
+
+            amqpMessage.Properties.CorrelationId = new Guid(streamResponseInternal.RequestId);
+
+            if (amqpMessage.ApplicationProperties == null)
+            {
+                amqpMessage.ApplicationProperties = new ApplicationProperties();
+            }
+
+            amqpMessage.ApplicationProperties.Map[DeviceStreamingFieldIsAccepted] = streamResponseInternal.IsAccepted;
+
+            if (Logging.IsEnabled) Logging.Exit(this, streamResponseInternal, $"{nameof(CreateAmqpMessageFromStreamResponse)}");
+
+            return amqpMessage;
+        }
+        #endregion DEVICE STREAMING
 
         #region Connectivity Event
         public void OnConnectionDisconnected()
