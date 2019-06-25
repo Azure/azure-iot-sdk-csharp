@@ -43,6 +43,8 @@ using System.Net.Http;
             {
                 throw new ArgumentException("A valid module ID should be specified to create a ModuleClient");
             }
+
+            if (Logging.IsEnabled) Logging.Associate(this, this, internalClient, nameof(ModuleClient));
         }
 
         /// <summary>
@@ -228,6 +230,7 @@ using System.Net.Http;
 
         /// <summary>
         /// Sets the retry policy used in the operation retries.
+        /// The change will take effect after any in-progress operations.
         /// </summary>
         /// <param name="retryPolicy">The retry policy. The default is new ExponentialBackoff(int.MaxValue, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100));</param>
         // Codes_SRS_DEVICECLIENT_28_001: [This property shall be defaulted to the exponential retry strategy with backoff 

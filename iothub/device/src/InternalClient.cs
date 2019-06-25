@@ -60,65 +60,6 @@ namespace Microsoft.Azure.Devices.Client
     /// <param name="reason">The reason for the connection status change</param>
     public delegate void ConnectionStatusChangesHandler(ConnectionStatus status, ConnectionStatusChangeReason reason);
 
-    /*
-     * Class Diagram and Chain of Responsibility in Device Client 
-     * 
-                                         +--------------------+
-                                         | <<interface>>      |
-                                         | IDelegatingHandler |
-                                         |  * Open            |
-                                         |  * Close           |
-                                         |  * SendEvent       |
-                                         |  * SendEvents      |
-                                         |  * Receive         |
-                                         |  * Complete        |
-                                         |  * Abandon         |
-                                         |  * Reject          |
-                                         +-------+------------+
-                                                 |
-                                                 |implements
-                                                 |
-                                                 |
-                                         +-------+-------+
-                                         |  <<abstract>> |     
-                                         |  Default      |
-     +----------------+                  |  Delegating   <------inherits-----------------+
-     | ClientFactory  |                  |  Handler      |                               |
-     +-------|--------+      +--inherits->               <--inherits----+                |
-             |               |           +-------^-------+              |                |
-             |               |                   |inherits              |                |
-             |               |                   |                      |                |
-     +-------v--------+  +---+---------+      +--+----------+       +---+--------+       +--------------+
-     |                |  |             |      |             |       | Protocol   |       | <<abstract>> |
-     | InternalClient |  | Retry       | use  |  Error      |  use  | Routing    |  use  | Transport    |
-     |                |--> Delegating  +------>  Delegating +-------> Delegating +-------> Delegating   |
-     +----------------+  | Handler     |      |  Handler    |       | Handler    |       | Handler      |
-             |           |             |      |             |       |            |       |              |
-             |           | overrides:  |      |  overrides  |       | overrides: |       | overrides:   |
-       ------+------     |  Open       |      |   Open      |       |  Open      |       |  Receive     |
-       |           |     |  SendEvent  |      |   SendEvent |       |            |       |              |
-    +-------+ +--------+ |  SendEvents |      |   SendEvents|       +------------+       +--^--^---^----+
-    |Device | | Module | |  Receive    |      |   Receive   |                               |  |   |
-    |Client | | Client | |  Reject     |      |   Reject    |                               |  |   |
-    +-------+ +--------+ |  Abandon    |      |   Abandon   |                               |  |   |
-                         |  Complete   |      |   Complete  |                               |  |   |
-                         |             |      |             |                               |  |   |
-                         +-------------+      +-------------+     +-------------+-+inherits-+  |   +---inherits-+-------------+
-                                                                  |             |              |                |             |
-                                                                  | AMQP        |              inherits         | HTTP        |
-                                                                  | Transport   |              |                | Transport   |
-                                                                  | Handler     |          +---+---------+      | Handler     |
-                                                                  |             |          |             |      |             |
-                                                                  | overrides:  |          | MQTT        |      | overrides:  |
-                                                                  |  everything |          | Transport   |      |  everything |
-                                                                  |             |          | Handler     |      |             |
-                                                                  +-------------+          |             |      +-------------+
-                                                                                           | overrides:  |
-                                                                                           |  everything |
-                                                                                           |             |
-                                                                                           +-------------+
-    */
-
     /// <summary>
     /// Contains methods that a device can use to send messages to and receive from the service.
     /// </summary>
@@ -235,11 +176,6 @@ namespace Microsoft.Azure.Devices.Client
             set
             {
                 _operationTimeoutInMilliseconds = value;
-                var retryDelegatingHandler = GetDelegateHandler<RetryDelegatingHandler>();
-                if (retryDelegatingHandler != null)
-                {
-                    retryDelegatingHandler.RetryTimeoutInMilliseconds = value;
-                }
             }
         }
 
@@ -1241,11 +1177,7 @@ namespace Microsoft.Azure.Devices.Client
 
         private Task DisableMethodAsync(CancellationToken cancellationToken)
         {
-            if (this.deviceMethods == null && this.deviceDefaultMethodCallback == null)
-            {
-                return InnerHandler.DisableMethodsAsync(cancellationToken);
-            }
-
+            // TODO # 890.
             return TaskHelpers.CompletedTask;
         }
 

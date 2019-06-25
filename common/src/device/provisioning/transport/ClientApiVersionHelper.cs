@@ -7,6 +7,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Client
     {
         // TODO: Split ApiVersionName as it is only used by HTTP and AMQP.
         public const string ApiVersionName = "api-version";
-        public const string ApiVersion = "2017-11-15";
+        public const string ApiVersion = "2019-03-31";
     }
 }

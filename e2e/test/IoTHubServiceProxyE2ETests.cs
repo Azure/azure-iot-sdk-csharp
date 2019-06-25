@@ -68,9 +68,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             using (DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString))
             using (ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(ConnectionString, TransportType.Amqp, transportSettings))
             {
-                string payload;
-                string p1Value;
-                Message testMessage = ComposeD2CTestMessage(out payload, out p1Value);
+                (Message testMessage, string messageId, string payload, string p1Value) = ComposeD2CTestMessage();
                 await serviceClient.SendAsync(testDevice.Id, testMessage).ConfigureAwait(false);
 
                 await deviceClient.CloseAsync().ConfigureAwait(false);
@@ -105,17 +103,20 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        private Message ComposeD2CTestMessage(out string payload, out string p1Value)
+        public static (Message message, string messageId, string payload, string p1Value) ComposeD2CTestMessage()
         {
-            payload = Guid.NewGuid().ToString();
-            p1Value = Guid.NewGuid().ToString();
+            var messageId = Guid.NewGuid().ToString();
+            var payload = Guid.NewGuid().ToString();
+            var p1Value = Guid.NewGuid().ToString();
 
-            _log.WriteLine($"{nameof(ComposeD2CTestMessage)}: payload='{payload}' p1Value='{p1Value}'");
-
-            return new Message(Encoding.UTF8.GetBytes(payload))
+            _log.WriteLine($"{nameof(ComposeD2CTestMessage)}: messageId='{messageId}' payload='{payload}' p1Value='{p1Value}'");
+            var message = new Message(Encoding.UTF8.GetBytes(payload))
             {
+                MessageId = messageId,
                 Properties = { ["property1"] = p1Value }
             };
+
+            return (message, messageId, payload, p1Value);
         }
 
         public void Dispose()

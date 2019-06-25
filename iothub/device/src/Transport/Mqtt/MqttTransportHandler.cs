@@ -164,7 +164,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             this.closeRetryPolicy = new RetryPolicy(new TransientErrorIgnoreStrategy(), 5, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
         }
 
-        #region Client operations
+        public override bool IsUsable => this.State != TransportState.Closed && this.State != TransportState.Error;
+
+#region Client operations
 
         public override async Task OpenAsync(CancellationToken cancellationToken)
         {
@@ -174,7 +176,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                this.EnsureValidState();
+                this.EnsureValidState(throwIfNotOpen: false);
 
                 await this.OpenAsyncInternal(cancellationToken).ConfigureAwait(true);
             }
@@ -315,19 +317,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         protected override void Dispose(bool disposing)
         {
-            try
+            if (_disposed) return;
+
+            base.Dispose(disposing);
+            if (disposing)
             {
-                if (disposing)
+                if (this.TryStop())
                 {
-                    if (this.TryStop())
-                    {
-                        this.Cleanup();
-                    }
+                    this.Cleanup();
                 }
-            }
-            finally
-            {
-                base.Dispose(disposing);
             }
         }
 
@@ -341,7 +339,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
                 if (this.TryStop())
                 {
-                    _transportShouldRetry.TrySetCanceled();
+                    OnTransportClosedGracefully();
 
                     await this.closeRetryPolicy.ExecuteAsync(this.CleanupAsync, cancellationToken).ConfigureAwait(true);
                 }
@@ -453,7 +451,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             catch (Exception exception) when (!exception.IsFatal())
             {
-                throw AmqpClientHelper.ToIotHubClientContract(exception);
+                throw MqttClientHelper.ToIotHubClientContract(exception);
             }
             finally
             {
@@ -565,12 +563,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     case TransportState.Subscribing:
                         this.fatalException = ExceptionDispatchInfo.Capture(exception);
                         this.subscribeCompletionSource.TrySetException(exception);
-                        _transportShouldRetry.TrySetResult(true);
+                        OnTransportDisconnected();
                         break;
                     case TransportState.Receiving:
                         this.fatalException = ExceptionDispatchInfo.Capture(exception);
                         this.disconnectAwaitersCancellationSource.Cancel();
-                        _transportShouldRetry.TrySetResult(true);
+                        OnTransportDisconnected();
                         break;
                     default:
                         Debug.Fail($"Unknown transport state: {previousState}");
@@ -796,7 +794,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             catch (Exception exception) when (!exception.IsFatal())
             {
-                throw AmqpClientHelper.ToIotHubClientContract(exception);
+                throw MqttClientHelper.ToIotHubClientContract(exception);
             }
             finally
             {
@@ -823,7 +821,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             catch (Exception exception) when (!exception.IsFatal())
             {
-                throw AmqpClientHelper.ToIotHubClientContract(exception);
+                throw MqttClientHelper.ToIotHubClientContract(exception);
             }
             finally
             {
@@ -1188,7 +1186,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             return (TransportState)Interlocked.CompareExchange(ref this.state, (int)toState, (int)fromState) == fromState;
         }
 
-        void EnsureValidState()
+        private void EnsureValidState(bool throwIfNotOpen = true)
         {
             if (this.State == TransportState.Error)
             {
@@ -1198,6 +1196,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 Debug.Fail($"{nameof(MqttTransportHandler)}.{nameof(EnsureValidState)}: Attempting to reuse transport after it was closed.");
                 throw new InvalidOperationException($"Invalid transport state: {this.State}");
+            }
+            if (throwIfNotOpen && (State & TransportState.Open) == 0)
+            {
+                throw new IotHubCommunicationException("MQTT connection is not established. Please retry later.");
             }
         }
 

@@ -1,0 +1,114 @@
+@startuml csharpDeviceClientAmqpArchitecture
+
+abstract class TransportHandler 
+{
+    + OnTransportClosedGracefully
+    + OnTransportDisconnected
+}
+
+class AmqpTransportHandler
+{
+    ..AMQP State..
+    - _amqpIoTSession
+    - _amqpIoTMessageSendLink
+    - _amqpIoTMessageReceiveLink
+      ... (etc) ...
+    ..Transport State..
+    + OpenAsync
+    + CloseAsync
+    + WaitForTransportClosedAsync
+    + IsUsable
+    ..Device to Cloud (D2C)..
+    + SendEventAsync
+    ..Cloud to Device (C2D)..
+    + ReceiveAsync
+    + AbandonAsync
+    + CompleteAsync
+    ..Module to Module (M2M)..
+    + EnableEventReceiveAsync
+    ..Methods..
+    + EnableMethodsAsync
+    + SendMethodResponseAsync
+    ..Twin..
+    + SendTwinGetAsync
+    + SendTwinPatchAsync
+    + EnableTwinPatchAsync
+}
+
+class AmqpIoTMessageAdapter << (S,#FF7700) static >>
+{
+}
+
+class AmqpIoTExceptionAdapter << (S,#FF7700) static >>
+{
+}
+
+class AmqpIoTResultAdapter << (S,#FF7700) static >>
+{
+}
+
+class AmqpIoTLink
+{
+}
+
+class AmqpIoTSession
+{
+    - _isPooled
+}
+
+package "Amqp connection pool and multiplexing"
+{
+    class AmqpIoTSessionFactory << (S,#77FF00) Singleton>>
+    {
+        + CreateAmqpIoTSessionAsync(deviceIdentity)
+    }
+
+    abstract class AmqpIoTConnectionPool
+    {
+        + poolName
+        + authenticationProviderType
+        + serverName
+        + maximumNumberOfConnections
+        + GarbageCollectConnectionsAsync
+    }
+
+    abstract class AmqpIoTConnection
+    {
+    }
+
+    class AmqpIoTConnectionCBS
+    {
+        - _tokenRefreshers[]
+        + StartTokenRefreshLoopAsync
+
+    }
+
+    class AmqpIoTConnectionX509
+    {
+        - _x509Certificate
+    }
+
+    class TokenRefresh
+    {
+        //Note: Owned by InternalClient//
+    }
+}
+
+TransportHandler <|-- AmqpTransportHandler
+AmqpTransportHandler "1" *-- "1" AmqpIoTSession : owns >
+AmqpTransportHandler "1" *-- "many" AmqpIoTLink : owns >
+AmqpTransportHandler o-- AmqpIoTMessageAdapter
+AmqpTransportHandler o-- AmqpIoTExceptionAdapter
+AmqpTransportHandler o-- AmqpIoTResultAdapter
+
+AmqpIoTSessionFactory "1" *-- "many" AmqpIoTConnectionPool : owns >
+AmqpIoTConnectionPool "1" *-- "many" AmqpIoTConnection : owns >
+AmqpIoTConnection <|-- AmqpIoTConnectionCBS
+AmqpIoTConnection <|-- AmqpIoTConnectionX509
+AmqpIoTConnectionCBS "1" o-- "many" TokenRefresh
+
+note "AmqpIoTSession" as N1
+AmqpIoTSessionFactory .. N1
+N1 ..> AmqpIoTSession
+
+@enduml

@@ -19,9 +19,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             public static string IdScope => GetValue("DPS_IDSCOPE");
 
-            public static string TpmDeviceRegistrationId => GetValue("DPS_TPM_REGISTRATIONID");
-
-            public static string TpmDeviceId => GetValue("DPS_TPM_DEVICEID");
 
             // To generate use Powershell: [System.Convert]::ToBase64String( (Get-Content .\certificate.pfx -Encoding Byte) )
             public static X509Certificate2 GetIndividualEnrollmentCertificate() 
@@ -36,6 +33,12 @@ namespace Microsoft.Azure.Devices.E2ETests
             public static string ConnectionStringInvalidServiceCertificate => GetValue("PROVISIONING_CONNECTION_STRING_INVALIDCERT", string.Empty);
 
             public static string GlobalDeviceEndpointInvalidServiceCertificate => GetValue("DPS_GLOBALDEVICEENDPOINT_INVALIDCERT", string.Empty);
+
+            //Note: Due to limitations with using VSTS Hosted agents, there is no guarantee that this hub is actually farther away 
+            // than the other test iot hub. As such, geolatency allocation policies cannot be tested properly
+            public static string FarAwayIotHubHostName => GetValue("FAR_AWAY_IOTHUB_HOSTNAME");
+
+            public static string CustomAllocationPolicyWebhook => GetValue("CUSTOM_ALLOCATION_POLICY_WEBHOOK");
         }
     }
 }

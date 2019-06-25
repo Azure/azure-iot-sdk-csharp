@@ -86,6 +86,8 @@ phases:
       IOTHUB_CONN_STRING_INVALIDCERT: $(IOTHUB-CONN-STRING-INVALIDCERT)
       DPS_GLOBALDEVICEENDPOINT_INVALIDCERT: $(DPS-GLOBALDEVICEENDPOINT-INVALIDCERT)
       PROVISIONING_CONNECTION_STRING_INVALIDCERT: $(PROVISIONING-CONNECTION-STRING-INVALIDCERT)
+      FAR_AWAY_IOTHUB_HOSTNAME: $(FAR-AWAY-IOTHUB-HOSTNAME)
+      CUSTOM_ALLOCATION_POLICY_WEBHOOK: $(CUSTOM-ALLOCATION-POLICY-WEBHOOK)
       IOTHUB_PROXY_SERVER_ADDRESS: 127.0.0.1:8888
       LA_AAD_TENANT: $(LA-AAD-TENANT)
       LA_AAD_APP_ID: $(LA-AAD-APP-ID)
@@ -158,9 +160,19 @@ phases:
        
        rem List active docker containers
        docker ps -a
+
+       rem Start 
+
+       rem Start ETL logging
+       logman create trace IotTrace -o iot.etl -pf tools/CaptureLogs/iot_providers.txt
+       logman start IotTrace
        
        rem Start build
        vsts/windows_csharp.cmd
+
+       ren Stop ETL logging
+       logman stop IotTrace
+       logman delete IotTrace
         
     displayName: build
     env:
@@ -188,6 +200,8 @@ phases:
       IOTHUB_CONN_STRING_INVALIDCERT: $(IOTHUB-CONN-STRING-INVALIDCERT)
       DPS_GLOBALDEVICEENDPOINT_INVALIDCERT: $(DPS-GLOBALDEVICEENDPOINT-INVALIDCERT)
       PROVISIONING_CONNECTION_STRING_INVALIDCERT: $(PROVISIONING-CONNECTION-STRING-INVALIDCERT)
+      FAR_AWAY_IOTHUB_HOSTNAME: $(FAR-AWAY-IOTHUB-HOSTNAME)
+      CUSTOM_ALLOCATION_POLICY_WEBHOOK: $(CUSTOM-ALLOCATION-POLICY-WEBHOOK)
       IOTHUB_PROXY_SERVER_ADDRESS: 127.0.0.1:3128
       LA_AAD_TENANT: $(LA-AAD-TENANT)
       LA_AAD_APP_ID: $(LA-AAD-APP-ID)
@@ -195,11 +209,22 @@ phases:
       LA_WORKSPACE_ID: $(LA-WORKSPACE-ID)
 
   - task: CopyFiles@2
-    displayName: 'Copy files to the artifacts folder'
+    displayName: 'Copy TRX files to the artifacts folder'
     inputs:
       SourceFolder: '$(Build.SourcesDirectory)'
 
       Contents: '**/*.trx'
+
+      TargetFolder: '$(Build.ArtifactStagingDirectory)'
+
+    condition: always()
+
+  - task: CopyFiles@2
+    displayName: 'Copy ETL files to the artifacts folder'
+    inputs:
+      SourceFolder: '$(Build.SourcesDirectory)'
+
+      Contents: '**/*.etl'
 
       TargetFolder: '$(Build.ArtifactStagingDirectory)'
 
@@ -259,6 +284,8 @@ phases:
     displayName: 'Run MpCmdRun.exe'
     inputs:
       EnableServices: true
+      SignatureFreshness: OneDay
+
 
 
   - task: securedevelopmentteam.vss-secure-development-tools.build-task-autoapplicability.AutoApplicability@1
@@ -290,6 +317,7 @@ phases:
   - task: securedevelopmentteam.vss-secure-development-tools.build-task-credscan.CredScan@2
     displayName: 'Run CredScan'
     inputs:
+      suppressionsFile: vsts/CredScanSuppressions.json
       regexMatchTimeoutInSeconds: 5
 
     # TODO #181 Samples / tests fail the test due to fake connection strings.
@@ -310,6 +338,13 @@ phases:
     displayName: 'Create Security Analysis Report'
     inputs:
       AllTools: true
+
+  - task: securedevelopmentteam.vss-secure-development-tools.build-task-uploadtotsa.TSAUpload@1
+    displayName: 'TSA upload'
+    inputs:
+      tsaVersion: TsaV2
+      tsaStamp: Azure
+      codeBaseName: 'Azure-Iot-SDK-CSharp-Master'
 
   - task: securedevelopmentteam.vss-secure-development-tools.build-task-postanalysis.PostAnalysis@1
     displayName: 'Post Analysis'
@@ -346,7 +381,7 @@ phases:
   condition: succeeded()
   queue:
     name: win
-    timeoutInMinutes: 5
+    timeoutInMinutes: 15
 
   steps:
   - powershell: ./vsts/manual_checkout.ps1 
@@ -402,6 +437,7 @@ phases:
   - task: securedevelopmentteam.vss-secure-development-tools.build-task-credscan.CredScan@2
     displayName: 'Run CredScan'
     inputs:
+      suppressionsFile: vsts/CredScanSuppressions.json
       regexMatchTimeoutInSeconds: 5
 
     # TODO #181 Samples / tests fail the test due to fake connection strings.
@@ -422,6 +458,13 @@ phases:
     displayName: 'Create Security Analysis Report'
     inputs:
       AllTools: true
+
+  - task: securedevelopmentteam.vss-secure-development-tools.build-task-uploadtotsa.TSAUpload@1
+    displayName: 'TSA upload'
+    inputs:
+      tsaVersion: TsaV2
+      tsaStamp: Azure
+      codeBaseName: 'Azure-Iot-SDK-CSharp-Master'
 
   - task: securedevelopmentteam.vss-secure-development-tools.build-task-postanalysis.PostAnalysis@1
     displayName: 'Post Analysis'

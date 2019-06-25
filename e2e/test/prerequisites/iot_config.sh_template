@@ -80,14 +80,19 @@ export DPS_X509_PFX_CERTIFICATE_PASSWORD=
 # The CN=xdevice1 certificate should be signed by an issuer within this chain.
 export DPS_GROUPX509_CERTIFICATE_CHAIN=
 
-# TPM device registration ID.
-export DPS_TPM_REGISTRATIONID=indtpmdevice1
-
-# TPM device device ID:
-export DPS_TPM_DEVICEID=provisionedtpm1
-
 # Provisioning service owner connection string.
 export PROVISIONING_CONNECTION_STRING=""
+
+# Custom allocation webhook url
+# This webhook is used during provisioning tests to provision devices to certain iot hubs
+# For these tests, the azure function is expected to always choose to provision to the hub with the longest hostname
+export CUSTOM_ALLOCATION_POLICY_WEBHOOK=""
+
+# Far away iot hub hostname.
+# Reprovisioning tests rely on the dps instance under test to have two linked iothubs to provision to. 
+# This hub does not currently need to be far away from the dps instance, but it does need to be linked to the dps instance alongside the IOTHUB_CONN_STRING_CSHARP hub.
+# Only the hostname is needed, not the full connection string
+export FAR_AWAY_IOTHUB_HOSTNAME=""
 
 # ---------- Invalid Certificate validation ----------
 # The connection strings below point to servers with incorrect TLS server certificates. Tests will attempt to connect and expect that the TLS connection ends in a security exception.
