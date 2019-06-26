@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
@@ -80,6 +81,59 @@ namespace Microsoft.Azure.Devices.E2ETests
         public Task SecurityMessage_DeviceSendSingleMessage_Http()
         {
             return TestSecurityMessage(Client.TransportType.Http1);
+        }
+        
+        public async Task SecurityMessage_DeviceSendSingleMessage_Amqp()
+        {
+            await TestSecurityMessage(Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task SecurityMessage_ModuleSendSingleMessage_Amqp()
+        {
+            await TestSecurityMessageModule(Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task SecurityMessage_DeviceSendSingleMessage_AmqpWs()
+        {
+            await TestSecurityMessage(Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task SecurityMessage_ModuleSendSingleMessage_AmqpWs()
+        {
+            await TestSecurityMessageModule(Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task SecurityMessage_DeviceSendSingleMessage_Mqtt()
+        {
+            await TestSecurityMessage(Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task SecurityMessage_ModuleSendSingleMessage_Mqtt()
+        {
+            await TestSecurityMessageModule(Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task SecurityMessage_DeviceSendSingleMessage_MqttWs()
+        {
+            await TestSecurityMessage(Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task SecurityMessage_ModuleSendSingleMessage_MqttWs()
+        {
+            await TestSecurityMessageModule(Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task SecurityMessage_DeviceSendSingleMessage_Http()
+        {
+            await TestSecurityMessage(Client.TransportType.Http1).ConfigureAwait(false);
         }
 
         private Client.Message ComposeD2CSecurityTestMessage(out string eventId, out string payload, out string p1Value)
@@ -169,7 +223,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             await ValidateEvent(deviceId, eventId, payload, p1Value, testListener, logAnalticsTestClient).ConfigureAwait(false);
         }
-
+        
         private Task SendSingleSecurityMessageModule(ModuleClient moduleClient, string deviceId, EventHubTestListener testListener, AzureSecurityCenterForIoTLogAnalyticsClient logAnalticsTestClient)
         {
             moduleClient.OpenAsync();
@@ -178,6 +232,16 @@ namespace Microsoft.Azure.Devices.E2ETests
             moduleClient.SendEventAsync(testMessage);
 
             return ValidateEvent(deviceId, eventId, payload, p1Value, testListener, logAnalticsTestClient);
+        }    
+        
+        private async Task SendSingleSecurityMessageModule(ModuleClient moduleClient, string deviceId, EventHubTestListener testListener, AzureSecurityCenterForIoTLogAnalyticsClient logAnalticsTestClient)
+        {
+            await moduleClient.OpenAsync().ConfigureAwait(false);
+
+            Client.Message testMessage = ComposeD2CSecurityTestMessage(out string eventId, out string payload, out string p1Value);
+            await moduleClient.SendEventAsync(testMessage).ConfigureAwait(false);
+
+            await ValidateEvent(deviceId, eventId, payload, p1Value, testListener, logAnalticsTestClient).ConfigureAwait(false);
         }
 
         private async Task ValidateEvent(string deviceId, string eventId, string payload, string p1Value,
