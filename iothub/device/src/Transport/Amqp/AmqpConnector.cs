@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         #region Authentication
         private static bool InitializeDisableServerCertificateValidation()
         {
-#if NETSTANDARD1_3 // No System.Configuration.ConfigurationManager in NetStandard1.3
+#if !NET451
             bool flag;
             if (!AppContext.TryGetSwitch("DisableServerCertificateValidationKeyName", out flag))
             {
