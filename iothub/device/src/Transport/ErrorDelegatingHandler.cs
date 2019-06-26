@@ -15,6 +15,7 @@ using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using DotNetty.Transport.Channels;
 
 namespace Microsoft.Azure.Devices.Client.Transport
@@ -143,7 +144,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private static bool IsNetwork(Exception singleException)
         {
-            return s_networkExceptions.Contains(singleException.GetType());
+            Type exceptionType = singleException.GetType();
+            return s_networkExceptions.Any(baseExceptionType => baseExceptionType.IsAssignableFrom(exceptionType));
         }
 
         private Task ExecuteWithErrorHandlingAsync(Func<Task> asyncOperation)
