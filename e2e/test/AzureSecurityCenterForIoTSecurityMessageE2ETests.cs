@@ -13,10 +13,10 @@ namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
     [TestCategory("IoTHub-E2E")]
-    public partial class AzureSecurityCenterForIoTSecurityMessageE2ETests : IDisposable
+    public class AzureSecurityCenterForIoTSecurityMessageE2ETests : IDisposable
     {
-        private readonly string DevicePrefix = $"E2E_{nameof(AzureSecurityCenterForIoTSecurityMessageE2ETests)}_";
-        private readonly string ModulePrefix = $"E2E_{nameof(AzureSecurityCenterForIoTSecurityMessageE2ETests)}_";
+        private readonly string _devicePrefix = $"E2E_{nameof(AzureSecurityCenterForIoTSecurityMessageE2ETests)}_";
+        private readonly string _modulePrefix = $"E2E_{nameof(AzureSecurityCenterForIoTSecurityMessageE2ETests)}_";
         private static TestLogging _log = TestLogging.GetInstance();
 
         private readonly ConsoleEventListener _listener;
@@ -31,55 +31,55 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         public async Task SecurityMessage_DeviceSendSingleMessage_Amqp()
         {
-            await TestSecurityMessage(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
+            await TestSecurityMessage(Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task SecurityMessage_ModuleSendSingleMessage_Amqp()
         {
-            await TestSecurityMessageModule(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
+            await TestSecurityMessageModule(Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task SecurityMessage_DeviceSendSingleMessage_AmqpWs()
         {
-            await TestSecurityMessage(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
+            await TestSecurityMessage(Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task SecurityMessage_ModuleSendSingleMessage_AmqpWs()
         {
-            await TestSecurityMessageModule(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
+            await TestSecurityMessageModule(Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task SecurityMessage_DeviceSendSingleMessage_Mqtt()
         {
-            await TestSecurityMessage(TestDeviceType.Sasl, Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
+            await TestSecurityMessage(Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task SecurityMessage_ModuleSendSingleMessage_Mqtt()
         {
-            await TestSecurityMessageModule(TestDeviceType.Sasl, Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
+            await TestSecurityMessageModule(Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task SecurityMessage_DeviceSendSingleMessage_MqttWs()
         {
-            await TestSecurityMessage(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
+            await TestSecurityMessage(Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task SecurityMessage_ModuleSendSingleMessage_MqttWs()
         {
-            await TestSecurityMessageModule(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
+            await TestSecurityMessageModule(Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task SecurityMessage_DeviceSendSingleMessage_Http()
         {
-            await TestSecurityMessage(TestDeviceType.Sasl, Client.TransportType.Http1).ConfigureAwait(false);
+            await TestSecurityMessage(Client.TransportType.Http1).ConfigureAwait(false);
         }
 
         private Client.Message ComposeD2CSecurityTestMessage(out string eventId, out string payload, out string p1Value)
@@ -122,9 +122,9 @@ namespace Microsoft.Azure.Devices.E2ETests
             };
         }
 
-        private async Task TestSecurityMessage(TestDeviceType type, Client.TransportType transport)
+        private async Task TestSecurityMessage(Client.TransportType transport)
         {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(_devicePrefix).ConfigureAwait(false);
             EventHubTestListener testListener = await EventHubTestListener.CreateListener(testDevice.Id).ConfigureAwait(false);
 
             using (DeviceClient deviceClient = testDevice.CreateDeviceClient(transport))
@@ -141,9 +141,9 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        private async Task TestSecurityMessageModule(TestDeviceType type, Client.TransportType transport)
+        private async Task TestSecurityMessageModule(Client.TransportType transport)
         {
-            TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix, ModulePrefix).ConfigureAwait(false);
+            TestModule testModule = await TestModule.GetTestModuleAsync(_devicePrefix, _modulePrefix).ConfigureAwait(false);
             EventHubTestListener testListener = await EventHubTestListener.CreateListener(testModule.Id).ConfigureAwait(false);
 
             using (ModuleClient moduleClient = ModuleClient.CreateFromConnectionString(testModule.ConnectionString, transport))

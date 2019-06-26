@@ -6,16 +6,17 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
-#if !NET451
+using Microsoft.IdentityModel.Clients.ActiveDirectory;
+#if NET451
+using System.Net.Http.Headers;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+#else
 using Microsoft.Azure.OperationalInsights;
 using Microsoft.Rest;
 #endif
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
@@ -27,7 +28,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         //Azure Active Directory authentication authority for public cloud
         private const string AuthenticationAuthorityTemplate = "https://login.windows.net/{0}";
         //Azure Log Analytics Authentication token audience
-        private const string Audience =  "https://api.loganalytics.io/";
+        private const string Audience = "https://api.loganalytics.io/";
         //Azure Log Analytics query URL
         private const string QueryUriTemplate = "https://api.loganalytics.io/{0}/workspaces/{1}/query";
         //Azure Log Analytics API version
@@ -37,21 +38,21 @@ namespace Microsoft.Azure.Devices.E2ETests
             @"SecurityIoTRawEvent
     | where DeviceId == ""{0}""
     | where IoTRawEventId == ""{1}""";
-        
+
         private readonly string _workspaceId = Configuration.AzureSecurityCenterForIoTLogAnalytics.WorkspacedId;
         private readonly string _aadTenant = Configuration.AzureSecurityCenterForIoTLogAnalytics.AadTenant;
         private readonly string _appId = Configuration.AzureSecurityCenterForIoTLogAnalytics.AadAppId;
         private readonly string _appCertificate = Configuration.AzureSecurityCenterForIoTLogAnalytics.AadAppCertificate;
 
         private readonly TimeSpan _polingInterval = TimeSpan.FromSeconds(20);
+        private readonly TimeSpan _timeout = TimeSpan.FromMinutes(30);
 
         private readonly AuthenticationContext _authenticationContext;
         private readonly IClientAssertionCertificate _certificateAssertion;
 
-#if NET451 //http client and a REST Log Analytics api query URI
+        //These are used in NET451 instead of OperationalInsights SDK
         private readonly HttpClient _client;
         private readonly string _queryUri;
-#endif
 
         public static AzureSecurityCenterForIoTLogAnalyticsClient CreateClient()
         {
@@ -60,26 +61,34 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private AzureSecurityCenterForIoTLogAnalyticsClient()
         {
-#if NET451
             _client = new HttpClient();
             _queryUri = string.Format(CultureInfo.InvariantCulture, QueryUriTemplate, LogAnalyticsApiVersion, _workspaceId);
-#endif
             string authority = string.Format(CultureInfo.InvariantCulture, AuthenticationAuthorityTemplate, _aadTenant);
             _authenticationContext = new AuthenticationContext(authority);
             var cert = new X509Certificate2(Convert.FromBase64String(_appCertificate));
             _certificateAssertion = new ClientAssertionCertificate(_appId, cert);
-
         }
 
         public async Task<bool> IsRawEventExist(string deviceId, string eventId)
         {
-            bool isEventExist = false;
             string query = string.Format(CultureInfo.InvariantCulture, RawEventQueryTemplate, deviceId, eventId);
+#if NET451  //Use Http client
+            return await QueryEventHttpClient(query).ConfigureAwait(false);
+#else       // Use  Log analytics SDK client
+            return await QueryEventLogAnalyticsClient(query).ConfigureAwait(false);
+#endif
+        }
+
+#if NET451
+#region NET451
+        private async Task<bool> QueryEventHttpClient(string query)
+        {
+            bool isEventExist = false;
             var sw = new Stopwatch();
             sw.Start();
-            while (!isEventExist && sw.Elapsed.TotalMinutes < 30)
+            while (!isEventExist && sw.Elapsed < _timeout)
             {
-                isEventExist = await DoQuery(query).ConfigureAwait(false);
+                isEventExist = await DoQueryHttpClient(query).ConfigureAwait(false);
                 await Task.Delay(_polingInterval).ConfigureAwait(false);
             }
 
@@ -87,17 +96,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             return isEventExist;
         }
 
-        private async Task<bool> DoQuery(string query)
-        {
-            string accessToken = await GetAccessToken().ConfigureAwait(false);
-#if NET451
-            return await DoQueryHttpClient(query).ConfigureAwait(false);
-#else
-            return await DoQueryLogAnalyticsClient(query).ConfigureAwait(false);
-#endif
-        }
-
-#if NET451
         private async Task<bool> DoQueryHttpClient(string query)
         {
             string accessToken = await GetAccessToken().ConfigureAwait(false);
@@ -126,23 +124,36 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             return content;
         }
-#else 
-        private async Task<bool> DoQueryLogAnalyticsClient(string query)
+#endregion NET451
+#else
+#region !NET451
+        private async Task<bool> QueryEventLogAnalyticsClient(string query)
         {
             string accessToken = await GetAccessToken().ConfigureAwait(false);
             TokenCredentials creds = new TokenCredentials(accessToken);
             using (OperationalInsightsDataClient client = new OperationalInsightsDataClient(creds))
             {
                 client.WorkspaceId = _workspaceId;
-                var result = client.Query(query);
-                return result.Results.Any();
+                bool isEventExist = false;
+                var sw = new Stopwatch();
+                sw.Start();
+                while (!isEventExist && sw.Elapsed < _timeout)
+                {
+                    isEventExist = client.Query(query).Results.Any();
+                    await Task.Delay(_polingInterval).ConfigureAwait(false);
+                }
+
+                sw.Stop();
+                return isEventExist;
             }
         }
+#endregion !NET451
 #endif
 
         private async Task<string> GetAccessToken()
         {
-            AuthenticationResult result = await _authenticationContext.AcquireTokenAsync(Audience, _certificateAssertion).ConfigureAwait(false);
+            AuthenticationResult result = await _authenticationContext
+                .AcquireTokenAsync(Audience, _certificateAssertion).ConfigureAwait(false);
             return result.AccessToken;
         }
 
@@ -156,9 +167,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             if (disposing)
             {
-#if NET451
-                _client.Dispose();
-#endif
+                _client?.Dispose();
             }
         }
     }
