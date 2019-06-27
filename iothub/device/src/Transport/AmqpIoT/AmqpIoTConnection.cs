@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             _amqpIoTTransport = new AmqpIoTTransport(_amqpSettings, _amqpTransportSettings, hostName, disableServerCertificateValidation);
         }
 
-        private void _amqpConnectionClosed(object sender, EventArgs e)
+        private void OnAmqpConnectionClosed(object sender, EventArgs e)
         {
             Closed.Invoke(sender, e);
         }
@@ -54,15 +54,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             try
             {
                 _amqpConnection = new AmqpConnection(transportBase, _amqpSettings, _amqpConnectionSettings);
-                _amqpConnection.Closed += _amqpConnectionClosed;
+                _amqpConnection.Closed += OnAmqpConnectionClosed;
                 await _amqpConnection.OpenAsync(timeout).ConfigureAwait(false);
 
                 if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(OpenConnectionAsync)}");
                 return this;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 transportBase?.Close();
+                AmqpIoTExceptionAdapter.HandleAmqpException(ex, "AMQP connection open failed.");
                 throw;
             }
             finally
@@ -71,12 +72,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
         }
 
-        #region CBS link
         internal AmqpIoTCbsLink CreateCbsLink(DeviceIdentity deviceIdentity, TimeSpan timeout)
         {
             return new AmqpIoTCbsLink(_amqpConnection);
         }
-        #endregion
 
         internal AmqpIoTSession AddSession()
         {
@@ -88,14 +87,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             return _amqpConnection.IsClosing();
         }
 
-        internal void SafeClose()
-        {
-            _amqpConnection.SafeClose();
-        }
-
         internal void Abort()
         {
-            _amqpConnection.Abort();
+            _amqpConnection.SafeClose();
         }
     }
 }

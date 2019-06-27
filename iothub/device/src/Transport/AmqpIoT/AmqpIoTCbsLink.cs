@@ -25,9 +25,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             {
                 return await _amqpCbsLink.SendTokenAsync(tokenProvider, namespaceAddress, audience, resource, requiredClaims, timeout).ConfigureAwait(false);
             }
-            catch (AmqpException ex)
+            catch (Exception ex)
             {
-                throw new IotHubCommunicationException("AmqpIoTCbsLink.SendTokenAsync error", ex.InnerException);
+                AmqpIoTExceptionAdapter.HandleAmqpException(ex, "Cannot send CBS token.");
+                throw;
             }
             finally
             {
@@ -42,9 +43,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             {
                 _amqpCbsLink.Close();
             }
-            catch (AmqpException ex)
+            catch (Exception ex)
             {
-                throw new IotHubCommunicationException("AmqpIoTCbsLink.Close error", ex.InnerException);
+                AmqpIoTExceptionAdapter.HandleAmqpException(ex, "Cannot close CBS link.");
+                throw;
             }
             finally
             {

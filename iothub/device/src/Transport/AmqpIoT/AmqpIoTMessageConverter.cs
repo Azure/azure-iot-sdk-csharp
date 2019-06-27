@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         private const string MethodName = "IoThub-methodname";
         private const string Status = "IoThub-status";
 
-#region AmqpMessage <--> Message
+        #region AmqpMessage <--> Message
         public static Message AmqpMessageToMessage(AmqpMessage amqpMessage)
         {
             if (amqpMessage == null)

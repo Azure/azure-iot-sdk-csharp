@@ -25,22 +25,31 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         public AmqpIoTReceivingLink(ReceivingAmqpLink receivingAmqpLink)
         {
             _receivingAmqpLink = receivingAmqpLink;
-            _receivingAmqpLink.Closed += _receivingAmqpLinkClosed;
+            _receivingAmqpLink.Closed += OnReceivingAmqpLinkClosed;
         }
 
-        private void _receivingAmqpLinkClosed(object sender, EventArgs e)
+        private void OnReceivingAmqpLinkClosed(object sender, EventArgs e)
         {
             Closed.Invoke(sender, e);
         }
 
-        internal Task CloseAsync(TimeSpan timeout)
+        internal async Task CloseAsync(TimeSpan timeout)
         {
-            return _receivingAmqpLink.CloseAsync(timeout);
+            try
+            {
+                await _receivingAmqpLink.CloseAsync(timeout).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                AmqpIoTExceptionAdapter.HandleAmqpException(ex, "Cannot close AMQP receiving link.");
+                throw;
+            }
         }
 
         internal void Abort()
         {
-            _receivingAmqpLink.Abort();
+            // Aborting links is not protocol safe as it creates an inconsistent state between the client and the broker.
+            _receivingAmqpLink.SafeClose();
         }
 
         #region Receive Message
@@ -48,34 +57,54 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(ReceiveAmqpMessageAsync)}");
 
-            var amqpMessage = await _receivingAmqpLink.ReceiveMessageAsync(timeout).ConfigureAwait(false);
-            Message message = null;
-            if (amqpMessage != null)
+            try
             {
-                message = AmqpIoTMessageConverter.AmqpMessageToMessage(amqpMessage);
-                message.LockToken = new Guid(amqpMessage.DeliveryTag.Array).ToString();
+                var amqpMessage = await _receivingAmqpLink.ReceiveMessageAsync(timeout).ConfigureAwait(false);
+                Message message = null;
+                if (amqpMessage != null)
+                {
+                    message = AmqpIoTMessageConverter.AmqpMessageToMessage(amqpMessage);
+                    message.LockToken = new Guid(amqpMessage.DeliveryTag.Array).ToString();
+                }
+
+                return message;
             }
-
-            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(ReceiveAmqpMessageAsync)}");
-
-            return message;
+            catch (Exception ex)
+            {
+                AmqpIoTExceptionAdapter.HandleAmqpException(ex, "Receive AMQP message failed.");
+                throw;
+            }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(ReceiveAmqpMessageAsync)}");
+            }
         }
 
         internal async Task<AmqpIoTOutcome> DisposeMessageAsync(string lockToken, Outcome outcome, TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, outcome, $"{nameof(DisposeMessageAsync)}");
 
-            ArraySegment<byte> deliveryTag = ConvertToDeliveryTag(lockToken);
-            Outcome disposeOutcome = 
-                await _receivingAmqpLink.DisposeMessageAsync(
-                    deliveryTag, 
-                    outcome, 
-                    batchable: true, 
-                    timeout: timeout).ConfigureAwait(false);
+            try
+            {
+                ArraySegment<byte> deliveryTag = ConvertToDeliveryTag(lockToken);
+                Outcome disposeOutcome =
+                    await _receivingAmqpLink.DisposeMessageAsync(
+                        deliveryTag,
+                        outcome,
+                        batchable: true,
+                        timeout: timeout).ConfigureAwait(false);
 
-            if (Logging.IsEnabled) Logging.Exit(this, outcome, $"{nameof(DisposeMessageAsync)}");
-
-            return new AmqpIoTOutcome(disposeOutcome);
+                return new AmqpIoTOutcome(disposeOutcome);
+            }
+            catch (Exception ex)
+            {
+                AmqpIoTExceptionAdapter.HandleAmqpException(ex, "Dispose AMQP message failed.");
+                throw;
+            }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, outcome, $"{nameof(DisposeMessageAsync)}");
+            }
         }
 
         private static ArraySegment<byte> ConvertToDeliveryTag(string lockToken)
@@ -164,7 +193,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 {
                     _onDesiredPropertyReceived.Invoke(null, correlationId, null);
                 }
-
 
                 Twin twin = null;
                 TwinCollection twinProperties = null;

@@ -10,7 +10,7 @@ using Microsoft.Azure.Amqp.Framing;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 {
-    static class AmqpIoTErrorAdapter
+    internal static class AmqpIoTErrorAdapter
     {
         public static readonly AmqpSymbol TimeoutName = AmqpIoTConstants.Vendor + ":timeout";
         public static readonly AmqpSymbol StackTraceName = AmqpIoTConstants.Vendor + ":stack-trace";
@@ -34,12 +34,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         public static readonly AmqpSymbol ApiVersion = AmqpIoTConstants.Vendor + ":api-version";
         public static readonly AmqpSymbol ChannelCorrelationId = AmqpIoTConstants.Vendor + ":channel-correlation-id";
 
-        const int MaxSizeInInfoMap = 32 * 1024;
-
-        public static AmqpException ToAmqpException(Exception exception, string gatewayId)
-        {
-            return ToAmqpException(exception, gatewayId, false);
-        }
+        private const int MaxSizeInInfoMap = 32 * 1024;
 
         public static AmqpException ToAmqpException(Exception exception, string gatewayId, bool includeStackTrace)
         {

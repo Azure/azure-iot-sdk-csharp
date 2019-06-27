@@ -218,7 +218,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             {
                 amqpIoTCbsLink?.Close();
                 amqpAuthenticationRefresher?.StopLoop();
-                amqpIoTConnection?.SafeClose();
+                amqpIoTConnection?.Abort();
                 throw;
             }
             finally

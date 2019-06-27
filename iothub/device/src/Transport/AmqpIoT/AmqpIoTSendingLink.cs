@@ -20,25 +20,31 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         public AmqpIoTSendingLink(SendingAmqpLink sendingAmqpLink)
         {
             _sendingAmqpLink = sendingAmqpLink;
-            _sendingAmqpLink.Closed += _sendingAmqpLinkClosed;
+            _sendingAmqpLink.Closed += SendingAmqpLinkClosed;
         }
 
-        private void _sendingAmqpLinkClosed(object sender, EventArgs e)
+        private void SendingAmqpLinkClosed(object sender, EventArgs e)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(_sendingAmqpLinkClosed)}");
             Closed.Invoke(sender, e);
         }
 
-        internal Task CloseAsync(TimeSpan timeout)
+        internal async Task CloseAsync(TimeSpan timeout)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(CloseAsync)}");
-            return _sendingAmqpLink.CloseAsync(timeout);
+            try
+            {
+                await _sendingAmqpLink.CloseAsync(timeout).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                AmqpIoTExceptionAdapter.HandleAmqpException(ex, "Cannot close AMQP sending link.");
+                throw;
+            }
         }
 
         internal void Abort()
         {
-            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(Abort)}");
-            _sendingAmqpLink.Abort();
+            // Aborting links is not protocol safe as it creates an inconsistent state between the client and the broker.
+            _sendingAmqpLink.SafeClose();
         }
 
         #region Telemetry handling
@@ -89,17 +95,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(SendMessagesAsync)}");
 
             return amqpIoTOutcome;
-        }
-
-        private async Task<Outcome> SendAmqpMessageAsync(AmqpMessage amqpMessage, TimeSpan timeout)
-        {
-            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(SendAmqpMessageAsync)}");
-
-            return await _sendingAmqpLink.SendMessageAsync(
-                amqpMessage,
-                new ArraySegment<byte>(Guid.NewGuid().ToByteArray()),
-                AmqpConstants.NullBinary,
-                timeout).ConfigureAwait(false);
         }
         #endregion
 
@@ -155,5 +150,24 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             return new AmqpIoTOutcome(outcome);
         }
         #endregion
+
+        private async Task<Outcome> SendAmqpMessageAsync(AmqpMessage amqpMessage, TimeSpan timeout)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(SendAmqpMessageAsync)}");
+
+            try
+            {
+                return await _sendingAmqpLink.SendMessageAsync(
+                    amqpMessage,
+                    new ArraySegment<byte>(Guid.NewGuid().ToByteArray()),
+                    AmqpConstants.NullBinary,
+                    timeout).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                AmqpIoTExceptionAdapter.HandleAmqpException(ex, "Send AMQP message failed.");
+                throw;
+            }
+        }
     }
 }
