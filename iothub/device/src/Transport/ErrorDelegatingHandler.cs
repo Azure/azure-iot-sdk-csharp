@@ -17,6 +17,7 @@ using System.Net.WebSockets;
 using System.Net;
 using System.Net.Http;
 using Microsoft.Azure.Amqp;
+using System.Reflection;
 using DotNetty.Transport.Channels;
 
 namespace Microsoft.Azure.Devices.Client.Transport
@@ -146,7 +147,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private static bool IsNetwork(Exception singleException)
         {
-            return s_networkExceptions.Contains(singleException.GetType());
+            return s_networkExceptions.Any(baseExceptionType => baseExceptionType.IsInstanceOfType(singleException));
         }
 
         private Task ExecuteWithErrorHandlingAsync(Func<Task> asyncOperation)

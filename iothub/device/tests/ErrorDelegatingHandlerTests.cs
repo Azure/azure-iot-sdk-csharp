@@ -65,6 +65,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                                                                 "Inner exception",
                                                                 new AuthenticationException()))
             },
+            { typeof(TestDerivedException), () => new TestDerivedException() },
         };
 
         private static readonly HashSet<Type> s_networkExceptions = new HashSet<Type>
@@ -77,7 +78,12 @@ namespace Microsoft.Azure.Devices.Client.Test
             typeof(WebException),
             typeof(AmqpException),
             typeof(WebSocketException),
+            typeof(TestDerivedException),
         };
+
+        public class TestDerivedException : SocketException
+        {
+        }
 
         public class TestSecurityException : Exception
         {
