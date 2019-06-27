@@ -144,8 +144,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private static bool IsNetwork(Exception singleException)
         {
-            Type exceptionType = singleException.GetType();
-            return s_networkExceptions.Any(baseExceptionType => baseExceptionType.IsAssignableFrom(exceptionType));
+            return s_networkExceptions.Any(baseExceptionType => baseExceptionType.IsInstanceOfType(singleException));
         }
 
         private Task ExecuteWithErrorHandlingAsync(Func<Task> asyncOperation)
