@@ -120,7 +120,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             int n = 1;
             string a = "sas";
             int c = -1;
-            string i = Guid.NewGuid().ToString();
+            string i = null;
             string f = null;
 
             while (param_counter + 1 < args.Length)
@@ -183,6 +183,11 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Console.Error.WriteLine("Missing -f <scenario> parameter.");
                 Help();
                 return -1;
+            }
+
+            if (i == null)
+            {
+                i = $"{DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.ffZ")}_dotNet_{f}";
             }
 
             Tuple<string, Func<PerfScenarioConfig, PerfScenario>> scenario;
