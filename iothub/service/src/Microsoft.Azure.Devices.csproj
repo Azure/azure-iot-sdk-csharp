@@ -158,4 +158,10 @@
     <PackageReference Condition=" '$(Configuration)' == 'Debug' " Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.6.1" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="Microsoft.Rest.ClientRuntime">
+      <Version>2.3.10</Version>
+    </PackageReference>
+  </ItemGroup>
+
 </Project>
