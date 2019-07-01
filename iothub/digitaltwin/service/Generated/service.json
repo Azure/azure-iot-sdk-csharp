@@ -1,0 +1,401 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "2019-07-01-preview",
+    "title": "IotHub Gateway Service APIs - 2019-07-01-preview"
+  },
+  "host": "fully-qualified-iothubname.azure-devices.net",
+  "schemes": [
+    "https"
+  ],
+  "paths": {
+    "/digitalTwins/{digitalTwinId}/interfaces": {
+      "get": {
+        "summary": "Gets the properties of interfaces.",
+        "operationId": "DigitalTwin_GetAllInterfaces",
+        "consumes": [],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "digitalTwinId",
+            "in": "path",
+            "description": "Digital Twin ID. Format of digitalTwinId is DeviceId[~ModuleId]. ModuleId is optional.\r\nExample 1: \"myDevice\"\r\nExample 2: \"myDevice~module1\"",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "$ref": "#/parameters/api-version"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns a collection of interface objects",
+            "schema": {
+              "$ref": "#/definitions/DigitalTwinInterfaces"
+            },
+            "headers": {
+              "ETag": {
+                "description": "ETag of the digital twin.",
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Updates desired properties of multiple interfaces.\r\n            Example URI: \"digitalTwins/{digitalTwinId}/interfaces\"",
+        "operationId": "DigitalTwin_UpdateMultipleInterfaces",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "digitalTwinId",
+            "in": "path",
+            "description": "Digital Twin ID. Format of digitalTwinId is DeviceId[~ModuleId]. ModuleId is optional.\r\nExample 1: \"myDevice\"\r\nExample 2: \"myDevice~module1\"",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "interfacesPatchInfo",
+            "in": "body",
+            "description": "Multiple interfaces desired properties to update.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DigitalTwinInterfacesPatch"
+            }
+          },
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "$ref": "#/parameters/api-version"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns multiple interfaces",
+            "schema": {
+              "$ref": "#/definitions/DigitalTwinInterfaces"
+            },
+            "headers": {
+              "ETag": {
+                "description": "ETag of the digital twin.",
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/digitalTwins/{digitalTwinId}/interfaces/{interfaceName}": {
+      "get": {
+        "summary": "Gets the properties of given interface.\r\n            Example URI: \"digitalTwins/{digitalTwinId}/interfaces/{interfaceName}\"",
+        "operationId": "DigitalTwin_GetSingleInterface",
+        "consumes": [],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "digitalTwinId",
+            "in": "path",
+            "description": "Digital Twin ID. Format of digitalTwinId is DeviceId[~ModuleId]. ModuleId is optional.\r\nExample 1: \"myDevice\"\r\nExample 2: \"myDevice~module1\"",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "interfaceName",
+            "in": "path",
+            "description": "Interface name, for example <example>myThermostat</example>.",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "$ref": "#/parameters/api-version"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns interface object of given id",
+            "schema": {
+              "$ref": "#/definitions/DigitalTwinInterfaces"
+            },
+            "headers": {
+              "ETag": {
+                "description": "ETag of the digital twin.",
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/digitalTwins/{digitalTwinId}/interfaces/{interfaceName}/commands/{commandName}": {
+      "post": {
+        "summary": "Invoke a digital twin interface command.",
+        "description": "Invoke a digital twin interface command.",
+        "operationId": "DigitalTwin_InvokeInterfaceCommand",
+        "consumes": [
+		  "application/json"
+        ],
+        "produces": [
+		  "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "digitalTwinId",
+            "in": "path",
+            "description": "Digital Twin ID. Format of digitalTwinId is DeviceId[~ModuleId]. ModuleId is optional.\r\nExample 1: \"myDevice\"\r\nExample 2: \"myDevice~module1\"",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "interfaceName",
+            "in": "path",
+            "description": "Interface name, for example <example>myThermostat</example>.",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "commandName",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "responseTimeoutInSeconds",
+            "in": "query",
+            "description": "Response timeout in seconds.",
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "connectTimeoutInSeconds",
+            "in": "query",
+            "description": "Connect timeout in seconds.",
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "$ref": "#/parameters/api-version"
+          },
+          {
+            "name": "payload",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the method response payload",
+            "headers": {
+              "x-ms-request-id": {
+                "description": "Correlation Id of the command request.",
+                "type": "string"
+              },
+              "x-ms-command-statuscode": {
+                "description": "Status code of command execution result following HTTP status code schema.",
+                "type": "integer"
+              }
+            },
+            "schema": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "/digitalTwins/models/{modelId}": {
+      "get": {
+        "summary": "Returns a DigitalTwin model definition for the given \"id\".\r\nIf \"expand\" is present in the query parameters and \"id\" is for a device capability model then it returns\r\nthe capability metamodel with expanded interface definitions.",
+        "operationId": "DigitalTwin_GetDigitalTwinModel",
+        "consumes": [],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "modelId",
+            "in": "path",
+            "description": "Model id Ex: <example>urn:contoso:TemperatureSensor:1</example>",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "expand",
+            "in": "query",
+            "description": "Indicates whether to expand the device capability model's interface definitions inline or not.\r\nThis query parameter ONLY applies to Capability model.",
+            "required": false,
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "$ref": "#/parameters/api-version"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the digital twin model",
+            "schema": {
+              "type": "object"
+            },
+            "headers": {
+              "ETag": {
+                "description": "Etag of the model definition.",
+                "type": "string"
+              },
+              "x-ms-model-id": {
+                "description": "Id of the model returned.",
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "DigitalTwinInterfaces": {
+      "type": "object",
+      "properties": {
+        "interfaces": {
+          "description": "Interface(s) data on the digital twin.",
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/Interface"
+          }
+        },
+        "version": {
+          "format": "int64",
+          "description": "Version of digital twin.",
+          "type": "integer"
+        }
+      }
+    },
+    "Interface": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "The name of digital twin interface, e.g.: myThermostat.",
+          "type": "string"
+        },
+        "properties": {
+          "description": "List of all properties in an interface.",
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/Property"
+          }
+        }
+      }
+    },
+    "Property": {
+      "type": "object",
+      "properties": {
+        "reported": {
+          "$ref": "#/definitions/Reported"
+        },
+        "desired": {
+          "$ref": "#/definitions/Desired"
+        }
+      }
+    },
+    "Reported": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "description": "The current interface property value in a digitalTwin.",
+          "type": "object"
+        },
+        "desiredState": {
+          "$ref": "#/definitions/DesiredState"
+        }
+      }
+    },
+    "Desired": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "description": "The desired value of the interface property to set in a digitalTwin.",
+          "type": "object"
+        }
+      }
+    },
+    "DesiredState": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "format": "int32",
+          "description": "Status code for the operation.",
+          "type": "integer"
+        },
+        "subCode": {
+          "format": "int32",
+          "description": "Sub status code for the status.",
+          "type": "integer"
+        },
+        "version": {
+          "format": "int64",
+          "description": "Version of the desired value received.",
+          "type": "integer"
+        },
+        "description": {
+          "description": "Description of the status.",
+          "type": "string"
+        }
+      }
+    },
+    "DigitalTwinInterfacesPatch": {
+      "type": "object",
+      "properties": {
+        "interfaces": {
+          "description": "Interface(s) data to patch in the digital twin.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "properties": {
+                "description": "List of properties to update in an interface.",
+                "type": "object",
+                "additionalProperties": {
+                  "type": "object",
+                  "properties": {
+                    "desired": {
+                      "type": "object",
+                      "properties": {
+                        "value": {
+                          "description": "The desired value of the interface property to set in a digitalTwin.",
+                          "type": "object"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "parameters": {
+    "api-version": {
+      "name": "api-version",
+      "in": "query",
+      "description": "Version of the Api. Must be 2019-07-01-preview",
+      "required": true,
+      "type": "string"
+    }
+  }
+}
