@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         Device
     }
 
-    public class TestDevice
+    public class TestDevice : IDisposable
     {
         private const int DelayAfterDeviceCreationSeconds = 5;
         private static Dictionary<string, TestDevice> s_deviceCache = new Dictionary<string, TestDevice>();
@@ -56,6 +56,26 @@ namespace Microsoft.Azure.Devices.E2ETests
                     await CreateDeviceAsync(type, prefix).ConfigureAwait(false);
                 }
 
+                TestDevice ret = s_deviceCache[prefix];
+
+                s_log.WriteLine($"{nameof(GetTestDeviceAsync)}: Using device {ret.Id}.");
+                return ret;
+            }
+            finally
+            {
+                s_semaphore.Release();
+            }
+        }
+
+        public static async Task<TestDevice> CreateTestDeviceAsync(string namePrefix, TestDeviceType type = TestDeviceType.Sasl)
+        {
+            string prefix = namePrefix + type + "_" + Guid.NewGuid();
+
+            try
+            {
+                await s_semaphore.WaitAsync().ConfigureAwait(false);
+                
+                await CreateDeviceAsync(type, prefix).ConfigureAwait(false);
                 TestDevice ret = s_deviceCache[prefix];
 
                 s_log.WriteLine($"{nameof(GetTestDeviceAsync)}: Using device {ret.Id}.");
@@ -201,10 +221,23 @@ namespace Microsoft.Azure.Devices.E2ETests
             return deviceClient;
         }
 
+        private async Task DisposeDeviceAsync()
+        {
+            using (RegistryManager rm = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
+            {
+                await rm.RemoveDeviceAsync(this.Id).ConfigureAwait(false);
+            }
+        }
+
         private static string GetHostName(string iotHubConnectionString)
         {
             Regex regex = new Regex("HostName=([^;]+)", RegexOptions.None);
             return regex.Match(iotHubConnectionString).Groups[1].Value;
+        }
+
+        public void Dispose()
+        {
+            DisposeDeviceAsync().GetAwaiter().GetResult();
         }
     }
 }
