@@ -29,7 +29,7 @@ phases:
 
       containerName: 'testtpm-instance'
 
-      ports: |  
+      ports: |
        127.0.0.1:2321:2321
        127.0.0.1:2322:2322
 
@@ -51,15 +51,15 @@ phases:
 
       restartPolicy: unlessStopped
 
-  - script: |  
+  - script: |
        # Run dotnet first experience.
        dotnet new
-       
+
        # List active docker containers
        docker ps -a
-       
+
        # Start build
-       vsts/linux_csharp_netcore.sh 
+       vsts/linux_csharp_netcore.sh
     displayName: build
     env:
       IOTHUB_CONN_STRING_CSHARP: $(IOTHUB-CONN-STRING-CSHARP)
@@ -84,6 +84,10 @@ phases:
       FAR_AWAY_IOTHUB_HOSTNAME: $(FAR-AWAY-IOTHUB-HOSTNAME)
       CUSTOM_ALLOCATION_POLICY_WEBHOOK: $(CUSTOM-ALLOCATION-POLICY-WEBHOOK)
       IOTHUB_PROXY_SERVER_ADDRESS: 127.0.0.1:8888
+      LA_AAD_TENANT: $(LA-AAD-TENANT)
+      LA_AAD_APP_ID: $(LA-AAD-APP-ID)
+      LA_AAD_APP_CERT_BASE64: $(LA-AAD-APP-CERT-BASE64)
+      LA_WORKSPACE_ID: $(LA-WORKSPACE-ID)
 
   - task: CopyFiles@2
     displayName: 'Copy files to the artifacts folder'
@@ -124,20 +128,20 @@ phases:
     name: Hosted VS2017
     timeoutInMinutes: 180
   steps:
-  - script: |  
+  - script: |
        call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
        sn -Vr *,31bf3856ad364e35
-        
+
     displayName: 'Disable strong name validation'
 
-  - script: |  
+  - script: |
        choco install -y squid
-        
+
     displayName: 'Install Squid'
 
-  - script: |  
+  - script: |
        choco install -y netfx-4.5.2-devpack
-        
+
     displayName: 'Install .NET 4.5.2 Targetting Pack'
 
   - powershell: ./vsts/manual_checkout.ps1
@@ -145,26 +149,26 @@ phases:
     env:
       COMMIT_FROM: $(COMMIT_FROM)
 
-  - script: |  
+  - script: |
        rem Run dotnet first experience.
        dotnet new
-       
+
        rem List active docker containers
        docker ps -a
 
-       rem Start 
+       rem Start
 
        rem Start ETL logging
        logman create trace IotTrace -o iot.etl -pf tools/CaptureLogs/iot_providers.txt
        logman start IotTrace
-       
+
        rem Start build
        vsts/windows_csharp.cmd
 
        ren Stop ETL logging
        logman stop IotTrace
        logman delete IotTrace
-        
+
     displayName: build
     env:
       IOTHUB_CONN_STRING_CSHARP: $(IOTHUB-CONN-STRING-CSHARP)
@@ -189,6 +193,10 @@ phases:
       FAR_AWAY_IOTHUB_HOSTNAME: $(FAR-AWAY-IOTHUB-HOSTNAME)
       CUSTOM_ALLOCATION_POLICY_WEBHOOK: $(CUSTOM-ALLOCATION-POLICY-WEBHOOK)
       IOTHUB_PROXY_SERVER_ADDRESS: 127.0.0.1:3128
+      LA_AAD_TENANT: $(LA-AAD-TENANT)
+      LA_AAD_APP_ID: $(LA-AAD-APP-ID)
+      LA_AAD_APP_CERT_BASE64: $(LA-AAD-APP-CERT-BASE64)
+      LA_WORKSPACE_ID: $(LA-WORKSPACE-ID)
 
   - task: CopyFiles@2
     displayName: 'Copy TRX files to the artifacts folder'
@@ -346,15 +354,15 @@ phases:
     name: win
     timeoutInMinutes: 1
   steps:
-  - powershell: ./vsts/manual_checkout.ps1 
+  - powershell: ./vsts/manual_checkout.ps1
     displayName: 'GIT checkout'
     env:
       COMMIT_FROM: $(COMMIT_FROM)
 
-  - script: |  
+  - script: |
        call "C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\Common7\\Tools\\VsDevCmd.bat"
        vsts/windows_csharp_mf.cmd
-        
+
     displayName: build
 
 - phase: DEVEXP
@@ -366,14 +374,14 @@ phases:
     timeoutInMinutes: 15
 
   steps:
-  - powershell: ./vsts/manual_checkout.ps1 
+  - powershell: ./vsts/manual_checkout.ps1
     displayName: 'GIT checkout'
     env:
       COMMIT_FROM: $(COMMIT_FROM)
 
-  - script: |  
+  - script: |
        call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
-       vsts/windows_csharp_deviceexplorer.cmd 
+       vsts/windows_csharp_deviceexplorer.cmd
     displayName: build
 
 # BEGIN: SDL and Compliance tasks #

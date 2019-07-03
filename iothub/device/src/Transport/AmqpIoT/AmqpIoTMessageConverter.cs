@@ -177,7 +177,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 }
             }
         }
-        
+
         /// <summary>
         /// Copies the Message instance's properties to the AmqpMessage instance.
         /// </summary>
@@ -239,6 +239,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             if (data.SystemProperties.TryGetValue(MessageSystemPropertyNames.OutputName, out propertyValue))
             {
                 amqpMessage.ApplicationProperties.Map[MessageSystemPropertyNames.OutputName] = (string)propertyValue;
+            }
+
+            if (data.SystemProperties.TryGetValue(MessageSystemPropertyNames.InterfaceId, out propertyValue))
+            {
+                amqpMessage.MessageAnnotations.Map[MessageSystemPropertyNames.InterfaceId] = (string)propertyValue;
             }
 
             if (copyUserProperties && data.Properties.Count > 0)
