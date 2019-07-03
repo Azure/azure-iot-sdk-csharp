@@ -38,7 +38,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 { MessageSystemPropertyNames.MessageSchema, CustomHeaderConstants.MessageSchema },
                 { MessageSystemPropertyNames.CreationTimeUtc, CustomHeaderConstants.CreationTimeUtc },
                 { MessageSystemPropertyNames.ContentType, CustomHeaderConstants.ContentType },
-                { MessageSystemPropertyNames.ContentEncoding, CustomHeaderConstants.ContentEncoding }
+                { MessageSystemPropertyNames.ContentEncoding, CustomHeaderConstants.ContentEncoding },
+                { MessageSystemPropertyNames.InterfaceId, CustomHeaderConstants.InterfaceId }
             };
 
         readonly IHttpClientHelper httpClientHelper;
@@ -106,7 +107,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
 
             cancellationToken.ThrowIfCancellationRequested();
-            
+
             var customHeaders = PrepareCustomHeaders(CommonConstants.DeviceEventPathTemplate.FormatInvariant(this.deviceId), string.Empty, CommonConstants.DeviceToCloudOperation);
 
             string body = ToJson(messages);
@@ -132,7 +133,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         internal async Task UploadToBlobAsync(string blobName, Stream source, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            
+
             var fileUploadRequest = new FileUploadRequest()
             {
                 BlobName = blobName
@@ -146,11 +147,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
             cancellationToken).ConfigureAwait(false);
 
             string putString = String.Format(
-                CultureInfo.InvariantCulture, 
+                CultureInfo.InvariantCulture,
                 "https://{0}/{1}/{2}{3}",
                 fileUploadResponse.HostName,
                 fileUploadResponse.ContainerName,
-                Uri.EscapeDataString(fileUploadResponse.BlobName), // Pass URL encoded device name and blob name to support special characters 
+                Uri.EscapeDataString(fileUploadResponse.BlobName), // Pass URL encoded device name and blob name to support special characters
                 fileUploadResponse.SasToken);
 
             var notification = new FileUploadNotificationResponse();
