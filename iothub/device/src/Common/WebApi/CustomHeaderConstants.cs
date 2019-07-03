@@ -7,15 +7,15 @@ namespace Microsoft.Azure.Devices.Client
     {
         /// <summary>
         /// Used in message responses and feedback
-        /// Specifies the tracing correlation Id for the request; the resource provider *must* log this 
-        /// so that end-to-end requests can be correlated across Azure. 
+        /// Specifies the tracing correlation Id for the request; the resource provider *must* log this
+        /// so that end-to-end requests can be correlated across Azure.
         /// </summary>
         public const string CorrelationId = "iothub-correlationid";
 
         /// <summary>
-        /// [Required for two way requests] Used to correlate two-way communication. 
+        /// [Required for two way requests] Used to correlate two-way communication.
         /// Format: A case-sensitive string ( up to 128 char long) of ASCII 7-bit alphanumeric chars
-        ///  + {'-', ':', '/', '\', '.', '+', '%', '_', '#', '*', '?', '!', '(', ')', ',', '=', '@', ';', '$', '''}. 
+        ///  + {'-', ':', '/', '\', '.', '+', '%', '_', '#', '*', '?', '!', '(', ')', ',', '=', '@', ';', '$', '''}.
         /// Non-alphanumeric characters are from URN RFC.
         /// </summary>
         public const string MessageId = "iothub-messageid";
@@ -46,23 +46,23 @@ namespace Microsoft.Azure.Devices.Client
         public const string UserId = "iothub-userid";
 
         /// <summary>
-        /// [Optional] Used to specify the role of the message in the communication pattern. 
-        /// Possible values: 
-        ///     “d2c”: event message (device to cloud) 
-        ///     “c2d”: message 
-        ///     “d2creq”: inquiry request 
-        ///     “d2cres”: inquiry response 
-        ///     “c2dreq”: command request 
+        /// [Optional] Used to specify the role of the message in the communication pattern.
+        /// Possible values:
+        ///     “d2c”: event message (device to cloud)
+        ///     “c2d”: message
+        ///     “d2creq”: inquiry request
+        ///     “d2cres”: inquiry response
+        ///     “c2dreq”: command request
         ///     “c2dres”: command response
         /// </summary>
         public const string Operation = "iothub-operation";
 
         /// <summary>
-        /// [Optional] Used to specify the feedback required for the consumption of the message by the device. 
-        /// Possible values: 
-        ///     “none”: no feedback 
-        ///     “positive”: receive a feedback message if the message was consumed 
-        ///     “negative”: receive a feedback message if the message expired without being completed by the device 
+        /// [Optional] Used to specify the feedback required for the consumption of the message by the device.
+        /// Possible values:
+        ///     “none”: no feedback
+        ///     “positive”: receive a feedback message if the message was consumed
+        ///     “negative”: receive a feedback message if the message expired without being completed by the device
         ///     “full”: both positive and negative
         /// </summary>
         public const string Ack = "iothub-ack";
@@ -88,7 +88,7 @@ namespace Microsoft.Azure.Devices.Client
         public const string ContentType = "iothub-contenttype";
 
         /// <summary>
-        /// The lock token of the retrieved message 
+        /// The lock token of the retrieved message
         /// </summary>
         public const string MessageLockToken = "iothub-messagelocktoken";
 
@@ -125,7 +125,7 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// x-ms-client-ip-address
-        /// Set to the client IP address used in the request; this is required since the resource provider 
+        /// Set to the client IP address used in the request; this is required since the resource provider
         /// will not have access to the client IP.
         /// </summary>
         public const string ClientIpAddress = "x-ms-client-ip-address";
@@ -168,11 +168,11 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// x-ms-client-request-id
-        /// Caller-specified request ID, in the form of a GUID with no decoration such as curly braces 
-        /// (e.g. client-request-id: 9C4D50EE-2D56-4CD3-8152-34347DC9F2B0). 
-        /// A caller-defined value that identifies the given request.   If specified, this will be 
-        /// included in response information as a way to map the request. 
-        /// If the caller provides this header – the resource provider *must* log this with their 
+        /// Caller-specified request ID, in the form of a GUID with no decoration such as curly braces
+        /// (e.g. client-request-id: 9C4D50EE-2D56-4CD3-8152-34347DC9F2B0).
+        /// A caller-defined value that identifies the given request.   If specified, this will be
+        /// included in response information as a way to map the request.
+        /// If the caller provides this header – the resource provider *must* log this with their
         /// traces to facilitate tracing a single request.
         /// </summary>
         public const string ClientRequestId = "x-ms-client-request-id";
@@ -213,5 +213,10 @@ namespace Microsoft.Azure.Devices.Client
         /// Used to supply module ID of invoking module when used by module to invoke method on other modules/devices.
         /// </summary>
         public const string ModuleId = "x-ms-edge-moduleId";
+
+        /// <summary>
+        /// Used to indicate that the message is a security message
+        /// </summary>
+        public const string InterfaceId = "iothub-interface-id";
     }
 }
