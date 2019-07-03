@@ -6,31 +6,45 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
-    public class DeviceAllTest : DeviceClientScenario
+    public class DeviceAllNoRetry : DeviceClientScenario
     {
         private Task _sendTask;
         private Task _receiveTask;
         private Task _waitForMethodTask;
+        private Task _waitForDisconnectTask;
 
 
-        public DeviceAllTest(PerfScenarioConfig config) : base(config)
+        public DeviceAllNoRetry(PerfScenarioConfig config) : base(config)
         {
         }
 
         public override async Task SetupAsync(CancellationToken ct)
         {
             await CreateDeviceAsync().ConfigureAwait(false);
+            DisableRetry();
             await OpenDeviceAsync(ct).ConfigureAwait(false);
             await EnableMethodsAsync(ct).ConfigureAwait(false);
         }
 
-        public override Task RunTestAsync(CancellationToken ct)
+        public override async Task RunTestAsync(CancellationToken ct)
         {
+            SetupTasks(ct);
+            Task completedTask = await Task.WhenAny(_waitForDisconnectTask, _sendTask, _receiveTask, _waitForMethodTask).ConfigureAwait(false);
+
+            if (completedTask == _waitForDisconnectTask)
+            {
+                DisposeDevice();
+                await SetupAsync(ct).ConfigureAwait(false);
+                SetupTasks(ct);
+            }
+        }
+
+        private void SetupTasks(CancellationToken ct)
+        {
+            if (_waitForDisconnectTask == null || _waitForDisconnectTask.IsCompleted) _waitForDisconnectTask = WaitForDisconnected(ct);
             if (_sendTask == null || _sendTask.IsCompleted) _sendTask = SendMessageAsync(ct);
             if (_receiveTask == null || _receiveTask.IsCompleted) _receiveTask = ReceiveMessageAsync(ct);
             if (_waitForMethodTask == null || _waitForMethodTask.IsCompleted) _waitForMethodTask = WaitForMethodAsync(ct);
-
-            return Task.WhenAny(_sendTask, _receiveTask, _waitForMethodTask);
         }
 
         public override Task TeardownAsync(CancellationToken ct)

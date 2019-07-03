@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using DotNetty.Common;
 using Microsoft.Azure.Devices.Client;
 using System;
 using System.Diagnostics;
@@ -12,6 +13,8 @@ namespace Microsoft.Azure.Devices.E2ETests
 {
     public abstract class DeviceClientScenario : PerfScenario
     {
+        private const int AmqpPrefetchCount = 100;
+
         private DeviceClient _dc;
 
         // Shared by Create, Open and Send
@@ -28,6 +31,10 @@ namespace Microsoft.Azure.Devices.E2ETests
         private SemaphoreSlim _methodSemaphore = new SemaphoreSlim(1);
         private static readonly MethodResponse s_methodResponse = new MethodResponse(200);
 
+        private TelemetryMetrics _mConnectionStatus = new TelemetryMetrics();
+        private SemaphoreSlim _connectionStatusChangedSemaphore = new SemaphoreSlim(1);
+        private SemaphoreSlim _waitForDisconnectSemaphore = new SemaphoreSlim(0);
+
         private byte[] _messageBytes;
 
         private bool _pooled;
@@ -41,6 +48,10 @@ namespace Microsoft.Azure.Devices.E2ETests
             _mRecv.OperationType = TelemetryMetrics.DeviceOperationReceive;
 
             _mMethod.Id = _id;
+
+            _mConnectionStatus.Id = _id;
+            _mConnectionStatus.ExecuteTime = null;
+            _mConnectionStatus.ScheduleTime = null;
 
             _messageBytes = new byte[_sizeBytes];
 
@@ -61,7 +72,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 transportSettings = new AmqpTransportSettings(
                     _transport,
-                    100,     // Prefetch Count.
+                    AmqpPrefetchCount,
                     new AmqpConnectionPoolSettings()
                     {
                         Pooling = true,
@@ -94,9 +105,60 @@ namespace Microsoft.Azure.Devices.E2ETests
                 throw new NotImplementedException($"Not implemented for authType {_authType}");
             }
 
+            _dc.SetConnectionStatusChangesHandler(OnConnectionStatusChanged);
+
             _m.ExecuteTime = _sw.ElapsedMilliseconds;
             _m.ScheduleTime = null; // sync operation
             await _writer.WriteAsync(_m).ConfigureAwait(false);
+        }
+
+        protected void DisableRetry()
+        {
+            _dc.SetRetryPolicy(new NoRetry());
+        }
+
+        private async void OnConnectionStatusChanged(ConnectionStatus status, ConnectionStatusChangeReason reason)
+        {
+            try
+            {
+                await _connectionStatusChangedSemaphore.WaitAsync().ConfigureAwait(false);
+
+                switch (status)
+                {
+                    case ConnectionStatus.Disconnected:
+                        SystemMetrics.DeviceDisconnected();
+                        _mConnectionStatus.OperationType = TelemetryMetrics.DeviceStateDisconnected;
+                        _waitForDisconnectSemaphore.Release();
+                        break;
+                    case ConnectionStatus.Connected:
+                        SystemMetrics.DeviceConnected();
+                        _mConnectionStatus.OperationType = TelemetryMetrics.DeviceStateConnected;
+                        break;
+                    case ConnectionStatus.Disconnected_Retrying:
+                        SystemMetrics.DeviceDisconnected();
+                        _mConnectionStatus.OperationType = TelemetryMetrics.DeviceStateDisconnectedRetrying;
+                        _waitForDisconnectSemaphore.Release();
+                        break;
+                    case ConnectionStatus.Disabled:
+                        _mConnectionStatus.OperationType = TelemetryMetrics.DeviceStateDisconnected;
+                        break;
+                    default:
+                        _mConnectionStatus.OperationType = TelemetryMetrics.DeviceStateUnknown;
+                        break;
+                }
+
+                _mConnectionStatus.ErrorMessage = $"ConnectionStatus: {status} reason: {reason}";
+                await _writer.WriteAsync(_mConnectionStatus).ConfigureAwait(false);
+            }
+            finally
+            {
+                _connectionStatusChangedSemaphore.Release();
+            }
+        }
+
+        protected Task WaitForDisconnected(CancellationToken ct)
+        {
+            return _waitForDisconnectSemaphore.WaitAsync(ct);
         }
 
         protected async Task OpenDeviceAsync(CancellationToken ct)
@@ -115,7 +177,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
             catch (Exception ex)
             {
-                _m.ErrorMessage = ex.Message;
+                _m.ErrorMessage = $"{ex.GetType().Name} - {ex.Message}";
                 exInfo = ExceptionDispatchInfo.Capture(ex);
             }
 
@@ -143,7 +205,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
             catch (Exception ex)
             {
-                _m.ErrorMessage = ex.Message;
+                _m.ErrorMessage = $"{ex.GetType().Name} - {ex.Message}";
                 exInfo = ExceptionDispatchInfo.Capture(ex);
             }
 
@@ -172,7 +234,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
             catch (Exception ex)
             {
-                _mRecv.ErrorMessage = ex.Message;
+                _mRecv.ErrorMessage = $"{ex.GetType().Name} - {ex.Message}";
                 exInfo = ExceptionDispatchInfo.Capture(ex);
             }
 
@@ -198,7 +260,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
             catch (Exception ex)
             {
-                _mMethod.ErrorMessage = ex.Message;
+                _mMethod.ErrorMessage = $"{ex.GetType().Name} - {ex.Message}";
                 exInfo = ExceptionDispatchInfo.Capture(ex);
             }
 
@@ -230,7 +292,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
             catch (Exception ex)
             {
-                _mMethod.ErrorMessage = ex.Message;
+                _mMethod.ErrorMessage = $"{ex.GetType().Name} - {ex.Message}";
                 exInfo = ExceptionDispatchInfo.Capture(ex);
             }
 
@@ -243,6 +305,11 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             if (_dc == null) return Task.CompletedTask;
             return _dc.CloseAsync(ct);
+        }
+
+        protected void DisposeDevice()
+        {
+            _dc.Dispose();
         }
     }
 }
