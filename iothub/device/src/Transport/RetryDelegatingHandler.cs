@@ -530,16 +530,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             try
             {
                 // No reason to reconnect at this moment.
-                if (!(_methodsEnabled || _twinEnabled || _eventsEnabled))
-                {
-                    _onConnectionStatusChanged(ConnectionStatus.Disconnected, ConnectionStatusChangeReason.Communication_Error);
-                    return;
-                }
-                else
-                {
-                    _onConnectionStatusChanged(ConnectionStatus.Disconnected_Retrying, ConnectionStatusChangeReason.Communication_Error);
-                }
-
+                 _onConnectionStatusChanged(ConnectionStatus.Disconnected_Retrying, ConnectionStatusChangeReason.Communication_Error);
+            
                 CancellationToken cancellationToken = _handleDisconnectCts.Token;
                 
                 // This will recover to the state before the disconnect.
@@ -588,7 +580,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                 // We were not able to recover the connection or subscriptions within the configured policy.
                 // The object will be placed in an unusable state.
-                Dispose(true);
+                // Dispose(true);
             }
             finally
             {

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Encoding;
 using Microsoft.Azure.Amqp.Framing;
+using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
 
@@ -16,7 +17,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
     internal class AmqpIoTReceivingLink
     {
         public event EventHandler Closed;
-        private ReceivingAmqpLink _receivingAmqpLink;
+        private readonly ReceivingAmqpLink _receivingAmqpLink;
 
         private Action<Message> _onEventsReceived;
         private Action<MethodRequestInternal> _onMethodReceived;
@@ -25,10 +26,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         public AmqpIoTReceivingLink(ReceivingAmqpLink receivingAmqpLink)
         {
             _receivingAmqpLink = receivingAmqpLink;
-            _receivingAmqpLink.Closed += _receivingAmqpLinkClosed;
+            _receivingAmqpLink.Closed += ReceivingAmqpLinkClosed;
         }
 
-        private void _receivingAmqpLinkClosed(object sender, EventArgs e)
+        private void ReceivingAmqpLinkClosed(object sender, EventArgs e)
         {
             Closed.Invoke(sender, e);
         }
@@ -38,27 +39,47 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             return _receivingAmqpLink.CloseAsync(timeout);
         }
 
-        internal void Abort()
+        internal bool IsClosing()
         {
-            _receivingAmqpLink.Abort();
+            return _receivingAmqpLink.IsClosing();
+        }
+
+        internal void SafeClose()
+        {
+            _receivingAmqpLink.SafeClose();
         }
 
         #region Receive Message
         internal async Task<Message> ReceiveAmqpMessageAsync(TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(ReceiveAmqpMessageAsync)}");
-
-            var amqpMessage = await _receivingAmqpLink.ReceiveMessageAsync(timeout).ConfigureAwait(false);
-            Message message = null;
-            if (amqpMessage != null)
+            try
             {
-                message = AmqpIoTMessageConverter.AmqpMessageToMessage(amqpMessage);
-                message.LockToken = new Guid(amqpMessage.DeliveryTag.Array).ToString();
+                var amqpMessage = await _receivingAmqpLink.ReceiveMessageAsync(timeout).ConfigureAwait(false);
+                Message message = null;
+                if (amqpMessage != null)
+                {
+                    message = AmqpIoTMessageConverter.AmqpMessageToMessage(amqpMessage);
+                    message.LockToken = new Guid(amqpMessage.DeliveryTag.Array).ToString();
+                }
+                return message;
             }
-
-            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(ReceiveAmqpMessageAsync)}");
-
-            return message;
+            catch (Exception e) when (!e.IsFatal())
+            {
+                Exception ex = AmqpIoTExceptionAdapter.ConvertToIoTHubException(e, _receivingAmqpLink);
+                if (ReferenceEquals(e, ex))
+                {
+                    throw;
+                }
+                else
+                {
+                    throw ex;
+                }
+            }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(ReceiveAmqpMessageAsync)}");
+            }
         }
 
         internal async Task<AmqpIoTOutcome> DisposeMessageAsync(string lockToken, Outcome outcome, TimeSpan timeout)

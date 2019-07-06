@@ -4,88 +4,92 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
-using Microsoft.Azure.Amqp.Transport;
-using Microsoft.Azure.Devices.Shared;
+using Microsoft.Azure.Amqp.Framing;
+using Microsoft.Azure.Devices.Client.Extensions;
+using Microsoft.Azure.Devices.Client.Transport.Amqp;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 {
     internal class AmqpIoTConnection
     {
-        static readonly AmqpVersion amqpVersion_1_0_0 = new AmqpVersion(1, 0, 0);
-
         public event EventHandler Closed;
-        private AmqpConnection _amqpConnection;
-        private AmqpConnectionSettings _amqpConnectionSettings;
+        private readonly AmqpConnection _amqpConnection;
+        private readonly AmqpIoTCbsLink _amqpIoTCbsLink;
 
-        private AmqpTransportSettings _amqpTransportSettings;
-        private AmqpIoTTransport _amqpIoTTransport;
-
-        private AmqpSettings _amqpSettings;
-
-        internal AmqpIoTConnection(AmqpTransportSettings amqpTransportSettings, string hostName, bool disableServerCertificateValidation)
+        internal AmqpIoTConnection(AmqpConnection amqpConnection)
         {
-            _amqpTransportSettings = amqpTransportSettings;
-
-            _amqpSettings = new AmqpSettings();
-            var amqpTransportProvider = new AmqpTransportProvider();
-            amqpTransportProvider.Versions.Add(amqpVersion_1_0_0);
-            _amqpSettings.TransportProviders.Add(amqpTransportProvider);
-
-            _amqpConnectionSettings = new AmqpConnectionSettings()
-            {
-                MaxFrameSize = AmqpConstants.DefaultMaxFrameSize,
-                ContainerId = CommonResources.GetNewStringGuid(),
-                HostName = hostName
-            };
-
-            _amqpIoTTransport = new AmqpIoTTransport(_amqpSettings, _amqpTransportSettings, hostName, disableServerCertificateValidation);
+            _amqpConnection = amqpConnection;
+            _amqpIoTCbsLink = new AmqpIoTCbsLink(new AmqpCbsLink(amqpConnection));
         }
 
-        private void _amqpConnectionClosed(object sender, EventArgs e)
+        internal AmqpIoTCbsLink GetCbsLink()
+        {
+            return _amqpIoTCbsLink;
+        }
+
+        internal void AmqpConnectionClosed(object sender, EventArgs e)
         {
             Closed.Invoke(sender, e);
         }
 
-        internal async Task<AmqpIoTConnection> OpenConnectionAsync(TimeSpan timeout)
+        internal async Task<AmqpIoTSession> OpenSessionAsync(TimeSpan timeout)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(OpenConnectionAsync)}");
+            if (_amqpConnection.IsClosing())
+            {
+                throw AmqpIoTExceptionAdapter.RESOUCE_DISCONNECTED_EXCEPTION;
+            }
 
-            TransportBase transportBase = await _amqpIoTTransport.Initialize(timeout).ConfigureAwait(false);
+            AmqpSessionSettings amqpSessionSettings = new AmqpSessionSettings()
+            {
+                Properties = new Fields()
+            };
+
             try
             {
-                _amqpConnection = new AmqpConnection(transportBase, _amqpSettings, _amqpConnectionSettings);
-                _amqpConnection.Closed += _amqpConnectionClosed;
-                await _amqpConnection.OpenAsync(timeout).ConfigureAwait(false);
-
-                if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(OpenConnectionAsync)}");
-                return this;
+                var amqpSession = new AmqpSession(_amqpConnection, amqpSessionSettings, AmqpIoTLinkFactory.GetInstance());
+                _amqpConnection.AddSession(amqpSession, new ushort?());
+                await amqpSession.OpenAsync(timeout).ConfigureAwait(false);
+                return new AmqpIoTSession(amqpSession);
             }
-            catch (Exception)
+            catch(Exception e) when (!e.IsFatal())
             {
-                transportBase?.Close();
-                throw;
+                Exception ex = AmqpIoTExceptionAdapter.ConvertToIoTHubException(e, _amqpConnection);
+                if (ReferenceEquals(e, ex))
+                {
+                    throw;
+                }
+                else
+                {
+                    throw ex;
+                }
             }
-            finally
+        }
+
+        internal async Task<IAmqpAuthenticationRefresher> CreateRefresherAsync(DeviceIdentity deviceIdentity, TimeSpan timeout)
+        {
+            if (_amqpConnection.IsClosing())
             {
-                if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(OpenConnectionAsync)}");
+                throw AmqpIoTExceptionAdapter.RESOUCE_DISCONNECTED_EXCEPTION;
             }
-        }
+            try
+            {
+                IAmqpAuthenticationRefresher amqpAuthenticator = new AmqpAuthenticationRefresher(deviceIdentity, _amqpIoTCbsLink);
+                await amqpAuthenticator.InitLoopAsync(timeout).ConfigureAwait(false);
+                return amqpAuthenticator;
+            }
+            catch (Exception e) when (!e.IsFatal())
+            {
+                Exception ex = AmqpIoTExceptionAdapter.ConvertToIoTHubException(e, _amqpConnection);
+                if (ReferenceEquals(e, ex))
+                {
+                    throw;
+                }
+                else
+                {
+                    throw ex;
+                }
+            }
 
-        #region CBS link
-        internal AmqpIoTCbsLink CreateCbsLink(DeviceIdentity deviceIdentity, TimeSpan timeout)
-        {
-            return new AmqpIoTCbsLink(_amqpConnection);
-        }
-        #endregion
-
-        internal AmqpIoTSession AddSession()
-        {
-            return new AmqpIoTSession(_amqpConnection);
-        }
-
-        internal bool IsClosing()
-        {
-            return _amqpConnection.IsClosing();
         }
 
         internal void SafeClose()
@@ -93,9 +97,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             _amqpConnection.SafeClose();
         }
 
-        internal void Abort()
+        internal bool IsClosing()
         {
-            _amqpConnection.Abort();
+            return _amqpConnection.IsClosing();
         }
     }
 }
