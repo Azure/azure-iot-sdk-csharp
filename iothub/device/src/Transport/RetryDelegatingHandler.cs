@@ -558,9 +558,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
                         tasks.Add(base.EnableEventReceiveAsync(cancellationToken));
                     }
 
-                    Debug.Assert(tasks.Count > 0);
-                    await Task.WhenAll(tasks).ConfigureAwait(false);
-
+                    if (tasks.Count > 0)
+                    {
+                        await Task.WhenAll(tasks).ConfigureAwait(false);
+                    }
+                    
                     // Send the request for transport close notification.
                     _transportClosedTask = HandleDisconnect();
 
