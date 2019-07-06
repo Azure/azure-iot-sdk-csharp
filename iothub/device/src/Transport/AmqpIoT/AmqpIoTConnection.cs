@@ -60,6 +60,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 }
                 else
                 {
+                    if (ex is AmqpIoTResourceException)
+                    {
+                        _amqpConnection.SafeClose();
+                    }
                     throw ex;
                 }
             }

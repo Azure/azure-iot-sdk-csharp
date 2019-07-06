@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 var amqpException = exception as AmqpException;
                 if (amqpException != null)
                 {
-                    return AmqpIoTErrorAdapter.ToIotHubClientContract(amqpException.Error);
+                    return AmqpIoTErrorAdapter.ToIotHubClientContract(amqpException);
                 }
 
                 return exception;

@@ -229,6 +229,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 }
                 else
                 {
+                    if (ex is AmqpIoTResourceException)
+                    {
+                        amqpSession.SafeClose();
+                    }
                     throw ex;
                 }
             }
@@ -289,6 +293,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 }
                 else
                 {
+                    if (ex is AmqpIoTResourceException)
+                    {
+                        amqpSession.SafeClose();
+                    }
                     throw ex;
                 }
             }

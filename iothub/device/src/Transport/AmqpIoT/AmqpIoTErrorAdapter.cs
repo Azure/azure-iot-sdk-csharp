@@ -177,6 +177,135 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             return retException;
         }
 
+        public static Exception ToIotHubClientContract(AmqpException amqpException)
+        {
+            Error error = amqpException.Error;
+            AmqpSymbol amqpSymbol = error.Condition;
+            string message = error.ToString();
+
+            // Generic AMQP error
+            if (Equals(AmqpErrorCode.InternalError, amqpSymbol))
+            {
+                return new IotHubException(message, amqpException);
+            }
+            else if (Equals(AmqpErrorCode.NotFound, amqpSymbol))
+            {
+                return new IotHubNotFoundException(message, amqpException);
+            }
+            else if (Equals(AmqpErrorCode.UnauthorizedAccess, amqpSymbol))
+            {
+                return new UnauthorizedException(message, amqpException);
+            }
+            else if (Equals(AmqpErrorCode.DecodeError, amqpSymbol))
+            {
+                return new AmqpIoTResourceException(message, amqpException);
+            }
+            else if (Equals(AmqpErrorCode.ResourceLimitExceeded, amqpSymbol))
+            {
+                return new IotHubException(message, amqpException);
+            }
+            else if (Equals(AmqpErrorCode.NotAllowed, amqpSymbol))
+            {
+                return new InvalidOperationException(message, amqpException);
+            }
+            else if (Equals(AmqpErrorCode.InvalidField, amqpSymbol))
+            {
+                return new InvalidOperationException(message, amqpException);
+            }
+            else if (Equals(AmqpErrorCode.NotImplemented, amqpSymbol))
+            {
+                return new NotSupportedException(message, amqpException);
+            }
+            else if (Equals(AmqpErrorCode.ResourceLocked, amqpSymbol))
+            {
+                return new IotHubException(message, amqpException);
+            }
+            else if (Equals(AmqpErrorCode.PreconditionFailed, amqpSymbol))
+            {
+                return new IotHubException(message, amqpException);
+            }
+            else if (Equals(AmqpErrorCode.ResourceDeleted, amqpSymbol))
+            {
+                return new IotHubException(message, amqpException);
+            }
+            else if (Equals(AmqpErrorCode.IllegalState, amqpSymbol))
+            {
+                return new IotHubException(message, amqpException);
+            }
+            else if (Equals(AmqpErrorCode.FrameSizeTooSmall, amqpSymbol))
+            {
+                return new AmqpIoTResourceException(message, amqpException);
+            }
+            // AMQP Connection Error
+            else if (Equals(AmqpErrorCode.ConnectionForced, amqpSymbol))
+            {
+                return new AmqpIoTResourceException(message, amqpException, true);
+            }
+            else if (Equals(AmqpErrorCode.FramingError, amqpSymbol))
+            {
+                return new AmqpIoTResourceException(message, amqpException, true);
+            }
+            else if (Equals(AmqpErrorCode.ConnectionRedirect, amqpSymbol))
+            {
+                return new AmqpIoTResourceException(message, amqpException, true);
+            }
+            // AMQP Session Error
+            else if (Equals(AmqpErrorCode.WindowViolation, amqpSymbol))
+            {
+                return new AmqpIoTResourceException(message, amqpException, true);
+            }
+            else if (Equals(AmqpErrorCode.ErrantLink, amqpSymbol))
+            {
+                return new AmqpIoTResourceException(message, amqpException, true);
+            }
+            else if (Equals(AmqpErrorCode.HandleInUse, amqpSymbol))
+            {
+                return new AmqpIoTResourceException(message, amqpException, true);
+            }
+            else if (Equals(AmqpErrorCode.UnattachedHandle, amqpSymbol))
+            {
+                return new AmqpIoTResourceException(message, amqpException, true);
+            }
+            // AMQP Link Error
+            else if (Equals(AmqpErrorCode.DetachForced, amqpSymbol))
+            {
+                return new AmqpIoTResourceException(message, amqpException, true);
+            }
+            else if (Equals(AmqpErrorCode.TransferLimitExceeded, amqpSymbol))
+            {
+                return new IotHubException(message, amqpException);
+            }
+            else if (Equals(AmqpErrorCode.MessageSizeExceeded, amqpSymbol))
+            {
+                return new MessageTooLargeException(message, amqpException);
+            }
+            else if (Equals(AmqpErrorCode.LinkRedirect, amqpSymbol))
+            {
+                return new AmqpIoTResourceException(message, amqpException, true);
+            }
+            else if (Equals(AmqpErrorCode.Stolen, amqpSymbol))
+            {
+                return new AmqpIoTResourceException(message, amqpException, true);
+            }
+            // AMQP Transaction Error
+            else if (Equals(AmqpErrorCode.TransactionUnknownId, amqpSymbol))
+            {
+                return new IotHubException(message, amqpException);
+            }
+            else if (Equals(AmqpErrorCode.TransactionRollback, amqpSymbol))
+            {
+                return new IotHubCommunicationException(message, amqpException);
+            }
+            else if (Equals(AmqpErrorCode.TransactionTimeout, amqpSymbol))
+            {
+                return new IotHubCommunicationException(message, amqpException);
+            }
+            else
+            {
+                return new IotHubException(message, amqpException);
+            }
+        }
+
         public static Exception ToIotHubClientContract(Error error)
         {
             Exception retException;
