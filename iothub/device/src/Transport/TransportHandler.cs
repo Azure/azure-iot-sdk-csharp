@@ -3,6 +3,7 @@
 
 namespace Microsoft.Azure.Devices.Client.Transport
 {
+    using Microsoft.Azure.Devices.Shared;
     using System;
     using System.Threading;
     using System.Threading.Tasks;
@@ -42,11 +43,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         protected void OnTransportClosedGracefully()
         {
+            if (Logging.IsEnabled) Logging.Info(this, $"{nameof(OnTransportClosedGracefully)}");
             _transportShouldRetry.TrySetCanceled();
         }
 
         protected void OnTransportDisconnected()
         {
+            if (Logging.IsEnabled) Logging.Info(this, $"{nameof(OnTransportDisconnected)}");
             _transportShouldRetry.TrySetResult(true);
         }
     }

@@ -118,7 +118,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             Debug.Assert(InnerHandler != null);
 
             // We don't need to double check since it's being handled in OpenAsync
-            CreateNewTransportHandler();
+            CreateNewTransportIfNotReady();
 
             // Operations above should never throw. If they do, it's not safe to continue.
             _handlerLock.Release();

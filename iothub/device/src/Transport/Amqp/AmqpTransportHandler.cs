@@ -19,8 +19,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         private readonly TimeSpan _operationTimeout;
         private readonly AmqpUnit _amqpUnit;
         private readonly Action<TwinCollection> _desiredPropertyListener;
+        private readonly object _lock = new object();
         private ConcurrentDictionary<string, TaskCompletionSource<Twin>> _twinResponseCompletions = new ConcurrentDictionary<string, TaskCompletionSource<Twin>>();
-        private volatile bool _closed;
+        private bool _closed;
 #pragma warning disable CA1810 // Initialize reference type static fields inline: We use the static ctor to have init-once semantics.
         static AmqpTransportHandler()
 #pragma warning restore CA1810 // Initialize reference type static fields inline
@@ -61,9 +62,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         private void OnDisconnected()
         {
-            if (!_closed)
+            lock(_lock)
             {
-                OnTransportDisconnected();
+                if (!_closed)
+                {
+                    OnTransportDisconnected();
+                }
             }
         }
         #endregion
@@ -75,7 +79,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             if (Logging.IsEnabled) Logging.Enter(this, cancellationToken, $"{nameof(OpenAsync)}");
             cancellationToken.ThrowIfCancellationRequested();
-            _closed = false;
+            lock (_lock)
+            {
+                if (_disposed)
+                {
+                    return;
+                }
+                _closed = false;
+            }
             try
             {
                 await _amqpUnit.OpenAsync(_operationTimeout).ConfigureAwait(false);
@@ -89,7 +100,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         public override async Task CloseAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(CloseAsync)}");
-            _closed = true;
+            lock (_lock)
+            {
+                _closed = true;
+            }
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -408,14 +422,17 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         #region IDispose
         protected override void Dispose(bool disposing)
         {
-            if (_disposed) return;
-
-            base.Dispose(disposing);
-            if (disposing)
+            lock (_lock)
             {
-                _closed = true;
-                OnTransportDisconnected();
-                AmqpUnitManager.GetInstance().RemoveAmqpUnit(_amqpUnit);
+                if (_disposed) return;
+                if (Logging.IsEnabled) Logging.Info(this, $"{nameof(disposing)}");
+                if (disposing)
+                {
+                    _disposed = true;
+                    _closed = true;
+                    OnTransportClosedGracefully();
+                    AmqpUnitManager.GetInstance().RemoveAmqpUnit(_amqpUnit);
+                }
             }
 
         }

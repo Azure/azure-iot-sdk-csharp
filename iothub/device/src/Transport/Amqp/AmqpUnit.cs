@@ -339,7 +339,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         
         private async Task OpenMethodsReceiverLinkAsync(string correlationIdSuffix, TimeSpan timeout)
         {
-            if (_methodReceivingLink == null || !_methodReceivingLink.IsClosing())
+            if (_methodReceivingLink == null || _methodReceivingLink.IsClosing())
             {
                 _methodReceivingLink = await _amqpIoTSession.OpenMethodsReceiverLinkAsync(_deviceIdentity, correlationIdSuffix, timeout).ConfigureAwait(false);
                 _methodReceivingLink.Closed += OnLinkDisconnected;
@@ -455,7 +455,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
         private async Task OpenTwinReceiverLinkAsync(string correlationIdSuffix, TimeSpan timeout)
         {
-            if (_twinReceivingLink == null || !_twinReceivingLink.IsClosing())
+            if (_twinReceivingLink == null || _twinReceivingLink.IsClosing())
             {
                 _twinReceivingLink = await _amqpIoTSession.OpenTwinReceiverLinkAsync(_deviceIdentity, correlationIdSuffix, timeout).ConfigureAwait(false);
                 _twinReceivingLink.Closed += OnLinkDisconnected;
@@ -465,7 +465,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         }
         private async Task OpenTwinSenderLinkAsync(string correlationIdSuffix, TimeSpan timeout)
         {
-            if (_twinSendingLink == null || !_twinSendingLink.IsClosing())
+            if (_twinSendingLink == null || _twinSendingLink.IsClosing())
             {
                 _twinSendingLink = await _amqpIoTSession.OpenTwinSenderLinkAsync(_deviceIdentity, correlationIdSuffix, timeout).ConfigureAwait(false);
                 _twinSendingLink.Closed += OnLinkDisconnected;
@@ -565,7 +565,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             {
                 _disposed = true;
             }
-            
+
             if (disposing)
             {
                 if (Logging.IsEnabled) Logging.Enter(this, disposing, $"{nameof(Dispose)}");
