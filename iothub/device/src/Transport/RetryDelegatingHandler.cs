@@ -469,11 +469,19 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 {
                     if (Logging.IsEnabled) Logging.Info(this, "Opening connection", nameof(EnsureOpenedAsync));
                     await OpenAsyncInternal(cancellationToken).ConfigureAwait(false);
-                    _opened = true;
-                    _openCalled = true;
+                    if (!_disposed)
+                    {
+                        _opened = true;
+                        _openCalled = true;
 
-                    // Send the request for transport close notification.
-                    _transportClosedTask = HandleDisconnect();
+                        // Send the request for transport close notification.
+                        _transportClosedTask = HandleDisconnect();
+                    }
+                    else
+                    {
+                        if (Logging.IsEnabled) Logging.Info(this, "Race condition: Disposed during opening.", nameof(EnsureOpenedAsync));
+                        _handleDisconnectCts.Cancel();
+                    }
                 }
             }
             finally
@@ -509,6 +517,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private async Task HandleDisconnect()
         {
+            if (_disposed)
+            {
+                if (Logging.IsEnabled) Logging.Info(this, "Race condition: Disposed during disconnection.", nameof(EnsureOpenedAsync));
+                _handleDisconnectCts.Cancel();
+            }
+
             try
             {
                 // No timeout on connection being established.
@@ -519,9 +533,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 // Canceled when the transport is being closed by the application.
                 if (Logging.IsEnabled) Logging.Info(this, "Transport disconnected: closed by application.", nameof(HandleDisconnect));
                 _onConnectionStatusChanged(ConnectionStatus.Disabled, ConnectionStatusChangeReason.Client_Close);
-
                 return;
             }
+
 
             if (Logging.IsEnabled) Logging.Info(this, "Transport disconnected: unexpected.", nameof(HandleDisconnect));
             await _handlerLock.WaitAsync().ConfigureAwait(false);
