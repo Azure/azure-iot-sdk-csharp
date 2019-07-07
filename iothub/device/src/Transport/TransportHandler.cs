@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
     abstract class TransportHandler : DefaultDelegatingHandler
     {
         protected ITransportSettings TransportSettings;
-        private TaskCompletionSource<bool> _transportShouldRetry = new TaskCompletionSource<bool>();
+        private TaskCompletionSource<bool> _transportShouldRetry;
 
         protected TransportHandler(IPipelineContext context, ITransportSettings transportSettings)
             : base(context, innerHandler: null)
@@ -26,6 +26,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override Task WaitForTransportClosedAsync()
         {
+            _transportShouldRetry = new TaskCompletionSource<bool>();
             return _transportShouldRetry.Task;
         }
 
