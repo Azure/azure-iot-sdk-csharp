@@ -83,7 +83,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
         }
 
-        internal async Task EnsureSessionAsync(TimeSpan timeout)
+        internal async Task<AmqpIoTSession> EnsureSessionAsync(TimeSpan timeout)
         {
             if (_closed)
             {
@@ -109,12 +109,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                         _amqpAuthenticationRefresher = await _amqpConnectionHolder.CreateRefresher(_deviceIdentity, timeout).ConfigureAwait(false);
                         if (Logging.IsEnabled) Logging.Associate(this, _amqpAuthenticationRefresher, $"{nameof(_amqpAuthenticationRefresher)}");
                     }
+
                     _amqpIoTSession.Closed += OnSessionDisconnected;
                     _messageSendingLink = await _amqpIoTSession.OpenTelemetrySenderLinkAsync(_deviceIdentity, timeout).ConfigureAwait(false);
-                    _messageSendingLink.Closed += OnLinkDisconnected;
+                    _messageSendingLink.Closed += (obj, arg) => {
+                        _amqpIoTSession.SafeClose();
+                    };
 
                     if (Logging.IsEnabled) Logging.Associate(this, _messageSendingLink, $"{nameof(_messageSendingLink)}");
                 }
+                return _amqpIoTSession;
             }
             finally
             {
@@ -126,7 +130,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         public async Task CloseAsync(TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(CloseAsync)}");
-
+            
             bool gain = await _sessionLock.WaitAsync(timeout).ConfigureAwait(false);
             if (!gain)
             {
@@ -154,6 +158,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
             finally
             {
+                _closed = true;
                 if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(CloseAsync)}");
                 _sessionLock.Release();
             }
@@ -171,7 +176,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
 
             if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(EnsureReceivingLinkAsync)}");
-            await EnsureSessionAsync(timeout).ConfigureAwait(false);
+            AmqpIoTSession amqpIoTSession = await EnsureSessionAsync(timeout).ConfigureAwait(false);
             bool gain = await _messageReceivingLinkLock.WaitAsync(timeout).ConfigureAwait(false);
             if (!gain)
             {
@@ -184,14 +189,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 {
                     if (_deviceIdentity.IotHubConnectionString.ModuleId.IsNullOrWhiteSpace())
                     {
-                        _messageReceivingLink = await _amqpIoTSession.OpenTelemetryReceiverLinkAsync(_deviceIdentity, timeout).ConfigureAwait(false);
+                        _messageReceivingLink = await amqpIoTSession.OpenTelemetryReceiverLinkAsync(_deviceIdentity, timeout).ConfigureAwait(false);
                     }
                     else
                     {
-                        _messageReceivingLink = await _amqpIoTSession.OpenEventsReceiverLinkAsync(_deviceIdentity, timeout).ConfigureAwait(false);
+                        _messageReceivingLink = await amqpIoTSession.OpenEventsReceiverLinkAsync(_deviceIdentity, timeout).ConfigureAwait(false);
                     }
 
-                    _messageReceivingLink.Closed += OnLinkDisconnected;
+                    _messageReceivingLink.Closed += (obj, arg) => {
+                        amqpIoTSession.SafeClose();
+                    };
                     if (Logging.IsEnabled) Logging.Associate(this, this, _messageReceivingLink, $"{nameof(EnsureReceivingLinkAsync)}");
                 }
             }
@@ -315,7 +322,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
 
             if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(EnableMethodsAsync)}");
-            await EnsureSessionAsync(timeout).ConfigureAwait(false);
+            AmqpIoTSession amqpIoTSession = await EnsureSessionAsync(timeout).ConfigureAwait(false);
             bool gain = await _methodLinkLock.WaitAsync(timeout).ConfigureAwait(false);
             if (!gain)
             {
@@ -326,8 +333,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             try
             {
                 await Task.WhenAll(
-                    OpenMethodsReceiverLinkAsync(correlationIdSuffix, timeout),
-                    OpenMethodsSenderLinkAsync(correlationIdSuffix, timeout)
+                    OpenMethodsReceiverLinkAsync(amqpIoTSession, correlationIdSuffix, timeout),
+                    OpenMethodsSenderLinkAsync(amqpIoTSession, correlationIdSuffix, timeout)
                 ).ConfigureAwait(false);
             }
             finally
@@ -337,22 +344,26 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
         }
         
-        private async Task OpenMethodsReceiverLinkAsync(string correlationIdSuffix, TimeSpan timeout)
+        private async Task OpenMethodsReceiverLinkAsync(AmqpIoTSession amqpIoTSession, string correlationIdSuffix, TimeSpan timeout)
         {
             if (_methodReceivingLink == null || _methodReceivingLink.IsClosing())
             {
-                _methodReceivingLink = await _amqpIoTSession.OpenMethodsReceiverLinkAsync(_deviceIdentity, correlationIdSuffix, timeout).ConfigureAwait(false);
-                _methodReceivingLink.Closed += OnLinkDisconnected;
+                _methodReceivingLink = await amqpIoTSession.OpenMethodsReceiverLinkAsync(_deviceIdentity, correlationIdSuffix, timeout).ConfigureAwait(false);
+                _methodReceivingLink.Closed += (obj, arg) => {
+                    amqpIoTSession.SafeClose();
+                };
                 _methodReceivingLink.RegisterMethodListener(OnMethodReceived);
                 if (Logging.IsEnabled) Logging.Associate(this, _methodReceivingLink, $"{nameof(_methodReceivingLink)}");
             }
         }
-        private async Task OpenMethodsSenderLinkAsync(string correlationIdSuffix, TimeSpan timeout)
+        private async Task OpenMethodsSenderLinkAsync(AmqpIoTSession amqpIoTSession, string correlationIdSuffix, TimeSpan timeout)
         {
             if (_methodSendingLink == null || _methodSendingLink.IsClosing())
             {
-                _methodSendingLink = await _amqpIoTSession.OpenMethodsSenderLinkAsync(_deviceIdentity, correlationIdSuffix, timeout).ConfigureAwait(false);
-                _methodSendingLink.Closed += OnLinkDisconnected;
+                _methodSendingLink = await amqpIoTSession.OpenMethodsSenderLinkAsync(_deviceIdentity, correlationIdSuffix, timeout).ConfigureAwait(false);
+                _methodSendingLink.Closed += (obj, arg) => {
+                    amqpIoTSession.SafeClose();
+                };
                 if (Logging.IsEnabled) Logging.Associate(this, _methodSendingLink, $"{nameof(_methodSendingLink)}");
             }
         }
@@ -430,7 +441,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
 
             if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(EnableTwinLinksAsync)}");
-            await EnsureSessionAsync(timeout).ConfigureAwait(false);
+            AmqpIoTSession amqpIoTSession = await EnsureSessionAsync(timeout).ConfigureAwait(false);
             bool gain = await _twinLinksLock.WaitAsync(timeout).ConfigureAwait(false);
             if (!gain)
             {
@@ -442,8 +453,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 string correlationIdSuffix = Guid.NewGuid().ToString();
 
                 await Task.WhenAll(
-                   OpenTwinReceiverLinkAsync(correlationIdSuffix, timeout),
-                   OpenTwinSenderLinkAsync(correlationIdSuffix, timeout)
+                   OpenTwinReceiverLinkAsync(amqpIoTSession, correlationIdSuffix, timeout),
+                   OpenTwinSenderLinkAsync(amqpIoTSession, correlationIdSuffix, timeout)
                ).ConfigureAwait(false);
             }
             finally
@@ -453,22 +464,26 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
         }
 
-        private async Task OpenTwinReceiverLinkAsync(string correlationIdSuffix, TimeSpan timeout)
+        private async Task OpenTwinReceiverLinkAsync(AmqpIoTSession amqpIoTSession, string correlationIdSuffix, TimeSpan timeout)
         {
             if (_twinReceivingLink == null || _twinReceivingLink.IsClosing())
             {
-                _twinReceivingLink = await _amqpIoTSession.OpenTwinReceiverLinkAsync(_deviceIdentity, correlationIdSuffix, timeout).ConfigureAwait(false);
-                _twinReceivingLink.Closed += OnLinkDisconnected;
+                _twinReceivingLink = await amqpIoTSession.OpenTwinReceiverLinkAsync(_deviceIdentity, correlationIdSuffix, timeout).ConfigureAwait(false);
+                _twinReceivingLink.Closed += (obj, arg) => {
+                    amqpIoTSession.SafeClose();
+                };
                 _twinReceivingLink.RegisterTwinListener(OnDesiredPropertyReceived);
                 if (Logging.IsEnabled) Logging.Associate(this, _twinReceivingLink, $"{nameof(_twinReceivingLink)}");
             }
         }
-        private async Task OpenTwinSenderLinkAsync(string correlationIdSuffix, TimeSpan timeout)
+        private async Task OpenTwinSenderLinkAsync(AmqpIoTSession amqpIoTSession, string correlationIdSuffix, TimeSpan timeout)
         {
             if (_twinSendingLink == null || _twinSendingLink.IsClosing())
             {
-                _twinSendingLink = await _amqpIoTSession.OpenTwinSenderLinkAsync(_deviceIdentity, correlationIdSuffix, timeout).ConfigureAwait(false);
-                _twinSendingLink.Closed += OnLinkDisconnected;
+                _twinSendingLink = await amqpIoTSession.OpenTwinSenderLinkAsync(_deviceIdentity, correlationIdSuffix, timeout).ConfigureAwait(false);
+                _twinSendingLink.Closed += (obj, arg) => {
+                    amqpIoTSession.SafeClose();
+                };
                 if (Logging.IsEnabled) Logging.Associate(this, _twinSendingLink, $"{nameof(_twinSendingLink)}");
             }
         }
@@ -539,12 +554,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             if (Logging.IsEnabled) Logging.Exit(this, o, $"{nameof(OnSessionDisconnected)}");
         }
 
-        private void OnLinkDisconnected(object o, EventArgs args)
-        {
-            if (Logging.IsEnabled) Logging.Enter(this, o, $"{nameof(OnLinkDisconnected)}");
-            _onUnitDisconnected();
-            if (Logging.IsEnabled) Logging.Exit(this, o, $"{nameof(OnLinkDisconnected)}");
-        }
         #endregion
 
         #region IDisposable
