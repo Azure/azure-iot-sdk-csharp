@@ -110,7 +110,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     deviceClient.SetConnectionStatusChangesHandler((ConnectionStatus status, ConnectionStatusChangeReason reason) =>
                     {
                         _log.WriteLine($"{nameof(ConnectionStatusChangesHandler)}: {status}; {reason}");
-                        if (status == ConnectionStatus.Disconnected) deviceDisconnected.Release();
+                        if (status == ConnectionStatus.Disconnected_Retrying || status == ConnectionStatus.Disconnected) deviceDisconnected.Release();
                     });
                 }
 
