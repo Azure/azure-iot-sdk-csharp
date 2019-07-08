@@ -100,7 +100,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 deviceIdentity,
                 _amqpSession,
                 null,
-                (byte)ReceiverSettleMode.First,
+                (byte)ReceiverSettleMode.Second,
                 CommonConstants.DeviceEventPathTemplate,
                 CommonConstants.ModuleEventPathTemplate,
                 AmqpIoTConstants.EventsReceiverLinkSuffix,
@@ -206,7 +206,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             if (Logging.IsEnabled) Logging.Enter(typeof(AmqpIoTSession), deviceIdentity, $"{nameof(OpenSendingAmqpLinkAsync)}");
             AmqpLinkSettings amqpLinkSettings = new AmqpLinkSettings
             {
-                LinkName = CommonResources.GetNewStringGuid(linkSuffix),
+                LinkName = linkSuffix,
                 Role = false,
                 InitialDeliveryCount = 0,
                 Target = new Target() { Address = BuildLinkAddress(deviceIdentity, deviceTemplate, moduleTemplate) },
@@ -259,7 +259,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             string deviceTemplate,
             string moduleTemplate,
             string linkSuffix,
-            string CorrelationId,
+            string correlationId,
             TimeSpan timeout
         )
         {
@@ -269,7 +269,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
             AmqpLinkSettings amqpLinkSettings = new AmqpLinkSettings
             {
-                LinkName = CommonResources.GetNewStringGuid(linkSuffix),
+                LinkName = linkSuffix,
                 Role = true,
                 TotalLinkCredit = prefetchCount,
                 AutoSendFlow = prefetchCount > 0,
@@ -281,9 +281,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             amqpLinkSettings.AddProperty(AmqpIoTErrorAdapter.TimeoutName, timeout.TotalMilliseconds);
             amqpLinkSettings.AddProperty(AmqpIoTErrorAdapter.ClientVersion, deviceIdentity.ProductInfo.ToString());
             amqpLinkSettings.AddProperty(AmqpIoTErrorAdapter.ApiVersion, ClientApiVersionHelper.ApiVersionString);
-            if (CorrelationId != null)
+            if (correlationId != null)
             {
-                amqpLinkSettings.AddProperty(AmqpIoTErrorAdapter.ChannelCorrelationId, CorrelationId);
+                amqpLinkSettings.AddProperty(AmqpIoTErrorAdapter.ChannelCorrelationId, correlationId);
             }
 
             try
