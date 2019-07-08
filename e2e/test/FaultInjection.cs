@@ -192,7 +192,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                         // we would attempt to send the fault injection forever.)
                         if (setConnectionStatusChangesHandlerCount < 4)
                         {
-                            s_log.WriteLine($"Warning: The expected connection status change count for device{i} should equals or greater than 4 but was {setConnectionStatusChangesHandlerCount}");
+                            s_log.WriteLine($"Warning: The expected connection status change count should equals or greater than 4 but was {setConnectionStatusChangesHandlerCount}");
 
                         }
                     }
