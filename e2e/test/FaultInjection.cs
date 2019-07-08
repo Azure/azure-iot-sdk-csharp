@@ -160,9 +160,9 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await deviceClient.OpenAsync().ConfigureAwait(false);
                 if (transport != Client.TransportType.Http1)
                 {
-                    Assert.IsTrue(setConnectionStatusChangesHandlerCount >= 1); // Normally one connection but in some cases, due to network issues we might have already retried several times to connect.
-                    Assert.AreEqual(ConnectionStatus.Connected, lastConnectionStatus);
-                    Assert.AreEqual(ConnectionStatusChangeReason.Connection_Ok, lastConnectionStatusChangeReason);
+                    Assert.IsTrue(setConnectionStatusChangesHandlerCount >= 1, $"Excepted connection status change to be equals or greater than 1 but was {setConnectionStatusChangesHandlerCount}"); // Normally one connection but in some cases, due to network issues we might have already retried several times to connect.
+                    Assert.AreEqual(ConnectionStatus.Connected, lastConnectionStatus, $"Excepted connection status to be {ConnectionStatus.Connected} but was {lastConnectionStatus}");
+                    Assert.AreEqual(ConnectionStatusChangeReason.Connection_Ok, lastConnectionStatusChangeReason, $"Excepted connection status change reason to be {ConnectionStatusChangeReason.Connection_Ok} but was {lastConnectionStatusChangeReason}");
                 }
 
                 await initOperation(deviceClient, testDevice).ConfigureAwait(false);

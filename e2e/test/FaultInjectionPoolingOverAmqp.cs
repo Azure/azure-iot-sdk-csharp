@@ -129,8 +129,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                             Assert.IsTrue(amqpConnectionStatuses[i].ConnectionStatusChangesHandlerCount == 2, $"The actual connection status change count for for faulted device[0] is = {amqpConnectionStatuses[i].ConnectionStatusChangesHandlerCount}");
                         }
                     }
-                    Assert.AreEqual(ConnectionStatus.Disabled, amqpConnectionStatuses[i].LastConnectionStatus);
-                    Assert.AreEqual(ConnectionStatusChangeReason.Client_Close, amqpConnectionStatuses[i].LastConnectionStatusChangeReason);
+                    Assert.AreEqual(ConnectionStatus.Disabled, amqpConnectionStatuses[i].LastConnectionStatus, $"Excepted connection status to be {ConnectionStatus.Disabled} but was {amqpConnectionStatuses[i].LastConnectionStatus);
+                    Assert.AreEqual(ConnectionStatusChangeReason.Client_Close, amqpConnectionStatuses[i].LastConnectionStatusChangeReason, $"Excepted connection status change reason to be {ConnectionStatusChangeReason.Client_Close} but was {amqpConnectionStatuses[i].LastConnectionStatusChangeReason);
                 }
             }
             finally
