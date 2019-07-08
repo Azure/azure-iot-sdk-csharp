@@ -113,9 +113,9 @@ namespace Microsoft.Azure.Devices.E2ETests
                         new CloudToDeviceMethod(methodName, TimeSpan.FromMinutes(5)).SetPayloadJson(reqJson)).ConfigureAwait(false);
 
                 _log.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponse)}: Method status: {response.Status}.");
-                Assert.AreEqual(200, response.Status, $"Excepted respose status to be 200 but was {response.Status}");
+                Assert.AreEqual(200, response.Status, $"The expected respose status should be 200 but was {response.Status}");
                 string payload = response.GetPayloadAsJson();
-                Assert.AreEqual(respJson, payload, $"Excepted respose payload to be {respJson} but was {payload}");
+                Assert.AreEqual(respJson, payload, $"The expected respose payload should be {respJson} but was {payload}");
 
                 await serviceClient.CloseAsync().ConfigureAwait(false);
             }
@@ -132,8 +132,8 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                     try
                     {
-                        Assert.AreEqual(methodName, request.Name, $"Excepted method name to be {methodName} but was {request.Name}");
-                        Assert.AreEqual(ServiceRequestJson, request.DataAsJson, $"Excepted respose payload to be {ServiceRequestJson} but was {request.DataAsJson}");
+                        Assert.AreEqual(methodName, request.Name, $"The expected method name should be {methodName} but was {request.Name}");
+                        Assert.AreEqual(ServiceRequestJson, request.DataAsJson, $"The expected respose payload should be {ServiceRequestJson} but was {request.DataAsJson}");
 
                         methodCallReceived.SetResult(true);
                     }
@@ -161,8 +161,8 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                     try
                     {
-                        Assert.AreEqual(methodName, request.Name, $"Excepted method name to be {methodName} but was {request.Name}");
-                        Assert.AreEqual(ServiceRequestJson, request.DataAsJson, $"Excepted respose payload to be {ServiceRequestJson} but was {request.DataAsJson}");
+                        Assert.AreEqual(methodName, request.Name, $"The expected method name should be {methodName} but was {request.Name}");
+                        Assert.AreEqual(ServiceRequestJson, request.DataAsJson, $"The expected respose payload should be {ServiceRequestJson} but was {request.DataAsJson}");
 
                         methodCallReceived.SetResult(true);
                     }
@@ -189,8 +189,8 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 try
                 {
-                    Assert.AreEqual(methodName, request.Name, $"Excepted method name to be {methodName} but was {request.Name}");
-                    Assert.AreEqual(ServiceRequestJson, request.DataAsJson, $"Excepted respose payload to be {ServiceRequestJson} but was {request.DataAsJson}");
+                    Assert.AreEqual(methodName, request.Name, $"The expected method name should be {methodName} but was {request.Name}");
+                    Assert.AreEqual(ServiceRequestJson, request.DataAsJson, $"The expected respose payload should be {ServiceRequestJson} but was {request.DataAsJson}");
 
                     methodCallReceived.SetResult(true);
                 }

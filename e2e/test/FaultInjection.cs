@@ -160,9 +160,9 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await deviceClient.OpenAsync().ConfigureAwait(false);
                 if (transport != Client.TransportType.Http1)
                 {
-                    Assert.IsTrue(setConnectionStatusChangesHandlerCount >= 1, $"Excepted connection status change to be equals or greater than 1 but was {setConnectionStatusChangesHandlerCount}"); // Normally one connection but in some cases, due to network issues we might have already retried several times to connect.
-                    Assert.AreEqual(ConnectionStatus.Connected, lastConnectionStatus, $"Excepted connection status to be {ConnectionStatus.Connected} but was {lastConnectionStatus}");
-                    Assert.AreEqual(ConnectionStatusChangeReason.Connection_Ok, lastConnectionStatusChangeReason, $"Excepted connection status change reason to be {ConnectionStatusChangeReason.Connection_Ok} but was {lastConnectionStatusChangeReason}");
+                    Assert.IsTrue(setConnectionStatusChangesHandlerCount >= 1, $"The expected connection status change should equals or greater than 1 but was {setConnectionStatusChangesHandlerCount}"); // Normally one connection but in some cases, due to network issues we might have already retried several times to connect.
+                    Assert.AreEqual(ConnectionStatus.Connected, lastConnectionStatus, $"The expected connection status should be {ConnectionStatus.Connected} but was {lastConnectionStatus}");
+                    Assert.AreEqual(ConnectionStatusChangeReason.Connection_Ok, lastConnectionStatusChangeReason, $"The expected connection status change reason should be {ConnectionStatusChangeReason.Connection_Ok} but was {lastConnectionStatusChangeReason}");
                 }
 
                 await initOperation(deviceClient, testDevice).ConfigureAwait(false);
@@ -190,18 +190,18 @@ namespace Microsoft.Azure.Devices.E2ETests
                         // 4 is the minimum notification count: connect, fault, reconnect, disable.
                         // There are cases where the retry must be timed out (i.e. very likely for MQTT where otherwise 
                         // we would attempt to send the fault injection forever.)
-                        Assert.IsTrue(setConnectionStatusChangesHandlerCount >= 4, $"Connection status changes is expected to be equals or greater than 4 but was {setConnectionStatusChangesHandlerCount}"); 
+                        Assert.IsTrue(setConnectionStatusChangesHandlerCount >= 4, $"The expected connection status changes should be equals or greater than 4 but was {setConnectionStatusChangesHandlerCount}"); 
                     }
                     else
                     {
                         // 2 is the minimum notification count: connect, disable.
                         // We will monitor the test environment real network stability and switch to >=2 if necessary to 
                         // account for real network issues.
-                        Assert.IsTrue(setConnectionStatusChangesHandlerCount == 2, $"Connection status changes is expected to be 2 but was {setConnectionStatusChangesHandlerCount}"); 
+                        Assert.IsTrue(setConnectionStatusChangesHandlerCount == 2, $"The expected connection status changes should be 2 but was {setConnectionStatusChangesHandlerCount}"); 
                     }
 
-                    Assert.AreEqual(ConnectionStatus.Disabled, lastConnectionStatus, $"Connection status is expected to be {ConnectionStatus.Disabled} but was {lastConnectionStatus}");
-                    Assert.AreEqual(ConnectionStatusChangeReason.Client_Close, lastConnectionStatusChangeReason, $"Connection status change reason is expected to be {ConnectionStatusChangeReason.Client_Close} but was {lastConnectionStatusChangeReason}");
+                    Assert.AreEqual(ConnectionStatus.Disabled, lastConnectionStatus, $"The expected connection status should be {ConnectionStatus.Disabled} but was {lastConnectionStatus}");
+                    Assert.AreEqual(ConnectionStatusChangeReason.Client_Close, lastConnectionStatusChangeReason, $"The expected connection status change reason should be {ConnectionStatusChangeReason.Client_Close} but was {lastConnectionStatusChangeReason}");
                 }
             }
             finally
