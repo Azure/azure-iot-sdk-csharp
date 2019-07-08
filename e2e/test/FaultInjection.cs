@@ -190,18 +190,18 @@ namespace Microsoft.Azure.Devices.E2ETests
                         // 4 is the minimum notification count: connect, fault, reconnect, disable.
                         // There are cases where the retry must be timed out (i.e. very likely for MQTT where otherwise 
                         // we would attempt to send the fault injection forever.)
-                        Assert.IsTrue(setConnectionStatusChangesHandlerCount >= 4); 
+                        Assert.IsTrue(setConnectionStatusChangesHandlerCount >= 4, $"Connection status changes is expected to be equals or greater than 4 but was {setConnectionStatusChangesHandlerCount}"); 
                     }
                     else
                     {
                         // 2 is the minimum notification count: connect, disable.
                         // We will monitor the test environment real network stability and switch to >=2 if necessary to 
                         // account for real network issues.
-                        Assert.IsTrue(setConnectionStatusChangesHandlerCount == 2); 
+                        Assert.IsTrue(setConnectionStatusChangesHandlerCount == 2, $"Connection status changes is expected to be 2 but was {setConnectionStatusChangesHandlerCount}"); 
                     }
 
-                    Assert.AreEqual(ConnectionStatus.Disabled, lastConnectionStatus);
-                    Assert.AreEqual(ConnectionStatusChangeReason.Client_Close, lastConnectionStatusChangeReason);
+                    Assert.AreEqual(ConnectionStatus.Disabled, lastConnectionStatus, $"Connection status is expected to be {ConnectionStatus.Disabled} but was {lastConnectionStatus}");
+                    Assert.AreEqual(ConnectionStatusChangeReason.Client_Close, lastConnectionStatusChangeReason, $"Connection status change reason is expected to be {ConnectionStatusChangeReason.Client_Close} but was {lastConnectionStatusChangeReason}");
                 }
             }
             finally
