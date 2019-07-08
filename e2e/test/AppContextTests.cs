@@ -1,4 +1,7 @@
-﻿using Microsoft.Azure.Devices.Client;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Common;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
@@ -7,6 +10,7 @@ using System.Diagnostics.Tracing;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.E2ETests
@@ -45,7 +49,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             if (isFlagSet)
             {
-                await DCLC_ReceiveAsyncAfterDispose(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
+                await ReceiveAsyncAfterDispose(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only, false).ConfigureAwait(false);
             }
             else
             {
@@ -53,7 +57,28 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        private async Task DCLC_ReceiveAsyncAfterDispose(TestDeviceType testDeviceType, Client.TransportType transportType)
+        [TestMethod]
+        public async Task AppConfig_ReceiveAsyncWithCancellationTokenAfterDispose_Sasl_Amqp()
+        {
+
+            bool isFlagSet = false;
+            bool flag = false;
+
+#if !NET451
+            isFlagSet = AppContext.TryGetSwitch(AppContextConstants.DisableObjectDisposedExceptionForReceiveAsync, out flag);
+#endif
+
+            if (isFlagSet)
+            {
+                await ReceiveAsyncAfterDispose(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only, true).ConfigureAwait(false);
+            }
+            else
+            {
+                Assert.Fail("AppContext flag DisableObjectDisposedExceptionForReceiveAsync not set");
+            }
+        }
+
+        private async Task ReceiveAsyncAfterDispose(TestDeviceType testDeviceType, Client.TransportType transportType, bool expectException)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, testDeviceType).ConfigureAwait(false);
 
@@ -61,12 +86,23 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 Exception exceptionCaught = null;
                 Client.Message message = null;
+                CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
 
                 try
                 {
                     await deviceClient.OpenAsync().ConfigureAwait(false);
 
-                    Task<Client.Message> t = deviceClient.ReceiveAsync();
+                    Task<Client.Message> t;
+
+                    if (expectException)
+                    {
+                        // ReceiveAsync with cancellation token should always throw exception.
+                        t = deviceClient.ReceiveAsync(cts.Token);
+                    }
+                    else
+                    {
+                        t = deviceClient.ReceiveAsync();
+                    }
 
                     deviceClient.Dispose();
 
@@ -78,13 +114,23 @@ namespace Microsoft.Azure.Devices.E2ETests
                     exceptionCaught = exception;
                 }
 
-                if (exceptionCaught != null)
+                if (expectException)
                 {
-                    Assert.Fail("Unexpected exception was thrown (was disabled in AppConfig).");
+                    if (exceptionCaught == null)
+                    {
+                        Assert.Fail("Expected exception but got none.");
+                    }
                 }
-                else if (message != null)
+                else
                 {
-                    Assert.Fail("ReceiveAsync did not return null");
+                    if (exceptionCaught != null)
+                    {
+                        Assert.Fail("Unexpected exception was thrown (was disabled in AppConfig).");
+                    }
+                    else if (message != null)
+                    {
+                        Assert.Fail("ReceiveAsync did not return null");
+                    }
                 }
             }
         }
@@ -105,7 +151,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             if (isFlagSet)
             {
-                await DCLC_ReceiveAsyncAfterCloseAsync(TestDeviceType.X509, Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
+                await ReceiveAsyncAfterCloseAsync(TestDeviceType.X509, Client.TransportType.Amqp_WebSocket_Only, false).ConfigureAwait(false);
             }
             else
             {
@@ -113,7 +159,27 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        private async Task DCLC_ReceiveAsyncAfterCloseAsync(TestDeviceType testDeviceType, Client.TransportType transportType)
+        [TestMethod]
+        public async Task AppConfig_ReceiveAsyncWithCancellationTokenAfterCloseAsync_x509_AmqpWs()
+        {
+            bool isFlagSet = false;
+            bool flag = false;
+
+#if !NET451
+            isFlagSet = AppContext.TryGetSwitch(AppContextConstants.DisableObjectDisposedExceptionForReceiveAsync, out flag);
+#endif
+
+            if (isFlagSet)
+            {
+                await ReceiveAsyncAfterCloseAsync(TestDeviceType.X509, Client.TransportType.Amqp_WebSocket_Only, true).ConfigureAwait(false);
+            }
+            else
+            {
+                Assert.Fail("AppContext flag DisableObjectDisposedExceptionForReceiveAsync not set");
+            }
+        }
+
+        private async Task ReceiveAsyncAfterCloseAsync(TestDeviceType testDeviceType, Client.TransportType transportType, bool expectException)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, testDeviceType).ConfigureAwait(false);
 
@@ -121,12 +187,23 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 Exception exceptionCaught = null;
                 Client.Message message = null;
+                CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
 
                 try
                 {
                     await deviceClient.OpenAsync().ConfigureAwait(false);
 
-                    Task<Client.Message> t = deviceClient.ReceiveAsync();
+                    Task<Client.Message> t;
+                    
+                    if (expectException)
+                    {
+                        // ReceiveAsync with cancellation token should always throw exception.
+                        t = deviceClient.ReceiveAsync(cts.Token);
+                    }
+                    else
+                    {
+                        t = deviceClient.ReceiveAsync();
+                    }
 
                     await deviceClient.CloseAsync().ConfigureAwait(false);
 
@@ -138,13 +215,23 @@ namespace Microsoft.Azure.Devices.E2ETests
                     exceptionCaught = exception;
                 }
 
-                if (exceptionCaught != null)
+                if (expectException)
                 {
-                    Assert.Fail("Unexpected exception was thrown (was disabled in AppConfig).");
+                    if (exceptionCaught == null)
+                    {
+                        Assert.Fail("Expected exception but got none.");
+                    }
                 }
-                else if (message != null)
+                else
                 {
-                    Assert.Fail("ReceiveAsync did not return null");
+                    if (exceptionCaught != null)
+                    {
+                        Assert.Fail("Unexpected exception was thrown (was disabled in AppConfig).");
+                    }
+                    else if (message != null)
+                    {
+                        Assert.Fail("ReceiveAsync did not return null");
+                    }
                 }
             }
         }

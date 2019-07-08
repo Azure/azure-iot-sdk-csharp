@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Azure.Devices.Client.Common;
 using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client.Transport
@@ -75,32 +74,14 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public virtual Task<Message> ReceiveAsync(CancellationToken cancellationToken)
         {
-            bool isObjectDisposedExceptionDisabled = false;
-
-#if !NET451
-            AppContext.TryGetSwitch(AppContextConstants.DisableObjectDisposedExceptionForReceiveAsync, out isObjectDisposedExceptionDisabled);
-#endif
-
-            if (!isObjectDisposedExceptionDisabled)
-            {
-                ThrowIfDisposed();
-            }
+            ThrowIfDisposed();
 
             return InnerHandler?.ReceiveAsync(cancellationToken) ?? s_dummyResultObject;
         }
 
         public virtual Task<Message> ReceiveAsync(TimeSpan timeout, CancellationToken cancellationToken)
         {
-            bool isObjectDisposedExceptionDisabled = false;
-
-#if !NET451
-            AppContext.TryGetSwitch(AppContextConstants.DisableObjectDisposedExceptionForReceiveAsync, out isObjectDisposedExceptionDisabled);
-#endif
-
-            if (!isObjectDisposedExceptionDisabled)
-            {
-                ThrowIfDisposed();
-            }
+            ThrowIfDisposed();
 
             return InnerHandler?.ReceiveAsync(timeout, cancellationToken) ?? s_dummyResultObject;
         }

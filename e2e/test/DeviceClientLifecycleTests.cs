@@ -30,56 +30,18 @@ namespace Microsoft.Azure.Devices.E2ETests
         #region ReceiveAsyncAfterDispose
 
         [TestMethod]
-        public async Task DCLC_ReceiveAsyncAfterDispose_Sasl_Amqp()
+        public async Task DeviceClientLifeCycle_ReceiveAsyncAfterDispose_Sasl_Amqp()
         {
-            await DCLC_ReceiveAsyncAfterDispose(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
+            await DeviceClientLifeCycle_ReceiveAsyncAfterDispose(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
         }
 
         [TestMethod]
-        public async Task DCLC_ReceiveAsyncAfterDispose_Sasl_AmqpWs()
+        public async Task DeviceClientLifeCycle_ReceiveAsyncAfterDispose_Sasl_AmqpWs()
         {
-            await DCLC_ReceiveAsyncAfterDispose(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
+            await DeviceClientLifeCycle_ReceiveAsyncAfterDispose(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
         }
 
-        // NOTE: MQTT transport is not throwing any exception if the device client is either disposed or closed (ewertons).
-
-        //[TestMethod]
-        //public async Task DCLC_ReceiveAsyncAfterDispose_Sasl_Mqtt()
-        //{
-        //    await DCLC_ReceiveAsyncAfterDispose(TestDeviceType.Sasl, Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
-        //}
-
-        //[TestMethod]
-        //public async Task DCLC_ReceiveAsyncAfterDispose_Sasl_MqttWs()
-        //{
-        //    await DCLC_ReceiveAsyncAfterDispose(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
-        //}
-
-        [TestMethod]
-        public async Task DCLC_ReceiveAsyncAfterDispose_x509_Amqp()
-        {
-            await DCLC_ReceiveAsyncAfterDispose(TestDeviceType.X509, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task DCLC_ReceiveAsyncAfterDispose_x509_AmqpWs()
-        {
-            await DCLC_ReceiveAsyncAfterDispose(TestDeviceType.X509, Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
-        }
-
-        //[TestMethod]
-        //public async Task DCLC_ReceiveAsyncAfterDispose_x509_Mqtt()
-        //{
-        //    await DCLC_ReceiveAsyncAfterDispose(TestDeviceType.X509, Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
-        //}
-
-        //[TestMethod]
-        //public async Task DCLC_ReceiveAsyncAfterDispose_x509_MqttWs()
-        //{
-        //    await DCLC_ReceiveAsyncAfterDispose(TestDeviceType.X509, Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
-        //}
-
-        private async Task DCLC_ReceiveAsyncAfterDispose(TestDeviceType testDeviceType, Client.TransportType transportType)
+        private async Task DeviceClientLifeCycle_ReceiveAsyncAfterDispose(TestDeviceType testDeviceType, Client.TransportType transportType)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, testDeviceType).ConfigureAwait(false);
 
@@ -119,54 +81,18 @@ namespace Microsoft.Azure.Devices.E2ETests
         #region ReceiveAsyncAfterCloseAsync
 
         [TestMethod]
-        public async Task DCLC_ReceiveAsyncAfterCloseAsync_Sasl_Amqp()
+        public async Task DeviceClientLifeCycle_ReceiveAsyncAfterCloseAsync_Sasl_Amqp()
         {
-            await DCLC_ReceiveAsyncAfterCloseAsync(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
+            await DeviceClientLifeCycle_ReceiveAsyncAfterCloseAsync(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
         }
 
         [TestMethod]
-        public async Task DCLC_ReceiveAsyncAfterCloseAsync_Sasl_AmqpWs()
+        public async Task DeviceClientLifeCycle_ReceiveAsyncAfterCloseAsync_Sasl_AmqpWs()
         {
-            await DCLC_ReceiveAsyncAfterCloseAsync(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
+            await DeviceClientLifeCycle_ReceiveAsyncAfterCloseAsync(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
         }
 
-        //[TestMethod]
-        //public async Task DCLC_ReceiveAsyncAfterCloseAsync_Sasl_Mqtt()
-        //{
-        //    await DCLC_ReceiveAsyncAfterCloseAsync(TestDeviceType.Sasl, Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
-        //}
-
-        //[TestMethod]
-        //public async Task DCLC_ReceiveAsyncAfterCloseAsync_Sasl_MqttWs()
-        //{
-        //    await DCLC_ReceiveAsyncAfterCloseAsync(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
-        //}
-
-        [TestMethod]
-        public async Task DCLC_ReceiveAsyncAfterCloseAsync_x509_Amqp()
-        {
-            await DCLC_ReceiveAsyncAfterCloseAsync(TestDeviceType.X509, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task DCLC_ReceiveAsyncAfterCloseAsync_x509_AmqpWs()
-        {
-            await DCLC_ReceiveAsyncAfterCloseAsync(TestDeviceType.X509, Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
-        }
-
-        //[TestMethod]
-        //public async Task DCLC_ReceiveAsyncAfterCloseAsync_x509_Mqtt()
-        //{
-        //    await DCLC_ReceiveAsyncAfterCloseAsync(TestDeviceType.X509, Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
-        //}
-
-        //[TestMethod]
-        //public async Task DCLC_ReceiveAsyncAfterCloseAsync_x509_MqttWs()
-        //{
-        //    await DCLC_ReceiveAsyncAfterCloseAsync(TestDeviceType.X509, Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
-        //}
-
-        private async Task DCLC_ReceiveAsyncAfterCloseAsync(TestDeviceType testDeviceType, Client.TransportType transportType)
+        private async Task DeviceClientLifeCycle_ReceiveAsyncAfterCloseAsync(TestDeviceType testDeviceType, Client.TransportType transportType)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, testDeviceType).ConfigureAwait(false);
 
@@ -206,53 +132,18 @@ namespace Microsoft.Azure.Devices.E2ETests
         #region SendAsyncAfterDispose
 
         [TestMethod]
-        public async Task DCLC_SendAsyncAfterDispose_Sasl_Amqp()
+        public async Task DeviceClientLifeCycle_SendAsyncAfterDispose_Sasl_Amqp()
         {
-            await DCLC_SendAsyncAfterDispose(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
+            await DeviceClientLifeCycle_SendAsyncAfterDispose(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
         }
 
         [TestMethod]
-        public async Task DCLC_SendAsyncAfterDispose_Sasl_AmqpWs()
+        public async Task DeviceClientLifeCycle_SendAsyncAfterDispose_Sasl_AmqpWs()
         {
-            await DCLC_SendAsyncAfterDispose(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
+            await DeviceClientLifeCycle_SendAsyncAfterDispose(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
         }
 
-        //[TestMethod]
-        //public async Task DCLC_SendAsyncAfterDispose_Sasl_Mqtt()
-        //{
-        //    await DCLC_SendAsyncAfterDispose(TestDeviceType.Sasl, Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
-        //}
-
-        //[TestMethod]
-        //public async Task DCLC_SendAsyncAfterDispose_Sasl_MqttWs()
-        //{
-        //    await DCLC_SendAsyncAfterDispose(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
-        //}
-
-        [TestMethod]
-        public async Task DCLC_SendAsyncAfterDispose_x509_Amqp()
-        {
-            await DCLC_SendAsyncAfterDispose(TestDeviceType.X509, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task DCLC_SendAsyncAfterDispose_x509_AmqpWs()
-        {
-            await DCLC_SendAsyncAfterDispose(TestDeviceType.X509, Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
-        }
-
-        //[TestMethod]
-        //public async Task DCLC_SendAsyncAfterDispose_x509_Mqtt()
-        //{
-        //    await DCLC_SendAsyncAfterDispose(TestDeviceType.X509, Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
-        //}
-
-        //[TestMethod]
-        //public async Task DCLC_SendAsyncAfterDispose_x509_MqttWs()
-        //{
-        //    await DCLC_SendAsyncAfterDispose(TestDeviceType.X509, Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
-        //}
-        private async Task DCLC_SendAsyncAfterDispose(TestDeviceType testDeviceType, Client.TransportType transportType)
+        private async Task DeviceClientLifeCycle_SendAsyncAfterDispose(TestDeviceType testDeviceType, Client.TransportType transportType)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, testDeviceType).ConfigureAwait(false);
 
@@ -292,54 +183,18 @@ namespace Microsoft.Azure.Devices.E2ETests
         #region SendAsyncAfterCloseAsync
 
         [TestMethod]
-        public async Task DCLC_SendAsyncAfterCloseAsync_Sasl_Amqp()
+        public async Task DeviceClientLifeCycle_SendAsyncAfterCloseAsync_Sasl_Amqp()
         {
-            await DCLC_SendAsyncAfterCloseAsync(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
+            await DeviceClientLifeCycle_SendAsyncAfterCloseAsync(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
         }
 
         [TestMethod]
-        public async Task DCLC_SendAsyncAfterCloseAsync_Sasl_AmqpWs()
+        public async Task DeviceClientLifeCycle_SendAsyncAfterCloseAsync_Sasl_AmqpWs()
         {
-            await DCLC_SendAsyncAfterCloseAsync(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
+            await DeviceClientLifeCycle_SendAsyncAfterCloseAsync(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
         }
 
-        //[TestMethod]
-        //public async Task DCLC_SendAsyncAfterCloseAsync_Sasl_Mqtt()
-        //{
-        //    await DCLC_SendAsyncAfterCloseAsync(TestDeviceType.Sasl, Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
-        //}
-
-        //[TestMethod]
-        //public async Task DCLC_SendAsyncAfterCloseAsync_Sasl_MqttWs()
-        //{
-        //    await DCLC_SendAsyncAfterCloseAsync(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
-        //}
-
-        [TestMethod]
-        public async Task DCLC_SendAsyncAfterCloseAsync_x509_Amqp()
-        {
-            await DCLC_SendAsyncAfterCloseAsync(TestDeviceType.X509, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task DCLC_SendAsyncAfterCloseAsync_x509_AmqpWs()
-        {
-            await DCLC_SendAsyncAfterCloseAsync(TestDeviceType.X509, Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
-        }
-
-        //[TestMethod]
-        //public async Task DCLC_SendAsyncAfterCloseAsync_x509_Mqtt()
-        //{
-        //    await DCLC_SendAsyncAfterCloseAsync(TestDeviceType.X509, Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
-        //}
-
-        //[TestMethod]
-        //public async Task DCLC_SendAsyncAfterCloseAsync_x509_MqttWs()
-        //{
-        //    await DCLC_SendAsyncAfterCloseAsync(TestDeviceType.X509, Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
-        //}
-
-        private async Task DCLC_SendAsyncAfterCloseAsync(TestDeviceType testDeviceType, Client.TransportType transportType)
+        private async Task DeviceClientLifeCycle_SendAsyncAfterCloseAsync(TestDeviceType testDeviceType, Client.TransportType transportType)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, testDeviceType).ConfigureAwait(false);
 

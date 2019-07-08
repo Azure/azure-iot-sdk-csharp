@@ -20,6 +20,7 @@ namespace Microsoft.Azure.Devices.Client
     using System.Security.Cryptography.X509Certificates;
     using System.IO;
     using Microsoft.Azure.Devices.Client.Exceptions;
+    using Microsoft.Azure.Devices.Client.Common;
 
     /// <summary>
     /// Delegate for desired property update callbacks.  This will be called
@@ -322,6 +323,24 @@ namespace Microsoft.Azure.Devices.Client
                     return await ReceiveAsync(cts.Token).ConfigureAwait(false);
                 }
             }
+            catch (ObjectDisposedException)
+            {
+                bool isObjectDisposedExceptionDisabled = false;
+#if !NET451
+                AppContext.TryGetSwitch(AppContextConstants.DisableObjectDisposedExceptionForReceiveAsync, out isObjectDisposedExceptionDisabled);
+#endif
+                // If cancellationToken.IsCancellationRequested is false, then this OperationCanceledException comes from 
+                //  _amqpUnit.ReceiveMessageAsync, which then should be optionally suppresed by isObjectDisposedExceptionDisabled 
+                // to match the behavior of Azure IoT C# SDK released on 2018-08-17 (nuget 1.18.0).
+                if (isObjectDisposedExceptionDisabled)
+                {
+                    return null;
+                }
+                else
+                {
+                    throw;
+                }
+            }
             catch (OperationCanceledException ex)
             {
                 // Exception adaptation for non-CancellationToken public API.
@@ -345,6 +364,24 @@ namespace Microsoft.Azure.Devices.Client
                 catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
                 {
                     return null;
+                }
+                catch (ObjectDisposedException)
+                {
+                    bool isObjectDisposedExceptionDisabled = false;
+#if !NET451
+                    AppContext.TryGetSwitch(AppContextConstants.DisableObjectDisposedExceptionForReceiveAsync, out isObjectDisposedExceptionDisabled);
+#endif
+                    // If cancellationToken.IsCancellationRequested is false, then this OperationCanceledException comes from 
+                    //  _amqpUnit.ReceiveMessageAsync, which then should be optionally suppresed by isObjectDisposedExceptionDisabled 
+                    // to match the behavior of Azure IoT C# SDK released on 2018-08-17 (nuget 1.18.0).
+                    if (isObjectDisposedExceptionDisabled)
+                    {
+                        return null;
+                    }
+                    else
+                    {
+                        throw;
+                    }
                 }
             }
         }
