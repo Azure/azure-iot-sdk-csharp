@@ -38,7 +38,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
         private AmqpIoTSendingLink _twinSendingLink;
         private AmqpIoTReceivingLink _twinReceivingLink;
-        private bool _twinLinksOpened;
         private readonly SemaphoreSlim _twinLinksLock = new SemaphoreSlim(1, 1);
 
         private AmqpIoTSession _amqpIoTSession;
@@ -550,10 +549,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         private void OnSessionDisconnected(object o, EventArgs args)
         {
             if (Logging.IsEnabled) Logging.Enter(this, o, $"{nameof(OnSessionDisconnected)}");
-            _onUnitDisconnected();
+            if (ReferenceEquals(o, _amqpIoTSession))
+            {
+                _onUnitDisconnected();
+            }
             if (Logging.IsEnabled) Logging.Exit(this, o, $"{nameof(OnSessionDisconnected)}");
         }
-
         #endregion
 
         #region IDisposable

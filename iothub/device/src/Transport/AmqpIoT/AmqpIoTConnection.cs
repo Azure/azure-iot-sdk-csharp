@@ -7,6 +7,7 @@ using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Client.Transport.Amqp;
+using Microsoft.Azure.Devices.Shared;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 {
@@ -29,7 +30,16 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
         internal void AmqpConnectionClosed(object sender, EventArgs e)
         {
-            Closed.Invoke(sender, e);
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpConnectionClosed)}");
+            if (ReferenceEquals(sender, _amqpConnection))
+            {
+                Closed?.Invoke(this, e);
+            }
+            else
+            {
+                if (Logging.IsEnabled) Logging.Error(this, "AmqpConnection closed event: instance mismatch.", $"{nameof(AmqpConnectionClosed)}");
+            }
+            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpConnectionClosed)}");
         }
 
         internal async Task<AmqpIoTSession> OpenSessionAsync(TimeSpan timeout)

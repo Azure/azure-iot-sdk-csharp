@@ -435,14 +435,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 await _handlerLock.WaitAsync().ConfigureAwait(false);
                 if (!_openCalled) return;
-            }
-            finally
-            {
-                _handlerLock.Release();
-            }
-
-            try
-            {
                 if (Logging.IsEnabled) Logging.Enter(this, cancellationToken, nameof(CloseAsync));
 
                 _handleDisconnectCts.Cancel();
@@ -452,6 +444,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             finally
             {
                 if (Logging.IsEnabled) Logging.Exit(this, cancellationToken, nameof(CloseAsync));
+                _handlerLock.Release();
             }
         }
 
@@ -543,7 +536,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
             try
             {
-                // No reason to reconnect at this moment.
+                // always reconnect.
                  _onConnectionStatusChanged(ConnectionStatus.Disconnected_Retrying, ConnectionStatusChangeReason.Communication_Error);
             
                 CancellationToken cancellationToken = _handleDisconnectCts.Token;

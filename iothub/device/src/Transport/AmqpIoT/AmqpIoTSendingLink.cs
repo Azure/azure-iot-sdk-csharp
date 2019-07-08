@@ -27,7 +27,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         private void SendingAmqpLinkClosed(object sender, EventArgs e)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(SendingAmqpLinkClosed)}");
-            Closed.Invoke(sender, e);
+            if (ReferenceEquals(sender, _sendingAmqpLink))
+            {
+                Closed?.Invoke(this, e);
+            }
+            else
+            {
+                if (Logging.IsEnabled) Logging.Error(this, "Amqp SendingLink closed event: instance mismatch.", $"{nameof(SendingAmqpLinkClosed)}");
+            }
+            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(SendingAmqpLinkClosed)}");
         }
 
         internal Task CloseAsync(TimeSpan timeout)
