@@ -137,8 +137,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             int durationInSec,
             Func<DeviceClient, TestDevice, Task> initOperation,
             Func<DeviceClient, TestDevice, Task> testOperation,
-            Func<Task> cleanupOperation,
-            bool recoverable = true)
+            Func<Task> cleanupOperation)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(devicePrefix, type).ConfigureAwait(false);
             DeviceClient deviceClient = testDevice.CreateDeviceClient(transport);
@@ -178,7 +177,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 s_log.WriteLine($"{nameof(FaultInjection)}: Waiting for fault injection to be active: {delayInSec} seconds.");
                 await Task.Delay(TimeSpan.FromSeconds(delayInSec)).ConfigureAwait(false);
 
-                // For disconnect type faults, the faulted device should disconnect and all devices should recover.
+                // For disconnect type faults, the device should disconnect and recover.
                 if (FaultShouldDisconnect(faultType))
                 {
                     s_log.WriteLine($"{nameof(FaultInjection)}: Confirming fault injection has been actived.");
@@ -214,7 +213,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
                 else
                 {
-                    s_log.WriteLine($"{nameof(FaultInjection)}: Performing test operation while fault injection is being actived.");
+                    s_log.WriteLine($"{nameof(FaultInjection)}: Performing test operation while fault injection is being activated.");
                     // Perform the test operation for the faulted device multi times.
                     for (int i = 0; i < StatusCheckLoop; i++)
                     {
@@ -222,9 +221,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                         await testOperation(deviceClient, testDevice).ConfigureAwait(false);
                         await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
                     }
-
-                    //  Following code will be executed only when fault is recoverable
-                    Assert.IsTrue(recoverable, $"The device {testDevice.Id} did not get faulted with fault type: {faultType}");
                 }
 
                 await deviceClient.CloseAsync().ConfigureAwait(false);

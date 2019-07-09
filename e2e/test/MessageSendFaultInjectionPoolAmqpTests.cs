@@ -687,8 +687,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             string reason,
             int delayInSec = FaultInjection.DefaultDelayInSec,
             int durationInSec = FaultInjection.DefaultDurationInSec,
-            ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device,
-            bool recoverable = true)
+            ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
         {
             Dictionary<string, EventHubTestListener> eventHubListeners = new Dictionary<string, EventHubTestListener>();
 
@@ -737,8 +736,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 initOperation,
                 testOperation,
                 cleanupOperation,
-                authScope,
-                recoverable).ConfigureAwait(false);
+                authScope).ConfigureAwait(false);
         }
     }
 }

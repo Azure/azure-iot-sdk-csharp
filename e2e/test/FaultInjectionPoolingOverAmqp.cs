@@ -26,8 +26,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             Func<DeviceClient, TestDevice, Task> initOperation,
             Func<DeviceClient, TestDevice, Task> testOperation,
             Func<IList<DeviceClient>, Task> cleanupOperation,
-            ConnectionStringAuthScope authScope,
-            bool recoverable = true)
+            ConnectionStringAuthScope authScope)
         {
             var transportSettings = new ITransportSettings[]
             {
@@ -148,7 +147,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
                 else
                 {
-                    s_log.WriteLine($"{nameof(FaultInjectionPoolingOverAmqp)}: Performing test operation while fault injection is being actived.");
+                    s_log.WriteLine($"{nameof(FaultInjectionPoolingOverAmqp)}: Performing test operation while fault injection is being activated.");
                     // Perform the test operation for the faulted device multi times.
                     for (int i = 0; i < FaultInjection.StatusCheckLoop; i++)
                     {
@@ -156,9 +155,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                         await testOperation(deviceClients[0], testDevices[0]).ConfigureAwait(false);
                         await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
                     }
-
-                    //  Following code will be executed only when fault is recoverable
-                    Assert.IsTrue(recoverable, $"The device {testDevices[0].Id} did not get faulted with fault type: {faultType}");
                 }
 
                 // Close the device client instances
