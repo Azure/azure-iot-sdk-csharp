@@ -90,12 +90,13 @@ namespace Microsoft.Azure.Devices.E2ETests
                 var faultInjectionMessage = FaultInjection.ComposeErrorInjectionProperties(faultType, reason, delayInSec, durationInSec);
                 await deviceClients[0].SendEventAsync(faultInjectionMessage).ConfigureAwait(false);
 
-                s_log.WriteLine($"{nameof(FaultInjectionPoolingOverAmqp)}: Waiting for fault injection to be active and device to be connected: {delayInSec} seconds.");
+                s_log.WriteLine($"{nameof(FaultInjection)}: Waiting for fault injection to be active: {delayInSec} seconds.");
                 await Task.Delay(TimeSpan.FromSeconds(delayInSec)).ConfigureAwait(false);
 
                 // For disconnect type faults, the faulted device should disconnect and all devices should recover.
                 if (FaultInjection.FaultShouldDisconnect(faultType))
                 {
+                    s_log.WriteLine($"{nameof(FaultInjectionPoolingOverAmqp)}: Confirming fault injection has been actived.");
                     // Check that service issued the fault to the faulting device [device 0]
                     bool isFaulted = false;
                     for (int i = 0; i < FaultInjection.StatusCheckLoop; i++)
@@ -110,8 +111,10 @@ namespace Microsoft.Azure.Devices.E2ETests
                     }
 
                     Assert.IsTrue(isFaulted, $"The device {testDevices[0].Id} did not get faulted with fault type: {faultType}");
+                    s_log.WriteLine($"{nameof(FaultInjectionPoolingOverAmqp)}: Confirmed fault injection has been actived.");
 
                     // Check all devices are back online
+                    s_log.WriteLine($"{nameof(FaultInjectionPoolingOverAmqp)}: Confirming all devices back online.");
                     bool notRecovered = true;
                     int j = 0;
                     for (int i = 0; notRecovered && i < durationInSec + FaultInjection.StatusCheckLoop; i++)
@@ -122,6 +125,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                             if (amqpConnectionStatuses[j].LastConnectionStatus != ConnectionStatus.Connected)
                             {
                                 await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
+                                notRecovered = true;
                                 break;
                             }
                         }
@@ -131,6 +135,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     {
                         Assert.Fail($"{testDevices[j].Id} did not reconnect.");
                     }
+                    s_log.WriteLine($"{nameof(FaultInjectionPoolingOverAmqp)}: Confirmed all devices back online.");
 
                     // Perform the test operation for all devices
                     for (int i = 0; i < devicesCount; i++)
@@ -143,6 +148,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
                 else
                 {
+                    s_log.WriteLine($"{nameof(FaultInjectionPoolingOverAmqp)}: Performing test operation while fault injection is being actived.");
                     // Perform the test operation for the faulted device multi times.
                     for (int i = 0; i < FaultInjection.StatusCheckLoop; i++)
                     {

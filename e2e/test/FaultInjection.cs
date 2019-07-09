@@ -179,8 +179,9 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await Task.Delay(TimeSpan.FromSeconds(delayInSec)).ConfigureAwait(false);
 
                 // For disconnect type faults, the faulted device should disconnect and all devices should recover.
-                if (FaultInjection.FaultShouldDisconnect(faultType))
+                if (FaultShouldDisconnect(faultType))
                 {
+                    s_log.WriteLine($"{nameof(FaultInjection)}: Confirming fault injection has been actived.");
                     // Check that service issued the fault to the faulting device
                     bool isFaulted = false;
                     for (int i = 0; i < StatusCheckLoop; i++)
@@ -195,25 +196,29 @@ namespace Microsoft.Azure.Devices.E2ETests
                     }
 
                     Assert.IsTrue(isFaulted, $"The device {testDevice.Id} did not get faulted with fault type: {faultType}");
+                    s_log.WriteLine($"{nameof(FaultInjection)}: Confirmed fault injection has been actived.");
 
                     // Check the device is back online
+                    s_log.WriteLine($"{nameof(FaultInjection)}: Confirming device back online.");
                     for (int i = 0; lastConnectionStatus != ConnectionStatus.Connected && i < durationInSec + StatusCheckLoop; i++)
                     {
                         await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
                     }
 
                     Assert.AreEqual(lastConnectionStatus, ConnectionStatus.Connected, $"{testDevice.Id} did not reconnect.");
+                    s_log.WriteLine($"{nameof(FaultInjection)}: Confirmed device back online.");
 
                     // Perform the test operation.
-                    s_log.WriteLine($">>> {nameof(FaultInjectionPoolingOverAmqp)}: Performing test operation for device {testDevice.Id}.");
+                    s_log.WriteLine($">>> {nameof(FaultInjection)}: Performing test operation for device {testDevice.Id}.");
                     await testOperation(deviceClient, testDevice).ConfigureAwait(false);
                 }
                 else
                 {
+                    s_log.WriteLine($"{nameof(FaultInjection)}: Performing test operation while fault injection is being actived.");
                     // Perform the test operation for the faulted device multi times.
                     for (int i = 0; i < StatusCheckLoop; i++)
                     {
-                        s_log.WriteLine($">>> {nameof(FaultInjectionPoolingOverAmqp)}: Performing test operation for device 0 - Run {i}.");
+                        s_log.WriteLine($">>> {nameof(FaultInjection)}: Performing test operation for device - Run {i}.");
                         await testOperation(deviceClient, testDevice).ConfigureAwait(false);
                         await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
                     }
