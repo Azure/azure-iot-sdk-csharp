@@ -26,7 +26,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             Func<DeviceClient, TestDevice, Task> initOperation,
             Func<DeviceClient, TestDevice, Task> testOperation,
             Func<IList<DeviceClient>, Task> cleanupOperation,
-            ConnectionStringAuthScope authScope)
+            ConnectionStringAuthScope authScope,
+            bool recoverable = true)
         {
             var transportSettings = new ITransportSettings[]
             {
@@ -97,7 +98,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 {
                     // Check that service issued the fault to the faulting device [device 0]
                     bool isFaulted = false;
-                    for (int i = 0; i < 5; i++)
+                    for (int i = 0; i < FaultInjection.StatusCheckLoop; i++)
                     {
                         if (amqpConnectionStatuses[0].ConnectionStatusChangeCount >= 2)
                         {
@@ -113,7 +114,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     // Check all devices are back online
                     bool notRecovered = true;
                     int j = 0;
-                    for (int i = 0; notRecovered && i < FaultInjection.WaitForReconnectMilliseconds; i++)
+                    for (int i = 0; notRecovered && i < durationInSec + FaultInjection.StatusCheckLoop; i++)
                     {
                         notRecovered = false;
                         for (j = 0; j < devicesCount; j++)
@@ -142,14 +143,16 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
                 else
                 {
-                    // If the fault is not recoverable, perform the test operation for the faulted device 5 times and check that exception is thrown.
-                    for (int i = 0; i < 5; i++)
+                    // Perform the test operation for the faulted device multi times.
+                    for (int i = 0; i < FaultInjection.StatusCheckLoop; i++)
                     {
                         s_log.WriteLine($">>> {nameof(FaultInjectionPoolingOverAmqp)}: Performing test operation for device 0 - Run {i}.");
                         await testOperation(deviceClients[0], testDevices[0]).ConfigureAwait(false);
                         await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
                     }
-                    Assert.Fail($"The device {testDevices[0].Id} did not get faulted with fault type: {faultType}");
+
+                    //  Following code will be executed only when fault is recoverable
+                    Assert.IsTrue(recoverable, $"The device {testDevices[0].Id} did not get faulted with fault type: {faultType}");
                 }
 
                 // Close the device client instances

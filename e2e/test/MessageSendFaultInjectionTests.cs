@@ -141,39 +141,25 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         public async Task Message_ThrottledConnectionRecovery_Amqp()
         {
-            try
-            {
-                await SendMessageRecovery(
+            await SendMessageRecovery(
                     TestDeviceType.Sasl,
                     Client.TransportType.Amqp_Tcp_Only,
                     FaultInjection.FaultType_Throttle,
                     FaultInjection.FaultCloseReason_Boom,
                     FaultInjection.DefaultDelayInSec,
                     FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
-            }
-            catch (IotHubException ex)
-            {
-                Assert.IsInstanceOfType(ex, typeof(IotHubThrottledException));
-            }
         }
         
         [TestMethod]
         public async Task Message_ThrottledConnectionRecovery_AmqpWs()
         {
-            try
-            {
-                await SendMessageRecovery(
+            await SendMessageRecovery(
                     TestDeviceType.Sasl,
                     Client.TransportType.Amqp_WebSocket_Only,
                     FaultInjection.FaultType_Throttle,
                     FaultInjection.FaultCloseReason_Boom,
                     FaultInjection.DefaultDelayInSec,
                     FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
-            }
-            catch (IotHubException ex)
-            {
-                Assert.IsInstanceOfType(ex, typeof(IotHubThrottledException));
-            }
         }
         
         [TestMethod]
@@ -188,7 +174,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                     FaultInjection.FaultCloseReason_Boom,
                     FaultInjection.DefaultDelayInSec,
                     FaultInjection.DefaultDurationInSec,
-                    FaultInjection.ShortRetryInMilliSec).ConfigureAwait(false);
+                    FaultInjection.ShortRetryInMilliSec,
+                    true).ConfigureAwait(false);
 
                 Assert.Fail("None of the expected exceptions were thrown.");
             }
@@ -212,7 +199,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                     FaultInjection.FaultCloseReason_Boom,
                     FaultInjection.DefaultDelayInSec,
                     FaultInjection.DefaultDurationInSec,
-                    FaultInjection.ShortRetryInMilliSec).ConfigureAwait(false);
+                    FaultInjection.ShortRetryInMilliSec,
+                    true).ConfigureAwait(false);
                 Assert.Fail("None of the expected exceptions were thrown.");
             }
             catch (IotHubThrottledException) { }
@@ -235,7 +223,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                     FaultInjection.FaultCloseReason_Boom,
                     FaultInjection.DefaultDelayInSec,
                     FaultInjection.DefaultDurationInSec,
-                    FaultInjection.ShortRetryInMilliSec).ConfigureAwait(false);
+                    FaultInjection.ShortRetryInMilliSec,
+                    true).ConfigureAwait(false);
 
                 Assert.Fail("None of the expected exceptions were thrown.");
             }
@@ -333,7 +322,9 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.FaultType_Auth,
                 FaultInjection.FaultCloseReason_Boom,
                 FaultInjection.DefaultDelayInSec,
-                FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
+                FaultInjection.DefaultDurationInSec,
+                FaultInjection.RecoveryTimeMilliseconds,
+                false).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -387,7 +378,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             string reason,
             int delayInSec,
             int durationInSec = FaultInjection.DefaultDurationInSec,
-            int retryDurationInMilliSec = FaultInjection.RecoveryTimeMilliseconds)
+            int retryDurationInMilliSec = FaultInjection.RecoveryTimeMilliseconds,
+            bool recoverable = true)
         {
             EventHubTestListener testListener = null;
 
@@ -429,7 +421,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 durationInSec,
                 init,
                 testOperation,
-                cleanupOperation).ConfigureAwait(false);
+                cleanupOperation,
+                recoverable).ConfigureAwait(false);
         }
 
         public void Dispose()

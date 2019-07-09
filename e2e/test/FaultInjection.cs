@@ -44,6 +44,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         public const int DefaultDelayInSec = 1; // Time in seconds after service initiates the fault.
         public const int DefaultDurationInSec = 5; // Duration in seconds 
+        public const int StatusCheckLoop = 10; 
 
         public const int WaitForDisconnectMilliseconds = 3 * DefaultDelayInSec * 1000;
         public const int WaitForReconnectMilliseconds = 2 * DefaultDurationInSec * 1000;
@@ -71,7 +72,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         public static bool FaultShouldDisconnect(string faultType)
         {
-            return
+            return (faultType != FaultType_Auth) &&
                 (faultType != FaultType_Throttle) &&
                 (faultType != FaultType_QuotaExceeded);
         }
@@ -136,7 +137,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             int durationInSec,
             Func<DeviceClient, TestDevice, Task> initOperation,
             Func<DeviceClient, TestDevice, Task> testOperation,
-            Func<Task> cleanupOperation)
+            Func<Task> cleanupOperation,
+            bool recoverable = true)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(devicePrefix, type).ConfigureAwait(false);
             DeviceClient deviceClient = testDevice.CreateDeviceClient(transport);
@@ -181,7 +183,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 {
                     // Check that service issued the fault to the faulting device
                     bool isFaulted = false;
-                    for (int i = 0; i < 5; i++)
+                    for (int i = 0; i < StatusCheckLoop; i++)
                     {
                         if (connectionStatusChangeCount >= 2)
                         {
@@ -195,7 +197,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     Assert.IsTrue(isFaulted, $"The device {testDevice.Id} did not get faulted with fault type: {faultType}");
 
                     // Check the device is back online
-                    for (int i = 0; lastConnectionStatus != ConnectionStatus.Connected && i < FaultInjection.WaitForReconnectMilliseconds; i++)
+                    for (int i = 0; lastConnectionStatus != ConnectionStatus.Connected && i < durationInSec + StatusCheckLoop; i++)
                     {
                         await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
                     }
@@ -208,14 +210,16 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
                 else
                 {
-                    // If the fault is not recoverable, perform the test operation for the faulted device 5 times and check that exception is thrown.
-                    for (int i = 0; i < 5; i++)
+                    // Perform the test operation for the faulted device multi times.
+                    for (int i = 0; i < StatusCheckLoop; i++)
                     {
                         s_log.WriteLine($">>> {nameof(FaultInjectionPoolingOverAmqp)}: Performing test operation for device 0 - Run {i}.");
                         await testOperation(deviceClient, testDevice).ConfigureAwait(false);
                         await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
                     }
-                    Assert.Fail($"The device {testDevice.Id} did not get faulted with fault type: {faultType}");
+
+                    //  Following code will be executed only when fault is recoverable
+                    Assert.IsTrue(recoverable, $"The device {testDevice.Id} did not get faulted with fault type: {faultType}");
                 }
 
                 await deviceClient.CloseAsync().ConfigureAwait(false);
