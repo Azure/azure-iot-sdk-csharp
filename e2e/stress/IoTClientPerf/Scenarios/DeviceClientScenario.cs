@@ -34,6 +34,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private TelemetryMetrics _mConnectionStatus = new TelemetryMetrics();
         private SemaphoreSlim _connectionStatusChangedSemaphore = new SemaphoreSlim(1);
         private SemaphoreSlim _waitForDisconnectSemaphore = new SemaphoreSlim(0);
+        private bool _connected;
 
         private byte[] _messageBytes;
 
@@ -126,20 +127,41 @@ namespace Microsoft.Azure.Devices.E2ETests
                 switch (status)
                 {
                     case ConnectionStatus.Disconnected:
-                        SystemMetrics.DeviceDisconnected();
+                        if (_connected)
+                        {
+                            SystemMetrics.DeviceDisconnected();
+                            _connected = false;
+                        }
+
                         _mConnectionStatus.OperationType = TelemetryMetrics.DeviceStateDisconnected;
                         _waitForDisconnectSemaphore.Release();
                         break;
                     case ConnectionStatus.Connected:
-                        SystemMetrics.DeviceConnected();
+                        if (!_connected)
+                        {
+                            SystemMetrics.DeviceConnected();
+                            _connected = true;
+                        }
+
                         _mConnectionStatus.OperationType = TelemetryMetrics.DeviceStateConnected;
                         break;
                     case ConnectionStatus.Disconnected_Retrying:
-                        SystemMetrics.DeviceDisconnected();
+                        if (_connected)
+                        {
+                            SystemMetrics.DeviceDisconnected();
+                            _connected = false;
+                        }
+
                         _mConnectionStatus.OperationType = TelemetryMetrics.DeviceStateDisconnectedRetrying;
                         _waitForDisconnectSemaphore.Release();
                         break;
                     case ConnectionStatus.Disabled:
+                        if (_connected)
+                        {
+                            SystemMetrics.DeviceDisconnected();
+                            _connected = false;
+                        }
+
                         _mConnectionStatus.OperationType = TelemetryMetrics.DeviceStateDisconnected;
                         break;
                     default:

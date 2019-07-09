@@ -12,9 +12,9 @@ namespace Microsoft.Azure.Devices.E2ETests
 {
     public static class SystemMetrics
     {
-        private const int RefreshIntervalMs = 500;
+        private const int RefreshIntervalMs = 1000;
         private static readonly Stopwatch _sw = new Stopwatch();
-        private static TimeSpan s_lastTotalCpuUsage = TimeSpan.Zero;
+        private static double s_lastTotalCpuUsageMs = 0.0;
         private static int s_cpuPercent;
         private static long s_totalMemoryBytes;
         private static long s_lastGcBytes;
@@ -53,13 +53,14 @@ namespace Microsoft.Azure.Devices.E2ETests
         private static void UpdateCpuUsage()
         {
             var proc = Process.GetCurrentProcess();
-            TimeSpan currentTotalCpuUsage = proc.TotalProcessorTime;
+            double currentTotalCpuUsageMs = proc.TotalProcessorTime.TotalMilliseconds / Environment.ProcessorCount;
+            double timeDeltaMs = _sw.Elapsed.TotalMilliseconds;
 
-            long timeDelta = _sw.ElapsedMilliseconds;
-            long usedTimeDelta = (long)(currentTotalCpuUsage - s_lastTotalCpuUsage).TotalMilliseconds;
-            if (timeDelta != 0) s_cpuPercent = (int)(usedTimeDelta * 100 / (timeDelta * Environment.ProcessorCount));
+            double usedTimeDeltaMs = currentTotalCpuUsageMs - s_lastTotalCpuUsageMs;
+            if (timeDeltaMs > 0.1) s_cpuPercent = (int)(usedTimeDeltaMs * 100 / timeDeltaMs);
+            if (s_cpuPercent > 100) s_cpuPercent = 100;
 
-            s_lastTotalCpuUsage = currentTotalCpuUsage;
+            s_lastTotalCpuUsageMs = currentTotalCpuUsageMs;
         }
 
         private static void UpdateTotalMemoryBytes()
