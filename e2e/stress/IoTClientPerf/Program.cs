@@ -19,6 +19,21 @@ namespace Microsoft.Azure.Devices.E2ETests
                     "Generate the IoT Hub configuration required for the test (creates multiple devices).",
                     (c) => {return new GenerateIotHubConfigTest(c);})},
 
+            { "device_all",
+                new Tuple<string, Func<PerfScenarioConfig, PerfScenario>>(
+                    "Devices connecting to IoT Hub then using multiple features.",
+                    (c) => {return new DeviceAllTest(c);})},
+
+            { "device_all_noretry",
+                new Tuple<string, Func<PerfScenarioConfig, PerfScenario>>(
+                    "Like device_all but will disable retries and create a new DeviceClient when the previous enters a faulted state.",
+                    (c) => {return new DeviceAllNoRetry(c);})},
+
+            {"single_device_d2c",
+                new Tuple<string, Func<PerfScenarioConfig, PerfScenario>>(
+                    "A single device sending many events to IoT Hub.",
+                    (c) => {return new DeviceOneD2CTest(c);}) },
+
             {"device_d2c",
                 new Tuple<string, Func<PerfScenarioConfig, PerfScenario>>(
                     "Devices sending events to IoT Hub.",
@@ -34,6 +49,21 @@ namespace Microsoft.Azure.Devices.E2ETests
                     "Devices receiving method calls from IoT Hub.",
                     (c) => {return new DeviceMethodTest(c);}) },
 
+            { "device_d2c_noretry",
+                new Tuple<string, Func<PerfScenarioConfig, PerfScenario>>(
+                    "Like device_d2c but will disable retries and create a new DeviceClient when the previous enters a faulted state.",
+                    (c) => {return new DeviceD2CNoRetry(c);})},
+
+            { "device_c2d_noretry",
+                new Tuple<string, Func<PerfScenarioConfig, PerfScenario>>(
+                    "Like device_c2d but will disable retries and create a new DeviceClient when the previous enters a faulted state.",
+                    (c) => {return new DeviceC2DNoRetry(c);})},
+
+            { "device_methods_noretry",
+                new Tuple<string, Func<PerfScenarioConfig, PerfScenario>>(
+                    "Like device_methods but will disable retries and create a new DeviceClient when the previous enters a faulted state.",
+                    (c) => {return new DeviceMethodsNoRetry(c);})},
+
             {"service_c2d",
                 new Tuple<string, Func<PerfScenarioConfig, PerfScenario>>(
                     "ServiceClient sending events to devices through IoT Hub.",
@@ -43,21 +73,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 new Tuple<string, Func<PerfScenarioConfig, PerfScenario>>(
                     "ServiceClient calling methods on devices through IoT Hub.",
                     (c) => {return new ServiceMethodTest(c);}) },
-
-            {"single_device_d2c",
-                new Tuple<string, Func<PerfScenarioConfig, PerfScenario>>(
-                    "A single device sending many events to IoT Hub.",
-                    (c) => {return new DeviceOneD2CTest(c);}) },
-
-            { "device_all",
-                new Tuple<string, Func<PerfScenarioConfig, PerfScenario>>(
-                    "Devices connecting to IoT Hub then using multiple features.",
-                    (c) => {return new DeviceAllTest(c);})},
-
-            { "device_all_openclose",
-                new Tuple<string, Func<PerfScenarioConfig, PerfScenario>>(
-                    "Like device_all but devices keep connecting and disconnecting.",
-                    (c) => {return new DeviceAllOpenCloseTest(c);})},
 
             { "baseline_noop",
                 new Tuple<string, Func<PerfScenarioConfig, PerfScenario>>(
@@ -69,8 +84,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             Console.WriteLine(
                 "Usage: \n\n" +
-                "   dotnet run -- [-topslna] -f <scenario>\n" +
-                "   iotclientperf [-topslna] -f <scenario>\n" +
+                "   dotnet run -- [-topslnaci] -f <scenario>\n" +
+                "   iotclientperf [-topslnaci] -f <scenario>\n" +
                 "       -t <seconds>    : Execution time (default 10 seconds).\n" +
                 "       -o <path>       : Output path (default outputs to console).\n" +
                 "       -p <protocol>   : Protocol (default mqtt). \n" +
@@ -88,7 +103,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             foreach (string scenario in s_scenarios.Keys)
             {
-                Console.WriteLine($"\t{scenario}: {s_scenarios[scenario].Item1}");
+                Console.WriteLine($"       {scenario,-25}: {s_scenarios[scenario].Item1}");
             }
         }
 
@@ -120,7 +135,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             int n = 1;
             string a = "sas";
             int c = -1;
-            string i = Guid.NewGuid().ToString();
+            string i = null;
             string f = null;
 
             while (param_counter + 1 < args.Length)
@@ -183,6 +198,11 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Console.Error.WriteLine("Missing -f <scenario> parameter.");
                 Help();
                 return -1;
+            }
+
+            if (i == null)
+            {
+                i = $"{DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.ffZ")}_dotNet_{f}";
             }
 
             Tuple<string, Func<PerfScenarioConfig, PerfScenario>> scenario;
