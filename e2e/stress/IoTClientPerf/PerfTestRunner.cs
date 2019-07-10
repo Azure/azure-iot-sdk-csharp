@@ -50,14 +50,34 @@ namespace Microsoft.Azure.Devices.E2ETests
             _authType = authType;
             _poolSize = poolSize;
             _scenarioFactory = scenarioFactory;
-             _tests = new PerfScenario[_n];
+            _tests = new PerfScenario[_n];
 
             TelemetryMetrics.SetStaticConfigParameters(runId, _timeSeconds, _transportType, _messageSizeBytes, _parallelOperations, _n, _authType, _poolSize, scenario);
+
+            FilterTcpStatistics();
 
             string poolInfo = "";
             if (_poolSize > 0) poolInfo = $"(pooled, {_poolSize} connections)";
             Console.WriteLine($"Running {_timeSeconds}s test. ({_transportType}{poolInfo} {authType})");
             Console.WriteLine($"  {_n} operations ({_parallelOperations} parallel) with {_messageSizeBytes}B/message.");
+        }
+
+        private void FilterTcpStatistics()
+        {
+            switch (_transportType)
+            {
+                case Client.TransportType.Http1:
+                case Client.TransportType.Amqp_WebSocket_Only:
+                case Client.TransportType.Mqtt_WebSocket_Only:
+                    SystemMetrics.TcpFilterPort(443);
+                    break;
+                case Client.TransportType.Amqp_Tcp_Only:
+                    SystemMetrics.TcpFilterPort(5671);
+                    break;
+                case Client.TransportType.Mqtt_Tcp_Only:
+                    SystemMetrics.TcpFilterPort(8883);
+                    break;
+            }
         }
 
         public async Task RunTestAsync()
@@ -129,12 +149,13 @@ namespace Microsoft.Azure.Devices.E2ETests
                         (double avgRps, double stdDevRps) = CalculateAvgAndStDev(statRps);
                         double avgBps = avgRps * _messageSizeBytes;
                         double stdDevBps = stdDevRps * _messageSizeBytes;
-                        SystemMetrics.GetMetrics(out int cpuPercent, out long memoryBytes, out long gcBytes, out long tcpConn);
+                        SystemMetrics.GetMetrics(out int cpuPercent, out long memoryBytes, out long gcBytes, out long tcpConn, out long devConn);
 
                         Console.WriteLine($"[{_sw.Elapsed}] Loop Statistics:");
                         Console.WriteLine($"RPS       : {requestsPerSec,10:N2} R/s Avg: {avgRps,10:N2} R/s +/-StdDev: {stdDevRps,10:N2} R/s");
                         Console.WriteLine($"Throughput: {GetHumanReadableBytes(transferPerSec)}/s Avg: {GetHumanReadableBytes(avgBps)}/s +/-StdDev: {GetHumanReadableBytes(avgRps)}/s         ");
-                        Console.WriteLine($"CPU       : {cpuPercent,10:N2}%    Mem: {GetHumanReadableBytes(memoryBytes)}      GC_Mem: {GetHumanReadableBytes(gcBytes)} Conn: {tcpConn,4:N0}");
+                        Console.WriteLine($"Connected : {devConn,10:N0}        ");
+                        Console.WriteLine($"CPU       : {cpuPercent,10:N2}%    Mem: {GetHumanReadableBytes(memoryBytes)}      GC_Mem: {GetHumanReadableBytes(gcBytes)} TCP: {tcpConn,4:N0}");
                         Console.WriteLine("----");
                         Console.WriteLine($"TOTALs: ");
                         Console.WriteLine($"Requests  : Completed: {statTotalCompleted,10:N0} Faulted: {statTotalFaulted,10:N0} Cancelled: {statTotalCancelled,10:N0}");
@@ -191,11 +212,12 @@ namespace Microsoft.Azure.Devices.E2ETests
                         double totalRequestsPerSec = statTotalCompleted / statTotalSeconds;
 
                         (double avgRps, double stdDevRps) = CalculateAvgAndStDev(statRps);
-                        SystemMetrics.GetMetrics(out int cpuPercent, out long memoryBytes, out long gcBytes, out long tcpConn);
+                        SystemMetrics.GetMetrics(out int cpuPercent, out long memoryBytes, out long gcBytes, out long tcpConn, out long devConn);
 
                         Console.WriteLine($"[{_sw.Elapsed}] Setup Statistics:");
                         Console.WriteLine($"RPS       : {requestsPerSec,10:N2} R/s Avg: {avgRps,10:N2} R/s +/-StdDev: {stdDevRps,10:N2} R/s");
-                        Console.WriteLine($"CPU       : {cpuPercent,10:N2}%    Mem: {GetHumanReadableBytes(memoryBytes)}      GC_Mem: {GetHumanReadableBytes(gcBytes)} Conn: {tcpConn,4:N0}");
+                        Console.WriteLine($"Connected : {devConn,10:N0}        ");
+                        Console.WriteLine($"CPU       : {cpuPercent,10:N2}%    Mem: {GetHumanReadableBytes(memoryBytes)}      GC_Mem: {GetHumanReadableBytes(gcBytes)} TCP: {tcpConn,4:N0}");
                         Console.WriteLine("----");
                         Console.WriteLine($"TOTALs: ");
                         Console.WriteLine($"Requests  : Completed: {statTotalCompleted,10:N0} Faulted: {statTotalFaulted,10:N0} Cancelled: {statTotalCancelled,10:N0}");
@@ -236,11 +258,13 @@ namespace Microsoft.Azure.Devices.E2ETests
                         double totalRequestsPerSec = statTotalCompleted / statTotalSeconds;
 
                         (double avgRps, double stdDevRps) = CalculateAvgAndStDev(statRps);
-                        SystemMetrics.GetMetrics(out int cpuPercent, out long memoryBytes, out long gcBytes, out long tcpConn);
+                        SystemMetrics.GetMetrics(out int cpuPercent, out long memoryBytes, out long gcBytes, out long tcpConn, out long devConn);
+
 
                         Console.WriteLine($"[{_sw.Elapsed}] Teardown Statistics:");
                         Console.WriteLine($"RPS       : {requestsPerSec,10:N2} R/s Avg: {avgRps,10:N2} R/s +/-StdDev: {stdDevRps,10:N2} R/s");
-                        Console.WriteLine($"CPU       : {cpuPercent,10:N2}%    Mem: {GetHumanReadableBytes(memoryBytes)}      GC_Mem: {GetHumanReadableBytes(gcBytes)} Conn: {tcpConn,4:N0}");
+                        Console.WriteLine($"Connected : {devConn,10:N0}        ");
+                        Console.WriteLine($"CPU       : {cpuPercent,10:N2}%    Mem: {GetHumanReadableBytes(memoryBytes)}      GC_Mem: {GetHumanReadableBytes(gcBytes)} TCP: {tcpConn,4:N0}");
                         Console.WriteLine("----");
                         Console.WriteLine($"TOTALs: ");
                         Console.WriteLine($"Requests  : Completed: {statTotalCompleted,10:N0} Faulted: {statTotalFaulted,10:N0} Cancelled: {statTotalCancelled,10:N0}");
