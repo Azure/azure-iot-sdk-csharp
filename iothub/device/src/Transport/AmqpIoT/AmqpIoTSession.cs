@@ -100,7 +100,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 deviceIdentity,
                 _amqpSession,
                 null,
-                (byte)ReceiverSettleMode.Second,
+                (byte)ReceiverSettleMode.First,
                 CommonConstants.DeviceEventPathTemplate,
                 CommonConstants.ModuleEventPathTemplate,
                 AmqpIoTConstants.EventsReceiverLinkSuffix,

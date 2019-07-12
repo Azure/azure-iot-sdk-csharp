@@ -31,6 +31,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 return exception;
             }
         }
+
         internal static Exception ConvertToIoTHubException(Exception exception, AmqpObject source)
         {
             Exception e = ConvertToIoTHubException(exception);

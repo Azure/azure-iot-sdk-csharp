@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
     internal interface IAmqpConnectionHolder : IDisposable
     {
         Task<AmqpIoTSession> OpenSessionAsync(DeviceIdentity deviceIdentity, TimeSpan timeout);
-        Task<AmqpIoTConnection> EnsureConnection(TimeSpan timeout);
-        Task<IAmqpAuthenticationRefresher> CreateRefresher(DeviceIdentity deviceIdentity, TimeSpan timeout);
+        Task<AmqpIoTConnection> EnsureConnectionAsync(TimeSpan timeout);
+        Task<IAmqpAuthenticationRefresher> CreateRefresherAsync(DeviceIdentity deviceIdentity, TimeSpan timeout);
     }
 }

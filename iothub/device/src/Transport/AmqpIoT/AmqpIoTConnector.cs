@@ -20,8 +20,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 #if NET451
         const string DisableServerCertificateValidationKeyName = "Microsoft.Azure.Devices.DisableServerCertificateValidation";
 #endif
-        static readonly AmqpVersion amqpVersion_1_0_0 = new AmqpVersion(1, 0, 0);
-        static readonly bool DisableServerCertificateValidation = InitializeDisableServerCertificateValidation();
+        private static readonly AmqpVersion s_amqpVersion_1_0_0 = new AmqpVersion(1, 0, 0);
+        private static readonly bool DisableServerCertificateValidation = InitializeDisableServerCertificateValidation();
 
         private readonly AmqpTransportSettings _amqpTransportSettings;
         private readonly string _hostName;
@@ -32,7 +32,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             _amqpTransportSettings = amqpTransportSettings;
             _hostName = hostName;
-
         }
 #endregion
 
@@ -43,7 +42,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
             var amqpSettings = new AmqpSettings();
             var amqpTransportProvider = new AmqpTransportProvider();
-            amqpTransportProvider.Versions.Add(amqpVersion_1_0_0);
+            amqpTransportProvider.Versions.Add(s_amqpVersion_1_0_0);
             amqpSettings.TransportProviders.Add(amqpTransportProvider);
 
             var amqpConnectionSettings = new AmqpConnectionSettings()
@@ -55,7 +54,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
             var amqpIoTTransport = new AmqpIoTTransport(amqpSettings, _amqpTransportSettings, _hostName, DisableServerCertificateValidation);
 
-            TransportBase transportBase = await amqpIoTTransport.Initialize(timeout).ConfigureAwait(false);
+            TransportBase transportBase = await amqpIoTTransport.InitializeAsync(timeout).ConfigureAwait(false);
             try
             {
                 var amqpConnection = new AmqpConnection(transportBase, amqpSettings, amqpConnectionSettings);

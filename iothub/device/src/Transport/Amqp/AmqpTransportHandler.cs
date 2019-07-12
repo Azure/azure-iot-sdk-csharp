@@ -87,6 +87,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 }
                 _closed = false;
             }
+
             try
             {
                 await _amqpUnit.OpenAsync(_operationTimeout).ConfigureAwait(false);
@@ -104,6 +105,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             {
                 _closed = true;
             }
+
             try
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -199,7 +201,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 cancellationToken.ThrowIfCancellationRequested();
 
                 throw new IotHubException("Disable methods is not supported.", false);
-                //await _amqpUnit.DisableMethodsAsync(_operationTimeout).ConfigureAwait(false);;
             }
             finally
             {
@@ -428,10 +429,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 if (Logging.IsEnabled) Logging.Info(this, $"{nameof(disposing)}");
                 if (disposing)
                 {
-                    _disposed = true;
                     _closed = true;
                     OnTransportClosedGracefully();
                     AmqpUnitManager.GetInstance().RemoveAmqpUnit(_amqpUnit);
+                    _disposed = true;
                 }
             }
 

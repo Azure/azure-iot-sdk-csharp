@@ -97,28 +97,28 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             _disposed = true;
         }
 
-        public async Task<IAmqpAuthenticationRefresher> CreateRefresher(DeviceIdentity deviceIdentity, TimeSpan timeout)
+        public async Task<IAmqpAuthenticationRefresher> CreateRefresherAsync(DeviceIdentity deviceIdentity, TimeSpan timeout)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, deviceIdentity, timeout, $"{nameof(CreateRefresher)}");
-            AmqpIoTConnection amqpIoTConnection = await EnsureConnection(timeout).ConfigureAwait(false);
+            if (Logging.IsEnabled) Logging.Enter(this, deviceIdentity, timeout, $"{nameof(CreateRefresherAsync)}");
+            AmqpIoTConnection amqpIoTConnection = await EnsureConnectionAsync(timeout).ConfigureAwait(false);
             IAmqpAuthenticationRefresher amqpAuthenticator = await amqpIoTConnection.CreateRefresherAsync(deviceIdentity, timeout).ConfigureAwait(false);
-            if (Logging.IsEnabled) Logging.Exit(this, deviceIdentity, timeout, $"{nameof(CreateRefresher)}");
+            if (Logging.IsEnabled) Logging.Exit(this, deviceIdentity, timeout, $"{nameof(CreateRefresherAsync)}");
             return amqpAuthenticator;
         }
 
         public async Task<AmqpIoTSession> OpenSessionAsync(DeviceIdentity deviceIdentity, TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, deviceIdentity, timeout, $"{nameof(OpenSessionAsync)}");
-            AmqpIoTConnection amqpIoTConnection = await EnsureConnection(timeout).ConfigureAwait(false);
+            AmqpIoTConnection amqpIoTConnection = await EnsureConnectionAsync(timeout).ConfigureAwait(false);
             AmqpIoTSession amqpIoTSession = await amqpIoTConnection.OpenSessionAsync(timeout).ConfigureAwait(false);
             if (Logging.IsEnabled) Logging.Associate(amqpIoTConnection, amqpIoTSession, $"{nameof(OpenSessionAsync)}");
             if (Logging.IsEnabled) Logging.Exit(this, deviceIdentity, timeout, $"{nameof(OpenSessionAsync)}");
             return amqpIoTSession;
         }
 
-        public async Task<AmqpIoTConnection> EnsureConnection(TimeSpan timeout)
+        public async Task<AmqpIoTConnection> EnsureConnectionAsync(TimeSpan timeout)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(EnsureConnection)}");
+            if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(EnsureConnectionAsync)}");
             AmqpIoTConnection amqpIoTConnection = null;
             IAmqpAuthenticationRefresher amqpAuthenticationRefresher = null;
             bool gain = await _lock.WaitAsync(timeout).ConfigureAwait(false);
@@ -130,7 +130,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             {
                 if (_amqpIoTConnection == null || _amqpIoTConnection.IsClosing())
                 {
-                    if (Logging.IsEnabled) Logging.Info(this, "Creating new AmqpConnection", $"{nameof(EnsureConnection)}");
+                    if (Logging.IsEnabled) Logging.Info(this, "Creating new AmqpConnection", $"{nameof(EnsureConnectionAsync)}");
                     // Create AmqpConnection
                     amqpIoTConnection = await _amqpIoTConnector.OpenConnectionAsync(timeout).ConfigureAwait(false);
 
@@ -138,7 +138,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     {
                         if (_deviceIdentity.AuthenticationModel == AuthenticationModel.SasGrouped)
                         {
-                            if (Logging.IsEnabled) Logging.Info(this, "Creating connection width AmqpAuthenticationRefresher", $"{nameof(EnsureConnection)}");
+                            if (Logging.IsEnabled) Logging.Info(this, "Creating connection width AmqpAuthenticationRefresher", $"{nameof(EnsureConnectionAsync)}");
                             amqpAuthenticationRefresher = new AmqpAuthenticationRefresher(_deviceIdentity, amqpIoTConnection.GetCbsLink());
                             await amqpAuthenticationRefresher.InitLoopAsync(timeout).ConfigureAwait(false);
                         }
@@ -163,7 +163,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             {
                 _lock.Release();
             }
-            if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(EnsureConnection)}");
+            if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(EnsureConnectionAsync)}");
             return amqpIoTConnection;
         }
 

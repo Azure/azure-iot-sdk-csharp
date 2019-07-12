@@ -98,7 +98,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     s_log.WriteLine($"{nameof(FaultInjectionPoolingOverAmqp)}: Confirming fault injection has been actived.");
                     // Check that service issued the fault to the faulting device [device 0]
                     bool isFaulted = false;
-                    for (int i = 0; i < FaultInjection.StatusCheckLoop; i++)
+                    for (int i = 0; i < FaultInjection.LatencyTimeBufferInSec; i++)
                     {
                         if (amqpConnectionStatuses[0].ConnectionStatusChangeCount >= 2)
                         {
@@ -116,7 +116,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     s_log.WriteLine($"{nameof(FaultInjectionPoolingOverAmqp)}: Confirming all devices back online.");
                     bool notRecovered = true;
                     int j = 0;
-                    for (int i = 0; notRecovered && i < durationInSec + FaultInjection.StatusCheckLoop; i++)
+                    for (int i = 0; notRecovered && i < durationInSec + FaultInjection.LatencyTimeBufferInSec; i++)
                     {
                         notRecovered = false;
                         for (j = 0; j < devicesCount; j++)
@@ -149,7 +149,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 {
                     s_log.WriteLine($"{nameof(FaultInjectionPoolingOverAmqp)}: Performing test operation while fault injection is being activated.");
                     // Perform the test operation for the faulted device multi times.
-                    for (int i = 0; i < FaultInjection.StatusCheckLoop; i++)
+                    for (int i = 0; i < FaultInjection.LatencyTimeBufferInSec; i++)
                     {
                         s_log.WriteLine($">>> {nameof(FaultInjectionPoolingOverAmqp)}: Performing test operation for device 0 - Run {i}.");
                         await testOperation(deviceClients[0], testDevices[0]).ConfigureAwait(false);

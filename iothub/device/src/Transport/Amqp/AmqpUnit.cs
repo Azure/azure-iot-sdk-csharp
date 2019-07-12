@@ -96,7 +96,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 throw new TimeoutException();
             }
 
-            Debug.Assert(!_disposed);
             try
             { 
                 if (_amqpIoTSession == null || _amqpIoTSession.IsClosing())
@@ -105,7 +104,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                     if (Logging.IsEnabled) Logging.Associate(this, _amqpIoTSession, $"{nameof(_amqpIoTSession)}");
                     if (_deviceIdentity.AuthenticationModel == AuthenticationModel.SasIndividual)
                     {
-                        _amqpAuthenticationRefresher = await _amqpConnectionHolder.CreateRefresher(_deviceIdentity, timeout).ConfigureAwait(false);
+                        _amqpAuthenticationRefresher = await _amqpConnectionHolder.CreateRefresherAsync(_deviceIdentity, timeout).ConfigureAwait(false);
                         if (Logging.IsEnabled) Logging.Associate(this, _amqpAuthenticationRefresher, $"{nameof(_amqpAuthenticationRefresher)}");
                     }
 
@@ -117,13 +116,27 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
                     if (Logging.IsEnabled) Logging.Associate(this, _messageSendingLink, $"{nameof(_messageSendingLink)}");
                 }
-                return _amqpIoTSession;
+
+                if (_disposed)
+                {
+                    _amqpAuthenticationRefresher?.StopLoop();
+                    _amqpIoTSession.SafeClose();
+                    if (!_deviceIdentity.IsPooling())
+                    {
+                        _amqpConnectionHolder.Dispose();
+                    }
+                    throw DEVICE_DISCONNECTED_EXCEPTION;
+                }
+
             }
             finally
             {
-                if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(EnsureSessionAsync)}");
                 _sessionLock.Release();
             }
+
+
+            if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(EnsureSessionAsync)}");
+            return _amqpIoTSession;
         }
 
         public async Task CloseAsync(TimeSpan timeout)

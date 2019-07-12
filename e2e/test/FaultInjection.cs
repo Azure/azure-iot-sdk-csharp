@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         public const int DefaultDelayInSec = 1; // Time in seconds after service initiates the fault.
         public const int DefaultDurationInSec = 5; // Duration in seconds 
-        public const int StatusCheckLoop = 10; 
+        public const int LatencyTimeBufferInSec = 5; // Buffer time waiting fault occurs or connection recover
 
         public const int WaitForDisconnectMilliseconds = 3 * DefaultDelayInSec * 1000;
         public const int WaitForReconnectMilliseconds = 2 * DefaultDurationInSec * 1000;
@@ -183,7 +183,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     s_log.WriteLine($"{nameof(FaultInjection)}: Confirming fault injection has been actived.");
                     // Check that service issued the fault to the faulting device
                     bool isFaulted = false;
-                    for (int i = 0; i < StatusCheckLoop; i++)
+                    for (int i = 0; i < LatencyTimeBufferInSec; i++)
                     {
                         if (connectionStatusChangeCount >= 2)
                         {
@@ -199,7 +199,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                     // Check the device is back online
                     s_log.WriteLine($"{nameof(FaultInjection)}: Confirming device back online.");
-                    for (int i = 0; lastConnectionStatus != ConnectionStatus.Connected && i < durationInSec + StatusCheckLoop; i++)
+                    for (int i = 0; lastConnectionStatus != ConnectionStatus.Connected && i < durationInSec + LatencyTimeBufferInSec; i++)
                     {
                         await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
                     }
@@ -215,7 +215,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 {
                     s_log.WriteLine($"{nameof(FaultInjection)}: Performing test operation while fault injection is being activated.");
                     // Perform the test operation for the faulted device multi times.
-                    for (int i = 0; i < StatusCheckLoop; i++)
+                    for (int i = 0; i < LatencyTimeBufferInSec; i++)
                     {
                         s_log.WriteLine($">>> {nameof(FaultInjection)}: Performing test operation for device - Run {i}.");
                         await testOperation(deviceClient, testDevice).ConfigureAwait(false);
@@ -232,7 +232,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                         // 4 is the minimum notification count: connect, fault, reconnect, disable.
                         // There are cases where the retry must be timed out (i.e. very likely for MQTT where otherwise 
                         // we would attempt to send the fault injection forever.)
-                        Assert.IsTrue(connectionStatusChangeCount >= 4, $"The expected connection status change count for {testDevice.Id} should equals or greater than 4 but was {connectionStatusChangeCount}");
+                        Assert.IsTrue(connectionStatusChangeCount >= 4, $"The expected connection status change count for {testDevice.Id} should be equal or greater than 4 but was {connectionStatusChangeCount}");
                     }
                     else
                     {

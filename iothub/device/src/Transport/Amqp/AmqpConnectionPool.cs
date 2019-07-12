@@ -12,14 +12,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
     internal class AmqpConnectionPool : IAmqpUnitManager
     {
         private AmqpConnectionHolder[] _amqpSasIndividualPool;
-        private IDictionary<string, AmqpConnectionHolder[]> _amqpSasGroupedPool;
-        private readonly object _lock;
-
-        internal AmqpConnectionPool()
-        {
-            _lock = new object();
-            _amqpSasGroupedPool = new Dictionary<string, AmqpConnectionHolder[]>();
-        }
+        private IDictionary<string, AmqpConnectionHolder[]> _amqpSasGroupedPool = new Dictionary<string, AmqpConnectionHolder[]>();
+        private readonly object _lock = new object();
 
         public AmqpUnit CreateAmqpUnit(
             DeviceIdentity deviceIdentity, 
@@ -37,6 +31,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     AmqpConnectionHolder[] amqpConnectionHolders = ResolveConnectionGroup(deviceIdentity);
                     amqpConnectionHolder = ResolveConnectionByHashing(amqpConnectionHolders, deviceIdentity);
                 }
+
                 if (Logging.IsEnabled) Logging.Exit(this, deviceIdentity, $"{nameof(CreateAmqpUnit)}");
                 return amqpConnectionHolder.CreateAmqpUnit(deviceIdentity, methodHandler, twinMessageListener, eventListener, onUnitDisconnected);
             }
@@ -61,6 +56,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     amqpConnectionHolder.RemoveAmqpUnit(amqpUnit);
                 }
             }
+
             if (Logging.IsEnabled) Logging.Exit(this, amqpUnit, $"{nameof(RemoveAmqpUnit)}");
         }
 
@@ -72,6 +68,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 {
                     _amqpSasIndividualPool = new AmqpConnectionHolder[deviceIdentity.AmqpTransportSettings.AmqpConnectionPoolSettings.MaxPoolSize];
                 }
+
                 return _amqpSasIndividualPool;
             }
             else
@@ -83,6 +80,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     amqpConnectionHolders = new AmqpConnectionHolder[deviceIdentity.AmqpTransportSettings.AmqpConnectionPoolSettings.MaxPoolSize];
                     _amqpSasGroupedPool.Add(scope, amqpConnectionHolders);
                 }
+
                 return amqpConnectionHolders;
             }
         }
