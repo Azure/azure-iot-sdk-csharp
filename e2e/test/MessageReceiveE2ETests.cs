@@ -40,6 +40,18 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
+        public async Task Message_DeviceReceive_Amqp_Validate_Timeout()
+        {
+            await ReceiveAsyncTimeout(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task Message_DeviceReceive_AmqpWs_Validate_Timeout()
+        {
+            await ReceiveAsyncTimeout(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
+        }
+
+        [TestMethod]
         public async Task Message_DeviceReceiveSingleMessage_Mqtt()
         {
             await ReceiveSingleMessage(TestDeviceType.Sasl, Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
@@ -139,6 +151,26 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
 
             sw.Stop();
+        }
+
+        private async Task ReceiveAsyncTimeout(TestDeviceType type, Client.TransportType transport)
+        {
+            var testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, type).ConfigureAwait(false);
+            using (DeviceClient deviceClient = testDevice.CreateDeviceClient(transport))
+            {
+                await deviceClient.OpenAsync().ConfigureAwait(false);
+
+                const int timeout = 1_000;
+
+                var sw = Stopwatch.StartNew();
+                var receivedMessage = await deviceClient.ReceiveAsync(TimeSpan.FromMilliseconds(timeout)).ConfigureAwait(false);
+                sw.Stop();
+
+                Assert.IsNull(receivedMessage, "Found a message for test device without sending one");
+                Assert.IsTrue(sw.ElapsedMilliseconds < 5_000, $"Expected timeout not met. Timeout fired after {sw.ElapsedMilliseconds}ms and requested was {timeout}ms");
+
+                await deviceClient.CloseAsync().ConfigureAwait(false);
+            }
         }
 
         private async Task ReceiveSingleMessage(TestDeviceType type, Client.TransportType transport)
