@@ -16,18 +16,17 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
     {
         private readonly DeviceIdentity _deviceIdentity;
         private readonly AmqpIoTConnector _amqpIoTConnector;
-        private readonly SemaphoreSlim _lock;
-        private readonly ISet<AmqpUnit> _amqpUnits;
+        private readonly SemaphoreSlim _lock = new SemaphoreSlim(1, 1);
+        private readonly HashSet<AmqpUnit> _amqpUnits = new HashSet<AmqpUnit>();
+        private readonly object _unitsLock = new object();
         private AmqpIoTConnection _amqpIoTConnection;
         private IAmqpAuthenticationRefresher _amqpAuthenticationRefresher;
-        private bool _disposed;
+        private volatile bool _disposed;
 
         public AmqpConnectionHolder(DeviceIdentity deviceIdentity)
         {
             _deviceIdentity = deviceIdentity;
             _amqpIoTConnector = new AmqpIoTConnector(deviceIdentity.AmqpTransportSettings, deviceIdentity.IotHubConnectionString.HostName);
-            _lock = new SemaphoreSlim(1, 1);
-            _amqpUnits = new HashSet<AmqpUnit>();
             if (Logging.IsEnabled) Logging.Associate(this, _deviceIdentity, $"{nameof(_deviceIdentity)}");
         }
 
@@ -47,7 +46,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 twinMessageListener, 
                 eventListener,
                 onUnitDisconnected);
-            _amqpUnits.Add(amqpUnit);
+            lock(_unitsLock)
+            {
+                _amqpUnits.Add(amqpUnit);
+            }
             if (Logging.IsEnabled) Logging.Exit(this, deviceIdentity, $"{nameof(CreateAmqpUnit)}");
             return amqpUnit;
         }
@@ -58,9 +60,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             if (_amqpIoTConnection != null && ReferenceEquals(_amqpIoTConnection, o))
             {
                 _amqpAuthenticationRefresher?.StopLoop();
-                foreach (AmqpUnit unit in _amqpUnits)
+                lock (_unitsLock)
                 {
-                    unit.OnConnectionDisconnected();
+                    foreach (AmqpUnit unit in _amqpUnits)
+                    {
+                        unit.OnConnectionDisconnected();
+                    }
                 }
             }
             if (Logging.IsEnabled) Logging.Exit(this, o, $"{nameof(OnConnectionClosed)}");
@@ -90,7 +95,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 _amqpIoTConnection?.SafeClose();
                 _lock?.Dispose();
                 _amqpIoTConnector?.Dispose();
-                _amqpUnits?.Clear();
+                lock (_unitsLock)
+                {
+                    _amqpUnits.Clear();
+                }
                 _amqpAuthenticationRefresher?.Dispose();
             }
 
@@ -170,10 +178,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         public void RemoveAmqpUnit(AmqpUnit amqpUnit)
         {
             if (Logging.IsEnabled) Logging.Enter(this, amqpUnit, $"{nameof(RemoveAmqpUnit)}");
-            _amqpUnits.Remove(amqpUnit);
-            if (_amqpUnits.Count == 0)
+            lock (_unitsLock)
             {
-                Shutdown();
+                _amqpUnits.Remove(amqpUnit);
+                if (_amqpUnits.Count == 0)
+                {
+                    Shutdown();
+                }
             }
             if (Logging.IsEnabled) Logging.Exit(this, amqpUnit, $"{nameof(RemoveAmqpUnit)}");
         }
