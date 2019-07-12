@@ -3,7 +3,7 @@ name: BumpVersion_$(BuildID)_$(Date:yyyyMMdd)$(Rev:.r)
 
 phases:
 
-- phase: Phase_1
+- phase: Build
 
   steps:
 
@@ -104,6 +104,7 @@ phases:
 ### Linux build ###
 - phase: LINUX
   displayName: Linux
+  dependsOn: Build
 
   condition: succeeded()
   queue:
@@ -217,7 +218,7 @@ phases:
 - phase: WINDOWS
   displayName: Windows
 # Uncomment to serialize builds:
-#  dependsOn: LINUX
+  dependsOn: Build
 
   condition: succeeded()
   queue:
