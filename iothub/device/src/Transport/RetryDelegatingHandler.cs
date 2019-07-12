@@ -586,10 +586,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
                 var hubException = ex as IotHubException;
                 if (hubException != null) HandleConnectionStatusExceptions(hubException);
-
-                // We were not able to recover the connection or subscriptions within the configured policy.
-                // The object will be placed in an unusable state.
-                // Dispose(true);
             }
             finally
             {

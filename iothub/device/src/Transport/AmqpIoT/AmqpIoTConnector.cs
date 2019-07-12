@@ -7,6 +7,7 @@ using Microsoft.Azure.Devices.Shared;
 using Microsoft.Azure.Devices.Client.Transport.AmqpIoT;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Transport;
+using Microsoft.Azure.Devices.Client.Extensions;
 
 #if !NETSTANDARD1_3
 using System.Configuration;
@@ -14,14 +15,14 @@ using System.Configuration;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
-    internal class AmqpIoTConnector
+    internal class AmqpIoTConnector : IDisposable
     {
         #region Members-Constructor
 #if NET451
         const string DisableServerCertificateValidationKeyName = "Microsoft.Azure.Devices.DisableServerCertificateValidation";
 #endif
         private static readonly AmqpVersion s_amqpVersion_1_0_0 = new AmqpVersion(1, 0, 0);
-        private static readonly bool DisableServerCertificateValidation = InitializeDisableServerCertificateValidation();
+        private static readonly bool s_disableServerCertificateValidation = InitializeDisableServerCertificateValidation();
 
         private readonly AmqpTransportSettings _amqpTransportSettings;
         private readonly string _hostName;
@@ -52,7 +53,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 HostName = _hostName
             };
 
-            var amqpIoTTransport = new AmqpIoTTransport(amqpSettings, _amqpTransportSettings, _hostName, DisableServerCertificateValidation);
+            var amqpIoTTransport = new AmqpIoTTransport(amqpSettings, _amqpTransportSettings, _hostName, s_disableServerCertificateValidation);
 
             TransportBase transportBase = await amqpIoTTransport.InitializeAsync(timeout).ConfigureAwait(false);
             try
@@ -65,7 +66,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(OpenConnectionAsync)}");
                 return amqpIoTConnection;
             }
-            catch (Exception)
+            catch (Exception e) when (!e.IsFatal())
             {
                 transportBase?.Close();
                 throw;

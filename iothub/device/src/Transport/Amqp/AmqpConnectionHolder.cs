@@ -183,6 +183,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 _amqpUnits.Remove(amqpUnit);
                 if (_amqpUnits.Count == 0)
                 {
+                    // TODO #887: handle gracefulDisconnect
                     Shutdown();
                 }
             }

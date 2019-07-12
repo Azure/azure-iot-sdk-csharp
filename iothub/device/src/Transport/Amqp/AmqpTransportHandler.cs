@@ -85,6 +85,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 {
                     return;
                 }
+
                 _closed = false;
             }
 
@@ -169,6 +170,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                     break;
                 }
             }
+
             if (Logging.IsEnabled) Logging.Exit(this, timeout, cancellationToken, $"{nameof(ReceiveAsync)}");
             return message;
         }
