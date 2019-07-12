@@ -1,5 +1,5 @@
 # update .csproj file versions and create a release branch/commit
-name: BumpVersion_$(BuildID)_$(Date:yyyyMMdd)$(Rev:.r)
+name: Release_$(BuildID)_$(Date:yyyyMMdd)$(Rev:.r)
 
 phases:
 
@@ -16,8 +16,8 @@ phases:
   - task: DownloadBuildArtifacts@0
     inputs:
       buildType: 'specific'
-      project: 'f9b79625-2860-4d92-a4ee-57b03fabfd10'
-      pipeline: '296'
+      project: 'f9b79625-2860-4d92-a4ee-57b03fabfd10' # azure-iot-sdks
+      pipeline: '296' # iot-sdks-internals-mirror pipeline (scripts)
       buildVersionToDownload: 'latest'
       downloadType: 'single'
       downloadPath: '$(System.ArtifactsDirectory)/build-tools'
@@ -217,7 +217,6 @@ phases:
 
 - phase: WINDOWS
   displayName: Windows
-# Uncomment to serialize builds:
   dependsOn: Build
 
   condition: succeeded()
@@ -245,20 +244,20 @@ phases:
 
   - script: |  
        call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
-       sn -Vr *,31bf3856ad364e35        
+       sn -Vr *,31bf3856ad364e35
     displayName: 'Disable strong name validation'
 
   - script: |  
-       choco install -y squid        
+       choco install -y squid
     displayName: 'Install Squid'
 
   - script: |  
-       choco install -y netfx-4.5.2-devpack        
+       choco install -y netfx-4.5.2-devpack
     displayName: 'Install .NET 4.5.2 Targetting Pack'
 
   - script: |  
        rem Run dotnet first experience.
-       dotnet new       
+       dotnet new
        rem List active docker containers
        docker ps -a
        echo "start tmp sim"
