@@ -162,16 +162,20 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         public override async Task<Message> ReceiveAsync(TimeSpan timeout, CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled) Logging.Enter(this, timeout, cancellationToken, $"{nameof(ReceiveAsync)}");
+
             Message message = null;
+            var absoluteTimeout = DateTime.UtcNow + timeout;
+
             while (true)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 message = await _amqpUnit.ReceiveMessageAsync(timeout).ConfigureAwait(false);
-                if (message != null)
+                if (message != null || DateTime.UtcNow >= absoluteTimeout)
                 {
                     break;
                 }
             }
+
             if (Logging.IsEnabled) Logging.Exit(this, timeout, cancellationToken, $"{nameof(ReceiveAsync)}");
             return message;
         }

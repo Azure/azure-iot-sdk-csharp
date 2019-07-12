@@ -336,16 +336,13 @@ namespace Microsoft.Azure.Devices.Client
         public async Task<Message> ReceiveAsync(TimeSpan timeout)
         {
             if (timeout == TimeSpan.MaxValue) return await ReceiveAsync(CancellationToken.None).ConfigureAwait(false);
-            using (var cts = new CancellationTokenSource(timeout))
+            try
             {
-                try
-                {
-                    return await ReceiveAsync(cts.Token).ConfigureAwait(false);
-                }
-                catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
-                {
-                    return null;
-                }
+                return await InnerHandler.ReceiveAsync(timeout, CancellationToken.None).ConfigureAwait(false);
+            }
+            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
+            {
+                return null;
             }
         }
 
