@@ -564,6 +564,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             if (Logging.IsEnabled) Logging.Enter(this, o, $"{nameof(OnSessionDisconnected)}");
             if (ReferenceEquals(o, _amqpIoTSession))
             {
+                _amqpAuthenticationRefresher?.StopLoop();
                 _onUnitDisconnected();
             }
             if (Logging.IsEnabled) Logging.Exit(this, o, $"{nameof(OnSessionDisconnected)}");
