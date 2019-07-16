@@ -209,28 +209,43 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task<Message> ReceiveAsync(TimeSpan timeout, CancellationToken cancellationToken)
         {
-            // Long-polling is not supported
+            CancellationTokenSource cts = null;
+
             if (!TimeSpan.Zero.Equals(timeout))
             {
-                throw new ArgumentOutOfRangeException(nameof(timeout), "Http Protocol does not support a non-zero receive timeout");
+                if (cancellationToken == CancellationToken.None)
+                {
+                    cts = new CancellationTokenSource((int)timeout.TotalMilliseconds);
+                    cancellationToken = cts.Token;
+                }
+                else
+                {
+                    // Long-polling is not supported
+                    throw new ArgumentOutOfRangeException(nameof(timeout), "Http Protocol does not support a non-zero receive timeout");
+                }
             }
 
-            cancellationToken.ThrowIfCancellationRequested();
+            HttpResponseMessage responseMessage = null;
 
-            IDictionary<string, string> customHeaders = PrepareCustomHeaders(CommonConstants.DeviceBoundPathTemplate.FormatInvariant(this.deviceId), null, CommonConstants.CloudToDeviceOperation);
-            IDictionary<string, string> queryValueDictionary =
-                new Dictionary<string, string>() { { CustomHeaderConstants.MessageLockTimeout, DefaultOperationTimeout.TotalSeconds.ToString(CultureInfo.InvariantCulture) } };
-
-            HttpResponseMessage responseMessage = await this.httpClientHelper.GetAsync<HttpResponseMessage>(
-                GetRequestUri(this.deviceId, CommonConstants.DeviceBoundPathTemplate, queryValueDictionary),
-                ExceptionHandlingHelper.GetDefaultErrorMapping(),
-                customHeaders,
-                true,
-                cancellationToken).ConfigureAwait(false);
-
-            if (responseMessage == null || responseMessage.StatusCode == HttpStatusCode.NoContent)
+            using (cts)
             {
-                return null;
+                cancellationToken.ThrowIfCancellationRequested();
+
+                IDictionary<string, string> customHeaders = PrepareCustomHeaders(CommonConstants.DeviceBoundPathTemplate.FormatInvariant(this.deviceId), null, CommonConstants.CloudToDeviceOperation);
+                IDictionary<string, string> queryValueDictionary =
+                    new Dictionary<string, string>() { { CustomHeaderConstants.MessageLockTimeout, DefaultOperationTimeout.TotalSeconds.ToString(CultureInfo.InvariantCulture) } };
+
+                responseMessage = await this.httpClientHelper.GetAsync<HttpResponseMessage>(
+                    GetRequestUri(this.deviceId, CommonConstants.DeviceBoundPathTemplate, queryValueDictionary),
+                    ExceptionHandlingHelper.GetDefaultErrorMapping(),
+                    customHeaders,
+                    true,
+                    cancellationToken).ConfigureAwait(false);
+
+                if (responseMessage == null || responseMessage.StatusCode == HttpStatusCode.NoContent)
+                {
+                    return null;
+                }
             }
 
             IEnumerable<string> messageId;
