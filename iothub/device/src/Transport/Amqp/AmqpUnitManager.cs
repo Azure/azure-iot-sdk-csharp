@@ -15,7 +15,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
         private IDictionary<string, IAmqpUnitManager> _amqpConnectionPools;
         private readonly object _lock = new object();
-        private bool _disposed;
 
         internal AmqpUnitManager()
         {

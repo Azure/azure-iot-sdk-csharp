@@ -49,12 +49,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             amqpUnit.Dispose();
             if (deviceIdentity.IsPooling())
             {
+                AmqpConnectionHolder amqpConnectionHolder;
                 lock (_lock)
                 {
                     AmqpConnectionHolder[] amqpConnectionHolders = ResolveConnectionGroup(deviceIdentity);
-                    AmqpConnectionHolder amqpConnectionHolder = ResolveConnectionByHashing(amqpConnectionHolders, deviceIdentity);
-                    amqpConnectionHolder.RemoveAmqpUnit(amqpUnit);
+                    amqpConnectionHolder = ResolveConnectionByHashing(amqpConnectionHolders, deviceIdentity);
                 }
+                amqpConnectionHolder.RemoveAmqpUnit(amqpUnit);
             }
 
             if (Logging.IsEnabled) Logging.Exit(this, amqpUnit, $"{nameof(RemoveAmqpUnit)}");
