@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.Azure.Devices.Client;
+using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Diagnostics;
@@ -9,6 +10,7 @@ using System.Diagnostics.Tracing;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.E2ETests
@@ -52,6 +54,21 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
+        [ExpectedException(typeof(OperationCanceledException))]
+        public async Task Message_DeviceReceive_Amqp_Validate_CancellationToken()
+        {
+            await ReceiveAsyncCancel(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(OperationCanceledException))]
+        public async Task Message_DeviceReceive_AmqpWs_Validate_CancellationToken()
+        {
+            await ReceiveAsyncCancel(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
+        }
+
+
+        [TestMethod]
         public async Task Message_DeviceReceiveSingleMessage_Mqtt()
         {
             await ReceiveSingleMessage(TestDeviceType.Sasl, Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
@@ -64,9 +81,48 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
+        public async Task Message_DeviceReceive_Mqtt_Validate_Timeout()
+        {
+            await ReceiveAsyncTimeout(TestDeviceType.Sasl, Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(OperationCanceledException))]
+        public async Task Message_DeviceReceive_Mqtt_Validate_CancellationToken()
+        {
+            await ReceiveAsyncCancel(TestDeviceType.Sasl, Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(OperationCanceledException))]
+        public async Task Message_DeviceReceive_MqttWs_Validate_CancellationToken()
+        {
+            await ReceiveAsyncCancel(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task Message_DeviceReceive_MqttWs_Validate_Timeout()
+        {
+            await ReceiveAsyncTimeout(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
+        }
+
+        [TestMethod]
         public async Task Message_DeviceReceiveSingleMessage_Http()
         {
             await ReceiveSingleMessage(TestDeviceType.Sasl, Client.TransportType.Http1).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task Message_DeviceReceive_Http_Validate_Timeout()
+        {
+            await ReceiveAsyncTimeout(TestDeviceType.Sasl, Client.TransportType.Http1).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(OperationCanceledException))]
+        public async Task Message_DeviceReceive_Http_Validate_CancellationToken()
+        {
+            await ReceiveAsyncCancel(TestDeviceType.Sasl, Client.TransportType.Http1).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -126,7 +182,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Client.Message receivedMessage = null;
 
                 _log.WriteLine($"Receiving messages for device {deviceId}.");
-                receivedMessage = await dc.ReceiveAsync(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
+                receivedMessage = await dc.ReceiveAsync(TimeSpan.FromSeconds(60)).ConfigureAwait(false);
 
                 if (receivedMessage != null)
                 {
@@ -173,6 +229,44 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
+        private async Task ReceiveAsyncCancel(TestDeviceType type, Client.TransportType transport)
+        {
+            var testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, type).ConfigureAwait(false);
+            using (DeviceClient deviceClient = testDevice.CreateDeviceClient(transport))
+            {
+                await deviceClient.OpenAsync().ConfigureAwait(false);
+
+                try
+                {
+                    using (var cts = new CancellationTokenSource())
+                    {
+                        const int timeout = 1_000;
+
+                        var receiveTask = deviceClient.ReceiveAsync(cts.Token).ConfigureAwait(false);
+
+                        var sw = Stopwatch.StartNew();
+                        cts.Cancel();
+
+                        try
+                        {
+                            await receiveTask;
+                        }
+                        catch (IotHubCommunicationException ex)
+                        {
+                            sw.Stop();
+                            Assert.IsTrue(ex.InnerException is OperationCanceledException);
+                            Assert.IsTrue(sw.ElapsedMilliseconds < 11_000, $"Expected timeout not met. Timeout fired after {sw.ElapsedMilliseconds}ms and requested was {timeout}ms");
+                            throw ex.InnerException;
+                        }
+                    }
+                }
+                finally
+                {
+                    await deviceClient.CloseAsync().ConfigureAwait(false);
+                }
+            }
+        }
+
         private async Task ReceiveSingleMessage(TestDeviceType type, Client.TransportType transport)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, type).ConfigureAwait(false);
@@ -185,7 +279,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     transport == Client.TransportType.Mqtt_WebSocket_Only)
                 {
                     // Dummy ReceiveAsync to ensure mqtt subscription registration before SendAsync() is called on service client.
-                    await deviceClient.ReceiveAsync(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
+                    await deviceClient.ReceiveAsync(TimeSpan.FromSeconds(60)).ConfigureAwait(false);
                 }
 
                 await serviceClient.OpenAsync().ConfigureAwait(false);

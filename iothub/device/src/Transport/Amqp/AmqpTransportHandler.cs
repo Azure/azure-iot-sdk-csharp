@@ -159,24 +159,39 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        public override async Task<Message> ReceiveAsync(TimeSpan timeout, CancellationToken cancellationToken)
+        public override async Task<Message> ReceiveAsync(CancellationToken cancellationToken)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, timeout, cancellationToken, $"{nameof(ReceiveAsync)}");
+            if (Logging.IsEnabled) Logging.Enter(this, cancellationToken, $"{nameof(ReceiveAsync)}");
+
+            var defaultReceiveTimeout = TimeSpan.FromSeconds(10);
 
             Message message = null;
-            var absoluteTimeout = DateTime.UtcNow + timeout;
 
             while (true)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                message = await _amqpUnit.ReceiveMessageAsync(timeout).ConfigureAwait(false);
-                if (message != null || DateTime.UtcNow >= absoluteTimeout)
+                // The AMQP protocol implementation does not take a cancellation token. 
+                // We use a shorter timeout to be able to check on the cancellation state of the passed
+                // in token
+                message = await _amqpUnit.ReceiveMessageAsync(defaultReceiveTimeout).ConfigureAwait(false);
+                if (message != null)
                 {
                     break;
                 }
             }
 
-            if (Logging.IsEnabled) Logging.Exit(this, timeout, cancellationToken, $"{nameof(ReceiveAsync)}");
+            if (Logging.IsEnabled) Logging.Exit(this, cancellationToken, $"{nameof(ReceiveAsync)}");
+            return message;
+        }
+
+        public override async Task<Message> ReceiveAsync(TimeSpan timeout)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(ReceiveAsync)}");
+
+            var message = await _amqpUnit.ReceiveMessageAsync(timeout).ConfigureAwait(false);
+            
+            if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(ReceiveAsync)}");
+
             return message;
         }
         #endregion

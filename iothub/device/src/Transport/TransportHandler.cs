@@ -18,11 +18,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             TransportSettings = transportSettings;
         }
 
-        public override Task<Message> ReceiveAsync(CancellationToken cancellationToken)
-        {
-            return ReceiveAsync(TransportSettings.DefaultReceiveTimeout, cancellationToken);
-        }
-
         public override Task WaitForTransportClosedAsync()
         {
             return _transportShouldRetry.Task;
@@ -37,7 +32,29 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 OnTransportClosedGracefully();
             }
+        }
 
+        public override async Task OpenAsync(TimeSpan timeout)
+        {
+            using (var cts = new CancellationTokenSource((int)timeout.TotalMilliseconds))
+            {
+                await this.OpenAsync(cts.Token).ConfigureAwait(false);
+            }
+        }
+
+        public override async Task<Message> ReceiveAsync(TimeSpan timeout)
+        {
+            using (var cts = new CancellationTokenSource(timeout))
+            {
+                try
+                {
+                    return await this.ReceiveAsync(cts.Token).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+                    return null;
+                }
+            }
         }
 
         protected void OnTransportClosedGracefully()

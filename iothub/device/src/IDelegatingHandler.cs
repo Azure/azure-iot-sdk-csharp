@@ -13,6 +13,7 @@ namespace Microsoft.Azure.Devices.Client
     {
         // Transport state.
         Task OpenAsync(CancellationToken cancellationToken);
+        Task OpenAsync(TimeSpan timeout);
         Task CloseAsync(CancellationToken cancellationToken);
         Task WaitForTransportClosedAsync();
         bool IsUsable { get; }
@@ -23,7 +24,7 @@ namespace Microsoft.Azure.Devices.Client
 
         // Telemetry downlink.
         Task<Message> ReceiveAsync(CancellationToken cancellationToken);
-        Task<Message> ReceiveAsync(TimeSpan timeout, CancellationToken cancellationToken);
+        Task<Message> ReceiveAsync(TimeSpan timeout);
         Task RejectAsync(string lockToken, CancellationToken cancellationToken);
         Task AbandonAsync(string lockToken, CancellationToken cancellationToken);
         Task CompleteAsync(string lockToken, CancellationToken cancellationToken);

@@ -160,22 +160,38 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        public override async Task<Message> ReceiveAsync(TimeSpan timeout, CancellationToken cancellationToken)
+        public override async Task<Message> ReceiveAsync(TimeSpan timeout)
         {
             try
             {
-                if (Logging.IsEnabled) Logging.Enter(this, timeout, cancellationToken, nameof(ReceiveAsync));
+                if (Logging.IsEnabled) Logging.Enter(this, timeout, nameof(ReceiveAsync));
 
-                return await _internalRetryPolicy.ExecuteAsync(async () =>
+                using (var cts = new CancellationTokenSource(timeout))
                 {
-                    await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
-                    return await base.ReceiveAsync(timeout, cancellationToken).ConfigureAwait(false);
-                },
-            cancellationToken).ConfigureAwait(false);
+                    return await _internalRetryPolicy.ExecuteAsync(async () =>
+                    {
+                        var ensureOpenStopWatch = Stopwatch.StartNew();
+
+                        await EnsureOpenedAsync(cts.Token, timeout).ConfigureAwait(false);
+
+                        // adjust the timeout to take the time spent 
+                        // opening of the connection into account
+                        ensureOpenStopWatch.Stop();
+                        timeout = timeout - ensureOpenStopWatch.Elapsed;
+
+                        if (timeout.TotalMilliseconds <= 0)
+                        {
+                            return null; // already timed out
+                        }
+                        
+                        return await base.ReceiveAsync(timeout).ConfigureAwait(false);
+                    },
+                    cts.Token).ConfigureAwait(false);
+                }
             }
             finally
             {
-                if (Logging.IsEnabled) Logging.Exit(this, timeout, cancellationToken, nameof(ReceiveAsync));
+                if (Logging.IsEnabled) Logging.Exit(this, timeout, nameof(ReceiveAsync));
             }
         }
 
@@ -458,7 +474,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         /// <summary>
         /// Implicit open handler.
         /// </summary>
-        private async Task EnsureOpenedAsync(CancellationToken cancellationToken)
+        private async Task EnsureOpenedAsync(CancellationToken cancellationToken, TimeSpan? timeout = null)
         {
             if (Volatile.Read(ref _opened)) return;
 
@@ -468,7 +484,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 if (!_opened)
                 {
                     if (Logging.IsEnabled) Logging.Info(this, "Opening connection", nameof(EnsureOpenedAsync));
-                    await OpenAsyncInternal(cancellationToken).ConfigureAwait(false);
+
+                    await OpenAsyncInternal(cancellationToken, timeout).ConfigureAwait(false);
+
                     _opened = true;
                     _openCalled = true;
 
@@ -482,7 +500,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        private Task OpenAsyncInternal(CancellationToken cancellationToken)
+        private Task OpenAsyncInternal(CancellationToken cancellationToken, TimeSpan? timeout = null)
         {
             return _internalRetryPolicy.ExecuteAsync(async () =>
             {
@@ -490,8 +508,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 {
                     if (Logging.IsEnabled) Logging.Enter(this, cancellationToken, nameof(OpenAsync));
 
-                    // Will throw on error.
-                    await base.OpenAsync(cancellationToken).ConfigureAwait(false);
+                    if (timeout.HasValue)
+                    {
+                        await base.OpenAsync(timeout.Value).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        // Will throw on error.
+                        await base.OpenAsync(cancellationToken).ConfigureAwait(false);
+                    }
+                    
                     _onConnectionStatusChanged(ConnectionStatus.Connected, ConnectionStatusChangeReason.Connection_Ok);
                 }
                 catch (IotHubException ex)

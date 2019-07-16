@@ -143,22 +143,27 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
             if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(EnsureReceivingLinkIsOpenedAsync)}");
 
+            var releaseLock = false;
             try
             {
-                await _messageReceivingLinkLock.WaitAsync().ConfigureAwait(false);
-                if (_messageReceivingLink != null) return;
+                if ((releaseLock = await _messageReceivingLinkLock.WaitAsync(timeout).ConfigureAwait(false)))
+                {
+                    if (_messageReceivingLink != null) return;
 
-                _messageReceivingLink = await _amqpIoTSession.OpenTelemetryReceiverLinkAsync(
-                    _deviceIdentity,
-                    timeout
-                ).ConfigureAwait(false);
-
-                _messageReceivingLink.Closed += OnLinkDisconnected;
-                if (Logging.IsEnabled) Logging.Associate(this, this, _messageReceivingLink, $"{nameof(EnsureReceivingLinkIsOpenedAsync)}");
+                    _messageReceivingLink = await _amqpIoTSession.OpenTelemetryReceiverLinkAsync(
+                        _deviceIdentity,
+                        timeout
+                    ).ConfigureAwait(false);
+                    _messageReceivingLink.Closed += OnLinkDisconnected;
+                    if (Logging.IsEnabled) Logging.Associate(this, this, _messageReceivingLink, $"{nameof(EnsureReceivingLinkIsOpenedAsync)}");
+                }
             }
             finally
             {
-                _messageReceivingLinkLock.Release();
+                if (releaseLock)
+                {
+                    _messageReceivingLinkLock.Release();
+                }
                 if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(EnsureReceivingLinkIsOpenedAsync)}");
             }
         }
@@ -199,8 +204,21 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
             try
             {
+                // if we need to open the link, we need to account for the time
+                // spent for that and adjust the total timeout we got for receiving the message
+
+                var openLinkStopWatch = Stopwatch.StartNew();
+
                 await EnsureReceivingLinkIsOpenedAsync(timeout).ConfigureAwait(false);
                 Debug.Assert(_messageSendingLink != null);
+
+                openLinkStopWatch.Stop();
+                timeout = timeout - openLinkStopWatch.Elapsed;
+
+                if (timeout.TotalMilliseconds <= 0)
+                {
+                    return null; // already timed out
+                }
 
                 return await _messageReceivingLink.ReceiveAmqpMessageAsync(timeout).ConfigureAwait(false);
             }

@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         [TestMethod]
         public async Task MqttTransportHandlerReceiveAsyncTokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => CreateFromConnectionString().ReceiveAsync(new TimeSpan(0, 10, 0), token)).ConfigureAwait(false);
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().ReceiveAsync(token)).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -582,7 +582,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
             transport.OnConnected();
             await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-            await transport.ReceiveAsync(new TimeSpan(0, 0, 0, 0, 5), CancellationToken.None).ConfigureAwait(false);
+            await transport.ReceiveAsync(new TimeSpan(0, 0, 0, 0, 5)).ConfigureAwait(false);
 
             // act
             transport.OnError(new ApplicationException("Testing"));
