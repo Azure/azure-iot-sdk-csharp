@@ -127,7 +127,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 catch (TimeoutException) { }
                 catch (SocketException) { }
                 catch (TaskCanceledException) { }
-                catch (IotHubCommunicationException) { }
+                catch (IotHubCommunicationException ex2) { Console.WriteLine(ex2); }
                 finally
                 {
                     foreach (Message m in msg)

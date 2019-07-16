@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.28803.352
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.757
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MemoryLeakTest", "MemoryLeakTest\MemoryLeakTest.csproj", "{97445B7F-D060-4CDE-9B35-93746A526C02}"
 EndProject
@@ -14,6 +14,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IoTClientPerf", "IoTClientPerf\IoTClientPerf.csproj", "{E8CC39DC-5C1E-4B8E-9916-6C7C72072B3F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices", "..\..\iothub\service\src\Microsoft.Azure.Devices.csproj", "{E3AB0D50-B2BC-4949-96CF-9D836B130F85}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RaceConditionText", "RaceConditionTest\RaceConditionText.csproj", "{D00E828D-860B-41FA-AA20-40695399626A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -85,6 +87,18 @@ Global
 		{E3AB0D50-B2BC-4949-96CF-9D836B130F85}.Release|x64.Build.0 = Release|Any CPU
 		{E3AB0D50-B2BC-4949-96CF-9D836B130F85}.Release|x86.ActiveCfg = Release|Any CPU
 		{E3AB0D50-B2BC-4949-96CF-9D836B130F85}.Release|x86.Build.0 = Release|Any CPU
+		{D00E828D-860B-41FA-AA20-40695399626A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D00E828D-860B-41FA-AA20-40695399626A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D00E828D-860B-41FA-AA20-40695399626A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D00E828D-860B-41FA-AA20-40695399626A}.Debug|x64.Build.0 = Debug|Any CPU
+		{D00E828D-860B-41FA-AA20-40695399626A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D00E828D-860B-41FA-AA20-40695399626A}.Debug|x86.Build.0 = Debug|Any CPU
+		{D00E828D-860B-41FA-AA20-40695399626A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D00E828D-860B-41FA-AA20-40695399626A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D00E828D-860B-41FA-AA20-40695399626A}.Release|x64.ActiveCfg = Release|Any CPU
+		{D00E828D-860B-41FA-AA20-40695399626A}.Release|x64.Build.0 = Release|Any CPU
+		{D00E828D-860B-41FA-AA20-40695399626A}.Release|x86.ActiveCfg = Release|Any CPU
+		{D00E828D-860B-41FA-AA20-40695399626A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -462,7 +462,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (Volatile.Read(ref _opened)) return;
 
-            await _handlerLock.WaitAsync().ConfigureAwait(false);
+            await _handlerLock.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
                 if (!_opened)
