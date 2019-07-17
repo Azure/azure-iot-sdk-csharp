@@ -6,6 +6,7 @@ languages:
 products:
 - azure
 - azure-iot-hub
+- dotnet
 ---
 
 # Azure IoT Samples for Csharp (.NET)
