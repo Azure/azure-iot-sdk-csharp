@@ -88,6 +88,10 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 await Task.WhenAll(tasks).ConfigureAwait(false);
             }
+            catch (OperationCanceledException) { }
+            catch (IotHubCommunicationException iotHubEx) 
+                when (iotHubEx.InnerException is TaskCanceledException || iotHubEx.InnerException is OperationCanceledException)
+            { }
             catch (Exception ex)
             {
                 Console.WriteLine(ex);
