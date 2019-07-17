@@ -229,7 +229,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
             else
             {
-                resultWriter = new ResultWriterFile(o);
+                resultWriter = new ResultWriterFile(o, TelemetryMetrics.GetHeader());
             }
 
             var runner = new PerfTestRunner(

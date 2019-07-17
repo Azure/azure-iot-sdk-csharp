@@ -8,11 +8,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 {
     public class ResultWriterConsole : ResultWriter
     {
-        protected override Task<bool> NeedsHeader()
-        {
-            return Task.FromResult(true);
-        }
-
         protected override Task WriteLineAsync(string s)
         {
             Console.WriteLine(s);

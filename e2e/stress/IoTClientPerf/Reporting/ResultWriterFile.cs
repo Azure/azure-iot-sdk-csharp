@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -11,44 +12,96 @@ namespace Microsoft.Azure.Devices.E2ETests
     public class ResultWriterFile : ResultWriter
     {
         private const int MaximumLinesBuffer = 2000;
+        private const long MaximumFileSize = (long)2 * 1024 * 1024 * 1024;
         private const int FileBufferBytes = 100 * 1024 * 1024;
         private StreamWriter _writer;
-        private bool _needsHeader;
         private SemaphoreSlim _semaphore = new SemaphoreSlim(1);
         private int _bufferedLines = 0;
+        private long _fileSize = (long)MaximumFileSize + 1;
+        private int _fileCount = 0;
+        private string _fileName;
 
-        public ResultWriterFile(string fileName)
+        public ResultWriterFile(string fileName, string header = null) : base(header)
         {
-            if (!File.Exists(fileName))
+            if (File.Exists(fileName))
             {
-                _needsHeader = true;
+                throw new InvalidOperationException($"Output file {fileName} already exists.");
             }
 
-            _writer = new StreamWriter(fileName, true, new UTF8Encoding(encoderShouldEmitUTF8Identifier:false), FileBufferBytes);
-        }
-
-        protected override Task<bool> NeedsHeader()
-        {
-            return Task.FromResult(_needsHeader);
+            _fileName = fileName;
         }
 
         protected override async Task WriteLineAsync(string s)
         {
-            await _semaphore.WaitAsync().ConfigureAwait(false);
-            await _writer.WriteLineAsync(s).ConfigureAwait(false);
-
-            if (++_bufferedLines > MaximumLinesBuffer)
+            try
             {
-                _bufferedLines = 0;
-                await _writer.FlushAsync();
-            }
+                await _semaphore.WaitAsync().ConfigureAwait(false);
+                _fileSize += s.Length; // Assuming UTF8.
 
-            _semaphore.Release();
+                if (_fileSize > MaximumFileSize)
+                {
+                    _fileCount++;
+                    _fileSize = s.Length;
+                    await CreateNewLogFileAsync().ConfigureAwait(false);
+                    if (_header != null)
+                    {
+                        await _writer.WriteLineAsync(_header).ConfigureAwait(false);
+                        _fileSize += _header.Length;
+                    }
+                }
+
+                await _writer.WriteLineAsync(s).ConfigureAwait(false);
+
+                if (++_bufferedLines > MaximumLinesBuffer)
+                {
+                    _bufferedLines = 0;
+                    await _writer.FlushAsync().ConfigureAwait(false);
+                }
+            }
+            finally
+            {
+                _semaphore.Release();
+            }
         }
 
-        public override Task FlushAsync()
+        public override async Task FlushAsync()
         {
-            return _writer.FlushAsync();
+            try
+            {
+                await _semaphore.WaitAsync().ConfigureAwait(false);
+                await _writer.FlushAsync().ConfigureAwait(false); ;
+            }
+            finally
+            {
+                _semaphore.Release();
+            }
+        }
+
+        private string GetFileFullPath()
+        {
+            if (_fileCount == 1) return _fileName;
+
+            string dir = Path.GetDirectoryName(_fileName);
+            string file = Path.GetFileNameWithoutExtension(_fileName);
+            string ext = Path.GetExtension(_fileName);
+
+            return Path.Combine(dir, $"{file}_{_fileCount}{ext}");
+        }
+
+        private async Task CreateNewLogFileAsync()
+        {
+            if (_writer != null)
+            {
+                await _writer.FlushAsync().ConfigureAwait(false);
+                _writer.Dispose();
+            }
+
+            InitWriter(GetFileFullPath());
+        }
+
+        private void InitWriter(string fileName)
+        {
+            _writer = new StreamWriter(fileName, false, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false), FileBufferBytes);
         }
     }
 }

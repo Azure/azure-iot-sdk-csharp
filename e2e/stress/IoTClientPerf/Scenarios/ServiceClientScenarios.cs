@@ -20,6 +20,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         // Separate metrics and time calculation for operations that can be parallelized.
         private const string TestMethodName = "PerfTestMethod";
+        private const int MethodPassStatus = 200;
         private TelemetryMetrics _mMethod = new TelemetryMetrics();
         private Stopwatch _swMethod = new Stopwatch();
 
@@ -102,11 +103,17 @@ namespace Microsoft.Azure.Devices.E2ETests
             try
             {
                 var methodCall = new CloudToDeviceMethod(TestMethodName);
-                Task t = s_sc.InvokeDeviceMethodAsync(Configuration.Stress.GetDeviceNameById(_id, _authType), methodCall);
+                Task<CloudToDeviceMethodResult> t = s_sc.InvokeDeviceMethodAsync(Configuration.Stress.GetDeviceNameById(_id, _authType), methodCall);
                 _mMethod.ScheduleTime = _swMethod.ElapsedMilliseconds;
 
                 _swMethod.Restart();
-                await t.ConfigureAwait(false);
+                CloudToDeviceMethodResult result = await t.ConfigureAwait(false);
+
+                // Check method result.
+                if (result.Status != MethodPassStatus) 
+                {
+                    throw new InvalidOperationException($"Method Failed status={result.Status} Payload:{result.GetPayloadAsJson()}");
+                }
             }
             catch (Exception ex)
             {
