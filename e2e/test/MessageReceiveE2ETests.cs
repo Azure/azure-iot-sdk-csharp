@@ -54,14 +54,14 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(OperationCanceledException))]
+        [ExpectedException(typeof(IotHubCommunicationException))]
         public async Task Message_DeviceReceive_Amqp_Validate_CancellationToken()
         {
             await ReceiveAsyncCancel(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
         }
 
         [TestMethod]
-        [ExpectedException(typeof(OperationCanceledException))]
+        [ExpectedException(typeof(IotHubCommunicationException))]
         public async Task Message_DeviceReceive_AmqpWs_Validate_CancellationToken()
         {
             await ReceiveAsyncCancel(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
@@ -87,14 +87,14 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(OperationCanceledException))]
+        [ExpectedException(typeof(IotHubCommunicationException))]
         public async Task Message_DeviceReceive_Mqtt_Validate_CancellationToken()
         {
             await ReceiveAsyncCancel(TestDeviceType.Sasl, Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
         }
 
         [TestMethod]
-        [ExpectedException(typeof(OperationCanceledException))]
+        [ExpectedException(typeof(IotHubCommunicationException))]
         public async Task Message_DeviceReceive_MqttWs_Validate_CancellationToken()
         {
             await ReceiveAsyncCancel(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
@@ -119,7 +119,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(OperationCanceledException))]
+        [ExpectedException(typeof(IotHubCommunicationException))]
         public async Task Message_DeviceReceive_Http_Validate_CancellationToken()
         {
             await ReceiveAsyncCancel(TestDeviceType.Sasl, Client.TransportType.Http1).ConfigureAwait(false);
@@ -240,7 +240,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 {
                     using (var cts = new CancellationTokenSource())
                     {
-                        const int timeout = 1_000;
+                        const int timeout = 5_000;
 
                         var receiveTask = deviceClient.ReceiveAsync(cts.Token).ConfigureAwait(false);
 
@@ -256,7 +256,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                             sw.Stop();
                             Assert.IsTrue(ex.InnerException is OperationCanceledException);
                             Assert.IsTrue(sw.ElapsedMilliseconds < 11_000, $"Expected timeout not met. Timeout fired after {sw.ElapsedMilliseconds}ms and requested was {timeout}ms");
-                            throw ex.InnerException;
+                            throw;
                         }
                     }
                 }

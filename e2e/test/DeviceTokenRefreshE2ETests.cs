@@ -116,7 +116,14 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 var message = new Client.Message(Encoding.UTF8.GetBytes("Hello"));
 
-                using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(ttl * 10)))
+                // calculating test run timeout: 
+                // we use the ttl + max percentage buffer time * number of calls we make to WaitForTokenRefreshAsync
+                // and add a buffer for opening and sending on the deviceclient.
+                const int operationCompletionBufferTimeInSeconds = 10;
+                const int numberOfWaitForTokenCalls = 2;
+                var testRunTimeout = (numberOfWaitForTokenCalls * (ttl * (float)(1 + buffer / 100))) + operationCompletionBufferTimeInSeconds;
+
+                using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(testRunTimeout)))
                 {
                     try
                     {
@@ -137,7 +144,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     // Wait for the Token to expire.
                     if (transport == Client.TransportType.Http1)
                     {
-                        float waitTime = (float)ttl * ((float)buffer / 100) + 1;
+                        float waitTime = ttl * (1 + (float)buffer / 100);
                         Console.WriteLine($"[{DateTime.UtcNow}] Waiting {waitTime} seconds.");
                         await Task.Delay(TimeSpan.FromSeconds(waitTime)).ConfigureAwait(false);
                     }
@@ -162,7 +169,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     // Ensure that the token was refreshed.
                     Console.WriteLine($"[{DateTime.UtcNow}] Token was refreshed after {refresher.DetectedRefreshInterval} (ttl = {ttl} seconds).");
                     Assert.IsTrue(
-                        refresher.DetectedRefreshInterval.TotalSeconds < (float)ttl * (1 + (float)buffer/100), // Wait for more than what we expect.
+                        refresher.DetectedRefreshInterval.TotalSeconds < ((float)ttl * (1 + (float)buffer/100)) + 1, // Wait for more than what we expect.
                         $"Token was refreshed after {refresher.DetectedRefreshInterval} although ttl={ttl} seconds.");
 
                     Console.WriteLine($"[{DateTime.UtcNow}] CloseAsync");
