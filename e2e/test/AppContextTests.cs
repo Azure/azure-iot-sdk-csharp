@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             _listener = TestConfig.StartEventListener();
         }
 
-        #region ReceiveAsyncAfterDispose
+        #region ReceiveAsyncAfterDisposeAsync
 
         [TestMethod]
         public async Task AppConfig_ReceiveAsyncAfterDispose_Sasl_Amqp()
@@ -49,7 +49,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             if (isFlagSet)
             {
-                await ReceiveAsyncAfterDispose(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only, false).ConfigureAwait(false);
+                await ReceiveAsyncAfterDisposeAsync(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only, false).ConfigureAwait(false);
             }
             else
             {
@@ -70,7 +70,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             if (isFlagSet)
             {
-                await ReceiveAsyncAfterDispose(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only, true).ConfigureAwait(false);
+                await ReceiveAsyncAfterDisposeAsync(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only, true).ConfigureAwait(false);
             }
             else
             {
@@ -78,15 +78,59 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        private async Task ReceiveAsyncAfterDispose(TestDeviceType testDeviceType, Client.TransportType transportType, bool expectException)
+        [Ignore("ReceiveAsync hangs due to bug in DotNetty (https://github.com/Azure/DotNetty/issues/502)")]
+        [TestMethod]
+        public async Task AppConfig_ReceiveAsyncAfterDispose_Sasl_Mqtt()
+        {
+
+            bool isFlagSet = false;
+            bool flag = false;
+
+#if !NET451
+            isFlagSet = AppContext.TryGetSwitch(AppContextConstants.DisableObjectDisposedExceptionForReceiveAsync, out flag);
+#endif
+
+            if (isFlagSet)
+            {
+                await ReceiveAsyncAfterDisposeAsync(TestDeviceType.Sasl, Client.TransportType.Mqtt_Tcp_Only, false).ConfigureAwait(false);
+            }
+            else
+            {
+                Assert.Fail("AppContext flag DisableObjectDisposedExceptionForReceiveAsync not set");
+            }
+        }
+
+        [Ignore("ReceiveAsync hangs due to bug in DotNetty (https://github.com/Azure/DotNetty/issues/502)")]
+        [TestMethod]
+        public async Task AppConfig_ReceiveAsyncWithCancellationTokenAfterDispose_Sasl_Mqtt()
+        {
+
+            bool isFlagSet = false;
+            bool flag = false;
+
+#if !NET451
+            isFlagSet = AppContext.TryGetSwitch(AppContextConstants.DisableObjectDisposedExceptionForReceiveAsync, out flag);
+#endif
+
+            if (isFlagSet)
+            {
+                await ReceiveAsyncAfterDisposeAsync(TestDeviceType.Sasl, Client.TransportType.Mqtt_Tcp_Only, true).ConfigureAwait(false);
+            }
+            else
+            {
+                Assert.Fail("AppContext flag DisableObjectDisposedExceptionForReceiveAsync not set");
+            }
+        }
+
+        private async Task ReceiveAsyncAfterDisposeAsync(TestDeviceType testDeviceType, Client.TransportType transportType, bool expectException)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, testDeviceType).ConfigureAwait(false);
 
+            using (CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(60)))
             using (DeviceClient deviceClient = testDevice.CreateDeviceClient(transportType))
             {
                 Exception exceptionCaught = null;
                 Client.Message message = null;
-                CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
 
                 try
                 {
@@ -135,10 +179,10 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        #endregion ReceiveAsyncAfterDispose
+        #endregion ReceiveAsyncAfterDisposeAsync
 
         #region ReceiveAsyncAfterCloseAsync
-        
+
         [TestMethod]
         public async Task AppConfig_ReceiveAsyncAfterCloseAsync_x509_AmqpWs()
         {
@@ -179,15 +223,57 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
+        [Ignore("ReceiveAsync hangs due to bug in DotNetty (https://github.com/Azure/DotNetty/issues/502)")]
+        [TestMethod]
+        public async Task AppConfig_ReceiveAsyncAfterCloseAsync_x509_Mqtt()
+        {
+            bool isFlagSet = false;
+            bool flag = false;
+
+#if !NET451
+            isFlagSet = AppContext.TryGetSwitch(AppContextConstants.DisableObjectDisposedExceptionForReceiveAsync, out flag);
+#endif
+
+            if (isFlagSet)
+            {
+                await ReceiveAsyncAfterCloseAsync(TestDeviceType.X509, Client.TransportType.Mqtt_Tcp_Only, false).ConfigureAwait(false);
+            }
+            else
+            {
+                Assert.Fail("AppContext flag DisableObjectDisposedExceptionForReceiveAsync not set");
+            }
+        }
+
+        [Ignore("ReceiveAsync hangs due to bug in DotNetty (https://github.com/Azure/DotNetty/issues/502)")]
+        [TestMethod]
+        public async Task AppConfig_ReceiveAsyncWithCancellationTokenAfterCloseAsync_x509_MqttWs()
+        {
+            bool isFlagSet = false;
+            bool flag = false;
+
+#if !NET451
+            isFlagSet = AppContext.TryGetSwitch(AppContextConstants.DisableObjectDisposedExceptionForReceiveAsync, out flag);
+#endif
+
+            if (isFlagSet)
+            {
+                await ReceiveAsyncAfterCloseAsync(TestDeviceType.X509, Client.TransportType.Mqtt_WebSocket_Only, true).ConfigureAwait(false);
+            }
+            else
+            {
+                Assert.Fail("AppContext flag DisableObjectDisposedExceptionForReceiveAsync not set");
+            }
+        }
+
         private async Task ReceiveAsyncAfterCloseAsync(TestDeviceType testDeviceType, Client.TransportType transportType, bool expectException)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, testDeviceType).ConfigureAwait(false);
 
+            using (CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(60)))
             using (DeviceClient deviceClient = testDevice.CreateDeviceClient(transportType))
             {
                 Exception exceptionCaught = null;
                 Client.Message message = null;
-                CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
 
                 try
                 {

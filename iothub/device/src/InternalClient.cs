@@ -327,11 +327,10 @@ namespace Microsoft.Azure.Devices.Client
             {
                 bool isObjectDisposedExceptionDisabled = false;
 #if !NET451
+                // If switch is present in AppContext and it is true, revert the functionality of ReceiveAsync to how it behaved until DeviceClient version 1.18.0.
+                // If switch is not present, assume it is false (cause ReceiveAsync to behave as after version 1.18.0).
                 AppContext.TryGetSwitch(AppContextConstants.DisableObjectDisposedExceptionForReceiveAsync, out isObjectDisposedExceptionDisabled);
 #endif
-                // If cancellationToken.IsCancellationRequested is false, then this OperationCanceledException comes from 
-                //  _amqpUnit.ReceiveMessageAsync, which then should be optionally suppresed by isObjectDisposedExceptionDisabled 
-                // to match the behavior of Azure IoT C# SDK released on 2018-08-17 (nuget 1.18.0).
                 if (isObjectDisposedExceptionDisabled)
                 {
                     return null;
@@ -369,11 +368,10 @@ namespace Microsoft.Azure.Devices.Client
                 {
                     bool isObjectDisposedExceptionDisabled = false;
 #if !NET451
+                    // If switch is present in AppContext and it is true, revert the functionality of ReceiveAsync to how it behaved until DeviceClient version 1.18.0.
+                    // If switch is not present, assume it is false (cause ReceiveAsync to behave as after version 1.18.0).
                     AppContext.TryGetSwitch(AppContextConstants.DisableObjectDisposedExceptionForReceiveAsync, out isObjectDisposedExceptionDisabled);
 #endif
-                    // If cancellationToken.IsCancellationRequested is false, then this OperationCanceledException comes from 
-                    //  _amqpUnit.ReceiveMessageAsync, which then should be optionally suppresed by isObjectDisposedExceptionDisabled 
-                    // to match the behavior of Azure IoT C# SDK released on 2018-08-17 (nuget 1.18.0).
                     if (isObjectDisposedExceptionDisabled)
                     {
                         return null;
