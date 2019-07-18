@@ -121,7 +121,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 // and add a buffer for opening and sending on the deviceclient.
                 const int operationCompletionBufferTimeInSeconds = 10;
                 const int numberOfWaitForTokenCalls = 2;
-                var testRunTimeout = (numberOfWaitForTokenCalls * (ttl * (float)(1 + buffer / 100))) + operationCompletionBufferTimeInSeconds;
+                float testRunTimeout = (numberOfWaitForTokenCalls * (ttl * (float)(1 + buffer / 100))) + operationCompletionBufferTimeInSeconds;
 
                 using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(testRunTimeout)))
                 {
