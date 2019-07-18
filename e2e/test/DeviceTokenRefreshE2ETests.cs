@@ -90,7 +90,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
 
-            int buffer = 50;
+            const int bufferInPercentage = 50;
             Device device = testDevice.Identity;
             SemaphoreSlim deviceDisconnected = new SemaphoreSlim(0);
 
@@ -98,7 +98,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 device.Id, 
                 device.Authentication.SymmetricKey.PrimaryKey, 
                 ttl, 
-                buffer,
+                bufferInPercentage,
                 transport);
 
             using (DeviceClient deviceClient = DeviceClient.Create(testDevice.IoTHubHostName, refresher, transport))
@@ -121,7 +121,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 // and add a buffer for opening and sending on the deviceclient.
                 const int operationCompletionBufferTimeInSeconds = 10;
                 const int numberOfWaitForTokenCalls = 2;
-                float testRunTimeout = (numberOfWaitForTokenCalls * (ttl * (float)(1 + buffer / 100))) + operationCompletionBufferTimeInSeconds;
+                int bufferInSeconds = (int)(ttl * ((float)bufferInPercentage / 100));
+                float testRunTimeout = (numberOfWaitForTokenCalls * (ttl + bufferInSeconds)) + operationCompletionBufferTimeInSeconds;
 
                 using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(testRunTimeout)))
                 {
@@ -144,9 +145,9 @@ namespace Microsoft.Azure.Devices.E2ETests
                     // Wait for the Token to expire.
                     if (transport == Client.TransportType.Http1)
                     {
-                        float waitTime = ttl * (1 + (float)buffer / 100);
+                        float waitTime = ttl - bufferInSeconds;
                         Console.WriteLine($"[{DateTime.UtcNow}] Waiting {waitTime} seconds.");
-                        await Task.Delay(TimeSpan.FromSeconds(waitTime)).ConfigureAwait(false);
+                        await Task.Delay(TimeSpan.FromSeconds(ttl)).ConfigureAwait(false);
                     }
                     else if (transport == Client.TransportType.Mqtt)
                     {
@@ -169,7 +170,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     // Ensure that the token was refreshed.
                     Console.WriteLine($"[{DateTime.UtcNow}] Token was refreshed after {refresher.DetectedRefreshInterval} (ttl = {ttl} seconds).");
                     Assert.IsTrue(
-                        refresher.DetectedRefreshInterval.TotalSeconds < ((float)ttl * (1 + (float)buffer/100)) + 1, // Wait for more than what we expect.
+                        refresher.DetectedRefreshInterval.TotalSeconds < (ttl + bufferInSeconds), // Wait for more than what we expect.
                         $"Token was refreshed after {refresher.DetectedRefreshInterval} although ttl={ttl} seconds.");
 
                     Console.WriteLine($"[{DateTime.UtcNow}] CloseAsync");
