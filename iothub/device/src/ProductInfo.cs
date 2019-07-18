@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using Microsoft.Azure.Devices.Client.Extensions;
 
 namespace Microsoft.Azure.Devices.Client
 {
@@ -40,38 +41,45 @@ namespace Microsoft.Azure.Devices.Client
         private string ToString(string format)
         {
             const string Name = ".NET";
-            string version = typeof(DeviceClient).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
-            string runtime = RuntimeInformation.FrameworkDescription.Trim();
-            string operatingSystem = RuntimeInformation.OSDescription.Trim();
-            string processorArchitecture = RuntimeInformation.ProcessArchitecture.ToString().Trim();
-            string productType = (_productType.Value != 0) ? $" WindowsProduct:0x{_productType.Value:X8}" : string.Empty;
-            string deviceId = (!string.IsNullOrWhiteSpace(_sqmId.Value)) ? _sqmId.Value : string.Empty;
-
-            string userAgent = string.Empty;
+            string version = string.Empty;
             string infoParts = string.Empty;
 
-            if (!string.IsNullOrWhiteSpace(format))
+            try
             {
-                infoParts =
-                    format.Replace("{runtime}", runtime)
-                    .Replace("{operatingSystem}", operatingSystem + productType)
-                    .Replace("{architecture}", processorArchitecture)
-                    .Replace("{deviceId}", deviceId);
-            }
-            else
-            {
-                string[] agentInfoParts =
+                version = typeof(DeviceClient).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
+                string runtime = RuntimeInformation.FrameworkDescription.Trim();
+                string operatingSystem = RuntimeInformation.OSDescription.Trim();
+                string processorArchitecture = RuntimeInformation.ProcessArchitecture.ToString().Trim();
+                string productType = (_productType.Value != 0) ? $" WindowsProduct:0x{_productType.Value:X8}" : string.Empty;
+                string deviceId = (!string.IsNullOrWhiteSpace(_sqmId.Value)) ? _sqmId.Value : string.Empty;
+
+                if (!string.IsNullOrWhiteSpace(format))
                 {
-                    runtime,
-                    operatingSystem + productType,
-                    processorArchitecture,
-                    deviceId,
-                };
+                    infoParts =
+                        format.Replace("{runtime}", runtime)
+                        .Replace("{operatingSystem}", operatingSystem + productType)
+                        .Replace("{architecture}", processorArchitecture)
+                        .Replace("{deviceId}", deviceId);
+                }
+                else
+                {
+                    string[] agentInfoParts =
+                    {
+                        runtime,
+                        operatingSystem + productType,
+                        processorArchitecture,
+                        deviceId,
+                    };
 
-                infoParts = string.Join("; ", agentInfoParts.Where(x => !string.IsNullOrEmpty(x)));
+                    infoParts = string.Join("; ", agentInfoParts.Where(x => !string.IsNullOrEmpty(x)));
+                }
+            }
+            catch (Exception ex) when (!ex.IsFatal()) 
+            { 
+                // no-op 
             }
 
-            userAgent = $"{Name}/{version} ({infoParts})";
+            string userAgent = $"{Name}/{version} ({infoParts})";
 
             if (!string.IsNullOrWhiteSpace(this.Extra))
             {

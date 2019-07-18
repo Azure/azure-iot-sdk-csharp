@@ -92,7 +92,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
             catch (Exception ex)
             {
-                _m.ErrorMessage = ex.Message;
+                _m.ErrorMessage = $"{ex.GetType().Name} - {ex.Message}";
                 exInfo = ExceptionDispatchInfo.Capture(ex);
             }
 
@@ -125,7 +125,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
             catch (Exception ex)
             {
-                _m.ErrorMessage = ex.Message;
+                _m.ErrorMessage = $"{ex.GetType().Name} - {ex.Message}";
                 exInfo = ExceptionDispatchInfo.Capture(ex);
             }
 
