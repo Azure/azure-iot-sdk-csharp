@@ -31,14 +31,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         internal void AmqpConnectionClosed(object sender, EventArgs e)
         {
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpConnectionClosed)}");
-            if (ReferenceEquals(sender, _amqpConnection))
-            {
-                Closed?.Invoke(this, e);
-            }
-            else
-            {
-                if (Logging.IsEnabled) Logging.Error(this, "AmqpConnection closed event: instance mismatch.", $"{nameof(AmqpConnectionClosed)}");
-            }
+            Closed?.Invoke(this, e);
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(AmqpConnectionClosed)}");
         }
 
