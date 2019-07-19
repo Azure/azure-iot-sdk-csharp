@@ -47,7 +47,7 @@ export LA_AAD_APP_CERT_BASE64=""
 # ---------- Device Provisioning Service Configuration ----------
 # See Configuration.Provisioning.cs for usage details.
 
-# DPS ID Scope 
+# DPS ID Scope
 export DPS_IDSCOPE=
 
 # The DPS Global Device Endpoint (the default is defined in code)
@@ -78,7 +78,7 @@ export PROVISIONING_CONNECTION_STRING=""
 export CUSTOM_ALLOCATION_POLICY_WEBHOOK=""
 
 # Far away iot hub hostname.
-# Reprovisioning tests rely on the dps instance under test to have two linked iothubs to provision to. 
+# Reprovisioning tests rely on the dps instance under test to have two linked iothubs to provision to.
 # This hub does not currently need to be far away from the dps instance, but it does need to be linked to the dps instance alongside the IOTHUB_CONN_STRING_CSHARP hub.
 # Only the hostname is needed, not the full connection string
 export FAR_AWAY_IOTHUB_HOSTNAME=""
