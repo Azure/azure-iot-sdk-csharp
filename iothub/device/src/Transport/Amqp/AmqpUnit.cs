@@ -88,7 +88,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         {
             if (_closed)
             {
-                throw new IotHubException("AmqpUnit is disconnected.", false);
+                throw new IotHubException("Device is now offline.", false);
             }
 
             if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(EnsureSessionAsync)}");
@@ -127,7 +127,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                     {
                         _amqpConnectionHolder.Dispose();
                     }
-                    throw new IotHubException("AmqpUnit is disconnected.", false);
+                    throw new IotHubException("Device is now offline.", false);
                 }
 
             }
@@ -186,7 +186,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         {
             if (_closed)
             {
-                throw new IotHubException("AmqpUnit is disconnected.", false);
+                throw new IotHubException("Device is now offline.", false);
             }
 
             if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(EnsureMessageReceivingLinkAsync)}");
@@ -278,7 +278,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         {
             if (_closed)
             {
-                throw new IotHubException("AmqpUnit is disconnected.", false);
+                throw new IotHubException("Device is now offline.", false);
             }
 
             if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(EnsureEventReceivingLinkAsync)}");
@@ -359,7 +359,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         {
             if (_closed)
             {
-                throw new IotHubException("AmqpUnit is disconnected.", false);
+                throw new IotHubException("Device is now offline.", false);
             }
 
             if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(EnableMethodsAsync)}");
@@ -479,7 +479,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         {
             if (_closed)
             {
-                throw new IotHubException("AmqpUnit is disconnected.", false);
+                throw new IotHubException("Device is now offline.", false);
             }
 
             if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(EnableTwinLinksAsync)}");
