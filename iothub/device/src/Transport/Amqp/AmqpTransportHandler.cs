@@ -202,7 +202,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                throw new IotHubException("Disable methods is not supported.", false);
+                await _amqpUnit.DisableMethodsAsync(_operationTimeout).ConfigureAwait(false);
             }
             finally
             {

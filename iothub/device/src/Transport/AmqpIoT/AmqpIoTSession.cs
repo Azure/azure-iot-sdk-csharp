@@ -71,7 +71,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             ).ConfigureAwait(false);
         }
 
-        internal async Task<AmqpIoTReceivingLink> OpenTelemetryReceiverLinkAsync(
+        internal async Task<AmqpIoTReceivingLink> OpenMessageReceiverLinkAsync(
             DeviceIdentity deviceIdentity,
             TimeSpan timeout
         )

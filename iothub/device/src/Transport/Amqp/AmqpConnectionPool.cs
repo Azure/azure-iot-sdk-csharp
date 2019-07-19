@@ -46,7 +46,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         {
             if (Logging.IsEnabled) Logging.Enter(this, amqpUnit, $"{nameof(RemoveAmqpUnit)}");
             DeviceIdentity deviceIdentity = amqpUnit.GetDeviceIdentity();
-            amqpUnit.Dispose();
             if (deviceIdentity.IsPooling())
             {
                 AmqpConnectionHolder amqpConnectionHolder;
