@@ -1166,7 +1166,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             string properties = UrlEncodedDictionarySerializer.Serialize(new ReadOnlyMergeDictionary<string, string>(systemProperties, message.Properties));
 
             string msg;
-            if (properties != string.Empty)
+            if (properties.Length != 0)
             {
                 msg = topicName.EndsWith(SegmentSeparator, StringComparison.Ordinal) ? topicName + properties + SegmentSeparator : topicName + SegmentSeparator + properties;
             }
