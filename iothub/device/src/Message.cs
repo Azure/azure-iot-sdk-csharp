@@ -505,7 +505,7 @@ namespace Microsoft.Azure.Devices.Client
         }
 #endif
 
-        private Stream BodyStream
+        public Stream BodyStream
         {
             get
             {
