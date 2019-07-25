@@ -190,7 +190,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             }
             else if (Equals(AmqpErrorCode.NotFound, amqpSymbol))
             {
-                return new IotHubNotFoundException(message, amqpException);
+                return new DeviceNotFoundException(message, amqpException);
             }
             else if (Equals(AmqpErrorCode.UnauthorizedAccess, amqpSymbol))
             {

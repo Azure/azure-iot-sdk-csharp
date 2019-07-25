@@ -10,7 +10,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
     internal class AmqpIoTExceptionAdapter
     {
         internal static readonly IotHubException RESOUCE_DISCONNECTED_EXCEPTION = new IotHubException("Amqp resource is disconnected.", true);
-        private static Exception ConvertToIoTHubException(Exception exception)
+        internal static Exception ConvertToIoTHubException(Exception exception)
         {
             if (exception is TimeoutException)
             {
