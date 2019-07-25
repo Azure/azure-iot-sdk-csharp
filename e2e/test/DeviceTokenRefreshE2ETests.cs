@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.Azure.Devices.Client;
+using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Diagnostics;
@@ -29,6 +30,33 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             _listener = TestConfig.StartEventListener();
             _log = TestLogging.GetInstance();
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(DeviceNotFoundException))]
+        public async Task DeviceClient_Not_Exist_AMQP()
+        {
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
+
+            var config = new Configuration.IoTHub.DeviceConnectionStringParser(testDevice.ConnectionString);
+            using (DeviceClient deviceClient = DeviceClient.CreateFromConnectionString($"HostName={config.IoTHub};DeviceId=device_id_not_exist;SharedAccessKey={config.SharedAccessKey}", Client.TransportType.Amqp_Tcp_Only))
+            {
+                await deviceClient.OpenAsync().ConfigureAwait(false);
+            }
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(UnauthorizedException))]
+        public async Task DeviceClient_Bad_Credentials_AMQP()
+        {
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
+
+            var config = new Configuration.IoTHub.DeviceConnectionStringParser(testDevice.ConnectionString);
+            string invalidKey = Convert.ToBase64String(Encoding.UTF8.GetBytes("invalid_key"));
+            using (DeviceClient deviceClient = DeviceClient.CreateFromConnectionString($"HostName={config.IoTHub};DeviceId={config.DeviceID};SharedAccessKey={invalidKey}", Client.TransportType.Amqp_Tcp_Only))
+            {
+                await deviceClient.OpenAsync().ConfigureAwait(false);
+            }
         }
 
         [TestMethod]
