@@ -72,7 +72,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
 
             var config = new Configuration.IoTHub.DeviceConnectionStringParser(testDevice.ConnectionString);
-            using (DeviceClient deviceClient = DeviceClient.CreateFromConnectionString($"HostName={config.IoTHub};DeviceId={config.DeviceID};SharedAccessKey={config.SharedAccessKey.Replace('=', 'a')}", Client.TransportType.Amqp_Tcp_Only))
+            string invalidKey = Convert.ToBase64String(Encoding.UTF8.GetBytes("invalid_key"));
+            using (DeviceClient deviceClient = DeviceClient.CreateFromConnectionString($"HostName={config.IoTHub};DeviceId={config.DeviceID};SharedAccessKey={invalidKey}", Client.TransportType.Amqp_Tcp_Only))
             {
                 await deviceClient.OpenAsync().ConfigureAwait(false);
             }
