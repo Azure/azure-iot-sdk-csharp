@@ -529,6 +529,17 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 return;
             }
 
+            if (!_internalRetryPolicy.RetryStrategy.GetShouldRetry().Invoke(0, new IotHubCommunicationException(), out TimeSpan delay))
+            {
+                if (Logging.IsEnabled) Logging.Info(this, "Transport disconnected: closed by application.", nameof(HandleDisconnect));
+                _onConnectionStatusChanged(ConnectionStatus.Disconnected, ConnectionStatusChangeReason.Retry_Expired);
+                return;
+            }
+
+            if (delay > TimeSpan.Zero)
+            {
+                await Task.Delay(delay).ConfigureAwait(false);
+            }
 
             if (Logging.IsEnabled) Logging.Info(this, "Transport disconnected: unexpected.", nameof(HandleDisconnect));
             await _handlerLock.WaitAsync().ConfigureAwait(false);
