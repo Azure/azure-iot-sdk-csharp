@@ -33,11 +33,6 @@ phases:
     inputs:
       secureFile: 'iothubsdksign-req-base64.pfx'
 
-  - task: CmdLine@2
-    displayName: 'env vars'
-    inputs:
-        script: 'set'
-
 # install signing certificates
 
   - powershell: |
