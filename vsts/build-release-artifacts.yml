@@ -20,7 +20,7 @@ phases:
       pipeline: '296' # iot-sdks-internals-mirror pipeline (scripts)
       buildVersionToDownload: 'latest'
       downloadType: 'single'
-      downloadPath: '$(System.ArtifactsDirectory)/build-tools'
+      downloadPath: '$(System.ArtifactsDirectory)/scripts'
       artifactName: 'csharp'
 
   - task: DownloadSecureFile@1
@@ -37,13 +37,13 @@ phases:
 
   - task: PowerShell@2
     inputs:
-      filePath: '$(Build.StagingDirectory)/build-tools/csharp/install-signing-certificates.ps1'
+      filePath: '$(Build.StagingDirectory)/scripts/csharp/install-signing-certificates.ps1'
     displayName: 'Install Signing Certificates'
     env:
         certpwd: $(certpassphrase)
 
   - powershell: |
-      . $(Build.StagingDirectory)/build-tools/csharp/new/SignTools.ps1
+      . $(Build.StagingDirectory)/scripts/csharp/new/SignTools.ps1
       md $env:ESRP_LOG_DIR
       md $env:AZURE_IOT_LOCALPACKAGES
       Set-Location $(Build.SourcesDirectory)
@@ -51,11 +51,11 @@ phases:
 
     displayName: 'Build, Package, Sign'
     env:
-        ESRP_AUTH_CONFIG: $(Build.StagingDirectory)/build-tools/csharp/new/json/Auth.json
-        ESRP_POLICY_CONFIG: $(Build.StagingDirectory)/build-tools/csharp/new/json/Policy.json
-        ESRP_INPUT_JSON_DIR: $(Build.StagingDirectory)/build-tools/csharp/new/json
-        ESRP_LOG_DIR: $(Build.StagingDirectory)/build-tools/csharp/new/logs
-        AZURE_IOT_LOCALPACKAGES: $(Build.StagingDirectory)/build-tools/csharp/nuget_local
+        ESRP_AUTH_CONFIG: $(Build.StagingDirectory)/scripts/csharp/new/json/Auth.json
+        ESRP_POLICY_CONFIG: $(Build.StagingDirectory)/scripts/csharp/new/json/Policy.json
+        ESRP_INPUT_JSON_DIR: $(Build.StagingDirectory)/scripts/csharp/new/json
+        ESRP_LOG_DIR: $(Build.StagingDirectory)/scripts/csharp/new/logs
+        AZURE_IOT_LOCALPACKAGES: $(Build.StagingDirectory)/scripts/csharp/nuget_local
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Signed Nuget Packages'
