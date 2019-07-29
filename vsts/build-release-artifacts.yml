@@ -37,7 +37,7 @@ phases:
 
   - task: PowerShell@2
     inputs:
-      filePath: '$(Build.StagingDirectory)/scripts/csharp/install-signing-certificates.ps1'
+      filePath: '$(Build.StagingDirectory)/scripts/csharp/vsts/install-signing-certificates.ps1'
     displayName: 'Install Signing Certificates'
     env:
         certpwd: $(certpassphrase)
