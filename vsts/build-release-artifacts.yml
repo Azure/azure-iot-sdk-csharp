@@ -35,11 +35,6 @@ phases:
 
 # install signing certificates
 
-  - task: CmdLine@2
-    inputs:
-      script: 'tree /f /a'
-      workingDirectory: '$(Build.StagingDirectory)'
-
   - task: PowerShell@2
     inputs:
       filePath: '$(Build.StagingDirectory)/scripts/csharp/vsts/install-signing-certificates.ps1'
