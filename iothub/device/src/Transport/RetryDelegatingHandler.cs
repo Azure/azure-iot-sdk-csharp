@@ -512,7 +512,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (_disposed)
             {
-                if (Logging.IsEnabled) Logging.Info(this, "Race condition: Disposed during disconnection.", nameof(EnsureOpenedAsync));
+                if (Logging.IsEnabled) Logging.Info(this, "Disposed during disconnection.", nameof(HandleDisconnect));
                 _handleDisconnectCts.Cancel();
             }
 
@@ -529,27 +529,26 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 return;
             }
 
-            if (!_internalRetryPolicy.RetryStrategy.GetShouldRetry().Invoke(0, new IotHubCommunicationException(), out TimeSpan delay))
-            {
-                if (Logging.IsEnabled) Logging.Info(this, "Transport disconnected: closed by application.", nameof(HandleDisconnect));
-                _onConnectionStatusChanged(ConnectionStatus.Disconnected, ConnectionStatusChangeReason.Retry_Expired);
-                return;
-            }
-
-            if (delay > TimeSpan.Zero)
-            {
-                await Task.Delay(delay).ConfigureAwait(false);
-            }
-
             if (Logging.IsEnabled) Logging.Info(this, "Transport disconnected: unexpected.", nameof(HandleDisconnect));
             await _handlerLock.WaitAsync().ConfigureAwait(false);
             _opened = false;
 
             try
             {
+                if (!_internalRetryPolicy.RetryStrategy.GetShouldRetry().Invoke(0, new IotHubCommunicationException(), out TimeSpan delay))
+                {
+                    if (Logging.IsEnabled) Logging.Info(this, "Transport disconnected: closed by application.", nameof(HandleDisconnect));
+                    _onConnectionStatusChanged(ConnectionStatus.Disconnected, ConnectionStatusChangeReason.Retry_Expired);
+                    return;
+                }
+
+                if (delay > TimeSpan.Zero)
+                {
+                    await Task.Delay(delay).ConfigureAwait(false);
+                }
+
                 // always reconnect.
-                 _onConnectionStatusChanged(ConnectionStatus.Disconnected_Retrying, ConnectionStatusChangeReason.Communication_Error);
-            
+                _onConnectionStatusChanged(ConnectionStatus.Disconnected_Retrying, ConnectionStatusChangeReason.Communication_Error);
                 CancellationToken cancellationToken = _handleDisconnectCts.Token;
                 
                 // This will recover to the state before the disconnect.
