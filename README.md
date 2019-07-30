@@ -7,9 +7,10 @@ products:
 - azure
 - azure-iot-hub
 - dotnet
+urlFragment: azure-iot-samples-for-csharp-net
 ---
 
-# Azure IoT Samples for Csharp (.NET)
+# Azure IoT Samples for C# (.NET)
 
 azure-iot-samples-csharp provides a set of easy-to-understand, continuously-tested samples for connecting to Azure IoT Hub via Azure/azure-iot-sdk-csharp.
 
