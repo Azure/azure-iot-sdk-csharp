@@ -43,6 +43,15 @@ set LA_AAD_APP_ID=
 @REM the certificate credentials for the given app
 set LA_AAD_APP_CERT_BASE64=
 
+@REM ---------- Variables required for running Azure IoT Hub Stress Test and Azure IoT Samples for C# ------------
+@REM Device primary and secondary connection strings:
+set IOTHUB_DEVICE_CONN_STRING=
+set IOTHUB_DEVICE_CONN_STRING2=
+
+@REM IoT Hub Module connection string:
+set IOTHUB_MODULE_CONN_STRING=
+set IOTHUB_MODULE_CONN_STRING2=
+
 @REM ---------- Device Provisioning Service Configuration ----------
 @REM See Configuration.Provisioning.cs for usage details.
 
