@@ -5,6 +5,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Framing;
+using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Devices.Client.Extensions;
 using Microsoft.Azure.Devices.Client.Transport.Amqp;
 using Microsoft.Azure.Devices.Shared;
@@ -67,7 +68,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                     {
                         _amqpConnection.SafeClose();
                     }
-                    throw ex;
+                    throw new IotHubCommunicationException(ex.Message, ex);
                 }
             }
         }
