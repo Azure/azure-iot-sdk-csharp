@@ -132,5 +132,20 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             ms.Write(Encoding.UTF8.GetBytes("howdy"), 0, 5);
         }
+
+        [TestMethod]
+        public void SettingMessageAsSecurityMessageTest()
+        {
+            var msg = new Message(Encoding.UTF8.GetBytes("security message test"));
+
+            Assert.IsFalse(msg.IsSecurityMessage);
+            Assert.IsFalse(msg.SystemProperties.ContainsKey(MessageSystemPropertyNames.InterfaceId));
+
+            msg.SetAsSecurityMessage();
+
+            Assert.IsTrue(msg.SystemProperties.ContainsKey(MessageSystemPropertyNames.InterfaceId));
+            Assert.AreEqual(CommonConstants.SecurityMessageInterfaceId, msg.SystemProperties[MessageSystemPropertyNames.InterfaceId]);
+            Assert.IsTrue(msg.IsSecurityMessage);
+        }
     }
 }
