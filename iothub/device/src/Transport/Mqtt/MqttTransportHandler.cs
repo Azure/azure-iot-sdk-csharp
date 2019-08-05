@@ -885,10 +885,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                             return false; // Let anything else stop the application.
                         });
                     }
-                    catch (DotNetty.Transport.Channels.ConnectException ex)
+                    catch (ConnectException ex)
                     {
                         //same as above, we will handle DotNetty.Transport.Channels.ConnectException
-                        Debug.WriteLine("ConnectException trying to connect to {0}: {1}", address.ToString(), ex.ToString(), nameof(CreateChannelFactory));
+                        if (Logging.IsEnabled) Logging.Error(this, $"ConnectException trying to connect to {address.ToString()}: {ex.ToString()}", nameof(CreateChannelFactory));
                     }
                 }
 
