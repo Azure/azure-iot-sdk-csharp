@@ -27,10 +27,26 @@ set IOTHUB_EVENTHUB_COMPATIBLE_NAME=
 @REM EventHub consumer group:
 set IOTHUB_EVENTHUB_CONSUMER_GROUP=
 
+@REM ---------- Azure Security Center For IoT - Log Analytics Configuration ----------
+@REM the iot hub above must be registered to Azure Security Center for IoT security solution
+@REM with the feature export raw events set to on
+
+@REM the Azure Security Center for IoT Log Analytics workspace that connected to the hub
+set LA_WORKSPACE_ID=
+
+@REM the Azure Active Directory tenant of the Log Analytics workspace
+set LA_AAD_TENANT=
+
+@REM the Azure Active Directory app id that has reader role on the workspace
+set LA_AAD_APP_ID=
+
+@REM the certificate credentials for the given app
+set LA_AAD_APP_CERT_BASE64=
+
 @REM ---------- Device Provisioning Service Configuration ----------
 @REM See Configuration.Provisioning.cs for usage details.
 
-@REM DPS ID Scope 
+@REM DPS ID Scope
 set DPS_IDSCOPE=
 
 @REM The DPS Global Device Endpoint (the default is defined in code)
@@ -62,7 +78,7 @@ set PROVISIONING_CONNECTION_STRING=
 set CUSTOM_ALLOCATION_POLICY_WEBHOOK=
 
 @REM Far away iot hub hostname.
-@REM Reprovisioning tests rely on the dps instance under test to have two linked iothubs to provision to. 
+@REM Reprovisioning tests rely on the dps instance under test to have two linked iothubs to provision to.
 @REM This hub does not currently need to be far away from the dps instance, but it does need to be linked to the dps instance alongside the IOTHUB_CONN_STRING_CSHARP hub.
 @REM Only the hostname is needed, not the full connection string
 set FAR_AWAY_IOTHUB_HOSTNAME=
