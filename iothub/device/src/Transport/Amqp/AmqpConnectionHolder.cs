@@ -60,12 +60,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             if (_amqpIoTConnection != null && ReferenceEquals(_amqpIoTConnection, o))
             {
                 _amqpAuthenticationRefresher?.StopLoop();
+                HashSet<AmqpUnit> amqpUnits;
                 lock (_unitsLock)
                 {
-                    foreach (AmqpUnit unit in _amqpUnits)
-                    {
-                        unit.OnConnectionDisconnected();
-                    }
+                    amqpUnits = new HashSet<AmqpUnit>(_amqpUnits);
+                }
+                foreach (AmqpUnit unit in amqpUnits)
+                {
+                    unit.OnConnectionDisconnected();
                 }
             }
             if (Logging.IsEnabled) Logging.Exit(this, o, $"{nameof(OnConnectionClosed)}");
