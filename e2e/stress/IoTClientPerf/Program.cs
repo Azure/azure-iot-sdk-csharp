@@ -232,6 +232,14 @@ namespace Microsoft.Azure.Devices.E2ETests
                 resultWriter = new ResultWriterFile(o, TelemetryMetrics.GetHeader());
             }
 
+            Console.CancelKeyPress += delegate
+            {
+                // Make sure we flush the log before the process is terminated.
+                Console.Write("Aborted. Writing output . . . ");
+                resultWriter.FlushAsync().GetAwaiter().GetResult();
+                Console.WriteLine("OK");
+            };
+
             var runner = new PerfTestRunner(
                 resultWriter,
                 t,

@@ -11,12 +11,10 @@ namespace Microsoft.Azure.Devices.E2ETests
 {
     public class ResultWriterFile : ResultWriter
     {
-        private const int MaximumLinesBuffer = 2000;
         private const long MaximumFileSize = (long)2 * 1024 * 1024 * 1024;
         private const int FileBufferBytes = 100 * 1024 * 1024;
         private StreamWriter _writer;
         private SemaphoreSlim _semaphore = new SemaphoreSlim(1);
-        private int _bufferedLines = 0;
         private long _fileSize = (long)MaximumFileSize + 1;
         private int _fileCount = 0;
         private string _fileName;
@@ -42,7 +40,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 {
                     _fileCount++;
                     _fileSize = s.Length;
-                    await CreateNewLogFileAsync().ConfigureAwait(false);
+                    await RotateLogFileAsync().ConfigureAwait(false);
                     if (_header != null)
                     {
                         await _writer.WriteLineAsync(_header).ConfigureAwait(false);
@@ -51,12 +49,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
 
                 await _writer.WriteLineAsync(s).ConfigureAwait(false);
-
-                if (++_bufferedLines > MaximumLinesBuffer)
-                {
-                    _bufferedLines = 0;
-                    await _writer.FlushAsync().ConfigureAwait(false);
-                }
             }
             finally
             {
@@ -88,7 +80,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             return Path.Combine(dir, $"{file}_{_fileCount}{ext}");
         }
 
-        private async Task CreateNewLogFileAsync()
+        private async Task RotateLogFileAsync()
         {
             if (_writer != null)
             {
@@ -96,12 +88,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 _writer.Dispose();
             }
 
-            InitWriter(GetFileFullPath());
-        }
-
-        private void InitWriter(string fileName)
-        {
-            _writer = new StreamWriter(fileName, false, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false), FileBufferBytes);
+            _writer = new StreamWriter(GetFileFullPath(), false, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false), FileBufferBytes);
         }
     }
 }

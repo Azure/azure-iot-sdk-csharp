@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices;
 using System;
 using System.Diagnostics;
 using System.Runtime.ExceptionServices;
@@ -24,7 +23,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         private TelemetryMetrics _mMethod = new TelemetryMetrics();
         private Stopwatch _swMethod = new Stopwatch();
 
-        private byte[] _messageBytes;
+        private readonly byte[] _messageBytes;
+        private readonly string _methodPayload;
 
         public ServiceClientScenario(PerfScenarioConfig config) : base(config)
         {
@@ -32,7 +32,12 @@ namespace Microsoft.Azure.Devices.E2ETests
             _mMethod.Id = _id;
 
             _messageBytes = new byte[_sizeBytes];
-            BitConverter.TryWriteBytes(_messageBytes, _id);
+            byte[] idBytes = BitConverter.GetBytes(_id);
+            Buffer.BlockCopy(idBytes, 0, _messageBytes, 0, idBytes.Length);
+
+            _methodPayload = 
+                "{\"Data\":\"" +
+                Convert.ToBase64String(_messageBytes) + "\"}";
         }
 
         protected void CreateServiceClient()
@@ -59,11 +64,13 @@ namespace Microsoft.Azure.Devices.E2ETests
                 _m.ErrorMessage = $"{ex.GetType().Name} - {ex.Message}";
                 exInfo = ExceptionDispatchInfo.Capture(ex);
             }
+            finally
+            {
+                _m.ExecuteTime = _sw.ElapsedMilliseconds;
+                await _writer.WriteAsync(_m).ConfigureAwait(false);
 
-            _m.ExecuteTime = _sw.ElapsedMilliseconds;
-            await _writer.WriteAsync(_m).ConfigureAwait(false);
-
-            exInfo?.Throw();
+                exInfo?.Throw();
+            }
         }
 
         protected async Task SendMessageAsync(CancellationToken ct)
@@ -87,10 +94,12 @@ namespace Microsoft.Azure.Devices.E2ETests
                 _m.ErrorMessage = $"{ex.GetType().Name} - {ex.Message}";
                 exInfo = ExceptionDispatchInfo.Capture(ex);
             }
-
-            _m.ExecuteTime = _sw.ElapsedMilliseconds;
-            await _writer.WriteAsync(_m).ConfigureAwait(false);
-            exInfo?.Throw();
+            finally
+            {
+                _m.ExecuteTime = _sw.ElapsedMilliseconds;
+                await _writer.WriteAsync(_m).ConfigureAwait(false);
+                exInfo?.Throw();
+            }
         }
 
         protected async Task CallMethodAsync(CancellationToken ct)
@@ -102,7 +111,10 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             try
             {
+                string deviceId = Configuration.Stress.GetDeviceNameById(_id, _authType);
+
                 var methodCall = new CloudToDeviceMethod(TestMethodName);
+                methodCall.SetPayloadJson(_methodPayload);
                 Task<CloudToDeviceMethodResult> t = s_sc.InvokeDeviceMethodAsync(Configuration.Stress.GetDeviceNameById(_id, _authType), methodCall);
                 _mMethod.ScheduleTime = _swMethod.ElapsedMilliseconds;
 
@@ -110,7 +122,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 CloudToDeviceMethodResult result = await t.ConfigureAwait(false);
 
                 // Check method result.
-                if (result.Status != MethodPassStatus) 
+                if (result.Status != MethodPassStatus)
                 {
                     throw new InvalidOperationException($"Method Failed status={result.Status} Payload:{result.GetPayloadAsJson()}");
                 }
@@ -120,10 +132,12 @@ namespace Microsoft.Azure.Devices.E2ETests
                 _mMethod.ErrorMessage = $"{ex.GetType().Name} - {ex.Message}";
                 exInfo = ExceptionDispatchInfo.Capture(ex);
             }
-
-            _mMethod.ExecuteTime = _swMethod.ElapsedMilliseconds;
-            await _writer.WriteAsync(_mMethod).ConfigureAwait(false);
-            exInfo?.Throw();
+            finally
+            {
+                _mMethod.ExecuteTime = _swMethod.ElapsedMilliseconds;
+                await _writer.WriteAsync(_mMethod).ConfigureAwait(false);
+                exInfo?.Throw();
+            }
         }
 
         protected Task CloseAsync(CancellationToken ct)

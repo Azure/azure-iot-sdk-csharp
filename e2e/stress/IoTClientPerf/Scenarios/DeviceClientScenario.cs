@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using DotNetty.Common;
 using Microsoft.Azure.Devices.Client;
 using System;
 using System.Diagnostics;
@@ -28,11 +27,11 @@ namespace Microsoft.Azure.Devices.E2ETests
         private const string TestMethodName = "PerfTestMethod";
         private TelemetryMetrics _mMethod = new TelemetryMetrics();
         private Stopwatch _swMethod = new Stopwatch();
-        private SemaphoreSlim _methodSemaphore = new SemaphoreSlim(1);
+        private SemaphoreSlim _methodSemaphore = new SemaphoreSlim(0);
         private static readonly MethodResponse s_methodResponse = new MethodResponse(200);
 
         private TelemetryMetrics _mConnectionStatus = new TelemetryMetrics();
-        private SemaphoreSlim _connectionStatusChangedSemaphore = new SemaphoreSlim(1);
+        private SemaphoreSlim _connectionStatusChangedSemaphore = new SemaphoreSlim(0);
         private SemaphoreSlim _waitForDisconnectSemaphore = new SemaphoreSlim(0);
         private bool _connected;
 
@@ -178,7 +177,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        protected Task WaitForDisconnected(CancellationToken ct)
+        protected Task WaitForDisconnectedAsync(CancellationToken ct)
         {
             return _waitForDisconnectSemaphore.WaitAsync(ct);
         }
@@ -202,11 +201,13 @@ namespace Microsoft.Azure.Devices.E2ETests
                 _m.ErrorMessage = $"{ex.GetType().Name} - {ex.Message}";
                 exInfo = ExceptionDispatchInfo.Capture(ex);
             }
+            finally
+            {
+                _m.ExecuteTime = _sw.ElapsedMilliseconds;
+                await _writer.WriteAsync(_m).ConfigureAwait(false);
 
-            _m.ExecuteTime = _sw.ElapsedMilliseconds;
-            await _writer.WriteAsync(_m).ConfigureAwait(false);
-
-            exInfo?.Throw();
+                exInfo?.Throw();
+            }
         }
 
         protected async Task SendMessageAsync(CancellationToken ct)
@@ -230,10 +231,12 @@ namespace Microsoft.Azure.Devices.E2ETests
                 _m.ErrorMessage = $"{ex.GetType().Name} - {ex.Message}";
                 exInfo = ExceptionDispatchInfo.Capture(ex);
             }
-
-            _m.ExecuteTime = _sw.ElapsedMilliseconds;
-            await _writer.WriteAsync(_m).ConfigureAwait(false);
-            exInfo?.Throw();
+            finally
+            {
+                _m.ExecuteTime = _sw.ElapsedMilliseconds;
+                await _writer.WriteAsync(_m).ConfigureAwait(false);
+                exInfo?.Throw();
+            }
         }
 
         protected async Task ReceiveMessageAsync(CancellationToken ct)
@@ -259,10 +262,12 @@ namespace Microsoft.Azure.Devices.E2ETests
                 _mRecv.ErrorMessage = $"{ex.GetType().Name} - {ex.Message}";
                 exInfo = ExceptionDispatchInfo.Capture(ex);
             }
-
-            _mRecv.ExecuteTime = _swRecv.ElapsedMilliseconds;
-            await _writer.WriteAsync(_mRecv).ConfigureAwait(false);
-            exInfo?.Throw();
+            finally
+            {
+                _mRecv.ExecuteTime = _swRecv.ElapsedMilliseconds;
+                await _writer.WriteAsync(_mRecv).ConfigureAwait(false);
+                exInfo?.Throw();
+            }
         }
 
         protected async Task EnableMethodsAsync(CancellationToken ct)
@@ -285,10 +290,12 @@ namespace Microsoft.Azure.Devices.E2ETests
                 _mMethod.ErrorMessage = $"{ex.GetType().Name} - {ex.Message}";
                 exInfo = ExceptionDispatchInfo.Capture(ex);
             }
-
-            _mMethod.ExecuteTime = _swMethod.ElapsedMilliseconds;
-            await _writer.WriteAsync(_mMethod).ConfigureAwait(false);
-            exInfo?.Throw();
+            finally
+            {
+                _mMethod.ExecuteTime = _swMethod.ElapsedMilliseconds;
+                await _writer.WriteAsync(_mMethod).ConfigureAwait(false);
+                exInfo?.Throw();
+            }
         }
 
         private Task<MethodResponse> MethodHandlerAsync(MethodRequest methodRequest, object userContext)
@@ -317,10 +324,12 @@ namespace Microsoft.Azure.Devices.E2ETests
                 _mMethod.ErrorMessage = $"{ex.GetType().Name} - {ex.Message}";
                 exInfo = ExceptionDispatchInfo.Capture(ex);
             }
-
-            _mMethod.ExecuteTime = _swMethod.ElapsedMilliseconds;
-            await _writer.WriteAsync(_mMethod).ConfigureAwait(false);
-            exInfo?.Throw();
+            finally
+            {
+                _mMethod.ExecuteTime = _swMethod.ElapsedMilliseconds;
+                await _writer.WriteAsync(_mMethod).ConfigureAwait(false);
+                exInfo?.Throw();
+            }
         }
 
         protected Task CloseAsync(CancellationToken ct)
