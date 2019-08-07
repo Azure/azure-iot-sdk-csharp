@@ -47,7 +47,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         protected async Task OpenServiceClientAsync(CancellationToken ct)
         {
-            ExceptionDispatchInfo exInfo = null;
             _m.OperationType = TelemetryMetrics.ServiceOperationOpen;
             _m.ScheduleTime = null;
             _sw.Restart();
@@ -62,20 +61,17 @@ namespace Microsoft.Azure.Devices.E2ETests
             catch (Exception ex)
             {
                 _m.ErrorMessage = $"{ex.GetType().Name} - {ex.Message}";
-                exInfo = ExceptionDispatchInfo.Capture(ex);
+                throw;
             }
             finally
             {
                 _m.ExecuteTime = _sw.ElapsedMilliseconds;
                 await _writer.WriteAsync(_m).ConfigureAwait(false);
-
-                exInfo?.Throw();
             }
         }
 
         protected async Task SendMessageAsync(CancellationToken ct)
         {
-            ExceptionDispatchInfo exInfo = null;
             _m.OperationType = TelemetryMetrics.ServiceOperationSend;
             _m.ScheduleTime = null;
             _sw.Restart();
@@ -92,19 +88,17 @@ namespace Microsoft.Azure.Devices.E2ETests
             catch (Exception ex)
             {
                 _m.ErrorMessage = $"{ex.GetType().Name} - {ex.Message}";
-                exInfo = ExceptionDispatchInfo.Capture(ex);
+                throw;
             }
             finally
             {
                 _m.ExecuteTime = _sw.ElapsedMilliseconds;
                 await _writer.WriteAsync(_m).ConfigureAwait(false);
-                exInfo?.Throw();
             }
         }
 
         protected async Task CallMethodAsync(CancellationToken ct)
         {
-            ExceptionDispatchInfo exInfo = null;
             _mMethod.ScheduleTime = null;
             _mMethod.OperationType = TelemetryMetrics.ServiceOperationMethodCall;
             _swMethod.Restart();
@@ -124,26 +118,43 @@ namespace Microsoft.Azure.Devices.E2ETests
                 // Check method result.
                 if (result.Status != MethodPassStatus)
                 {
-                    throw new InvalidOperationException($"Method Failed status={result.Status} Payload:{result.GetPayloadAsJson()}");
+                    throw new InvalidOperationException($"IoTPerfClient: Status: {result.Status} Payload:{result.GetPayloadAsJson()}");
                 }
             }
             catch (Exception ex)
             {
                 _mMethod.ErrorMessage = $"{ex.GetType().Name} - {ex.Message}";
-                exInfo = ExceptionDispatchInfo.Capture(ex);
+                throw;
             }
             finally
             {
                 _mMethod.ExecuteTime = _swMethod.ElapsedMilliseconds;
                 await _writer.WriteAsync(_mMethod).ConfigureAwait(false);
-                exInfo?.Throw();
             }
         }
 
-        protected Task CloseAsync(CancellationToken ct)
+        protected async Task CloseAsync(CancellationToken ct)
         {
-            if (s_sc == null) return Task.CompletedTask;
-            return s_sc.CloseAsync();
+            if (s_sc == null) return;
+
+            _m.ScheduleTime = null;
+            _m.OperationType = TelemetryMetrics.ServiceOperationClose;
+            _sw.Restart();
+
+            try
+            {
+                await s_sc.CloseAsync().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _m.ErrorMessage = $"{ex.GetType().Name} - {ex.Message}";
+                throw;
+            }
+            finally
+            {
+                _m.ExecuteTime = _sw.ElapsedMilliseconds;
+                await _writer.WriteAsync(_m).ConfigureAwait(false);
+            }
         }
     }
 }
