@@ -279,18 +279,20 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>The receive message or null if there was no message until the default timeout</returns>
         public Task<Message> ReceiveAsync() => this.internalClient.ReceiveAsync();
 
-        /// <summary>
-        /// Receive a message from the device queue using the default timeout.
-        /// </summary>
+        /// <summary>Receive a message from the device queue using the default timeout.</summary>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>  
         /// <returns>The receive message or null if there was no message until the default timeout</returns>
+        /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>
+        /// <remarks>
+        /// Cancellation can be performed only when the AMQP protocol library returns control to the SDK. This is done every AmqpTransportSettings.OperationTimeout if the DeviceClient is already connected or before or after AmqpTransportSettings.OpenTimeout if the DeviceClient needs to reconnect.
+        /// </remarks>
         public Task<Message> ReceiveAsync(CancellationToken cancellationToken) => this.internalClient.ReceiveAsync(cancellationToken);
 
         /// <summary>
-        /// Receive a message from the device queue with the specified timeout
+        /// Receive a message from the device queue with the specified timeout.
         /// </summary>
         /// <returns>The receive message or null if there was no message until the specified time has elapsed</returns>
+        [Obsolete("This method has been deprecated. Please use ReceiveAsync(CancellationToken) instead.")]
         public Task<Message> ReceiveAsync(TimeSpan timeout) => this.internalClient.ReceiveAsync(timeout);
 
         /// <summary>
