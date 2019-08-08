@@ -147,9 +147,17 @@ namespace Microsoft.Azure.Devices.Shared
         /// </summary>
         /// <param name="formatting">Optional. Formatting for the output JSON string.</param>
         /// <returns>JSON string</returns>
-        public string ToJson(Formatting formatting = Formatting.None)
+        public string ToJson(Formatting formatting)
         {
             return JsonConvert.SerializeObject(this, formatting);
+        }
+        /// <summary>
+        /// Gets the Twin as a JSON string
+        /// </summary>
+        /// <returns>JSON string</returns>
+        public string ToJson()
+        {
+            return JsonConvert.SerializeObject(this);
         }
     }
 }
