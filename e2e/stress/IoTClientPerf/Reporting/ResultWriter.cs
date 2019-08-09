@@ -7,12 +7,11 @@ namespace Microsoft.Azure.Devices.E2ETests
 {
     public abstract class ResultWriter
     {
-        public async Task WriteHeaderAsync()
+        protected string _header;
+
+        public ResultWriter(string header = null)
         {
-            if (await NeedsHeader().ConfigureAwait(false))
-            {
-                await WriteLineAsync(TelemetryMetrics.GetHeader()).ConfigureAwait(false);
-            }
+            _header = header;
         }
 
         public Task WriteAsync(TelemetryMetrics m)
@@ -21,8 +20,6 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         public abstract Task FlushAsync();
-
-        protected abstract Task<bool> NeedsHeader();
 
         protected abstract Task WriteLineAsync(string s);
     }
