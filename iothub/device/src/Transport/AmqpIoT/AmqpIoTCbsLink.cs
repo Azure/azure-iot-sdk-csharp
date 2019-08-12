@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Devices.Shared;
+using Microsoft.Azure.Devices.Client.Extensions;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 {
@@ -25,9 +26,17 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             {
                 return await _amqpCbsLink.SendTokenAsync(tokenProvider, namespaceAddress, audience, resource, requiredClaims, timeout).ConfigureAwait(false);
             }
-            catch (AmqpException ex)
+            catch (AmqpException e) when (!e.IsFatal())
             {
-                throw new IotHubCommunicationException("AmqpIoTCbsLink.SendTokenAsync error", ex.InnerException);
+                Exception ex = AmqpIoTExceptionAdapter.ConvertToIoTHubException(e);
+                if (ReferenceEquals(e, ex))
+                {
+                    throw;
+                }
+                else
+                {
+                    throw ex;
+                }
             }
             finally
             {

@@ -46,5 +46,7 @@ namespace Microsoft.Azure.Devices.Client
         public const string DiagId = "iothub-diag-id";
 
         public const string DiagCorrelationContext = "diag-correlation-context";
+
+        public const string InterfaceId = "iothub-interface-id";
     }
 }
