@@ -2,16 +2,17 @@ name: $(BuildID)_$(BuildDefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd)$(Re
 resources:
 - repo: self
   clean: true
+
 phases:
 
 ### Linux build ###
 - phase: LINUX
   displayName: Linux
-
   condition: succeeded()
   queue:
     name: Hosted Ubuntu 1604
     timeoutInMinutes: 180
+
   steps:
   - powershell: ./vsts/manual_checkout.ps1
     displayName: 'GIT checkout'
@@ -116,13 +117,11 @@ phases:
 
 - phase: WINDOWS
   displayName: Windows
-# Uncomment to serialize builds:
-#  dependsOn: LINUX
-
   condition: succeeded()
   queue:
     name: Hosted VS2017
     timeoutInMinutes: 180
+
   steps:
   - script: |  
        call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
@@ -132,7 +131,6 @@ phases:
 
   - script: |  
        choco install -y squid
-        
     displayName: 'Install Squid'
 
   - script: |  
@@ -161,7 +159,7 @@ phases:
        rem Start build
        vsts/windows_csharp.cmd
 
-       ren Stop ETL logging
+       rem Stop ETL logging
        logman stop IotTrace
        logman delete IotTrace
         
@@ -194,54 +192,43 @@ phases:
     displayName: 'Copy TRX files to the artifacts folder'
     inputs:
       SourceFolder: '$(Build.SourcesDirectory)'
-
       Contents: '**/*.trx'
-
       TargetFolder: '$(Build.ArtifactStagingDirectory)'
-
     condition: always()
 
   - task: CopyFiles@2
     displayName: 'Copy ETL files to the artifacts folder'
     inputs:
       SourceFolder: '$(Build.SourcesDirectory)'
-
       Contents: '**/*.etl'
-
       TargetFolder: '$(Build.ArtifactStagingDirectory)'
-
     condition: always()
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact: testresults'
     inputs:
       ArtifactName: testresults_windows
-
     condition: always()
 
   - task: PublishTestResults@2
     displayName: 'Publish Test Results **/*.trx'
     inputs:
       testRunner: VSTest
-
       testResultsFiles: '**/*.trx'
-
       testRunTitle: 'Windows Tests'
-
       platform: Windows
-
       configuration: 'Debug UT + Release E2E'
-
     condition: always()
 
 ### WINDOWS Analyzers ###
+
 - phase: Analyzers
   displayName: Analyzers
-
   condition: succeeded()
   queue:
     name: Hosted VS2017
     timeoutInMinutes: 60
+
   steps:
 
   - powershell: ./vsts/manual_checkout.ps1
@@ -261,14 +248,11 @@ phases:
   - task: ComponentGovernanceComponentDetection@0
     displayName: 'Component Detection'
 
-
   - task: securedevelopmentteam.vss-secure-development-tools.build-task-antimalware.AntiMalware@3
     displayName: 'Run MpCmdRun.exe'
     inputs:
       EnableServices: true
       SignatureFreshness: OneDay
-
-
 
   - task: securedevelopmentteam.vss-secure-development-tools.build-task-autoapplicability.AutoApplicability@1
     displayName: 'Run AutoApplicability'
@@ -294,7 +278,6 @@ phases:
 
     # TODO #181 Config issue: must run on Debug builds only with valid PDBs.
     enabled: false
-
 
   - task: securedevelopmentteam.vss-secure-development-tools.build-task-credscan.CredScan@2
     displayName: 'Run CredScan'
@@ -340,11 +323,11 @@ phases:
 
 - phase: NETMF
   displayName: NetMF
-
   condition: succeeded()
   queue:
     name: win
     timeoutInMinutes: 1
+
   steps:
   - powershell: ./vsts/manual_checkout.ps1 
     displayName: 'GIT checkout'
@@ -357,9 +340,10 @@ phases:
         
     displayName: build
 
+# BEGIN: SDL and Compliance tasks #
+
 - phase: DEVEXP
   displayName: csharp-deviceexplorer
-
   condition: succeeded()
   queue:
     name: win
@@ -375,8 +359,6 @@ phases:
        call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
        vsts/windows_csharp_deviceexplorer.cmd 
     displayName: build
-
-# BEGIN: SDL and Compliance tasks #
 
   - task: ComponentGovernanceComponentDetection@0
     displayName: 'Component Detection'
