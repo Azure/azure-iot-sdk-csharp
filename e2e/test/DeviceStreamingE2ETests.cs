@@ -46,9 +46,34 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
+        public async Task DeviceStreaming_RequestAccepted_Sas_Amqp_WithProxy()
+        {
+            Client.AmqpTransportSettings amqpTransportSettings = new Client.AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only)
+            {
+                Proxy = new WebProxy(ProxyServerAddress)
+            };
+            ITransportSettings[] transportSettings = new ITransportSettings[] { amqpTransportSettings };
+
+            await TestDeviceStreamingAsync(TestDeviceType.Sasl, transportSettings, true).ConfigureAwait(false);
+        }
+
+
+        [TestMethod]
         public async Task DeviceStreaming_RequestAccepted_Sas_AmqpWs()
         {
             Client.AmqpTransportSettings amqpTransportSettings = new Client.AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only);
+            ITransportSettings[] transportSettings = new ITransportSettings[] { amqpTransportSettings };
+
+            await TestDeviceStreamingAsync(TestDeviceType.Sasl, transportSettings, true).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task DeviceStreaming_RequestAccepted_Sas_AmqpWs_WithProxy()
+        {
+            Client.AmqpTransportSettings amqpTransportSettings = new Client.AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only)
+            {
+                Proxy = new WebProxy(ProxyServerAddress)
+            };
             ITransportSettings[] transportSettings = new ITransportSettings[] { amqpTransportSettings };
 
             await TestDeviceStreamingAsync(TestDeviceType.Sasl, transportSettings, true).ConfigureAwait(false);
@@ -65,6 +90,19 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
+        public async Task DeviceStreaming_RequestAccepted_Sas_Mqtt_WithProxy()
+        {
+            Client.Transport.Mqtt.MqttTransportSettings mqttTransportSettings =
+                new Client.Transport.Mqtt.MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only)
+                {
+                    Proxy = new WebProxy(ProxyServerAddress)
+                };
+            ITransportSettings[] transportSettings = new ITransportSettings[] { mqttTransportSettings };
+
+            await TestDeviceStreamingAsync(TestDeviceType.Sasl, transportSettings, true).ConfigureAwait(false);
+        }
+
+        [TestMethod]
         public async Task DeviceStreaming_RequestAccepted_Sas_MqttWs()
         {
             Client.Transport.Mqtt.MqttTransportSettings mqttTransportSettings =
@@ -75,9 +113,34 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
+        public async Task DeviceStreaming_RequestAccepted_Sas_MqttWs_WithProxy()
+        {
+            Client.Transport.Mqtt.MqttTransportSettings mqttTransportSettings =
+                new Client.Transport.Mqtt.MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only)
+                {
+                    Proxy = new WebProxy(ProxyServerAddress)
+                };
+            ITransportSettings[] transportSettings = new ITransportSettings[] { mqttTransportSettings };
+
+            await TestDeviceStreamingAsync(TestDeviceType.Sasl, transportSettings, true).ConfigureAwait(false);
+        }
+
+        [TestMethod]
         public async Task DeviceStreaming_RequestAccepted_x509_Amqp()
         {
             Client.AmqpTransportSettings amqpTransportSettings = new Client.AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only);
+            ITransportSettings[] transportSettings = new ITransportSettings[] { amqpTransportSettings };
+
+            await TestDeviceStreamingAsync(TestDeviceType.X509, transportSettings, true).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task DeviceStreaming_RequestAccepted_x509_Amqp_WithProxy()
+        {
+            Client.AmqpTransportSettings amqpTransportSettings = new Client.AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only)
+            {
+                Proxy = new WebProxy(ProxyServerAddress)
+            };
             ITransportSettings[] transportSettings = new ITransportSettings[] { amqpTransportSettings };
 
             await TestDeviceStreamingAsync(TestDeviceType.X509, transportSettings, true).ConfigureAwait(false);
@@ -94,6 +157,63 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
+        public async Task DeviceStreaming_RequestAccepted_x509_Mqtt_WithProxy()
+        {
+            Client.Transport.Mqtt.MqttTransportSettings mqttTransportSettings =
+                new Client.Transport.Mqtt.MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only)
+                {
+                    Proxy = new WebProxy(ProxyServerAddress)
+                };
+            ITransportSettings[] transportSettings = new ITransportSettings[] { mqttTransportSettings };
+
+            await TestDeviceStreamingAsync(TestDeviceType.X509, transportSettings, true).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task DeviceStreaming_RequestRejected_x509_Amqp()
+        {
+            Client.AmqpTransportSettings amqpTransportSettings = new Client.AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only);
+            ITransportSettings[] transportSettings = new ITransportSettings[] { amqpTransportSettings };
+
+            await TestDeviceStreamingAsync(TestDeviceType.X509, transportSettings, false).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task DeviceStreaming_RequestRejected_x509_Amqp_WithProxy()
+        {
+            Client.AmqpTransportSettings amqpTransportSettings = new Client.AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only)
+            {
+                Proxy = new WebProxy(ProxyServerAddress)
+            };
+            ITransportSettings[] transportSettings = new ITransportSettings[] { amqpTransportSettings };
+
+            await TestDeviceStreamingAsync(TestDeviceType.X509, transportSettings, false).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task DeviceStreaming_RequestRejected_x509_Mqtt()
+        {
+            Client.Transport.Mqtt.MqttTransportSettings mqttTransportSettings =
+                new Client.Transport.Mqtt.MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only);
+            ITransportSettings[] transportSettings = new ITransportSettings[] { mqttTransportSettings };
+
+            await TestDeviceStreamingAsync(TestDeviceType.X509, transportSettings, false).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task DeviceStreaming_RequestRejected_x509_Mqtt_WithProxy()
+        {
+            Client.Transport.Mqtt.MqttTransportSettings mqttTransportSettings =
+                new Client.Transport.Mqtt.MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only)
+                {
+                    Proxy = new WebProxy(ProxyServerAddress)
+                };
+            ITransportSettings[] transportSettings = new ITransportSettings[] { mqttTransportSettings };
+
+            await TestDeviceStreamingAsync(TestDeviceType.X509, transportSettings, false).ConfigureAwait(false);
+        }
+
+        [TestMethod]
         public async Task DeviceStreaming_RequestRejected_Sas_Amqp()
         {
             Client.AmqpTransportSettings amqpTransportSettings = new Client.AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only);
@@ -103,9 +223,34 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
+        public async Task DeviceStreaming_RequestRejected_Sas_Amqp_WithProxy()
+        {
+            Client.AmqpTransportSettings amqpTransportSettings = new Client.AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only)
+            {
+                Proxy = new WebProxy(ProxyServerAddress)
+            };
+
+            ITransportSettings[] transportSettings = new ITransportSettings[] { amqpTransportSettings };
+
+            await TestDeviceStreamingAsync(TestDeviceType.Sasl, transportSettings, false).ConfigureAwait(false);
+        }
+
+        [TestMethod]
         public async Task DeviceStreaming_RequestRejected_Sas_AmqpWs()
         {
             Client.AmqpTransportSettings amqpTransportSettings = new Client.AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only);
+            ITransportSettings[] transportSettings = new ITransportSettings[] { amqpTransportSettings };
+
+            await TestDeviceStreamingAsync(TestDeviceType.Sasl, transportSettings, false).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task DeviceStreaming_RequestRejected_Sas_AmqpWs_WithProxy()
+        {
+            Client.AmqpTransportSettings amqpTransportSettings = new Client.AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only)
+            {
+                Proxy = new WebProxy(ProxyServerAddress)
+            };
             ITransportSettings[] transportSettings = new ITransportSettings[] { amqpTransportSettings };
 
             await TestDeviceStreamingAsync(TestDeviceType.Sasl, transportSettings, false).ConfigureAwait(false);
@@ -122,6 +267,19 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
+        public async Task DeviceStreaming_RequestRejected_Sas_Mqtt_WithProxy()
+        {
+            Client.Transport.Mqtt.MqttTransportSettings mqttTransportSettings =
+                new Client.Transport.Mqtt.MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only)
+                {
+                    Proxy = new WebProxy(ProxyServerAddress)
+                };
+            ITransportSettings[] transportSettings = new ITransportSettings[] { mqttTransportSettings };
+
+            await TestDeviceStreamingAsync(TestDeviceType.Sasl, transportSettings, false).ConfigureAwait(false);
+        }
+
+        [TestMethod]
         public async Task DeviceStreaming_RequestRejected_Sas_MqttWs()
         {
             Client.Transport.Mqtt.MqttTransportSettings mqttTransportSettings =
@@ -132,8 +290,21 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
+        public async Task DeviceStreaming_RequestRejected_Sas_MqttWs_WithProxy()
+        {
+            Client.Transport.Mqtt.MqttTransportSettings mqttTransportSettings =
+                new Client.Transport.Mqtt.MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only)
+                {
+                    Proxy = new WebProxy(ProxyServerAddress)
+                };
+            ITransportSettings[] transportSettings = new ITransportSettings[] { mqttTransportSettings };
+
+            await TestDeviceStreamingAsync(TestDeviceType.Sasl, transportSettings, false).ConfigureAwait(false);
+        }
+
+        [TestMethod]
         [ExpectedException(typeof(OperationCanceledException))]
-        public async Task DeviceStreaming_WaitForDeviceStreamRequestAsync_5secs_TimesOut_Amqp()
+        public async Task DeviceStreaming_WaitForDeviceStreamRequestAsync_5secs_TimesOut_Sas_Amqp()
         {
             Client.AmqpTransportSettings amqpTransportSettings = new Client.AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only);
             ITransportSettings[] transportSettings = new ITransportSettings[] { amqpTransportSettings };
@@ -141,7 +312,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
 
             using (CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(5)))
-            using (DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transportSettings))
+            using (DeviceClient deviceClient = testDevice.CreateDeviceClient(transportSettings))
             {
                 await deviceClient.OpenAsync(cts.Token).ConfigureAwait(false);
 
@@ -162,16 +333,18 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         [TestMethod]
         [ExpectedException(typeof(OperationCanceledException))]
-        public async Task DeviceStreaming_WaitForDeviceStreamRequestAsync_5secs_TimesOut_Mqtt()
+        public async Task DeviceStreaming_WaitForDeviceStreamRequestAsync_5secs_TimesOut_Sas_Amqp_WithProxy()
         {
-            Client.Transport.Mqtt.MqttTransportSettings mqttTransportSettings =
-                new Client.Transport.Mqtt.MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only);
-            ITransportSettings[] transportSettings = new ITransportSettings[] { mqttTransportSettings };
+            Client.AmqpTransportSettings amqpTransportSettings = new Client.AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only)
+            {
+                Proxy = new WebProxy(ProxyServerAddress)
+            };
+            ITransportSettings[] transportSettings = new ITransportSettings[] { amqpTransportSettings };
 
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
 
             using (CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(5)))
-            using (DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transportSettings))
+            using (DeviceClient deviceClient = testDevice.CreateDeviceClient(transportSettings))
             {
                 await deviceClient.OpenAsync(cts.Token).ConfigureAwait(false);
 
@@ -189,6 +362,194 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
             }
         }
+
+        [TestMethod]
+        [ExpectedException(typeof(OperationCanceledException))]
+        public async Task DeviceStreaming_WaitForDeviceStreamRequestAsync_5secs_TimesOut_Sas_Mqtt()
+        {
+            Client.Transport.Mqtt.MqttTransportSettings mqttTransportSettings =
+                new Client.Transport.Mqtt.MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only);
+            ITransportSettings[] transportSettings = new ITransportSettings[] { mqttTransportSettings };
+
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
+
+            using (CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(5)))
+            using (DeviceClient deviceClient = testDevice.CreateDeviceClient(transportSettings))
+            {
+                await deviceClient.OpenAsync(cts.Token).ConfigureAwait(false);
+
+                try
+                {
+                    ClientDeviceStreamingRequest clientRequestTask = await deviceClient.WaitForDeviceStreamRequestAsync(cts.Token).ConfigureAwait(false);
+                }
+                catch (IotHubCommunicationException ce)
+                {
+                    throw ce.InnerException;
+                }
+                catch (Exception)
+                {
+                    throw;
+                }
+            }
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(OperationCanceledException))]
+        public async Task DeviceStreaming_WaitForDeviceStreamRequestAsync_5secs_TimesOut_Sas_Mqtt_WithProxy()
+        {
+            Client.Transport.Mqtt.MqttTransportSettings mqttTransportSettings =
+                new Client.Transport.Mqtt.MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only)
+                {
+                    Proxy = new WebProxy(ProxyServerAddress)
+                };
+            ITransportSettings[] transportSettings = new ITransportSettings[] { mqttTransportSettings };
+
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
+
+            using (CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(5)))
+            using (DeviceClient deviceClient = testDevice.CreateDeviceClient(transportSettings))
+            {
+                await deviceClient.OpenAsync(cts.Token).ConfigureAwait(false);
+
+                try
+                {
+                    ClientDeviceStreamingRequest clientRequestTask = await deviceClient.WaitForDeviceStreamRequestAsync(cts.Token).ConfigureAwait(false);
+                }
+                catch (IotHubCommunicationException ce)
+                {
+                    throw ce.InnerException;
+                }
+                catch (Exception)
+                {
+                    throw;
+                }
+            }
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(OperationCanceledException))]
+        public async Task DeviceStreaming_WaitForDeviceStreamRequestAsync_5secs_TimesOut_x509_Amqp()
+        {
+            Client.AmqpTransportSettings amqpTransportSettings = new Client.AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only);
+            ITransportSettings[] transportSettings = new ITransportSettings[] { amqpTransportSettings };
+
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, TestDeviceType.X509).ConfigureAwait(false);
+
+            using (CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(5)))
+            using (DeviceClient deviceClient = testDevice.CreateDeviceClient(transportSettings))
+            {
+                await deviceClient.OpenAsync(cts.Token).ConfigureAwait(false);
+
+                try
+                {
+                    ClientDeviceStreamingRequest clientRequestTask = await deviceClient.WaitForDeviceStreamRequestAsync(cts.Token).ConfigureAwait(false);
+                }
+                catch (IotHubCommunicationException ce)
+                {
+                    throw ce.InnerException;
+                }
+                catch (Exception)
+                {
+                    throw;
+                }
+            }
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(OperationCanceledException))]
+        public async Task DeviceStreaming_WaitForDeviceStreamRequestAsync_5secs_TimesOut_x509_Amqp_WithProxy()
+        {
+            Client.AmqpTransportSettings amqpTransportSettings = new Client.AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only)
+            {
+                Proxy = new WebProxy(ProxyServerAddress)
+            };
+            ITransportSettings[] transportSettings = new ITransportSettings[] { amqpTransportSettings };
+
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, TestDeviceType.X509).ConfigureAwait(false);
+
+            using (CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(5)))
+            using (DeviceClient deviceClient = testDevice.CreateDeviceClient(transportSettings))
+            {
+                await deviceClient.OpenAsync(cts.Token).ConfigureAwait(false);
+
+                try
+                {
+                    ClientDeviceStreamingRequest clientRequestTask = await deviceClient.WaitForDeviceStreamRequestAsync(cts.Token).ConfigureAwait(false);
+                }
+                catch (IotHubCommunicationException ce)
+                {
+                    throw ce.InnerException;
+                }
+                catch (Exception)
+                {
+                    throw;
+                }
+            }
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(OperationCanceledException))]
+        public async Task DeviceStreaming_WaitForDeviceStreamRequestAsync_5secs_TimesOut_x509_Mqtt()
+        {
+            Client.Transport.Mqtt.MqttTransportSettings mqttTransportSettings =
+                new Client.Transport.Mqtt.MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only);
+            ITransportSettings[] transportSettings = new ITransportSettings[] { mqttTransportSettings };
+
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, TestDeviceType.X509).ConfigureAwait(false);
+
+            using (CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(5)))
+            using (DeviceClient deviceClient = testDevice.CreateDeviceClient(transportSettings))
+            {
+                await deviceClient.OpenAsync(cts.Token).ConfigureAwait(false);
+
+                try
+                {
+                    ClientDeviceStreamingRequest clientRequestTask = await deviceClient.WaitForDeviceStreamRequestAsync(cts.Token).ConfigureAwait(false);
+                }
+                catch (IotHubCommunicationException ce)
+                {
+                    throw ce.InnerException;
+                }
+                catch (Exception)
+                {
+                    throw;
+                }
+            }
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(OperationCanceledException))]
+        public async Task DeviceStreaming_WaitForDeviceStreamRequestAsync_5secs_TimesOut_x509_Mqtt_WithProxy()
+        {
+            Client.Transport.Mqtt.MqttTransportSettings mqttTransportSettings =
+                new Client.Transport.Mqtt.MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only)
+                {
+                    Proxy = new WebProxy(ProxyServerAddress)
+                };
+            ITransportSettings[] transportSettings = new ITransportSettings[] { mqttTransportSettings };
+
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, TestDeviceType.X509).ConfigureAwait(false);
+
+            using (CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(5)))
+            using (DeviceClient deviceClient = testDevice.CreateDeviceClient(transportSettings))
+            {
+                await deviceClient.OpenAsync(cts.Token).ConfigureAwait(false);
+
+                try
+                {
+                    ClientDeviceStreamingRequest clientRequestTask = await deviceClient.WaitForDeviceStreamRequestAsync(cts.Token).ConfigureAwait(false);
+                }
+                catch (IotHubCommunicationException ce)
+                {
+                    throw ce.InnerException;
+                }
+                catch (Exception)
+                {
+                    throw;
+                }
+            }
+        }
+
         #endregion Device Client Tests
 
         #region Module Client Tests
@@ -202,9 +563,33 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
+        public async Task ModuleStreaming_RequestAccepted_Sas_Amqp_WithProxy()
+        {
+            Client.AmqpTransportSettings amqpTransportSettings = new Client.AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only)
+            {
+                Proxy = new WebProxy(ProxyServerAddress)
+            };
+            ITransportSettings[] transportSettings = new ITransportSettings[] { amqpTransportSettings };
+
+            await TestModuleStreamingAsync(TestDeviceType.Sasl, transportSettings, true).ConfigureAwait(false);
+        }
+
+        [TestMethod]
         public async Task ModuleStreaming_RequestAccepted_Sas_AmqpWs()
         {
             Client.AmqpTransportSettings amqpTransportSettings = new Client.AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only);
+            ITransportSettings[] transportSettings = new ITransportSettings[] { amqpTransportSettings };
+
+            await TestModuleStreamingAsync(TestDeviceType.Sasl, transportSettings, true).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task ModuleStreaming_RequestAccepted_Sas_AmqpWs_WithProxy()
+        {
+            Client.AmqpTransportSettings amqpTransportSettings = new Client.AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only)
+            {
+                Proxy = new WebProxy(ProxyServerAddress)
+            };
             ITransportSettings[] transportSettings = new ITransportSettings[] { amqpTransportSettings };
 
             await TestModuleStreamingAsync(TestDeviceType.Sasl, transportSettings, true).ConfigureAwait(false);
@@ -221,10 +606,36 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
+        public async Task ModuleStreaming_RequestAccepted_Sas_Mqtt_WithProxy()
+        {
+            Client.Transport.Mqtt.MqttTransportSettings mqttTransportSettings =
+                new Client.Transport.Mqtt.MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only)
+                {
+                    Proxy = new WebProxy(ProxyServerAddress)
+                };
+            ITransportSettings[] transportSettings = new ITransportSettings[] { mqttTransportSettings };
+
+            await TestModuleStreamingAsync(TestDeviceType.Sasl, transportSettings, true).ConfigureAwait(false);
+        }
+
+        [TestMethod]
         public async Task ModuleStreaming_RequestAccepted_Sas_MqttWs()
         {
             Client.Transport.Mqtt.MqttTransportSettings mqttTransportSettings =
                 new Client.Transport.Mqtt.MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only);
+            ITransportSettings[] transportSettings = new ITransportSettings[] { mqttTransportSettings };
+
+            await TestModuleStreamingAsync(TestDeviceType.Sasl, transportSettings, true).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task ModuleStreaming_RequestAccepted_Sas_MqttWs_WithProxy()
+        {
+            Client.Transport.Mqtt.MqttTransportSettings mqttTransportSettings =
+                new Client.Transport.Mqtt.MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only)
+                {
+                    Proxy = new WebProxy(ProxyServerAddress)
+                };
             ITransportSettings[] transportSettings = new ITransportSettings[] { mqttTransportSettings };
 
             await TestModuleStreamingAsync(TestDeviceType.Sasl, transportSettings, true).ConfigureAwait(false);
@@ -241,9 +652,34 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
+        public async Task ModuleStreaming_RequestRejected_Sas_MqttWs_WithProxy()
+        {
+            Client.Transport.Mqtt.MqttTransportSettings mqttTransportSettings =
+                new Client.Transport.Mqtt.MqttTransportSettings(Client.TransportType.Mqtt_WebSocket_Only)
+                {
+                    Proxy = new WebProxy(ProxyServerAddress)
+                };
+            ITransportSettings[] transportSettings = new ITransportSettings[] { mqttTransportSettings };
+
+            await TestModuleStreamingAsync(TestDeviceType.Sasl, transportSettings, false).ConfigureAwait(false);
+        }
+
+        [TestMethod]
         public async Task ModuleStreaming_RequestRejected_Sas_Amqp()
         {
             Client.AmqpTransportSettings amqpTransportSettings = new Client.AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only);
+            ITransportSettings[] transportSettings = new ITransportSettings[] { amqpTransportSettings };
+
+            await TestModuleStreamingAsync(TestDeviceType.Sasl, transportSettings, false).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task ModuleStreaming_RequestRejected_Sas_Amqp_WithProxy()
+        {
+            Client.AmqpTransportSettings amqpTransportSettings = new Client.AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only)
+            {
+                Proxy = new WebProxy(ProxyServerAddress)
+            };
             ITransportSettings[] transportSettings = new ITransportSettings[] { amqpTransportSettings };
 
             await TestModuleStreamingAsync(TestDeviceType.Sasl, transportSettings, false).ConfigureAwait(false);
@@ -259,6 +695,18 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
+        public async Task ModuleStreaming_RequestRejected_Sas_AmqpWs_WithProxy()
+        {
+            Client.AmqpTransportSettings amqpTransportSettings = new Client.AmqpTransportSettings(Client.TransportType.Amqp_WebSocket_Only)
+            {
+                Proxy = new WebProxy(ProxyServerAddress)
+            };
+            ITransportSettings[] transportSettings = new ITransportSettings[] { amqpTransportSettings };
+
+            await TestModuleStreamingAsync(TestDeviceType.Sasl, transportSettings, false).ConfigureAwait(false);
+        }
+
+        [TestMethod]
         public async Task ModuleStreaming_RequestRejected_Sas_Mqtt()
         {
             Client.Transport.Mqtt.MqttTransportSettings mqttTransportSettings =
@@ -267,16 +715,184 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             await TestModuleStreamingAsync(TestDeviceType.Sasl, transportSettings, false).ConfigureAwait(false);
         }
-#endregion Module Client Tests
 
-#region Private Methods
-        private async Task TestDeviceStreamingAsync(TestDeviceType type, ITransportSettings[] transportSettings, bool acceptRequest)
+        [TestMethod]
+        public async Task ModuleStreaming_RequestRejected_Sas_Mqtt_WithProxy()
         {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
+            Client.Transport.Mqtt.MqttTransportSettings mqttTransportSettings =
+                new Client.Transport.Mqtt.MqttTransportSettings(Client.TransportType.Mqtt_Tcp_Only)
+                {
+                    Proxy = new WebProxy(ProxyServerAddress)
+                };
+            ITransportSettings[] transportSettings = new ITransportSettings[] { mqttTransportSettings };
+
+            await TestModuleStreamingAsync(TestDeviceType.Sasl, transportSettings, false).ConfigureAwait(false);
+        }
+
+        #endregion Module Client Tests
+
+        #region Service Client Tests
+
+        [TestMethod]
+        public async Task DeviceStreaming_RequestAccepted_Sas_Service_Amqp()
+        {
+            await TestDeviceStreamingAsync(TestDeviceType.Sasl, TransportType.Amqp, new ServiceClientTransportSettings(), true).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task DeviceStreaming_RequestAccepted_Sas_Service_Amqp_WithProxy()
+        {
+            ServiceClientTransportSettings transportSettings = new ServiceClientTransportSettings()
+            {
+                AmqpProxy = new WebProxy(ProxyServerAddress),
+                HttpProxy = new WebProxy(ProxyServerAddress)
+            };
+            await TestDeviceStreamingAsync(TestDeviceType.Sasl, TransportType.Amqp, transportSettings, true).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task DeviceStreaming_RequestAccepted_Sas_Service_AmqpWs()
+        {
+            await TestDeviceStreamingAsync(TestDeviceType.Sasl, TransportType.Amqp_WebSocket_Only, new ServiceClientTransportSettings(), true).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task DeviceStreaming_RequestAccepted_Sas_Service_Amqpws_WithProxy()
+        {
+            ServiceClientTransportSettings transportSettings = new ServiceClientTransportSettings()
+            {
+                AmqpProxy = new WebProxy(ProxyServerAddress),
+                HttpProxy = new WebProxy(ProxyServerAddress)
+            };
+            await TestDeviceStreamingAsync(TestDeviceType.Sasl, TransportType.Amqp_WebSocket_Only, transportSettings, true).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task DeviceStreaming_RequestRejected_Sas_Service_Amqp()
+        {
+            await TestDeviceStreamingAsync(TestDeviceType.Sasl, TransportType.Amqp, new ServiceClientTransportSettings(), false).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task DeviceStreaming_RequestRejected_Sas_Service_Amqp_WithProxy()
+        {
+            ServiceClientTransportSettings transportSettings = new ServiceClientTransportSettings()
+            {
+                AmqpProxy = new WebProxy(ProxyServerAddress),
+                HttpProxy = new WebProxy(ProxyServerAddress)
+            };
+            await TestDeviceStreamingAsync(TestDeviceType.Sasl, TransportType.Amqp, transportSettings, false).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task DeviceStreaming_RequestRejected_Sas_Service_AmqpWs()
+        {
+            await TestDeviceStreamingAsync(TestDeviceType.Sasl, TransportType.Amqp_WebSocket_Only, new ServiceClientTransportSettings(), false).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task DeviceStreaming_RequestRejected_Sas_Service_Amqpws_WithProxy()
+        {
+            ServiceClientTransportSettings transportSettings = new ServiceClientTransportSettings()
+            {
+                AmqpProxy = new WebProxy(ProxyServerAddress),
+                HttpProxy = new WebProxy(ProxyServerAddress)
+            };
+            await TestDeviceStreamingAsync(TestDeviceType.Sasl, TransportType.Amqp_WebSocket_Only, transportSettings, false).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task DeviceStreaming_RequestAccepted_x509_Service_Amqp()
+        {
+            await TestDeviceStreamingAsync(TestDeviceType.X509, TransportType.Amqp, new ServiceClientTransportSettings(), true).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task DeviceStreaming_RequestAccepted_x509_Service_Amqp_WithProxy()
+        {
+            ServiceClientTransportSettings transportSettings = new ServiceClientTransportSettings()
+            {
+                AmqpProxy = new WebProxy(ProxyServerAddress),
+                HttpProxy = new WebProxy(ProxyServerAddress)
+            };
+            await TestDeviceStreamingAsync(TestDeviceType.X509, TransportType.Amqp, transportSettings, true).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task DeviceStreaming_RequestAccepted_x509_Service_AmqpWs()
+        {
+            await TestDeviceStreamingAsync(TestDeviceType.X509, TransportType.Amqp_WebSocket_Only, new ServiceClientTransportSettings(), true).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task DeviceStreaming_RequestAccepted_x509_Service_Amqpws_WithProxy()
+        {
+            ServiceClientTransportSettings transportSettings = new ServiceClientTransportSettings()
+            {
+                AmqpProxy = new WebProxy(ProxyServerAddress),
+                HttpProxy = new WebProxy(ProxyServerAddress)
+            };
+            await TestDeviceStreamingAsync(TestDeviceType.X509, TransportType.Amqp_WebSocket_Only, transportSettings, true).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task DeviceStreaming_RequestRejected_x509_Service_Amqp()
+        {
+            await TestDeviceStreamingAsync(TestDeviceType.X509, TransportType.Amqp, new ServiceClientTransportSettings(), false).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task DeviceStreaming_RequestRejected_x509_Service_Amqp_WithProxy()
+        {
+            ServiceClientTransportSettings transportSettings = new ServiceClientTransportSettings()
+            {
+                AmqpProxy = new WebProxy(ProxyServerAddress),
+                HttpProxy = new WebProxy(ProxyServerAddress)
+            };
+            await TestDeviceStreamingAsync(TestDeviceType.X509, TransportType.Amqp, transportSettings, false).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task DeviceStreaming_RequestRejected_x509_Service_AmqpWs()
+        {
+            await TestDeviceStreamingAsync(TestDeviceType.X509, TransportType.Amqp_WebSocket_Only, new ServiceClientTransportSettings(), false).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task DeviceStreaming_RequestRejected_x509_Service_Amqpws_WithProxy()
+        {
+            ServiceClientTransportSettings transportSettings = new ServiceClientTransportSettings()
+            {
+                AmqpProxy = new WebProxy(ProxyServerAddress),
+                HttpProxy = new WebProxy(ProxyServerAddress)
+            };
+            await TestDeviceStreamingAsync(TestDeviceType.X509, TransportType.Amqp_WebSocket_Only, transportSettings, false).ConfigureAwait(false);
+        }
+
+        #endregion Service Client Tests
+
+        #region Private Methods
+
+        private async Task TestDeviceStreamingAsync(TestDeviceType type, ITransportSettings[] deviceTransportSettings, bool acceptRequest)
+        {
+            await TestDeviceStreamingAsync(type, deviceTransportSettings, TransportType.Amqp, new ServiceClientTransportSettings(), acceptRequest).ConfigureAwait(false);
+        }
+
+        private async Task TestDeviceStreamingAsync(TestDeviceType type, TransportType serviceTransportType, ServiceClientTransportSettings serviceTransportSettings, bool acceptRequest)
+        {
+            Client.AmqpTransportSettings amqpTransportSettings = new Client.AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only);
+            ITransportSettings[] deviceTransportSettings = new ITransportSettings[] { amqpTransportSettings };
+
+            await TestDeviceStreamingAsync(type, deviceTransportSettings, TransportType.Amqp, new ServiceClientTransportSettings(), acceptRequest).ConfigureAwait(false);
+        }
+
+        private async Task TestDeviceStreamingAsync(TestDeviceType type, ITransportSettings[] deviceTransportSettings, TransportType serviceTransportType, ServiceClientTransportSettings serviceTransportSettings, bool acceptRequest)
+        {
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, type).ConfigureAwait(false);
 
             using (CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(60)))
-            using (ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
-            using (DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transportSettings))
+            using (ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString, serviceTransportType, serviceTransportSettings))
+            using (DeviceClient deviceClient = testDevice.CreateDeviceClient(deviceTransportSettings))
             {
                 await serviceClient.OpenAsync().ConfigureAwait(false);
                 await deviceClient.OpenAsync(cts.Token).ConfigureAwait(false);

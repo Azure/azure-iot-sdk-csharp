@@ -66,7 +66,17 @@ namespace Microsoft.Azure.Devices
             this.httpClientObj.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(CommonConstants.MediaTypeForDeviceManagementApis));
             this.httpClientObj.DefaultRequestHeaders.ExpectContinue = false;
 
-            this.httpClientObjWithPerRequestTimeout = new HttpClient();
+            if (customHttpProxy != DefaultWebProxySettings.Instance)
+            {
+                HttpClientHandler httpClientHandler = new HttpClientHandler();
+                httpClientHandler.UseProxy = (customHttpProxy != null);
+                httpClientHandler.Proxy = customHttpProxy;
+                this.httpClientObjWithPerRequestTimeout = new HttpClient(httpClientHandler);
+            }
+            else
+            {
+                this.httpClientObjWithPerRequestTimeout = new HttpClient();
+            }
             this.httpClientObjWithPerRequestTimeout.BaseAddress = this.baseAddress;
             this.httpClientObjWithPerRequestTimeout.Timeout = Timeout.InfiniteTimeSpan;
             this.httpClientObjWithPerRequestTimeout.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(CommonConstants.MediaTypeForDeviceManagementApis));
