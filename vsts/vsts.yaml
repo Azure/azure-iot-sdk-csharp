@@ -6,7 +6,7 @@ phases:
 
 - phase: LINUX
   displayName: Linux Build
-  condition: succeeded()
+  condition: coalesce(variables.test, False)
   queue:
     name: Hosted Ubuntu 1604
     timeoutInMinutes: 180
@@ -118,18 +118,11 @@ phases:
        rem List active docker containers
        docker ps -a
 
-       rem Start
-
-       rem Start ETL logging
-       logman create trace IotTrace -o iot.etl -pf tools/CaptureLogs/iot_providers.txt
-       logman start IotTrace
-
-       rem Start build
-       vsts/windows_csharp.cmd
-
-       rem Stop ETL logging
-       logman stop IotTrace
-       logman delete IotTrace
+       rem logman create trace IotTrace -o iot.etl -pf tools/CaptureLogs/iot_providers.txt
+       rem logman start IotTrace
+       rem vsts/windows_csharp.cmd
+       rem logman stop IotTrace
+       rem logman delete IotTrace
     displayName: build
     env:
       IOTHUB_CONN_STRING_CSHARP: $(IOTHUB-CONN-STRING-CSHARP)
@@ -164,19 +157,19 @@ phases:
       SourceFolder: '$(Build.SourcesDirectory)'
       Contents: '**/*.trx'
       TargetFolder: '$(Build.ArtifactStagingDirectory)'
-    condition: always()
+    condition: coalesce(variables.test, False)
   - task: CopyFiles@2
     displayName: 'Copy ETL files to the artifacts folder'
     inputs:
       SourceFolder: '$(Build.SourcesDirectory)'
       Contents: '**/*.etl'
       TargetFolder: '$(Build.ArtifactStagingDirectory)'
-    condition: always()
+    condition: coalesce(variables.test, False)
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact: testresults'
     inputs:
       ArtifactName: testresults_windows
-    condition: always()
+    condition: coalesce(variables.test, False)
   - task: PublishTestResults@2
     displayName: 'Publish Test Results **/*.trx'
     inputs:
@@ -185,11 +178,11 @@ phases:
       testRunTitle: 'Windows Tests'
       platform: Windows
       configuration: 'Debug UT + Release E2E'
-    condition: always()
+    condition: coalesce(variables.test, False)
 
 - phase: Analyzers
   displayName: Analyzers
-  condition: succeeded()
+  condition: coalesce(variables.test, False)
   queue:
     name: Hosted VS2017
     timeoutInMinutes: 60
@@ -263,7 +256,7 @@ phases:
 
 - phase: NETMF
   displayName: NetMF
-  condition: succeeded()
+  condition: coalesce(variables.test, False)
   queue:
     name: win
     timeoutInMinutes: 1
@@ -279,7 +272,7 @@ phases:
 
 - phase: DEVEXP
   displayName: csharp-deviceexplorer
-  condition: succeeded()
+  condition: coalesce(variables.test, False)
   queue:
     name: win
     timeoutInMinutes: 15
