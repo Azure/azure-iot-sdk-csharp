@@ -95,10 +95,7 @@ phases:
   steps:
 
   - task: EsrpClientTool@1
-  - condition: eq(coalesce(variables.release, False), True)
-
   - task: DownloadBuildArtifacts@0
-  - condition: eq(coalesce(variables.release, False), True)
     inputs:
       buildType: 'specific'
       project: 'f9b79625-2860-4d92-a4ee-57b03fabfd10' # azure-iot-sdks
@@ -109,19 +106,16 @@ phases:
       artifactName: 'csharp'
 
   - task: DownloadSecureFile@1
-  - condition: eq(coalesce(variables.release, False), True)
     displayName: 'Download secure file - iothubsdksign-auth-base64.pfx'
     inputs:
       secureFile: 'iothubsdksign-auth-base64.pfx'
 
   - task: DownloadSecureFile@1
-  - condition: eq(coalesce(variables.release, False), True)
     displayName: 'Download secure file - iothubsdksign-req-base64.pfx'
     inputs:
       secureFile: 'iothubsdksign-req-base64.pfx'
 
   - task: PowerShell@2
-  - condition: eq(coalesce(variables.release, False), True)
     inputs:
       filePath: '$(Build.StagingDirectory)/scripts/csharp/vsts/install-signing-certificates.ps1'
     displayName: 'Install Signing Certificates'
