@@ -121,11 +121,17 @@ phases:
     env:
         certpwd: $(certpassphrase)
 
+  - powershell: ./vsts/manual_checkout.ps1
+    displayName: 'GIT checkout'
+    env:
+      COMMIT_FROM: $(COMMIT_FROM)
+
   - powershell: |
       . $(Build.StagingDirectory)/scripts/csharp/new/SignTools.ps1
       md $env:ESRP_LOG_DIR
       md $env:AZURE_IOT_LOCALPACKAGES
       Set-Location $(Build.SourcesDirectory)
+
       $(Build.SourcesDirectory)/build.ps1 -configuration Release -sign -verbosity d
 
     displayName: 'Build, Package, Sign'
@@ -145,7 +151,7 @@ phases:
 
 - phase: WINDOWS
   displayName: Windows Build
-  condition: succeeded()
+  condition: eq(coalesce(variables.test, False), True)
   queue:
     name: Hosted VS2017
     timeoutInMinutes: 180
