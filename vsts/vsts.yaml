@@ -6,7 +6,7 @@ phases:
 
 - phase: LINUX
   displayName: Linux Build
-  condition: eq(variables.test, True)
+  condition: eq(coalesce(variables.test, False), True)
   queue:
     name: Hosted Ubuntu 1604
     timeoutInMinutes: 180
@@ -157,19 +157,19 @@ phases:
       SourceFolder: '$(Build.SourcesDirectory)'
       Contents: '**/*.trx'
       TargetFolder: '$(Build.ArtifactStagingDirectory)'
-    condition: eq(variables.test, True)
+    condition: eq(coalesce(variables.test, False), True)
   - task: CopyFiles@2
     displayName: 'Copy ETL files to the artifacts folder'
     inputs:
       SourceFolder: '$(Build.SourcesDirectory)'
       Contents: '**/*.etl'
       TargetFolder: '$(Build.ArtifactStagingDirectory)'
-    condition: eq(variables.test, True)
+    condition: eq(coalesce(variables.test, False), True)
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact: testresults'
     inputs:
       ArtifactName: testresults_windows
-    condition: eq(variables.test, True)
+    condition: eq(coalesce(variables.test, False), True)
   - task: PublishTestResults@2
     displayName: 'Publish Test Results **/*.trx'
     inputs:
@@ -178,11 +178,11 @@ phases:
       testRunTitle: 'Windows Tests'
       platform: Windows
       configuration: 'Debug UT + Release E2E'
-    condition: eq(variables.test, True)
+    condition: eq(coalesce(variables.test, False), True)
 
 - phase: Analyzers
   displayName: Analyzers
-  condition: eq(variables.test, True)
+  condition: eq(coalesce(variables.test, False), True)
   queue:
     name: Hosted VS2017
     timeoutInMinutes: 60
@@ -256,7 +256,7 @@ phases:
 
 - phase: NETMF
   displayName: NetMF
-  condition: eq(variables.test, True)
+  condition: eq(coalesce(variables.test, False), True)
   queue:
     name: win
     timeoutInMinutes: 1
@@ -272,7 +272,7 @@ phases:
 
 - phase: DEVEXP
   displayName: csharp-deviceexplorer
-  condition: eq(variables.test, True)
+  condition: eq(coalesce(variables.test, False), True)
   queue:
     name: win
     timeoutInMinutes: 15
