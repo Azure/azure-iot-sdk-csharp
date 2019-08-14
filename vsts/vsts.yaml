@@ -91,7 +91,9 @@ phases:
     condition: always()
 
 - phase: RELEASE
+  condition: eq(coalesce(variables.release, False), True)
   steps:
+
   - task: EsrpClientTool@1
 
   - task: DownloadBuildArtifacts@0
@@ -121,37 +123,36 @@ phases:
     env:
         certpwd: $(certpassphrase)
 
-  - powershell: ./vsts/manual_checkout.ps1
-    displayName: 'GIT checkout'
-    env:
-      COMMIT_FROM: $(COMMIT_FROM)
-
-  - powershell: |
-      . $(Build.StagingDirectory)/scripts/csharp/new/SignTools.ps1
-      md $env:ESRP_LOG_DIR
-      md $env:AZURE_IOT_LOCALPACKAGES
-      Set-Location $(Build.SourcesDirectory)
-
-      $(Build.SourcesDirectory)/build.ps1 -configuration Release -sign -verbosity d
-
-    displayName: 'Build, Package, Sign'
-    env:
-        ESRP_AUTH_CONFIG: $(Build.StagingDirectory)/scripts/csharp/new/json/Auth.json
-        ESRP_POLICY_CONFIG: $(Build.StagingDirectory)/scripts/csharp/new/json/Policy.json
-        ESRP_INPUT_JSON_DIR: $(Build.StagingDirectory)/scripts/csharp/new/json
-        ESRP_LOG_DIR: $(Build.StagingDirectory)/scripts/csharp/new/logs
-        AZURE_IOT_LOCALPACKAGES: $(Build.StagingDirectory)/scripts/csharp/nuget_local
-
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish Signed Nuget Packages'
-    inputs:
-        PathtoPublish: '$(Build.SourcesDirectory)/bin/pkg'
-        ArtifactName: 'nuget'
-        publishLocation: 'Container'
+#  - powershell: ./vsts/manual_checkout.ps1
+#    displayName: 'GIT checkout'
+#    env:
+#      COMMIT_FROM: $(COMMIT_FROM)
+#
+#  - powershell: |
+#      . $(Build.StagingDirectory)/scripts/csharp/new/SignTools.ps1
+#      md $env:ESRP_LOG_DIR
+#      md $env:AZURE_IOT_LOCALPACKAGES
+#      Set-Location $(Build.SourcesDirectory)
+#
+#      $(Build.SourcesDirectory)/build.ps1 -configuration Release -sign -verbosity d
+#
+#    displayName: 'Build, Package, Sign'
+#    env:
+#        ESRP_AUTH_CONFIG: $(Build.StagingDirectory)/scripts/csharp/new/json/Auth.json
+#        ESRP_POLICY_CONFIG: $(Build.StagingDirectory)/scripts/csharp/new/json/Policy.json
+#        ESRP_INPUT_JSON_DIR: $(Build.StagingDirectory)/scripts/csharp/new/json
+#        ESRP_LOG_DIR: $(Build.StagingDirectory)/scripts/csharp/new/logs
+#        AZURE_IOT_LOCALPACKAGES: $(Build.StagingDirectory)/scripts/csharp/nuget_local
+#
+#  - task: PublishBuildArtifacts@1
+#    displayName: 'Publish Signed Nuget Packages'
+#    inputs:
+#        PathtoPublish: '$(Build.SourcesDirectory)/bin/pkg'
+#        ArtifactName: 'nuget'
+#        publishLocation: 'Container'
 
 - phase: WINDOWS
   displayName: Windows Build
-  condition: eq(coalesce(variables.test, False), True)
   queue:
     name: Hosted VS2017
     timeoutInMinutes: 180
@@ -160,15 +161,12 @@ phases:
        call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
        sn -Vr *,31bf3856ad364e35
     displayName: 'Disable strong name validation'
-    condition: eq(coalesce(variables.test, False), True)
   - script: |
        choco install -y squid
     displayName: 'Install Squid'
-    condition: eq(coalesce(variables.test, False), True)
   - script: |
        choco install -y netfx-4.5.2-devpack
     displayName: 'Install .NET 4.5.2 Targeting Pack'
-    condition: eq(coalesce(variables.test, False), True)
   - powershell: ./vsts/manual_checkout.ps1
     displayName: 'GIT checkout'
     env:
@@ -219,19 +217,16 @@ phases:
       SourceFolder: '$(Build.SourcesDirectory)'
       Contents: '**/*.trx'
       TargetFolder: '$(Build.ArtifactStagingDirectory)'
-    condition: eq(coalesce(variables.test, False), True)
   - task: CopyFiles@2
     displayName: 'Copy ETL files to the artifacts folder'
     inputs:
       SourceFolder: '$(Build.SourcesDirectory)'
       Contents: '**/*.etl'
       TargetFolder: '$(Build.ArtifactStagingDirectory)'
-    condition: eq(coalesce(variables.test, False), True)
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact: testresults'
     inputs:
       ArtifactName: testresults_windows
-    condition: eq(coalesce(variables.test, False), True)
   - task: PublishTestResults@2
     displayName: 'Publish Test Results **/*.trx'
     inputs:
@@ -240,7 +235,6 @@ phases:
       testRunTitle: 'Windows Tests'
       platform: Windows
       configuration: 'Debug UT + Release E2E'
-    condition: eq(coalesce(variables.test, False), True)
 
 - phase: Analyzers
   displayName: Analyzers
