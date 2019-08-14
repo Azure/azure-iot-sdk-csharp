@@ -101,9 +101,11 @@ phases:
        call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
        sn -Vr *,31bf3856ad364e35
     displayName: 'Disable strong name validation'
+    condition: eq(coalesce(variables.test, False), True)
   - script: |
        choco install -y squid
     displayName: 'Install Squid'
+    condition: eq(coalesce(variables.test, False), True)
   - script: |
        choco install -y netfx-4.5.2-devpack
     displayName: 'Install .NET 4.5.2 Targeting Pack'
