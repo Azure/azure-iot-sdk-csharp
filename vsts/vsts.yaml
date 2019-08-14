@@ -106,7 +106,8 @@ phases:
     displayName: 'Install Squid'
   - script: |
        choco install -y netfx-4.5.2-devpack
-    displayName: 'Install .NET 4.5.2 Targetting Pack'
+    displayName: 'Install .NET 4.5.2 Targeting Pack'
+    condition: eq(coalesce(variables.test, False), True)
   - powershell: ./vsts/manual_checkout.ps1
     displayName: 'GIT checkout'
     env:
