@@ -90,6 +90,59 @@ phases:
       testResultsFiles: '**/*.trx'
     condition: always()
 
+- phase: RELEASE
+  steps:
+  - task: EsrpClientTool@1
+
+  - task: DownloadBuildArtifacts@0
+    inputs:
+      buildType: 'specific'
+      project: 'f9b79625-2860-4d92-a4ee-57b03fabfd10' # azure-iot-sdks
+      pipeline: '311' # iot-sdks-internals-scripts-clone pipeline
+      buildVersionToDownload: 'latest'
+      downloadType: 'single'
+      downloadPath: '$(System.ArtifactsDirectory)/scripts'
+      artifactName: 'csharp'
+
+  - task: DownloadSecureFile@1
+    displayName: 'Download secure file - iothubsdksign-auth-base64.pfx'
+    inputs:
+      secureFile: 'iothubsdksign-auth-base64.pfx'
+
+  - task: DownloadSecureFile@1
+    displayName: 'Download secure file - iothubsdksign-req-base64.pfx'
+    inputs:
+      secureFile: 'iothubsdksign-req-base64.pfx'
+
+  - task: PowerShell@2
+    inputs:
+      filePath: '$(Build.StagingDirectory)/scripts/csharp/vsts/install-signing-certificates.ps1'
+    displayName: 'Install Signing Certificates'
+    env:
+        certpwd: $(certpassphrase)
+
+  - powershell: |
+      . $(Build.StagingDirectory)/scripts/csharp/new/SignTools.ps1
+      md $env:ESRP_LOG_DIR
+      md $env:AZURE_IOT_LOCALPACKAGES
+      Set-Location $(Build.SourcesDirectory)
+      $(Build.SourcesDirectory)/build.ps1 -configuration Release -sign -verbosity d
+
+    displayName: 'Build, Package, Sign'
+    env:
+        ESRP_AUTH_CONFIG: $(Build.StagingDirectory)/scripts/csharp/new/json/Auth.json
+        ESRP_POLICY_CONFIG: $(Build.StagingDirectory)/scripts/csharp/new/json/Policy.json
+        ESRP_INPUT_JSON_DIR: $(Build.StagingDirectory)/scripts/csharp/new/json
+        ESRP_LOG_DIR: $(Build.StagingDirectory)/scripts/csharp/new/logs
+        AZURE_IOT_LOCALPACKAGES: $(Build.StagingDirectory)/scripts/csharp/nuget_local
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Signed Nuget Packages'
+    inputs:
+        PathtoPublish: '$(Build.SourcesDirectory)/bin/pkg'
+        ArtifactName: 'nuget'
+        publishLocation: 'Container'
+
 - phase: WINDOWS
   displayName: Windows Build
   condition: succeeded()
