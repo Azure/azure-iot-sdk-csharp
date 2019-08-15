@@ -4,6 +4,7 @@
 using Microsoft.Azure.Devices.DigitalTwin.Client.Exceptions;
 using Microsoft.Azure.Devices.DigitalTwin.Client.Helper;
 using Microsoft.Azure.Devices.DigitalTwin.Client.Model;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -43,9 +44,9 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client
         /// Reports property to the cloud service.
         /// </summary>
         /// <param name="property">The digital twin property.</param>
-        protected async Task ReportPropertyAsync(DigitalTwinProperty property)
+        protected async Task ReportPropertiesAsync(IEnumerable<DigitalTwinProperty> properties)
         {
-            await ReportPropertyAsync(property, CancellationToken.None).ConfigureAwait(false);
+            await ReportPropertiesAsync(properties, CancellationToken.None).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -53,10 +54,10 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client
         /// </summary>
         /// <param name="property">The digital twin property.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        protected async Task ReportPropertyAsync(DigitalTwinProperty property, CancellationToken cancellationToken)
+        protected async Task ReportPropertiesAsync(IEnumerable<DigitalTwinProperty> properties, CancellationToken cancellationToken)
         {
             ThrowIfInterfaceNotRegistered();
-            await digitalTwinClient.ReportPropertyAsync(Id, InstanceName, property, cancellationToken).ConfigureAwait(false);
+            await digitalTwinClient.ReportPropertiesAsync(Id, InstanceName, properties, cancellationToken).ConfigureAwait(false);
         }
         #endregion
 
