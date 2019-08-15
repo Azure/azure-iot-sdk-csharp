@@ -5,6 +5,7 @@ using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.DigitalTwin.Client.Bindings;
 using Microsoft.Azure.Devices.DigitalTwin.Client.Helper;
 using Microsoft.Azure.Devices.DigitalTwin.Client.Model;
+using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,9 +20,10 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client
     {
         private const string CapabilityModelIdTag = "capabilityModelId";
         private const string InterfacesTag = "interfaces";
+        private const string InterfacesPrefix = "$iotin:";
 
         private const string ModelDiscoveryInterfaceId = "urn:azureiot:ModelDiscovery:ModelInformation:1";
-        private const string ModelDiscoveryInterfaceInstanceName = "urn_azureiot_ModelDiscovery_ModelInformation";
+        private const string ModelDiscoveryInterfaceInstanceName = "urn:azureiot:ModelDiscovery:ModelInformation";
         private const string ModelInformationSchema = "modelInformation";
 
         private readonly DeviceClient deviceClient;
@@ -50,7 +52,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client
             foreach (var dtInterface in dtInterfaces)
             {
                 GuardHelper.ThrowIfNull(dtInterface, nameof(dtInterface));
-                interfaceName.Add(dtInterface.Id, dtInterface.InstanceName);
+                interfaceName.Add(dtInterface.InstanceName, dtInterface.Id);
             }
 
             var capabilityModelIdProperty = new DigitalTwinProperty(CapabilityModelIdTag, DigitalTwinValue.CreateString(capabilityModelId));
@@ -82,9 +84,17 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client
         #endregion
 
         #region IoTHubOperations 
-        internal async Task ReportPropertyAsync(string interfaceId, string instanceName, DigitalTwinProperty property, CancellationToken cancellationToken)
+        internal async Task ReportPropertiesAsync(string interfaceId, string instanceName, IEnumerable<DigitalTwinProperty> properties, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            TwinCollection twinCollection = new TwinCollection();
+            foreach (DigitalTwinProperty property in properties)
+            {
+                twinCollection[property.Name] = new Dictionary<string, object> { { "value", property.RawValue } };
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+            await deviceClient.UpdateReportedPropertiesAsync(
+                CreateKeyValueTwinCollection(InterfacesPrefix + instanceName, twinCollection)).ConfigureAwait(false);
         }
 
         internal async Task SetPropertyUpdatedCallbackAsync(string interfaceId, string instanceName, string propertyName, DigitalTwinPropertyCallback propertyHandler, object userContext, CancellationToken cancellationToken)
@@ -107,6 +117,13 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client
             throw new NotImplementedException();
         }
 
+        private static TwinCollection CreateKeyValueTwinCollection(string key, object value)
+        {
+            TwinCollection json = new TwinCollection();
+            json[key] = value;
+            return json;
+        }
+
         private static DataCollection CreateKeyValueDataCollection(string key, object value)
         {
             DataCollection json = new DataCollection();
@@ -127,10 +144,9 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client
         }
 
         private Message CreateRegistrationMessage(IEnumerable<DigitalTwinProperty> telemetryValues)
-        {
-            Message message = new Message(
-                Encoding.ASCII.GetBytes(
-                    digitalTwinFormatterCollection.FromObject(
+        {       
+            Message message = new Message(Encoding.UTF8.GetBytes(
+                digitalTwinFormatterCollection.FromObject(
                         CreateKeyValueDataCollection(
                             telemetryValues.Select(v => new KeyValuePair<string, object>(v.Name, v.RawValue))))));
             message.Properties.Add(DigitalTwinConstants.IoTHubInterfaceId, ModelDiscoveryInterfaceId);
@@ -143,7 +159,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client
         private Message CreateDigitalTwinMessage(string interfaceId, string interfaceInstanceId, DigitalTwinProperty telemetryValue)
         {
             Message message = new Message(
-                Encoding.ASCII.GetBytes(
+                Encoding.UTF8.GetBytes(
                     digitalTwinFormatterCollection.FromObject(
                         CreateKeyValueDataCollection(telemetryValue.Name, telemetryValue.RawValue))));
             message.Properties.Add(DigitalTwinConstants.IothubInterfaceInstance, interfaceInstanceId);

@@ -7,6 +7,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "device", "device", "{588860
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.DigitalTwin.Client", "device\src\Microsoft.Azure.Devices.DigitalTwin.Client.csproj", "{5389DE61-ED83-4946-A668-5A3769CC6516}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnvironmentalSensorSample", "sample\EnvironmentSensorSample\EnvironmentalSensorSample.csproj", "{1BA4CB73-85C4-4F92-8D1A-2BDE0D321A77}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -17,17 +19,16 @@ Global
 		{5389DE61-ED83-4946-A668-5A3769CC6516}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5389DE61-ED83-4946-A668-5A3769CC6516}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5389DE61-ED83-4946-A668-5A3769CC6516}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BDAF4D9C-649D-4558-8983-2B9950D33E2D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BDAF4D9C-649D-4558-8983-2B9950D33E2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BDAF4D9C-649D-4558-8983-2B9950D33E2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BDAF4D9C-649D-4558-8983-2B9950D33E2D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1BA4CB73-85C4-4F92-8D1A-2BDE0D321A77}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1BA4CB73-85C4-4F92-8D1A-2BDE0D321A77}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1BA4CB73-85C4-4F92-8D1A-2BDE0D321A77}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1BA4CB73-85C4-4F92-8D1A-2BDE0D321A77}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{5389DE61-ED83-4946-A668-5A3769CC6516} = {588860D9-EB42-458A-B8B4-CE72C9F7A765}
-		{BDAF4D9C-649D-4558-8983-2B9950D33E2D} = {F30359AA-1F16-4CCF-8571-4DEF14E0D31E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A01BB316-82A6-4AA9-BDE1-12936DF4DFCB}
