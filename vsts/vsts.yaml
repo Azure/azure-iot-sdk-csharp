@@ -160,7 +160,7 @@ phases:
        REM logman create trace IotTrace -o iot.etl -pf tools/CaptureLogs/iot_providers.txt
        REM logman start IotTrace
        
-       vsts/windows_csharp.cmd
+       REM vsts/windows_csharp.cmd
 
        REM logman stop IotTrace
        REM logman delete IotTrace
