@@ -220,6 +220,10 @@ try {
             throw "Local NuGet package source path is not set, required when signing packages."
         }
 
+        if ($env:AZURE_IOT_SIGNING_SCRIPT) {
+            Import-Module $env:AZURE_IOT_SIGNING_SCRIPT -ErrorAction Stop
+        }
+
         CheckSignTools
     }
 

@@ -21,7 +21,20 @@ rem If the build is Delay Signed, this requires strong name validation disabled 
 rem (As Administrator:)  sn -Vr *,31bf3856ad364e35
 rem Re-enable strong name validation for this key using:
 rem (As Administrator:)  sn -Vx
-call build.cmd -clean -configuration Release -e2etests
+
+IF [%RELEASE%] EQU [True] (
+    
+    MD %ESRP_LOG_DIR%
+    MD %AZURE_IOT_LOCALPACKAGES%
+    CD %BUILD_SOURCESDIRECTORY%
+
+    ECHO CALL build.ps1 -configuration Release -sign -verbosity d
+
+) ELSE (
+    
+    ECHO call build.cmd -clean -configuration Release -e2etests
+)
+
 if errorlevel 1 goto :eof
 
 echo.
