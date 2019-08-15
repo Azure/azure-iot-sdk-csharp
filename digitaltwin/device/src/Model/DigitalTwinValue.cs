@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="DigitalTwinValue"/> class.
         /// </summary>
-        /// <param name="value">The value of PnP schema type boolean.</param>
+        /// <param name="value">The value of Digital Twin schema type boolean.</param>
         public static DigitalTwinValue CreateBoolean(bool value)
         {
             return new DigitalTwinValue(value);
@@ -48,7 +48,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="DigitalTwinValue"/> class.
         /// </summary>
-        /// <param name="value">The value when PnP schema type is Object.</param>
+        /// <param name="value">The value when Digital Twin schema type is Object.</param>
         public static DigitalTwinValue CreateObject(DataCollection value)
         {
             return new DigitalTwinValue(value);
@@ -66,7 +66,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="DigitalTwinValue"/> class.
         /// </summary>
-        /// <param name="value">The value of PnP schema type time.</param>
+        /// <param name="value">The value of Digital Twin schema type time.</param>
         public static DigitalTwinValue CreateTime(DateTime value)
         {
             return new DigitalTwinValue(value.ToString("O", CultureInfo.InvariantCulture).Split('T')[1]);

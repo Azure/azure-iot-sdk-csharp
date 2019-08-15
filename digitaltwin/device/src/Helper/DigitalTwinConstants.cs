@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client.Helper
         /// <summary>
         /// The maximum allowed length of interface id.
         /// </summary>
-        public const int MaxInterfaceIdLength = 64;
+        public const int MaxInterfaceIdLength = 256;
 
         /// <summary>
         /// The invalid interface id error message.

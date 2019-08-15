@@ -15,6 +15,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client.Helper
     {
         private static readonly TimeSpan s_regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
         private static readonly Regex s_interfaceIdPatternRegex = new Regex(@"^(http|https|ftp|file)\://[a-z0-9]+(\.[a-zA-Z0-9]*)+(/[a-z0-9]+)+/(\d+\.)?(\d+\.)?(\d+)$", RegexOptions.Compiled | RegexOptions.IgnoreCase, s_regexTimeoutMilliseconds);
+        private const int interfaceMaxLenght = 256;
 
         /// <summary>
         /// Throw ArgumentNullException if the value is null reference.
@@ -52,10 +53,11 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client.Helper
         public static void ThrowIfInvalidInterfaceId(string argumentValue, string argumentName)
         {
             GuardHelper.ThrowIfNullOrWhiteSpace(argumentValue, argumentName);
-            if (!s_interfaceIdPatternRegex.IsMatch(argumentValue))
-            {
-                throw new ArgumentException(DigitalTwinConstants.InvalidInterfaceIdErrorMessage, argumentName);
-            }
+            // TODO: update regex
+            //if (!s_interfaceIdPatternRegex.IsMatch(argumentValue))
+            //{
+            //    throw new ArgumentException(DigitalTwinConstants.InvalidInterfaceIdErrorMessage, argumentName);
+            //}
         }
 
         /// <summary>
@@ -73,10 +75,10 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client.Helper
         }
 
         /// <summary>
-        /// Throw ArgumentException if the value is not allowed PnP Type.
+        /// Throw ArgumentException if the value is not allowed Digital Twin Type.
         /// </summary>
         /// <param name="argumentValue">The argument value.</param>
-        public static void ThrowIfInvalidPnPType(object argumentValue)
+        public static void ThrowIfInvalidDigitatTwinType(object argumentValue)
         {
             if (argumentValue != null)
             {

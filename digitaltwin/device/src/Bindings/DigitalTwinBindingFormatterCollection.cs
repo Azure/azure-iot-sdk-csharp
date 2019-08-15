@@ -9,7 +9,7 @@ using System.Linq;
 namespace Microsoft.Azure.Devices.DigitalTwin.Client.Bindings
 {
     /// <summary>
-    /// The PnP Binding Formatter Collection.
+    /// The Digital Twin Binding Formatter Collection.
     /// </summary>
     public class DigitalTwinBindingFormatterCollection : Collection<IDigitalTwinFormatter>
     {
@@ -51,7 +51,6 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client.Bindings
         /// <returns>The Digital Twin Serializer.</returns>
         public IDigitalTwinFormatter FindSerializer()
         {
-            // TODO - https://github.com/Azure/azure-iot-sdk-csharp-pnp/issues/14#issue-377622384
             IDigitalTwinFormatter result = Items.FirstOrDefault();
             if (result == null)
             {
