@@ -6,7 +6,7 @@ phases:
 
 - phase: LINUX
   displayName: Linux Build
-  condition: eq(coalesce(variables.test, False), True)
+  condition: eq(coalesce(variables.release, False), False)
   queue:
     name: Hosted Ubuntu 1604
     timeoutInMinutes: 180
@@ -92,11 +92,13 @@ phases:
 
 - phase: WINDOWS
   displayName: Windows Build
-  queue:
-    name: Hosted VS2017
-    timeoutInMinutes: 180
+
   steps:
 
+  - checkout: self  # self represents the repo where the initial Pipelines YAML file was found
+    persistCredentials: 'true'  # set to 'true' to leave the OAuth token in the Git config after the initial fetch
+    clean: 'resources'
+    
   - task: EsrpClientTool@1
   
   - task: DownloadBuildArtifacts@0
@@ -224,7 +226,7 @@ phases:
 
 - phase: Analyzers
   displayName: Analyzers
-  condition: eq(coalesce(variables.test, False), True)
+  condition: eq(coalesce(variables.release, False), False)
   queue:
     name: Hosted VS2017
     timeoutInMinutes: 60
@@ -298,7 +300,7 @@ phases:
 
 - phase: NETMF
   displayName: NetMF
-  condition: eq(coalesce(variables.test, False), True)
+  condition: eq(coalesce(variables.release, False), False)
   queue:
     name: win
     timeoutInMinutes: 1
@@ -314,7 +316,7 @@ phases:
 
 - phase: DEVEXP
   displayName: csharp-deviceexplorer
-  condition: eq(coalesce(variables.test, False), True)
+  condition: eq(coalesce(variables.release, False), False)
   queue:
     name: win
     timeoutInMinutes: 15
@@ -384,36 +386,3 @@ phases:
       AllTools: true
     # TODO #181 Enable post analysis to break builds after all above items are enabled.
     enabled: false
-
-
-
-
-
-
-#- phase: RELEASE
-#  condition: eq(coalesce(variables.release, False), True)
-#  steps:
-#
-#
-#  - powershell: |
-#      . $(Build.StagingDirectory)/scripts/csharp/new/SignTools.ps1
-#      md $env:ESRP_LOG_DIR
-#      md $env:AZURE_IOT_LOCALPACKAGES
-#      Set-Location $(Build.SourcesDirectory)
-#
-#      $(Build.SourcesDirectory)/build.ps1 -configuration Release -sign -verbosity d
-#
-#    displayName: 'Build, Package, Sign'
-#    env:
-#        ESRP_AUTH_CONFIG: $(Build.StagingDirectory)/scripts/csharp/new/json/Auth.json
-#        ESRP_POLICY_CONFIG: $(Build.StagingDirectory)/scripts/csharp/new/json/Policy.json
-#        ESRP_INPUT_JSON_DIR: $(Build.StagingDirectory)/scripts/csharp/new/json
-#        ESRP_LOG_DIR: $(Build.StagingDirectory)/scripts/csharp/new/logs
-#        AZURE_IOT_LOCALPACKAGES: $(Build.StagingDirectory)/scripts/csharp/nuget_local
-#
-#  - task: PublishBuildArtifacts@1
-#    displayName: 'Publish Signed Nuget Packages'
-#    inputs:
-#        PathtoPublish: '$(Build.SourcesDirectory)/bin/pkg'
-#        ArtifactName: 'nuget'
-#        publishLocation: 'Container'
