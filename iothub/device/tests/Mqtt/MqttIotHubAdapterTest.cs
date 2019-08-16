@@ -5,10 +5,12 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
 {
     using DotNetty.Codecs.Mqtt.Packets;
     using DotNetty.Transport.Channels;
+    using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Azure.Devices.Client.Transport.Mqtt;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Moq;
     using System;
+    using System.Collections.Generic;
     using System.Threading.Tasks;
 
     [TestClass]
@@ -35,6 +37,32 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
             Assert.AreEqual(3, message.SystemProperties.Count);
             Assert.AreEqual("Corrid1", message.SystemProperties["correlation-id"]);
             Assert.AreEqual("MessageId1", message.SystemProperties["message-id"]);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(MessageTooLargeException), AllowDerivedTypes = false)]
+        public void TestPopulateMessagePropertiesFromMessage_TopicNameTooLong()
+        {
+            var message = new Message();
+
+            for (int i = 0; i < 65; i++)
+            {
+                message.Properties.Add(Guid.NewGuid().ToString(), new string('1', 1024));
+            }
+
+            var publishPacket = new PublishPacket(QualityOfService.AtMostOnce, false, false)
+            {
+                PacketId = 0,
+                TopicName = "devices/d10/messages/devicebound/%24.cid=Corrid1&%24.mid=MessageId1&Prop1=Value1&Prop2=Value2&Prop3=Value3/"
+            };
+
+            var passwordProvider = new Mock<IAuthorizationProvider>();
+            var mqttIotHubEventHandler = new Mock<IMqttIotHubEventHandler>();
+            var productInfo = new ProductInfo();
+            var mqttTransportSetting = new MqttTransportSettings(TransportType.Mqtt_Tcp_Only) { HasWill = false };
+            var mqttIotHubAdapter = new MqttIotHubAdapter("deviceId", string.Empty, string.Empty, passwordProvider.Object, mqttTransportSetting, null, mqttIotHubEventHandler.Object, productInfo);
+
+            mqttIotHubAdapter.PopulateMessagePropertiesFromMessage(publishPacket.TopicName, message);
         }
 
         [TestMethod]
