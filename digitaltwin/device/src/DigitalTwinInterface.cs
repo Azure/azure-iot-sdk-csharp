@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
+using static Microsoft.Azure.Devices.DigitalTwin.Client.Model.Callbacks;
 
 namespace Microsoft.Azure.Devices.DigitalTwin.Client
 {
@@ -17,9 +18,8 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client
 
         public string Id { get; private set; }
         public string InstanceName { get; private set; }
-
-        public delegate Task DigitalTwinPropertyCallback(DigitalTwinValue propertyUpdate, long desiredVersion, object userContext);
-        public delegate Task<DigitalTwinCommandResponse> CommandCallback(DigitalTwinCommandRequest commandRequest, object userContext);
+        internal CommandCallback CommandHandler { get; private set; }
+        internal PropertyUpdatedCallback PropertyUpdatedHandler { get; private set; }
 
         internal void Initialize(DigitalTwinClient dtClient)
         {
@@ -30,13 +30,19 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client
         /// Creates an instance of <see cref="DigitalTwinInterface"/> 
         /// </summary>
         /// <param name="interfaceId">the interface id. </param>
-        /// <param name="interfaceId">the interface instance name. </param>
-        public DigitalTwinInterface(string interfaceId, string interfaceInstanceName)
+        /// <param name="interfaceInstanceName">the interface instance name. </param>
+        /// /// <param name="callbacks">the interface's callbacks. </param>
+        public DigitalTwinInterface(string interfaceId, string interfaceInstanceName, Callbacks callbacks = null)
         {
             GuardHelper.ThrowIfInvalidInterfaceId(interfaceId, nameof(interfaceId));
             GuardHelper.ThrowIfInterfaceIdLengthInvalid(interfaceId, nameof(interfaceId));
             Id = interfaceId;
             InstanceName = interfaceInstanceName;
+            if (callbacks != null)
+            {
+                CommandHandler = callbacks.CommandCB;
+                PropertyUpdatedHandler = callbacks.PropertyUpdatedCB;
+            }
         }
 
         #region report property
@@ -58,36 +64,6 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client
         {
             ThrowIfInterfaceNotRegistered();
             await digitalTwinClient.ReportPropertiesAsync(Id, InstanceName, properties, cancellationToken).ConfigureAwait(false);
-        }
-        #endregion
-
-        #region Set property update callback
-        /// <summary>
-        /// Registers a delegate to receive property value update from the cloud service. If a delegate is already registered 
-        /// for the given property, it will replaced with the new delegate.
-        /// </summary>
-        /// <param name="propertyName">The name of the read-write property to associate with the callback. Cannot be null reference, empty string or white space.</param>
-        /// <param name="propertyHandler">The callback to invoke when read-write property has been updated.</param>
-        /// <param name="userContext">Context object that will be passed into callback</param>
-        protected async Task SetPropertyUpdatedCallbackAsync(string propertyName, DigitalTwinPropertyCallback propertyHandler, object userContext)
-        {
-            await SetPropertyUpdatedCallbackAsync(propertyName, propertyHandler, userContext, CancellationToken.None).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Registers a delegate to receive property value update from the cloud service. If a delegate is already registered 
-        /// for the given read-write property, it will replaced with the new delegate.
-        /// </summary>
-        /// <param name="propertyName">The name of the read-write property to associate with the callback. Cannot be null reference, empty string or white space.</param>
-        /// <param name="propertyHandler">The callback to invoke when read-write property has been updated.</param>
-        /// <param name="userContext">Context object that will be passed into callback</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        protected async Task SetPropertyUpdatedCallbackAsync(string propertyName, DigitalTwinPropertyCallback propertyHandler, object userContext, CancellationToken cancellationToken)
-        {
-            GuardHelper.ThrowIfNullOrWhiteSpace(propertyName, nameof(propertyName));
-            GuardHelper.ThrowIfNull(propertyHandler, nameof(propertyHandler));
-            ThrowIfInterfaceNotRegistered();
-            await digitalTwinClient.SetPropertyUpdatedCallbackAsync(Id, InstanceName, propertyName, propertyHandler, userContext, cancellationToken).ConfigureAwait(false);
         }
         #endregion
 
@@ -114,34 +90,6 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client
         #endregion
 
         #region command
-        /// <summary>
-        /// Registers a delegate for a given command. If a delegate is already registered 
-        /// for the given command, it will replaced with the new delegate.
-        /// </summary>
-        /// <param name="commandName">The name of command to associate with the callback.</param>
-        /// <param name="commandCallback">The callback to invoke when command is called by the cloud service.</param>
-        /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
-        protected async Task SetCommandCallbackAsync(string commandName, CommandCallback commandCallback, object userContext)
-        {
-            await SetCommandCallbackAsync(commandName, commandCallback, userContext, CancellationToken.None).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Registers a delegate for a given command. If a delegate is already registered 
-        /// for the given command, it will replaced with the new delegate.
-        /// </summary>
-        /// <param name="commandName">The name of command to associate with the callback.</param>
-        /// <param name="commandCallback">The callback to invoke when command is called by the cloud service.</param>
-        /// <param name="userContext">Generic parameter to be interpreted by the client code.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        protected async Task SetCommandCallbackAsync(string commandName, CommandCallback commandCallback, object userContext, CancellationToken cancellationToken)
-        {
-            GuardHelper.ThrowIfNullOrWhiteSpace(commandName, nameof(commandName));
-            GuardHelper.ThrowIfNull(commandCallback, nameof(commandCallback));
-            ThrowIfInterfaceNotRegistered();
-            await digitalTwinClient.SetCommandCallbackAsync(Id, InstanceName, commandName, commandCallback, userContext, cancellationToken).ConfigureAwait(false);
-        }
-
         /// <summary>
         /// Sends an update of the status of a pending asynchronous command. 
         /// </summary>

@@ -2,9 +2,14 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading.Tasks;
+using DotNetty.Transport.Channels;
 using Microsoft.Azure.Devices.DigitalTwin.Client;
 using Microsoft.Azure.Devices.DigitalTwin.Client.Model;
 
@@ -12,7 +17,9 @@ namespace EnvironmentalSensorSample
 {
     public class EnvironmentalSensorInterface : DigitalTwinInterface
     {
-        public EnvironmentalSensorInterface(string interfaceId, string interfaceName) : base(interfaceId, interfaceName) { }
+        public EnvironmentalSensorInterface(string interfaceId, string interfaceName) :
+            base(interfaceId, interfaceName, new Callbacks(EnvironmentalSensorPropertiesCallbackAsync, EnvironmentalSensorCommandsCallbackAsync)){ }
+        
 
         #region Read-Only properties
         public async Task DeviceStatePropertyAsync(DeviceStateEnum state)
@@ -24,33 +31,40 @@ namespace EnvironmentalSensorSample
         #endregion
 
         #region Read-write properties
-        public async Task SetCustomerNameAsync(DigitalTwinValue customerNameUpdatedValue, long desiredVersion, object userContext)
+        public static async Task EnvironmentalSensorPropertiesCallbackAsync(DigitalTwinValue twinValue, long  desiredVersion, object userContext)
         {
-            // code to consume customer value, currently just displaying on screen.
-            Console.WriteLine($"Customer name received is {customerNameUpdatedValue.Value}.");
+            Console.WriteLine($"Customer name received is {twinValue.Value}.");
 
-            // report Completed
-            //await ReportPropertyStatusAsync(Constants.CustomerName, new DigitalTwinPropertyResponse(customerNameUpdatedValue, desiredVersion, DigitalTwinPropertyStatusCode.Completed, "Request completed")).ConfigureAwait(false);
-            Console.WriteLine("Sent completed status.");
+            //TODO: dispatch send reportproperty status async
         }
 
-        public async Task SetBrightnessAsync(DigitalTwinValue brightnessUpdatedValue, long desiredVersion, object userContext)
-        {
-            // code to consume light brightness value, currently just displaying on screen
-            Console.WriteLine($"Updated brightness value is {brightnessUpdatedValue.Value}.");
+        //public async Task SetCustomerNameAsync(DigitalTwinValue customerNameUpdatedValue, long desiredVersion, object userContext)
+        //{
+        //    // code to consume customer value, currently just displaying on screen.
+        //    Console.WriteLine($"Customer name received is {customerNameUpdatedValue.Value}.");
 
-            // report Pending
-            //await ReportPropertyStatusAsync(Constants.Brightness, new DigitalTwinPropertyResponse(brightnessUpdatedValue, desiredVersion, DigitalTwinPropertyStatusCode.Pending, "Processing Request")).ConfigureAwait(false);
-            Console.WriteLine("Sent pending status for brightness property.");
+        //    // report Completed
+        //    //await ReportPropertyStatusAsync(Constants.CustomerName, new DigitalTwinPropertyResponse(customerNameUpdatedValue, desiredVersion, DigitalTwinPropertyStatusCode.Completed, "Request completed")).ConfigureAwait(false);
+        //    Console.WriteLine("Sent completed status.");
+        //}
 
-            // do some action
-            await Task.Delay(5 * 1000).ConfigureAwait(false);
-            Console.WriteLine("Run script to update the time interval of telemetry frequency (in seconds).");
+        //public async Task SetBrightnessAsync(DigitalTwinValue brightnessUpdatedValue, long desiredVersion, object userContext)
+        //{
+        //    // code to consume light brightness value, currently just displaying on screen
+        //    Console.WriteLine($"Updated brightness value is {brightnessUpdatedValue.Value}.");
 
-            // report Completed
-            //await ReportReadWritePropertyStatusAsync(Constants.Brightness, new DigitalTwinPropertyResponse(brightnessUpdatedValue, desiredVersion, DigitalTwinPropertyStatusCode.Completed, "Request completed")).ConfigureAwait(false);
-            Console.WriteLine("Sent completed status for brightness property.");
-        }
+        //    // report Pending
+        //    //await ReportPropertyStatusAsync(Constants.Brightness, new DigitalTwinPropertyResponse(brightnessUpdatedValue, desiredVersion, DigitalTwinPropertyStatusCode.Pending, "Processing Request")).ConfigureAwait(false);
+        //    Console.WriteLine("Sent pending status for brightness property.");
+
+        //    // do some action
+        //    await Task.Delay(5 * 1000).ConfigureAwait(false);
+        //    Console.WriteLine("Run script to update the time interval of telemetry frequency (in seconds).");
+
+        //    // report Completed
+        //    //await ReportReadWritePropertyStatusAsync(Constants.Brightness, new DigitalTwinPropertyResponse(brightnessUpdatedValue, desiredVersion, DigitalTwinPropertyStatusCode.Completed, "Request completed")).ConfigureAwait(false);
+        //    Console.WriteLine("Sent completed status for brightness property.");
+        //}
         #endregion
 
         #region Telemetry
@@ -66,45 +80,14 @@ namespace EnvironmentalSensorSample
         #endregion
 
         #region Commands
-        public Task<DigitalTwinCommandResponse> BlinkCommandAsync(DigitalTwinCommandRequest commandRequest, object userContext)
+        public static Task<DigitalTwinCommandResponse> EnvironmentalSensorCommandsCallbackAsync(DigitalTwinCommandRequest commandRequest, object userContext)
         {
-            Console.WriteLine($"\t {Constants.BlinkCommandName} command was invoked from the service.");
+            Console.WriteLine($"\t Command - {commandRequest.Name} was invoked from the service");
+            Console.WriteLine($"\t Data - {commandRequest.Payload.ToString()}.");
+            Console.WriteLine($"\t Request Id - {commandRequest.RequestId}.");
 
-            long timeInterval = (long)commandRequest.RequestSchemaData;
-            Console.WriteLine($"Time interval received {timeInterval} milliseconds");
-
-            Console.WriteLine($"Send {Constants.BlinkCommandName} command status: Completed.");
+            // TODO: trigger the callback and return command response
             return Task.FromResult(new DigitalTwinCommandResponse(200));
-        }
-
-        public Task<DigitalTwinCommandResponse> TurnOnLightCommandAsync(DigitalTwinCommandRequest commandRequest, object userContext)
-        {
-            Console.WriteLine($"\t {Constants.TurnOnLightCommad} command was invoked from the service.");
-
-            Console.WriteLine($"Send {Constants.TurnOnLightCommad} command status: Completed.");
-            return Task.FromResult(new DigitalTwinCommandResponse(200, DigitalTwinValue.CreateString("Light turned on.")));
-        }
-
-        public Task<DigitalTwinCommandResponse> TurnOffLightCommandAsync(DigitalTwinCommandRequest commandRequest, object userContext)
-        {
-            Console.WriteLine($"\t {Constants.TurnOffLightCommand} command was invoked from the service.");
-
-            Console.WriteLine($"Send {Constants.TurnOffLightCommand} command status: Completed.");
-            return Task.FromResult(new DigitalTwinCommandResponse(200, DigitalTwinValue.CreateString("Light turned off.")));
-        }
-        #endregion
-
-        #region setup
-        public async void SetUpCallbacks()
-        {
-            // register read-write properties
-            await SetPropertyUpdatedCallbackAsync(Constants.CustomerName, SetCustomerNameAsync, null).ConfigureAwait(false);
-            await SetPropertyUpdatedCallbackAsync(Constants.Brightness, SetBrightnessAsync, null).ConfigureAwait(false);
-
-            // register commands
-            //await SetCommandInvokeCallbackAsync(Constants.BlinkCommandName, BlinkCommandAsync, null).ConfigureAwait(false);
-            //await SetCommandInvokeCallbackAsync(Constants.TurnOnLightCommad, TurnOnLightCommandAsync, null).ConfigureAwait(false);
-            //await SetCommandInvokeCallbackAsync(Constants.TurnOffLightCommand, TurnOffLightCommandAsync, null).ConfigureAwait(false);
         }
         #endregion
     }

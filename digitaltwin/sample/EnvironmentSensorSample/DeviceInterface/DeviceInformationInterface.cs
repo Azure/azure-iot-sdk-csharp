@@ -3,6 +3,7 @@
 
 using Microsoft.Azure.Devices.DigitalTwin.Client;
 using Microsoft.Azure.Devices.DigitalTwin.Client.Model;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -13,6 +14,7 @@ namespace EnvironmentalSensorSample
         private static string s_deviceInformationInterfaceId = "urn:azureiot:DeviceInformation:1";
         private static string s_deviceInformationInterfaceName = "deviceinfo";
         private List<DigitalTwinProperty> propertyCollection;
+        private static object context = new object();
 
         public DeviceInformationInterface() : base(s_deviceInformationInterfaceId, s_deviceInformationInterfaceName)
         {
