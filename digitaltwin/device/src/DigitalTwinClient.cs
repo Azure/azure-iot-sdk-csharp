@@ -6,13 +6,14 @@ using Microsoft.Azure.Devices.DigitalTwin.Client.Bindings;
 using Microsoft.Azure.Devices.DigitalTwin.Client.Helper;
 using Microsoft.Azure.Devices.DigitalTwin.Client.Model;
 using Microsoft.Azure.Devices.Shared;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using static Microsoft.Azure.Devices.DigitalTwin.Client.DigitalTwinInterface;
+using static Microsoft.Azure.Devices.DigitalTwin.Client.Model.Callbacks;
 
 namespace Microsoft.Azure.Devices.DigitalTwin.Client
 {
@@ -21,21 +22,24 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client
         private const string CapabilityModelIdTag = "capabilityModelId";
         private const string InterfacesTag = "interfaces";
         private const string InterfacesPrefix = "$iotin:";
+        private const string IothubInterfaceInstance = "$.ifname";
+        private const string IoTHubInterfaceId = "$.ifid";
+        private const string JsonContentType = "application/json";
 
         private const string ModelDiscoveryInterfaceId = "urn:azureiot:ModelDiscovery:ModelInformation:1";
         private const string ModelDiscoveryInterfaceInstanceName = "urn:azureiot:ModelDiscovery:ModelInformation";
         private const string ModelInformationSchema = "modelInformation";
 
+        private const string JsonCommandRequestId = "commandRequest.requestId";
+        private const string JsonCommandRequestValue = "commandRequest.value";
+
         private readonly DeviceClient deviceClient;
-        private Dictionary<string, Tuple<DigitalTwinPropertyCallback, object>> propertyCallbacksWithUserContext;
-        private Dictionary<string, CommandCallback> commandCallbacks;
+        private Dictionary<string, DigitalTwinInterface> interfaces = new Dictionary<string, DigitalTwinInterface>();
         private readonly DigitalTwinBindingFormatterCollection digitalTwinFormatterCollection;
 
         public DigitalTwinClient(DeviceClient deviceClient)
         {
             this.deviceClient = deviceClient;
-            this.propertyCallbacksWithUserContext = new Dictionary<string, Tuple<DigitalTwinPropertyCallback, object>>();
-            this.commandCallbacks = new Dictionary<string, CommandCallback>();
             this.digitalTwinFormatterCollection = new DigitalTwinBindingFormatterCollection();
         }
 
@@ -53,6 +57,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client
             {
                 GuardHelper.ThrowIfNull(dtInterface, nameof(dtInterface));
                 interfaceName.Add(dtInterface.InstanceName, dtInterface.Id);
+                interfaces.Add(dtInterface.InstanceName, dtInterface);
             }
 
             var capabilityModelIdProperty = new DigitalTwinProperty(CapabilityModelIdTag, DigitalTwinValue.CreateString(capabilityModelId));
@@ -71,6 +76,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client
             }
 
             // TODO: send device information
+            await SetupDigitalTwinClientAsync().ConfigureAwait(false);
         }
 
         /// <summary>
@@ -97,24 +103,21 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client
                 CreateKeyValueTwinCollection(InterfacesPrefix + instanceName, twinCollection)).ConfigureAwait(false);
         }
 
-        internal async Task SetPropertyUpdatedCallbackAsync(string interfaceId, string instanceName, string propertyName, DigitalTwinPropertyCallback propertyHandler, object userContext, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
         internal async Task SendTelemetryAsync(string interfaceId, string interfaceInstanceName, DigitalTwinProperty telemetryValue, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             await deviceClient.SendEventAsync(CreateDigitalTwinMessage(interfaceId, interfaceInstanceName, telemetryValue), cancellationToken).ConfigureAwait(false);
         }
-        internal async Task SetCommandCallbackAsync(string interfaceId, string instanceName, string commandName, CommandCallback commandHandler, object userContext, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
 
         internal async Task UpdateAsyncCommandStatusAsync(string interfaceId, string instanceName, DigitalTwinAsyncCommandUpdate update, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
+        }
+
+        private async Task SetupDigitalTwinClientAsync()
+        {
+            await deviceClient.SetMethodDefaultHandlerAsync(GenericMethodHandlerAsync, this).ConfigureAwait(false);
+            await deviceClient.SetDesiredPropertyUpdateCallbackAsync(GenericPropertyUpdateHandlerAsync, this).ConfigureAwait(false);
         }
 
         private static TwinCollection CreateKeyValueTwinCollection(string key, object value)
@@ -149,9 +152,9 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client
                 digitalTwinFormatterCollection.FromObject(
                         CreateKeyValueDataCollection(
                             telemetryValues.Select(v => new KeyValuePair<string, object>(v.Name, v.RawValue))))));
-            message.Properties.Add(DigitalTwinConstants.IoTHubInterfaceId, ModelDiscoveryInterfaceId);
-            message.Properties.Add(DigitalTwinConstants.IothubInterfaceInstance, ModelDiscoveryInterfaceInstanceName);
-            message.ContentType = DigitalTwinConstants.JsonContentType;
+            message.Properties.Add(IoTHubInterfaceId, ModelDiscoveryInterfaceId);
+            message.Properties.Add(IothubInterfaceInstance, ModelDiscoveryInterfaceInstanceName);
+            message.ContentType = JsonContentType;
             message.MessageSchema = ModelInformationSchema;
             return message;
         }
@@ -162,11 +165,74 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client
                 Encoding.UTF8.GetBytes(
                     digitalTwinFormatterCollection.FromObject(
                         CreateKeyValueDataCollection(telemetryValue.Name, telemetryValue.RawValue))));
-            message.Properties.Add(DigitalTwinConstants.IothubInterfaceInstance, interfaceInstanceId);
-            message.Properties.Add(DigitalTwinConstants.IoTHubInterfaceId, interfaceId);
-            message.ContentType = DigitalTwinConstants.JsonContentType;
+            message.Properties.Add(IothubInterfaceInstance, interfaceInstanceId);
+            message.Properties.Add(IoTHubInterfaceId, interfaceId);
+            message.ContentType = JsonContentType;
             message.MessageSchema = telemetryValue.Name;
             return message;
+        }
+
+        private async Task<MethodResponse> GenericMethodHandlerAsync(MethodRequest methodRequest, object userContext)
+        {
+            // parse the genericMethodRequest.Name to determine which interface to forward
+            // with the use interface reference to trigger the generic callback for the interface
+
+            (string interfaceInstanceName, string methodName) = ParseMethodRequestName(methodRequest.Name);
+
+            if (string.IsNullOrEmpty(interfaceInstanceName) || string.IsNullOrEmpty(methodName))
+            {
+                return new MethodResponse(404);
+            }
+
+            CommandCallback callback = interfaces[interfaceInstanceName].CommandHandler;
+
+            var jsonObj  = JObject.Parse(methodRequest.DataAsJson);
+
+            DigitalTwinCommandResponse response = await callback(
+                new DigitalTwinCommandRequest(
+                    methodName,
+                    jsonObj.SelectToken(JsonCommandRequestId).ToString(),
+                    Encoding.UTF8.GetBytes(jsonObj.SelectToken(JsonCommandRequestValue).ToString())),
+                    userContext).ConfigureAwait(false);
+
+            if (response.Payload != null)
+            {
+                return new MethodResponse(
+                    Encoding.UTF8.GetBytes(
+                        digitalTwinFormatterCollection.FromObject(response.Payload)), 
+                    response.Status);
+            }
+
+            return new MethodResponse(response.Status);
+        }
+
+        private static (string interfaceInstanceName, string methodName) ParseMethodRequestName(string methodRequestName)
+        {
+            if (string.CompareOrdinal(InterfacesPrefix, 0, methodRequestName, 0, InterfacesPrefix.Length) != 0)
+            {
+                return (null, null);
+            }
+
+            string[] values = methodRequestName.Substring(InterfacesPrefix.Length).Split("*");
+            if (values.Length != 2)
+            {
+                return (null, null);
+            }
+
+            return (values[0], values[1]);
+        }
+
+        private async Task GenericPropertyUpdateHandlerAsync(TwinCollection desiredProperties, object userContext)
+        {
+            //JObject _json = JObject.Parse(desiredProperties.ToJson());
+            //string version = (string)_json[PnPConstants.ResponseVersion];
+            //foreach (var property in _json)
+            //{
+            //    if (interfaces.ContainsValue(property.Key))
+            //    {
+            //        await interfaces[property.Key].PropertyUpdatedHandler(property.Key, (JObject)property.Value, Convert.ToInt64(version, CultureInfo.InvariantCulture)).ConfigureAwait(false);
+            //    }
+            //}
         }
         #endregion
     }

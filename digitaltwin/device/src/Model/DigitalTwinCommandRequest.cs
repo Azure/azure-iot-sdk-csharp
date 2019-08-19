@@ -11,15 +11,13 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client.Model
         /// Initializes a new instance of the <see cref="DigitalTwinCommandRequest"/> class.
         /// </summary>
         /// <param name="name">The name of the command.</param>
-        /// <param name="requestSchemaData">The request schema data to be sent for the command.</param>
-        /// <param name="responseTimeout">The time out for the command response.</param>
-        /// <param name="connectionTimeout">The connection time out for the command.</param>
-        internal DigitalTwinCommandRequest(string name, object requestSchemaData, TimeSpan? responseTimeout, TimeSpan? connectionTimeout)
+        /// <param name="requestId"> The server generated identifier passed as part of the command.</param>
+        /// <param name="payload"> Payload of the request.</param>
+        internal DigitalTwinCommandRequest(string name, string requestId, Memory<byte> payload)
         {
             Name = name;
-            RequestSchemaData = requestSchemaData;
-            ResponseTimeout = responseTimeout;
-            ConnectionTimeout = connectionTimeout;
+            RequestId = requestId;
+            Payload = payload;
         }
 
         /// <summary>
@@ -28,19 +26,14 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client.Model
         public string Name { get; private set; }
 
         /// <summary>
-        /// The request schema data to be sent for the command.
+        /// A server generated string passed as part of the command.
+        /// This is used when sending responses to asynchronous commands to act as a correlation Id and/or for diagnostics purposes
         /// </summary>
-        public object RequestSchemaData { get; private set; }
+        public string RequestId { get; private set; }
 
         /// <summary>
-        /// The time out for the command response.
+        /// The data to be sent for the command.
         /// </summary>
-        public TimeSpan? ResponseTimeout { get; private set; }
-
-        /// <summary>
-        /// The connection time out for the command.
-        /// </summary>
-        public TimeSpan? ConnectionTimeout { get; private set; }
-
+        public Memory<byte> Payload { get; private set; }
     }
 }

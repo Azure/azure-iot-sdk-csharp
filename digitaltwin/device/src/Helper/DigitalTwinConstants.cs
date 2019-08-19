@@ -8,26 +8,6 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client.Helper
     /// </summary>
     public static class DigitalTwinConstants
     {
-        ///// <summary>
-        ///// The Digital Twin Interfaces section.
-        ///// </summary>
-        //public const string DigitalTwinInterfaces = "__iot:interfaces";
-
-        /// <summary>
-        /// Digital Twin interface instance id constant used for events.
-        /// </summary>
-        public const string IothubInterfaceInstance = "$.ifname";
-
-        /// <summary>
-        /// Digital Twin interface id constant used for events.
-        /// </summary>
-        public const string IoTHubInterfaceId = "$.ifid";
-
-        /// <summary>
-        /// The json content type.
-        /// </summary>
-        public const string JsonContentType = "application/json";
-
         /// <summary>
         /// The maximum allowed length of interface id.
         /// </summary>
