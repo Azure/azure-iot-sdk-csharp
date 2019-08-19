@@ -40,6 +40,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         JobNotFound = 404002,
         PartitionNotFound = 404003,
         ModuleNotFound = 404010,
+        DeviceNotOnline = 404103,
 
         //Conflict - 409
         DeviceAlreadyExists = 409001,

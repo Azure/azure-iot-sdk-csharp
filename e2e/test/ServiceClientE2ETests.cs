@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Microsoft.Azure.Devices.Common.Exceptions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
@@ -35,6 +36,36 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task Message_NoTimeoutPassed()
         {
             await DefaultTimeout().ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(DeviceNotOnlineException))]
+        public async Task C2DMethod_DeviceNotOnline_Amqp()
+        {
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
+            using (ServiceClient sender = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString, TransportType.Amqp))
+            {
+                _log.WriteLine($"Testing ServiceClient SendAsync() method invocation");
+                await sender.InvokeDeviceMethodAsync(
+                    testDevice.Id,
+                    new CloudToDeviceMethod("NonExistingMethod", Amqp.AmqpConstants.DefaultTimeout).SetPayloadJson("42")
+                ).ConfigureAwait(false);
+            }
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(DeviceNotOnlineException))]
+        public async Task C2DMethod_DeviceNotOnline_AmqpWs()
+        {
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
+            using (ServiceClient sender = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString, TransportType.Amqp_WebSocket_Only))
+            {
+                _log.WriteLine($"Testing ServiceClient SendAsync() method invocation");
+                await sender.InvokeDeviceMethodAsync(
+                    testDevice.Id,
+                    new CloudToDeviceMethod("NonExistingMethod", Amqp.AmqpConstants.DefaultTimeout).SetPayloadJson("42")
+                ).ConfigureAwait(false);
+            }
         }
 
         private async Task FastTimeout()

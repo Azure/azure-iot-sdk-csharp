@@ -8,8 +8,9 @@ namespace Microsoft.Azure.Devices
     using System.Net;
     using System.Net.Http;
     using System.Threading.Tasks;
-
+    using Microsoft.Azure.Devices.Common;
     using Microsoft.Azure.Devices.Common.Exceptions;
+    using Microsoft.Azure.Devices.Common.Extensions;
 
     class ExceptionHandlingHelper
     {
@@ -18,7 +19,7 @@ namespace Microsoft.Azure.Devices
             var mappings = new Dictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>();
 
             mappings.Add(HttpStatusCode.NoContent, async (response) => new DeviceNotFoundException(await GetExceptionMessageAsync(response).ConfigureAwait(false)));
-            mappings.Add(HttpStatusCode.NotFound, async (response) => new DeviceNotFoundException(await GetExceptionMessageAsync(response).ConfigureAwait(false)));
+            mappings.Add(HttpStatusCode.NotFound, HttpNotFoundMapping);
             mappings.Add(HttpStatusCode.Conflict, async (response) => new DeviceAlreadyExistsException(await GetExceptionMessageAsync(response).ConfigureAwait(false)));
             mappings.Add(HttpStatusCode.BadRequest, async (response) => new ArgumentException(await GetExceptionMessageAsync(response).ConfigureAwait(false)));
             mappings.Add(HttpStatusCode.Unauthorized, async (response) => new UnauthorizedException(await GetExceptionMessageAsync(response).ConfigureAwait(false)));
@@ -36,6 +37,22 @@ namespace Microsoft.Azure.Devices
         {
             // TODO: pradeepc - consider parsing to HttpError
             return response.Content.ReadAsStringAsync();
+        }
+
+        private static async Task<Exception> HttpNotFoundMapping(HttpResponseMessage response)
+        {
+            string exMsg = await GetExceptionMessageAsync(response).ConfigureAwait(false);
+            string httpErrorCode = response.Headers.GetFirstValueOrNull(CommonConstants.HttpErrorCodeName);
+            ErrorCode errorCode;
+            if (Enum.TryParse(httpErrorCode, out errorCode))
+            {
+                switch (errorCode)
+                {
+                    case ErrorCode.DeviceNotOnline:
+                        return new DeviceNotOnlineException(exMsg);
+                }
+            }
+            return new DeviceNotFoundException(exMsg);
         }
     }
 }
