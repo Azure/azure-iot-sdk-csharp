@@ -4,9 +4,11 @@ resources:
   clean: true
 phases:
 
+### Linux build ###
 - phase: LINUX
-  displayName: Linux Build
-  condition: eq(coalesce(variables.release, False), False)
+  displayName: Linux
+
+  condition: succeeded()
   queue:
     name: Hosted Ubuntu 1604
     timeoutInMinutes: 180
@@ -15,31 +17,47 @@ phases:
     displayName: 'GIT checkout'
     env:
       COMMIT_FROM: $(COMMIT_FROM)
+
   - task: Docker@1
     displayName: 'Start TPM Simulator'
     inputs:
       containerregistrytype: 'Container Registry'
+
       command: 'Run an image'
+
       imageName: aziotbld/testtpm
+
       containerName: 'testtpm-instance'
+
       ports: |
        127.0.0.1:2321:2321
        127.0.0.1:2322:2322
+
       restartPolicy: unlessStopped
+
+
   - task: Docker@1
     displayName: 'Start Test Proxy'
     inputs:
       containerregistrytype: 'Container Registry'
+
       command: 'Run an image'
+
       imageName: aziotbld/testproxy
+
       containerName: 'testproxy-instance'
+
       ports: '127.0.0.1:8888:8888'
+
       restartPolicy: unlessStopped
+
   - script: |
        # Run dotnet first experience.
        dotnet new
+
        # List active docker containers
        docker ps -a
+
        # Start build
        vsts/linux_csharp_netcore.sh
     displayName: build
@@ -70,80 +88,61 @@ phases:
       LA_AAD_APP_ID: $(LA-AAD-APP-ID)
       LA_AAD_APP_CERT_BASE64: $(LA-AAD-APP-CERT-BASE64)
       LA_WORKSPACE_ID: $(LA-WORKSPACE-ID)
+
   - task: CopyFiles@2
     displayName: 'Copy files to the artifacts folder'
     inputs:
       SourceFolder: '$(Build.SourcesDirectory)'
+
       Contents: '**/*.trx'
+
       TargetFolder: '$(Build.ArtifactStagingDirectory)'
+
     condition: always()
+
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact: testresults_linux'
     inputs:
       ArtifactName: testresults_linux
+
     condition: always()
+
   - task: PublishTestResults@2
     displayName: 'Publish Test Results **/*.trx'
     inputs:
       testRunner: VSTest
       testRunTitle: 'Linux Tests'
       testResultsFiles: '**/*.trx'
+
     condition: always()
 
+### Windows build ###
+
 - phase: WINDOWS
-  displayName: Windows Build
+  displayName: Windows
+# Uncomment to serialize builds:
+#  dependsOn: LINUX
 
+  condition: succeeded()
+  queue:
+    name: Hosted VS2017
+    timeoutInMinutes: 180
   steps:
+  - script: |
+       call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
+       sn -Vr *,31bf3856ad364e35
 
-  - checkout: self  # self represents the repo where the initial Pipelines YAML file was found
-    persistCredentials: 'true'  # set to 'true' to leave the OAuth token in the Git config after the initial fetch
-    clean: 'resources'
-    
-  - task: EsrpClientTool@1
-  
-  - task: DownloadBuildArtifacts@0
-    condition: eq(coalesce(variables.release, False), True)
-    inputs:
-      buildType: 'specific'
-      project: 'f9b79625-2860-4d92-a4ee-57b03fabfd10' # azure-iot-sdks
-      pipeline: '311' # iot-sdks-internals-scripts-clone pipeline
-      buildVersionToDownload: 'latest'
-      downloadType: 'single'
-      downloadPath: '$(System.ArtifactsDirectory)/scripts'
-      artifactName: 'csharp'
+    displayName: 'Disable strong name validation'
 
-  - task: DownloadSecureFile@1
-    condition: eq(coalesce(variables.release, False), True)
-    displayName: 'Download secure file - iothubsdksign-auth-base64.pfx'
-    inputs:
-      secureFile: 'iothubsdksign-auth-base64.pfx'
+  - script: |
+       choco install -y squid
 
-  - task: DownloadSecureFile@1
-    condition: eq(coalesce(variables.release, False), True)
-    displayName: 'Download secure file - iothubsdksign-req-base64.pfx'
-    inputs:
-      secureFile: 'iothubsdksign-req-base64.pfx'
+    displayName: 'Install Squid'
 
-  - task: PowerShell@2
-    condition: eq(coalesce(variables.release, False), True)
-    inputs:
-      filePath: '$(Build.StagingDirectory)/scripts/csharp/vsts/install-signing-certificates.ps1'
-    displayName: 'Install Signing Certificates'
-    env:
-        certpwd: $(certpassphrase)
+  - script: |
+       choco install -y netfx-4.5.2-devpack
 
-    #  - script: |
-    #       call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
-    #       sn -Vr *,31bf3856ad364e35
-    #    displayName: 'Disable strong name validation'
-    #
-    #  - script: |
-    #       choco install -y squid
-    #    displayName: 'Install Squid'
-    #
-    #  - script: |
-    #       choco install -y netfx-4.5.2-devpack
-    #    displayName: 'Install .NET 4.5.2 Targeting Pack'
+    displayName: 'Install .NET 4.5.2 Targetting Pack'
 
   - powershell: ./vsts/manual_checkout.ps1
     displayName: 'GIT checkout'
@@ -151,19 +150,25 @@ phases:
       COMMIT_FROM: $(COMMIT_FROM)
 
   - script: |
-       REM Run dotnet first experience.
+       rem Run dotnet first experience.
        dotnet new
 
-       REM List active docker containers
+       rem List active docker containers
        docker ps -a
 
-       REM logman create trace IotTrace -o iot.etl -pf tools/CaptureLogs/iot_providers.txt
-       REM logman start IotTrace
-       
-       REM vsts/windows_csharp.cmd
+       rem Start
 
-       REM logman stop IotTrace
-       REM logman delete IotTrace
+       rem Start ETL logging
+       logman create trace IotTrace -o iot.etl -pf tools/CaptureLogs/iot_providers.txt
+       logman start IotTrace
+
+       rem Start build
+       vsts/windows_csharp.cmd
+
+       ren Stop ETL logging
+       logman stop IotTrace
+       logman delete IotTrace
+
     displayName: build
     env:
       IOTHUB_CONN_STRING_CSHARP: $(IOTHUB-CONN-STRING-CSHARP)
@@ -192,119 +197,159 @@ phases:
       LA_AAD_APP_ID: $(LA-AAD-APP-ID)
       LA_AAD_APP_CERT_BASE64: $(LA-AAD-APP-CERT-BASE64)
       LA_WORKSPACE_ID: $(LA-WORKSPACE-ID)
-      ESRP_AUTH_CONFIG: $(Build.StagingDirectory)/scripts/csharp/new/json/Auth.json
-      ESRP_POLICY_CONFIG: $(Build.StagingDirectory)/scripts/csharp/new/json/Policy.json
-      ESRP_INPUT_JSON_DIR: $(Build.StagingDirectory)/scripts/csharp/new/json
-      ESRP_LOG_DIR: $(Build.StagingDirectory)/scripts/csharp/new/logs
-      AZURE_IOT_LOCALPACKAGES: $(Build.StagingDirectory)/scripts/csharp/nuget_local
-      AZURE_IOT_SIGNING_SCRIPT: $(Build.StagingDirectory)/scripts/new/SignTools.ps1
-      RELEASE: eq(coalesce(variables.release, False), True)
 
   - task: CopyFiles@2
     displayName: 'Copy TRX files to the artifacts folder'
     inputs:
       SourceFolder: '$(Build.SourcesDirectory)'
+
       Contents: '**/*.trx'
+
       TargetFolder: '$(Build.ArtifactStagingDirectory)'
+
+    condition: always()
 
   - task: CopyFiles@2
     displayName: 'Copy ETL files to the artifacts folder'
     inputs:
       SourceFolder: '$(Build.SourcesDirectory)'
+
       Contents: '**/*.etl'
+
       TargetFolder: '$(Build.ArtifactStagingDirectory)'
-      
+
+    condition: always()
+
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact: testresults'
     inputs:
       ArtifactName: testresults_windows
 
+    condition: always()
+
   - task: PublishTestResults@2
     displayName: 'Publish Test Results **/*.trx'
     inputs:
       testRunner: VSTest
+
       testResultsFiles: '**/*.trx'
+
       testRunTitle: 'Windows Tests'
+
       platform: Windows
+
       configuration: 'Debug UT + Release E2E'
 
+    condition: always()
+
+### WINDOWS Analyzers ###
 - phase: Analyzers
   displayName: Analyzers
-  condition: eq(coalesce(variables.release, False), False)
+
+  condition: succeeded()
   queue:
     name: Hosted VS2017
     timeoutInMinutes: 60
   steps:
+
   - powershell: ./vsts/manual_checkout.ps1
     displayName: 'GIT checkout'
     env:
       COMMIT_FROM: $(COMMIT_FROM)
+
   - script: |
        rem Run dotnet first experience.
        dotnet new
+
        rem Start build
        build.cmd -clean -nounittests -configuration Debug
+
     displayName: build
+
   - task: ComponentGovernanceComponentDetection@0
     displayName: 'Component Detection'
+
+
   - task: securedevelopmentteam.vss-secure-development-tools.build-task-antimalware.AntiMalware@3
     displayName: 'Run MpCmdRun.exe'
     inputs:
       EnableServices: true
       SignatureFreshness: OneDay
+
+
+
   - task: securedevelopmentteam.vss-secure-development-tools.build-task-autoapplicability.AutoApplicability@1
     displayName: 'Run AutoApplicability'
     inputs:
       ExternalRelease: true
+
       IsSoftware: true
+
       UsesHSM: true
+
   - task: securedevelopmentteam.vss-secure-development-tools.build-task-binskim.BinSkim@3
     displayName: 'Run BinSkim '
     inputs:
       arguments: 'analyze  $(Build.SourcesDirectory)\Microsoft.Azure.Devices.*.dll $(Build.SourcesDirectory)\DeviceExplorer.exe --recurse --verbose'
+
     # TODO #181 Config issue: must run on Debug builds only with valid PDBs.
     enabled: false
+
   - task: securedevelopmentteam.vss-secure-development-tools.build-task-codemetrics.CodeMetrics@1
     displayName: 'Run CodeMetrics '
     inputs:
       Files: '$(Build.SourcesDirectory)\**\DeviceExplorer.exe;$(Build.SourcesDirectory)\**\Microsoft.Azure.Devices.*.dll'
+
     # TODO #181 Config issue: must run on Debug builds only with valid PDBs.
     enabled: false
+
+
   - task: securedevelopmentteam.vss-secure-development-tools.build-task-credscan.CredScan@2
     displayName: 'Run CredScan'
     inputs:
       suppressionsFile: vsts/CredScanSuppressions.json
       regexMatchTimeoutInSeconds: 5
+
     # TODO #181 Samples / tests fail the test due to fake connection strings.
       debugMode: false
+
   - task: securedevelopmentteam.vss-secure-development-tools.build-task-policheck.PoliCheck@1
     displayName: 'Run PoliCheck'
     inputs:
       targetType: F
+
   - task: securedevelopmentteam.vss-secure-development-tools.build-task-vulnerabilityassessment.VulnerabilityAssessment@0
     displayName: 'Run Vulnerability Assessment'
+
   - task: securedevelopmentteam.vss-secure-development-tools.build-task-publishsecurityanalysislogs.PublishSecurityAnalysisLogs@2
     displayName: 'Publish Security Analysis Logs'
+
   - task: securedevelopmentteam.vss-secure-development-tools.build-task-report.SdtReport@1
     displayName: 'Create Security Analysis Report'
     inputs:
       AllTools: true
+
   - task: securedevelopmentteam.vss-secure-development-tools.build-task-uploadtotsa.TSAUpload@1
     displayName: 'TSA upload'
     inputs:
       tsaVersion: TsaV2
       tsaStamp: Azure
       codeBaseName: 'Azure-Iot-SDK-CSharp-Master'
+
   - task: securedevelopmentteam.vss-secure-development-tools.build-task-postanalysis.PostAnalysis@1
     displayName: 'Post Analysis'
     inputs:
       AllTools: true
+
     # TODO #181 Enable post analysis to break builds after all above items are enabled.
     enabled: false
 
+# END: SDL and Compliance tasks #
+
 - phase: NETMF
   displayName: NetMF
-  condition: eq(coalesce(variables.release, False), False)
+
+  condition: succeeded()
   queue:
     name: win
     timeoutInMinutes: 1
@@ -313,80 +358,110 @@ phases:
     displayName: 'GIT checkout'
     env:
       COMMIT_FROM: $(COMMIT_FROM)
+
   - script: |
        call "C:\\Program Files (x86)\\Microsoft Visual Studio 14.0\\Common7\\Tools\\VsDevCmd.bat"
        vsts/windows_csharp_mf.cmd
+
     displayName: build
 
 - phase: DEVEXP
   displayName: csharp-deviceexplorer
-  condition: eq(coalesce(variables.release, False), False)
+
+  condition: succeeded()
   queue:
     name: win
     timeoutInMinutes: 15
+
   steps:
   - powershell: ./vsts/manual_checkout.ps1
     displayName: 'GIT checkout'
     env:
       COMMIT_FROM: $(COMMIT_FROM)
+
   - script: |
        call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
        vsts/windows_csharp_deviceexplorer.cmd
     displayName: build
+
+# BEGIN: SDL and Compliance tasks #
+
   - task: ComponentGovernanceComponentDetection@0
     displayName: 'Component Detection'
+
     # TODO #181 CD component bugs currently investigated by the owning team.
     enabled: false
+
   - task: securedevelopmentteam.vss-secure-development-tools.build-task-antimalware.AntiMalware@3
     displayName: 'Run MpCmdRun.exe'
     inputs:
       EnableServices: true
+
+
   - task: securedevelopmentteam.vss-secure-development-tools.build-task-autoapplicability.AutoApplicability@1
     displayName: 'Run AutoApplicability'
     inputs:
       ExternalRelease: true
+
       IsSoftware: true
+
       UsesHSM: true
+
   - task: securedevelopmentteam.vss-secure-development-tools.build-task-binskim.BinSkim@3
     displayName: 'Run BinSkim '
     inputs:
       arguments: 'analyze  $(Build.SourcesDirectory)\Microsoft.Azure.Devices.*.dll $(Build.SourcesDirectory)\DeviceExplorer.exe --recurse --verbose'
+
     # TODO #181 Config issue: must run on Debug builds only with valid PDBs.
     enabled: false
+
   - task: securedevelopmentteam.vss-secure-development-tools.build-task-codemetrics.CodeMetrics@1
     displayName: 'Run CodeMetrics '
     inputs:
       Files: '$(Build.SourcesDirectory)\**\DeviceExplorer.exe;$(Build.SourcesDirectory)\**\Microsoft.Azure.Devices.*.dll'
+
     # TODO #181 Config issue: must run on Debug builds only with valid PDBs.
     enabled: false
+
+
   - task: securedevelopmentteam.vss-secure-development-tools.build-task-credscan.CredScan@2
     displayName: 'Run CredScan'
     inputs:
       suppressionsFile: vsts/CredScanSuppressions.json
       regexMatchTimeoutInSeconds: 5
+
     # TODO #181 Samples / tests fail the test due to fake connection strings.
       debugMode: false
+
   - task: securedevelopmentteam.vss-secure-development-tools.build-task-policheck.PoliCheck@1
     displayName: 'Run PoliCheck'
     inputs:
       targetType: F
+
   - task: securedevelopmentteam.vss-secure-development-tools.build-task-vulnerabilityassessment.VulnerabilityAssessment@0
     displayName: 'Run Vulnerability Assessment'
+
   - task: securedevelopmentteam.vss-secure-development-tools.build-task-publishsecurityanalysislogs.PublishSecurityAnalysisLogs@2
     displayName: 'Publish Security Analysis Logs'
+
   - task: securedevelopmentteam.vss-secure-development-tools.build-task-report.SdtReport@1
     displayName: 'Create Security Analysis Report'
     inputs:
       AllTools: true
+
   - task: securedevelopmentteam.vss-secure-development-tools.build-task-uploadtotsa.TSAUpload@1
     displayName: 'TSA upload'
     inputs:
       tsaVersion: TsaV2
       tsaStamp: Azure
       codeBaseName: 'Azure-Iot-SDK-CSharp-Master'
+
   - task: securedevelopmentteam.vss-secure-development-tools.build-task-postanalysis.PostAnalysis@1
     displayName: 'Post Analysis'
     inputs:
       AllTools: true
+
     # TODO #181 Enable post analysis to break builds after all above items are enabled.
     enabled: false
+
+# END: SDL and Compliance tasks #
