@@ -1,12 +1,8 @@
-# update .csproj file versions and create a release branch/commit
 name: Release_$(BuildID)_$(Date:yyyyMMdd)$(Rev:.r)
-
 phases:
 
 - phase: Build
-
   steps:
-
   - checkout: self  # self represents the repo where the initial Pipelines YAML file was found
     persistCredentials: 'true'  # set to 'true' to leave the OAuth token in the Git config after the initial fetch
     clean: 'resources'
@@ -17,7 +13,7 @@ phases:
     inputs:
       buildType: 'specific'
       project: 'f9b79625-2860-4d92-a4ee-57b03fabfd10' # azure-iot-sdks
-      pipeline: '311' # iot-sdks-internals-scripts pipeline
+      pipeline: $(scriptspipeline) # iot-sdks-internals scripts pipeline
       buildVersionToDownload: 'latest'
       downloadType: 'single'
       downloadPath: '$(System.ArtifactsDirectory)/scripts'
@@ -33,9 +29,7 @@ phases:
     inputs:
       secureFile: 'iothubsdksign-req-base64.pfx'
 
-# install signing certificates
-
-  - task: PowerShell@2
+  - task: PowerShell@2 # install signing certificates
     inputs:
       filePath: '$(Build.StagingDirectory)/scripts/csharp/vsts/install-signing-certificates.ps1'
     displayName: 'Install Signing Certificates'
@@ -57,18 +51,16 @@ phases:
         ESRP_LOG_DIR: $(Build.StagingDirectory)/scripts/csharp/new/logs
         AZURE_IOT_LOCALPACKAGES: $(Build.StagingDirectory)/scripts/csharp/nuget_local
 
-  - task: PublishBuildArtifacts@1
+  - task: PublishBuildArtifacts@1 # post signed nugets for LINUX and WINDOWS test phase access
     displayName: 'Publish Signed Nuget Packages'
     inputs:
         PathtoPublish: '$(Build.SourcesDirectory)/bin/pkg'
         ArtifactName: 'nuget'
         publishLocation: 'Container'
 
-### Linux build ###
 - phase: LINUX
-  displayName: Linux
+  displayName: Linux Build
   dependsOn: Build
-
   condition: succeeded()
   queue:
     name: Hosted Ubuntu 1604
@@ -80,7 +72,7 @@ phases:
     inputs:
       buildType: 'specific'
       project: 'f9b79625-2860-4d92-a4ee-57b03fabfd10'
-      pipeline: '313' # self
+      pipeline: $(system.definitionId) # self
       buildVersionToDownload: 'latest'
       downloadType: 'single'
       downloadPath: '$(System.ArtifactsDirectory)'
@@ -176,15 +168,12 @@ phases:
       testResultsFiles: '**/*.trx'
     condition: always()
 
-### Windows build ###
-
 - phase: WINDOWS
-  displayName: Windows
+  displayName: Windows Build
   dependsOn: Build
-
   condition: succeeded()
   queue:
-    name: Hosted VS2017
+    name: Hosted VS2017 # required due to below sn.exe call
     timeoutInMinutes: 180
   steps:
 
@@ -192,7 +181,7 @@ phases:
     inputs:
       buildType: 'specific'
       project: 'f9b79625-2860-4d92-a4ee-57b03fabfd10' # azure-iot-sdk
-      pipeline: '313' # self
+      pipeline: $(system.definitionId) # self
       buildVersionToDownload: 'latest'
       downloadType: 'single'
       downloadPath: '$(System.ArtifactsDirectory)'
@@ -205,20 +194,20 @@ phases:
       TargetFolder: '$(Build.SourcesDirectory)/bin/pkg'
       OverWrite: true
 
-  - script: |  
+  - script: |
        call "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\Common7\\Tools\\VsDevCmd.bat"
        sn -Vr *,31bf3856ad364e35
     displayName: 'Disable strong name validation'
 
-  - script: |  
+  - script: |
        choco install -y squid
     displayName: 'Install Squid'
 
-  - script: |  
+  - script: |
        choco install -y netfx-4.5.2-devpack
     displayName: 'Install .NET 4.5.2 Targetting Pack'
 
-  - script: |  
+  - script: |
        rem Run dotnet first experience.
        dotnet new
        rem List active docker containers
