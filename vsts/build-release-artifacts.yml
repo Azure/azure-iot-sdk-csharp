@@ -2,6 +2,7 @@ name: Release_$(BuildID)_$(Date:yyyyMMdd)$(Rev:.r)
 phases:
 
 - phase: Build
+  condition: eq(coalesce(variables.build, True), True) # run this phase if 'variables.build' doesn't exist or equals 'True'
   steps:
   - checkout: self  # self represents the repo where the initial Pipelines YAML file was found
     persistCredentials: 'true'  # set to 'true' to leave the OAuth token in the Git config after the initial fetch
@@ -61,7 +62,7 @@ phases:
 - phase: LINUX
   displayName: Linux Build
   dependsOn: Build
-  condition: succeeded()
+  condition: and(succeeded(), eq(coalesce(variables.test, True), True)) # run this phase if 'dependsOn' status is 'succeeded' and 'variables.test' doesn't exist or equals 'True'
   queue:
     name: Hosted Ubuntu 1604
     timeoutInMinutes: 180
@@ -171,7 +172,7 @@ phases:
 - phase: WINDOWS
   displayName: Windows Build
   dependsOn: Build
-  condition: succeeded()
+  condition: and(succeeded(), eq(coalesce(variables.test, True), True)) # run this phase if 'dependsOn' status is 'succeeded' and 'variables.test' doesn't exist or equals 'True'
   queue:
     name: Hosted VS2017 # required due to below sn.exe call
     timeoutInMinutes: 180
