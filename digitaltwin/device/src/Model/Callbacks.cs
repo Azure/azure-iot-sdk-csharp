@@ -7,7 +7,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client.Model
 {
     public class Callbacks
     {
-        public delegate Task PropertyUpdatedCallback(DigitalTwinValue propertyUpdate, long desiredVersion, object userContext);
+        public delegate Task PropertyUpdatedCallback(DigitalTwinPropertyUpdate propertyUpdate, object userContext);
         public delegate Task<DigitalTwinCommandResponse> CommandCallback(DigitalTwinCommandRequest commandRequest, object userContext);
 
         internal PropertyUpdatedCallback PropertyUpdatedCB { get; private set; }
