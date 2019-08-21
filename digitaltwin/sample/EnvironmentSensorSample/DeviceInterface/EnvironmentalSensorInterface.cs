@@ -31,11 +31,11 @@ namespace EnvironmentalSensorSample
         #endregion
 
         #region Read-write properties
-        public static async Task EnvironmentalSensorPropertiesCallbackAsync(DigitalTwinValue twinValue, long  desiredVersion, object userContext)
+        public static async Task EnvironmentalSensorPropertiesCallbackAsync(DigitalTwinPropertyUpdate propertyUpdate, object userContext)
         {
-            Console.WriteLine($"Customer name received is {twinValue.Value}.");
+            Console.WriteLine($"Received updates for property {propertyUpdate.PropertyName} = {Encoding.UTF8.GetString(propertyUpdate.PropertyDesired.Span)} with version = {propertyUpdate.DesiredVersion}");
 
-            //TODO: dispatch send reportproperty status async
+            //TODO: dispatch property update
         }
 
         //public async Task SetCustomerNameAsync(DigitalTwinValue customerNameUpdatedValue, long desiredVersion, object userContext)

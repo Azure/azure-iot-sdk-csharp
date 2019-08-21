@@ -187,14 +187,14 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client
             CommandCallback callback = interfaces[interfaceInstanceName].CommandHandler;
 
             var jsonObj  = JObject.Parse(methodRequest.DataAsJson);
-
+            var commandRequestValue = jsonObj.SelectToken(JsonCommandRequestValue)?.ToString();
             DigitalTwinCommandResponse response = await callback(
                 new DigitalTwinCommandRequest(
                     methodName,
-                    jsonObj.SelectToken(JsonCommandRequestId).ToString(),
-                    Encoding.UTF8.GetBytes(jsonObj.SelectToken(JsonCommandRequestValue).ToString())),
+                    jsonObj.SelectToken(JsonCommandRequestId)?.ToString(),
+                    commandRequestValue != null ? Encoding.UTF8.GetBytes(commandRequestValue) : null),
                     userContext).ConfigureAwait(false);
-
+            
             if (response.Payload != null)
             {
                 return new MethodResponse(
@@ -224,15 +224,29 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client
 
         private async Task GenericPropertyUpdateHandlerAsync(TwinCollection desiredProperties, object userContext)
         {
-            //JObject _json = JObject.Parse(desiredProperties.ToJson());
-            //string version = (string)_json[PnPConstants.ResponseVersion];
-            //foreach (var property in _json)
-            //{
-            //    if (interfaces.ContainsValue(property.Key))
-            //    {
-            //        await interfaces[property.Key].PropertyUpdatedHandler(property.Key, (JObject)property.Value, Convert.ToInt64(version, CultureInfo.InvariantCulture)).ConfigureAwait(false);
-            //    }
-            //}
+            JObject jsonObj = JObject.Parse(desiredProperties.ToString());
+            int version = (int)jsonObj["$version"];
+
+            foreach (var property in jsonObj)
+            {
+                if (string.CompareOrdinal(InterfacesPrefix, 0, property.Key, 0, InterfacesPrefix.Length) == 0)
+                {
+                    string interfaceInstanceName = property.Key.Substring(InterfacesPrefix.Length);
+                    PropertyUpdatedCallback callback = interfaces[interfaceInstanceName].PropertyUpdatedHandler;
+
+                    foreach (var childToken in property.Value.Children())
+                    {
+                        string propertyName = ((JProperty)childToken).Name;
+                        Memory<byte> propertyValue = Encoding.UTF8.GetBytes(((JProperty)childToken).Value["value"].ToString());
+                        await callback(new DigitalTwinPropertyUpdate(
+                            propertyName,
+                            version,
+                            propertyValue,
+                            null),
+                            userContext).ConfigureAwait(false);
+                    }
+                }
+            }
         }
         #endregion
     }
