@@ -2,6 +2,7 @@ name: Release_$(BuildID)_$(Date:yyyyMMdd)$(Rev:.r)
 phases:
 
 - phase: Build
+  condition: eq(coalesce(variables.build, True), True) # run this phase if 'variables.test' is undefined or equals 'True'
   steps:
   - checkout: self  # self represents the repo where the initial Pipelines YAML file was found
     persistCredentials: 'true'  # set to 'true' to leave the OAuth token in the Git config after the initial fetch
