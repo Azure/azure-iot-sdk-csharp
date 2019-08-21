@@ -72,7 +72,7 @@ phases:
     inputs:
       buildType: 'specific'
       project: 'f9b79625-2860-4d92-a4ee-57b03fabfd10'
-      pipeline: $(system.definitionId) # self
+      pipeline: '313' # self
       buildVersionToDownload: 'latest'
       downloadType: 'single'
       downloadPath: '$(System.ArtifactsDirectory)'
@@ -214,8 +214,8 @@ phases:
        docker ps -a
        echo "start tmp sim"
        start /D .\vsts\TpmSimulator Simulator.exe
-       build.cmd -configuration Release -nobuild -nounittests -nopackage -e2etests
-        
+       $(Build.SourcesDirectory)/build.ps1 -configuration Release -nobuild -nounittests -nopackage -e2etests
+       
     displayName: build
     env:
       IOTHUB_CONN_STRING_CSHARP: $(IOTHUB-CONN-STRING-CSHARP)
