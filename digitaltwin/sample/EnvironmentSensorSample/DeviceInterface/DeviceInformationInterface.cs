@@ -3,8 +3,11 @@
 
 using Microsoft.Azure.Devices.DigitalTwin.Client;
 using Microsoft.Azure.Devices.DigitalTwin.Client.Model;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace EnvironmentalSensorSample
@@ -13,78 +16,78 @@ namespace EnvironmentalSensorSample
     {
         private static string s_deviceInformationInterfaceId = "urn:azureiot:DeviceInformation:1";
         private static string s_deviceInformationInterfaceName = "deviceinfo";
-        private List<DigitalTwinProperty> propertyCollection;
-        private static object context = new object();
+        private Dictionary<string, object> propertyCollection;
 
         public DeviceInformationInterface() : base(s_deviceInformationInterfaceId, s_deviceInformationInterfaceName)
         {
-            propertyCollection = new List<DigitalTwinProperty>();
+            propertyCollection = new Dictionary<string, object>();
         }
 
         public void SetFirmwareVersion(string value)
         {
-            propertyCollection.Add(new DigitalTwinProperty(Constants.FirmwareVersion, DigitalTwinValue.CreateString(value)));
+            propertyCollection.Add(Constants.FirmwareVersion, value);
         }
 
         public void SetHardwareVersion(string value)
         {
-            propertyCollection.Add(new DigitalTwinProperty(Constants.HardwareVersion, DigitalTwinValue.CreateString(value)));
+            propertyCollection.Add(Constants.HardwareVersion, value);
         }
 
         public void SetManufacturer(string value)
         {
-            propertyCollection.Add(new DigitalTwinProperty(Constants.Manufacturer, DigitalTwinValue.CreateString(value)));
+            propertyCollection.Add(Constants.Manufacturer, value);
         }
 
         public void SetModel(string value)
         {
-            propertyCollection.Add(new DigitalTwinProperty(Constants.Model, DigitalTwinValue.CreateString(value)));
+            propertyCollection.Add(Constants.Model, value);
         }
 
         public void SetOriginalEquipmentManufacturer(string value)
         {
-            propertyCollection.Add(new DigitalTwinProperty(Constants.OriginalEquipmentManufacturer, DigitalTwinValue.CreateString(value)));
+            propertyCollection.Add(Constants.OriginalEquipmentManufacturer, value);
         }
 
         public void SetOperatingSystemName(string value)
         {
-            propertyCollection.Add(new DigitalTwinProperty(Constants.OperatingSystemName, DigitalTwinValue.CreateString(value)));
+            propertyCollection.Add(Constants.OperatingSystemName, value);
         }
 
         public void SetOperatingSystemVersion(string value)
         {
-            propertyCollection.Add(new DigitalTwinProperty(Constants.OperatingSystemVersion, DigitalTwinValue.CreateString(value)));
+            propertyCollection.Add(Constants.OperatingSystemVersion, value);
         }
 
         public void SetProcessorArchitecture(string value)
         {
-            propertyCollection.Add(new DigitalTwinProperty(Constants.ProcessorArchitecture, DigitalTwinValue.CreateString(value)));
+            propertyCollection.Add(Constants.ProcessorArchitecture, value);
         }
 
         public void SetProcessorType(string value)
         {
-            propertyCollection.Add(new DigitalTwinProperty(Constants.ProcessorType, DigitalTwinValue.CreateString(value)));
+            propertyCollection.Add(Constants.ProcessorType, value);
         }
 
         public void SetSerialNumber(string value)
         {
-            propertyCollection.Add(new DigitalTwinProperty(Constants.SerialNumber, DigitalTwinValue.CreateString(value)));
+            propertyCollection.Add(Constants.SerialNumber, value);
         }
 
         public void SetTotalMemory(double value)
         {
-            propertyCollection.Add(new DigitalTwinProperty(Constants.TotalMemory, DigitalTwinValue.CreateDouble(value)));
+            propertyCollection.Add(Constants.TotalMemory, value);
         }
 
         public void SetTotalStorage(double value)
         {
-            propertyCollection.Add(new DigitalTwinProperty(Constants.TotalStorage, DigitalTwinValue.CreateDouble(value)));
+            propertyCollection.Add(Constants.TotalStorage, value);
         }
 
         #region Read-Only properties
         public async Task SendAllPropertiesAsync()
         {
-            await ReportPropertiesAsync(propertyCollection).ConfigureAwait(false);
+            string output = JsonConvert.SerializeObject(propertyCollection);
+            await ReportPropertiesAsync(new Memory<byte>(Encoding.UTF8.GetBytes(output))).ConfigureAwait(false);
             propertyCollection.Clear();
         }
         #endregion

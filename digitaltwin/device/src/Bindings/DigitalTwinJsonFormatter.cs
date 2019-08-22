@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client.Bindings
     /// <summary>
     /// The Json Serializer.
     /// </summary>
-    public class DigitalTwinJsonFormatter : IDigitalTwinFormatter
+    internal class DigitalTwinJsonFormatter : IDigitalTwinFormatter
     {
         /// <summary>
         /// Serialize to string

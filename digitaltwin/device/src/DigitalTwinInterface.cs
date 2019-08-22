@@ -4,6 +4,8 @@
 using Microsoft.Azure.Devices.DigitalTwin.Client.Exceptions;
 using Microsoft.Azure.Devices.DigitalTwin.Client.Helper;
 using Microsoft.Azure.Devices.DigitalTwin.Client.Model;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
@@ -50,7 +52,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client
         /// Reports property to the cloud service.
         /// </summary>
         /// <param name="property">The digital twin property.</param>
-        protected async Task ReportPropertiesAsync(IEnumerable<DigitalTwinProperty> properties)
+        protected async Task ReportPropertiesAsync(Memory<byte> properties)
         {
             await ReportPropertiesAsync(properties, CancellationToken.None).ConfigureAwait(false);
         }
@@ -60,7 +62,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client
         /// </summary>
         /// <param name="property">The digital twin property.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        protected async Task ReportPropertiesAsync(IEnumerable<DigitalTwinProperty> properties, CancellationToken cancellationToken)
+        protected async Task ReportPropertiesAsync(Memory<byte> properties, CancellationToken cancellationToken)
         {
             ThrowIfInterfaceNotRegistered();
             await digitalTwinClient.ReportPropertiesAsync(Id, InstanceName, properties, cancellationToken).ConfigureAwait(false);
@@ -72,9 +74,9 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client
         /// Sends an telemetry event to the cloud service.
         /// </summary>
         /// <parm name="telemetryValue">The telemetry name and telemetry value.</parm>
-        protected async Task SendTelemetryAsync(DigitalTwinProperty telemetryData)
+        protected async Task SendTelemetryAsync(string telemetryName, Memory<Byte> telemetryValue)
         {
-            await SendTelemetryAsync(telemetryData, CancellationToken.None).ConfigureAwait(false);
+            await SendTelemetryAsync(telemetryName, telemetryValue, CancellationToken.None).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -82,10 +84,10 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client
         /// </summary>
         /// <parm name="telemetryValue">The telemetry name and telemetry value.</parm>
         /// <param name="cancellationToken">The cancellation token.</param>
-        protected async Task SendTelemetryAsync(DigitalTwinProperty telemetryData, CancellationToken cancellationToken)
+        protected async Task SendTelemetryAsync(string telemetryName, Memory<Byte> telemetryValue, CancellationToken cancellationToken)
         {
             ThrowIfInterfaceNotRegistered();
-            await digitalTwinClient.SendTelemetryAsync(Id, InstanceName, telemetryData, cancellationToken).ConfigureAwait(false);
+            await digitalTwinClient.SendTelemetryAsync(Id, InstanceName, telemetryName, telemetryValue, cancellationToken).ConfigureAwait(false);
         }
         #endregion
 
