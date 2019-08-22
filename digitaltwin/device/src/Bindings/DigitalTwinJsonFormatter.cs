@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.DigitalTwin.Client.Model;
+using Azure.Iot.DigitalTwin.Device.Model;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 
-namespace Microsoft.Azure.Devices.DigitalTwin.Client.Bindings
+namespace Azure.Iot.DigitalTwin.Device.Bindings
 {
     /// <summary>
     /// The Json Serializer.

@@ -1,14 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.DigitalTwin.Client.Helper;
+using Azure.Iot.DigitalTwin.Device.Helper;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.Azure.Devices.DigitalTwin.Client.Model
+namespace Azure.Iot.DigitalTwin.Device.Model
 {
     /// <summary>
     /// A collection of key value data pairs. This collection doesn't have meta data for properties, only actual data values.

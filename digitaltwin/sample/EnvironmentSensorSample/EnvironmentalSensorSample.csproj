@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\device\src\Microsoft.Azure.Devices.DigitalTwin.Client.csproj" />
+    <ProjectReference Include="..\..\device\src\Azure.Iot.DigitalTwin.Device.csproj" />
   </ItemGroup>
 
 </Project>
