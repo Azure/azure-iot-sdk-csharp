@@ -195,12 +195,9 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client
                     commandRequestValue != null ? Encoding.UTF8.GetBytes(commandRequestValue) : null),
                     userContext).ConfigureAwait(false);
             
-            if (response.Payload != null)
+            if (!response.Payload.IsEmpty)
             {
-                return new MethodResponse(
-                    Encoding.UTF8.GetBytes(
-                        digitalTwinFormatterCollection.FromObject(response.Payload)), 
-                    response.Status);
+                return new MethodResponse(response.Payload.ToArray(), response.Status);
             }
 
             return new MethodResponse(response.Status);
