@@ -83,11 +83,11 @@ namespace EnvironmentalSensorSample
         public static Task<DigitalTwinCommandResponse> EnvironmentalSensorCommandsCallbackAsync(DigitalTwinCommandRequest commandRequest, object userContext)
         {
             Console.WriteLine($"\t Command - {commandRequest.Name} was invoked from the service");
-            Console.WriteLine($"\t Data - {commandRequest.Payload.ToString()}.");
+            Console.WriteLine($"\t Data - {Encoding.UTF8.GetString(commandRequest.Payload.Span)}");
             Console.WriteLine($"\t Request Id - {commandRequest.RequestId}.");
 
             // TODO: trigger the callback and return command response
-            return Task.FromResult(new DigitalTwinCommandResponse(200));
+            return Task.FromResult(new DigitalTwinCommandResponse(200, Encoding.UTF8.GetBytes("{\"payload\": \"data\"}")));
         }
         #endregion
     }
