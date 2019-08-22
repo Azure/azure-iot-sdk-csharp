@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client.Model
     /// A collection of key value data pairs. This collection doesn't have meta data for properties, only actual data values.
     /// </summary>
     [JsonConverter(typeof(DataCollectionJsonConverter))]
-    public class DataCollection : IEnumerable<KeyValuePair<string, object>>
+    internal class DataCollection : IEnumerable<KeyValuePair<string, object>>
     {
         private JObject _properties;
 

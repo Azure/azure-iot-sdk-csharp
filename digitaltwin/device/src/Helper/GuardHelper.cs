@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client.Helper
     /// <summary>
     /// The Guard Helper.
     /// </summary>
-    public static class GuardHelper
+    internal static class GuardHelper
     {
         private static readonly TimeSpan s_regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
         private static readonly Regex s_interfaceIdPatternRegex = new Regex(@"^(http|https|ftp|file)\://[a-z0-9]+(\.[a-zA-Z0-9]*)+(/[a-z0-9]+)+/(\d+\.)?(\d+\.)?(\d+)$", RegexOptions.Compiled | RegexOptions.IgnoreCase, s_regexTimeoutMilliseconds);

@@ -6,7 +6,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client.Helper
     /// <summary>
     /// All constants related with Digital Twin Service sdk.
     /// </summary>
-    public static class DigitalTwinConstants
+    internal static class DigitalTwinConstants
     {
         /// <summary>
         /// The maximum allowed length of interface id.
