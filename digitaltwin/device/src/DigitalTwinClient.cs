@@ -60,15 +60,14 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client
                 interfaces.Add(dtInterface.InstanceName, dtInterface);
             }
 
-            var capabilityModelIdProperty = new DigitalTwinProperty(CapabilityModelIdTag, DigitalTwinValue.CreateString(capabilityModelId));
+            Dictionary<string, Object> telemetryValues = new Dictionary<string, object>();
 
-            var interfacesProperty = new DigitalTwinProperty(
-                InterfacesTag,
-                DigitalTwinValue.CreateObject(new DataCollection(digitalTwinFormatterCollection.FromObject(interfaceName))));
+            telemetryValues.Add(CapabilityModelIdTag, capabilityModelId );
+            telemetryValues.Add(InterfacesTag, new DataCollection(digitalTwinFormatterCollection.FromObject(interfaceName)));
 
             // send register interface 
             await deviceClient.SendEventAsync(
-                CreateRegistrationMessage(new[] { capabilityModelIdProperty, interfacesProperty }), cancellationToken).ConfigureAwait(false);
+                CreateRegistrationMessage(telemetryValues), cancellationToken).ConfigureAwait(false);
 
             foreach (var dtInterface in dtInterfaces)
             {
@@ -90,12 +89,23 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client
         #endregion
 
         #region IoTHubOperations 
-        internal async Task ReportPropertiesAsync(string interfaceId, string instanceName, IEnumerable<DigitalTwinProperty> properties, CancellationToken cancellationToken)
+        internal async Task ReportPropertiesAsync(string interfaceId, string instanceName, Memory<byte> propertiesJson, CancellationToken cancellationToken)
         {
-            TwinCollection twinCollection = new TwinCollection();
-            foreach (DigitalTwinProperty property in properties)
+            JObject properties = null;
+
+            try
             {
-                twinCollection[property.Name] = new Dictionary<string, object> { { "value", property.RawValue } };
+                properties = JObject.Parse(Encoding.UTF8.GetString(propertiesJson.Span));
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+
+            TwinCollection twinCollection = new TwinCollection();
+            foreach (JProperty property in properties.Children())
+            {
+                twinCollection[property.Name] = new Dictionary<string, object> { { "value", property.Value } };
             }
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -103,10 +113,11 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client
                 CreateKeyValueTwinCollection(InterfacesPrefix + instanceName, twinCollection)).ConfigureAwait(false);
         }
 
-        internal async Task SendTelemetryAsync(string interfaceId, string interfaceInstanceName, DigitalTwinProperty telemetryValue, CancellationToken cancellationToken)
+        internal async Task SendTelemetryAsync(string interfaceId, string interfaceInstanceName, string telemetryName, Memory<Byte> telemetryValue, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            await deviceClient.SendEventAsync(CreateDigitalTwinMessage(interfaceId, interfaceInstanceName, telemetryValue), cancellationToken).ConfigureAwait(false);
+            await deviceClient.SendEventAsync(
+                CreateDigitalTwinMessage(interfaceId, interfaceInstanceName, telemetryName, telemetryValue), cancellationToken).ConfigureAwait(false);
         }
 
         internal async Task UpdateAsyncCommandStatusAsync(string interfaceId, string instanceName, DigitalTwinAsyncCommandUpdate update, CancellationToken cancellationToken)
@@ -146,12 +157,11 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client
             return json;
         }
 
-        private Message CreateRegistrationMessage(IEnumerable<DigitalTwinProperty> telemetryValues)
-        {       
+        private Message CreateRegistrationMessage(IReadOnlyDictionary<string, object> telemetryValues)
+        {
             Message message = new Message(Encoding.UTF8.GetBytes(
                 digitalTwinFormatterCollection.FromObject(
-                        CreateKeyValueDataCollection(
-                            telemetryValues.Select(v => new KeyValuePair<string, object>(v.Name, v.RawValue))))));
+                        CreateKeyValueDataCollection(telemetryValues))));
             message.Properties.Add(IoTHubInterfaceId, ModelDiscoveryInterfaceId);
             message.Properties.Add(IothubInterfaceInstance, ModelDiscoveryInterfaceInstanceName);
             message.ContentType = JsonContentType;
@@ -159,16 +169,15 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client
             return message;
         }
 
-        private Message CreateDigitalTwinMessage(string interfaceId, string interfaceInstanceId, DigitalTwinProperty telemetryValue)
+        private Message CreateDigitalTwinMessage(string interfaceId, string interfaceInstanceId, string telemetryName, Memory<Byte> telemetryValue)
         {
-            Message message = new Message(
-                Encoding.UTF8.GetBytes(
-                    digitalTwinFormatterCollection.FromObject(
-                        CreateKeyValueDataCollection(telemetryValue.Name, telemetryValue.RawValue))));
+            string content = $"{{ \"{telemetryName}\": {Encoding.UTF8.GetString(telemetryValue.Span)} }}";
+
+            Message message = new Message(Encoding.UTF8.GetBytes(content));
             message.Properties.Add(IothubInterfaceInstance, interfaceInstanceId);
             message.Properties.Add(IoTHubInterfaceId, interfaceId);
             message.ContentType = JsonContentType;
-            message.MessageSchema = telemetryValue.Name;
+            message.MessageSchema = telemetryName;
             return message;
         }
 

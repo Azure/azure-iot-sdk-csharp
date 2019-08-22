@@ -6,7 +6,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client.Bindings
     /// <summary>
     /// The Interface of Digital Twin Serializer.
     /// </summary>
-    public interface IDigitalTwinFormatter
+    internal interface IDigitalTwinFormatter
     {
         /// <summary>
         /// Serialize to string

@@ -35,7 +35,7 @@ namespace EnvironmentalSensorSample
             await digitalTwinClient.RegisterInterfacesAsync(capabilityModelId, new DigitalTwinInterface[] { deviceInformationInterface, environmentalSensorInterface }).ConfigureAwait(false);
 
             // send device information
-            deviceInformationInterface.SetFirmwareVersion("359888");
+            deviceInformationInterface.SetFirmwareVersion("456888");
             deviceInformationInterface.SetHardwareVersion("9000C1");
             deviceInformationInterface.SetManufacturer("element14");
             deviceInformationInterface.SetModel("ModelIDxcdvmk");
@@ -45,12 +45,16 @@ namespace EnvironmentalSensorSample
             deviceInformationInterface.SetProcessorArchitecture("64-bit");
             deviceInformationInterface.SetProcessorType("ARMv8 CPU");
             deviceInformationInterface.SetSerialNumber("JH786AB0");
-            deviceInformationInterface.SetTotalMemory(128);
-            deviceInformationInterface.SetTotalStorage(64);
+            deviceInformationInterface.SetTotalMemory(1024);
+            deviceInformationInterface.SetTotalStorage(256);
             await deviceInformationInterface.SendAllPropertiesAsync().ConfigureAwait(false);
 
             // report properties data
             await environmentalSensorInterface.DeviceStatePropertyAsync(DeviceStateEnum.Online).ConfigureAwait(false);
+
+            // send telemetry
+            await environmentalSensorInterface.SendTemperatureAsync(37);
+            await environmentalSensorInterface.SendHumidityAsync(28);
         }
     }
 }
