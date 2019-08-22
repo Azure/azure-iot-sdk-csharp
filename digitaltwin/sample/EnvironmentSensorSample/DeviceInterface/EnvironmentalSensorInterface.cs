@@ -2,18 +2,12 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Data;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-using DotNetty.Transport.Channels;
-using Microsoft.Azure.Devices.DigitalTwin.Client;
-using Microsoft.Azure.Devices.DigitalTwin.Client.Model;
+using Azure.Iot.DigitalTwin.Device;
+using Azure.Iot.DigitalTwin.Device.Model;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace EnvironmentalSensorSample
 {
@@ -40,34 +34,6 @@ namespace EnvironmentalSensorSample
 
             //TODO: dispatch property update
         }
-
-        //public async Task SetCustomerNameAsync(DigitalTwinValue customerNameUpdatedValue, long desiredVersion, object userContext)
-        //{
-        //    // code to consume customer value, currently just displaying on screen.
-        //    Console.WriteLine($"Customer name received is {customerNameUpdatedValue.Value}.");
-
-        //    // report Completed
-        //    //await ReportPropertyStatusAsync(Constants.CustomerName, new DigitalTwinPropertyResponse(customerNameUpdatedValue, desiredVersion, DigitalTwinPropertyStatusCode.Completed, "Request completed")).ConfigureAwait(false);
-        //    Console.WriteLine("Sent completed status.");
-        //}
-
-        //public async Task SetBrightnessAsync(DigitalTwinValue brightnessUpdatedValue, long desiredVersion, object userContext)
-        //{
-        //    // code to consume light brightness value, currently just displaying on screen
-        //    Console.WriteLine($"Updated brightness value is {brightnessUpdatedValue.Value}.");
-
-        //    // report Pending
-        //    //await ReportPropertyStatusAsync(Constants.Brightness, new DigitalTwinPropertyResponse(brightnessUpdatedValue, desiredVersion, DigitalTwinPropertyStatusCode.Pending, "Processing Request")).ConfigureAwait(false);
-        //    Console.WriteLine("Sent pending status for brightness property.");
-
-        //    // do some action
-        //    await Task.Delay(5 * 1000).ConfigureAwait(false);
-        //    Console.WriteLine("Run script to update the time interval of telemetry frequency (in seconds).");
-
-        //    // report Completed
-        //    //await ReportReadWritePropertyStatusAsync(Constants.Brightness, new DigitalTwinPropertyResponse(brightnessUpdatedValue, desiredVersion, DigitalTwinPropertyStatusCode.Completed, "Request completed")).ConfigureAwait(false);
-        //    Console.WriteLine("Sent completed status for brightness property.");
-        //}
         #endregion
 
         #region Telemetry

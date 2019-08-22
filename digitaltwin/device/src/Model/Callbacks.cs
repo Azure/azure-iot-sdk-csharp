@@ -3,7 +3,7 @@
 
 using System.Threading.Tasks;
 
-namespace Microsoft.Azure.Devices.DigitalTwin.Client.Model
+namespace Azure.Iot.DigitalTwin.Device.Model
 {
     public class Callbacks
     {
