@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.DigitalTwin.Client.Bindings
     /// <summary>
     /// The Digital Twin Binding Formatter Collection.
     /// </summary>
-    public class DigitalTwinBindingFormatterCollection : Collection<IDigitalTwinFormatter>
+    internal class DigitalTwinBindingFormatterCollection : Collection<IDigitalTwinFormatter>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="DigitalTwinBindingFormatterCollection"/> class.

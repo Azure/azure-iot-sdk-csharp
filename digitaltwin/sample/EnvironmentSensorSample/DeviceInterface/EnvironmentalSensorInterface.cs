@@ -12,6 +12,8 @@ using System.Threading.Tasks;
 using DotNetty.Transport.Channels;
 using Microsoft.Azure.Devices.DigitalTwin.Client;
 using Microsoft.Azure.Devices.DigitalTwin.Client.Model;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace EnvironmentalSensorSample
 {
@@ -24,9 +26,10 @@ namespace EnvironmentalSensorSample
         #region Read-Only properties
         public async Task DeviceStatePropertyAsync(DeviceStateEnum state)
         {
-            List<DigitalTwinProperty> propertyCollection = new List<DigitalTwinProperty>();
-            propertyCollection.Add(new DigitalTwinProperty(Constants.DeviceState, DigitalTwinValue.CreateString(state.ToString())));
-            await ReportPropertiesAsync(propertyCollection).ConfigureAwait(false);
+            var propertyCollection = new Dictionary<string, string>();
+            propertyCollection.Add(Constants.DeviceState, state.ToString());
+            string output = JsonConvert.SerializeObject(propertyCollection);
+            await ReportPropertiesAsync(new Memory<byte>(Encoding.UTF8.GetBytes(output))).ConfigureAwait(false);
         }
         #endregion
 
@@ -70,12 +73,12 @@ namespace EnvironmentalSensorSample
         #region Telemetry
         public async Task SendTemperatureAsync(double temperature)
         {
-            await SendTelemetryAsync(new DigitalTwinProperty(Constants.Temperature, DigitalTwinValue.CreateDouble(temperature))).ConfigureAwait(false);
+            await SendTelemetryAsync(Constants.Temperature, Encoding.UTF8.GetBytes(temperature.ToString())).ConfigureAwait(false);
         }
 
         public async Task SendHumidityAsync(double humidity)
         {
-            await SendTelemetryAsync(new DigitalTwinProperty(Constants.Humidity, DigitalTwinValue.CreateDouble(humidity))).ConfigureAwait(false);
+            await SendTelemetryAsync(Constants.Humidity, Encoding.UTF8.GetBytes(humidity.ToString())).ConfigureAwait(false);
         }
         #endregion
 
