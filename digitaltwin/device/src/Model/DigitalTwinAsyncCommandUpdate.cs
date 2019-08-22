@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Microsoft.Azure.Devices.DigitalTwin.Client.Model
+namespace Azure.Iot.DigitalTwin.Device.Model
 {
     public class DigitalTwinAsyncCommandUpdate
     {

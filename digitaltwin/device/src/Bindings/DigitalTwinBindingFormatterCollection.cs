@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
-namespace Microsoft.Azure.Devices.DigitalTwin.Client.Bindings
+namespace Azure.Iot.DigitalTwin.Device.Bindings
 {
     /// <summary>
     /// The Digital Twin Binding Formatter Collection.

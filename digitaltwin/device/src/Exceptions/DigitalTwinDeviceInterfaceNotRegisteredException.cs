@@ -4,7 +4,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace Microsoft.Azure.Devices.DigitalTwin.Client.Exceptions
+namespace Azure.Iot.DigitalTwin.Device.Exceptions
 {
     /// <summary>
     /// This exception is thrown when the digital twin device interface is not registered.

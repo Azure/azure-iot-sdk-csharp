@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.28922.388
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "device", "device", "{588860D9-EB42-458A-B8B4-CE72C9F7A765}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.DigitalTwin.Client", "device\src\Microsoft.Azure.Devices.DigitalTwin.Client.csproj", "{5389DE61-ED83-4946-A668-5A3769CC6516}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Azure.Iot.DigitalTwin.Device", "device\src\Azure.Iot.DigitalTwin.Device.csproj", "{5389DE61-ED83-4946-A668-5A3769CC6516}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnvironmentalSensorSample", "sample\EnvironmentSensorSample\EnvironmentalSensorSample.csproj", "{1BA4CB73-85C4-4F92-8D1A-2BDE0D321A77}"
 EndProject

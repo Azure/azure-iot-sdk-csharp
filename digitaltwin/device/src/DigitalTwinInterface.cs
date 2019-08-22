@@ -1,18 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.DigitalTwin.Client.Exceptions;
-using Microsoft.Azure.Devices.DigitalTwin.Client.Helper;
-using Microsoft.Azure.Devices.DigitalTwin.Client.Model;
-using Newtonsoft.Json.Linq;
+using Azure.Iot.DigitalTwin.Device.Exceptions;
+using Azure.Iot.DigitalTwin.Device.Helper;
+using Azure.Iot.DigitalTwin.Device.Model;
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
-using static Microsoft.Azure.Devices.DigitalTwin.Client.Model.Callbacks;
+using static Azure.Iot.DigitalTwin.Device.Model.Callbacks;
 
-namespace Microsoft.Azure.Devices.DigitalTwin.Client
+namespace Azure.Iot.DigitalTwin.Device
 {
     public abstract class DigitalTwinInterface
     {

@@ -2,20 +2,19 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.Azure.Devices.Client;
-using Microsoft.Azure.Devices.DigitalTwin.Client.Bindings;
-using Microsoft.Azure.Devices.DigitalTwin.Client.Helper;
-using Microsoft.Azure.Devices.DigitalTwin.Client.Model;
+using Azure.Iot.DigitalTwin.Device.Bindings;
+using Azure.Iot.DigitalTwin.Device.Helper;
+using Azure.Iot.DigitalTwin.Device.Model;
 using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using static Microsoft.Azure.Devices.DigitalTwin.Client.Model.Callbacks;
+using static Azure.Iot.DigitalTwin.Device.Model.Callbacks;
 
-namespace Microsoft.Azure.Devices.DigitalTwin.Client
+namespace Azure.Iot.DigitalTwin.Device
 {
     public class DigitalTwinClient
     {
