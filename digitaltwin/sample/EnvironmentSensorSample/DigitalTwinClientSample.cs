@@ -9,10 +9,10 @@ namespace EnvironmentalSensorSample
     public class DigitalTwinClientSample
     {
         // Interfaces implemented by the device
-        private static string environmentalSensorInterfaceId = "urn:contoso:environmentalsensor:1";
-        private static string environmentalSensorInterfaceName = "environmentalsensor";
+        private static string environmentalSensorInterfaceId = "urn:contoso:com:EnvironmentalSensor:1";
+        private static string environmentalSensorInterfaceName = "environmentalSensor";
 
-        private static string capabilityModelId = "urn:contoso:com:dcm:1";
+        private static string capabilityModelId = "urn:azureiot:samplemodel:1";
 
         private static EnvironmentalSensorInterface environmentalSensorInterface;
         private static DeviceInformationInterface deviceInformationInterface;
