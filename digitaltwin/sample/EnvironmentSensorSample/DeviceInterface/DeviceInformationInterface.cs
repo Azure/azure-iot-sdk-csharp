@@ -12,8 +12,8 @@ namespace EnvironmentalSensorSample
 {
     public class DeviceInformationInterface : DigitalTwinInterface
     {
-        private static string s_deviceInformationInterfaceId = "urn:azureiot:DeviceInformation:1";
-        private static string s_deviceInformationInterfaceName = "deviceinfo";
+        private static string s_deviceInformationInterfaceId = "urn:azureiot:DeviceManagement:DeviceInformation:1";
+        private static string s_deviceInformationInterfaceName = "deviceInformation";
         private Dictionary<string, object> propertyCollection;
 
         public DeviceInformationInterface() : base(s_deviceInformationInterfaceId, s_deviceInformationInterfaceName)

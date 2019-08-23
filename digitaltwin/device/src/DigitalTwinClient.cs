@@ -26,8 +26,8 @@ namespace Azure.Iot.DigitalTwin.Device
         private const string JsonContentType = "application/json";
 
         private const string ModelDiscoveryInterfaceId = "urn:azureiot:ModelDiscovery:ModelInformation:1";
-        private const string ModelDiscoveryInterfaceInstanceName = "urn:azureiot:ModelDiscovery:ModelInformation";
-        private const string ModelInformationSchema = "modelInformation";
+        private const string ModelDiscoveryInterfaceInstanceName = "urn_azureiot_ModelDiscovery_ModelInformation";
+        private const string CapabilityReportTelemetryName = "modelInformation";
 
         private const string JsonCommandRequestId = "commandRequest.requestId";
         private const string JsonCommandRequestValue = "commandRequest.value";
@@ -51,6 +51,7 @@ namespace Azure.Iot.DigitalTwin.Device
         public async Task RegisterInterfacesAsync(string capabilityModelId, DigitalTwinInterface[] dtInterfaces, CancellationToken cancellationToken)
         {
             var interfaceName = new Dictionary<string, string>();
+            interfaceName.Add("urn_azureiot_ModelDiscovery_ModelInformation", "urn:azureiot:ModelDiscovery:ModelInformation:1");
 
             foreach (var dtInterface in dtInterfaces)
             {
@@ -59,14 +60,18 @@ namespace Azure.Iot.DigitalTwin.Device
                 interfaces.Add(dtInterface.InstanceName, dtInterface);
             }
 
-            Dictionary<string, Object> telemetryValues = new Dictionary<string, object>();
+            Dictionary<string, Object> modelInformation = new Dictionary<string, object>();
+            modelInformation.Add(CapabilityModelIdTag, capabilityModelId);
+            modelInformation.Add(InterfacesTag, new DataCollection(digitalTwinFormatterCollection.FromObject(interfaceName)));
 
-            telemetryValues.Add(CapabilityModelIdTag, capabilityModelId );
-            telemetryValues.Add(InterfacesTag, new DataCollection(digitalTwinFormatterCollection.FromObject(interfaceName)));
-
-            // send register interface 
+            // send register interface
             await deviceClient.SendEventAsync(
-                CreateRegistrationMessage(telemetryValues), cancellationToken).ConfigureAwait(false);
+                CreateTelemetryMessage(
+                    ModelDiscoveryInterfaceId, 
+                    ModelDiscoveryInterfaceInstanceName, 
+                    CapabilityReportTelemetryName, 
+                    digitalTwinFormatterCollection.FromObject(CreateKeyValueDataCollection(modelInformation))), 
+                cancellationToken).ConfigureAwait(false);
 
             foreach (var dtInterface in dtInterfaces)
             {
@@ -116,7 +121,7 @@ namespace Azure.Iot.DigitalTwin.Device
         {
             cancellationToken.ThrowIfCancellationRequested();
             await deviceClient.SendEventAsync(
-                CreateDigitalTwinMessage(interfaceId, interfaceInstanceName, telemetryName, telemetryValue), cancellationToken).ConfigureAwait(false);
+                CreateTelemetryMessage(interfaceId, interfaceInstanceName, telemetryName, Encoding.UTF8.GetString(telemetryValue.Span)), cancellationToken).ConfigureAwait(false);
         }
 
         internal async Task UpdateAsyncCommandStatusAsync(string interfaceId, string instanceName, DigitalTwinAsyncCommandUpdate update, CancellationToken cancellationToken)
@@ -156,21 +161,9 @@ namespace Azure.Iot.DigitalTwin.Device
             return json;
         }
 
-        private Message CreateRegistrationMessage(IReadOnlyDictionary<string, object> telemetryValues)
+        private static Message CreateTelemetryMessage(string interfaceId, string interfaceInstanceId, string telemetryName, string telemetryValue)
         {
-            Message message = new Message(Encoding.UTF8.GetBytes(
-                digitalTwinFormatterCollection.FromObject(
-                        CreateKeyValueDataCollection(telemetryValues))));
-            message.Properties.Add(IoTHubInterfaceId, ModelDiscoveryInterfaceId);
-            message.Properties.Add(IothubInterfaceInstance, ModelDiscoveryInterfaceInstanceName);
-            message.ContentType = JsonContentType;
-            message.MessageSchema = ModelInformationSchema;
-            return message;
-        }
-
-        private Message CreateDigitalTwinMessage(string interfaceId, string interfaceInstanceId, string telemetryName, Memory<Byte> telemetryValue)
-        {
-            string content = $"{{ \"{telemetryName}\": {Encoding.UTF8.GetString(telemetryValue.Span)} }}";
+            string content = $"{{ \"{telemetryName}\": {telemetryValue} }}";
 
             Message message = new Message(Encoding.UTF8.GetBytes(content));
             message.Properties.Add(IothubInterfaceInstance, interfaceInstanceId);
