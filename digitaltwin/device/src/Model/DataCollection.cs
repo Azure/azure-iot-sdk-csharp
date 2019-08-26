@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Azure.Iot.DigitalTwin.Device.Helper;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+
+using Azure.Iot.DigitalTwin.Device.Helper;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -16,7 +17,7 @@ namespace Azure.Iot.DigitalTwin.Device.Model
     [JsonConverter(typeof(DataCollectionJsonConverter))]
     internal class DataCollection : IEnumerable<KeyValuePair<string, object>>
     {
-        private JObject _properties;
+        private JObject properties;
 
         /// <summary>
         /// Creates an instance of <see cref="DataCollection"/>.
@@ -38,7 +39,7 @@ namespace Azure.Iot.DigitalTwin.Device.Model
 
         private DataCollection(JObject properties)
         {
-            _properties = properties;
+            this.properties = properties;
         }
 
         /// <summary>
@@ -51,24 +52,25 @@ namespace Azure.Iot.DigitalTwin.Device.Model
             get
             {
                 JToken jtoken;
-                if (_properties.TryGetValue(propertyName, out jtoken))
+                if (this.properties.TryGetValue(propertyName, out jtoken))
                 {
                     return jtoken;
                 }
 
                 return string.Empty;
             }
+
             set
             {
                 JToken valueJToken = value == null ? null : JToken.FromObject(value, new JsonSerializer() { DateParseHandling = DateParseHandling.None });
                 JToken ignored;
-                if (_properties.TryGetValue(propertyName, out ignored))
+                if (this.properties.TryGetValue(propertyName, out ignored))
                 {
-                    _properties[propertyName] = valueJToken;
+                    this.properties[propertyName] = valueJToken;
                 }
                 else
                 {
-                    _properties.Add(propertyName, valueJToken);
+                    this.properties.Add(propertyName, valueJToken);
                 }
             }
         }
@@ -80,7 +82,7 @@ namespace Azure.Iot.DigitalTwin.Device.Model
         /// <returns>JSON string</returns>
         public string ToJson(Formatting formatting = Formatting.None)
         {
-            return JsonConvert.SerializeObject(_properties, formatting);
+            return JsonConvert.SerializeObject(this.properties, formatting);
         }
 
         /// <summary>
@@ -89,7 +91,7 @@ namespace Azure.Iot.DigitalTwin.Device.Model
         /// <returns></returns>
         public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
         {
-            foreach (KeyValuePair<string, JToken> kvp in _properties)
+            foreach (KeyValuePair<string, JToken> kvp in this.properties)
             {
                 yield return new KeyValuePair<string, dynamic>(kvp.Key, this[kvp.Key]);
             }
@@ -103,7 +105,7 @@ namespace Azure.Iot.DigitalTwin.Device.Model
         /// </returns>
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return GetEnumerator();
+            return this.GetEnumerator();
         }
 
         /// <summary>
@@ -112,10 +114,10 @@ namespace Azure.Iot.DigitalTwin.Device.Model
         /// <returns>a json string of the properties.</returns>
         public override string ToString()
         {
-            return _properties.ToString();
+            return this.properties.ToString();
         }
 
-        internal JObject JObject => _properties;
+        internal JObject JObject => this.properties;
 
         /// <summary>
         /// This is needed because JObject.Parse doesn't support DateParseHandling settings,

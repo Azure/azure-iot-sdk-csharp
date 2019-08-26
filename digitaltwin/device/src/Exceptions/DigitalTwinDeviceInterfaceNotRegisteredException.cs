@@ -9,12 +9,13 @@ namespace Azure.Iot.DigitalTwin.Device.Exceptions
     /// <summary>
     /// This exception is thrown when the digital twin device interface is not registered.
     /// </summary>
-    public class DigitalTwinDeviceInterfaceNotRegisteredException : Exception
+    public class DigitalTwinDeviceInterfaceNotRegisteredException : DigitalTwinException
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="DigitalTwinDeviceInterfaceNotRegisteredException"/> class.
         /// </summary>
         public DigitalTwinDeviceInterfaceNotRegisteredException()
+            : base()
         {
         }
 
@@ -23,7 +24,7 @@ namespace Azure.Iot.DigitalTwin.Device.Exceptions
         /// </summary>
         /// <param name="message">The error message.</param>
         public DigitalTwinDeviceInterfaceNotRegisteredException(string message)
-                : base(message)
+            : base(message)
         {
         }
 
@@ -34,16 +35,6 @@ namespace Azure.Iot.DigitalTwin.Device.Exceptions
         /// <param name="innerException">The inner exception.</param>
         public DigitalTwinDeviceInterfaceNotRegisteredException(string message, Exception innerException)
             : base(message, innerException)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DigitalTwinDeviceInterfaceNotRegisteredException"/> class.
-        /// </summary>
-        /// <param name="serializationInfo">The SerializationInfo that holds the serialized object data about the exception being thrown.</param>
-        /// <param name="streamingContext">The StreamingContext that contains contextual information about the source or destination.</param>
-        protected DigitalTwinDeviceInterfaceNotRegisteredException(SerializationInfo serializationInfo, StreamingContext streamingContext)
-            : base(serializationInfo, streamingContext)
         {
         }
     }
