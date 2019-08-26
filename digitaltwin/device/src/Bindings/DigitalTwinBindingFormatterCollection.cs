@@ -29,7 +29,7 @@ namespace Azure.Iot.DigitalTwin.Device.Bindings
         /// <returns>The serialized string.</returns>
         public string FromObject<T>(T userObject)
         {
-            IDigitalTwinFormatter digitaltwinSerializer = FindSerializer();
+            IDigitalTwinFormatter digitaltwinSerializer = this.FindSerializer();
             return digitaltwinSerializer.FromObject(userObject);
         }
 
@@ -41,7 +41,7 @@ namespace Azure.Iot.DigitalTwin.Device.Bindings
         /// <returns>The instance needs to be de-serialized.</returns>
         public T ToObject<T>(string value)
         {
-            IDigitalTwinFormatter digitalTwinSerializer = FindSerializer();
+            IDigitalTwinFormatter digitalTwinSerializer = this.FindSerializer();
             return digitalTwinSerializer.ToObject<T>(value);
         }
 
@@ -51,7 +51,7 @@ namespace Azure.Iot.DigitalTwin.Device.Bindings
         /// <returns>The Digital Twin Serializer.</returns>
         public IDigitalTwinFormatter FindSerializer()
         {
-            IDigitalTwinFormatter result = Items.FirstOrDefault();
+            IDigitalTwinFormatter result = this.Items.FirstOrDefault();
             if (result == null)
             {
                 throw new InvalidOperationException("Can't find the media type");

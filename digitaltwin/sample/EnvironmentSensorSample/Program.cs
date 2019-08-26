@@ -13,7 +13,7 @@ namespace EnvironmentalSensorSample
         //  "HostName=<iothub_host_name>;DeviceId=<device_id>;SharedAccessKey=<device_key>"
         //  "HostName=<iothub_host_name>;CredentialType=SharedAccessSignature;DeviceId=<device_id>;SharedAccessSignature=SharedAccessSignature sr=<iot_host>/devices/<device_id>&sig=<token>&se=<expiry_time>";
         private static string s_deviceConnectionString = Environment.GetEnvironmentVariable("IOTHUB_DEVICE_CONN_STRING");
-
+        
         // Select one of the following transports used by DeviceClient to connect to IoT Hub.
         private static TransportType s_transportType = TransportType.Mqtt;
 
@@ -24,16 +24,19 @@ namespace EnvironmentalSensorSample
                 s_deviceConnectionString = args[0];
             }
             
-            DigitalTwinClient digitalTwinClient = new DigitalTwinClient(DeviceClient.CreateFromConnectionString(s_deviceConnectionString, s_transportType));
-
-            if (digitalTwinClient == null)
+            using (var deviceClient = DeviceClient.CreateFromConnectionString(s_deviceConnectionString, s_transportType))
             {
-                Console.WriteLine("Failed to create DeviceClient!");
-                return 1;
-            }
+                DigitalTwinClient digitalTwinClient = new DigitalTwinClient(deviceClient);
 
-            var sample = new DigitalTwinClientSample(digitalTwinClient);
-            sample.RunSampleAsync().GetAwaiter().GetResult();
+                if (digitalTwinClient == null)
+                {
+                    Console.WriteLine("Failed to create DeviceClient!");
+                    return 1;
+                }
+
+                var sample = new DigitalTwinClientSample(digitalTwinClient);
+                sample.RunSampleAsync().GetAwaiter().GetResult();
+            }
 
             Console.WriteLine("Waiting to receive updates from cloud...\n");
             Console.ReadLine();
