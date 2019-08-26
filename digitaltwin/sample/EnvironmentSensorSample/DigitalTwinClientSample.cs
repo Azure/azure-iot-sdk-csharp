@@ -9,10 +9,10 @@ namespace EnvironmentalSensorSample
     public class DigitalTwinClientSample
     {
         // Interfaces implemented by the device
-        private static string environmentalSensorInterfaceId = "urn:contoso:com:EnvironmentalSensor:1";
+        private static string environmentalSensorInterfaceId = "urn:csharp_sdk_sample:EnvironmentalSensor:1";
         private static string environmentalSensorInterfaceName = "environmentalSensor";
 
-        private static string capabilityModelId = "urn:azureiot:samplemodel:1";
+        private static string capabilityModelId = "urn:csharp_sdk_sample:sample_device:1";
 
         private static EnvironmentalSensorInterface environmentalSensorInterface;
         private static DeviceInformationInterface deviceInformationInterface;
@@ -32,25 +32,21 @@ namespace EnvironmentalSensorSample
         public async Task RunSampleAsync()
         {
             // register interface(s) for the device
-            await digitalTwinClient.RegisterInterfacesAsync(capabilityModelId, new DigitalTwinInterface[] { deviceInformationInterface, environmentalSensorInterface }).ConfigureAwait(false);
+            await digitalTwinClient.RegisterInterfacesAsync(capabilityModelId, new DigitalTwinInterfaceClient[] { deviceInformationInterface, environmentalSensorInterface }).ConfigureAwait(false);
 
             // send device information
-            deviceInformationInterface.SetFirmwareVersion("456888");
-            deviceInformationInterface.SetHardwareVersion("9000C1");
             deviceInformationInterface.SetManufacturer("element14");
             deviceInformationInterface.SetModel("ModelIDxcdvmk");
-            deviceInformationInterface.SetOriginalEquipmentManufacturer("Raspberry Pi");
+            deviceInformationInterface.SetSoftwareVersion("1.0.0");
             deviceInformationInterface.SetOperatingSystemName("Windows 10");
-            deviceInformationInterface.SetOperatingSystemVersion("122.0.0");
             deviceInformationInterface.SetProcessorArchitecture("64-bit");
-            deviceInformationInterface.SetProcessorType("ARMv8 CPU");
-            deviceInformationInterface.SetSerialNumber("JH786AB0");
+            deviceInformationInterface.SetProcessorManufacturer("Intel");
             deviceInformationInterface.SetTotalMemory(1024);
             deviceInformationInterface.SetTotalStorage(256);
             await deviceInformationInterface.SendAllPropertiesAsync().ConfigureAwait(false);
 
             // report properties data
-            await environmentalSensorInterface.DeviceStatePropertyAsync(DeviceStateEnum.Online).ConfigureAwait(false);
+            await environmentalSensorInterface.DeviceStatePropertyAsync(true).ConfigureAwait(false);
 
             // send telemetry
             await environmentalSensorInterface.SendTemperatureAsync(37);

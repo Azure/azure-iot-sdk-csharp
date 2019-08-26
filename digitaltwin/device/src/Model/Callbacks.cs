@@ -8,15 +8,17 @@ namespace Azure.Iot.DigitalTwin.Device.Model
     public class Callbacks
     {
         public delegate Task PropertyUpdatedCallback(DigitalTwinPropertyUpdate propertyUpdate, object userContext);
+
         public delegate Task<DigitalTwinCommandResponse> CommandCallback(DigitalTwinCommandRequest commandRequest, object userContext);
 
         internal PropertyUpdatedCallback PropertyUpdatedCB { get; private set; }
+
         internal CommandCallback CommandCB { get; private set; }
 
         public Callbacks(PropertyUpdatedCallback propertyUpdatedCallback, CommandCallback commandCallback)
         {
-            CommandCB = commandCallback;
-            PropertyUpdatedCB = propertyUpdatedCallback;
+            this.CommandCB = commandCallback;
+            this.PropertyUpdatedCB = propertyUpdatedCallback;
         }
     }
 }
