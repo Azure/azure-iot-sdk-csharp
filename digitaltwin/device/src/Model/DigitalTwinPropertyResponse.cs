@@ -1,9 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace Azure.Iot.DigitalTwin.Device.Model
 {
+    /// <summary>
+    /// Contains response of the property update request passed from the Digital Twin Client to Digital Twin 
+    /// Interface Client for further processing.
+    /// </summary>
     public class DigitalTwinPropertyResponse
     {
         /// <summary>
@@ -14,13 +17,13 @@ namespace Azure.Iot.DigitalTwin.Device.Model
         /// <param name="statusDescription">Friendly description string of current status of update.</param>
         public DigitalTwinPropertyResponse(int respondVersion, int statusCode, string statusDescription)
         {
-            RespondVersion = respondVersion;
-            StatusCode = statusCode;
-            StatusDescription = statusDescription;
+            this.RespondVersion = respondVersion;
+            this.StatusCode = statusCode;
+            this.StatusDescription = statusDescription;
         }
 
         /// <summary>
-        /// The respond version is used for server to disambiguate calls for given property.
+        /// Gets the version which is used for server to disambiguate calls for given property.
         /// </summary>
         public int RespondVersion
         {
@@ -28,13 +31,16 @@ namespace Azure.Iot.DigitalTwin.Device.Model
         }
 
         /// <summary>
-        /// The status code which maps to appropriate HTTP status code of the property updates.
+        /// Gets the status code associated with the respond.
         /// </summary>
         public int StatusCode
         {
             get; private set;
         }
 
+        /// <summary>
+        /// Gets the status description associated with the respond.
+        /// </summary>
         public string StatusDescription
         {
             get; private set;

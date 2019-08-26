@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+
 using Azure.Iot.DigitalTwin.Device.Model;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System;
 
 namespace Azure.Iot.DigitalTwin.Device.Bindings
 {
@@ -41,9 +42,9 @@ namespace Azure.Iot.DigitalTwin.Device.Bindings
 
             // If consumer pass Object or dynamic as T and result is a complex json object,
             // in order to represent as JObject, we represent as DataCollection.
-            if (typeof(T) == typeof(Object) && result != null && result.GetType() == typeof(JObject))
+            if (typeof(T) == typeof(object) && result != null && result.GetType() == typeof(JObject))
             {
-                result = (T)(new DataCollection(value) as Object);
+                result = (T)(new DataCollection(value) as object);
             }
 
             return result;

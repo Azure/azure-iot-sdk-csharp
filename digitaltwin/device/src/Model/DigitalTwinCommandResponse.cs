@@ -5,6 +5,10 @@ using System;
 
 namespace Azure.Iot.DigitalTwin.Device.Model
 {
+    /// <summary>
+    /// Contains response of the command passed from the Digital Twin Interface Client to Digital Twin Client
+    /// for further processing (response to service).
+    /// </summary>
     public class DigitalTwinCommandResponse
     {
         /// <summary>
@@ -14,8 +18,8 @@ namespace Azure.Iot.DigitalTwin.Device.Model
         /// <param name="payload">The response data of command execution.</param>
         public DigitalTwinCommandResponse(int status, Memory<byte> payload)
         {
-            Payload = payload;
-            Status = status;
+            this.Payload = payload;
+            this.Status = status;
         }
 
         /// <summary>
@@ -24,11 +28,11 @@ namespace Azure.Iot.DigitalTwin.Device.Model
         /// <param name="status">The status of the executed command.</param>
         public DigitalTwinCommandResponse(int status)
         {
-            Status = status;
+            this.Status = status;
         }
 
         /// <summary>
-        /// The response value after the command executed.
+        /// Gets the serialized json representation of the payload in the response.
         /// </summary>
         public Memory<byte> Payload
         {
@@ -36,7 +40,7 @@ namespace Azure.Iot.DigitalTwin.Device.Model
         }
 
         /// <summary>
-        /// The status of command executed.
+        /// Gets the status of the response.
         /// </summary>
         public int Status
         {

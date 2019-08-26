@@ -1,21 +1,26 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices.Client;
-using Azure.Iot.DigitalTwin.Device.Bindings;
-using Azure.Iot.DigitalTwin.Device.Helper;
-using Azure.Iot.DigitalTwin.Device.Model;
-using Microsoft.Azure.Devices.Shared;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+
+using Azure.Iot.DigitalTwin.Device.Bindings;
+using Azure.Iot.DigitalTwin.Device.Helper;
+using Azure.Iot.DigitalTwin.Device.Model;
+using Microsoft.Azure.Devices.Client;
+using Microsoft.Azure.Devices.Shared;
+using Newtonsoft.Json.Linq;
+
 using static Azure.Iot.DigitalTwin.Device.Model.Callbacks;
 
 namespace Azure.Iot.DigitalTwin.Device
 {
+    /// <summary>
+    /// Digital Twin Client binds Digital Twin interfaces handles to the IoTHub transport.
+    /// </summary>
     public class DigitalTwinClient
     {
         private const string CapabilityModelIdTag = "capabilityModelId";
@@ -33,67 +38,73 @@ namespace Azure.Iot.DigitalTwin.Device
         private const string JsonCommandRequestValue = "commandRequest.value";
 
         private readonly DeviceClient deviceClient;
-        private Dictionary<string, DigitalTwinInterface> interfaces = new Dictionary<string, DigitalTwinInterface>();
         private readonly DigitalTwinBindingFormatterCollection digitalTwinFormatterCollection;
 
+        private Dictionary<string, DigitalTwinInterfaceClient> interfaces = new Dictionary<string, DigitalTwinInterfaceClient>();
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DigitalTwinClient"/> class.
+        /// </summary>
+        /// <param name="deviceClient">the IotHub device client to be associated with. </param>
         public DigitalTwinClient(DeviceClient deviceClient)
         {
             this.deviceClient = deviceClient;
             this.digitalTwinFormatterCollection = new DigitalTwinBindingFormatterCollection();
         }
 
-        #region Register Interfaces
         /// <summary>
         /// Register list of interfaces. This method will replace any previously registered interfaces.
         /// </summary>
-        /// <param name="dtInterfaces">The list of digital twin interfaces.</param>
-        /// <parm name="cancellationToken">The cancellation token.</parm>
-        public async Task RegisterInterfacesAsync(string capabilityModelId, DigitalTwinInterface[] dtInterfaces, CancellationToken cancellationToken)
+        /// <param name="capabilityModelId">The capability model id.</param>
+        /// <param name="digitalTwinInterfaces">The list of digital twin interfaces.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>Task representing the asynchronous operation.</returns>
+        public async Task RegisterInterfacesAsync(string capabilityModelId, DigitalTwinInterfaceClient[] digitalTwinInterfaces, CancellationToken cancellationToken)
         {
             var interfaceName = new Dictionary<string, string>();
             interfaceName.Add("urn_azureiot_ModelDiscovery_ModelInformation", "urn:azureiot:ModelDiscovery:ModelInformation:1");
 
-            foreach (var dtInterface in dtInterfaces)
+            foreach (var dtInterface in digitalTwinInterfaces)
             {
                 GuardHelper.ThrowIfNull(dtInterface, nameof(dtInterface));
-                interfaceName.Add(dtInterface.InstanceName, dtInterface.Id);
-                interfaces.Add(dtInterface.InstanceName, dtInterface);
+                interfaceName.Add(dtInterface.Id, dtInterface.InstanceName);
+                this.interfaces.Add(dtInterface.Id, dtInterface);
             }
 
-            Dictionary<string, Object> modelInformation = new Dictionary<string, object>();
+            Dictionary<string, object> modelInformation = new Dictionary<string, object>();
             modelInformation.Add(CapabilityModelIdTag, capabilityModelId);
-            modelInformation.Add(InterfacesTag, new DataCollection(digitalTwinFormatterCollection.FromObject(interfaceName)));
+            modelInformation.Add(InterfacesTag, new DataCollection(this.digitalTwinFormatterCollection.FromObject(interfaceName)));
 
             // send register interface
-            await deviceClient.SendEventAsync(
+            await this.deviceClient.SendEventAsync(
                 CreateTelemetryMessage(
-                    ModelDiscoveryInterfaceId, 
-                    ModelDiscoveryInterfaceInstanceName, 
-                    CapabilityReportTelemetryName, 
-                    digitalTwinFormatterCollection.FromObject(CreateKeyValueDataCollection(modelInformation))), 
+                    ModelDiscoveryInterfaceId,
+                    ModelDiscoveryInterfaceInstanceName,
+                    CapabilityReportTelemetryName,
+                    this.digitalTwinFormatterCollection.FromObject(CreateKeyValueDataCollection(modelInformation))),
                 cancellationToken).ConfigureAwait(false);
 
-            foreach (var dtInterface in dtInterfaces)
+            foreach (var dtInterface in digitalTwinInterfaces)
             {
                 dtInterface.Initialize(this);
             }
 
             // TODO: send device information
-            await SetupDigitalTwinClientAsync().ConfigureAwait(false);
+            await this.SetupDigitalTwinClientAsync().ConfigureAwait(false);
         }
 
         /// <summary>
         /// Register list of interfaces. This method will replace any previously registered interfaces.
         /// </summary>
-        /// <param name="digitalTwinInterfaces">The list of digital twin interfaces.</param>
-        public async Task RegisterInterfacesAsync(string capabilityModelId, DigitalTwinInterface[] digitalTwinInterfaces)
+        /// <param name="capabilityModelId">The capability model id.</param>
+        /// <param name="digitalTwinInterfaceClients">The list of digital twin interfaces.</param>
+        /// <returns>Task representing the asynchronous operation.</returns>
+        public async Task RegisterInterfacesAsync(string capabilityModelId, DigitalTwinInterfaceClient[] digitalTwinInterfaceClients)
         {
-            await RegisterInterfacesAsync(capabilityModelId, digitalTwinInterfaces, CancellationToken.None).ConfigureAwait(false);
+            await this.RegisterInterfacesAsync(capabilityModelId, digitalTwinInterfaceClients, CancellationToken.None).ConfigureAwait(false);
         }
-        #endregion
 
-        #region IoTHubOperations 
-        internal async Task ReportPropertiesAsync(string interfaceId, string instanceName, Memory<byte> propertiesJson, CancellationToken cancellationToken)
+        internal async Task ReportPropertiesAsync(string instanceName, Memory<byte> propertiesJson, CancellationToken cancellationToken)
         {
             JObject properties = null;
 
@@ -113,14 +124,14 @@ namespace Azure.Iot.DigitalTwin.Device
             }
 
             cancellationToken.ThrowIfCancellationRequested();
-            await deviceClient.UpdateReportedPropertiesAsync(
+            await this.deviceClient.UpdateReportedPropertiesAsync(
                 CreateKeyValueTwinCollection(InterfacesPrefix + instanceName, twinCollection)).ConfigureAwait(false);
         }
 
-        internal async Task SendTelemetryAsync(string interfaceId, string interfaceInstanceName, string telemetryName, Memory<Byte> telemetryValue, CancellationToken cancellationToken)
+        internal async Task SendTelemetryAsync(string interfaceId, string interfaceInstanceName, string telemetryName, Memory<byte> telemetryValue, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            await deviceClient.SendEventAsync(
+            await this.deviceClient.SendEventAsync(
                 CreateTelemetryMessage(interfaceId, interfaceInstanceName, telemetryName, Encoding.UTF8.GetString(telemetryValue.Span)), cancellationToken).ConfigureAwait(false);
         }
 
@@ -129,22 +140,9 @@ namespace Azure.Iot.DigitalTwin.Device
             throw new NotImplementedException();
         }
 
-        private async Task SetupDigitalTwinClientAsync()
-        {
-            await deviceClient.SetMethodDefaultHandlerAsync(GenericMethodHandlerAsync, this).ConfigureAwait(false);
-            await deviceClient.SetDesiredPropertyUpdateCallbackAsync(GenericPropertyUpdateHandlerAsync, this).ConfigureAwait(false);
-        }
-
         private static TwinCollection CreateKeyValueTwinCollection(string key, object value)
         {
             TwinCollection json = new TwinCollection();
-            json[key] = value;
-            return json;
-        }
-
-        private static DataCollection CreateKeyValueDataCollection(string key, object value)
-        {
-            DataCollection json = new DataCollection();
             json[key] = value;
             return json;
         }
@@ -173,37 +171,6 @@ namespace Azure.Iot.DigitalTwin.Device
             return message;
         }
 
-        private async Task<MethodResponse> GenericMethodHandlerAsync(MethodRequest methodRequest, object userContext)
-        {
-            // parse the genericMethodRequest.Name to determine which interface to forward
-            // with the use interface reference to trigger the generic callback for the interface
-
-            (string interfaceInstanceName, string methodName) = ParseMethodRequestName(methodRequest.Name);
-
-            if (string.IsNullOrEmpty(interfaceInstanceName) || string.IsNullOrEmpty(methodName))
-            {
-                return new MethodResponse(404);
-            }
-
-            CommandCallback callback = interfaces[interfaceInstanceName].CommandHandler;
-
-            var jsonObj  = JObject.Parse(methodRequest.DataAsJson);
-            var commandRequestValue = jsonObj.SelectToken(JsonCommandRequestValue)?.ToString();
-            DigitalTwinCommandResponse response = await callback(
-                new DigitalTwinCommandRequest(
-                    methodName,
-                    jsonObj.SelectToken(JsonCommandRequestId)?.ToString(),
-                    commandRequestValue != null ? Encoding.UTF8.GetBytes(commandRequestValue) : null),
-                    userContext).ConfigureAwait(false);
-            
-            if (!response.Payload.IsEmpty)
-            {
-                return new MethodResponse(response.Payload.ToArray(), response.Status);
-            }
-
-            return new MethodResponse(response.Status);
-        }
-
         private static (string interfaceInstanceName, string methodName) ParseMethodRequestName(string methodRequestName)
         {
             if (string.CompareOrdinal(InterfacesPrefix, 0, methodRequestName, 0, InterfacesPrefix.Length) != 0)
@@ -220,6 +187,43 @@ namespace Azure.Iot.DigitalTwin.Device
             return (values[0], values[1]);
         }
 
+        private async Task SetupDigitalTwinClientAsync()
+        {
+            await this.deviceClient.SetMethodDefaultHandlerAsync(this.GenericMethodHandlerAsync, this).ConfigureAwait(false);
+            await this.deviceClient.SetDesiredPropertyUpdateCallbackAsync(this.GenericPropertyUpdateHandlerAsync, this).ConfigureAwait(false);
+        }
+
+        private async Task<MethodResponse> GenericMethodHandlerAsync(MethodRequest methodRequest, object userContext)
+        {
+            /* parse the genericMethodRequest.InstanceName to determine which interface to forward
+               with the use interface reference to trigger the generic callback for the interface */
+
+            (string interfaceInstanceName, string methodName) = ParseMethodRequestName(methodRequest.Name);
+
+            if (string.IsNullOrEmpty(interfaceInstanceName) || string.IsNullOrEmpty(methodName))
+            {
+                return new MethodResponse(404);
+            }
+
+            CommandCallback callback = this.interfaces[interfaceInstanceName].CommandHandler;
+
+            var jsonObj = JObject.Parse(methodRequest.DataAsJson);
+            var commandRequestValue = jsonObj.SelectToken(JsonCommandRequestValue)?.ToString();
+            DigitalTwinCommandResponse response = await callback(
+                new DigitalTwinCommandRequest(
+                    methodName,
+                    jsonObj.SelectToken(JsonCommandRequestId)?.ToString(),
+                    commandRequestValue != null ? Encoding.UTF8.GetBytes(commandRequestValue) : null),
+                userContext).ConfigureAwait(false);
+
+            if (!response.Payload.IsEmpty)
+            {
+                return new MethodResponse(response.Payload.ToArray(), response.Status);
+            }
+
+            return new MethodResponse(response.Status);
+        }
+
         private async Task GenericPropertyUpdateHandlerAsync(TwinCollection desiredProperties, object userContext)
         {
             JObject jsonObj = JObject.Parse(desiredProperties.ToString());
@@ -230,13 +234,14 @@ namespace Azure.Iot.DigitalTwin.Device
                 if (string.CompareOrdinal(InterfacesPrefix, 0, property.Key, 0, InterfacesPrefix.Length) == 0)
                 {
                     string interfaceInstanceName = property.Key.Substring(InterfacesPrefix.Length);
-                    PropertyUpdatedCallback callback = interfaces[interfaceInstanceName].PropertyUpdatedHandler;
+                    PropertyUpdatedCallback callback = this.interfaces[interfaceInstanceName].PropertyUpdatedHandler;
 
                     foreach (var childToken in property.Value.Children())
                     {
                         string propertyName = ((JProperty)childToken).Name;
                         Memory<byte> propertyValue = Encoding.UTF8.GetBytes(((JProperty)childToken).Value["value"].ToString());
-                        await callback(new DigitalTwinPropertyUpdate(
+                        await callback(
+                            new DigitalTwinPropertyUpdate(
                             propertyName,
                             version,
                             propertyValue,
@@ -246,6 +251,5 @@ namespace Azure.Iot.DigitalTwin.Device
                 }
             }
         }
-        #endregion
     }
 }

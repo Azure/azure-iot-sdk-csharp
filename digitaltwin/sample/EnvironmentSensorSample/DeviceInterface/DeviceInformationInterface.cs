@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace EnvironmentalSensorSample
 {
-    public class DeviceInformationInterface : DigitalTwinInterface
+    public class DeviceInformationInterface : DigitalTwinInterfaceClient
     {
         private static string s_deviceInformationInterfaceId = "urn:azureiot:DeviceManagement:DeviceInformation:1";
         private static string s_deviceInformationInterfaceName = "deviceInformation";
@@ -19,16 +19,6 @@ namespace EnvironmentalSensorSample
         public DeviceInformationInterface() : base(s_deviceInformationInterfaceId, s_deviceInformationInterfaceName)
         {
             propertyCollection = new Dictionary<string, object>();
-        }
-
-        public void SetFirmwareVersion(string value)
-        {
-            propertyCollection.Add(Constants.FirmwareVersion, value);
-        }
-
-        public void SetHardwareVersion(string value)
-        {
-            propertyCollection.Add(Constants.HardwareVersion, value);
         }
 
         public void SetManufacturer(string value)
@@ -41,9 +31,9 @@ namespace EnvironmentalSensorSample
             propertyCollection.Add(Constants.Model, value);
         }
 
-        public void SetOriginalEquipmentManufacturer(string value)
+        public void SetSoftwareVersion(string value)
         {
-            propertyCollection.Add(Constants.OriginalEquipmentManufacturer, value);
+            propertyCollection.Add(Constants.SoftwareVersion, value);
         }
 
         public void SetOperatingSystemName(string value)
@@ -51,24 +41,13 @@ namespace EnvironmentalSensorSample
             propertyCollection.Add(Constants.OperatingSystemName, value);
         }
 
-        public void SetOperatingSystemVersion(string value)
-        {
-            propertyCollection.Add(Constants.OperatingSystemVersion, value);
-        }
-
         public void SetProcessorArchitecture(string value)
         {
             propertyCollection.Add(Constants.ProcessorArchitecture, value);
         }
-
-        public void SetProcessorType(string value)
+        public void SetProcessorManufacturer(string value)
         {
-            propertyCollection.Add(Constants.ProcessorType, value);
-        }
-
-        public void SetSerialNumber(string value)
-        {
-            propertyCollection.Add(Constants.SerialNumber, value);
+            propertyCollection.Add(Constants.ProcessorManufacturer, value);
         }
 
         public void SetTotalMemory(double value)

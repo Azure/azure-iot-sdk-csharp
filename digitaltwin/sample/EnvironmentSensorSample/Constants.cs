@@ -7,106 +7,86 @@ namespace EnvironmentalSensorSample
     {
         #region Environmental Sensor Interface
         /// <summary>
-        /// Device State Property Name
+        /// Device State Property InstanceName
         /// </summary>
         public const string DeviceState = "state";
 
         /// <summary>
-        /// Customer Name Property Name
+        /// Customer InstanceName Property InstanceName
         /// </summary>
         public const string CustomerName = "name";
 
         /// <summary>
-        /// Brightness Level Property Name
+        /// Brightness Level Property InstanceName
         /// </summary>
         public const string Brightness = "brightness";
 
         /// <summary>
-        /// Temperature Property Name
+        /// Temperature Property InstanceName
         /// </summary>
         public const string Temperature = "temp";
 
         /// <summary>
-        /// Humidity Property Name
+        /// Humidity Property InstanceName
         /// </summary>
         public const string Humidity = "humid";
 
         /// <summary>
-        /// Blink Light Command Name
+        /// Blink Light Command InstanceName
         /// </summary>
         public const string BlinkCommandName = "blink";
 
         /// <summary>
-        /// Turn On Light Command Name
+        /// Turn On Light Command InstanceName
         /// </summary>
         public const string TurnOnLightCommad = "turnon";
 
         /// <summary>
-        /// Turn Off Light Command Name
+        /// Turn Off Light Command InstanceName
         /// </summary>
         public const string TurnOffLightCommand = "turnoff";
         #endregion
 
         #region Device Information Interface
         /// <summary>
-        /// Firmware Version Property Name
-        /// </summary>
-        public const string FirmwareVersion = "fwVersion";
-
-        /// <summary>
-        /// Hardware Version Property Name
-        /// </summary>
-        public const string HardwareVersion = "hwVersion";
-
-        /// <summary>
-        /// Manufacturer Property Name
+        /// Manufacturer Property InstanceName
         /// </summary>
         public const string Manufacturer = "manufacturer";
 
         /// <summary>
-        /// Model Property Name
+        /// Model Property InstanceName
         /// </summary>
         public const string Model = "model";
 
         /// <summary>
-        /// Original Equipment Manufacturer Property Name
+        /// Firmware Version Property InstanceName
         /// </summary>
-        public const string OriginalEquipmentManufacturer = "oem";
+        public const string SoftwareVersion = "swVersion";
 
         /// <summary>
-        /// Operating System Edition Property Name
+        /// Operating System Edition Property InstanceName
         /// </summary>
         public const string OperatingSystemName = "osName";
 
         /// <summary>
-        /// Operating System Version" Property Name
-        /// </summary>
-        public const string OperatingSystemVersion = "osVersion";
-
-        /// <summary>
-        /// Processor Architecture Property Name
+        /// Processor Architecture Property InstanceName
         /// </summary>
         public const string ProcessorArchitecture = "processorArchitecture";
 
         /// <summary>
-        /// Processor Type Property Name
+        /// Processor Manufacturer Property InstanceName
         /// </summary>
-        public const string ProcessorType = "processorType";
+        public const string ProcessorManufacturer = "processorManufacturer";
 
         /// <summary>
-        /// Serial Number Property Name
-        /// </summary>
-        public const string SerialNumber = "serialNumber";
-
-        /// <summary>
-        /// Total Memory Property Name
-        /// </summary>
-        public const string TotalMemory = "totalMemory";
-
-        /// <summary>
-        /// Total Storage Property Name
+        /// Total Storage Property InstanceName
         /// </summary>
         public const string TotalStorage = "totalStorage";
+
+        /// <summary>
+        /// Total Memory Property InstanceName
+        /// </summary>
+        public const string TotalMemory = "totalMemory";
         #endregion
 
     }
