@@ -2,16 +2,14 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Threading.Tasks;
+
 using Azure.Iot.DigitalTwin.Device;
 
 namespace EnvironmentalSensorSample
 {
     public class DigitalTwinClientSample
     {
-        // Interfaces implemented by the device
-        private static string environmentalSensorInterfaceId = "urn:csharp_sdk_sample:EnvironmentalSensor:1";
         private static string environmentalSensorInterfaceName = "environmentalSensor";
-
         private static string capabilityModelId = "urn:csharp_sdk_sample:sample_device:1";
 
         private static EnvironmentalSensorInterface environmentalSensorInterface;
@@ -23,7 +21,7 @@ namespace EnvironmentalSensorSample
             this.digitalTwinClient = digitalTwinClient;
 
             // create environmental sensor interface
-            environmentalSensorInterface = new EnvironmentalSensorInterface(environmentalSensorInterfaceId, environmentalSensorInterfaceName);
+            environmentalSensorInterface = new EnvironmentalSensorInterface(environmentalSensorInterfaceName);
 
             // create device information interface
             deviceInformationInterface = new DeviceInformationInterface();
@@ -32,10 +30,10 @@ namespace EnvironmentalSensorSample
         public async Task RunSampleAsync()
         {
             // register interface(s) for the device
-            await digitalTwinClient.RegisterInterfacesAsync(capabilityModelId, new DigitalTwinInterfaceClient[] { deviceInformationInterface, environmentalSensorInterface }).ConfigureAwait(false);
+            await this.digitalTwinClient.RegisterInterfacesAsync(capabilityModelId, new DigitalTwinInterfaceClient[] { deviceInformationInterface, environmentalSensorInterface }).ConfigureAwait(false);
 
             // send device information
-            deviceInformationInterface.SetManufacturer("element14");
+            deviceInformationInterface.SetManufacturer("element15");
             deviceInformationInterface.SetModel("ModelIDxcdvmk");
             deviceInformationInterface.SetSoftwareVersion("1.0.0");
             deviceInformationInterface.SetOperatingSystemName("Windows 10");
