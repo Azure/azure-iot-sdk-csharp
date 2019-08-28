@@ -19,7 +19,7 @@ namespace Azure.Iot.DigitalTwin.Device.Model
         /// <param name="requestId">The request id of the command to be updated.</param>
         /// <param name="status">The status of the the command to be updated.</param>
         /// <param name="payload">The serialized payload of the the command to be updated.</param>
-        public DigitalTwinAsyncCommandUpdate(string name, string requestId, int status, Memory<byte> payload)
+        public DigitalTwinAsyncCommandUpdate(string name, string requestId, int status, string payload)
         {
             this.Name = name;
             this.Payload = payload;
@@ -34,7 +34,7 @@ namespace Azure.Iot.DigitalTwin.Device.Model
         /// <param name="requestId">The request id of the command to be updated.</param>
         /// <param name="status">The status of the the command to be updated.</param>
         public DigitalTwinAsyncCommandUpdate(string name, string requestId, int status)
-            : this(name, requestId, status, Memory<byte>.Empty)
+            : this(name, requestId, status, string.Empty)
         {
         }
 
@@ -46,7 +46,7 @@ namespace Azure.Iot.DigitalTwin.Device.Model
         /// <summary>
         /// Gets the serialized payload associated with this update.
         /// </summary>
-        public Memory<byte> Payload { get; private set; }
+        public string Payload { get; private set; }
 
         /// <summary>
         /// Gets the command request id associated with this update.

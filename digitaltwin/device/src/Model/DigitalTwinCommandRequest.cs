@@ -17,7 +17,7 @@ namespace Azure.Iot.DigitalTwin.Device.Model
         /// <param name="name">The name of the command.</param>
         /// <param name="requestId"> The server generated identifier passed as part of the command.</param>
         /// <param name="payload"> The serialized json representation of the payload in the request.</param>
-        internal DigitalTwinCommandRequest(string name, string requestId, Memory<byte> payload)
+        internal DigitalTwinCommandRequest(string name, string requestId, string payload)
         {
             this.Name = name;
             this.RequestId = requestId;
@@ -37,6 +37,6 @@ namespace Azure.Iot.DigitalTwin.Device.Model
         /// <summary>
         /// Gets serialized json representation of the payload in the request.
         /// </summary>
-        public Memory<byte> Payload { get; private set; }
+        public string Payload { get; private set; }
     }
 }

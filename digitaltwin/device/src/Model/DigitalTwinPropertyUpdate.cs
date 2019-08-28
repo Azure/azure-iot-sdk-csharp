@@ -17,7 +17,7 @@ namespace Azure.Iot.DigitalTwin.Device.Model
         /// <param name="respondVersion">The response version.</param>
         /// <param name="statusCode">The status code which maps to appropriate HTTP status code of the property updates.</param>
         /// <param name="statusDescription">Friendly description string of current status of update.</param>
-        internal DigitalTwinPropertyUpdate(string propertyName, int desiredVersion, Memory<byte> propertyDesired, Memory<byte> propertyReported)
+        internal DigitalTwinPropertyUpdate(string propertyName, int desiredVersion, string propertyDesired, string propertyReported)
         {
             this.PropertyName = propertyName;
             this.DesiredVersion = desiredVersion;
@@ -38,7 +38,7 @@ namespace Azure.Iot.DigitalTwin.Device.Model
         /// This value may be NULL if the application never reported the property.  It will also
         /// be NULL when an update arrives to the given property after the initial callback.
         /// </summary>
-        public Memory<byte> PropertyReported
+        public string PropertyReported
         {
             get; private set;
         }
@@ -46,7 +46,7 @@ namespace Azure.Iot.DigitalTwin.Device.Model
         /// <summary>
         /// Gets the value of the service requests the given property to be set to.
         /// </summary>
-        public Memory<byte> PropertyDesired
+        public string PropertyDesired
         {
             get; private set;
         }
