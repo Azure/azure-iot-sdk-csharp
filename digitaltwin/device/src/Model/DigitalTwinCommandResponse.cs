@@ -16,7 +16,7 @@ namespace Azure.Iot.DigitalTwin.Device.Model
         /// </summary>
         /// <param name="status">The status of the executed command.</param>
         /// <param name="payload">The response data of command execution.</param>
-        public DigitalTwinCommandResponse(int status, Memory<byte> payload)
+        public DigitalTwinCommandResponse(int status, string payload)
         {
             this.Payload = payload;
             this.Status = status;
@@ -34,7 +34,7 @@ namespace Azure.Iot.DigitalTwin.Device.Model
         /// <summary>
         /// Gets the serialized json representation of the payload in the response.
         /// </summary>
-        public Memory<byte> Payload
+        public string Payload
         {
             get; private set;
         }

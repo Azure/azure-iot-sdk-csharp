@@ -1,10 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Azure.Iot.DigitalTwin.Device.Helper;
+
 namespace Azure.Iot.DigitalTwin.Device.Model
 {
     /// <summary>
-    /// Contains response of the property update request passed from the Digital Twin Client to Digital Twin 
+    /// Contains response of the property update request passed from the Digital Twin Client to Digital Twin
     /// Interface Client for further processing.
     /// </summary>
     public class DigitalTwinPropertyResponse
@@ -17,6 +19,8 @@ namespace Azure.Iot.DigitalTwin.Device.Model
         /// <param name="statusDescription">Friendly description string of current status of update.</param>
         public DigitalTwinPropertyResponse(int respondVersion, int statusCode, string statusDescription)
         {
+            GuardHelper.ThrowIfNullOrWhiteSpace(statusDescription, nameof(statusDescription));
+
             this.RespondVersion = respondVersion;
             this.StatusCode = statusCode;
             this.StatusDescription = statusDescription;
