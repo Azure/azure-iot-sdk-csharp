@@ -36,15 +36,5 @@ namespace Azure.Iot.DigitalTwin.Device.Exceptions
             : base(message, innerException)
         {
         }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DigitalTwinException"/> class.
-        /// </summary>
-        /// <param name="serializationInfo">The SerializationInfo that holds the serialized object data about the exception being thrown.</param>
-        /// <param name="streamingContext">The StreamingContext that contains contextual information about the source or destination.</param>
-        protected DigitalTwinException(SerializationInfo serializationInfo, StreamingContext streamingContext)
-            : base(serializationInfo, streamingContext)
-        {
-        }
     }
 }

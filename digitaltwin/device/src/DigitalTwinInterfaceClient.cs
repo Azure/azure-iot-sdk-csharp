@@ -1,16 +1,13 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
-
 using Azure.Iot.DigitalTwin.Device.Exceptions;
 using Azure.Iot.DigitalTwin.Device.Helper;
 using Azure.Iot.DigitalTwin.Device.Model;
-
-using static Azure.Iot.DigitalTwin.Device.Model.Callbacks;
 
 namespace Azure.Iot.DigitalTwin.Device
 {
@@ -26,55 +23,61 @@ namespace Azure.Iot.DigitalTwin.Device
         /// <summary>
         /// Initializes a new instance of the <see cref="DigitalTwinInterfaceClient"/> class.
         /// </summary>
-        /// <param name="id">the interface id. </param>
-        /// <param name="instanceName">the interface instance name. </param>
-        /// /// <param name="callbacks">the interface's callbacks. </param>
-        public DigitalTwinInterfaceClient(string id, string instanceName, Callbacks callbacks)
+        /// <param name="id">the interface id.</param>
+        /// <param name="instanceName">the interface instance name.</param>
+        /// <param name="isCommandEnabled">indicates if command is implemented in the interface.</param>
+        /// <param name="isPropertyUpdatedEnabled">indicates if property updated is required in the interface.</param>
+        protected DigitalTwinInterfaceClient(string id, string instanceName, bool isCommandEnabled, bool isPropertyUpdatedEnabled)
         {
             GuardHelper.ThrowIfInvalidInterfaceId(id, nameof(id));
             GuardHelper.ThrowIfInterfaceIdLengthInvalid(id, nameof(id));
             this.Id = id;
             this.InstanceName = instanceName;
-            if (callbacks != null)
-            {
-                this.CommandHandler = callbacks.CommandCB;
-                this.PropertyUpdatedHandler = callbacks.PropertyUpdatedCB;
-            }
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DigitalTwinInterfaceClient"/> class.
-        /// </summary>
-        /// <param name="id">the interface id. </param>
-        /// <param name="instanceName">the interface instance name. </param>
-        public DigitalTwinInterfaceClient(string id, string instanceName)
-            : this(id, instanceName, null)
-        {
+            this.IsCommandEnabled = isCommandEnabled;
+            this.IsPropertyUpdatedEnabled = isPropertyUpdatedEnabled;
         }
 
         /// <summary>
         /// Gets the interface instance name associated with this interface.
         /// </summary>
-        public string InstanceName { get; private set; }
+        internal string InstanceName { get; private set; }
 
         /// <summary>
         /// Gets the interface id associated with this interface.
         /// </summary>
-        public string Id { get; private set; }
+        internal string Id { get; private set; }
+
+        internal bool IsCommandEnabled { get; private set; }
+
+        internal bool IsPropertyUpdatedEnabled { get; private set; }
 
         /// <summary>
-        /// Gets the command handler associated with  this interface.
+        /// Callback for commands.  Triggers when a command is received at an interface.
         /// </summary>
-        internal CommandCallback CommandHandler { get; private set; }
-
-        /// <summary>
-        /// Gets the property updated handler associated with  this interface.
-        /// </summary>
-        internal PropertyUpdatedCallback PropertyUpdatedHandler { get; private set; }
-
-        internal void Initialize(DigitalTwinClient dtClient)
+        /// <param name="commandRequest">incoming command request.</param>
+        /// <returns>DigitalTwinCommandResponse.</returns>
+        public virtual Task<DigitalTwinCommandResponse> OnCommandRequest(DigitalTwinCommandRequest commandRequest)
         {
-            this.digitalTwinClient = dtClient;
+            return Task.FromResult(new DigitalTwinCommandResponse(404));
+        }
+
+
+        /// <summary>
+        /// Callback for property updates.  Triggers when a property update is received at an interface.
+        /// </summary>
+        /// <param name="propertyUpdate">incoming property updated notification.</param>
+        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
+        public virtual Task OnPropertyUpdated(DigitalTwinPropertyUpdate propertyUpdate)
+        {
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Initialize the digital twin        /// </summary>
+        /// <param name="digitalTwinClient"></param>
+        internal void Initialize(DigitalTwinClient digitalTwinClient)
+        {
+            this.digitalTwinClient = digitalTwinClient;
         }
 
         /// <summary>
@@ -82,7 +85,7 @@ namespace Azure.Iot.DigitalTwin.Device
         /// </summary>
         /// <param name="properties">The serialized json representing the property key and value pair(s) to be reported.</param>
         /// <returns>Task representing the asynchronous operation.</returns>
-        protected async Task ReportPropertiesAsync(Memory<byte> properties)
+        protected async Task ReportPropertiesAsync(IEnumerable<DigitalTwinPropertyReport> properties)
         {
             await this.ReportPropertiesAsync(properties, CancellationToken.None).ConfigureAwait(false);
         }
@@ -93,7 +96,7 @@ namespace Azure.Iot.DigitalTwin.Device
         /// <param name="properties">The serialized json containing the property key and value pair(s) to be reported.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task representing the asynchronous operation.</returns>
-        protected async Task ReportPropertiesAsync(Memory<byte> properties, CancellationToken cancellationToken)
+        protected async Task ReportPropertiesAsync(IEnumerable<DigitalTwinPropertyReport> properties, CancellationToken cancellationToken)
         {
             this.ThrowIfInterfaceNotRegistered();
             await this.digitalTwinClient.ReportPropertiesAsync(this.InstanceName, properties, cancellationToken).ConfigureAwait(false);
@@ -105,7 +108,7 @@ namespace Azure.Iot.DigitalTwin.Device
         /// <param name="telemetryName">>The telemetry name to be sent.</param>
         /// <param name="telemetryValue">The serialized representation the telemetry value to be sent.</param>
         /// <returns>Task representing the asynchronous operation.</returns>
-        protected async Task SendTelemetryAsync(string telemetryName, Memory<byte> telemetryValue)
+        protected async Task SendTelemetryAsync(string telemetryName, string telemetryValue)
         {
             await this.SendTelemetryAsync(telemetryName, telemetryValue, CancellationToken.None).ConfigureAwait(false);
         }
@@ -117,7 +120,7 @@ namespace Azure.Iot.DigitalTwin.Device
         /// <param name="telemetryValue">The serialized representation the telemetry value to be sent.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task representing the asynchronous operation.</returns>
-        protected async Task SendTelemetryAsync(string telemetryName, Memory<byte> telemetryValue, CancellationToken cancellationToken)
+        protected async Task SendTelemetryAsync(string telemetryName, string telemetryValue, CancellationToken cancellationToken)
         {
             this.ThrowIfInterfaceNotRegistered();
             await this.digitalTwinClient.SendTelemetryAsync(this.Id, this.InstanceName, telemetryName, telemetryValue, cancellationToken).ConfigureAwait(false);

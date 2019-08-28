@@ -7,7 +7,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "device", "device", "{588860
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Azure.Iot.DigitalTwin.Device", "device\src\Azure.Iot.DigitalTwin.Device.csproj", "{5389DE61-ED83-4946-A668-5A3769CC6516}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnvironmentalSensorSample", "sample\EnvironmentSensorSample\EnvironmentalSensorSample.csproj", "{1BA4CB73-85C4-4F92-8D1A-2BDE0D321A77}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnvironmentalSensorLib", "sample\EnvironmentSensorLib\EnvironmentalSensorLib.csproj", "{EDD7A7DC-A2D7-4AB9-8E6F-8564AFAE84E2}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnvironmentalSensorSample", "sample\EnvironmentalSensorSample\EnvironmentalSensorSample.csproj", "{87AE8A2D-27EB-4EB4-88EA-19472BECC07B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{A72FAC03-E0EC-45B6-B521-BD09C836F013}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "sample", "sample", "{1B6B3D00-32D1-49B5-8BFF-8A237A4FA511}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -19,16 +25,22 @@ Global
 		{5389DE61-ED83-4946-A668-5A3769CC6516}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5389DE61-ED83-4946-A668-5A3769CC6516}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5389DE61-ED83-4946-A668-5A3769CC6516}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1BA4CB73-85C4-4F92-8D1A-2BDE0D321A77}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1BA4CB73-85C4-4F92-8D1A-2BDE0D321A77}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1BA4CB73-85C4-4F92-8D1A-2BDE0D321A77}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1BA4CB73-85C4-4F92-8D1A-2BDE0D321A77}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EDD7A7DC-A2D7-4AB9-8E6F-8564AFAE84E2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EDD7A7DC-A2D7-4AB9-8E6F-8564AFAE84E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EDD7A7DC-A2D7-4AB9-8E6F-8564AFAE84E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EDD7A7DC-A2D7-4AB9-8E6F-8564AFAE84E2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{87AE8A2D-27EB-4EB4-88EA-19472BECC07B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{87AE8A2D-27EB-4EB4-88EA-19472BECC07B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{87AE8A2D-27EB-4EB4-88EA-19472BECC07B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{87AE8A2D-27EB-4EB4-88EA-19472BECC07B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{5389DE61-ED83-4946-A668-5A3769CC6516} = {588860D9-EB42-458A-B8B4-CE72C9F7A765}
+		{EDD7A7DC-A2D7-4AB9-8E6F-8564AFAE84E2} = {1B6B3D00-32D1-49B5-8BFF-8A237A4FA511}
+		{87AE8A2D-27EB-4EB4-88EA-19472BECC07B} = {1B6B3D00-32D1-49B5-8BFF-8A237A4FA511}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A01BB316-82A6-4AA9-BDE1-12936DF4DFCB}
