@@ -9,19 +9,19 @@ namespace Azure.Iot.DigitalTwin.Device.Helper
     internal static class DigitalTwinConstants
     {
         /// <summary>
-        /// The maximum allowed length of interface id.
+        /// The invalid interface id error message.
         /// </summary>
-        public const int MaxInterfaceIdLength = 256;
+        public const string InvalidInterfaceIdErrorMessage = "Invalid interface id.";
 
         /// <summary>
         /// The invalid interface id error message.
         /// </summary>
-        public const string InvalidInterfaceIdErrorMessage = "invalid interface id";
+        public const string InvalidInterfaceInstanceNameErrorMessage = "Invalid interface instance name.";
 
         /// <summary>
         /// The invalid interface id error message.
         /// </summary>
-        public const string InterfaceIdLengthErrorMessage = "interface id maximum allowed size of 64 ASCII characters.";
+        public const string InterfaceIdLengthErrorMessage = "Interface id maximum allowed size of 64 ASCII characters.";
 
         /// <summary>
         /// The parameter null error message format.

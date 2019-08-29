@@ -10,10 +10,10 @@ namespace Azure.Iot.DigitalTwin.Device.Model
     /// <summary>
     /// Contains information needed for updating an asynchronous command's status.
     /// </summary>
-    public class DigitalTwinAsyncCommandUpdate
+    public struct DigitalTwinAsyncCommandUpdate
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="DigitalTwinAsyncCommandUpdate"/> class.
+        /// Initializes a new instance of the <see cref="DigitalTwinAsyncCommandUpdate"/> struct.
         /// </summary>
         /// <param name="name">The name of the command to be updated.</param>
         /// <param name="requestId">The request id of the command to be updated.</param>
@@ -28,7 +28,7 @@ namespace Azure.Iot.DigitalTwin.Device.Model
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DigitalTwinAsyncCommandUpdate"/> class.
+        /// Initializes a new instance of the <see cref="DigitalTwinAsyncCommandUpdate"/> struct.
         /// </summary>
         /// <param name="name">The name of the command to be updated.</param>
         /// <param name="requestId">The request id of the command to be updated.</param>
@@ -41,21 +41,21 @@ namespace Azure.Iot.DigitalTwin.Device.Model
         /// <summary>
         /// Gets the command name associated with this update.
         /// </summary>
-        public string Name { get; private set; }
+        public string Name { get; }
 
         /// <summary>
         /// Gets the serialized payload associated with this update.
         /// </summary>
-        public string Payload { get; private set; }
+        public string Payload { get; }
 
         /// <summary>
         /// Gets the command request id associated with this update.
         /// </summary>
-        public string RequestId { get; private set; }
+        public string RequestId { get; }
 
         /// <summary>
         /// Gets the status associated with this update.
         /// </summary>
-        public int Status { get; private set; }
+        public int Status { get; }
     }
 }
