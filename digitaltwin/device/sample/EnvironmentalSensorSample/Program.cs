@@ -14,7 +14,7 @@ namespace EnvironmentalSensorSample
         //  "HostName=<iothub_host_name>;DeviceId=<device_id>;SharedAccessKey=<device_key>"
         //  "HostName=<iothub_host_name>;CredentialType=SharedAccessSignature;DeviceId=<device_id>;SharedAccessSignature=SharedAccessSignature sr=<iot_host>/devices/<device_id>&sig=<token>&se=<expiry_time>";
         private static string deviceConnectionString = Environment.GetEnvironmentVariable("IOTHUB_DEVICE_CONN_STRING");
-        
+
         // Select one of the following transports used by DeviceClient to connect to IoT Hub.
         private static TransportType transportType = TransportType.Mqtt;
 

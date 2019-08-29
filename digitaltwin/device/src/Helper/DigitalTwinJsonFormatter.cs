@@ -7,7 +7,7 @@ using Azure.Iot.DigitalTwin.Device.Model;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Azure.Iot.DigitalTwin.Device.Bindings
+namespace Azure.Iot.DigitalTwin.Device.Helper
 {
     /// <summary>
     /// The Json Serializer.
@@ -15,9 +15,9 @@ namespace Azure.Iot.DigitalTwin.Device.Bindings
     internal class DigitalTwinJsonFormatter : IDigitalTwinFormatter
     {
         /// <summary>
-        /// Serialize to string
+        /// Serialize to string.
         /// </summary>
-        /// <typeparam name="T">Any class or struct</typeparam>
+        /// <typeparam name="T">Any class or struct.</typeparam>
         /// <param name="obj">The object needs to be serialized.</param>
         /// <returns>The serialized string.</returns>
         public string FromObject<T>(T obj)
@@ -26,9 +26,9 @@ namespace Azure.Iot.DigitalTwin.Device.Bindings
         }
 
         /// <summary>
-        /// Serialize to string
+        /// Serialize to string.
         /// </summary>
-        /// <typeparam name="T">Any class or struct</typeparam>
+        /// <typeparam name="T">Any class or struct.</typeparam>
         /// <param name="value">The string.</param>
         /// <returns>The instance needs to be de-serialized.</returns>
         public T ToObject<T>(string value)
