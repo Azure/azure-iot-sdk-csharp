@@ -32,9 +32,8 @@ namespace Azure.Iot.DigitalTwin.Device
         {
             GuardHelper.ThrowIfNullOrWhiteSpace(id, nameof(id));
             GuardHelper.ThrowIfInvalidInterfaceId(id, nameof(id));
-            GuardHelper.ThrowIfInterfaceIdLengthInvalid(id, nameof(id));
-
             GuardHelper.ThrowIfNullOrWhiteSpace(instanceName, nameof(instanceName));
+            GuardHelper.ThrowIfInvalidInterfaceInstanceName(instanceName, nameof(instanceName));
 
             this.Id = id;
             this.InstanceName = instanceName;
@@ -45,36 +44,16 @@ namespace Azure.Iot.DigitalTwin.Device
         /// <summary>
         /// Gets the interface instance name associated with this interface.
         /// </summary>
-        internal string InstanceName { get; private set; }
+        internal string InstanceName { get; }
 
         /// <summary>
         /// Gets the interface id associated with this interface.
         /// </summary>
-        internal string Id { get; private set; }
+        internal string Id { get; }
 
-        internal bool IsCommandEnabled { get; private set; }
+        internal bool IsCommandEnabled { get; }
 
-        internal bool IsPropertyUpdatedEnabled { get; private set; }
-
-        /// <summary>
-        /// Callback for commands.  Triggers when a command is received at an interface.
-        /// </summary>
-        /// <param name="commandRequest">incoming command request.</param>
-        /// <returns>DigitalTwinCommandResponse.</returns>
-        public virtual Task<DigitalTwinCommandResponse> OnCommandRequest(DigitalTwinCommandRequest commandRequest)
-        {
-            return Task.FromResult(new DigitalTwinCommandResponse(404));
-        }
-
-        /// <summary>
-        /// Callback for property updates.  Triggers when a property update is received at an interface.
-        /// </summary>
-        /// <param name="propertyUpdate">incoming property updated notification.</param>
-        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
-        public virtual Task OnPropertyUpdated(DigitalTwinPropertyUpdate propertyUpdate)
-        {
-            return Task.CompletedTask;
-        }
+        internal bool IsPropertyUpdatedEnabled { get; }
 
         /// <summary>
         /// Initialize the digital twin.
@@ -83,6 +62,28 @@ namespace Azure.Iot.DigitalTwin.Device
         internal void Initialize(DigitalTwinClient digitalTwinClient)
         {
             this.digitalTwinClient = digitalTwinClient;
+        }
+
+        /// <summary>
+        /// Callback for commands. Triggers when a command is received at an interface.
+        /// Interfaces implementation is expected to override it.
+        /// </summary>
+        /// <param name="commandRequest">incoming command request.</param>
+        /// <returns>DigitalTwinCommandResponse.</returns>
+        protected internal virtual Task<DigitalTwinCommandResponse> OnCommandRequest(DigitalTwinCommandRequest commandRequest)
+        {
+            return Task.FromResult(new DigitalTwinCommandResponse(404));
+        }
+
+        /// <summary>
+        /// Callback for property updates.  Triggers when a property update is received at an interface.
+        /// Interfaces implementation is expected to override it.
+        /// </summary>
+        /// <param name="propertyUpdate">incoming property updated notification.</param>
+        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
+        protected internal virtual Task OnPropertyUpdated(DigitalTwinPropertyUpdate propertyUpdate)
+        {
+            return Task.CompletedTask;
         }
 
         /// <summary>

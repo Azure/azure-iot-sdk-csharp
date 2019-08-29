@@ -9,10 +9,10 @@ namespace Azure.Iot.DigitalTwin.Device.Model
     /// Contains information of the property update request passed from the Digital Twin Client to Digital Twin Interface Client
     /// for further processing.
     /// </summary>
-    public class DigitalTwinPropertyUpdate
+    public struct DigitalTwinPropertyUpdate
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="DigitalTwinPropertyUpdate"/> class.
+        /// Initializes a new instance of the <see cref="DigitalTwinPropertyUpdate"/> struct.
         /// </summary>
         /// <param name="respondVersion">The response version.</param>
         /// <param name="statusCode">The status code which maps to appropriate HTTP status code of the property updates.</param>

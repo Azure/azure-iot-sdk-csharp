@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Azure.Iot.DigitalTwin.Device.Bindings;
+using Azure.Iot.DigitalTwin.Device.Helper;
 using Azure.Iot.DigitalTwin.Device.Helper;
 using Azure.Iot.DigitalTwin.Device.Model;
 using Microsoft.Azure.Devices.Client;
@@ -37,7 +37,7 @@ namespace Azure.Iot.DigitalTwin.Device
         private const string JsonCommandRequestValue = "commandRequest.value";
 
         private readonly DeviceClient deviceClient;
-        private readonly DigitalTwinBindingFormatterCollection digitalTwinFormatterCollection;
+        private readonly IDigitalTwinFormatter digitalTwinFormatter = new DigitalTwinJsonFormatter();
 
         private Dictionary<string, DigitalTwinInterfaceClient> interfaces = new Dictionary<string, DigitalTwinInterfaceClient>();
 
@@ -48,7 +48,6 @@ namespace Azure.Iot.DigitalTwin.Device
         public DigitalTwinClient(DeviceClient deviceClient)
         {
             this.deviceClient = deviceClient;
-            this.digitalTwinFormatterCollection = new DigitalTwinBindingFormatterCollection();
         }
 
         /// <summary>
@@ -75,14 +74,14 @@ namespace Azure.Iot.DigitalTwin.Device
 
             Dictionary<string, object> modelInformation = new Dictionary<string, object>();
             modelInformation.Add(CapabilityModelIdTag, capabilityModelId);
-            modelInformation.Add(InterfacesTag, new DataCollection(this.digitalTwinFormatterCollection.FromObject(interfaceName)));
+            modelInformation.Add(InterfacesTag, new DataCollection(this.digitalTwinFormatter.FromObject(interfaceName)));
 
             // send register interface
             Message msg = CreateTelemetryMessage(
                     ModelDiscoveryInterfaceId,
                     ModelDiscoveryInterfaceInstanceName,
                     CapabilityReportTelemetryName,
-                    this.digitalTwinFormatterCollection.FromObject(CreateKeyValueDataCollection(modelInformation)));
+                    this.digitalTwinFormatter.FromObject(CreateKeyValueDataCollection(modelInformation)));
             await this.deviceClient.SendEventAsync(
                 msg,
                 cancellationToken).ConfigureAwait(false);
@@ -93,8 +92,9 @@ namespace Azure.Iot.DigitalTwin.Device
                 dtInterface.Initialize(this);
             }
 
-            // TODO: send device information
+            // TODO: send device SDK information
             await this.SetupDigitalTwinClientAsync().ConfigureAwait(false);
+            await this.GetPropertiesAsync().ConfigureAwait(false);
         }
 
         /// <summary>
@@ -125,7 +125,7 @@ namespace Azure.Iot.DigitalTwin.Device
                 }
 
                 Dictionary<string, object> values = new Dictionary<string, object> { { "value", jTokenValue } };
-                if (property.DigitalTwinPropertyResponse != null)
+                if (property.DigitalTwinPropertyResponse == DigitalTwinPropertyResponse.Empty)
                 {
                     DigitalTwinPropertyResponse response = property.DigitalTwinPropertyResponse;
                     values.Add("sc", response.StatusCode);
@@ -206,6 +206,40 @@ namespace Azure.Iot.DigitalTwin.Device
         {
             await this.deviceClient.SetMethodDefaultHandlerAsync(this.GenericMethodHandlerAsync, this).ConfigureAwait(false);
             await this.deviceClient.SetDesiredPropertyUpdateCallbackAsync(this.GenericPropertyUpdateHandlerAsync, this).ConfigureAwait(false);
+        }
+
+        private async Task GetPropertiesAsync()
+        {
+            Twin twin = await this.deviceClient.GetTwinAsync().ConfigureAwait(false);
+            JObject desiredJObject = JObject.Parse(twin.Properties.Desired.ToJson());
+            JObject reportedJObject = JObject.Parse(twin.Properties.Reported.ToJson());
+            int version = (int)desiredJObject["$version"];
+            List<Task> tasks = new List<Task>();
+
+            foreach (var interfaceWithPrefix in desiredJObject)
+            {
+                if (string.CompareOrdinal(InterfacesPrefix, 0, interfaceWithPrefix.Key, 0, InterfacesPrefix.Length) == 0)
+                {
+                    string interfaceInstanceName = interfaceWithPrefix.Key.Substring(InterfacesPrefix.Length);
+
+                    foreach (var childToken in interfaceWithPrefix.Value.Children())
+                    {
+                        string propertyName = ((JProperty)childToken).Name;
+                        string desiredPropertyValue = JsonConvert.SerializeObject(((JProperty)childToken).Value["value"]);
+                        JToken reportedPropertyValueToken = reportedJObject[interfaceWithPrefix.Key]?[propertyName]?["value"];
+                        string reportedPropertyValue = reportedPropertyValueToken != null ? JsonConvert.SerializeObject(reportedPropertyValueToken) : null;
+
+                        tasks.Add(this.interfaces[interfaceInstanceName].OnPropertyUpdated(
+                            new DigitalTwinPropertyUpdate(
+                            propertyName,
+                            version,
+                            desiredPropertyValue,
+                            reportedPropertyValue)));
+                    }
+                }
+            }
+
+            await Task.WhenAll(tasks).ConfigureAwait(false);
         }
 
         private async Task<MethodResponse> GenericMethodHandlerAsync(MethodRequest methodRequest, object userContext)

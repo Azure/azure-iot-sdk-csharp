@@ -5,12 +5,23 @@ using Azure.Iot.DigitalTwin.Device.Helper;
 
 namespace Azure.Iot.DigitalTwin.Device.Model
 {
-    public class DigitalTwinPropertyReport
+    public struct DigitalTwinPropertyReport
     {
-        public DigitalTwinPropertyReport(string name, string value) : this(name, value, null)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        public DigitalTwinPropertyReport(string name, string value) : this(name, value, DigitalTwinPropertyResponse.Empty)
         {
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        /// <param name="digitalTwinPropertyResponse"></param>
         public DigitalTwinPropertyReport(string name, string value, DigitalTwinPropertyResponse digitalTwinPropertyResponse)
         {
             GuardHelper.ThrowIfNullOrWhiteSpace(name, nameof(name));
@@ -21,10 +32,19 @@ namespace Azure.Iot.DigitalTwin.Device.Model
             this.DigitalTwinPropertyResponse = digitalTwinPropertyResponse;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public string Name { get; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public string Value { get; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public DigitalTwinPropertyResponse DigitalTwinPropertyResponse { get; }
     }
 }
