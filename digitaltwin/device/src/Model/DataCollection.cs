@@ -23,8 +23,8 @@ namespace Azure.Iot.DigitalTwin.Device.Model
         /// Creates an instance of <see cref="DataCollection"/>.
         /// </summary>
         public DataCollection()
-            : this(new JObject())
         {
+            this.properties = new JObject();
         }
 
         /// <summary>
@@ -32,14 +32,9 @@ namespace Azure.Iot.DigitalTwin.Device.Model
         /// </summary>
         /// <param name="propertiesJson"></param>
         public DataCollection(string propertiesJson)
-            : this(ParseStringIntoJObject(propertiesJson))
         {
             GuardHelper.ThrowIfNullOrWhiteSpace(propertiesJson, nameof(propertiesJson));
-        }
-
-        private DataCollection(JObject properties)
-        {
-            this.properties = properties;
+            this.properties = ParseStringIntoJObject(propertiesJson);
         }
 
         /// <summary>
@@ -76,10 +71,10 @@ namespace Azure.Iot.DigitalTwin.Device.Model
         }
 
         /// <summary>
-        /// Gets the <see cref="DataCollection"/> as a JSON string
+        /// Gets the <see cref="DataCollection"/> as a JSON string.
         /// </summary>
         /// <param name="formatting">Optional. Formatting for the output JSON string.</param>
-        /// <returns>JSON string</returns>
+        /// <returns>JSON string.</returns>
         public string ToJson(Formatting formatting = Formatting.None)
         {
             return JsonConvert.SerializeObject(this.properties, formatting);

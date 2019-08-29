@@ -7,6 +7,9 @@ using Azure.Iot.DigitalTwin.Device;
 
 namespace EnvironmentalSensorSample
 {
+    /// <summary>
+    /// sample of Digital Twin Client SDK usage.
+    /// </summary>
     public class DigitalTwinClientSample
     {
         private static string environmentalSensorInterfaceName = "environmentalSensor";
@@ -16,6 +19,10 @@ namespace EnvironmentalSensorSample
         private static DeviceInformationInterface deviceInformationInterface;
         private DigitalTwinClient digitalTwinClient;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DigitalTwinClientSample"/> class.
+        /// </summary>
+        /// <param name="digitalTwinClient">digital twin client.</param>
         public DigitalTwinClientSample(DigitalTwinClient digitalTwinClient)
         {
             this.digitalTwinClient = digitalTwinClient;
@@ -27,6 +34,10 @@ namespace EnvironmentalSensorSample
             deviceInformationInterface = new DeviceInformationInterface();
         }
 
+        /// <summary>
+        /// sample starting point.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         public async Task RunSampleAsync()
         {
             // register interface(s) for the device

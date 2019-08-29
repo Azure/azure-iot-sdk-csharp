@@ -9,10 +9,10 @@ namespace Azure.Iot.DigitalTwin.Device.Model
     /// Contains information of the invoked command passed from the Digital Twin Client to Digital Twin Interface Client
     /// for further processing.
     /// </summary>
-    public class DigitalTwinCommandRequest
+    public struct DigitalTwinCommandRequest
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="DigitalTwinCommandRequest"/> class.
+        /// Initializes a new instance of the <see cref="DigitalTwinCommandRequest"/> struct.
         /// </summary>
         /// <param name="name">The name of the command.</param>
         /// <param name="requestId"> The server generated identifier passed as part of the command.</param>
@@ -27,16 +27,16 @@ namespace Azure.Iot.DigitalTwin.Device.Model
         /// <summary>
         /// Gets the name of the command.
         /// </summary>
-        public string Name { get; private set; }
+        public string Name { get; }
 
         /// <summary>
         /// Gets the server generated identifier of the command.
         /// </summary>
-        public string RequestId { get; private set; }
+        public string RequestId { get; }
 
         /// <summary>
         /// Gets serialized json representation of the payload in the request.
         /// </summary>
-        public string Payload { get; private set; }
+        public string Payload { get; }
     }
 }
