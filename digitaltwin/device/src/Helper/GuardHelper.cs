@@ -79,7 +79,7 @@ namespace Azure.Iot.DigitalTwin.Device.Helper
         /// Throw ArgumentException if the value is not allowed Digital Twin Type.
         /// </summary>
         /// <param name="argumentValue">The argument value.</param>
-        public static void ThrowIfInvalidDigitatTwinType(object argumentValue)
+        public static void ThrowIfInvalidDigitalTwinType(object argumentValue)
         {
             if (argumentValue != null)
             {
