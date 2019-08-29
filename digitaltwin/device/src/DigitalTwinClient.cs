@@ -12,6 +12,7 @@ using Azure.Iot.DigitalTwin.Device.Helper;
 using Azure.Iot.DigitalTwin.Device.Model;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Shared;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Azure.Iot.DigitalTwin.Device
@@ -77,13 +78,15 @@ namespace Azure.Iot.DigitalTwin.Device
             modelInformation.Add(InterfacesTag, new DataCollection(this.digitalTwinFormatterCollection.FromObject(interfaceName)));
 
             // send register interface
-            await this.deviceClient.SendEventAsync(
-                CreateTelemetryMessage(
+            Message msg = CreateTelemetryMessage(
                     ModelDiscoveryInterfaceId,
                     ModelDiscoveryInterfaceInstanceName,
                     CapabilityReportTelemetryName,
-                    digitalTwinFormatterCollection.FromObject(CreateKeyValueDataCollection(modelInformation))),
+                    this.digitalTwinFormatterCollection.FromObject(CreateKeyValueDataCollection(modelInformation)));
+            await this.deviceClient.SendEventAsync(
+                msg,
                 cancellationToken).ConfigureAwait(false);
+            msg.Dispose();
 
             foreach (var dtInterface in digitalTwinInterfaces)
             {
@@ -142,7 +145,9 @@ namespace Azure.Iot.DigitalTwin.Device
         internal async Task SendTelemetryAsync(string interfaceId, string interfaceInstanceName, string telemetryName, string telemetryValue, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            await this.deviceClient.SendEventAsync(CreateTelemetryMessage(interfaceId, interfaceInstanceName, telemetryName, telemetryValue), cancellationToken).ConfigureAwait(false);
+            Message msg = CreateTelemetryMessage(interfaceId, interfaceInstanceName, telemetryName, telemetryValue);
+            await this.deviceClient.SendEventAsync(msg, cancellationToken).ConfigureAwait(false);
+            msg.Dispose();
         }
 
         internal async Task UpdateAsyncCommandStatusAsync(string interfaceId, string instanceName, DigitalTwinAsyncCommandUpdate update, CancellationToken cancellationToken)
@@ -233,7 +238,7 @@ namespace Azure.Iot.DigitalTwin.Device
 
         private async Task GenericPropertyUpdateHandlerAsync(TwinCollection desiredProperties, object userContext)
         {
-            JObject jsonObj = JObject.Parse(desiredProperties.ToString());
+            JObject jsonObj = JObject.Parse(desiredProperties.ToJson());
             int version = (int)jsonObj["$version"];
 
             foreach (var property in jsonObj)
@@ -245,7 +250,7 @@ namespace Azure.Iot.DigitalTwin.Device
                     foreach (var childToken in property.Value.Children())
                     {
                         string propertyName = ((JProperty)childToken).Name;
-                        string propertyValue = ((JProperty)childToken).Value["value"].ToString();
+                        string propertyValue = JsonConvert.SerializeObject(((JProperty)childToken).Value["value"]);
                         await this.interfaces[interfaceInstanceName].OnPropertyUpdated(
                             new DigitalTwinPropertyUpdate(
                             propertyName,

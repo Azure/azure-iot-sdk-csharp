@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Azure.Iot.DigitalTwin.Device.Exceptions;
 using Azure.Iot.DigitalTwin.Device.Helper;
 using Azure.Iot.DigitalTwin.Device.Model;
@@ -29,8 +30,12 @@ namespace Azure.Iot.DigitalTwin.Device
         /// <param name="isPropertyUpdatedEnabled">indicates if property updated is required in the interface.</param>
         protected DigitalTwinInterfaceClient(string id, string instanceName, bool isCommandEnabled, bool isPropertyUpdatedEnabled)
         {
+            GuardHelper.ThrowIfNullOrWhiteSpace(id, nameof(id));
             GuardHelper.ThrowIfInvalidInterfaceId(id, nameof(id));
             GuardHelper.ThrowIfInterfaceIdLengthInvalid(id, nameof(id));
+
+            GuardHelper.ThrowIfNullOrWhiteSpace(instanceName, nameof(instanceName));
+
             this.Id = id;
             this.InstanceName = instanceName;
             this.IsCommandEnabled = isCommandEnabled;
@@ -61,7 +66,6 @@ namespace Azure.Iot.DigitalTwin.Device
             return Task.FromResult(new DigitalTwinCommandResponse(404));
         }
 
-
         /// <summary>
         /// Callback for property updates.  Triggers when a property update is received at an interface.
         /// </summary>
@@ -73,8 +77,9 @@ namespace Azure.Iot.DigitalTwin.Device
         }
 
         /// <summary>
-        /// Initialize the digital twin        /// </summary>
-        /// <param name="digitalTwinClient"></param>
+        /// Initialize the digital twin.
+        /// </summary>
+        /// <param name="digitalTwinClient">the DigitalTwinClient associated with this interface instance.</param>
         internal void Initialize(DigitalTwinClient digitalTwinClient)
         {
             this.digitalTwinClient = digitalTwinClient;
@@ -98,6 +103,7 @@ namespace Azure.Iot.DigitalTwin.Device
         /// <returns>Task representing the asynchronous operation.</returns>
         protected async Task ReportPropertiesAsync(IEnumerable<DigitalTwinPropertyReport> properties, CancellationToken cancellationToken)
         {
+            GuardHelper.ThrowIfNull(properties, nameof(properties));
             this.ThrowIfInterfaceNotRegistered();
             await this.digitalTwinClient.ReportPropertiesAsync(this.InstanceName, properties, cancellationToken).ConfigureAwait(false);
         }

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -41,6 +42,9 @@ namespace EnvironmentalSensorSample
                 case Constants.CustomerName:
                     await this.SetCustomerNameAsync(propertyUpdate).ConfigureAwait(false);
                     break;
+                case Constants.Brightness:
+                    await this.SetBrightnessAsync(propertyUpdate).ConfigureAwait(false);
+                    break;
                 default:
                     Console.WriteLine($"Property name '{propertyUpdate.PropertyName}' is not handled.");
                     break;
@@ -54,7 +58,12 @@ namespace EnvironmentalSensorSample
             Console.WriteLine($"Desired customer name is '{customerName}'.");
 
             // report Completed
-            //await ReportReadWritePropertyStatusAsync(Constants.CustomerName, new PnPPropertyResponse(customerNameUpdatedValue, desiredVersion, PnPPropertyStatusCode.Completed, "Request completed")).ConfigureAwait(false);
+            var propertyReport = new Collection<DigitalTwinPropertyReport>();
+            propertyReport.Add(new DigitalTwinPropertyReport(
+                customerNameUpdate.PropertyName,
+                customerNameUpdate.PropertyDesired,
+                new DigitalTwinPropertyResponse(customerNameUpdate.DesiredVersion, 200, "Processing Completed")));
+            await this.ReportPropertiesAsync(propertyReport).ConfigureAwait(false);
             Console.WriteLine("Sent completed status.");
         }
 
@@ -62,17 +71,32 @@ namespace EnvironmentalSensorSample
         {
             // code to consume light brightness value, currently just displaying on screen
             string brightness = brightnessUpdate.PropertyDesired;
+            long current = 0;
+
             Console.WriteLine($"Desired brightness value is {brightness}.");
 
             // report Pending
-            //await ReportReadWritePropertyStatusAsync(Constants.Brightness, new PnPPropertyResponse(brightnessUpdate, desiredVersion, PnPPropertyStatusCode.Pending, "Processing Request")).ConfigureAwait(false);
+            var propertyReport = new Collection<DigitalTwinPropertyReport>();
+            propertyReport.Add(new DigitalTwinPropertyReport(
+                brightnessUpdate.PropertyName,
+                current.ToString(),
+                new DigitalTwinPropertyResponse(brightnessUpdate.DesiredVersion, 102, "Processing Request")));
+            await this.ReportPropertiesAsync(propertyReport).ConfigureAwait(false);
             Console.WriteLine("Sent pending status for brightness property.");
+            propertyReport.Clear();
 
             // Pretend calling command to Sensor to update brightness
             await Task.Delay(5 * 1000).ConfigureAwait(false);
 
             // report Completed
-            //await ReportReadWritePropertyStatusAsync(Constants.Brightness, new PnPPropertyResponse(brightnessUpdate, desiredVersion, PnPPropertyStatusCode.Completed, "Request completed")).ConfigureAwait(false);
+            propertyReport.Add(new DigitalTwinPropertyReport(
+                brightnessUpdate.PropertyName,
+                brightnessUpdate.PropertyDesired,
+                new DigitalTwinPropertyResponse(
+                    brightnessUpdate.DesiredVersion,
+                    200,
+                    "Request completed")));
+            await this.ReportPropertiesAsync(propertyReport).ConfigureAwait(false);
             Console.WriteLine("Sent completed status for brightness property.");
         }
         #endregion
