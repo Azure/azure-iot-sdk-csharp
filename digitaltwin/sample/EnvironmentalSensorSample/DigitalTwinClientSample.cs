@@ -47,8 +47,8 @@ namespace EnvironmentalSensorSample
             await environmentalSensorInterface.DeviceStatePropertyAsync(true).ConfigureAwait(false);
 
             // send telemetry
-            await environmentalSensorInterface.SendTemperatureAsync(37);
-            await environmentalSensorInterface.SendHumidityAsync(28);
+            await environmentalSensorInterface.SendTemperatureAsync(37).ConfigureAwait(false);
+            await environmentalSensorInterface.SendHumidityAsync(28).ConfigureAwait(false);
         }
     }
 }
