@@ -44,21 +44,21 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        public async Task Service_InvokeMethodWithCustomTimeout_Amqp()
+        public async Task ServiceClient_InvokeMethodWithCustomTimeout_Amqp()
         {
-            await Service_InvokeMethodWithCustomTimeout(TransportType.Amqp).ConfigureAwait(false);
+            await ServiceClient_InvokeMethodWithCustomTimeout(TransportType.Amqp).ConfigureAwait(false);
         }
 
         [TestMethod]
-        public async Task Service_InvokeMethodWithCustomTimeout_AmqpWs()
+        public async Task ServiceClient_InvokeMethodWithCustomTimeout_AmqpWs()
         {
-            await Service_InvokeMethodWithCustomTimeout(TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
+            await ServiceClient_InvokeMethodWithCustomTimeout(TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
         }
 
         [TestMethod]
-        public async Task Service_InvokeMethodWithCustomTimeout_Amqp_WithProxy()
+        public async Task ServiceClient_InvokeMethodWithCustomTimeout_Amqp_WithProxy()
         {
-            await Service_InvokeMethodWithCustomTimeout(
+            await ServiceClient_InvokeMethodWithCustomTimeout(
                 TransportType.Amqp, 
                 new ServiceClientTransportSettings()
                 {
@@ -68,9 +68,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        public async Task Service_InvokeMethodWithCustomTimeout_AmqpWs_WithProxy()
+        public async Task ServiceClient_InvokeMethodWithCustomTimeout_AmqpWs_WithProxy()
         {
-            await Service_InvokeMethodWithCustomTimeout(
+            await ServiceClient_InvokeMethodWithCustomTimeout(
                 TransportType.Amqp_WebSocket_Only,
                 new ServiceClientTransportSettings()
                 {
@@ -79,12 +79,12 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }).ConfigureAwait(false);
         }
 
-        private async Task Service_InvokeMethodWithCustomTimeout(TransportType transportType)
+        private async Task ServiceClient_InvokeMethodWithCustomTimeout(TransportType transportType)
         {
-            await Service_InvokeMethodWithCustomTimeout(TransportType.Amqp_WebSocket_Only, new ServiceClientTransportSettings()).ConfigureAwait(false);
+            await ServiceClient_InvokeMethodWithCustomTimeout(TransportType.Amqp_WebSocket_Only, new ServiceClientTransportSettings()).ConfigureAwait(false);
         }
 
-        private async Task Service_InvokeMethodWithCustomTimeout(TransportType transportType, ServiceClientTransportSettings transportSettings)
+        private async Task ServiceClient_InvokeMethodWithCustomTimeout(TransportType transportType, ServiceClientTransportSettings transportSettings)
         {
             TestDevice device = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
             DeviceClient deviceClient = device.CreateDeviceClient(Client.TransportType.Amqp);
