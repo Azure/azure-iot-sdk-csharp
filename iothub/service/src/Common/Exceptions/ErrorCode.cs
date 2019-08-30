@@ -41,6 +41,7 @@ namespace Microsoft.Azure.Devices.Common.Exceptions
         PartitionNotFound = 404003,
         ModuleNotFound = 404010,
         DeviceNotOnline = 404103,
+        ConnectionLost = 404104,
 
         //Conflict - 409
         DeviceAlreadyExists = 409001,
