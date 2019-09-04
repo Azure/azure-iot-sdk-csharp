@@ -12,17 +12,9 @@ namespace Azure.IoT.DigitalTwin.Device.Test
 {
     internal class DigitalTwinInterfaceTestClient : DigitalTwinInterfaceClient
     {
-        internal DigitalTwinClient digitalTwinClientCopy;
-
         public DigitalTwinInterfaceTestClient(string id, string instanceName, bool isCommandEnabled, bool isPropertyUpdatedEnabled)
             : base(id, instanceName, isCommandEnabled, isPropertyUpdatedEnabled)
         {
-        }
-
-        internal new void Initialize(DigitalTwinClient digitalTwinClient)
-        {
-            base.Initialize(digitalTwinClient);
-            this.digitalTwinClientCopy = digitalTwinClient;
         }
 
         public async Task ReportPropertiesAsync(IEnumerable<DigitalTwinPropertyReport> properties)
