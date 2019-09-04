@@ -121,7 +121,7 @@ namespace Azure.IoT.DigitalTwin.Device.Test.Bindings
                 return;
             }
 
-            Assert.Fail($"Expected to throw exception for invalid interface id {instanceName}.");
+            Assert.Fail($"Expected to throw exception for invalid interface name {instanceName}.");
         }
 
         private static IEnumerable<object[]> GetInvalidInterfaceIdData()

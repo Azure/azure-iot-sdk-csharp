@@ -41,44 +41,6 @@ namespace EnvironmentalSensorSample
         }
 
         /// <summary>
-        /// Callback on command received.
-        /// </summary>
-        /// <param name="commandRequest">information regarding the command received.</param>
-        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        protected override Task<DigitalTwinCommandResponse> OnCommandRequest(DigitalTwinCommandRequest commandRequest)
-        {
-            Console.WriteLine($"\t Command - {commandRequest.Name} was invoked from the service");
-            Console.WriteLine($"\t Data - {commandRequest.Payload}");
-            Console.WriteLine($"\t Request Id - {commandRequest.RequestId}.");
-
-            // TODO: trigger the callback and return command response
-            return Task.FromResult(new DigitalTwinCommandResponse(200, "{\"payload\": \"data\"}"));
-        }
-
-        /// <summary>
-        /// Callback on property updated.
-        /// </summary>
-        /// <param name="propertyUpdate">information regarding the property updated.</param>
-        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        protected override async Task OnPropertyUpdated(DigitalTwinPropertyUpdate propertyUpdate)
-        {
-            Console.WriteLine($"Received updates for property '{propertyUpdate.PropertyName}'");
-
-            switch (propertyUpdate.PropertyName)
-            {
-                case CustomerName:
-                    await this.SetCustomerNameAsync(propertyUpdate).ConfigureAwait(false);
-                    break;
-                case Brightness:
-                    await this.SetBrightnessAsync(propertyUpdate).ConfigureAwait(false);
-                    break;
-                default:
-                    Console.WriteLine($"Property name '{propertyUpdate.PropertyName}' is not handled.");
-                    break;
-            }
-        }
-
-        /// <summary>
         /// Process CustomerName property updated.
         /// </summary>
         /// <param name="customerNameUpdate">information of property to be reported.</param>
@@ -170,6 +132,45 @@ namespace EnvironmentalSensorSample
         public async Task SendHumidityAsync(double humidity)
         {
             await this.SendTelemetryAsync(Humidity, humidity.ToString()).ConfigureAwait(false);
+        }
+
+
+        /// <summary>
+        /// Callback on command received.
+        /// </summary>
+        /// <param name="commandRequest">information regarding the command received.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        protected override Task<DigitalTwinCommandResponse> OnCommandRequest(DigitalTwinCommandRequest commandRequest)
+        {
+            Console.WriteLine($"\t Command - {commandRequest.Name} was invoked from the service");
+            Console.WriteLine($"\t Data - {commandRequest.Payload}");
+            Console.WriteLine($"\t Request Id - {commandRequest.RequestId}.");
+
+            // TODO: trigger the callback and return command response
+            return Task.FromResult(new DigitalTwinCommandResponse(200, "{\"payload\": \"data\"}"));
+        }
+
+        /// <summary>
+        /// Callback on property updated.
+        /// </summary>
+        /// <param name="propertyUpdate">information regarding the property updated.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        protected override async Task OnPropertyUpdated(DigitalTwinPropertyUpdate propertyUpdate)
+        {
+            Console.WriteLine($"Received updates for property '{propertyUpdate.PropertyName}'");
+
+            switch (propertyUpdate.PropertyName)
+            {
+                case CustomerName:
+                    await this.SetCustomerNameAsync(propertyUpdate).ConfigureAwait(false);
+                    break;
+                case Brightness:
+                    await this.SetBrightnessAsync(propertyUpdate).ConfigureAwait(false);
+                    break;
+                default:
+                    Console.WriteLine($"Property name '{propertyUpdate.PropertyName}' is not handled.");
+                    break;
+            }
         }
     }
 }
