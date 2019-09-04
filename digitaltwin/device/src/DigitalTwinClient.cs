@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Azure.IoT.DigitalTwin.Device;
 using Azure.Iot.DigitalTwin.Device.Helper;
 using Azure.Iot.DigitalTwin.Device.Model;
 using Microsoft.Azure.Devices.Client;
@@ -61,8 +62,11 @@ namespace Azure.Iot.DigitalTwin.Device
             GuardHelper.ThrowIfNull(digitalTwinInterfaces, nameof(digitalTwinInterfaces));
             GuardHelper.ThrowIfNullOrWhiteSpace(capabilityModelId, nameof(capabilityModelId));
 
+            SdkInformationInterface sdkInformationInterface = new SdkInformationInterface();
+
             var interfaceName = new Dictionary<string, string>();
             interfaceName.Add("urn_azureiot_ModelDiscovery_ModelInformation", "urn:azureiot:ModelDiscovery:ModelInformation:1");
+            interfaceName.Add(sdkInformationInterface.InstanceName, sdkInformationInterface.Id);
 
             foreach (var dtInterface in digitalTwinInterfaces)
             {
@@ -91,7 +95,8 @@ namespace Azure.Iot.DigitalTwin.Device
                 dtInterface.Initialize(this);
             }
 
-            // TODO: send device SDK information
+            sdkInformationInterface.Initialize(this);
+            await sdkInformationInterface.SendSdkInformationAsync().ConfigureAwait(false);
             await this.SetupDigitalTwinClientAsync().ConfigureAwait(false);
             await this.GetPropertiesAsync().ConfigureAwait(false);
         }
