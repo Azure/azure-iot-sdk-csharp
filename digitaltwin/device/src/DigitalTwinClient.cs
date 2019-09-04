@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Azure.Iot.DigitalTwin.Device.Helper;
-using Azure.Iot.DigitalTwin.Device.Helper;
 using Azure.Iot.DigitalTwin.Device.Model;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Shared;
@@ -108,7 +107,7 @@ namespace Azure.Iot.DigitalTwin.Device
             await this.RegisterInterfacesAsync(capabilityModelId, digitalTwinInterfaceClients, CancellationToken.None).ConfigureAwait(false);
         }
 
-        internal async Task ReportPropertiesAsync(string instanceName, IEnumerable<DigitalTwinPropertyReport> properties, CancellationToken cancellationToken)
+        public async Task ReportPropertiesAsync(string instanceName, IEnumerable<DigitalTwinPropertyReport> properties, CancellationToken cancellationToken)
         {
             TwinCollection twinCollection = new TwinCollection();
 
@@ -125,7 +124,7 @@ namespace Azure.Iot.DigitalTwin.Device
                 }
 
                 Dictionary<string, object> values = new Dictionary<string, object> { { "value", jTokenValue } };
-                if (property.DigitalTwinPropertyResponse == DigitalTwinPropertyResponse.Empty)
+                if (property.DigitalTwinPropertyResponse != DigitalTwinPropertyResponse.Empty)
                 {
                     DigitalTwinPropertyResponse response = property.DigitalTwinPropertyResponse;
                     values.Add("sc", response.StatusCode);
