@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 _log.WriteLine($"{nameof(FaultInjection_NoRecovery)}: deviceId={testDevice.Id}");
                 deviceClient.SetRetryPolicy(new NoRetry());
 
-                ConnectionStatus lastConnectionStatus = default;
+                ConnectionStatus? lastConnectionStatus = null;
                 Dictionary<ConnectionStatus, int> connectionStatusChanges = new Dictionary<ConnectionStatus, int>();
                 deviceClient.SetConnectionStatusChangesHandler((status, reason) =>
                 {
@@ -86,7 +86,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 _log.WriteLine($"{nameof(Duplicated_NoPingpong)}: set device client instance 1 to no retry.");
                 deviceClient1.SetRetryPolicy(new NoRetry());
 
-                ConnectionStatus lastConnectionStatus = default;
+                ConnectionStatus? lastConnectionStatus = null;
                 Dictionary<ConnectionStatus, int> connectionStatusChanges = new Dictionary<ConnectionStatus, int>();
                 deviceClient1.SetConnectionStatusChangesHandler((status, reason) =>
                 {
