@@ -36,6 +36,11 @@ namespace Azure.Iot.DigitalTwin.Device
         private const string JsonCommandRequestId = "commandRequest.requestId";
         private const string JsonCommandRequestValue = "commandRequest.value";
 
+        private const string AsynResultSchema = "asyncResult";
+        private const string CommandRequestIdProperty = "iothub-command-request-id";
+        private const string CommandStatusCodeProperty = "iothub-command-statuscode";
+        private const string CommandNameProperty = "iothub-command-name";
+
         private readonly DeviceClient deviceClient;
         private readonly IDigitalTwinFormatter digitalTwinFormatter = new DigitalTwinJsonFormatter();
 
@@ -154,9 +159,25 @@ namespace Azure.Iot.DigitalTwin.Device
             msg.Dispose();
         }
 
-        internal async Task UpdateAsyncCommandStatusAsync(string interfaceId, string instanceName, DigitalTwinAsyncCommandUpdate update, CancellationToken cancellationToken)
+        internal async Task UpdateAsyncCommandStatusAsync(string interfaceId, string interfaceInstanceName, DigitalTwinAsyncCommandUpdate update, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            this.digitalTwinFormatter.FromObject(update);
+
+            cancellationToken.ThrowIfCancellationRequested();
+            Message msg = CreateTelemetryMessage(
+                    interfaceId,
+                    interfaceInstanceName,
+                    AsynResultSchema,
+                    update.Payload);
+
+            msg.Properties.Add(CommandNameProperty, update.Name);
+            msg.Properties.Add(CommandRequestIdProperty, update.RequestId);
+            msg.Properties.Add(CommandStatusCodeProperty, update.Status.ToString());
+
+            await this.deviceClient.SendEventAsync(
+                msg,
+                cancellationToken).ConfigureAwait(false);
+            msg.Dispose();
         }
 
         private static TwinCollection CreateKeyValueTwinCollection(string key, object value)
