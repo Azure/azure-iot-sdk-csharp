@@ -11,7 +11,7 @@
     <DefaultItemExcludes>config/**;netstandard13/**;netstandard20/**;net451/**;$(DefaultItemExcludes)</DefaultItemExcludes>
     <RootDir>$(MSBuildProjectDirectory)\..\..</RootDir>
   </PropertyGroup>
-  
+
   <PropertyGroup>
     <CommonTest>$(RootDir)\common\test</CommonTest>
   </PropertyGroup>
@@ -26,6 +26,9 @@
     </Compile>
     <Compile Include="$(CommonTest)\Configuration.IoTHub.cs">
       <Link>Common\Configuration.IoTHub.cs</Link>
+    </Compile>
+    <Compile Include="$(CommonTest)\Configuration.AzureSecurityCenterForIoTLogAnalytics.cs">
+      <Link>Common\Configuration.AzureSecurityCenterForIoTLogAnalytics.cs</Link>
     </Compile>
     <Compile Include="$(CommonTest)\EventSourceTestLogging.cs">
       <Link>Common\EventSourceTestLogging.cs</Link>
@@ -67,6 +70,7 @@
 
   <!-- All Platforms -->
   <ItemGroup>
+    <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="5.2.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.8.0" />
     <PackageReference Include="MSTest.TestAdapter" Version="1.3.2" />
     <PackageReference Include="MSTest.TestFramework" Version="1.3.2" />
@@ -121,5 +125,4 @@
     <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Service" Version="1.*" />
     <ProjectReference Include="$(RootDir)\security\tpm\samples\SecurityProviderTpmSimulator\SecurityProviderTpmSimulator.csproj" />
   </ItemGroup>
-
 </Project>
