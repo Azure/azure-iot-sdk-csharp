@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Configuration;
+using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
@@ -27,9 +29,11 @@ namespace EnvironmentalSensorSample
         private const string Brightness = "brightness";
         private const string Temperature = "temp";
         private const string Humidity = "humid";
-        private const string BlinkCommandName = "blink";
-        private const string TurnOnLightCommad = "turnon";
+        private const string BlinkCommand = "blink";
+        private const string TurnOnLightCommand = "turnon";
         private const string TurnOffLightCommand = "turnoff";
+        private const string RunDiagnosticsCommand = "rundiagnostics";
+        private const int DigitalTwinAsyncCommandPending = 202;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EnvironmentalSensorInterface"/> class.
@@ -38,69 +42,6 @@ namespace EnvironmentalSensorSample
         public EnvironmentalSensorInterface(string interfaceName)
             : base(EnvironmentalSensorInterfaceId, interfaceName, true, true)
             {
-        }
-
-        /// <summary>
-        /// Process CustomerName property updated.
-        /// </summary>
-        /// <param name="customerNameUpdate">information of property to be reported.</param>
-        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public async Task SetCustomerNameAsync(DigitalTwinPropertyUpdate customerNameUpdate)
-        {
-            // code to consume customer value, currently just displaying on screen.
-            string customerName = customerNameUpdate.PropertyDesired;
-            Console.WriteLine($"Desired customer name = '{customerName}'.");
-            Console.WriteLine($"Reported customer name = '{customerNameUpdate.PropertyReported}'.");
-            Console.WriteLine($"Version is '{customerNameUpdate.DesiredVersion}'.");
-
-            // report Completed
-            var propertyReport = new Collection<DigitalTwinPropertyReport>();
-            propertyReport.Add(new DigitalTwinPropertyReport(
-                customerNameUpdate.PropertyName,
-                customerNameUpdate.PropertyDesired,
-                new DigitalTwinPropertyResponse(customerNameUpdate.DesiredVersion, 200, "Processing Completed")));
-            await this.ReportPropertiesAsync(propertyReport).ConfigureAwait(false);
-            Console.WriteLine("Sent completed status.");
-        }
-
-        /// <summary>
-        /// Process Brightness property updated.
-        /// </summary>
-        /// <param name="brightnessUpdate">information of property to be reported.</param>
-        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public async Task SetBrightnessAsync(DigitalTwinPropertyUpdate brightnessUpdate)
-        {
-            // code to consume light brightness value, currently just displaying on screen
-            string brightness = brightnessUpdate.PropertyDesired;
-            long current = 0;
-
-            Console.WriteLine($"Desired brightness = '{brightness}'.");
-            Console.WriteLine($"Reported brightness = '{brightnessUpdate.PropertyReported}'.");
-            Console.WriteLine($"Version is '{brightnessUpdate.DesiredVersion}'.");
-
-            // report Pending
-            var propertyReport = new Collection<DigitalTwinPropertyReport>();
-            propertyReport.Add(new DigitalTwinPropertyReport(
-                brightnessUpdate.PropertyName,
-                current.ToString(),
-                new DigitalTwinPropertyResponse(brightnessUpdate.DesiredVersion, 102, "Processing Request")));
-            await this.ReportPropertiesAsync(propertyReport).ConfigureAwait(false);
-            Console.WriteLine("Sent pending status for brightness property.");
-            propertyReport.Clear();
-
-            // Pretend calling command to Sensor to update brightness
-            await Task.Delay(5 * 1000).ConfigureAwait(false);
-
-            // report Completed
-            propertyReport.Add(new DigitalTwinPropertyReport(
-                brightnessUpdate.PropertyName,
-                brightnessUpdate.PropertyDesired,
-                new DigitalTwinPropertyResponse(
-                    brightnessUpdate.DesiredVersion,
-                    200,
-                    "Request completed")));
-            await this.ReportPropertiesAsync(propertyReport).ConfigureAwait(false);
-            Console.WriteLine("Sent completed status for brightness property.");
         }
 
         /// <summary>
@@ -140,14 +81,35 @@ namespace EnvironmentalSensorSample
         /// </summary>
         /// <param name="commandRequest">information regarding the command received.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        protected override Task<DigitalTwinCommandResponse> OnCommandRequest(DigitalTwinCommandRequest commandRequest)
+        protected override async Task<DigitalTwinCommandResponse> OnCommandRequest(DigitalTwinCommandRequest commandRequest)
         {
             Console.WriteLine($"\t Command - {commandRequest.Name} was invoked from the service");
             Console.WriteLine($"\t Data - {commandRequest.Payload}");
             Console.WriteLine($"\t Request Id - {commandRequest.RequestId}.");
 
-            // TODO: trigger the callback and return command response
-            return Task.FromResult(new DigitalTwinCommandResponse(200, "{\"payload\": \"data\"}"));
+            switch (commandRequest.Name)
+            {
+                case BlinkCommand:
+                    return new DigitalTwinCommandResponse(200, "{\"description\": \"abc\"}");
+                case RunDiagnosticsCommand:
+                    var t = Task.Run(async () =>
+                    {
+                        Console.WriteLine("RunDiagnosticAsync started...");
+
+                        // Pretend calling command to Sensor to run diagnostics.
+                        await Task.Delay(10 * 1000).ConfigureAwait(false);
+                        Console.WriteLine("RunDiagnosticAsync done... Send status update.");
+
+                        await this.UpdateAsyncCommandStatusAsync(new DigitalTwinAsyncCommandUpdate(commandRequest.Name, commandRequest.RequestId, 200)).ConfigureAwait(false);
+                    });
+                    return new DigitalTwinCommandResponse(DigitalTwinAsyncCommandPending, null);
+                case TurnOffLightCommand:
+                case TurnOnLightCommand:
+                    return new DigitalTwinCommandResponse(200, null);
+                default:
+                    Console.WriteLine($"Property name '{commandRequest.Name}' is not handled.");
+                    return new DigitalTwinCommandResponse(404, null);
+            }
         }
 
         /// <summary>
@@ -171,6 +133,69 @@ namespace EnvironmentalSensorSample
                     Console.WriteLine($"Property name '{propertyUpdate.PropertyName}' is not handled.");
                     break;
             }
+        }
+
+        /// <summary>
+        /// Process CustomerName property updated.
+        /// </summary>
+        /// <param name="customerNameUpdate">information of property to be reported.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        private async Task SetCustomerNameAsync(DigitalTwinPropertyUpdate customerNameUpdate)
+        {
+            // code to consume customer value, currently just displaying on screen.
+            string customerName = customerNameUpdate.PropertyDesired;
+            Console.WriteLine($"Desired customer name = '{customerName}'.");
+            Console.WriteLine($"Reported customer name = '{customerNameUpdate.PropertyReported}'.");
+            Console.WriteLine($"Version is '{customerNameUpdate.DesiredVersion}'.");
+
+            // report Completed
+            var propertyReport = new Collection<DigitalTwinPropertyReport>();
+            propertyReport.Add(new DigitalTwinPropertyReport(
+                customerNameUpdate.PropertyName,
+                customerNameUpdate.PropertyDesired,
+                new DigitalTwinPropertyResponse(customerNameUpdate.DesiredVersion, 200, "Processing Completed")));
+            await this.ReportPropertiesAsync(propertyReport).ConfigureAwait(false);
+            Console.WriteLine("Sent completed status.");
+        }
+
+        /// <summary>
+        /// Process Brightness property updated.
+        /// </summary>
+        /// <param name="brightnessUpdate">information of property to be reported.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        private async Task SetBrightnessAsync(DigitalTwinPropertyUpdate brightnessUpdate)
+        {
+            // code to consume light brightness value, currently just displaying on screen
+            string brightness = brightnessUpdate.PropertyDesired;
+            long current = 0;
+
+            Console.WriteLine($"Desired brightness = '{brightness}'.");
+            Console.WriteLine($"Reported brightness = '{brightnessUpdate.PropertyReported}'.");
+            Console.WriteLine($"Version is '{brightnessUpdate.DesiredVersion}'.");
+
+            // report Pending
+            var propertyReport = new Collection<DigitalTwinPropertyReport>();
+            propertyReport.Add(new DigitalTwinPropertyReport(
+                brightnessUpdate.PropertyName,
+                current.ToString(),
+                new DigitalTwinPropertyResponse(brightnessUpdate.DesiredVersion, 102, "Processing Request")));
+            await this.ReportPropertiesAsync(propertyReport).ConfigureAwait(false);
+            Console.WriteLine("Sent pending status for brightness property.");
+            propertyReport.Clear();
+
+            // Pretend calling command to Sensor to update brightness
+            await Task.Delay(5 * 1000).ConfigureAwait(false);
+
+            // report Completed
+            propertyReport.Add(new DigitalTwinPropertyReport(
+                brightnessUpdate.PropertyName,
+                brightnessUpdate.PropertyDesired,
+                new DigitalTwinPropertyResponse(
+                    brightnessUpdate.DesiredVersion,
+                    200,
+                    "Request completed")));
+            await this.ReportPropertiesAsync(propertyReport).ConfigureAwait(false);
+            Console.WriteLine("Sent completed status for brightness property.");
         }
     }
 }
