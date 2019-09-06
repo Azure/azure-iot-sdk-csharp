@@ -28,9 +28,9 @@ namespace Microsoft.Azure.Devices.Client
     {
         readonly object messageLock = new object();
 #if NETMF
-        public Stream bodyStream;
+        Stream bodyStream;
 #else
-        public volatile Stream bodyStream;
+        volatile Stream bodyStream;
 #endif
         bool disposed;
         bool ownsBodyStream;
