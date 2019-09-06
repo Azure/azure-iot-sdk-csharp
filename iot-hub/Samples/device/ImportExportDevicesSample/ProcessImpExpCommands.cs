@@ -12,13 +12,14 @@ using System.Threading.Tasks;
 
 namespace ImportExportDevices
 {
-    public static class IOTHubDevices
+    public static class IoTHubDevices
     {
+
         //IoT Hub connection string. You can get this from the portal.
         // Log into https://azure.portal.com, go to Resources, find your hub and select it.
         // Then look for Shared Access Policies and select it. 
-        // Then select iothubowner and copy one of the connection strings.
-        public static string iotHubConnectionString = "<connection string to your IoT hub>";
+        // Then select IoThubowner and copy one of the connection strings.
+        public static string IoTHubConnectionString = "<connection string to your IoT hub>";
 
         // Connection string to the storage account used to hold the imported or exported data.
         // Log into https://azure.portal.com, go to Resources, find your storage account and select it.
@@ -37,10 +38,10 @@ namespace ImportExportDevices
         public static string deviceListFile = "devices.txt";
 
         // List of devices to add. This is a temporary file.
-        public static string devices_to_add = "devices_new.txt";
+        public static string devicesToAdd = "devices_new.txt";
 
         /// <summary>
-        /// Sets up references to the blob hierarchy objects, sets URI_to_container with an SAS for access.
+        /// Sets up references to the blob hierarchy objects, sets containerURI with an SAS for access.
         /// Create the container if it doesn't exist.
         /// </summary>
         /// <returns></returns>
@@ -85,27 +86,25 @@ namespace ImportExportDevices
             string containerSASToken = GetContainerSasToken(cloudBlobContainer);
 
             // Append the SAS token to the URI to the container. This is returned.
-            string URI_to_container = containerURI + containerSASToken;
-
-            return URI_to_container;
+            return containerURI + containerSASToken;
         }
 
         /// <summary>
-        /// Add num_to_add devices to the IoT Hub. The limit is 1 million. 
+        /// Add NumToAdd devices to the IoT Hub. The limit is 1 million. 
         /// You should size your hub so it can have as many devices as you want to test with.
         /// </summary>
         /// <param name="num_to_add">Number of devices to add.</param>
         public async static Task AddDevicesToHub(int num_to_add)
         { 
-            string URI_to_container = PrepareForImportExport();
-            // Add num_to_add devices to the IoT Hub.
+            string containerURI = PrepareForImportExport();
+            // Add NumToAdd devices to the IoT Hub.
             // This won't change any devices already registered with the hub, it just adds more.
             // The default is 10. 
             if (num_to_add < 0)
             {
                 num_to_add = 10;
             }        
-            await IOTHubDevices.GenerateAndAddDevices(URI_to_container, num_to_add);
+            await IoTHubDevices.GenerateAndAddDevices(containerURI, num_to_add);
         }
 
         /// <summary>
@@ -113,8 +112,8 @@ namespace ImportExportDevices
         /// </summary>
         public async static Task ExportDevicesToBlobStorage()
         {
-            string URI_to_container = PrepareForImportExport();
-            await IOTHubDevices.ExportDevices(URI_to_container);
+            string containerURI = PrepareForImportExport();
+            await IoTHubDevices.ExportDevices(containerURI);
         }
 
         /// <summary>
@@ -125,8 +124,11 @@ namespace ImportExportDevices
         /// <returns></returns>
         public async static Task ReadAndDisplayExportedDeviceList()
         {
-            string URI_to_container = PrepareForImportExport();
-            await IOTHubDevices.ReadExportedDeviceList();
+            string containerURI = PrepareForImportExport();
+            // First, export IoT device list to the blob.
+            await IoTHubDevices.ExportDevices(containerURI);
+            // Next, read the data in the blob and show it on the screen.
+            await IoTHubDevices.ReadExportedDeviceList();
         }
 
         /// <summary>
@@ -136,30 +138,31 @@ namespace ImportExportDevices
         /// <returns></returns>
         public async static Task DeleteAllDevicesFromHub()
         {
-            string URI_to_container = PrepareForImportExport();
-            await IOTHubDevices.DeleteDevices(URI_to_container);
+            string containerURI = PrepareForImportExport();
+            await IoTHubDevices.DeleteDevices(containerURI);
         }
 
-        //generate num_to_add devices and add them to the hub 
+        //generate NumToAdd devices and add them to the hub 
         // to do this, generate each identity 
         // * include authentication keys
         // * write the device info to a block blob
         // * import the devices into the identity registry by calling the import job
-        private static async Task GenerateAndAddDevices(string URI_to_container, int num_to_add)
+        private static async Task GenerateAndAddDevices(string containerURI, int NumToAdd)
         {
             //generate reference for list of new devices you're going to add, will write list to this blob 
-            CloudBlockBlob generatedListBlob = cloudBlobContainer.GetBlockBlobReference(devices_to_add);
+            CloudBlockBlob generatedListBlob = cloudBlobContainer.GetBlockBlobReference(devicesToAdd);
 
             // define serializedDevices as a generic list<string>
             List<string> serializedDevices = new List<string>();
             
-            for (var i = 1; i <= num_to_add; i++)
+            for (var i = 1; i <= NumToAdd; i++)
             {
                 // Create device name with this format: Hub_00000000 + a new guid.
                 // This should be large enough to display the largest number (1 million).
-                string deviceName = "Hub_" + i.ToString("D8") + "-" + Guid.NewGuid().ToString();
-                System.Diagnostics.Debug.Print("device = '{0}'", deviceName);
+                //string deviceName = "Hub_" + i.ToString("D8") + "-" + Guid.NewGuid().ToString();
+                string deviceName = $"Hub_{i.ToString("D8")}-{Guid.NewGuid().ToString()}";
 
+                System.Diagnostics.Debug.Print("device = '{0}'", deviceName);
                 // Create a new ExportImportDevice.
                 // CryptoKeyGenerator is in the Microsoft.Azure.Devices.Common namespace.
                 var deviceToAdd = new ExportImportDevice()
@@ -214,15 +217,15 @@ namespace ImportExportDevices
 
             JobProperties importJob = new JobProperties();
             RegistryManager registryManager =
-                RegistryManager.CreateFromConnectionString(iotHubConnectionString);
+                RegistryManager.CreateFromConnectionString(IoTHubConnectionString);
             try
             {
                 // First URL is the container to import from; the file must be called devices.txt
                 // Second URL points to the container to write errors to as a block blob.
                 // This lets you import the devices from any file name. Since we wrote the new 
-                //   devices to [devices_to_add], need to read the list from there as well. 
+                //   devices to [devicesToAdd], need to read the list from there as well. 
                 importJob =
-                  await registryManager.ImportDevicesAsync(URI_to_container, URI_to_container, devices_to_add);
+                  await registryManager.ImportDevicesAsync(containerURI, containerURI, devicesToAdd);
 
                 // This will catch any errors if something bad happens to interrupt the job.
                 while (true)
@@ -252,17 +255,17 @@ namespace ImportExportDevices
         ///   and export it to a blob as deserialized objects.
         /// Can use this for testing -- read the devices and export them, 
         ///   then open the file and see what it has in it.
-        private static async Task ExportDevices(string URI_to_container)
+        private static async Task ExportDevices(string containerURI)
         {
             // Create an instance of the registry manager class.
             RegistryManager registryManager =
-              RegistryManager.CreateFromConnectionString(iotHubConnectionString);
+              RegistryManager.CreateFromConnectionString(IoTHubConnectionString);
 
             // Call an export job on the IoT Hub to retrieve all devices.
             // This writes them to devices.txt in the container. 
             // The second parameter indicates whether to export the keys or not.
             JobProperties exportJob = await
-              registryManager.ExportDevicesAsync(URI_to_container, false);
+              registryManager.ExportDevicesAsync(containerURI, false);
 
             // Poll every 5 seconds to see if the job has finished executing.
             while (true)
@@ -283,9 +286,10 @@ namespace ImportExportDevices
         }
 
         /// <summary>
-        /// Read list of exported devices from the blob.
+        /// Read the list of devices from the existing blob.
         /// Deserialize each entry and add it to exportedDevices.
-        /// This is for testing your export.
+        /// Then show the list in the output window.
+        /// This is for testing.
         /// </summary>
         /// <returns></returns>
         private static async Task ReadExportedDeviceList()
@@ -309,9 +313,9 @@ namespace ImportExportDevices
             }
 
             // Print out the list of devices to the console.
-            foreach (ExportImportDevice eid in exportedDevices)
+            foreach (ExportImportDevice exportImportDevice in exportedDevices)
             {
-                System.Diagnostics.Debug.Print("Hub id = {0}, eTag = {1}", eid.Id, eid.ETag);
+                System.Diagnostics.Debug.Print("Hub id = {0}, eTag = {1}", exportImportDevice.Id, exportImportDevice.ETag);
             }
         }
 
@@ -325,10 +329,10 @@ namespace ImportExportDevices
         // Write the new StringBuilder to the block blob. 
         //   This essentially replaces the list with a list of devices that have ImportJob = Delete.
         // Call ImportDevicesAsync, which will read in the list in devices.txt, then delete each one. 
-        private static async Task DeleteDevices(string URI_to_container)
+        private static async Task DeleteDevices(string containerURI)
         {
             // Read the devices from the hub and write= them to devices.txt.
-            await ExportDevices(URI_to_container);
+            await ExportDevices(containerURI);
 
             // Read devices.txt which contains serialized objects. 
             // Write each line to the serializedDevices list. (List<string>).
@@ -352,7 +356,7 @@ namespace ImportExportDevices
                 }
             }
 
-            // Get ready to delete the blog containing the list of devices,
+            // Delete the blob containing the list of devices,
             //   because you're going to recreate it. 
             CloudBlockBlob blobToDelete = cloudBlobContainer.GetBlockBlobReference("devices.txt");
 
@@ -386,9 +390,9 @@ namespace ImportExportDevices
             // Step 3: Call import using the same blob to delete all devices.
             // Loads devices.txt and applies that change.
             RegistryManager registryManager =
-              RegistryManager.CreateFromConnectionString(iotHubConnectionString);
+              RegistryManager.CreateFromConnectionString(IoTHubConnectionString);
             JobProperties importJob =
-              await registryManager.ImportDevicesAsync(URI_to_container, URI_to_container);
+              await registryManager.ImportDevicesAsync(containerURI, containerURI);
 
             // Wait until job is finished
             while (true)

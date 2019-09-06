@@ -14,21 +14,22 @@ namespace ImportExportDevices
             //  correspond to the number of devices you want to create and test with.
             //  For example, if you want to create a million devices, don't use a hub with a Basic sku.
 
-            //IOTHubDevices.DeleteAllDevicesFromHub().Wait();
+            //IoTHubDevices.DeleteAllDevicesFromHub().Wait();
             //Console.WriteLine("Add devices to the hub.");
             // Add devices to the hub; specify how many.
-            IOTHubDevices.AddDevicesToHub(10).Wait();
+            //IoTHubDevices.AddDevicesToHub(10).Wait();
 
             //Console.WriteLine("Read devices from the hub, write to blob storage.");
             // Read the list of registered devices for the IoT Hub.
             // Write them to blob storage.
-            IOTHubDevices.ExportDevicesToBlobStorage().Wait();
+            //IoTHubDevices.ExportDevicesToBlobStorage().Wait();
 
-            //Console.WriteLine("Export device list to blob storage, then read them in and display them.");
-            IOTHubDevices.ReadAndDisplayExportedDeviceList().Wait();
+            //Console.WriteLine("read the devices, export device list to blob storage, then read them in and display them.");
+            //IoTHubDevices.ReadAndDisplayExportedDeviceList().Wait();
 
+            //** uncomment this if you want to delete all the devices registered to the hub **
             //Console.WriteLine("Delete all devices from the hub.");
-            //IOTHubDevices.DeleteAllDevicesFromHub().Wait();
+            IoTHubDevices.DeleteAllDevicesFromHub().Wait();
 
             Console.WriteLine("Finished.");
             Console.WriteLine();
