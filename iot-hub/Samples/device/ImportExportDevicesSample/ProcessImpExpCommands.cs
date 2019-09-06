@@ -22,7 +22,7 @@ namespace ImportExportDevices
 
         // Connection string to the storage account used to hold the imported or exported data.
         // Log into https://azure.portal.com, go to Resources, find your storage account and select it.
-        // Select Access Keys and copy one of the connection strings."DefaultEndpointsProtocol=https;AccountName=contosostoragerobin;AccountKey=fHQtUgF9z10PGk/7GQZgGYrtmN01rooNOR5j7/P/l25Ly7F+nqk+Uy1P0DFu+hlP+UgjuJQuMnDtLwUa+ZU+Bg==;EndpointSuffix=core.windows.net""DefaultEndpointsProtocol=https;AccountName=contosostoragerobin;AccountKey=fHQtUgF9z10PGk/7GQZgGYrtmN01rooNOR5j7/P/l25Ly7F+nqk+Uy1P0DFu+hlP+UgjuJQuMnDtLwUa+ZU+Bg==;EndpointSuffix=core.windows.net"
+        // Select Access Keys and copy one of the connection strings.
         public static string storageAccountConnectionString = "<your storage account connection string>";
 
         // Container used to hold the blob containing the list of import/export files.
@@ -37,10 +37,6 @@ namespace ImportExportDevices
         public static string deviceListFile = "devices.txt";
 
         // List of devices to add. This is a temporary file.
-        //THERE MIGHT BE A BUG WITH THIS. I can control the file created, but when I read it in,
-        //    the ImportDevicesAsync lets you specify the name, but I don't think it uses it. 
-        //    If I create devices_new.txt, and pass that name in, it ignores it and it crashes because the 
-        //    file devices.txt is not there. 
         public static string devices_to_add = "devices_new.txt";
 
         /// <summary>
@@ -152,7 +148,7 @@ namespace ImportExportDevices
         private static async Task GenerateAndAddDevices(string URI_to_container, int num_to_add)
         {
             //generate reference for list of new devices you're going to add, will write list to this blob 
-            CloudBlockBlob generatedListBlob = cloudBlobContainer.GetBlockBlobReference(deviceListFile);
+            CloudBlockBlob generatedListBlob = cloudBlobContainer.GetBlockBlobReference(devices_to_add);
 
             // define serializedDevices as a generic list<string>
             List<string> serializedDevices = new List<string>();
@@ -206,7 +202,6 @@ namespace ImportExportDevices
             }
 
             // Should now have a file with all the new devices in it as serialized objects in blob storage.
-            System.Diagnostics.Debug.Print("hello");
 
             // generatedListBlob has the list of devices to be added as serialized objects.
 
@@ -222,14 +217,12 @@ namespace ImportExportDevices
                 RegistryManager.CreateFromConnectionString(iotHubConnectionString);
             try
             {
-                //this should let you import the devices from any file name, but if it's anything but devices.txt, it doesn't work.
-                //importJob =
-                //await registryManager.ImportDevicesAsync(URI_to_container, URI_to_container, devices_to_add); //robin -- doesn't work
-
                 // First URL is the container to import from; the file must be called devices.txt
                 // Second URL points to the container to write errors to as a block blob.
+                // This lets you import the devices from any file name. Since we wrote the new 
+                //   devices to [devices_to_add], need to read the list from there as well. 
                 importJob =
-                  await registryManager.ImportDevicesAsync(URI_to_container, URI_to_container);
+                  await registryManager.ImportDevicesAsync(URI_to_container, URI_to_container, devices_to_add);
 
                 // This will catch any errors if something bad happens to interrupt the job.
                 while (true)
@@ -252,6 +245,7 @@ namespace ImportExportDevices
 
                 System.Diagnostics.Debug.Print("description = {0}", ex.Message);
             }
+
         }
 
         /// Get the list of devices registered to the IoT Hub 
