@@ -19,6 +19,9 @@ namespace Azure.Iot.DigitalTwin.Device
     /// </summary>
     public abstract class DigitalTwinInterfaceClient
     {
+        public const int DigitalTwinCommandCompleted = 200;
+        public const int DigitalTwinAsyncCommandPending = 202;
+
         private DigitalTwinClient digitalTwinClient;
 
         /// <summary>
@@ -62,7 +65,15 @@ namespace Azure.Iot.DigitalTwin.Device
         internal void Initialize(DigitalTwinClient digitalTwinClient)
         {
             this.digitalTwinClient = digitalTwinClient;
+            this.OnRegistrationCompleted();
         }
+
+        /// <summary>
+        /// Should contains interface initialization process.  Triggers when register interface is completed and signal
+        /// interface to proceed with initialization. Interfaces should implement it.
+        /// </summary>
+        /// <param name="propertyUpdate">incoming property updated notification.</param>
+        protected abstract void OnRegistrationCompleted();
 
         /// <summary>
         /// Callback for commands. Triggers when a command is received at an interface.
