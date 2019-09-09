@@ -33,7 +33,6 @@ namespace EnvironmentalSensorSample
         private const string TurnOnLightCommand = "turnon";
         private const string TurnOffLightCommand = "turnoff";
         private const string RunDiagnosticsCommand = "rundiagnostics";
-        private const int DigitalTwinAsyncCommandPending = 202;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EnvironmentalSensorInterface"/> class.
@@ -133,6 +132,14 @@ namespace EnvironmentalSensorSample
                     Console.WriteLine($"Property name '{propertyUpdate.PropertyName}' is not handled.");
                     break;
             }
+        }
+
+        /// <summary>
+        /// Callback when registration is completed.
+        /// </summary>
+        protected override void OnRegistrationCompleted()
+        {
+            Console.WriteLine($"OnRegistrationCompleted.");
         }
 
         /// <summary>
