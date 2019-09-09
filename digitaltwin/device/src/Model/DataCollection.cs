@@ -20,7 +20,7 @@ namespace Azure.Iot.DigitalTwin.Device.Model
         private JObject properties;
 
         /// <summary>
-        /// Creates an instance of <see cref="DataCollection"/>.
+        /// Initializes a new instance of the <see cref="DataCollection"/> class.
         /// </summary>
         public DataCollection()
         {
@@ -28,9 +28,9 @@ namespace Azure.Iot.DigitalTwin.Device.Model
         }
 
         /// <summary>
-        /// Creates an instance of <see cref="DataCollection"/> with given json properties.
+        /// Initializes a new instance of the <see cref="DataCollection"/> class with json properties.
         /// </summary>
-        /// <param name="propertiesJson"></param>
+        /// <param name="propertiesJson">json representation of the properties.</param>
         public DataCollection(string propertiesJson)
         {
             GuardHelper.ThrowIfNullOrWhiteSpace(propertiesJson, nameof(propertiesJson));
@@ -40,8 +40,8 @@ namespace Azure.Iot.DigitalTwin.Device.Model
         /// <summary>
         /// Set value of an property.
         /// </summary>
-        /// <param name="propertyName"></param>
-        /// <returns></returns>
+        /// <param name="propertyName">propertry name.</param>
+        /// <returns>object representating the property.</returns>
         public object this[string propertyName]
         {
             get
@@ -83,7 +83,7 @@ namespace Azure.Iot.DigitalTwin.Device.Model
         /// <summary>
         /// Get enumerator list of key value pairs.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>IEnumerator of the properties</returns>
         public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
         {
             foreach (KeyValuePair<string, JToken> kvp in this.properties)
@@ -101,15 +101,6 @@ namespace Azure.Iot.DigitalTwin.Device.Model
         IEnumerator IEnumerable.GetEnumerator()
         {
             return this.GetEnumerator();
-        }
-
-        /// <summary>
-        /// Convert the properties to a json string.
-        /// </summary>
-        /// <returns>a json string of the properties.</returns>
-        public override string ToString()
-        {
-            return this.properties.ToString();
         }
 
         internal JObject JObject => this.properties;

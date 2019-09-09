@@ -44,5 +44,12 @@ namespace Azure.IoT.DigitalTwin.Device
         {
             await this.ReportPropertiesAsync(this.propertyCollection).ConfigureAwait(false);
         }
+
+        /// <summary>
+        /// No ops for SdkInformationInterface.
+        /// </summary>
+        protected override void OnRegistrationCompleted()
+        {
+        }
     }
 }
