@@ -93,18 +93,18 @@ namespace ImportExportDevices
         /// Add NumToAdd devices to the IoT Hub. The limit is 1 million. 
         /// You should size your hub so it can have as many devices as you want to test with.
         /// </summary>
-        /// <param name="num_to_add">Number of devices to add.</param>
-        public async static Task AddDevicesToHub(int num_to_add)
+        /// <param name="NumToAdd">Number of devices to add.</param>
+        public async static Task AddDevicesToHub(int NumToAdd)
         { 
             string containerURI = PrepareForImportExport();
             // Add NumToAdd devices to the IoT Hub.
             // This won't change any devices already registered with the hub, it just adds more.
             // The default is 10. 
-            if (num_to_add < 0)
+            if (NumToAdd < 0)
             {
-                num_to_add = 10;
+                NumToAdd = 10;
             }        
-            await IoTHubDevices.GenerateAndAddDevices(containerURI, num_to_add);
+            await IoTHubDevices.GenerateAndAddDevices(containerURI, NumToAdd);
         }
 
         /// <summary>
