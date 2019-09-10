@@ -50,8 +50,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                     try
                     {
                         s_log.WriteLine($"{nameof(SetDeviceReceiveMethodAsync)}: DeviceClient callback method: {request.Name} {request.ResponseTimeout}.");
-                        Assert.AreEqual(methodName, request.Name);
-                        Assert.AreEqual(expectedServiceRequestJson, request.DataAsJson);
+                        Assert.AreEqual(methodName, request.Name, $"The expected method name should be {methodName} but was {request.Name}");
+                        Assert.AreEqual(expectedServiceRequestJson, request.DataAsJson, $"The expected method name should be {expectedServiceRequestJson} but was {request.DataAsJson}");
 
                         return Task.FromResult(new MethodResponse(Encoding.UTF8.GetBytes(deviceResponseJson), 200));
                     }

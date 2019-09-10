@@ -82,10 +82,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         public async Task DeviceClient_TokenConnectionDoubleRelease_Ok()
         {
-            string deviceConnectionString = null;
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
 
-            deviceConnectionString = testDevice.ConnectionString;
+            string deviceConnectionString = testDevice.ConnectionString;
 
             var config = new Configuration.IoTHub.DeviceConnectionStringParser(deviceConnectionString);
             string iotHub = config.IoTHub;
@@ -138,7 +137,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     deviceClient.SetConnectionStatusChangesHandler((ConnectionStatus status, ConnectionStatusChangeReason reason) =>
                     {
                         _log.WriteLine($"{nameof(ConnectionStatusChangesHandler)}: {status}; {reason}");
-                        if (status == ConnectionStatus.Disconnected) deviceDisconnected.Release();
+                        if (status == ConnectionStatus.Disconnected_Retrying || status == ConnectionStatus.Disconnected) deviceDisconnected.Release();
                     });
                 }
 
