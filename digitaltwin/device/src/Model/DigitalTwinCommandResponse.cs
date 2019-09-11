@@ -9,7 +9,7 @@ namespace Azure.Iot.DigitalTwin.Device.Model
     /// Contains response of the command passed from the Digital Twin Interface Client to Digital Twin Client
     /// for further processing (response to service).
     /// </summary>
-    public struct DigitalTwinCommandResponse
+    public struct DigitalTwinCommandResponse : IEquatable<DigitalTwinCommandResponse>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="DigitalTwinCommandResponse"/> struct.
@@ -41,5 +41,20 @@ namespace Azure.Iot.DigitalTwin.Device.Model
         /// Gets the status of the response.
         /// </summary>
         public int Status { get; }
+
+        public bool Equals(DigitalTwinCommandResponse other)
+        {
+            return string.Equals(this.Payload, other.Payload, StringComparison.OrdinalIgnoreCase) && this.Status == other.Status;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is DigitalTwinCommandResponse && Equals((DigitalTwinCommandResponse)obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(this.Payload, this.Status);
+        }
     }
 }

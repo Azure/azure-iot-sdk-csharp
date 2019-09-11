@@ -2,10 +2,11 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Azure.Iot.DigitalTwin.Device.Helper;
+using System;
 
 namespace Azure.Iot.DigitalTwin.Device.Model
 {
-    public struct DigitalTwinPropertyReport
+    public struct DigitalTwinPropertyReport : IEquatable<DigitalTwinPropertyReport>
     {
         /// <summary>
         /// 
@@ -46,5 +47,23 @@ namespace Azure.Iot.DigitalTwin.Device.Model
         /// 
         /// </summary>
         public DigitalTwinPropertyResponse DigitalTwinPropertyResponse { get; }
+
+        public bool Equals(DigitalTwinPropertyReport other)
+        {
+            return
+                string.Equals(this.Name, other.Name, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(this.Value, other.Value, StringComparison.OrdinalIgnoreCase) &&
+                this.DigitalTwinPropertyResponse.Equals(other.DigitalTwinPropertyResponse);
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is DigitalTwinPropertyReport && Equals((DigitalTwinPropertyReport)obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(this.Name, this.Value, this.DigitalTwinPropertyResponse);
+        }
     }
 }
