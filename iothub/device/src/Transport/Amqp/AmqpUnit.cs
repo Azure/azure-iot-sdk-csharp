@@ -269,8 +269,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             {
                 await EnsureMessageReceivingLinkAsync(timeout).ConfigureAwait(false);
                 disposeOutcome = await _messageReceivingLink.DisposeMessageAsync(lockToken, AmqpIoTResultAdapter.GetResult(disposeAction), timeout).ConfigureAwait(false);
-            }
-            else
+            } else
             {
                 await EnableEventReceiveAsync(timeout).ConfigureAwait(false);
                 disposeOutcome = await _eventReceivingLink.DisposeMessageAsync(lockToken, AmqpIoTResultAdapter.GetResult(disposeAction), timeout).ConfigureAwait(false);
@@ -282,14 +281,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         #endregion
 
         #region Event
-        public async Task EnableEventReceiveAsync(TimeSpan timeout)
+        private async Task EnsureEventReceivingLinkAsync(TimeSpan timeout)
         {
             if (_closed)
             {
                 throw new IotHubException("Device is now offline.", false);
             }
 
-            if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(EnableEventReceiveAsync)}");
+            if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(EnsureEventReceivingLinkAsync)}");
             AmqpIoTSession amqpIoTSession = await EnsureSessionAsync(timeout).ConfigureAwait(false);
             bool gain = await _eventReceivingLinkLock.WaitAsync(timeout).ConfigureAwait(false);
             if (!gain)
@@ -302,16 +301,30 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 if (_eventReceivingLink == null || _eventReceivingLink.IsClosing())
                 {
                     _eventReceivingLink = await amqpIoTSession.OpenEventsReceiverLinkAsync(_deviceIdentity, timeout).ConfigureAwait(false);
+
                     _eventReceivingLink.Closed += (obj, arg) => {
                         amqpIoTSession.SafeClose();
                     };
-                    _eventReceivingLink.RegisterEventListener(OnEventsReceived);
-                    if (Logging.IsEnabled) Logging.Associate(this, this, _eventReceivingLink, $"{nameof(EnableEventReceiveAsync)}");
+                    if (Logging.IsEnabled) Logging.Associate(this, this, _eventReceivingLink, $"{nameof(EnsureEventReceivingLinkAsync)}");
                 }
             }
             finally
             {
                 _eventReceivingLinkLock.Release();
+                if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(EnsureEventReceivingLinkAsync)}");
+            }
+        }
+
+        public async Task EnableEventReceiveAsync(TimeSpan timeout)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(EnableEventReceiveAsync)}");
+            try
+            {
+                await EnsureEventReceivingLinkAsync(timeout).ConfigureAwait(false);
+                _eventReceivingLink.RegisterEventListener(OnEventsReceived);
+            }
+            finally
+            {
                 if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(EnableEventReceiveAsync)}");
             }
         }
