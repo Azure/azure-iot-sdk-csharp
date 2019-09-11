@@ -264,16 +264,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         public async Task<AmqpIoTOutcome> DisposeMessageAsync(string lockToken, AmqpIoTDisposeActions disposeAction, TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, lockToken, $"{nameof(DisposeMessageAsync)}");
+            await EnsureMessageReceivingLinkAsync(timeout).ConfigureAwait(false);
             AmqpIoTOutcome disposeOutcome;
-            if (_deviceIdentity.IotHubConnectionString.ModuleId.IsNullOrWhiteSpace())
-            {
-                await EnsureMessageReceivingLinkAsync(timeout).ConfigureAwait(false);
-                disposeOutcome = await _messageReceivingLink.DisposeMessageAsync(lockToken, AmqpIoTResultAdapter.GetResult(disposeAction), timeout).ConfigureAwait(false);
-            } else
-            {
-                await EnableEventReceiveAsync(timeout).ConfigureAwait(false);
-                disposeOutcome = await _eventReceivingLink.DisposeMessageAsync(lockToken, AmqpIoTResultAdapter.GetResult(disposeAction), timeout).ConfigureAwait(false);
-            }
+            disposeOutcome = await _messageReceivingLink.DisposeMessageAsync(lockToken, AmqpIoTResultAdapter.GetResult(disposeAction), timeout).ConfigureAwait(false);
             if (Logging.IsEnabled) Logging.Exit(this, lockToken, $"{nameof(DisposeMessageAsync)}");
             return disposeOutcome;
         }
