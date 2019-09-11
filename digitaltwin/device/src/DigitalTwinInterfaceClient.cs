@@ -21,6 +21,7 @@ namespace Azure.Iot.DigitalTwin.Device
     {
         public const int DigitalTwinCommandCompleted = 200;
         public const int DigitalTwinAsyncCommandPending = 202;
+        public const int DigitalTwinResourceNotFound = 404;
 
         private DigitalTwinClient digitalTwinClient;
 
@@ -73,7 +74,9 @@ namespace Azure.Iot.DigitalTwin.Device
         /// interface to proceed with initialization. Interfaces should implement it.
         /// </summary>
         /// <param name="propertyUpdate">incoming property updated notification.</param>
-        protected abstract void OnRegistrationCompleted();
+        protected virtual void OnRegistrationCompleted()
+        {
+        }
 
         /// <summary>
         /// Callback for commands. Triggers when a command is received at an interface.
@@ -83,7 +86,7 @@ namespace Azure.Iot.DigitalTwin.Device
         /// <returns>DigitalTwinCommandResponse.</returns>
         protected internal virtual Task<DigitalTwinCommandResponse> OnCommandRequest(DigitalTwinCommandRequest commandRequest)
         {
-            return Task.FromResult(new DigitalTwinCommandResponse(404));
+            return Task.FromResult(new DigitalTwinCommandResponse(DigitalTwinResourceNotFound));
         }
 
         /// <summary>
@@ -98,37 +101,16 @@ namespace Azure.Iot.DigitalTwin.Device
         }
 
         /// <summary>
-        /// Reports properties to the cloud service.
-        /// </summary>
-        /// <param name="properties">The serialized json representing the property key and value pair(s) to be reported.</param>
-        /// <returns>Task representing the asynchronous operation.</returns>
-        protected async Task ReportPropertiesAsync(IEnumerable<DigitalTwinPropertyReport> properties)
-        {
-            await this.ReportPropertiesAsync(properties, CancellationToken.None).ConfigureAwait(false);
-        }
-
-        /// <summary>
         /// Reports property to the cloud service.
         /// </summary>
         /// <param name="properties">The serialized json containing the property key and value pair(s) to be reported.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task representing the asynchronous operation.</returns>
-        protected async Task ReportPropertiesAsync(IEnumerable<DigitalTwinPropertyReport> properties, CancellationToken cancellationToken)
+        protected async Task ReportPropertiesAsync(IEnumerable<DigitalTwinPropertyReport> properties, CancellationToken cancellationToken = default)
         {
             GuardHelper.ThrowIfNull(properties, nameof(properties));
             this.ThrowIfInterfaceNotRegistered();
             await this.digitalTwinClient.ReportPropertiesAsync(this.InstanceName, properties, cancellationToken).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Sends an telemetry event to the cloud service.
-        /// </summary>
-        /// <param name="telemetryName">>The telemetry name to be sent.</param>
-        /// <param name="telemetryValue">The serialized representation the telemetry value to be sent.</param>
-        /// <returns>Task representing the asynchronous operation.</returns>
-        protected async Task SendTelemetryAsync(string telemetryName, string telemetryValue)
-        {
-            await this.SendTelemetryAsync(telemetryName, telemetryValue, CancellationToken.None).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -138,7 +120,7 @@ namespace Azure.Iot.DigitalTwin.Device
         /// <param name="telemetryValue">The serialized representation the telemetry value to be sent.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task representing the asynchronous operation.</returns>
-        protected async Task SendTelemetryAsync(string telemetryName, string telemetryValue, CancellationToken cancellationToken)
+        protected async Task SendTelemetryAsync(string telemetryName, string telemetryValue, CancellationToken cancellationToken = default)
         {
             this.ThrowIfInterfaceNotRegistered();
             await this.digitalTwinClient.SendTelemetryAsync(this.Id, this.InstanceName, telemetryName, telemetryValue, cancellationToken).ConfigureAwait(false);
@@ -148,19 +130,9 @@ namespace Azure.Iot.DigitalTwin.Device
         /// Sends an update of the status of a pending asynchronous command.
         /// </summary>
         /// <param name="update">The serialized json representing the property key and value pair(s) to be reported.</param>
-        /// <returns>Task representing the asynchronous operation.</returns>
-        protected async Task UpdateAsyncCommandStatusAsync(DigitalTwinAsyncCommandUpdate update)
-        {
-            await this.UpdateAsyncCommandStatusAsync(update, CancellationToken.None).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Sends an update of the status of a pending asynchronous command.
-        /// </summary>
-        /// <param name="update">The serialized json representing the property key and value pair(s) to be reported.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task representing the asynchronous operation.</returns>
-        protected async Task UpdateAsyncCommandStatusAsync(DigitalTwinAsyncCommandUpdate update, CancellationToken cancellationToken)
+        protected async Task UpdateAsyncCommandStatusAsync(DigitalTwinAsyncCommandUpdate update, CancellationToken cancellationToken = default)
         {
             this.ThrowIfInterfaceNotRegistered();
             await this.digitalTwinClient.UpdateAsyncCommandStatusAsync(this.Id, this.InstanceName, update, cancellationToken).ConfigureAwait(false);
