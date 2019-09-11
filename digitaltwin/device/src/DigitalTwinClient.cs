@@ -62,7 +62,7 @@ namespace Azure.Iot.DigitalTwin.Device
         /// <param name="digitalTwinInterfaces">The list of digital twin interfaces.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>Task representing the asynchronous operation.</returns>
-        public async Task RegisterInterfacesAsync(string capabilityModelId, IEnumerable<DigitalTwinInterfaceClient> digitalTwinInterfaces, CancellationToken cancellationToken)
+        public async Task RegisterInterfacesAsync(string capabilityModelId, IEnumerable<DigitalTwinInterfaceClient> digitalTwinInterfaces, CancellationToken cancellationToken = default)
         {
             GuardHelper.ThrowIfNull(digitalTwinInterfaces, nameof(digitalTwinInterfaces));
             GuardHelper.ThrowIfNullOrWhiteSpace(capabilityModelId, nameof(capabilityModelId));
@@ -106,17 +106,6 @@ namespace Azure.Iot.DigitalTwin.Device
             {
                 dtInterface.Initialize(this);
             }
-        }
-
-        /// <summary>
-        /// Register list of interfaces. This method will replace any previously registered interfaces.
-        /// </summary>
-        /// <param name="capabilityModelId">The capability model id.</param>
-        /// <param name="digitalTwinInterfaceClients">The list of digital twin interfaces.</param>
-        /// <returns>Task representing the asynchronous operation.</returns>
-        public async Task RegisterInterfacesAsync(string capabilityModelId, DigitalTwinInterfaceClient[] digitalTwinInterfaceClients)
-        {
-            await this.RegisterInterfacesAsync(capabilityModelId, digitalTwinInterfaceClients, CancellationToken.None).ConfigureAwait(false);
         }
 
         public async Task ReportPropertiesAsync(string instanceName, IEnumerable<DigitalTwinPropertyReport> properties, CancellationToken cancellationToken)

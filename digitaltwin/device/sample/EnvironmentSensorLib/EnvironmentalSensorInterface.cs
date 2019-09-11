@@ -2,24 +2,16 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Configuration;
-using System.Net.Sockets;
-using System.Runtime.CompilerServices;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading.Tasks;
 
 using Azure.Iot.DigitalTwin.Device;
 using Azure.Iot.DigitalTwin.Device.Model;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Newtonsoft.Json;
 
 namespace EnvironmentalSensorSample
 {
     /// <summary>
-    /// sample for DigitalTwinInterfaceClient implementation.
+    /// Sample for DigitalTwinInterfaceClient implementation.
     /// </summary>
     public class EnvironmentalSensorInterface : DigitalTwinInterfaceClient
     {
@@ -44,7 +36,7 @@ namespace EnvironmentalSensorSample
         }
 
         /// <summary>
-        /// sample for reporting a property on an interface.
+        /// Sample for reporting a property on an interface.
         /// </summary>
         /// <param name="state">state property.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
