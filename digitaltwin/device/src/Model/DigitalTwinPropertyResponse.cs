@@ -30,39 +30,49 @@ namespace Azure.Iot.DigitalTwin.Device.Model
         /// <summary>
         /// Gets the version which is used for server to disambiguate calls for given property.
         /// </summary>
-        public int RespondVersion
-        {
-            get; private set;
-        }
+        public int RespondVersion { get; }
 
         /// <summary>
         /// Gets the status code associated with the respond.
         /// </summary>
-        public int StatusCode
-        {
-            get; private set;
-        }
+        public int StatusCode { get; }
 
         /// <summary>
         /// Gets the status description associated with the respond.
         /// </summary>
-        public string StatusDescription
-        {
-            get; private set;
-        }
+        public string StatusDescription { get; }
 
-        public bool Equals(DigitalTwinPropertyResponse other)
+        public static bool operator !=(DigitalTwinPropertyResponse obj1, DigitalTwinPropertyResponse obj2)
         {
-            return this.RespondVersion.Equals(other.RespondVersion) &&
-                this.StatusCode.Equals(other.StatusCode) &&
-                string.Equals(this.StatusDescription, other.StatusDescription, StringComparison.OrdinalIgnoreCase);
+            return !(obj1 == obj2);
         }
-
-        public static bool operator !=(DigitalTwinPropertyResponse obj1, DigitalTwinPropertyResponse obj2) => !(obj1 == obj2);
 
         public static bool operator ==(DigitalTwinPropertyResponse obj1, DigitalTwinPropertyResponse obj2)
         {
             return obj1.Equals(obj2);
+        }
+
+        /// <summary>
+        /// Equals.
+        /// </summary>
+        /// <param name="other">DigitalTwinPropertyResponse</param>
+        /// <returns>bool equals.</returns>
+        public bool Equals(DigitalTwinPropertyResponse other)
+        {
+            return
+                this.RespondVersion.Equals(other.RespondVersion) &&
+                this.StatusCode.Equals(other.StatusCode) &&
+                string.Equals(this.StatusDescription, other.StatusDescription, StringComparison.OrdinalIgnoreCase);
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is DigitalTwinCommandRequest && Equals((DigitalTwinCommandRequest)obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(this.RespondVersion, this.StatusCode, this.StatusDescription);
         }
     }
 }

@@ -13,7 +13,7 @@ using Newtonsoft.Json;
 namespace EnvironmentalSensorSample
 {
     /// <summary>
-    /// sample of DeviceInformationInterface.
+    /// Sample of DeviceInformationInterface.
     /// </summary>
     public class DeviceInformationInterface : DigitalTwinInterfaceClient
     {
