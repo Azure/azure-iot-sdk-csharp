@@ -10,7 +10,7 @@ namespace Azure.Iot.DigitalTwin.Device.Model
     /// <summary>
     /// Contains information needed for updating an asynchronous command's status.
     /// </summary>
-    public struct DigitalTwinAsyncCommandUpdate
+    public struct DigitalTwinAsyncCommandUpdate : IEquatable<DigitalTwinAsyncCommandUpdate>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="DigitalTwinAsyncCommandUpdate"/> struct.
@@ -57,5 +57,24 @@ namespace Azure.Iot.DigitalTwin.Device.Model
         /// Gets the status associated with this update.
         /// </summary>
         public int Status { get; }
+
+        public bool Equals(DigitalTwinAsyncCommandUpdate other)
+        {
+            return
+                string.Equals(this.Name, other.Name, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(this.Payload, other.Payload, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(this.RequestId, other.RequestId, StringComparison.OrdinalIgnoreCase) &&
+                this.Status == other.Status;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is DigitalTwinAsyncCommandUpdate && this.Equals((DigitalTwinAsyncCommandUpdate)obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(this.Name, this.Payload, this.RequestId, this.Status);
+        }
     }
 }

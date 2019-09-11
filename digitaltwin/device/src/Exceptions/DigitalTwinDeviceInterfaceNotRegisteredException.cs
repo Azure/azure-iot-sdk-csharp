@@ -9,7 +9,7 @@ namespace Azure.Iot.DigitalTwin.Device.Exceptions
     /// <summary>
     /// This exception is thrown when the digital twin device interface is not registered.
     /// </summary>
-    public class DigitalTwinDeviceInterfaceNotRegisteredException : DigitalTwinException
+    public class DigitalTwinDeviceInterfaceNotRegisteredException : Exception
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="DigitalTwinDeviceInterfaceNotRegisteredException"/> class.
