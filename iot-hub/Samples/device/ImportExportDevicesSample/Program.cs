@@ -14,19 +14,16 @@ namespace ImportExportDevices
         // Log into https://azure.portal.com, go to Resources, find your hub and select it.
         // Then look for Shared Access Policies and select it. 
         // Then select IoThubowner and copy one of the connection strings.
-        //public static string IoTHubConnectionString = "<connection string to an existing IoT hub>";
-        public static string IoTHubConnectionString = "HostName=ContosoTestHub16658.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=PJJ1zoWAK064vtsZ9ydnDlAvaCPQwk4vvafC7sfYdWU=";
+        public static string IoTHubConnectionString = "<connection string to an existing IoT hub>";
 
         // When copying data from one hub to another, this is the connection string
         //   to the destination hub, i.e. the new one.
-        //public static string DestIoTHubConnectionString = "<connection string to a IoT hub to copy devices to>";
-        public static string DestIoTHubConnectionString = "HostName=ContosoTestHubrobin.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=dycssovx5K2/dqU26IvYvxmVUTPrFKjDSp56kx49jGs=";
+        public static string DestIoTHubConnectionString = "<connection string to a IoT hub to copy devices to>";
 
         // Connection string to the storage account used to hold the imported or exported data.
         // Log into https://azure.portal.com, go to Resources, find your storage account and select it.
         // Select Access Keys and copy one of the connection strings.
-        //public static string storageAccountConnectionString = "<your storage account connection string>";
-        public static string storageAccountConnectionString = "DefaultEndpointsProtocol=https;AccountName=contosostorage16658;AccountKey=wiLvScSyhPvxbp1IBi0JZWKzSlSzIE9KxJhMmLZ4vjeAVFmZ1odRJ/T6FHCVNWARP/P5VU1Y+QpkAWkSXh0vfg==;EndpointSuffix=core.windows.net";
+        public static string storageAccountConnectionString = "<your storage account connection string>";
 
         // Container used to hold the blob containing the list of import/export files.
         // This is a module-wide variable.
@@ -38,10 +35,6 @@ namespace ImportExportDevices
         // Name of the file used for exports and imports. 
         // This is set by the IoT SDK, and can't be changed.
         public static string deviceListFile = "devices.txt";
-
-        //List of devices to add. This is the devices exported from the original hut 
-        //  to be imported into the new hub. 
-        //public static string deviceListFromOriginalHub = "devices_original.txt";
 
         public static void Main(string[] args)
         {
@@ -64,7 +57,7 @@ namespace ImportExportDevices
             //IoTHubDevices.GenerateAndAddDevices(IoTHubConnectionString, cloudBlobContainer, 
             //   containerURI, NumToAdd, deviceListFile).Wait();
 
-
+            //** you can use this if you want to add a bunch of devices, then dump them and look at them in a file (in blob storage).
             //Console.WriteLine("Read devices from the original hub, write to blob storage.");
             // Read the list of registered devices for the IoT Hub.
             // Write them to blob storage.
@@ -76,10 +69,10 @@ namespace ImportExportDevices
                 cloudBlobContainer, containerURI, deviceListFile).Wait();
 
             //** uncomment this if you want to delete all the devices registered to the original hub **
-            //Console.WriteLine("Delete all devices from the hub.");
+            //Console.WriteLine("Delete all devices from the source hub.");
             //IoTHubDevices.DeleteAllDevicesFromHub(IoTHubConnectionString, cloudBlobContainer, containerURI, deviceListFile).Wait();
 
-            //Console.WriteLine("Delete all devices from the new hub.");
+            //Console.WriteLine("Delete all devices from the destination hub.");
             //IoTHubDevices.DeleteAllDevicesFromHub(DestIoTHubConnectionString, cloudBlobContainer, containerURI, deviceListFile).Wait();
 
             Console.WriteLine("Finished.");
