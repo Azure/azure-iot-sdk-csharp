@@ -3,7 +3,7 @@
 
 using System;
 using System.Diagnostics;
-using System.Runtime.ExceptionServices;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -42,13 +42,32 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         protected void CreateServiceClient()
         {
-            if (_id == 0) s_sc = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+            if (_id != 0) return;
+            s_sc?.Dispose();
+
+            switch (_transport)
+            {
+                case Client.TransportType.Amqp_WebSocket_Only:
+                    s_sc = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString, TransportType.Amqp_WebSocket_Only);
+                    break;
+                case Client.TransportType.Amqp_Tcp_Only:
+                    s_sc = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString, TransportType.Amqp);
+                    break;
+
+                case Client.TransportType.Amqp:
+                case Client.TransportType.Http1:
+                case Client.TransportType.Mqtt:
+                case Client.TransportType.Mqtt_WebSocket_Only:
+                case Client.TransportType.Mqtt_Tcp_Only:
+                default:
+                    s_sc = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+                    break;
+            }
         }
 
         protected async Task OpenServiceClientAsync(CancellationToken ct)
         {
-            _m.OperationType = TelemetryMetrics.ServiceOperationOpen;
-            _m.ScheduleTime = null;
+            _m.Clear(TelemetryMetrics.ServiceOperationOpen);
             _sw.Restart();
             try
             {
@@ -57,6 +76,12 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 _sw.Restart();
                 await t.ConfigureAwait(false);
+            }
+            catch (NullReferenceException ex) // TODO #708 - ServiceClient AMQP will continuously fail with NullRefException after fault.
+            {
+                CreateServiceClient();
+                _m.ErrorMessage = $"{ex.GetType().Name} - {ex.Message}";
+                throw;
             }
             catch (Exception ex)
             {
@@ -72,18 +97,24 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         protected async Task SendMessageAsync(CancellationToken ct)
         {
-            _m.OperationType = TelemetryMetrics.ServiceOperationSend;
-            _m.ScheduleTime = null;
+            _m.Clear(TelemetryMetrics.ServiceOperationSend);
             _sw.Restart();
 
             try
             {
                 var message = new Message(_messageBytes);
+                message.ExpiryTimeUtc = DateTime.UtcNow + TimeSpan.FromSeconds(90);
                 Task t = s_sc.SendAsync(Configuration.Stress.GetDeviceNameById(_id, _authType), message);
                 _m.ScheduleTime = _sw.ElapsedMilliseconds;
 
                 _sw.Restart();
                 await t.ConfigureAwait(false);
+            }
+            catch (NullReferenceException ex) // TODO #708 - ServiceClient AMQP will continuously fail with NullRefException after fault.
+            {
+                CreateServiceClient();
+                _m.ErrorMessage = $"{ex.GetType().Name} - {ex.Message}";
+                throw;
             }
             catch (Exception ex)
             {
@@ -99,15 +130,14 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         protected async Task CallMethodAsync(CancellationToken ct)
         {
-            _mMethod.ScheduleTime = null;
-            _mMethod.OperationType = TelemetryMetrics.ServiceOperationMethodCall;
+            _mMethod.Clear(TelemetryMetrics.ServiceOperationMethodCall);
             _swMethod.Restart();
 
             try
             {
                 string deviceId = Configuration.Stress.GetDeviceNameById(_id, _authType);
 
-                var methodCall = new CloudToDeviceMethod(TestMethodName);
+                var methodCall = new CloudToDeviceMethod(methodName: TestMethodName, responseTimeout: TimeSpan.FromSeconds(30), connectionTimeout: TimeSpan.FromSeconds(30));
                 methodCall.SetPayloadJson(_methodPayload);
                 Task<CloudToDeviceMethodResult> t = s_sc.InvokeDeviceMethodAsync(Configuration.Stress.GetDeviceNameById(_id, _authType), methodCall);
                 _mMethod.ScheduleTime = _swMethod.ElapsedMilliseconds;
@@ -137,8 +167,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             if (s_sc == null) return;
 
-            _m.ScheduleTime = null;
-            _m.OperationType = TelemetryMetrics.ServiceOperationClose;
+            _m.Clear(TelemetryMetrics.ServiceOperationClose);
             _sw.Restart();
 
             try

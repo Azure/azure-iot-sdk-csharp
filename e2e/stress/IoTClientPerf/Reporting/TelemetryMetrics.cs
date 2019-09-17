@@ -12,6 +12,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         public const string DeviceOperationCreate = "device_create";
         public const string DeviceOperationOpen = "device_open";
         public const string DeviceOperationClose = "device_close";
+        public const string DeviceOperationDispose = "device_dispose";
         public const string DeviceOperationSend = "device_send";
         public const string DeviceOperationReceive = "device_receive";
         public const string DeviceOperationMethodEnable = "device_method_enable";
@@ -30,7 +31,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private static string s_configString; // Contains all Config* parameters.
         public int? Id;
-        public string OperationType; // e.g. OpenAsync / SendAsync, etc
+        private string OperationType; // e.g. OpenAsync / SendAsync, etc
         public double? ScheduleTime;
         public double? ExecuteTime;
         public string ErrorMessage;
@@ -62,6 +63,14 @@ namespace Microsoft.Azure.Devices.E2ETests
                 "ErrorMessage";
         }
 
+        public void Clear(string operationType)
+        {
+            OperationType = operationType;
+            ScheduleTime = null;
+            ExecuteTime = null;
+            ErrorMessage = null;
+        }
+
         public static void SetStaticConfigParameters(
             string runId,
             int timeSeconds,
@@ -87,9 +96,9 @@ namespace Microsoft.Azure.Devices.E2ETests
             Add(sb, ScheduleTime);
             Add(sb, ExecuteTime);
 
-            SystemMetrics.GetMetrics(out int cpuPercent, out long memoryBytes, out long gcBytes, out long tcpConn, out long devConn);
+            SystemMetrics.GetMetrics(out int cpuLoad, out long memoryBytes, out long gcBytes, out long tcpConn, out long devConn);
 
-            Add(sb, cpuPercent);
+            Add(sb, cpuLoad);
             Add(sb, memoryBytes);
             Add(sb, gcBytes);
             Add(sb, tcpConn);

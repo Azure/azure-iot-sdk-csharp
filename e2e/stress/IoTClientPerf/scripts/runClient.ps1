@@ -24,18 +24,31 @@ Param(
 
 $host.ui.RawUI.WindowTitle = "Azure IoT SDK: Device Stress"
 
+$fileName = [io.path]::GetFileNameWithoutExtension($outputFile)
+$filePath = [io.path]::GetDirectoryName($outputFile)
+if ($filePath -eq "") {
+    $filePath = pwd
+}
 
 Write-Host -ForegroundColor Cyan "`nDEVICE: C2D`n"
-& dotnet run --no-build -c Release -- -t $durationSeconds -o $outputFile -p $protocol -n $clients -c $connections -f device_c2d
+$scenario = "device_c2d"
+$out = Join-Path $filePath "$fileName.$($scenario).csv"
+& dotnet run --no-build -c Release -- -t $durationSeconds -o $out -p $protocol -n $clients -c $connections -f $scenario -s 2048
 
 
 Write-Host -ForegroundColor Cyan  "`nDEVICE: Methods`n"
-& dotnet run --no-build -c Release -- -t $durationSeconds -o $outputFile -p $protocol -n $clients -c $connections -f device_method
-
+$scenario = "device_method"
+$out = Join-Path $filePath "$fileName.$($scenario).csv"
+& dotnet run --no-build -c Release -- -t $durationSeconds -o $out -p $protocol -n $clients -c $connections -f $scenario -s 2048
 
 Write-Host -ForegroundColor Cyan "`nDEVICE: All`n"
-& dotnet run --no-build -c Release -- -t $durationSeconds -o $outputFile -p $protocol -n $clients -c $connections -f device_all
+$scenario = "device_all"
+$out = Join-Path $filePath "$fileName.$($scenario).csv"
+
+& dotnet run --no-build -c Release -- -t $durationSeconds -o $out -p $protocol -n $clients -c $connections -f $scenario -s 2048
 
 
 Write-Host -ForegroundColor Cyan "`nDEVICE: D2C`n"
-& dotnet run --no-build -c Release -- -t $durationSeconds -o $outputFile -p $protocol -n $clients -c $connections -f device_d2c
+$scenario = "device_d2c"
+$out = Join-Path $filePath "$fileName.$($scenario).csv"
+& dotnet run --no-build -c Release -- -t $durationSeconds -o $out -p $protocol -n $clients -c $connections -f $scenario -s 2048

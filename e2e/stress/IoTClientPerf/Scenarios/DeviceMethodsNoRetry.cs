@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             if (completedTask == _waitForDisconnectTask)
             {
-                DisposeDevice();
+                await DisposeDevice().ConfigureAwait(false);
                 await SetupAsync(ct).ConfigureAwait(false);
                 SetupTasks(ct);
             }

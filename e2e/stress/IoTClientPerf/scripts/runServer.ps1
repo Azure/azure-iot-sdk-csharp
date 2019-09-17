@@ -19,13 +19,16 @@ Param(
     $protocol = "amqp",
     $connections = 10,
     $outputFile = "service.csv",
-    $durationSeconds = 1800,
+    $durationSeconds = 300,
     $type = $null
 )
 
 
 $fileName = [io.path]::GetFileNameWithoutExtension($outputFile)
 $filePath = [io.path]::GetDirectoryName($outputFile)
+if ($filePath -eq "") {
+    $filePath = pwd
+}
 
 if ($type -eq $null)
 {
@@ -44,15 +47,25 @@ elseif ($type -eq "methods")
     $host.ui.RawUI.WindowTitle = "Azure IoT SDK: Service Stress [Methods]"
     Write-Host -ForegroundColor Cyan "`nSERVICE: Methods`n"
 
-    $out = Join-Path $filePath "$fileName.method.csv"
     $scenario = "service_method"
+    $out = Join-Path $filePath "$fileName.$($scenario).csv"
+    if (Test-Path $out) 
+    {
+        rm $out
+    }
+    
 }
 elseif ($type -eq "c2d")
 {
     $host.ui.RawUI.WindowTitle = "Azure IoT SDK: Service Stress [C2D]"
     Write-Host -ForegroundColor Cyan "`nSERVICE: C2D`n"
-    $out = Join-Path $filePath "$fileName.c2d.csv"
     $scenario = "service_c2d"
+    $out = Join-Path $filePath "$fileName.$($scenario).csv"
+
+    if (Test-Path $out) 
+    {
+        rm $out
+    }
 }
 else
 {
@@ -60,5 +73,5 @@ else
 }
 
 
-& dotnet run --no-build -c Release -- -t $durationSeconds -o $out -p $protocol -n $clients -c $connections -f $scenario
+& dotnet run --no-build -c Release -- -t $durationSeconds -o $out -p $protocol -n $clients -c $connections -f $scenario -s 2048
 Read-Host "Press ENTER to close"

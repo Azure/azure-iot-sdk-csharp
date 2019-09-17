@@ -1,6 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Microsoft.Azure.Devices.Client.Exceptions;
+using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -8,6 +11,8 @@ namespace Microsoft.Azure.Devices.E2ETests
 {
     public class DeviceAllNoRetry : DeviceClientScenario
     {
+        private const int DelaySecondsAfterFailure = 1;
+        private readonly SemaphoreSlim _lock = new SemaphoreSlim(1); 
         private Task _sendTask;
         private Task _receiveTask;
         private Task _waitForMethodTask;
@@ -28,14 +33,37 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         public override async Task RunTestAsync(CancellationToken ct)
         {
-            SetupTasks(ct);
-            Task completedTask = await Task.WhenAny(_waitForDisconnectTask, _sendTask, _receiveTask, _waitForMethodTask).ConfigureAwait(false);
-
-            if (completedTask == _waitForDisconnectTask)
+            try
             {
-                DisposeDevice();
-                await SetupAsync(ct).ConfigureAwait(false);
+                await _lock.WaitAsync().ConfigureAwait(false);
                 SetupTasks(ct);
+
+                Task completedTask = await Task.WhenAny(_waitForDisconnectTask, _sendTask, _receiveTask, _waitForMethodTask).ConfigureAwait(false);
+
+                if (completedTask == _waitForDisconnectTask)
+                {
+                    await DisposeDevice().ConfigureAwait(false);
+
+                    try
+                    {
+                        // Drain current operations. Method will not be notified in any way of the disconnect.
+                        await Task.WhenAll(_sendTask, _receiveTask).ConfigureAwait(false);
+                    }
+                    catch (IotHubException) { }
+                    catch (OperationCanceledException) { }
+
+                    _waitForDisconnectTask = null;
+                    _sendTask = null;
+                    _receiveTask = null;
+                    _waitForMethodTask = null;
+
+                    await Task.Delay(DelaySecondsAfterFailure * 1000).ConfigureAwait(false);
+                    await SetupAsync(ct).ConfigureAwait(false);
+                }
+            }
+            finally
+            {
+                _lock.Release();
             }
         }
 

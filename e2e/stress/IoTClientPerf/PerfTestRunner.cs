@@ -25,8 +25,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         private readonly int _timeSeconds;
         private readonly Func<PerfScenarioConfig, PerfScenario> _scenarioFactory;
 
-        private PerfScenario[] _tests;
-        private Stopwatch _sw = new Stopwatch();
+        private readonly PerfScenario[] _tests;
+        private readonly Stopwatch _sw = new Stopwatch();
 
         public PerfTestRunner(
             ResultWriter writer,
@@ -148,13 +148,13 @@ namespace Microsoft.Azure.Devices.E2ETests
                         (double avgRps, double stdDevRps) = CalculateAvgAndStDev(statRps);
                         double avgBps = avgRps * _messageSizeBytes;
                         double stdDevBps = stdDevRps * _messageSizeBytes;
-                        SystemMetrics.GetMetrics(out int cpuPercent, out long memoryBytes, out long gcBytes, out long tcpConn, out long devConn);
+                        SystemMetrics.GetMetrics(out int cpuLoad, out long memoryBytes, out long gcBytes, out long tcpConn, out long devConn);
 
                         Console.WriteLine($"[{_sw.Elapsed}] Loop Statistics:");
                         Console.WriteLine($"RPS       : {requestsPerSec,10:N2} R/s Avg: {avgRps,10:N2} R/s +/-StdDev: {stdDevRps,10:N2} R/s");
                         Console.WriteLine($"Throughput: {GetHumanReadableBytes(transferPerSec)}/s Avg: {GetHumanReadableBytes(avgBps)}/s +/-StdDev: {GetHumanReadableBytes(avgRps)}/s         ");
                         Console.WriteLine($"Connected : {devConn,10:N0}        ");
-                        Console.WriteLine($"CPU       : {cpuPercent,10:N2}%    Mem: {GetHumanReadableBytes(memoryBytes)}      GC_Mem: {GetHumanReadableBytes(gcBytes)} TCP: {tcpConn,4:N0}");
+                        Console.WriteLine($"CPU Load  : {(float)cpuLoad/100,10:N2}     Mem: {GetHumanReadableBytes(memoryBytes)}      GC_Mem: {GetHumanReadableBytes(gcBytes)} TCP: {tcpConn,4:N0}");
                         Console.WriteLine("----");
                         Console.WriteLine($"TOTALs: ");
                         Console.WriteLine($"Requests  : Completed: {statTotalCompleted,10:N0} Faulted: {statTotalFaulted,10:N0} Cancelled: {statTotalCancelled,10:N0}");
@@ -211,12 +211,12 @@ namespace Microsoft.Azure.Devices.E2ETests
                         double totalRequestsPerSec = statTotalCompleted / statTotalSeconds;
 
                         (double avgRps, double stdDevRps) = CalculateAvgAndStDev(statRps);
-                        SystemMetrics.GetMetrics(out int cpuPercent, out long memoryBytes, out long gcBytes, out long tcpConn, out long devConn);
+                        SystemMetrics.GetMetrics(out int cpuLoad, out long memoryBytes, out long gcBytes, out long tcpConn, out long devConn);
 
                         Console.WriteLine($"[{_sw.Elapsed}] Setup Statistics:");
                         Console.WriteLine($"RPS       : {requestsPerSec,10:N2} R/s Avg: {avgRps,10:N2} R/s +/-StdDev: {stdDevRps,10:N2} R/s");
                         Console.WriteLine($"Connected : {devConn,10:N0}        ");
-                        Console.WriteLine($"CPU       : {cpuPercent,10:N2}%    Mem: {GetHumanReadableBytes(memoryBytes)}      GC_Mem: {GetHumanReadableBytes(gcBytes)} TCP: {tcpConn,4:N0}");
+                        Console.WriteLine($"CPU Load  : {(float)cpuLoad/100,10:N2}     Mem: {GetHumanReadableBytes(memoryBytes)}      GC_Mem: {GetHumanReadableBytes(gcBytes)} TCP: {tcpConn,4:N0}");
                         Console.WriteLine("----");
                         Console.WriteLine($"TOTALs: ");
                         Console.WriteLine($"Requests  : Completed: {statTotalCompleted,10:N0} Faulted: {statTotalFaulted,10:N0} Cancelled: {statTotalCancelled,10:N0}");
@@ -257,13 +257,13 @@ namespace Microsoft.Azure.Devices.E2ETests
                         double totalRequestsPerSec = statTotalCompleted / statTotalSeconds;
 
                         (double avgRps, double stdDevRps) = CalculateAvgAndStDev(statRps);
-                        SystemMetrics.GetMetrics(out int cpuPercent, out long memoryBytes, out long gcBytes, out long tcpConn, out long devConn);
+                        SystemMetrics.GetMetrics(out int cpuLoad, out long memoryBytes, out long gcBytes, out long tcpConn, out long devConn);
 
 
                         Console.WriteLine($"[{_sw.Elapsed}] Teardown Statistics:");
                         Console.WriteLine($"RPS       : {requestsPerSec,10:N2} R/s Avg: {avgRps,10:N2} R/s +/-StdDev: {stdDevRps,10:N2} R/s");
                         Console.WriteLine($"Connected : {devConn,10:N0}        ");
-                        Console.WriteLine($"CPU       : {cpuPercent,10:N2}%    Mem: {GetHumanReadableBytes(memoryBytes)}      GC_Mem: {GetHumanReadableBytes(gcBytes)} TCP: {tcpConn,4:N0}");
+                        Console.WriteLine($"CPU Load  : {(float)cpuLoad/100,10:N2}     Mem: {GetHumanReadableBytes(memoryBytes)}      GC_Mem: {GetHumanReadableBytes(gcBytes)} TCP: {tcpConn,4:N0}");
                         Console.WriteLine("----");
                         Console.WriteLine($"TOTALs: ");
                         Console.WriteLine($"Requests  : Completed: {statTotalCompleted,10:N0} Faulted: {statTotalFaulted,10:N0} Cancelled: {statTotalCancelled,10:N0}");
