@@ -4,7 +4,6 @@
 using System;
 using System.Globalization;
 using System.Text.RegularExpressions;
-using Azure.Iot.DigitalTwin.Device.Model;
 
 namespace Azure.Iot.DigitalTwin.Device.Helper
 {
