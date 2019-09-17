@@ -1,5 +1,5 @@
 ﻿# This retrieves the subscription id of the current Azure account.
-# This field is used when setting up the routing rules.
+# This field is used when setting up the routing queries.
 $subscriptionID = (Get-AzureRmContext).Subscription.Id
 
 # Concatenate this number onto the resources that have to be globally unique.
