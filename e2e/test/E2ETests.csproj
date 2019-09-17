@@ -8,9 +8,6 @@
     <RootNamespace>Microsoft.Azure.Devices.E2ETests</RootNamespace>
     <AssemblyName>Microsoft.Azure.Devices.E2ETests</AssemblyName>
     <RootDir>$(MSBuildProjectDirectory)\..\..</RootDir>
-  </PropertyGroup>
-
-  <PropertyGroup>
     <CommonTest>$(RootDir)\common\test</CommonTest>
   </PropertyGroup>
 

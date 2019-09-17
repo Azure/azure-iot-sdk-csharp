@@ -1,8 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Microsoft.Azure.Devices.Common.Exceptions;
 using System;
 using System.Diagnostics;
+using System.Globalization;
+using System.Net.WebSockets;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,6 +23,11 @@ namespace Microsoft.Azure.Devices.E2ETests
         // Separate metrics and time calculation for operations that can be parallelized.
         private const string TestMethodName = "PerfTestMethod";
         private const int MethodPassStatus = 200;
+        private const int MethodConnectionTimeoutSeconds = 30;
+        private const int MethodResponseTimeoutSeconds = 30;
+
+        private const int C2DExpiryTimeSeconds = 90;
+
         private TelemetryMetrics _mMethod = new TelemetryMetrics();
         private Stopwatch _swMethod = new Stopwatch();
 
@@ -42,13 +50,32 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         protected void CreateServiceClient()
         {
-            if (_id == 0) s_sc = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+            if (_id != 0) return;
+            s_sc?.Dispose();
+
+            switch (_transport)
+            {
+                case Client.TransportType.Amqp_WebSocket_Only:
+                    s_sc = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString, TransportType.Amqp_WebSocket_Only);
+                    break;
+                case Client.TransportType.Amqp_Tcp_Only:
+                    s_sc = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString, TransportType.Amqp);
+                    break;
+
+                case Client.TransportType.Amqp:
+                case Client.TransportType.Http1:
+                case Client.TransportType.Mqtt:
+                case Client.TransportType.Mqtt_WebSocket_Only:
+                case Client.TransportType.Mqtt_Tcp_Only:
+                default:
+                    s_sc = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
+                    break;
+            }
         }
 
         protected async Task OpenServiceClientAsync(CancellationToken ct)
         {
-            _m.OperationType = TelemetryMetrics.ServiceOperationOpen;
-            _m.ScheduleTime = null;
+            _m.Clear(TelemetryMetrics.ServiceOperationOpen);
             _sw.Restart();
             try
             {
@@ -58,9 +85,15 @@ namespace Microsoft.Azure.Devices.E2ETests
                 _sw.Restart();
                 await t.ConfigureAwait(false);
             }
+            catch (NullReferenceException ex) // TODO #708 - ServiceClient AMQP will continuously fail with NullRefException after fault.
+            {
+                CreateServiceClient();
+                SetErrorMessage(_m, ex);
+                throw;
+            }
             catch (Exception ex)
             {
-                _m.ErrorMessage = $"{ex.GetType().Name} - {ex.Message}";
+                SetErrorMessage(_m, ex);
                 throw;
             }
             finally
@@ -72,22 +105,28 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         protected async Task SendMessageAsync(CancellationToken ct)
         {
-            _m.OperationType = TelemetryMetrics.ServiceOperationSend;
-            _m.ScheduleTime = null;
+            _m.Clear(TelemetryMetrics.ServiceOperationSend);
             _sw.Restart();
 
             try
             {
                 var message = new Message(_messageBytes);
+                message.ExpiryTimeUtc = DateTime.UtcNow + TimeSpan.FromSeconds(C2DExpiryTimeSeconds);
                 Task t = s_sc.SendAsync(Configuration.Stress.GetDeviceNameById(_id, _authType), message);
                 _m.ScheduleTime = _sw.ElapsedMilliseconds;
 
                 _sw.Restart();
                 await t.ConfigureAwait(false);
             }
+            catch (NullReferenceException ex) // TODO #708 - ServiceClient AMQP will continuously fail with NullRefException after fault.
+            {
+                CreateServiceClient();
+                SetErrorMessage(_m, ex);
+                throw;
+            }
             catch (Exception ex)
             {
-                _m.ErrorMessage = $"{ex.GetType().Name} - {ex.Message}";
+                SetErrorMessage(_m, ex);
                 throw;
             }
             finally
@@ -99,15 +138,17 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         protected async Task CallMethodAsync(CancellationToken ct)
         {
-            _mMethod.ScheduleTime = null;
-            _mMethod.OperationType = TelemetryMetrics.ServiceOperationMethodCall;
+            _mMethod.Clear(TelemetryMetrics.ServiceOperationMethodCall);
             _swMethod.Restart();
 
             try
             {
                 string deviceId = Configuration.Stress.GetDeviceNameById(_id, _authType);
 
-                var methodCall = new CloudToDeviceMethod(TestMethodName);
+                var methodCall = new CloudToDeviceMethod(
+                    methodName: TestMethodName, 
+                    responseTimeout: TimeSpan.FromSeconds(MethodResponseTimeoutSeconds), 
+                    connectionTimeout: TimeSpan.FromSeconds(MethodConnectionTimeoutSeconds));
                 methodCall.SetPayloadJson(_methodPayload);
                 Task<CloudToDeviceMethodResult> t = s_sc.InvokeDeviceMethodAsync(Configuration.Stress.GetDeviceNameById(_id, _authType), methodCall);
                 _mMethod.ScheduleTime = _swMethod.ElapsedMilliseconds;
@@ -118,12 +159,12 @@ namespace Microsoft.Azure.Devices.E2ETests
                 // Check method result.
                 if (result.Status != MethodPassStatus)
                 {
-                    throw new InvalidOperationException($"IoTPerfClient: Status: {result.Status} Payload:{result.GetPayloadAsJson()}");
+                    throw new MethodCallFailedException($"IoTPerfClient: Status: {result.Status} Payload:{result.GetPayloadAsJson()}");
                 }
             }
             catch (Exception ex)
             {
-                _mMethod.ErrorMessage = $"{ex.GetType().Name} - {ex.Message}";
+                SetErrorMessage(_mMethod, ex);
                 throw;
             }
             finally
@@ -133,12 +174,34 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
+        private void SetErrorMessage(TelemetryMetrics m, Exception ex)
+        {
+            m.ErrorMessage = $"{ex.GetType().Name} id: {ResultWriter.IdOf(s_sc)} - {ex.Message}";
+            if (IsFatalException(ex))
+            {
+                throw new ParallelRunFatalException(ExceptionDispatchInfo.Capture(ex));
+            }
+        }
+
+        private bool IsFatalException(Exception ex)
+        {
+            // List of known exceptions:
+            if (ex is MethodCallFailedException || /* Method call exception */
+                ex is DeviceNotFoundException || /* Returned when device is offline (during fault injection). */
+                ex is DeviceMaximumQueueDepthExceededException ||  /* caused by the device not consuming C2D messages */
+                ex is IotHubCommunicationException) /* POST operation timed out. */
+            {
+                return false;
+            }
+
+            return true;
+        }
+
         protected async Task CloseAsync(CancellationToken ct)
         {
             if (s_sc == null) return;
 
-            _m.ScheduleTime = null;
-            _m.OperationType = TelemetryMetrics.ServiceOperationClose;
+            _m.Clear(TelemetryMetrics.ServiceOperationClose);
             _sw.Restart();
 
             try
@@ -147,7 +210,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
             catch (Exception ex)
             {
-                _m.ErrorMessage = $"{ex.GetType().Name} - {ex.Message}";
+                SetErrorMessage(_m, ex);
                 throw;
             }
             finally
@@ -155,6 +218,11 @@ namespace Microsoft.Azure.Devices.E2ETests
                 _m.ExecuteTime = _sw.ElapsedMilliseconds;
                 await _writer.WriteAsync(_m).ConfigureAwait(false);
             }
+        }
+
+        public class MethodCallFailedException : Exception
+        {
+            public MethodCallFailedException(string message) : base(message) { }
         }
     }
 }

@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Globalization;
 using System.Security.Cryptography.X509Certificates;
 
 namespace Microsoft.Azure.Devices.E2ETests
@@ -25,6 +26,36 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             private static Lazy<X509Certificate2> s_cert = new Lazy<X509Certificate2>(() => { return Configuration.IoTHub.GetCertificateWithPrivateKey(); });
 
+            /// <summary>
+            /// Gets the import export BLOB URI.
+            /// </summary>
+            public static string ImportExportBlobUri => GetValue("IOTHUB_IMPORTEXPORT_BLOB_URI");
+
+            /// <summary>
+            /// Gets the connected devices percentage expected by the runner after the test ended.
+            /// </summary>
+            public static long? ConnectedDevicesPercentage => ParseNullable(GetValue("IOTHUB_PERF_CONNECTED_PERCENTAGE", ""));
+
+            /// <summary>
+            /// Gets the connected devices percentage expected by the runner after the test ended.
+            /// </summary>
+            public static long? TcpConnectionsPercentage => ParseNullable(GetValue("IOTHUB_PERF_TCP_PERCENTAGE", ""));
+
+            /// <summary>
+            /// Gets the requests per second minimum average after the test ended.
+            /// </summary>
+            public static long? RequestsPerSecondMinAvg => ParseNullable(GetValue("IOTHUB_PERF_RPS_MIN_AVG", ""));
+
+            /// <summary>
+            /// Gets the requests per second minimum standard deviation after the test ended.
+            /// </summary>
+            public static long? RequestsPerSecondMaxStd => ParseNullable(GetValue("IOTHUB_PERF_RPS_MAX_STD", ""));
+
+            /// <summary>
+            /// Gets the requests per second minimum standard deviation after the test ended.
+            /// </summary>
+            public static long? GCMemoryBytes => ParseNullable(GetValue("IOTHUB_PERF_GC_MEM_BYTES_MAX", ""));
+
             public static string GetDeviceNameById(int id, string authType)
             {
                 return $"{NamePrefix}_{authType}_{id}";
@@ -43,6 +74,12 @@ namespace Microsoft.Azure.Devices.E2ETests
             public static string Key2 => s_key2.Value;
 
             public static X509Certificate2 Certificate => s_cert.Value;
+
+            private static long? ParseNullable(string s)
+            {
+                if (long.TryParse(s, out long l)) return l;
+                return null;
+            }
         }
     }
 }

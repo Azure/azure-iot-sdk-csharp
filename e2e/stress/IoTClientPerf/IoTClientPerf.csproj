@@ -2,19 +2,27 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
     <RootNamespace>Microsoft.Azure.Devices.E2ETests</RootNamespace>
+    <RootDir>$(MSBuildProjectDirectory)\..\..\..</RootDir>
+    <CommonTest>$(RootDir)\common\test</CommonTest>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\..\common\test\Configuration.cs" Link="Configuration.cs" />
-    <Compile Include="..\..\..\common\test\Configuration.IoTHub.cs" Link="Configuration.IoTHub.cs" />
+    <Compile Include="$(CommonTest)\Configuration.cs" Link="Configuration.cs" />
+    <Compile Include="$(CommonTest)\Configuration.IoTHub.cs" Link="Configuration.IoTHub.cs" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\iothub\device\src\Microsoft.Azure.Devices.Client.csproj" />
-    <ProjectReference Include="..\..\..\iothub\service\src\Microsoft.Azure.Devices.csproj" />
-    <ProjectReference Include="..\..\..\shared\src\Microsoft.Azure.Devices.Shared.csproj" />
+  <ItemGroup Condition=" '$(AZURE_IOT_LOCALPACKAGES)' == '' ">
+    <ProjectReference Include="$(RootDir)\iothub\device\src\Microsoft.Azure.Devices.Client.csproj" />
+    <ProjectReference Include="$(RootDir)\iothub\service\src\Microsoft.Azure.Devices.csproj" />
+    <ProjectReference Include="$(RootDir)\shared\src\Microsoft.Azure.Devices.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(AZURE_IOT_LOCALPACKAGES)' != '' ">
+    <PackageReference Include="Microsoft.Azure.Devices" Version="1.*" />
+    <PackageReference Include="Microsoft.Azure.Devices.Shared" Version="1.*" />
+    <PackageReference Include="Microsoft.Azure.Devices.Client" Version="1.*" />
   </ItemGroup>
 
 </Project>

@@ -11,7 +11,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 {
     public class ResultWriterFile : ResultWriter
     {
-        private const long MaximumFileSize = (long)2 * 1024 * 1024 * 1024;
+        private const long MaximumFileSize = (long)1 * 1024 * 1024 * 1024;
         private const int FileBufferBytes = 100 * 1024 * 1024;
         private StreamWriter _writer;
         private SemaphoreSlim _semaphore = new SemaphoreSlim(1);

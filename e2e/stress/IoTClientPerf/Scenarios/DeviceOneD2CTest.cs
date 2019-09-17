@@ -42,7 +42,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private async Task CreateDeviceAsync()
         {
             _sw.Restart();
-            _m.OperationType = TelemetryMetrics.DeviceOperationCreate;
+            _m.Clear(TelemetryMetrics.DeviceOperationCreate);
 
             ITransportSettings transportSettings = null;
 
@@ -79,8 +79,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         protected async Task OpenDeviceAsync(CancellationToken ct)
         {
             ExceptionDispatchInfo exInfo = null;
-            _m.OperationType = TelemetryMetrics.DeviceOperationOpen;
-            _m.ScheduleTime = null;
+            _m.Clear(TelemetryMetrics.DeviceOperationOpen);
             _sw.Restart();
             try
             {
@@ -110,8 +109,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         protected async Task SendMessageAsync(CancellationToken ct)
         {
             ExceptionDispatchInfo exInfo = null;
-            _m.OperationType = TelemetryMetrics.DeviceOperationSend;
-            _m.ScheduleTime = null;
+            _m.Clear(TelemetryMetrics.DeviceOperationSend);
             _sw.Restart();
 
             try
