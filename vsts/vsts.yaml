@@ -209,7 +209,7 @@ phases:
        dotnet new
 
        rem Start build
-       build.cmd -clean -nounittests -configuration Debug
+       build.cmd -clean -norun -configuration Debug
 
     displayName: build
 
