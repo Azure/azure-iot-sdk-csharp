@@ -58,6 +58,21 @@ namespace Azure.Iot.DigitalTwin.Device.Model
         /// </summary>
         public int Status { get; }
 
+        public static bool operator ==(DigitalTwinAsyncCommandUpdate left, DigitalTwinAsyncCommandUpdate right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(DigitalTwinAsyncCommandUpdate left, DigitalTwinAsyncCommandUpdate right)
+        {
+            return !(left == right);
+        }
+
+        /// <summary>
+        /// Determines whether the specified DigitalTwinAsyncCommandUpdate is equal to the current.
+        /// </summary>
+        /// <param name="other">The DigitalTwinAsyncCommandUpdate to compare with the current.</param>
+        /// <returns>True if the specified DigitalTwinAsyncCommandUpdate is equal to the current; otherwise, false.</returns>
         public bool Equals(DigitalTwinAsyncCommandUpdate other)
         {
             return
@@ -67,11 +82,20 @@ namespace Azure.Iot.DigitalTwin.Device.Model
                 this.Status == other.Status;
         }
 
+        /// <summary>
+        /// Determines whether the specified object is equal to the current object.
+        /// </summary>
+        /// <param name="obj">The object to compare with the current object.</param>
+        /// <returns>True if the specified object is equal to the current object; otherwise, false.</returns>
         public override bool Equals(object obj)
         {
             return obj is DigitalTwinAsyncCommandUpdate && this.Equals((DigitalTwinAsyncCommandUpdate)obj);
         }
 
+        /// <summary>
+        /// Returns the hash code for this instance.
+        /// </summary>
+        /// <returns>The hash code for this instance.</returns>
         public override int GetHashCode()
         {
             return HashCode.Combine(this.Name, this.Payload, this.RequestId, this.Status);

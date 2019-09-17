@@ -47,6 +47,11 @@ namespace Azure.Iot.DigitalTwin.Device.Model
         /// </summary>
         public int DesiredVersion { get; }
 
+        /// <summary>
+        /// Determines whether the specified DigitalTwinPropertyUpdate is equal to the current.
+        /// </summary>
+        /// <param name="other">The DigitalTwinPropertyUpdate to compare with the current.</param>
+        /// <returns>True if the specified DigitalTwinPropertyUpdate is equal to the current; otherwise, false.</returns>
         public bool Equals(DigitalTwinPropertyUpdate other)
         {
             return
@@ -56,11 +61,20 @@ namespace Azure.Iot.DigitalTwin.Device.Model
                 this.DesiredVersion == other.DesiredVersion;
         }
 
+        /// <summary>
+        /// Determines whether the specified object is equal to the current object.
+        /// </summary>
+        /// <param name="obj">The object to compare with the current object.</param>
+        /// <returns>True if the specified object is equal to the current object; otherwise, false.</returns>
         public override bool Equals(object obj)
         {
             return obj is DigitalTwinPropertyUpdate && this.Equals((DigitalTwinPropertyUpdate)obj);
         }
 
+        /// <summary>
+        /// Returns the hash code for this instance.
+        /// </summary>
+        /// <returns>The hash code for this instance.</returns>
         public override int GetHashCode()
         {
             return HashCode.Combine(this.PropertyName, this.PropertyReported, this.PropertyDesired, this.DesiredVersion);
