@@ -112,6 +112,7 @@ try {
         #RunApp iot-hub\Samples\module\MessageSample "IoTHub\Module\MessageSample"
         #RunApp iot-hub\Samples\module\MethodSample "IoTHub\Module\MethodSample"
 
+        RunApp iot-hub\Samples\service\CleanUpDevicesSample "IoTHub\Service\CleanUpDevicesSample"
         RunApp iot-hub\Samples\service\AutomaticDeviceManagementSample "IoTHub\Service\AutomaticDeviceManagementSample"
         RunApp iot-hub\Samples\service\JobsSample "IoTHub\Service\JobsSample"
         RunApp iot-hub\Samples\service\RegistryManagerSample "IoTHub\Service\RegistryManagerSample"
@@ -122,6 +123,7 @@ try {
 
         # TODO #11: Modify Provisioning\device samples to run unattended.
 
+        RunApp provisioning\Samples\service\CleanupEnrollmentsSample "Provisioning\Service\CleanupEnrollmentsSample"
         RunApp provisioning\Samples\service\BulkOperationSample "Provisioning\Service\BulkOperationSample"
         # TODO #11 :RunApp provisioning\Samples\service\EnrollmentGroupSample "Provisioning\Service\EnrollmentGroupSample"
         RunApp provisioning\Samples\service\EnrollmentSample "Provisioning\Service\EnrollmentSample"
