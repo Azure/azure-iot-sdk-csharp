@@ -3,9 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
-using System.Net.NetworkInformation;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
@@ -48,21 +46,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 new Tuple<string, Func<PerfScenarioConfig, PerfScenario>>(
                     "Devices receiving method calls from IoT Hub.",
                     (c) => {return new DeviceMethodTest(c);}) },
-
-            { "device_d2c_noretry",
-                new Tuple<string, Func<PerfScenarioConfig, PerfScenario>>(
-                    "Like device_d2c but will disable retries and create a new DeviceClient when the previous enters a faulted state.",
-                    (c) => {return new DeviceD2CNoRetry(c);})},
-
-            { "device_c2d_noretry",
-                new Tuple<string, Func<PerfScenarioConfig, PerfScenario>>(
-                    "Like device_c2d but will disable retries and create a new DeviceClient when the previous enters a faulted state.",
-                    (c) => {return new DeviceC2DNoRetry(c);})},
-
-            { "device_methods_noretry",
-                new Tuple<string, Func<PerfScenarioConfig, PerfScenario>>(
-                    "Like device_methods but will disable retries and create a new DeviceClient when the previous enters a faulted state.",
-                    (c) => {return new DeviceMethodsNoRetry(c);})},
 
             {"service_c2d",
                 new Tuple<string, Func<PerfScenarioConfig, PerfScenario>>(

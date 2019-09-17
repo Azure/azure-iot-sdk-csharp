@@ -20,6 +20,11 @@ namespace Microsoft.Azure.Devices.E2ETests
         // Separate metrics and time calculation for operations that can be parallelized.
         private const string TestMethodName = "PerfTestMethod";
         private const int MethodPassStatus = 200;
+        private const int MethodConnectionTimeoutSeconds = 30;
+        private const int MethodResponseTimeoutSeconds = 30;
+
+        private const int C2DExpiryTimeSeconds = 90;
+
         private TelemetryMetrics _mMethod = new TelemetryMetrics();
         private Stopwatch _swMethod = new Stopwatch();
 
@@ -103,7 +108,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             try
             {
                 var message = new Message(_messageBytes);
-                message.ExpiryTimeUtc = DateTime.UtcNow + TimeSpan.FromSeconds(90);
+                message.ExpiryTimeUtc = DateTime.UtcNow + TimeSpan.FromSeconds(C2DExpiryTimeSeconds);
                 Task t = s_sc.SendAsync(Configuration.Stress.GetDeviceNameById(_id, _authType), message);
                 _m.ScheduleTime = _sw.ElapsedMilliseconds;
 
@@ -137,7 +142,10 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 string deviceId = Configuration.Stress.GetDeviceNameById(_id, _authType);
 
-                var methodCall = new CloudToDeviceMethod(methodName: TestMethodName, responseTimeout: TimeSpan.FromSeconds(30), connectionTimeout: TimeSpan.FromSeconds(30));
+                var methodCall = new CloudToDeviceMethod(
+                    methodName: TestMethodName, 
+                    responseTimeout: TimeSpan.FromSeconds(MethodResponseTimeoutSeconds), 
+                    connectionTimeout: TimeSpan.FromSeconds(MethodConnectionTimeoutSeconds));
                 methodCall.SetPayloadJson(_methodPayload);
                 Task<CloudToDeviceMethodResult> t = s_sc.InvokeDeviceMethodAsync(Configuration.Stress.GetDeviceNameById(_id, _authType), methodCall);
                 _mMethod.ScheduleTime = _swMethod.ElapsedMilliseconds;
