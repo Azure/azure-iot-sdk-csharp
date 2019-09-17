@@ -39,6 +39,21 @@ namespace Azure.Iot.DigitalTwin.Device.Model
         /// </summary>
         public string Payload { get; }
 
+        public static bool operator ==(DigitalTwinCommandRequest left, DigitalTwinCommandRequest right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(DigitalTwinCommandRequest left, DigitalTwinCommandRequest right)
+        {
+            return !(left == right);
+        }
+
+        /// <summary>
+        /// Determines whether the specified DigitalTwinCommandRequest is equal to the current.
+        /// </summary>
+        /// <param name="other">The DigitalTwinCommandRequest to compare with the current.</param>
+        /// <returns>True if the specified DigitalTwinCommandRequest is equal to the current; otherwise, false.</returns>
         public bool Equals(DigitalTwinCommandRequest other)
         {
             return
@@ -47,11 +62,20 @@ namespace Azure.Iot.DigitalTwin.Device.Model
                 string.Equals(this.Payload, other.Payload, StringComparison.OrdinalIgnoreCase);
         }
 
+        /// <summary>
+        /// Determines whether the specified object is equal to the current object.
+        /// </summary>
+        /// <param name="obj">The object to compare with the current object.</param>
+        /// <returns>True if the specified object is equal to the current object; otherwise, false.</returns>
         public override bool Equals(object obj)
         {
-            return obj is DigitalTwinCommandRequest && Equals((DigitalTwinCommandRequest)obj);
+            return obj is DigitalTwinCommandRequest && this.Equals((DigitalTwinCommandRequest)obj);
         }
 
+        /// <summary>
+        /// Returns the hash code for this instance.
+        /// </summary>
+        /// <returns>The hash code for this instance.</returns>
         public override int GetHashCode()
         {
             return HashCode.Combine(this.Name, this.RequestId, this.Payload);

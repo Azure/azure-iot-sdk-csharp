@@ -81,7 +81,7 @@ namespace EnvironmentalSensorSample
             switch (commandRequest.Name)
             {
                 case BlinkCommand:
-                    return new DigitalTwinCommandResponse(200, "{\"description\": \"abc\"}");
+                    return new DigitalTwinCommandResponse(StatusCodeCompleted, "{\"description\": \"abc\"}");
                 case RunDiagnosticsCommand:
                     var t = Task.Run(async () =>
                     {
@@ -91,15 +91,15 @@ namespace EnvironmentalSensorSample
                         await Task.Delay(10 * 1000).ConfigureAwait(false);
                         Console.WriteLine("RunDiagnosticAsync done... Send status update.");
 
-                        await this.UpdateAsyncCommandStatusAsync(new DigitalTwinAsyncCommandUpdate(commandRequest.Name, commandRequest.RequestId, 200)).ConfigureAwait(false);
+                        await this.UpdateAsyncCommandStatusAsync(new DigitalTwinAsyncCommandUpdate(commandRequest.Name, commandRequest.RequestId, StatusCodeCompleted)).ConfigureAwait(false);
                     });
-                    return new DigitalTwinCommandResponse(DigitalTwinAsyncCommandPending, null);
+                    return new DigitalTwinCommandResponse(StatusCodePending, null);
                 case TurnOffLightCommand:
                 case TurnOnLightCommand:
-                    return new DigitalTwinCommandResponse(200, null);
+                    return new DigitalTwinCommandResponse(StatusCodeCompleted, null);
                 default:
                     Console.WriteLine($"Property name '{commandRequest.Name}' is not handled.");
-                    return new DigitalTwinCommandResponse(404, null);
+                    return new DigitalTwinCommandResponse(StatusCodeNotImplemented, null);
             }
         }
 
@@ -152,7 +152,7 @@ namespace EnvironmentalSensorSample
             propertyReport.Add(new DigitalTwinPropertyReport(
                 customerNameUpdate.PropertyName,
                 customerNameUpdate.PropertyDesired,
-                new DigitalTwinPropertyResponse(customerNameUpdate.DesiredVersion, 200, "Processing Completed")));
+                new DigitalTwinPropertyResponse(customerNameUpdate.DesiredVersion, StatusCodeCompleted, "Processing Completed")));
             await this.ReportPropertiesAsync(propertyReport).ConfigureAwait(false);
             Console.WriteLine("Sent completed status.");
         }
@@ -191,7 +191,7 @@ namespace EnvironmentalSensorSample
                 brightnessUpdate.PropertyDesired,
                 new DigitalTwinPropertyResponse(
                     brightnessUpdate.DesiredVersion,
-                    200,
+                    StatusCodeCompleted,
                     "Request completed")));
             await this.ReportPropertiesAsync(propertyReport).ConfigureAwait(false);
             Console.WriteLine("Sent completed status for brightness property.");
