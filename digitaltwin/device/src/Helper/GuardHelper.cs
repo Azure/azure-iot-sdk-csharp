@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using Azure.Iot.DigitalTwin.Device.Model;
@@ -18,7 +19,7 @@ namespace Azure.Iot.DigitalTwin.Device.Helper
         /// </summary>
         /// <param name="argumentValue">The argument value.</param>
         /// <param name="argumentName">The argument name.</param>
-        public static void ThrowIfNull(object argumentValue, string argumentName)
+        internal static void ThrowIfNull(object argumentValue, string argumentName)
         {
             if (argumentValue == null)
             {
@@ -32,7 +33,7 @@ namespace Azure.Iot.DigitalTwin.Device.Helper
         /// </summary>
         /// <param name="argumentValue">The argument value.</param>
         /// <param name="argumentName">The argument name.</param>
-        public static void ThrowIfNullOrWhiteSpace(string argumentValue, string argumentName)
+        internal static void ThrowIfNullOrWhiteSpace(string argumentValue, string argumentName)
         {
             if (string.IsNullOrWhiteSpace(argumentValue))
             {
@@ -46,7 +47,7 @@ namespace Azure.Iot.DigitalTwin.Device.Helper
         /// </summary>
         /// <param name="argumentValue">The argument value.</param>
         /// <param name="argumentName">The argument name.</param>
-        public static void ThrowIfInvalidInterfaceId(string argumentValue, string argumentName)
+        internal static void ThrowIfInvalidInterfaceId(string argumentValue, string argumentName)
         {
             var regex = new Regex("^urn:[a-zA-z0-9_:]{1,252}$");
 
@@ -56,7 +57,7 @@ namespace Azure.Iot.DigitalTwin.Device.Helper
             }
         }
 
-        public static void ThrowIfInvalidInterfaceInstanceName(string argumentValue, string argumentName)
+        internal static void ThrowIfInvalidInterfaceInstanceName(string argumentValue, string argumentName)
         {
             var regex = new Regex("^[a-zA-z0-9_]{1,256}$");
 

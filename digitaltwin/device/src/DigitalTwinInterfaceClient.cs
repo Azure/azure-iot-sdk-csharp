@@ -19,9 +19,25 @@ namespace Azure.Iot.DigitalTwin.Device
     /// </summary>
     public abstract class DigitalTwinInterfaceClient
     {
-        public const int DigitalTwinCommandCompleted = 200;
-        public const int DigitalTwinAsyncCommandPending = 202;
-        public const int DigitalTwinResourceNotFound = 404;
+        /// <summary>
+        /// Status code for completed.
+        /// </summary>
+        public const int StatusCodeCompleted = 200;
+
+        /// <summary>
+        /// Status code for pending operation.
+        /// </summary>
+        public const int StatusCodePending = 202;
+
+        /// <summary>
+        /// Status code for invalid operation.
+        /// </summary>
+        public const int StatusCodeInvalid = 400;
+
+        /// <summary>
+        /// Status code for not implemented.
+        /// </summary>
+        public const int StatusCodeNotImplemented = 404;
 
         private DigitalTwinClient digitalTwinClient;
 
@@ -70,15 +86,6 @@ namespace Azure.Iot.DigitalTwin.Device
         }
 
         /// <summary>
-        /// Should contains interface initialization process.  Triggers when register interface is completed and signal
-        /// interface to proceed with initialization. Interfaces should implement it.
-        /// </summary>
-        /// <param name="propertyUpdate">incoming property updated notification.</param>
-        protected virtual void OnRegistrationCompleted()
-        {
-        }
-
-        /// <summary>
         /// Callback for commands. Triggers when a command is received at an interface.
         /// Interfaces implementation is expected to override it.
         /// </summary>
@@ -86,7 +93,7 @@ namespace Azure.Iot.DigitalTwin.Device
         /// <returns>DigitalTwinCommandResponse.</returns>
         protected internal virtual Task<DigitalTwinCommandResponse> OnCommandRequest(DigitalTwinCommandRequest commandRequest)
         {
-            return Task.FromResult(new DigitalTwinCommandResponse(DigitalTwinResourceNotFound));
+            return Task.FromResult(new DigitalTwinCommandResponse(StatusCodeNotImplemented));
         }
 
         /// <summary>
@@ -98,6 +105,15 @@ namespace Azure.Iot.DigitalTwin.Device
         protected internal virtual Task OnPropertyUpdated(DigitalTwinPropertyUpdate propertyUpdate)
         {
             return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Should contains interface initialization process.  Triggers when register interface is completed and signal
+        /// interface to proceed with initialization. Interfaces should implement it.
+        /// </summary>
+        /// <param name="propertyUpdate">incoming property updated notification.</param>
+        protected virtual void OnRegistrationCompleted()
+        {
         }
 
         /// <summary>
@@ -135,6 +151,7 @@ namespace Azure.Iot.DigitalTwin.Device
         protected async Task UpdateAsyncCommandStatusAsync(DigitalTwinAsyncCommandUpdate update, CancellationToken cancellationToken = default)
         {
             this.ThrowIfInterfaceNotRegistered();
+            update.Validate();
             await this.digitalTwinClient.UpdateAsyncCommandStatusAsync(this.Id, this.InstanceName, update, cancellationToken).ConfigureAwait(false);
         }
 

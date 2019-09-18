@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Azure.Iot.DigitalTwin.Device.Helper;
 using System;
 
 namespace Azure.Iot.DigitalTwin.Device.Model
@@ -12,8 +11,6 @@ namespace Azure.Iot.DigitalTwin.Device.Model
     /// </summary>
     public struct DigitalTwinPropertyResponse : IEquatable<DigitalTwinPropertyResponse>
     {
-        public static DigitalTwinPropertyResponse Empty = new DigitalTwinPropertyResponse(0, 0, null);
-
         /// <summary>
         /// Initializes a new instance of the <see cref="DigitalTwinPropertyResponse"/> struct.
         /// </summary>
@@ -53,10 +50,10 @@ namespace Azure.Iot.DigitalTwin.Device.Model
         }
 
         /// <summary>
-        /// Equals.
+        /// Determines whether the specified DigitalTwinPropertyResponse is equal to the current.
         /// </summary>
-        /// <param name="other">DigitalTwinPropertyResponse</param>
-        /// <returns>bool equals.</returns>
+        /// <param name="other">The DigitalTwinPropertyResponse to compare with the current.</param>
+        /// <returns>True if the specified DigitalTwinPropertyResponse is equal to the current; otherwise, false.</returns>
         public bool Equals(DigitalTwinPropertyResponse other)
         {
             return
@@ -65,14 +62,29 @@ namespace Azure.Iot.DigitalTwin.Device.Model
                 string.Equals(this.StatusDescription, other.StatusDescription, StringComparison.OrdinalIgnoreCase);
         }
 
+        /// <summary>
+        /// Determines whether the specified object is equal to the current object.
+        /// </summary>
+        /// <param name="obj">The object to compare with the current object.</param>
+        /// <returns>True if the specified object is equal to the current object; otherwise, false.</returns>
         public override bool Equals(object obj)
         {
-            return obj is DigitalTwinCommandRequest && Equals((DigitalTwinCommandRequest)obj);
+            return obj is DigitalTwinPropertyResponse && this.Equals((DigitalTwinPropertyResponse)obj);
         }
 
+        /// <summary>
+        /// Returns the hash code for this instance.
+        /// </summary>
+        /// <returns>The hash code for this instance.</returns>
         public override int GetHashCode()
         {
-            return HashCode.Combine(this.RespondVersion, this.StatusCode, this.StatusDescription);
+            unchecked
+            {
+                var hashCode = this.RespondVersion.GetHashCode();
+                hashCode = (hashCode * 397) ^ this.StatusCode.GetHashCode();
+                hashCode = (hashCode * 397) ^ (this.StatusDescription != null ? this.StatusDescription.GetHashCode() : 0);
+                return hashCode;
+            }
         }
     }
 }

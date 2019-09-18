@@ -42,19 +42,49 @@ namespace Azure.Iot.DigitalTwin.Device.Model
         /// </summary>
         public int Status { get; }
 
+        public static bool operator ==(DigitalTwinCommandResponse left, DigitalTwinCommandResponse right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(DigitalTwinCommandResponse left, DigitalTwinCommandResponse right)
+        {
+            return !(left == right);
+        }
+
+        /// <summary>
+        /// Determines whether the specified DigitalTwinCommandResponse is equal to the current.
+        /// </summary>
+        /// <param name="other">The DigitalTwinCommandResponse to compare with the current.</param>
+        /// <returns>True if the specified DigitalTwinCommandResponse is equal to the current; otherwise, false.</returns>
         public bool Equals(DigitalTwinCommandResponse other)
         {
             return string.Equals(this.Payload, other.Payload, StringComparison.OrdinalIgnoreCase) && this.Status == other.Status;
         }
 
+        /// <summary>
+        /// Determines whether the specified object is equal to the current object.
+        /// </summary>
+        /// <param name="obj">The object to compare with the current object.</param>
+        /// <returns>True if the specified object is equal to the current object; otherwise, false.</returns>
         public override bool Equals(object obj)
         {
-            return obj is DigitalTwinCommandResponse && Equals((DigitalTwinCommandResponse)obj);
+            return obj is DigitalTwinCommandResponse && this.Equals((DigitalTwinCommandResponse)obj);
         }
 
+        /// <summary>
+        /// Returns the hash code for this instance.
+        /// </summary>
+        /// <returns>The hash code for this instance.</returns>
         public override int GetHashCode()
         {
-            return HashCode.Combine(this.Payload, this.Status);
+            unchecked
+            {
+                var hashCode = this.Status.GetHashCode();
+                hashCode = (hashCode * 397) ^ (this.Payload != null ? this.Payload.GetHashCode() : 0);
+                return hashCode;
+            }
         }
+
     }
 }
