@@ -3,6 +3,8 @@
 
 using System;
 
+using Azure.Iot.DigitalTwin.Device.Helper;
+
 namespace Azure.Iot.DigitalTwin.Device.Model
 {
     /// <summary>
@@ -78,7 +80,13 @@ namespace Azure.Iot.DigitalTwin.Device.Model
         /// <returns>The hash code for this instance.</returns>
         public override int GetHashCode()
         {
-            return HashCode.Combine(this.Name, this.RequestId, this.Payload);
+            unchecked
+            {
+                var hashCode = this.Name.GetHashCode();
+                hashCode = (hashCode * 397) ^ (this.Payload != null ? this.Payload.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ this.RequestId.GetHashCode();
+                return hashCode;
+            }
         }
     }
 }

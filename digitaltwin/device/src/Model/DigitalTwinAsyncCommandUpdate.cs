@@ -2,8 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
-using System.Text;
+
+using Azure.Iot.DigitalTwin.Device.Helper;
 
 namespace Azure.Iot.DigitalTwin.Device.Model
 {
@@ -19,23 +19,12 @@ namespace Azure.Iot.DigitalTwin.Device.Model
         /// <param name="requestId">The request id of the command to be updated.</param>
         /// <param name="status">The status of the the command to be updated.</param>
         /// <param name="payload">The serialized payload of the the command to be updated.</param>
-        public DigitalTwinAsyncCommandUpdate(string name, string requestId, int status, string payload)
+        public DigitalTwinAsyncCommandUpdate(string name, string requestId, int status, string payload = default)
         {
             this.Name = name;
             this.Payload = payload;
             this.RequestId = requestId;
             this.Status = status;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DigitalTwinAsyncCommandUpdate"/> struct.
-        /// </summary>
-        /// <param name="name">The name of the command to be updated.</param>
-        /// <param name="requestId">The request id of the command to be updated.</param>
-        /// <param name="status">The status of the the command to be updated.</param>
-        public DigitalTwinAsyncCommandUpdate(string name, string requestId, int status)
-            : this(name, requestId, status, string.Empty)
-        {
         }
 
         /// <summary>
@@ -75,8 +64,7 @@ namespace Azure.Iot.DigitalTwin.Device.Model
         /// <returns>True if the specified DigitalTwinAsyncCommandUpdate is equal to the current; otherwise, false.</returns>
         public bool Equals(DigitalTwinAsyncCommandUpdate other)
         {
-            return
-                string.Equals(this.Name, other.Name, StringComparison.OrdinalIgnoreCase) &&
+            return string.Equals(this.Name, other.Name, StringComparison.OrdinalIgnoreCase) &&
                 string.Equals(this.Payload, other.Payload, StringComparison.OrdinalIgnoreCase) &&
                 string.Equals(this.RequestId, other.RequestId, StringComparison.OrdinalIgnoreCase) &&
                 this.Status == other.Status;
@@ -98,7 +86,23 @@ namespace Azure.Iot.DigitalTwin.Device.Model
         /// <returns>The hash code for this instance.</returns>
         public override int GetHashCode()
         {
-            return HashCode.Combine(this.Name, this.Payload, this.RequestId, this.Status);
+            unchecked
+            {
+                var hashCode = this.Name.GetHashCode();
+                hashCode = (hashCode * 397) ^ (this.Payload != null ? this.Payload.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ this.RequestId.GetHashCode();
+                hashCode = (hashCode * 397) ^ this.Status;
+                return hashCode;
+            }
+        }
+
+        /// <summary>
+        /// Validate the struct contains valid data.
+        /// </summary>
+        public void Validate()
+        {
+            GuardHelper.ThrowIfNullOrWhiteSpace(this.Name, $"DigitalTwinAsyncCommandUpdate.{nameof(this.Name)}");
+            GuardHelper.ThrowIfNull(this.RequestId, $"DigitalTwinAsyncCommandUpdate.{nameof(this.RequestId)}");
         }
     }
 }

@@ -1,8 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Azure.Iot.DigitalTwin.Device.Helper;
 using System;
+
+using Azure.Iot.DigitalTwin.Device.Helper;
 
 namespace Azure.Iot.DigitalTwin.Device.Model
 {
@@ -16,22 +17,9 @@ namespace Azure.Iot.DigitalTwin.Device.Model
         /// </summary>
         /// <param name="name">The property name.</param>
         /// <param name="value">The property value.</param>
-        public DigitalTwinPropertyReport(string name, string value)
-            : this(name, value, DigitalTwinPropertyResponse.Empty)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DigitalTwinPropertyReport"/> struct.
-        /// </summary>
-        /// <param name="name">The property name.</param>
-        /// <param name="value">The property value.</param>
         /// <param name="digitalTwinPropertyResponse">The reported property response.</param>
-        public DigitalTwinPropertyReport(string name, string value, DigitalTwinPropertyResponse digitalTwinPropertyResponse)
+        public DigitalTwinPropertyReport(string name, string value, DigitalTwinPropertyResponse digitalTwinPropertyResponse = default)
         {
-            GuardHelper.ThrowIfNullOrWhiteSpace(name, nameof(name));
-            GuardHelper.ThrowIfNull(value, nameof(value));
-
             this.Name = name;
             this.Value = value;
             this.DigitalTwinPropertyResponse = digitalTwinPropertyResponse;
@@ -51,6 +39,16 @@ namespace Azure.Iot.DigitalTwin.Device.Model
         /// Gets the digital twin property response.
         /// </summary>
         public DigitalTwinPropertyResponse DigitalTwinPropertyResponse { get; }
+
+        public static bool operator ==(DigitalTwinPropertyReport left, DigitalTwinPropertyReport right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(DigitalTwinPropertyReport left, DigitalTwinPropertyReport right)
+        {
+            return !(left == right);
+        }
 
         /// <summary>
         /// Determines whether the specified DigitalTwinPropertyReport is equal to the current.
@@ -81,7 +79,21 @@ namespace Azure.Iot.DigitalTwin.Device.Model
         /// <returns>The hash code for this instance.</returns>
         public override int GetHashCode()
         {
-            return HashCode.Combine(this.Name, this.Value, this.DigitalTwinPropertyResponse);
+            unchecked
+            {
+                var hashCode = this.Name.GetHashCode();
+                hashCode = (hashCode * 397) ^ this.Value.GetHashCode();
+                hashCode = (hashCode * 397) ^ this.DigitalTwinPropertyResponse.GetHashCode();
+                return hashCode;
+            }
+        }
+
+        /// <summary>
+        /// Validate the struct contains valid data.
+        /// </summary>
+        public void Validate()
+        {
+            GuardHelper.ThrowIfNullOrWhiteSpace(this.Name, $"DigitalTwinPropertyReport.{nameof(this.Name)}");
         }
     }
 }
