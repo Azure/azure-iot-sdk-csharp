@@ -73,7 +73,7 @@ namespace simulated_device
                 // An IoT hub can filter on these properties without access to the message body.
                 message.Properties.Add("temperatureAlert", (currentTemperature > 30) ? "true" : "false");
 
-                // Send the tlemetry message
+                // Send the telemetry message
                 await s_deviceClient.SendEventAsync(message);
                 Console.WriteLine("{0} > Sending message: {1}", DateTime.Now, messageString);
 
