@@ -14,7 +14,6 @@ namespace ImportExportDevices
     public static class IoTHubDevices
     {
 
-
         //generate NumToAdd devices and add them to the hub 
         // to do this, generate each identity 
         // * include authentication keys
@@ -215,8 +214,7 @@ namespace ImportExportDevices
                 sb.AppendLine(JsonConvert.SerializeObject(device));
             });
 
-            // Step 2: Delete the blob if it already exists, then write the list in memory to the blob.
-            
+            // Step 2: Delete the blob if it already exists, then write the list in memory to the blob.            
             await blobToDelete.DeleteIfExistsAsync();
             using (CloudBlobStream stream = await blobToDelete.OpenWriteAsync())
             {
@@ -252,18 +250,19 @@ namespace ImportExportDevices
         }
 
         //---------------------------------------------------------------------------------------
-        // This shows how to export devices for an IoT Hub. Then import them to a new Hub. 
+        // This shows how to copy devices from one IoT Hub to another.
         // First, export the list from the Source hut to devices.txt (ExportDevices).
         // Next, read in that file. Each row is a serialized object; 
         //   read them into the generic list serializedDevices. 
         // Delete the devices.txt in blob storage, because you're going to recreate it.
-        // For each serializedDevice, deserialize it, set ImportMode to UPDATE, 
+        // For each serializedDevice, deserialize it, set ImportMode to CREATE, 
         //   reserialize it, and write it to a StringBuilder. The ImportMode field is what
-        //   tells the job framework to update each one.
+        //   tells the job framework to add each device.
         // Write the new StringBuilder to the block blob.
         //   This essentially replaces the list with a list of devices that have ImportJob = Delete.
         // Call ImportDevicesAsync, which will read in the list in devices.txt, then add each one 
-        //   because it doesn't already exist
+        //   because it doesn't already exist. If it already exists, it will write an entry to
+        //   the import error log and not add the new one.
         public static async Task CopyAllDevicesToNewHub(string sourceHubConnectionString,
             string destHubConnectionString, CloudBlobContainer cloudBlobContainer, 
             string containerURI, string deviceListFile)        {
@@ -323,8 +322,8 @@ namespace ImportExportDevices
                 }
             }
 
-            // Step 3: Call import using the same blob to delete all devices.
-            // Loads devices.txt and applies that change.
+            // Step 3: Call import using the same blob to create all devices.
+            // Loads devices.txt and adds the devices to the destination hub.
             RegistryManager registryManager =
               RegistryManager.CreateFromConnectionString(destHubConnectionString);
             JobProperties importJob =
