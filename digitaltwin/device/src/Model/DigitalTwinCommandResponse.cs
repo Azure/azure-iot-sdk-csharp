@@ -78,7 +78,12 @@ namespace Azure.Iot.DigitalTwin.Device.Model
         /// <returns>The hash code for this instance.</returns>
         public override int GetHashCode()
         {
-            return HashCode.Combine(this.Payload, this.Status);
+            unchecked
+            {
+                var hashCode = this.Status.GetHashCode();
+                hashCode = (hashCode * 397) ^ (this.Payload != null ? this.Payload.GetHashCode() : 0);
+                return hashCode;
+            }
         }
 
     }
