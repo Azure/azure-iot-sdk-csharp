@@ -4,3 +4,4 @@
 using System.Runtime.CompilerServices;
 
 [assembly:InternalsVisibleTo("Azure.IoT.DigitalTwin.Device.Test")]
+[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]

@@ -151,6 +151,7 @@ namespace Azure.Iot.DigitalTwin.Device
         protected async Task UpdateAsyncCommandStatusAsync(DigitalTwinAsyncCommandUpdate update, CancellationToken cancellationToken = default)
         {
             this.ThrowIfInterfaceNotRegistered();
+            update.Validate();
             await this.digitalTwinClient.UpdateAsyncCommandStatusAsync(this.Id, this.InstanceName, update, cancellationToken).ConfigureAwait(false);
         }
 
