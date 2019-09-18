@@ -1,0 +1,33 @@
+{
+    "tool": "Credential Scanner",
+    "suppressions": [
+        {
+            "placeholder": "dGVzdFN0cmluZzE=",
+            "_justification": "Dummy secret used in unit tests, it is fake"
+        },
+        {
+            "placeholder": "dGVzdFN0cmluZzI=",
+            "_justification": "Dummy secret used in unit tests, it is fake"
+        },
+        {
+            "placeholder": "dGVzdFN0cmluZzM=",
+            "_justification": "Dummy secret used in unit tests, it is fake"
+        },
+        {
+            "placeholder": "dGVzdFN0cmluZzQ=",
+            "_justification": "Dummy secret used in unit tests, it is fake"
+        },
+        {
+            "placeholder": "dGVzdFN0cmluZzU=",
+            "_justification": "Dummy secret used in unit tests, it is fake"
+        },
+        {
+            "placeholder": "dGVzdFN0cmluZzY=",
+            "_justification": "Dummy secret used in unit tests, it is fake"
+        },
+        {
+            "placeholder": "notsafe",
+            "_justification": "Dummy secret used in unit tests, it is fake"
+        }
+    ]
+}
