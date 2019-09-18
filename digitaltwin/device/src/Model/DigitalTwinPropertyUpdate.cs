@@ -3,6 +3,8 @@
 
 using System;
 
+using Azure.Iot.DigitalTwin.Device.Helper;
+
 namespace Azure.Iot.DigitalTwin.Device.Model
 {
     /// <summary>
@@ -47,6 +49,16 @@ namespace Azure.Iot.DigitalTwin.Device.Model
         /// </summary>
         public int DesiredVersion { get; }
 
+        public static bool operator !=(DigitalTwinPropertyUpdate obj1, DigitalTwinPropertyUpdate obj2)
+        {
+            return !(obj1 == obj2);
+        }
+
+        public static bool operator ==(DigitalTwinPropertyUpdate obj1, DigitalTwinPropertyUpdate obj2)
+        {
+            return obj1.Equals(obj2);
+        }
+
         /// <summary>
         /// Determines whether the specified DigitalTwinPropertyUpdate is equal to the current.
         /// </summary>
@@ -77,7 +89,14 @@ namespace Azure.Iot.DigitalTwin.Device.Model
         /// <returns>The hash code for this instance.</returns>
         public override int GetHashCode()
         {
-            return HashCode.Combine(this.PropertyName, this.PropertyReported, this.PropertyDesired, this.DesiredVersion);
+            unchecked
+            {
+                var hashCode = this.PropertyName.GetHashCode();
+                hashCode = (hashCode * 397) ^ this.DesiredVersion.GetHashCode();
+                hashCode = (hashCode * 397) ^ (this.PropertyDesired != null ? this.PropertyDesired.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (this.PropertyReported != null ? this.PropertyReported.GetHashCode() : 0);
+                return hashCode;
+            }
         }
     }
 }

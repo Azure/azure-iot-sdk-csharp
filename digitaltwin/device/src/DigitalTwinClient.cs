@@ -52,6 +52,7 @@ namespace Azure.Iot.DigitalTwin.Device
         /// <param name="deviceClient">the IotHub device client to be associated with. </param>
         public DigitalTwinClient(DeviceClient deviceClient)
         {
+            GuardHelper.ThrowIfNull(deviceClient, nameof(deviceClient));
             this.deviceClient = deviceClient;
         }
 
@@ -108,24 +109,28 @@ namespace Azure.Iot.DigitalTwin.Device
             }
         }
 
-        public async Task ReportPropertiesAsync(string instanceName, IEnumerable<DigitalTwinPropertyReport> properties, CancellationToken cancellationToken)
+        /// <summary>
+        /// Report properties for the specified interface instance.
+        /// </summary>
+        /// <param name="instanceName">The interface instance name.</param>
+        /// <param name="properties">The list of properties to be reported.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
+        internal virtual async Task ReportPropertiesAsync(string instanceName, IEnumerable<DigitalTwinPropertyReport> properties, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+            GuardHelper.ThrowIfNull(properties, nameof(properties));
+
             TwinCollection twinCollection = new TwinCollection();
 
             foreach (DigitalTwinPropertyReport property in properties)
             {
+                property.Validate();
                 JToken jTokenValue = null;
-                try
-                {
-                    jTokenValue = JToken.Parse(property.Value);
-                }
-                catch (Exception)
-                {
-                    throw;
-                }
+                jTokenValue = property.Value != null ? JToken.Parse(property.Value) : null;
 
                 Dictionary<string, object> values = new Dictionary<string, object> { { "value", jTokenValue } };
-                if (property.DigitalTwinPropertyResponse != DigitalTwinPropertyResponse.Empty)
+                if (property.DigitalTwinPropertyResponse != default)
                 {
                     DigitalTwinPropertyResponse response = property.DigitalTwinPropertyResponse;
                     values.Add("sc", response.StatusCode);
@@ -153,9 +158,10 @@ namespace Azure.Iot.DigitalTwin.Device
 
         internal async Task UpdateAsyncCommandStatusAsync(string interfaceId, string interfaceInstanceName, DigitalTwinAsyncCommandUpdate update, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             this.digitalTwinFormatter.FromObject(update);
 
-            cancellationToken.ThrowIfCancellationRequested();
             using (
             Message msg = CreateTelemetryMessage(
                     interfaceId,
@@ -210,7 +216,7 @@ namespace Azure.Iot.DigitalTwin.Device
                 return (null, null);
             }
 
-            string[] values = methodRequestName.Substring(InterfacesPrefix.Length).Split("*");
+            string[] values = methodRequestName.Substring(InterfacesPrefix.Length).Split('*');
             if (values.Length != 2)
             {
                 return (null, null);
@@ -277,7 +283,9 @@ namespace Azure.Iot.DigitalTwin.Device
 
             (string interfaceInstanceName, string methodName) = ParseMethodRequestName(methodRequest.Name);
 
-            if (string.IsNullOrEmpty(interfaceInstanceName) || string.IsNullOrEmpty(methodName))
+            if (string.IsNullOrEmpty(interfaceInstanceName)
+                || this.interfaces.ContainsKey(interfaceInstanceName)
+                || string.IsNullOrEmpty(methodName))
             {
                 return new MethodResponse(404);
             }
@@ -288,7 +296,7 @@ namespace Azure.Iot.DigitalTwin.Device
                 new DigitalTwinCommandRequest(
                     methodName,
                     jsonObj.SelectToken(JsonCommandRequestId)?.ToString(),
-                    commandRequestValue != null ? commandRequestValue : null)).ConfigureAwait(false);
+                    commandRequestValue)).ConfigureAwait(false);
 
             if (!string.IsNullOrEmpty(response.Payload))
             {
