@@ -147,7 +147,7 @@ namespace Azure.Iot.DigitalTwin.Device
                 CreateKeyValueTwinCollection(InterfacesPrefix + instanceName, twinCollection)).ConfigureAwait(false);
         }
 
-        internal async Task SendTelemetryAsync(string interfaceId, string interfaceInstanceName, string telemetryName, string telemetryValue, CancellationToken cancellationToken)
+        internal virtual async Task SendTelemetryAsync(string interfaceId, string interfaceInstanceName, string telemetryName, string telemetryValue, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             using (Message msg = CreateTelemetryMessage(interfaceId, interfaceInstanceName, telemetryName, telemetryValue))
@@ -156,7 +156,7 @@ namespace Azure.Iot.DigitalTwin.Device
             }
         }
 
-        internal async Task UpdateAsyncCommandStatusAsync(string interfaceId, string interfaceInstanceName, DigitalTwinAsyncCommandUpdate update, CancellationToken cancellationToken)
+        internal virtual async Task UpdateAsyncCommandStatusAsync(string interfaceId, string interfaceInstanceName, DigitalTwinAsyncCommandUpdate update, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
