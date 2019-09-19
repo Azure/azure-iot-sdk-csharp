@@ -27,6 +27,26 @@ namespace Azure.IoT.DigitalTwin.Device.Test
             await base.ReportPropertiesAsync(properties, ct).ConfigureAwait(false);
         }
 
+        public async Task SendTelemetryAsync(string telemetryName, string telemetryValue)
+        {
+            await base.SendTelemetryAsync(telemetryName, telemetryValue).ConfigureAwait(false);
+        }
+
+        public async Task SendTelemetryAsync(string telemetryName, string telemetryValue, CancellationToken ct)
+        {
+            await base.SendTelemetryAsync(telemetryName, telemetryValue, ct).ConfigureAwait(false);
+        }
+
+        public async Task UpdateAsyncCommandStatusAsync(DigitalTwinAsyncCommandUpdate update)
+        {
+            await base.UpdateAsyncCommandStatusAsync(update).ConfigureAwait(false);
+        }
+
+        public async Task UpdateAsyncCommandStatusAsync(DigitalTwinAsyncCommandUpdate update, CancellationToken ct)
+        {
+            await base.UpdateAsyncCommandStatusAsync(update, ct).ConfigureAwait(false);
+        }
+
         public void OnRegistrationCompleted2()
         {
             OnRegistrationCompleted();

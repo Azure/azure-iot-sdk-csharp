@@ -102,7 +102,7 @@ namespace Azure.Iot.DigitalTwin.Device.Model
         public void Validate()
         {
             GuardHelper.ThrowIfNullOrWhiteSpace(this.Name, $"DigitalTwinAsyncCommandUpdate.{nameof(this.Name)}");
-            GuardHelper.ThrowIfNull(this.RequestId, $"DigitalTwinAsyncCommandUpdate.{nameof(this.RequestId)}");
+            GuardHelper.ThrowIfNullOrWhiteSpace(this.RequestId, $"DigitalTwinAsyncCommandUpdate.{nameof(this.RequestId)}");
         }
     }
 }
