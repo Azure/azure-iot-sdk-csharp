@@ -138,6 +138,8 @@ namespace Azure.Iot.DigitalTwin.Device
         /// <returns>Task representing the asynchronous operation.</returns>
         protected async Task SendTelemetryAsync(string telemetryName, string telemetryValue, CancellationToken cancellationToken = default)
         {
+            GuardHelper.ThrowIfNullOrWhiteSpace(telemetryName, nameof(telemetryName));
+            GuardHelper.ThrowIfNullOrWhiteSpace(telemetryValue, nameof(telemetryValue));
             this.ThrowIfInterfaceNotRegistered();
             await this.digitalTwinClient.SendTelemetryAsync(this.Id, this.InstanceName, telemetryName, telemetryValue, cancellationToken).ConfigureAwait(false);
         }
@@ -150,8 +152,8 @@ namespace Azure.Iot.DigitalTwin.Device
         /// <returns>Task representing the asynchronous operation.</returns>
         protected async Task UpdateAsyncCommandStatusAsync(DigitalTwinAsyncCommandUpdate update, CancellationToken cancellationToken = default)
         {
-            this.ThrowIfInterfaceNotRegistered();
             update.Validate();
+            this.ThrowIfInterfaceNotRegistered();
             await this.digitalTwinClient.UpdateAsyncCommandStatusAsync(this.Id, this.InstanceName, update, cancellationToken).ConfigureAwait(false);
         }
 
