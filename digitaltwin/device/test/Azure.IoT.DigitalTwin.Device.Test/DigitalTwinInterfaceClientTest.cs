@@ -21,109 +21,57 @@ namespace Azure.IoT.DigitalTwin.Device.Test
         [Fact]
         public void TestConstructorWhenIdIsNull()
         {
-            try
-            {
-                var client = new DigitalTwinInterfaceTestClient(null, "testInstanceName", true, true);
-            }
-            catch (Exception ex)
-            {
-                Assert.Equal(typeof(ArgumentNullException).FullName, ex.GetType().FullName);
-                Assert.Equal("id", ((ArgumentNullException)ex).ParamName);
-                Assert.True(ex.Message?.StartsWith("The parameter named id can't be null, empty string or white space.", StringComparison.Ordinal) ?? false);
-                return;
-            }
+            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => new DigitalTwinInterfaceTestClient(null, "testInstanceName", true, true));
 
-            Assert.True(false);
+            Assert.Equal("id", ex.ParamName);
+            Assert.StartsWith("The parameter named id can't be null, empty string or white space.", ex.Message, StringComparison.Ordinal);
         }
 
         [Fact]
         public void TestConstructorWhenIdIsWhiteSpace()
         {
-            try
-            {
-                var client = new DigitalTwinInterfaceTestClient(" ", "testInstanceName", true, true);
-            }
-            catch (Exception ex)
-            {
-                Assert.Equal(typeof(ArgumentNullException).FullName, ex.GetType().FullName);
-                Assert.Equal("id", ((ArgumentNullException)ex).ParamName);
-                Assert.True(ex.Message?.StartsWith("The parameter named id can't be null, empty string or white space.", StringComparison.Ordinal) ?? false);
-                return;
-            }
+            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => new DigitalTwinInterfaceTestClient(" ", "testInstanceName", true, true));
+
+            Assert.Equal("id", ex.ParamName);
+            Assert.StartsWith("The parameter named id can't be null, empty string or white space.", ex.Message, StringComparison.Ordinal);
         }
 
         [Theory]
         [MemberData(nameof(GetInvalidInterfaceIdData))]
         public void TestConstructorWhenIdFormatIsInvalid(string id)
         {
-            try
-            {
-                var client = new DigitalTwinInterfaceTestClient(id, "testInstanceName", true, true);
-            }
-            catch (Exception ex)
-            {
-                Assert.Equal(typeof(ArgumentException).FullName, ex.GetType().FullName);
-                Assert.Equal("id", ((ArgumentException)ex).ParamName);
-                Assert.True(ex.Message?.StartsWith(DigitalTwinConstants.InvalidInterfaceIdErrorMessage, StringComparison.Ordinal) ?? false);
-                return;
-            }
+            ArgumentException ex = Assert.Throws<ArgumentException>(() => new DigitalTwinInterfaceTestClient(id, "testInstanceName", true, true));
 
-            Assert.True(false, $"Expected to throw exception for invalid interface id {id}.");
+            Assert.Equal("id", ex.ParamName);
+            Assert.StartsWith(DigitalTwinConstants.InvalidInterfaceIdErrorMessage, ex.Message, StringComparison.Ordinal);
         }
 
         [Fact]
         public void TestConstructorWhenInstanceNameIsNull()
         {
-            try
-            {
-                var client = new DigitalTwinInterfaceTestClient("urn:testId", null, true, true);
-            }
-            catch (Exception ex)
-            {
-                Assert.Equal(typeof(ArgumentNullException).FullName, ex.GetType().FullName);
-                Assert.Equal("instanceName", ((ArgumentNullException)ex).ParamName);
-                Assert.True(ex.Message?.StartsWith("The parameter named instanceName can't be null, empty string or white space.", StringComparison.Ordinal) ?? false);
-                return;
-            }
+            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => new DigitalTwinInterfaceTestClient("urn:testId", null, true, true));
 
-            Assert.True(false);
+            Assert.Equal("instanceName", ex.ParamName);
+            Assert.StartsWith("The parameter named instanceName can't be null, empty string or white space.", ex.Message, StringComparison.Ordinal);
         }
 
         [Fact]
         public void TestConstructorWhenInstanceNameIsWhiteSpace()
         {
-            try
-            {
-                var client = new DigitalTwinInterfaceTestClient("urn:testId", " ", true, true);
-            }
-            catch (Exception ex)
-            {
-                Assert.Equal(typeof(ArgumentNullException).FullName, ex.GetType().FullName);
-                Assert.Equal("instanceName", ((ArgumentNullException)ex).ParamName);
-                Assert.True(ex.Message?.StartsWith("The parameter named instanceName can't be null, empty string or white space.", StringComparison.Ordinal) ?? false);
-                return;
-            }
+            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => new DigitalTwinInterfaceTestClient("urn:testId", " ", true, true));
 
-            Assert.True(false);
+            Assert.Equal("instanceName", ex.ParamName);
+            Assert.StartsWith("The parameter named instanceName can't be null, empty string or white space.", ex.Message, StringComparison.Ordinal);
         }
 
         [Theory]
         [MemberData(nameof(GetInvalidInterfaceInstanceNameData))]
         public void TestConstructorWhenInstanceNameFormatIsInvalid(string instanceName)
         {
-            try
-            {
-                var client = new DigitalTwinInterfaceTestClient("urn:testId", instanceName, true, true);
-            }
-            catch (Exception ex)
-            {
-                Assert.Equal(typeof(ArgumentException).FullName, ex.GetType().FullName);
-                Assert.Equal("instanceName", ((ArgumentException)ex).ParamName);
-                Assert.True(ex.Message?.StartsWith(DigitalTwinConstants.InvalidInterfaceInstanceNameErrorMessage, StringComparison.Ordinal) ?? false);
-                return;
-            }
+                var ex = Assert.Throws<ArgumentException>(() => new DigitalTwinInterfaceTestClient("urn:testId", instanceName, true, true));
 
-            Assert.True(false, $"Expected to throw exception for invalid interface name {instanceName}.");
+                Assert.Equal(ex.ParamName, "instanceName");
+                Assert.StartsWith(DigitalTwinConstants.InvalidInterfaceInstanceNameErrorMessage, ex.Message, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -172,71 +120,135 @@ namespace Azure.IoT.DigitalTwin.Device.Test
         }
 
         [Fact]
-        public void TestReportPropertiesAsyncWhenPropertiesIsNull()
+        public async Task TestReportPropertiesAsyncWhenPropertiesIsNull()
         {
             var client = new DigitalTwinInterfaceTestClient("urn:id", "instanceName", true, true);
 
-            try
-            {
-                client.ReportPropertiesAsync(null).Wait();
-            }
-            catch (Exception ex)
-            {
-                Assert.Equal(typeof(AggregateException).FullName, ex.GetType().FullName);
-                Assert.Equal(1, ((AggregateException)ex).InnerExceptions.Count);
-
-                Exception innerEx = ((AggregateException)ex).InnerExceptions[0];
-                Assert.Equal(typeof(ArgumentNullException).FullName, innerEx.GetType().FullName);
-                Assert.Equal("properties", ((ArgumentException)innerEx).ParamName);
-                Assert.True(innerEx.Message?.StartsWith("The parameter named properties can't be null.", StringComparison.Ordinal) ?? false);
-                return;
-            }
-
-            Assert.True(false);
+            ArgumentNullException ex = await Assert.ThrowsAsync<ArgumentNullException>(() => client.ReportPropertiesAsync(null)).ConfigureAwait(false);
+            Assert.Equal("properties", ex.ParamName);
+            Assert.StartsWith("The parameter named properties can't be null.", ex.Message, StringComparison.Ordinal);
         }
 
         [Fact]
-        public void TestReportPropertiesAsyncWhenInterfaceNotRegistered()
+        public async Task TestReportPropertiesAsyncWhenInterfaceNotRegistered()
         {
             var client = new DigitalTwinInterfaceTestClient("urn:id", "instanceName", true, true);
+            IList<DigitalTwinPropertyReport> properties = new List<DigitalTwinPropertyReport>();
+            properties.Add(new DigitalTwinPropertyReport("propertyName1", "propertyValue1"));
 
-            try
-            {
-                IList<DigitalTwinPropertyReport> properties = new List<DigitalTwinPropertyReport>();
-                properties.Add(new DigitalTwinPropertyReport("propertyName1", "propertyValue1"));
-                client.ReportPropertiesAsync(properties).Wait();
-            }
-            catch (Exception ex)
-            {
-                Assert.Equal(typeof(AggregateException).FullName, ex.GetType().FullName);
-                Assert.Equal(1, ((AggregateException)ex).InnerExceptions.Count);
-
-                Exception innerEx = ((AggregateException)ex).InnerExceptions[0];
-                Assert.Equal(typeof(DigitalTwinDeviceInterfaceNotRegisteredException).FullName, innerEx.GetType().FullName);
-                Assert.True(innerEx.Message?.Equals("The interface instanceName is not registered.", StringComparison.Ordinal) ?? false);
-                return;
-            }
-
-            Assert.True(false);
+            DigitalTwinDeviceInterfaceNotRegisteredException ex =
+                await Assert.ThrowsAsync<DigitalTwinDeviceInterfaceNotRegisteredException>(() => client.ReportPropertiesAsync(properties)).ConfigureAwait(false);
+            Assert.Equal("The interface instanceName is not registered.", ex.Message);
         }
 
         [Fact]
-        public void TestReportPropertiesAsyncWillCallToDigitalTwinClient()
+        public async Task TestReportPropertiesAsyncCallDigitalTwinClient()
         {
             var client = new DigitalTwinInterfaceTestClient("urn:id", "instanceName", true, true);
-
             var properties = new List<DigitalTwinPropertyReport>();
             properties.Add(new DigitalTwinPropertyReport("propertyName1", "propertyValue1"));
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString("HostName=zzz.azure-devices.net;DeviceId=aaaa;SharedAccessKey=WWWWWWWWWWWWWWWW/WWWWWWWWWWWWWWWWWWWWWWWWWW=");
+            var digitalTwinClientMock = Substitute.For<DigitalTwinClient>(deviceClient);
+            digitalTwinClientMock.ReportPropertiesAsync("instanceName", properties, CancellationToken.None).ReturnsForAnyArgs(Task.CompletedTask);
+            client.Initialize(digitalTwinClientMock);
+
+            await client.ReportPropertiesAsync(properties).ConfigureAwait(false);
+
+            digitalTwinClientMock.Received().ReportPropertiesAsync("instanceName", properties, CancellationToken.None).Wait();
+        }
+
+        [Fact]
+        public async Task TestSendTelemetryAsyncWhenTelemetryNameIsNull()
+        {
+            var client = new DigitalTwinInterfaceTestClient("urn:id", "instanceName", true, true);
+
+            ArgumentNullException ex = await Assert.ThrowsAsync<ArgumentNullException>(() => client.SendTelemetryAsync(null, "telemetryValue")).ConfigureAwait(false);
+            Assert.Equal("telemetryName", ex.ParamName);
+            Assert.StartsWith("The parameter named telemetryName can't be null, empty string or white space.", ex.Message, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public async Task TestSendTelemetryAsyncWhenTelemetryValueIsNull()
+        {
+            var client = new DigitalTwinInterfaceTestClient("urn:id", "instanceName", true, true);
+
+            var ex = await Assert.ThrowsAsync<ArgumentNullException>(() => client.SendTelemetryAsync("telemetryName", null)).ConfigureAwait(false);
+            Assert.Equal("telemetryValue", ex.ParamName);
+            Assert.StartsWith("The parameter named telemetryValue can't be null, empty string or white space.", ex.Message, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public async Task TestSendTelemetryAsyncWhenInterfaceNotRegistered()
+        {
+            var client = new DigitalTwinInterfaceTestClient("urn:id", "instanceName", true, true);
+
+            var ex = await Assert.ThrowsAsync<DigitalTwinDeviceInterfaceNotRegisteredException>(() => client.SendTelemetryAsync("telemetryName", "telemetryValue")).ConfigureAwait(false);
+            Assert.Equal("The interface instanceName is not registered.", ex.Message);
+        }
+
+        [Fact]
+        public void TestSendTelemetryAsyncCallDigitalTwinClient()
+        {
+            var client = new DigitalTwinInterfaceTestClient("urn:id", "instanceName", true, true);
 
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString("HostName=zzz.azure-devices.net;DeviceId=aaaa;SharedAccessKey=WWWWWWWWWWWWWWWW/WWWWWWWWWWWWWWWWWWWWWWWWWW=");
             var digitalTwinClientMock = Substitute.For<DigitalTwinClient>(deviceClient);
 
-            digitalTwinClientMock.ReportPropertiesAsync("instanceName", properties, CancellationToken.None).ReturnsForAnyArgs(Task.CompletedTask);
+            digitalTwinClientMock.SendTelemetryAsync("urn:id", "instanceName", "telemetryName", "telemetryValue", CancellationToken.None).ReturnsForAnyArgs(Task.CompletedTask);
             client.Initialize(digitalTwinClientMock);
 
-            client.ReportPropertiesAsync(properties).Wait();
+            client.SendTelemetryAsync("telemetryName", "telemetryValue").Wait();
 
-            digitalTwinClientMock.Received().ReportPropertiesAsync("instanceName", properties, CancellationToken.None).Wait();
+            digitalTwinClientMock.Received().SendTelemetryAsync("urn:id", "instanceName", "telemetryName", "telemetryValue", CancellationToken.None).Wait();
+        }
+
+        [Fact]
+        public async Task TestUpdateAsyncCommandStatusAsyncWhenUpdateNameIsNull()
+        {
+            var client = new DigitalTwinInterfaceTestClient("urn:id", "instanceName", true, true);
+            var cmdUpdate = new DigitalTwinAsyncCommandUpdate(null, "TestReqId", 999, "TestPayload");
+
+            ArgumentNullException ex = await Assert.ThrowsAsync<ArgumentNullException>(() => client.UpdateAsyncCommandStatusAsync(cmdUpdate)).ConfigureAwait(false);
+            Assert.Equal("DigitalTwinAsyncCommandUpdate.Name", ex.ParamName);
+            Assert.StartsWith("The parameter named DigitalTwinAsyncCommandUpdate.Name can't be null, empty string or white space.", ex.Message, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public async Task TestUpdateAsyncCommandStatusAsyncWhenUpdateRequestIdIsNull()
+        {
+            var client = new DigitalTwinInterfaceTestClient("urn:id", "instanceName", true, true);
+            var cmdUpdate = new DigitalTwinAsyncCommandUpdate("TestName", null, 999, "TestPayload");
+
+            ArgumentNullException ex = await Assert.ThrowsAsync<ArgumentNullException>(() => client.UpdateAsyncCommandStatusAsync(cmdUpdate)).ConfigureAwait(false);
+            Assert.Equal("DigitalTwinAsyncCommandUpdate.RequestId", ex.ParamName);
+            Assert.StartsWith("The parameter named DigitalTwinAsyncCommandUpdate.RequestId can't be null, empty string or white space.", ex.Message, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public async Task TestUpdateAsyncCommandStatusAsyncWhenInterfaceNotRegistered()
+        {
+            var client = new DigitalTwinInterfaceTestClient("urn:id", "instanceName", true, true);
+            var cmdUpdate = new DigitalTwinAsyncCommandUpdate("TestName", "TestRequestId", 999, "TestPayload");
+
+            var ex = await Assert.ThrowsAsync<DigitalTwinDeviceInterfaceNotRegisteredException>(() => client.UpdateAsyncCommandStatusAsync(cmdUpdate)).ConfigureAwait(false);
+            Assert.Equal("The interface instanceName is not registered.", ex.Message);
+        }
+
+        [Fact]
+        public void TestUpdateAsyncCommandStatusAsyncCallDigitalTwinClient()
+        {
+            var client = new DigitalTwinInterfaceTestClient("urn:id", "instanceName", true, true);
+            var cmdUpdate = new DigitalTwinAsyncCommandUpdate("TestName", "TestReqId", 999, "TestPayload");
+
+            DeviceClient deviceClient = DeviceClient.CreateFromConnectionString("HostName=zzz.azure-devices.net;DeviceId=aaaa;SharedAccessKey=WWWWWWWWWWWWWWWW/WWWWWWWWWWWWWWWWWWWWWWWWWW=");
+            var digitalTwinClientMock = Substitute.For<DigitalTwinClient>(deviceClient);
+
+            digitalTwinClientMock.UpdateAsyncCommandStatusAsync("urn:id", "instanceName", cmdUpdate, CancellationToken.None).ReturnsForAnyArgs(Task.CompletedTask);
+            client.Initialize(digitalTwinClientMock);
+
+            client.UpdateAsyncCommandStatusAsync(cmdUpdate).Wait();
+
+            digitalTwinClientMock.Received().UpdateAsyncCommandStatusAsync("urn:id", "instanceName", cmdUpdate, CancellationToken.None).Wait();
         }
 
         public static IEnumerable<object[]> GetInvalidInterfaceIdData =>
