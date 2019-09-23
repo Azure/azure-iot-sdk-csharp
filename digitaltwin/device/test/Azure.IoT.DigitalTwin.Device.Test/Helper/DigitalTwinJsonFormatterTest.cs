@@ -83,7 +83,7 @@ namespace Azure.IoT.DigitalTwin.Device.Test.Helper
             public bool Equals(TestDigitalTwinJson other)
             {
                 return this.Value1.Equals(other.Value1) &&
-                    string.Equals(this.Value2, other.Value2);
+                    string.Equals(this.Value2, other.Value2, StringComparison.Ordinal);
             }
         }
     }
