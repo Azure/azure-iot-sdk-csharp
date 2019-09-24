@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         [TestMethod]
         public async Task HttpTransportHandler_ReceiveAsync_TokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => CreateFromConnectionString().ReceiveAsync(new TimeSpan(0, 0, 0), token)).ConfigureAwait(false);
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().ReceiveAsync(token)).ConfigureAwait(false);
         }
 
         [TestMethod]

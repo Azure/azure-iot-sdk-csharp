@@ -48,9 +48,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return ExecuteWithErrorHandlingAsync(() => base.ReceiveAsync(cancellationToken));
         }
 
-        public override Task<Message> ReceiveAsync(TimeSpan timeout, CancellationToken cancellationToken)
+        public override Task<Message> ReceiveAsync(TimeSpan timeout)
         {
-            return ExecuteWithErrorHandlingAsync(() => base.ReceiveAsync(timeout, cancellationToken));
+            return ExecuteWithErrorHandlingAsync(() => base.ReceiveAsync(timeout));
         }
 
         public override Task EnableMethodsAsync(CancellationToken cancellationToken)

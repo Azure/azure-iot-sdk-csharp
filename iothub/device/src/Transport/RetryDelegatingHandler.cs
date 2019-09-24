@@ -160,22 +160,22 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        public override async Task<Message> ReceiveAsync(TimeSpan timeout, CancellationToken cancellationToken)
+        public override async Task<Message> ReceiveAsync(TimeSpan timeout)
         {
             try
             {
-                if (Logging.IsEnabled) Logging.Enter(this, timeout, cancellationToken, nameof(ReceiveAsync));
-
+                if (Logging.IsEnabled) Logging.Enter(this, timeout, nameof(ReceiveAsync));
+                CancellationToken cancellationToken = new CancellationTokenSource(timeout).Token;
                 return await _internalRetryPolicy.ExecuteAsync(async () =>
                 {
                     await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
-                    return await base.ReceiveAsync(timeout, cancellationToken).ConfigureAwait(false);
+                    return await base.ReceiveAsync(timeout).ConfigureAwait(false);
                 },
             cancellationToken).ConfigureAwait(false);
             }
             finally
             {
-                if (Logging.IsEnabled) Logging.Exit(this, timeout, cancellationToken, nameof(ReceiveAsync));
+                if (Logging.IsEnabled) Logging.Exit(this, timeout, nameof(ReceiveAsync));
             }
         }
 

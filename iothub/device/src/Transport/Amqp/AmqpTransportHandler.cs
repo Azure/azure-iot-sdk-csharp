@@ -157,21 +157,30 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        public override async Task<Message> ReceiveAsync(TimeSpan timeout, CancellationToken cancellationToken)
+        public override async Task<Message> ReceiveAsync(TimeSpan timeout)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, timeout, cancellationToken, $"{nameof(ReceiveAsync)}");
-            Message message = null;
+            if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(ReceiveAsync)}");
+            Message message = await _amqpUnit.ReceiveMessageAsync(timeout).ConfigureAwait(false);
+
+            if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(ReceiveAsync)}");
+            return message;
+        }
+
+        public override async Task<Message> ReceiveAsync(CancellationToken cancellationToken)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, cancellationToken, $"{nameof(ReceiveAsync)}");
+            Message message;
             while (true)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                message = await _amqpUnit.ReceiveMessageAsync(timeout).ConfigureAwait(false);
+                message = await _amqpUnit.ReceiveMessageAsync(TransportSettings.DefaultReceiveTimeout).ConfigureAwait(false);
                 if (message != null)
                 {
                     break;
                 }
             }
 
-            if (Logging.IsEnabled) Logging.Exit(this, timeout, cancellationToken, $"{nameof(ReceiveAsync)}");
+            if (Logging.IsEnabled) Logging.Exit(this, cancellationToken, cancellationToken, $"{nameof(ReceiveAsync)}");
             return message;
         }
         #endregion

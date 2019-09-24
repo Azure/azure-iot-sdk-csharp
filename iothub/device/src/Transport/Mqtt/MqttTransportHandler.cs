@@ -203,11 +203,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        public override async Task<Message> ReceiveAsync(TimeSpan timeout, CancellationToken cancellationToken)
+        public override async Task<Message> ReceiveAsync(CancellationToken cancellationToken)
         {
-            Message message = null;
-
             cancellationToken.ThrowIfCancellationRequested();
+
+            Message message = null;
 
             this.EnsureValidState();
 
@@ -216,7 +216,38 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 await this.SubscribeAsync().ConfigureAwait(true);
             }
 
-            bool hasMessage = await this.ReceiveMessageArrivalAsync(timeout, cancellationToken).ConfigureAwait(true);
+            bool hasMessage = await this.ReceiveMessageArrivalAsync(TransportSettings.DefaultReceiveTimeout, cancellationToken).ConfigureAwait(true);
+
+            if (hasMessage)
+            {
+                lock (this.syncRoot)
+                {
+                    this.messageQueue.TryDequeue(out message);
+                    message.LockToken = message.LockToken;
+                    if (this.qos == QualityOfService.AtLeastOnce)
+                    {
+                        this.completionQueue.Enqueue(message.LockToken);
+                    }
+
+                    message.LockToken = this.generationId + message.LockToken;
+                }
+            }
+
+            return message;
+        }
+
+        public override async Task<Message> ReceiveAsync(TimeSpan timeout)
+        {
+            Message message = null;
+
+            this.EnsureValidState();
+
+            if (this.State != TransportState.Receiving)
+            {
+                await this.SubscribeAsync().ConfigureAwait(true);
+            }
+
+            bool hasMessage = await this.ReceiveMessageArrivalAsync(timeout, new CancellationTokenSource(timeout).Token).ConfigureAwait(true);
 
             if (hasMessage)
             {

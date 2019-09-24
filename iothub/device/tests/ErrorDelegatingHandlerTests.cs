@@ -181,9 +181,9 @@ namespace Microsoft.Azure.Devices.Client.Test
 
             TimeSpan timeout = TimeSpan.FromSeconds(1);
             await OperationAsync_ExceptionThrownAndThenSucceed_OperationSuccessfullyCompleted(
-                di => di.ReceiveAsync(Arg.Is(timeout), Arg.Any<CancellationToken>()),
-                di => di.ReceiveAsync(timeout, cancellationToken),
-                di => di.Received(2).ReceiveAsync(Arg.Is(timeout), Arg.Any<CancellationToken>()),
+                di => di.ReceiveAsync(Arg.Is(timeout)),
+                di => di.ReceiveAsync(timeout),
+                di => di.Received(2).ReceiveAsync(Arg.Is(timeout)),
                 thrownExceptionType, expectedExceptionType).ConfigureAwait(false);
 
             await OperationAsync_ExceptionThrownAndThenSucceed_OperationSuccessfullyCompleted(
