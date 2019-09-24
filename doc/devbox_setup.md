@@ -22,10 +22,10 @@ This may not be sufficient to run certain samples that require Visual Studio and
     Enable Powershell script execution on your system. See http://go.microsoft.com/fwlink/?LinkID=135170 for more information.
     `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned`
 
-### Linux/OSX (tested on Ubuntu 16.04)
+### Linux/OSX
 
-- Install Powershell https://github.com/PowerShell/PowerShell/blob/master/docs/installation/linux.md#ubuntu-1604
-- Install the latest .NET Core SDK CLI https://www.microsoft.com/net/learn/get-started/linux/ubuntu16-04
+- Install Powershell https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell?view=powershell-6
+- Install the latest .NET Core SDK CLI https://dotnet.microsoft.com/download
 
 <a name="advanced"/>
 
