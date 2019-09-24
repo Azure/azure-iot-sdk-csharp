@@ -23,7 +23,8 @@ namespace Microsoft.Azure.Devices.E2ETests
         private const int FileSizeBig = 5120 * 1024;
 
         private readonly ConsoleEventListener _listener;
-
+        private static TestLogging _log = TestLogging.GetInstance();
+        
         public FileUploadE2ETests()
         {
             _listener = TestConfig.StartEventListener();
@@ -82,6 +83,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 // The following checks allow running these tests multiple times in parallel. 
                 // Notifications for one of the test-run instances may be received by the other test-run.
+                _log.WriteLine($"TestDevice: '{testDevice.Id}', blobName: '{fileNotification.BlobName}', size: {fileNotification.BlobSizeInBytes}");
                 Assert.IsNotNull(fileNotification, "FileNotification is not received.");
                 Assert.IsFalse(string.IsNullOrEmpty(fileNotification.BlobUri), "File notification blob uri is null or empty");
 
