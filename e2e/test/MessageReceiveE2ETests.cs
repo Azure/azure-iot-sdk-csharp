@@ -153,7 +153,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     transport == Client.TransportType.Mqtt_WebSocket_Only)
                 {
                     // Dummy ReceiveAsync to ensure mqtt subscription registration before SendAsync() is called on service client.
-                    await deviceClient.ReceiveAsync(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
+                    await deviceClient.ReceiveAsync(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
                 }
 
                 await serviceClient.OpenAsync().ConfigureAwait(false);

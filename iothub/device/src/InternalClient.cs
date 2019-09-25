@@ -317,10 +317,7 @@ namespace Microsoft.Azure.Devices.Client
             try
             {
                 // Codes_SRS_DEVICECLIENT_28_011: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable(authentication, quota exceed) error occurs.]
-                using (CancellationTokenSource cts = CancellationTokenSourceFactory())
-                {
-                    return await ReceiveAsync(cts.Token).ConfigureAwait(false);
-                }
+                return await InnerHandler.ReceiveAsync().ConfigureAwait(false);
             }
             catch (OperationCanceledException ex)
             {
@@ -337,7 +334,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             try
             {
-                return await ReceiveAsync(timeout).ConfigureAwait(false);
+                return await InnerHandler.ReceiveAsync(timeout).ConfigureAwait(false);
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {
@@ -350,10 +347,10 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>The receive message or null if there was no message until the default timeout</returns>
-        public Task<Message> ReceiveAsync(CancellationToken cancellationToken)
+        public async Task<Message> ReceiveAsync(CancellationToken cancellationToken)
         {
             // Codes_SRS_DEVICECLIENT_28_011: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable(authentication, quota exceed) error occurs.]
-            return InnerHandler.ReceiveAsync(cancellationToken);
+            return await InnerHandler.ReceiveAsync(cancellationToken).ConfigureAwait(false); ;
         }
 
         /// <summary>

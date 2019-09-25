@@ -24,6 +24,7 @@ namespace Microsoft.Azure.Devices.Client
         // Telemetry downlink.
         Task<Message> ReceiveAsync(CancellationToken cancellationToken);
         Task<Message> ReceiveAsync(TimeSpan timeout);
+        Task<Message> ReceiveAsync();
         Task RejectAsync(string lockToken, CancellationToken cancellationToken);
         Task AbandonAsync(string lockToken, CancellationToken cancellationToken);
         Task CompleteAsync(string lockToken, CancellationToken cancellationToken);

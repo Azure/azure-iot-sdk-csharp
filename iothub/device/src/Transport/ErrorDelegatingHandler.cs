@@ -43,6 +43,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return ExecuteWithErrorHandlingAsync(() => base.OpenAsync(cancellationToken));
         }
 
+        public override Task<Message> ReceiveAsync()
+        {
+            return ExecuteWithErrorHandlingAsync(() => base.ReceiveAsync());
+        }
+
         public override Task<Message> ReceiveAsync(CancellationToken cancellationToken)
         {
             return ExecuteWithErrorHandlingAsync(() => base.ReceiveAsync(cancellationToken));
