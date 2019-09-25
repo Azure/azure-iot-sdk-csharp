@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Azure.Iot.DigitalTwin.Device.Exceptions;
 using Azure.Iot.DigitalTwin.Device.Helper;
 using Azure.Iot.DigitalTwin.Device.Model;
+using Azure.IoT.DigitalTwin.Device;
 
 namespace Azure.Iot.DigitalTwin.Device
 {
@@ -93,6 +94,7 @@ namespace Azure.Iot.DigitalTwin.Device
         /// <returns>DigitalTwinCommandResponse.</returns>
         protected internal virtual Task<DigitalTwinCommandResponse> OnCommandRequest(DigitalTwinCommandRequest commandRequest)
         {
+            Logging.Instance.LogInformational("Command not being handled at interface.");
             return Task.FromResult(new DigitalTwinCommandResponse(StatusCodeNotImplemented));
         }
 
@@ -104,6 +106,7 @@ namespace Azure.Iot.DigitalTwin.Device
         /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
         protected internal virtual Task OnPropertyUpdated(DigitalTwinPropertyUpdate propertyUpdate)
         {
+            Logging.Instance.LogInformational("Property updated not being handled at interface.");
             return Task.CompletedTask;
         }
 
@@ -114,6 +117,7 @@ namespace Azure.Iot.DigitalTwin.Device
         /// <param name="propertyUpdate">incoming property updated notification.</param>
         protected virtual void OnRegistrationCompleted()
         {
+            Logging.Instance.LogVerbose("DigitalTwinInterfaceClient registered.");
         }
 
         /// <summary>

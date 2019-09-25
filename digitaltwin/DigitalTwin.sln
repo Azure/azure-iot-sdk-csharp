@@ -13,7 +13,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnvironmentalSensorSample",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnvironmentalSensorLib", "device\sample\EnvironmentSensorLib\EnvironmentalSensorLib.csproj", "{99967F0E-3778-445B-9C7F-6BDA35435CEA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Azure.IoT.DigitalTwin.Device.Test", "device\test\Azure.IoT.DigitalTwin.Device.Test\Azure.IoT.DigitalTwin.Device.Test.csproj", "{F0928B2B-A55C-45C8-8050-5509A02FD2F2}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{62D7B337-13D4-4745-9ECC-DE4FE06B7693}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Azure.IoT.DigitalTwin.Device.Test", "device\test\Azure.IoT.DigitalTwin.Device.Test\Azure.IoT.DigitalTwin.Device.Test.csproj", "{DFDA3A71-869D-46C6-AD2B-A6E322447937}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,10 +35,10 @@ Global
 		{99967F0E-3778-445B-9C7F-6BDA35435CEA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{99967F0E-3778-445B-9C7F-6BDA35435CEA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{99967F0E-3778-445B-9C7F-6BDA35435CEA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F0928B2B-A55C-45C8-8050-5509A02FD2F2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F0928B2B-A55C-45C8-8050-5509A02FD2F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F0928B2B-A55C-45C8-8050-5509A02FD2F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F0928B2B-A55C-45C8-8050-5509A02FD2F2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DFDA3A71-869D-46C6-AD2B-A6E322447937}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DFDA3A71-869D-46C6-AD2B-A6E322447937}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DFDA3A71-869D-46C6-AD2B-A6E322447937}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DFDA3A71-869D-46C6-AD2B-A6E322447937}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -45,6 +47,7 @@ Global
 		{5389DE61-ED83-4946-A668-5A3769CC6516} = {588860D9-EB42-458A-B8B4-CE72C9F7A765}
 		{BF7F2466-CB8B-4330-9B6E-BC55D6430A93} = {1B6B3D00-32D1-49B5-8BFF-8A237A4FA511}
 		{99967F0E-3778-445B-9C7F-6BDA35435CEA} = {1B6B3D00-32D1-49B5-8BFF-8A237A4FA511}
+		{DFDA3A71-869D-46C6-AD2B-A6E322447937} = {62D7B337-13D4-4745-9ECC-DE4FE06B7693}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A01BB316-82A6-4AA9-BDE1-12936DF4DFCB}
