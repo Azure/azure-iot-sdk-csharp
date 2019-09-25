@@ -216,7 +216,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 await this.SubscribeAsync().ConfigureAwait(true);
             }
 
-            bool hasMessage = await this.ReceiveMessageArrivalAsync(TransportSettings.DefaultReceiveTimeout, cancellationToken).ConfigureAwait(true);
+            bool hasMessage = await this.ReceiveMessageArrivalAsync(TimeSpan.MaxValue, cancellationToken).ConfigureAwait(true);
 
             if (hasMessage)
             {
