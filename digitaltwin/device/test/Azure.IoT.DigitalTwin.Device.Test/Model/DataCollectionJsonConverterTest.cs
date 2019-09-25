@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Azure.Iot.DigitalTwin.Device.Helper;
+using System;
+
 using Azure.Iot.DigitalTwin.Device.Model;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using NSubstitute;
-using Pose;
 using Xunit;
 
 namespace Azure.IoT.DigitalTwin.Device.Test.Model
