@@ -79,8 +79,8 @@ namespace Azure.IoT.DigitalTwin.Device.Test
         {
             string id = "urn:testId";
             string instanceName = "testInstanceName";
-            bool isCommandEnabled = Arg.Any<bool>();
-            bool isPropertyUpdatedEnabled = Arg.Any<bool>();
+            bool isCommandEnabled = true;
+            bool isPropertyUpdatedEnabled = true;
 
             var client = new DigitalTwinInterfaceTestClient(id, instanceName, isCommandEnabled, isPropertyUpdatedEnabled);
 
@@ -112,11 +112,15 @@ namespace Azure.IoT.DigitalTwin.Device.Test
         }
 
         [Fact]
-        public void OnRegistrationCompleted()
+        public void TestOnRegistrationCompleted()
         {
             var client = new DigitalTwinInterfaceTestClient("urn:id", "instanceName", true, true);
+            ILogging logger = Substitute.For<ILogging>();
+            Logging.Instance = logger;
 
-            client.OnRegistrationCompleted2();
+            client.OnRegistrationCompleted();
+
+            logger.Received().LogVerbose("DigitalTwinInterfaceClient registered.", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>());
         }
 
         [Fact]

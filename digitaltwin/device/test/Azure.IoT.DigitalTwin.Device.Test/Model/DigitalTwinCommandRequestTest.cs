@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Azure.Iot.DigitalTwin.Device.Model;
-using System;
 using Xunit;
 
 namespace Azure.IoT.DigitalTwin.Device.Test.Model
