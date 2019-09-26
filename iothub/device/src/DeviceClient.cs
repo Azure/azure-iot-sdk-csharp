@@ -280,11 +280,11 @@ namespace Microsoft.Azure.Devices.Client
         public Task<Message> ReceiveAsync() => this.internalClient.ReceiveAsync();
 
         /// <summary>
-        /// Receive a message from the device queue using the default timeout.
+        /// Receive a message from the device queue using the cancellation token.
         /// </summary>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>  
-        /// <returns>The receive message or null if there was no message until the default timeout</returns>
+        /// <returns>The receive message</returns>
         public Task<Message> ReceiveAsync(CancellationToken cancellationToken) => this.internalClient.ReceiveAsync(cancellationToken);
 
         /// <summary>

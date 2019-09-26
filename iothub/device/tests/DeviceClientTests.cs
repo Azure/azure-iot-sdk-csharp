@@ -149,12 +149,12 @@ namespace Microsoft.Azure.Devices.Client.Test
             deviceClient.OperationTimeoutInMilliseconds = 0;
 
             var innerHandler = Substitute.For<IDelegatingHandler>();
-            innerHandler.ReceiveAsync(Arg.Any<CancellationToken>()).Returns(new Task<Message>(() => new Message()));
+            innerHandler.ReceiveAsync(Arg.Any<TimeoutHelper>()).Returns(new Task<Message>(() => new Message()));
             deviceClient.InnerHandler = innerHandler;
 
             Task<Message> t = deviceClient.ReceiveAsync();
 
-            await innerHandler.Received().ReceiveAsync(Arg.Any<CancellationToken>()).ConfigureAwait(false);
+            await innerHandler.Received().ReceiveAsync(Arg.Any<TimeoutHelper>()).ConfigureAwait(false);
         }
 
         [TestMethod]

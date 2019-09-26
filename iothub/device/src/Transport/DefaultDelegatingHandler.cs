@@ -12,7 +12,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
 {
     internal abstract class DefaultDelegatingHandler : IDelegatingHandler
     {
-        private static readonly Task<Message> s_dummyResultObject = Task.FromResult((Message)null);
         private volatile IDelegatingHandler _innerHandler;
         protected volatile bool _disposed;
 
@@ -38,6 +37,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 _innerHandler = value;
                 if (Logging.IsEnabled) Logging.Associate(this, _innerHandler, nameof(InnerHandler));
             }
+        }
+
+        public virtual Task OpenAsync(TimeoutHelper timeoutHelper)
+        {
+            ThrowIfDisposed();
+            return InnerHandler?.OpenAsync(timeoutHelper) ?? TaskHelpers.CompletedTask;
         }
 
         public virtual Task OpenAsync(CancellationToken cancellationToken)
@@ -73,16 +78,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return InnerHandler.WaitForTransportClosedAsync();
         }
 
-        public virtual Task<Message> ReceiveAsync(CancellationToken cancellationToken)
+        public virtual async Task<Message> ReceiveAsync(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return InnerHandler?.ReceiveAsync(cancellationToken) ?? s_dummyResultObject;
+            return await InnerHandler.ReceiveAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        public virtual Task<Message> ReceiveAsync(TimeSpan timeout, CancellationToken cancellationToken)
+        public virtual async Task<Message> ReceiveAsync(TimeoutHelper timeoutHelper)
         {
             ThrowIfDisposed();
-            return InnerHandler?.ReceiveAsync(timeout, cancellationToken) ?? s_dummyResultObject;
+            return await InnerHandler.ReceiveAsync(timeoutHelper).ConfigureAwait(false);
         }
 
         public virtual Task CompleteAsync(string lockToken, CancellationToken cancellationToken)

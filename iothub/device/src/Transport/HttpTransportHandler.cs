@@ -64,6 +64,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 transportSettings.Proxy);
         }
 
+        public override Task OpenAsync(TimeoutHelper timeoutHelper)
+        {
+            return TaskHelpers.CompletedTask;
+        }
+
         public override Task OpenAsync(CancellationToken cancellationToken)
         {
             return TaskHelpers.CompletedTask;
@@ -203,19 +208,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             throw new NotImplementedException("Device twins are only supported with Mqtt protocol.");
         }
 
-        public override Task<Message> ReceiveAsync(CancellationToken cancellationToken)
+        public override async Task<Message> ReceiveAsync(CancellationToken cancellationToken)
         {
-            return this.ReceiveAsync(TimeSpan.Zero, cancellationToken);
-        }
-
-        public override async Task<Message> ReceiveAsync(TimeSpan timeout, CancellationToken cancellationToken)
-        {
-            // Long-polling is not supported
-            if (!TimeSpan.Zero.Equals(timeout))
-            {
-                throw new ArgumentOutOfRangeException(nameof(timeout), "Http Protocol does not support a non-zero receive timeout");
-            }
-
             cancellationToken.ThrowIfCancellationRequested();
 
             IDictionary<string, string> customHeaders = PrepareCustomHeaders(CommonConstants.DeviceBoundPathTemplate.FormatInvariant(this.deviceId), null, CommonConstants.CloudToDeviceOperation);
@@ -302,6 +296,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
 
             return message;
+        }
+
+
+        public override async Task<Message> ReceiveAsync(TimeoutHelper timeoutHelper)
+        {
+            return await ReceiveAsync(new CancellationTokenSource(timeoutHelper.RemainingTime()).Token).ConfigureAwait(false);
         }
 
         public override Task CompleteAsync(string lockToken, CancellationToken cancellationToken)
