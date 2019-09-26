@@ -672,6 +672,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
             {
                 status = ConnectionStatusChangeReason.Device_Disabled;
             }
+            else if (hubException is DeviceNotFoundException)
+            {
+                status = ConnectionStatusChangeReason.Device_Not_Found;
+            }
 
             _onConnectionStatusChanged(ConnectionStatus.Disconnected, status);
         }
