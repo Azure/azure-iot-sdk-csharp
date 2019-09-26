@@ -64,6 +64,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 transportSettings.Proxy);
         }
 
+        public override Task OpenAsync(TimeoutHelper timeoutHelper)
+        {
+            return TaskHelpers.CompletedTask;
+        }
+
         public override Task OpenAsync(CancellationToken cancellationToken)
         {
             return TaskHelpers.CompletedTask;
@@ -293,9 +298,10 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return message;
         }
 
-        public override async Task<Message> ReceiveAsync(TimeSpan timeout)
+
+        public override async Task<Message> ReceiveAsync(TimeoutHelper timeoutHelper)
         {
-            return await ReceiveAsync(new CancellationTokenSource(timeout).Token).ConfigureAwait(false);
+            return await ReceiveAsync(new CancellationTokenSource(timeoutHelper.RemainingTime()).Token).ConfigureAwait(false);
         }
 
         public override Task CompleteAsync(string lockToken, CancellationToken cancellationToken)

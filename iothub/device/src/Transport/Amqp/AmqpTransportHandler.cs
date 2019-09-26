@@ -75,6 +75,29 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         public override bool IsUsable => !_disposed;
 
         #region Open-Close
+        public override async Task OpenAsync(TimeoutHelper timeoutHelper)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, timeoutHelper, $"{nameof(OpenAsync)}");
+            lock (_lock)
+            {
+                if (_disposed)
+                {
+                    return;
+                }
+
+                _closed = false;
+            }
+
+            try
+            {
+                await _amqpUnit.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+            }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, timeoutHelper, $"{nameof(OpenAsync)}");
+            }
+        }
+
         public override async Task OpenAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled) Logging.Enter(this, cancellationToken, $"{nameof(OpenAsync)}");
@@ -157,12 +180,12 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        public override async Task<Message> ReceiveAsync(TimeSpan timeout)
+        public override async Task<Message> ReceiveAsync(TimeoutHelper timeoutHelper)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(ReceiveAsync)}");
-            Message message = await _amqpUnit.ReceiveMessageAsync(timeout).ConfigureAwait(false);
+            if (Logging.IsEnabled) Logging.Enter(this, timeoutHelper, $"{nameof(ReceiveAsync)}");
+            Message message = await _amqpUnit.ReceiveMessageAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
 
-            if (Logging.IsEnabled) Logging.Exit(this, timeout, $"{nameof(ReceiveAsync)}");
+            if (Logging.IsEnabled) Logging.Exit(this, timeoutHelper, $"{nameof(ReceiveAsync)}");
             return message;
         }
 

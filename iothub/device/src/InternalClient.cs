@@ -314,16 +314,8 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>The receive message or null if there was no message until the default timeout</returns>
         public async Task<Message> ReceiveAsync()
         {
-            try
-            {
-                // Codes_SRS_DEVICECLIENT_28_011: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable(authentication, quota exceed) error occurs.]
-                return await InnerHandler.ReceiveAsync().ConfigureAwait(false);
-            }
-            catch (OperationCanceledException ex)
-            {
-                // Exception adaptation for non-CancellationToken public API.
-                throw new TimeoutException("The operation timed out.", ex);
-            }
+            // Codes_SRS_DEVICECLIENT_28_011: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable(authentication, quota exceed) error occurs.]
+            return await ReceiveAsync(TimeSpan.FromMilliseconds(_operationTimeoutInMilliseconds)).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -334,9 +326,9 @@ namespace Microsoft.Azure.Devices.Client
         {
             try
             {
-                return await InnerHandler.ReceiveAsync(timeout).ConfigureAwait(false);
+                return await InnerHandler.ReceiveAsync(new TimeoutHelper(timeout)).ConfigureAwait(false);
             }
-            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
+            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException || ex.InnerException is TimeoutException)
             {
                 return null;
             }

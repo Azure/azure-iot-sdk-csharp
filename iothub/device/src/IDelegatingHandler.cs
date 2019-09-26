@@ -12,6 +12,7 @@ namespace Microsoft.Azure.Devices.Client
     interface IDelegatingHandler : IContinuationProvider<IDelegatingHandler>, IDisposable
     {
         // Transport state.
+        Task OpenAsync(TimeoutHelper timeoutHelper);
         Task OpenAsync(CancellationToken cancellationToken);
         Task CloseAsync(CancellationToken cancellationToken);
         Task WaitForTransportClosedAsync();
@@ -23,8 +24,7 @@ namespace Microsoft.Azure.Devices.Client
 
         // Telemetry downlink.
         Task<Message> ReceiveAsync(CancellationToken cancellationToken);
-        Task<Message> ReceiveAsync(TimeSpan timeout);
-        Task<Message> ReceiveAsync();
+        Task<Message> ReceiveAsync(TimeoutHelper timeoutHelper);
         Task RejectAsync(string lockToken, CancellationToken cancellationToken);
         Task AbandonAsync(string lockToken, CancellationToken cancellationToken);
         Task CompleteAsync(string lockToken, CancellationToken cancellationToken);

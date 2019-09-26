@@ -160,22 +160,22 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
-        public override async Task<Message> ReceiveAsync(TimeSpan timeout)
+        public override async Task<Message> ReceiveAsync(TimeoutHelper timeoutHelper)
         {
             try
             {
-                if (Logging.IsEnabled) Logging.Enter(this, timeout, nameof(ReceiveAsync));
-                CancellationToken cancellationToken = new CancellationTokenSource(timeout).Token;
+                if (Logging.IsEnabled) Logging.Enter(this, timeoutHelper, nameof(ReceiveAsync));
                 return await _internalRetryPolicy.ExecuteAsync(async () =>
-                {
-                    await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
-                    return await base.ReceiveAsync(timeout).ConfigureAwait(false);
-                },
-            cancellationToken).ConfigureAwait(false);
+                    {
+                        await EnsureOpenedAsync(timeoutHelper).ConfigureAwait(false);
+                        return await base.ReceiveAsync(timeoutHelper).ConfigureAwait(false);
+                    },
+                    new CancellationTokenSource(timeoutHelper.RemainingTime()).Token
+                ).ConfigureAwait(false);
             }
             finally
             {
-                if (Logging.IsEnabled) Logging.Exit(this, timeout, nameof(ReceiveAsync));
+                if (Logging.IsEnabled) Logging.Exit(this, timeoutHelper, nameof(ReceiveAsync));
             }
         }
 
@@ -483,6 +483,38 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
+        private async Task EnsureOpenedAsync(TimeoutHelper timeoutHelper)
+        {
+            if (Volatile.Read(ref _opened)) return;
+            bool gain = await _handlerLock.WaitAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+            if (!gain) throw new TimeoutException("Timed out to acquire handler lock.");
+            try
+            {
+                if (!_opened)
+                {
+                    if (Logging.IsEnabled) Logging.Info(this, "Opening connection", nameof(EnsureOpenedAsync));
+                    await OpenAsyncInternal(timeoutHelper).ConfigureAwait(false);
+                    if (!_disposed)
+                    {
+                        _opened = true;
+                        _openCalled = true;
+
+                        // Send the request for transport close notification.
+                        _transportClosedTask = HandleDisconnect();
+                    }
+                    else
+                    {
+                        if (Logging.IsEnabled) Logging.Info(this, "Race condition: Disposed during opening.", nameof(EnsureOpenedAsync));
+                        _handleDisconnectCts.Cancel();
+                    }
+                }
+            }
+            finally
+            {
+                _handlerLock.Release();
+            }
+        }
+
         private Task OpenAsyncInternal(CancellationToken cancellationToken)
         {
             return _internalRetryPolicy.ExecuteAsync(async () =>
@@ -506,6 +538,31 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 }
             },
             cancellationToken);
+        }
+
+        private Task OpenAsyncInternal(TimeoutHelper timeoutHelper)
+        {
+            return _internalRetryPolicy.ExecuteAsync(async () =>
+            {
+                try
+                {
+                    if (Logging.IsEnabled) Logging.Enter(this, timeoutHelper, nameof(OpenAsync));
+
+                    // Will throw on error.
+                    await base.OpenAsync(timeoutHelper).ConfigureAwait(false);
+                    _onConnectionStatusChanged(ConnectionStatus.Connected, ConnectionStatusChangeReason.Connection_Ok);
+                }
+                catch (IotHubException ex)
+                {
+                    HandleConnectionStatusExceptions(ex);
+                    throw;
+                }
+                finally
+                {
+                    if (Logging.IsEnabled) Logging.Exit(this, timeoutHelper, nameof(OpenAsync));
+                }
+            },
+            new CancellationTokenSource(timeoutHelper.RemainingTime()).Token);
         }
 
         private async Task HandleDisconnect()

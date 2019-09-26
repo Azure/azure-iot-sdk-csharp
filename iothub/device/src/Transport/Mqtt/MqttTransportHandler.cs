@@ -156,7 +156,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public override bool IsUsable => this.State != TransportState.Closed && this.State != TransportState.Error;
 
-#region Client operations
+        #region Client operations
+        public override Task OpenAsync(TimeoutHelper timeoutHelper)
+        {
+            return OpenAsync(new CancellationTokenSource(timeoutHelper.RemainingTime()).Token);
+        }
 
         public override async Task OpenAsync(CancellationToken cancellationToken)
         {
@@ -216,7 +220,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 await this.SubscribeAsync().ConfigureAwait(true);
             }
 
-            bool hasMessage = await this.ReceiveMessageArrivalAsync(TimeSpan.MaxValue, cancellationToken).ConfigureAwait(true);
+            bool hasMessage = await this.ReceiveMessageArrivalAsync(cancellationToken).ConfigureAwait(true);
 
             if (hasMessage)
             {
@@ -236,7 +240,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             return message;
         }
 
-        public override async Task<Message> ReceiveAsync(TimeSpan timeout)
+        public override async Task<Message> ReceiveAsync(TimeoutHelper timeoutHelper)
         {
             Message message = null;
 
@@ -247,6 +251,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 await this.SubscribeAsync().ConfigureAwait(true);
             }
 
+            TimeSpan timeout = timeoutHelper.RemainingTime();
             bool hasMessage = await this.ReceiveMessageArrivalAsync(timeout, new CancellationTokenSource(timeout).Token).ConfigureAwait(true);
 
             if (hasMessage)
@@ -276,6 +281,30 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             using (CancellationTokenSource linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, this.disconnectAwaitersCancellationSource.Token))
             {
                 hasMessage = await this.receivingSemaphore.WaitAsync(timeout, linkedCts.Token).ConfigureAwait(true);
+            }
+
+            return hasMessage;
+        }
+
+        async Task<bool> ReceiveMessageArrivalAsync(CancellationToken cancellationToken)
+        {
+            bool hasMessage = false;
+            cancellationToken.ThrowIfCancellationRequested();
+            this.EnsureValidState();
+
+            using (CancellationTokenSource linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, this.disconnectAwaitersCancellationSource.Token))
+            {
+                try
+                {
+                    await this.receivingSemaphore.WaitAsync(linkedCts.Token).ConfigureAwait(true);
+                }
+                catch (OperationCanceledException)
+                {
+                    if (!cancellationToken.IsCancellationRequested)
+                    {
+                        throw new IotHubCommunicationException("MQTT is disconnected");
+                    }
+                }
             }
 
             return hasMessage;
