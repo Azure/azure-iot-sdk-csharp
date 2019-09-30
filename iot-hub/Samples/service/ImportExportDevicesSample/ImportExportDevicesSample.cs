@@ -54,17 +54,17 @@ namespace Microsoft.Azure.Devices.Samples
             // This is a good way to test the import -- create a bunch of devices on one hub,
             //    then use this the Copy feature to copy the devices to another hub.
             // Number of devices to create and add. Default is 10.
-            Console.WriteLine("Create new devices for the hub.");
-            int NumToAdd = 10;
-            await GenerateAndAddDevices(_IoTHubConnectionString, 
-               containerURIwSAS, NumToAdd, deviceListFile).ConfigureAwait(false);
+//            Console.WriteLine("Create new devices for the hub.");
+//            int NumToAdd = 10;
+//            await GenerateAndAddDevices(_IoTHubConnectionString, 
+//               containerURIwSAS, NumToAdd, deviceListFile).ConfigureAwait(false);
 
             //  This exports the devices to a file in blob storage. 
             //  You can use this to add a bunch of new devices, then export them and look at them in a file (in blob storage).
             // Read the list of registered devices for the IoT Hub.
             // Write them to blob storage.
-            Console.WriteLine("Read devices from the original hub, write to blob storage.");
-            await ExportDevices(containerURIwSAS, _IoTHubConnectionString).ConfigureAwait(false);
+//            Console.WriteLine("Read devices from the original hub, write to blob storage.");
+//            await ExportDevices(containerURIwSAS, _IoTHubConnectionString).ConfigureAwait(false);
 
             Console.WriteLine("Copy devices from the original hub to a new hub.");
             // Copy devices from an existing hub to a new hub.
