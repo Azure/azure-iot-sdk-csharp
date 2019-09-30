@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Devices.Samples
         // Log into https://azure.portal.com, go to Resources, find your storage account and select it.
         // Select Access Keys and copy one of the connection strings.
         private static string _storageAccountConnectionString =
-            Environment.GetEnvironmentVariable("STORAGE_CONN_STRING");
+            Environment.GetEnvironmentVariable("STORAGE_ACCT_CONN_STRING");
 
         public static void Main(string[] args)
         {
