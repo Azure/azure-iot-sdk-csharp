@@ -57,13 +57,13 @@ if ($type -eq $null)
     $err = 0
     if ($proc_method.ExitCode -ne 0)
     {
-        Write-Error "ServiceClient Methods failed with exit code: $($proc_method.ExitCode)"
+        Write-Host -ForegroundColor Red "ERROR: ServiceClient Methods failed with exit code: $($proc_method.ExitCode)"
         $err = $proc_method.ExitCode 
     }
 
     if ($proc_c2d.ExitCode -ne 0)
     {
-        Write-Error "ServiceClient Methods failed with exit code: $($proc_c2d.ExitCode)"
+        Write-Host -ForegroundColor Red "ERROR: ServiceClient Methods failed with exit code: $($proc_c2d.ExitCode)"
         $err = $proc_c2d.ExitCode
     }
     
@@ -122,10 +122,10 @@ Wait-Process -Id $proc_sevice.Id
 
 if ($proc_sevice.ExitCode -ne 0)
 {
-    Write-Error "ServiceClient failed with exit code: $($proc_sevice.ExitCode)"
+    Write-Host -ForegroundColor Red "ERROR: ServiceClient failed with exit code: $($proc_sevice.ExitCode)"
     $err = $proc_sevice.ExitCode 
 
-    Write-Error "ERRORS:"
+    Write-Host -ForegroundColor Red "ERRORS:"
     cat "$out.err"
 }
 

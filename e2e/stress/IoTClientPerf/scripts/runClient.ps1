@@ -68,7 +68,7 @@ Wait-Process $proc_device.Id
 $err = 0
 if ($proc_device.ExitCode -ne 0)
 {
-    Write-Error "DeviceClient failed with exit code: $($proc_device.ExitCode)"
+    Write-Host -ForegroundColor Red "ERROR: DeviceClient failed with exit code: $($proc_device.ExitCode)"
     $err = $proc_device.ExitCode 
 
     foreach ($file in (ls *.err))
@@ -81,7 +81,7 @@ if ($proc_device.ExitCode -ne 0)
 
 if ($fault -and ($proc_fault.ExitCode -ne 0))
 {
-    Write-Error "FaultInjection failed with exit code: $($proc_fault.ExitCode)"
+    Write-Host -ForegroundColor Red "ERROR: FaultInjection failed with exit code: $($proc_fault.ExitCode)"
     $err = $proc_fault.ExitCode    
 }
 
