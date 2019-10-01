@@ -125,7 +125,9 @@ try {
 
         # TODO #11: Modify Provisioning\device samples to run unattended.
 
-        RunApp provisioning\Samples\service\CleanupEnrollmentsSample "Provisioning\Service\CleanupEnrollmentsSample"
+        # TODO: Modify bulk enrollment operation to take in more device per operation
+        #RunApp provisioning\Samples\service\CleanupEnrollmentsSample "Provisioning\Service\CleanupEnrollmentsSample"
+
         RunApp provisioning\Samples\service\BulkOperationSample "Provisioning\Service\BulkOperationSample"
         # TODO #11 :RunApp provisioning\Samples\service\EnrollmentGroupSample "Provisioning\Service\EnrollmentGroupSample"
         RunApp provisioning\Samples\service\EnrollmentSample "Provisioning\Service\EnrollmentSample"
