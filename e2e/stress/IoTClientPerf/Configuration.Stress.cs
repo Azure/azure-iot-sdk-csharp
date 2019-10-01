@@ -56,6 +56,11 @@ namespace Microsoft.Azure.Devices.E2ETests
             /// </summary>
             public static long? GCMemoryBytes => ParseNullable(GetValue("IOTHUB_PERF_GC_MEM_BYTES_MAX", ""));
 
+            /// <summary>
+            /// Success rate defined as operations completed / (completed + failed + cancelled).
+            /// </summary>
+            public static long? SuccessRate => ParseNullable(GetValue("IOTHUB_PERF_SUCCESS_RATE_PERCENTAGE", ""));
+
             public static string GetDeviceNameById(int id, string authType)
             {
                 return $"{NamePrefix}_{authType}_{id}";

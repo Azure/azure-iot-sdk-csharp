@@ -49,7 +49,7 @@ if ($fault -and (-not (Test-Administrator)))
 Write-Host -ForegroundColor Cyan "`nDEVICE scenario: $scenario`n"
 $out = Join-Path $filePath "$fileName.$($scenario).csv"
 
-$proc_device = Start-Process -NoNewWindow dotnet -ArgumentList "run --no-build -c Release -- -t $durationSeconds -o $out -p $protocol -n $clients -c $connections -f $scenario -s 2048" -PassThru
+$proc_device = Start-Process -NoNewWindow dotnet -ArgumentList "run --no-build -c Release -- -t $durationSeconds -o $out -p $protocol -n $clients -c $connections -f $scenario -s 2048" -PassThru -RedirectStandardError "$out.err"
 $handle = $proc_device.Handle # Workaround to ensure we have the exit code
 
 if ($fault)
@@ -70,13 +70,17 @@ if ($proc_device.ExitCode -ne 0)
 {
     Write-Error "DeviceClient failed with exit code: $($proc_device.ExitCode)"
     $err = $proc_device.ExitCode 
-}
 
+    Write-Error "ERRORS:"
+    cat "$out.err"
+}
 
 if ($fault -and ($proc_fault.ExitCode -ne 0))
 {
     Write-Error "FaultInjection failed with exit code: $($proc_fault.ExitCode)"
     $err = $proc_fault.ExitCode    
 }
+
+rm -ErrorAction Continue "$out.err"
 
 exit $err

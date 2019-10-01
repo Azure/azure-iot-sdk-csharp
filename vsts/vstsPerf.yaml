@@ -16,6 +16,7 @@ resources:
   #KPI_RPS_AVG_MIN: 1500
   #KPI_RPS_STD_MAX: 2000
   #KPI_GC_MEM_MAX: 600000000
+  #KPI_SUCCESS: 80
   #AZURE_IOT_LOCALPACKAGES: 
 
 phases:
@@ -75,6 +76,7 @@ phases:
       IOTHUB_PERF_RPS_MIN_AVG: $(KPI_RPS_AVG_MIN)
       IOTHUB_PERF_RPS_MAX_STD: $(KPI_RPS_STD_MAX)
       IOTHUB_PERF_GC_MEM_BYTES_MAX: $(KPI_GC_MEM_MAX)
+      IOTHUB_PERF_SUCCESS_RATE_PERCENTAGE: $(KPI_SUCCESS)
 
   - powershell: |
         cd ./e2e/stress/IoTClientPerf/
@@ -139,6 +141,7 @@ phases:
       SIM_FAULT: $(SIM_FAULT)
       SIM_FAULT_START_DELAY: $(SIM_FAULT_START_DELAY)
       SIM_FAULT_DURATION: $(SIM_FAULT_START_DELAY)
+      IOTHUB_PERF_SUCCESS_RATE_PERCENTAGE: $(KPI_SUCCESS)
 
   - powershell: |
         cd ./e2e/stress/IoTClientPerf/

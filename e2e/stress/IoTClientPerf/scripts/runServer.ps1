@@ -104,9 +104,20 @@ else
 }
 
 # Fork (C2D/Methods)
-$proc_sevice = Start-Process -NoNewWindow dotnet -ArgumentList "run --no-build -c Release -- -t $durationSeconds -o $out -p $protocol -n $clients -c $connections -f $scenario -s 2048" -PassThru
+$proc_sevice = Start-Process -NoNewWindow dotnet -ArgumentList "run --no-build -c Release -- -t $durationSeconds -o $out -p $protocol -n $clients -c $connections -f $scenario -s 2048" -PassThru -RedirectStandardError "$out.err"
 $handle3 = $proc_sevice.Handle # Workaround to ensure we have the exit code
 Wait-Process -Id $proc_sevice.Id
+
+if ($proc_sevice.ExitCode -ne 0)
+{
+    Write-Error "ServiceClient failed with exit code: $($proc_sevice.ExitCode)"
+    $err = $proc_sevice.ExitCode 
+
+    Write-Error "ERRORS:"
+    cat "$out.err"
+}
+
+rm -ErrorAction Continue "$out.err"
 
 if (-not $nowait) 
 {

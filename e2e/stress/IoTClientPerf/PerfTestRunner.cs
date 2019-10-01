@@ -206,6 +206,13 @@ namespace Microsoft.Azure.Devices.E2ETests
                     Console.Error.WriteLine($"FAILED KPI: GC Memory. Expected: <{GetHumanReadableBytes(Configuration.Stress.GCMemoryBytes.Value)}; Actual: {GetHumanReadableBytes(gcBytes)}.");
                     ret = 5;
                 }
+
+                float successRate = ((float)statTotalCompleted * 100)/ (statTotalCompleted + statTotalFaulted + statTotalCancelled);
+                if (Configuration.Stress.SuccessRate.HasValue && Configuration.Stress.SuccessRate < successRate)
+                {
+                    Console.Error.WriteLine($"FAILED KPI: Success Rate. Expected: >{Configuration.Stress.SuccessRate}; Actual: {successRate}.");
+                    ret = 6;
+                }
                 
                 if (ret != 0) Console.WriteLine("^^^^^^^^^^^^^^^^^^^\n");
                 return ret;
