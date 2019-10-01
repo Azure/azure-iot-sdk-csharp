@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private readonly TelemetryMetrics _mRecv = new TelemetryMetrics();
         private readonly Stopwatch _swRecv = new Stopwatch();
 
-        private const string TestMethodName = "SendMessageToDevice";
+        private const string TestMethodName = "PerfTestMethod";
         private readonly TelemetryMetrics _mMethod = new TelemetryMetrics();
         private readonly Stopwatch _swMethod = new Stopwatch();
         private readonly SemaphoreSlim _methodSemaphore = new SemaphoreSlim(0);
