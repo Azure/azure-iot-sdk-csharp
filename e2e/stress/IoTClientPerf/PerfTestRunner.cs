@@ -158,12 +158,12 @@ namespace Microsoft.Azure.Devices.E2ETests
                         double avgBps = avgRps * _messageSizeBytes;
                         double stdDevBps = stdDevRps * _messageSizeBytes;
                         SystemMetrics.GetMetrics(out cpuLoad, out memoryBytes, out gcBytes, out tcpConn, out devConn);
-                        
+
                         Console.WriteLine($"[{_sw.Elapsed}] Loop Statistics:");
                         Console.WriteLine($"RPS       : {requestsPerSec,10:N2} R/s Avg: {avgRps,10:N2} R/s +/-StdDev: {stdDevRps,10:N2} R/s");
                         Console.WriteLine($"Throughput: {GetHumanReadableBytes(transferPerSec)}/s Avg: {GetHumanReadableBytes(avgBps)}/s +/-StdDev: {GetHumanReadableBytes(stdDevBps)}/s         ");
                         Console.WriteLine($"Connected : {devConn,10:N0}        ");
-                        Console.WriteLine($"CPU Load  : {(float)cpuLoad/100,10:N2}     Mem: {GetHumanReadableBytes(memoryBytes)}      GC_Mem: {GetHumanReadableBytes(gcBytes)} TCP: {tcpConn,4:N0}");
+                        Console.WriteLine($"CPU Load  : {(float)cpuLoad / 100,10:N2}     Mem: {GetHumanReadableBytes(memoryBytes)}      GC_Mem: {GetHumanReadableBytes(gcBytes)} TCP: {tcpConn,4:N0}");
                         Console.WriteLine("----");
                         Console.WriteLine($"TOTALs: ");
                         Console.WriteLine($"Requests  : Completed: {statTotalCompleted,10:N0} Faulted: {statTotalFaulted,10:N0} Cancelled: {statTotalCancelled,10:N0}");
@@ -174,49 +174,107 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 Console.WriteLine();
                 int ret = 0;
-                float? expectedDeviceConn = (float)_n * Configuration.Stress.ConnectedDevicesPercentage / 100;
-                float? expectedTcpConn = (float)_poolSize * Configuration.Stress.TcpConnectionsPercentage / 100;
+                ret = CheckKPI(statTotalCompleted, statTotalFaulted, statTotalCancelled, gcBytes, tcpConn, devConn, avgRps, stdDevRps, ret);
 
-                if (expectedDeviceConn.HasValue && (devConn < expectedDeviceConn))
-                {
-                    Console.Error.WriteLine($"FAILED KPI: Connected Devices. Expected: >{expectedDeviceConn}; Actual: {devConn}.");
-                    ret = 1;
-                }
-                
-                if (expectedTcpConn.HasValue && (tcpConn != expectedTcpConn))     // Ensure all are connected and no connection leaks exist.
-                {
-                    Console.Error.WriteLine($"FAILED KPI: TCP Connections. Expected: ={expectedTcpConn}; Actual: {tcpConn}.");
-                    ret = 2;
-                }
-                
-                if (Configuration.Stress.RequestsPerSecondMinAvg.HasValue && (avgRps < Configuration.Stress.RequestsPerSecondMinAvg))
-                {
-                    Console.Error.WriteLine($"FAILED KPI: RPS Average. Expected: >{Configuration.Stress.RequestsPerSecondMinAvg}; Actual: {avgRps}.");
-                    ret = 3;
-                }
-                
-                if (Configuration.Stress.RequestsPerSecondMaxStd.HasValue && (stdDevRps > Configuration.Stress.RequestsPerSecondMaxStd))
-                {
-                    Console.Error.WriteLine($"FAILED KPI: RPS StdDev. Expected: <{Configuration.Stress.RequestsPerSecondMaxStd}; Actual: {stdDevRps}.");
-                    ret = 4;
-                }
-
-                if (Configuration.Stress.GCMemoryBytes.HasValue && (gcBytes > Configuration.Stress.GCMemoryBytes))
-                {
-                    Console.Error.WriteLine($"FAILED KPI: GC Memory. Expected: <{GetHumanReadableBytes(Configuration.Stress.GCMemoryBytes.Value)}; Actual: {GetHumanReadableBytes(gcBytes)}.");
-                    ret = 5;
-                }
-
-                float successRate = ((float)statTotalCompleted * 100)/ (statTotalCompleted + statTotalFaulted + statTotalCancelled);
-                if (Configuration.Stress.SuccessRate.HasValue && Configuration.Stress.SuccessRate < successRate)
-                {
-                    Console.Error.WriteLine($"FAILED KPI: Success Rate. Expected: >{Configuration.Stress.SuccessRate}; Actual: {successRate}.");
-                    ret = 6;
-                }
-                
                 if (ret != 0) Console.WriteLine("^^^^^^^^^^^^^^^^^^^\n");
                 return ret;
             }
+        }
+
+        private int CheckKPI(ulong statTotalCompleted, ulong statTotalFaulted, ulong statTotalCancelled, long gcBytes, long tcpConn, long devConn, double avgRps, double stdDevRps, int ret)
+        {
+            float? expectedDeviceConn = (float)_n * Configuration.Stress.ConnectedDevicesPercentage / 100;
+            float? expectedTcpConn = (float)_poolSize * Configuration.Stress.TcpConnectionsPercentage / 100;
+
+            if (expectedDeviceConn.HasValue)
+            {
+                string status = $"Connected Devices. Expected: >{expectedDeviceConn}; Actual: {devConn}.";
+                if (devConn < expectedDeviceConn)
+                {
+                    Console.Error.WriteLine($"FAILED KPI: {status}");
+                    ret = 1;
+                }
+                else
+                {
+                    Console.WriteLine($"PASSED KPI: {status}");
+                }
+            }
+
+            if (expectedTcpConn.HasValue)
+            {
+                string status = $"TCP Connections. Expected: ={expectedTcpConn}; Actual: {tcpConn}.";
+
+                if (tcpConn != expectedTcpConn)     // Ensure all are connected and no connection leaks exist.
+                {
+                    Console.Error.WriteLine($"FAILED KPI: {status}");
+                    ret = 2;
+                }
+                else
+                {
+                    Console.WriteLine($"PASSED KPI: {status}");
+                }
+            }
+
+            if (Configuration.Stress.RequestsPerSecondMinAvg.HasValue)
+            {
+                string status = $"RPS Average.Expected: >{ Configuration.Stress.RequestsPerSecondMinAvg}; Actual: {avgRps}.";
+                
+                if (avgRps < Configuration.Stress.RequestsPerSecondMinAvg)
+                {
+                    Console.Error.WriteLine($"FAILED KPI: {status}");
+                    ret = 3;
+                }
+                else
+                {
+                    Console.WriteLine($"PASSED KPI: {status}");
+                }
+            }
+
+            if (Configuration.Stress.RequestsPerSecondMaxStd.HasValue)
+            {
+                string status = $"RPS StdDev.Expected: <{ Configuration.Stress.RequestsPerSecondMaxStd}; Actual: { stdDevRps}.";
+                if (stdDevRps > Configuration.Stress.RequestsPerSecondMaxStd)
+                {
+                    Console.Error.WriteLine($"FAILED KPI: {status}");
+                    ret = 4;
+                }
+                else
+                {
+                    Console.WriteLine($"PASSED KPI: {status}");
+                }
+            }
+
+            if (Configuration.Stress.GCMemoryBytes.HasValue)
+            {
+                string status = $"GC Memory.Expected: <{ GetHumanReadableBytes(Configuration.Stress.GCMemoryBytes.Value)}; Actual: { GetHumanReadableBytes(gcBytes)}.";
+                if (gcBytes > Configuration.Stress.GCMemoryBytes)
+                {
+                    Console.Error.WriteLine($"FAILED KPI: {status}");
+                    ret = 5;
+                }
+                else
+                {
+                    Console.WriteLine($"PASSED KPI: {status}");
+                }
+            }
+            
+            if (Configuration.Stress.SuccessRate.HasValue)
+            {
+                float successRate = ((float)statTotalCompleted * 100) / (statTotalCompleted + statTotalFaulted + statTotalCancelled);
+                string status = "Success Rate.Expected: >{Configuration.Stress.SuccessRate}; Actual: {successRate}.";
+
+                if (Configuration.Stress.SuccessRate < successRate)
+                {
+                    Console.Error.WriteLine($"FAILED KPI: {status}");
+                    ret = 6;
+                }
+                else
+                {
+                    Console.WriteLine($"PASSED KPI: {status}");
+                }
+            }
+
+            return ret;
         }
 
         private async Task SetupAllAsync()
