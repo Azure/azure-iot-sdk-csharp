@@ -66,6 +66,18 @@ if ($type -eq $null)
         Write-Error "ServiceClient Methods failed with exit code: $($proc_c2d.ExitCode)"
         $err = $proc_c2d.ExitCode
     }
+    
+    if ($err -ne 0)
+    {
+        foreach ($file in (ls *.err))
+        {
+            Write-Host -ForegroundColor Red "ERRORS $file"
+            cat $file
+            Write-Host
+        }
+    }
+
+    rm -ErrorAction Continue *.err
 
     exit $err #One of the methods or c2d error codes
 }
@@ -116,8 +128,6 @@ if ($proc_sevice.ExitCode -ne 0)
     Write-Error "ERRORS:"
     cat "$out.err"
 }
-
-rm -ErrorAction Continue "$out.err"
 
 if (-not $nowait) 
 {

@@ -71,8 +71,12 @@ if ($proc_device.ExitCode -ne 0)
     Write-Error "DeviceClient failed with exit code: $($proc_device.ExitCode)"
     $err = $proc_device.ExitCode 
 
-    Write-Error "ERRORS:"
-    cat "$out.err"
+    foreach ($file in (ls *.err))
+    {
+        Write-Host -ForegroundColor Red "ERRORS $file"
+        cat $file
+        Write-Host
+    }
 }
 
 if ($fault -and ($proc_fault.ExitCode -ne 0))
