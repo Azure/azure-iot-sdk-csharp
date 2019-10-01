@@ -143,7 +143,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 if (this.IsInState(StateFlags.Closed))
                 {
-                    return;
+                    throw new IotHubCommunicationException("MQTT is disconnected.");
                 }
 
                 var message = data as Message;
@@ -534,11 +534,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             if (Logging.IsEnabled) Logging.Enter(this, context.Name, packet.PacketType, nameof(ProcessMessage));
 
-            if (this.IsInState(StateFlags.Closed))
-            {
-                return;
-            }
-
             try
             {
                 switch (packet.PacketType)
@@ -622,7 +617,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (this.IsInState(StateFlags.Closed))
             {
-                return;
+                throw new IotHubCommunicationException("MQTT is disconnected.");
             }
 
             switch (packet.QualityOfService)
