@@ -112,7 +112,9 @@ try {
         #RunApp iot-hub\Samples\module\MessageSample "IoTHub\Module\MessageSample"
         #RunApp iot-hub\Samples\module\MethodSample "IoTHub\Module\MethodSample"
 
-        RunApp iot-hub\Samples\service\CleanUpDevicesSample "IoTHub\Service\CleanUpDevicesSample"
+        # TODO: Modify registry manager device deletion to delete devices in bulk
+        #RunApp iot-hub\Samples\service\CleanUpDevicesSample "IoTHub\Service\CleanUpDevicesSample"
+
         RunApp iot-hub\Samples\service\AutomaticDeviceManagementSample "IoTHub\Service\AutomaticDeviceManagementSample"
         RunApp iot-hub\Samples\service\JobsSample "IoTHub\Service\JobsSample"
         RunApp iot-hub\Samples\service\RegistryManagerSample "IoTHub\Service\RegistryManagerSample"
