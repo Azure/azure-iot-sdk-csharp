@@ -65,7 +65,7 @@ namespace Azure.Iot.DigitalTwin.Device
         /// <returns>Task representing the asynchronous operation.</returns>
         public async Task RegisterInterfacesAsync(string capabilityModelId, IEnumerable<DigitalTwinInterfaceClient> digitalTwinInterfaces, CancellationToken cancellationToken = default)
         {
-            Logging.Instance.LogVerbose("Enter.");
+            Logging.Instance.LogVerbose("Starting interface registration.");
             GuardHelper.ThrowIfNull(digitalTwinInterfaces, nameof(digitalTwinInterfaces));
             GuardHelper.ThrowIfNullOrWhiteSpace(capabilityModelId, nameof(capabilityModelId));
 
@@ -113,7 +113,7 @@ namespace Azure.Iot.DigitalTwin.Device
                 dtInterface.Initialize(this);
             }
 
-            Logging.Instance.LogVerbose("Exit.");
+            Logging.Instance.LogVerbose("Interface registration completed successfully.");
         }
 
         /// <summary>
@@ -274,18 +274,18 @@ namespace Azure.Iot.DigitalTwin.Device
                         }
                         else
                         {
-                            Logging.Instance.LogInformational("Interface {$interfaceInstanceName} is not registered.");
+                            Logging.Instance.LogWarning("Interface {$interfaceInstanceName} is not registered. Received property updates will not be processed.");
                         }
                     }
                     else
                     {
-                        Logging.Instance.LogInformational("Non-Interface {$interfaceWithPrefix) received will not be processed.");
+                        Logging.Instance.LogWarning("Non-Interface {$interfaceWithPrefix) received will not be processed.");
                     }
                 }
             }
             else
             {
-                Logging.Instance.LogInformational("Received property updates without version.");
+                Logging.Instance.LogWarning("Received property updates without version will not be processed.");
             }
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
@@ -295,7 +295,6 @@ namespace Azure.Iot.DigitalTwin.Device
         {
             /* parse the genericMethodRequest.InstanceName to determine which interface to forward
                with the use interface reference to trigger the generic callback for the interface */
-            Logging.Instance.LogVerbose("Enter.");
 
             (string interfaceInstanceName, string methodName) = ParseMethodRequestName(methodRequest.Name);
 
@@ -303,7 +302,7 @@ namespace Azure.Iot.DigitalTwin.Device
                 || this.interfaces.ContainsKey(interfaceInstanceName)
                 || string.IsNullOrEmpty(methodName))
             {
-                Logging.Instance.LogInformational("InterfaceName or command name not valid.");
+                Logging.Instance.LogWarning("InterfaceName or command name not valid.");
                 return new MethodResponse(404);
             }
 
@@ -355,18 +354,18 @@ namespace Azure.Iot.DigitalTwin.Device
                         }
                         else
                         {
-                            Logging.Instance.LogInformational("Interface {$interfaceInstanceName} is not registered.");
+                            Logging.Instance.LogWarning("Interface {$interfaceInstanceName} is not registered. Received property updates will not be processed.");
                         }
                     }
                     else
                     {
-                        Logging.Instance.LogInformational("Non-Interface {$interfaceWithPrefix) received will not be processed.");
+                        Logging.Instance.LogWarning("Non-Interface {$interfaceWithPrefix) received will not be processed.");
                     }
                 }
             }
             else
             {
-                Logging.Instance.LogInformational("Received property updates without version.");
+                Logging.Instance.LogWarning("Received property updates without version will not be processed.");
             }
         }
     }
