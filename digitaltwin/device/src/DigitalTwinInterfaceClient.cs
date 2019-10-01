@@ -115,9 +115,9 @@ namespace Azure.Iot.DigitalTwin.Device
         /// interface to proceed with initialization. Interfaces should implement it.
         /// </summary>
         /// <param name="propertyUpdate">incoming property updated notification.</param>
-        protected virtual void OnRegistrationCompleted()
+        protected internal virtual void OnRegistrationCompleted()
         {
-            Logging.Instance.LogVerbose("DigitalTwinInterfaceClient registered.");
+            Logging.Instance.LogInformational("DigitalTwinInterfaceClient registered.");
         }
 
         /// <summary>
