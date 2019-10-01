@@ -59,24 +59,34 @@ if ($type -eq $null)
     {
         Write-Host -ForegroundColor Red "ERROR: ServiceClient Methods failed with exit code: $($proc_method.ExitCode)"
         $err = $proc_method.ExitCode 
+
+        foreach ($file in (ls *.err))
+        {
+            if ($file.Name -match "methods")
+            {
+                Write-Host -ForegroundColor Red "ERRORS $file"
+                cat $file
+                Write-Host
+            }
+        }
     }
 
     if ($proc_c2d.ExitCode -ne 0)
     {
-        Write-Host -ForegroundColor Red "ERROR: ServiceClient Methods failed with exit code: $($proc_c2d.ExitCode)"
+        Write-Host -ForegroundColor Red "ERROR: ServiceClient C2D failed with exit code: $($proc_c2d.ExitCode)"
         $err = $proc_c2d.ExitCode
-    }
-    
-    if ($err -ne 0)
-    {
+
         foreach ($file in (ls *.err))
         {
-            Write-Host -ForegroundColor Red "ERRORS $file"
-            cat $file
-            Write-Host
+            if ($file.Name -match "c2d")
+            {
+                Write-Host -ForegroundColor Red "ERRORS $file"
+                cat $file
+                Write-Host
+            }
         }
     }
-
+    
     rm -ErrorAction Continue *.err
 
     exit $err #One of the methods or c2d error codes
