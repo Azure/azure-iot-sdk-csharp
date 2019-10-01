@@ -48,7 +48,7 @@ namespace Azure.IoT.DigitalTwin.Device
         /// <summary>
         /// No ops for SdkInformationInterface.
         /// </summary>
-        protected override void OnRegistrationCompleted()
+        protected internal override void OnRegistrationCompleted()
         {
         }
     }
