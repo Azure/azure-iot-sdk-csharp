@@ -188,7 +188,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             if (expectedDeviceConn.HasValue)
             {
-                string status = $"Connected Devices. Expected: >{expectedDeviceConn}; Actual: {devConn}.";
+                string status = $"Connected Devices. Expected: >={expectedDeviceConn}; Actual: {devConn}.";
                 if (devConn < expectedDeviceConn)
                 {
                     Console.Error.WriteLine($"FAILED KPI: {status}");
@@ -217,7 +217,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             if (Configuration.Stress.RequestsPerSecondMinAvg.HasValue)
             {
-                string status = $"RPS Average.Expected: >{ Configuration.Stress.RequestsPerSecondMinAvg}; Actual: {avgRps}.";
+                string status = $"RPS Average.Expected: >={Configuration.Stress.RequestsPerSecondMinAvg}; Actual: {avgRps}.";
                 
                 if (avgRps < Configuration.Stress.RequestsPerSecondMinAvg)
                 {
@@ -232,7 +232,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             if (Configuration.Stress.RequestsPerSecondMaxStd.HasValue)
             {
-                string status = $"RPS StdDev.Expected: <{ Configuration.Stress.RequestsPerSecondMaxStd}; Actual: { stdDevRps}.";
+                string status = $"RPS StdDev.Expected: <={ Configuration.Stress.RequestsPerSecondMaxStd}; Actual: { stdDevRps}.";
                 if (stdDevRps > Configuration.Stress.RequestsPerSecondMaxStd)
                 {
                     Console.Error.WriteLine($"FAILED KPI: {status}");
@@ -246,7 +246,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             if (Configuration.Stress.GCMemoryBytes.HasValue)
             {
-                string status = $"GC Memory.Expected: <{ GetHumanReadableBytes(Configuration.Stress.GCMemoryBytes.Value)}; Actual: { GetHumanReadableBytes(gcBytes)}.";
+                string status = $"GC Memory.Expected: <={GetHumanReadableBytes(Configuration.Stress.GCMemoryBytes.Value)}; Actual: {GetHumanReadableBytes(gcBytes)}.";
                 if (gcBytes > Configuration.Stress.GCMemoryBytes)
                 {
                     Console.Error.WriteLine($"FAILED KPI: {status}");
@@ -261,9 +261,9 @@ namespace Microsoft.Azure.Devices.E2ETests
             if (Configuration.Stress.SuccessRate.HasValue)
             {
                 float successRate = ((float)statTotalCompleted * 100) / (statTotalCompleted + statTotalFaulted + statTotalCancelled);
-                string status = "Success Rate.Expected: >{Configuration.Stress.SuccessRate}; Actual: {successRate}.";
+                string status = $"Success Rate.Expected: >={Configuration.Stress.SuccessRate}; Actual: {successRate}.";
 
-                if (Configuration.Stress.SuccessRate < successRate)
+                if (Configuration.Stress.SuccessRate > successRate)
                 {
                     Console.Error.WriteLine($"FAILED KPI: {status}");
                     ret = 6;
