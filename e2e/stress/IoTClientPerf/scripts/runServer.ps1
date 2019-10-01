@@ -62,7 +62,7 @@ if ($type -eq $null)
 
         foreach ($file in (ls *.err))
         {
-            if ($file.Name -match "methods")
+            if ($file.Name -match "method")
             {
                 Write-Host -ForegroundColor Red "ERRORS $file"
                 cat $file
