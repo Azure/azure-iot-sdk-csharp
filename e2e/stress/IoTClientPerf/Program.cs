@@ -248,12 +248,15 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 ret = runner.RunTestAsync().GetAwaiter().GetResult();
             }
-            finally
+            catch (Exception ex)
             {
-                Console.Write("Writing output . . . ");
-                resultWriter.FlushAsync().GetAwaiter().GetResult();
-                Console.WriteLine("OK");
+                Console.WriteLine(ex);
+                ret = -1;
             }
+
+            Console.Write("Writing output . . . ");
+            resultWriter.FlushAsync().GetAwaiter().GetResult();
+            Console.WriteLine("OK");
 
             if (ret == 0)
             {
