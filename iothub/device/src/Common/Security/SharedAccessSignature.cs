@@ -31,7 +31,7 @@ namespace Microsoft.Azure.Devices.Client
 
             if (this.IsExpired())
             {
-                throw new UnauthorizedAccessException("The specified SAS token is expired");
+                throw new UnauthorizedAccessException($"The specified SAS token is expired on {this.ExpiresOn}.");
             }
 
             this.iotHubName = iotHubName;
@@ -150,7 +150,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (this.IsExpired())
             {
-                throw new UnauthorizedAccessException("The specified SAS token is expired.");
+                throw new UnauthorizedAccessException($"The specified SAS token is expired on {this.ExpiresOn}.");
             }
 
             if (sasAuthorizationRule.PrimaryKey != null)
