@@ -299,7 +299,7 @@ namespace Azure.Iot.DigitalTwin.Device
             (string interfaceInstanceName, string methodName) = ParseMethodRequestName(methodRequest.Name);
 
             if (string.IsNullOrEmpty(interfaceInstanceName)
-                || this.interfaces.ContainsKey(interfaceInstanceName)
+                || !this.interfaces.ContainsKey(interfaceInstanceName)
                 || string.IsNullOrEmpty(methodName))
             {
                 Logging.Instance.LogWarning("InterfaceName or command name not valid.");

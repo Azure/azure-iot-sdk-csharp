@@ -120,7 +120,7 @@ namespace Azure.IoT.DigitalTwin.Device.Test
 
             client.OnRegistrationCompleted();
 
-            logger.Received().LogVerbose("DigitalTwinInterfaceClient registered.", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>());
+            logger.Received().LogInformational("DigitalTwinInterfaceClient registered.", Arg.Any<string>(), Arg.Any<string>(), Arg.Any<int>());
         }
 
         [Fact]
