@@ -200,9 +200,10 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                         s_log.WriteLine($"{nameof(ServiceSendMethodAndVerifyResponse)}: Method status: {response.Status}.");
 
-                        Assert.AreEqual(200, response.Status);
-                        Assert.AreEqual(respJson, response.GetPayloadAsJson());
-                        
+                        Assert.AreEqual(200, response.Status, $"The expected respose status should be 200 but was {response.Status}");
+                        string payload = response.GetPayloadAsJson();
+                        Assert.AreEqual(respJson, payload, $"The expected respose payload should be {respJson} but was {payload}");
+
                         await serviceClient.CloseAsync().ConfigureAwait(false);
                         done = true;
                     }

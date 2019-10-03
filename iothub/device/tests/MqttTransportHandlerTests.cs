@@ -564,12 +564,13 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
             transport.OnConnected();
             await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
+            Task task = transport.WaitForTransportClosedAsync();
 
             // act
             transport.OnError(new ApplicationException("Testing"));
 
             // assert
-            await transport.WaitForTransportClosedAsync().ConfigureAwait(false);
+            await task.ConfigureAwait(false);
         }
 
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_28_05: If OnError is triggered after ReceiveAsync is called, WaitForTransportClosedAsync shall be invoked.
@@ -583,12 +584,13 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             transport.OnConnected();
             await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
             await transport.ReceiveAsync(new TimeSpan(0, 0, 0, 0, 5), CancellationToken.None).ConfigureAwait(false);
+            Task task = transport.WaitForTransportClosedAsync();
 
             // act
             transport.OnError(new ApplicationException("Testing"));
 
             // assert
-            await transport.WaitForTransportClosedAsync().ConfigureAwait(false);
+            await task.ConfigureAwait(false);
         }
 
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_28_06: If OnError is triggered without any prior operation, WaitForTransportClosedAsync shall not be invoked.

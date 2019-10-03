@@ -37,6 +37,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                 }
                 return Task.CompletedTask;
             });
+            innerHandlerMock.WaitForTransportClosedAsync().Returns(Task.Delay(TimeSpan.FromSeconds(10)));
 
             var sut = new RetryDelegatingHandler(contextMock, innerHandlerMock);
 

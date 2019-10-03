@@ -141,39 +141,25 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         public async Task Message_ThrottledConnectionRecovery_Amqp()
         {
-            try
-            {
-                await SendMessageRecovery(
+            await SendMessageRecovery(
                     TestDeviceType.Sasl,
                     Client.TransportType.Amqp_Tcp_Only,
                     FaultInjection.FaultType_Throttle,
                     FaultInjection.FaultCloseReason_Boom,
                     FaultInjection.DefaultDelayInSec,
                     FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
-            }
-            catch (IotHubException ex)
-            {
-                Assert.IsInstanceOfType(ex, typeof(IotHubThrottledException));
-            }
         }
         
         [TestMethod]
         public async Task Message_ThrottledConnectionRecovery_AmqpWs()
         {
-            try
-            {
-                await SendMessageRecovery(
+            await SendMessageRecovery(
                     TestDeviceType.Sasl,
                     Client.TransportType.Amqp_WebSocket_Only,
                     FaultInjection.FaultType_Throttle,
                     FaultInjection.FaultCloseReason_Boom,
                     FaultInjection.DefaultDelayInSec,
                     FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
-            }
-            catch (IotHubException ex)
-            {
-                Assert.IsInstanceOfType(ex, typeof(IotHubThrottledException));
-            }
         }
         
         [TestMethod]
@@ -333,7 +319,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FaultInjection.FaultType_Auth,
                 FaultInjection.FaultCloseReason_Boom,
                 FaultInjection.DefaultDelayInSec,
-                FaultInjection.DefaultDurationInSec).ConfigureAwait(false);
+                FaultInjection.DefaultDurationInSec,
+                FaultInjection.RecoveryTimeMilliseconds).ConfigureAwait(false);
         }
 
         [TestMethod]

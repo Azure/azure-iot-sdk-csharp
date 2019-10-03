@@ -25,14 +25,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         internal static readonly Accepted AcceptedOutcome = AmqpConstants.AcceptedOutcome;
 
         internal const string ResponseStatusName = "status";
-        internal const string TelemetrySenderLinkSuffix = "_TelemetrySenderLink";
-        internal const string TelemetryReceiveLinkSuffix = "_TelemetryReceiverLink";
-        internal const string EventsReceiverLinkSuffix = "_EventsReceiverLink";
-        internal const string MethodsSenderLinkSuffix = "_MethodsSenderLink";
-        internal const string MethodsReceiverLinkSuffix = "_MethodsReceiverLink";
+        internal const string TelemetrySenderLinkSuffix = "TelemetrySenderLink";
+        internal const string TelemetryReceiveLinkSuffix = "TelemetryReceiverLink";
+        internal const string EventsReceiverLinkSuffix = "EventsReceiverLink";
+        internal const string MethodsSenderLinkSuffix = "MethodsSenderLink";
+        internal const string MethodsReceiverLinkSuffix = "MethodsReceiverLink";
         internal const string MethodCorrelationIdPrefix = "methods:";
-        internal const string TwinSenderLinkSuffix = "_TwinSenderLink";
-        internal const string TwinReceiverLinkSuffix = "_TwinReceiverLink";
+        internal const string TwinSenderLinkSuffix = "TwinSenderLink";
+        internal const string TwinReceiverLinkSuffix = "TwinReceiverLink";
         internal const string TwinCorrelationIdPrefix = "twin:";
 
         internal const string MethodName = "IoThub-methodname";
