@@ -65,6 +65,7 @@ namespace Azure.Iot.DigitalTwin.Device
         /// <returns>Task representing the asynchronous operation.</returns>
         public async Task RegisterInterfacesAsync(string capabilityModelId, IEnumerable<DigitalTwinInterfaceClient> digitalTwinInterfaces, CancellationToken cancellationToken = default)
         {
+            Logging.Instance.LogVerbose("Starting interface registration.");
             GuardHelper.ThrowIfNull(digitalTwinInterfaces, nameof(digitalTwinInterfaces));
             GuardHelper.ThrowIfNullOrWhiteSpace(capabilityModelId, nameof(capabilityModelId));
 
@@ -97,16 +98,22 @@ namespace Azure.Iot.DigitalTwin.Device
                     cancellationToken).ConfigureAwait(false);
             }
 
+            Logging.Instance.LogVerbose("Register Interface message sent.");
+
             sdkInformationInterface.Initialize(this);
             await sdkInformationInterface.SendSdkInformationAsync().ConfigureAwait(false);
+            Logging.Instance.LogVerbose("SDK information sent.");
 
             await this.SetupDigitalTwinClientAsync().ConfigureAwait(false);
             await this.GetPropertiesAsync().ConfigureAwait(false);
+            Logging.Instance.LogVerbose("Get Properties completed.");
 
             foreach (var dtInterface in digitalTwinInterfaces)
             {
                 dtInterface.Initialize(this);
             }
+
+            Logging.Instance.LogVerbose("Interface registration completed successfully.");
         }
 
         /// <summary>
@@ -236,41 +243,49 @@ namespace Azure.Iot.DigitalTwin.Device
             Twin twin = await this.deviceClient.GetTwinAsync().ConfigureAwait(false);
             JObject desiredJObject = JObject.Parse(twin.Properties.Desired.ToJson());
             JObject reportedJObject = JObject.Parse(twin.Properties.Reported.ToJson());
-            int version = (int)desiredJObject["$version"];
+
             List<Task> tasks = new List<Task>();
-
-            foreach (var interfaceWithPrefix in desiredJObject)
+            if (desiredJObject.ContainsKey("$version"))
             {
-                if (string.CompareOrdinal(InterfacesPrefix, 0, interfaceWithPrefix.Key, 0, InterfacesPrefix.Length) == 0)
+                int version = (int)desiredJObject["$version"];
+
+                foreach (var interfaceWithPrefix in desiredJObject)
                 {
-                    string interfaceInstanceName = interfaceWithPrefix.Key.Substring(InterfacesPrefix.Length);
-
-                    if (this.interfaces.ContainsKey(interfaceInstanceName))
+                    if (string.CompareOrdinal(InterfacesPrefix, 0, interfaceWithPrefix.Key, 0, InterfacesPrefix.Length) == 0)
                     {
-                        foreach (var childToken in interfaceWithPrefix.Value.Children())
-                        {
-                            string propertyName = ((JProperty)childToken).Name;
-                            string desiredPropertyValue = JsonConvert.SerializeObject(((JProperty)childToken).Value["value"]);
-                            JToken reportedPropertyValueToken = reportedJObject[interfaceWithPrefix.Key]?[propertyName]?["value"];
-                            string reportedPropertyValue = reportedPropertyValueToken != null ? JsonConvert.SerializeObject(reportedPropertyValueToken) : null;
+                        string interfaceInstanceName = interfaceWithPrefix.Key.Substring(InterfacesPrefix.Length);
 
-                            tasks.Add(this.interfaces[interfaceInstanceName].OnPropertyUpdated(
-                                new DigitalTwinPropertyUpdate(
-                                propertyName,
-                                version,
-                                desiredPropertyValue,
-                                reportedPropertyValue)));
+                        if (this.interfaces.ContainsKey(interfaceInstanceName))
+                        {
+                            foreach (var childToken in interfaceWithPrefix.Value.Children())
+                            {
+                                string propertyName = ((JProperty)childToken).Name;
+                                string desiredPropertyValue = JsonConvert.SerializeObject(((JProperty)childToken).Value["value"]);
+                                JToken reportedPropertyValueToken = reportedJObject[interfaceWithPrefix.Key]?[propertyName]?["value"];
+                                string reportedPropertyValue = reportedPropertyValueToken != null ? JsonConvert.SerializeObject(reportedPropertyValueToken) : null;
+
+                                tasks.Add(this.interfaces[interfaceInstanceName].OnPropertyUpdated(
+                                    new DigitalTwinPropertyUpdate(
+                                    propertyName,
+                                    version,
+                                    desiredPropertyValue,
+                                    reportedPropertyValue)));
+                            }
+                        }
+                        else
+                        {
+                            Logging.Instance.LogWarning("Interface {$interfaceInstanceName} is not registered. Received property updates will not be processed.");
                         }
                     }
                     else
                     {
-                        // TODO: Log interfaceName not registered
+                        Logging.Instance.LogWarning("Non-Interface {$interfaceWithPrefix) received will not be processed.");
                     }
                 }
-                else
-                {
-                    // TODO: Log non-interface property
-                }
+            }
+            else
+            {
+                Logging.Instance.LogWarning("Received property updates without version will not be processed.");
             }
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
@@ -287,6 +302,7 @@ namespace Azure.Iot.DigitalTwin.Device
                 || this.interfaces.ContainsKey(interfaceInstanceName)
                 || string.IsNullOrEmpty(methodName))
             {
+                Logging.Instance.LogWarning("InterfaceName or command name not valid.");
                 return new MethodResponse(404);
             }
 
@@ -300,38 +316,56 @@ namespace Azure.Iot.DigitalTwin.Device
 
             if (!string.IsNullOrEmpty(response.Payload))
             {
+                Logging.Instance.LogVerbose("Exit with {$response.Status} and payload.");
                 return new MethodResponse(Encoding.UTF8.GetBytes(response.Payload), response.Status);
             }
 
+            Logging.Instance.LogVerbose("Exit with {$response.Status}.");
             return new MethodResponse(response.Status);
         }
 
         private async Task GenericPropertyUpdateHandlerAsync(TwinCollection desiredProperties, object userContext)
         {
             JObject jsonObj = JObject.Parse(desiredProperties.ToJson());
-            int version = (int)jsonObj["$version"];
 
-            foreach (var property in jsonObj)
+            if (jsonObj.ContainsKey("$version"))
             {
-                if (string.CompareOrdinal(InterfacesPrefix, 0, property.Key, 0, InterfacesPrefix.Length) == 0)
-                {
-                    string interfaceInstanceName = property.Key.Substring(InterfacesPrefix.Length);
+                int version = (int)jsonObj["$version"];
 
-                    if (this.interfaces.ContainsKey(interfaceInstanceName))
+                foreach (var property in jsonObj)
+                {
+                    if (string.CompareOrdinal(InterfacesPrefix, 0, property.Key, 0, InterfacesPrefix.Length) == 0)
                     {
-                        foreach (var childToken in property.Value.Children())
+                        string interfaceInstanceName = property.Key.Substring(InterfacesPrefix.Length);
+
+                        if (this.interfaces.ContainsKey(interfaceInstanceName))
                         {
-                            string propertyName = ((JProperty)childToken).Name;
-                            string propertyValue = JsonConvert.SerializeObject(((JProperty)childToken).Value["value"]);
-                            await this.interfaces[interfaceInstanceName].OnPropertyUpdated(
-                                new DigitalTwinPropertyUpdate(
-                                propertyName,
-                                version,
-                                propertyValue,
-                                null)).ConfigureAwait(false);
+                            foreach (var childToken in property.Value.Children())
+                            {
+                                string propertyName = ((JProperty)childToken).Name;
+                                string propertyValue = JsonConvert.SerializeObject(((JProperty)childToken).Value["value"]);
+                                await this.interfaces[interfaceInstanceName].OnPropertyUpdated(
+                                    new DigitalTwinPropertyUpdate(
+                                    propertyName,
+                                    version,
+                                    propertyValue,
+                                    null)).ConfigureAwait(false);
+                            }
+                        }
+                        else
+                        {
+                            Logging.Instance.LogWarning("Interface {$interfaceInstanceName} is not registered. Received property updates will not be processed.");
                         }
                     }
+                    else
+                    {
+                        Logging.Instance.LogWarning("Non-Interface {$interfaceWithPrefix) received will not be processed.");
+                    }
                 }
+            }
+            else
+            {
+                Logging.Instance.LogWarning("Received property updates without version will not be processed.");
             }
         }
     }
