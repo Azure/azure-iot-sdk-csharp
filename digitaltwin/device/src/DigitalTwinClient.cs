@@ -105,13 +105,15 @@ namespace Azure.Iot.DigitalTwin.Device
             Logging.Instance.LogVerbose("SDK information sent.");
 
             await this.SetupDigitalTwinClientAsync().ConfigureAwait(false);
-            await this.GetPropertiesAsync().ConfigureAwait(false);
-            Logging.Instance.LogVerbose("Get Properties completed.");
 
             foreach (var dtInterface in digitalTwinInterfaces)
             {
                 dtInterface.Initialize(this);
             }
+
+            // Get properties should only be triggered after interfaces are initialized.
+            await this.GetPropertiesAsync().ConfigureAwait(false);
+            Logging.Instance.LogVerbose("Get Properties completed.");
 
             Logging.Instance.LogVerbose("Interface registration completed successfully.");
         }
