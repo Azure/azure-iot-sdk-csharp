@@ -17,6 +17,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{62D7B337-1
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Azure.IoT.DigitalTwin.Device.Test", "device\test\Azure.IoT.DigitalTwin.Device.Test\Azure.IoT.DigitalTwin.Device.Test.csproj", "{DFDA3A71-869D-46C6-AD2B-A6E322447937}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "service", "service", "{A3ABCAA4-38AA-4EDF-B666-396889E60F7E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Azure.IoT.DigitalTwin.Service", "service\src\Azure.IoT.DigitalTwin.Service.csproj", "{C2AA7517-37E5-4E8D-994A-9EDD1EBF2D1E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +43,10 @@ Global
 		{DFDA3A71-869D-46C6-AD2B-A6E322447937}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DFDA3A71-869D-46C6-AD2B-A6E322447937}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DFDA3A71-869D-46C6-AD2B-A6E322447937}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C2AA7517-37E5-4E8D-994A-9EDD1EBF2D1E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C2AA7517-37E5-4E8D-994A-9EDD1EBF2D1E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C2AA7517-37E5-4E8D-994A-9EDD1EBF2D1E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C2AA7517-37E5-4E8D-994A-9EDD1EBF2D1E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -48,6 +56,7 @@ Global
 		{BF7F2466-CB8B-4330-9B6E-BC55D6430A93} = {1B6B3D00-32D1-49B5-8BFF-8A237A4FA511}
 		{99967F0E-3778-445B-9C7F-6BDA35435CEA} = {1B6B3D00-32D1-49B5-8BFF-8A237A4FA511}
 		{DFDA3A71-869D-46C6-AD2B-A6E322447937} = {62D7B337-13D4-4745-9ECC-DE4FE06B7693}
+		{C2AA7517-37E5-4E8D-994A-9EDD1EBF2D1E} = {A3ABCAA4-38AA-4EDF-B666-396889E60F7E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A01BB316-82A6-4AA9-BDE1-12936DF4DFCB}
