@@ -83,6 +83,9 @@ If you would like to develop an application using the Azure IoT SDK for C# (usin
 Contains the IoT Hub Device SDK source, unit-tests and samples. 
 This produces the `Microsoft.Azure.Devices.Client` NuGet package.
 
+```diff
+- .NET MicroFramework will not be supported in future versions of the SDK.
+```
 The src.NetMF folder contains the .NET Microframework port.
 
 ### /iothub/service

@@ -47,7 +47,11 @@ Components:
 Install the Microsoft IoT Windows Core Project Templates for Visual Studio 2017 from the Extension Marketplace: 
 	https://marketplace.visualstudio.com/items?itemName=MicrosoftIoT.WindowsIoTCoreProjectTemplatesforVS15
 
-### Installing .NET Micro Framework
+### [Deprecated] Installing .NET Micro Framework
+
+```diff
+- .NET MicroFramework will not be supported in future versions of the SDK.
+```
 
 #### 1. Download and Install Visual Studio Community 2015 Update 3 (approx. size: 9GB)
 
