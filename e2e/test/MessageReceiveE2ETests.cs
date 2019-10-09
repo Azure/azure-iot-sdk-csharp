@@ -114,7 +114,14 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Client.Message receivedMessage = null;
 
                 _log.WriteLine($"Receiving messages for device {deviceId}.");
-                receivedMessage = await dc.ReceiveAsync(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
+                if (transport == Client.TransportType.Http1)
+                {
+                    receivedMessage = await dc.ReceiveAsync().ConfigureAwait(false);
+                }
+                else
+                {
+                    receivedMessage = await dc.ReceiveAsync(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
+                }
 
                 if (receivedMessage != null)
                 {
