@@ -146,13 +146,12 @@ namespace Microsoft.Azure.Devices.Client.Test
         public async Task DeviceClient_OperationTimeoutInMilliseconds_Equals_0_Receive()
         {
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(fakeConnectionString);
-            deviceClient.OperationTimeoutInMilliseconds = 0;
 
             var innerHandler = Substitute.For<IDelegatingHandler>();
             innerHandler.ReceiveAsync(Arg.Any<TimeoutHelper>()).Returns(new Task<Message>(() => new Message()));
             deviceClient.InnerHandler = innerHandler;
 
-            Task<Message> t = deviceClient.ReceiveAsync();
+            Task<Message> t = deviceClient.ReceiveAsync(TimeSpan.Zero);
 
             await innerHandler.Received().ReceiveAsync(Arg.Any<TimeoutHelper>()).ConfigureAwait(false);
         }
