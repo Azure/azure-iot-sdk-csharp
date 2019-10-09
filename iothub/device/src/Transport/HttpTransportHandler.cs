@@ -301,7 +301,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task<Message> ReceiveAsync(TimeoutHelper timeoutHelper)
         {
-            return await ReceiveAsync(new CancellationTokenSource(timeoutHelper.RemainingTime()).Token).ConfigureAwait(false);
+            throw new NotImplementedException("Http Protocol does not support receive timeout");
         }
 
         public override Task CompleteAsync(string lockToken, CancellationToken cancellationToken)

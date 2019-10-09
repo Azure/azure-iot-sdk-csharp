@@ -242,6 +242,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public override async Task<Message> ReceiveAsync(TimeoutHelper timeoutHelper)
         {
+            if (Logging.IsEnabled) Logging.Enter(this, timeoutHelper, timeoutHelper.RemainingTime(), $"{nameof(ReceiveAsync)}");
+
             Message message = null;
 
             this.EnsureValidState();
@@ -269,6 +271,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 }
             }
 
+            if (Logging.IsEnabled) Logging.Exit(this, timeoutHelper, timeoutHelper.RemainingTime(), $"{nameof(ReceiveAsync)}");
+
             return message;
         }
 
@@ -276,11 +280,22 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             bool hasMessage = false;
             cancellationToken.ThrowIfCancellationRequested();
+            var disconnectToken = this.disconnectAwaitersCancellationSource.Token;
             this.EnsureValidState();
 
-            using (CancellationTokenSource linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, this.disconnectAwaitersCancellationSource.Token))
+            using (CancellationTokenSource linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, disconnectToken))
             {
-                hasMessage = await this.receivingSemaphore.WaitAsync(timeout, linkedCts.Token).ConfigureAwait(true);
+                try
+                {
+                    hasMessage = await this.receivingSemaphore.WaitAsync(timeout, linkedCts.Token).ConfigureAwait(true);
+                }
+                catch (OperationCanceledException)
+                {
+                    if (disconnectToken.IsCancellationRequested)
+                    {
+                        throw new IotHubCommunicationException("MQTT is disconnected");
+                    }
+                }
             }
 
             return hasMessage;
