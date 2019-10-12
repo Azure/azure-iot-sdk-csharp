@@ -78,16 +78,16 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return InnerHandler.WaitForTransportClosedAsync();
         }
 
-        public virtual async Task<Message> ReceiveAsync(CancellationToken cancellationToken)
+        public virtual Task<Message> ReceiveAsync(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return await InnerHandler.ReceiveAsync(cancellationToken).ConfigureAwait(false);
+            return InnerHandler.ReceiveAsync(cancellationToken);
         }
 
-        public virtual async Task<Message> ReceiveAsync(TimeoutHelper timeoutHelper)
+        public virtual Task<Message> ReceiveAsync(TimeoutHelper timeoutHelper)
         {
             ThrowIfDisposed();
-            return await InnerHandler.ReceiveAsync(timeoutHelper).ConfigureAwait(false);
+            return InnerHandler.ReceiveAsync(timeoutHelper);
         }
 
         public virtual Task CompleteAsync(string lockToken, CancellationToken cancellationToken)

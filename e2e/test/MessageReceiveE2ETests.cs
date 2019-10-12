@@ -116,6 +116,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 _log.WriteLine($"Receiving messages for device {deviceId}.");
                 if (transport == Client.TransportType.Http1)
                 {
+                    // timeout on HTTP is not supported
                     receivedMessage = await dc.ReceiveAsync().ConfigureAwait(false);
                 }
                 else

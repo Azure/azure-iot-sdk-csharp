@@ -351,10 +351,10 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <returns>The receive message or null if there was no message until the default timeout</returns>
-        public async Task<Message> ReceiveAsync(CancellationToken cancellationToken)
+        public Task<Message> ReceiveAsync(CancellationToken cancellationToken)
         {
             // Codes_SRS_DEVICECLIENT_28_011: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable(authentication, quota exceed) error occurs.]
-            return await InnerHandler.ReceiveAsync(cancellationToken);
+            return InnerHandler.ReceiveAsync(cancellationToken);
         }
 
         /// <summary>

@@ -284,7 +284,7 @@ namespace Microsoft.Azure.Devices.Client
         /// </summary>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>  
-        /// <returns>The receive message</returns>
+        /// <returns>The receive message or null if there was no message until CancellationToken Expired</returns>
         public Task<Message> ReceiveAsync(CancellationToken cancellationToken) => this.internalClient.ReceiveAsync(cancellationToken);
 
         /// <summary>

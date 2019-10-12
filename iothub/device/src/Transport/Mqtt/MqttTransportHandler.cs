@@ -221,21 +221,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
 
             bool hasMessage = await this.ReceiveMessageArrivalAsync(cancellationToken).ConfigureAwait(true);
-
-            if (hasMessage)
-            {
-                lock (this.syncRoot)
-                {
-                    this.messageQueue.TryDequeue(out message);
-                    message.LockToken = message.LockToken;
-                    if (this.qos == QualityOfService.AtLeastOnce)
-                    {
-                        this.completionQueue.Enqueue(message.LockToken);
-                    }
-
-                    message.LockToken = this.generationId + message.LockToken;
-                }
-            }
+            message = ProcessMessage(message, hasMessage);
 
             return message;
         }
@@ -255,7 +241,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             TimeSpan timeout = timeoutHelper.RemainingTime();
             bool hasMessage = await this.ReceiveMessageArrivalAsync(timeout, new CancellationTokenSource(timeout).Token).ConfigureAwait(true);
+            message = ProcessMessage(message, hasMessage);
 
+            if (Logging.IsEnabled) Logging.Exit(this, timeoutHelper, timeoutHelper.RemainingTime(), $"{nameof(ReceiveAsync)}");
+
+            return message;
+        }
+
+        private Message ProcessMessage(Message message, bool hasMessage)
+        {
             if (hasMessage)
             {
                 lock (this.syncRoot)
@@ -270,8 +264,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     message.LockToken = this.generationId + message.LockToken;
                 }
             }
-
-            if (Logging.IsEnabled) Logging.Exit(this, timeoutHelper, timeoutHelper.RemainingTime(), $"{nameof(ReceiveAsync)}");
 
             return message;
         }
