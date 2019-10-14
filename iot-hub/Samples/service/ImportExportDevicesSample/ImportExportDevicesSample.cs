@@ -55,20 +55,20 @@ namespace Microsoft.Azure.Devices.Samples
             //    then use this the Copy feature to copy the devices to another hub.
             // Number of devices to create and add. Default is 10.
 
-            Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Start();
+            //Stopwatch stopwatch = new Stopwatch();
+            //stopwatch.Start();
 
-            int NumToAdd = 5000;
-            Console.WriteLine("Create {0} new devices for the hub.", NumToAdd);
+            //int NumToAdd = 5000;
+            //Console.WriteLine("Create {0} new devices for the hub.", NumToAdd);
             
             //await GenerateAndAddDevices(_IoTHubConnectionString, 
             //    containerURIwSAS, NumToAdd, deviceListFile).ConfigureAwait(false);
             
 
-            stopwatch.Stop();
-            Console.WriteLine("Time elapsed: {0}", stopwatch.Elapsed);
-            Debug.Write("Time elapsed: {0}", stopwatch.Elapsed.ToString());
-
+            //stopwatch.Stop();
+            //Console.WriteLine("Time elapsed: {0}", stopwatch.Elapsed);
+            //Debug.Write("Time elapsed: {0}", stopwatch.Elapsed.ToString());
+            
             //  This exports the devices to a file in blob storage. 
             //  You can use this to add a bunch of new devices, then export them and look at them in a file (in blob storage).
             // Read the list of registered devices for the IoT Hub.
@@ -76,18 +76,18 @@ namespace Microsoft.Azure.Devices.Samples
             //            Console.WriteLine("Read devices from the original hub, write to blob storage.");
             //            await ExportDevices(containerURIwSAS, _IoTHubConnectionString).ConfigureAwait(false);
 
-            stopwatch = new Stopwatch();
-            stopwatch.Start();
+            //stopwatch = new Stopwatch();
+            //stopwatch.Start();
 
             
-            Console.WriteLine("Copy devices from the original hub to a new hub.");
+            //Console.WriteLine("Copy devices from the original hub to a new hub.");
             // Copy devices from an existing hub to a new hub.
             //await CopyAllDevicesToNewHub(_IoTHubConnectionString, _DestIoTHubConnectionString,
             //  containerURIwSAS, deviceListFile).ConfigureAwait(false);
 
-            stopwatch.Stop();
-            Console.WriteLine("Time elapsed: {0}", stopwatch.Elapsed);
-            Debug.Write("Time elapsed: {0}", stopwatch.Elapsed.ToString());
+            //stopwatch.Stop();
+            //Console.WriteLine("Time elapsed: {0}", stopwatch.Elapsed);
+            //Debug.Write("Time elapsed: {0}", stopwatch.Elapsed.ToString());
             
 
             //***************************************************************************************************
@@ -97,12 +97,12 @@ namespace Microsoft.Azure.Devices.Samples
             // Delete devices from the source hub.
 
             
-            stopwatch = new Stopwatch();
+            Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
 
             Console.WriteLine("Delete all devices from the source hub.");
-            //await DeleteAllDevicesFromHub(_IoTHubConnectionString,  
-            //    containerURIwSAS, deviceListFile).ConfigureAwait(false);
+            await DeleteAllDevicesFromHub(_IoTHubConnectionString,  
+                containerURIwSAS, deviceListFile).ConfigureAwait(false);
 
             stopwatch.Stop();
                 Console.WriteLine("Time elapsed: {0}", stopwatch.Elapsed);
@@ -112,17 +112,17 @@ namespace Microsoft.Azure.Devices.Samples
 
             // Delete devices from the destination hub.
 
-            stopwatch = new Stopwatch();
-            stopwatch.Start();
+            //stopwatch = new Stopwatch();
+            //stopwatch.Start();
 
-            Console.WriteLine("Delete all devices from the destination hub.");
-            await DeleteAllDevicesFromHub(_DestIoTHubConnectionString,  
-                containerURIwSAS, deviceListFile).ConfigureAwait(false);
+            //Console.WriteLine("Delete all devices from the destination hub.");
+            //await DeleteAllDevicesFromHub(_DestIoTHubConnectionString,  
+            //    containerURIwSAS, deviceListFile).ConfigureAwait(false);
 
-            stopwatch.Stop();
-            Console.WriteLine("Time elapsed: {0}", stopwatch.Elapsed);
-            Debug.Print("Time elapsed: {0}", stopwatch.Elapsed);
-            Console.WriteLine("Time elapsed: {0}", stopwatch.Elapsed);
+            //stopwatch.Stop();
+            //Console.WriteLine("Time elapsed: {0}", stopwatch.Elapsed);
+            //Debug.Print("Time elapsed: {0}", stopwatch.Elapsed);
+            //Console.WriteLine("Time elapsed: {0}", stopwatch.Elapsed);
 
         }
 
