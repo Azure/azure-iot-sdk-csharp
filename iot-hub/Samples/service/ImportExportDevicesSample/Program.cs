@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Samples
 {
@@ -36,7 +37,7 @@ namespace Microsoft.Azure.Devices.Samples
         private static string _storageAccountConnectionString =
             Environment.GetEnvironmentVariable("STORAGE_ACCT_CONN_STRING");
 
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             //To use this sample, uncomment the bits you want to run in ImportExportDevicesSample.RunSampleAsync
 
@@ -66,14 +67,14 @@ namespace Microsoft.Azure.Devices.Samples
 
             try
             {
-
-                importExportDevicesSample.RunSampleAsync().GetAwaiter().GetResult();
+                await importExportDevicesSample.RunSampleAsync();
             }
             catch (Exception ex)
             {
                 Debug.Print("Error. Description = {0}", ex.Message);
+                Console.WriteLine($"Error. Description = {ex.Message}\n{ex.StackTrace}");
             }
-
+            
             Console.WriteLine("Finished.");
             Console.WriteLine();
             Console.Write("Press any key to continue.");
