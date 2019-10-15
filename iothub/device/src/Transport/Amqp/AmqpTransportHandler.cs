@@ -75,6 +75,29 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
         public override bool IsUsable => !_disposed;
 
         #region Open-Close
+        public override async Task OpenAsync(TimeoutHelper timeoutHelper)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, timeoutHelper, $"{nameof(OpenAsync)}");
+            lock (_lock)
+            {
+                if (_disposed)
+                {
+                    return;
+                }
+
+                _closed = false;
+            }
+
+            try
+            {
+                await _amqpUnit.OpenAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+            }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, timeoutHelper, $"{nameof(OpenAsync)}");
+            }
+        }
+
         public override async Task OpenAsync(CancellationToken cancellationToken)
         {
             if (Logging.IsEnabled) Logging.Enter(this, cancellationToken, $"{nameof(OpenAsync)}");
@@ -157,21 +180,30 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        public override async Task<Message> ReceiveAsync(TimeSpan timeout, CancellationToken cancellationToken)
+        public override async Task<Message> ReceiveAsync(TimeoutHelper timeoutHelper)
         {
-            if (Logging.IsEnabled) Logging.Enter(this, timeout, cancellationToken, $"{nameof(ReceiveAsync)}");
-            Message message = null;
+            if (Logging.IsEnabled) Logging.Enter(this, timeoutHelper, timeoutHelper.RemainingTime(), $"{nameof(ReceiveAsync)}");
+            Message message = await _amqpUnit.ReceiveMessageAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+
+            if (Logging.IsEnabled) Logging.Exit(this, timeoutHelper, timeoutHelper.RemainingTime(), $"{nameof(ReceiveAsync)}");
+            return message;
+        }
+
+        public override async Task<Message> ReceiveAsync(CancellationToken cancellationToken)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, cancellationToken, $"{nameof(ReceiveAsync)}");
+            Message message;
             while (true)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                message = await _amqpUnit.ReceiveMessageAsync(timeout).ConfigureAwait(false);
+                message = await _amqpUnit.ReceiveMessageAsync(TransportSettings.DefaultReceiveTimeout).ConfigureAwait(false);
                 if (message != null)
                 {
                     break;
                 }
             }
 
-            if (Logging.IsEnabled) Logging.Exit(this, timeout, cancellationToken, $"{nameof(ReceiveAsync)}");
+            if (Logging.IsEnabled) Logging.Exit(this, cancellationToken, cancellationToken, $"{nameof(ReceiveAsync)}");
             return message;
         }
         #endregion

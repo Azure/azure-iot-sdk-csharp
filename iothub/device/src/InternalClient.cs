@@ -335,17 +335,14 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>The receive message or null if there was no message until the specified time has elapsed</returns>
         public async Task<Message> ReceiveAsync(TimeSpan timeout)
         {
-            if (timeout == TimeSpan.MaxValue) return await ReceiveAsync(CancellationToken.None).ConfigureAwait(false);
-            using (var cts = new CancellationTokenSource(timeout))
+            try
             {
-                try
-                {
-                    return await ReceiveAsync(cts.Token).ConfigureAwait(false);
-                }
-                catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
-                {
-                    return null;
-                }
+                return await InnerHandler.ReceiveAsync(new TimeoutHelper(timeout)).ConfigureAwait(false);
+            }
+            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException || 
+                ex.InnerException is TimeoutException)
+            {
+                return null;
             }
         }
 

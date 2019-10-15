@@ -4,8 +4,6 @@
 namespace Microsoft.Azure.Devices.Client.Transport
 {
     using Microsoft.Azure.Devices.Shared;
-    using System;
-    using System.Threading;
     using System.Threading.Tasks;
 
     abstract class TransportHandler : DefaultDelegatingHandler
@@ -17,11 +15,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             : base(context, innerHandler: null)
         {
             TransportSettings = transportSettings;
-        }
-
-        public override Task<Message> ReceiveAsync(CancellationToken cancellationToken)
-        {
-            return ReceiveAsync(TransportSettings.DefaultReceiveTimeout, cancellationToken);
         }
 
         public override Task WaitForTransportClosedAsync()

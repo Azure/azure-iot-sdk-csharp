@@ -54,7 +54,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         [TestMethod]
         public async Task MqttTransportHandlerReceiveAsyncTokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => CreateFromConnectionString().ReceiveAsync(new TimeSpan(0, 10, 0), token)).ConfigureAwait(false);
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().ReceiveAsync(token)).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -575,6 +575,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_28_05: If OnError is triggered after ReceiveAsync is called, WaitForTransportClosedAsync shall be invoked.
         [TestMethod]
+        [ExpectedException(typeof(IotHubCommunicationException))]
         public async Task MqttTransportHandlerOnErrorCallConnectionClosedListenerReceiving()
         {
             // arrange
@@ -583,7 +584,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
             transport.OnConnected();
             await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-            await transport.ReceiveAsync(new TimeSpan(0, 0, 0, 0, 5), CancellationToken.None).ConfigureAwait(false);
+            Task receivingTask = transport.ReceiveAsync(CancellationToken.None);
             Task task = transport.WaitForTransportClosedAsync();
 
             // act
@@ -591,6 +592,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
             // assert
             await task.ConfigureAwait(false);
+            await receivingTask.ConfigureAwait(false);
         }
 
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_28_06: If OnError is triggered without any prior operation, WaitForTransportClosedAsync shall not be invoked.
