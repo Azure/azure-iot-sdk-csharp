@@ -42,27 +42,37 @@ namespace Microsoft.Azure.Devices.Samples
             _storageAccountConnectionString = incoming_storageAccountConnectionString;          
         }
 
-        public async Task RunSampleAsync()
+        public async Task RunSampleAsync(bool addDevices, int numToAdd, bool copyDevices, 
+            bool deleteSourceDevices, bool deleteDestDevices)
         {
-            Console.WriteLine("Preparing storage.");
             // This sets cloud blob container and returns container uri (w/shared access token).
             containerURIwSAS = PrepareStorageForImportExport(_storageAccountConnectionString);
 
-            // generate and add new devices 
-            int NumToAdd = 100;
-            await AddNewDevices(_IoTHubConnectionString, NumToAdd).ConfigureAwait(false);
-      
-            // Copy devices from the original hub to a new hub
-            await CopyToNewHub(_IoTHubConnectionString, _DestIoTHubConnectionString).ConfigureAwait(false);
+            if (addDevices)
+            {
+                // generate and add new devices 
+                await AddNewDevices(_IoTHubConnectionString, numToAdd).ConfigureAwait(false);
+            }
 
-            // delete devices from the source hub
-            //await DeleteAllDevicesFromHub(_IoTHubConnectionString,
-            //    containerURIwSAS, deviceListFile).ConfigureAwait(false);
+            if (copyDevices)
+            {
+                // Copy devices from the original hub to a new hub
+                await CopyToNewHub(_IoTHubConnectionString, _DestIoTHubConnectionString).ConfigureAwait(false);
+            }
 
-            // delete devices from the destination hub
-            //await DeleteAllDevicesFromHub(_DestIoTHubConnectionString,  
-            //    containerURIwSAS, deviceListFile).ConfigureAwait(false);
-           
+            if (deleteSourceDevices)
+            {
+                // delete devices from the source hub
+                await DeleteAllDevicesFromHub(_IoTHubConnectionString,
+                    containerURIwSAS, deviceListFile).ConfigureAwait(false);
+            }
+
+            if (deleteDestDevices)
+            { 
+                // delete devices from the destination hub
+                await DeleteAllDevicesFromHub(_DestIoTHubConnectionString,
+                    containerURIwSAS, deviceListFile).ConfigureAwait(false);
+            }
         }
 
 
@@ -73,6 +83,8 @@ namespace Microsoft.Azure.Devices.Samples
         /// <returns>URI to blob container, including SAS token</returns>
         private string PrepareStorageForImportExport(string storageAccountConnectionString)
         {
+            Console.WriteLine("Preparing storage.");
+
             string containerURI = string.Empty;
             try
             {
@@ -173,7 +185,7 @@ namespace Microsoft.Azure.Devices.Samples
 
             stopwatch.Stop();
             Console.WriteLine("AddDevices, time elapsed=  {0}", stopwatch.Elapsed);
-            Debug.Write("AddDevicers, time elapsed = {0}", stopwatch.Elapsed.ToString());
+            Debug.Print("AddDevices, time elapsed = {0}", stopwatch.Elapsed.ToString());
 
         }
 
@@ -199,6 +211,7 @@ namespace Microsoft.Azure.Devices.Samples
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
 
+            Debug.Print("Delete all devices from a hub.");
             Console.WriteLine("Delete all devices from a hub.");
             await DeleteAllDevicesFromHub(hubConnectionString, containerURIwSAS, deviceListFile).ConfigureAwait(false);
 
@@ -226,7 +239,7 @@ namespace Microsoft.Azure.Devices.Samples
 
             stopwatch.Stop();
             Console.WriteLine("CopyToNewHub: time elapsed = {0}", stopwatch.Elapsed);
-            Debug.Write("CopyToNewHub: time elapsed = {0}", stopwatch.Elapsed.ToString());
+            Debug.Print("CopyToNewHub: time elapsed = {0}", stopwatch.Elapsed.ToString());
         }
 
 
@@ -590,6 +603,7 @@ namespace Microsoft.Azure.Devices.Samples
             // Wait until job is finished
             while (true)
             {
+
                 importJob = await registryManager.GetJobAsync(importJob.JobId).ConfigureAwait(false);
                 if (importJob.Status == JobStatus.Completed ||
                     importJob.Status == JobStatus.Failed ||
