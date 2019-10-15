@@ -9,6 +9,19 @@ namespace Microsoft.Azure.Devices.Samples
 {
     public class Program
     {
+        // Set these booleans to true or false, depending on which bits you want to run. 
+        // If you don't want them to run, set them to false.
+        private static bool addDevices = false;
+        //If you ask to add devices, this will be the number added.
+        private static int numToAdd = 10000; 
+        // Copy the devices from the source hub to the destination hub.
+        private static bool copyDevices = false;
+        // Delete all of the devices from the source hub.
+        private static bool deleteSourceDevices = false;
+        // Delete all of the devices from the destination hub.
+        private static bool deleteDestDevices = true;
+
+
         // To populate these variables, either:
         // - pass these values as command-prompt arguments
         // - set the corresponding environment variables (you can do this at the command line
@@ -67,7 +80,8 @@ namespace Microsoft.Azure.Devices.Samples
 
             try
             {
-                await importExportDevicesSample.RunSampleAsync();
+                await importExportDevicesSample.RunSampleAsync(addDevices, numToAdd, copyDevices, deleteSourceDevices,
+                    deleteDestDevices);
             }
             catch (Exception ex)
             {
