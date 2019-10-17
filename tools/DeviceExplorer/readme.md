@@ -1,3 +1,5 @@
+### **_Device Explorer is deprecated as of 10/30/2019 and is being replaced by [Azure IOT Explorer][lnk-azure-iot-explorer] . [This](https://github.com/Azure/azure-iot-sdk-csharp/releases/tag/2019-9-11) is the last release of Device Explorer._**
+
 # How to use Device Explorer for IoT Hub devices
 This topic describes how to download, build and use the Device Explorer tool. You can use this tool to manage devices connecting to your IoT hub. For example, you can register a device with your IoT hub, monitor messages from your devices, and send messages to your devices.
 
@@ -44,7 +46,7 @@ To build Device Explorer yourself and generate the MSI, the following component 
     ![](./VS_installer_key.png)
       1. Add the node 15.0\_**[User ID]**\_Config like as shown below 15.0\_**cbfbe12c**\_Config.
       2. Add MSBuild folder (key) in it.
-      3. In MSBuild, create new DWORD Value “EnableOutOfProcBuild” and set its value as 0.
+      3. In MSBuild, create new DWORD Value "EnableOutOfProcBuild" and set its value as 0.
 
 Once installed, open the **tools\\DeviceExplorer\\DeviceExplorerWithInstaller.sln** file in your local copy of this repository in Visual Studio 2017. Then build and run the solution.
 
@@ -198,3 +200,4 @@ Run your sample application. Device Explorer should now show that the IoT hub ha
 [sample-application-tutorial]: ../../doc/get_started/arduinoide-arduino-wifi101-c.md
 [lnk-VS-Installer]:https://marketplace.visualstudio.com/items?itemName=VisualStudioProductTeam.MicrosoftVisualStudio2017InstallerProjects
 [lnk-Win-IoT-SDK]:https://marketplace.visualstudio.com/items?itemName=MicrosoftIoT.WindowsIoTCoreProjectTemplatesforVS15
+[lnk-azure-iot-explorer]:https://github.com/Azure/azure-iot-explorer
