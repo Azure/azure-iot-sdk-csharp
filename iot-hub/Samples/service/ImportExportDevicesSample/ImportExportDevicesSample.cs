@@ -63,15 +63,13 @@ namespace Microsoft.Azure.Devices.Samples
             if (deleteSourceDevices)
             {
                 // delete devices from the source hub
-                await DeleteAllDevicesFromHub(_IoTHubConnectionString,
-                    containerURIwSAS, deviceListFile).ConfigureAwait(false);
+                await DeleteFromHub(_IoTHubConnectionString).ConfigureAwait(false);
             }
 
             if (deleteDestDevices)
             { 
                 // delete devices from the destination hub
-                await DeleteAllDevicesFromHub(_DestIoTHubConnectionString,
-                    containerURIwSAS, deviceListFile).ConfigureAwait(false);
+                await DeleteFromHub(_DestIoTHubConnectionString).ConfigureAwait(false);
             }
         }
 
@@ -461,7 +459,6 @@ namespace Microsoft.Azure.Devices.Samples
             CloudBlockBlob blobToDelete = _cloudBlobContainer.GetBlockBlobReference("devices.txt");
 
             Console.WriteLine("Update ImportMode to be 'Delete' for each device, write out to new file.");
-
             // Step 1: Update each device's ImportMode to be Delete
             StringBuilder sb = new StringBuilder();
             serializedDevices.ForEach(serializedDevice =>

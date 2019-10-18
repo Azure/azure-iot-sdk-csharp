@@ -11,15 +11,15 @@ namespace Microsoft.Azure.Devices.Samples
     {
         // Set these booleans to true or false, depending on which bits you want to run. 
         // If you don't want them to run, set them to false.
-        private static bool addDevices = false;
+        private static bool addDevices = true;
         //If you ask to add devices, this will be the number added.
-        private static int numToAdd = 10000; 
+        private static int numToAdd = 200000; 
         // Copy the devices from the source hub to the destination hub.
         private static bool copyDevices = false;
         // Delete all of the devices from the source hub.
         private static bool deleteSourceDevices = false;
         // Delete all of the devices from the destination hub.
-        private static bool deleteDestDevices = true;
+        private static bool deleteDestDevices = false;
 
 
         // To populate these variables, either:
