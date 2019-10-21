@@ -584,7 +584,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 _log.WriteLine($"{nameof(FaultInjectionPoolAmqpTests)}: Preparing to receive message for device {testDevice.Id}");
                 await deviceClient.OpenAsync().ConfigureAwait(false);
-                await MessageReceiveE2ETests.VerifyReceivedC2DMessageAsync(transport, deviceClient, testDevice.Id, payload, p1Value).ConfigureAwait(false);
+                await MessageReceiveE2ETests.VerifyReceivedC2DMessageAndComplete(transport, deviceClient, testDevice.Id, payload, p1Value).ConfigureAwait(false);
             };
 
             Func<IList<DeviceClient>, Task> cleanupOperation = async (deviceClients) =>
