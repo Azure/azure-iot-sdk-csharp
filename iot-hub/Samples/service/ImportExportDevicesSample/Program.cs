@@ -25,6 +25,8 @@ namespace Microsoft.Azure.Devices.Samples
         // They are the first five command-line arguments, and all are required 
         //   because args 6 through 8 are required connection strings. 
         // These are passed in as strings and converted to numeric or boolean, whichever the case may be.        
+
+        // Add randomly created devices to the hub.
         private static bool addDevices = false;
         //If you ask to add devices, this will be the number added.
         private static int numToAdd = 0; 
@@ -176,15 +178,15 @@ namespace Microsoft.Azure.Devices.Samples
             }
 
             // Show the data passed in and what it thinks it was.
-            Console.WriteLine("input variables:");
-            Console.WriteLine($"add devices = {addDevices}.");
-            Console.WriteLine($"num to add = {numToAdd}.");
-            Console.WriteLine($"copy devices = {copyDevices}.");
-            Console.WriteLine($"delete source devices = {deleteSourceDevices}.");
-            Console.WriteLine($"delete dest devices = {deleteDestDevices}.");
-            Console.WriteLine($"IoTHubConnString = '{_IoTHubConnectionString}'.");
-            Console.WriteLine($"IoTHubDestString = '{_DestIoTHubConnectionString}'.");
-            Console.WriteLine($"storage connection string  = '{_storageAccountConnectionString}'.");
+            Console.WriteLine("Inputs:");
+            Console.WriteLine($"  add devices = {addDevices}.");
+            Console.WriteLine($"  num to add = {numToAdd}.");
+            Console.WriteLine($"  copy devices = {copyDevices}.");
+            Console.WriteLine($"  delete source devices = {deleteSourceDevices}.");
+            Console.WriteLine($"  delete dest devices = {deleteDestDevices}.");
+            Console.WriteLine($"  IoTHubConnString = '{_IoTHubConnectionString}'.");
+            Console.WriteLine($"  IoTHubDestString = '{_DestIoTHubConnectionString}'.");
+            Console.WriteLine($"  storage connection string  = '{_storageAccountConnectionString}'.");
 
             // Instantiate the class and run the sample.
             ImportExportDevicesSample importExportDevicesSample =
