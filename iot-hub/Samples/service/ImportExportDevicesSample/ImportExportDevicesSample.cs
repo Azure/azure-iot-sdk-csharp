@@ -169,21 +169,21 @@ namespace Microsoft.Azure.Devices.Samples
         /// Number of devices to create and add. Default is 10.
         /// </summary>
         /// <returns></returns>
-        private async Task AddNewDevices(string hubConnectionString, int NumToAdd)
+        public async Task AddNewDevices(string hubConnectionString, int NumToAdd)
         {
 
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            Console.WriteLine("Create {0} new devices for the hub.", NumToAdd);
+            Console.WriteLine($"Create {NumToAdd} new devices for the hub.");
 
             await GenerateAndAddDevices(hubConnectionString,
                 containerURIwSAS, NumToAdd, deviceListFile).ConfigureAwait(false);
 
 
             stopwatch.Stop();
-            Console.WriteLine("AddDevices, time elapsed=  {0}", stopwatch.Elapsed);
-            Debug.Print("AddDevices, time elapsed = {0}", stopwatch.Elapsed.ToString());
+            Console.WriteLine($"AddDevices, time elapsed = {stopwatch.Elapsed}.");
+            Debug.Print($"AddDevices, time elapsed = {stopwatch.Elapsed.ToString()}");
 
         }
 
@@ -191,7 +191,7 @@ namespace Microsoft.Azure.Devices.Samples
         /// <summary>
         ///  This reads the device list from the IoT Hub, then writes them to a file in blob storage. 
         /// </summary>
-        private async Task ExportToBlobStorage(string hubConnectionString)
+        public async Task ExportToBlobStorage(string hubConnectionString)
         {
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -200,11 +200,16 @@ namespace Microsoft.Azure.Devices.Samples
             await ExportDevices(containerURIwSAS, hubConnectionString).ConfigureAwait(false);
 
             stopwatch.Stop();
-            Console.WriteLine("Export devices to blob storage: time elapsed = {0}", stopwatch.Elapsed);
-            Debug.Print("Export devices to blob storage: time elapsed = {0}", stopwatch.Elapsed);
+            Console.WriteLine($"Export devices to blob storage: time elapsed = {stopwatch.Elapsed}");
+            Debug.Print($"Export devices to blob storage: time elapsed = {stopwatch.Elapsed}");
         }
 
-        private async Task DeleteFromHub(string hubConnectionString)
+        /// <summary>
+        /// Delete all of the devices from the hub with the given connection string.
+        /// </summary>
+        /// <param name="hubConnectionString">Connection to the hub from which you want to delete the devices.</param>
+        /// <returns></returns>
+        public async Task DeleteFromHub(string hubConnectionString)
         {
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -214,8 +219,8 @@ namespace Microsoft.Azure.Devices.Samples
             await DeleteAllDevicesFromHub(hubConnectionString, containerURIwSAS, deviceListFile).ConfigureAwait(false);
 
             stopwatch.Stop();
-            Console.WriteLine("DeleteFromHub: time elapsed = {0}", stopwatch.Elapsed);
-            Debug.Print("DeleteFromHub: time elapsed = {0}", stopwatch.Elapsed);
+            Console.WriteLine($"DeleteFromHub: time elapsed = {stopwatch.Elapsed}");
+            Debug.Print($"DeleteFromHub: time elapsed = {stopwatch.Elapsed}");
 
         }
 
@@ -226,7 +231,7 @@ namespace Microsoft.Azure.Devices.Samples
         /// <param name="prevHubConnectionString">Connection string for source hub.</param>
         /// <param name="newHubConnectionString">Connection string for destination hub.</param>
         /// <returns></returns>
-        private async Task CopyToNewHub(string prevHubConnectionString, string newHubConnectionString)
+        public async Task CopyToNewHub(string prevHubConnectionString, string newHubConnectionString)
         {
             Console.WriteLine("Copy devices from the original hub to a new hub.");
             Stopwatch stopwatch = new Stopwatch();
@@ -236,8 +241,8 @@ namespace Microsoft.Azure.Devices.Samples
               containerURIwSAS, deviceListFile).ConfigureAwait(false);
 
             stopwatch.Stop();
-            Console.WriteLine("CopyToNewHub: time elapsed = {0}", stopwatch.Elapsed);
-            Debug.Print("CopyToNewHub: time elapsed = {0}", stopwatch.Elapsed.ToString());
+            Console.WriteLine($"CopyToNewHub: time elapsed = {stopwatch.Elapsed}");
+            Debug.Print("CopyToNewHub: time elapsed = {stopwatch.Elapsed.ToString()}");
         }
 
 
@@ -272,7 +277,7 @@ namespace Microsoft.Azure.Devices.Samples
                 // This should be large enough to display the largest number (1 million).
                 //string deviceName = "Hub_" + i.ToString("D8") + "-" + Guid.NewGuid().ToString();
                 string deviceName = $"Hub_{i.ToString("D8")}-{Guid.NewGuid().ToString()}";
-                Debug.Print("device = '{0}'\n", deviceName);
+                Debug.Print($"device = '{deviceName}'\n");
 
                 // Create a new ExportImportDevice.
                 // CryptoKeyGenerator is in the Microsoft.Azure.Devices.Common namespace.
@@ -368,7 +373,7 @@ namespace Microsoft.Azure.Devices.Samples
             catch (Exception ex)
             {
 
-                Debug.Print("description = {0}", ex.Message);
+                Debug.Print("exception message {0}", ex.Message);
             }
         }
 
@@ -377,7 +382,8 @@ namespace Microsoft.Azure.Devices.Samples
         private async Task ExportDevices(string containerURI, string hubConnectionString)
         {
             try
-            { 
+            {
+                Console.WriteLine("Creating and running registry manager job to retrieve the devices from the hub.");
                 // Create an instance of the registry manager class.
                 RegistryManager registryManager =
                     RegistryManager.CreateFromConnectionString(hubConnectionString);
@@ -405,10 +411,8 @@ namespace Microsoft.Azure.Devices.Samples
             }
             catch (Exception ex)
             {
-                Debug.Print("Error exporting devices to blob storage. Description = {0}", ex.Message);
+                Debug.Print("Error exporting devices to blob storage. Exception message = {0}", ex.Message);
             }
-
-            // Note: could add twin data here if you want to export it.
         }
 
         // This shows how to delete all of the devices for the IoT Hub.
@@ -485,7 +489,7 @@ namespace Microsoft.Azure.Devices.Samples
                 }
             }
 
-            Console.WriteLine("Call registry manager to run the delete job.");
+            Console.WriteLine("Creating and running registry manager job to delete the devices from the hub.");
 
             // Step 3: Call import using the same blob to delete all devices.
             // Loads devices.txt and applies that change.
@@ -510,7 +514,6 @@ namespace Microsoft.Azure.Devices.Samples
             }
         }
 
-        //---------------------------------------------------------------------------------------
         // This shows how to copy devices from one IoT Hub to another.
         // First, export the list from the Source hut to devices.txt (ExportDevices).
         // Next, read in that file. Each row is a serialized object; 
@@ -529,6 +532,7 @@ namespace Microsoft.Azure.Devices.Samples
             string containerURI, string deviceListFile)
         {
             Console.WriteLine("Exporting devices on current hub");
+
             // Read the devices from the hub and write them to devices.txt in blob storage.
             await ExportDevices(containerURI, sourceHubConnectionString).ConfigureAwait(false);
 
@@ -588,7 +592,7 @@ namespace Microsoft.Azure.Devices.Samples
                 }
             }
 
-            Console.WriteLine("Submit job to import the entries from devices.txt");
+            Console.WriteLine("Creating and running registry manager job to import the entries from the text file to the new hub");
 
             // Step 3: Call import using the same blob to create all devices.
             // Loads devices.txt and adds the devices to the destination hub.
