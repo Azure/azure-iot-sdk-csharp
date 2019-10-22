@@ -2,22 +2,18 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.Azure.Devices.Client;
-using Microsoft.Azure.Devices.Common.Exceptions;
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
+using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Data.SqlTypes;
 using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using System.Linq;
-using System.Net;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 
-public delegate Task MyFunction(Microsoft.Azure.Devices.Client.TransportType transport, DeviceClient dc, string deviceId, string payload, string p1value);        
+public delegate Task ProcessMessage(Microsoft.Azure.Devices.Client.TransportType transport, DeviceClient dc, string deviceId, string payload, string p1value);        
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
@@ -204,7 +200,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             while (wait)
             {
                 Client.Message receivedMessage = null;
-                CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+                CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
                 receivedMessage = await ReceiveMessage(transport, dc, deviceId, cts).ConfigureAwait(false);
 
                 if (receivedMessage != null)
@@ -234,7 +230,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             while (wait)
             {
                 Client.Message receivedMessage = null;
-                CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+                CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
                 receivedMessage = await ReceiveMessage(transport, dc, deviceId, cts).ConfigureAwait(false);
 
                 if (receivedMessage != null)
@@ -266,7 +262,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
             else
             {
-                receivedMessage = await dc.ReceiveAsync(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
+                receivedMessage = await dc.ReceiveAsync(TimeSpan.FromSeconds(20)).ConfigureAwait(false);
             }
 
             return receivedMessage;
@@ -281,7 +277,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             while (wait)
             {
                 Client.Message receivedMessage = null;
-                CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+                CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
                 receivedMessage = await ReceiveMessage(transport, dc, deviceId, cts).ConfigureAwait(false);
 
                 if (receivedMessage != null)
@@ -291,6 +287,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     receivedMessage = await ReceiveMessage(transport, dc, deviceId, cts).ConfigureAwait(false);
                     Assert.IsNotNull(receivedMessage);
                     VerifyMessage(deviceId, payload, p1Value, receivedMessage);
+                    await dc.CompleteAsync(receivedMessage).ConfigureAwait(false);
 
                     break;
                 }
@@ -317,7 +314,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             Assert.AreEqual(p1Value, prop.Value, $"The value of \"property1\" did not match for device {deviceId}");
         }
 
-        private static async Task ReceiveSingleMessage(TestDeviceType type, Client.TransportType transport, MyFunction ReceiveAndAckMessage)
+        private static async Task ReceiveSingleMessage(TestDeviceType type, Client.TransportType transport, ProcessMessage ReceiveAndAckMessage)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, type).ConfigureAwait(false);
             using (DeviceClient deviceClient = testDevice.CreateDeviceClient(transport))
@@ -329,7 +326,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     transport == Client.TransportType.Mqtt_WebSocket_Only)
                 {
                     // Dummy ReceiveAsync to ensure mqtt subscription registration before SendAsync() is called on service client.
-                    await deviceClient.ReceiveAsync(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
+                    await deviceClient.ReceiveAsync(TimeSpan.FromSeconds(20)).ConfigureAwait(false);
                 }
 
                 await serviceClient.OpenAsync().ConfigureAwait(false);
@@ -355,7 +352,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     transport == Client.TransportType.Mqtt_WebSocket_Only)
                 {
                     // Dummy ReceiveAsync to ensure mqtt subscription registration before SendAsync() is called on service client.
-                    await deviceClient.ReceiveAsync(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
+                    await deviceClient.ReceiveAsync(TimeSpan.FromSeconds(20)).ConfigureAwait(false);
                 }
 
                 await serviceClient.OpenAsync().ConfigureAwait(false);
@@ -384,10 +381,12 @@ namespace Microsoft.Azure.Devices.E2ETests
                 if (p1Value == prop2.Value)
                 {
                     VerifyMessage(messageId1, payload1, p1Value, receivedMessage2);
+                    await deviceClient.CompleteAsync(receivedMessage2).ConfigureAwait(false);
                 }
                 else if (p1Value == prop3.Value)
                 {
                     VerifyMessage(messageId1, payload1, p1Value, receivedMessage3);
+                    await deviceClient.CompleteAsync(receivedMessage3).ConfigureAwait(false);
                 }
                 else
                 {
@@ -411,7 +410,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     transport == Client.TransportType.Mqtt_WebSocket_Only)
                 {
                     // Dummy ReceiveAsync to ensure mqtt subscription registration before SendAsync() is called on service client.
-                    await deviceClient.ReceiveAsync(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
+                    await deviceClient.ReceiveAsync(TimeSpan.FromSeconds(20)).ConfigureAwait(false);
                 }
 
                 await serviceClient.OpenAsync().ConfigureAwait(false);
@@ -440,10 +439,13 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
                 finally
                 {
+                    CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
                     // Reject all messages received for clean up
                     for (int i = 0; i < 50; i++)
                     {
-                        //deviceClient.RejectAsync(msg[i]);
+                        Client.Message receivedMessage = await deviceClient.ReceiveAsync(cts.Token).ConfigureAwait(false);
+                        Assert.IsNotNull(receivedMessage);
+                        await deviceClient.RejectAsync(receivedMessage).ConfigureAwait(false);
                     }
                     await deviceClient.CloseAsync().ConfigureAwait(false);
                     await serviceClient.CloseAsync().ConfigureAwait(false);
