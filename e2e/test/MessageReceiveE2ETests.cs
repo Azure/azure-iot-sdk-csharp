@@ -431,10 +431,11 @@ namespace Microsoft.Azure.Devices.E2ETests
                     for (int i = 0; i < 51; i++)
                     {
                         (Message msg1, string messageId1, string payload1, string p1Value) = ComposeC2DTestMessage();
-                        msg1.ExpiryTimeUtc = new DateTime(2019, 10, 24);
+                        msg1.ExpiryTimeUtc = DateTime.Now.AddHours(1);
                         await serviceClient.SendAsync(testDevice.Id, msg1).ConfigureAwait(false);
                         numMessages++;
                     }
+                    Assert.Fail(); // If no exception is thrown then it gets here.
                 }
                 catch (Exception ex)
                 {
