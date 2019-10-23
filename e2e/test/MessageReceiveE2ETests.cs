@@ -382,18 +382,17 @@ namespace Microsoft.Azure.Devices.E2ETests
                 if (p1Value == prop2.Value)
                 {
                     VerifyMessage(messageId1, payload1, p1Value, receivedMessage2);
-                    await deviceClient.CompleteAsync(receivedMessage2).ConfigureAwait(false);
                 }
                 else if (p1Value == prop3.Value)
                 {
-                    VerifyMessage(messageId1, payload1, p1Value, receivedMessage3);
-                    await deviceClient.CompleteAsync(receivedMessage3).ConfigureAwait(false);
+                    VerifyMessage(messageId1, payload1, p1Value, receivedMessage3);                    
                 }
                 else
                 {
                     throw new InvalidOperationException(" Did not receive Abandoned message");
                 }
-    
+                await deviceClient.CompleteAsync(receivedMessage2).ConfigureAwait(false);
+                await deviceClient.CompleteAsync(receivedMessage3).ConfigureAwait(false);
                 await deviceClient.CloseAsync().ConfigureAwait(false);
                 await serviceClient.CloseAsync().ConfigureAwait(false);
             }
