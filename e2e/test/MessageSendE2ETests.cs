@@ -19,8 +19,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         private readonly string ModulePrefix = $"E2E_{nameof(MessageSendE2ETests)}_";
         private static string ProxyServerAddress = Configuration.IoTHub.ProxyServerAddress;
         private static TestLogging _log = TestLogging.GetInstance();
-        /* Random number chosen for sending multiple message test */
-        private const int numMessages = 50;
+        private const int numMessages = 50; // random number chosen for send + receive combined tests
 
         private readonly ConsoleEventListener _listener;
 
@@ -36,21 +35,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        public async Task Message_DeviceSendMultipleMessage_Amqp()
-        {
-            await SendMultipleMessages(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
-        }
-
-        [TestMethod]
         public async Task Message_DeviceSendSingleMessage_AmqpWs()
         {
             await SendSingleMessage(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task Message_DeviceSendMultipleMessage_AmqpWs()
-        {
-            await SendMultipleMessages(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -60,33 +47,15 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        public async Task Message_DeviceSendMultipleMessage_Mqtt()
-        {
-            await SendMultipleMessages(TestDeviceType.Sasl, Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
-        }
-
-        [TestMethod]
         public async Task Message_DeviceSendSingleMessage_MqttWs()
         {
             await SendSingleMessage(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
         }
 
         [TestMethod]
-        public async Task Message_DeviceSendMultipleMessage_MqttWs()
-        {
-            await SendMultipleMessages(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
-        }
-
-        [TestMethod]
         public async Task Message_DeviceSendSingleMessage_Http()
         {
             await SendSingleMessage(TestDeviceType.Sasl, Client.TransportType.Http1).ConfigureAwait(false);
-        }
-
-        [TestMethod]
-        public async Task Message_DeviceSendMultipleMessage_Http()
-        {
-            await SendMultipleMessages(TestDeviceType.Sasl, Client.TransportType.Http1).ConfigureAwait(false);
         }
 
         [TestMethod]
