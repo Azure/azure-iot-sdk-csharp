@@ -29,17 +29,42 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
+        public void CombinedSendReceiveMessages_AmqpWs()
+        {
+            CombinedSendReceiveMultipleMessages(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only);
+        }
+
+        [TestMethod]
+        public void CombinedSendReceiveMessages_Mqtt()
+        {
+            CombinedSendReceiveMultipleMessages(TestDeviceType.Sasl, Client.TransportType.Mqtt_Tcp_Only);
+        }
+
+        [TestMethod]
+        public void CombinedSendReceiveMessages_MqttWs()
+        {
+            CombinedSendReceiveMultipleMessages(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only);
+        }
+
+        [TestMethod]
+        public void CombinedSendReceiveMessages_Http()
+        {
+            CombinedSendReceiveMultipleMessages(TestDeviceType.Sasl, Client.TransportType.Http1);
+        }
+
         public void CombinedSendReceiveMultipleMessages(TestDeviceType type, Client.TransportType transport)
         {
             var task1 = Task.Run(async () =>
             {
-                await MessageReceiveE2ETests.SendReceiveMultipleMessages(type, transport).ConfigureAwait(false);
+                MessageReceiveE2ETests.SendReceiveMultipleMessages(type, transport);
             });
 
             var task2 = Task.Run(async () =>
             {
-                await MessageSendE2ETests.SendMultipleMessages(type, transport).ConfigureAwait(false);
+                MessageSendE2ETests.SendMultipleMessages(type, transport);
             });
+
+            Task.WaitAll(task1, task2);
         }
 
 
