@@ -3,9 +3,7 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.Tracing;
-using System.Text;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
@@ -15,7 +13,6 @@ namespace Microsoft.Azure.Devices.E2ETests
     public partial class FaultInjectionPoolAmqpTests : IDisposable
     {
         private static TestLogging _log = TestLogging.GetInstance();
-
         private readonly ConsoleEventListener _listener;
 
         public FaultInjectionPoolAmqpTests()

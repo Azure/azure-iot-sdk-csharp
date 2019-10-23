@@ -4,8 +4,8 @@
 using Microsoft.Azure.Devices.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -688,12 +688,12 @@ namespace Microsoft.Azure.Devices.E2ETests
             int durationInSec = FaultInjection.DefaultDurationInSec,
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
         {
-            Dictionary<string, TestDeviceCallbackHandler> testDevicesWithCallbackHandler = new Dictionary<string, TestDeviceCallbackHandler>();
+            ConcurrentDictionary<string, TestDeviceCallbackHandler> testDevicesWithCallbackHandler = new ConcurrentDictionary<string, TestDeviceCallbackHandler>();
 
             Func<DeviceClient, TestDevice, Task> initOperation = async (deviceClient, testDevice) =>
             {
                 var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient);
-                testDevicesWithCallbackHandler.Add(testDevice.Id, testDeviceCallbackHandler);
+                testDevicesWithCallbackHandler.TryAdd(testDevice.Id, testDeviceCallbackHandler);
 
                 _log.WriteLine($"{nameof(MethodE2EPoolAmqpTests)}: Setting method callback handler for device {testDevice.Id}");
                 await testDeviceCallbackHandler.SetDeviceReceiveMethodAsync(MethodName, MethodE2ETests.DeviceResponseJson, MethodE2ETests.ServiceRequestJson).ConfigureAwait(false);

@@ -4,8 +4,8 @@
 using Microsoft.Azure.Devices.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -1472,17 +1472,17 @@ namespace Microsoft.Azure.Devices.E2ETests
             int durationInSec = FaultInjection.DefaultDurationInSec,
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
         {
-            Dictionary<string, List<string>> twinPropertyMap = new Dictionary<string, List<string>>();
-            Dictionary<string, TestDeviceCallbackHandler> testDevicesWithCallbackHandler = new Dictionary<string, TestDeviceCallbackHandler>();
+            ConcurrentDictionary<string, List<string>> twinPropertyMap = new ConcurrentDictionary<string, List<string>>();
+            ConcurrentDictionary<string, TestDeviceCallbackHandler> testDevicesWithCallbackHandler = new ConcurrentDictionary<string, TestDeviceCallbackHandler>();
 
             Func<DeviceClient, TestDevice, Task> initOperation = async (deviceClient, testDevice) =>
             {
                 var testDeviceCallbackHandler = new TestDeviceCallbackHandler(deviceClient);
-                testDevicesWithCallbackHandler.Add(testDevice.Id, testDeviceCallbackHandler);
+                testDevicesWithCallbackHandler.TryAdd(testDevice.Id, testDeviceCallbackHandler);
 
                 var propName = Guid.NewGuid().ToString();
                 var propValue = Guid.NewGuid().ToString();
-                twinPropertyMap.Add(testDevice.Id, new List<string> { propName, propValue });
+                twinPropertyMap.TryAdd(testDevice.Id, new List<string> { propName, propValue });
 
                 _log.WriteLine($"{nameof(FaultInjectionPoolAmqpTests)}: Setting desired propery callback for device {testDevice.Id}");
                 _log.WriteLine($"{nameof(Twin_DeviceDesiredPropertyUpdateRecoveryPoolOverAmqp)}: name={propName}, value={propValue}");

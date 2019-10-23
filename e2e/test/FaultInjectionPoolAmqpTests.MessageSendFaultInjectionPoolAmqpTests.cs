@@ -5,8 +5,8 @@ using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics.Tracing;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.E2ETests
@@ -806,12 +806,12 @@ namespace Microsoft.Azure.Devices.E2ETests
             int durationInSec = FaultInjection.DefaultDurationInSec,
             ConnectionStringAuthScope authScope = ConnectionStringAuthScope.Device)
         {
-            Dictionary<string, EventHubTestListener> eventHubListeners = new Dictionary<string, EventHubTestListener>();
+            ConcurrentDictionary<string, EventHubTestListener> eventHubListeners = new ConcurrentDictionary<string, EventHubTestListener>();
 
             Func<DeviceClient, TestDevice, Task> initOperation = async (deviceClient, testDevice) =>
             {
                 EventHubTestListener testListener = await EventHubTestListener.CreateListener(testDevice.Id).ConfigureAwait(false);
-                eventHubListeners.Add(testDevice.Id, testListener);
+                eventHubListeners.TryAdd(testDevice.Id, testListener);
             };
 
             Func<DeviceClient, TestDevice, Task> testOperation = async (deviceClient, testDevice) =>

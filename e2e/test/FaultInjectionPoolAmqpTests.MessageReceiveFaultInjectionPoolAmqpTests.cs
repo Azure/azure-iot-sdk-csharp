@@ -5,7 +5,6 @@ using Microsoft.Azure.Devices.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Tracing;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.E2ETests
