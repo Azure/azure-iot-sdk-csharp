@@ -326,6 +326,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             using (ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
             {
                 await deviceClient.OpenAsync().ConfigureAwait(false);
+                await serviceClient.OpenAsync().ConfigureAwait(false);
+                await serviceClient.PurgeMessageQueueAsync(testDevice.Id).ConfigureAwait(false);
 
                 if (transport == Client.TransportType.Mqtt_Tcp_Only ||
                     transport == Client.TransportType.Mqtt_WebSocket_Only)
@@ -333,9 +335,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                     // Dummy ReceiveAsync to ensure mqtt subscription registration before SendAsync() is called on service client.
                     await deviceClient.ReceiveAsync(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
                 }
-
-                await serviceClient.OpenAsync().ConfigureAwait(false);
-                await serviceClient.PurgeMessageQueueAsync(testDevice.Id).ConfigureAwait(false);
 
                 (Message msg, string messageId, string payload, string p1Value) = ComposeC2DTestMessage();
                 await serviceClient.SendAsync(testDevice.Id, msg).ConfigureAwait(false);
