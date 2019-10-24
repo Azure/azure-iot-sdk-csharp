@@ -400,8 +400,13 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>The previously received message</returns>
         public Task CompleteAsync(Message message)
         {
+            if (message == null)
+            {
+                throw new ArgumentNullException(nameof(message));
+            }
+
             // Codes_SRS_DEVICECLIENT_28_015: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.]
-            return CompleteAsync(message?.LockToken);
+            return CompleteAsync(message.LockToken);
         }
 
         /// <summary>
@@ -415,6 +420,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 throw new ArgumentNullException(nameof(message));
             }
+
             // Codes_SRS_DEVICECLIENT_28_015: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.]
             return CompleteAsync(message.LockToken, cancellationToken);
         }
@@ -461,6 +467,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>The lock identifier for the previously received message</returns>
         public Task AbandonAsync(Message message)
         {
+            if (message == null)
+            {
+                throw new ArgumentNullException(nameof(message));
+            }
+
             return AbandonAsync(message.LockToken);
         }
 
@@ -519,6 +530,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>The lock identifier for the previously received message</returns>
         public Task RejectAsync(Message message)
         {
+            if (message == null)
+            {
+                throw new ArgumentNullException(nameof(message));
+            }
+
             return RejectAsync(message.LockToken);
         }
 
@@ -544,11 +560,11 @@ namespace Microsoft.Azure.Devices.Client
         {
             try
             {
-            // Codes_SRS_DEVICECLIENT_28_013: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.]
-            using (CancellationTokenSource cts = CancellationTokenSourceFactory())
-            {
-                await SendEventAsync(message, cts.Token).ConfigureAwait(false);
-            }
+                // Codes_SRS_DEVICECLIENT_28_013: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.]
+                using (CancellationTokenSource cts = CancellationTokenSourceFactory())
+                {
+                    await SendEventAsync(message, cts.Token).ConfigureAwait(false);
+                }
             }
             catch (OperationCanceledException ex)
             {
