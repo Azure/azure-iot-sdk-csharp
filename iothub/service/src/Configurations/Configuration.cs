@@ -101,7 +101,7 @@ namespace Microsoft.Azure.Devices
         /// Custom Configuration Metrics
         /// </summary>
         [JsonProperty(PropertyName = "metrics", NullValueHandling = NullValueHandling.Ignore)]
-        public ConfigurationMetrics Metrics { get; internal set; }
+        public ConfigurationMetrics Metrics { get; set; }
 
         /// <summary>
         /// Gets or sets configuration's ETag
