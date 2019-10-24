@@ -114,7 +114,15 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Client.Message receivedMessage = null;
 
                 _log.WriteLine($"Receiving messages for device {deviceId}.");
-                receivedMessage = await dc.ReceiveAsync(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
+                if (transport == Client.TransportType.Http1)
+                {
+                    // timeout on HTTP is not supported
+                    receivedMessage = await dc.ReceiveAsync().ConfigureAwait(false);
+                }
+                else
+                {
+                    receivedMessage = await dc.ReceiveAsync(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
+                }
 
                 if (receivedMessage != null)
                 {
@@ -153,7 +161,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     transport == Client.TransportType.Mqtt_WebSocket_Only)
                 {
                     // Dummy ReceiveAsync to ensure mqtt subscription registration before SendAsync() is called on service client.
-                    await deviceClient.ReceiveAsync(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
+                    await deviceClient.ReceiveAsync(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
                 }
 
                 await serviceClient.OpenAsync().ConfigureAwait(false);

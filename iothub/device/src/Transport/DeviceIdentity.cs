@@ -62,6 +62,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
         }
 
+        internal bool IsPooling()
+        {
+            return (AuthenticationModel != AuthenticationModel.X509) && (AmqpTransportSettings?.AmqpConnectionPoolSettings?.Pooling ?? false);
+        }
+
         public override bool Equals(object obj)
         {
             return obj is DeviceIdentity identity
