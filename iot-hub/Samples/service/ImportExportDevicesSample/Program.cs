@@ -3,25 +3,68 @@
 
 using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.Samples
 {
     public class Program
     {
-        // To populate these variables, either:
-        // - pass these values as command-prompt arguments
-        // - set the corresponding environment variables (you can do this at the command line
-        //     and then run the app from the same command line.
-        // - create a launchSettings.json (see launchSettings.json.template) containing the variables
-        // If you do the last one, you have to rename launchSettings.json.template to launchSettings.json
-        //   for it to work.
-        // If you use the last method, be sure not to check the file into github with the 
-        //   connection strings still in it.
+        // This application will do the following:
+        //   * create new devices and add them to an IoT hub (for testing) -- you specify how many you want to add
+        //      --> This has been tested up to 500,000 devices, 
+        //          but should work all the way up to the million devices allowed on a hub.
+        //   * copy the devices from one hub to another
+        //   * delete the devices from any hub -- referred to as source or destination in case 
+        //       you're cloning a hub and want to test adding or copying devices more than once
+        //
+        // To specify which of the options you want to run,
+        // set these booleans to true or false, depending on which bits you want to run. 
+        // If you don't want them to run, set them to false.
+        //
+        // You can set environment variables for these, or pass them in as command-line arguments. 
+        // They are the first five command-line arguments, and all are required 
+        //   because args 6 through 8 are required connection strings. 
+        // These are passed in as strings and converted to numeric or boolean, whichever the case may be.        
 
-        //IoT Hub connection string. You can get this from the portal.
-        // Log into https://azure.portal.com, go to Resources, find your hub and select it.
-        // Then look for Shared Access Policies and select it. 
-        // Then select IoThubowner and copy one of the connection strings.
+        // Add randomly created devices to the hub.
+        private static bool addDevices = false;
+        //If you ask to add devices, this will be the number added.
+        private static int numToAdd = 0; 
+        // Copy the devices from the source hub to the destination hub.
+        private static bool copyDevices = false;
+        // Delete all of the devices from the source hub. (It uses the IoTHubConnectionString).
+        private static bool deleteSourceDevices = false;
+        // Delete all of the devices from the destination hub. (Uses the DestIotHubConnectionString).
+        private static bool deleteDestDevices = false;
+        // You can also add these to the launchSettings.json file (see launchSettings.json.template),
+        //  but you must be careful not to check that file in to source control and expose your secrets. 
+        //
+        // These are the connection strings to the hubs and the storage account. 
+        // If you are cloning a hub, the source is the original hub and the destination is the clone.         
+
+        // These retrieve the environment variables. If they are null or empty, 
+        //    it will try to get these from the command line arguments. 
+        // You can set these on the command line with the SET command, like this:
+        //    SET ADD_DEVICES=TRUE
+        // Then you run the application from that command window and the environment variables
+        //    will be available in the application.
+        // For more information about this application's use, see the Clone-a-hub article here: 
+        //   https://docs.microsoft.com/azure/iot-hub/iot-hub-how-to-clone
+        private static string _add_Devices =
+            Environment.GetEnvironmentVariable("ADD_DEVICES");
+        private static string _num_To_Add =
+            Environment.GetEnvironmentVariable("NUM_TO_ADD");
+        private static string _copy_Devices =
+            Environment.GetEnvironmentVariable("COPY_DEVICES");
+        private static string _delete_Source_Devices =
+            Environment.GetEnvironmentVariable("DELETE_SOURCE_DEVICES");
+        private static string _delete_Dest_Devices =
+            Environment.GetEnvironmentVariable("DELETE_DEST_DEVICES");
+
+        // IoT Hub connection string. You can get this from the portal.
+        //   Log into https://azure.portal.com, go to Resources, find your hub and select it.
+        //   Then look for Shared Access Policies and select it. 
+        //   Then select IoThubowner and copy one of the connection strings.
         private static string _IoTHubConnectionString =
             Environment.GetEnvironmentVariable("IOTHUB_CONN_STRING");
 
@@ -31,54 +74,140 @@ namespace Microsoft.Azure.Devices.Samples
             Environment.GetEnvironmentVariable("DEST_IOTHUB_CONN_STRING");
 
         // Connection string to the storage account used to hold the imported or exported data.
-        // Log into https://azure.portal.com, go to Resources, find your storage account and select it.
-        // Select Access Keys and copy one of the connection strings.
+        //   Log into https://azure.portal.com, go to Resources, find your storage account and select it.
+        //   Select Access Keys and copy one of the connection strings.
         private static string _storageAccountConnectionString =
             Environment.GetEnvironmentVariable("STORAGE_ACCT_CONN_STRING");
 
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
-            //To use this sample, uncomment the bits you want to run in ImportExportDevicesSample.RunSampleAsync
-
             //The size of the hub you are using should be able to manage the number of devices 
             //  you want to create and test with.
 
-            // Check and see if the environment variables were read. If not, check
-            //   for command-line arguments -- if found, load them into the connection strings.
-            // This is just another way to run the sample that lets you run it w/o 
-            //   putting the connection strings in the code.
-            if (string.IsNullOrEmpty(_IoTHubConnectionString) && args.Length> 0)
+            // When retrieving the variables, it works like this:
+            // For the 5 options, try to read the environment variable. These will be put in the 
+            //   private static strings above, like _copy_Devices.
+            // If the environment variable is blank and there is a command-line argument available, 
+            //   read that argument into a string (the private static strings above, like _copy_Devices).
+            // Convert the private static string to boolean or integer (depending on how it's defined)
+            //   and store the result in the class-level camelcase variables (like copyDevices).
+
+            // For the connection strings, try to read the environment variable. These will be put in the
+            //   private static strings above, like _IoTHubConnectionString. 
+            // If the connection string environment variable is blank, try to get it from the 
+            //   command line argument. These don't require any conversions because they are all text.
+
+            // Note that because of the order of the arguments, you can set the connection strings 
+            //   using environment variables and then pass in the five options using command line args.
+            // The only reason you might want to do this is because the connection strings are so long,
+            //   it makes it hard to distinguish them at the command line.
+
+            // If you want to look at the raw arg values, uncomment this and they will print in the console window.
+            for (int i = 0; i < args.Length; i++)
             {
-                _IoTHubConnectionString = args[0];
+                Console.WriteLine($"args({i}) = {args[i]}");
             }
-            if (string.IsNullOrEmpty(_DestIoTHubConnectionString) && args.Length > 1)
+            // **addDevices**
+            if (string.IsNullOrEmpty(_add_Devices) && args.Length > 0)
             {
-                _DestIoTHubConnectionString = args[1];
+                _add_Devices = args[0];
             }
-            if (string.IsNullOrEmpty(_storageAccountConnectionString) && args.Length > 2)
+            if (!string.IsNullOrEmpty(_add_Devices))
             {
-                _storageAccountConnectionString = args[2];
+                addDevices = _add_Devices.Trim().ToUpper() == "TRUE" ? true : false;
             }
 
+            // **numToAdd**
+            if (addDevices)
+            {
+                if (string.IsNullOrEmpty(_num_To_Add) && args.Length > 1)
+                {
+                    _num_To_Add = args[1];
+                }
+                if (!string.IsNullOrEmpty(_num_To_Add))
+                { 
+                    bool isNumber = int.TryParse(_num_To_Add, out numToAdd);
+                }
+            }
+
+            // **copyDevices**
+            if (string.IsNullOrEmpty(_copy_Devices) && args.Length > 2)
+            {
+                _copy_Devices = args[2];
+            }
+            if (!string.IsNullOrEmpty(_copy_Devices))
+            {
+                copyDevices = _copy_Devices.Trim().ToUpper() == "TRUE" ? true : false;
+            }
+            // **deleteSourceDevices**
+            if (string.IsNullOrEmpty(_delete_Source_Devices) && args.Length > 3)
+            {
+                _delete_Source_Devices = args[3].Trim().ToUpper();
+            }
+            if (!string.IsNullOrEmpty(_delete_Source_Devices))
+            { 
+                deleteSourceDevices = _delete_Source_Devices.Trim().ToUpper() == "TRUE" ? true : false;
+            }
+
+            // **deleteDestDevices**
+            if (string.IsNullOrEmpty(_delete_Dest_Devices) && args.Length > 4)
+            {
+                _delete_Dest_Devices = args[4];
+            }
+            if (!string.IsNullOrEmpty(_delete_Dest_Devices))
+            { 
+                deleteDestDevices = _delete_Dest_Devices.Trim().ToUpper() == "TRUE" ? true : false;
+            }
+
+            // ** IoTHubConnectionString **
+            if (string.IsNullOrEmpty(_IoTHubConnectionString) && args.Length > 5)
+            {
+                _IoTHubConnectionString = args[5];
+            }
+
+            // ** DestIoTHubConnectionString **
+            if (string.IsNullOrEmpty(_IoTHubConnectionString) && args.Length > 5)
+            {
+                _DestIoTHubConnectionString = args[5];
+            }
+
+            // ** storageAccountConnectionString **
+            if (string.IsNullOrEmpty(_storageAccountConnectionString) && args.Length > 5)
+            {
+                _storageAccountConnectionString = args[5];
+            }
+
+            // Show the data passed in and what it thinks it was.
+            Console.WriteLine("Inputs:");
+            Console.WriteLine($"  add devices = {addDevices}.");
+            Console.WriteLine($"  num to add = {numToAdd}.");
+            Console.WriteLine($"  copy devices = {copyDevices}.");
+            Console.WriteLine($"  delete source devices = {deleteSourceDevices}.");
+            Console.WriteLine($"  delete dest devices = {deleteDestDevices}.");
+            Console.WriteLine($"  IoTHubConnString = '{_IoTHubConnectionString}'.");
+            Console.WriteLine($"  IoTHubDestString = '{_DestIoTHubConnectionString}'.");
+            Console.WriteLine($"  storage connection string  = '{_storageAccountConnectionString}'.");
+
+            // Instantiate the class and run the sample.
             ImportExportDevicesSample importExportDevicesSample =
                 new ImportExportDevicesSample(_IoTHubConnectionString, _DestIoTHubConnectionString,
                 _storageAccountConnectionString);
 
             try
             {
-
-                importExportDevicesSample.RunSampleAsync().GetAwaiter().GetResult();
+                await importExportDevicesSample.RunSampleAsync(addDevices, numToAdd, copyDevices, deleteSourceDevices,
+                  deleteDestDevices);
             }
             catch (Exception ex)
             {
                 Debug.Print("Error. Description = {0}", ex.Message);
+                Console.WriteLine($"Error. Description = {ex.Message}\n{ex.StackTrace}");
             }
-
+            
             Console.WriteLine("Finished.");
             Console.WriteLine();
             Console.Write("Press any key to continue.");
             Console.ReadLine();
-
         }
     }
 }
