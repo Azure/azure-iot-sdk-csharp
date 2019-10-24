@@ -43,14 +43,20 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return ExecuteWithErrorHandlingAsync(() => base.OpenAsync(cancellationToken));
         }
 
+        public override Task OpenAsync(TimeoutHelper timeoutHelper)
+        {
+            return ExecuteWithErrorHandlingAsync(() => base.OpenAsync(timeoutHelper));
+        }
+
+
         public override Task<Message> ReceiveAsync(CancellationToken cancellationToken)
         {
             return ExecuteWithErrorHandlingAsync(() => base.ReceiveAsync(cancellationToken));
         }
 
-        public override Task<Message> ReceiveAsync(TimeSpan timeout, CancellationToken cancellationToken)
+        public override Task<Message> ReceiveAsync(TimeoutHelper timeoutHelper)
         {
-            return ExecuteWithErrorHandlingAsync(() => base.ReceiveAsync(timeout, cancellationToken));
+            return ExecuteWithErrorHandlingAsync(() => base.ReceiveAsync(timeoutHelper));
         }
 
         public override Task EnableMethodsAsync(CancellationToken cancellationToken)
