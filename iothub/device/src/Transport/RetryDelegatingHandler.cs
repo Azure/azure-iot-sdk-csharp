@@ -670,11 +670,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
             else if (hubException is DeviceDisabledException)
             {
+                // This mapping along with the DeviceDisabledException class 
+                // needs to be removed because DeviceDisabledException is not used anywhere.
                 status = ConnectionStatusChangeReason.Device_Disabled;
             }
             else if (hubException is DeviceNotFoundException)
             {
-                status = ConnectionStatusChangeReason.Device_Not_Found;
+                status = ConnectionStatusChangeReason.Device_Disabled;
             }
 
             _onConnectionStatusChanged(ConnectionStatus.Disconnected, status);
