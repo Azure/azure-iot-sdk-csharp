@@ -330,7 +330,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 await deviceClient.OpenAsync().ConfigureAwait(false);
                 await serviceClient.OpenAsync().ConfigureAwait(false);
-                await serviceClient.PurgeMessageQueueAsync(testDevice.Id).ConfigureAwait(false);
+                PurgeMessageQueueResult purgeMessageQResult = await serviceClient.PurgeMessageQueueAsync(testDevice.Id).ConfigureAwait(false);
+                _log.WriteLine($"Number of messages purged ='{purgeMessageQResult.TotalMessagesPurged}'");
                 System.Threading.Thread.Sleep(2000);
 
                 if (transport == Client.TransportType.Mqtt_Tcp_Only ||
@@ -359,7 +360,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 await deviceClient.OpenAsync().ConfigureAwait(false);
                 await serviceClient.OpenAsync().ConfigureAwait(false);
-                await serviceClient.PurgeMessageQueueAsync(testDevice.Id).ConfigureAwait(false);
+                PurgeMessageQueueResult purgeMessageQResult = await serviceClient.PurgeMessageQueueAsync(testDevice.Id).ConfigureAwait(false);
+                _log.WriteLine($"Number of messages purged ='{purgeMessageQResult.TotalMessagesPurged}'");
                 System.Threading.Thread.Sleep(2000);
 
                 (Message msg1, string messageId1, string payload1, string p1Value) = ComposeC2DTestMessage();
@@ -424,7 +426,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 
                 
                 await serviceClient.OpenAsync().ConfigureAwait(false);
-                await serviceClient.PurgeMessageQueueAsync(testDevice.Id).ConfigureAwait(false);
+                PurgeMessageQueueResult purgeMessageQResult = await serviceClient.PurgeMessageQueueAsync(testDevice.Id).ConfigureAwait(false);
+                _log.WriteLine($"Number of messages purged ='{purgeMessageQResult.TotalMessagesPurged}'");
                 System.Threading.Thread.Sleep(2000);
 
                 int numMessages = 0;
@@ -457,7 +460,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
                 finally
                 {
-                    await serviceClient.PurgeMessageQueueAsync(testDevice.Id).ConfigureAwait(false);
+                    purgeMessageQResult = await serviceClient.PurgeMessageQueueAsync(testDevice.Id).ConfigureAwait(false);
+                    _log.WriteLine($"Number of messages purged ='{purgeMessageQResult.TotalMessagesPurged}'");
                     System.Threading.Thread.Sleep(2000);
                     await deviceClient.CloseAsync().ConfigureAwait(false);
                     await serviceClient.CloseAsync().ConfigureAwait(false);
