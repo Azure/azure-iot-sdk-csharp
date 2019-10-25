@@ -98,9 +98,9 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
                 if (currentRetryCount < this.retryCount)
                 {
                     Random random = new Random();
-                    int num = (int)((Math.Pow(2.0, (double)currentRetryCount) - 1.0) * (double)random.Next((int)(this.deltaBackoff.TotalMilliseconds * 0.8), (int)(this.deltaBackoff.TotalMilliseconds * 1.2)));
-                    int num2 = (int)Math.Min(this.minBackoff.TotalMilliseconds + (double)num, this.maxBackoff.TotalMilliseconds);
-                    retryInterval = TimeSpan.FromMilliseconds((double)num2);
+                    double num = ((Math.Pow(2.0, currentRetryCount) - 1.0) * random.Next((int)(this.deltaBackoff.TotalMilliseconds * 0.8), (int)(this.deltaBackoff.TotalMilliseconds * 1.2)));
+                    double num2 = Math.Min(this.minBackoff.TotalMilliseconds + num, this.maxBackoff.TotalMilliseconds);
+                    retryInterval = TimeSpan.FromMilliseconds(num2);
                     return true;
                 }
                 retryInterval = TimeSpan.Zero;
