@@ -444,7 +444,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                         await serviceClient.SendAsync(testDevice.Id, msg1).ConfigureAwait(false);
                         numMessages++;
                     }
-                    Assert.Fail(); // If no exception is thrown then it gets here.
+                    // If no exception is thrown then it gets here
+                    Assert.Fail($"Number of C2D messages sent so far are : {numMessages} device : {testDevice.Id}"); 
                 }
                 catch (Exception ex)
                 {
