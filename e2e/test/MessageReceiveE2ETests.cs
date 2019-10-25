@@ -242,8 +242,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     cts.Dispose();
                     cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
                     receivedMessage = await ReceiveMessage(transport, dc, deviceId, cts).ConfigureAwait(false);
-                    string messageData = Encoding.ASCII.GetString(receivedMessage.GetBytes());
-                    Assert.IsNull(receivedMessage, $"received message is : {messageData} for device : {deviceId}");
+                    Assert.IsNull(receivedMessage, $"received message is not NULL for device : {deviceId}");
                     break;
                 }
 
@@ -274,8 +273,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     await dc.RejectAsync(receivedMessage).ConfigureAwait(false);
                     System.Threading.Thread.Sleep(2000);
                     receivedMessage = await ReceiveMessage(transport, dc, deviceId, cts).ConfigureAwait(false);
-                    string messageData = Encoding.ASCII.GetString(receivedMessage.GetBytes());
-                    Assert.IsNull(receivedMessage, $"received message is : {messageData} for device : {deviceId}");
+                    Assert.IsNull(receivedMessage, $"received message is not NULL for device : {deviceId}");
                     break;
                 }
 
@@ -306,8 +304,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     await dc.AbandonAsync(receivedMessage).ConfigureAwait(false);
                     System.Threading.Thread.Sleep(2000);
                     receivedMessage = await ReceiveMessage(transport, dc, deviceId, cts).ConfigureAwait(false);
-                    string messageData = Encoding.ASCII.GetString(receivedMessage.GetBytes());
-                    Assert.IsNull(receivedMessage, $"received message is : {messageData} for device : {deviceId}");
+                    Assert.IsNotNull(receivedMessage, $"received message is NULL for device : {deviceId}");
                     VerifyMessage(deviceId, payload, p1Value, receivedMessage);
                     await dc.CompleteAsync(receivedMessage).ConfigureAwait(false);
 
