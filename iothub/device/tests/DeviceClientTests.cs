@@ -1137,5 +1137,101 @@ namespace Microsoft.Azure.Devices.Client.Test
             client.ProductInfo = userAgent;
             Assert.AreEqual(userAgent, client.ProductInfo);
         }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public async Task CompleteAsyncThrowsForNullMessage()
+        {
+            DeviceClient client = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            await client.CompleteAsync((Message)null);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public async Task CompleteAsyncWithCancellationTokenThrowsForNullMessage()
+        {
+            DeviceClient client = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            await client.CompleteAsync((Message)null, CancellationToken.None);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public async Task CompleteAsyncThrowsForNullLockToken()
+        {
+            DeviceClient client = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            await client.CompleteAsync((string)null);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public async Task CompleteAsyncWithCancellationTokenThrowsForNullLockToken()
+        {
+            DeviceClient client = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            await client.CompleteAsync((string)null, CancellationToken.None);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public async Task RejectAsyncThrowsForNullMessage()
+        {
+            DeviceClient client = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            await client.RejectAsync((Message)null);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public async Task RejectAsyncWithCancellationTokenThrowsForNullMessage()
+        {
+            DeviceClient client = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            await client.RejectAsync((Message)null, CancellationToken.None);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public async Task RejectAsyncThrowsForNullLockToken()
+        {
+            DeviceClient client = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            await client.RejectAsync((string)null);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public async Task RejectAsyncWithCancellationTokenThrowsForNullLockToken()
+        {
+            DeviceClient client = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            await client.RejectAsync((string)null, CancellationToken.None);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public async Task AbandonAsyncThrowsForNullMessage()
+        {
+            DeviceClient client = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            await client.AbandonAsync((Message)null);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public async Task AbandonAsyncWithCancellationTokenThrowsForNullMessage()
+        {
+            DeviceClient client = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            await client.AbandonAsync((Message)null, CancellationToken.None);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public async Task AbandonAsyncThrowsForNullLockToken()
+        {
+            DeviceClient client = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            await client.AbandonAsync((string)null);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public async Task AbandonAsyncWithCancellationTokenThrowsForNullLockToken()
+        {
+            DeviceClient client = DeviceClient.CreateFromConnectionString(fakeConnectionString);
+            await client.AbandonAsync((string)null, CancellationToken.None);
+        }
     }
 }
