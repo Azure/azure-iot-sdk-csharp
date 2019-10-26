@@ -1,0 +1,199 @@
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+namespace Microsoft.Azure.Devices.E2ETests
+{
+    using Microsoft.Azure.Devices.Client;
+    using Microsoft.Azure.Devices.Client.Exceptions;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using System;
+    using System.Diagnostics.Tracing;
+    using System.Net;
+    using System.Threading.Tasks;
+
+    [TestClass]
+    [TestCategory("IoTHub-E2E")]
+    public class ConnectionStatusChangeHandlerTests : IDisposable
+    {
+        private readonly string DevicePrefix = $"E2E_{nameof(ConnectionStatusChangeHandlerTests)}";
+        private readonly string ModulePrefix = $"E2E_{nameof(ConnectionStatusChangeHandlerTests)}";
+        private static TestLogging _log = TestLogging.GetInstance();
+
+        private readonly ConsoleEventListener _listener;
+
+        public ConnectionStatusChangeHandlerTests()
+        {
+            _listener = TestConfig.StartEventListener();
+        }
+
+        [TestMethod]
+        public async Task DeviceClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled()
+        {
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix + "_DeviceClient").ConfigureAwait(false);
+            string deviceConnectionString = testDevice.ConnectionString;
+
+            var config = new Configuration.IoTHub.DeviceConnectionStringParser(deviceConnectionString);
+            string iotHub = config.IoTHub;
+            string deviceId = config.DeviceID;
+            string key = config.SharedAccessKey;
+
+            SharedAccessSignatureBuilder builder = new SharedAccessSignatureBuilder()
+            {
+                Key = key,
+                TimeToLive = new TimeSpan(0, 10, 0),
+                Target = $"{iotHub}/devices/{WebUtility.UrlEncode(deviceId)}",
+            };
+
+            DeviceAuthenticationWithToken auth = new DeviceAuthenticationWithToken(deviceId, builder.ToSignature());
+
+            ConnectionStatus? status = null;
+            ConnectionStatusChangeReason? statusChangeReason = null;
+            bool deviceDisabledReceived = false;
+
+            using (DeviceClient deviceClient = DeviceClient.Create(iotHub, auth, Client.TransportType.Amqp_Tcp_Only))
+            {
+                IRetryPolicy retryStrategy = new ExponentialBackoff(
+                    retryCount: 2,
+                    minBackoff: TimeSpan.FromMilliseconds(100),
+                    maxBackoff: TimeSpan.FromSeconds(10),
+                    deltaBackoff: TimeSpan.FromMilliseconds(100));
+                deviceClient.SetRetryPolicy(retryStrategy);
+
+                ConnectionStatusChangesHandler statusChangeHandler = (s, r) =>
+                {
+                    if (r == ConnectionStatusChangeReason.Device_Disabled)
+                    {
+                        status = s;
+                        statusChangeReason = r;
+                        deviceDisabledReceived = true;
+                    }
+                };
+
+                deviceClient.SetConnectionStatusChangesHandler(statusChangeHandler);
+                _log.WriteLine($"Created {nameof(DeviceClient)} ID={TestLogging.IdOf(deviceClient)}");
+
+                Console.WriteLine("DeviceClient OpenAsync.");
+                await deviceClient.OpenAsync().ConfigureAwait(false);
+
+                // Receiving the module twin should succeed right now.
+                Console.WriteLine("ModuleClient GetTwinAsync.");
+                var twin = await deviceClient.GetTwinAsync().ConfigureAwait(false);
+                Assert.IsNotNull(twin);
+
+                // Delete the device in IoT Hub. This should trigger the ConnectionStatusChangesHandler.
+                using (RegistryManager registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
+                {
+                    await registryManager.RemoveDeviceAsync(deviceId).ConfigureAwait(false);
+                }
+
+                // Periodically keep retrieving the device twin to keep connection alive.
+                // The ConnectionStatusChangesHandler should be triggered when the connection is closed from IoT hub with an
+                // exception thrown.
+                int twinRetrievals = 10;
+                for (int i = 0; i < twinRetrievals; i++)
+                {
+                    try
+                    {
+                        if (deviceDisabledReceived)
+                        {
+                            break;
+                        }
+
+                        await Task.Delay(TimeSpan.FromSeconds(5)).ConfigureAwait(false);
+                        await deviceClient.GetTwinAsync().ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        _log.WriteLine($"Exception occurred while retrieving module twin: {ex}");
+                    }
+                }
+
+                Assert.AreEqual(ConnectionStatus.Disconnected, status);
+                Assert.AreEqual(ConnectionStatusChangeReason.Device_Disabled, statusChangeReason);
+            }
+        }
+
+        [TestMethod]
+        public async Task ModuleClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled()
+        {
+            AmqpTransportSettings amqpTransportSettings = new AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only);
+            ITransportSettings[] transportSettings = new ITransportSettings[] { amqpTransportSettings };
+
+            TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix + "_DeviceClient", ModulePrefix).ConfigureAwait(false);
+            ConnectionStatus? status = null;
+            ConnectionStatusChangeReason? statusChangeReason = null;
+            bool deviceDisabledReceived = false;
+            ConnectionStatusChangesHandler statusChangeHandler = (s, r) =>
+            {
+                if (r == ConnectionStatusChangeReason.Device_Disabled)
+                {
+                    status = s;
+                    statusChangeReason = r;
+                    deviceDisabledReceived = true;
+                }
+            };
+
+            using (ModuleClient moduleClient = ModuleClient.CreateFromConnectionString(testModule.ConnectionString, transportSettings))
+            {
+                IRetryPolicy retryStrategy = new ExponentialBackoff(
+                    retryCount: 2,
+                    minBackoff: TimeSpan.FromMilliseconds(100),
+                    maxBackoff: TimeSpan.FromSeconds(10),
+                    deltaBackoff: TimeSpan.FromMilliseconds(100));
+                moduleClient.SetRetryPolicy(retryStrategy);
+                moduleClient.SetConnectionStatusChangesHandler(statusChangeHandler);
+                _log.WriteLine($"Created {nameof(DeviceClient)} ID={TestLogging.IdOf(moduleClient)}");
+
+                Console.WriteLine("ModuleClient OpenAsync.");
+                await moduleClient.OpenAsync().ConfigureAwait(false);
+
+                // Receiving the module twin should succeed right now.
+                Console.WriteLine("ModuleClient GetTwinAsync.");
+                var twin = await moduleClient.GetTwinAsync().ConfigureAwait(false);
+                Assert.IsNotNull(twin);
+
+                // Delete the device in IoT Hub.
+                using (RegistryManager registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
+                {
+                    await registryManager.RemoveDeviceAsync(testModule.DeviceId).ConfigureAwait(false);
+                }
+
+                // Periodically keep retrieving the device twin to keep connection alive.
+                // The ConnectionStatusChangesHandler should be triggered when the connection is closed from IoT hub with an
+                // exception thrown.
+                int twinRetrievals = 10;
+                for(int i = 0; i < twinRetrievals; i++)
+                {
+                    try
+                    {
+                        if (deviceDisabledReceived)
+                        {
+                            break;
+                        }
+
+                        await Task.Delay(TimeSpan.FromSeconds(5)).ConfigureAwait(false);
+                        await moduleClient.GetTwinAsync().ConfigureAwait(false);
+                    }
+                    catch (IotHubException ex)
+                    {
+                        _log.WriteLine($"Exception occurred while retrieving module twin: {ex}");
+                        Assert.IsInstanceOfType(ex.InnerException, typeof(DeviceNotFoundException));
+                    }
+                }
+
+                Assert.AreEqual(ConnectionStatus.Disconnected, status);
+                Assert.AreEqual(ConnectionStatusChangeReason.Device_Disabled, statusChangeReason);
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+        }
+    }
+}
