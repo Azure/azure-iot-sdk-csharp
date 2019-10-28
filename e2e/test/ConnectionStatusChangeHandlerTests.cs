@@ -8,7 +8,6 @@ namespace Microsoft.Azure.Devices.E2ETests
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using System;
     using System.Diagnostics.Tracing;
-    using System.Net;
     using System.Threading.Tasks;
 
     [TestClass]
@@ -33,32 +32,14 @@ namespace Microsoft.Azure.Devices.E2ETests
             string deviceConnectionString = testDevice.ConnectionString;
 
             var config = new Configuration.IoTHub.DeviceConnectionStringParser(deviceConnectionString);
-            string iotHub = config.IoTHub;
             string deviceId = config.DeviceID;
-            string key = config.SharedAccessKey;
-
-            SharedAccessSignatureBuilder builder = new SharedAccessSignatureBuilder()
-            {
-                Key = key,
-                TimeToLive = new TimeSpan(0, 10, 0),
-                Target = $"{iotHub}/devices/{WebUtility.UrlEncode(deviceId)}",
-            };
-
-            DeviceAuthenticationWithToken auth = new DeviceAuthenticationWithToken(deviceId, builder.ToSignature());
 
             ConnectionStatus? status = null;
             ConnectionStatusChangeReason? statusChangeReason = null;
             bool deviceDisabledReceived = false;
 
-            using (DeviceClient deviceClient = DeviceClient.Create(iotHub, auth, Client.TransportType.Amqp_Tcp_Only))
+            using (DeviceClient deviceClient =  DeviceClient.CreateFromConnectionString(deviceConnectionString, Client.TransportType.Amqp_Tcp_Only))
             {
-                IRetryPolicy retryStrategy = new ExponentialBackoff(
-                    retryCount: 2,
-                    minBackoff: TimeSpan.FromMilliseconds(100),
-                    maxBackoff: TimeSpan.FromSeconds(10),
-                    deltaBackoff: TimeSpan.FromMilliseconds(100));
-                deviceClient.SetRetryPolicy(retryStrategy);
-
                 ConnectionStatusChangesHandler statusChangeHandler = (s, r) =>
                 {
                     if (r == ConnectionStatusChangeReason.Device_Disabled)
@@ -135,12 +116,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             using (ModuleClient moduleClient = ModuleClient.CreateFromConnectionString(testModule.ConnectionString, transportSettings))
             {
-                IRetryPolicy retryStrategy = new ExponentialBackoff(
-                    retryCount: 2,
-                    minBackoff: TimeSpan.FromMilliseconds(100),
-                    maxBackoff: TimeSpan.FromSeconds(10),
-                    deltaBackoff: TimeSpan.FromMilliseconds(100));
-                moduleClient.SetRetryPolicy(retryStrategy);
                 moduleClient.SetConnectionStatusChangesHandler(statusChangeHandler);
                 _log.WriteLine($"Created {nameof(DeviceClient)} ID={TestLogging.IdOf(moduleClient)}");
 
