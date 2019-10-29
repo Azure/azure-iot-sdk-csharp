@@ -72,6 +72,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 ConnectionStringAuthScope.IoTHub).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         public async Task Message_DeviceSak_DeviceReceiveSingleMessage_MultipleConnections_Amqp()
         {
@@ -81,6 +82,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 PoolingOverAmqp.MultipleConnections_DevicesCount).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         public async Task Message_DeviceSak_DeviceReceiveSingleMessage_MultipleConnections_AmqpWs()
         {
@@ -90,6 +92,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 PoolingOverAmqp.MultipleConnections_DevicesCount).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         public async Task Message_IoTHubSak_DeviceReceiveSingleMessage_MultipleConnections_Amqp()
         {
@@ -100,6 +103,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 ConnectionStringAuthScope.IoTHub).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         public async Task Message_IoTHubSak_DeviceReceiveSingleMessage_MultipleConnections_AmqpWs()
         {

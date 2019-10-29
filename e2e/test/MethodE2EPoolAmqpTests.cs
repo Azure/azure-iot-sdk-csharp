@@ -133,6 +133,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 authScope: ConnectionStringAuthScope.IoTHub).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         public async Task Method_DeviceSak_DeviceReceivesMethodAndResponse_MultipleConnections_Amqp()
         {
@@ -144,6 +145,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 MethodE2ETests.SetDeviceReceiveMethod).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         public async Task Method_DeviceSak_DeviceReceivesMethodAndResponse_MultipleConnections_AmqpWs()
         {
@@ -155,6 +157,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 MethodE2ETests.SetDeviceReceiveMethod).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         public async Task Method_IoTHubSak_DeviceReceivesMethodAndResponse_MultipleConnections_Amqp()
         {
@@ -167,6 +170,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 authScope: ConnectionStringAuthScope.IoTHub).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         public async Task Method_IoTHubSak_DeviceReceivesMethodAndResponse_MultipleConnections_AmqpWs()
         {
@@ -179,6 +183,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 authScope: ConnectionStringAuthScope.IoTHub).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         public async Task Method_DeviceSak_DeviceReceivesMethodAndResponseWithDefaultHandler_MultipleConnections_Amqp()
         {
@@ -190,6 +195,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 MethodE2ETests.SetDeviceReceiveMethodDefaultHandler).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         public async Task Method_DeviceSak_DeviceReceivesMethodAndResponseWithDefaultHandler_MultipleConnections_AmqpWs()
         {
@@ -201,6 +207,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 MethodE2ETests.SetDeviceReceiveMethodDefaultHandler).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         public async Task Method_IoTHubSak_DeviceReceivesMethodAndResponseWithDefaultHandler_MultipleConnections_Amqp()
         {
@@ -213,6 +220,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 authScope: ConnectionStringAuthScope.IoTHub).ConfigureAwait(false);
         }
 
+        [Ignore]
         [TestMethod]
         public async Task Method_IoTHubSak_DeviceReceivesMethodAndResponseWithDefaultHandler_MultipleConnections_AmqpWs()
         {
