@@ -14,7 +14,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestCategory("IoTHub-E2E")]
     public class ConnectionStatusChangeHandlerTests : IDisposable
     {
-        private readonly string DevicePrefix = $"E2E_{nameof(ConnectionStatusChangeHandlerTests)}";
+        private readonly string DevicePrefix = $"E2E_{nameof(ConnectionStatusChangeHandlerTests)}_Device";
         private readonly string ModulePrefix = $"E2E_{nameof(ConnectionStatusChangeHandlerTests)}";
         private static TestLogging _log = TestLogging.GetInstance();
 
@@ -26,9 +26,32 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        public async Task DeviceClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled()
+        public async Task DeviceClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AMQP_TCP()
         {
-            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix + "_DeviceClient").ConfigureAwait(false);
+            await this.DeviceClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_Base(TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task DeviceClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AMQP_WS()
+        {
+            await this.DeviceClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_Base(TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task ModuleClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AMQP_TCP()
+        {
+            await this.ModuleClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_Base(TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task ModuleClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_AMQP_WS()
+        {
+            await this.ModuleClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_Base(TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
+        }
+
+        async Task DeviceClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_Base(Client.TransportType protocol)
+        {
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix + $"_{Guid.NewGuid()}").ConfigureAwait(false);
             string deviceConnectionString = testDevice.ConnectionString;
 
             var config = new Configuration.IoTHub.DeviceConnectionStringParser(deviceConnectionString);
@@ -38,7 +61,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             ConnectionStatusChangeReason? statusChangeReason = null;
             bool deviceDisabledReceived = false;
 
-            using (DeviceClient deviceClient =  DeviceClient.CreateFromConnectionString(deviceConnectionString, Client.TransportType.Amqp_Tcp_Only))
+            using (DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionString, protocol))
             {
                 ConnectionStatusChangesHandler statusChangeHandler = (s, r) =>
                 {
@@ -94,13 +117,12 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        [TestMethod]
-        public async Task ModuleClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled()
+        async Task ModuleClient_DeviceDeleted_Gives_ConnectionStatus_DeviceDisabled_Base(Client.TransportType protocol)
         {
-            AmqpTransportSettings amqpTransportSettings = new AmqpTransportSettings(Client.TransportType.Amqp_Tcp_Only);
+            AmqpTransportSettings amqpTransportSettings = new AmqpTransportSettings(protocol);
             ITransportSettings[] transportSettings = new ITransportSettings[] { amqpTransportSettings };
 
-            TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix + "_DeviceClient", ModulePrefix).ConfigureAwait(false);
+            TestModule testModule = await TestModule.GetTestModuleAsync(DevicePrefix + $"_{Guid.NewGuid()}", ModulePrefix).ConfigureAwait(false);
             ConnectionStatus? status = null;
             ConnectionStatusChangeReason? statusChangeReason = null;
             bool deviceDisabledReceived = false;
@@ -137,7 +159,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 // The ConnectionStatusChangesHandler should be triggered when the connection is closed from IoT hub with an
                 // exception thrown.
                 int twinRetrievals = 10;
-                for(int i = 0; i < twinRetrievals; i++)
+                for (int i = 0; i < twinRetrievals; i++)
                 {
                     try
                     {
