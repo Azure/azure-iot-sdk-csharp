@@ -26,7 +26,7 @@ namespace Microsoft.Azure.Devices.Samples
         //   because args 6 through 8 are required connection strings. 
         // These are passed in as strings and converted to numeric or boolean, whichever the case may be.        
 
-        // Add randomly created devices to the hub.
+        // Add randomly created devices to the source hub.
         private static bool addDevices = false;
         //If you ask to add devices, this will be the number added.
         private static int numToAdd = 0; 
