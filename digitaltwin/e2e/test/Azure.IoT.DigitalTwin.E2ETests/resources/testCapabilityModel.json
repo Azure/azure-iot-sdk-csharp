@@ -1,0 +1,13 @@
+{
+  "@id": "urn:contoso:azureiot:sdk:testinterface:cm:1",
+  "@type": "CapabilityModel",
+  "displayName": "Test capability Model With Single Interface",
+  "description": "A test DCM used in digital twin SDK end to end tests",
+  "implements": [
+    {
+      "name": "testInterfaceInstance",
+      "schema": "urn:contoso:azureiot:sdk:testinterface:1"
+    }
+  ],
+  "@context": "http://azureiot.com/v1/contexts/CapabilityModel.json"
+}

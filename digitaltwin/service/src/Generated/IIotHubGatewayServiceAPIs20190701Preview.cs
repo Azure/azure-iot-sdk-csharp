@@ -4,7 +4,7 @@
 // regenerated.
 // </auto-generated>
 
-namespace Azure.IoT.DigitalTwin.Service
+namespace Azure.IoT.DigitalTwin.Service.Generated
 {
     using Microsoft.Rest;
     using Models;
@@ -12,7 +12,7 @@ namespace Azure.IoT.DigitalTwin.Service
 
     /// <summary>
     /// </summary>
-    public partial interface IIotHubGatewayServiceAPIs20190701Preview : System.IDisposable
+    internal partial interface IIotHubGatewayServiceAPIs20190701Preview : System.IDisposable
     {
         /// <summary>
         /// The base URI of the service.
@@ -30,7 +30,7 @@ namespace Azure.IoT.DigitalTwin.Service
         JsonSerializerSettings DeserializationSettings { get; }
 
         /// <summary>
-        /// Version of the Api. Must be 2019-07-01-preview
+        /// Version of the Api.
         /// </summary>
         string ApiVersion { get; set; }
 

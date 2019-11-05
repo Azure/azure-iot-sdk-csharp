@@ -12,7 +12,7 @@ namespace Azure.IoT.DigitalTwin.Service.Models
     /// <summary>
     /// Defines headers for UpdateMultipleInterfaces operation.
     /// </summary>
-    public partial class DigitalTwinUpdateMultipleInterfacesHeaders
+    internal partial class DigitalTwinUpdateMultipleInterfacesHeaders
     {
         /// <summary>
         /// Initializes a new instance of the

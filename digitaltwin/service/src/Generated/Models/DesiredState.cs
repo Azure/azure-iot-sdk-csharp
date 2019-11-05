@@ -4,12 +4,12 @@
 // regenerated.
 // </auto-generated>
 
-namespace Azure.IoT.DigitalTwin.Service.Models
+namespace Azure.IoT.DigitalTwin.Service.Generated.Models
 {
     using Newtonsoft.Json;
     using System.Linq;
 
-    public partial class DesiredState
+    internal partial class DesiredState
     {
         /// <summary>
         /// Initializes a new instance of the DesiredState class.
@@ -23,14 +23,12 @@ namespace Azure.IoT.DigitalTwin.Service.Models
         /// Initializes a new instance of the DesiredState class.
         /// </summary>
         /// <param name="code">Status code for the operation.</param>
-        /// <param name="subCode">Sub status code for the status.</param>
         /// <param name="version">Version of the desired value
         /// received.</param>
         /// <param name="description">Description of the status.</param>
-        public DesiredState(int? code = default(int?), int? subCode = default(int?), long? version = default(long?), string description = default(string))
+        public DesiredState(int? code = default(int?), long? version = default(long?), string description = default(string))
         {
             Code = code;
-            SubCode = subCode;
             Version = version;
             Description = description;
             CustomInit();
@@ -46,12 +44,6 @@ namespace Azure.IoT.DigitalTwin.Service.Models
         /// </summary>
         [JsonProperty(PropertyName = "code")]
         public int? Code { get; set; }
-
-        /// <summary>
-        /// Gets or sets sub status code for the status.
-        /// </summary>
-        [JsonProperty(PropertyName = "subCode")]
-        public int? SubCode { get; set; }
 
         /// <summary>
         /// Gets or sets version of the desired value received.

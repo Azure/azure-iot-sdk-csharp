@@ -4,14 +4,14 @@
 // regenerated.
 // </auto-generated>
 
-namespace Azure.IoT.DigitalTwin.Service.Models
+namespace Azure.IoT.DigitalTwin.Service.Generated.Models
 {
     using Newtonsoft.Json;
     using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
 
-    public partial class InterfaceModel
+    internal partial class InterfaceModel
     {
         /// <summary>
         /// Initializes a new instance of the InterfaceModel class.
@@ -24,8 +24,7 @@ namespace Azure.IoT.DigitalTwin.Service.Models
         /// <summary>
         /// Initializes a new instance of the InterfaceModel class.
         /// </summary>
-        /// <param name="name">The name of digital twin interface, e.g.:
-        /// myThermostat.</param>
+        /// <param name="name">Full name of digital twin interface.</param>
         /// <param name="properties">List of all properties in an
         /// interface.</param>
         public InterfaceModel(string name = default(string), IDictionary<string, Property> properties = default(IDictionary<string, Property>))
@@ -41,8 +40,7 @@ namespace Azure.IoT.DigitalTwin.Service.Models
         partial void CustomInit();
 
         /// <summary>
-        /// Gets or sets the name of digital twin interface, e.g.:
-        /// myThermostat.
+        /// Gets or sets full name of digital twin interface.
         /// </summary>
         [JsonProperty(PropertyName = "name")]
         public string Name { get; set; }

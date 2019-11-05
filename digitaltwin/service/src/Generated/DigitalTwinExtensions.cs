@@ -4,7 +4,7 @@
 // regenerated.
 // </auto-generated>
 
-namespace Azure.IoT.DigitalTwin.Service
+namespace Azure.IoT.DigitalTwin.Service.Generated
 {
     using Models;
     using System.Threading;
@@ -13,10 +13,10 @@ namespace Azure.IoT.DigitalTwin.Service
     /// <summary>
     /// Extension methods for DigitalTwin.
     /// </summary>
-    public static partial class DigitalTwinExtensions
+    internal static partial class DigitalTwinExtensions
     {
             /// <summary>
-            /// Gets the properties of interfaces.
+            /// Gets the list of interfaces.
             /// </summary>
             /// <param name='operations'>
             /// The operations group for this extension method.
@@ -24,32 +24,13 @@ namespace Azure.IoT.DigitalTwin.Service
             /// <param name='digitalTwinId'>
             /// Digital Twin ID. Format of digitalTwinId is DeviceId[~ModuleId]. ModuleId
             /// is optional.
-            /// Example 1: "myDevice"
-            /// Example 2: "myDevice~module1"
-            /// </param>
-            public static DigitalTwinInterfaces GetAllInterfaces(this IDigitalTwin operations, string digitalTwinId)
-            {
-                return operations.GetAllInterfacesAsync(digitalTwinId).GetAwaiter().GetResult();
-            }
-
-            /// <summary>
-            /// Gets the properties of interfaces.
-            /// </summary>
-            /// <param name='operations'>
-            /// The operations group for this extension method.
-            /// </param>
-            /// <param name='digitalTwinId'>
-            /// Digital Twin ID. Format of digitalTwinId is DeviceId[~ModuleId]. ModuleId
-            /// is optional.
-            /// Example 1: "myDevice"
-            /// Example 2: "myDevice~module1"
             /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<DigitalTwinInterfaces> GetAllInterfacesAsync(this IDigitalTwin operations, string digitalTwinId, CancellationToken cancellationToken = default(CancellationToken))
+            internal static async Task<string> GetInterfacesAsync(this IDigitalTwin operations, string digitalTwinId, CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.GetAllInterfacesWithHttpMessagesAsync(digitalTwinId, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.GetInterfacesWithHttpMessagesAsync(digitalTwinId, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
@@ -65,33 +46,8 @@ namespace Azure.IoT.DigitalTwin.Service
             /// <param name='digitalTwinId'>
             /// Digital Twin ID. Format of digitalTwinId is DeviceId[~ModuleId]. ModuleId
             /// is optional.
-            /// Example 1: "myDevice"
-            /// Example 2: "myDevice~module1"
             /// </param>
-            /// <param name='interfacesPatchInfo'>
-            /// Multiple interfaces desired properties to update.
-            /// </param>
-            /// <param name='ifMatch'>
-            /// </param>
-            public static DigitalTwinInterfaces UpdateMultipleInterfaces(this IDigitalTwin operations, string digitalTwinId, DigitalTwinInterfacesPatch interfacesPatchInfo, string ifMatch = default(string))
-            {
-                return operations.UpdateMultipleInterfacesAsync(digitalTwinId, interfacesPatchInfo, ifMatch).GetAwaiter().GetResult();
-            }
-
-            /// <summary>
-            /// Updates desired properties of multiple interfaces.
-            /// Example URI: "digitalTwins/{digitalTwinId}/interfaces"
-            /// </summary>
-            /// <param name='operations'>
-            /// The operations group for this extension method.
-            /// </param>
-            /// <param name='digitalTwinId'>
-            /// Digital Twin ID. Format of digitalTwinId is DeviceId[~ModuleId]. ModuleId
-            /// is optional.
-            /// Example 1: "myDevice"
-            /// Example 2: "myDevice~module1"
-            /// </param>
-            /// <param name='interfacesPatchInfo'>
+            /// <param name='patch'>
             /// Multiple interfaces desired properties to update.
             /// </param>
             /// <param name='ifMatch'>
@@ -99,16 +55,16 @@ namespace Azure.IoT.DigitalTwin.Service
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<DigitalTwinInterfaces> UpdateMultipleInterfacesAsync(this IDigitalTwin operations, string digitalTwinId, DigitalTwinInterfacesPatch interfacesPatchInfo, string ifMatch = default(string), CancellationToken cancellationToken = default(CancellationToken))
+            internal static async Task<string> UpdateInterfacesAsync(this IDigitalTwin operations, string digitalTwinId, string patch, string ifMatch = default(string), CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.UpdateMultipleInterfacesWithHttpMessagesAsync(digitalTwinId, interfacesPatchInfo, ifMatch, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.UpdateInterfacesWithHttpMessagesAsync(digitalTwinId, patch, ifMatch, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
             }
 
             /// <summary>
-            /// Gets the properties of given interface.
+            /// Gets the interface of given interfaceId.
             /// Example URI: "digitalTwins/{digitalTwinId}/interfaces/{interfaceName}"
             /// </summary>
             /// <param name='operations'>
@@ -117,141 +73,24 @@ namespace Azure.IoT.DigitalTwin.Service
             /// <param name='digitalTwinId'>
             /// Digital Twin ID. Format of digitalTwinId is DeviceId[~ModuleId]. ModuleId
             /// is optional.
-            /// Example 1: "myDevice"
-            /// Example 2: "myDevice~module1"
             /// </param>
             /// <param name='interfaceName'>
-            /// Interface name, for example &lt;example&gt;myThermostat&lt;/example&gt;.
-            /// </param>
-            public static DigitalTwinInterfaces GetSingleInterface(this IDigitalTwin operations, string digitalTwinId, string interfaceName)
-            {
-                return operations.GetSingleInterfaceAsync(digitalTwinId, interfaceName).GetAwaiter().GetResult();
-            }
-
-            /// <summary>
-            /// Gets the properties of given interface.
-            /// Example URI: "digitalTwins/{digitalTwinId}/interfaces/{interfaceName}"
-            /// </summary>
-            /// <param name='operations'>
-            /// The operations group for this extension method.
-            /// </param>
-            /// <param name='digitalTwinId'>
-            /// Digital Twin ID. Format of digitalTwinId is DeviceId[~ModuleId]. ModuleId
-            /// is optional.
-            /// Example 1: "myDevice"
-            /// Example 2: "myDevice~module1"
-            /// </param>
-            /// <param name='interfaceName'>
-            /// Interface name, for example &lt;example&gt;myThermostat&lt;/example&gt;.
+            /// The interface name.
             /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<DigitalTwinInterfaces> GetSingleInterfaceAsync(this IDigitalTwin operations, string digitalTwinId, string interfaceName, CancellationToken cancellationToken = default(CancellationToken))
+            internal static async Task<string> GetInterfaceAsync(this IDigitalTwin operations, string digitalTwinId, string interfaceName, CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.GetSingleInterfaceWithHttpMessagesAsync(digitalTwinId, interfaceName, null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.GetInterfaceWithHttpMessagesAsync(digitalTwinId, interfaceName, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
             }
 
             /// <summary>
-            /// Invoke a digital twin interface command.
-            /// </summary>
-            /// <remarks>
-            /// Invoke a digital twin interface command.
-            /// </remarks>
-            /// <param name='operations'>
-            /// The operations group for this extension method.
-            /// </param>
-            /// <param name='digitalTwinId'>
-            /// Digital Twin ID. Format of digitalTwinId is DeviceId[~ModuleId]. ModuleId
-            /// is optional.
-            /// Example 1: "myDevice"
-            /// Example 2: "myDevice~module1"
-            /// </param>
-            /// <param name='interfaceName'>
-            /// Interface name, for example &lt;example&gt;myThermostat&lt;/example&gt;.
-            /// </param>
-            /// <param name='commandName'>
-            /// </param>
-            /// <param name='payload'>
-            /// </param>
-            /// <param name='responseTimeoutInSeconds'>
-            /// Response timeout in seconds.
-            /// </param>
-            /// <param name='connectTimeoutInSeconds'>
-            /// Connect timeout in seconds.
-            /// </param>
-            public static object InvokeInterfaceCommand(this IDigitalTwin operations, string digitalTwinId, string interfaceName, string commandName, object payload, int? responseTimeoutInSeconds = default(int?), int? connectTimeoutInSeconds = default(int?))
-            {
-                return operations.InvokeInterfaceCommandAsync(digitalTwinId, interfaceName, commandName, payload, responseTimeoutInSeconds, connectTimeoutInSeconds).GetAwaiter().GetResult();
-            }
-
-            /// <summary>
-            /// Invoke a digital twin interface command.
-            /// </summary>
-            /// <remarks>
-            /// Invoke a digital twin interface command.
-            /// </remarks>
-            /// <param name='operations'>
-            /// The operations group for this extension method.
-            /// </param>
-            /// <param name='digitalTwinId'>
-            /// Digital Twin ID. Format of digitalTwinId is DeviceId[~ModuleId]. ModuleId
-            /// is optional.
-            /// Example 1: "myDevice"
-            /// Example 2: "myDevice~module1"
-            /// </param>
-            /// <param name='interfaceName'>
-            /// Interface name, for example &lt;example&gt;myThermostat&lt;/example&gt;.
-            /// </param>
-            /// <param name='commandName'>
-            /// </param>
-            /// <param name='payload'>
-            /// </param>
-            /// <param name='responseTimeoutInSeconds'>
-            /// Response timeout in seconds.
-            /// </param>
-            /// <param name='connectTimeoutInSeconds'>
-            /// Connect timeout in seconds.
-            /// </param>
-            /// <param name='cancellationToken'>
-            /// The cancellation token.
-            /// </param>
-            public static async Task<object> InvokeInterfaceCommandAsync(this IDigitalTwin operations, string digitalTwinId, string interfaceName, string commandName, object payload, int? responseTimeoutInSeconds = default(int?), int? connectTimeoutInSeconds = default(int?), CancellationToken cancellationToken = default(CancellationToken))
-            {
-                using (var _result = await operations.InvokeInterfaceCommandWithHttpMessagesAsync(digitalTwinId, interfaceName, commandName, payload, responseTimeoutInSeconds, connectTimeoutInSeconds, null, cancellationToken).ConfigureAwait(false))
-                {
-                    return _result.Body;
-                }
-            }
-
-            /// <summary>
-            /// Returns a DigitalTwin model definition for the given "id".
-            /// If "expand" is present in the query parameters and "id" is for a device
-            /// capability model then it returns
-            /// the capability metamodel with expanded interface definitions.
-            /// </summary>
-            /// <param name='operations'>
-            /// The operations group for this extension method.
-            /// </param>
-            /// <param name='modelId'>
-            /// Model id Ex: &lt;example&gt;urn:contoso:TemperatureSensor:1&lt;/example&gt;
-            /// </param>
-            /// <param name='expand'>
-            /// Indicates whether to expand the device capability model's interface
-            /// definitions inline or not.
-            /// This query parameter ONLY applies to Capability model.
-            /// </param>
-            public static object GetDigitalTwinModel(this IDigitalTwin operations, string modelId, bool? expand = false)
-            {
-                return operations.GetDigitalTwinModelAsync(modelId, expand).GetAwaiter().GetResult();
-            }
-
-            /// <summary>
-            /// Returns a DigitalTwin model definition for the given "id".
-            /// If "expand" is present in the query parameters and "id" is for a device
+            /// Returns a DigitalTwin model definition for the given id.
+            /// If "expand" is present in the query parameters and id is for a device
             /// capability model then it returns
             /// the capability metamodel with expanded interface definitions.
             /// </summary>
@@ -269,9 +108,43 @@ namespace Azure.IoT.DigitalTwin.Service
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<object> GetDigitalTwinModelAsync(this IDigitalTwin operations, string modelId, bool? expand = false, CancellationToken cancellationToken = default(CancellationToken))
+            internal static async Task<object> GetDigitalTwinModelAsync(this IDigitalTwin operations, string modelId, bool? expand = default(bool?), CancellationToken cancellationToken = default(CancellationToken))
             {
                 using (var _result = await operations.GetDigitalTwinModelWithHttpMessagesAsync(modelId, expand, null, cancellationToken).ConfigureAwait(false))
+                {
+                    return _result.Body;
+                }
+            }
+
+            /// <summary>
+            /// Invoke a digital twin interface command.
+            /// </summary>
+            /// <remarks>
+            /// Invoke a digital twin interface command.
+            /// </remarks>
+            /// <param name='operations'>
+            /// The operations group for this extension method.
+            /// </param>
+            /// <param name='digitalTwinId'>
+            /// </param>
+            /// <param name='interfaceName'>
+            /// </param>
+            /// <param name='commandName'>
+            /// </param>
+            /// <param name='payload'>
+            /// </param>
+            /// <param name='connectTimeoutInSeconds'>
+            /// Connect timeout in seconds.
+            /// </param>
+            /// <param name='responseTimeoutInSeconds'>
+            /// Response timeout in seconds.
+            /// </param>
+            /// <param name='cancellationToken'>
+            /// The cancellation token.
+            /// </param>
+            internal static async Task<object> InvokeInterfaceCommandAsync(this IDigitalTwin operations, string digitalTwinId, string interfaceName, string commandName, object payload = default(object), int? connectTimeoutInSeconds = default(int?), int? responseTimeoutInSeconds = default(int?), CancellationToken cancellationToken = default(CancellationToken))
+            {
+                using (var _result = await operations.InvokeInterfaceCommandWithHttpMessagesAsync(digitalTwinId, interfaceName, commandName, payload, connectTimeoutInSeconds, responseTimeoutInSeconds, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
