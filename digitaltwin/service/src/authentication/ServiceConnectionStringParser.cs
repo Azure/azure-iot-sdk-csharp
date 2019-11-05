@@ -23,7 +23,6 @@ namespace Azure.IoT.DigitalTwin.Service
         private const string SharedAccessKeyNamePropertyName = nameof(SharedAccessKeyName);
         private const string SharedAccessKeyPropertyName = nameof(SharedAccessKey);
         private const string SharedAccessSignaturePropertyName = nameof(SharedAccessSignatureString);
-        private const string RepositoryIdPropertyName = nameof(RepositoryId);
 
         private static readonly TimeSpan regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
         private static readonly Regex HostNameRegex = new Regex(@"[a-zA-Z0-9_\-\.]+$", RegexOptions.Compiled | RegexOptions.IgnoreCase, regexTimeoutMilliseconds);
@@ -67,7 +66,7 @@ namespace Azure.IoT.DigitalTwin.Service
         }
 
         /// <summary>
-        /// The Provisioning Service Client Hostname
+        /// The Service Client Hostname
         /// </summary>
         public string HostName
         {
@@ -76,28 +75,23 @@ namespace Azure.IoT.DigitalTwin.Service
         }
 
         /// <summary>
-        /// The Provisioning Service Access Policy Name
+        /// The Service Access Policy Name
         /// </summary>
         public string SharedAccessKeyName { get; internal set; }
 
         /// <summary>
-        /// The Provisioning Service Shared Access Key for the specified
+        /// The Service Shared Access Key for the specified
         /// access policy
         /// </summary>
         public string SharedAccessKey { get; internal set; }
 
         /// <summary>
-        /// The Provisioning Service Shared Access Signature
+        /// The Service Shared Access Signature
         /// </summary>
         public string SharedAccessSignatureString { get; internal set; }
 
         /// <summary>
-        /// The Repository to connect to
-        /// </summary>
-        public string RepositoryId { get; internal set; }
-
-        /// <summary>
-        /// The Provisioning Service Name
+        /// The Service Name
         /// </summary>
         public string ServiceName
         {
@@ -111,7 +105,7 @@ namespace Azure.IoT.DigitalTwin.Service
         }
 
         /// <summary>
-        /// Returns the Provisioning Service Connection string
+        /// Returns the Service Connection string
         /// </summary>
         /// <returns></returns>
         public override string ToString()
@@ -123,7 +117,6 @@ namespace Azure.IoT.DigitalTwin.Service
             stringBuilder.AppendKeyValuePairIfNotEmpty(SharedAccessKeyNamePropertyName, SharedAccessKeyName);
             stringBuilder.AppendKeyValuePairIfNotEmpty(SharedAccessKeyPropertyName, SharedAccessKey);
             stringBuilder.AppendKeyValuePairIfNotEmpty(SharedAccessSignaturePropertyName, SharedAccessSignatureString);
-            stringBuilder.AppendKeyValuePairIfNotEmpty(RepositoryIdPropertyName, RepositoryId);
             if (stringBuilder.Length > 0)
             {
                 stringBuilder.Remove(stringBuilder.Length - 1, 1);
@@ -140,7 +133,6 @@ namespace Azure.IoT.DigitalTwin.Service
             SharedAccessKeyName = GetConnectionStringOptionalValue(map, SharedAccessKeyNamePropertyName);
             SharedAccessKey = GetConnectionStringOptionalValue(map, SharedAccessKeyPropertyName);
             SharedAccessSignatureString = GetConnectionStringOptionalValue(map, SharedAccessSignaturePropertyName);
-            RepositoryId = GetConnectionStringOptionalValue(map, RepositoryIdPropertyName);
             Validate();
         }
 
@@ -165,9 +157,6 @@ namespace Azure.IoT.DigitalTwin.Service
             ValidateFormatIfSpecified(SharedAccessKeyName, SharedAccessKeyNamePropertyName, SharedAccessKeyNameRegex);
             ValidateFormatIfSpecified(SharedAccessKey, SharedAccessKeyPropertyName, SharedAccessKeyRegex);
             ValidateFormatIfSpecified(SharedAccessSignatureString, SharedAccessSignaturePropertyName, SharedAccessSignatureRegex);
-            
-            //TODO
-            //ValidateFormatIfSpecified(RepositoryId, RepositoryIdPropertyName, SharedAccessSignatureRegex);
         }
 
         private void SetHostName(string hostname)

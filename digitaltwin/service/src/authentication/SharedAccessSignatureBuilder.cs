@@ -12,8 +12,6 @@ namespace Azure.IoT.DigitalTwin.Service
 {
     internal sealed class SharedAccessSignatureBuilder
     {
-        private string _key;
-
         public SharedAccessSignatureBuilder()
         {
             TimeToLive = TimeSpan.FromMinutes(20);
@@ -21,20 +19,7 @@ namespace Azure.IoT.DigitalTwin.Service
 
         public string KeyName { get; set; }
 
-        public string RepositoryId { get; set; }
-
-        public string Key
-        {
-            get
-            {
-                return _key;
-            }
-
-            set
-            {
-                _key = value;
-            }
-        }
+        public string Key { get; set; }
 
         public string Target { get; set; }
 
@@ -42,10 +27,10 @@ namespace Azure.IoT.DigitalTwin.Service
 
         public string ToSignature()
         {
-            return BuildSignature(KeyName, Key, Target, TimeToLive, RepositoryId);
+            return BuildSignature(KeyName, Key, Target, TimeToLive);
         }
 
-        private static string BuildSignature(string keyName, string key, string target, TimeSpan timeToLive, string repositoryId)
+        private static string BuildSignature(string keyName, string key, string target, TimeSpan timeToLive)
         {
             string expiresOn = BuildExpiresOn(timeToLive);
             string audience = WebUtility.UrlEncode(target);
@@ -73,12 +58,6 @@ namespace Azure.IoT.DigitalTwin.Service
             {
                 buffer.AppendFormat(CultureInfo.InvariantCulture, "&{0}={1}",
                     SharedAccessSignatureConstants.KeyNameFieldName, WebUtility.UrlEncode(keyName));
-            }
-
-            if (!string.IsNullOrEmpty(repositoryId))
-            {
-                buffer.AppendFormat(CultureInfo.InvariantCulture, "&{0}={1}",
-                    SharedAccessSignatureConstants.RepositoryIdFieldName, WebUtility.UrlEncode(repositoryId));
             }
 
             return buffer.ToString();

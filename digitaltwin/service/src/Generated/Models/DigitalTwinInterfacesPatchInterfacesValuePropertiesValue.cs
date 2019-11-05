@@ -4,12 +4,12 @@
 // regenerated.
 // </auto-generated>
 
-namespace Azure.IoT.DigitalTwin.Service.Models
+namespace Azure.IoT.DigitalTwin.Service.Generated.Models
 {
     using Newtonsoft.Json;
     using System.Linq;
 
-    public partial class DigitalTwinInterfacesPatchInterfacesValuePropertiesValue
+    internal partial class DigitalTwinInterfacesPatchInterfacesValuePropertiesValue
     {
         /// <summary>
         /// Initializes a new instance of the

@@ -4,7 +4,7 @@
 // regenerated.
 // </auto-generated>
 
-namespace Azure.IoT.DigitalTwin.Service
+namespace Azure.IoT.DigitalTwin.Service.Generated
 {
     using Microsoft.Rest;
     using Microsoft.Rest.Serialization;
@@ -15,7 +15,7 @@ namespace Azure.IoT.DigitalTwin.Service
     using System.Net;
     using System.Net.Http;
 
-    public partial class IotHubGatewayServiceAPIs20190701Preview : ServiceClient<IotHubGatewayServiceAPIs20190701Preview>, IIotHubGatewayServiceAPIs20190701Preview
+    internal partial class IotHubGatewayServiceAPIs20190701Preview : ServiceClient<IotHubGatewayServiceAPIs20190701Preview>, IIotHubGatewayServiceAPIs20190701Preview
     {
         /// <summary>
         /// The base URI of the service.
@@ -33,7 +33,7 @@ namespace Azure.IoT.DigitalTwin.Service
         public JsonSerializerSettings DeserializationSettings { get; private set; }
 
         /// <summary>
-        /// Version of the Api. Must be 2019-07-01-preview
+        /// Version of the Api.
         /// </summary>
         public string ApiVersion { get; set; }
 
@@ -142,7 +142,7 @@ namespace Azure.IoT.DigitalTwin.Service
         /// <exception cref="System.ArgumentNullException">
         /// Thrown when a required parameter is null
         /// </exception>
-        public IotHubGatewayServiceAPIs20190701Preview(ServiceClientCredentials credentials, params DelegatingHandler[] handlers) : this(handlers)
+        internal IotHubGatewayServiceAPIs20190701Preview(ServiceClientCredentials credentials, params DelegatingHandler[] handlers) : this(handlers)
         {
             if (credentials == null)
             {
@@ -169,7 +169,7 @@ namespace Azure.IoT.DigitalTwin.Service
         /// <exception cref="System.ArgumentNullException">
         /// Thrown when a required parameter is null
         /// </exception>
-        public IotHubGatewayServiceAPIs20190701Preview(ServiceClientCredentials credentials, HttpClient httpClient, bool disposeHttpClient) : this(httpClient, disposeHttpClient)
+        internal IotHubGatewayServiceAPIs20190701Preview(ServiceClientCredentials credentials, HttpClient httpClient, bool disposeHttpClient) : this(httpClient, disposeHttpClient)
         {
             if (credentials == null)
             {
@@ -197,7 +197,7 @@ namespace Azure.IoT.DigitalTwin.Service
         /// <exception cref="System.ArgumentNullException">
         /// Thrown when a required parameter is null
         /// </exception>
-        public IotHubGatewayServiceAPIs20190701Preview(ServiceClientCredentials credentials, HttpClientHandler rootHandler, params DelegatingHandler[] handlers) : this(rootHandler, handlers)
+        internal IotHubGatewayServiceAPIs20190701Preview(ServiceClientCredentials credentials, HttpClientHandler rootHandler, params DelegatingHandler[] handlers) : this(rootHandler, handlers)
         {
             if (credentials == null)
             {
@@ -225,7 +225,7 @@ namespace Azure.IoT.DigitalTwin.Service
         /// <exception cref="System.ArgumentNullException">
         /// Thrown when a required parameter is null
         /// </exception>
-        public IotHubGatewayServiceAPIs20190701Preview(System.Uri baseUri, ServiceClientCredentials credentials, params DelegatingHandler[] handlers) : this(handlers)
+        internal IotHubGatewayServiceAPIs20190701Preview(System.Uri baseUri, ServiceClientCredentials credentials, params DelegatingHandler[] handlers) : this(handlers)
         {
             if (baseUri == null)
             {
@@ -261,7 +261,7 @@ namespace Azure.IoT.DigitalTwin.Service
         /// <exception cref="System.ArgumentNullException">
         /// Thrown when a required parameter is null
         /// </exception>
-        public IotHubGatewayServiceAPIs20190701Preview(System.Uri baseUri, ServiceClientCredentials credentials, HttpClientHandler rootHandler, params DelegatingHandler[] handlers) : this(rootHandler, handlers)
+        internal IotHubGatewayServiceAPIs20190701Preview(System.Uri baseUri, ServiceClientCredentials credentials, HttpClientHandler rootHandler, params DelegatingHandler[] handlers) : this(rootHandler, handlers)
         {
             if (baseUri == null)
             {
@@ -290,6 +290,7 @@ namespace Azure.IoT.DigitalTwin.Service
         {
             DigitalTwin = new DigitalTwin(this);
             BaseUri = new System.Uri("https://fully-qualified-iothubname.azure-devices.net");
+            ApiVersion = "2019-07-01-preview";
             SerializationSettings = new JsonSerializerSettings
             {
                 Formatting = Newtonsoft.Json.Formatting.Indented,
