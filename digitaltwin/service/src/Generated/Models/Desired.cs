@@ -4,12 +4,12 @@
 // regenerated.
 // </auto-generated>
 
-namespace Azure.IoT.DigitalTwin.Service.Models
+namespace Azure.IoT.DigitalTwin.Service.Generated.Models
 {
     using Newtonsoft.Json;
     using System.Linq;
 
-    public partial class Desired
+    internal partial class Desired
     {
         /// <summary>
         /// Initializes a new instance of the Desired class.

@@ -4,7 +4,7 @@
 // regenerated.
 // </auto-generated>
 
-namespace Azure.IoT.DigitalTwin.Service.Models
+namespace Azure.IoT.DigitalTwin.Service.Generated.Models
 {
     using Newtonsoft.Json;
     using System.Linq;
@@ -12,7 +12,7 @@ namespace Azure.IoT.DigitalTwin.Service.Models
     /// <summary>
     /// Defines headers for InvokeInterfaceCommand operation.
     /// </summary>
-    public partial class DigitalTwinInvokeInterfaceCommandHeaders
+    internal partial class DigitalTwinInvokeInterfaceCommandHeaders
     {
         /// <summary>
         /// Initializes a new instance of the
@@ -27,14 +27,14 @@ namespace Azure.IoT.DigitalTwin.Service.Models
         /// Initializes a new instance of the
         /// DigitalTwinInvokeInterfaceCommandHeaders class.
         /// </summary>
-        /// <param name="xMsRequestId">Correlation Id of the command
-        /// request.</param>
-        /// <param name="xMsCommandStatuscode">Status code of command execution
-        /// result following HTTP status code schema.</param>
-        public DigitalTwinInvokeInterfaceCommandHeaders(string xMsRequestId = default(string), int? xMsCommandStatuscode = default(int?))
+        /// <param name="xMsCommandStatuscode">Device Generated Status Code for
+        /// this Operation</param>
+        /// <param name="xMsRequestId">Server Generated Request Id (GUID), to
+        /// uniquely identify this request in the service</param>
+        public DigitalTwinInvokeInterfaceCommandHeaders(int? xMsCommandStatuscode = default(int?), string xMsRequestId = default(string))
         {
-            XMsRequestId = xMsRequestId;
             XMsCommandStatuscode = xMsCommandStatuscode;
+            XMsRequestId = xMsRequestId;
             CustomInit();
         }
 
@@ -44,17 +44,17 @@ namespace Azure.IoT.DigitalTwin.Service.Models
         partial void CustomInit();
 
         /// <summary>
-        /// Gets or sets correlation Id of the command request.
-        /// </summary>
-        [JsonProperty(PropertyName = "x-ms-request-id")]
-        public string XMsRequestId { get; set; }
-
-        /// <summary>
-        /// Gets or sets status code of command execution result following HTTP
-        /// status code schema.
+        /// Gets or sets device Generated Status Code for this Operation
         /// </summary>
         [JsonProperty(PropertyName = "x-ms-command-statuscode")]
         public int? XMsCommandStatuscode { get; set; }
+
+        /// <summary>
+        /// Gets or sets server Generated Request Id (GUID), to uniquely
+        /// identify this request in the service
+        /// </summary>
+        [JsonProperty(PropertyName = "x-ms-request-id")]
+        public string XMsRequestId { get; set; }
 
     }
 }

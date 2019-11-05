@@ -4,7 +4,7 @@
 // regenerated.
 // </auto-generated>
 
-namespace Azure.IoT.DigitalTwin.Service.Models
+namespace Azure.IoT.DigitalTwin.Service.Generated.Models
 {
     using Newtonsoft.Json;
     using System.Linq;
@@ -12,7 +12,7 @@ namespace Azure.IoT.DigitalTwin.Service.Models
     /// <summary>
     /// Defines headers for GetDigitalTwinModel operation.
     /// </summary>
-    public partial class DigitalTwinGetDigitalTwinModelHeaders
+    internal partial class DigitalTwinGetDigitalTwinModelHeaders
     {
         /// <summary>
         /// Initializes a new instance of the
@@ -27,7 +27,7 @@ namespace Azure.IoT.DigitalTwin.Service.Models
         /// Initializes a new instance of the
         /// DigitalTwinGetDigitalTwinModelHeaders class.
         /// </summary>
-        /// <param name="eTag">Etag of the model definition.</param>
+        /// <param name="eTag">ETag of the digital twin.</param>
         /// <param name="xMsModelId">Id of the model returned.</param>
         public DigitalTwinGetDigitalTwinModelHeaders(string eTag = default(string), string xMsModelId = default(string))
         {
@@ -42,7 +42,7 @@ namespace Azure.IoT.DigitalTwin.Service.Models
         partial void CustomInit();
 
         /// <summary>
-        /// Gets or sets etag of the model definition.
+        /// Gets or sets eTag of the digital twin.
         /// </summary>
         [JsonProperty(PropertyName = "ETag")]
         public string ETag { get; set; }

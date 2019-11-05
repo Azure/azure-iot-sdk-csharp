@@ -1,12 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Rest;
-using System.Net;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace Azure.IoT.DigitalTwin.Service
 {
     /// <summary>
@@ -14,15 +8,15 @@ namespace Azure.IoT.DigitalTwin.Service
     /// </summary>
     public class SharedAccessKeyCredentials : IoTServiceClientCredentials
     {
-        private static ServiceConnectionString _provisioningConnectionString;
+        private static ServiceConnectionString _serviceConnectionString;
 
         /// <summary>
         /// Create a new instance of <code>SharedAccessKeyCredentials</code> using
-        /// the Provisioning Service Connection String
+        /// the Service Connection String
         /// </summary>
         public SharedAccessKeyCredentials(ServiceConnectionString serviceConnectionString)
         {
-            _provisioningConnectionString = serviceConnectionString;
+            _serviceConnectionString = serviceConnectionString;
         }
 
         /// <summary>
@@ -31,7 +25,7 @@ namespace Azure.IoT.DigitalTwin.Service
         /// <returns></returns>
         protected override string GetSasToken()
         {
-            return _provisioningConnectionString.GetSasToken();
+            return _serviceConnectionString.GetSasToken();
         }
     }
 }

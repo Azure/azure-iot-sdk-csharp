@@ -12,7 +12,7 @@ namespace Azure.IoT.DigitalTwin.Service.Models
     /// <summary>
     /// Defines headers for GetAllInterfaces operation.
     /// </summary>
-    public partial class DigitalTwinGetAllInterfacesHeaders
+    internal partial class DigitalTwinGetAllInterfacesHeaders
     {
         /// <summary>
         /// Initializes a new instance of the

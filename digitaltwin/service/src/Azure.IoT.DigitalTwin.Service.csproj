@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Azure.Core" Version="1.0.0-preview.8" />
     <PackageReference Include="Microsoft.Rest.ClientRuntime" Version="2.3.20" />
   </ItemGroup>
 
