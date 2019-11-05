@@ -14,7 +14,6 @@ namespace Azure.IoT.DigitalTwin.Service
         public const string SignatureFieldName = "sig";
         public const string KeyNameFieldName = "skn";
         public const string ExpiryFieldName = "se";
-        public const string RepositoryIdFieldName = "rid";
         public const string SignedResourceFullFieldName = SharedAccessSignature + " " + AudienceFieldName;
         public const string KeyValueSeparator = "=";
         public const string PairSeparator = "&";

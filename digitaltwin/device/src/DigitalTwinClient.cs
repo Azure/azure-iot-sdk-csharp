@@ -46,6 +46,8 @@ namespace Azure.Iot.DigitalTwin.Device
 
         private Dictionary<string, DigitalTwinInterfaceClient> interfaces = new Dictionary<string, DigitalTwinInterfaceClient>();
 
+        private Semaphore registrationLock;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DigitalTwinClient"/> class.
         /// </summary>
@@ -54,6 +56,7 @@ namespace Azure.Iot.DigitalTwin.Device
         {
             GuardHelper.ThrowIfNull(deviceClient, nameof(deviceClient));
             this.deviceClient = deviceClient;
+            this.registrationLock = new Semaphore(1, 1);
         }
 
         /// <summary>
@@ -65,57 +68,78 @@ namespace Azure.Iot.DigitalTwin.Device
         /// <returns>Task representing the asynchronous operation.</returns>
         public async Task RegisterInterfacesAsync(string capabilityModelId, IEnumerable<DigitalTwinInterfaceClient> digitalTwinInterfaces, CancellationToken cancellationToken = default)
         {
-            Logging.Instance.LogVerbose("Starting interface registration.");
-            GuardHelper.ThrowIfNull(digitalTwinInterfaces, nameof(digitalTwinInterfaces));
-            GuardHelper.ThrowIfNullOrWhiteSpace(capabilityModelId, nameof(capabilityModelId));
+            Logging.Instance.LogVerbose("Waiting for registration mutex to be free");
+            this.registrationLock.WaitOne();
 
-            SdkInformationInterface sdkInformationInterface = new SdkInformationInterface();
-
-            var interfaceName = new Dictionary<string, string>();
-            interfaceName.Add("urn_azureiot_ModelDiscovery_ModelInformation", "urn:azureiot:ModelDiscovery:ModelInformation:1");
-            interfaceName.Add(sdkInformationInterface.InstanceName, sdkInformationInterface.Id);
-
-            foreach (var dtInterface in digitalTwinInterfaces)
+            try
             {
-                GuardHelper.ThrowIfNull(dtInterface, nameof(dtInterface));
-                interfaceName.Add(dtInterface.InstanceName, dtInterface.Id);
-                this.interfaces.Add(dtInterface.InstanceName, dtInterface);
+                Logging.Instance.LogVerbose("Starting interface registration.");
+                GuardHelper.ThrowIfNull(digitalTwinInterfaces, nameof(digitalTwinInterfaces));
+                GuardHelper.ThrowIfNullOrWhiteSpace(capabilityModelId, nameof(capabilityModelId));
+
+                if (this.interfaces.Count != 0)
+                {
+                    throw new InvalidOperationException("Cannot register interfaces more than once per client");
+                }
+
+                SdkInformationInterface sdkInformationInterface = new SdkInformationInterface();
+
+                var interfaceName = new Dictionary<string, string>();
+                interfaceName.Add("urn_azureiot_ModelDiscovery_ModelInformation", "urn:azureiot:ModelDiscovery:ModelInformation:1");
+                interfaceName.Add(sdkInformationInterface.InstanceName, sdkInformationInterface.Id);
+
+                foreach (var dtInterface in digitalTwinInterfaces)
+                {
+                    GuardHelper.ThrowIfNull(dtInterface, nameof(dtInterface));
+                    interfaceName.Add(dtInterface.InstanceName, dtInterface.Id);
+                    this.interfaces.Add(dtInterface.InstanceName, dtInterface);
+                }
+
+                if (this.interfaces.Count < 1)
+                {
+                    throw new InvalidOperationException("Cannot register 0 interfaces");
+                }
+
+                Dictionary<string, object> modelInformation = new Dictionary<string, object>();
+                modelInformation.Add(CapabilityModelIdTag, capabilityModelId);
+                modelInformation.Add(InterfacesTag, new DataCollection(this.digitalTwinFormatter.FromObject(interfaceName)));
+
+                // send register interface
+                using (Message msg = CreateTelemetryMessage(
+                        ModelDiscoveryInterfaceId,
+                        ModelDiscoveryInterfaceInstanceName,
+                        CapabilityReportTelemetryName,
+                        this.digitalTwinFormatter.FromObject(CreateKeyValueDataCollection(modelInformation))))
+                {
+                    await this.deviceClient.SendEventAsync(
+                        msg,
+                        cancellationToken).ConfigureAwait(false);
+                }
+
+                Logging.Instance.LogInformational("Register Interface message sent.");
+
+                sdkInformationInterface.Initialize(this);
+                await sdkInformationInterface.SendSdkInformationAsync().ConfigureAwait(false);
+                Logging.Instance.LogInformational("SDK information sent.");
+
+                await this.SetupDigitalTwinClientAsync().ConfigureAwait(false);
+
+                foreach (var dtInterface in digitalTwinInterfaces)
+                {
+                    dtInterface.Initialize(this);
+                }
+
+                // Get properties should only be triggered after interfaces are initialized.
+                await this.GetPropertiesAsync().ConfigureAwait(false);
+                Logging.Instance.LogInformational("Get Properties completed.");
+
+                Logging.Instance.LogInformational("Interface registration completed successfully.");
             }
-
-            Dictionary<string, object> modelInformation = new Dictionary<string, object>();
-            modelInformation.Add(CapabilityModelIdTag, capabilityModelId);
-            modelInformation.Add(InterfacesTag, new DataCollection(this.digitalTwinFormatter.FromObject(interfaceName)));
-
-            // send register interface
-            using (Message msg = CreateTelemetryMessage(
-                    ModelDiscoveryInterfaceId,
-                    ModelDiscoveryInterfaceInstanceName,
-                    CapabilityReportTelemetryName,
-                    this.digitalTwinFormatter.FromObject(CreateKeyValueDataCollection(modelInformation))))
+            finally
             {
-                await this.deviceClient.SendEventAsync(
-                    msg,
-                    cancellationToken).ConfigureAwait(false);
+                Logging.Instance.LogVerbose("Freeing registration mutex");
+                this.registrationLock.Release();
             }
-
-            Logging.Instance.LogVerbose("Register Interface message sent.");
-
-            sdkInformationInterface.Initialize(this);
-            await sdkInformationInterface.SendSdkInformationAsync().ConfigureAwait(false);
-            Logging.Instance.LogVerbose("SDK information sent.");
-
-            await this.SetupDigitalTwinClientAsync().ConfigureAwait(false);
-
-            foreach (var dtInterface in digitalTwinInterfaces)
-            {
-                dtInterface.Initialize(this);
-            }
-
-            // Get properties should only be triggered after interfaces are initialized.
-            await this.GetPropertiesAsync().ConfigureAwait(false);
-            Logging.Instance.LogVerbose("Get Properties completed.");
-
-            Logging.Instance.LogVerbose("Interface registration completed successfully.");
         }
 
         /// <summary>
@@ -309,7 +333,7 @@ namespace Azure.Iot.DigitalTwin.Device
             }
 
             var jsonObj = JObject.Parse(methodRequest.DataAsJson);
-            var commandRequestValue = jsonObj.SelectToken(JsonCommandRequestValue)?.ToString();
+            var commandRequestValue = jsonObj.SelectToken(JsonCommandRequestValue)?.ToString(Newtonsoft.Json.Formatting.None);
             DigitalTwinCommandResponse response = await this.interfaces[interfaceInstanceName].OnCommandRequest(
                 new DigitalTwinCommandRequest(
                     methodName,

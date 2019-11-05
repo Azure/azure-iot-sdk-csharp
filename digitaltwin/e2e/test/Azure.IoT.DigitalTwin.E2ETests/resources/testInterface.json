@@ -1,0 +1,139 @@
+{
+  "@id": "urn:contoso:azureiot:sdk:testinterface:1",
+  "@type": "Interface",
+  "displayName": "Azure IoT Client Library End-to-End Test Interface",
+  "description": "A test interface used in digital twin SDK end to end tests",
+  "contents": [
+    {
+      "@type": "Telemetry",
+      "name": "telemetryWithDoubleValue",
+      "schema": "double"
+    },
+    {
+      "@type": "Telemetry",
+      "name": "telemetryWithIntegerValue",
+      "schema": "integer"
+    },
+    {
+      "@type": "Telemetry",
+      "name": "telemetryWithBooleanValue",
+      "schema": "boolean"
+    },
+    {
+      "@type": "Telemetry",
+      "name": "telemetryWithStringValue",
+      "schema": "string"
+    },
+    {
+      "@type": "Telemetry",
+      "name": "telemetryWithComplexValue",
+      "displayName": "telemetryWithComplexValue",
+      "schema": {
+        "@type": "Object",
+        "fields": [
+          {
+            "name": "x",
+            "schema": "integer"
+          },
+          {
+            "name": "y",
+            "schema": "integer"
+          },
+          {
+            "name": "z",
+            "schema": "integer"
+          }
+        ]
+      }
+    },
+    {
+      "@type": "Property",
+      "name": "readOnlyProperty",
+      "writable": false,
+      "schema": "string"
+    },
+    {
+      "@type": "Property",
+      "name": "writableProperty",
+      "writable": true,
+      "schema": "string"
+    },
+    {
+      "@type": "Property",
+      "name": "anotherWritableProperty",
+      "writable": true,
+      "schema": "string"
+    },
+    {
+      "@type": "Property",
+      "name": "complexProperty",
+      "writable": true,
+      "schema": {
+        "@type": "Object",
+        "fields": [
+          {
+            "name": "nestedProperty",
+            "schema": "integer"
+          },
+          {
+            "name": "nestedProperty2",
+            "schema": "integer"
+          }
+        ]
+      }
+    },
+    {
+      "@type": "Command",
+      "name": "syncCommand",
+      "commandType": "synchronous",
+      "request": {
+        "name": "requestProperty",
+        "schema": "string"
+      },
+      "response": {
+        "name": "responseProperty",
+        "schema": "string"
+      }
+    },
+    {
+      "@type": "Command",
+      "name": "anotherSyncCommand",
+      "commandType": "synchronous",
+      "request": {
+        "name": "requestProperty",
+        "schema": "string"
+      },
+      "response": {
+        "name": "responseProperty",
+        "schema": "string"
+      }
+    },
+    {
+      "@type": "Command",
+      "name": "asyncCommand",
+      "commandType": "asynchronous",
+      "request": {
+        "name": "requestProperty",
+        "schema": "string"
+      },
+      "response": {
+        "name": "responseProperty",
+        "schema": "string"
+      }
+    },
+    {
+      "@type": "Command",
+      "name": "anotherAsyncCommand",
+      "commandType": "asynchronous",
+      "request": {
+        "name": "requestProperty",
+        "schema": "string"
+      },
+      "response": {
+        "name": "responseProperty",
+        "schema": "string"
+      }
+    }
+  ],
+  "@context": "http://azureiot.com/v1/contexts/Interface.json"
+}

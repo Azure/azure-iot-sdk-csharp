@@ -4,7 +4,7 @@
 // regenerated.
 // </auto-generated>
 
-namespace Azure.IoT.DigitalTwin.Service
+namespace Azure.IoT.DigitalTwin.Service.Generated
 {
     using Microsoft.Rest;
     using Models;
@@ -16,16 +16,14 @@ namespace Azure.IoT.DigitalTwin.Service
     /// <summary>
     /// DigitalTwin operations.
     /// </summary>
-    public partial interface IDigitalTwin
+    internal partial interface IDigitalTwin
     {
         /// <summary>
-        /// Gets the properties of interfaces.
+        /// Gets the list of interfaces.
         /// </summary>
         /// <param name='digitalTwinId'>
         /// Digital Twin ID. Format of digitalTwinId is DeviceId[~ModuleId].
         /// ModuleId is optional.
-        /// Example 1: "myDevice"
-        /// Example 2: "myDevice~module1"
         /// </param>
         /// <param name='customHeaders'>
         /// The headers that will be added to request.
@@ -42,7 +40,7 @@ namespace Azure.IoT.DigitalTwin.Service
         /// <exception cref="Microsoft.Rest.ValidationException">
         /// Thrown when a required parameter is null
         /// </exception>
-        Task<HttpOperationResponse<DigitalTwinInterfaces,DigitalTwinGetAllInterfacesHeaders>> GetAllInterfacesWithHttpMessagesAsync(string digitalTwinId, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<string,DigitalTwinGetInterfacesHeaders>> GetInterfacesWithHttpMessagesAsync(string digitalTwinId, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <summary>
         /// Updates desired properties of multiple interfaces.
         /// Example URI: "digitalTwins/{digitalTwinId}/interfaces"
@@ -50,8 +48,6 @@ namespace Azure.IoT.DigitalTwin.Service
         /// <param name='digitalTwinId'>
         /// Digital Twin ID. Format of digitalTwinId is DeviceId[~ModuleId].
         /// ModuleId is optional.
-        /// Example 1: "myDevice"
-        /// Example 2: "myDevice~module1"
         /// </param>
         /// <param name='interfacesPatchInfo'>
         /// Multiple interfaces desired properties to update.
@@ -73,21 +69,18 @@ namespace Azure.IoT.DigitalTwin.Service
         /// <exception cref="Microsoft.Rest.ValidationException">
         /// Thrown when a required parameter is null
         /// </exception>
-        Task<HttpOperationResponse<DigitalTwinInterfaces,DigitalTwinUpdateMultipleInterfacesHeaders>> UpdateMultipleInterfacesWithHttpMessagesAsync(string digitalTwinId, DigitalTwinInterfacesPatch interfacesPatchInfo, string ifMatch = default(string), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<string,DigitalTwinUpdateInterfacesHeaders>> UpdateInterfacesWithHttpMessagesAsync(string digitalTwinId, string patch, string ifMatch = default(string), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <summary>
-        /// Gets the properties of given interface.
+        /// Gets the interface of given interfaceId.
         /// Example URI:
         /// "digitalTwins/{digitalTwinId}/interfaces/{interfaceName}"
         /// </summary>
         /// <param name='digitalTwinId'>
         /// Digital Twin ID. Format of digitalTwinId is DeviceId[~ModuleId].
         /// ModuleId is optional.
-        /// Example 1: "myDevice"
-        /// Example 2: "myDevice~module1"
         /// </param>
         /// <param name='interfaceName'>
-        /// Interface name, for example
-        /// &lt;example&gt;myThermostat&lt;/example&gt;.
+        /// The interface name.
         /// </param>
         /// <param name='customHeaders'>
         /// The headers that will be added to request.
@@ -104,52 +97,10 @@ namespace Azure.IoT.DigitalTwin.Service
         /// <exception cref="Microsoft.Rest.ValidationException">
         /// Thrown when a required parameter is null
         /// </exception>
-        Task<HttpOperationResponse<DigitalTwinInterfaces,DigitalTwinGetSingleInterfaceHeaders>> GetSingleInterfaceWithHttpMessagesAsync(string digitalTwinId, string interfaceName, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<string,DigitalTwinGetInterfaceHeaders>> GetInterfaceWithHttpMessagesAsync(string digitalTwinId, string interfaceName, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
         /// <summary>
-        /// Invoke a digital twin interface command.
-        /// </summary>
-        /// <remarks>
-        /// Invoke a digital twin interface command.
-        /// </remarks>
-        /// <param name='digitalTwinId'>
-        /// Digital Twin ID. Format of digitalTwinId is DeviceId[~ModuleId].
-        /// ModuleId is optional.
-        /// Example 1: "myDevice"
-        /// Example 2: "myDevice~module1"
-        /// </param>
-        /// <param name='interfaceName'>
-        /// Interface name, for example
-        /// &lt;example&gt;myThermostat&lt;/example&gt;.
-        /// </param>
-        /// <param name='commandName'>
-        /// </param>
-        /// <param name='payload'>
-        /// </param>
-        /// <param name='responseTimeoutInSeconds'>
-        /// Response timeout in seconds.
-        /// </param>
-        /// <param name='connectTimeoutInSeconds'>
-        /// Connect timeout in seconds.
-        /// </param>
-        /// <param name='customHeaders'>
-        /// The headers that will be added to request.
-        /// </param>
-        /// <param name='cancellationToken'>
-        /// The cancellation token.
-        /// </param>
-        /// <exception cref="Microsoft.Rest.HttpOperationException">
-        /// Thrown when the operation returned an invalid status code
-        /// </exception>
-        /// <exception cref="Microsoft.Rest.SerializationException">
-        /// Thrown when unable to deserialize the response
-        /// </exception>
-        /// <exception cref="Microsoft.Rest.ValidationException">
-        /// Thrown when a required parameter is null
-        /// </exception>
-        Task<HttpOperationResponse<object,DigitalTwinInvokeInterfaceCommandHeaders>> InvokeInterfaceCommandWithHttpMessagesAsync(string digitalTwinId, string interfaceName, string commandName, object payload, int? responseTimeoutInSeconds = default(int?), int? connectTimeoutInSeconds = default(int?), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
-        /// <summary>
-        /// Returns a DigitalTwin model definition for the given "id".
-        /// If "expand" is present in the query parameters and "id" is for a
+        /// Returns a DigitalTwin model definition for the given id.
+        /// If "expand" is present in the query parameters and id is for a
         /// device capability model then it returns
         /// the capability metamodel with expanded interface definitions.
         /// </summary>
@@ -177,6 +128,42 @@ namespace Azure.IoT.DigitalTwin.Service
         /// <exception cref="Microsoft.Rest.ValidationException">
         /// Thrown when a required parameter is null
         /// </exception>
-        Task<HttpOperationResponse<object,DigitalTwinGetDigitalTwinModelHeaders>> GetDigitalTwinModelWithHttpMessagesAsync(string modelId, bool? expand = false, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<object,DigitalTwinGetDigitalTwinModelHeaders>> GetDigitalTwinModelWithHttpMessagesAsync(string modelId, bool? expand = default(bool?), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        /// <summary>
+        /// Invoke a digital twin interface command.
+        /// </summary>
+        /// <remarks>
+        /// Invoke a digital twin interface command.
+        /// </remarks>
+        /// <param name='digitalTwinId'>
+        /// </param>
+        /// <param name='interfaceName'>
+        /// </param>
+        /// <param name='commandName'>
+        /// </param>
+        /// <param name='payload'>
+        /// </param>
+        /// <param name='connectTimeoutInSeconds'>
+        /// Connect timeout in seconds.
+        /// </param>
+        /// <param name='responseTimeoutInSeconds'>
+        /// Response timeout in seconds.
+        /// </param>
+        /// <param name='customHeaders'>
+        /// The headers that will be added to request.
+        /// </param>
+        /// <param name='cancellationToken'>
+        /// The cancellation token.
+        /// </param>
+        /// <exception cref="Microsoft.Rest.HttpOperationException">
+        /// Thrown when the operation returned an invalid status code
+        /// </exception>
+        /// <exception cref="Microsoft.Rest.SerializationException">
+        /// Thrown when unable to deserialize the response
+        /// </exception>
+        /// <exception cref="Microsoft.Rest.ValidationException">
+        /// Thrown when a required parameter is null
+        /// </exception>
+        Task<HttpOperationResponse<object,DigitalTwinInvokeInterfaceCommandHeaders>> InvokeInterfaceCommandWithHttpMessagesAsync(string digitalTwinId, string interfaceName, string commandName, object payload = default(object), int? connectTimeoutInSeconds = default(int?), int? responseTimeoutInSeconds = default(int?), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

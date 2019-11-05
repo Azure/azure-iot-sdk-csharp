@@ -4,7 +4,7 @@
 // regenerated.
 // </auto-generated>
 
-namespace Azure.IoT.DigitalTwin.Service
+namespace Azure.IoT.DigitalTwin.Service.Generated
 {
     using Microsoft.Rest;
     using Models;
@@ -21,7 +21,7 @@ namespace Azure.IoT.DigitalTwin.Service
     /// <summary>
     /// DigitalTwin operations.
     /// </summary>
-    public partial class DigitalTwin : IServiceOperations<IotHubGatewayServiceAPIs20190701Preview>, IDigitalTwin
+    internal partial class DigitalTwin : IServiceOperations<IotHubGatewayServiceAPIs20190701Preview>, IDigitalTwin
     {
         /// <summary>
         /// Initializes a new instance of the DigitalTwin class.
@@ -47,13 +47,11 @@ namespace Azure.IoT.DigitalTwin.Service
         public IotHubGatewayServiceAPIs20190701Preview Client { get; private set; }
 
         /// <summary>
-        /// Gets the properties of interfaces.
+        /// Gets the list of interfaces.
         /// </summary>
         /// <param name='digitalTwinId'>
         /// Digital Twin ID. Format of digitalTwinId is DeviceId[~ModuleId]. ModuleId
         /// is optional.
-        /// Example 1: "myDevice"
-        /// Example 2: "myDevice~module1"
         /// </param>
         /// <param name='customHeaders'>
         /// Headers that will be added to request.
@@ -76,7 +74,7 @@ namespace Azure.IoT.DigitalTwin.Service
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<DigitalTwinInterfaces,DigitalTwinGetAllInterfacesHeaders>> GetAllInterfacesWithHttpMessagesAsync(string digitalTwinId, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<string,DigitalTwinGetInterfacesHeaders>> GetInterfacesWithHttpMessagesAsync(string digitalTwinId, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (digitalTwinId == null)
             {
@@ -95,7 +93,7 @@ namespace Azure.IoT.DigitalTwin.Service
                 Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
                 tracingParameters.Add("digitalTwinId", digitalTwinId);
                 tracingParameters.Add("cancellationToken", cancellationToken);
-                ServiceClientTracing.Enter(_invocationId, this, "GetAllInterfaces", tracingParameters);
+                ServiceClientTracing.Enter(_invocationId, this, "GetInterfaces", tracingParameters);
             }
             // Construct URL
             var _baseUrl = Client.BaseUri.AbsoluteUri;
@@ -159,7 +157,7 @@ namespace Azure.IoT.DigitalTwin.Service
                     _responseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
                 }
                 else {
-                    _responseContent = string.Empty;
+                    _responseContent = null;
                 }
                 ex.Request = new HttpRequestMessageWrapper(_httpRequest, _requestContent);
                 ex.Response = new HttpResponseMessageWrapper(_httpResponse, _responseContent);
@@ -175,7 +173,7 @@ namespace Azure.IoT.DigitalTwin.Service
                 throw ex;
             }
             // Create Result
-            var _result = new HttpOperationResponse<DigitalTwinInterfaces,DigitalTwinGetAllInterfacesHeaders>();
+            var _result = new HttpOperationResponse<string,DigitalTwinGetInterfacesHeaders>();
             _result.Request = _httpRequest;
             _result.Response = _httpResponse;
             // Deserialize Response
@@ -184,7 +182,7 @@ namespace Azure.IoT.DigitalTwin.Service
                 _responseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
                 try
                 {
-                    _result.Body = Microsoft.Rest.Serialization.SafeJsonConvert.DeserializeObject<DigitalTwinInterfaces>(_responseContent, Client.DeserializationSettings);
+                    _result.Body = _responseContent;
                 }
                 catch (JsonException ex)
                 {
@@ -198,7 +196,7 @@ namespace Azure.IoT.DigitalTwin.Service
             }
             try
             {
-                _result.Headers = _httpResponse.GetHeadersAsJson().ToObject<DigitalTwinGetAllInterfacesHeaders>(JsonSerializer.Create(Client.DeserializationSettings));
+                _result.Headers = _httpResponse.GetHeadersAsJson().ToObject<DigitalTwinGetInterfacesHeaders>(JsonSerializer.Create(Client.DeserializationSettings));
             }
             catch (JsonException ex)
             {
@@ -223,10 +221,8 @@ namespace Azure.IoT.DigitalTwin.Service
         /// <param name='digitalTwinId'>
         /// Digital Twin ID. Format of digitalTwinId is DeviceId[~ModuleId]. ModuleId
         /// is optional.
-        /// Example 1: "myDevice"
-        /// Example 2: "myDevice~module1"
         /// </param>
-        /// <param name='interfacesPatchInfo'>
+        /// <param name='patch'>
         /// Multiple interfaces desired properties to update.
         /// </param>
         /// <param name='ifMatch'>
@@ -252,15 +248,15 @@ namespace Azure.IoT.DigitalTwin.Service
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<DigitalTwinInterfaces,DigitalTwinUpdateMultipleInterfacesHeaders>> UpdateMultipleInterfacesWithHttpMessagesAsync(string digitalTwinId, DigitalTwinInterfacesPatch interfacesPatchInfo, string ifMatch = default(string), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<string,DigitalTwinUpdateInterfacesHeaders>> UpdateInterfacesWithHttpMessagesAsync(string digitalTwinId, string patch, string ifMatch = default(string), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (digitalTwinId == null)
             {
                 throw new ValidationException(ValidationRules.CannotBeNull, "digitalTwinId");
             }
-            if (interfacesPatchInfo == null)
+            if (patch == null)
             {
-                throw new ValidationException(ValidationRules.CannotBeNull, "interfacesPatchInfo");
+                throw new ValidationException(ValidationRules.CannotBeNull, "patch");
             }
             if (Client.ApiVersion == null)
             {
@@ -274,10 +270,10 @@ namespace Azure.IoT.DigitalTwin.Service
                 _invocationId = ServiceClientTracing.NextInvocationId.ToString();
                 Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
                 tracingParameters.Add("digitalTwinId", digitalTwinId);
-                tracingParameters.Add("interfacesPatchInfo", interfacesPatchInfo);
+                tracingParameters.Add("patch", patch);
                 tracingParameters.Add("ifMatch", ifMatch);
                 tracingParameters.Add("cancellationToken", cancellationToken);
-                ServiceClientTracing.Enter(_invocationId, this, "UpdateMultipleInterfaces", tracingParameters);
+                ServiceClientTracing.Enter(_invocationId, this, "UpdateInterfaces", tracingParameters);
             }
             // Construct URL
             var _baseUrl = Client.BaseUri.AbsoluteUri;
@@ -322,9 +318,9 @@ namespace Azure.IoT.DigitalTwin.Service
 
             // Serialize Request
             string _requestContent = null;
-            if(interfacesPatchInfo != null)
+            if(patch != null)
             {
-                _requestContent = Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(interfacesPatchInfo, Client.SerializationSettings);
+                _requestContent = patch;
                 _httpRequest.Content = new StringContent(_requestContent, System.Text.Encoding.UTF8);
                 _httpRequest.Content.Headers.ContentType =System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
             }
@@ -355,7 +351,7 @@ namespace Azure.IoT.DigitalTwin.Service
                     _responseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
                 }
                 else {
-                    _responseContent = string.Empty;
+                    _responseContent = null;
                 }
                 ex.Request = new HttpRequestMessageWrapper(_httpRequest, _requestContent);
                 ex.Response = new HttpResponseMessageWrapper(_httpResponse, _responseContent);
@@ -371,7 +367,7 @@ namespace Azure.IoT.DigitalTwin.Service
                 throw ex;
             }
             // Create Result
-            var _result = new HttpOperationResponse<DigitalTwinInterfaces,DigitalTwinUpdateMultipleInterfacesHeaders>();
+            var _result = new HttpOperationResponse<string,DigitalTwinUpdateInterfacesHeaders>();
             _result.Request = _httpRequest;
             _result.Response = _httpResponse;
             // Deserialize Response
@@ -380,7 +376,7 @@ namespace Azure.IoT.DigitalTwin.Service
                 _responseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
                 try
                 {
-                    _result.Body = Microsoft.Rest.Serialization.SafeJsonConvert.DeserializeObject<DigitalTwinInterfaces>(_responseContent, Client.DeserializationSettings);
+                    _result.Body = _responseContent;
                 }
                 catch (JsonException ex)
                 {
@@ -394,7 +390,7 @@ namespace Azure.IoT.DigitalTwin.Service
             }
             try
             {
-                _result.Headers = _httpResponse.GetHeadersAsJson().ToObject<DigitalTwinUpdateMultipleInterfacesHeaders>(JsonSerializer.Create(Client.DeserializationSettings));
+                _result.Headers = _httpResponse.GetHeadersAsJson().ToObject<DigitalTwinUpdateInterfacesHeaders>(JsonSerializer.Create(Client.DeserializationSettings));
             }
             catch (JsonException ex)
             {
@@ -413,17 +409,15 @@ namespace Azure.IoT.DigitalTwin.Service
         }
 
         /// <summary>
-        /// Gets the properties of given interface.
+        /// Gets the interface of given interfaceId.
         /// Example URI: "digitalTwins/{digitalTwinId}/interfaces/{interfaceName}"
         /// </summary>
         /// <param name='digitalTwinId'>
         /// Digital Twin ID. Format of digitalTwinId is DeviceId[~ModuleId]. ModuleId
         /// is optional.
-        /// Example 1: "myDevice"
-        /// Example 2: "myDevice~module1"
         /// </param>
         /// <param name='interfaceName'>
-        /// Interface name, for example &lt;example&gt;myThermostat&lt;/example&gt;.
+        /// The interface name.
         /// </param>
         /// <param name='customHeaders'>
         /// Headers that will be added to request.
@@ -446,7 +440,7 @@ namespace Azure.IoT.DigitalTwin.Service
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<DigitalTwinInterfaces,DigitalTwinGetSingleInterfaceHeaders>> GetSingleInterfaceWithHttpMessagesAsync(string digitalTwinId, string interfaceName, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<string,DigitalTwinGetInterfaceHeaders>> GetInterfaceWithHttpMessagesAsync(string digitalTwinId, string interfaceName, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (digitalTwinId == null)
             {
@@ -470,7 +464,7 @@ namespace Azure.IoT.DigitalTwin.Service
                 tracingParameters.Add("digitalTwinId", digitalTwinId);
                 tracingParameters.Add("interfaceName", interfaceName);
                 tracingParameters.Add("cancellationToken", cancellationToken);
-                ServiceClientTracing.Enter(_invocationId, this, "GetSingleInterface", tracingParameters);
+                ServiceClientTracing.Enter(_invocationId, this, "GetInterface", tracingParameters);
             }
             // Construct URL
             var _baseUrl = Client.BaseUri.AbsoluteUri;
@@ -535,7 +529,7 @@ namespace Azure.IoT.DigitalTwin.Service
                     _responseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
                 }
                 else {
-                    _responseContent = string.Empty;
+                    _responseContent = null;
                 }
                 ex.Request = new HttpRequestMessageWrapper(_httpRequest, _requestContent);
                 ex.Response = new HttpResponseMessageWrapper(_httpResponse, _responseContent);
@@ -551,7 +545,7 @@ namespace Azure.IoT.DigitalTwin.Service
                 throw ex;
             }
             // Create Result
-            var _result = new HttpOperationResponse<DigitalTwinInterfaces,DigitalTwinGetSingleInterfaceHeaders>();
+            var _result = new HttpOperationResponse<string,DigitalTwinGetInterfaceHeaders>();
             _result.Request = _httpRequest;
             _result.Response = _httpResponse;
             // Deserialize Response
@@ -560,7 +554,7 @@ namespace Azure.IoT.DigitalTwin.Service
                 _responseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
                 try
                 {
-                    _result.Body = Microsoft.Rest.Serialization.SafeJsonConvert.DeserializeObject<DigitalTwinInterfaces>(_responseContent, Client.DeserializationSettings);
+                    _result.Body = _responseContent;
                 }
                 catch (JsonException ex)
                 {
@@ -574,7 +568,7 @@ namespace Azure.IoT.DigitalTwin.Service
             }
             try
             {
-                _result.Headers = _httpResponse.GetHeadersAsJson().ToObject<DigitalTwinGetSingleInterfaceHeaders>(JsonSerializer.Create(Client.DeserializationSettings));
+                _result.Headers = _httpResponse.GetHeadersAsJson().ToObject<DigitalTwinGetInterfaceHeaders>(JsonSerializer.Create(Client.DeserializationSettings));
             }
             catch (JsonException ex)
             {
@@ -593,227 +587,8 @@ namespace Azure.IoT.DigitalTwin.Service
         }
 
         /// <summary>
-        /// Invoke a digital twin interface command.
-        /// </summary>
-        /// <remarks>
-        /// Invoke a digital twin interface command.
-        /// </remarks>
-        /// <param name='digitalTwinId'>
-        /// Digital Twin ID. Format of digitalTwinId is DeviceId[~ModuleId]. ModuleId
-        /// is optional.
-        /// Example 1: "myDevice"
-        /// Example 2: "myDevice~module1"
-        /// </param>
-        /// <param name='interfaceName'>
-        /// Interface name, for example &lt;example&gt;myThermostat&lt;/example&gt;.
-        /// </param>
-        /// <param name='commandName'>
-        /// </param>
-        /// <param name='payload'>
-        /// </param>
-        /// <param name='responseTimeoutInSeconds'>
-        /// Response timeout in seconds.
-        /// </param>
-        /// <param name='connectTimeoutInSeconds'>
-        /// Connect timeout in seconds.
-        /// </param>
-        /// <param name='customHeaders'>
-        /// Headers that will be added to request.
-        /// </param>
-        /// <param name='cancellationToken'>
-        /// The cancellation token.
-        /// </param>
-        /// <exception cref="HttpOperationException">
-        /// Thrown when the operation returned an invalid status code
-        /// </exception>
-        /// <exception cref="SerializationException">
-        /// Thrown when unable to deserialize the response
-        /// </exception>
-        /// <exception cref="ValidationException">
-        /// Thrown when a required parameter is null
-        /// </exception>
-        /// <exception cref="System.ArgumentNullException">
-        /// Thrown when a required parameter is null
-        /// </exception>
-        /// <return>
-        /// A response object containing the response body and response headers.
-        /// </return>
-        public async Task<HttpOperationResponse<object,DigitalTwinInvokeInterfaceCommandHeaders>> InvokeInterfaceCommandWithHttpMessagesAsync(string digitalTwinId, string interfaceName, string commandName, object payload, int? responseTimeoutInSeconds = default(int?), int? connectTimeoutInSeconds = default(int?), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            if (digitalTwinId == null)
-            {
-                throw new ValidationException(ValidationRules.CannotBeNull, "digitalTwinId");
-            }
-            if (interfaceName == null)
-            {
-                throw new ValidationException(ValidationRules.CannotBeNull, "interfaceName");
-            }
-            if (commandName == null)
-            {
-                throw new ValidationException(ValidationRules.CannotBeNull, "commandName");
-            }
-            if (Client.ApiVersion == null)
-            {
-                throw new ValidationException(ValidationRules.CannotBeNull, "this.Client.ApiVersion");
-            }
-            if (payload == null)
-            {
-                throw new ValidationException(ValidationRules.CannotBeNull, "payload");
-            }
-            // Tracing
-            bool _shouldTrace = ServiceClientTracing.IsEnabled;
-            string _invocationId = null;
-            if (_shouldTrace)
-            {
-                _invocationId = ServiceClientTracing.NextInvocationId.ToString();
-                Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
-                tracingParameters.Add("digitalTwinId", digitalTwinId);
-                tracingParameters.Add("interfaceName", interfaceName);
-                tracingParameters.Add("commandName", commandName);
-                tracingParameters.Add("responseTimeoutInSeconds", responseTimeoutInSeconds);
-                tracingParameters.Add("connectTimeoutInSeconds", connectTimeoutInSeconds);
-                tracingParameters.Add("payload", payload);
-                tracingParameters.Add("cancellationToken", cancellationToken);
-                ServiceClientTracing.Enter(_invocationId, this, "InvokeInterfaceCommand", tracingParameters);
-            }
-            // Construct URL
-            var _baseUrl = Client.BaseUri.AbsoluteUri;
-            var _url = new System.Uri(new System.Uri(_baseUrl + (_baseUrl.EndsWith("/") ? "" : "/")), "digitalTwins/{digitalTwinId}/interfaces/{interfaceName}/commands/{commandName}").ToString();
-            _url = _url.Replace("{digitalTwinId}", System.Uri.EscapeDataString(digitalTwinId));
-            _url = _url.Replace("{interfaceName}", System.Uri.EscapeDataString(interfaceName));
-            _url = _url.Replace("{commandName}", System.Uri.EscapeDataString(commandName));
-            List<string> _queryParameters = new List<string>();
-            if (responseTimeoutInSeconds != null)
-            {
-                _queryParameters.Add(string.Format("responseTimeoutInSeconds={0}", System.Uri.EscapeDataString(Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(responseTimeoutInSeconds, Client.SerializationSettings).Trim('"'))));
-            }
-            if (connectTimeoutInSeconds != null)
-            {
-                _queryParameters.Add(string.Format("connectTimeoutInSeconds={0}", System.Uri.EscapeDataString(Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(connectTimeoutInSeconds, Client.SerializationSettings).Trim('"'))));
-            }
-            if (Client.ApiVersion != null)
-            {
-                _queryParameters.Add(string.Format("api-version={0}", System.Uri.EscapeDataString(Client.ApiVersion)));
-            }
-            if (_queryParameters.Count > 0)
-            {
-                _url += "?" + string.Join("&", _queryParameters);
-            }
-            // Create HTTP transport objects
-            var _httpRequest = new HttpRequestMessage();
-            HttpResponseMessage _httpResponse = null;
-            _httpRequest.Method = new HttpMethod("POST");
-            _httpRequest.RequestUri = new System.Uri(_url);
-            // Set Headers
-
-
-            if (customHeaders != null)
-            {
-                foreach(var _header in customHeaders)
-                {
-                    if (_httpRequest.Headers.Contains(_header.Key))
-                    {
-                        _httpRequest.Headers.Remove(_header.Key);
-                    }
-                    _httpRequest.Headers.TryAddWithoutValidation(_header.Key, _header.Value);
-                }
-            }
-
-            // Serialize Request
-            string _requestContent = null;
-            if(payload != null)
-            {
-                _requestContent = Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(payload, Client.SerializationSettings);
-                _httpRequest.Content = new StringContent(_requestContent, System.Text.Encoding.UTF8);
-                _httpRequest.Content.Headers.ContentType =System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
-            }
-            // Set Credentials
-            if (Client.Credentials != null)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                await Client.Credentials.ProcessHttpRequestAsync(_httpRequest, cancellationToken).ConfigureAwait(false);
-            }
-            // Send Request
-            if (_shouldTrace)
-            {
-                ServiceClientTracing.SendRequest(_invocationId, _httpRequest);
-            }
-            cancellationToken.ThrowIfCancellationRequested();
-            _httpResponse = await Client.HttpClient.SendAsync(_httpRequest, cancellationToken).ConfigureAwait(false);
-            if (_shouldTrace)
-            {
-                ServiceClientTracing.ReceiveResponse(_invocationId, _httpResponse);
-            }
-            HttpStatusCode _statusCode = _httpResponse.StatusCode;
-            cancellationToken.ThrowIfCancellationRequested();
-            string _responseContent = null;
-            if ((int)_statusCode != 200)
-            {
-                var ex = new HttpOperationException(string.Format("Operation returned an invalid status code '{0}'", _statusCode));
-                if (_httpResponse.Content != null) {
-                    _responseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-                }
-                else {
-                    _responseContent = string.Empty;
-                }
-                ex.Request = new HttpRequestMessageWrapper(_httpRequest, _requestContent);
-                ex.Response = new HttpResponseMessageWrapper(_httpResponse, _responseContent);
-                if (_shouldTrace)
-                {
-                    ServiceClientTracing.Error(_invocationId, ex);
-                }
-                _httpRequest.Dispose();
-                if (_httpResponse != null)
-                {
-                    _httpResponse.Dispose();
-                }
-                throw ex;
-            }
-            // Create Result
-            var _result = new HttpOperationResponse<object,DigitalTwinInvokeInterfaceCommandHeaders>();
-            _result.Request = _httpRequest;
-            _result.Response = _httpResponse;
-            // Deserialize Response
-            if ((int)_statusCode == 200)
-            {
-                _responseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-                try
-                {
-                    _result.Body = Microsoft.Rest.Serialization.SafeJsonConvert.DeserializeObject<object>(_responseContent, Client.DeserializationSettings);
-                }
-                catch (JsonException ex)
-                {
-                    _httpRequest.Dispose();
-                    if (_httpResponse != null)
-                    {
-                        _httpResponse.Dispose();
-                    }
-                    throw new SerializationException("Unable to deserialize the response.", _responseContent, ex);
-                }
-            }
-            try
-            {
-                _result.Headers = _httpResponse.GetHeadersAsJson().ToObject<DigitalTwinInvokeInterfaceCommandHeaders>(JsonSerializer.Create(Client.DeserializationSettings));
-            }
-            catch (JsonException ex)
-            {
-                _httpRequest.Dispose();
-                if (_httpResponse != null)
-                {
-                    _httpResponse.Dispose();
-                }
-                throw new SerializationException("Unable to deserialize the headers.", _httpResponse.GetHeadersAsJson().ToString(), ex);
-            }
-            if (_shouldTrace)
-            {
-                ServiceClientTracing.Exit(_invocationId, _result);
-            }
-            return _result;
-        }
-
-        /// <summary>
-        /// Returns a DigitalTwin model definition for the given "id".
-        /// If "expand" is present in the query parameters and "id" is for a device
+        /// Returns a DigitalTwin model definition for the given id.
+        /// If "expand" is present in the query parameters and id is for a device
         /// capability model then it returns
         /// the capability metamodel with expanded interface definitions.
         /// </summary>
@@ -846,7 +621,7 @@ namespace Azure.IoT.DigitalTwin.Service
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<object,DigitalTwinGetDigitalTwinModelHeaders>> GetDigitalTwinModelWithHttpMessagesAsync(string modelId, bool? expand = false, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<object,DigitalTwinGetDigitalTwinModelHeaders>> GetDigitalTwinModelWithHttpMessagesAsync(string modelId, bool? expand = default(bool?), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (modelId == null)
             {
@@ -934,7 +709,7 @@ namespace Azure.IoT.DigitalTwin.Service
                     _responseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
                 }
                 else {
-                    _responseContent = string.Empty;
+                    _responseContent = null;
                 }
                 ex.Request = new HttpRequestMessageWrapper(_httpRequest, _requestContent);
                 ex.Response = new HttpResponseMessageWrapper(_httpResponse, _responseContent);
@@ -959,7 +734,7 @@ namespace Azure.IoT.DigitalTwin.Service
                 _responseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
                 try
                 {
-                    _result.Body = Microsoft.Rest.Serialization.SafeJsonConvert.DeserializeObject<object>(_responseContent, Client.DeserializationSettings);
+                    _result.Body = _responseContent;
                 }
                 catch (JsonException ex)
                 {
@@ -974,6 +749,216 @@ namespace Azure.IoT.DigitalTwin.Service
             try
             {
                 _result.Headers = _httpResponse.GetHeadersAsJson().ToObject<DigitalTwinGetDigitalTwinModelHeaders>(JsonSerializer.Create(Client.DeserializationSettings));
+            }
+            catch (JsonException ex)
+            {
+                _httpRequest.Dispose();
+                if (_httpResponse != null)
+                {
+                    _httpResponse.Dispose();
+                }
+                throw new SerializationException("Unable to deserialize the headers.", _httpResponse.GetHeadersAsJson().ToString(), ex);
+            }
+            if (_shouldTrace)
+            {
+                ServiceClientTracing.Exit(_invocationId, _result);
+            }
+            return _result;
+        }
+
+        /// <summary>
+        /// Invoke a digital twin interface command.
+        /// </summary>
+        /// <remarks>
+        /// Invoke a digital twin interface command.
+        /// </remarks>
+        /// <param name='digitalTwinId'>
+        /// </param>
+        /// <param name='interfaceName'>
+        /// </param>
+        /// <param name='commandName'>
+        /// </param>
+        /// <param name='payload'>
+        /// </param>
+        /// <param name='connectTimeoutInSeconds'>
+        /// Connect timeout in seconds.
+        /// </param>
+        /// <param name='responseTimeoutInSeconds'>
+        /// Response timeout in seconds.
+        /// </param>
+        /// <param name='customHeaders'>
+        /// Headers that will be added to request.
+        /// </param>
+        /// <param name='cancellationToken'>
+        /// The cancellation token.
+        /// </param>
+        /// <exception cref="HttpOperationException">
+        /// Thrown when the operation returned an invalid status code
+        /// </exception>
+        /// <exception cref="SerializationException">
+        /// Thrown when unable to deserialize the response
+        /// </exception>
+        /// <exception cref="ValidationException">
+        /// Thrown when a required parameter is null
+        /// </exception>
+        /// <exception cref="System.ArgumentNullException">
+        /// Thrown when a required parameter is null
+        /// </exception>
+        /// <return>
+        /// A response object containing the response body and response headers.
+        /// </return>
+        public async Task<HttpOperationResponse<object,DigitalTwinInvokeInterfaceCommandHeaders>> InvokeInterfaceCommandWithHttpMessagesAsync(string digitalTwinId, string interfaceName, string commandName, object payload = default(object), int? connectTimeoutInSeconds = default(int?), int? responseTimeoutInSeconds = default(int?), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            if (digitalTwinId == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "digitalTwinId");
+            }
+            if (interfaceName == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "interfaceName");
+            }
+            if (commandName == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "commandName");
+            }
+            if (Client.ApiVersion == null)
+            {
+                throw new ValidationException(ValidationRules.CannotBeNull, "this.Client.ApiVersion");
+            }
+            // Tracing
+            bool _shouldTrace = ServiceClientTracing.IsEnabled;
+            string _invocationId = null;
+            if (_shouldTrace)
+            {
+                _invocationId = ServiceClientTracing.NextInvocationId.ToString();
+                Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
+                tracingParameters.Add("digitalTwinId", digitalTwinId);
+                tracingParameters.Add("interfaceName", interfaceName);
+                tracingParameters.Add("commandName", commandName);
+                tracingParameters.Add("payload", payload);
+                tracingParameters.Add("connectTimeoutInSeconds", connectTimeoutInSeconds);
+                tracingParameters.Add("responseTimeoutInSeconds", responseTimeoutInSeconds);
+                tracingParameters.Add("cancellationToken", cancellationToken);
+                ServiceClientTracing.Enter(_invocationId, this, "InvokeInterfaceCommand", tracingParameters);
+            }
+            // Construct URL
+            var _baseUrl = Client.BaseUri.AbsoluteUri;
+            var _url = new System.Uri(new System.Uri(_baseUrl + (_baseUrl.EndsWith("/") ? "" : "/")), "digitalTwins/{digitalTwinId}/interfaces/{interfaceName}/commands/{commandName}").ToString();
+            _url = _url.Replace("{digitalTwinId}", System.Uri.EscapeDataString(digitalTwinId));
+            _url = _url.Replace("{interfaceName}", System.Uri.EscapeDataString(interfaceName));
+            _url = _url.Replace("{commandName}", System.Uri.EscapeDataString(commandName));
+            List<string> _queryParameters = new List<string>();
+            if (Client.ApiVersion != null)
+            {
+                _queryParameters.Add(string.Format("api-version={0}", System.Uri.EscapeDataString(Client.ApiVersion)));
+            }
+            if (connectTimeoutInSeconds != null)
+            {
+                _queryParameters.Add(string.Format("connectTimeoutInSeconds={0}", System.Uri.EscapeDataString(Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(connectTimeoutInSeconds, Client.SerializationSettings).Trim('"'))));
+            }
+            if (responseTimeoutInSeconds != null)
+            {
+                _queryParameters.Add(string.Format("responseTimeoutInSeconds={0}", System.Uri.EscapeDataString(Microsoft.Rest.Serialization.SafeJsonConvert.SerializeObject(responseTimeoutInSeconds, Client.SerializationSettings).Trim('"'))));
+            }
+            if (_queryParameters.Count > 0)
+            {
+                _url += "?" + string.Join("&", _queryParameters);
+            }
+            // Create HTTP transport objects
+            var _httpRequest = new HttpRequestMessage();
+            HttpResponseMessage _httpResponse = null;
+            _httpRequest.Method = new HttpMethod("POST");
+            _httpRequest.RequestUri = new System.Uri(_url);
+            // Set Headers
+
+
+            if (customHeaders != null)
+            {
+                foreach(var _header in customHeaders)
+                {
+                    if (_httpRequest.Headers.Contains(_header.Key))
+                    {
+                        _httpRequest.Headers.Remove(_header.Key);
+                    }
+                    _httpRequest.Headers.TryAddWithoutValidation(_header.Key, _header.Value);
+                }
+            }
+
+            // Serialize Request
+            string _requestContent = null;
+            if(payload != null)
+            {
+                _requestContent = payload.ToString();
+                _httpRequest.Content = new StringContent(_requestContent, System.Text.Encoding.UTF8);
+                _httpRequest.Content.Headers.ContentType =System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
+            }
+            // Set Credentials
+            if (Client.Credentials != null)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                await Client.Credentials.ProcessHttpRequestAsync(_httpRequest, cancellationToken).ConfigureAwait(false);
+            }
+            // Send Request
+            if (_shouldTrace)
+            {
+                ServiceClientTracing.SendRequest(_invocationId, _httpRequest);
+            }
+            cancellationToken.ThrowIfCancellationRequested();
+            _httpResponse = await Client.HttpClient.SendAsync(_httpRequest, cancellationToken).ConfigureAwait(false);
+            if (_shouldTrace)
+            {
+                ServiceClientTracing.ReceiveResponse(_invocationId, _httpResponse);
+            }
+            HttpStatusCode _statusCode = _httpResponse.StatusCode;
+            cancellationToken.ThrowIfCancellationRequested();
+            string _responseContent = null;
+            if ((int)_statusCode != 200)
+            {
+                var ex = new HttpOperationException(string.Format("Operation returned an invalid status code '{0}'", _statusCode));
+                if (_httpResponse.Content != null) {
+                    _responseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+                }
+                else {
+                    _responseContent = null;
+                }
+                ex.Request = new HttpRequestMessageWrapper(_httpRequest, _requestContent);
+                ex.Response = new HttpResponseMessageWrapper(_httpResponse, _responseContent);
+                if (_shouldTrace)
+                {
+                    ServiceClientTracing.Error(_invocationId, ex);
+                }
+                _httpRequest.Dispose();
+                if (_httpResponse != null)
+                {
+                    _httpResponse.Dispose();
+                }
+                throw ex;
+            }
+            // Create Result
+            var _result = new HttpOperationResponse<object,DigitalTwinInvokeInterfaceCommandHeaders>();
+            _result.Request = _httpRequest;
+            _result.Response = _httpResponse;
+            // Deserialize Response
+            if ((int)_statusCode == 200)
+            {
+                _responseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+                try
+                {
+                    _result.Body = _responseContent;
+                }
+                catch (JsonException ex)
+                {
+                    _httpRequest.Dispose();
+                    if (_httpResponse != null)
+                    {
+                        _httpResponse.Dispose();
+                    }
+                    throw new SerializationException("Unable to deserialize the response.", _responseContent, ex);
+                }
+            }
+            try
+            {
+                _result.Headers = _httpResponse.GetHeadersAsJson().ToObject<DigitalTwinInvokeInterfaceCommandHeaders>(JsonSerializer.Create(Client.DeserializationSettings));
             }
             catch (JsonException ex)
             {

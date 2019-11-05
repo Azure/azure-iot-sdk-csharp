@@ -42,11 +42,10 @@ namespace Azure.IoT.DigitalTwin.Service
             SharedAccessSignature = parser.SharedAccessSignatureString;
             ServiceName = parser.ServiceName;
             HttpsEndpoint = new UriBuilder("https", parser.HostName).Uri;
-            RepositoryId = parser.RepositoryId;
         }
 
         /// <summary>
-        /// The Provisioning Service Name
+        /// The Service Name
         /// </summary>
         public string ServiceName
         {
@@ -55,7 +54,7 @@ namespace Azure.IoT.DigitalTwin.Service
         }
 
         /// <summary>
-        /// The Provisioning Service Client Hostname
+        /// The Service Client Hostname
         /// </summary>
         public string HostName
         {
@@ -64,7 +63,7 @@ namespace Azure.IoT.DigitalTwin.Service
         }
 
         /// <summary>
-        /// The Provisioning Service Client Https Endpoint
+        /// The Service Client Https Endpoint
         /// </summary>
         public Uri HttpsEndpoint
         {
@@ -73,7 +72,7 @@ namespace Azure.IoT.DigitalTwin.Service
         }
 
         /// <summary>
-        /// The Provisioning Service Audience
+        /// The Service Audience
         /// </summary>
         public string Audience
         {
@@ -81,7 +80,7 @@ namespace Azure.IoT.DigitalTwin.Service
         }
 
         /// <summary>
-        /// The Provisioning Service Access Policy Name
+        /// The Service Access Policy Name
         /// </summary>
         public string SharedAccessKeyName
         {
@@ -90,7 +89,7 @@ namespace Azure.IoT.DigitalTwin.Service
         }
 
         /// <summary>
-        /// The Provisioning Service Shared Access Key for the specified
+        /// The Service Shared Access Key for the specified
         /// access policy
         /// </summary>
         public string SharedAccessKey
@@ -100,15 +99,9 @@ namespace Azure.IoT.DigitalTwin.Service
         }
 
         /// <summary>
-        /// The Provisioning Service Shared Access Signature
+        /// The Service Shared Access Signature
         /// </summary>
         public string SharedAccessSignature
-        {
-            get;
-            private set;
-        }
-
-        public string RepositoryId
         {
             get;
             private set;
@@ -135,7 +128,7 @@ namespace Azure.IoT.DigitalTwin.Service
         }
 
         /// <summary>
-        /// Parser for the Provisioning Service Connection String
+        /// Parser for the Service Connection String
         /// </summary>
         /// <param name="connectionString"> The DPS Connection String </param>
         /// <returns></returns>
@@ -153,7 +146,6 @@ namespace Azure.IoT.DigitalTwin.Service
                 Key = SharedAccessKey,
                 TimeToLive = DefaultTokenTimeToLive,
                 Target = Audience,
-                RepositoryId = RepositoryId
             };
 
             ttl = builder.TimeToLive;
