@@ -121,7 +121,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
                 else
                 {
-                    receivedMessage = await dc.ReceiveAsync(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
+                    receivedMessage = await dc.ReceiveAsync(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
                 }
 
                 if (receivedMessage != null)

@@ -189,9 +189,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 {
                     await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
 
+                    await _handlerLock.WaitAsync(cancellationToken).ConfigureAwait(false);
                     try
                     {
-                        await _handlerLock.WaitAsync().ConfigureAwait(false);
                         Debug.Assert(!_methodsEnabled);
                         await base.EnableMethodsAsync(cancellationToken).ConfigureAwait(false);
                         _methodsEnabled = true;
@@ -218,10 +218,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 await _internalRetryPolicy.ExecuteAsync(async () =>
                 {
                     await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
-
+                    await _handlerLock.WaitAsync(cancellationToken).ConfigureAwait(false);
                     try
                     {
-                        await _handlerLock.WaitAsync().ConfigureAwait(false);
                         Debug.Assert(_methodsEnabled);
                         await base.DisableMethodsAsync(cancellationToken).ConfigureAwait(false);
                         _methodsEnabled = false;
@@ -248,10 +247,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 await _internalRetryPolicy.ExecuteAsync(async () =>
                 {
                     await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
-
+                    await _handlerLock.WaitAsync(cancellationToken).ConfigureAwait(false);
                     try
                     {
-                        await _handlerLock.WaitAsync().ConfigureAwait(false);
                         await base.EnableEventReceiveAsync(cancellationToken).ConfigureAwait(false);
                         Debug.Assert(!_eventsEnabled);
                         _eventsEnabled = true;
@@ -278,10 +276,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 await _internalRetryPolicy.ExecuteAsync(async () =>
                 {
                     await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
-
+                    await _handlerLock.WaitAsync(cancellationToken).ConfigureAwait(false);
                     try
                     {
-                        await _handlerLock.WaitAsync().ConfigureAwait(false);
                         Debug.Assert(_eventsEnabled);
                         await base.DisableEventReceiveAsync(cancellationToken).ConfigureAwait(false);
                         _eventsEnabled = false;
@@ -308,10 +305,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 await _internalRetryPolicy.ExecuteAsync(async () =>
                 {
                     await EnsureOpenedAsync(cancellationToken).ConfigureAwait(false);
-
+                    await _handlerLock.WaitAsync(cancellationToken).ConfigureAwait(false);
                     try
                     {
-                        await _handlerLock.WaitAsync().ConfigureAwait(false);
                         Debug.Assert(!_twinEnabled);
                         await base.EnableTwinPatchAsync(cancellationToken).ConfigureAwait(false);
                         _twinEnabled = true;
@@ -431,9 +427,9 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         public override async Task CloseAsync(CancellationToken cancellationToken)
         {
+            await _handlerLock.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
-                await _handlerLock.WaitAsync().ConfigureAwait(false);
                 if (!_openCalled) return;
                 if (Logging.IsEnabled) Logging.Enter(this, cancellationToken, nameof(CloseAsync));
 
@@ -455,7 +451,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             if (Volatile.Read(ref _opened)) return;
 
-            await _handlerLock.WaitAsync().ConfigureAwait(false);
+            await _handlerLock.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
                 if (!_opened)
