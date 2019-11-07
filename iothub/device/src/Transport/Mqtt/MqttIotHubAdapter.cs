@@ -313,11 +313,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 }
                 this.stateFlags = StateFlags.Connecting;
 
+                this.ScheduleCheckConnectTimeout(context);
                 await WriteMessageAsync(context, connectPacket, ShutdownOnWriteErrorHandler).ConfigureAwait(true);
                 this.lastChannelActivityTime = DateTime.UtcNow;
                 this.ScheduleKeepConnectionAlive(context);
-
-                this.ScheduleCheckConnectTimeout(context);
             }
             catch (Exception ex) when (!ex.IsFatal())
             {
