@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
 
 namespace Microsoft.Azure.Devices.Samples
 {
@@ -25,7 +28,6 @@ namespace Microsoft.Azure.Devices.Samples
             sample.RunSampleAsync().GetAwaiter().GetResult();
 
             Console.WriteLine("Done.\n");
-            Console.ReadLine();
             return 0;
         }
     }
