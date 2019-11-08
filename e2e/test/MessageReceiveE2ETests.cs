@@ -10,6 +10,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Azure.Devices.Client.Exceptions;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
@@ -143,6 +144,30 @@ namespace Microsoft.Azure.Devices.E2ETests
             await ReceiveMessageWithTimeout(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only, timeInSeconds).ConfigureAwait(false);
         }
 
+        [TestMethod]
+        public async Task Message_DeviceReceiveMessageOperationTimeout_Amqp()
+        {
+            await ReceiveMessageInOperationTimeout(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task Message_DeviceReceiveMessageOperationTimeout_AmqpWs()
+        {
+            await ReceiveMessageInOperationTimeout(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task Message_DeviceReceiveMessageOperationTimeout_Mqtt()
+        {
+            await ReceiveMessageInOperationTimeout(TestDeviceType.Sasl, Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task Message_DeviceReceiveMessageOperationTimeout_MqttWs()
+        {
+            await ReceiveMessageInOperationTimeout(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
+        }
+
         public static (Message message, string messageId, string payload, string p1Value) ComposeC2DTestMessage()
         {
             var payload = Guid.NewGuid().ToString();
@@ -170,6 +195,32 @@ namespace Microsoft.Azure.Devices.E2ETests
             if (sw.Elapsed.TotalSeconds > (timeInSeconds + bufferTime))
             {
                 throw new TimeoutException("ReceiveAsync with Timeout did not return in allocated time.");
+            }
+
+        }
+
+        public static async Task ReceiveMessageTimeoutCheck(DeviceClient dc)
+        {
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+            double bufferTime = 5;
+
+            // set operation timeout to 15 seconds
+            dc.OperationTimeoutInMilliseconds = 15 * 1000;
+
+            try
+            {
+                await dc.ReceiveAsync().ConfigureAwait(false);
+            }
+            catch(IotHubCommunicationException)
+            {
+                /* OperationCanceledException is being mapped to IotHubCommunicationException 
+                 which is expected here after default operation Timeout*/
+            }
+
+            if (sw.Elapsed.TotalSeconds > (dc.OperationTimeoutInMilliseconds + bufferTime))
+            {
+                throw new TimeoutException("ReceiveAsync did not return in Operation Timeout time.");
             }
 
         }
@@ -218,6 +269,26 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
 
             sw.Stop();
+        }
+
+        private async Task ReceiveMessageInOperationTimeout(TestDeviceType type, Client.TransportType transport)
+        {
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, type).ConfigureAwait(false);
+            using (DeviceClient deviceClient = testDevice.CreateDeviceClient(transport))
+            {
+                await deviceClient.OpenAsync().ConfigureAwait(false);
+
+                if (transport == Client.TransportType.Mqtt_Tcp_Only ||
+                    transport == Client.TransportType.Mqtt_WebSocket_Only)
+                {
+                    // Dummy ReceiveAsync to ensure mqtt subscription registration before SendAsync() is called on service client.
+                    await deviceClient.ReceiveAsync(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
+                }
+
+                await ReceiveMessageTimeoutCheck(deviceClient).ConfigureAwait(false);
+
+                await deviceClient.CloseAsync().ConfigureAwait(false);
+            }
         }
 
         private async Task ReceiveMessageWithTimeout(TestDeviceType type, Client.TransportType transport, double time)
