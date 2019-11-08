@@ -12,6 +12,10 @@ The sample code is set up to use X.509 certificates stored within a password-pro
 
 `powershell .\GenerateTestCertificate.ps1`
 
+You can optionally pass the DeviceID and generated certificate validity duration to the powershell script:
+
+`powershell .\GenerateTestCertificate.ps1 -deviceName "iothubx509device1" -certificateValidityInYears 10`
+
 The script will prompt for a PFX password. The same password must be used when running the sample.
 
 In your Device Provisioning Service go to "Manage enrollments" and select "Individual Enrollments".
