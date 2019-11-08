@@ -317,10 +317,7 @@ namespace Microsoft.Azure.Devices.Client
             try
             {
                 // Codes_SRS_DEVICECLIENT_28_011: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable(authentication, quota exceed) error occurs.]
-                using (CancellationTokenSource cts = CancellationTokenSourceFactory())
-                {
-                    return await ReceiveAsync(cts.Token).ConfigureAwait(false);
-                }
+                return await ReceiveAsync(TimeSpan.FromMilliseconds(OperationTimeoutInMilliseconds)).ConfigureAwait(false);
             }
             catch (OperationCanceledException ex)
             {
