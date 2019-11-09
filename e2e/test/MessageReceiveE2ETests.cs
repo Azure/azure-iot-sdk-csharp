@@ -205,8 +205,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             sw.Start();
             double bufferTime = 5;
 
-            // set operation timeout to 15 seconds
-            dc.OperationTimeoutInMilliseconds = 15 * 1000;
+            // set operation timeout to 60 seconds
+            dc.OperationTimeoutInMilliseconds = 60 * 1000;
 
             try
             {
