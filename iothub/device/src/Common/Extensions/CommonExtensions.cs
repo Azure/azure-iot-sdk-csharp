@@ -68,7 +68,7 @@ namespace Microsoft.Azure.Devices.Client.Extensions
                         (m.NextMatch().Success ? m.NextMatch().Index : valuePairString.Length) - (m.Index + m.Value.Length))
                 });
 
-            if (parts.Any(p => p.Length != 2))
+            if (!parts.Any() || parts.Any(p => p.Length != 2))
             {
                 throw new FormatException("Malformed Token");
             }
