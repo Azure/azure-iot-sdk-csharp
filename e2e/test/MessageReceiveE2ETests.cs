@@ -87,6 +87,62 @@ namespace Microsoft.Azure.Devices.E2ETests
             await ReceiveSingleMessage(TestDeviceType.X509, Client.TransportType.Http1).ConfigureAwait(false);
         }
 
+        [TestMethod]
+        public async Task Message_DeviceReceiveMessageWithLessTimeout_Amqp()
+        {
+            double timeInSeconds = 1;
+            await ReceiveMessageWithTimeout(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only, timeInSeconds).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task Message_DeviceReceiveMessageWithMoreTimeout_Amqp()
+        {
+            double timeInSeconds = 20;
+            await ReceiveMessageWithTimeout(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only, timeInSeconds).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task Message_DeviceReceiveMessageWithLessTimeout_AmqpWs()
+        {
+            double timeInSeconds = 1;
+            await ReceiveMessageWithTimeout(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only, timeInSeconds).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task Message_DeviceReceiveMessageWithMoreTimeout_AmqpWs()
+        {
+            double timeInSeconds = 20;
+            await ReceiveMessageWithTimeout(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only, timeInSeconds).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task Message_DeviceReceiveMessageWithLessTimeout_Mqtt()
+        {
+            double timeInSeconds = 1;
+            await ReceiveMessageWithTimeout(TestDeviceType.Sasl, Client.TransportType.Mqtt_Tcp_Only, timeInSeconds).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task Message_DeviceReceiveMessageWithMoreTimeout_Mqtt()
+        {
+            double timeInSeconds = 20;
+            await ReceiveMessageWithTimeout(TestDeviceType.Sasl, Client.TransportType.Mqtt_Tcp_Only, timeInSeconds).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task Message_DeviceReceiveMessageWithLessTimeout_MqttWs()
+        {
+            double timeInSeconds = 1;
+            await ReceiveMessageWithTimeout(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only, timeInSeconds).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task Message_DeviceReceiveMessageWithMoreTimeout_MqttWs()
+        {
+            double timeInSeconds = 20;
+            await ReceiveMessageWithTimeout(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only, timeInSeconds).ConfigureAwait(false);
+        }
+
         public static (Message message, string messageId, string payload, string p1Value) ComposeC2DTestMessage()
         {
             var payload = Guid.NewGuid().ToString();
@@ -101,6 +157,21 @@ namespace Microsoft.Azure.Devices.E2ETests
             };
 
             return (message, messageId, payload, p1Value);
+        }
+
+        public static async Task ReceiveMessageTimeoutCheck(DeviceClient dc, double timeInSeconds)
+        {
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+            double bufferTime = 5;
+
+            await dc.ReceiveAsync(TimeSpan.FromSeconds(timeInSeconds)).ConfigureAwait(false);
+
+            if (sw.Elapsed.TotalSeconds > (timeInSeconds + bufferTime))
+            {
+                throw new TimeoutException("ReceiveAsync with Timeout did not return in allocated time.");
+            }
+
         }
 
         public static async Task VerifyReceivedC2DMessageAsync(Client.TransportType transport, DeviceClient dc, string deviceId, string payload, string p1Value)
@@ -121,7 +192,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
                 else
                 {
-                    receivedMessage = await dc.ReceiveAsync(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
+                    receivedMessage = await dc.ReceiveAsync(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
                 }
 
                 if (receivedMessage != null)
@@ -147,6 +218,26 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
 
             sw.Stop();
+        }
+
+        private async Task ReceiveMessageWithTimeout(TestDeviceType type, Client.TransportType transport, double time)
+        {
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, type).ConfigureAwait(false);
+            using (DeviceClient deviceClient = testDevice.CreateDeviceClient(transport))
+            {
+                await deviceClient.OpenAsync().ConfigureAwait(false);
+
+                if (transport == Client.TransportType.Mqtt_Tcp_Only ||
+                    transport == Client.TransportType.Mqtt_WebSocket_Only)
+                {
+                    // Dummy ReceiveAsync to ensure mqtt subscription registration before SendAsync() is called on service client.
+                    await deviceClient.ReceiveAsync(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
+                }
+
+                await ReceiveMessageTimeoutCheck(deviceClient, time).ConfigureAwait(false);
+
+                await deviceClient.CloseAsync().ConfigureAwait(false);
+            }
         }
 
         private async Task ReceiveSingleMessage(TestDeviceType type, Client.TransportType transport)

@@ -15,6 +15,6 @@ namespace Microsoft.Azure.Devices.Client
         Retry_Expired,
         No_Network,
         Communication_Error,
-        Client_Close                    
+        Client_Close
     }
 }
