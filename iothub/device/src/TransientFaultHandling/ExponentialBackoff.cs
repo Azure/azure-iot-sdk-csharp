@@ -98,24 +98,13 @@ namespace Microsoft.Azure.Devices.Client.TransientFaultHandling
                 if (currentRetryCount < this.retryCount)
                 {
                     Random random = new Random();
-                    try
-                    {
-                        checked
-                        {
-                            int num = (int) (Math.Pow(2.0, currentRetryCount) - 1.0) * random.Next((int)(this.deltaBackoff.TotalMilliseconds * 0.8), (int)(this.deltaBackoff.TotalMilliseconds * 1.2));
-                            int num2 = (int) Math.Min(this.minBackoff.TotalMilliseconds + num, this.maxBackoff.TotalMilliseconds);
-                            retryInterval = TimeSpan.FromMilliseconds(num2);
-                            return true;
-                        }
-                    }
-                    catch (OverflowException e)
-                    {
-                        //Integer overflow only occurs due to the exponential backoff calculations at high retry count
-                        // Therefore, if integer overflow occurs, it is reasonable to default to the default maxBackoff
-                        retryInterval = TimeSpan.FromMilliseconds(this.maxBackoff.TotalMilliseconds);
-                        return true;
-                    }
+                    double exponentialInterval = (Math.Pow(2.0, currentRetryCount) - 1.0) * random.Next((int) this.deltaBackoff.TotalMilliseconds * 8 / 10, (int) this.deltaBackoff.TotalMilliseconds * 12 / 10) + this.minBackoff.TotalMilliseconds;
+                    double maxInterval = this.maxBackoff.TotalMilliseconds;
+                    double num2 = Math.Min(exponentialInterval, maxInterval);
+                    retryInterval = TimeSpan.FromMilliseconds(num2);
+                    return true;
                 }
+
                 retryInterval = TimeSpan.Zero;
                 return false;
             };
