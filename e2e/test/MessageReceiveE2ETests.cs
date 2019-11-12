@@ -196,7 +196,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 throw new TimeoutException("ReceiveAsync with Timeout did not return in allocated time.");
             }
-
+            sw.Stop();
         }
 
         public static async Task ReceiveMessageTimeoutCheck(DeviceClient dc)
@@ -222,7 +222,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 throw new TimeoutException("ReceiveAsync did not return in Operation Timeout time.");
             }
-
+            sw.Stop();
         }
 
         public static async Task VerifyReceivedC2DMessageAsync(Client.TransportType transport, DeviceClient dc, string deviceId, string payload, string p1Value)
