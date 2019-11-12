@@ -203,7 +203,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         {
             Stopwatch sw = new Stopwatch();
             sw.Start();
-            double bufferTime = 5;
+            double bufferTime = 5 * 1000;
 
             // set operation timeout to 60 seconds
             dc.OperationTimeoutInMilliseconds = 60 * 1000;
@@ -218,7 +218,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                  which is expected here after default operation Timeout*/
             }
 
-            if (sw.Elapsed.TotalSeconds > (dc.OperationTimeoutInMilliseconds + bufferTime))
+            if (sw.Elapsed.TotalMilliseconds > (dc.OperationTimeoutInMilliseconds + bufferTime))
             {
                 throw new TimeoutException("ReceiveAsync did not return in Operation Timeout time.");
             }
