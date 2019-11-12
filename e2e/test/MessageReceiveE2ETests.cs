@@ -184,7 +184,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             return (message, messageId, payload, p1Value);
         }
 
-        public static async Task ReceiveMessageTimeoutCheck(DeviceClient dc, double timeInSeconds)
+        private static async Task ReceiveMessageTimeoutCheck(DeviceClient dc, double timeInSeconds)
         {
             Stopwatch sw = new Stopwatch();
             sw.Start();
@@ -199,7 +199,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             sw.Stop();
         }
 
-        public static async Task ReceiveMessageTimeoutCheck(DeviceClient dc)
+        private static async Task ReceiveMessageTimeoutCheck(DeviceClient dc)
         {
             Stopwatch sw = new Stopwatch();
             sw.Start();
