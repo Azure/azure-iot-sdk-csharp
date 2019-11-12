@@ -87,18 +87,26 @@ namespace EnvironmentalSensorSample
                     {
                         Console.WriteLine("RunDiagnosticAsync started...");
 
-                        // Pretend calling command to Sensor to run diagnostics.
-                        await Task.Delay(10 * 1000).ConfigureAwait(false);
-                        Console.WriteLine("RunDiagnosticAsync done... Send status update.");
+                        // delay thread to simulate a long running operation
+                        await Task.Delay(5 * 1000).ConfigureAwait(false);
+                        await this.UpdateAsyncCommandStatusAsync(new DigitalTwinAsyncCommandUpdate(commandRequest.Name, commandRequest.RequestId, StatusCodePending, "25% complete")).ConfigureAwait(false);
 
-                        await this.UpdateAsyncCommandStatusAsync(new DigitalTwinAsyncCommandUpdate(commandRequest.Name, commandRequest.RequestId, StatusCodeCompleted)).ConfigureAwait(false);
+                        await Task.Delay(5 * 1000).ConfigureAwait(false);
+                        await this.UpdateAsyncCommandStatusAsync(new DigitalTwinAsyncCommandUpdate(commandRequest.Name, commandRequest.RequestId, StatusCodePending, "50% complete")).ConfigureAwait(false);
+
+                        await Task.Delay(5 * 1000).ConfigureAwait(false);
+                        await this.UpdateAsyncCommandStatusAsync(new DigitalTwinAsyncCommandUpdate(commandRequest.Name, commandRequest.RequestId, StatusCodePending, "75% complete")).ConfigureAwait(false);
+
+                        await Task.Delay(5 * 1000).ConfigureAwait(false);
+                        Console.WriteLine("RunDiagnosticAsync done... Send status update.");
+                        await this.UpdateAsyncCommandStatusAsync(new DigitalTwinAsyncCommandUpdate(commandRequest.Name, commandRequest.RequestId, StatusCodeCompleted, "100% complete")).ConfigureAwait(false);
                     });
                     return new DigitalTwinCommandResponse(StatusCodePending, null);
                 case TurnOffLightCommand:
                 case TurnOnLightCommand:
                     return new DigitalTwinCommandResponse(StatusCodeCompleted, null);
                 default:
-                    Console.WriteLine($"Property name '{commandRequest.Name}' is not handled.");
+                    Console.WriteLine($"Command name '{commandRequest.Name}' is not handled.");
                     return new DigitalTwinCommandResponse(StatusCodeNotImplemented, null);
             }
         }
