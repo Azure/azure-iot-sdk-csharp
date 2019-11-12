@@ -11,8 +11,6 @@ namespace Azure.IoT.DigitalTwin.E2ETests
 
         public static string EventHubConnectionString => GetValue("EVENTHUB_CONNECTION_STRING");
 
-        public static string EventhubName => GetValue("EVENTHUB_NAME");
-
         private static string GetValue(string envName, string defaultValue = null)
         {
             string envValue = Environment.GetEnvironmentVariable(envName);

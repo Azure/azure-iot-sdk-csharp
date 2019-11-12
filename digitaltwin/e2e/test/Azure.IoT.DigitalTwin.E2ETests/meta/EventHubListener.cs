@@ -21,7 +21,6 @@ namespace Azure.IoT.DigitalTwin.E2ETests.meta
     {
         private EventHubClient eventHubClient;
         private string EventHubConnectionString = Configuration.EventHubConnectionString;
-        private string EventHubName = Configuration.EventhubName;
 
         private bool startedListening = false;
 
@@ -54,10 +53,7 @@ namespace Azure.IoT.DigitalTwin.E2ETests.meta
         private EventHubListener()
         {
             //singleton pattern, not publicly accessible only purpose
-            var connectionStringBuilder = new EventHubsConnectionStringBuilder(EventHubConnectionString)
-            {
-                EntityPath = EventHubName
-            };
+            var connectionStringBuilder = new EventHubsConnectionStringBuilder(EventHubConnectionString);
 
             receivedMessages = new BlockingCollection<string>();
             partitionReceivers = new List<PartitionReceiver>();
