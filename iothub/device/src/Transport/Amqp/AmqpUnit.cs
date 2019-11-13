@@ -121,12 +121,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
                 if (_disposed)
                 {
-                    _amqpAuthenticationRefresher?.StopLoop();
-                    _amqpIoTSession.SafeClose();
-                    if (!_deviceIdentity.IsPooling())
-                    {
-                        _amqpConnectionHolder.Dispose();
-                    }
+                    Cleanup();
                     throw new IotHubException("Device is now offline.", false);
                 }
 
@@ -161,12 +156,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                     }
                     finally
                     {
-                        _amqpAuthenticationRefresher?.StopLoop();
-                        _amqpIoTSession.SafeClose();
-                        if (!_deviceIdentity.IsPooling())
-                        {
-                            _amqpConnectionHolder.Dispose();
-                        }
+                        Cleanup();
                     }
                 }
             }
@@ -177,6 +167,18 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 _sessionLock.Release();
             }
 
+        }
+
+        private void Cleanup()
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(Cleanup)}");
+            _amqpIoTSession?.SafeClose();
+            _amqpAuthenticationRefresher?.StopLoop();
+            if (!_deviceIdentity.IsPooling())
+            {
+                _amqpConnectionHolder?.Dispose();
+            }
+            if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(Cleanup)}");
         }
         #endregion
 
@@ -611,8 +613,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             if (disposing)
             {
                 if (Logging.IsEnabled) Logging.Enter(this, disposing, $"{nameof(Dispose)}");
-                _amqpIoTSession?.SafeClose();
-                _amqpAuthenticationRefresher?.StopLoop();
+                Cleanup();
                 if (Logging.IsEnabled) Logging.Exit(this, disposing, $"{nameof(Dispose)}");
             }
         }
