@@ -86,8 +86,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                
                 Assert.IsNotNull(fileNotification, "FileNotification is not received.");
                 _log.WriteLine($"TestDevice: '{testDevice.Id}', blobName: '{fileNotification.BlobName}', size: {fileNotification.BlobSizeInBytes}");
-                Assert.IsFalse(string.IsNullOrEmpty(fileNotification.BlobUri), "File notification blob uri is null or empty");
-                                
+                Assert.IsFalse(string.IsNullOrEmpty(fileNotification.BlobUri), "File notification blob uri is null or empty");                
                 await deviceClient.CloseAsync().ConfigureAwait(false);
                 await serviceClient.CloseAsync().ConfigureAwait(false);
             }
