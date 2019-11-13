@@ -126,6 +126,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 }
 
             }
+            catch (Exception)
+            {
+                Cleanup();
+                throw;
+            }
             finally
             {
                 _sessionLock.Release();
