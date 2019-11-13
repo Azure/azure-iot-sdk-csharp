@@ -191,6 +191,31 @@ namespace Microsoft.Azure.Devices.Client.Test
         }
 
         [TestMethod]
+        public async Task DeviceNotFoundExceptionReturnsDeviceDisabledStatus()
+        {
+            var contextMock = Substitute.For<IPipelineContext>();
+            var innerHandlerMock = Substitute.For<IDelegatingHandler>();
+            innerHandlerMock.OpenAsync(Arg.Any<CancellationToken>()).Returns(t => throw new DeviceNotFoundException());
+
+            ConnectionStatus? status = null;
+            ConnectionStatusChangeReason? statusChangeReason = null;
+            ConnectionStatusChangesHandler statusChangeHandler = (s, r) =>
+            {
+                status = s;
+                statusChangeReason = r;
+            };
+
+            contextMock.Get<ConnectionStatusChangesHandler>().Returns(statusChangeHandler);
+
+            var cancellationToken = new CancellationToken();
+            var testee = new RetryDelegatingHandler(contextMock, innerHandlerMock);
+            await ((Func<Task>)(() => testee.OpenAsync(cancellationToken))).ExpectedAsync<DeviceNotFoundException>().ConfigureAwait(false);
+
+            Assert.AreEqual(ConnectionStatus.Disconnected, status);
+            Assert.AreEqual(ConnectionStatusChangeReason.Device_Disabled, statusChangeReason);
+        }
+
+        [TestMethod]
         public async Task RetryTransientErrorThrownAfterNumberOfRetriesThrows()
         {
             var contextMock = Substitute.For<IPipelineContext>();
