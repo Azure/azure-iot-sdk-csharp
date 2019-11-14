@@ -48,6 +48,6 @@ namespace Sample
 
         private static String usage = "In order to run this sample, you must set environment variables for \n" +
                 "IOTHUB_CONNECTION_STRING - Your IoT Hub's connection string\n" +
-                "DEVICE_ID - The ID of the device to invoke the command onto\n";
+                "DEVICE_ID - The ID of the device to get the digital twin of\n";
     }
 }
