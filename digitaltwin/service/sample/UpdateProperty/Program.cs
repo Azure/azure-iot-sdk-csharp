@@ -97,8 +97,8 @@ namespace UpdateProperty
 
         private static String usage = "In order to run this sample, you must set environment variables for \n" +
                 "IOTHUB_CONNECTION_STRING - Your IoT Hub's connection string\n" +
-                "DEVICE_ID - The ID of the device to invoke the command onto\n" +
-                "INTERFACE_INSTANCE_NAME - the interface the command belongs to\n" +
+                "DEVICE_ID - The ID of the device to update the property on\n" +
+                "INTERFACE_INSTANCE_NAME - the interface the property belongs to\n" +
                 "PROPERTY_NAME - the name of the property to update on your digital twin\n" +
                 "PROPERTY_VALUE - the value of the property to set";
     }
