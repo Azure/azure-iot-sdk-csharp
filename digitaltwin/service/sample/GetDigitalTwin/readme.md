@@ -15,7 +15,7 @@ your device must have the .NET Core 2.2 SDK installed.
 
 In order to run this sample, you must set environment variables for:
 - "IOTHUB_CONNECTION_STRING" : Your IoT Hub's connection string
-- "DIGITAL_TWIN_ID" : Your digital twin id to invoke the command onto
+- "DEVICE_ID" : The ID of the device to invoke the command onto
 
 ### Other Prerequisites
 In order to run this sample, you will need an IoT Hub. You will also need at least one device registered in this hub so that the sample can interact with that device
