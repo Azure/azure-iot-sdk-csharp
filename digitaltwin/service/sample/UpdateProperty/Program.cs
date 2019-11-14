@@ -13,8 +13,8 @@ namespace UpdateProperty
     /// </summary>
     class Program
     {
-        private static string CONNECTION_STRING = Environment.GetEnvironmentVariable("CONNECTION_STRING");
-        private static string DIGITAL_TWIN_ID = Environment.GetEnvironmentVariable("DIGITAL_TWIN_ID");
+        private static string IOTHUB_CONNECTION_STRING = Environment.GetEnvironmentVariable("IOTHUB_CONNECTION_STRING");
+        private static string DEVICE_ID = Environment.GetEnvironmentVariable("DEVICE_ID");
         private static string INTERFACE_INSTANCE_NAME = Environment.GetEnvironmentVariable("INTERFACE_INSTANCE_NAME");
         private static string PROPERTY_NAME = Environment.GetEnvironmentVariable("PROPERTY_NAME");
         private static string PROPERTY_VALUE = Environment.GetEnvironmentVariable("PROPERTY_VALUE");
@@ -23,13 +23,13 @@ namespace UpdateProperty
         {
             verifyInputs();
 
-            var digitalTwinServiceClient = new DigitalTwinServiceClient(CONNECTION_STRING);
+            var digitalTwinServiceClient = new DigitalTwinServiceClient(IOTHUB_CONNECTION_STRING);
 
-            Console.WriteLine("Updating " + PROPERTY_NAME + " on device " + DIGITAL_TWIN_ID + " with interface instance name " + INTERFACE_INSTANCE_NAME);
+            Console.WriteLine("Updating " + PROPERTY_NAME + " on device " + DEVICE_ID + " with interface instance name " + INTERFACE_INSTANCE_NAME);
 
             string digitalTwinPatch = buildUpdatePatchSinglePropertyOnSingleInterface(PROPERTY_NAME, PROPERTY_VALUE);
 
-            string digitalTwin = digitalTwinServiceClient.UpdateDigitalTwinProperties(DIGITAL_TWIN_ID, INTERFACE_INSTANCE_NAME, digitalTwinPatch).Value;
+            string digitalTwin = digitalTwinServiceClient.UpdateDigitalTwinProperties(DEVICE_ID, INTERFACE_INSTANCE_NAME, digitalTwinPatch).Value;
 
             string jsonFormatted = JValue.Parse(digitalTwin).ToString(Formatting.Indented);
 
@@ -81,7 +81,7 @@ namespace UpdateProperty
 
         private static void verifyInputs()
         {
-            if (isNullOrEmpty(CONNECTION_STRING) || isNullOrEmpty(DIGITAL_TWIN_ID) || isNullOrEmpty(INTERFACE_INSTANCE_NAME) || isNullOrEmpty(PROPERTY_NAME) || isNullOrEmpty(PROPERTY_VALUE))
+            if (isNullOrEmpty(IOTHUB_CONNECTION_STRING) || isNullOrEmpty(DEVICE_ID) || isNullOrEmpty(INTERFACE_INSTANCE_NAME) || isNullOrEmpty(PROPERTY_NAME) || isNullOrEmpty(PROPERTY_VALUE))
             {
                 Console.WriteLine(usage);
                 Console.WriteLine("Enter any key to finish");
@@ -97,7 +97,7 @@ namespace UpdateProperty
 
         private static String usage = "In order to run this sample, you must set environment variables for \n" +
                 "IOTHUB_CONNECTION_STRING - Your IoT Hub's connection string\n" +
-                "DIGITAL_TWIN_ID - your digital twin id to invoke the command onto\n" +
+                "DEVICE_ID - The ID of the device to invoke the command onto\n" +
                 "INTERFACE_INSTANCE_NAME - the interface the command belongs to\n" +
                 "PROPERTY_NAME - the name of the property to update on your digital twin\n" +
                 "PROPERTY_VALUE - the value of the property to set";
