@@ -16,8 +16,8 @@ your device must have the .NET Core 2.2 SDK installed.
 
 In order to run this sample, you must set environment variables for:
 - "IOTHUB_CONNECTION_STRING" : Your IoT Hub's connection string
-- "DEVICE_ID" : The ID of the device to invoke the command onto
-- "INTERFACE_INSTANCE_NAME" : The interface the command belongs to
+- "DEVICE_ID" : The ID of the device to update the property on
+- "INTERFACE_INSTANCE_NAME" : The interface the property belongs to
 - "PROPERTY_NAME" : The name of the property to update on your digital twin
 - "PROPERTY_VALUE" : The value of the property to set
 
