@@ -12,8 +12,8 @@ namespace Sample
     /// </summary>
     class Program
     {
-        private static string CONNECTION_STRING = Environment.GetEnvironmentVariable("CONNECTION_STRING");
-        private static string DIGITAL_TWIN_ID = Environment.GetEnvironmentVariable("DIGITAL_TWIN_ID");
+        private static string IOTHUB_CONNECTION_STRING = Environment.GetEnvironmentVariable("IOTHUB_CONNECTION_STRING");
+        private static string DEVICE_ID = Environment.GetEnvironmentVariable("DEVICE_ID");
         private static string INTERFACE_INSTANCE_NAME = Environment.GetEnvironmentVariable("INTERFACE_INSTANCE_NAME");
         private static string ASYNC_COMMAND_NAME = Environment.GetEnvironmentVariable("ASYNC_COMMAND_NAME");
         private static string EVENTHUB_CONNECTION_STRING = Environment.GetEnvironmentVariable("EVENTHUB_CONNECTION_STRING");
@@ -27,11 +27,11 @@ namespace Sample
         {
             verifyInputs();
 
-            var digitalTwinServiceClient = new DigitalTwinServiceClient(CONNECTION_STRING);
+            var digitalTwinServiceClient = new DigitalTwinServiceClient(IOTHUB_CONNECTION_STRING);
 
-            Console.WriteLine("Invoking " + ASYNC_COMMAND_NAME + " on device " + DIGITAL_TWIN_ID + " with interface instance name " + INTERFACE_INSTANCE_NAME);
+            Console.WriteLine("Invoking " + ASYNC_COMMAND_NAME + " on device " + DEVICE_ID + " with interface instance name " + INTERFACE_INSTANCE_NAME);
 
-            var digitalTwinCommandResponse = digitalTwinServiceClient.InvokeCommand(DIGITAL_TWIN_ID, INTERFACE_INSTANCE_NAME, ASYNC_COMMAND_NAME, PAYLOAD).Value;
+            var digitalTwinCommandResponse = digitalTwinServiceClient.InvokeCommand(DEVICE_ID, INTERFACE_INSTANCE_NAME, ASYNC_COMMAND_NAME, PAYLOAD).Value;
 
             Console.WriteLine("Command " + ASYNC_COMMAND_NAME + " invoked on the device successfully, the returned status was " + digitalTwinCommandResponse.Status + " and the request id was " + digitalTwinCommandResponse.RequestId);
             Console.WriteLine("The returned payload was ");
@@ -125,8 +125,8 @@ namespace Sample
 
         private static void verifyInputs()
         {
-            if (isNullOrEmpty(CONNECTION_STRING) || 
-                isNullOrEmpty(DIGITAL_TWIN_ID) || 
+            if (isNullOrEmpty(IOTHUB_CONNECTION_STRING) || 
+                isNullOrEmpty(DEVICE_ID) || 
                 isNullOrEmpty(INTERFACE_INSTANCE_NAME) || 
                 isNullOrEmpty(ASYNC_COMMAND_NAME) || 
                 isNullOrEmpty(EVENTHUB_CONNECTION_STRING))
@@ -150,7 +150,7 @@ namespace Sample
 
         private static String usage = "In order to run this sample, you must set environment variables for \n" +
                 "IOTHUB_CONNECTION_STRING - Your IoT Hub's connection string\n" +
-                "DIGITAL_TWIN_ID - Your digital twin id to invoke the command onto\n" +
+                "DEVICE_ID - The ID of the device to invoke the command onto\n" +
                 "INTERFACE_INSTANCE_NAME - The interface the command belongs to\n" +
                 "ASYNC_COMMAND_NAME - The name of the command to invoke on your digital twin\n" +
                 "EVENTHUB_CONNECTION_STRING - The connection string to the EventHub associated to your IoT Hub\n" +

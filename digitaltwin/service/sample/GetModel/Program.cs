@@ -10,14 +10,14 @@ namespace Sample
     /// </summary>
     class Program
     {
-        private static String CONNECTION_STRING = Environment.GetEnvironmentVariable("CONNECTION_STRING");
+        private static string IOTHUB_CONNECTION_STRING = Environment.GetEnvironmentVariable("IOTHUB_CONNECTION_STRING");
         private static String MODEL_ID = Environment.GetEnvironmentVariable("MODEL_ID");
 
         public static int Main(string[] args)
         {
             verifyInputs();
 
-            var digitalTwinServiceClient = new DigitalTwinServiceClient(CONNECTION_STRING);
+            var digitalTwinServiceClient = new DigitalTwinServiceClient(IOTHUB_CONNECTION_STRING);
 
             Console.WriteLine("Getting model with id " + MODEL_ID + " from the model repo...");
 
@@ -35,7 +35,7 @@ namespace Sample
 
         private static void verifyInputs()
         {
-            if (isNullOrEmpty(CONNECTION_STRING) || isNullOrEmpty(MODEL_ID))
+            if (isNullOrEmpty(IOTHUB_CONNECTION_STRING) || isNullOrEmpty(MODEL_ID))
             {
                 Console.WriteLine(usage);
                 Console.WriteLine("Enter any key to finish");
