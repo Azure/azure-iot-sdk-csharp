@@ -83,10 +83,10 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 // The following checks allow running these tests multiple times in parallel. 
                 // Notifications for one of the test-run instances may be received by the other test-run.
-                _log.WriteLine($"TestDevice: '{testDevice.Id}', blobName: '{fileNotification.BlobName}', size: {fileNotification.BlobSizeInBytes}");
+               
                 Assert.IsNotNull(fileNotification, "FileNotification is not received.");
-                Assert.IsFalse(string.IsNullOrEmpty(fileNotification.BlobUri), "File notification blob uri is null or empty");
-
+                _log.WriteLine($"TestDevice: '{testDevice.Id}', blobName: '{fileNotification.BlobName}', size: {fileNotification.BlobSizeInBytes}");
+                Assert.IsFalse(string.IsNullOrEmpty(fileNotification.BlobUri), "File notification blob uri is null or empty");                
                 await deviceClient.CloseAsync().ConfigureAwait(false);
                 await serviceClient.CloseAsync().ConfigureAwait(false);
             }

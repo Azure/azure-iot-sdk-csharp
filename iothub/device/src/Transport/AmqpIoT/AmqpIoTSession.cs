@@ -235,8 +235,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                     if (ex is AmqpIoTResourceException)
                     {
                         amqpSession.SafeClose();
+                        throw new IotHubCommunicationException(ex.Message, ex);
                     }
-                    throw new IotHubCommunicationException(ex.Message, ex);
+                    throw ex;
                 }
             }
             finally
@@ -299,8 +300,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                     if (ex is AmqpIoTResourceException)
                     {
                         amqpSession.SafeClose();
+                        throw new IotHubCommunicationException(ex.Message, ex);
                     }
-                    throw new IotHubCommunicationException(ex.Message, ex);
+                    throw ex;
                 }
             }
             finally
