@@ -22,7 +22,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Version>1.18.1</Version>
+    <Version>1.27.0-preview-004</Version>
     <Title>Microsoft Azure IoT Service Client SDK</Title>
     <Authors>Microsoft</Authors>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
@@ -106,11 +106,7 @@
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
-<<<<<<< HEAD
     <PackageReference Include="Microsoft.Azure.Amqp" Version="2.4.2" />
-=======
-    <PackageReference Include="Microsoft.Azure.Amqp" Version="2.4.1" />
->>>>>>> 75688c69... Preview update from David Lu + DS e2e test fixes (#971)
   </ItemGroup>
 
   <ItemGroup>

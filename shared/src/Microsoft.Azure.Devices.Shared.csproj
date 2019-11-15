@@ -17,11 +17,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-<<<<<<< HEAD
     <Version>1.16.0</Version>
-=======
-    <Version>1.25.0-preview-002</Version>
->>>>>>> bd106d0a... Release 2019 3 11 (#846)
     <Title>Microsoft Azure IoT Devices Shared</Title>
     <Authors>Microsoft</Authors>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>

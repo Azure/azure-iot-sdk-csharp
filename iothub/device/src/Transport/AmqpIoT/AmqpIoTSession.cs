@@ -184,6 +184,46 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         }
         #endregion
 
+        #region StreamLink
+        internal async Task<AmqpIoTSendingLink> OpenStreamsSenderLinkAsync(
+            DeviceIdentity deviceIdentity,
+            string correlationIdSuffix,
+            TimeSpan timeout
+        )
+        {
+            return await OpenSendingAmqpLinkAsync(
+                deviceIdentity,
+                _amqpSession,
+                (byte)SenderSettleMode.Settled,
+                (byte)ReceiverSettleMode.First,
+                CommonConstants.DeviceStreamsPathTemplate,
+                CommonConstants.ModuleStreamsPathTemplate,
+                AmqpIoTConstants.StreamsSenderLinkSuffix,
+                AmqpIoTConstants.StreamsCorrelationIdPrefix + correlationIdSuffix,
+                timeout
+            ).ConfigureAwait(false);
+        }
+
+        internal async Task<AmqpIoTReceivingLink> OpenStreamsReceiverLinkAsync(
+            DeviceIdentity deviceIdentity,
+            string correlationIdSuffix,
+            TimeSpan timeout
+        )
+        {
+            return await OpenReceivingAmqpLinkAsync(
+                deviceIdentity,
+                _amqpSession,
+                (byte)SenderSettleMode.Settled,
+                (byte)ReceiverSettleMode.First,
+                CommonConstants.DeviceStreamsPathTemplate,
+                CommonConstants.ModuleStreamsPathTemplate,
+                AmqpIoTConstants.StreamsReceiverLinkSuffix,
+                AmqpIoTConstants.StreamsCorrelationIdPrefix + correlationIdSuffix,
+                timeout
+            ).ConfigureAwait(false);
+        }
+        #endregion
+
         #region Common link handling
         private static async Task<AmqpIoTSendingLink> OpenSendingAmqpLinkAsync(
             DeviceIdentity deviceIdentity,

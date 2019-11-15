@@ -411,17 +411,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
                 while (true)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    try
+                    deviceStreamRequest = await _amqpUnit.WaitForDeviceStreamRequestAsync(_operationTimeout).ConfigureAwait(false);
+                    if (deviceStreamRequest != null)
                     {
-                        deviceStreamRequest = await _amqpUnit.WaitForDeviceStreamRequestAsync(_operationTimeout).ConfigureAwait(false);
-                        if (deviceStreamRequest != null)
-                        {
-                            break;
-                        }
-                    }
-                    catch (Exception exception) when (!exception.IsFatal() && !(exception is OperationCanceledException))
-                    {
-                        throw AmqpClientHelper.ToIotHubClientContract(exception);
+                        break;
                     }
                 }
 
