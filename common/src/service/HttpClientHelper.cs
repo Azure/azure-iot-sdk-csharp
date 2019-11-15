@@ -7,6 +7,7 @@ namespace Microsoft.Azure.Devices
     using Microsoft.Azure.Devices.Common.Exceptions;
     using Microsoft.Azure.Devices.Common.Extensions;
     using Microsoft.Azure.Devices.Shared;
+    using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
@@ -24,6 +25,7 @@ namespace Microsoft.Azure.Devices
 
     sealed class HttpClientHelper : IHttpClientHelper
     {
+        static readonly JsonSerializerSettings s_jsonSerializerSettings = new JsonSerializerSettings { DateParseHandling = DateParseHandling.DateTime, };
 #if !NETSTANDARD1_3 && !NETSTANDARD2_0
         static readonly JsonMediaTypeFormatter JsonFormatter = new JsonMediaTypeFormatter();
 #endif
@@ -180,7 +182,7 @@ namespace Microsoft.Azure.Devices
                     {
                         InsertEtag(requestMsg, entity, operationType);
 #if NETSTANDARD1_3 || NETSTANDARD2_0
-                        var str = Newtonsoft.Json.JsonConvert.SerializeObject(entity);
+                        var str = Newtonsoft.Json.JsonConvert.SerializeObject(entity, s_jsonSerializerSettings);
                         requestMsg.Content = new StringContent(str, System.Text.Encoding.UTF8, "application/json");
 #else
                         requestMsg.Content = new ObjectContent<T>(entity, JsonFormatter);
@@ -208,7 +210,7 @@ namespace Microsoft.Azure.Devices
                     (requestMsg, token) =>
                     {
 #if NETSTANDARD1_3 || NETSTANDARD2_0
-                        var str = Newtonsoft.Json.JsonConvert.SerializeObject(entity);
+                        var str = Newtonsoft.Json.JsonConvert.SerializeObject(entity, s_jsonSerializerSettings);
                         requestMsg.Content = new StringContent(str, System.Text.Encoding.UTF8, "application/json");
 #else
                         requestMsg.Content = new ObjectContent<T>(entity, JsonFormatter);
@@ -237,7 +239,7 @@ namespace Microsoft.Azure.Devices
                 {
                     InsertEtag(requestMsg, etag, operationType);
 #if NETSTANDARD1_3 || NETSTANDARD2_0
-                    var str = Newtonsoft.Json.JsonConvert.SerializeObject(entity);
+                    var str = Newtonsoft.Json.JsonConvert.SerializeObject(entity, s_jsonSerializerSettings);
                     requestMsg.Content = new StringContent(str, System.Text.Encoding.UTF8, "application/json");
 #else
                     requestMsg.Content = new ObjectContent<T>(entity, JsonFormatter);
@@ -267,7 +269,7 @@ namespace Microsoft.Azure.Devices
                     // TODO: skintali: Use string etag when service side changes are ready
                     InsertEtag(requestMsg, etag, operationType);
 #if NETSTANDARD1_3 || NETSTANDARD2_0
-                    var str = Newtonsoft.Json.JsonConvert.SerializeObject(entity);
+                    var str = Newtonsoft.Json.JsonConvert.SerializeObject(entity, s_jsonSerializerSettings);
                     requestMsg.Content = new StringContent(str, System.Text.Encoding.UTF8, "application/json");
 #else
                     requestMsg.Content = new ObjectContent<T>(entity, JsonFormatter);
@@ -291,7 +293,7 @@ namespace Microsoft.Azure.Devices
                 {
                     InsertEtag(requestMsg, etag, PutOperationType.UpdateEntity);
 #if NETSTANDARD1_3 || NETSTANDARD2_0
-                    var str = Newtonsoft.Json.JsonConvert.SerializeObject(entity);
+                    var str = Newtonsoft.Json.JsonConvert.SerializeObject(entity, s_jsonSerializerSettings);
                     requestMsg.Content = new StringContent(str, System.Text.Encoding.UTF8, "application/json");
 #else
                     requestMsg.Content = new ObjectContent<T>(entity, JsonFormatter);
@@ -317,7 +319,7 @@ namespace Microsoft.Azure.Devices
                 {
                     InsertEtag(requestMsg, etag, putOperationType);
 #if NETSTANDARD1_3 || NETSTANDARD2_0
-                    var str = Newtonsoft.Json.JsonConvert.SerializeObject(entity);
+                    var str = Newtonsoft.Json.JsonConvert.SerializeObject(entity, s_jsonSerializerSettings);
                     requestMsg.Content = new StringContent(str, System.Text.Encoding.UTF8, "application/json");
 #else
                     requestMsg.Content = new ObjectContent<T>(entity, JsonFormatter);
@@ -340,7 +342,7 @@ namespace Microsoft.Azure.Devices
 
 #if NETSTANDARD1_3 || NETSTANDARD2_0
             var str = await message.Content.ReadAsStringAsync().ConfigureAwait(false);
-            T entity = Newtonsoft.Json.JsonConvert.DeserializeObject<T>(str);
+            T entity = Newtonsoft.Json.JsonConvert.DeserializeObject<T>(str, s_jsonSerializerSettings);
 #else
             T entity = await message.Content.ReadAsAsync<T>(token).ConfigureAwait(false);
 #endif
@@ -601,7 +603,7 @@ namespace Microsoft.Azure.Devices
                     }
                     else
                     {
-                        var str = Newtonsoft.Json.JsonConvert.SerializeObject(entity);
+                        var str = Newtonsoft.Json.JsonConvert.SerializeObject(entity, s_jsonSerializerSettings);
                         requestMsg.Content = new StringContent(str, System.Text.Encoding.UTF8, "application/json");
                     }
                 }
