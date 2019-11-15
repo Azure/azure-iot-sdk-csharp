@@ -14,9 +14,11 @@ namespace EnvironmentalSensorSample
     {
         private static string environmentalSensorInterfaceName = "environmentalSensor";
         private static string capabilityModelId = "urn:csharp_sdk_sample:sample_device:1";
+        private const string ModelDefinitionInterfaceName = "urn_azureiot_ModelDiscovery_ModelDefinition";
 
         private static EnvironmentalSensorInterface environmentalSensorInterface;
         private static DeviceInformationInterface deviceInformationInterface;
+        private static ModelDefinitionInterface modelDefinitionInterface;
         private DigitalTwinClient digitalTwinClient;
 
         /// <summary>
@@ -32,6 +34,8 @@ namespace EnvironmentalSensorSample
 
             // create device information interface
             deviceInformationInterface = new DeviceInformationInterface();
+
+            modelDefinitionInterface = new ModelDefinitionInterface(ModelDefinitionInterfaceName);
         }
 
         /// <summary>
@@ -41,7 +45,7 @@ namespace EnvironmentalSensorSample
         public async Task RunSampleAsync()
         {
             // register interface(s) for the device
-            await this.digitalTwinClient.RegisterInterfacesAsync(capabilityModelId, new DigitalTwinInterfaceClient[] { deviceInformationInterface, environmentalSensorInterface }).ConfigureAwait(false);
+            await this.digitalTwinClient.RegisterInterfacesAsync(capabilityModelId, new DigitalTwinInterfaceClient[] { deviceInformationInterface, environmentalSensorInterface, modelDefinitionInterface }).ConfigureAwait(false);
 
             // send device information
             deviceInformationInterface.SetManufacturer("element15");
