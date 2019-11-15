@@ -596,7 +596,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 throw new IotHubException("Device is now offline.", false);
             }
 
-            if (Logging.IsEnabled) Logging.Enter(this, timeout, $"{nameof(EnableTwinLinksAsync)}");
             AmqpIoTSession amqpIoTSession = await EnsureSessionAsync(timeout).ConfigureAwait(false);
             bool gain = await _streamLinksLock.WaitAsync(timeout).ConfigureAwait(false);
             if (!gain)
@@ -628,7 +627,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 _streamReceivingLink.Closed += (obj, arg) => {
                     amqpIoTSession.SafeClose();
                 };
-                _streamReceivingLink.RegisterTwinListener(OnDesiredPropertyReceived);
                 if (Logging.IsEnabled) Logging.Associate(this, _streamReceivingLink, $"{nameof(_streamReceivingLink)}");
             }
         }
