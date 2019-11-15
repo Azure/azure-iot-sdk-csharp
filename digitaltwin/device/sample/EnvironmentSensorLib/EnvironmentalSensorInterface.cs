@@ -15,7 +15,7 @@ namespace EnvironmentalSensorSample
     /// </summary>
     public class EnvironmentalSensorInterface : DigitalTwinInterfaceClient
     {
-        private const string EnvironmentalSensorInterfaceId = "urn:csharp_sdk_sample:EnvironmentalSensor:1";
+        public const string EnvironmentalSensorInterfaceId = "urn:csharp_sdk_sample:EnvironmentalSensor:1";
         private const string DeviceState = "state";
         private const string CustomerName = "name";
         private const string Brightness = "brightness";
@@ -32,7 +32,7 @@ namespace EnvironmentalSensorSample
         /// <param name="interfaceName">interface name.</param>
         public EnvironmentalSensorInterface(string interfaceName)
             : base(EnvironmentalSensorInterfaceId, interfaceName, true, true)
-            {
+        {
         }
 
         /// <summary>
@@ -89,17 +89,25 @@ namespace EnvironmentalSensorSample
 
                         // delay thread to simulate a long running operation
                         await Task.Delay(5 * 1000).ConfigureAwait(false);
-                        await this.UpdateAsyncCommandStatusAsync(new DigitalTwinAsyncCommandUpdate(commandRequest.Name, commandRequest.RequestId, StatusCodePending, "25% complete")).ConfigureAwait(false);
+                        string updateMessage = "25% complete";
+                        Console.WriteLine(updateMessage);
+                        await this.UpdateAsyncCommandStatusAsync(new DigitalTwinAsyncCommandUpdate(commandRequest.Name, commandRequest.RequestId, StatusCodePending, updateMessage)).ConfigureAwait(false);
 
                         await Task.Delay(5 * 1000).ConfigureAwait(false);
-                        await this.UpdateAsyncCommandStatusAsync(new DigitalTwinAsyncCommandUpdate(commandRequest.Name, commandRequest.RequestId, StatusCodePending, "50% complete")).ConfigureAwait(false);
+                        updateMessage = "50% complete";
+                        Console.WriteLine(updateMessage);
+                        await this.UpdateAsyncCommandStatusAsync(new DigitalTwinAsyncCommandUpdate(commandRequest.Name, commandRequest.RequestId, StatusCodePending, updateMessage)).ConfigureAwait(false);
 
                         await Task.Delay(5 * 1000).ConfigureAwait(false);
-                        await this.UpdateAsyncCommandStatusAsync(new DigitalTwinAsyncCommandUpdate(commandRequest.Name, commandRequest.RequestId, StatusCodePending, "75% complete")).ConfigureAwait(false);
+                        updateMessage = "75% complete";
+                        Console.WriteLine(updateMessage);
+                        await this.UpdateAsyncCommandStatusAsync(new DigitalTwinAsyncCommandUpdate(commandRequest.Name, commandRequest.RequestId, StatusCodePending, updateMessage)).ConfigureAwait(false);
 
                         await Task.Delay(5 * 1000).ConfigureAwait(false);
+                        updateMessage = "100% complete";
+                        Console.WriteLine(updateMessage);
                         Console.WriteLine("RunDiagnosticAsync done... Send status update.");
-                        await this.UpdateAsyncCommandStatusAsync(new DigitalTwinAsyncCommandUpdate(commandRequest.Name, commandRequest.RequestId, StatusCodeCompleted, "100% complete")).ConfigureAwait(false);
+                        await this.UpdateAsyncCommandStatusAsync(new DigitalTwinAsyncCommandUpdate(commandRequest.Name, commandRequest.RequestId, StatusCodeCompleted, updateMessage)).ConfigureAwait(false);
                     });
                     return new DigitalTwinCommandResponse(StatusCodePending, null);
                 case TurnOffLightCommand:
