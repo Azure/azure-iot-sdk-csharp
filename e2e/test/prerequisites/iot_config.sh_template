@@ -28,7 +28,6 @@ export IOTHUB_EVENTHUB_COMPATIBLE_NAME=
 # EventHub consumer group:
 export IOTHUB_EVENTHUB_CONSUMER_GROUP=
 
-<<<<<<< HEAD
 # ---------- Azure Security Center for IoT - Log Analytics Configuration ----------
 # the iot hub above must be registered to Azure Security Center for IoT security solution
 # with the feature export raw events set to on
@@ -54,24 +53,6 @@ export IOTHUB_DEVICE_CONN_STRING2=
 export IOTHUB_MODULE_CONN_STRING=
 export IOTHUB_MODULE_CONN_STRING2=
 
-=======
-@REM ---------- Azure Security Center for IoT - Log Analytics Configuration ----------
-@REM the iot hub above must be registered to Azure Security Center for IoT security solution
-@REM with the feature export raw events set to on
-
-@REM the Azure Security Center for IoT Log Analytics workspace that connected to the hub
-export LA_WORKSPACE_ID=""
-
-@REM the Azure Active Directory tenant of the Log Analytics workspace
-export LA_AAD_TENANT=""
-
-@REM the Azure Active Directory app id that has reader role on the workspace
-export LA_AAD_APP_ID=""
-
-@REM the certificate credentials for the given app
-export LA_AAD_APP_CERT_BASE64=""
-
->>>>>>> 8cb14d0e... AddE2ETestsWithAscForIotIntegration (#910)
 # ---------- Device Provisioning Service Configuration ----------
 # See Configuration.Provisioning.cs for usage details.
 
