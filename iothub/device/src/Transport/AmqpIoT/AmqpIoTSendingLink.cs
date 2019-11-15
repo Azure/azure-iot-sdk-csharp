@@ -136,6 +136,24 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         }
         #endregion
 
+        #region DeviceStreamResponse handling
+        internal async Task<AmqpIoTOutcome> SendDeviceStreamResponseAsync(DeviceStreamResponse streamResponse, TimeSpan timeout)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, streamResponse, $"{nameof(SendDeviceStreamResponseAsync)}");
+            AmqpMessage amqpMessage = AmqpMessage.Create();
+            amqpMessage.Properties.CorrelationId = new Guid(streamResponse.RequestId);
+            if (amqpMessage.ApplicationProperties == null)
+            {
+                amqpMessage.ApplicationProperties = new ApplicationProperties();
+            }
+
+            amqpMessage.ApplicationProperties.Map[AmqpIoTConstants.DeviceStreamingFieldIsAccepted] = streamResponse.IsAccepted;
+            Outcome outcome = await SendAmqpMessageAsync(amqpMessage, timeout).ConfigureAwait(false);
+            if (Logging.IsEnabled) Logging.Exit(this, streamResponse, $"{nameof(SendDeviceStreamResponseAsync)}");
+            return new AmqpIoTOutcome(outcome);
+        }
+        #endregion
+
         #region Method handling
         internal async Task<AmqpIoTOutcome> SendMethodResponseAsync(MethodResponseInternal methodResponse, TimeSpan timeout)
         {

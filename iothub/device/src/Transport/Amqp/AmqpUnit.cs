@@ -740,14 +740,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
         public async Task SendDeviceStreamResponseAsync(DeviceStreamResponse streamResponse, TimeSpan timeout)
         {
             if (Logging.IsEnabled) Logging.Enter(this, streamResponse, timeout, $"{nameof(SendDeviceStreamResponseAsync)}");
-
             try
             {
                 await EnableStreamsAsync(timeout).ConfigureAwait(false);
-                using (Message message = CreateMessageFromStreamResponse(streamResponse))
-                {
-                    await _streamSendingLink.SendMessageAsync(message, timeout).ConfigureAwait(false);
-                }
+                await _streamSendingLink.SendDeviceStreamResponseAsync(streamResponse, timeout).ConfigureAwait(false);
             }
             finally
             {
@@ -787,22 +783,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             if (Logging.IsEnabled) Logging.Exit(this, message, $"{nameof(ConstructStreamRequestFromMessage)}");
 
             return new DeviceStreamRequest(streamRequestId, streamName, new Uri(proxyUri), authorizationToken);
-        }
-
-        private Message CreateMessageFromStreamResponse(DeviceStreamResponse streamResponseInternal)
-        {
-            if (Logging.IsEnabled) Logging.Enter(this, streamResponseInternal, $"{nameof(CreateMessageFromStreamResponse)}");
-
-            Message message = new Message();
-
-            message.CorrelationId = streamResponseInternal.RequestId;
-
-
-            message.SystemProperties[AmqpIoTConstants.DeviceStreamingFieldIsAccepted] = streamResponseInternal.IsAccepted;
-
-            if (Logging.IsEnabled) Logging.Exit(this, streamResponseInternal, $"{nameof(CreateMessageFromStreamResponse)}");
-
-            return message;
         }
         #endregion DEVICE STREAMING
 
