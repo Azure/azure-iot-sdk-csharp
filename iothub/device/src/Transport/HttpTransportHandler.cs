@@ -64,6 +64,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 transportSettings.Proxy);
         }
 
+        public override Task OpenAsync(TimeoutHelper timeoutHelper)
+        {
+            return TaskHelpers.CompletedTask;
+        }
+
         public override Task OpenAsync(CancellationToken cancellationToken)
         {
             return TaskHelpers.CompletedTask;
@@ -107,7 +112,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
 
             cancellationToken.ThrowIfCancellationRequested();
-            
+
             var customHeaders = PrepareCustomHeaders(CommonConstants.DeviceEventPathTemplate.FormatInvariant(this.deviceId), string.Empty, CommonConstants.DeviceToCloudOperation);
 
             string body = ToJson(messages);
@@ -133,7 +138,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
         internal async Task UploadToBlobAsync(string blobName, Stream source, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            
+
             var fileUploadRequest = new FileUploadRequest()
             {
                 BlobName = blobName
@@ -147,11 +152,11 @@ namespace Microsoft.Azure.Devices.Client.Transport
             cancellationToken).ConfigureAwait(false);
 
             string putString = String.Format(
-                CultureInfo.InvariantCulture, 
+                CultureInfo.InvariantCulture,
                 "https://{0}/{1}/{2}{3}",
                 fileUploadResponse.HostName,
                 fileUploadResponse.ContainerName,
-                Uri.EscapeDataString(fileUploadResponse.BlobName), // Pass URL encoded device name and blob name to support special characters 
+                Uri.EscapeDataString(fileUploadResponse.BlobName), // Pass URL encoded device name and blob name to support special characters
                 fileUploadResponse.SasToken);
 
             var notification = new FileUploadNotificationResponse();
@@ -203,19 +208,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
             throw new NotImplementedException("Device twins are only supported with Mqtt protocol.");
         }
 
-        public override Task<Message> ReceiveAsync(CancellationToken cancellationToken)
+        public override async Task<Message> ReceiveAsync(CancellationToken cancellationToken)
         {
-            return this.ReceiveAsync(TimeSpan.Zero, cancellationToken);
-        }
-
-        public override async Task<Message> ReceiveAsync(TimeSpan timeout, CancellationToken cancellationToken)
-        {
-            // Long-polling is not supported
-            if (!TimeSpan.Zero.Equals(timeout))
-            {
-                throw new ArgumentOutOfRangeException(nameof(timeout), "Http Protocol does not support a non-zero receive timeout");
-            }
-
             cancellationToken.ThrowIfCancellationRequested();
 
             IDictionary<string, string> customHeaders = PrepareCustomHeaders(CommonConstants.DeviceBoundPathTemplate.FormatInvariant(this.deviceId), null, CommonConstants.CloudToDeviceOperation);
@@ -302,6 +296,20 @@ namespace Microsoft.Azure.Devices.Client.Transport
             }
 
             return message;
+        }
+
+
+        public override async Task<Message> ReceiveAsync(TimeoutHelper timeoutHelper)
+        {
+            TimeSpan timeout = timeoutHelper.RemainingTime();
+            if (timeout > TimeSpan.Zero)
+            {
+                throw new ArgumentOutOfRangeException(nameof(timeoutHelper), "Http Protocol does not support a non-zero receive timeout");
+            }
+            else
+            {
+                return await ReceiveAsync(new CancellationTokenSource(DefaultOperationTimeout).Token).ConfigureAwait(false);
+            }
         }
 
         public override Task CompleteAsync(string lockToken, CancellationToken cancellationToken)

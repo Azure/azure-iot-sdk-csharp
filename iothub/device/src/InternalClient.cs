@@ -337,17 +337,14 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>The receive message or null if there was no message until the specified time has elapsed</returns>
         public async Task<Message> ReceiveAsync(TimeSpan timeout)
         {
-            if (timeout == TimeSpan.MaxValue) return await ReceiveAsync(CancellationToken.None).ConfigureAwait(false);
-            using (var cts = new CancellationTokenSource(timeout))
+            try
             {
-                try
-                {
-                    return await ReceiveAsync(cts.Token).ConfigureAwait(false);
-                }
-                catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
-                {
-                    return null;
-                }
+                return await InnerHandler.ReceiveAsync(new TimeoutHelper(timeout)).ConfigureAwait(false);
+            }
+            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException || 
+                ex.InnerException is TimeoutException)
+            {
+                return null;
             }
         }
 
@@ -405,8 +402,13 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>The previously received message</returns>
         public Task CompleteAsync(Message message)
         {
+            if (message == null)
+            {
+                throw new ArgumentNullException(nameof(message));
+            }
+
             // Codes_SRS_DEVICECLIENT_28_015: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.]
-            return CompleteAsync(message?.LockToken);
+            return CompleteAsync(message.LockToken);
         }
 
         /// <summary>
@@ -420,6 +422,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 throw new ArgumentNullException(nameof(message));
             }
+
             // Codes_SRS_DEVICECLIENT_28_015: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.]
             return CompleteAsync(message.LockToken, cancellationToken);
         }
@@ -466,6 +469,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>The lock identifier for the previously received message</returns>
         public Task AbandonAsync(Message message)
         {
+            if (message == null)
+            {
+                throw new ArgumentNullException(nameof(message));
+            }
+
             return AbandonAsync(message.LockToken);
         }
 
@@ -524,6 +532,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>The lock identifier for the previously received message</returns>
         public Task RejectAsync(Message message)
         {
+            if (message == null)
+            {
+                throw new ArgumentNullException(nameof(message));
+            }
+
             return RejectAsync(message.LockToken);
         }
 
@@ -549,11 +562,11 @@ namespace Microsoft.Azure.Devices.Client
         {
             try
             {
-            // Codes_SRS_DEVICECLIENT_28_013: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.]
-            using (CancellationTokenSource cts = CancellationTokenSourceFactory())
-            {
-                await SendEventAsync(message, cts.Token).ConfigureAwait(false);
-            }
+                // Codes_SRS_DEVICECLIENT_28_013: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.]
+                using (CancellationTokenSource cts = CancellationTokenSourceFactory())
+                {
+                    await SendEventAsync(message, cts.Token).ConfigureAwait(false);
+                }
             }
             catch (OperationCanceledException ex)
             {

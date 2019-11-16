@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         const int DefaultMaxPendingInboundMessages = 50;
         const QualityOfService DefaultPublishToServerQoS = QualityOfService.AtLeastOnce;
         const QualityOfService DefaultReceivingQoS = QualityOfService.AtLeastOnce;
-        static readonly TimeSpan DefaultConnectArrivalTimeout = TimeSpan.FromSeconds(300);
+        static readonly TimeSpan DefaultConnectArrivalTimeout = TimeSpan.FromSeconds(10);
         static readonly TimeSpan DefaultDeviceReceiveAckTimeout = TimeSpan.FromSeconds(300);
 
         public MqttTransportSettings(TransportType transportType)

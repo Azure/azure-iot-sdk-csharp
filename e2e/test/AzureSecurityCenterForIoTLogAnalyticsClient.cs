@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -9,21 +9,16 @@ using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
-#if NET451
 using System.Net.Http.Headers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-#else
-using Microsoft.Azure.OperationalInsights;
-using Microsoft.Rest;
-#endif
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
     public class AzureSecurityCenterForIoTLogAnalyticsClient : IDisposable
     {
         //OperationalInsights sdk is not supported on .NET 451
-        //In .NET451 this class uses LogAnaltics REST api 
+        //In .NET451 this class uses LogAnaltics REST api
 
         //Azure Active Directory authentication authority for public cloud
         private const string AuthenticationAuthorityTemplate = "https://login.windows.net/{0}";
@@ -72,15 +67,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         public async Task<bool> IsRawEventExist(string deviceId, string eventId)
         {
             string query = string.Format(CultureInfo.InvariantCulture, RawEventQueryTemplate, deviceId, eventId);
-#if NET451  //Use Http client
             return await QueryEventHttpClient(query).ConfigureAwait(false);
-#else       // Use  Log analytics SDK client
-            return await QueryEventLogAnalyticsClient(query).ConfigureAwait(false);
-#endif
         }
 
-#if NET451
-#region NET451
         private async Task<bool> QueryEventHttpClient(string query)
         {
             bool isEventExist = false;
@@ -124,31 +113,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             return content;
         }
-#endregion NET451
-#else
-#region !NET451
-        private async Task<bool> QueryEventLogAnalyticsClient(string query)
-        {
-            string accessToken = await GetAccessToken().ConfigureAwait(false);
-            TokenCredentials creds = new TokenCredentials(accessToken);
-            using (OperationalInsightsDataClient client = new OperationalInsightsDataClient(creds))
-            {
-                client.WorkspaceId = _workspaceId;
-                bool isEventExist = false;
-                var sw = new Stopwatch();
-                sw.Start();
-                while (!isEventExist && sw.Elapsed < _timeout)
-                {
-                    isEventExist = client.Query(query).Results.Any();
-                    await Task.Delay(_polingInterval).ConfigureAwait(false);
-                }
-
-                sw.Stop();
-                return isEventExist;
-            }
-        }
-#endregion !NET451
-#endif
 
         private async Task<string> GetAccessToken()
         {

@@ -12,7 +12,7 @@ namespace Microsoft.Azure.Devices.Client
         public const string AmqpsScheme = "amqps";
         public const string AmqpScheme = "amqp";
         public const string AmqpDnsWSPrefix = "amqpws";
-        
+
         // IotHub WindowsFabric Constants
         public const int WindowsFabricRetryLimit = 20;
         public const int WindowsFabricRetryWaitInMilliseconds = 3000;
@@ -78,8 +78,7 @@ namespace Microsoft.Azure.Devices.Client
         public const string DefaultConfigurationKey = "_default_config_key";
 
         // Security message constants
-        public const string SecurityMessageInterfaceId = "http://security.azureiot.com/SecurityAgent/1.0.0";
-
+        public const string SecurityMessageInterfaceId = "urn:azureiot:Security:SecurityAgent:1";
 
         public static class CloudToDevice
         {

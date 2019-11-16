@@ -166,7 +166,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         public override bool IsUsable => this.State != TransportState.Closed && this.State != TransportState.Error;
 
-#region Client operations
+        #region Client operations
+        public override Task OpenAsync(TimeoutHelper timeoutHelper)
+        {
+            return OpenAsync(new CancellationTokenSource(timeoutHelper.RemainingTime()).Token);
+        }
 
         public override async Task OpenAsync(CancellationToken cancellationToken)
         {
@@ -213,11 +217,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
         }
 
-        public override async Task<Message> ReceiveAsync(TimeSpan timeout, CancellationToken cancellationToken)
+        public override async Task<Message> ReceiveAsync(CancellationToken cancellationToken)
         {
-            Message message = null;
-
             cancellationToken.ThrowIfCancellationRequested();
+
+            Message message = null;
 
             this.EnsureValidState();
 
@@ -226,8 +230,36 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 await this.SubscribeAsync().ConfigureAwait(true);
             }
 
-            bool hasMessage = await this.ReceiveMessageArrivalAsync(timeout, cancellationToken).ConfigureAwait(true);
+            bool hasMessage = await this.ReceiveMessageArrivalAsync(cancellationToken).ConfigureAwait(true);
+            message = ProcessMessage(message, hasMessage);
 
+            return message;
+        }
+
+        public override async Task<Message> ReceiveAsync(TimeoutHelper timeoutHelper)
+        {
+            if (Logging.IsEnabled) Logging.Enter(this, timeoutHelper, timeoutHelper.RemainingTime(), $"{nameof(ReceiveAsync)}");
+
+            Message message = null;
+
+            this.EnsureValidState();
+
+            if (this.State != TransportState.Receiving)
+            {
+                await this.SubscribeAsync().ConfigureAwait(true);
+            }
+
+            TimeSpan timeout = timeoutHelper.RemainingTime();
+            bool hasMessage = await this.ReceiveMessageArrivalAsync(timeout, new CancellationTokenSource(timeout).Token).ConfigureAwait(true);
+            message = ProcessMessage(message, hasMessage);
+
+            if (Logging.IsEnabled) Logging.Exit(this, timeoutHelper, timeoutHelper.RemainingTime(), $"{nameof(ReceiveAsync)}");
+
+            return message;
+        }
+
+        private Message ProcessMessage(Message message, bool hasMessage)
+        {
             if (hasMessage)
             {
                 lock (this.syncRoot)
@@ -250,11 +282,46 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             bool hasMessage = false;
             cancellationToken.ThrowIfCancellationRequested();
+            var disconnectToken = this.disconnectAwaitersCancellationSource.Token;
+            this.EnsureValidState();
+
+            using (CancellationTokenSource linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, disconnectToken))
+            {
+                try
+                {
+                    hasMessage = await this.receivingSemaphore.WaitAsync(timeout, linkedCts.Token).ConfigureAwait(true);
+                }
+                catch (OperationCanceledException)
+                {
+                    if (disconnectToken.IsCancellationRequested)
+                    {
+                        throw new IotHubCommunicationException("MQTT is disconnected");
+                    }
+                }
+            }
+
+            return hasMessage;
+        }
+
+        async Task<bool> ReceiveMessageArrivalAsync(CancellationToken cancellationToken)
+        {
+            bool hasMessage = false;
+            cancellationToken.ThrowIfCancellationRequested();
             this.EnsureValidState();
 
             using (CancellationTokenSource linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, this.disconnectAwaitersCancellationSource.Token))
             {
-                hasMessage = await this.receivingSemaphore.WaitAsync(timeout, linkedCts.Token).ConfigureAwait(true);
+                try
+                {
+                    await this.receivingSemaphore.WaitAsync(linkedCts.Token).ConfigureAwait(true);
+                }
+                catch (OperationCanceledException)
+                {
+                    if (!cancellationToken.IsCancellationRequested)
+                    {
+                        throw new IotHubCommunicationException("MQTT is disconnected");
+                    }
+                }
             }
 
             return hasMessage;
@@ -451,7 +518,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             catch (Exception exception) when (!exception.IsFatal())
             {
-                throw MqttClientHelper.ToIotHubClientContract(exception);
+                throw ToIotHubClientContract(exception);
             }
             finally
             {
@@ -465,7 +532,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 string[] tokens = Regex.Split(message.MqttTopicName, "/", RegexOptions.Compiled, regexTimeoutMilliseconds);
 
-                var mr = new MethodRequestInternal(tokens[3], tokens[4].Substring(6), message.BodyStream, CancellationToken.None);
+                var mr = new MethodRequestInternal(tokens[3], tokens[4].Substring(6), message.GetBodyStream(), CancellationToken.None);
                 await Task.Run(() =>this.messageListener(mr)).ConfigureAwait(true);
             }
             finally
@@ -794,7 +861,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             catch (Exception exception) when (!exception.IsFatal())
             {
-                throw MqttClientHelper.ToIotHubClientContract(exception);
+                throw ToIotHubClientContract(exception);
             }
             finally
             {
@@ -821,7 +888,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             }
             catch (Exception exception) when (!exception.IsFatal())
             {
-                throw MqttClientHelper.ToIotHubClientContract(exception);
+                throw ToIotHubClientContract(exception);
             }
             finally
             {
@@ -1229,5 +1296,21 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             if (Logging.IsEnabled) Logging.Info(null, "EventLoopGroup threads count was not set.");
             return new MultithreadEventLoopGroup();
         }
+        private static Exception ToIotHubClientContract(Exception exception)
+        {
+            if (exception is TimeoutException)
+            {
+                return new IotHubCommunicationException(exception.Message, exception);
+            }
+            else if (exception is UnauthorizedAccessException)
+            {
+                return new UnauthorizedException(exception.Message, exception);
+            }
+            else
+            {
+                return exception;
+            }
+        }
     }
+
 }

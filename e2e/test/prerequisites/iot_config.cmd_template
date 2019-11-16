@@ -10,14 +10,6 @@
 @REM IoT Hub Owner connection string:
 set IOTHUB_CONN_STRING_CSHARP=
 
-@REM Device primary and secondary connection strings:
-set IOTHUB_DEVICE_CONN_STRING=
-set IOTHUB_DEVICE_CONN_STRING2=
-
-@REM IoT Hub Module connection string:
-set IOTHUB_MODULE_CONN_STRING=
-set IOTHUB_MODULE_CONN_STRING2=
-
 @REM Use the following Powershell command to retrieve the Base64 encoding of a file:
 @REM Use Powershell: [Convert]::ToBase64String((Get-Content myFileName -Encoding Byte)) to generate.
 
@@ -25,9 +17,6 @@ set IOTHUB_MODULE_CONN_STRING2=
 set IOTHUB_PFX_X509_THUMBPRINT=
 @REM X509 PFX Base64 encoded Certificate 1 (empty password):
 set IOTHUB_X509_PFX_CERTIFICATE=
-
-@REM X509 Certificate 2 thumbprint:
-set IOTHUB_PFX_X509_THUMBPRINT2=
 
 @REM EventHub connection string for the messages/events endpoint:
 set IOTHUB_EVENTHUB_CONN_STRING_CSHARP=
@@ -54,11 +43,19 @@ set LA_AAD_APP_ID=
 @REM the certificate credentials for the given app
 set LA_AAD_APP_CERT_BASE64=
 
+@REM ---------- Variables required for running Azure IoT Hub Stress Test and Azure IoT Samples for C# ------------
+@REM Device primary and secondary connection strings:
+set IOTHUB_DEVICE_CONN_STRING=
+set IOTHUB_DEVICE_CONN_STRING2=
+
+@REM IoT Hub Module connection string:
+set IOTHUB_MODULE_CONN_STRING=
+set IOTHUB_MODULE_CONN_STRING2=
 
 @REM ---------- Device Provisioning Service Configuration ----------
 @REM See Configuration.Provisioning.cs for usage details.
 
-@REM DPS ID Scope 
+@REM DPS ID Scope
 set DPS_IDSCOPE=
 
 @REM The DPS Global Device Endpoint (the default is defined in code)
@@ -90,7 +87,7 @@ set PROVISIONING_CONNECTION_STRING=
 set CUSTOM_ALLOCATION_POLICY_WEBHOOK=
 
 @REM Far away iot hub hostname.
-@REM Reprovisioning tests rely on the dps instance under test to have two linked iothubs to provision to. 
+@REM Reprovisioning tests rely on the dps instance under test to have two linked iothubs to provision to.
 @REM This hub does not currently need to be far away from the dps instance, but it does need to be linked to the dps instance alongside the IOTHUB_CONN_STRING_CSHARP hub.
 @REM Only the hostname is needed, not the full connection string
 set FAR_AWAY_IOTHUB_HOSTNAME=

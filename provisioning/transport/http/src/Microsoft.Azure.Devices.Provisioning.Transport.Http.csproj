@@ -19,7 +19,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Version>1.1.5</Version>
+    <Version>1.1.6</Version>
     <Title>Microsoft Azure IoT Provisioning Device Client HTTP Transport</Title>
     <Authors>Microsoft</Authors>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
@@ -39,6 +39,9 @@
   <ItemGroup>
     <Compile Include="$(Common)\Logging.Common.cs">
       <Link>Common\Logging.Common.cs</Link>
+    </Compile>
+    <Compile Include="$(Common)\device\provisioning\transport\RetryJitter.cs">
+      <Link>Common\device\provisioning\transport\RetryJitter.cs</Link>
     </Compile>
     <Compile Include="$(Common)\Logging.ProvisioningTransport.Common.cs">
       <Link>Common\Logging.ProvisioningTransport.Common.cs</Link>
