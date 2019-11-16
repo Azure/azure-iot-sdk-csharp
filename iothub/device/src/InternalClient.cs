@@ -325,7 +325,7 @@ namespace Microsoft.Azure.Devices.Client
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException || ex.InnerException is TimeoutException)
             {
                 // Exception adaptation for non-CancellationToken public API.
-                throw new TimeoutException("The operation timed out.", ex);
+                return null;
             }
         }
 
@@ -339,8 +339,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 return await InnerHandler.ReceiveAsync(new TimeoutHelper(timeout)).ConfigureAwait(false);
             }
-            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException || 
-                ex.InnerException is TimeoutException)
+            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException || ex.InnerException is TimeoutException)
             {
                 return null;
             }

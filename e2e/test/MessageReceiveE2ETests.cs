@@ -201,28 +201,37 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private static async Task ReceiveMessageTimeoutCheck(DeviceClient dc)
         {
-            Stopwatch sw = new Stopwatch();
-            sw.Start();
             double bufferTime = 5 * 1000;
-
             // set operation timeout to 60 seconds
             dc.OperationTimeoutInMilliseconds = 60 * 1000;
 
-            try
+            while (true)
             {
-                await dc.ReceiveAsync().ConfigureAwait(false);
-            }
-            catch(IotHubCommunicationException)
-            {
-                /* OperationCanceledException is being mapped to IotHubCommunicationException 
-                 which is expected here after default operation Timeout*/
-            }
+                Stopwatch sw = new Stopwatch();
+                try
+                {
+                    sw.Start();
+                    Client.Message message = await dc.ReceiveAsync().ConfigureAwait(false);
+                    if (message == null)
+                    {
+                        break;
+                    }
+                }
+                catch (TimeoutException)
+                {
+                    /* OperationCanceledException is being mapped to IotHubCommunicationException 
+                     which is expected here after default operation Timeout*/
+                }
+                finally
+                {
+                    if (sw.Elapsed.TotalMilliseconds > (dc.OperationTimeoutInMilliseconds + bufferTime))
+                    {
+                        Assert.Fail("ReceiveAsync did not return in Operation Timeout time.");
+                    }
+                    sw.Stop();
 
-            if (sw.Elapsed.TotalMilliseconds > (dc.OperationTimeoutInMilliseconds + bufferTime))
-            {
-                throw new TimeoutException("ReceiveAsync did not return in Operation Timeout time.");
+                }
             }
-            sw.Stop();
         }
 
         public static async Task VerifyReceivedC2DMessageAsync(Client.TransportType transport, DeviceClient dc, string deviceId, string payload, string p1Value)
