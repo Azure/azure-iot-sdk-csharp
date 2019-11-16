@@ -265,7 +265,7 @@ namespace Microsoft.Azure.Devices.Client
                     await OpenAsync(cts.Token).ConfigureAwait(false);
                 }
             }
-            catch (OperationCanceledException ex)
+            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException || ex.InnerException is TimeoutException)
             {
                 // Exception adaptation for non-CancellationToken public API.
                 throw new TimeoutException("The operation timed out.", ex);
@@ -294,7 +294,7 @@ namespace Microsoft.Azure.Devices.Client
                     await CloseAsync(cts.Token).ConfigureAwait(false);
                 }
             }
-            catch (OperationCanceledException ex)
+            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException || ex.InnerException is TimeoutException)
             {
                 // Exception adaptation for non-CancellationToken public API.
                 throw new TimeoutException("The operation timed out.", ex);
@@ -324,7 +324,7 @@ namespace Microsoft.Azure.Devices.Client
                     return await ReceiveAsync(cts.Token).ConfigureAwait(false);
                 }
             }
-            catch (OperationCanceledException ex)
+            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException || ex.InnerException is TimeoutException)
             {
                 // Exception adaptation for non-CancellationToken public API.
                 throw new TimeoutException("The operation timed out.", ex);
@@ -373,7 +373,7 @@ namespace Microsoft.Azure.Devices.Client
                     await CompleteAsync(lockToken, cts.Token).ConfigureAwait(false);
                 }
             }
-            catch (OperationCanceledException ex)
+            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException || ex.InnerException is TimeoutException)
             {
                 // Exception adaptation for non-CancellationToken public API.
                 throw new TimeoutException("The operation timed out.", ex);
@@ -440,7 +440,7 @@ namespace Microsoft.Azure.Devices.Client
                     await AbandonAsync(lockToken, cts.Token).ConfigureAwait(false);
                 }
             }
-            catch (OperationCanceledException ex)
+            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException || ex.InnerException is TimeoutException)
             {
                 // Exception adaptation for non-CancellationToken public API.
                 throw new TimeoutException("The operation timed out.", ex);
@@ -505,7 +505,7 @@ namespace Microsoft.Azure.Devices.Client
                     await RejectAsync(lockToken, cts.Token).ConfigureAwait(false);
                 }
             }
-            catch (OperationCanceledException ex)
+            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException || ex.InnerException is TimeoutException)
             {
                 // Exception adaptation for non-CancellationToken public API.
                 throw new TimeoutException("The operation timed out.", ex);
@@ -568,7 +568,7 @@ namespace Microsoft.Azure.Devices.Client
                     await SendEventAsync(message, cts.Token).ConfigureAwait(false);
                 }
             }
-            catch (OperationCanceledException ex)
+            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException || ex.InnerException is TimeoutException)
             {
                 // Exception adaptation for non-CancellationToken public API.
                 throw new TimeoutException("The operation timed out.", ex);
@@ -605,7 +605,7 @@ namespace Microsoft.Azure.Devices.Client
                     await SendEventBatchAsync(messages, cts.Token).ConfigureAwait(false);
                 }
             }
-            catch (OperationCanceledException ex)
+            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException || ex.InnerException is TimeoutException)
             {
                 // Exception adaptation for non-CancellationToken public API.
                 throw new TimeoutException("The operation timed out.", ex);
@@ -708,7 +708,7 @@ namespace Microsoft.Azure.Devices.Client
                     await SetMethodHandlerAsync(methodName, methodHandler, userContext, cts.Token).ConfigureAwait(false);
                 }
             }
-            catch (OperationCanceledException ex)
+            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException || ex.InnerException is TimeoutException)
             {
                 // Exception adaptation for non-CancellationToken public API.
                 throw new TimeoutException("The operation timed out.", ex);
@@ -782,7 +782,7 @@ namespace Microsoft.Azure.Devices.Client
                     await SetMethodDefaultHandlerAsync(methodHandler, userContext, cts.Token).ConfigureAwait(false);
                 }
             }
-            catch (OperationCanceledException ex)
+            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException || ex.InnerException is TimeoutException)
             {
                 // Exception adaptation for non-CancellationToken public API.
                 throw new TimeoutException("The operation timed out.", ex);
@@ -1074,7 +1074,7 @@ namespace Microsoft.Azure.Devices.Client
                     await SetDesiredPropertyUpdateCallbackAsync(callback, userContext, cts.Token).ConfigureAwait(false);
                 }
             }
-            catch (OperationCanceledException ex)
+            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException || ex.InnerException is TimeoutException)
             {
                 // Exception adaptation for non-CancellationToken public API.
                 throw new TimeoutException("The operation timed out.", ex);
@@ -1118,7 +1118,7 @@ namespace Microsoft.Azure.Devices.Client
                     return await GetTwinAsync(cts.Token).ConfigureAwait(false);
                 }
             }
-            catch (OperationCanceledException ex)
+            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException || ex.InnerException is TimeoutException)
             {
                 // Exception adaptation for non-CancellationToken public API.
                 throw new TimeoutException("The operation timed out.", ex);
@@ -1148,7 +1148,7 @@ namespace Microsoft.Azure.Devices.Client
                     await UpdateReportedPropertiesAsync(reportedProperties, cts.Token).ConfigureAwait(false);
                 }
             }
-            catch (OperationCanceledException ex)
+            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException || ex.InnerException is TimeoutException)
             {
                 // Exception adaptation for non-CancellationToken public API.
                 throw new TimeoutException("The operation timed out.", ex);
@@ -1238,7 +1238,7 @@ namespace Microsoft.Azure.Devices.Client
                     await SendEventAsync(outputName, message, cts.Token).ConfigureAwait(false);
                 }
             }
-            catch (OperationCanceledException ex)
+            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException || ex.InnerException is TimeoutException)
             {
                 // Exception adaptation for non-CancellationToken public API.
                 throw new TimeoutException("The operation timed out.", ex);
@@ -1297,7 +1297,7 @@ namespace Microsoft.Azure.Devices.Client
                     await SendEventBatchAsync(outputName, messages, cts.Token).ConfigureAwait(false);
                 }
             }
-            catch (OperationCanceledException ex)
+            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException || ex.InnerException is TimeoutException)
             {
                 // Exception adaptation for non-CancellationToken public API.
                 throw new TimeoutException("The operation timed out.", ex);
@@ -1361,7 +1361,7 @@ namespace Microsoft.Azure.Devices.Client
                     await SetInputMessageHandlerAsync(inputName, messageHandler, userContext, cts.Token).ConfigureAwait(false);
                 }
             }
-            catch (OperationCanceledException ex)
+            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException || ex.InnerException is TimeoutException)
             {
                 // Exception adaptation for non-CancellationToken public API.
                 throw new TimeoutException("The operation timed out.", ex);
@@ -1437,7 +1437,7 @@ namespace Microsoft.Azure.Devices.Client
                     await SetMessageHandlerAsync(messageHandler, userContext, cts.Token).ConfigureAwait(false);
                 }
             }
-            catch (OperationCanceledException ex)
+            catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException || ex.InnerException is TimeoutException)
             {
                 // Exception adaptation for non-CancellationToken public API.
                 throw new TimeoutException("The operation timed out.", ex);
