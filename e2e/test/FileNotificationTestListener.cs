@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -11,9 +12,8 @@ namespace Microsoft.Azure.Devices.E2ETests
     {
         private static readonly TimeSpan s_duration = TimeSpan.FromHours(2);
         private static readonly TimeSpan s_interval = TimeSpan.FromMinutes(5);
-        private static readonly TimeSpan s_maxDelay = TimeSpan.FromMinutes(1);
         private static readonly TimeSpan s_checkInterval = TimeSpan.FromSeconds(10);
-
+        private static readonly TimeSpan s_checkDuration = TimeSpan.FromMinutes(1);
         private static readonly TestLogging s_log = TestLogging.GetInstance();
 
         private static readonly SemaphoreSlim s_lock = new SemaphoreSlim(1, 1);
@@ -46,23 +46,31 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
-        public static async Task VerifyFileNotification(string blobName, string deviceId)
+        public static async Task VerifyFileNotification(string fileName, string deviceId)
         {
-            CancellationToken cancellationToken = new CancellationTokenSource(s_maxDelay).Token;
-            while (!cancellationToken.IsCancellationRequested)
+            string key = RetrieveKey(fileName);
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+            try
             {
-                bool received = s_fileNotifications.TryRemove(blobName, out var fileNotification);
-                if (received)
+                while (stopwatch.Elapsed < s_checkDuration)
                 {
-                    Assert.AreEqual(blobName, fileNotification.BlobName);
-                    Assert.AreEqual(deviceId, fileNotification.DeviceId);
-                    Assert.IsFalse(string.IsNullOrEmpty(fileNotification.BlobUri), "File notification blob uri is null or empty.");
-                    return;
+                    bool received = s_fileNotifications.TryRemove(key, out var fileNotification);
+                    if (received)
+                    {
+                        Assert.AreEqual(deviceId, fileNotification.DeviceId);
+                        Assert.IsFalse(string.IsNullOrEmpty(fileNotification.BlobUri), "File notification blob uri is null or empty.");
+                        return;
+                    }
+                    await Task.Delay(s_checkInterval).ConfigureAwait(false);
                 }
-                await Task.Delay(s_checkInterval).ConfigureAwait(false);
+            }
+            finally
+            {
+                stopwatch.Stop();
             }
 
-            Assert.Fail($"FileNotification is not received in {s_checkInterval}: deviceId={deviceId}, blobName={blobName}.");
+            Assert.Fail($"FileNotification is not received in {s_checkDuration}: deviceId={deviceId}, blobName={fileName}.");
         }
 
         private static async Task StartReceivingLoopAsync(FileNotificationReceiver<FileNotification> fileNotificationReceiver)
@@ -75,12 +83,26 @@ namespace Microsoft.Azure.Devices.E2ETests
                 FileNotification fileNotification = await fileNotificationReceiver.ReceiveAsync(s_interval).ConfigureAwait(false);
                 if (fileNotification != null)
                 {
-                    s_fileNotifications.TryAdd(fileNotification.BlobName, fileNotification);
+                    string key = RetrieveKey(fileNotification.BlobName);
+                    s_fileNotifications.TryAdd(key, fileNotification);
                     s_log.WriteLine($"File notification received deviceId={fileNotification.DeviceId}, blobName={fileNotification.BlobName}.");
                 }
             }
 
             s_log.WriteLine("End receiving file notification loop.");
+        }
+
+        private static string RetrieveKey(string fileName)
+        {
+            int index = fileName.LastIndexOf("/", StringComparison.InvariantCultureIgnoreCase);
+            if (index > 0)
+            {
+                return fileName.Substring(index);
+            }
+            else
+            {
+                return fileName;
+            }
         }
     }
 }
