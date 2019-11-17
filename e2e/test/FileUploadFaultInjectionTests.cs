@@ -107,8 +107,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                     }
 
                     await Task.WhenAll(fileuploadTask, verifyTask).ConfigureAwait(false);
-                    Assert.IsTrue(fileuploadTask.IsCompletedSuccessfully, $"File upload task failed with error {fileuploadTask.Exception}");
-                    Assert.IsTrue(verifyTask.IsCompletedSuccessfully, $"File upload notification validate failed with error {verifyTask.Exception}");
+                    Assert.IsFalse(fileuploadTask.IsFaulted, $"File upload task failed with error {fileuploadTask.Exception}");
+                    Assert.IsFalse(verifyTask.IsFaulted, $"File upload notification validate failed with error {verifyTask.Exception}");
                 }
 
                 try
