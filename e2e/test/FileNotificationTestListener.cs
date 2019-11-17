@@ -18,6 +18,8 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private static readonly SemaphoreSlim s_lock = new SemaphoreSlim(1, 1);
         private static readonly ConcurrentDictionary<string, FileNotification> s_fileNotifications = new ConcurrentDictionary<string, FileNotification>();
+
+        private static FileNotificationReceiver<FileNotification> s_fileNotificationReceiver;
         private static bool s_receiving = false;
 
         public static async Task InitAsync()
@@ -31,11 +33,11 @@ namespace Microsoft.Azure.Devices.E2ETests
                     {
                         s_log.WriteLine("Initializing FileNotificationReceiver...");
                         ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString);
-                        FileNotificationReceiver<FileNotification> fileNotificationReceiver = serviceClient.GetFileNotificationReceiver();
+                        s_fileNotificationReceiver = serviceClient.GetFileNotificationReceiver();
                         s_log.WriteLine("Receiving once to connect FileNotificationReceiver...");
-                        await fileNotificationReceiver.ReceiveAsync(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
+                        await s_fileNotificationReceiver.ReceiveAsync(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
                         s_log.WriteLine("FileNotificationReceiver connected.");
-                        _ = StartReceivingLoopAsync(fileNotificationReceiver).ConfigureAwait(false);
+                        _ = StartReceivingLoopAsync().ConfigureAwait(false);
                         s_receiving = true;
                     }
                 }
@@ -58,6 +60,9 @@ namespace Microsoft.Azure.Devices.E2ETests
                     bool received = s_fileNotifications.TryRemove(key, out var fileNotification);
                     if (received)
                     {
+                        s_log.WriteLine($"Completing FileNotification: deviceId={fileNotification.DeviceId}, blobName={fileNotification.BlobName}.");
+                        await s_fileNotificationReceiver.CompleteAsync(fileNotification).ConfigureAwait(false);
+
                         Assert.AreEqual(deviceId, fileNotification.DeviceId);
                         Assert.IsFalse(string.IsNullOrEmpty(fileNotification.BlobUri), "File notification blob uri is null or empty.");
                         return;
@@ -70,17 +75,17 @@ namespace Microsoft.Azure.Devices.E2ETests
                 stopwatch.Stop();
             }
 
-            Assert.Fail($"FileNotification is not received in {s_checkDuration}: deviceId={deviceId}, blobName={fileName}.");
+            Assert.Fail($"FileNotification is not received in {s_checkDuration}: deviceId={deviceId}, fileName={fileName}.");
         }
 
-        private static async Task StartReceivingLoopAsync(FileNotificationReceiver<FileNotification> fileNotificationReceiver)
+        private static async Task StartReceivingLoopAsync()
         {
             s_log.WriteLine("Starting receiving file notification loop...");
             
             CancellationToken cancellationToken = new CancellationTokenSource(s_duration).Token;
             while (!cancellationToken.IsCancellationRequested)
             {
-                FileNotification fileNotification = await fileNotificationReceiver.ReceiveAsync(s_interval).ConfigureAwait(false);
+                FileNotification fileNotification = await s_fileNotificationReceiver.ReceiveAsync(s_interval).ConfigureAwait(false);
                 if (fileNotification != null)
                 {
                     string key = RetrieveKey(fileNotification.BlobName);
