@@ -71,31 +71,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 ).ConfigureAwait(false);
         }
 
-        private static async Task<FileNotification> VerifyFileNotification(FileNotificationReceiver<FileNotification> fileNotificationReceiver, string deviceId)
-        {
-            FileNotification fileNotification = null;
-
-            Stopwatch sw = new Stopwatch();
-            sw.Start();
-            while (sw.Elapsed.TotalMinutes < 2)
-            {
-                // Receive the file notification from queue
-                fileNotification = await fileNotificationReceiver.ReceiveAsync(TimeSpan.FromSeconds(20)).ConfigureAwait(false);
-                if (fileNotification != null)
-                {
-                    if (fileNotification.DeviceId == deviceId)
-                    {
-                        await fileNotificationReceiver.CompleteAsync(fileNotification).ConfigureAwait(false);
-                        break;
-                    }
-
-                    await fileNotificationReceiver.AbandonAsync(fileNotification).ConfigureAwait(false);
-                    fileNotification = null;
-                }
-            }
-            sw.Stop();
-            return fileNotification;
-        }
+        
 
         private async Task UploadFileDisconnectTransport(
             Client.TransportType transport,
@@ -109,42 +85,40 @@ namespace Microsoft.Azure.Devices.E2ETests
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
 
             using (DeviceClient deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport))
-            using (ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
             {
-                FileNotificationReceiver<FileNotification> notificationReceiver = serviceClient.GetFileNotificationReceiver();
                 deviceClient.OperationTimeoutInMilliseconds = (uint)retryDurationInMilliSec;
 
+                await FileNotificationTestListener.InitAsync().ConfigureAwait(false);
+
                 Task fileuploadTask;
-                Task<FileNotification> verifyTask;
+                Task verifyTask;
                 using (FileStream fileStreamSource = new FileStream(filename, FileMode.Open, FileAccess.Read))
                 {
-                    verifyTask = VerifyFileNotification(notificationReceiver, testDevice.Id);
+                    verifyTask = FileNotificationTestListener.VerifyFileNotification(filename, testDevice.Id);
                     fileuploadTask = deviceClient.UploadToBlobAsync(filename, fileStreamSource);
 
                     try
                     {
-                        await
-                            deviceClient.SendEventAsync(FaultInjection.ComposeErrorInjectionProperties(faultType, reason,
-                                delayInSec, durationInSec)).ConfigureAwait(false);
+                        await deviceClient.SendEventAsync(FaultInjection.ComposeErrorInjectionProperties(faultType, reason, delayInSec, durationInSec)).ConfigureAwait(false);
                     }
                     catch (Exception)
                     {
-                        // catch and ignore exceptions resulted from error injection and continue to 
-                        // check result of the file upload status
+                        // catch and ignore exceptions resulted from error injection and continue to check result of the file upload status
                     }
 
                     await Task.WhenAll(fileuploadTask, verifyTask).ConfigureAwait(false);
+                    Assert.IsTrue(fileuploadTask.IsCompletedSuccessfully, $"File upload task failed with error {fileuploadTask.Exception}");
+                    Assert.IsTrue(verifyTask.IsCompletedSuccessfully, $"File upload notification validate failed with error {verifyTask.Exception}");
                 }
 
-                FileNotification fileNotification = await verifyTask.ConfigureAwait(false);
-
-                Assert.IsNotNull(fileNotification, "FileNotification is not received.");
-                Assert.AreEqual(testDevice.Id + "/" + filename, fileNotification.BlobName, "Uploaded file name mismatch in notifications");
-                Assert.AreEqual(new FileInfo(filename).Length, fileNotification.BlobSizeInBytes, "Uploaded file size mismatch in notifications");
-                Assert.IsFalse(string.IsNullOrEmpty(fileNotification.BlobUri), "File notification blob uri is null or empty");
-
-                await deviceClient.CloseAsync().ConfigureAwait(false);
-                await serviceClient.CloseAsync().ConfigureAwait(false);
+                try
+                {
+                    await deviceClient.CloseAsync().ConfigureAwait(false);
+                }
+                catch(Exception)
+                {
+                    // catch and ignore exceptions resulted incase device client close failed while offline
+                }
             }
         }
 
