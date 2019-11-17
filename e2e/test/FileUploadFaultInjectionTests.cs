@@ -90,25 +90,13 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 await FileNotificationTestListener.InitAsync().ConfigureAwait(false);
 
-                Task fileuploadTask;
-                Task verifyTask;
                 using (FileStream fileStreamSource = new FileStream(filename, FileMode.Open, FileAccess.Read))
                 {
-                    verifyTask = FileNotificationTestListener.VerifyFileNotification(filename, testDevice.Id);
-                    fileuploadTask = deviceClient.UploadToBlobAsync(filename, fileStreamSource);
+                    Task fileuploadTask = deviceClient.UploadToBlobAsync(filename, fileStreamSource);
+                    Task errorInjectionTask = SendErrorInjectionMessageAsync(deviceClient, faultType, reason, delayInSec, durationInSec);
+                    await Task.WhenAll(fileuploadTask, errorInjectionTask).ConfigureAwait(false);
 
-                    try
-                    {
-                        await deviceClient.SendEventAsync(FaultInjection.ComposeErrorInjectionProperties(faultType, reason, delayInSec, durationInSec)).ConfigureAwait(false);
-                    }
-                    catch (Exception)
-                    {
-                        // catch and ignore exceptions resulted from error injection and continue to check result of the file upload status
-                    }
-
-                    await Task.WhenAll(fileuploadTask, verifyTask).ConfigureAwait(false);
-                    Assert.IsFalse(fileuploadTask.IsFaulted, $"File upload task failed with error {fileuploadTask.Exception}");
-                    Assert.IsFalse(verifyTask.IsFaulted, $"File upload notification validate failed with error {verifyTask.Exception}");
+                    await FileNotificationTestListener.VerifyFileNotification(filename, testDevice.Id).ConfigureAwait(false);
                 }
 
                 try
@@ -119,6 +107,23 @@ namespace Microsoft.Azure.Devices.E2ETests
                 {
                     // catch and ignore exceptions resulted incase device client close failed while offline
                 }
+            }
+        }
+
+        private static async Task SendErrorInjectionMessageAsync(
+            DeviceClient deviceClient, 
+            string faultType,
+            string reason,
+            int delayInSec,
+            int durationInSec)
+        {
+            try
+            {
+                await deviceClient.SendEventAsync(FaultInjection.ComposeErrorInjectionProperties(faultType, reason, delayInSec, durationInSec)).ConfigureAwait(false);
+            }
+            catch (Exception)
+            {
+                // catch and ignore exceptions resulted from error injection and continue to check result of the file upload status
             }
         }
 
