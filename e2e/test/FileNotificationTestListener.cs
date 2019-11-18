@@ -1,7 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -61,7 +60,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                     if (received)
                     {
                         s_log.WriteLine($"Completing FileNotification: deviceId={fileNotification.DeviceId}, blobName={fileNotification.BlobName}.");
-                        await s_fileNotificationReceiver.CompleteAsync(fileNotification).ConfigureAwait(false);
 
                         Assert.AreEqual(deviceId, fileNotification.DeviceId);
                         Assert.IsFalse(string.IsNullOrEmpty(fileNotification.BlobUri), "File notification blob uri is null or empty.");
@@ -91,6 +89,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     string key = RetrieveKey(fileNotification.BlobName);
                     s_fileNotifications.TryAdd(key, fileNotification);
                     s_log.WriteLine($"File notification received deviceId={fileNotification.DeviceId}, blobName={fileNotification.BlobName}.");
+                    await s_fileNotificationReceiver.CompleteAsync(fileNotification).ConfigureAwait(false);
                 }
             }
 
@@ -99,7 +98,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private static string RetrieveKey(string fileName)
         {
-            int index = fileName.LastIndexOf("/", StringComparison.InvariantCultureIgnoreCase);
+            int index = fileName.LastIndexOf("\\", StringComparison.InvariantCultureIgnoreCase);
             if (index > 0)
             {
                 return fileName.Substring(index);
