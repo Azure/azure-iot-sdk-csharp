@@ -98,15 +98,12 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private static string RetrieveKey(string fileName)
         {
-            int index = fileName.LastIndexOf("\\", StringComparison.InvariantCultureIgnoreCase);
-            if (index > 0)
-            {
-                return fileName.Substring(index);
-            }
-            else
-            {
-                return fileName;
-            }
+            return RetrieveValueAfterChar(RetrieveValueAfterChar(fileName, '/'), '\\');
+        }
+
+        private static string RetrieveValueAfterChar(string value, char ch)
+        {
+            return value.Substring(value.LastIndexOf(ch) + 1);
         }
     }
 }
