@@ -111,7 +111,10 @@ namespace EnvironmentalSensorSample
                     });
                     return new DigitalTwinCommandResponse(StatusCodePending, null);
                 case TurnOffLightCommand:
+                    await this.DeviceStatePropertyAsync(false);
+                    return new DigitalTwinCommandResponse(StatusCodeCompleted, null);
                 case TurnOnLightCommand:
+                    await this.DeviceStatePropertyAsync(true);
                     return new DigitalTwinCommandResponse(StatusCodeCompleted, null);
                 default:
                     Console.WriteLine($"Command name '{commandRequest.Name}' is not handled.");
