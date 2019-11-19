@@ -11,7 +11,7 @@
     <DefaultItemExcludes>config/**;netstandard13/**;netstandard20/**;net451/**;$(DefaultItemExcludes)</DefaultItemExcludes>
     <RootDir>$(MSBuildProjectDirectory)\..\..</RootDir>
   </PropertyGroup>
-  
+
   <PropertyGroup>
     <CommonTest>$(RootDir)\common\test</CommonTest>
   </PropertyGroup>
@@ -113,7 +113,7 @@
 
   <ItemGroup Condition=" '$(AZURE_IOT_LOCALPACKAGES)' != '' ">
     <PackageReference Include="Microsoft.Azure.Devices" Version="1.27.0-preview-*" />
-    <PackageReference Include="Microsoft.Azure.Devices.Shared" Version="1.25.0-preview-*" />
+    <PackageReference Include="Microsoft.Azure.Devices.Shared" Version="1.*" />
     <PackageReference Include="Microsoft.Azure.Devices.Client" Version="1.29.0-preview-*" />
   </ItemGroup>
   <ItemGroup Condition=" ('$(AZURE_IOT_LOCALPACKAGES.ToUpper())' != '') And ( '$(TargetFramework)' != 'net451' ) ">
@@ -124,19 +124,6 @@
     <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Security.Tpm" Version="1.*" />
     <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Service" Version="1.*" />
     <ProjectReference Include="$(RootDir)\security\tpm\samples\SecurityProviderTpmSimulator\SecurityProviderTpmSimulator.csproj" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'net47'">
-    <PackageReference Include="Microsoft.Azure.OperationalInsights">
-      <Version>0.10.0-preview</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Rest.ClientRuntime.Azure.Authentication">
-      <Version>2.4.0</Version>
-    </PackageReference>
-  </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.1'">
-    <PackageReference Include="Microsoft.Azure.OperationalInsights">
-      <Version>0.10.0-preview</Version>
-    </PackageReference>
   </ItemGroup>
 
 </Project>

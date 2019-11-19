@@ -4,14 +4,11 @@
 namespace Microsoft.Azure.Devices.Client
 {
     using System;
-    using System.Net;
-    using Microsoft.Azure.Amqp;
     using System.Threading.Tasks;
-    using Microsoft.Azure.Devices.Client.Extensions;
     using System.Diagnostics;
     using Microsoft.Azure.Devices.Shared;
-
-    internal sealed partial class IotHubConnectionString : IAuthorizationProvider, ICbsTokenProvider
+    
+    internal sealed partial class IotHubConnectionString : IAuthorizationProvider
     {
         public AuthenticationWithTokenRefresh TokenRefresher
         {
@@ -37,37 +34,6 @@ namespace Microsoft.Azure.Devices.Client
             finally
             {
                 if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(IotHubConnectionString)}.{nameof(IAuthorizationProvider.GetPasswordAsync)}");
-            }
-        }
-
-        // Used by IotHubTokenRefresher.
-        async Task<CbsToken> ICbsTokenProvider.GetTokenAsync(Uri namespaceAddress, string appliesTo, string[] requiredClaims)
-        {
-            try
-            {
-                if (Logging.IsEnabled) Logging.Enter(this, namespaceAddress, appliesTo, $"{nameof(IotHubConnectionString)}.{nameof(ICbsTokenProvider.GetTokenAsync)}");
-
-                string tokenValue;
-                DateTime expiresOn;
-
-                if (!string.IsNullOrWhiteSpace(this.SharedAccessSignature))
-                {
-                    tokenValue = this.SharedAccessSignature;
-                    expiresOn = DateTime.MaxValue;
-                }
-                else
-                {
-                    if (Logging.IsEnabled && (TokenRefresher == null)) Logging.Fail(this, $"Cannot create SAS Token: no provider.", nameof(ICbsTokenProvider.GetTokenAsync));
-                    Debug.Assert(TokenRefresher != null);
-                    tokenValue = await this.TokenRefresher.GetTokenAsync(this.Audience).ConfigureAwait(false);
-                    expiresOn = this.TokenRefresher.RefreshesOn;
-                }
-
-                return new CbsToken(tokenValue, CbsConstants.IotHubSasTokenType, expiresOn);
-            }
-            finally
-            {
-                if (Logging.IsEnabled) Logging.Exit(this, namespaceAddress, appliesTo, $"{nameof(IotHubConnectionString)}.{nameof(ICbsTokenProvider.GetTokenAsync)}");
             }
         }
 

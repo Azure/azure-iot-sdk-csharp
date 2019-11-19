@@ -12,11 +12,10 @@ using Microsoft.Azure.Devices.Shared;
 using System.Security.Authentication;
 using System.Runtime.InteropServices;
 using System.Net.Sockets;
-using System.Diagnostics;
 using System.Net.WebSockets;
 using System.Net;
 using System.Net.Http;
-using Microsoft.Azure.Amqp;
+using System.Reflection;
 using DotNetty.Transport.Channels;
 
 namespace Microsoft.Azure.Devices.Client.Transport
@@ -36,7 +35,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
             typeof(OperationCanceledException),
             typeof(HttpRequestException),
             typeof(WebException),
-            typeof(AmqpException),
             typeof(WebSocketException),
         };
 
@@ -45,14 +43,20 @@ namespace Microsoft.Azure.Devices.Client.Transport
             return ExecuteWithErrorHandlingAsync(() => base.OpenAsync(cancellationToken));
         }
 
+        public override Task OpenAsync(TimeoutHelper timeoutHelper)
+        {
+            return ExecuteWithErrorHandlingAsync(() => base.OpenAsync(timeoutHelper));
+        }
+
+
         public override Task<Message> ReceiveAsync(CancellationToken cancellationToken)
         {
             return ExecuteWithErrorHandlingAsync(() => base.ReceiveAsync(cancellationToken));
         }
 
-        public override Task<Message> ReceiveAsync(TimeSpan timeout, CancellationToken cancellationToken)
+        public override Task<Message> ReceiveAsync(TimeoutHelper timeoutHelper)
         {
-            return ExecuteWithErrorHandlingAsync(() => base.ReceiveAsync(timeout, cancellationToken));
+            return ExecuteWithErrorHandlingAsync(() => base.ReceiveAsync(timeoutHelper));
         }
 
         public override Task EnableMethodsAsync(CancellationToken cancellationToken)
@@ -173,7 +177,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
 
         private static bool IsNetwork(Exception singleException)
         {
-            return s_networkExceptions.Contains(singleException.GetType());
+            return s_networkExceptions.Any(baseExceptionType => baseExceptionType.IsInstanceOfType(singleException));
         }
 
         private Task ExecuteWithErrorHandlingAsync(Func<Task> asyncOperation)

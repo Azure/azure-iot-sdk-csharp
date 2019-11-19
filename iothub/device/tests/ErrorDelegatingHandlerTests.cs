@@ -13,7 +13,6 @@ namespace Microsoft.Azure.Devices.Client.Test
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Azure.Amqp;
-    using Microsoft.Azure.Devices.Client.Common;
     using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Azure.Devices.Client.Transport;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -67,6 +66,7 @@ namespace Microsoft.Azure.Devices.Client.Test
                                                                 "Inner exception",
                                                                 new AuthenticationException()))
             },
+            { typeof(TestDerivedException), () => new TestDerivedException() },
         };
 
         private static readonly HashSet<Type> s_networkExceptions = new HashSet<Type>
@@ -77,9 +77,14 @@ namespace Microsoft.Azure.Devices.Client.Test
             typeof(OperationCanceledException),
             typeof(HttpRequestException),
             typeof(WebException),
-            typeof(AmqpException),
+            typeof(IotHubCommunicationException),
             typeof(WebSocketException),
+            typeof(TestDerivedException),
         };
+
+        public class TestDerivedException : SocketException
+        {
+        }
 
         public class TestSecurityException : Exception
         {
@@ -177,10 +182,11 @@ namespace Microsoft.Azure.Devices.Client.Test
                 thrownExceptionType, expectedExceptionType).ConfigureAwait(false);
 
             TimeSpan timeout = TimeSpan.FromSeconds(1);
+            TimeoutHelper timeoutHelper = new TimeoutHelper(timeout);
             await OperationAsync_ExceptionThrownAndThenSucceed_OperationSuccessfullyCompleted(
-                di => di.ReceiveAsync(Arg.Is(timeout), Arg.Any<CancellationToken>()),
-                di => di.ReceiveAsync(timeout, cancellationToken),
-                di => di.Received(2).ReceiveAsync(Arg.Is(timeout), Arg.Any<CancellationToken>()),
+                di => di.ReceiveAsync(Arg.Is(timeoutHelper)),
+                di => di.ReceiveAsync(timeoutHelper),
+                di => di.Received(2).ReceiveAsync(Arg.Is(timeoutHelper)),
                 thrownExceptionType, expectedExceptionType).ConfigureAwait(false);
 
             await OperationAsync_ExceptionThrownAndThenSucceed_OperationSuccessfullyCompleted(

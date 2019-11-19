@@ -1,15 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace Microsoft.Azure.Devices
+namespace Microsoft.Azure.Amqp.Transport
 {
     using System;
     using System.IO;
     using System.Net;
     using System.Net.WebSockets;
     using System.Threading.Tasks;
-    using Microsoft.Azure.Amqp;
-    using Microsoft.Azure.Amqp.Transport;
+    using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Common;
 
     sealed class LegacyClientWebSocketTransport : TransportBase

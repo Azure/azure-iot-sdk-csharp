@@ -19,7 +19,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Version>1.1.7</Version>
+    <Version>1.1.9</Version>
     <Title>Microsoft Azure IoT Provisioning Device Client AMQP Transport</Title>
     <Authors>Microsoft</Authors>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
@@ -39,6 +39,9 @@
   <ItemGroup>
     <Compile Include="$(Common)\Logging.Common.cs">
       <Link>Common\Logging.Common.cs</Link>
+    </Compile>
+    <Compile Include="$(Common)\device\provisioning\transport\RetryJitter.cs">
+      <Link>Common\device\provisioning\transport\RetryJitter.cs</Link>
     </Compile>
     <Compile Include="$(Common)\Logging.ProvisioningTransport.Common.cs">
       <Link>Common\Logging.ProvisioningTransport.Common.cs</Link>
@@ -79,7 +82,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Azure.Amqp" Version="2.4.1" />
+    <PackageReference Include="Microsoft.Azure.Amqp" Version="2.4.2" />
     <PackageReference Condition=" '$(Configuration)' == 'Debug' " Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.6.1" />
   </ItemGroup>
 </Project>

@@ -127,12 +127,12 @@ namespace Microsoft.Azure.Devices
         {
             if (string.IsNullOrWhiteSpace(deviceId))
             {
-                throw new ArgumentException("Value should be non null and non empty", "deviceId");
+                throw new ArgumentNullException(nameof(deviceId));
             }
 
             if (message == null)
             {
-                throw new ArgumentNullException("message");
+                throw new ArgumentNullException(nameof(message));
             }
             Outcome outcome;
 
@@ -240,6 +240,16 @@ namespace Microsoft.Azure.Devices
 
         public override Task<CloudToDeviceMethodResult> InvokeDeviceMethodAsync(string deviceId, string moduleId, CloudToDeviceMethod cloudToDeviceMethod, CancellationToken cancellationToken)
         {
+            if (string.IsNullOrWhiteSpace(deviceId))
+            {
+                throw new ArgumentNullException(nameof(deviceId));
+            }
+
+            if (string.IsNullOrWhiteSpace(moduleId))
+            {
+                throw new ArgumentNullException(nameof(moduleId));
+            }
+
             return InvokeDeviceMethodAsync(GetModuleMethodUri(deviceId, moduleId), cloudToDeviceMethod, cancellationToken);
         }
 
@@ -247,12 +257,12 @@ namespace Microsoft.Azure.Devices
         {
             if (string.IsNullOrWhiteSpace(deviceId))
             {
-                throw new ArgumentException("Value should be non null and non empty", nameof(deviceId));
+                throw new ArgumentNullException(nameof(deviceId));
             }
 
             if (string.IsNullOrWhiteSpace(moduleId))
             {
-                throw new ArgumentException("Value should be non null and non empty", nameof(moduleId));
+                throw new ArgumentNullException(nameof(moduleId));
             }
 
             if (message == null)
@@ -266,8 +276,8 @@ namespace Microsoft.Azure.Devices
                 amqpMessage.Properties.To = "/devices/" + WebUtility.UrlEncode(deviceId) + "/modules/" + WebUtility.UrlEncode(moduleId) + "/messages/deviceBound";
                 try
                 {
-                    SendingAmqpLink sendingLink = await this.GetSendingLinkAsync();
-                    outcome = await sendingLink.SendMessageAsync(amqpMessage, IotHubConnection.GetNextDeliveryTag(ref this.sendingDeliveryTag), AmqpConstants.NullBinary, this.OperationTimeout);
+                    SendingAmqpLink sendingLink = await this.GetSendingLinkAsync().ConfigureAwait(false);
+                    outcome = await sendingLink.SendMessageAsync(amqpMessage, IotHubConnection.GetNextDeliveryTag(ref this.sendingDeliveryTag), AmqpConstants.NullBinary, this.OperationTimeout).ConfigureAwait(false);
                 }
                 catch (Exception exception)
                 {

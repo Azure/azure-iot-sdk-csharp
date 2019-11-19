@@ -110,7 +110,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Mqtt
             message.SetAsSecurityMessage();
 
             var topicName = MqttIotHubAdapter.PopulateMessagePropertiesFromMessage("", message);
-            Assert.AreEqual("/%24.ifid=http%3A%2F%2Fsecurity.azureiot.com%2FSecurityAgent%2F1.0.0", topicName);
+            Assert.AreEqual("/%24.ifid=urn%3Aazureiot%3ASecurity%3ASecurityAgent%3A1", topicName);
         }
 
         private async Task SendRequestAndAcknowledgementsInSpecificOrder<T>(T requestPacket, Func<T, PacketWithId> ackFactory, bool receiveResponseBeforeSendingRequestContinues)

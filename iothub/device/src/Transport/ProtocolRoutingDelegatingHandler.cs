@@ -4,6 +4,7 @@
 using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Diagnostics;
+using System.Runtime.InteropServices.ComTypes;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -31,39 +32,76 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
         }
 
+        public override async Task OpenAsync(TimeoutHelper timeoutHelper)
+        {
+            try
+            {
+                if (Logging.IsEnabled) Logging.Enter(this, timeoutHelper, $"{nameof(ProtocolRoutingDelegatingHandler)}.{nameof(OpenAsync)}");
+
+                bool gain = await _handlerLock.WaitAsync(timeoutHelper.RemainingTime()).ConfigureAwait(false);
+                if (!gain) throw new TimeoutException("Timed out to acquire handler lock.");
+                SelectTransport();
+
+                try
+                {
+                    CreateNewTransportIfNotReady();
+                    await base.OpenAsync(timeoutHelper).ConfigureAwait(false);
+
+                    // since Dispose is not synced with _handlerLock, double check if disposed.
+                    if (_disposed)
+                    {
+                        InnerHandler?.Dispose();
+                        ThrowIfDisposed();
+                    }
+                    _transportSelectionComplete = true;
+                }
+                finally
+                {
+                    _handlerLock.Release();
+                }
+            }
+            finally
+            {
+                if (Logging.IsEnabled) Logging.Exit(this, timeoutHelper, $"{nameof(ProtocolRoutingDelegatingHandler)}.{nameof(OpenAsync)}");
+            }
+        }
+
+        private void SelectTransport()
+        {
+            if (!_transportSelectionComplete)
+            {
+                // Try next protocol if we're still searching.
+
+                ITransportSettings[] transportSettingsArray = this.Context.Get<ITransportSettings[]>();
+                Debug.Assert(transportSettingsArray != null);
+
+                // Keep cycling through all transports until we find one that works.
+                if (_nextTransportIndex >= transportSettingsArray.Length) _nextTransportIndex = 0;
+
+                ITransportSettings transportSettings = transportSettingsArray[_nextTransportIndex];
+                Debug.Assert(transportSettings != null);
+
+                if (Logging.IsEnabled) Logging.Info(
+                    this,
+                    $"Trying {transportSettings?.GetTransportType()}",
+                    $"{nameof(ProtocolRoutingDelegatingHandler)}.{nameof(OpenAsync)}");
+
+                // Configure the transportSettings for this context (Important! Within Context, 'ITransportSettings' != 'ITransportSettings[]').
+                Context.Set<ITransportSettings>(transportSettings);
+                CreateNewTransportHandler();
+
+                _nextTransportIndex++;
+            }
+        }
+
         public override async Task OpenAsync(CancellationToken cancellationToken)
         {
             try
             {
                 if (Logging.IsEnabled) Logging.Enter(this, cancellationToken, $"{nameof(ProtocolRoutingDelegatingHandler)}.{nameof(OpenAsync)}");
                 cancellationToken.ThrowIfCancellationRequested();
-
                 await _handlerLock.WaitAsync().ConfigureAwait(false);
-
-                if (!_transportSelectionComplete)
-                {
-                    // Try next protocol if we're still searching.
-
-                    ITransportSettings[] transportSettingsArray = this.Context.Get<ITransportSettings[]>();
-                    Debug.Assert(transportSettingsArray != null);
-
-                    // Keep cycling through all transports until we find one that works.
-                    if (_nextTransportIndex >= transportSettingsArray.Length) _nextTransportIndex = 0;
-
-                    ITransportSettings transportSettings = transportSettingsArray[_nextTransportIndex];
-                    Debug.Assert(transportSettings != null);
-
-                    if (Logging.IsEnabled) Logging.Info(
-                        this,
-                        $"Trying {transportSettings?.GetTransportType()}",
-                        $"{nameof(ProtocolRoutingDelegatingHandler)}.{nameof(OpenAsync)}");
-
-                    // Configure the transportSettings for this context (Important! Within Context, 'ITransportSettings' != 'ITransportSettings[]').
-                    Context.Set<ITransportSettings>(transportSettings);
-                    CreateNewTransportHandler();
-
-                    _nextTransportIndex++;
-                }
+                SelectTransport();
 
                 try
                 {
@@ -118,7 +156,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
             Debug.Assert(InnerHandler != null);
 
             // We don't need to double check since it's being handled in OpenAsync
-            CreateNewTransportHandler();
+            CreateNewTransportIfNotReady();
 
             // Operations above should never throw. If they do, it's not safe to continue.
             _handlerLock.Release();
