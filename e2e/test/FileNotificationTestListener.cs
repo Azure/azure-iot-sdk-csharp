@@ -83,13 +83,20 @@ namespace Microsoft.Azure.Devices.E2ETests
             CancellationToken cancellationToken = new CancellationTokenSource(s_duration).Token;
             while (!cancellationToken.IsCancellationRequested)
             {
-                FileNotification fileNotification = await s_fileNotificationReceiver.ReceiveAsync(s_interval).ConfigureAwait(false);
-                if (fileNotification != null)
+                try
                 {
-                    string key = RetrieveKey(fileNotification.BlobName);
-                    s_fileNotifications.TryAdd(key, fileNotification);
-                    s_log.WriteLine($"File notification received deviceId={fileNotification.DeviceId}, blobName={fileNotification.BlobName}.");
-                    await s_fileNotificationReceiver.CompleteAsync(fileNotification).ConfigureAwait(false);
+                    FileNotification fileNotification = await s_fileNotificationReceiver.ReceiveAsync(s_interval).ConfigureAwait(false);
+                    if (fileNotification != null)
+                    {
+                        string key = RetrieveKey(fileNotification.BlobName);
+                        s_fileNotifications.TryAdd(key, fileNotification);
+                        s_log.WriteLine($"File notification received deviceId={fileNotification.DeviceId}, blobName={fileNotification.BlobName}.");
+                        await s_fileNotificationReceiver.AbandonAsync(fileNotification).ConfigureAwait(false);
+                    }
+                }
+                catch(Exception)
+                {
+                    s_log.WriteLine("Ingore any exception while receiving file upload notification.");
                 }
             }
 
