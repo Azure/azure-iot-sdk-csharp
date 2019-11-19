@@ -19,7 +19,7 @@ namespace EnvironmentalSensorSample
         private const string getModelDefinitionCommandName = "getModelDefinition";
 
         public ModelDefinitionInterface(string interfaceInstanceName)
-            : base(ModelDefinitionInterfaceId, interfaceInstanceName, true, false)
+            : base(ModelDefinitionInterfaceId, interfaceInstanceName)
         {
             environmentalSensorModelDefinition = File.ReadAllText("../../../EnvironmentalSensor.interface.json");
         }

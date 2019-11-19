@@ -21,7 +21,7 @@ namespace Azure.IoT.DigitalTwin.Device.Test
         [Fact]
         public void TestConstructorWhenIdIsNull()
         {
-            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => new DigitalTwinInterfaceTestClient(null, "testInstanceName", true, true));
+            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => new DigitalTwinInterfaceTestClient(null, "testInstanceName"));
 
             Assert.Equal("id", ex.ParamName);
             Assert.StartsWith("The parameter named id can't be null, empty string or white space.", ex.Message, StringComparison.Ordinal);
@@ -30,7 +30,7 @@ namespace Azure.IoT.DigitalTwin.Device.Test
         [Fact]
         public void TestConstructorWhenIdIsWhiteSpace()
         {
-            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => new DigitalTwinInterfaceTestClient(" ", "testInstanceName", true, true));
+            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => new DigitalTwinInterfaceTestClient(" ", "testInstanceName"));
 
             Assert.Equal("id", ex.ParamName);
             Assert.StartsWith("The parameter named id can't be null, empty string or white space.", ex.Message, StringComparison.Ordinal);
@@ -40,7 +40,7 @@ namespace Azure.IoT.DigitalTwin.Device.Test
         [MemberData(nameof(GetInvalidInterfaceIdData))]
         public void TestConstructorWhenIdFormatIsInvalid(string id)
         {
-            ArgumentException ex = Assert.Throws<ArgumentException>(() => new DigitalTwinInterfaceTestClient(id, "testInstanceName", true, true));
+            ArgumentException ex = Assert.Throws<ArgumentException>(() => new DigitalTwinInterfaceTestClient(id, "testInstanceName"));
 
             Assert.Equal("id", ex.ParamName);
             Assert.StartsWith(DigitalTwinConstants.InvalidInterfaceIdErrorMessage, ex.Message, StringComparison.Ordinal);
@@ -49,7 +49,7 @@ namespace Azure.IoT.DigitalTwin.Device.Test
         [Fact]
         public void TestConstructorWhenInstanceNameIsNull()
         {
-            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => new DigitalTwinInterfaceTestClient("urn:testId", null, true, true));
+            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => new DigitalTwinInterfaceTestClient("urn:testId", null));
 
             Assert.Equal("instanceName", ex.ParamName);
             Assert.StartsWith("The parameter named instanceName can't be null, empty string or white space.", ex.Message, StringComparison.Ordinal);
@@ -58,7 +58,7 @@ namespace Azure.IoT.DigitalTwin.Device.Test
         [Fact]
         public void TestConstructorWhenInstanceNameIsWhiteSpace()
         {
-            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => new DigitalTwinInterfaceTestClient("urn:testId", " ", true, true));
+            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => new DigitalTwinInterfaceTestClient("urn:testId", " "));
 
             Assert.Equal("instanceName", ex.ParamName);
             Assert.StartsWith("The parameter named instanceName can't be null, empty string or white space.", ex.Message, StringComparison.Ordinal);
@@ -68,7 +68,7 @@ namespace Azure.IoT.DigitalTwin.Device.Test
         [MemberData(nameof(GetInvalidInterfaceInstanceNameData))]
         public void TestConstructorWhenInstanceNameFormatIsInvalid(string instanceName)
         {
-                var ex = Assert.Throws<ArgumentException>(() => new DigitalTwinInterfaceTestClient("urn:testId", instanceName, true, true));
+                var ex = Assert.Throws<ArgumentException>(() => new DigitalTwinInterfaceTestClient("urn:testId", instanceName));
 
                 Assert.Equal(ex.ParamName, "instanceName");
                 Assert.StartsWith(DigitalTwinConstants.InvalidInterfaceInstanceNameErrorMessage, ex.Message, StringComparison.Ordinal);
@@ -82,18 +82,16 @@ namespace Azure.IoT.DigitalTwin.Device.Test
             bool isCommandEnabled = true;
             bool isPropertyUpdatedEnabled = true;
 
-            var client = new DigitalTwinInterfaceTestClient(id, instanceName, isCommandEnabled, isPropertyUpdatedEnabled);
+            var client = new DigitalTwinInterfaceTestClient(id, instanceName);
 
             Assert.Equal(id, client.Id);
             Assert.Equal(instanceName, client.InstanceName);
-            Assert.Equal(isCommandEnabled, client.IsCommandEnabled);
-            Assert.Equal(isPropertyUpdatedEnabled, client.IsPropertyUpdatedEnabled);
         }
 
         [Fact]
         public void TestOnCommandRequest()
         {
-            var client = new DigitalTwinInterfaceTestClient("urn:id", "instanceName", true, true);
+            var client = new DigitalTwinInterfaceTestClient("urn:id", "instanceName");
 
             Task<DigitalTwinCommandResponse> response = client.OnCommandRequest(new DigitalTwinCommandRequest());
 
@@ -104,7 +102,7 @@ namespace Azure.IoT.DigitalTwin.Device.Test
         [Fact]
         public void TestOnPropertyUpdated()
         {
-            var client = new DigitalTwinInterfaceTestClient("urn:id", "instanceName", true, true);
+            var client = new DigitalTwinInterfaceTestClient("urn:id", "instanceName");
 
             Task updateTask = client.OnPropertyUpdated(new DigitalTwinPropertyUpdate());
 
@@ -114,7 +112,7 @@ namespace Azure.IoT.DigitalTwin.Device.Test
         [Fact]
         public void TestOnRegistrationCompleted()
         {
-            var client = new DigitalTwinInterfaceTestClient("urn:id", "instanceName", true, true);
+            var client = new DigitalTwinInterfaceTestClient("urn:id", "instanceName");
             ILogging logger = Substitute.For<ILogging>();
             Logging.Instance = logger;
 
@@ -126,7 +124,7 @@ namespace Azure.IoT.DigitalTwin.Device.Test
         [Fact]
         public async Task TestReportPropertiesAsyncWhenPropertiesIsNull()
         {
-            var client = new DigitalTwinInterfaceTestClient("urn:id", "instanceName", true, true);
+            var client = new DigitalTwinInterfaceTestClient("urn:id", "instanceName");
 
             ArgumentNullException ex = await Assert.ThrowsAsync<ArgumentNullException>(() => client.ReportPropertiesAsync(null)).ConfigureAwait(false);
             Assert.Equal("properties", ex.ParamName);
@@ -136,7 +134,7 @@ namespace Azure.IoT.DigitalTwin.Device.Test
         [Fact]
         public async Task TestReportPropertiesAsyncWhenInterfaceNotRegistered()
         {
-            var client = new DigitalTwinInterfaceTestClient("urn:id", "instanceName", true, true);
+            var client = new DigitalTwinInterfaceTestClient("urn:id", "instanceName");
             IList<DigitalTwinPropertyReport> properties = new List<DigitalTwinPropertyReport>();
             properties.Add(new DigitalTwinPropertyReport("propertyName1", "propertyValue1"));
 
@@ -148,7 +146,7 @@ namespace Azure.IoT.DigitalTwin.Device.Test
         [Fact]
         public async Task TestReportPropertiesAsyncCallDigitalTwinClient()
         {
-            var client = new DigitalTwinInterfaceTestClient("urn:id", "instanceName", true, true);
+            var client = new DigitalTwinInterfaceTestClient("urn:id", "instanceName");
             var properties = new List<DigitalTwinPropertyReport>();
             properties.Add(new DigitalTwinPropertyReport("propertyName1", "propertyValue1"));
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString("HostName=zzz.azure-devices.net;DeviceId=aaaa;SharedAccessKey=WWWWWWWWWWWWWWWW/WWWWWWWWWWWWWWWWWWWWWWWWWW=");
@@ -164,7 +162,7 @@ namespace Azure.IoT.DigitalTwin.Device.Test
         [Fact]
         public async Task TestSendTelemetryAsyncWhenTelemetryNameIsNull()
         {
-            var client = new DigitalTwinInterfaceTestClient("urn:id", "instanceName", true, true);
+            var client = new DigitalTwinInterfaceTestClient("urn:id", "instanceName");
 
             ArgumentNullException ex = await Assert.ThrowsAsync<ArgumentNullException>(() => client.SendTelemetryAsync(null, "telemetryValue")).ConfigureAwait(false);
             Assert.Equal("telemetryName", ex.ParamName);
@@ -174,7 +172,7 @@ namespace Azure.IoT.DigitalTwin.Device.Test
         [Fact]
         public async Task TestSendTelemetryAsyncWhenTelemetryValueIsNull()
         {
-            var client = new DigitalTwinInterfaceTestClient("urn:id", "instanceName", true, true);
+            var client = new DigitalTwinInterfaceTestClient("urn:id", "instanceName");
 
             var ex = await Assert.ThrowsAsync<ArgumentNullException>(() => client.SendTelemetryAsync("telemetryName", null)).ConfigureAwait(false);
             Assert.Equal("telemetryValue", ex.ParamName);
@@ -184,7 +182,7 @@ namespace Azure.IoT.DigitalTwin.Device.Test
         [Fact]
         public async Task TestSendTelemetryAsyncWhenInterfaceNotRegistered()
         {
-            var client = new DigitalTwinInterfaceTestClient("urn:id", "instanceName", true, true);
+            var client = new DigitalTwinInterfaceTestClient("urn:id", "instanceName");
 
             var ex = await Assert.ThrowsAsync<DigitalTwinDeviceInterfaceNotRegisteredException>(() => client.SendTelemetryAsync("telemetryName", "telemetryValue")).ConfigureAwait(false);
             Assert.Equal("The interface instanceName is not registered.", ex.Message);
@@ -193,7 +191,7 @@ namespace Azure.IoT.DigitalTwin.Device.Test
         [Fact]
         public void TestSendTelemetryAsyncCallDigitalTwinClient()
         {
-            var client = new DigitalTwinInterfaceTestClient("urn:id", "instanceName", true, true);
+            var client = new DigitalTwinInterfaceTestClient("urn:id", "instanceName");
 
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString("HostName=zzz.azure-devices.net;DeviceId=aaaa;SharedAccessKey=WWWWWWWWWWWWWWWW/WWWWWWWWWWWWWWWWWWWWWWWWWW=");
             var digitalTwinClientMock = Substitute.For<DigitalTwinClient>(deviceClient);
@@ -209,7 +207,7 @@ namespace Azure.IoT.DigitalTwin.Device.Test
         [Fact]
         public async Task TestUpdateAsyncCommandStatusAsyncWhenUpdateNameIsNull()
         {
-            var client = new DigitalTwinInterfaceTestClient("urn:id", "instanceName", true, true);
+            var client = new DigitalTwinInterfaceTestClient("urn:id", "instanceName");
             var cmdUpdate = new DigitalTwinAsyncCommandUpdate(null, "TestReqId", 999, "TestPayload");
 
             ArgumentNullException ex = await Assert.ThrowsAsync<ArgumentNullException>(() => client.UpdateAsyncCommandStatusAsync(cmdUpdate)).ConfigureAwait(false);
@@ -220,7 +218,7 @@ namespace Azure.IoT.DigitalTwin.Device.Test
         [Fact]
         public async Task TestUpdateAsyncCommandStatusAsyncWhenUpdateRequestIdIsNull()
         {
-            var client = new DigitalTwinInterfaceTestClient("urn:id", "instanceName", true, true);
+            var client = new DigitalTwinInterfaceTestClient("urn:id", "instanceName");
             var cmdUpdate = new DigitalTwinAsyncCommandUpdate("TestName", null, 999, "TestPayload");
 
             ArgumentNullException ex = await Assert.ThrowsAsync<ArgumentNullException>(() => client.UpdateAsyncCommandStatusAsync(cmdUpdate)).ConfigureAwait(false);
@@ -231,7 +229,7 @@ namespace Azure.IoT.DigitalTwin.Device.Test
         [Fact]
         public async Task TestUpdateAsyncCommandStatusAsyncWhenInterfaceNotRegistered()
         {
-            var client = new DigitalTwinInterfaceTestClient("urn:id", "instanceName", true, true);
+            var client = new DigitalTwinInterfaceTestClient("urn:id", "instanceName");
             var cmdUpdate = new DigitalTwinAsyncCommandUpdate("TestName", "TestRequestId", 999, "TestPayload");
 
             var ex = await Assert.ThrowsAsync<DigitalTwinDeviceInterfaceNotRegisteredException>(() => client.UpdateAsyncCommandStatusAsync(cmdUpdate)).ConfigureAwait(false);
@@ -241,7 +239,7 @@ namespace Azure.IoT.DigitalTwin.Device.Test
         [Fact]
         public void TestUpdateAsyncCommandStatusAsyncCallDigitalTwinClient()
         {
-            var client = new DigitalTwinInterfaceTestClient("urn:id", "instanceName", true, true);
+            var client = new DigitalTwinInterfaceTestClient("urn:id", "instanceName");
             var cmdUpdate = new DigitalTwinAsyncCommandUpdate("TestName", "TestReqId", 999, "TestPayload");
 
             DeviceClient deviceClient = DeviceClient.CreateFromConnectionString("HostName=zzz.azure-devices.net;DeviceId=aaaa;SharedAccessKey=WWWWWWWWWWWWWWWW/WWWWWWWWWWWWWWWWWWWWWWWWWW=");

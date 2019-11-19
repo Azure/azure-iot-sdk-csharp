@@ -28,7 +28,7 @@ namespace Azure.IoT.DigitalTwin.Device
         /// Initializes a new instance of the <see cref="SdkInformationInterface"/> class.
         /// </summary>
         internal SdkInformationInterface()
-            : base(SdkInformationInterfaceId, SdkInformationInterfaceName, false, false)
+            : base(SdkInformationInterfaceId, SdkInformationInterfaceName)
         {
             this.propertyCollection = new Collection<DigitalTwinPropertyReport>();
             this.propertyCollection.Add(new DigitalTwinPropertyReport(Language, JsonConvert.SerializeObject(SdkLanguage)));

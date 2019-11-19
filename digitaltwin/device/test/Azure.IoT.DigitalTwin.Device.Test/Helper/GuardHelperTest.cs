@@ -83,11 +83,7 @@ namespace Azure.IoT.DigitalTwin.Device.Test.Helper
         {
             try
             {
-                var client = new DigitalTwinInterfaceTestClient(
-                    id,
-                    "instanceName",
-                    true,
-                    true);
+                var client = new DigitalTwinInterfaceTestClient(id, "instanceName");
             }
             catch (Exception ex)
             {
@@ -106,11 +102,7 @@ namespace Azure.IoT.DigitalTwin.Device.Test.Helper
         {
             try
             {
-                var client = new DigitalTwinInterfaceTestClient(
-                    "urn:id",
-                    instanceName,
-                    true,
-                    true);
+                var client = new DigitalTwinInterfaceTestClient("urn:id", instanceName);
             }
             catch (Exception ex)
             {

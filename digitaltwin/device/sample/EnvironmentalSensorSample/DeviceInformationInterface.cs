@@ -33,7 +33,7 @@ namespace EnvironmentalSensorSample
         /// Initializes a new instance of the <see cref="DeviceInformationInterface"/> class.
         /// </summary>
         public DeviceInformationInterface()
-            : base(DeviceInformationInterfaceId, DeviceInformationInterfaceName, false, false)
+            : base(DeviceInformationInterfaceId, DeviceInformationInterfaceName)
         {
             this.propertyCollection = new Collection<DigitalTwinPropertyReport>();
         }

@@ -49,7 +49,7 @@ namespace Azure.Iot.DigitalTwin.Device
         /// <param name="instanceName">the interface instance name.</param>
         /// <param name="isCommandEnabled">indicates if command is implemented in the interface.</param>
         /// <param name="isPropertyUpdatedEnabled">indicates if property updated is required in the interface.</param>
-        protected DigitalTwinInterfaceClient(string id, string instanceName, bool isCommandEnabled, bool isPropertyUpdatedEnabled)
+        protected DigitalTwinInterfaceClient(string id, string instanceName)
         {
             GuardHelper.ThrowIfNullOrWhiteSpace(id, nameof(id));
             GuardHelper.ThrowIfInvalidInterfaceId(id, nameof(id));
@@ -58,8 +58,6 @@ namespace Azure.Iot.DigitalTwin.Device
 
             this.Id = id;
             this.InstanceName = instanceName;
-            this.IsCommandEnabled = isCommandEnabled;
-            this.IsPropertyUpdatedEnabled = isPropertyUpdatedEnabled;
         }
 
         /// <summary>
@@ -71,10 +69,6 @@ namespace Azure.Iot.DigitalTwin.Device
         /// Gets the interface id associated with this interface.
         /// </summary>
         internal string Id { get; }
-
-        internal bool IsCommandEnabled { get; }
-
-        internal bool IsPropertyUpdatedEnabled { get; }
 
         /// <summary>
         /// Initialize the digital twin.

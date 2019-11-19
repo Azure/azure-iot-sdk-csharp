@@ -12,8 +12,8 @@ namespace Azure.IoT.DigitalTwin.Device.Test
 {
     internal class DigitalTwinInterfaceTestClient : DigitalTwinInterfaceClient
     {
-        public DigitalTwinInterfaceTestClient(string id, string instanceName, bool isCommandEnabled, bool isPropertyUpdatedEnabled)
-            : base(id, instanceName, isCommandEnabled, isPropertyUpdatedEnabled)
+        public DigitalTwinInterfaceTestClient(string id, string instanceName)
+            : base(id, instanceName)
         {
         }
 
