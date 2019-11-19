@@ -23,7 +23,7 @@ namespace Azure.IoT.DigitalTwin.E2ETests.interfaces
         public bool onRegistrationCompleteExecuted { get; private set; }
 
         public DigitalTwinInterfaceClientWithTracking(string interfaceId, string interfaceName)
-            : base(interfaceId, interfaceName, true, true)
+            : base(interfaceId, interfaceName)
         {
             CommandsInvoked = new ConcurrentDictionary<string, string>();
             PropertyUpdates = new ConcurrentBag<DigitalTwinPropertyUpdate>();

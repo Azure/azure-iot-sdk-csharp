@@ -31,7 +31,7 @@ namespace EnvironmentalSensorSample
         /// </summary>
         /// <param name="interfaceName">interface name.</param>
         public EnvironmentalSensorInterface(string interfaceName)
-            : base(EnvironmentalSensorInterfaceId, interfaceName, true, true)
+            : base(EnvironmentalSensorInterfaceId, interfaceName)
         {
         }
 
