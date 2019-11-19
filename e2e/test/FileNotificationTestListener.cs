@@ -63,6 +63,13 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                         Assert.AreEqual(deviceId, fileNotification.DeviceId);
                         Assert.IsFalse(string.IsNullOrEmpty(fileNotification.BlobUri), "File notification blob uri is null or empty.");
+                        try
+                        {
+                            await s_fileNotificationReceiver.CompleteAsync(fileNotification).ConfigureAwait(false);
+                            catch (Exception)
+                        {
+                            s_log.WriteLine("Ingore any exception while completing file upload notification.");
+                        }
                         return;
                     }
                     await Task.Delay(s_checkInterval).ConfigureAwait(false);
@@ -96,7 +103,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
                 catch(Exception)
                 {
-                    s_log.WriteLine("Ingore any exception while receiving file upload notification.");
+                    s_log.WriteLine("Ingore any exception while receiving/abandon file upload notification.");
                 }
             }
 
