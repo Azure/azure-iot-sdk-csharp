@@ -66,7 +66,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                         try
                         {
                             await s_fileNotificationReceiver.CompleteAsync(fileNotification).ConfigureAwait(false);
-                            catch (Exception)
+                        }
+                        catch (Exception)
                         {
                             s_log.WriteLine("Ingore any exception while completing file upload notification.");
                         }
