@@ -20,7 +20,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     {
         private static readonly string DevicePrefix = $"E2E_{nameof(MessageReceiveE2ETests)}_";
         private static readonly TestLogging _log = TestLogging.GetInstance();
-        private static readonly TimeSpan TIMESPAN_SIXTYFIVE_SECONDS = TimeSpan.FromSeconds(65);
+        private static readonly TimeSpan TIMESPAN_ONE_MINUTE = TimeSpan.FromMinutes(1);
         private static readonly TimeSpan TIMESPAN_ONE_SECOND = TimeSpan.FromSeconds(1);
         private static readonly TimeSpan TIMESPAN_FIVE_SECONDS = TimeSpan.FromSeconds(5);
         private static readonly TimeSpan TIMESPAN_TWENDY_SECONDS = TimeSpan.FromSeconds(20);
@@ -197,12 +197,12 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
                 else
                 {
-                    receivedMessage = await dc.ReceiveAsync(TIMESPAN_SIXTYFIVE_SECONDS).ConfigureAwait(false);
+                    receivedMessage = await dc.ReceiveAsync(TIMESPAN_ONE_MINUTE).ConfigureAwait(false);
                 }
 
                 if (receivedMessage == null)
                 {
-                    Assert.Fail($"No message is received for device {deviceId} in {TIMESPAN_SIXTYFIVE_SECONDS}.");
+                    Assert.Fail($"No message is received for device {deviceId} in {TIMESPAN_ONE_MINUTE}.");
                 }
 
                 string messageData = Encoding.ASCII.GetString(receivedMessage.GetBytes());
@@ -251,10 +251,11 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 try
                 {
-                    deviceClient.OperationTimeoutInMilliseconds = Convert.ToUInt32(TIMESPAN_SIXTYFIVE_SECONDS.TotalMilliseconds);
+                    deviceClient.OperationTimeoutInMilliseconds = Convert.ToUInt32(TIMESPAN_ONE_MINUTE.TotalMilliseconds);
                     if (transport == Client.TransportType.Amqp || transport == Client.TransportType.Amqp_Tcp_Only || transport == Client.TransportType.Amqp_WebSocket_Only)
                     {
-                        await ReceiveMessageWithoutTimeoutCheck(deviceClient, TIMESPAN_SIXTYFIVE_SECONDS).ConfigureAwait(false);
+                        // For AMQP because of static 1 min interval check the cancellation token, in worst case it will block upto extra 1 min to return
+                        await ReceiveMessageWithoutTimeoutCheck(deviceClient, TIMESPAN_ONE_MINUTE).ConfigureAwait(false);
                     }
                     else
                     {
