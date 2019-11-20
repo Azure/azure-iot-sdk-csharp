@@ -202,29 +202,28 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 if (receivedMessage == null)
                 {
-                    Assert.Fail($"No message received  device {deviceId} in {TIMESPAN_ONE_MINUTE}.");
+                    Assert.Fail($"No message is received for device {deviceId} in {TIMESPAN_ONE_MINUTE}.");
                 }
-                else
+                
+                try
                 {
-                    string messageData = Encoding.ASCII.GetString(receivedMessage.GetBytes());
-                    _log.WriteLine($"{nameof(VerifyReceivedC2DMessageAsync)}: Received message: for {deviceId}: {messageData}");
-                    if (Equals(payload, messageData))
-                    {
-                        Assert.AreEqual(1, receivedMessage.Properties.Count, $"The count of received properties did not match for device {deviceId}");
-                        var prop = receivedMessage.Properties.Single();
-                        Assert.AreEqual("property1", prop.Key, $"The key \"property1\" did not match for device {deviceId}");
-                        Assert.AreEqual(p1Value, prop.Value, $"The value of \"property1\" did not match for device {deviceId}");
-                        break;
-                    }
+                    // always complete message
+                    await dc.CompleteAsync(receivedMessage).ConfigureAwait(false);
+                }
+                catch (Exception)
+                {
+                    // ignore exception from CompleteAsync
+                }
 
-                    try
-                    {
-                        await dc.CompleteAsync(receivedMessage).ConfigureAwait(false);
-                    }
-                    catch (Exception)
-                    {
-                        // ignore exception from CompleteAsync
-                    }
+                string messageData = Encoding.ASCII.GetString(receivedMessage.GetBytes());
+                _log.WriteLine($"{nameof(VerifyReceivedC2DMessageAsync)}: Received message: for {deviceId}: {messageData}");
+                if (Equals(payload, messageData))
+                {
+                    Assert.AreEqual(1, receivedMessage.Properties.Count, $"The count of received properties did not match for device {deviceId}");
+                    var prop = receivedMessage.Properties.Single();
+                    Assert.AreEqual("property1", prop.Key, $"The key \"property1\" did not match for device {deviceId}");
+                    Assert.AreEqual(p1Value, prop.Value, $"The value of \"property1\" did not match for device {deviceId}");
+                    break;
                 }
             }
 
