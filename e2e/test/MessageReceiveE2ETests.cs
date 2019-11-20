@@ -353,7 +353,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 try
                 {
                     sw.Start();
-                    Client.Message message = await dc.ReceiveAsync().ConfigureAwait(false);
+                    Client.Message message = await dc.ReceiveAsync(timeout).ConfigureAwait(false);
                     if (message == null)
                     {
                         break;
