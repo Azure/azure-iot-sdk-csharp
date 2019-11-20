@@ -171,6 +171,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 s_log.WriteLine($">>> {nameof(FaultInjection)} Testing baseline");
                 await testOperation(deviceClient, testDevice).ConfigureAwait(false);
 
+                int countBeforeFaultInjection = connectionStatusChangeCount;
                 watch.Start();
                 s_log.WriteLine($">>> {nameof(FaultInjection)} Testing fault handling");
                 await ActivateFaultInjection(transport, faultType, reason, delayInSec, durationInSec, deviceClient).ConfigureAwait(false);
@@ -185,7 +186,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     bool isFaulted = false;
                     for (int i = 0; i < LatencyTimeBufferInSec; i++)
                     {
-                        if (connectionStatusChangeCount >= 2)
+                        if (connectionStatusChangeCount > countBeforeFaultInjection)
                         {
                             isFaulted = true;
                             break;
