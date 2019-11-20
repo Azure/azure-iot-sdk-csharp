@@ -188,9 +188,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             sw.Start();
             while (wait)
             {
-                Client.Message receivedMessage = null;
-
                 _log.WriteLine($"Receiving messages for device {deviceId}.");
+                Client.Message receivedMessage;
                 if (transport == Client.TransportType.Http1)
                 {
                     // timeout on HTTP is not supported
@@ -198,32 +197,43 @@ namespace Microsoft.Azure.Devices.E2ETests
                 }
                 else
                 {
-                    receivedMessage = await dc.ReceiveAsync(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
+                    receivedMessage = await dc.ReceiveAsync(TIMESPAN_ONE_MINUTE).ConfigureAwait(false);
                 }
 
-                if (receivedMessage != null)
+                if (receivedMessage == null)
+                {
+                    Assert.Fail($"No message received  device {deviceId} in {TIMESPAN_ONE_MINUTE}.");
+                }
+                else
                 {
                     string messageData = Encoding.ASCII.GetString(receivedMessage.GetBytes());
                     _log.WriteLine($"{nameof(VerifyReceivedC2DMessageAsync)}: Received message: for {deviceId}: {messageData}");
+                    if (Equals(payload, messageData))
+                    {
+                        Assert.AreEqual(1, receivedMessage.Properties.Count, $"The count of received properties did not match for device {deviceId}");
+                        var prop = receivedMessage.Properties.Single();
+                        Assert.AreEqual("property1", prop.Key, $"The key \"property1\" did not match for device {deviceId}");
+                        Assert.AreEqual(p1Value, prop.Value, $"The value of \"property1\" did not match for device {deviceId}");
+                        break;
+                    }
 
-                    Assert.AreEqual(payload, messageData, $"The payload did not match for device {deviceId}");
-
-                    Assert.AreEqual(1, receivedMessage.Properties.Count, $"The count of received properties did not match for device {deviceId}");
-                    var prop = receivedMessage.Properties.Single();
-                    Assert.AreEqual("property1", prop.Key, $"The key \"property1\" did not match for device {deviceId}");
-                    Assert.AreEqual(p1Value, prop.Value, $"The value of \"property1\" did not match for device {deviceId}");
-
-                    await dc.CompleteAsync(receivedMessage).ConfigureAwait(false);
-                    break;
-                }
-
-                if (sw.Elapsed.TotalMilliseconds > FaultInjection.RecoveryTimeMilliseconds)
-                {
-                    throw new TimeoutException("Test is running longer than expected.");
+                    try
+                    {
+                        await dc.CompleteAsync(receivedMessage).ConfigureAwait(false);
+                    }
+                    catch (Exception)
+                    {
+                        // ignore exception from CompleteAsync
+                    }
                 }
             }
 
             sw.Stop();
+
+            if (sw.Elapsed.TotalMilliseconds > FaultInjection.RecoveryTimeMilliseconds)
+            {
+                throw new TimeoutException("Test is running longer than expected.");
+            }
         }
 
         private async Task ReceiveMessageInOperationTimeout(TestDeviceType type, Client.TransportType transport)
@@ -237,7 +247,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     transport == Client.TransportType.Mqtt_WebSocket_Only)
                 {
                     // Dummy ReceiveAsync to ensure mqtt subscription registration before SendAsync() is called on service client.
-                    await deviceClient.ReceiveAsync(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
+                    await deviceClient.ReceiveAsync(TIMESPAN_FIVE_SECONDS).ConfigureAwait(false);
                 }
 
                 try
@@ -272,7 +282,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     transport == Client.TransportType.Mqtt_WebSocket_Only)
                 {
                     // Dummy ReceiveAsync to ensure mqtt subscription registration before SendAsync() is called on service client.
-                    await deviceClient.ReceiveAsync(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
+                    await deviceClient.ReceiveAsync(TIMESPAN_FIVE_SECONDS).ConfigureAwait(false);
                 }
 
                 await ReceiveMessageWithTimeoutCheck(deviceClient, timeout).ConfigureAwait(false);
@@ -293,7 +303,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     transport == Client.TransportType.Mqtt_WebSocket_Only)
                 {
                     // Dummy ReceiveAsync to ensure mqtt subscription registration before SendAsync() is called on service client.
-                    await deviceClient.ReceiveAsync(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
+                    await deviceClient.ReceiveAsync(TIMESPAN_FIVE_SECONDS).ConfigureAwait(false);
                 }
 
                 await serviceClient.OpenAsync().ConfigureAwait(false);
@@ -320,6 +330,10 @@ namespace Microsoft.Azure.Devices.E2ETests
                     {
                         break;
                     }
+                    else
+                    {
+                        await dc.CompleteAsync(message).ConfigureAwait(false);
+                    }
                 }
                 finally
                 {
@@ -344,6 +358,10 @@ namespace Microsoft.Azure.Devices.E2ETests
                     if (message == null)
                     {
                         break;
+                    }
+                    else
+                    {
+                        await dc.CompleteAsync(message).ConfigureAwait(false);
                     }
                 }
                 finally
