@@ -1563,7 +1563,7 @@ namespace Microsoft.Azure.Devices.Client
 
         private static bool IsCausedByTimeoutOrCanncellation(Exception ex)
         {
-            return ex is OperationCanceledException || (ex is IotHubCommunicationException && IsCausedByTimeoutOrCanncellation(ex.InnerException));
+            return ex is OperationCanceledException || (ex is IotHubCommunicationException && (ex.InnerException is OperationCanceledException || ex.InnerException is TimeoutException));
         }
     }
 }
