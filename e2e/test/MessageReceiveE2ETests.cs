@@ -182,14 +182,14 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         public static async Task VerifyReceivedC2DMessageAsync(Client.TransportType transport, DeviceClient dc, string deviceId, string payload, string p1Value)
         {
-            var wait = true;
-
             Stopwatch sw = new Stopwatch();
             sw.Start();
-            while (wait)
+
+            while (sw.ElapsedMilliseconds < FaultInjection.RecoveryTimeMilliseconds)
             {
                 _log.WriteLine($"Receiving messages for device {deviceId}.");
                 Client.Message receivedMessage;
+
                 if (transport == Client.TransportType.Http1)
                 {
                     // timeout on HTTP is not supported
@@ -204,16 +204,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                 {
                     Assert.Fail($"No message is received for device {deviceId} in {TIMESPAN_ONE_MINUTE}.");
                 }
-                
-                try
-                {
-                    // always complete message
-                    await dc.CompleteAsync(receivedMessage).ConfigureAwait(false);
-                }
-                catch (Exception)
-                {
-                    // ignore exception from CompleteAsync
-                }
 
                 string messageData = Encoding.ASCII.GetString(receivedMessage.GetBytes());
                 _log.WriteLine($"{nameof(VerifyReceivedC2DMessageAsync)}: Received message: for {deviceId}: {messageData}");
@@ -225,13 +215,23 @@ namespace Microsoft.Azure.Devices.E2ETests
                     Assert.AreEqual(p1Value, prop.Value, $"The value of \"property1\" did not match for device {deviceId}");
                     break;
                 }
+
+                try
+                {
+                    // always complete message
+                    await dc.CompleteAsync(receivedMessage).ConfigureAwait(false);
+                }
+                catch (Exception)
+                {
+                    // ignore exception from CompleteAsync
+                }
             }
 
-            sw.Stop();
 
+            sw.Stop();
             if (sw.Elapsed.TotalMilliseconds > FaultInjection.RecoveryTimeMilliseconds)
             {
-                throw new TimeoutException("Test is running longer than expected.");
+                throw new TimeoutException($"Test is running longer than {FaultInjection.RecoveryTimeMilliseconds}.");
             }
         }
 
@@ -325,18 +325,17 @@ namespace Microsoft.Azure.Devices.E2ETests
                 {
                     sw.Start();
                     Client.Message message = await dc.ReceiveAsync().ConfigureAwait(false);
+                    sw.Stop();
+
                     if (message == null)
                     {
                         break;
                     }
-                    else
-                    {
-                        await dc.CompleteAsync(message).ConfigureAwait(false);
-                    }
+                    
+                    await dc.CompleteAsync(message).ConfigureAwait(false);
                 }
                 finally
                 {
-                    sw.Stop();
                     if (sw.Elapsed > (TimeSpan.FromMilliseconds(dc.OperationTimeoutInMilliseconds) + bufferTime))
                     {
                         Assert.Fail("ReceiveAsync did not return in Operation Timeout time.");
@@ -354,18 +353,17 @@ namespace Microsoft.Azure.Devices.E2ETests
                 {
                     sw.Start();
                     Client.Message message = await dc.ReceiveAsync(timeout).ConfigureAwait(false);
+                    sw.Stop();
+
                     if (message == null)
                     {
                         break;
                     }
-                    else
-                    {
-                        await dc.CompleteAsync(message).ConfigureAwait(false);
-                    }
+                   
+                    await dc.CompleteAsync(message).ConfigureAwait(false);
                 }
                 finally
                 {
-                    sw.Stop();
                     if (sw.Elapsed > (timeout + TIMESPAN_FIVE_SECONDS))
                     {
                         Assert.Fail("ReceiveAsync did not return in Operation Timeout time.");
