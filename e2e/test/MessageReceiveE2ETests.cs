@@ -18,8 +18,12 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestCategory("IoTHub-E2E")]
     public partial class MessageReceiveE2ETests : IDisposable
     {
-        private readonly string DevicePrefix = $"E2E_{nameof(MessageReceiveE2ETests)}_";
-        private static TestLogging _log = TestLogging.GetInstance();
+        private static readonly string DevicePrefix = $"E2E_{nameof(MessageReceiveE2ETests)}_";
+        private static readonly TestLogging _log = TestLogging.GetInstance();
+        private static readonly TimeSpan TIMESPAN_ONE_MINUTE = TimeSpan.FromMinutes(1);
+        private static readonly TimeSpan TIMESPAN_ONE_SECOND = TimeSpan.FromSeconds(1);
+        private static readonly TimeSpan TIMESPAN_FIVE_SECONDS = TimeSpan.FromSeconds(5);
+        private static readonly TimeSpan TIMESPAN_TWENDY_SECONDS = TimeSpan.FromSeconds(20);
 
         private readonly ConsoleEventListener _listener;
 
@@ -91,57 +95,49 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         public async Task Message_DeviceReceiveMessageWithLessTimeout_Amqp()
         {
-            double timeInSeconds = 1;
-            await ReceiveMessageWithTimeout(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only, timeInSeconds).ConfigureAwait(false);
+            await ReceiveMessageWithTimeout(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only, TIMESPAN_ONE_SECOND).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Message_DeviceReceiveMessageWithMoreTimeout_Amqp()
         {
-            double timeInSeconds = 20;
-            await ReceiveMessageWithTimeout(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only, timeInSeconds).ConfigureAwait(false);
+            await ReceiveMessageWithTimeout(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only, TIMESPAN_TWENDY_SECONDS).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Message_DeviceReceiveMessageWithLessTimeout_AmqpWs()
         {
-            double timeInSeconds = 1;
-            await ReceiveMessageWithTimeout(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only, timeInSeconds).ConfigureAwait(false);
+            await ReceiveMessageWithTimeout(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only, TIMESPAN_ONE_SECOND).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Message_DeviceReceiveMessageWithMoreTimeout_AmqpWs()
         {
-            double timeInSeconds = 20;
-            await ReceiveMessageWithTimeout(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only, timeInSeconds).ConfigureAwait(false);
+            await ReceiveMessageWithTimeout(TestDeviceType.Sasl, Client.TransportType.Amqp_WebSocket_Only, TIMESPAN_TWENDY_SECONDS).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Message_DeviceReceiveMessageWithLessTimeout_Mqtt()
         {
-            double timeInSeconds = 1;
-            await ReceiveMessageWithTimeout(TestDeviceType.Sasl, Client.TransportType.Mqtt_Tcp_Only, timeInSeconds).ConfigureAwait(false);
+            await ReceiveMessageWithTimeout(TestDeviceType.Sasl, Client.TransportType.Mqtt_Tcp_Only, TIMESPAN_ONE_SECOND).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Message_DeviceReceiveMessageWithMoreTimeout_Mqtt()
         {
-            double timeInSeconds = 20;
-            await ReceiveMessageWithTimeout(TestDeviceType.Sasl, Client.TransportType.Mqtt_Tcp_Only, timeInSeconds).ConfigureAwait(false);
+            await ReceiveMessageWithTimeout(TestDeviceType.Sasl, Client.TransportType.Mqtt_Tcp_Only, TIMESPAN_TWENDY_SECONDS).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Message_DeviceReceiveMessageWithLessTimeout_MqttWs()
         {
-            double timeInSeconds = 1;
-            await ReceiveMessageWithTimeout(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only, timeInSeconds).ConfigureAwait(false);
+            await ReceiveMessageWithTimeout(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only, TIMESPAN_ONE_SECOND).ConfigureAwait(false);
         }
 
         [TestMethod]
         public async Task Message_DeviceReceiveMessageWithMoreTimeout_MqttWs()
         {
-            double timeInSeconds = 20;
-            await ReceiveMessageWithTimeout(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only, timeInSeconds).ConfigureAwait(false);
+            await ReceiveMessageWithTimeout(TestDeviceType.Sasl, Client.TransportType.Mqtt_WebSocket_Only, TIMESPAN_TWENDY_SECONDS).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -182,56 +178,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             };
 
             return (message, messageId, payload, p1Value);
-        }
-
-        private static async Task ReceiveMessageTimeoutCheck(DeviceClient dc, double timeInSeconds)
-        {
-            Stopwatch sw = new Stopwatch();
-            sw.Start();
-            double bufferTime = 5;
-
-            await dc.ReceiveAsync(TimeSpan.FromSeconds(timeInSeconds)).ConfigureAwait(false);
-
-            if (sw.Elapsed.TotalSeconds > (timeInSeconds + bufferTime))
-            {
-                throw new TimeoutException("ReceiveAsync with Timeout did not return in allocated time.");
-            }
-            sw.Stop();
-        }
-
-        private static async Task ReceiveMessageTimeoutCheck(DeviceClient dc)
-        {
-            double bufferTime = 5 * 1000;
-            // set operation timeout to 60 seconds
-            dc.OperationTimeoutInMilliseconds = 60 * 1000;
-
-            while (true)
-            {
-                Stopwatch sw = new Stopwatch();
-                try
-                {
-                    sw.Start();
-                    Client.Message message = await dc.ReceiveAsync().ConfigureAwait(false);
-                    if (message == null)
-                    {
-                        break;
-                    }
-                }
-                catch (TimeoutException)
-                {
-                    /* OperationCanceledException is being mapped to IotHubCommunicationException 
-                     which is expected here after default operation Timeout*/
-                }
-                finally
-                {
-                    if (sw.Elapsed.TotalMilliseconds > (dc.OperationTimeoutInMilliseconds + bufferTime))
-                    {
-                        Assert.Fail("ReceiveAsync did not return in Operation Timeout time.");
-                    }
-                    sw.Stop();
-
-                }
-            }
         }
 
         public static async Task VerifyReceivedC2DMessageAsync(Client.TransportType transport, DeviceClient dc, string deviceId, string payload, string p1Value)
@@ -294,13 +240,28 @@ namespace Microsoft.Azure.Devices.E2ETests
                     await deviceClient.ReceiveAsync(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
                 }
 
-                await ReceiveMessageTimeoutCheck(deviceClient).ConfigureAwait(false);
-
-                await deviceClient.CloseAsync().ConfigureAwait(false);
+                try
+                {
+                    deviceClient.OperationTimeoutInMilliseconds = Convert.ToUInt32(TIMESPAN_ONE_MINUTE.TotalMilliseconds);
+                    if (transport == Client.TransportType.Amqp || transport == Client.TransportType.Amqp_Tcp_Only || transport == Client.TransportType.Amqp_WebSocket_Only)
+                    {
+                        await ReceiveMessageWithoutTimeoutCheck(deviceClient, TIMESPAN_ONE_MINUTE).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        await ReceiveMessageWithoutTimeoutCheck(deviceClient, TIMESPAN_FIVE_SECONDS).ConfigureAwait(false);
+                    }
+                }
+                finally
+                {
+                    deviceClient.OperationTimeoutInMilliseconds = DeviceClient.DefaultOperationTimeoutInMilliseconds;
+                    await deviceClient.CloseAsync().ConfigureAwait(false);
+                }
+                
             }
         }
 
-        private async Task ReceiveMessageWithTimeout(TestDeviceType type, Client.TransportType transport, double time)
+        private async Task ReceiveMessageWithTimeout(TestDeviceType type, Client.TransportType transport, TimeSpan timeout)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, type).ConfigureAwait(false);
             using (DeviceClient deviceClient = testDevice.CreateDeviceClient(transport))
@@ -314,7 +275,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     await deviceClient.ReceiveAsync(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
                 }
 
-                await ReceiveMessageTimeoutCheck(deviceClient, time).ConfigureAwait(false);
+                await ReceiveMessageWithTimeoutCheck(deviceClient, timeout).ConfigureAwait(false);
 
                 await deviceClient.CloseAsync().ConfigureAwait(false);
             }
@@ -346,6 +307,55 @@ namespace Microsoft.Azure.Devices.E2ETests
             }
         }
 
+        private static async Task ReceiveMessageWithoutTimeoutCheck(DeviceClient dc, TimeSpan bufferTime)
+        {
+            while (true)
+            {
+                Stopwatch sw = new Stopwatch();
+                try
+                {
+                    sw.Start();
+                    Client.Message message = await dc.ReceiveAsync().ConfigureAwait(false);
+                    if (message == null)
+                    {
+                        break;
+                    }
+                }
+                finally
+                {
+                    sw.Stop();
+                    if (sw.Elapsed > (TimeSpan.FromMilliseconds(dc.OperationTimeoutInMilliseconds) + bufferTime))
+                    {
+                        Assert.Fail("ReceiveAsync did not return in Operation Timeout time.");
+                    }
+                }
+            }
+        }
+        
+        private static async Task ReceiveMessageWithTimeoutCheck(DeviceClient dc, TimeSpan timeout)
+        {
+            while (true)
+            {
+                Stopwatch sw = new Stopwatch();
+                try
+                {
+                    sw.Start();
+                    Client.Message message = await dc.ReceiveAsync().ConfigureAwait(false);
+                    if (message == null)
+                    {
+                        break;
+                    }
+                }
+                finally
+                {
+                    sw.Stop();
+                    if (sw.Elapsed > (timeout + TIMESPAN_FIVE_SECONDS))
+                    {
+                        Assert.Fail("ReceiveAsync did not return in Operation Timeout time.");
+                    }
+                }
+            }
+        }
 
         public void Dispose()
         {
