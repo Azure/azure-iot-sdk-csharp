@@ -183,13 +183,16 @@ namespace Microsoft.Azure.Devices.E2ETests
         public static async Task VerifyReceivedC2DMessageAsync(Client.TransportType transport, DeviceClient dc, string deviceId, string payload, string p1Value)
         {
             Stopwatch sw = new Stopwatch();
+            bool received = false;
+
             sw.Start();
 
-            while (sw.ElapsedMilliseconds < FaultInjection.RecoveryTimeMilliseconds)
+            Client.Message receivedMessage;
+
+            while (!received && sw.ElapsedMilliseconds < FaultInjection.RecoveryTimeMilliseconds)
             {
                 _log.WriteLine($"Receiving messages for device {deviceId}.");
-                Client.Message receivedMessage;
-
+                
                 if (transport == Client.TransportType.Http1)
                 {
                     // timeout on HTTP is not supported
@@ -205,17 +208,6 @@ namespace Microsoft.Azure.Devices.E2ETests
                     Assert.Fail($"No message is received for device {deviceId} in {TIMESPAN_ONE_MINUTE}.");
                 }
 
-                string messageData = Encoding.ASCII.GetString(receivedMessage.GetBytes());
-                _log.WriteLine($"{nameof(VerifyReceivedC2DMessageAsync)}: Received message: for {deviceId}: {messageData}");
-                if (Equals(payload, messageData))
-                {
-                    Assert.AreEqual(1, receivedMessage.Properties.Count, $"The count of received properties did not match for device {deviceId}");
-                    var prop = receivedMessage.Properties.Single();
-                    Assert.AreEqual("property1", prop.Key, $"The key \"property1\" did not match for device {deviceId}");
-                    Assert.AreEqual(p1Value, prop.Value, $"The value of \"property1\" did not match for device {deviceId}");
-                    break;
-                }
-
                 try
                 {
                     // always complete message
@@ -225,14 +217,21 @@ namespace Microsoft.Azure.Devices.E2ETests
                 {
                     // ignore exception from CompleteAsync
                 }
-            }
 
+                string messageData = Encoding.ASCII.GetString(receivedMessage.GetBytes());
+                _log.WriteLine($"{nameof(VerifyReceivedC2DMessageAsync)}: Received message: for {deviceId}: {messageData}");
+                if (Equals(payload, messageData))
+                {
+                    Assert.AreEqual(1, receivedMessage.Properties.Count, $"The count of received properties did not match for device {deviceId}");
+                    var prop = receivedMessage.Properties.Single();
+                    Assert.AreEqual("property1", prop.Key, $"The key \"property1\" did not match for device {deviceId}");
+                    Assert.AreEqual(p1Value, prop.Value, $"The value of \"property1\" did not match for device {deviceId}");
+                    received = true;
+                }
+            }
 
             sw.Stop();
-            if (sw.Elapsed.TotalMilliseconds > FaultInjection.RecoveryTimeMilliseconds)
-            {
-                throw new TimeoutException($"Test is running longer than {FaultInjection.RecoveryTimeMilliseconds}.");
-            }
+            Assert.IsTrue(received, $"No message received for device {deviceId} with payload={payload} in {FaultInjection.RecoveryTimeMilliseconds}.");
         }
 
         private async Task ReceiveMessageInOperationTimeout(TestDeviceType type, Client.TransportType transport)
