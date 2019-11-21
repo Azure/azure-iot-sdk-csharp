@@ -9,8 +9,8 @@ namespace Microsoft.Azure.Devices.Samples
     public class EdgeDeploymentSample
     {
         private const string DeviceIdPrefix = "EdgeDeploymentSample_";
-        private const string ConfigurationIdPrefix = "sampleconfiguration-";
-        private const int NumOfEdgeDevices = 2;
+        private const string ConfigurationIdPrefix = "edgedeploymentsampleconfiguration-";
+        private const int NumOfEdgeDevices = 10;
         private const int BasePriority = 2;
         private readonly RegistryManager _registryManager;
 
@@ -21,52 +21,60 @@ namespace Microsoft.Azure.Devices.Samples
 
         public async Task RunSampleAsync()
         {
-            var devices = GenerateEdgeDevices(DeviceIdPrefix, NumOfEdgeDevices);
-            var conditionPropertyName = "condition-" + Guid.NewGuid().ToString("N");
-            var conditionPropertyValue = Guid.NewGuid().ToString();
-            var targetCondition = $"tags.{conditionPropertyName}='{conditionPropertyValue}'";
-
-            var edgeDevices = devices.ToList();
-            BulkRegistryOperationResult createResult = await CreateEdgeDevices(edgeDevices);
-            if (createResult.Errors.Length > 0)
+            try
             {
-                foreach (var err in createResult.Errors)
+                var devices = GenerateEdgeDevices(DeviceIdPrefix, NumOfEdgeDevices);
+                var conditionPropertyName = "condition-" + Guid.NewGuid().ToString("N");
+                var conditionPropertyValue = Guid.NewGuid().ToString();
+                var targetCondition = $"tags.{conditionPropertyName}='{conditionPropertyValue}'";
+
+                var edgeDevices = devices.ToList();
+                BulkRegistryOperationResult createResult = await CreateEdgeDevices(edgeDevices);
+                if (createResult.Errors.Length > 0)
                 {
-                    Console.WriteLine($"Create failed: {err.DeviceId}-{err.ErrorCode}-{err.ErrorStatus}");
+                    foreach (var err in createResult.Errors)
+                    {
+                        Console.WriteLine($"Create failed: {err.DeviceId}-{err.ErrorCode}-{err.ErrorStatus}");
+                    }
                 }
-            }
 
-            foreach (var device in edgeDevices)
-            {
-                var twin = await _registryManager.GetTwinAsync(device.Id);
-                twin.Tags[conditionPropertyName] = conditionPropertyValue;
-                await _registryManager.UpdateTwinAsync(device.Id, twin, twin.ETag);
-            }
-            
-            var baseConfiguration = new Configuration($"{ConfigurationIdPrefix}base")
-            {
-                Labels = new Dictionary<string, string>
+                foreach (var device in edgeDevices)
                 {
-                    { "App", "Mongo" }
-                },
-                Content = GetBaseConfigurationContent(),
-                Priority = BasePriority,
-                TargetCondition = targetCondition
-            };
-
-            var addOnConfiguration = new Configuration($"{ConfigurationIdPrefix}addOn")
-            {
-                Labels = new Dictionary<string, string>
+                    var twin = await _registryManager.GetTwinAsync(device.Id);
+                    twin.Tags[conditionPropertyName] = conditionPropertyValue;
+                    await _registryManager.UpdateTwinAsync(device.Id, twin, twin.ETag);
+                }
+                
+                var baseConfiguration = new Configuration($"{ConfigurationIdPrefix}base-{Guid.NewGuid().ToString()}")
                 {
-                    { "AddOn", "Stream Analytics" }
-                },
-                Content = GetAddOnConfigurationContent(),
-                Priority = BasePriority + 1,
-                TargetCondition = targetCondition
-            };
+                    Labels = new Dictionary<string, string>
+                    {
+                        { "App", "Mongo" }
+                    },
+                    Content = GetBaseConfigurationContent(),
+                    Priority = BasePriority,
+                    TargetCondition = targetCondition
+                };
 
-            await _registryManager.AddConfigurationAsync(baseConfiguration);
-            await _registryManager.AddConfigurationAsync(addOnConfiguration);
+                var addOnConfiguration = new Configuration($"{ConfigurationIdPrefix}addon-{Guid.NewGuid().ToString()}")
+                {
+                    Labels = new Dictionary<string, string>
+                    {
+                        { "AddOn", "Stream Analytics" }
+                    },
+                    Content = GetAddOnConfigurationContent(),
+                    Priority = BasePriority + 1,
+                    TargetCondition = targetCondition
+                };
+
+                var baseConfigTask = _registryManager.AddConfigurationAsync(baseConfiguration);
+                var addOnConfigTask = _registryManager.AddConfigurationAsync(addOnConfiguration);
+                await Task.WhenAll(baseConfigTask, addOnConfigTask);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
         }
 
         private static IEnumerable<Device> GenerateEdgeDevices(string deviceIdPrefix, int numToAdd)
