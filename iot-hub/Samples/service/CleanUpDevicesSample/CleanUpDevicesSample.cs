@@ -32,7 +32,7 @@ namespace Microsoft.Azure.Devices.Samples
         private List<string> _deleteConfigurationWithPrefix =
             new List<string>{
                 // C# E2E tests
-                "sampleconfiguration-",
+                "edgedeploymentsampleconfiguration-",
             };
 
         private List<Device> _devicesToDelete = new List<Device>();
@@ -98,34 +98,37 @@ namespace Microsoft.Azure.Devices.Samples
                 }
 
                 Console.WriteLine($"-- Total no of devices deleted: {devicesDeleted}");
+            
+                var configurations = await _rm.GetConfigurationsAsync(100, new CancellationToken());
+                {
+                    foreach (var configuration in configurations)
+                    {
+                        string configurationId = configuration.Id;
+                        foreach (var prefix in _deleteConfigurationWithPrefix)
+                        {
+                            if (configurationId.StartsWith(prefix))
+                            {
+                            _configurationsToDelete.Add(new Configuration(configurationId));
+                            }
+                        }
+                    }
+                }
+                
+                var removeConfigTasks = new List<Task>();
+                _configurationsToDelete.ForEach(configuration =>
+                {
+                    Console.WriteLine($"Remove: {configuration.Id}");
+                    removeConfigTasks.Add(_rm.RemoveConfigurationAsync(configuration.Id));
+                });
+
+                Task.WaitAll(removeConfigTasks.ToArray());
+                Console.WriteLine($"-- Total no of configurations deleted: {_configurationsToDelete.Count}");
+            
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex);
             }
-
-            var configurations = await _rm.GetConfigurationsAsync(100, new CancellationToken());
-            {
-                foreach (var configuration in configurations)
-                {
-                    string configurationId = configuration.Id;
-                    foreach (var prefix in _deleteConfigurationWithPrefix)
-                    {
-                        if (configurationId.StartsWith(prefix))
-                        {
-                        _configurationsToDelete.Add(new Configuration(configurationId));
-                        }
-                    }
-                }
-            }
-            
-            _configurationsToDelete.ForEach(async configuration =>
-            {
-                Console.WriteLine($"Remove: {configuration.Id}");
-                await _rm.RemoveConfigurationAsync(configuration.Id);
-            });
-            
-            Console.WriteLine($"-- Total no of configurations deleted: {_configurationsToDelete.Count}");
         }
 
         private async Task PrintDeviceCount()
