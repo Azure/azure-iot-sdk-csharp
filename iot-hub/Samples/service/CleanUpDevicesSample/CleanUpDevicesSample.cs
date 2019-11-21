@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -25,9 +26,18 @@ namespace Microsoft.Azure.Devices.Samples
                 "tpm-registration-id-",
                 "csdk_",
                 "someregistrationid-",
+                "EdgeDeploymentSample_",
+            };
+        
+        private List<string> _deleteConfigurationWithPrefix =
+            new List<string>{
+                // C# E2E tests
+                "sampleconfiguration-",
             };
 
         private List<Device> _devicesToDelete = new List<Device>();
+        private List<Configuration> _configurationsToDelete = new List<Configuration>();
+
 
         public CleanUpDevicesSample(RegistryManager rm)
         {
@@ -93,6 +103,29 @@ namespace Microsoft.Azure.Devices.Samples
             {
                 Console.WriteLine(ex);
             }
+
+            var configurations = await _rm.GetConfigurationsAsync(100, new CancellationToken());
+            {
+                foreach (var configuration in configurations)
+                {
+                    string configurationId = configuration.Id;
+                    foreach (var prefix in _deleteConfigurationWithPrefix)
+                    {
+                        if (configurationId.StartsWith(prefix))
+                        {
+                        _configurationsToDelete.Add(new Configuration(configurationId));
+                        }
+                    }
+                }
+            }
+            
+            _configurationsToDelete.ForEach(async configuration =>
+            {
+                Console.WriteLine($"Remove: {configuration.Id}");
+                await _rm.RemoveConfigurationAsync(configuration.Id);
+            });
+            
+            Console.WriteLine($"-- Total no of configurations deleted: {_configurationsToDelete.Count}");
         }
 
         private async Task PrintDeviceCount()
