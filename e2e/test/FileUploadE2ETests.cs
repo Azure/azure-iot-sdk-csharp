@@ -70,55 +70,21 @@ namespace Microsoft.Azure.Devices.E2ETests
                 deviceClient = DeviceClient.CreateFromConnectionString(testDevice.ConnectionString, transport);
             }
 
+            await FileNotificationTestListener.InitAsync().ConfigureAwait(false);
+
             using(deviceClient)
-            using (ServiceClient serviceClient = ServiceClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString))
             {
-                FileNotificationReceiver<FileNotification> notificationReceiver = serviceClient.GetFileNotificationReceiver();
                 using (FileStream fileStreamSource = new FileStream(filename, FileMode.Open, FileAccess.Read))
                 {
                     await deviceClient.UploadToBlobAsync(filename, fileStreamSource).ConfigureAwait(false);
                 }
 
-                FileNotification fileNotification = await VerifyFileNotification(notificationReceiver, testDevice.Id).ConfigureAwait(false);
-
-                // The following checks allow running these tests multiple times in parallel. 
-                // Notifications for one of the test-run instances may be received by the other test-run.
-                _log.WriteLine($"TestDevice: '{testDevice.Id}', blobName: '{fileNotification.BlobName}', size: {fileNotification.BlobSizeInBytes}");
-                Assert.IsNotNull(fileNotification, "FileNotification is not received.");
-                Assert.IsFalse(string.IsNullOrEmpty(fileNotification.BlobUri), "File notification blob uri is null or empty");
-
+                await FileNotificationTestListener.VerifyFileNotification(filename, testDevice.Id).ConfigureAwait(false);
                 await deviceClient.CloseAsync().ConfigureAwait(false);
-                await serviceClient.CloseAsync().ConfigureAwait(false);
             }
         }
 
-        private static async Task<FileNotification> VerifyFileNotification(FileNotificationReceiver<FileNotification> fileNotificationReceiver, string deviceId)
-        {
-            FileNotification fileNotification = null;
-
-            Stopwatch sw = new Stopwatch();
-            sw.Start();
-            while (sw.Elapsed.TotalMinutes < 2)
-            {
-                // Receive the file notification from queue
-                fileNotification = await fileNotificationReceiver.ReceiveAsync(TimeSpan.FromSeconds(20)).ConfigureAwait(false);
-                if (fileNotification != null)
-                {
-                    if (fileNotification.DeviceId == deviceId)
-                    {
-                        await fileNotificationReceiver.CompleteAsync(fileNotification).ConfigureAwait(false);
-                        break;
-                    }
-
-                    await fileNotificationReceiver.AbandonAsync(fileNotification).ConfigureAwait(false);
-                    fileNotification = null;
-                }
-            }
-            sw.Stop();
-            return fileNotification;
-        }
-
-        private async Task<string> GetTestFileNameAsync(int fileSize)
+        private static async Task<string> GetTestFileNameAsync(int fileSize)
         {
             var rnd = new Random();
             byte[] buffer = new byte[fileSize];
