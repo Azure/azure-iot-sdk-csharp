@@ -99,7 +99,7 @@ namespace Microsoft.Azure.Devices.Samples
 
                 Console.WriteLine($"-- Total no of devices deleted: {devicesDeleted}");
             
-                var configurations = await _rm.GetConfigurationsAsync(100, new CancellationToken());
+                var configurations = await _rm.GetConfigurationsAsync(100, new CancellationToken()).ConfigureAwait(false);
                 {
                     foreach (var configuration in configurations)
                     {
