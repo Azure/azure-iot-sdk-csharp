@@ -69,7 +69,7 @@ namespace Microsoft.Azure.Devices.Samples
 
                 var baseConfigTask = _registryManager.AddConfigurationAsync(baseConfiguration);
                 var addOnConfigTask = _registryManager.AddConfigurationAsync(addOnConfiguration);
-                await Task.WhenAll(baseConfigTask, addOnConfigTask);
+                Task.WaitAll(baseConfigTask, addOnConfigTask);
             }
             catch (Exception e)
             {
