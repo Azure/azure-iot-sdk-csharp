@@ -29,7 +29,7 @@ namespace Microsoft.Azure.Devices.Samples
                 var targetCondition = $"tags.{conditionPropertyName}='{conditionPropertyValue}'";
 
                 var edgeDevices = devices.ToList();
-                BulkRegistryOperationResult createResult = await CreateEdgeDevices(edgeDevices);
+                BulkRegistryOperationResult createResult = await CreateEdgeDevices(edgeDevices).ConfigureAwait(false);
                 if (createResult.Errors.Length > 0)
                 {
                     foreach (var err in createResult.Errors)
@@ -40,9 +40,9 @@ namespace Microsoft.Azure.Devices.Samples
 
                 foreach (var device in edgeDevices)
                 {
-                    var twin = await _registryManager.GetTwinAsync(device.Id);
+                    var twin = await _registryManager.GetTwinAsync(device.Id).ConfigureAwait(false);
                     twin.Tags[conditionPropertyName] = conditionPropertyValue;
-                    await _registryManager.UpdateTwinAsync(device.Id, twin, twin.ETag);
+                    await _registryManager.UpdateTwinAsync(device.Id, twin, twin.ETag).ConfigureAwait(false);
                 }
                 
                 var baseConfiguration = new Configuration($"{ConfigurationIdPrefix}base-{Guid.NewGuid().ToString()}")
