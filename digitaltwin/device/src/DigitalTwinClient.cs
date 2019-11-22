@@ -28,6 +28,7 @@ namespace Azure.Iot.DigitalTwin.Device
         private const string IothubInterfaceInstance = "$.ifname";
         private const string IoTHubInterfaceId = "$.ifid";
         private const string JsonContentType = "application/json";
+        private const string MesssageEncoding = "utf-8";
 
         private const string ModelDiscoveryInterfaceId = "urn:azureiot:ModelDiscovery:ModelInformation:1";
         private const string ModelDiscoveryInterfaceInstanceName = "urn_azureiot_ModelDiscovery_ModelInformation";
@@ -238,6 +239,7 @@ namespace Azure.Iot.DigitalTwin.Device
             message.Properties.Add(IothubInterfaceInstance, interfaceInstanceId);
             message.Properties.Add(IoTHubInterfaceId, interfaceId);
             message.ContentType = JsonContentType;
+            message.ContentEncoding = MesssageEncoding;
             message.MessageSchema = telemetryName;
             return message;
         }
