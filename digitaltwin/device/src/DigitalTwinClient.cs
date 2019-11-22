@@ -273,7 +273,7 @@ namespace Azure.Iot.DigitalTwin.Device
             JObject reportedJObject = JObject.Parse(twin.Properties.Reported.ToJson());
 
             List<Task> tasks = new List<Task>();
-            if (desiredJObject.ContainsKey("$version"))
+            if (desiredJObject["$version"] != null)
             {
                 int version = (int)desiredJObject["$version"];
 
@@ -356,7 +356,7 @@ namespace Azure.Iot.DigitalTwin.Device
         {
             JObject jsonObj = JObject.Parse(desiredProperties.ToJson());
 
-            if (jsonObj.ContainsKey("$version"))
+            if (jsonObj["$version"] != null)
             {
                 int version = (int)jsonObj["$version"];
 
