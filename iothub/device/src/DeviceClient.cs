@@ -206,7 +206,10 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Stores the timeout used in the operation retries.
+        /// Stores the timeout used in the operation retries. Note that this value is ignored for operations
+        /// where a cancellation token is provided. For example, SendEventAsync(Message) will use this timeout, but 
+        /// SendEventAsync(Message, CancellationToken) will not. The latter operation will only be canceled by the 
+        /// provided cancellation token.
         /// </summary>
         // Codes_SRS_DEVICECLIENT_28_002: [This property shall be defaulted to 240000 (4 minutes).]
         public uint OperationTimeoutInMilliseconds
