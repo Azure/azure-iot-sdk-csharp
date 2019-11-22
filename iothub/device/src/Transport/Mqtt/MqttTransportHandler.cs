@@ -41,15 +41,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         const int MaxMessageSize = 256 * 1024;
         const string ProcessorThreadCountVariableName = "MqttEventsProcessorThreadCount";
 
-        static readonly int GenerationPrefixLength = Guid.NewGuid().ToString().Length;
-
-        readonly string generationId = Guid.NewGuid().ToString();
-
         private static readonly Lazy<IEventLoopGroup> s_eventLoopGroup = new Lazy<IEventLoopGroup>(GetEventLoopGroup);
 
         readonly string hostName;
         readonly Func<IPAddress[], int, Task<IChannel>> channelFactory;
-        readonly Queue<string> completionQueue;
         readonly MqttIotHubAdapterFactory mqttIotHubAdapterFactory;
         readonly QualityOfService qos;
 
@@ -123,7 +118,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             this.mqttIotHubAdapterFactory = new MqttIotHubAdapterFactory(settings);
             this.messageQueue = new ConcurrentQueue<Message>();
-            this.completionQueue = new Queue<string>();
 
             this.serverAddresses = null; // this will be resolved asynchronously in OpenAsync
             this.hostName = iotHubConnectionString.HostName;
@@ -220,7 +214,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 await this.SubscribeAsync().ConfigureAwait(true);
             }
 
-            bool hasMessage = await this.ReceiveMessageArrivalAsync(cancellationToken).ConfigureAwait(true);
+            // -1 millisecond represents for SemaphoreSlim to wait indefinitely 
+            bool hasMessage = await this.ReceiveMessageArrivalAsync(TimeSpan.FromMilliseconds(-1), cancellationToken).ConfigureAwait(true);
             message = ProcessMessage(message, hasMessage);
 
             return message;
@@ -255,13 +250,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 lock (this.syncRoot)
                 {
                     this.messageQueue.TryDequeue(out message);
-                    message.LockToken = message.LockToken;
-                    if (this.qos == QualityOfService.AtLeastOnce)
-                    {
-                        this.completionQueue.Enqueue(message.LockToken);
-                    }
-
-                    message.LockToken = this.generationId + message.LockToken;
                 }
             }
 
@@ -270,51 +258,14 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
         async Task<bool> ReceiveMessageArrivalAsync(TimeSpan timeout, CancellationToken cancellationToken)
         {
-            bool hasMessage = false;
             cancellationToken.ThrowIfCancellationRequested();
             var disconnectToken = this.disconnectAwaitersCancellationSource.Token;
             this.EnsureValidState();
 
             using (CancellationTokenSource linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, disconnectToken))
             {
-                try
-                {
-                    hasMessage = await this.receivingSemaphore.WaitAsync(timeout, linkedCts.Token).ConfigureAwait(true);
-                }
-                catch (OperationCanceledException)
-                {
-                    if (disconnectToken.IsCancellationRequested)
-                    {
-                        throw new IotHubCommunicationException("MQTT is disconnected");
-                    }
-                }
+                return await this.receivingSemaphore.WaitAsync(timeout, linkedCts.Token).ConfigureAwait(true);
             }
-
-            return hasMessage;
-        }
-
-        async Task<bool> ReceiveMessageArrivalAsync(CancellationToken cancellationToken)
-        {
-            bool hasMessage = false;
-            cancellationToken.ThrowIfCancellationRequested();
-            this.EnsureValidState();
-
-            using (CancellationTokenSource linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, this.disconnectAwaitersCancellationSource.Token))
-            {
-                try
-                {
-                    await this.receivingSemaphore.WaitAsync(linkedCts.Token).ConfigureAwait(true);
-                }
-                catch (OperationCanceledException)
-                {
-                    if (!cancellationToken.IsCancellationRequested)
-                    {
-                        throw new IotHubCommunicationException("MQTT is disconnected");
-                    }
-                }
-            }
-
-            return hasMessage;
         }
 
         public override async Task CompleteAsync(string lockToken, CancellationToken cancellationToken)
@@ -330,29 +281,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             Task completeOperationCompletion;
             lock (this.syncRoot)
             {
-                if (!lockToken.StartsWith(this.generationId))
-                {
-                    throw new IotHubException(
-                        "Lock token is stale or never existed. The message will be redelivered, please discard this lock token and do not retry operation.",
-                        isTransient:false);
-                }
-
-                if (this.completionQueue.Count == 0)
-                {
-                    throw new IotHubException("Unknown lock token.", isTransient:false);
-                }
-
-                string actualLockToken = this.completionQueue.Peek();
-                if (lockToken.IndexOf(actualLockToken, GenerationPrefixLength, StringComparison.Ordinal) != GenerationPrefixLength ||
-                    lockToken.Length != actualLockToken.Length + GenerationPrefixLength)
-                {
-                    throw new IotHubException(
-                        $"Client MUST send PUBACK packets in the order in which the corresponding PUBLISH packets were received (QoS 1 messages) per [MQTT-4.6.0-2]. Expected lock token: '{actualLockToken}'; actual lock token: '{lockToken}'.",
-                        isTransient:false);
-                }
-
-                this.completionQueue.Dequeue();
-                completeOperationCompletion = this.channel.WriteAndFlushAsync(actualLockToken);
+                completeOperationCompletion = this.channel.WriteAndFlushAsync(lockToken);
             }
 
             await completeOperationCompletion.ConfigureAwait(true);
@@ -509,14 +438,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 // Add the endpoint as a SystemProperty
                 message.SystemProperties.Add(MessageSystemPropertyNames.InputName, inputName);
 
-                if (this.qos == QualityOfService.AtLeastOnce)
-                {
-                    lock (this.syncRoot)
-                    {
-                        this.completionQueue.Enqueue(message.LockToken);
-                    }
-                }
-                message.LockToken = this.generationId + message.LockToken;
                 await (this.messageReceivedListener?.Invoke(inputName, message) ?? TaskHelpers.CompletedTask).ConfigureAwait(true);
             }
             finally
