@@ -189,7 +189,8 @@ namespace Microsoft.Azure.Devices.Client
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {
-                throw new OperationCanceledException("The operation was cancelled.", ex);
+                cancellationToken.ThrowIfCancellationRequested();
+                throw;
             }
         }
 
@@ -289,7 +290,8 @@ namespace Microsoft.Azure.Devices.Client
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {
-                throw new OperationCanceledException("The operation was cancelled.", ex);
+                cancellationToken.ThrowIfCancellationRequested();
+                throw;
             }
         }
 
@@ -325,7 +327,8 @@ namespace Microsoft.Azure.Devices.Client
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {
-                throw new OperationCanceledException("The operation was cancelled.", ex);
+                cancellationToken.ThrowIfCancellationRequested();
+                throw;
             }
         }
 
@@ -380,7 +383,8 @@ namespace Microsoft.Azure.Devices.Client
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {
-                throw new OperationCanceledException("The operation was cancelled.", ex);
+                cancellationToken.ThrowIfCancellationRequested();
+                throw;
             }
         }
 
@@ -424,7 +428,8 @@ namespace Microsoft.Azure.Devices.Client
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {
-                throw new OperationCanceledException("The operation was cancelled.", ex);
+                cancellationToken.ThrowIfCancellationRequested();
+                throw;
             }
         }
 
@@ -462,7 +467,8 @@ namespace Microsoft.Azure.Devices.Client
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {
-                throw new OperationCanceledException("The operation was cancelled.", ex);
+                cancellationToken.ThrowIfCancellationRequested();
+                throw;
             }
         }
 
@@ -505,7 +511,8 @@ namespace Microsoft.Azure.Devices.Client
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {
-                throw new OperationCanceledException("The operation was cancelled.", ex);
+                cancellationToken.ThrowIfCancellationRequested();
+                throw;
             }
         }
 
@@ -540,7 +547,8 @@ namespace Microsoft.Azure.Devices.Client
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {
-                throw new OperationCanceledException("The operation was cancelled.", ex);
+                cancellationToken.ThrowIfCancellationRequested();
+                throw;
             }
         }
 
@@ -582,7 +590,8 @@ namespace Microsoft.Azure.Devices.Client
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {
-                throw new OperationCanceledException("The operation was cancelled.", ex);
+                cancellationToken.ThrowIfCancellationRequested();
+                throw;
             }
         }
 
@@ -616,7 +625,8 @@ namespace Microsoft.Azure.Devices.Client
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {
-                throw new OperationCanceledException("The operation was cancelled.", ex);
+                cancellationToken.ThrowIfCancellationRequested();
+                throw;
             }
         }
 
@@ -660,7 +670,8 @@ namespace Microsoft.Azure.Devices.Client
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {
-                throw new OperationCanceledException("The operation was cancelled.", ex);
+                cancellationToken.ThrowIfCancellationRequested();
+                throw;
             }
         }
 
@@ -703,7 +714,8 @@ namespace Microsoft.Azure.Devices.Client
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {
-                throw new OperationCanceledException("The operation was cancelled.", ex);
+                cancellationToken.ThrowIfCancellationRequested();
+                throw;
             }
         }
 
@@ -768,7 +780,8 @@ namespace Microsoft.Azure.Devices.Client
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {
-                throw new OperationCanceledException("The operation was cancelled.", ex);
+                cancellationToken.ThrowIfCancellationRequested();
+                throw;
             }
             finally
             {
@@ -848,7 +861,8 @@ namespace Microsoft.Azure.Devices.Client
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {
-                throw new OperationCanceledException("The operation was cancelled.", ex);
+                cancellationToken.ThrowIfCancellationRequested();
+                throw;
             }
             finally
             {
@@ -912,7 +926,8 @@ namespace Microsoft.Azure.Devices.Client
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {
-                throw new OperationCanceledException("The operation was cancelled.", ex);
+                cancellationToken.ThrowIfCancellationRequested();
+                throw;
             }
             finally
             {
@@ -1128,7 +1143,8 @@ namespace Microsoft.Azure.Devices.Client
                 }
                 catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
                 {
-                    throw new OperationCanceledException("The operation was cancelled.", ex);
+                    cancellationToken.ThrowIfCancellationRequested();
+                    throw;
                 }
             }
 
@@ -1170,7 +1186,8 @@ namespace Microsoft.Azure.Devices.Client
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {
-                throw new OperationCanceledException("The operation was cancelled.", ex);
+                cancellationToken.ThrowIfCancellationRequested();
+                throw;
             }
         }
         /// <summary>
@@ -1214,7 +1231,8 @@ namespace Microsoft.Azure.Devices.Client
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
             {
-                throw new OperationCanceledException("The operation was cancelled.", ex);
+                cancellationToken.ThrowIfCancellationRequested();
+                throw;
             }
         }
 
