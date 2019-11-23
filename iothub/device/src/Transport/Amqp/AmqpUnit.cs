@@ -121,7 +121,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 
                 if (_disposed)
                 {
-                    Cleanup();
                     throw new IotHubException("Device is now offline.", false);
                 }
 
@@ -181,8 +180,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             _amqpAuthenticationRefresher?.StopLoop();
             if (!_deviceIdentity.IsPooling())
             {
-                _amqpConnectionHolder?.Dispose();
+                _amqpConnectionHolder?.Shutdown();
             }
+
             if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(Cleanup)}");
         }
         #endregion
@@ -619,6 +619,11 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             {
                 if (Logging.IsEnabled) Logging.Enter(this, disposing, $"{nameof(Dispose)}");
                 Cleanup();
+                if (!_deviceIdentity.IsPooling())
+                {
+                    _amqpConnectionHolder?.Dispose();
+                }
+
                 if (Logging.IsEnabled) Logging.Exit(this, disposing, $"{nameof(Dispose)}");
             }
         }
