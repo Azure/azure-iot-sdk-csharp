@@ -394,14 +394,14 @@ namespace Microsoft.Azure.Devices.Client
 
 
         /// <summary>
-        /// Sends an event to device hub
+        /// Sends an event to device hub. Requires AMQP over WebSockets.
         /// </summary>
         /// <param name="message">The message.</param>
         /// <returns>The message containing the event</returns>
         public Task SendEventAsync(Message message) => this.internalClient.SendEventAsync(message);
 
         /// <summary>
-        /// Sends an event to device hub
+        /// Sends an event to device hub. Requires AMQP over WebSockets.
         /// </summary>
         /// <param name="message">The message.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
