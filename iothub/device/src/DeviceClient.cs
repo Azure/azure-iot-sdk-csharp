@@ -394,14 +394,14 @@ namespace Microsoft.Azure.Devices.Client
 
 
         /// <summary>
-        /// Sends an event to device hub. Requires AMQP over WebSockets.
+        /// Sends an event to device hub
         /// </summary>
         /// <param name="message">The message.</param>
         /// <returns>The message containing the event</returns>
         public Task SendEventAsync(Message message) => this.internalClient.SendEventAsync(message);
 
         /// <summary>
-        /// Sends an event to device hub. Requires AMQP over WebSockets.
+        /// Sends an event to device hub
         /// </summary>
         /// <param name="message">The message.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
@@ -410,14 +410,14 @@ namespace Microsoft.Azure.Devices.Client
         public Task SendEventAsync(Message message, CancellationToken cancellationToken) => this.internalClient.SendEventAsync(message, cancellationToken);
 
         /// <summary>
-        /// Sends a batch of events to device hub
+        /// Sends a batch of events to device hub. Requires AMQP over WebSockets.
         /// </summary>
         /// <param name="messages">A list of one or more messages to send</param>
         /// <returns>The task containing the event</returns>
         public Task SendEventBatchAsync(IEnumerable<Message> messages) => this.internalClient.SendEventBatchAsync(messages);
 
         /// <summary>
-        /// Sends a batch of events to device hub
+        /// Sends a batch of events to device hub. Requires AMQP over WebSockets.
         /// </summary>
         /// <param name="messages">An IEnumerable set of Message objects.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
