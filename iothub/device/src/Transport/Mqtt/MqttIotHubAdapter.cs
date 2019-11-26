@@ -897,7 +897,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             Debug.Assert(lockTaken);
             unchecked
             {
-                ret = ++_packetId == 0 ? ++_packetId : _packetId;
+                _packetId = (ushort)(++_packetId % 0x8000);
+                ret = _packetId == 0 ? ++_packetId : _packetId;
             }
             _packetIdLock.Exit();
 
