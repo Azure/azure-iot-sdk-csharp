@@ -79,7 +79,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "e2e", "e2e", "{F997B975-376
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Azure.Iot.DigitalTwin.Device", "digitaltwin\device\src\Azure.Iot.DigitalTwin.Device.csproj", "{680BA0F4-E98A-4AD0-96F5-E8E322E8525C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Azure.IoT.DigitalTwin.Device.Test", "digitaltwin\device\test\Azure.IoT.DigitalTwin.Device.Test\Azure.IoT.DigitalTwin.Device.Test.csproj", "{8113FEF4-36B3-4506-890A-D39DEB66F5C8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Azure.IoT.DigitalTwin.Device.Test", "digitaltwin\device\tests\Azure.IoT.DigitalTwin.Device.Test.csproj", "{8113FEF4-36B3-4506-890A-D39DEB66F5C8}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{202F238F-BB86-4280-B484-C3A9379F1287}"
 EndProject
@@ -89,7 +89,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnvironmentalSensorSample",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Azure.IoT.DigitalTwin.Service", "digitaltwin\service\src\Azure.IoT.DigitalTwin.Service.csproj", "{AE718D49-860F-44D9-8514-8B589330C525}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Azure.IoT.DigitalTwin.Service.Test", "digitaltwin\service\tests\Azure.IoT.DigitalTwin.Service.Test\Azure.IoT.DigitalTwin.Service.Test.csproj", "{BFF03EEB-A6B7-45B9-BFBB-FAE5FC3BF94B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Azure.IoT.DigitalTwin.Service.Test", "digitaltwin\service\tests\Azure.IoT.DigitalTwin.Service.Test.csproj", "{BFF03EEB-A6B7-45B9-BFBB-FAE5FC3BF94B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{F55F5878-1138-470B-BB67-8BB56B01845C}"
 EndProject
@@ -103,7 +103,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InvokeCommand", "digitaltwi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UpdateProperty", "digitaltwin\service\sample\UpdateProperty\UpdateProperty.csproj", "{52753999-90C4-4DC0-991F-32C9FCB8FCCB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Azure.IoT.DigitalTwin.E2ETests", "digitaltwin\e2e\test\Azure.IoT.DigitalTwin.E2ETests\Azure.IoT.DigitalTwin.E2ETests.csproj", "{3FC74170-8B26-4AF9-9E19-B3E4AB2BA814}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Azure.IoT.DigitalTwin.E2ETests", "digitaltwin\e2e\test\Azure.IoT.DigitalTwin.E2ETests.csproj", "{3FC74170-8B26-4AF9-9E19-B3E4AB2BA814}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
