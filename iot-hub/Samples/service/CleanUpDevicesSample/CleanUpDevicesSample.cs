@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -25,9 +26,18 @@ namespace Microsoft.Azure.Devices.Samples
                 "tpm-registration-id-",
                 "csdk_",
                 "someregistrationid-",
+                "EdgeDeploymentSample_",
+            };
+        
+        private List<string> _deleteConfigurationWithPrefix =
+            new List<string>{
+                // C# E2E tests
+                "edgedeploymentsampleconfiguration-",
             };
 
         private List<Device> _devicesToDelete = new List<Device>();
+        private List<Configuration> _configurationsToDelete = new List<Configuration>();
+
 
         public CleanUpDevicesSample(RegistryManager rm)
         {
@@ -88,6 +98,32 @@ namespace Microsoft.Azure.Devices.Samples
                 }
 
                 Console.WriteLine($"-- Total no of devices deleted: {devicesDeleted}");
+            
+                var configurations = await _rm.GetConfigurationsAsync(100, new CancellationToken()).ConfigureAwait(false);
+                {
+                    foreach (var configuration in configurations)
+                    {
+                        string configurationId = configuration.Id;
+                        foreach (var prefix in _deleteConfigurationWithPrefix)
+                        {
+                            if (configurationId.StartsWith(prefix))
+                            {
+                            _configurationsToDelete.Add(new Configuration(configurationId));
+                            }
+                        }
+                    }
+                }
+                
+                var removeConfigTasks = new List<Task>();
+                _configurationsToDelete.ForEach(configuration =>
+                {
+                    Console.WriteLine($"Remove: {configuration.Id}");
+                    removeConfigTasks.Add(_rm.RemoveConfigurationAsync(configuration.Id));
+                });
+
+                Task.WaitAll(removeConfigTasks.ToArray());
+                Console.WriteLine($"-- Total no of configurations deleted: {_configurationsToDelete.Count}");
+            
             }
             catch (Exception ex)
             {
