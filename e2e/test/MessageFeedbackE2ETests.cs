@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,7 +11,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
     [TestCategory("IoTHub-E2E")]
-    [Ignore]
     // TODO MQTT OrderedTwoPhaseWorkQueue disallow message feedback to be called mix order, enable this test once it's fixed
     public class MessageFeedbackE2ETests
     {
@@ -29,9 +29,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        public async Task Message_CompleteMixOrder_Mqtt()
+        public async Task Message_CompleteMixOrder_AMQP()
         {
-            await CompleteMessageMixOrder(TestDeviceType.Sasl, Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
+            await CompleteMessageMixOrder(TestDeviceType.Sasl, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
         }
 
         private static async Task CompleteMessageMixOrder(TestDeviceType type, Client.TransportType transport)
@@ -66,7 +66,11 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 for (int i = 0; i < MESSAGE_COUNT; i++)
                 {
+                    Stopwatch stopwatch = new Stopwatch();
+                    stopwatch.Start();
                     await deviceClient.CompleteAsync(messages[MESSAGE_COUNT - 1 - i]).ConfigureAwait(false);
+                    stopwatch.Stop();
+                    Assert.IsFalse(stopwatch.ElapsedMilliseconds > deviceClient.OperationTimeoutInMilliseconds, $"CompleteAsync is over {deviceClient.OperationTimeoutInMilliseconds}");
                 }
 
                 await deviceClient.CloseAsync().ConfigureAwait(false);
