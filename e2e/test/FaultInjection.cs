@@ -44,7 +44,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         public const int DefaultDelayInSec = 5; // Time in seconds after service initiates the fault.
         public const int DefaultDurationInSec = 5; // Duration in seconds 
-        public const int LatencyTimeBufferInSec = 5; // Buffer time waiting fault occurs or connection recover
+        public const int LatencyTimeBufferInSec = 10; // Buffer time waiting fault occurs or connection recover
 
         public const int WaitForDisconnectMilliseconds = 3 * DefaultDelayInSec * 1000;
         public const int WaitForReconnectMilliseconds = 2 * DefaultDurationInSec * 1000;
@@ -171,6 +171,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 s_log.WriteLine($">>> {nameof(FaultInjection)} Testing baseline");
                 await testOperation(deviceClient, testDevice).ConfigureAwait(false);
 
+                int countBeforeFaultInjection = connectionStatusChangeCount;
                 watch.Start();
                 s_log.WriteLine($">>> {nameof(FaultInjection)} Testing fault handling");
                 await ActivateFaultInjection(transport, faultType, reason, delayInSec, durationInSec, deviceClient).ConfigureAwait(false);
@@ -185,7 +186,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     bool isFaulted = false;
                     for (int i = 0; i < LatencyTimeBufferInSec; i++)
                     {
-                        if (connectionStatusChangeCount >= 2)
+                        if (connectionStatusChangeCount > countBeforeFaultInjection)
                         {
                             isFaulted = true;
                             break;
@@ -204,7 +205,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                         await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
                     }
 
-                    Assert.AreEqual(lastConnectionStatus, ConnectionStatus.Connected, $"{testDevice.Id} did not reconnect.");
+                    Assert.AreEqual(ConnectionStatus.Connected, lastConnectionStatus, $"{testDevice.Id} did not reconnect.");
                     s_log.WriteLine($"{nameof(FaultInjection)}: Confirmed device back online.");
 
                     // Perform the test operation.

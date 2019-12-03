@@ -82,6 +82,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await Task.WhenAll(operations).ConfigureAwait(false);
                 operations.Clear();
 
+                int countBeforeFaultInjection = amqpConnectionStatuses[0].ConnectionStatusChangeCount;
                 // Inject the fault into device 0
                 watch.Start();
 
@@ -100,7 +101,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     bool isFaulted = false;
                     for (int i = 0; i < FaultInjection.LatencyTimeBufferInSec; i++)
                     {
-                        if (amqpConnectionStatuses[0].ConnectionStatusChangeCount >= 2)
+                        if (amqpConnectionStatuses[0].ConnectionStatusChangeCount > countBeforeFaultInjection)
                         {
                             isFaulted = true;
                             break;
