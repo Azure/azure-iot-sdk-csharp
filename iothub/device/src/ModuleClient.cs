@@ -409,7 +409,7 @@ using System.Net.Http;
 
         /// <summary>
         /// Registers a new delegate for the connection status changed callback. If a delegate is already associated, 
-        /// it will be replaced with the new delegate.
+        /// it will be replaced with the new delegate. Note that this callback will never be called if the client is configured to use HTTP as that protocol is stateless
         /// <param name="statusChangesHandler">The name of the method to associate with the delegate.</param>
         /// </summary>
         public void SetConnectionStatusChangesHandler(ConnectionStatusChangesHandler statusChangesHandler) =>
