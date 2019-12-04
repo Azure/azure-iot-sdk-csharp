@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Azure.IoT.DigitalTwin.Service.Generated;
-using Azure.IoT.DigitalTwin.Service.models;
+using Azure.IoT.DigitalTwin.Service.Models;
 
 namespace Azure.IoT.DigitalTwin.Service
 {

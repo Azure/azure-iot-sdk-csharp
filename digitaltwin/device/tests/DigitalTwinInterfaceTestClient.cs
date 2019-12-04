@@ -5,8 +5,8 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Azure.Iot.DigitalTwin.Device;
-using Azure.Iot.DigitalTwin.Device.Model;
+using Azure.IoT.DigitalTwin.Device;
+using Azure.IoT.DigitalTwin.Device.Model;
 
 namespace Azure.IoT.DigitalTwin.Device.Test
 {

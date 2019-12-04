@@ -6,8 +6,8 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 
-using Azure.Iot.DigitalTwin.Device;
-using Azure.Iot.DigitalTwin.Device.Model;
+using Azure.IoT.DigitalTwin.Device;
+using Azure.IoT.DigitalTwin.Device.Model;
 using Newtonsoft.Json;
 
 namespace EnvironmentalSensorSample
