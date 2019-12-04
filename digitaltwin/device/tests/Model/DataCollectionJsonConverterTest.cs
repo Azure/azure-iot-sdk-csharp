@@ -3,7 +3,7 @@
 
 using System;
 
-using Azure.Iot.DigitalTwin.Device.Model;
+using Azure.IoT.DigitalTwin.Device.Model;
 using Newtonsoft.Json;
 using NSubstitute;
 using Xunit;

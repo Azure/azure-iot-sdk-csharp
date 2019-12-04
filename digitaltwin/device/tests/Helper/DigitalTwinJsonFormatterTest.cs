@@ -3,7 +3,7 @@
 
 using System;
 
-using Azure.Iot.DigitalTwin.Device.Helper;
+using Azure.IoT.DigitalTwin.Device.Helper;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -29,7 +29,7 @@ namespace Azure.IoT.DigitalTwin.Device.Test.Helper
         public void TestToObjectWhenGivenJObject()
         {
             var jobj2 = new DigitalTwinJsonFormatter().ToObject<object>("{\"Value1\":123,\"Value2\":\"OneTwoThree\"}");
-            Assert.Equal("Azure.Iot.DigitalTwin.Device.Model.DataCollection", jobj2.GetType().FullName);
+            Assert.Equal("Azure.IoT.DigitalTwin.Device.Model.DataCollection", jobj2.GetType().FullName);
         }
 
         private struct TestDigitalTwinJson : IEquatable<TestDigitalTwinJson>

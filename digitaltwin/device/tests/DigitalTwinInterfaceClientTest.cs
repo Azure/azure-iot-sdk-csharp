@@ -6,10 +6,10 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Azure.Iot.DigitalTwin.Device;
-using Azure.Iot.DigitalTwin.Device.Exceptions;
-using Azure.Iot.DigitalTwin.Device.Helper;
-using Azure.Iot.DigitalTwin.Device.Model;
+using Azure.IoT.DigitalTwin.Device;
+using Azure.IoT.DigitalTwin.Device.Exceptions;
+using Azure.IoT.DigitalTwin.Device.Helper;
+using Azure.IoT.DigitalTwin.Device.Model;
 using Microsoft.Azure.Devices.Client;
 using NSubstitute;
 using Xunit;

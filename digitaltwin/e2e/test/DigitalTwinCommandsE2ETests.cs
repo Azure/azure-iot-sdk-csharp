@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Azure.Iot.DigitalTwin.Device;
+using Azure.IoT.DigitalTwin.Device;
 using Azure.IoT.DigitalTwin.E2ETests.interfaces;
 using Azure.IoT.DigitalTwin.Service;
 using Microsoft.Azure.Devices.Client;
@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
-using DigitalTwinCommandResponse = Azure.IoT.DigitalTwin.Service.models.DigitalTwinCommandResponse;
+using DigitalTwinCommandResponse = Azure.IoT.DigitalTwin.Service.Models.DigitalTwinCommandResponse;
 
 namespace Azure.IoT.DigitalTwin.E2ETests
 {

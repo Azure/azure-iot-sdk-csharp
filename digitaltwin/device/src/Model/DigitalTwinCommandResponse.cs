@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Azure.Iot.DigitalTwin.Device.Model
+namespace Azure.IoT.DigitalTwin.Device.Model
 {
     /// <summary>
     /// Contains response of the command passed from the Digital Twin Interface Client to Digital Twin Client

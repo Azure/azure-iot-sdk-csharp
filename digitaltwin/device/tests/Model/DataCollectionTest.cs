@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 
-using Azure.Iot.DigitalTwin.Device.Model;
+using Azure.IoT.DigitalTwin.Device.Model;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;

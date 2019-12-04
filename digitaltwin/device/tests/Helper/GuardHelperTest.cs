@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using Azure.Iot.DigitalTwin.Device.Helper;
+using Azure.IoT.DigitalTwin.Device.Helper;
 using NSubstitute;
 using Xunit;
 
