@@ -575,7 +575,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_28_05: If OnError is triggered after ReceiveAsync is called, WaitForTransportClosedAsync shall be invoked.
         [TestMethod]
-        [ExpectedException(typeof(IotHubCommunicationException))]
+        [ExpectedException(typeof(OperationCanceledException))]
         public async Task MqttTransportHandlerOnErrorCallConnectionClosedListenerReceiving()
         {
             // arrange

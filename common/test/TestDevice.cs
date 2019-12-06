@@ -201,7 +201,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             return deviceClient;
         }
 
-        private static string GetHostName(string iotHubConnectionString)
+        public static string GetHostName(string iotHubConnectionString)
         {
             Regex regex = new Regex("HostName=([^;]+)", RegexOptions.None);
             return regex.Match(iotHubConnectionString).Groups[1].Value;
