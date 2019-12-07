@@ -4,6 +4,7 @@
 using Microsoft.Azure.Devices.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 using System.Net;
 using System.Text;
@@ -15,6 +16,7 @@ namespace Microsoft.Azure.Devices.E2ETests
     [TestCategory("IoTHub-E2E")]
     public partial class MessageSendE2ETests : IDisposable
     {
+        private const int MESSAGE_BATCH_COUNT = 5;
         private readonly string DevicePrefix = $"E2E_{nameof(MessageSendE2ETests)}_";
         private readonly string ModulePrefix = $"E2E_{nameof(MessageSendE2ETests)}_";
         private static string ProxyServerAddress = Configuration.IoTHub.ProxyServerAddress;
@@ -157,6 +159,41 @@ namespace Microsoft.Azure.Devices.E2ETests
             await SendSingleMessage(TestDeviceType.X509, Client.TransportType.Http1).ConfigureAwait(false);
         }
 
+        [TestMethod]
+        [Ignore]
+        public async Task X509_DeviceSendBatchMessages_Amqp()
+        {
+            await SendBatchMessages(TestDeviceType.X509, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [Ignore]
+        public async Task X509_DeviceSendBatchMessages_AmqpWs()
+        {
+            await SendBatchMessages(TestDeviceType.X509, Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [Ignore]
+        public async Task X509_DeviceSendBatchMessages_Mqtt()
+        {
+            await SendBatchMessages(TestDeviceType.X509, Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [Ignore]
+        public async Task X509_DeviceSendBatchMessages_MqttWs()
+        {
+            await SendBatchMessages(TestDeviceType.X509, Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        [Ignore]
+        public async Task X509_DeviceSendBatchMessages_Http()
+        {
+            await SendBatchMessages(TestDeviceType.X509, Client.TransportType.Http1).ConfigureAwait(false);
+        }
+
         private async Task SendSingleMessage(TestDeviceType type, Client.TransportType transport)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, type).ConfigureAwait(false);
@@ -165,6 +202,18 @@ namespace Microsoft.Azure.Devices.E2ETests
             {
                 await deviceClient.OpenAsync().ConfigureAwait(false);
                 await SendSingleMessageAndVerifyAsync(deviceClient, testDevice.Id).ConfigureAwait(false);
+                await deviceClient.CloseAsync().ConfigureAwait(false);
+            }
+        }
+
+        private async Task SendBatchMessages(TestDeviceType type, Client.TransportType transport)
+        {
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix, type).ConfigureAwait(false);
+
+            using (DeviceClient deviceClient = testDevice.CreateDeviceClient(transport))
+            {
+                await deviceClient.OpenAsync().ConfigureAwait(false);
+                await SendSendBatchMessagesAndVerifyAsync(deviceClient, testDevice.Id).ConfigureAwait(false);
                 await deviceClient.CloseAsync().ConfigureAwait(false);
             }
         }
@@ -203,6 +252,35 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 bool isReceived = await testListener.WaitForMessage(deviceId, payload, p1Value).ConfigureAwait(false);
                 Assert.IsTrue(isReceived, "Message is not received.");
+            }
+            finally
+            {
+                await testListener.CloseAsync().ConfigureAwait(false);
+            }
+        }
+
+        public static async Task SendSendBatchMessagesAndVerifyAsync(DeviceClient deviceClient, string deviceId)
+        {
+            EventHubTestListener testListener = await EventHubTestListener.CreateListener(deviceId).ConfigureAwait(false);
+
+            try
+            {
+                var messages = new List<Client.Message>();
+                var props = new List<Tuple<string, string>>();
+                for (int i = 0; i < MESSAGE_BATCH_COUNT; i++)
+                {
+                    (Client.Message testMessage, string messageId, string payload, string p1Value) = ComposeD2CTestMessage();
+                    messages.Add(testMessage);
+                    props.Add(Tuple.Create(payload, p1Value));
+                }
+                
+                await deviceClient.SendEventBatchAsync(messages).ConfigureAwait(false);
+
+                foreach (Tuple<string, string> prop in props)
+                {
+                    bool isReceived = await testListener.WaitForMessage(deviceId, prop.Item1, prop.Item2).ConfigureAwait(false);
+                    Assert.IsTrue(isReceived, "Message is not received.");
+                }
             }
             finally
             {
