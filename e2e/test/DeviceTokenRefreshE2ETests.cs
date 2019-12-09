@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.Azure.Devices.Client;
+using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Diagnostics;
@@ -32,6 +33,33 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
+        [ExpectedException(typeof(DeviceNotFoundException))]
+        public async Task DeviceClient_Not_Exist_AMQP()
+        {
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
+
+            var config = new Configuration.IoTHub.DeviceConnectionStringParser(testDevice.ConnectionString);
+            using (DeviceClient deviceClient = DeviceClient.CreateFromConnectionString($"HostName={config.IoTHub};DeviceId=device_id_not_exist;SharedAccessKey={config.SharedAccessKey}", Client.TransportType.Amqp_Tcp_Only))
+            {
+                await deviceClient.OpenAsync().ConfigureAwait(false);
+            }
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(UnauthorizedException))]
+        public async Task DeviceClient_Bad_Credentials_AMQP()
+        {
+            TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
+
+            var config = new Configuration.IoTHub.DeviceConnectionStringParser(testDevice.ConnectionString);
+            string invalidKey = Convert.ToBase64String(Encoding.UTF8.GetBytes("invalid_key"));
+            using (DeviceClient deviceClient = DeviceClient.CreateFromConnectionString($"HostName={config.IoTHub};DeviceId={config.DeviceID};SharedAccessKey={invalidKey}", Client.TransportType.Amqp_Tcp_Only))
+            {
+                await deviceClient.OpenAsync().ConfigureAwait(false);
+            }
+        }
+
+        [TestMethod]
         public async Task DeviceClient_TokenIsRefreshed_Ok_Http()
         {
             await DeviceClient_TokenIsRefreshed_Internal(Client.TransportType.Http1).ConfigureAwait(false);
@@ -54,10 +82,9 @@ namespace Microsoft.Azure.Devices.E2ETests
         [TestMethod]
         public async Task DeviceClient_TokenConnectionDoubleRelease_Ok()
         {
-            string deviceConnectionString = null;
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
 
-            deviceConnectionString = testDevice.ConnectionString;
+            string deviceConnectionString = testDevice.ConnectionString;
 
             var config = new Configuration.IoTHub.DeviceConnectionStringParser(deviceConnectionString);
             string iotHub = config.IoTHub;
@@ -86,7 +113,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             } // Second release
         }
 
-        private async Task DeviceClient_TokenIsRefreshed_Internal(Client.TransportType transport, int ttl = 6)
+        private async Task DeviceClient_TokenIsRefreshed_Internal(Client.TransportType transport, int ttl = 20)
         {
             TestDevice testDevice = await TestDevice.GetTestDeviceAsync(DevicePrefix).ConfigureAwait(false);
 
@@ -110,7 +137,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     deviceClient.SetConnectionStatusChangesHandler((ConnectionStatus status, ConnectionStatusChangeReason reason) =>
                     {
                         _log.WriteLine($"{nameof(ConnectionStatusChangesHandler)}: {status}; {reason}");
-                        if (status == ConnectionStatus.Disconnected) deviceDisconnected.Release();
+                        if (status == ConnectionStatus.Disconnected_Retrying || status == ConnectionStatus.Disconnected) deviceDisconnected.Release();
                     });
                 }
 

@@ -65,11 +65,13 @@ namespace Microsoft.Azure.Devices.Client
     /// </summary>
     internal class InternalClient : IDisposable
     {
+        private const double _defaultDeviceStreamingTimeoutSecs = 60;
         private uint _operationTimeoutInMilliseconds = DeviceClient.DefaultOperationTimeoutInMilliseconds;
         private int _diagnosticSamplingPercentage = 0;
         private ITransportSettings[] transportSettings;
         private SemaphoreSlim methodsDictionarySemaphore = new SemaphoreSlim(1, 1);
         private readonly SemaphoreSlim receiveSemaphore = new SemaphoreSlim(1, 1);
+        private SemaphoreSlim deviceStreamsSemaphore = new SemaphoreSlim(1, 1);
         private volatile Dictionary<string, Tuple<MessageHandler, object>> receiveEventEndpoints;
         private volatile Tuple<MessageHandler, object> defaultEventCallback;
         private ProductInfo productInfo = new ProductInfo();
@@ -263,7 +265,7 @@ namespace Microsoft.Azure.Devices.Client
                     await OpenAsync(cts.Token).ConfigureAwait(false);
                 }
             }
-            catch (OperationCanceledException ex)
+            catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
             {
                 // Exception adaptation for non-CancellationToken public API.
                 throw new TimeoutException("The operation timed out.", ex);
@@ -292,7 +294,7 @@ namespace Microsoft.Azure.Devices.Client
                     await CloseAsync(cts.Token).ConfigureAwait(false);
                 }
             }
-            catch (OperationCanceledException ex)
+            catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
             {
                 // Exception adaptation for non-CancellationToken public API.
                 throw new TimeoutException("The operation timed out.", ex);
@@ -322,10 +324,10 @@ namespace Microsoft.Azure.Devices.Client
                     return await ReceiveAsync(cts.Token).ConfigureAwait(false);
                 }
             }
-            catch (OperationCanceledException ex)
+            catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
             {
                 // Exception adaptation for non-CancellationToken public API.
-                throw new TimeoutException("The operation timed out.", ex);
+                return null;
             }
         }
 
@@ -335,17 +337,13 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>The receive message or null if there was no message until the specified time has elapsed</returns>
         public async Task<Message> ReceiveAsync(TimeSpan timeout)
         {
-            if (timeout == TimeSpan.MaxValue) return await ReceiveAsync(CancellationToken.None).ConfigureAwait(false);
-            using (var cts = new CancellationTokenSource(timeout))
+            try
             {
-                try
-                {
-                    return await ReceiveAsync(cts.Token).ConfigureAwait(false);
-                }
-                catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
-                {
-                    return null;
-                }
+                return await InnerHandler.ReceiveAsync(new TimeoutHelper(timeout)).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
+            {
+                return null;
             }
         }
 
@@ -374,7 +372,7 @@ namespace Microsoft.Azure.Devices.Client
                     await CompleteAsync(lockToken, cts.Token).ConfigureAwait(false);
                 }
             }
-            catch (OperationCanceledException ex)
+            catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
             {
                 // Exception adaptation for non-CancellationToken public API.
                 throw new TimeoutException("The operation timed out.", ex);
@@ -403,8 +401,13 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>The previously received message</returns>
         public Task CompleteAsync(Message message)
         {
+            if (message == null)
+            {
+                throw new ArgumentNullException(nameof(message));
+            }
+
             // Codes_SRS_DEVICECLIENT_28_015: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.]
-            return CompleteAsync(message?.LockToken);
+            return CompleteAsync(message.LockToken);
         }
 
         /// <summary>
@@ -418,6 +421,7 @@ namespace Microsoft.Azure.Devices.Client
             {
                 throw new ArgumentNullException(nameof(message));
             }
+
             // Codes_SRS_DEVICECLIENT_28_015: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.]
             return CompleteAsync(message.LockToken, cancellationToken);
         }
@@ -435,7 +439,7 @@ namespace Microsoft.Azure.Devices.Client
                     await AbandonAsync(lockToken, cts.Token).ConfigureAwait(false);
                 }
             }
-            catch (OperationCanceledException ex)
+            catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
             {
                 // Exception adaptation for non-CancellationToken public API.
                 throw new TimeoutException("The operation timed out.", ex);
@@ -464,6 +468,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>The lock identifier for the previously received message</returns>
         public Task AbandonAsync(Message message)
         {
+            if (message == null)
+            {
+                throw new ArgumentNullException(nameof(message));
+            }
+
             return AbandonAsync(message.LockToken);
         }
 
@@ -495,7 +504,7 @@ namespace Microsoft.Azure.Devices.Client
                     await RejectAsync(lockToken, cts.Token).ConfigureAwait(false);
                 }
             }
-            catch (OperationCanceledException ex)
+            catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
             {
                 // Exception adaptation for non-CancellationToken public API.
                 throw new TimeoutException("The operation timed out.", ex);
@@ -522,6 +531,11 @@ namespace Microsoft.Azure.Devices.Client
         /// <returns>The lock identifier for the previously received message</returns>
         public Task RejectAsync(Message message)
         {
+            if (message == null)
+            {
+                throw new ArgumentNullException(nameof(message));
+            }
+
             return RejectAsync(message.LockToken);
         }
 
@@ -547,13 +561,13 @@ namespace Microsoft.Azure.Devices.Client
         {
             try
             {
-            // Codes_SRS_DEVICECLIENT_28_013: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.]
-            using (CancellationTokenSource cts = CancellationTokenSourceFactory())
-            {
-                await SendEventAsync(message, cts.Token).ConfigureAwait(false);
+                // Codes_SRS_DEVICECLIENT_28_013: [The async operation shall retry until time specified in OperationTimeoutInMilliseconds property expire or unrecoverable error(authentication, quota exceed) occurs.]
+                using (CancellationTokenSource cts = CancellationTokenSourceFactory())
+                {
+                    await SendEventAsync(message, cts.Token).ConfigureAwait(false);
+                }
             }
-            }
-            catch (OperationCanceledException ex)
+            catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
             {
                 // Exception adaptation for non-CancellationToken public API.
                 throw new TimeoutException("The operation timed out.", ex);
@@ -590,7 +604,7 @@ namespace Microsoft.Azure.Devices.Client
                     await SendEventBatchAsync(messages, cts.Token).ConfigureAwait(false);
                 }
             }
-            catch (OperationCanceledException ex)
+            catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
             {
                 // Exception adaptation for non-CancellationToken public API.
                 throw new TimeoutException("The operation timed out.", ex);
@@ -693,7 +707,7 @@ namespace Microsoft.Azure.Devices.Client
                     await SetMethodHandlerAsync(methodName, methodHandler, userContext, cts.Token).ConfigureAwait(false);
                 }
             }
-            catch (OperationCanceledException ex)
+            catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
             {
                 // Exception adaptation for non-CancellationToken public API.
                 throw new TimeoutException("The operation timed out.", ex);
@@ -767,7 +781,7 @@ namespace Microsoft.Azure.Devices.Client
                     await SetMethodDefaultHandlerAsync(methodHandler, userContext, cts.Token).ConfigureAwait(false);
                 }
             }
-            catch (OperationCanceledException ex)
+            catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
             {
                 // Exception adaptation for non-CancellationToken public API.
                 throw new TimeoutException("The operation timed out.", ex);
@@ -833,6 +847,77 @@ namespace Microsoft.Azure.Devices.Client
                 if (Logging.IsEnabled) Logging.Exit(this, methodName, methodHandler, userContext, nameof(SetMethodHandler));
             }
         }
+
+        #region DEVICE STREAMING
+        public Task<DeviceStreamRequest> WaitForDeviceStreamRequestAsync()
+        {
+            try
+            {
+                using (CancellationTokenSource cts = CancellationTokenSourceFactory())
+                {
+                    return WaitForDeviceStreamRequestAsync(cts.Token);
+                }
+            }
+            catch (OperationCanceledException ex)
+            {
+                // Exception adaptation for non-CancellationToken public API.
+                throw new TimeoutException("The operation timed out.", ex);
+            }
+        }
+
+        public async Task<DeviceStreamRequest> WaitForDeviceStreamRequestAsync(CancellationToken cancellationToken)
+        {
+            DeviceStreamRequest result;
+
+            try
+            {
+                await deviceStreamsSemaphore.WaitAsync().ConfigureAwait(false);
+
+                await this.EnableStreamAsync(cancellationToken).ConfigureAwait(false);
+
+                result = await this.InnerHandler.WaitForDeviceStreamRequestAsync(cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                deviceStreamsSemaphore.Release();
+            }
+
+            return result;
+        }
+
+        public async Task AcceptDeviceStreamRequestAsync(DeviceStreamRequest request)
+        {
+            using (CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(_defaultDeviceStreamingTimeoutSecs)))
+            {
+                await AcceptDeviceStreamRequestAsync(request, cts.Token).ConfigureAwait(false);
+            }
+        }
+
+        public async Task AcceptDeviceStreamRequestAsync(DeviceStreamRequest request, CancellationToken cancellationToken)
+        {
+            await this.InnerHandler.AcceptDeviceStreamRequestAsync(request, cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task RejectDeviceStreamRequestAsync(DeviceStreamRequest request)
+        {
+            using (CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(_defaultDeviceStreamingTimeoutSecs)))
+            {
+                await this.InnerHandler.RejectDeviceStreamRequestAsync(request, cts.Token).ConfigureAwait(false);
+            }
+        }
+
+        public async Task RejectDeviceStreamRequestAsync(DeviceStreamRequest request, CancellationToken cancellationToken)
+        {
+            await this.InnerHandler.RejectDeviceStreamRequestAsync(request, cancellationToken).ConfigureAwait(false);
+        }
+
+        private async Task EnableStreamAsync(CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            await this.InnerHandler.EnableStreamsAsync(cancellationToken).ConfigureAwait(false);
+        }
+#endregion DEVICE STREAMING
 
         /// <summary>
         /// Registers a new delegate for the connection status changed callback. If a delegate is already associated, 
@@ -988,7 +1073,7 @@ namespace Microsoft.Azure.Devices.Client
                     await SetDesiredPropertyUpdateCallbackAsync(callback, userContext, cts.Token).ConfigureAwait(false);
                 }
             }
-            catch (OperationCanceledException ex)
+            catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
             {
                 // Exception adaptation for non-CancellationToken public API.
                 throw new TimeoutException("The operation timed out.", ex);
@@ -1032,7 +1117,7 @@ namespace Microsoft.Azure.Devices.Client
                     return await GetTwinAsync(cts.Token).ConfigureAwait(false);
                 }
             }
-            catch (OperationCanceledException ex)
+            catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
             {
                 // Exception adaptation for non-CancellationToken public API.
                 throw new TimeoutException("The operation timed out.", ex);
@@ -1062,7 +1147,7 @@ namespace Microsoft.Azure.Devices.Client
                     await UpdateReportedPropertiesAsync(reportedProperties, cts.Token).ConfigureAwait(false);
                 }
             }
-            catch (OperationCanceledException ex)
+            catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
             {
                 // Exception adaptation for non-CancellationToken public API.
                 throw new TimeoutException("The operation timed out.", ex);
@@ -1152,7 +1237,7 @@ namespace Microsoft.Azure.Devices.Client
                     await SendEventAsync(outputName, message, cts.Token).ConfigureAwait(false);
                 }
             }
-            catch (OperationCanceledException ex)
+            catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
             {
                 // Exception adaptation for non-CancellationToken public API.
                 throw new TimeoutException("The operation timed out.", ex);
@@ -1211,7 +1296,7 @@ namespace Microsoft.Azure.Devices.Client
                     await SendEventBatchAsync(outputName, messages, cts.Token).ConfigureAwait(false);
                 }
             }
-            catch (OperationCanceledException ex)
+            catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
             {
                 // Exception adaptation for non-CancellationToken public API.
                 throw new TimeoutException("The operation timed out.", ex);
@@ -1275,7 +1360,7 @@ namespace Microsoft.Azure.Devices.Client
                     await SetInputMessageHandlerAsync(inputName, messageHandler, userContext, cts.Token).ConfigureAwait(false);
                 }
             }
-            catch (OperationCanceledException ex)
+            catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
             {
                 // Exception adaptation for non-CancellationToken public API.
                 throw new TimeoutException("The operation timed out.", ex);
@@ -1351,7 +1436,7 @@ namespace Microsoft.Azure.Devices.Client
                     await SetMessageHandlerAsync(messageHandler, userContext, cts.Token).ConfigureAwait(false);
                 }
             }
-            catch (OperationCanceledException ex)
+            catch (Exception ex) when (IsCausedByTimeoutOrCanncellation(ex))
             {
                 // Exception adaptation for non-CancellationToken public API.
                 throw new TimeoutException("The operation timed out.", ex);
@@ -1475,5 +1560,10 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         #endregion Module Specific API
+
+        private static bool IsCausedByTimeoutOrCanncellation(Exception ex)
+        {
+            return ex is OperationCanceledException || (ex is IotHubCommunicationException && (ex.InnerException is OperationCanceledException || ex.InnerException is TimeoutException));
+        }
     }
 }

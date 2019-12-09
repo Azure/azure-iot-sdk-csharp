@@ -31,24 +31,27 @@ Due to security considerations, build logs are not publicly available.
 
 | Service Environment      | Status |
 | ---                      | ---    |
-| WestUS                   | [![Build Status](https://azure-iot-sdks.visualstudio.com/azure-iot-sdks/_apis/build/status/csharp/csharp-westus1?branchName=master)](https://azure-iot-sdks.visualstudio.com/azure-iot-sdks/_build/latest?definitionId=44)|
-| Canary                   | [![Build Status](https://azure-iot-sdks.visualstudio.com/azure-iot-sdks/_apis/build/status/csharp/csharp-canary1?branchName=master)](https://azure-iot-sdks.visualstudio.com/azure-iot-sdks/_build/latest?definitionId=43)|
-| Dogfood                  | [![Build Status](https://azure-iot-sdks.visualstudio.com/azure-iot-sdks/_apis/build/status/csharp/csharp-df1?branchName=master)](https://azure-iot-sdks.visualstudio.com/azure-iot-sdks/_build/latest?definitionId=36)|
+| Master                   | [![Build Status](https://azure-iot-sdks.visualstudio.com/azure-iot-sdks/_apis/build/status/csharp/csharp-westus1?branchName=master)](https://azure-iot-sdks.visualstudio.com/azure-iot-sdks/_build?definitionId=44&_a=summary&repositoryFilter=9&branchFilter=23)|
+| Preview                   | [![Build Status](https://azure-iot-sdks.visualstudio.com/azure-iot-sdks/_apis/build/status/csharp/csharp-canary1?branchName=preview)](https://azure-iot-sdks.visualstudio.com/azure-iot-sdks/_build?definitionId=43&_a=summary&repositoryFilter=9&branchFilter=72)|
 
 ## OS platforms and hardware compatibility
+
+```diff
+- .NET MicroFramework will not be supported in future versions of the SDK.
+```
+
 The IoT Hub device SDK for .NET can be used with a broad range of OS platforms and devices.
 
 The NuGet packages provide support for the following .NET flavors:
 - .NET Standard 2.0
 - .NET Standard 1.3 (IoT Hub SDKs only)
 - .NET Framework 4.5.1 (IoT Hub SDKs only)
-- .NET MicroFramework (IoT Hub SDKs only)
 
 For details on .NET support see the [.NET Standard documentation](https://docs.microsoft.com/en-us/dotnet/standard/net-standard).
 For details on OS support see the following resources:
 - [.NET Core Runtime ID Catalog](https://docs.microsoft.com/en-us/dotnet/core/rid-catalog)
-- [.NET MicroFramework](http://netmf.github.io)
 - [.NET Framework System Requirements](https://docs.microsoft.com/en-us/dotnet/framework/get-started/system-requirements)
+- [.NET MicroFramework](http://netmf.github.io)
 
 ## Key features and roadmap
 

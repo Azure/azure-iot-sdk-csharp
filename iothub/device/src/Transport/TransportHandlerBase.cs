@@ -7,6 +7,7 @@ namespace Microsoft.Azure.Devices.Client.Transport
     // Therefore, define a separate alias for each type argument
     using System;
     using System.Collections.Generic;
+    using System.Threading;
     using System.Threading.Tasks;
 
     /// <summary>
@@ -79,6 +80,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             await this.EnsureOpenedAsync(false).ConfigureAwait(false);
             return await this.OnReceiveAsync(timeout).ConfigureAwait(false);
+        }
+
+        public async Task<DeviceStreamRequest> WaitForDeviceStreamRequestAsync(CancellationToken cancellationToken)
+        {
+            await this.EnsureOpenedAsync(false).ConfigureAwait(false);
+            return await this.OnWaitForDeviceStreamRequestAsync(cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -270,6 +277,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
         protected abstract Task OnCloseAsync();
 
         protected abstract Task<Message> OnReceiveAsync(TimeSpan timeout);
+
+        protected abstract Task<DeviceStreamRequest> OnWaitForDeviceStreamRequestAsync(CancellationToken cancellationToken);
 
         protected virtual Task OnCompleteAsync(Message message)
         {

@@ -42,10 +42,12 @@ namespace Microsoft.Azure.Devices.E2ETests
         public const string FaultCloseReason_Boom = "boom";
         public const string FaultCloseReason_Bye = "byebye";
 
-        public const int DefaultDelayInSec = 1; // Time in seconds after service initiates the fault.
+        public const int DefaultDelayInSec = 5; // Time in seconds after service initiates the fault.
         public const int DefaultDurationInSec = 5; // Duration in seconds 
+        public const int LatencyTimeBufferInSec = 10; // Buffer time waiting fault occurs or connection recover
 
         public const int WaitForDisconnectMilliseconds = 3 * DefaultDelayInSec * 1000;
+        public const int WaitForReconnectMilliseconds = 2 * DefaultDurationInSec * 1000;
         public const int ShortRetryInMilliSec = (int)(DefaultDurationInSec / 2.0 * 1000);
 
         public const int RecoveryTimeMilliseconds = 5 * 60 * 1000;
@@ -70,7 +72,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         public static bool FaultShouldDisconnect(string faultType)
         {
-            return
+            return (faultType != FaultType_Auth) &&
                 (faultType != FaultType_Throttle) &&
                 (faultType != FaultType_QuotaExceeded);
         }
@@ -142,14 +144,14 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             ConnectionStatus? lastConnectionStatus = null;
             ConnectionStatusChangeReason? lastConnectionStatusChangeReason = null;
-            int setConnectionStatusChangesHandlerCount = 0;
+            int connectionStatusChangeCount = 0;
 
             deviceClient.SetConnectionStatusChangesHandler((status, statusChangeReason) =>
             {
-                setConnectionStatusChangesHandlerCount++;
+                connectionStatusChangeCount++;
                 lastConnectionStatus = status;
                 lastConnectionStatusChangeReason = statusChangeReason;
-                s_log.WriteLine($"{nameof(FaultInjection)}.{nameof(ConnectionStatusChangesHandler)}: status={status} statusChangeReason={statusChangeReason} count={setConnectionStatusChangesHandlerCount}");
+                s_log.WriteLine($"{nameof(FaultInjection)}.{nameof(ConnectionStatusChangesHandler)}: status={status} statusChangeReason={statusChangeReason} count={connectionStatusChangeCount}");
             });
 
             var watch = new Stopwatch();
@@ -159,9 +161,9 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await deviceClient.OpenAsync().ConfigureAwait(false);
                 if (transport != Client.TransportType.Http1)
                 {
-                    Assert.IsTrue(setConnectionStatusChangesHandlerCount >= 1); // Normally one connection but in some cases, due to network issues we might have already retried several times to connect.
-                    Assert.AreEqual(ConnectionStatus.Connected, lastConnectionStatus);
-                    Assert.AreEqual(ConnectionStatusChangeReason.Connection_Ok, lastConnectionStatusChangeReason);
+                    Assert.IsTrue(connectionStatusChangeCount >= 1, $"The expected connection status change should be equal or greater than 1 but was {connectionStatusChangeCount}"); // Normally one connection but in some cases, due to network issues we might have already retried several times to connect.
+                    Assert.AreEqual(ConnectionStatus.Connected, lastConnectionStatus, $"The expected connection status should be {ConnectionStatus.Connected} but was {lastConnectionStatus}");
+                    Assert.AreEqual(ConnectionStatusChangeReason.Connection_Ok, lastConnectionStatusChangeReason, $"The expected connection status change reason should be {ConnectionStatusChangeReason.Connection_Ok} but was {lastConnectionStatusChangeReason}");
                 }
 
                 await initOperation(deviceClient, testDevice).ConfigureAwait(false);
@@ -169,38 +171,79 @@ namespace Microsoft.Azure.Devices.E2ETests
                 s_log.WriteLine($">>> {nameof(FaultInjection)} Testing baseline");
                 await testOperation(deviceClient, testDevice).ConfigureAwait(false);
 
+                int countBeforeFaultInjection = connectionStatusChangeCount;
                 watch.Start();
                 s_log.WriteLine($">>> {nameof(FaultInjection)} Testing fault handling");
                 await ActivateFaultInjection(transport, faultType, reason, delayInSec, durationInSec, deviceClient).ConfigureAwait(false);
-                int delay = FaultInjection.WaitForDisconnectMilliseconds - (int)watch.ElapsedMilliseconds;
-                if (delay < 0) delay = 0;
+                s_log.WriteLine($"{nameof(FaultInjection)}: Waiting for fault injection to be active: {delayInSec} seconds.");
+                await Task.Delay(TimeSpan.FromSeconds(delayInSec)).ConfigureAwait(false);
 
-                s_log.WriteLine($"{nameof(FaultInjection)}: Waiting for fault injection to be active: {delay}ms");
-                await Task.Delay(delay).ConfigureAwait(false);
+                // For disconnect type faults, the device should disconnect and recover.
+                if (FaultShouldDisconnect(faultType))
+                {
+                    s_log.WriteLine($"{nameof(FaultInjection)}: Confirming fault injection has been actived.");
+                    // Check that service issued the fault to the faulting device
+                    bool isFaulted = false;
+                    for (int i = 0; i < LatencyTimeBufferInSec; i++)
+                    {
+                        if (connectionStatusChangeCount > countBeforeFaultInjection)
+                        {
+                            isFaulted = true;
+                            break;
+                        }
 
-                await testOperation(deviceClient, testDevice).ConfigureAwait(false);
+                        await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
+                    }
+
+                    Assert.IsTrue(isFaulted, $"The device {testDevice.Id} did not get faulted with fault type: {faultType}");
+                    s_log.WriteLine($"{nameof(FaultInjection)}: Confirmed fault injection has been actived.");
+
+                    // Check the device is back online
+                    s_log.WriteLine($"{nameof(FaultInjection)}: Confirming device back online.");
+                    for (int i = 0; lastConnectionStatus != ConnectionStatus.Connected && i < durationInSec + LatencyTimeBufferInSec; i++)
+                    {
+                        await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
+                    }
+
+                    Assert.AreEqual(ConnectionStatus.Connected, lastConnectionStatus, $"{testDevice.Id} did not reconnect.");
+                    s_log.WriteLine($"{nameof(FaultInjection)}: Confirmed device back online.");
+
+                    // Perform the test operation.
+                    s_log.WriteLine($">>> {nameof(FaultInjection)}: Performing test operation for device {testDevice.Id}.");
+                    await testOperation(deviceClient, testDevice).ConfigureAwait(false);
+                }
+                else
+                {
+                    s_log.WriteLine($"{nameof(FaultInjection)}: Performing test operation while fault injection is being activated.");
+                    // Perform the test operation for the faulted device multi times.
+                    for (int i = 0; i < LatencyTimeBufferInSec; i++)
+                    {
+                        s_log.WriteLine($">>> {nameof(FaultInjection)}: Performing test operation for device - Run {i}.");
+                        await testOperation(deviceClient, testDevice).ConfigureAwait(false);
+                        await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
+                    }
+                }
 
                 await deviceClient.CloseAsync().ConfigureAwait(false);
 
                 if (transport != Client.TransportType.Http1)
                 {
-                    if (FaultShouldDisconnect(faultType))
+                    if (FaultInjection.FaultShouldDisconnect(faultType))
                     {
                         // 4 is the minimum notification count: connect, fault, reconnect, disable.
                         // There are cases where the retry must be timed out (i.e. very likely for MQTT where otherwise 
                         // we would attempt to send the fault injection forever.)
-                        Assert.IsTrue(setConnectionStatusChangesHandlerCount >= 4); 
+                        Assert.IsTrue(connectionStatusChangeCount >= 4, $"The expected connection status change count for {testDevice.Id} should be equal or greater than 4 but was {connectionStatusChangeCount}");
                     }
                     else
                     {
                         // 2 is the minimum notification count: connect, disable.
                         // We will monitor the test environment real network stability and switch to >=2 if necessary to 
                         // account for real network issues.
-                        Assert.IsTrue(setConnectionStatusChangesHandlerCount == 2); 
+                        Assert.IsTrue(connectionStatusChangeCount == 2, $"The expected connection status change count for {testDevice.Id}  should be 2 but was {connectionStatusChangeCount}");
                     }
-
-                    Assert.AreEqual(ConnectionStatus.Disabled, lastConnectionStatus);
-                    Assert.AreEqual(ConnectionStatusChangeReason.Client_Close, lastConnectionStatusChangeReason);
+                    Assert.AreEqual(ConnectionStatus.Disabled, lastConnectionStatus, $"The expected connection status should be {ConnectionStatus.Disabled} but was {lastConnectionStatus}");
+                    Assert.AreEqual(ConnectionStatusChangeReason.Client_Close, lastConnectionStatusChangeReason, $"The expected connection status change reason should be {ConnectionStatusChangeReason.Client_Close} but was {lastConnectionStatusChangeReason}");
                 }
             }
             finally

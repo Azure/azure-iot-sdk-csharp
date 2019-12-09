@@ -11,14 +11,6 @@
 # IoT Hub Owner connection string:
 export IOTHUB_CONN_STRING_CSHARP=""
 
-# Device primary and secondary connection strings:
-export IOTHUB_DEVICE_CONN_STRING=""
-export IOTHUB_DEVICE_CONN_STRING2=""
-
-# IoT Hub Module connection string:
-export IOTHUB_MODULE_CONN_STRING=""
-export IOTHUB_MODULE_CONN_STRING2=""
-
 # Use the following Powershell command to retrieve the Base64 encoding of a file:
 # Use Powershell: [Convert]::ToBase64String((Get-Content myFileName -Encoding Byte)) to generate.
 
@@ -26,9 +18,6 @@ export IOTHUB_MODULE_CONN_STRING2=""
 export IOTHUB_PFX_X509_THUMBPRINT=
 # X509 PFX Base64 encoded Certificate 1 (empty password):
 export IOTHUB_X509_PFX_CERTIFICATE=
-
-# X509 Certificate 2 thumbprint:
-export IOTHUB_PFX_X509_THUMBPRINT2=
 
 # EventHub connection string for the messages/events endpoint:
 export IOTHUB_EVENTHUB_CONN_STRING_CSHARP=
@@ -39,10 +28,35 @@ export IOTHUB_EVENTHUB_COMPATIBLE_NAME=
 # EventHub consumer group:
 export IOTHUB_EVENTHUB_CONSUMER_GROUP=
 
+# ---------- Azure Security Center for IoT - Log Analytics Configuration ----------
+# the iot hub above must be registered to Azure Security Center for IoT security solution
+# with the feature export raw events set to on
+
+# the Azure Security Center for IoT Log Analytics workspace that connected to the hub
+export LA_WORKSPACE_ID=""
+
+# the Azure Active Directory tenant of the Log Analytics workspace
+export LA_AAD_TENANT=""
+
+# the Azure Active Directory app id that has reader role on the workspace
+export LA_AAD_APP_ID=""
+
+# the certificate credentials for the given app
+export LA_AAD_APP_CERT_BASE64=""
+
+# ---------- Variables required for running Azure IoT Hub Stress Test and Azure IoT Samples for C# ------------
+# Device primary and secondary connection strings:
+export IOTHUB_DEVICE_CONN_STRING=
+export IOTHUB_DEVICE_CONN_STRING2=
+
+# IoT Hub Module connection string:
+export IOTHUB_MODULE_CONN_STRING=
+export IOTHUB_MODULE_CONN_STRING2=
+
 # ---------- Device Provisioning Service Configuration ----------
 # See Configuration.Provisioning.cs for usage details.
 
-# DPS ID Scope 
+# DPS ID Scope
 export DPS_IDSCOPE=
 
 # The DPS Global Device Endpoint (the default is defined in code)
@@ -73,7 +87,7 @@ export PROVISIONING_CONNECTION_STRING=""
 export CUSTOM_ALLOCATION_POLICY_WEBHOOK=""
 
 # Far away iot hub hostname.
-# Reprovisioning tests rely on the dps instance under test to have two linked iothubs to provision to. 
+# Reprovisioning tests rely on the dps instance under test to have two linked iothubs to provision to.
 # This hub does not currently need to be far away from the dps instance, but it does need to be linked to the dps instance alongside the IOTHUB_CONN_STRING_CSHARP hub.
 # Only the hostname is needed, not the full connection string
 export FAR_AWAY_IOTHUB_HOSTNAME=""

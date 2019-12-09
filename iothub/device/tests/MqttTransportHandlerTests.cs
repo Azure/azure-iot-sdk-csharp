@@ -23,6 +23,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
     using Client.Transport;
     using DotNetty.Common.Concurrency;
     using Microsoft.Azure.Devices.Client.Test.ConnectionString;
+    using System.Collections.Generic;
 
     [TestClass]
     [TestCategory("Unit")]
@@ -38,6 +39,9 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         const int statusSuccess = 200;
         const int statusFailure = 400;
         const string fakeResponseId = "fakeResponseId";
+        const string deviceStreamingPostTopicFilter = "$iothub/streams/POST/#";
+        const string deviceStreamingPostTopicPrefix = "$iothub/streams/POST/";
+        const string deviceStreamingResponseTopicFilter = "$iothub/streams/res/#";
 
         [TestMethod]
         public async Task MqttTransportHandlerOpenAsyncTokenCancellationRequested()
@@ -54,7 +58,7 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
         [TestMethod]
         public async Task MqttTransportHandlerReceiveAsyncTokenCancellationRequested()
         {
-            await TestOperationCanceledByToken(token => CreateFromConnectionString().ReceiveAsync(new TimeSpan(0, 10, 0), token)).ConfigureAwait(false);
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().ReceiveAsync(token)).ConfigureAwait(false);
         }
 
         [TestMethod]
@@ -564,16 +568,18 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
             transport.OnConnected();
             await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
+            Task task = transport.WaitForTransportClosedAsync();
 
             // act
             transport.OnError(new ApplicationException("Testing"));
 
             // assert
-            await transport.WaitForTransportClosedAsync().ConfigureAwait(false);
+            await task.ConfigureAwait(false);
         }
 
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_28_05: If OnError is triggered after ReceiveAsync is called, WaitForTransportClosedAsync shall be invoked.
         [TestMethod]
+        [ExpectedException(typeof(IotHubCommunicationException))]
         public async Task MqttTransportHandlerOnErrorCallConnectionClosedListenerReceiving()
         {
             // arrange
@@ -582,13 +588,15 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
 
             transport.OnConnected();
             await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
-            await transport.ReceiveAsync(new TimeSpan(0, 0, 0, 0, 5), CancellationToken.None).ConfigureAwait(false);
+            Task receivingTask = transport.ReceiveAsync(CancellationToken.None);
+            Task task = transport.WaitForTransportClosedAsync();
 
             // act
             transport.OnError(new ApplicationException("Testing"));
 
             // assert
-            await transport.WaitForTransportClosedAsync().ConfigureAwait(false);
+            await task.ConfigureAwait(false);
+            await receivingTask.ConfigureAwait(false);
         }
 
         // Tests_SRS_CSHARP_MQTT_TRANSPORT_28_06: If OnError is triggered without any prior operation, WaitForTransportClosedAsync shall not be invoked.
@@ -611,5 +619,274 @@ namespace Microsoft.Azure.Devices.Client.Test.Transport
             transport.Dispose();
             Assert.IsTrue(t.IsCompleted);
         }
+
+        [TestMethod]
+        public void MqttTransportHandlerParseQueryString()
+        {
+            // arrange
+            string propKey0 = "$url";
+            string propValue0 = "wss%3A%2F%2Fcentralus-node-2.streaming.private.azure-devices-int.net%3A443%2Fbridges%2Fb253c304aa11443dbd94e3b511a6f1c5";
+            string propKey1 = "$auth";
+            string propValue1 = "IXrkbkRLow-hU7AYfteIQo5m4acwM69ncofrTj3SeX4";
+            string propKey2 = "$ip";
+            string propValue2 = "13.89.222.63";
+            string query = "?" + propKey0 + "=" + propValue0 + "&" + propKey1 + "=" + propValue1 + "&" + propKey2 + "=" + propValue2;
+
+            // act
+            IDictionary<string, string> result = MqttTransportHandler.ParseQueryString(query);
+
+            // assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(3, result.Count);
+            Assert.AreEqual(propValue0 , result[propKey0]);
+            Assert.AreEqual(propValue1 , result[propKey1]);
+            Assert.AreEqual(propValue2 , result[propKey2]);
+        }
+
+        [TestMethod]
+        public void MqttTransportHandlerParseQueryStringNoQuestionMark()
+        {
+            // arrange
+            string propKey0 = "$url";
+            string propValue0 = "wss%3A%2F%2Fcentralus-node-2.streaming.private.azure-devices-int.net%3A443%2Fbridges%2Fb253c304aa11443dbd94e3b511a6f1c5";
+            string propKey1 = "$auth";
+            string propValue1 = "IXrkbkRLow-hU7AYfteIQo5m4acwM69ncofrTj3SeX4";
+            string propKey2 = "$ip";
+            string propValue2 = "13.89.222.63";
+            string query = propKey0 + "=" + propValue0 + "&" + propKey1 + "=" + propValue1 + "&" + propKey2 + "=" + propValue2;
+
+            // act
+            IDictionary<string, string> result = MqttTransportHandler.ParseQueryString(query);
+
+            // assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(3, result.Count);
+            Assert.AreEqual(propValue0, result[propKey0]);
+            Assert.AreEqual(propValue1, result[propKey1]);
+            Assert.AreEqual(propValue2, result[propKey2]);
+        }
+
+        [TestMethod]
+        public void MqttTransportHandlerParseQueryStringEmptyString()
+        {
+            // arrange
+            string query = "";
+
+            // act
+            IDictionary<string, string> result = MqttTransportHandler.ParseQueryString(query);
+
+            // assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(0, result.Count);
+        }
+
+        [TestMethod]
+        public void MqttTransportHandlerParseQueryStringDoubleEqual()
+        {
+            // arrange
+            string propKey0 = "$url";
+            string propValue0 = "wss%3A%2F%2Fcentralus-node-2.streaming.private.azure-devices-int.net%3A443%2Fbridges%2Fb253c304aa11443dbd94e3b511a6f1c5";
+            string propKey1 = "$auth";
+            string propValue1 = "=IXrkbkRLow-hU7AYfteIQo5m4acwM69ncofrTj3SeX4"; // value starts with equal. Not valid.
+            string propKey2 = "$ip";
+            string propValue2 = "13.89.222.63";
+            string query = "?" + propKey0 + "=" + propValue0 + "&" + propKey1 + "=" + propValue1 + "&" + propKey2 + "=" + propValue2;
+
+            // act
+            IDictionary<string, string> result = MqttTransportHandler.ParseQueryString(query);
+
+            // assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(3, result.Count);
+            Assert.AreEqual(propValue0, result[propKey0]);
+            Assert.AreEqual(propValue1, result[propKey1]);
+            Assert.AreEqual(propValue2, result[propKey2]);
+        }
+
+        [TestMethod]
+        public void MqttTransportHandlerParseQueryStringDoubleAmpersand()
+        {
+            // arrange
+            string propKey0 = "$url";
+            string propValue0 = "wss%3A%2F%2Fcentralus-node-2.streaming.private.azure-devices-int.net%3A443%2Fbridges%2Fb253c304aa11443dbd94e3b511a6f1c5";
+            string propKey1 = "$auth";
+            string propValue1 = "IXrkbkRLow-hU7AYfteIQo5m4acwM69ncofrTj3SeX4";
+            string propKey2 = "$ip";
+            string propValue2 = "13.89.222.63";
+            string query = "?" + propKey0 + "=" + propValue0 + "&&" + propKey1 + "=" + propValue1 + "&" + propKey2 + "=" + propValue2;
+
+            // act
+            IDictionary<string, string> result = MqttTransportHandler.ParseQueryString(query);
+
+            // assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(3, result.Count);
+            Assert.AreEqual(propValue0, result[propKey0]);
+            Assert.AreEqual(propValue1, result[propKey1]);
+            Assert.AreEqual(propValue2, result[propKey2]);
+        }
+
+        [TestMethod]
+        public void MqttTransportHandlerParseQueryStringNoPropValue()
+        {
+            // arrange
+            string propKey0 = "$url";
+            string propValue0 = "wss%3A%2F%2Fcentralus-node-2.streaming.private.azure-devices-int.net%3A443%2Fbridges%2Fb253c304aa11443dbd94e3b511a6f1c5";
+            string propKey1 = "$auth";
+            string propValue1 = ""; // unexpected
+            string propKey2 = "$ip";
+            string propValue2 = "13.89.222.63";
+            string query = "?" + propKey0 + "=" + propValue0 + "&&" + propKey1 + "=" + propValue1 + "&" + propKey2 + "=" + propValue2;
+
+            // act
+            IDictionary<string, string> result = MqttTransportHandler.ParseQueryString(query);
+
+            // assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual(3, result.Count);
+            Assert.AreEqual(propValue0, result[propKey0]);
+            Assert.AreEqual(propValue1, result[propKey1]);
+            Assert.AreEqual(propValue2, result[propKey2]);
+        }
+
+        #region Device Streaming
+        const string fakeDeviceStreamSGWUrl = "wss://sgw.eastus2euap-001.streams.azure-devices.net/bridges/iot-sdks-tcpstreaming/E2E_DeviceStreamingTests_Sasl_f88fd19b-ed0d-496b-b32c-6346ca61d289/E2E_DeviceStreamingTests_b82c9ec4-4fb3-432a-bfb5-af484966a7d4c002f7a841b8/3a6a2eba4b525c38bfcb";
+        const string fakeDeviceStreamAuthToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1NDgzNTU0ODEsImp0aSI6InFfdlllQkF4OGpmRW5tTWFpOHhSNTM2QkpxdTZfRlBOa2ZWSFJieUc4bUUiLCJpb3RodWIRrcy10Y3BzdHJlYW1pbmciOiJpb3Qtc2ifQ.X_HIb53nDsCT2SZ0P4-vnA_Wz94jxYRLbk_5nvP9bj8";
+
+        [TestMethod]
+        public async Task MqttTransportHandlerEnableStreamsAsyncSuccessfully()
+        {
+            // arrange
+            IChannel channel;
+            var transport = CreateTransportHandlerWithMockChannel(out channel);
+
+            // act
+            transport.OnConnected();
+            await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
+            await transport.EnableStreamsAsync(CancellationToken.None).ConfigureAwait(false);
+
+            // assert
+            await channel.Received().WriteAsync(Arg.Is<SubscribePacket>(msg => msg.Requests[0].TopicFilter.Equals(deviceStreamingPostTopicFilter, StringComparison.InvariantCultureIgnoreCase))).ConfigureAwait(false);
+            await channel.Received().WriteAsync(Arg.Is<SubscribePacket>(msg => msg.Requests[0].TopicFilter.Equals(deviceStreamingResponseTopicFilter, StringComparison.InvariantCultureIgnoreCase))).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task MqttTransportHandlerDisableStreamsAsyncSuccessfully()
+        {
+            // arrange
+            IChannel channel;
+            var transport = CreateTransportHandlerWithMockChannel(out channel);
+
+            // act
+            transport.OnConnected();
+            await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
+            await transport.DisableStreamsAsync(CancellationToken.None).ConfigureAwait(false);
+
+            // assert
+            await channel.Received().WriteAsync(Arg.Is<UnsubscribePacket>(msg => Enumerable.ElementAt(msg.TopicFilters, 0).Equals(deviceStreamingPostTopicFilter, StringComparison.InvariantCultureIgnoreCase))).ConfigureAwait(false);
+            await channel.Received().WriteAsync(Arg.Is<UnsubscribePacket>(msg => Enumerable.ElementAt(msg.TopicFilters, 0).Equals(deviceStreamingResponseTopicFilter, StringComparison.InvariantCultureIgnoreCase))).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task MqttTransportHandlerAcceptDeviceStreamRequestAsyncSuccess()
+        {
+            // arrange
+            IChannel channel;
+            var transport = CreateTransportHandlerWithMockChannel(out channel);
+
+            DeviceStreamRequest request = new DeviceStreamRequest("1", "StreamA", new Uri(fakeDeviceStreamSGWUrl), fakeDeviceStreamAuthToken);
+
+            int statusCode = 200;
+            string responseTopic = $"$iothub/streams/res/{statusCode}/?$rid={request.RequestId}";
+
+            // act
+            await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
+            await transport.AcceptDeviceStreamRequestAsync(request, CancellationToken.None).ConfigureAwait(false);
+
+            // assert
+            await channel.Received().WriteAndFlushAsync(Arg.Is<Message>(msg => msg.MqttTopicName.Equals(responseTopic, StringComparison.InvariantCultureIgnoreCase))).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task MqttTransportHandlerRejectDeviceStreamRequestAsyncSuccess()
+        {
+            // arrange
+            IChannel channel;
+            var transport = CreateTransportHandlerWithMockChannel(out channel);
+
+            DeviceStreamRequest request = new DeviceStreamRequest("1", "StreamA", new Uri(fakeDeviceStreamSGWUrl), fakeDeviceStreamAuthToken);
+
+            int statusCode = 400;
+            string responseTopic = $"$iothub/streams/res/{statusCode}/?$rid={request.RequestId}";
+
+            // act
+            await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
+            await transport.RejectDeviceStreamRequestAsync(request, CancellationToken.None).ConfigureAwait(false);
+
+            // assert
+            await channel.Received().WriteAndFlushAsync(Arg.Is<Message>(msg => msg.MqttTopicName.Equals(responseTopic, StringComparison.InvariantCultureIgnoreCase))).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task MqttTransportHandlerWaitForDeviceStreamRequestAsyncCancellationRequested()
+        {
+            await TestOperationCanceledByToken(token => CreateFromConnectionString().WaitForDeviceStreamRequestAsync(token)).ConfigureAwait(false);
+        }
+
+        [TestMethod]
+        public async Task MqttTransportHandlerHandleIncomingDeviceStreamRequestSuccess()
+        {
+            // arrange
+            string requestId = "123";
+            string streamName = "StreamA";
+            string escapedUrl = Uri.EscapeDataString(fakeDeviceStreamSGWUrl);
+
+            IChannel channel;
+            var transport = CreateTransportHandlerWithMockChannel(out channel);
+
+            await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
+            transport.OnConnected();
+
+            transport.OnMessageReceived(new Message() {
+                MqttTopicName = $"{deviceStreamingPostTopicPrefix}{streamName}/$rid={requestId}&$url={escapedUrl}&$auth={fakeDeviceStreamAuthToken}"
+            });
+
+            // act
+            DeviceStreamRequest request;
+            using (CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(2)))
+            {
+                request = await transport.WaitForDeviceStreamRequestAsync(cts.Token).ConfigureAwait(false);
+            }
+
+            // assert
+            Assert.IsNotNull(request);
+            Assert.AreEqual(request.RequestId, requestId);
+            Assert.AreEqual(request.Name, streamName);
+            Assert.AreEqual(request.Url, fakeDeviceStreamSGWUrl);
+            Assert.AreEqual(request.AuthorizationToken, fakeDeviceStreamAuthToken);
+        }
+
+        [TestMethod]
+        public async Task MqttTransportHandlerHandleIncomingDeviceStreamRequestBadFormatNoStreamName()
+        {
+            // arrange
+            string requestId = "123";
+            string escapedUrl = Uri.EscapeDataString(fakeDeviceStreamSGWUrl);
+
+            IChannel channel;
+            var transport = CreateTransportHandlerWithMockChannel(out channel);
+
+            await transport.OpenAsync(CancellationToken.None).ConfigureAwait(false);
+            transport.OnConnected();
+
+            // act
+            transport.OnMessageReceived(new Message()
+            {
+                MqttTopicName = $"{deviceStreamingPostTopicPrefix}$rid={requestId}&$url={escapedUrl}&$auth={fakeDeviceStreamAuthToken}"
+            });
+
+            Assert.AreEqual(transport.State, TransportState.Error);
+        }
+        #endregion Device Streaming
     }
 }

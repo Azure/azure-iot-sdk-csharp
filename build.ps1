@@ -148,9 +148,16 @@ Function BuildPackage($path, $message) {
     }
 }
 
-Function RunTests($path, $message, $framework="*") {
+Function RunTests($path, $message, $framework="*", $filterTestCategory="*") {
 
-    $label = "TEST: --- $message $configuration ---"
+    if ($filterTestCategory -eq "*")
+    {
+        $label = "TEST: --- $message $configuration ---"
+    }
+    else
+    {
+        $label = "TEST: --- $message $configuration $filterTestCategory ---"
+    }
 
     Write-Host
     Write-Host -ForegroundColor Cyan $label
@@ -158,11 +165,25 @@ Function RunTests($path, $message, $framework="*") {
 
     if ($framework -eq "*")
     {
-        & dotnet test --verbosity $verbosity --configuration $configuration --logger "trx"
+        if ($filterTestCategory -eq "*")
+        {
+            & dotnet test --verbosity $verbosity --configuration $configuration --logger "trx"
+        }
+        else
+        {
+            & dotnet test --filter $filterTestCategory --verbosity $verbosity --configuration $configuration --logger "trx"
+        }
     }
     else 
     {
-        & dotnet test --framework $framework --verbosity $verbosity --configuration $configuration --logger "trx"
+        if ($filterTestCategory -eq "*")
+        {
+            & dotnet test --framework $framework --verbosity $verbosity --configuration $configuration --logger "trx"
+        }
+        else
+        {
+            & dotnet test --filter $filterTestCategory --framework $framework --verbosity $verbosity --configuration $configuration --logger "trx"
+        }
     }
 
     if ($LASTEXITCODE -ne 0) {
@@ -289,11 +310,15 @@ try {
 
         if (IsWindowsDevelopmentBox)
         {
-            RunTests e2e\test "End-to-end tests (NetCoreApp2.1, NET47, NET451)"
+            RunTests e2e\test "End-to-end tests (NetCoreApp2.1, NET47, NET451)" "*" "TestCategory!=IoTHub-FaultInjection-PoolAmqp"
+            RunTests e2e\test "End-to-end tests (NetCoreApp2.1, NET47, NET451)" "*" "TestCategory=IoTHub-FaultInjection-PoolAmqp"
         }
         else
         {
             RunTests e2e\test "End-to-end tests (NetCoreApp2.1)" "netcoreapp2.1"
+
+            # To exclude the Pooling Fault Injection Tests from E2E test run:
+            # RunTests e2e\test "End-to-end tests (NetCoreApp2.1)" "netcoreapp2.1" "TestCategory!=IoTHub-FaultInjection-PoolAmqp"
         }
 
         $verbosity = $oldVerbosity

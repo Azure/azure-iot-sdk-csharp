@@ -12,7 +12,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
 {
     internal abstract class DefaultDelegatingHandler : IDelegatingHandler
     {
-        private static readonly Task<Message> s_dummyResultObject = Task.FromResult((Message)null);
         private volatile IDelegatingHandler _innerHandler;
         protected volatile bool _disposed;
 
@@ -38,6 +37,12 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 _innerHandler = value;
                 if (Logging.IsEnabled) Logging.Associate(this, _innerHandler, nameof(InnerHandler));
             }
+        }
+
+        public virtual Task OpenAsync(TimeoutHelper timeoutHelper)
+        {
+            ThrowIfDisposed();
+            return InnerHandler?.OpenAsync(timeoutHelper) ?? TaskHelpers.CompletedTask;
         }
 
         public virtual Task OpenAsync(CancellationToken cancellationToken)
@@ -76,13 +81,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
         public virtual Task<Message> ReceiveAsync(CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
-            return InnerHandler?.ReceiveAsync(cancellationToken) ?? s_dummyResultObject;
+            return InnerHandler.ReceiveAsync(cancellationToken);
         }
 
-        public virtual Task<Message> ReceiveAsync(TimeSpan timeout, CancellationToken cancellationToken)
+        public virtual Task<Message> ReceiveAsync(TimeoutHelper timeoutHelper)
         {
             ThrowIfDisposed();
-            return InnerHandler?.ReceiveAsync(timeout, cancellationToken) ?? s_dummyResultObject;
+            return InnerHandler.ReceiveAsync(timeoutHelper);
         }
 
         public virtual Task CompleteAsync(string lockToken, CancellationToken cancellationToken)
@@ -113,6 +118,36 @@ namespace Microsoft.Azure.Devices.Client.Transport
         {
             ThrowIfDisposed();
             return InnerHandler?.SendEventAsync(messages, cancellationToken) ?? TaskHelpers.CompletedTask;
+        }
+
+        public virtual Task EnableStreamsAsync(CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+            return this.InnerHandler?.EnableStreamsAsync(cancellationToken) ?? TaskHelpers.CompletedTask;
+        }
+
+        public virtual Task DisableStreamsAsync(CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+            return this.InnerHandler?.DisableStreamsAsync(cancellationToken) ?? TaskHelpers.CompletedTask;
+        }
+
+        public virtual Task<DeviceStreamRequest> WaitForDeviceStreamRequestAsync(CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+            return this.InnerHandler?.WaitForDeviceStreamRequestAsync(cancellationToken) ?? Task.FromResult<DeviceStreamRequest>(null);
+        }
+
+        public virtual Task AcceptDeviceStreamRequestAsync(DeviceStreamRequest request, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+            return this.InnerHandler?.AcceptDeviceStreamRequestAsync(request, cancellationToken);
+        }
+
+        public virtual Task RejectDeviceStreamRequestAsync(DeviceStreamRequest request, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+            return this.InnerHandler?.RejectDeviceStreamRequestAsync(request, cancellationToken);
         }
 
         public virtual Task EnableMethodsAsync(CancellationToken cancellationToken)
