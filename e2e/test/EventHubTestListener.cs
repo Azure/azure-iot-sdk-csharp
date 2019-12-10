@@ -91,13 +91,13 @@ namespace Microsoft.Azure.Devices.E2ETests
         private async Task ReceiveAsync()
         {
             IEnumerable<EventData> eventDatas = await _receiver.ReceiveAsync(int.MaxValue, TimeSpan.FromSeconds(OperationTimeoutInSeconds)).ConfigureAwait(false);
-            if (events == null)
+            if (eventDatas == null)
             {
                 s_log.WriteLine($"{nameof(EventHubTestListener)}.{nameof(VerifyTestMessage)}: no events received.");
             }
             else
             {
-                s_log.WriteLine($"{nameof(EventHubTestListener)}.{nameof(VerifyTestMessage)}: {events.Count()} events received.");
+                s_log.WriteLine($"{nameof(EventHubTestListener)}.{nameof(VerifyTestMessage)}: {eventDatas.Count()} events received.");
                 foreach (EventData eventData in eventDatas)
                 {
                     string body = GetEventDataBody(eventData);
