@@ -160,35 +160,30 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        [Ignore]
         public async Task X509_DeviceSendBatchMessages_Amqp()
         {
             await SendBatchMessages(TestDeviceType.X509, Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
         }
 
         [TestMethod]
-        [Ignore]
         public async Task X509_DeviceSendBatchMessages_AmqpWs()
         {
             await SendBatchMessages(TestDeviceType.X509, Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
         }
 
         [TestMethod]
-        [Ignore]
         public async Task X509_DeviceSendBatchMessages_Mqtt()
         {
             await SendBatchMessages(TestDeviceType.X509, Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
         }
 
         [TestMethod]
-        [Ignore]
         public async Task X509_DeviceSendBatchMessages_MqttWs()
         {
             await SendBatchMessages(TestDeviceType.X509, Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
         }
 
         [TestMethod]
-        [Ignore]
         public async Task X509_DeviceSendBatchMessages_Http()
         {
             await SendBatchMessages(TestDeviceType.X509, Client.TransportType.Http1).ConfigureAwait(false);
