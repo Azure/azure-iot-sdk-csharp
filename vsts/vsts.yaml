@@ -165,7 +165,7 @@ phases:
        rem Start build
        vsts/windows_csharp.cmd
 
-       ren Stop ETL logging
+       rem Stop ETL logging
        logman stop IotTrace
        logman delete IotTrace
 
@@ -235,6 +235,120 @@ phases:
       testResultsFiles: '**/*.trx'
 
       testRunTitle: 'Windows Tests'
+
+      platform: Windows
+
+      configuration: 'Debug UT + Release E2E'
+
+    condition: always()
+
+### Windows IoT Core build ###
+
+- phase: IoTUAP
+  displayName: Windows IoT Core
+# Uncomment to serialize builds:
+#  dependsOn: WINDOWS
+
+  condition: succeeded()
+
+  queue:
+    name: win-iot-core
+    demands:
+      - e2e-tests-os -equals WinIoTCore_x64
+
+  steps:
+  - powershell: ./vsts/manual_checkout.ps1
+    displayName: 'GIT checkout $(COMMIT_FROM)'
+    env:
+      COMMIT_FROM: $(COMMIT_FROM)
+
+  - script: |
+       rem Start
+       
+       rem Start Squid
+       C:\Data\Squid\bin\squid.exe
+       
+       rem Start ETL logging
+       tracelog -stop IotTrace
+       rem Convert the list of provider GUIDs (iot_providers.txt) to a format compatible with the tracelog tool.
+       for /F "eol=; tokens=2 delims={}" %%i in (tools\CaptureLogs\iot_providers.txt) do @echo %%i;0xffffffffffffffff;0xff >> tools\CaptureLogs\iot_providers_temp.txt
+       tracelog -start IotTrace -f iot.etl -guid tools\CaptureLogs\iot_providers_temp.txt
+       del tools\CaptureLogs\iot_providers_temp.txt
+       
+       rem Start build
+       vsts/windows_csharp.cmd
+       
+       rem Stop ETL logging
+       tracelog -flush IotTrace
+       tracelog -stop IotTrace
+       
+    displayName: Build
+    continueOnError: true
+    env:
+      IOTHUB_CONN_STRING_CSHARP: $(IOTHUB-CONN-STRING-CSHARP)
+      IOTHUB_PFX_X509_THUMBPRINT: $(IOTHUB-PFX-X509-THUMBPRINT)
+      IOTHUB_X509_PFX_CERTIFICATE: $(IOTHUB-X509-PFX-CERTIFICATE)
+      IOTHUB_EVENTHUB_CONN_STRING_CSHARP: $(IOTHUB-EVENTHUB-CONN-STRING-CSHARP)
+      IOTHUB_EVENTHUB_COMPATIBLE_NAME: $(IOTHUB-EVENTHUB-COMPATIBLE-NAME)
+      IOTHUB_EVENTHUB_CONSUMER_GROUP: $(IOTHUB-EVENTHUB-CONSUMER-GROUP)
+      DPS_IDSCOPE: $(DPS-IDSCOPE)
+      DPS_GLOBALDEVICEENDPOINT: $(DPS-GLOBALDEVICEENDPOINT)
+      DPS_INDIVIDUALX509_PFX_CERTIFICATE: $(DPS-INDIVIDUALX509-PFX-CERTIFICATE)
+      DPS_GROUPX509_PFX_CERTIFICATE: $(DPS-GROUPX509-PFX-CERTIFICATE)
+      DPS_X509_PFX_CERTIFICATE_PASSWORD: $(DPS-X509-PFX-CERTIFICATE-PASSWORD)
+      DPS_GROUPX509_CERTIFICATE_CHAIN: $(DPS-GROUPX509-CERTIFICATE-CHAIN)
+      DPS_TPM_REGISTRATIONID: $(DPS-TPM-REGISTRATIONID)
+      DPS_TPM_DEVICEID: $(DPS-TPM-DEVICEID)
+      PROVISIONING_CONNECTION_STRING: $(PROVISIONING-CONNECTION-STRING)
+      IOTHUB_DEVICE_CONN_STRING_INVALIDCERT: $(IOTHUB-DEVICE-CONN-STRING-INVALIDCERT)
+      IOTHUB_CONN_STRING_INVALIDCERT: $(IOTHUB-CONN-STRING-INVALIDCERT)
+      DPS_GLOBALDEVICEENDPOINT_INVALIDCERT: $(DPS-GLOBALDEVICEENDPOINT-INVALIDCERT)
+      PROVISIONING_CONNECTION_STRING_INVALIDCERT: $(PROVISIONING-CONNECTION-STRING-INVALIDCERT)
+      FAR_AWAY_IOTHUB_HOSTNAME: $(FAR-AWAY-IOTHUB-HOSTNAME)
+      CUSTOM_ALLOCATION_POLICY_WEBHOOK: $(CUSTOM-ALLOCATION-POLICY-WEBHOOK)
+      IOTHUB_PROXY_SERVER_ADDRESS: 127.0.0.1:3128
+      LA_AAD_TENANT: $(LA-AAD-TENANT)
+      LA_AAD_APP_ID: $(LA-AAD-APP-ID)
+      LA_AAD_APP_CERT_BASE64: $(LA-AAD-APP-CERT-BASE64)
+      LA_WORKSPACE_ID: $(LA-WORKSPACE-ID)
+
+  - task: CopyFiles@2
+    displayName: 'Copy TRX files to the artifacts folder'
+    inputs:
+      SourceFolder: '$(Build.SourcesDirectory)'
+
+      Contents: '**/*.trx'
+
+      TargetFolder: '$(Build.ArtifactStagingDirectory)'
+
+    condition: always()
+
+  - task: CopyFiles@2
+    displayName: 'Copy ETL files to the artifacts folder'
+    inputs:
+      SourceFolder: '$(Build.SourcesDirectory)'
+
+      Contents: '**/*.etl'
+
+      TargetFolder: '$(Build.ArtifactStagingDirectory)'
+
+    condition: always()
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact: testresults'
+    inputs:
+      ArtifactName: testresults_iotuap
+
+    condition: always()
+
+  - task: PublishTestResults@2
+    displayName: 'Publish Test Results **/*.trx'
+    inputs:
+      testRunner: VSTest
+
+      testResultsFiles: '**/*.trx'
+
+      testRunTitle: 'Windows IoT Core Tests'
 
       platform: Windows
 

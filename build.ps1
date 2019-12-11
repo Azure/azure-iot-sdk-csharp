@@ -65,9 +65,11 @@ Param(
     [string] $verbosity = "q"
 )
 
-Function IsWindowsDevelopmentBox()
+Function IsWindowsDesktopDevelopmentBox()
 {
-    return ([Environment]::OSVersion.Platform -eq [System.PlatformID]::Win32NT)
+    # Use reg key HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\EditionID to tell different Windows editions apart - "IoTUAP" is Windows IoT Core
+    $osEdition = (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion').EditionID
+    return ($osEdition -ne "IoTUAP") -and ([Environment]::OSVersion.Platform -eq [System.PlatformID]::Win32NT)
 }
 
 Function CheckSignTools()
@@ -302,7 +304,7 @@ try {
         $oldVerbosity = $verbosity
         $verbosity = "normal"
 
-        if (IsWindowsDevelopmentBox)
+        if (IsWindowsDesktopDevelopmentBox)
         {
             RunTests e2e\test "End-to-end tests (NetCoreApp2.1, NET47, NET451)" "*" "TestCategory!=IoTHub-FaultInjection-PoolAmqp"
             RunTests e2e\test "End-to-end tests (NetCoreApp2.1, NET47, NET451)" "*" "TestCategory=IoTHub-FaultInjection-PoolAmqp"
