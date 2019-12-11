@@ -310,13 +310,14 @@ try {
         {
             RunTests e2e\test "End-to-end tests (NetCoreApp2.1, NET47, NET451)" "*" "TestCategory!=IoTHub-FaultInjection-PoolAmqp"
             RunTests e2e\test "End-to-end tests (NetCoreApp2.1, NET47, NET451)" "*" "TestCategory=IoTHub-FaultInjection-PoolAmqp"
+            RunTests digitaltwin\e2e\test "DigitalTwin End-to-end tests (NetCoreApp2.2, NET47)" "*"
         }
         else
         {
-            RunTests e2e\test "End-to-end tests (NetCoreApp2.1)" "netcoreapp2.1"
-
             # To exclude the Pooling Fault Injection Tests from E2E test run:
             # RunTests e2e\test "End-to-end tests (NetCoreApp2.1)" "netcoreapp2.1" "TestCategory!=IoTHub-FaultInjection-PoolAmqp"
+            RunTests e2e\test "End-to-end tests (NetCoreApp2.1)" "netcoreapp2.1"
+            RunTests digitaltwin\e2e\test "DigitalTwin End-to-end tests (NetCoreApp2.2)" "netcoreapp2.2"
         }
 
         $verbosity = $oldVerbosity

@@ -7,9 +7,9 @@ namespace Microsoft.Azure.IoT.DigitalTwin.E2ETests
 {
     class Configuration
     {
-        public static string IotHubConnectionString => GetValue("IOTHUB_CONNECTION_STRING");
+        public static string IotHubConnectionString => GetValue("IOTHUB_CONN_STRING_CSHARP");
 
-        public static string EventHubConnectionString => GetValue("EVENTHUB_CONNECTION_STRING");
+        public static string EventHubConnectionString => GetValue("IOTHUB_EVENTHUB_CONN_STRING_CSHARP");
 
         private static string GetValue(string envName, string defaultValue = null)
         {
