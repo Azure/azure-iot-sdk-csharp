@@ -253,6 +253,8 @@ try {
         RunTests provisioning\transport\mqtt\tests "Provisioning Transport for MQTT Tests"
         RunTests security\tpm\tests "SecurityProvider for TPM Tests"
         RunTests provisioning\service\tests "Provisioning Service Client Tests"
+        RunTests digitaltwin\device\tests "Digital Twin Device Client Tests"
+        RunTests digitaltwin\service\tests "Digital Twin Service Client Tests"
     }
 
     if ((-not $nopackage))
@@ -266,6 +268,8 @@ try {
         BuildPackage provisioning\transport\http\src "Provisioning Transport for HTTP"
         BuildPackage provisioning\transport\mqtt\src "Provisioning Transport for MQTT"
         BuildPackage provisioning\service\src "Provisioning Service Client SDK"
+		BuildPackage digitaltwin\device\src "Digital Twin Device Client SDK"
+        BuildPackage digitaltwin\service\src "Digital Twin Service Client SDK"
     }
 
     if (-not [string]::IsNullOrWhiteSpace($env:AZURE_IOT_LOCALPACKAGES))
