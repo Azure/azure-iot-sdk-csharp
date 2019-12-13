@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Xunit;
+using Azure;
 
 namespace Microsoft.Azure.IoT.DigitalTwin.E2ETests
 {
