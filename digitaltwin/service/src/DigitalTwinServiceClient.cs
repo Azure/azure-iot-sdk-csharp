@@ -6,7 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-
+using Azure;
 using Microsoft.Azure.IoT.DigitalTwin.Service.Generated;
 using Microsoft.Azure.IoT.DigitalTwin.Service.Models;
 
