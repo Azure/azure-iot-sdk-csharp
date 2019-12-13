@@ -1,6 +1,6 @@
 using System;
 using System.Threading;
-using Microsoft.Azure.IoT.DigitalTwin.Service.models;
+using Microsoft.Azure.IoT.DigitalTwin.Service.Models;
 using NSubstitute;
 using Xunit;
 
