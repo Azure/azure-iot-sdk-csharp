@@ -29,57 +29,57 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         [TestMethod]
-        public Task SecurityMessage_DeviceSendSingleMessage_Amqp()
+        public async Task SecurityMessage_DeviceSendSingleMessage_Amqp()
         {
-            return TestSecurityMessage(Client.TransportType.Amqp_Tcp_Only);
+            await TestSecurityMessage(Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
         }
 
         [TestMethod]
-        public Task SecurityMessage_ModuleSendSingleMessage_Amqp()
+        public async Task SecurityMessage_ModuleSendSingleMessage_Amqp()
         {
-            return TestSecurityMessageModule(Client.TransportType.Amqp_Tcp_Only);
+            await TestSecurityMessageModule(Client.TransportType.Amqp_Tcp_Only).ConfigureAwait(false);
         }
 
         [TestMethod]
-        public Task SecurityMessage_DeviceSendSingleMessage_AmqpWs()
+        public async Task SecurityMessage_DeviceSendSingleMessage_AmqpWs()
         {
-            return TestSecurityMessage(Client.TransportType.Amqp_WebSocket_Only);
+            await TestSecurityMessage(Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
         }
 
         [TestMethod]
-        public Task SecurityMessage_ModuleSendSingleMessage_AmqpWs()
+        public async Task SecurityMessage_ModuleSendSingleMessage_AmqpWs()
         {
-            return TestSecurityMessageModule(Client.TransportType.Amqp_WebSocket_Only);
+            await TestSecurityMessageModule(Client.TransportType.Amqp_WebSocket_Only).ConfigureAwait(false);
         }
 
         [TestMethod]
-        public Task SecurityMessage_DeviceSendSingleMessage_Mqtt()
+        public async Task SecurityMessage_DeviceSendSingleMessage_Mqtt()
         {
-            return TestSecurityMessage(Client.TransportType.Mqtt_Tcp_Only);
+            await TestSecurityMessage(Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
         }
 
         [TestMethod]
-        public Task SecurityMessage_ModuleSendSingleMessage_Mqtt()
+        public async Task SecurityMessage_ModuleSendSingleMessage_Mqtt()
         {
-            return TestSecurityMessageModule(Client.TransportType.Mqtt_Tcp_Only);
+            await TestSecurityMessageModule(Client.TransportType.Mqtt_Tcp_Only).ConfigureAwait(false);
         }
 
         [TestMethod]
-        public Task SecurityMessage_DeviceSendSingleMessage_MqttWs()
+        public async Task SecurityMessage_DeviceSendSingleMessage_MqttWs()
         {
-            return TestSecurityMessage(Client.TransportType.Mqtt_WebSocket_Only);
+            await TestSecurityMessage(Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
         }
 
         [TestMethod]
-        public Task SecurityMessage_ModuleSendSingleMessage_MqttWs()
+        public async Task SecurityMessage_ModuleSendSingleMessage_MqttWs()
         {
-            return TestSecurityMessageModule(Client.TransportType.Mqtt_WebSocket_Only);
+            await TestSecurityMessageModule(Client.TransportType.Mqtt_WebSocket_Only).ConfigureAwait(false);
         }
 
         [TestMethod]
-        public Task SecurityMessage_DeviceSendSingleMessage_Http()
+        public async Task SecurityMessage_DeviceSendSingleMessage_Http()
         {
-            return TestSecurityMessage(Client.TransportType.Http1);
+            await TestSecurityMessage(Client.TransportType.Http1).ConfigureAwait(false);
         }
 
         private Client.Message ComposeD2CSecurityTestMessage(out string eventId, out string payload, out string p1Value)
