@@ -6,15 +6,15 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Azure.Iot.DigitalTwin.Device;
-using Azure.Iot.DigitalTwin.Device.Exceptions;
-using Azure.Iot.DigitalTwin.Device.Helper;
-using Azure.Iot.DigitalTwin.Device.Model;
+using Microsoft.Azure.IoT.DigitalTwin.Device;
+using Microsoft.Azure.IoT.DigitalTwin.Device.Exceptions;
+using Microsoft.Azure.IoT.DigitalTwin.Device.Helper;
+using Microsoft.Azure.IoT.DigitalTwin.Device.Model;
 using Microsoft.Azure.Devices.Client;
 using NSubstitute;
 using Xunit;
 
-namespace Azure.IoT.DigitalTwin.Device.Test
+namespace Microsoft.Azure.IoT.DigitalTwin.Device.Test
 {
     public class DigitalTwinInterfaceClientTest
     {

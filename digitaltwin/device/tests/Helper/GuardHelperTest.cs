@@ -3,11 +3,11 @@
 
 using System;
 using System.Collections.Generic;
-using Azure.Iot.DigitalTwin.Device.Helper;
+using Microsoft.Azure.IoT.DigitalTwin.Device.Helper;
 using NSubstitute;
 using Xunit;
 
-namespace Azure.IoT.DigitalTwin.Device.Test.Helper
+namespace Microsoft.Azure.IoT.DigitalTwin.Device.Test.Helper
 {
     public class GuardHelperTest
     {

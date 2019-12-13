@@ -1,15 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Azure.Iot.DigitalTwin.Device;
-using Azure.Iot.DigitalTwin.Device.Model;
+using Microsoft.Azure.IoT.DigitalTwin.Device;
+using Microsoft.Azure.IoT.DigitalTwin.Device.Model;
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Azure.IoT.DigitalTwin.E2ETests.interfaces
+namespace Microsoft.Azure.IoT.DigitalTwin.E2ETests.interfaces
 {
     /// <summary>
     /// Abstract test interface representation. Tracks all commands invoked, all properties updated, and if onRegistrationComplete was fired

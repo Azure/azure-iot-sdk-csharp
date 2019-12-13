@@ -5,8 +5,8 @@ using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 
-using Azure.Iot.DigitalTwin.Device;
-using Azure.Iot.DigitalTwin.Device.Model;
+using Microsoft.Azure.IoT.DigitalTwin.Device;
+using Microsoft.Azure.IoT.DigitalTwin.Device.Model;
 
 namespace EnvironmentalSensorSample
 {

@@ -3,9 +3,9 @@
 
 using System;
 
-using Azure.Iot.DigitalTwin.Device.Helper;
+using Microsoft.Azure.IoT.DigitalTwin.Device.Helper;
 
-namespace Azure.Iot.DigitalTwin.Device.Model
+namespace Microsoft.Azure.IoT.DigitalTwin.Device.Model
 {
     /// <summary>
     /// Contains information of the invoked command passed from the Digital Twin Client to Digital Twin Interface Client

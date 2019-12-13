@@ -1,5 +1,5 @@
-﻿using Azure.Iot.DigitalTwin.Device;
-using Azure.Iot.DigitalTwin.Device.Model;
+﻿using Microsoft.Azure.IoT.DigitalTwin.Device;
+using Microsoft.Azure.IoT.DigitalTwin.Device.Model;
 using Newtonsoft.Json;
 using System.IO;
 using System.Threading.Tasks;
@@ -9,7 +9,7 @@ namespace EnvironmentalSensorSample
     /// <summary>
     /// A Special Digital Twin interface that provides the model definition when asked by the getModelDefinition command.
     /// </summary>
-    /// <seealso cref="Azure.Iot.DigitalTwin.Device.DigitalTwinInterfaceClient" />
+    /// <seealso cref="Microsoft.Azure.IoT.DigitalTwin.Device.DigitalTwinInterfaceClient" />
     public class ModelDefinitionInterface : DigitalTwinInterfaceClient
     {
         private const string ModelDefinitionInterfaceId = "urn:azureiot:ModelDiscovery:ModelDefinition:1";

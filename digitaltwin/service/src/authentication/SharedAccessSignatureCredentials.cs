@@ -7,7 +7,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Azure.IoT.DigitalTwin.Service
+namespace Microsoft.Azure.IoT.DigitalTwin.Service
 {
     /// <summary>
     /// Shared Access Key Signature class.

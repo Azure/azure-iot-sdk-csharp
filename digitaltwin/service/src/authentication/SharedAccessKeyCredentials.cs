@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace Azure.IoT.DigitalTwin.Service
+namespace Microsoft.Azure.IoT.DigitalTwin.Service
 {
     /// <summary>
     /// Shared Access Key Signature class.

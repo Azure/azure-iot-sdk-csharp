@@ -1,4 +1,4 @@
-﻿using Azure.IoT.DigitalTwin.Service;
+﻿using Microsoft.Azure.IoT.DigitalTwin.Service;
 using System;
 
 namespace Sample

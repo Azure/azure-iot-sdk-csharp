@@ -4,7 +4,7 @@
 using System;
 using System.Diagnostics.Tracing;
 
-namespace Azure.IoT.DigitalTwin.Device
+namespace Microsoft.Azure.IoT.DigitalTwin.Device
 {
     [EventSource(Name = "Microsoft-Azure-IoT-DigitalTwin-Device")]
     internal sealed class Logging : EventSource, ILogging
