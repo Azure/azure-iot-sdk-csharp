@@ -1,4 +1,4 @@
-﻿using Azure.IoT.DigitalTwin.Service;
+﻿using Microsoft.Azure.IoT.DigitalTwin.Service;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;

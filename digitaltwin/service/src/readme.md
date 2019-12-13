@@ -8,7 +8,7 @@
 input-file: serviceDigitalTwinOnly.json
 
 csharp:
-  namespace: Azure.IoT.DigitalTwin.Service.Generated
+  namespace: Microsoft.Azure.IoT.DigitalTwin.Service.Generated
   output-folder: Generated
   add-credentials: true                
   use-internal-constructors: true

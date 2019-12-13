@@ -8,7 +8,7 @@
 input-file: service.json # TODO need to add service.json swagger file to this directory
 
 csharp:
-  namespace: Azure.IoT.DigitalTwin.Service
+  namespace: Microsoft.Azure.IoT.DigitalTwin.Service
   output-folder: .
   add-credentials: true                # enable experimental XML serialization support
 ```

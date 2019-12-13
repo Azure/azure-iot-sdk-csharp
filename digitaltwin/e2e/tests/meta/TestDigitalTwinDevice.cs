@@ -1,14 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Azure.Iot.DigitalTwin.Device;
+using Microsoft.Azure.IoT.DigitalTwin.Device;
 using Microsoft.Azure.Devices;
 using Microsoft.Azure.Devices.Client;
 using System;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace Azure.IoT.DigitalTwin.E2ETests
+namespace Microsoft.Azure.IoT.DigitalTwin.E2ETests
 {
     class TestDigitalTwinDevice : IDisposable
     {

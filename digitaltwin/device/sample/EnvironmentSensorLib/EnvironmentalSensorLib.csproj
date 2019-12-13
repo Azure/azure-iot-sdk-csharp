@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Azure.IoT.DigitalTwin.Device.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.Azure.IoT.DigitalTwin.Device.csproj" />
   </ItemGroup>
 
 </Project>

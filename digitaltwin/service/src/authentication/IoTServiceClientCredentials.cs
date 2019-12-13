@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Rest;
 
-namespace Azure.IoT.DigitalTwin.Service
+namespace Microsoft.Azure.IoT.DigitalTwin.Service
 {
     /// <summary>
     /// Base credentials class.

@@ -3,12 +3,12 @@
 
 using System;
 
-using Azure.Iot.DigitalTwin.Device.Model;
+using Microsoft.Azure.IoT.DigitalTwin.Device.Model;
 using Newtonsoft.Json;
 using NSubstitute;
 using Xunit;
 
-namespace Azure.IoT.DigitalTwin.Device.Test.Model
+namespace Microsoft.Azure.IoT.DigitalTwin.Device.Test.Model
 {
     public class DataCollectionJsonConverterTest
     {

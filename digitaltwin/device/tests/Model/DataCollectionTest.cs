@@ -4,12 +4,12 @@
 using System;
 using System.Collections.Generic;
 
-using Azure.Iot.DigitalTwin.Device.Model;
+using Microsoft.Azure.IoT.DigitalTwin.Device.Model;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
-namespace Azure.IoT.DigitalTwin.Device.Test.Model
+namespace Microsoft.Azure.IoT.DigitalTwin.Device.Test.Model
 {
     public class DataCollectionTest
     {

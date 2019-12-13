@@ -7,10 +7,10 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Azure.IoT.DigitalTwin.Service.Generated;
-using Azure.IoT.DigitalTwin.Service.models;
+using Microsoft.Azure.IoT.DigitalTwin.Service.Generated;
+using Microsoft.Azure.IoT.DigitalTwin.Service.models;
 
-namespace Azure.IoT.DigitalTwin.Service
+namespace Microsoft.Azure.IoT.DigitalTwin.Service
 {
     /// <summary>
     /// Service client for getting digital twin interfaces, invoking interface commands, updating digital twin state, and retrieving model definitions.

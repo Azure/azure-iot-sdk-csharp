@@ -1,16 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Azure.Iot.DigitalTwin.Device;
-using Azure.IoT.DigitalTwin.E2ETests.interfaces;
-using Azure.IoT.DigitalTwin.E2ETests.meta;
-using Azure.IoT.DigitalTwin.Service;
+using Microsoft.Azure.IoT.DigitalTwin.Device;
+using Microsoft.Azure.IoT.DigitalTwin.E2ETests.interfaces;
+using Microsoft.Azure.IoT.DigitalTwin.E2ETests.meta;
+using Microsoft.Azure.IoT.DigitalTwin.Service;
 using Microsoft.Azure.Devices.Client;
 using System;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Azure.IoT.DigitalTwin.E2ETests
+namespace Microsoft.Azure.IoT.DigitalTwin.E2ETests
 {
     public class DigitalTwinRegisterInterfacesE2ETests
     {

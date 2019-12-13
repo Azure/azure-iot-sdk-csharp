@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Azure.IoT.DigitalTwin.Service;
+using Microsoft.Azure.IoT.DigitalTwin.Service;
 using Microsoft.Rest;
 using System;
 using Xunit;
 
-namespace Azure.IoT.DigitalTwin.E2ETests
+namespace Microsoft.Azure.IoT.DigitalTwin.E2ETests
 {
     public class DigitalTwinServiceClientE2ETests
     {

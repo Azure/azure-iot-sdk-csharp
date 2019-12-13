@@ -6,12 +6,12 @@ using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Azure.Iot.DigitalTwin.Device.Exceptions;
-using Azure.Iot.DigitalTwin.Device.Helper;
-using Azure.Iot.DigitalTwin.Device.Model;
-using Azure.IoT.DigitalTwin.Device;
+using Microsoft.Azure.IoT.DigitalTwin.Device.Exceptions;
+using Microsoft.Azure.IoT.DigitalTwin.Device.Helper;
+using Microsoft.Azure.IoT.DigitalTwin.Device.Model;
+using Microsoft.Azure.IoT.DigitalTwin.Device;
 
-namespace Azure.Iot.DigitalTwin.Device
+namespace Microsoft.Azure.IoT.DigitalTwin.Device
 {
     /// <summary>
     /// Digital Twin Interface Client implementations to receive requests on this interface from

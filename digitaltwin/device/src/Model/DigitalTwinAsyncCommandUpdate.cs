@@ -3,9 +3,9 @@
 
 using System;
 
-using Azure.Iot.DigitalTwin.Device.Helper;
+using Microsoft.Azure.IoT.DigitalTwin.Device.Helper;
 
-namespace Azure.Iot.DigitalTwin.Device.Model
+namespace Microsoft.Azure.IoT.DigitalTwin.Device.Model
 {
     /// <summary>
     /// Contains information needed for updating an asynchronous command's status.

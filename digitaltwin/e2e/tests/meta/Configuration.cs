@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Azure.IoT.DigitalTwin.E2ETests
+namespace Microsoft.Azure.IoT.DigitalTwin.E2ETests
 {
     class Configuration
     {

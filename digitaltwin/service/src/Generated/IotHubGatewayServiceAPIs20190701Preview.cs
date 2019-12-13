@@ -4,7 +4,7 @@
 // regenerated.
 // </auto-generated>
 
-namespace Azure.IoT.DigitalTwin.Service.Generated
+namespace Microsoft.Azure.IoT.DigitalTwin.Service.Generated
 {
     using Microsoft.Rest;
     using Microsoft.Rest.Serialization;

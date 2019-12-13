@@ -3,7 +3,7 @@
 
 using System.Threading.Tasks;
 
-using Azure.Iot.DigitalTwin.Device;
+using Microsoft.Azure.IoT.DigitalTwin.Device;
 
 namespace EnvironmentalSensorSample
 {
