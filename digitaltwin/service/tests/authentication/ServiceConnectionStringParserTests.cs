@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Xunit;
 
-namespace Azure.IoT.DigitalTwin.Service.Test.authentication
+namespace Azure.IoT.DigitalTwin.Service.Test.Authentication
 {
     public class ServiceConnectionStringParserTests
     {
