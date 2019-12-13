@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
-using DigitalTwinCommandResponse = Microsoft.Azure.IoT.DigitalTwin.Service.models.DigitalTwinCommandResponse;
+using DigitalTwinCommandResponse = Microsoft.Azure.IoT.DigitalTwin.Service.Models.DigitalTwinCommandResponse;
 
 namespace Microsoft.Azure.IoT.DigitalTwin.E2ETests
 {
