@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.Azure.IoT.DigitalTwin.Service
+namespace Microsoft.Azure.Devices.DigitalTwin.Service
 {
     internal static class SharedAccessSignatureConstants
     {

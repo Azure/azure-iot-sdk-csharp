@@ -7,15 +7,14 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Microsoft.Azure.IoT.DigitalTwin.Device;
-using Microsoft.Azure.IoT.DigitalTwin.Device.Helper;
-using Microsoft.Azure.IoT.DigitalTwin.Device.Model;
+using Microsoft.Azure.Devices.DigitalTwin.Client.Helper;
+using Microsoft.Azure.Devices.DigitalTwin.Client.Model;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.Azure.IoT.DigitalTwin.Device
+namespace Microsoft.Azure.Devices.DigitalTwin.Client
 {
     /// <summary>
     /// Digital Twin Client binds Digital Twin interfaces handles to the IoTHub transport.

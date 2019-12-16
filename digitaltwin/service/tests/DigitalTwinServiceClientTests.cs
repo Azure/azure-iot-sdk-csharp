@@ -1,11 +1,11 @@
 using System;
 using System.Threading;
 using Azure;
-using Microsoft.Azure.IoT.DigitalTwin.Service.Models;
+using Microsoft.Azure.Devices.DigitalTwin.Service.Models;
 using NSubstitute;
 using Xunit;
 
-namespace Microsoft.Azure.IoT.DigitalTwin.Service.ServiceClient.Test
+namespace Microsoft.Azure.Devices.DigitalTwin.Service.ServiceClient.Test
 {
     public class DigitalTwinServiceClientTests
     {

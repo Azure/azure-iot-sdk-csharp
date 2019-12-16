@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.Azure.IoT.DigitalTwin.Device.Model
+namespace Microsoft.Azure.Devices.DigitalTwin.Client.Model
 {
     /// <summary>
     /// Contains response of the property update request passed from the Digital Twin Client to Digital Twin

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 
-namespace Microsoft.Azure.IoT.DigitalTwin.Service
+namespace Microsoft.Azure.Devices.DigitalTwin.Service
 {
     internal static class GuardHelper
     {

@@ -8,7 +8,7 @@ using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.Azure.IoT.DigitalTwin.Device.Model
+namespace Microsoft.Azure.Devices.DigitalTwin.Client.Model
 {
     [SuppressMessage("Microsoft.Performance", "CA1812:AvoidUninstantiatedInternalClasses",
         Justification = "CodeAnalysis limitation: TwinCollectionJsonConverter is actually used by TwinCollection")]

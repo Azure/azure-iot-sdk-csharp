@@ -4,7 +4,7 @@
 // regenerated.
 // </auto-generated>
 
-namespace Microsoft.Azure.IoT.DigitalTwin.Service.Generated.Models
+namespace Microsoft.Azure.Devices.DigitalTwin.Service.Generated.Models
 {
     using Newtonsoft.Json;
     using System.Linq;

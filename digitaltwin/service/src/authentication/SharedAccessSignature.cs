@@ -8,7 +8,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Net;
 
-namespace Microsoft.Azure.IoT.DigitalTwin.Service
+namespace Microsoft.Azure.Devices.DigitalTwin.Service
 {
     internal sealed class SharedAccessSignature
     {

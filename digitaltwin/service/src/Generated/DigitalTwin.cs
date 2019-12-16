@@ -4,7 +4,7 @@
 // regenerated.
 // </auto-generated>
 
-namespace Microsoft.Azure.IoT.DigitalTwin.Service.Generated
+namespace Microsoft.Azure.Devices.DigitalTwin.Service.Generated
 {
     using Microsoft.Rest;
     using Models;

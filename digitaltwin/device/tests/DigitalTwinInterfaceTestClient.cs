@@ -5,10 +5,10 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Microsoft.Azure.IoT.DigitalTwin.Device;
-using Microsoft.Azure.IoT.DigitalTwin.Device.Model;
+using Microsoft.Azure.Devices.DigitalTwin.Client;
+using Microsoft.Azure.Devices.DigitalTwin.Client.Model;
 
-namespace Microsoft.Azure.IoT.DigitalTwin.Device.Test
+namespace Microsoft.Azure.Devices.DigitalTwin.Client.Test
 {
     internal class DigitalTwinInterfaceTestClient : DigitalTwinInterfaceClient
     {

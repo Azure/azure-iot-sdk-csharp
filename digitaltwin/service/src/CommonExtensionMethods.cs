@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Microsoft.Azure.IoT.DigitalTwin.Service
+namespace Microsoft.Azure.Devices.DigitalTwin.Service
 {
     internal static class CommonExtensionMethods
     {

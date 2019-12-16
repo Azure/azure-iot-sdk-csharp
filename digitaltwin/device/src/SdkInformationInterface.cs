@@ -5,11 +5,11 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 
-using Microsoft.Azure.IoT.DigitalTwin.Device;
-using Microsoft.Azure.IoT.DigitalTwin.Device.Model;
+using Microsoft.Azure.Devices.DigitalTwin.Client;
+using Microsoft.Azure.Devices.DigitalTwin.Client.Model;
 using Newtonsoft.Json;
 
-namespace Microsoft.Azure.IoT.DigitalTwin.Device
+namespace Microsoft.Azure.Devices.DigitalTwin.Client
 {
     internal class SdkInformationInterface : DigitalTwinInterfaceClient
     {
