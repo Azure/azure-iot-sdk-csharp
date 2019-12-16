@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Microsoft.Azure.IoT.DigitalTwin.Service.Models
+namespace Microsoft.Azure.Devices.DigitalTwin.Service.Models
 {
     public class DigitalTwinCommandResponse
     {

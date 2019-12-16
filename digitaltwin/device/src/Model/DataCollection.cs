@@ -5,11 +5,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 
-using Microsoft.Azure.IoT.DigitalTwin.Device.Helper;
+using Microsoft.Azure.Devices.DigitalTwin.Client.Helper;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.Azure.IoT.DigitalTwin.Device.Model
+namespace Microsoft.Azure.Devices.DigitalTwin.Client.Model
 {
     /// <summary>
     /// A collection of key value data pairs. This collection doesn't have meta data for properties, only actual data values.

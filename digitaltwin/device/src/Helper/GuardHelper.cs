@@ -5,9 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
-using Microsoft.Azure.IoT.DigitalTwin.Device.Model;
+using Microsoft.Azure.Devices.DigitalTwin.Client.Model;
 
-namespace Microsoft.Azure.IoT.DigitalTwin.Device.Helper
+namespace Microsoft.Azure.Devices.DigitalTwin.Client.Helper
 {
     /// <summary>
     /// The Guard Helper.

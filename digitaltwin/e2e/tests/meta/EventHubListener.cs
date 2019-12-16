@@ -11,7 +11,7 @@ using System.Text;
 using System.Threading;
 using Xunit;
 
-namespace Microsoft.Azure.IoT.DigitalTwin.E2ETests.meta
+namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests.meta
 {
     /// <summary>
     /// Spawn a thread to run this listener which will read all EventHub messages and store them in a gettable list

@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.IoT.DigitalTwin.Device.Model;
+using Microsoft.Azure.Devices.DigitalTwin.Client.Model;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Microsoft.Azure.IoT.DigitalTwin.E2ETests.interfaces
+namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests.interfaces
 {
     class TestInterface : DigitalTwinInterfaceClientWithTracking
     {

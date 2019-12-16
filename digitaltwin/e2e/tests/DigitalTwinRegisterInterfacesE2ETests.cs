@@ -1,16 +1,16 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.IoT.DigitalTwin.Device;
-using Microsoft.Azure.IoT.DigitalTwin.E2ETests.interfaces;
-using Microsoft.Azure.IoT.DigitalTwin.E2ETests.meta;
-using Microsoft.Azure.IoT.DigitalTwin.Service;
+using Microsoft.Azure.Devices.DigitalTwin.Client;
+using Microsoft.Azure.Devices.DigitalTwin.E2ETests.interfaces;
+using Microsoft.Azure.Devices.DigitalTwin.E2ETests.meta;
+using Microsoft.Azure.Devices.DigitalTwin.Service;
 using Microsoft.Azure.Devices.Client;
 using System;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Microsoft.Azure.IoT.DigitalTwin.E2ETests
+namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
 {
     public class DigitalTwinRegisterInterfacesE2ETests
     {
@@ -26,9 +26,9 @@ namespace Microsoft.Azure.IoT.DigitalTwin.E2ETests
         }
 
         [Theory]
-        [InlineData(TransportType.Mqtt_Tcp_Only)]
-        [InlineData(TransportType.Mqtt_WebSocket_Only)]
-        public async void registerCapbilityModelWithSingleInterface(TransportType transportType)
+        [InlineData(Devices.Client.TransportType.Mqtt_Tcp_Only)]
+        [InlineData(Devices.Client.TransportType.Mqtt_WebSocket_Only)]
+        public async void registerCapbilityModelWithSingleInterface(Devices.Client.TransportType transportType)
         {
             using (TestDigitalTwinDevice digitalTwinDevice = new TestDigitalTwinDevice(registerInterfacesDevicePrefix, transportType))
             {
@@ -52,9 +52,9 @@ namespace Microsoft.Azure.IoT.DigitalTwin.E2ETests
         }
 
         [Theory]
-        [InlineData(TransportType.Mqtt_Tcp_Only)]
-        [InlineData(TransportType.Mqtt_WebSocket_Only)]
-        public async void registerCapbilityModelWithMultipleInterfaces(TransportType transportType)
+        [InlineData(Devices.Client.TransportType.Mqtt_Tcp_Only)]
+        [InlineData(Devices.Client.TransportType.Mqtt_WebSocket_Only)]
+        public async void registerCapbilityModelWithMultipleInterfaces(Devices.Client.TransportType transportType)
         {
             using (TestDigitalTwinDevice digitalTwinDevice = new TestDigitalTwinDevice(registerInterfacesDevicePrefix, transportType))
             {
@@ -82,9 +82,9 @@ namespace Microsoft.Azure.IoT.DigitalTwin.E2ETests
         }
 
         [Theory]
-        [InlineData(TransportType.Mqtt_Tcp_Only)]
-        [InlineData(TransportType.Mqtt_WebSocket_Only)]
-        public async void registerCapbilityModelMultipleTimes(TransportType transportType)
+        [InlineData(Devices.Client.TransportType.Mqtt_Tcp_Only)]
+        [InlineData(Devices.Client.TransportType.Mqtt_WebSocket_Only)]
+        public async void registerCapbilityModelMultipleTimes(Devices.Client.TransportType transportType)
         {
             using (TestDigitalTwinDevice digitalTwinDevice = new TestDigitalTwinDevice(registerInterfacesDevicePrefix, transportType))
             {
@@ -115,9 +115,9 @@ namespace Microsoft.Azure.IoT.DigitalTwin.E2ETests
         }
 
         [Theory]
-        [InlineData(TransportType.Mqtt_Tcp_Only)]
-        [InlineData(TransportType.Mqtt_WebSocket_Only)]
-        public async void registerCapbilityModelMultipleTimesMultithreaded(TransportType transportType)
+        [InlineData(Devices.Client.TransportType.Mqtt_Tcp_Only)]
+        [InlineData(Devices.Client.TransportType.Mqtt_WebSocket_Only)]
+        public async void registerCapbilityModelMultipleTimesMultithreaded(Devices.Client.TransportType transportType)
         {
             using (TestDigitalTwinDevice digitalTwinDevice = new TestDigitalTwinDevice(registerInterfacesDevicePrefix, transportType))
             {
@@ -162,9 +162,9 @@ namespace Microsoft.Azure.IoT.DigitalTwin.E2ETests
         }
 
         [Theory]
-        [InlineData(TransportType.Mqtt_Tcp_Only)]
-        [InlineData(TransportType.Mqtt_WebSocket_Only)]
-        public async void registerCapbilityModelWithoutAnyInterfacesThrows(TransportType transportType)
+        [InlineData(Devices.Client.TransportType.Mqtt_Tcp_Only)]
+        [InlineData(Devices.Client.TransportType.Mqtt_WebSocket_Only)]
+        public async void registerCapbilityModelWithoutAnyInterfacesThrows(Devices.Client.TransportType transportType)
         {
             using (TestDigitalTwinDevice digitalTwinDevice = new TestDigitalTwinDevice(registerInterfacesDevicePrefix, transportType))
             {
@@ -187,9 +187,9 @@ namespace Microsoft.Azure.IoT.DigitalTwin.E2ETests
         }
 
         [Theory]
-        [InlineData(TransportType.Mqtt_Tcp_Only)]
-        [InlineData(TransportType.Mqtt_WebSocket_Only)]
-        public async void registerCapbilityModelWhenDeviceClientAlreadyOpen(TransportType transportType)
+        [InlineData(Devices.Client.TransportType.Mqtt_Tcp_Only)]
+        [InlineData(Devices.Client.TransportType.Mqtt_WebSocket_Only)]
+        public async void registerCapbilityModelWhenDeviceClientAlreadyOpen(Devices.Client.TransportType transportType)
         {
             using (TestDigitalTwinDevice digitalTwinDevice = new TestDigitalTwinDevice(registerInterfacesDevicePrefix, transportType))
             {
@@ -217,9 +217,9 @@ namespace Microsoft.Azure.IoT.DigitalTwin.E2ETests
         }
 
         [Theory]
-        [InlineData(TransportType.Mqtt_Tcp_Only)]
-        [InlineData(TransportType.Mqtt_WebSocket_Only)]
-        public async void registerCapbilityModelWhenDeviceClientIsDisposed(TransportType transportType)
+        [InlineData(Devices.Client.TransportType.Mqtt_Tcp_Only)]
+        [InlineData(Devices.Client.TransportType.Mqtt_WebSocket_Only)]
+        public async void registerCapbilityModelWhenDeviceClientIsDisposed(Devices.Client.TransportType transportType)
         {
             TestDigitalTwinDevice digitalTwinDevice = new TestDigitalTwinDevice(registerInterfacesDevicePrefix, transportType);
             

@@ -3,10 +3,10 @@
 
 using System;
 
-using Microsoft.Azure.IoT.DigitalTwin.Device.Model;
+using Microsoft.Azure.Devices.DigitalTwin.Client.Model;
 using Xunit;
 
-namespace Microsoft.Azure.IoT.DigitalTwin.Device.Test.Model
+namespace Microsoft.Azure.Devices.DigitalTwin.Client.Test.Model
 {
     public class DigitalTwinPropertyReportTest
     {

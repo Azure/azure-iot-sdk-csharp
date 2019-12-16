@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace Microsoft.Azure.IoT.DigitalTwin.Device.Helper
+namespace Microsoft.Azure.Devices.DigitalTwin.Client.Helper
 {
     /// <summary>
     /// All constants related with Digital Twin Service sdk.

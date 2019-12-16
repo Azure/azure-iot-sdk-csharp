@@ -1,17 +1,17 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.IoT.DigitalTwin.Device;
-using Microsoft.Azure.IoT.DigitalTwin.E2ETests.interfaces;
+using Microsoft.Azure.Devices.DigitalTwin.Client;
+using Microsoft.Azure.Devices.DigitalTwin.E2ETests.interfaces;
 using System;
 using Xunit;
 using TransportType = Microsoft.Azure.Devices.Client.TransportType;
-using Microsoft.Azure.IoT.DigitalTwin.E2ETests.meta;
+using Microsoft.Azure.Devices.DigitalTwin.E2ETests.meta;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using static Microsoft.Azure.IoT.DigitalTwin.E2ETests.interfaces.TestInterface2;
+using static Microsoft.Azure.Devices.DigitalTwin.E2ETests.interfaces.TestInterface2;
 
-namespace Microsoft.Azure.IoT.DigitalTwin.E2ETests
+namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
 {
     public class DigitalTwinTelemetryE2ETests
     {
@@ -47,28 +47,28 @@ namespace Microsoft.Azure.IoT.DigitalTwin.E2ETests
             "}";
 
         [Theory]
-        [InlineData(TransportType.Mqtt_Tcp_Only, TestInterface2.TELEMETRY_NAME_INTEGER, "1000")]
-        [InlineData(TransportType.Mqtt_Tcp_Only, TestInterface2.TELEMETRY_NAME_BOOLEAN, "false")]
-        [InlineData(TransportType.Mqtt_Tcp_Only, TestInterface2.TELEMETRY_NAME_DOUBLE, "1.0000000001")]
-        [InlineData(TransportType.Mqtt_Tcp_Only, TestInterface2.TELEMETRY_NAME_STRING, "\"someString\"")]
-        [InlineData(TransportType.Mqtt_Tcp_Only, TestInterface2.TELEMETRY_NAME_LONG, "9223372036854775807")]
-        [InlineData(TransportType.Mqtt_Tcp_Only, TestInterface2.TELEMETRY_NAME_COMPLEX_VALUE, COMPLEX_JSON_VALUE)]
-        [InlineData(TransportType.Mqtt_Tcp_Only, TestInterface2.TELEMETRY_NAME_FLOAT, "1.001")]
-        [InlineData(TransportType.Mqtt_Tcp_Only, TestInterface2.TELEMETRY_NAME_ARRAY, "[ 100, 500, 300, 200, 400 ]")]
-        [InlineData(TransportType.Mqtt_Tcp_Only, TestInterface2.TELEMETRY_NAME_COMPLEX_OBJECT, COMPLEX_JSON_OBJECT)]
-        [InlineData(TransportType.Mqtt_Tcp_Only, TestInterface2.TELEMETRY_NAME_ENUM, "offline")]
-        [InlineData(TransportType.Mqtt_Tcp_Only, TestInterface2.TELEMETRY_NAME_MAP, "offline")]
-        [InlineData(TransportType.Mqtt_WebSocket_Only, TestInterface2.TELEMETRY_NAME_INTEGER, "1000")]
-        [InlineData(TransportType.Mqtt_WebSocket_Only, TestInterface2.TELEMETRY_NAME_BOOLEAN, "false")]
-        [InlineData(TransportType.Mqtt_WebSocket_Only, TestInterface2.TELEMETRY_NAME_DOUBLE, "1.0000000001")]
-        [InlineData(TransportType.Mqtt_WebSocket_Only, TestInterface2.TELEMETRY_NAME_STRING, "\"someString\"")]
-        [InlineData(TransportType.Mqtt_WebSocket_Only, TestInterface2.TELEMETRY_NAME_LONG, "9223372036854775807")]
-        [InlineData(TransportType.Mqtt_WebSocket_Only, TestInterface2.TELEMETRY_NAME_COMPLEX_VALUE, COMPLEX_JSON_VALUE)]
-        [InlineData(TransportType.Mqtt_WebSocket_Only, TestInterface2.TELEMETRY_NAME_FLOAT, "1.001")]
-        [InlineData(TransportType.Mqtt_WebSocket_Only, TestInterface2.TELEMETRY_NAME_ARRAY, "[ 100, 500, 300, 200, 400 ]")]
-        [InlineData(TransportType.Mqtt_WebSocket_Only, TestInterface2.TELEMETRY_NAME_COMPLEX_OBJECT, COMPLEX_JSON_OBJECT)]
-        [InlineData(TransportType.Mqtt_WebSocket_Only, TestInterface2.TELEMETRY_NAME_ENUM, "offline")]
-        public async void sendTelemetryWithDifferentTypes(TransportType transportType, string telemetryName, string telemetryValue)
+        [InlineData(Devices.Client.TransportType.Mqtt_Tcp_Only, TestInterface2.TELEMETRY_NAME_INTEGER, "1000")]
+        [InlineData(Devices.Client.TransportType.Mqtt_Tcp_Only, TestInterface2.TELEMETRY_NAME_BOOLEAN, "false")]
+        [InlineData(Devices.Client.TransportType.Mqtt_Tcp_Only, TestInterface2.TELEMETRY_NAME_DOUBLE, "1.0000000001")]
+        [InlineData(Devices.Client.TransportType.Mqtt_Tcp_Only, TestInterface2.TELEMETRY_NAME_STRING, "\"someString\"")]
+        [InlineData(Devices.Client.TransportType.Mqtt_Tcp_Only, TestInterface2.TELEMETRY_NAME_LONG, "9223372036854775807")]
+        [InlineData(Devices.Client.TransportType.Mqtt_Tcp_Only, TestInterface2.TELEMETRY_NAME_COMPLEX_VALUE, COMPLEX_JSON_VALUE)]
+        [InlineData(Devices.Client.TransportType.Mqtt_Tcp_Only, TestInterface2.TELEMETRY_NAME_FLOAT, "1.001")]
+        [InlineData(Devices.Client.TransportType.Mqtt_Tcp_Only, TestInterface2.TELEMETRY_NAME_ARRAY, "[ 100, 500, 300, 200, 400 ]")]
+        [InlineData(Devices.Client.TransportType.Mqtt_Tcp_Only, TestInterface2.TELEMETRY_NAME_COMPLEX_OBJECT, COMPLEX_JSON_OBJECT)]
+        [InlineData(Devices.Client.TransportType.Mqtt_Tcp_Only, TestInterface2.TELEMETRY_NAME_ENUM, "offline")]
+        [InlineData(Devices.Client.TransportType.Mqtt_Tcp_Only, TestInterface2.TELEMETRY_NAME_MAP, "offline")]
+        [InlineData(Devices.Client.TransportType.Mqtt_WebSocket_Only, TestInterface2.TELEMETRY_NAME_INTEGER, "1000")]
+        [InlineData(Devices.Client.TransportType.Mqtt_WebSocket_Only, TestInterface2.TELEMETRY_NAME_BOOLEAN, "false")]
+        [InlineData(Devices.Client.TransportType.Mqtt_WebSocket_Only, TestInterface2.TELEMETRY_NAME_DOUBLE, "1.0000000001")]
+        [InlineData(Devices.Client.TransportType.Mqtt_WebSocket_Only, TestInterface2.TELEMETRY_NAME_STRING, "\"someString\"")]
+        [InlineData(Devices.Client.TransportType.Mqtt_WebSocket_Only, TestInterface2.TELEMETRY_NAME_LONG, "9223372036854775807")]
+        [InlineData(Devices.Client.TransportType.Mqtt_WebSocket_Only, TestInterface2.TELEMETRY_NAME_COMPLEX_VALUE, COMPLEX_JSON_VALUE)]
+        [InlineData(Devices.Client.TransportType.Mqtt_WebSocket_Only, TestInterface2.TELEMETRY_NAME_FLOAT, "1.001")]
+        [InlineData(Devices.Client.TransportType.Mqtt_WebSocket_Only, TestInterface2.TELEMETRY_NAME_ARRAY, "[ 100, 500, 300, 200, 400 ]")]
+        [InlineData(Devices.Client.TransportType.Mqtt_WebSocket_Only, TestInterface2.TELEMETRY_NAME_COMPLEX_OBJECT, COMPLEX_JSON_OBJECT)]
+        [InlineData(Devices.Client.TransportType.Mqtt_WebSocket_Only, TestInterface2.TELEMETRY_NAME_ENUM, "offline")]
+        public async void sendTelemetryWithDifferentTypes(Devices.Client.TransportType transportType, string telemetryName, string telemetryValue)
         {
             using (TestDigitalTwinDevice digitalTwinDevice = new TestDigitalTwinDevice(telemetryDevicePrefix, transportType))
             {
@@ -87,9 +87,9 @@ namespace Microsoft.Azure.IoT.DigitalTwin.E2ETests
         }
 
         [Theory]
-        [InlineData(TransportType.Mqtt_Tcp_Only, TestInterface2.TELEMETRY_NAME_INTEGER, "1000")]
-        [InlineData(TransportType.Mqtt_WebSocket_Only, TestInterface2.TELEMETRY_NAME_INTEGER, "1000")]
-        public async void sendTelemetryWithDifferentTypesMultithreaded(TransportType transportType, string telemetryName, string telemetryValue)
+        [InlineData(Devices.Client.TransportType.Mqtt_Tcp_Only, TestInterface2.TELEMETRY_NAME_INTEGER, "1000")]
+        [InlineData(Devices.Client.TransportType.Mqtt_WebSocket_Only, TestInterface2.TELEMETRY_NAME_INTEGER, "1000")]
+        public async void sendTelemetryWithDifferentTypesMultithreaded(Devices.Client.TransportType transportType, string telemetryName, string telemetryValue)
         {
             using (TestDigitalTwinDevice digitalTwinDevice = new TestDigitalTwinDevice(telemetryDevicePrefix, transportType))
             {

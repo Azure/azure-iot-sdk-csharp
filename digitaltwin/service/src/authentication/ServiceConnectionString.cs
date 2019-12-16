@@ -4,7 +4,7 @@
 using System;
 using System.Text;
 
-namespace Microsoft.Azure.IoT.DigitalTwin.Service
+namespace Microsoft.Azure.Devices.DigitalTwin.Service
 {
     /// <summary>
     /// This object handles the connection string for the Azure IoT Services.

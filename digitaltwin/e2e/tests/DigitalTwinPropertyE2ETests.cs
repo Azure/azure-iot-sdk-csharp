@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.IoT.DigitalTwin.Device;
-using Microsoft.Azure.IoT.DigitalTwin.E2ETests.interfaces;
-using Microsoft.Azure.IoT.DigitalTwin.Service;
+using Microsoft.Azure.Devices.DigitalTwin.Client;
+using Microsoft.Azure.Devices.DigitalTwin.E2ETests.interfaces;
+using Microsoft.Azure.Devices.DigitalTwin.Service;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Rest;
 using System;
@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 using Xunit;
 using Azure;
 
-namespace Microsoft.Azure.IoT.DigitalTwin.E2ETests
+namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
 {
     public class DigitalTwinPropertyE2ETests
     {
@@ -21,9 +21,9 @@ namespace Microsoft.Azure.IoT.DigitalTwin.E2ETests
         private const int maxDelayForPropertyUpdateInSeconds = 10;
 
         [Theory]
-        [InlineData(TransportType.Mqtt_Tcp_Only)]
-        [InlineData(TransportType.Mqtt_WebSocket_Only)]
-        public async Task testUpdateSingleWritablePropertySuccessAsync(TransportType transportType)
+        [InlineData(Devices.Client.TransportType.Mqtt_Tcp_Only)]
+        [InlineData(Devices.Client.TransportType.Mqtt_WebSocket_Only)]
+        public async Task testUpdateSingleWritablePropertySuccessAsync(Devices.Client.TransportType transportType)
         {
             using (TestDigitalTwinDevice digitalTwinDevice = new TestDigitalTwinDevice(propertiesDevicePrefix, transportType))
             {
@@ -48,9 +48,9 @@ namespace Microsoft.Azure.IoT.DigitalTwin.E2ETests
         }
 
         [Theory]
-        [InlineData(TransportType.Mqtt_Tcp_Only)]
-        [InlineData(TransportType.Mqtt_WebSocket_Only)]
-        public async void testUpdateMultipleWritablePropertiesOnSingleInterfacesSuccess(TransportType transportType)
+        [InlineData(Devices.Client.TransportType.Mqtt_Tcp_Only)]
+        [InlineData(Devices.Client.TransportType.Mqtt_WebSocket_Only)]
+        public async void testUpdateMultipleWritablePropertiesOnSingleInterfacesSuccess(Devices.Client.TransportType transportType)
         {
             using (TestDigitalTwinDevice digitalTwinDevice = new TestDigitalTwinDevice(propertiesDevicePrefix, transportType))
             {
@@ -78,9 +78,9 @@ namespace Microsoft.Azure.IoT.DigitalTwin.E2ETests
         }
 
         [Theory]
-        [InlineData(TransportType.Mqtt_Tcp_Only)]
-        [InlineData(TransportType.Mqtt_WebSocket_Only)]
-        public async void testUpdateSingleWritablePropertyOnSingleInterfacesMultithreadedSuccess(TransportType transportType)
+        [InlineData(Devices.Client.TransportType.Mqtt_Tcp_Only)]
+        [InlineData(Devices.Client.TransportType.Mqtt_WebSocket_Only)]
+        public async void testUpdateSingleWritablePropertyOnSingleInterfacesMultithreadedSuccess(Devices.Client.TransportType transportType)
         {
             using (TestDigitalTwinDevice digitalTwinDevice = new TestDigitalTwinDevice(propertiesDevicePrefix, transportType))
             {
@@ -115,9 +115,9 @@ namespace Microsoft.Azure.IoT.DigitalTwin.E2ETests
         }
 
         [Theory]
-        [InlineData(TransportType.Mqtt_Tcp_Only)]
-        [InlineData(TransportType.Mqtt_WebSocket_Only)]
-        public async Task deviceClientClosingPreventsPropertyUpdateCallbacks(TransportType transportType)
+        [InlineData(Devices.Client.TransportType.Mqtt_Tcp_Only)]
+        [InlineData(Devices.Client.TransportType.Mqtt_WebSocket_Only)]
+        public async Task deviceClientClosingPreventsPropertyUpdateCallbacks(Devices.Client.TransportType transportType)
         {
             TestDigitalTwinDevice digitalTwinDevice = new TestDigitalTwinDevice(propertiesDevicePrefix, transportType);
             DigitalTwinClient digitalTwinClient = digitalTwinDevice.digitalTwinClient;
@@ -138,9 +138,9 @@ namespace Microsoft.Azure.IoT.DigitalTwin.E2ETests
         }
 
         [Theory]
-        [InlineData(TransportType.Mqtt_Tcp_Only)]
-        [InlineData(TransportType.Mqtt_WebSocket_Only)]
-        public async Task interfaceClientCanReportReadOnlyProperty(TransportType transportType)
+        [InlineData(Devices.Client.TransportType.Mqtt_Tcp_Only)]
+        [InlineData(Devices.Client.TransportType.Mqtt_WebSocket_Only)]
+        public async Task interfaceClientCanReportReadOnlyProperty(Devices.Client.TransportType transportType)
         {
             using (TestDigitalTwinDevice digitalTwinDevice = new TestDigitalTwinDevice(propertiesDevicePrefix, transportType))
             {
@@ -161,9 +161,9 @@ namespace Microsoft.Azure.IoT.DigitalTwin.E2ETests
         }
 
         [Theory]
-        [InlineData(TransportType.Mqtt_Tcp_Only)]
-        [InlineData(TransportType.Mqtt_WebSocket_Only)]
-        public async Task interfaceClientCanReportReadWriteProperty(TransportType transportType)
+        [InlineData(Devices.Client.TransportType.Mqtt_Tcp_Only)]
+        [InlineData(Devices.Client.TransportType.Mqtt_WebSocket_Only)]
+        public async Task interfaceClientCanReportReadWriteProperty(Devices.Client.TransportType transportType)
         {
             using (TestDigitalTwinDevice digitalTwinDevice = new TestDigitalTwinDevice(propertiesDevicePrefix, transportType))
             {
@@ -184,9 +184,9 @@ namespace Microsoft.Azure.IoT.DigitalTwin.E2ETests
         }
 
         [Theory]
-        [InlineData(TransportType.Mqtt_Tcp_Only)]
-        [InlineData(TransportType.Mqtt_WebSocket_Only)]
-        public async Task interfaceClientCanReportMultipleProperties(TransportType transportType)
+        [InlineData(Devices.Client.TransportType.Mqtt_Tcp_Only)]
+        [InlineData(Devices.Client.TransportType.Mqtt_WebSocket_Only)]
+        public async Task interfaceClientCanReportMultipleProperties(Devices.Client.TransportType transportType)
         {
             using (TestDigitalTwinDevice digitalTwinDevice = new TestDigitalTwinDevice(propertiesDevicePrefix, transportType))
             {
@@ -215,7 +215,7 @@ namespace Microsoft.Azure.IoT.DigitalTwin.E2ETests
         [Fact(Skip = "Service isn't preventing undefined properties from being set right now")]
         public async void testUpdateWritablePropertyUnknownProperty()
         {
-            TransportType transportType = TransportType.Mqtt_Tcp_Only;
+            Devices.Client.TransportType transportType = Devices.Client.TransportType.Mqtt_Tcp_Only;
             using (TestDigitalTwinDevice digitalTwinDevice = new TestDigitalTwinDevice(propertiesDevicePrefix, transportType))
             {
                 DigitalTwinClient digitalTwinClient = digitalTwinDevice.digitalTwinClient;
@@ -241,7 +241,7 @@ namespace Microsoft.Azure.IoT.DigitalTwin.E2ETests
         [Fact(Skip = "Service isn't preventing read only properties from being updated right now")]
         public async Task testUpdateSingleReadonlyPropertyFails()
         {
-            TransportType transportType = TransportType.Mqtt_Tcp_Only;
+            Devices.Client.TransportType transportType = Devices.Client.TransportType.Mqtt_Tcp_Only;
             using (TestDigitalTwinDevice digitalTwinDevice = new TestDigitalTwinDevice(propertiesDevicePrefix, transportType))
             {
                 DigitalTwinClient digitalTwinClient = digitalTwinDevice.digitalTwinClient;

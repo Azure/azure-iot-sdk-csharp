@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.IoT.DigitalTwin.Device;
-using Microsoft.Azure.IoT.DigitalTwin.E2ETests.interfaces;
-using Microsoft.Azure.IoT.DigitalTwin.Service;
+using Microsoft.Azure.Devices.DigitalTwin.Client;
+using Microsoft.Azure.Devices.DigitalTwin.E2ETests.interfaces;
+using Microsoft.Azure.Devices.DigitalTwin.Service;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Rest;
 using System;
@@ -11,10 +11,10 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
-using DigitalTwinCommandResponse = Microsoft.Azure.IoT.DigitalTwin.Service.Models.DigitalTwinCommandResponse;
+using DigitalTwinCommandResponse = Microsoft.Azure.Devices.DigitalTwin.Service.Models.DigitalTwinCommandResponse;
 using Azure;
 
-namespace Microsoft.Azure.IoT.DigitalTwin.E2ETests
+namespace Microsoft.Azure.Devices.DigitalTwin.E2ETests
 {
     public class DigitalTwinCommandsE2ETests
     {
@@ -25,11 +25,11 @@ namespace Microsoft.Azure.IoT.DigitalTwin.E2ETests
         private const string noCommandPayload = null;
 
         [Theory]
-        [InlineData(TransportType.Mqtt_Tcp_Only, sampleSyncCommandName, sampleCommandPayload)]
-        [InlineData(TransportType.Mqtt_Tcp_Only, sampleSyncCommandName, noCommandPayload)]
-        [InlineData(TransportType.Mqtt_WebSocket_Only, sampleSyncCommandName, sampleCommandPayload)]
-        [InlineData(TransportType.Mqtt_WebSocket_Only, sampleSyncCommandName, noCommandPayload)]
-        public async Task testDeviceClientReceivesSyncCommandAndResponds(TransportType transportType, string commandName, string payload)
+        [InlineData(Devices.Client.TransportType.Mqtt_Tcp_Only, sampleSyncCommandName, sampleCommandPayload)]
+        [InlineData(Devices.Client.TransportType.Mqtt_Tcp_Only, sampleSyncCommandName, noCommandPayload)]
+        [InlineData(Devices.Client.TransportType.Mqtt_WebSocket_Only, sampleSyncCommandName, sampleCommandPayload)]
+        [InlineData(Devices.Client.TransportType.Mqtt_WebSocket_Only, sampleSyncCommandName, noCommandPayload)]
+        public async Task testDeviceClientReceivesSyncCommandAndResponds(Devices.Client.TransportType transportType, string commandName, string payload)
         {
             using (TestDigitalTwinDevice digitalTwinDevice = new TestDigitalTwinDevice(commandsDevicePrefix, transportType))
             {
@@ -57,11 +57,11 @@ namespace Microsoft.Azure.IoT.DigitalTwin.E2ETests
         }
 
         [Theory]
-        [InlineData(TransportType.Mqtt_Tcp_Only, sampleAsyncCommandName, sampleCommandPayload)]
-        [InlineData(TransportType.Mqtt_Tcp_Only, sampleAsyncCommandName, noCommandPayload)]
-        [InlineData(TransportType.Mqtt_WebSocket_Only, sampleAsyncCommandName, sampleCommandPayload)]
-        [InlineData(TransportType.Mqtt_WebSocket_Only, sampleAsyncCommandName, noCommandPayload)]
-        public async Task testDeviceClientReceivesAsyncCommandAndResponds(TransportType transportType, string commandName, string payload)
+        [InlineData(Devices.Client.TransportType.Mqtt_Tcp_Only, sampleAsyncCommandName, sampleCommandPayload)]
+        [InlineData(Devices.Client.TransportType.Mqtt_Tcp_Only, sampleAsyncCommandName, noCommandPayload)]
+        [InlineData(Devices.Client.TransportType.Mqtt_WebSocket_Only, sampleAsyncCommandName, sampleCommandPayload)]
+        [InlineData(Devices.Client.TransportType.Mqtt_WebSocket_Only, sampleAsyncCommandName, noCommandPayload)]
+        public async Task testDeviceClientReceivesAsyncCommandAndResponds(Devices.Client.TransportType transportType, string commandName, string payload)
         {
             using (TestDigitalTwinDevice digitalTwinDevice = new TestDigitalTwinDevice(commandsDevicePrefix, transportType))
             {
@@ -89,11 +89,11 @@ namespace Microsoft.Azure.IoT.DigitalTwin.E2ETests
         }
 
         [Theory]
-        [InlineData(TransportType.Mqtt_Tcp_Only, sampleSyncCommandName, sampleCommandPayload)]
-        [InlineData(TransportType.Mqtt_Tcp_Only, sampleSyncCommandName, noCommandPayload)]
-        [InlineData(TransportType.Mqtt_WebSocket_Only, sampleSyncCommandName, sampleCommandPayload)]
-        [InlineData(TransportType.Mqtt_WebSocket_Only, sampleSyncCommandName, noCommandPayload)]
-        public async void testSameCommandNameOnMultipleRegisteredInterfacesSuccess(TransportType transportType, string commandName, string payload)
+        [InlineData(Devices.Client.TransportType.Mqtt_Tcp_Only, sampleSyncCommandName, sampleCommandPayload)]
+        [InlineData(Devices.Client.TransportType.Mqtt_Tcp_Only, sampleSyncCommandName, noCommandPayload)]
+        [InlineData(Devices.Client.TransportType.Mqtt_WebSocket_Only, sampleSyncCommandName, sampleCommandPayload)]
+        [InlineData(Devices.Client.TransportType.Mqtt_WebSocket_Only, sampleSyncCommandName, noCommandPayload)]
+        public async void testSameCommandNameOnMultipleRegisteredInterfacesSuccess(Devices.Client.TransportType transportType, string commandName, string payload)
         {
             using (TestDigitalTwinDevice digitalTwinDevice = new TestDigitalTwinDevice(commandsDevicePrefix, transportType))
             {
@@ -115,9 +115,9 @@ namespace Microsoft.Azure.IoT.DigitalTwin.E2ETests
         }
 
         [Theory]
-        [InlineData(TransportType.Mqtt_Tcp_Only, "undefinedMethod", sampleCommandPayload)]
-        [InlineData(TransportType.Mqtt_WebSocket_Only, "undefinedMethod", sampleCommandPayload)]
-        public async Task testDeviceClientReceivesUnknownCommandAndResponds(TransportType transportType, string commandName, string payload)
+        [InlineData(Devices.Client.TransportType.Mqtt_Tcp_Only, "undefinedMethod", sampleCommandPayload)]
+        [InlineData(Devices.Client.TransportType.Mqtt_WebSocket_Only, "undefinedMethod", sampleCommandPayload)]
+        public async Task testDeviceClientReceivesUnknownCommandAndResponds(Devices.Client.TransportType transportType, string commandName, string payload)
         {
             using (TestDigitalTwinDevice digitalTwinDevice = new TestDigitalTwinDevice(commandsDevicePrefix, transportType))
             {
@@ -136,9 +136,9 @@ namespace Microsoft.Azure.IoT.DigitalTwin.E2ETests
         }
 
         [Theory]
-        [InlineData(TransportType.Mqtt_Tcp_Only, sampleSyncCommandName, sampleCommandPayload)]
-        [InlineData(TransportType.Mqtt_WebSocket_Only, sampleSyncCommandName, sampleCommandPayload)]
-        public async void testInvokeCommandUnknownInterfaceInstanceName(TransportType transportType, string commandName, string payload)
+        [InlineData(Devices.Client.TransportType.Mqtt_Tcp_Only, sampleSyncCommandName, sampleCommandPayload)]
+        [InlineData(Devices.Client.TransportType.Mqtt_WebSocket_Only, sampleSyncCommandName, sampleCommandPayload)]
+        public async void testInvokeCommandUnknownInterfaceInstanceName(Devices.Client.TransportType transportType, string commandName, string payload)
         {
             using (TestDigitalTwinDevice digitalTwinDevice = new TestDigitalTwinDevice(commandsDevicePrefix, transportType))
             {
@@ -158,9 +158,9 @@ namespace Microsoft.Azure.IoT.DigitalTwin.E2ETests
         }
 
         [Theory]
-        [InlineData(TransportType.Mqtt_Tcp_Only, "!!!!!@#!@$!R!D!@D!@$!@#!#", sampleCommandPayload)]
-        [InlineData(TransportType.Mqtt_WebSocket_Only, "!!!!!@#!@$!R!D!@D!@$!@#!#", sampleCommandPayload)]
-        public async void testInvokeCommandInvalidCommandName(TransportType transportType, string commandName, string payload)
+        [InlineData(Devices.Client.TransportType.Mqtt_Tcp_Only, "!!!!!@#!@$!R!D!@D!@$!@#!#", sampleCommandPayload)]
+        [InlineData(Devices.Client.TransportType.Mqtt_WebSocket_Only, "!!!!!@#!@$!R!D!@D!@$!@#!#", sampleCommandPayload)]
+        public async void testInvokeCommandInvalidCommandName(Devices.Client.TransportType transportType, string commandName, string payload)
         {
             using (TestDigitalTwinDevice digitalTwinDevice = new TestDigitalTwinDevice(commandsDevicePrefix, transportType))
             {
@@ -176,9 +176,9 @@ namespace Microsoft.Azure.IoT.DigitalTwin.E2ETests
         }
 
         [Theory]
-        [InlineData(TransportType.Mqtt_Tcp_Only, sampleSyncCommandName, sampleCommandPayload)]
-        [InlineData(TransportType.Mqtt_WebSocket_Only, sampleSyncCommandName, sampleCommandPayload)]
-        public async Task testInvokeCommandOnOfflineDevice(TransportType transportType, string commandName, string payload)
+        [InlineData(Devices.Client.TransportType.Mqtt_Tcp_Only, sampleSyncCommandName, sampleCommandPayload)]
+        [InlineData(Devices.Client.TransportType.Mqtt_WebSocket_Only, sampleSyncCommandName, sampleCommandPayload)]
+        public async Task testInvokeCommandOnOfflineDevice(Devices.Client.TransportType transportType, string commandName, string payload)
         {
             TestDigitalTwinDevice digitalTwinDevice = new TestDigitalTwinDevice(commandsDevicePrefix, transportType);
             DigitalTwinClient digitalTwinClient = digitalTwinDevice.digitalTwinClient;
@@ -195,9 +195,9 @@ namespace Microsoft.Azure.IoT.DigitalTwin.E2ETests
         }
 
         [Theory]
-        [InlineData(TransportType.Mqtt_Tcp_Only, sampleSyncCommandName, sampleCommandPayload)]
-        [InlineData(TransportType.Mqtt_WebSocket_Only, sampleSyncCommandName, sampleCommandPayload)]
-        public async void testInvokeCommandMultithreaded(TransportType transportType, string commandName, string payload)
+        [InlineData(Devices.Client.TransportType.Mqtt_Tcp_Only, sampleSyncCommandName, sampleCommandPayload)]
+        [InlineData(Devices.Client.TransportType.Mqtt_WebSocket_Only, sampleSyncCommandName, sampleCommandPayload)]
+        public async void testInvokeCommandMultithreaded(Devices.Client.TransportType transportType, string commandName, string payload)
         {
             using (TestDigitalTwinDevice digitalTwinDevice = new TestDigitalTwinDevice(commandsDevicePrefix, transportType))
             {
