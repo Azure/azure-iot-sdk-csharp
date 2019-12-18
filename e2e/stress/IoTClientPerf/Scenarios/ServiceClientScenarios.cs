@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Azure.Devices;
 using System;
 using System.Diagnostics;
 using System.Runtime.ExceptionServices;
@@ -20,10 +19,12 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         // Separate metrics and time calculation for operations that can be parallelized.
         private const string TestMethodName = "PerfTestMethod";
+        private const int MethodPassStatus = 200;
         private TelemetryMetrics _mMethod = new TelemetryMetrics();
         private Stopwatch _swMethod = new Stopwatch();
 
-        private byte[] _messageBytes;
+        private readonly byte[] _messageBytes;
+        private readonly string _methodPayload;
 
         public ServiceClientScenario(PerfScenarioConfig config) : base(config)
         {
@@ -31,7 +32,12 @@ namespace Microsoft.Azure.Devices.E2ETests
             _mMethod.Id = _id;
 
             _messageBytes = new byte[_sizeBytes];
-            BitConverter.TryWriteBytes(_messageBytes, _id);
+            byte[] idBytes = BitConverter.GetBytes(_id);
+            Buffer.BlockCopy(idBytes, 0, _messageBytes, 0, idBytes.Length);
+
+            _methodPayload = 
+                "{\"Data\":\"" +
+                Convert.ToBase64String(_messageBytes) + "\"}";
         }
 
         protected void CreateServiceClient()
@@ -41,7 +47,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         protected async Task OpenServiceClientAsync(CancellationToken ct)
         {
-            ExceptionDispatchInfo exInfo = null;
             _m.OperationType = TelemetryMetrics.ServiceOperationOpen;
             _m.ScheduleTime = null;
             _sw.Restart();
@@ -56,18 +61,17 @@ namespace Microsoft.Azure.Devices.E2ETests
             catch (Exception ex)
             {
                 _m.ErrorMessage = $"{ex.GetType().Name} - {ex.Message}";
-                exInfo = ExceptionDispatchInfo.Capture(ex);
+                throw;
             }
-
-            _m.ExecuteTime = _sw.ElapsedMilliseconds;
-            await _writer.WriteAsync(_m).ConfigureAwait(false);
-
-            exInfo?.Throw();
+            finally
+            {
+                _m.ExecuteTime = _sw.ElapsedMilliseconds;
+                await _writer.WriteAsync(_m).ConfigureAwait(false);
+            }
         }
 
         protected async Task SendMessageAsync(CancellationToken ct)
         {
-            ExceptionDispatchInfo exInfo = null;
             _m.OperationType = TelemetryMetrics.ServiceOperationSend;
             _m.ScheduleTime = null;
             _sw.Restart();
@@ -84,45 +88,73 @@ namespace Microsoft.Azure.Devices.E2ETests
             catch (Exception ex)
             {
                 _m.ErrorMessage = $"{ex.GetType().Name} - {ex.Message}";
-                exInfo = ExceptionDispatchInfo.Capture(ex);
+                throw;
             }
-
-            _m.ExecuteTime = _sw.ElapsedMilliseconds;
-            await _writer.WriteAsync(_m).ConfigureAwait(false);
-            exInfo?.Throw();
+            finally
+            {
+                _m.ExecuteTime = _sw.ElapsedMilliseconds;
+                await _writer.WriteAsync(_m).ConfigureAwait(false);
+            }
         }
 
         protected async Task CallMethodAsync(CancellationToken ct)
         {
-            ExceptionDispatchInfo exInfo = null;
             _mMethod.ScheduleTime = null;
             _mMethod.OperationType = TelemetryMetrics.ServiceOperationMethodCall;
             _swMethod.Restart();
 
             try
             {
+                string deviceId = Configuration.Stress.GetDeviceNameById(_id, _authType);
+
                 var methodCall = new CloudToDeviceMethod(TestMethodName);
-                Task t = s_sc.InvokeDeviceMethodAsync(Configuration.Stress.GetDeviceNameById(_id, _authType), methodCall);
+                methodCall.SetPayloadJson(_methodPayload);
+                Task<CloudToDeviceMethodResult> t = s_sc.InvokeDeviceMethodAsync(Configuration.Stress.GetDeviceNameById(_id, _authType), methodCall);
                 _mMethod.ScheduleTime = _swMethod.ElapsedMilliseconds;
 
                 _swMethod.Restart();
-                await t.ConfigureAwait(false);
+                CloudToDeviceMethodResult result = await t.ConfigureAwait(false);
+
+                // Check method result.
+                if (result.Status != MethodPassStatus)
+                {
+                    throw new InvalidOperationException($"IoTPerfClient: Status: {result.Status} Payload:{result.GetPayloadAsJson()}");
+                }
             }
             catch (Exception ex)
             {
                 _mMethod.ErrorMessage = $"{ex.GetType().Name} - {ex.Message}";
-                exInfo = ExceptionDispatchInfo.Capture(ex);
+                throw;
             }
-
-            _mMethod.ExecuteTime = _swMethod.ElapsedMilliseconds;
-            await _writer.WriteAsync(_mMethod).ConfigureAwait(false);
-            exInfo?.Throw();
+            finally
+            {
+                _mMethod.ExecuteTime = _swMethod.ElapsedMilliseconds;
+                await _writer.WriteAsync(_mMethod).ConfigureAwait(false);
+            }
         }
 
-        protected Task CloseAsync(CancellationToken ct)
+        protected async Task CloseAsync(CancellationToken ct)
         {
-            if (s_sc == null) return Task.CompletedTask;
-            return s_sc.CloseAsync();
+            if (s_sc == null) return;
+
+            _m.ScheduleTime = null;
+            _m.OperationType = TelemetryMetrics.ServiceOperationClose;
+            _sw.Restart();
+
+            try
+            {
+                await s_sc.CloseAsync().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _m.ErrorMessage = $"{ex.GetType().Name} - {ex.Message}";
+                throw;
+            }
+            finally
+            {
+                _m.ExecuteTime = _sw.ElapsedMilliseconds;
+                await _writer.WriteAsync(_m).ConfigureAwait(false);
+            }
         }
     }
 }

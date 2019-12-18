@@ -9,13 +9,12 @@ using Microsoft.Azure.Devices.Client.Transport.AmqpIoT;
 
 namespace Microsoft.Azure.Devices.Client.Transport.Amqp
 {
-    internal class AmqpUnitManager : IAmqpUnitManager, IDisposable
+    internal class AmqpUnitManager : IAmqpUnitManager
     {
         private static readonly AmqpUnitManager s_instance = new AmqpUnitManager();
 
         private IDictionary<string, IAmqpUnitManager> _amqpConnectionPools;
         private readonly object _lock = new object();
-        private bool _disposed;
 
         internal AmqpUnitManager()
         {
@@ -30,14 +29,23 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             DeviceIdentity deviceIdentity,
             Func<MethodRequestInternal, Task> methodHandler,
             Action<Twin, string, TwinCollection> twinMessageListener,
-            Func<string, Message, Task> eventListener)
+            Func<string, Message, Task> eventListener,
+            Action onUnitDisconnected)
         {
             IAmqpUnitManager amqpConnectionPool = ResolveConnectionPool(deviceIdentity.IotHubConnectionString.HostName);
             return amqpConnectionPool.CreateAmqpUnit(
                 deviceIdentity,
                 methodHandler,
                 twinMessageListener,
-                eventListener);
+                eventListener,
+                onUnitDisconnected);
+        }
+
+        public void RemoveAmqpUnit(AmqpUnit amqpUnit)
+        {
+            amqpUnit.Dispose();
+            IAmqpUnitManager amqpConnectionPool = ResolveConnectionPool(amqpUnit.GetDeviceIdentity().IotHubConnectionString.HostName);
+            amqpConnectionPool.RemoveAmqpUnit(amqpUnit);
         }
 
         private IAmqpUnitManager ResolveConnectionPool(string host)
@@ -56,23 +64,5 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             }
         }
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        private void Dispose(bool disposing)
-        {
-            if (_disposed) return;
-
-            if (disposing)
-            {
-                if (Logging.IsEnabled) Logging.Info(this, disposing, $"{nameof(Dispose)}");
-                _amqpConnectionPools.Clear();
-            }
-
-            _disposed = true;
-        }
     }
 }

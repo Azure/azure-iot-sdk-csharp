@@ -118,15 +118,13 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
 #region IChannelHandler overrides
 
-        public override void ChannelActive(IChannelHandlerContext context)
+        public override async void ChannelActive(IChannelHandlerContext context)
         {
             if (Logging.IsEnabled) Logging.Enter(this, context.Name, nameof(ChannelActive));
 
             this.stateFlags = StateFlags.NotConnected;
 
-            this.Connect(context);
-
-            // TODO #223: this executes in parallel with the Connect(context).
+            await Connect(context).ConfigureAwait(true);
 
             base.ChannelActive(context);
 
@@ -143,7 +141,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             {
                 if (this.IsInState(StateFlags.Closed))
                 {
-                    return;
+                    throw new IotHubCommunicationException("MQTT is disconnected.");
                 }
 
                 var message = data as Message;
@@ -271,7 +269,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         #endregion
 
         #region Connect
-        async void Connect(IChannelHandlerContext context)
+        async Task Connect(IChannelHandlerContext context)
         {
             if (Logging.IsEnabled) Logging.Enter(this, context.Name, nameof(Connect));
 
@@ -313,11 +311,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 }
                 this.stateFlags = StateFlags.Connecting;
 
+                this.ScheduleCheckConnectTimeout(context);
                 await WriteMessageAsync(context, connectPacket, ShutdownOnWriteErrorHandler).ConfigureAwait(true);
                 this.lastChannelActivityTime = DateTime.UtcNow;
                 this.ScheduleKeepConnectionAlive(context);
-
-                this.ScheduleCheckConnectTimeout(context);
             }
             catch (Exception ex) when (!ex.IsFatal())
             {
@@ -534,11 +531,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             if (Logging.IsEnabled) Logging.Enter(this, context.Name, packet.PacketType, nameof(ProcessMessage));
 
-            if (this.IsInState(StateFlags.Closed))
-            {
-                return;
-            }
-
             try
             {
                 switch (packet.PacketType)
@@ -622,7 +614,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
 
             if (this.IsInState(StateFlags.Closed))
             {
-                return;
+                throw new IotHubCommunicationException("MQTT is disconnected.");
             }
 
             switch (packet.QualityOfService)
@@ -905,7 +897,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             Debug.Assert(lockTaken);
             unchecked
             {
-                ret = ++_packetId == 0 ? ++_packetId : _packetId;
+                _packetId = (ushort)(++_packetId % 0x8000);
+                ret = _packetId == 0 ? ++_packetId : _packetId;
             }
             _packetIdLock.Exit();
 

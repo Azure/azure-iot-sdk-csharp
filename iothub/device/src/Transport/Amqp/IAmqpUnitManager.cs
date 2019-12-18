@@ -14,6 +14,8 @@ namespace Microsoft.Azure.Devices.Client.Transport.Amqp
             DeviceIdentity deviceIdentity, 
             Func<MethodRequestInternal, Task> methodHandler, 
             Action<Twin, string, TwinCollection> twinMessageListener, 
-            Func<string, Message, Task> eventListener);
+            Func<string, Message, Task> eventListener,
+            Action onUnitDisconnected);
+        void RemoveAmqpUnit(AmqpUnit amqpUnit);
     }
 }

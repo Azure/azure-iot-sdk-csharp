@@ -25,7 +25,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
     public class TestDevice
     {
-        private const int DelayAfterDeviceCreationSeconds = 5;
+        private const int DelayAfterDeviceCreationSeconds = 0;
         private static Dictionary<string, TestDevice> s_deviceCache = new Dictionary<string, TestDevice>();
         private static TestLogging s_log = TestLogging.GetInstance();
         private static SemaphoreSlim s_semaphore = new SemaphoreSlim(1, 1);
@@ -201,7 +201,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             return deviceClient;
         }
 
-        private static string GetHostName(string iotHubConnectionString)
+        public static string GetHostName(string iotHubConnectionString)
         {
             Regex regex = new Regex("HostName=([^;]+)", RegexOptions.None);
             return regex.Match(iotHubConnectionString).Groups[1].Value;
