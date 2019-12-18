@@ -268,7 +268,7 @@ try {
         BuildPackage provisioning\transport\http\src "Provisioning Transport for HTTP"
         BuildPackage provisioning\transport\mqtt\src "Provisioning Transport for MQTT"
         BuildPackage provisioning\service\src "Provisioning Service Client SDK"
-		BuildPackage digitaltwin\device\src "Digital Twin Device Client SDK"
+        BuildPackage digitaltwin\device\src "Digital Twin Device Client SDK"
         BuildPackage digitaltwin\service\src "Digital Twin Service Client SDK"
     }
 
