@@ -44,6 +44,15 @@ export LA_AAD_APP_ID=""
 # the certificate credentials for the given app
 export LA_AAD_APP_CERT_BASE64=""
 
+# ---------- Variables required for running Azure IoT Hub Stress Test and Azure IoT Samples for C# ------------
+# Device primary and secondary connection strings:
+export IOTHUB_DEVICE_CONN_STRING=
+export IOTHUB_DEVICE_CONN_STRING2=
+
+# IoT Hub Module connection string:
+export IOTHUB_MODULE_CONN_STRING=
+export IOTHUB_MODULE_CONN_STRING2=
+
 # ---------- Device Provisioning Service Configuration ----------
 # See Configuration.Provisioning.cs for usage details.
 

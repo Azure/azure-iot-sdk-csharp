@@ -206,7 +206,10 @@ namespace Microsoft.Azure.Devices.Client
         }
 
         /// <summary>
-        /// Stores the timeout used in the operation retries.
+        /// Stores the timeout used in the operation retries. Note that this value is ignored for operations
+        /// where a cancellation token is provided. For example, SendEventAsync(Message) will use this timeout, but 
+        /// SendEventAsync(Message, CancellationToken) will not. The latter operation will only be canceled by the 
+        /// provided cancellation token.
         /// </summary>
         // Codes_SRS_DEVICECLIENT_28_002: [This property shall be defaulted to 240000 (4 minutes).]
         public uint OperationTimeoutInMilliseconds
@@ -280,11 +283,11 @@ namespace Microsoft.Azure.Devices.Client
         public Task<Message> ReceiveAsync() => this.internalClient.ReceiveAsync();
 
         /// <summary>
-        /// Receive a message from the device queue using the default timeout.
+        /// Receive a message from the device queue using the cancellation token.
         /// </summary>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>  
-        /// <returns>The receive message or null if there was no message until the default timeout</returns>
+        /// <returns>The receive message or null if there was no message until CancellationToken Expired</returns>
         public Task<Message> ReceiveAsync(CancellationToken cancellationToken) => this.internalClient.ReceiveAsync(cancellationToken);
 
         /// <summary>
@@ -407,14 +410,14 @@ namespace Microsoft.Azure.Devices.Client
         public Task SendEventAsync(Message message, CancellationToken cancellationToken) => this.internalClient.SendEventAsync(message, cancellationToken);
 
         /// <summary>
-        /// Sends a batch of events to device hub
+        /// Sends a batch of events to device hub. Requires AMQP or AMQP over WebSockets.
         /// </summary>
         /// <param name="messages">A list of one or more messages to send</param>
         /// <returns>The task containing the event</returns>
         public Task SendEventBatchAsync(IEnumerable<Message> messages) => this.internalClient.SendEventBatchAsync(messages);
 
         /// <summary>
-        /// Sends a batch of events to device hub
+        /// Sends a batch of events to device hub. Requires AMQP or AMQP over WebSockets.
         /// </summary>
         /// <param name="messages">An IEnumerable set of Message objects.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
@@ -501,7 +504,7 @@ namespace Microsoft.Azure.Devices.Client
 
         /// <summary>
         /// Registers a new delegate for the connection status changed callback. If a delegate is already associated, 
-        /// it will be replaced with the new delegate.
+        /// it will be replaced with the new delegate. Note that this callback will never be called if the client is configured to use HTTP as that protocol is stateless
         /// <param name="statusChangesHandler">The name of the method to associate with the delegate.</param>
         /// </summary>
         public void SetConnectionStatusChangesHandler(ConnectionStatusChangesHandler statusChangesHandler) =>

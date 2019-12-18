@@ -9,7 +9,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 {
     internal class AmqpIoTExceptionAdapter
     {
-        public static Exception ConvertToIoTHubException(Exception exception)
+        internal static Exception ConvertToIoTHubException(Exception exception)
         {
             if (exception is TimeoutException)
             {
@@ -24,11 +24,25 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 var amqpException = exception as AmqpException;
                 if (amqpException != null)
                 {
-                    return AmqpIoTErrorAdapter.ToIotHubClientContract(amqpException.Error);
+                    return AmqpIoTErrorAdapter.ToIotHubClientContract(amqpException);
                 }
 
                 return exception;
             }
         }
+
+        internal static Exception ConvertToIoTHubException(Exception exception, AmqpObject source)
+        {
+            Exception e = ConvertToIoTHubException(exception);
+            if (source.IsClosing() && (e is InvalidOperationException || e is OperationCanceledException))
+            {
+                return new IotHubCommunicationException("Amqp resource is disconnected.");
+            }
+            else
+            {
+                return e;
+            }
+        }
     }
+
 }

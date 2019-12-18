@@ -41,7 +41,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         private void SetupTasks(CancellationToken ct)
         {
-            if (_waitForDisconnectTask == null || _waitForDisconnectTask.IsCompleted) _waitForDisconnectTask = WaitForDisconnected(ct);
+            if (_waitForDisconnectTask == null || _waitForDisconnectTask.IsCompleted) _waitForDisconnectTask = WaitForDisconnectedAsync(ct);
             if (_sendTask == null || _sendTask.IsCompleted) _sendTask = SendMessageAsync(ct);
             if (_receiveTask == null || _receiveTask.IsCompleted) _receiveTask = ReceiveMessageAsync(ct);
             if (_waitForMethodTask == null || _waitForMethodTask.IsCompleted) _waitForMethodTask = WaitForMethodAsync(ct);

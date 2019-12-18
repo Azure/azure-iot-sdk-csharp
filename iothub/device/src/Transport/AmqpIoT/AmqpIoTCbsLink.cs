@@ -3,7 +3,6 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.Azure.Devices.Client.Exceptions;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.Azure.Devices.Client.Extensions;
@@ -14,9 +13,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
     {
         private AmqpCbsLink _amqpCbsLink;
 
-        internal AmqpIoTCbsLink(AmqpConnection amqpConnection)
+        internal AmqpIoTCbsLink(AmqpCbsLink amqpCbsLink)
         {
-            _amqpCbsLink = _amqpCbsLink ?? new AmqpCbsLink(amqpConnection);
+            _amqpCbsLink = amqpCbsLink;
         }
 
         public async Task<DateTime> SendTokenAsync(ICbsTokenProvider tokenProvider, Uri namespaceAddress, string audience, string resource, string[] requiredClaims, TimeSpan timeout)
@@ -41,23 +40,6 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             finally
             {
                 if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(SendTokenAsync)}");
-            }
-        }
-
-        public void Close()
-        {
-            if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(Close)}");
-            try
-            {
-                _amqpCbsLink.Close();
-            }
-            catch (AmqpException ex)
-            {
-                throw new IotHubCommunicationException("AmqpIoTCbsLink.Close error", ex.InnerException);
-            }
-            finally
-            {
-                if (Logging.IsEnabled) Logging.Exit(this, $"{nameof(Close)}");
             }
         }
     }
