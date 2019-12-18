@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29519.87
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnvironmentalSensorSample", "EnvironmentalSensorSample\EnvironmentalSensorSample.csproj", "{3A11A999-B681-46D1-A94E-8E5245075A4B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnvironmentalSensorLib", "EnvironmentSensorLib\EnvironmentalSensorLib.csproj", "{0D078234-5B32-464D-A56F-D24AC662A89E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3A11A999-B681-46D1-A94E-8E5245075A4B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3A11A999-B681-46D1-A94E-8E5245075A4B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3A11A999-B681-46D1-A94E-8E5245075A4B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3A11A999-B681-46D1-A94E-8E5245075A4B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0D078234-5B32-464D-A56F-D24AC662A89E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0D078234-5B32-464D-A56F-D24AC662A89E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0D078234-5B32-464D-A56F-D24AC662A89E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0D078234-5B32-464D-A56F-D24AC662A89E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {66A14B8B-7E91-41AB-9530-98CE57947146}
+	EndGlobalSection
+EndGlobal
