@@ -5,11 +5,11 @@
   </PropertyGroup>
 
   <!-- delay sign the assembly for Release build -->
-  <!-- <PropertyGroup Condition=" '$(Configuration)' == 'Release' AND '$(AZURE_IOT_DONOTSIGN.ToUpper())' != 'TRUE' ">
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' AND '$(AZURE_IOT_DONOTSIGN.ToUpper())' != 'TRUE' ">
     <AssemblyOriginatorKeyFile>$(RootDir)\..\35MSSharedLib1024.snk</AssemblyOriginatorKeyFile>
     <DelaySign>true</DelaySign>
     <SignAssembly>true</SignAssembly>
-  </PropertyGroup> -->
+  </PropertyGroup>
 
   <PropertyGroup>
     <Version>1.0.0-preview-001</Version>
