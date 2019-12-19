@@ -7,13 +7,6 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <RootDir>$(MSBuildProjectDirectory)\..\..\..</RootDir>
-    <AssemblyOriginatorKeyFile>$(RootDir)\35MSSharedLib1024.snk</AssemblyOriginatorKeyFile>
-    <DelaySign>true</DelaySign>
-    <SignAssembly>true</SignAssembly>
-  </PropertyGroup>
-
   <ItemGroup>
     <AdditionalFiles Include="..\..\stylecop.json" Link="stylecop.json" />
   </ItemGroup>
