@@ -1,4 +1,4 @@
-﻿using Microsoft.Azure.IoT.DigitalTwin.Service;
+﻿using Microsoft.Azure.Devices.DigitalTwin.Service;
 using Microsoft.Azure.EventHubs;
 using System;
 using System.Collections.Generic;

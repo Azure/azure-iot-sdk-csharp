@@ -3,8 +3,8 @@
 
 using System;
 
-using Microsoft.Azure.IoT.DigitalTwin.Device;
 using Microsoft.Azure.Devices.Client;
+using Microsoft.Azure.Devices.DigitalTwin.Client;
 
 namespace EnvironmentalSensorSample
 {

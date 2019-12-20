@@ -1,5 +1,5 @@
-﻿using Microsoft.Azure.IoT.DigitalTwin.Device;
-using Microsoft.Azure.IoT.DigitalTwin.Device.Model;
+﻿using Microsoft.Azure.Devices.DigitalTwin.Client;
+using Microsoft.Azure.Devices.DigitalTwin.Client.Model;
 using Newtonsoft.Json;
 using System.IO;
 using System.Threading.Tasks;
