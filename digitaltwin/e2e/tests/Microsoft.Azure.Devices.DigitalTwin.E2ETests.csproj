@@ -3,8 +3,8 @@
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.2;net47</TargetFrameworks>
     <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">netcoreapp2.2</TargetFrameworks>
-
     <IsPackable>false</IsPackable>
+    <RootDir>$(MSBuildProjectDirectory)\..\..\..</RootDir>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,8 +19,13 @@
     </PackageReference>
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\device\src\Microsoft.Azure.Devices.DigitalTwin.Client.csproj" />
-    <ProjectReference Include="..\..\service\src\Microsoft.Azure.Devices.DigitalTwin.Service.csproj" />
+  <ItemGroup Condition=" '$(AZURE_IOT_LOCALPACKAGES)' == '' ">
+    <ProjectReference Include="$(RootDir)\digitaltwin\device\src\Microsoft.Azure.Devices.DigitalTwin.Client.csproj" />
+    <ProjectReference Include="$(RootDir)\digitaltwin\service\src\Microsoft.Azure.Devices.DigitalTwin.Service.csproj" />
+  </ItemGroup>
+  
+   <ItemGroup Condition=" '$(AZURE_IOT_LOCALPACKAGES)' != '' ">
+    <PackageReference Include="Microsoft.Azure.Devices.DigitalTwin.Client" Version="1.0.0-preview-*" />
+    <PackageReference Include="Microsoft.Azure.Devices.DigitalTwin.Service" Version="1.0.0-preview-*" />
   </ItemGroup>
 </Project>
