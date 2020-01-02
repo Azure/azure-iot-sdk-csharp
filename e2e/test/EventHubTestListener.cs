@@ -3,13 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Collections.Concurrent;
-using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Diagnostics;
 
 #if !NET451
 using Microsoft.Azure.EventHubs;
@@ -20,42 +17,46 @@ using System.IO;
 
 namespace Microsoft.Azure.Devices.E2ETests
 {
-    // Common code for EventHubListener.
     public partial class EventHubTestListener
     {
-        private const int MaximumWaitTimeInMinutes = 5;
+        private const int MaximumWaitTimeInMinutes = 1;
         private const int LookbackTimeInMinutes = 5;
         private const int OperationTimeoutInSeconds = 10;
 
         private static TestLogging s_log = TestLogging.GetInstance();
         private static ConcurrentDictionary<string, EventData> events = new ConcurrentDictionary<string, EventData>();
 
-        public static Task<EventHubTestListener> CreateListener(string deviceName)
+        static EventHubTestListener()
         {
-            return CreateListenerPal(deviceName);
+            // create the receiver pool - different for netfm and netcore
+            // start receiving messages and store in a dictionary
+            CreateListenerPalAndReceiveMessages();
         }
 
-        public async Task<bool> WaitForMessage(string deviceId, string payload, string p1Value)
+        private EventHubTestListener()
         {
+            // empty private constructor, since we don't want external intilization of an instance
+        }
+
+        // verify required message is present in the dictionary
+        public bool VerifyIfMessageIsReceived(string deviceId, string payload, string p1Value)
+        {
+            s_log.WriteLine($"Expected payload: deviceId={deviceId}; payload={payload}; property1={p1Value}");
+
             bool isReceived = false;
+
             var sw = new Stopwatch();
             sw.Start();
-            while (!isReceived && sw.Elapsed.TotalMinutes < 1)
-            {
-                if(!events.ContainsKey(payload))
-                {
-                    await ReceiveAsync().ConfigureAwait(false);
-                }
 
+            while (!isReceived && sw.Elapsed.TotalMinutes < MaximumWaitTimeInMinutes)
+            {
                 events.TryRemove(payload, out EventData eventData);
                 if (eventData == null)
                 {
                     continue;
                 }
 
-                isReceived = true;
-
-                VerifyTestMessage(eventData, deviceId, payload, p1Value);
+                isReceived = VerifyTestMessage(eventData, deviceId, payload, p1Value);
             }
 
             sw.Stop();
@@ -88,30 +89,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 #endif
         }
 
-        private async Task ReceiveAsync()
-        {
-            IEnumerable<EventData> eventDatas = await _receiver.ReceiveAsync(int.MaxValue, TimeSpan.FromSeconds(OperationTimeoutInSeconds)).ConfigureAwait(false);
-            if (eventDatas == null)
-            {
-                s_log.WriteLine($"{nameof(EventHubTestListener)}.{nameof(VerifyTestMessage)}: no events received.");
-            }
-            else
-            {
-                s_log.WriteLine($"{nameof(EventHubTestListener)}.{nameof(VerifyTestMessage)}: {eventDatas.Count()} events received.");
-                foreach (EventData eventData in eventDatas)
-                {
-                    string body = GetEventDataBody(eventData);
-                    events[body] = eventData;
-                }
-            }
-
-        }
-
-        public Task CloseAsync()
-        {
-            return _receiver.CloseAsync();
-        }
-
         private bool VerifyTestMessage(EventData eventData, string deviceName, string payload, string p1Value)
         {
 #if NET451
@@ -140,5 +117,6 @@ namespace Microsoft.Azure.Devices.E2ETests
 
             return false;
         }
+
     }
 }
