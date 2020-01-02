@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.E2ETests
@@ -19,39 +20,45 @@ namespace Microsoft.Azure.Devices.E2ETests
     // This is using the WindowsAzure.ServiceBus NuGet dependency.
     public partial class EventHubTestListener
     {
-        private EventHubReceiver _receiver;
-
-        private EventHubTestListener(EventHubReceiver receiver)
+        public static void CreateListenerPalAndReceiveMessages()
         {
-            _receiver = receiver;
-        }
-
-        public static Task<EventHubTestListener> CreateListenerPal(string deviceName)
-        {
-            EventHubReceiver receiver = null;
-            Stopwatch sw = new Stopwatch();
-            sw.Start();
-
             EventHubClient eventHubClient = EventHubClient.CreateFromConnectionString(Configuration.IoTHub.ConnectionString, "messages/events");
-            var eventHubPartitionsCount = eventHubClient.GetRuntimeInformation().PartitionCount;
-            string partition = EventHubPartitionKeyResolver.ResolveToPartition(deviceName, eventHubPartitionsCount);
+            var eventRuntimeInformation = eventHubClient.GetRuntimeInformation();
             string consumerGroupName = Configuration.IoTHub.EventHubConsumerGroup;
 
-            while (receiver == null && sw.Elapsed.TotalMinutes < MaximumWaitTimeInMinutes)
+            foreach (string partitionId in eventRuntimeInformation.PartitionIds)
             {
                 try
                 {
-                    receiver = eventHubClient.GetConsumerGroup(consumerGroupName).CreateReceiver(partition, DateTime.Now.AddMinutes(-LookbackTimeInMinutes));
+                    EventHubReceiver receiver = eventHubClient.GetConsumerGroup(consumerGroupName).CreateReceiver(partitionId, DateTime.Now.AddMinutes(-LookbackTimeInMinutes));
+                    s_log.WriteLine($"EventHub receiver created for partition {partitionId}, listening from {LookbackTimeInMinutes}");
+
+                    new Thread(
+                        async () => {
+                            while (true)
+                            {
+                                IEnumerable<EventData> eventDatas = await receiver.ReceiveAsync(int.MaxValue, TimeSpan.FromSeconds(OperationTimeoutInSeconds)).ConfigureAwait(false);
+                                if (eventDatas == null)
+                                {
+                                    s_log.WriteLine($"{nameof(EventHubTestListener)}.{nameof(CreateListenerPalAndReceiveMessages)}: no events received.");
+                                }
+                                else
+                                {
+                                    s_log.WriteLine($"{nameof(EventHubTestListener)}.{nameof(CreateListenerPalAndReceiveMessages)}: {eventDatas.Count()} events received.");
+                                    foreach (EventData eventData in eventDatas)
+                                    {
+                                        string body = GetEventDataBody(eventData);
+                                        events[body] = eventData;
+                                    }
+                                }
+                            }
+                        }).Start();
                 }
                 catch (QuotaExceededException ex)
                 {
-                    s_log.WriteLine($"{nameof(EventHubTestListener)}.{nameof(CreateListener)}: Cannot create receiver: {ex}");
+                    s_log.WriteLine($"{nameof(EventHubTestListener)}.{nameof(CreateListenerPalAndReceiveMessages)}: Cannot create receiver for partitionID {partitionId}: {ex}");
                 }
             }
-
-            sw.Stop();
-
-            return Task.FromResult(new EventHubTestListener(receiver));
         }
     }
 }
