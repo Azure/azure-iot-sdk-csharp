@@ -7,6 +7,7 @@ using System.Text;
 using System.Collections.Concurrent;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Diagnostics;
+using System.Linq;
 
 #if !NET451
 using Microsoft.Azure.EventHubs;
@@ -39,7 +40,7 @@ namespace Microsoft.Azure.Devices.E2ETests
         }
 
         // verify required message is present in the dictionary
-        public bool VerifyIfMessageIsReceived(string deviceId, string payload, string p1Value)
+        public static bool VerifyIfMessageIsReceived(string deviceId, string payload, string p1Value)
         {
             s_log.WriteLine($"Expected payload: deviceId={deviceId}; payload={payload}; property1={p1Value}");
 
@@ -89,7 +90,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 #endif
         }
 
-        private bool VerifyTestMessage(EventData eventData, string deviceName, string payload, string p1Value)
+        private static bool VerifyTestMessage(EventData eventData, string deviceName, string payload, string p1Value)
         {
 #if NET451
             var connectionDeviceId = eventData.SystemProperties["iothub-connection-device-id"].ToString();

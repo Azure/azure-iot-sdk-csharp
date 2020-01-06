@@ -44,11 +44,11 @@ namespace Microsoft.Azure.Devices.E2ETests
                                 IEnumerable<EventData> eventDatas = await receiver.ReceiveAsync(int.MaxValue, TimeSpan.FromSeconds(OperationTimeoutInSeconds)).ConfigureAwait(false);
                                 if (eventDatas == null)
                                 {
-                                    s_log.WriteLine($"{nameof(EventHubTestListener_xx)}.{nameof(CreateListenerPalAndReceiveMessages)}: no events received.");
+                                    s_log.WriteLine($"{nameof(EventHubTestListener)}.{nameof(CreateListenerPalAndReceiveMessages)}: no events received.");
                                 }
                                 else
                                 {
-                                    s_log.WriteLine($"{nameof(EventHubTestListener_xx)}.{nameof(CreateListenerPalAndReceiveMessages)}: {eventDatas.Count()} events received.");
+                                    s_log.WriteLine($"{nameof(EventHubTestListener)}.{nameof(CreateListenerPalAndReceiveMessages)}: {eventDatas.Count()} events received.");
                                     foreach (EventData eventData in eventDatas)
                                     {
                                         string body = GetEventDataBody(eventData);
