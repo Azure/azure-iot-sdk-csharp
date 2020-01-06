@@ -28,11 +28,10 @@ namespace EnvironmentalSensorSample
             var assembly = Assembly.GetExecutingAssembly();
             var assemblyResourceName = EnvironmentalSensorInterfaceFileAssemblyName + "." + EnvironmentalSensorInterfaceFileName;
 
-            using (Stream stream = assembly.GetManifestResourceStream(assemblyResourceName))
-            using (StreamReader reader = new StreamReader(stream))
-            {
-                this.environmentalSensorModelDefinition = reader.ReadToEnd();
-            }
+            using Stream stream = assembly.GetManifestResourceStream(assemblyResourceName);
+            using StreamReader reader = new StreamReader(stream);
+            
+            this.environmentalSensorModelDefinition = reader.ReadToEnd();
         }
 
         /// <summary>
@@ -49,11 +48,11 @@ namespace EnvironmentalSensorSample
                 string commandPayload = JsonConvert.DeserializeObject<string>(commandRequest.Payload);
                 if (commandPayload.Equals(EnvironmentalSensorInterface.EnvironmentalSensorInterfaceId))
                 {
-                    return Task<DigitalTwinCommandResponse>.Factory.StartNew(() => new DigitalTwinCommandResponse(StatusCodeCompleted, this.environmentalSensorModelDefinition));
+                    return Task.FromResult(new DigitalTwinCommandResponse(StatusCodeCompleted, this.environmentalSensorModelDefinition));
                 }
             }
 
-            return Task<DigitalTwinCommandResponse>.Factory.StartNew(() => new DigitalTwinCommandResponse(StatusCodeNotImplemented, null));
+            return Task.FromResult(new DigitalTwinCommandResponse(StatusCodeNotImplemented, null));
         }
     }
 }
