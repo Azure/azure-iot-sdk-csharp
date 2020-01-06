@@ -238,67 +238,40 @@ namespace Microsoft.Azure.Devices.E2ETests
 
         public static async Task SendSingleMessageAndVerifyAsync(DeviceClient deviceClient, string deviceId)
         {
-            EventHubTestListener testListener = await EventHubTestListener.CreateListener(deviceId).ConfigureAwait(false);
+            (Client.Message testMessage, string messageId, string payload, string p1Value) = ComposeD2CTestMessage();
+            await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
 
-            try
-            {
-                (Client.Message testMessage, string messageId, string payload, string p1Value) = ComposeD2CTestMessage();
-                await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
-
-                bool isReceived = await testListener.WaitForMessage(deviceId, payload, p1Value).ConfigureAwait(false);
-                Assert.IsTrue(isReceived, "Message is not received.");
-            }
-            finally
-            {
-                await testListener.CloseAsync().ConfigureAwait(false);
-            }
+            bool isReceived = EventHubTestListener.VerifyIfMessageIsReceived(deviceId, payload, p1Value);
+            Assert.IsTrue(isReceived, "Message is not received.");
         }
 
         public static async Task SendSendBatchMessagesAndVerifyAsync(DeviceClient deviceClient, string deviceId)
         {
-            EventHubTestListener testListener = await EventHubTestListener.CreateListener(deviceId).ConfigureAwait(false);
-
-            try
+            var messages = new List<Client.Message>();
+            var props = new List<Tuple<string, string>>();
+            for (int i = 0; i < MESSAGE_BATCH_COUNT; i++)
             {
-                var messages = new List<Client.Message>();
-                var props = new List<Tuple<string, string>>();
-                for (int i = 0; i < MESSAGE_BATCH_COUNT; i++)
-                {
-                    (Client.Message testMessage, string messageId, string payload, string p1Value) = ComposeD2CTestMessage();
-                    messages.Add(testMessage);
-                    props.Add(Tuple.Create(payload, p1Value));
-                }
-                
-                await deviceClient.SendEventBatchAsync(messages).ConfigureAwait(false);
-
-                foreach (Tuple<string, string> prop in props)
-                {
-                    bool isReceived = await testListener.WaitForMessage(deviceId, prop.Item1, prop.Item2).ConfigureAwait(false);
-                    Assert.IsTrue(isReceived, "Message is not received.");
-                }
+                (Client.Message testMessage, string messageId, string payload, string p1Value) = ComposeD2CTestMessage();
+                messages.Add(testMessage);
+                props.Add(Tuple.Create(payload, p1Value));
             }
-            finally
+
+            await deviceClient.SendEventBatchAsync(messages).ConfigureAwait(false);
+
+            foreach (Tuple<string, string> prop in props)
             {
-                await testListener.CloseAsync().ConfigureAwait(false);
+                bool isReceived = EventHubTestListener.VerifyIfMessageIsReceived(deviceId, prop.Item1, prop.Item2);
+                Assert.IsTrue(isReceived, "Message is not received.");
             }
         }
 
         private async Task SendSingleMessageModuleAndVerifyAsync(ModuleClient moduleClient, string deviceId)
         {
-            EventHubTestListener testListener = await EventHubTestListener.CreateListener(deviceId).ConfigureAwait(false);
+            (Client.Message testMessage, string messageId, string payload, string p1Value) = ComposeD2CTestMessage();
+            await moduleClient.SendEventAsync(testMessage).ConfigureAwait(false);
 
-            try
-            {
-                (Client.Message testMessage, string messageId, string payload, string p1Value) = ComposeD2CTestMessage();
-                await moduleClient.SendEventAsync(testMessage).ConfigureAwait(false);
-
-                bool isReceived = await testListener.WaitForMessage(deviceId, payload, p1Value).ConfigureAwait(false);
-                Assert.IsTrue(isReceived, "Message is not received.");
-            }
-            finally
-            {
-                await testListener.CloseAsync().ConfigureAwait(false);
-            }
+            bool isReceived = EventHubTestListener.VerifyIfMessageIsReceived(deviceId, payload, p1Value);
+            Assert.IsTrue(isReceived, "Message is not received.");
         }
 
         public static (Client.Message message, string messageId, string payload, string p1Value) ComposeD2CTestMessage()
