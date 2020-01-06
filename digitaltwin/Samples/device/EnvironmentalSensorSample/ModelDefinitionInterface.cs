@@ -35,12 +35,14 @@ namespace EnvironmentalSensorSample
             }
         }
 
-        /// <summary>
-        /// Callback on command received.
-        /// </summary>
-        /// <param name="commandRequest">information regarding the command received.</param>
-        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+                              /// <summary>
+                              /// Callback on command received.
+                              /// </summary>
+                              /// <param name="commandRequest">information regarding the command received.</param>
+                              /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         protected override async Task<DigitalTwinCommandResponse> OnCommandRequest(DigitalTwinCommandRequest commandRequest)
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             // There is only one command that ModelDefinition defines, and it is getModelDefinition. That command must specify the 
             // model Id in the payload, and the device must return the model definition in the command response payload
