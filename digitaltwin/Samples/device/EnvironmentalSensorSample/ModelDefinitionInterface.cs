@@ -35,11 +35,11 @@ namespace EnvironmentalSensorSample
             }
         }
 
-                              /// <summary>
-                              /// Callback on command received.
-                              /// </summary>
-                              /// <param name="commandRequest">information regarding the command received.</param>
-                              /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+        /// <summary>
+        /// Callback on command received.
+        /// </summary>
+        /// <param name="commandRequest">information regarding the command received.</param>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         protected override Task<DigitalTwinCommandResponse> OnCommandRequest(DigitalTwinCommandRequest commandRequest)
         {
             // There is only one command that ModelDefinition defines, and it is getModelDefinition. That command must specify the 
