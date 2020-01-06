@@ -2,6 +2,7 @@
 using Microsoft.Azure.Devices.DigitalTwin.Client.Model;
 using Newtonsoft.Json;
 using System.IO;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace EnvironmentalSensorSample
@@ -18,10 +19,20 @@ namespace EnvironmentalSensorSample
 
         private const string getModelDefinitionCommandName = "getModelDefinition";
 
+        private const string EnvironmentalSensorInterfaceFileName = "EnvironmentalSensor.interface.json";
+        private const string EnvironmentalSensorInterfaceFileAssemblyName = "EnvironmentalSensorSample";
+
         public ModelDefinitionInterface(string interfaceInstanceName)
             : base(ModelDefinitionInterfaceId, interfaceInstanceName)
         {
-            environmentalSensorModelDefinition = File.ReadAllText("../../../EnvironmentalSensor.interface.json");
+            var assembly = Assembly.GetExecutingAssembly();
+            var assemblyResourceName = EnvironmentalSensorInterfaceFileAssemblyName + "." + EnvironmentalSensorInterfaceFileName;
+
+            using (Stream stream = assembly.GetManifestResourceStream(assemblyResourceName))
+            using (StreamReader reader = new StreamReader(stream))
+            {
+                this.environmentalSensorModelDefinition = reader.ReadToEnd();
+            }
         }
 
         /// <summary>
