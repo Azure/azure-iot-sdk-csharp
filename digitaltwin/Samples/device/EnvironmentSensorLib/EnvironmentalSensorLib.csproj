@@ -5,6 +5,7 @@
     <TargetFrameworks>netcoreapp2.2; netcoreapp3.0</TargetFrameworks>
     <ApplicationIcon />
     <StartupObject />
+    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
