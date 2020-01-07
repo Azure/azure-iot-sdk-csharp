@@ -11,10 +11,9 @@ namespace Microsoft.Azure.Devices
     using System.Net.Security;
 #if !NETSTANDARD1_3
     using System.Net.WebSockets;
-    using System.Security.Authentication;
     using System.Security.Cryptography.X509Certificates;
 #endif
-
+    using System.Security.Authentication;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -136,10 +135,10 @@ namespace Microsoft.Azure.Devices
             {
                 Role = true,
                 TotalLinkCredit = prefetchCount,
-                AutoSendFlow = prefetchCount > 0, 
+                AutoSendFlow = prefetchCount > 0,
                 Source = new Source() { Address = linkAddress.AbsoluteUri },
                 SndSettleMode = null, // SenderSettleMode.Unsettled (null as it is the default and to avoid bytes on the wire)
-                RcvSettleMode = (byte)ReceiverSettleMode.Second, 
+                RcvSettleMode = (byte)ReceiverSettleMode.Second,
                 LinkName = Guid.NewGuid().ToString("N") // Use a human readable link name to help with debuggin
             };
 
@@ -183,7 +182,7 @@ namespace Microsoft.Azure.Devices
                 transport = await CreateClientWebSocketTransport(timeoutHelper.RemainingTime()).ConfigureAwait(false);
             }
             else
-            {             
+            {
                 var tlsTransportSettings = this.CreateTlsTransportSettings();
                 var amqpTransportInitiator = new AmqpTransportInitiator(amqpSettings, tlsTransportSettings);
                 try
@@ -305,7 +304,7 @@ namespace Microsoft.Azure.Devices
             return websocket;
         }
 #endif
-            async Task<TransportBase> CreateClientWebSocketTransport(TimeSpan timeout)
+        async Task<TransportBase> CreateClientWebSocketTransport(TimeSpan timeout)
         {
 #if NETSTANDARD1_3
             throw new NotImplementedException("web sockets are not yet supported for UWP");
@@ -327,11 +326,11 @@ namespace Microsoft.Azure.Devices
             else
             {
 #endif
-                var websocket = await this.CreateClientWebSocketAsync(websocketUri, timeoutHelper.RemainingTime()).ConfigureAwait(false);
-                return new ClientWebSocketTransport(
-                    websocket,
-                    null,
-                    null);
+            var websocket = await this.CreateClientWebSocketAsync(websocketUri, timeoutHelper.RemainingTime()).ConfigureAwait(false);
+            return new ClientWebSocketTransport(
+                websocket,
+                null,
+                null);
 #if NET451
             }
 #endif
@@ -370,8 +369,9 @@ namespace Microsoft.Azure.Devices
                 TargetHost = this.connectionString.HostName,
 #if !NETSTANDARD1_3
                 Certificate = null, // TODO: add client cert support
-                CertificateValidationCallback = OnRemoteCertificateValidation
+                CertificateValidationCallback = OnRemoteCertificateValidation,
 #endif
+                Protocols = TlsVersions.AcceptableVersions,
             };
 
             return tlsTransportSettings;
@@ -450,7 +450,6 @@ namespace Microsoft.Azure.Devices
             }
 
             return false;
-
         }
 #endif
         public static ArraySegment<byte> GetNextDeliveryTag(ref int deliveryTag)
@@ -475,7 +474,7 @@ namespace Microsoft.Azure.Devices
             var deliveryTag = new ArraySegment<byte>(lockTokenGuid.ToByteArray());
             return deliveryTag;
         }
-        
+
         /// <inheritdoc/>
         public void Dispose()
         {

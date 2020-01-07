@@ -17,7 +17,6 @@ namespace Microsoft.Azure.Devices.Client
 using System.Net.Http;
 #endif
     using System.Threading.Tasks;
-    using Microsoft.Azure.Devices.Client.Extensions;
     using Microsoft.Azure.Devices.Shared;
 
     /// <summary>
@@ -494,7 +493,7 @@ using System.Net.Http;
         /// <returns>The message containing the event</returns>
         public Task SendEventAsync(string outputName, Message message, CancellationToken cancellationToken) =>
             this.internalClient.SendEventAsync(outputName, message, cancellationToken);
-        
+
         /// <summary>
         /// Sends a batch of events to device hub
         /// </summary>
@@ -565,7 +564,7 @@ using System.Net.Http;
         /// <returns>The task containing the event</returns>
         public Task SetMessageHandlerAsync(MessageHandler messageHandler, object userContext, CancellationToken cancellationToken) =>
             this.internalClient.SetMessageHandlerAsync(messageHandler, userContext, cancellationToken);
-        
+
         /// <summary>
         /// Interactively invokes a method on device
         /// </summary>
@@ -594,7 +593,7 @@ using System.Net.Http;
         /// <param name="methodRequest">Device method parameters (passthrough to device)</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>  
         /// <returns>Method result</returns>
-        public Task<MethodResponse> InvokeMethodAsync(string deviceId, string moduleId, MethodRequest methodRequest) => 
+        public Task<MethodResponse> InvokeMethodAsync(string deviceId, string moduleId, MethodRequest methodRequest) =>
             InvokeMethodAsync(deviceId, moduleId, methodRequest, CancellationToken.None);
 
         /// <summary>
@@ -606,25 +605,29 @@ using System.Net.Http;
         /// <param name="cancellationToken">Cancellation Token</param>
         /// <exception cref="OperationCanceledException">Thrown when the operation has been canceled.</exception>  
         /// <returns>Method result</returns>
-        public Task<MethodResponse> InvokeMethodAsync(string deviceId, string moduleId, MethodRequest methodRequest, CancellationToken cancellationToken) => 
+        public Task<MethodResponse> InvokeMethodAsync(string deviceId, string moduleId, MethodRequest methodRequest, CancellationToken cancellationToken) =>
             InvokeMethodAsync(GetModuleMethodUri(deviceId, moduleId), methodRequest, cancellationToken);
 
         private async Task<MethodResponse> InvokeMethodAsync(Uri uri, MethodRequest methodRequest, CancellationToken cancellationToken)
         {
             HttpClientHandler httpClientHandler = null;
-            var customCertificateValidation =  this.certValidator.GetCustomCertificateValidation();
+            var customCertificateValidation = this.certValidator.GetCustomCertificateValidation();
 
             if (customCertificateValidation != null)
             {
 #if NETSTANDARD1_3 || NETSTANDARD2_0
-                httpClientHandler = new HttpClientHandler();
-                httpClientHandler.ServerCertificateCustomValidationCallback = customCertificateValidation;
+                httpClientHandler = new HttpClientHandler
+                {
+                    ServerCertificateCustomValidationCallback = customCertificateValidation,
+                    SslProtocols = TlsVersions.AcceptableVersions,
+                };
 #else
-            httpClientHandler = new WebRequestHandler();
-            ((WebRequestHandler)httpClientHandler).ServerCertificateValidationCallback = (sender, certificate, chain, errors) =>
-            {
-                return customCertificateValidation(sender, certificate, chain, errors);
-            };
+                TlsVersions.SetLegacyAcceptableVersions();
+                httpClientHandler = new WebRequestHandler();
+                ((WebRequestHandler)httpClientHandler).ServerCertificateValidationCallback = (sender, certificate, chain, errors) =>
+                {
+                    return customCertificateValidation(sender, certificate, chain, errors);
+                };
 #endif
             }
 

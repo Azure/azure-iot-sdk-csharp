@@ -2,12 +2,12 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Threading.Tasks;
-using System.Net.Security;
-using System.Security.Cryptography.X509Certificates;
-using System.Net.WebSockets;
 using System.Net;
+using System.Net.Security;
+using System.Net.WebSockets;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Transport;
@@ -41,6 +41,9 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 Certificate = null,
                 CertificateValidationCallback = _amqpTransportSettings.RemoteCertificateValidationCallback ?? OnRemoteCertificateValidation
             };
+
+            TlsVersions.SetLegacyAcceptableVersions();
+            _tlsTransportSettings.Protocols = TlsVersions.AcceptableVersions;
 
             if (_amqpTransportSettings.ClientCertificate != null)
             {
@@ -83,17 +86,17 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                 Uri websocketUri = new Uri(WebSocketConstants.Scheme + _hostName + ":" + WebSocketConstants.SecurePort + WebSocketConstants.UriSuffix + additionalQueryParams);
                 // Use Legacy WebSocket if it is running on Windows 7 or older. Windows 7/Windows 2008 R2 is version 6.1
 #if NET451
-                            if (Environment.OSVersion.Version.Major < 6 || (Environment.OSVersion.Version.Major == 6 && Environment.OSVersion.Version.Minor <= 1))
-                            {
-                                var websocket = await CreateLegacyClientWebSocketAsync(websocketUri, this._amqpTransportSettings.ClientCertificate, timeout).ConfigureAwait(false);
-                                return new LegacyClientWebSocketTransport(
-                                    websocket,
-                                    this._amqpTransportSettings.OperationTimeout,
-                                    null,
-                                    null);
-                            }
-                            else
-                            {
+                if (Environment.OSVersion.Version.Major < 6 || (Environment.OSVersion.Version.Major == 6 && Environment.OSVersion.Version.Minor <= 1))
+                {
+                    var websocket = await CreateLegacyClientWebSocketAsync(websocketUri, this._amqpTransportSettings.ClientCertificate, timeout).ConfigureAwait(false);
+                    return new LegacyClientWebSocketTransport(
+                        websocket,
+                        this._amqpTransportSettings.OperationTimeout,
+                        null,
+                        null);
+                }
+                else
+                {
 #endif
                 var websocket = await CreateClientWebSocketAsync(websocketUri, timeout).ConfigureAwait(false);
                 return new ClientWebSocketTransport(
@@ -101,7 +104,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
                     null,
                     null);
 #if NET451
-                            }
+                }
 #endif
             }
             finally

@@ -6,7 +6,6 @@ namespace Microsoft.Azure.Devices.Client.Transport
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
-    using System.Globalization;
     using System.IO;
     using System.Linq;
     using System.Net;
@@ -80,6 +79,8 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 handler.Proxy = proxy;
             }
 
+            TlsVersions.SetLegacyAcceptableVersions();
+
             this.httpClientObj = handler != null ? new HttpClient(handler) : new HttpClient();
 #else
             if (clientCert != null)
@@ -103,6 +104,13 @@ namespace Microsoft.Azure.Devices.Client.Transport
                 httpClientHandler.UseProxy = (proxy != null);
                 httpClientHandler.Proxy = proxy;
             }
+
+            // Enforce TLS 1.2+
+            if (httpClientHandler == null)
+            {
+                httpClientHandler = new HttpClientHandler();
+            };
+            httpClientHandler.SslProtocols = TlsVersions.AcceptableVersions;
 
             this.httpClientObj = httpClientHandler != null ? new HttpClient(httpClientHandler) : new HttpClient();
 #endif

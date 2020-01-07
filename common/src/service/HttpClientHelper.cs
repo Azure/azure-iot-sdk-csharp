@@ -51,9 +51,17 @@ namespace Microsoft.Azure.Devices
 
             if (customHttpProxy != DefaultWebProxySettings.Instance)
             {
-                HttpClientHandler httpClientHandler = new HttpClientHandler();
-                httpClientHandler.UseProxy = (customHttpProxy != null);
-                httpClientHandler.Proxy = customHttpProxy;
+                TlsVersions.SetLegacyAcceptableVersions();
+
+                var httpClientHandler = new HttpClientHandler
+                {
+                    UseProxy = (customHttpProxy != null),
+                    Proxy = customHttpProxy,
+#if !NET451
+                    SslProtocols = TlsVersions.AcceptableVersions,
+#endif
+                };
+
                 this.httpClientObj = new HttpClient(httpClientHandler);
             }
             else
@@ -630,7 +638,7 @@ namespace Microsoft.Azure.Devices
                     operationTimeout,
                     modifyRequestMessageFunc,
                     IsMappedToException,
-                    processResponseMessageAsync, 
+                    processResponseMessageAsync,
                     errorMappingOverrides,
                     cancellationToken);
             }
@@ -720,7 +728,7 @@ namespace Microsoft.Azure.Devices
             CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            
+
             var cts = new CancellationTokenSource(operationTimeout);
             CancellationTokenSource linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, cts.Token);
             return this.ExecuteAsync(

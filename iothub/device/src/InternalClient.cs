@@ -5,20 +5,14 @@ namespace Microsoft.Azure.Devices.Client
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Linq;
-#if !NET451
-    using System.Net.Http;
-#else
-    using System.Net;
-#endif
     using System.Threading;
     using System.Threading.Tasks;
+    using System.Security.Cryptography.X509Certificates;
+    using System.IO;
     using Microsoft.Azure.Devices.Client.Extensions;
     using Microsoft.Azure.Devices.Client.Transport;
     using Microsoft.Azure.Devices.Shared;
-    using System.Security.Cryptography.X509Certificates;
-    using System.IO;
     using Microsoft.Azure.Devices.Client.Exceptions;
 
     /// <summary>
@@ -30,7 +24,7 @@ namespace Microsoft.Azure.Devices.Client
     public delegate Task DesiredPropertyUpdateCallback(TwinCollection desiredProperties, object userContext);
 
     /// <summary>
-    ///      Delegate for method call. This will be called every time we receive a method call that was registered.
+    /// Delegate for method call. This will be called every time we receive a method call that was registered.
     /// </summary>
     /// <param name="methodRequest">Class with details about method.</param>
     /// <param name="userContext">Context object passed in when the callback was registered.</param>
@@ -38,10 +32,10 @@ namespace Microsoft.Azure.Devices.Client
     public delegate Task<MethodResponse> MethodCallback(MethodRequest methodRequest, object userContext);
 
     /// <summary>
-    ///    Status of handling a message. 
+    /// Status of handling a message.
     ///    None - Means Device SDK won't send an ackowledge of receipt.
     ///    Completed - Means Device SDK will Complete the event. Removing from the queue.
-    ///    Abandoned - Event will be Abandoned. 
+    ///    Abandoned - Event will be Abandoned.
     /// </summary>
     public enum MessageResponse { None, Completed, Abandoned };
 
@@ -111,9 +105,7 @@ namespace Microsoft.Azure.Devices.Client
         {
             if (Logging.IsEnabled) Logging.Enter(this, transportSettings, pipelineBuilder, nameof(InternalClient) + "_ctor");
 
-#if NET451
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
-#endif
+            TlsVersions.SetLegacyAcceptableVersions();
 
             this.IotHubConnectionString = iotHubConnectionString;
 
@@ -423,7 +415,8 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentNullException(nameof(lockToken));
             }
 
-            try{
+            try
+            {
                 return InnerHandler.CompleteAsync(lockToken, cancellationToken);
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)
@@ -620,7 +613,8 @@ namespace Microsoft.Azure.Devices.Client
                 throw new ArgumentNullException(nameof(message));
             }
 
-            try{
+            try
+            {
                 return RejectAsync(message.LockToken, cancellationToken);
             }
             catch (IotHubCommunicationException ex) when (ex.InnerException is OperationCanceledException)

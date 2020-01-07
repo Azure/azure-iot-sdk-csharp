@@ -45,9 +45,12 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
             IWebProxy webProxy = httpTransportSettings.Proxy;
             if (webProxy != DefaultWebProxySettings.Instance)
             {
-                HttpClientHandler httpClientHandler = new HttpClientHandler();
-                httpClientHandler.UseProxy = (webProxy != null);
-                httpClientHandler.Proxy = webProxy;
+                var httpClientHandler = new HttpClientHandler
+                {
+                    UseProxy = (webProxy != null),
+                    Proxy = webProxy,
+                    SslProtocols = TlsVersions.AcceptableVersions,
+                };
                 _httpClientObj = new HttpClient(httpClientHandler);
             }
             else
@@ -120,7 +123,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
                             httpResponse.ReasonPhrase);
                     }
                 }
-                catch(AggregateException ex)
+                catch (AggregateException ex)
                 {
                     var innerExceptions = ex.Flatten().InnerExceptions;
                     if (innerExceptions.Any(e => e is TimeoutException))
@@ -207,9 +210,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service
 
         protected virtual void Dispose(bool disposing)
         {
-            if(disposing)
+            if (disposing)
             {
-                if(_httpClientObj != null)
+                if (_httpClientObj != null)
                 {
                     _httpClientObj.Dispose();
                     _httpClientObj = null;

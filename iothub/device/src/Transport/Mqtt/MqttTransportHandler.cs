@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Security;
 using System.Net.WebSockets;
@@ -870,9 +871,17 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                 IChannel channel = null;
 
                 Func<Stream, SslStream> streamFactory = stream => new SslStream(stream, true, settings.RemoteCertificateValidationCallback);
-                var clientTlsSettings = settings.ClientCertificate != null ?
-                    new ClientTlsSettings(iotHubConnectionString.HostName, new List<X509Certificate> { settings.ClientCertificate }) :
-                    new ClientTlsSettings(iotHubConnectionString.HostName);
+
+                var certs = settings.ClientCertificate == null
+                    ? new List<X509Certificate>(0)
+                    : new List<X509Certificate> { settings.ClientCertificate };
+
+                var clientTlsSettings = new ClientTlsSettings(
+                    TlsVersions.AcceptableVersions,
+                    certs.Any(),
+                    certs,
+                    iotHubConnectionString.HostName);
+
                 Bootstrap bootstrap = new Bootstrap()
                     .Group(s_eventLoopGroup.Value)
                     .Channel<TcpSocketChannel>()

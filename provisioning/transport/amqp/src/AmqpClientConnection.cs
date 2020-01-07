@@ -7,7 +7,6 @@ using Microsoft.Azure.Amqp.Sasl;
 using Microsoft.Azure.Amqp.Transport;
 using Microsoft.Azure.Devices.Shared;
 using System;
-using System.Diagnostics;
 using System.Net;
 using System.Net.WebSockets;
 using System.Security.Cryptography.X509Certificates;
@@ -54,11 +53,17 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
             if (Logging.IsEnabled) Logging.Enter(this, $"{nameof(AmqpClientConnection)}.{nameof(OpenAsync)}");
             var hostName = _uri.Host;
 
-            var tcpSettings = new TcpTransportSettings { Host = hostName, Port = _uri.Port != -1 ? _uri.Port : AmqpConstants.DefaultSecurePort };
+            var tcpSettings = new TcpTransportSettings
+            {
+                Host = hostName,
+                Port = _uri.Port != -1 ? _uri.Port : AmqpConstants.DefaultSecurePort,
+            };
+
             TransportSettings = new TlsTransportSettings(tcpSettings)
             {
                 TargetHost = hostName,
-                Certificate = clientCert
+                Certificate = clientCert,
+                Protocols = TlsVersions.AcceptableVersions,
             };
 
             TransportBase transport;
@@ -83,7 +88,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     bool operationPending = transport.WriteAsync(args);
 
                     if (Logging.IsEnabled) Logging.Info(this, $"{nameof(AmqpClientConnection)}.{nameof(OpenAsync)}: Sent Protocol Header: {_sentHeader.ToString()} operationPending: {operationPending} completedSynchronously: {args.CompletedSynchronously}");
-                    
+
                     if (!operationPending)
                     {
                         args.CompletedCallback(args);

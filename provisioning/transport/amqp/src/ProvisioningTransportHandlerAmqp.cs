@@ -107,7 +107,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                 cancellationToken.ThrowIfCancellationRequested();
 
                 string correlationId = Guid.NewGuid().ToString();
-                DeviceRegistration deviceRegistration = (message.Payload != null && message.Payload.Length > 0) ? new DeviceRegistration { Payload = new JRaw(message.Payload) } : null;
+                DeviceRegistration deviceRegistration = (message.Payload != null && message.Payload.Length > 0)
+                    ? new DeviceRegistration { Payload = new JRaw(message.Payload) }
+                    : null;
 
                 RegistrationOperationStatus operation = await RegisterDeviceAsync(connection, correlationId, deviceRegistration).ConfigureAwait(false);
 

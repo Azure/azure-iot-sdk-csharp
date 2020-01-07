@@ -78,7 +78,10 @@ namespace Microsoft.Azure.Devices.Provisioning.Client.Transport
                     Port = Port,
                 };
 
-                HttpClientHandler httpClientHandler = new HttpClientHandler();
+                var httpClientHandler = new HttpClientHandler
+                {
+                    SslProtocols = TlsVersions.AcceptableVersions,
+                };
 
                 if (Proxy != DefaultWebProxySettings.Instance)
                 {
