@@ -33,26 +33,14 @@ namespace Microsoft.Azure.Devices.E2ETests
                     EventHubReceiver receiver = eventHubClient.GetConsumerGroup(consumerGroupName).CreateReceiver(partitionId, DateTime.Now.AddMinutes(-LookbackTimeInMinutes));
                     s_log.WriteLine($"EventHub receiver created for partition {partitionId}, listening from {LookbackTimeInMinutes}");
 
-                    new Thread(
-                        async () => {
-                            while (true)
-                            {
-                                IEnumerable<EventData> eventDatas = await receiver.ReceiveAsync(int.MaxValue, TimeSpan.FromSeconds(OperationTimeoutInSeconds)).ConfigureAwait(false);
-                                if (eventDatas == null)
-                                {
-                                    s_log.WriteLine($"{nameof(EventHubTestListener)}.{nameof(CreateListenerPalAndReceiveMessages)}: no events received.");
-                                }
-                                else
-                                {
-                                    s_log.WriteLine($"{nameof(EventHubTestListener)}.{nameof(CreateListenerPalAndReceiveMessages)}: {eventDatas.Count()} events received.");
-                                    foreach (EventData eventData in eventDatas)
-                                    {
-                                        string body = GetEventDataBody(eventData);
-                                        events[body] = eventData;
-                                    }
-                                }
-                            }
-                        }).Start();
+                    new Task(async () =>
+                    {
+                        while (true)
+                        {
+                            IEnumerable<EventData> eventDatas = await receiver.ReceiveAsync(int.MaxValue, TimeSpan.FromSeconds(OperationTimeoutInSeconds)).ConfigureAwait(false);
+                            ProcessEventData(eventDatas);
+                        }
+                    }).Start();
                 }
                 catch (QuotaExceededException ex)
                 {
