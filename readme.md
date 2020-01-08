@@ -107,6 +107,8 @@ This repository contains [provisioning service client SDK](./provisioning/servic
 | CRUD Operation with X.509 Individual Enrollment    | :heavy_check_mark: | Programmatically manage device enrollment using X.509 individual enrollment with the service SDK.  Please visit the [samples folder](./provisioning/service/samples/) to learn more about this feature. |
 | CRUD Operation with X.509 Group Enrollment         | :heavy_check_mark: | Programmatically manage device enrollment using X.509 group enrollment with the service SDK.  Please visit the [samples folder](./provisioning/service/samples/) to learn more about this feature. |
 | Query enrollments                                  | :heavy_check_mark: | Programmatically query registration states with the service SDK.  Please visit the [samples folder](./provisioning/service/samples/) to learn more about this feature.                                                                            |
+## Configuring TLS Protocol and Ciphers
+[See how to enforce TLS1.2](tls.md) 
 
 ## Read more
 * [Azure IoT Hub documentation][iot-hub-documentation]
