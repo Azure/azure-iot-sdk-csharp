@@ -3,13 +3,11 @@
 
 namespace Microsoft.Azure.Devices
 {
+    using Microsoft.Azure.Devices.Shared;
     using System;
     using System.Collections.Generic;
-    using System.Net;
-    using System.Net.Http.Headers;
     using System.Threading;
     using System.Threading.Tasks;
-    using Microsoft.Azure.Devices.Shared;
 
     /// <summary>
     /// Contains methods that services can use to perform create, remove, update and delete operations on devices.
@@ -34,10 +32,8 @@ namespace Microsoft.Azure.Devices
         /// <returns> An RegistryManager instance. </returns>
         public static RegistryManager CreateFromConnectionString(string connectionString, HttpTransportSettings transportSettings)
         {
-#if NET451
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
-#endif
-            
+            TlsVersions.SetLegacyAcceptableVersions();
+
             IotHubConnectionString iotHubConnectionString = IotHubConnectionString.Parse(connectionString);
             return new HttpRegistryManager(iotHubConnectionString, transportSettings);
         }
@@ -53,7 +49,7 @@ namespace Microsoft.Azure.Devices
         /// Releases unmanaged and - optionally - managed resources.
         /// </summary>
         /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
-        protected virtual void Dispose(bool disposing) {}
+        protected virtual void Dispose(bool disposing) { }
 
         /// <summary>
         /// Explicitly open the RegistryManager instance.

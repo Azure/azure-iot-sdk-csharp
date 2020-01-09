@@ -384,7 +384,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             await ProvisioningDeviceClient_ProvisioningFlow_CustomAllocation_AllocateToHubWithLongestHostName(transportProtocol, attestationType, enrollmentType, setCustomProxy, iotHubsToProvisionTo, expectedDestinationHub, customServerProxy).ConfigureAwait(false);
         }
 
-#endregion
+        #endregion
 
         [TestMethod]
         [TestCategory("ProxyE2ETests")]
@@ -461,7 +461,6 @@ namespace Microsoft.Azure.Devices.E2ETests
             using (ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportType))
             using (SecurityProvider security = await CreateSecurityProviderFromName(attestationType, enrollmentType, groupId, reprovisionPolicy, allocationPolicy, customAllocationDefinition, iothubs, deviceCapabilities).ConfigureAwait(false))
             {
-
                 _verboseLog.WriteLine("Creating device");
 
                 if (ImplementsWebProxy(transportType) && setCustomProxy)
@@ -506,10 +505,22 @@ namespace Microsoft.Azure.Devices.E2ETests
             ProvisioningServiceClient provisioningServiceClient = CreateProvisioningService(ProxyServerAddress);
             string groupId = IdPrefix + AttestationTypeToString(attestationType) + "-" + Guid.NewGuid();
 
-            CustomAllocationDefinition customAllocationDefinition = new CustomAllocationDefinition() { WebhookUrl = Configuration.Provisioning.CustomAllocationPolicyWebhook, ApiVersion = "2019-03-31" };
+            var customAllocationDefinition = new CustomAllocationDefinition
+            {
+                WebhookUrl = Configuration.Provisioning.CustomAllocationPolicyWebhook,
+                ApiVersion = "2019-03-31",
+            };
 
             using (ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportProtocol))
-            using (SecurityProvider security = await CreateSecurityProviderFromName(attestationType, enrollmentType, groupId, null, AllocationPolicy.Custom, customAllocationDefinition, iotHubsToProvisionTo).ConfigureAwait(false))
+            using (SecurityProvider security = await CreateSecurityProviderFromName(
+                    attestationType,
+                    enrollmentType,
+                    groupId,
+                    null,
+                    AllocationPolicy.Custom,
+                    customAllocationDefinition,
+                    iotHubsToProvisionTo)
+                .ConfigureAwait(false))
             {
                 //Check basic provisioning
                 if (ImplementsWebProxy(transportProtocol) && setCustomProxy)
@@ -517,7 +528,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                     transport.Proxy = (proxyServerAddress != null) ? new WebProxy(ProxyServerAddress) : null;
                 }
 
-                ProvisioningDeviceClient provClient = ProvisioningDeviceClient.Create(
+                var provClient = ProvisioningDeviceClient.Create(
                     s_globalDeviceEndpoint,
                     Configuration.Provisioning.IdScope,
                     security,
@@ -525,7 +536,9 @@ namespace Microsoft.Azure.Devices.E2ETests
                 var cts = new CancellationTokenSource(PassingTimeoutMiliseconds);
 
                 //Test registering with valid additional data payload
-                DeviceRegistrationResult result = await provClient.RegisterAsync(new ProvisioningRegistrationAdditionalData { JsonData = payloadJsonData}, cts.Token).ConfigureAwait(false);
+                DeviceRegistrationResult result = await provClient
+                    .RegisterAsync(new ProvisioningRegistrationAdditionalData { JsonData = payloadJsonData }, cts.Token)
+                    .ConfigureAwait(false);
                 ValidateDeviceRegistrationResult(true, result);
                 Assert.AreEqual(expectedDestinationHub, result.AssignedHub);
 
@@ -535,7 +548,14 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 if (attestationType != AttestationType.x509) //x509 enrollments are hardcoded, should never be deleted
                 {
-                    await DeleteCreatedEnrollment(enrollmentType, provisioningServiceClient, security, groupId).ConfigureAwait(false);
+                    try
+                    {
+                        await DeleteCreatedEnrollment(enrollmentType, provisioningServiceClient, security, groupId).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Cleanup of enrollment failed due to {ex}");
+                    }
                 }
             }
         }
@@ -573,7 +593,7 @@ namespace Microsoft.Azure.Devices.E2ETests
             using (ProvisioningTransportHandler transport = CreateTransportHandlerFromName(transportProtocol))
             using (SecurityProvider security = new SecurityProviderTpmSimulator("invalidregistrationid"))
             {
-                ProvisioningDeviceClient provClient = ProvisioningDeviceClient.Create(
+                var provClient = ProvisioningDeviceClient.Create(
                     s_globalDeviceEndpoint,
                     Configuration.Provisioning.IdScope,
                     security,
@@ -815,7 +835,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await moduleClient.OpenAsync().ConfigureAwait(false);
             }
         }
-        
+
         private async Task<SecurityProvider> CreateSecurityProviderFromName(AttestationType attestationType, EnrollmentType? enrollmentType, string groupId, ReprovisionPolicy reprovisionPolicy, AllocationPolicy allocationPolicy, CustomAllocationDefinition customAllocationDefinition, ICollection<string> iothubs, DeviceCapabilities capabilities = null)
         {
             _verboseLog.WriteLine($"{nameof(CreateSecurityProviderFromName)}({attestationType})");
@@ -954,16 +974,20 @@ namespace Microsoft.Azure.Devices.E2ETests
                 Assert.IsNull(result.JsonPayload);
             }
         }
-      
-        public static async Task DeleteCreatedEnrollment(EnrollmentType? enrollmentType, ProvisioningServiceClient provisioningServiceClient, SecurityProvider security, string groupId)
+
+        public static async Task DeleteCreatedEnrollment(
+            EnrollmentType? enrollmentType,
+            ProvisioningServiceClient dpsClient,
+            SecurityProvider security,
+            string groupId)
         {
             if (enrollmentType == EnrollmentType.Individual)
             {
-                await provisioningServiceClient.DeleteIndividualEnrollmentAsync(security.GetRegistrationID()).ConfigureAwait(false);
+                await dpsClient.DeleteIndividualEnrollmentAsync(security.GetRegistrationID()).ConfigureAwait(false);
             }
             else
             {
-                await provisioningServiceClient.DeleteEnrollmentGroupAsync(groupId).ConfigureAwait(false);
+                await dpsClient.DeleteEnrollmentGroupAsync(groupId).ConfigureAwait(false);
             }
         }
 

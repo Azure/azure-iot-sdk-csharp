@@ -13,6 +13,7 @@ namespace Microsoft.Azure.Devices.E2ETests
 {
     [TestClass]
     [TestCategory("IoTHub-E2E")]
+    [Ignore("Enable once the log analytics client can be created (needs a certificate).")]
     public class AzureSecurityCenterForIoTSecurityMessageE2ETests : IDisposable
     {
         private readonly string _devicePrefix = $"E2E_{nameof(AzureSecurityCenterForIoTSecurityMessageE2ETests)}_";

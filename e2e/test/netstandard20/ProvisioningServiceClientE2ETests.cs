@@ -188,7 +188,14 @@ namespace Microsoft.Azure.Devices.E2ETests
 
                 Assert.AreEqual(allocationPolicy, enrollmentGroup.AllocationPolicy);
 
-                await provisioningServiceClient.DeleteEnrollmentGroupAsync(enrollmentGroup.EnrollmentGroupId).ConfigureAwait(false);
+                try
+                {
+                    await provisioningServiceClient.DeleteEnrollmentGroupAsync(enrollmentGroup.EnrollmentGroupId).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Cleanup of enrollment group failed due to {ex}");
+                }
             }
         }
 

@@ -11,6 +11,8 @@ using System.Threading;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.Azure.Amqp;
 using Microsoft.Azure.Amqp.Transport;
+using System.Security.Authentication;
+using System.Linq;
 
 namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
 {
@@ -29,17 +31,29 @@ namespace Microsoft.Azure.Devices.Client.Transport.AmqpIoT
             _hostName = hostName;
             _disableServerCertificateValidation = disableServerCertificateValidation;
 
-            var tcpTransportSettings = new TcpTransportSettings()
+            var tcpTransportSettings = new TcpTransportSettings
             {
                 Host = hostName,
-                Port = AmqpConstants.DefaultSecurePort
+                Port = AmqpConstants.DefaultSecurePort,
             };
+
+            SslProtocols protocols = TlsVersions.Preferred;
+#if NET451
+            // Requires hardcoding in NET451 otherwise yields error:
+            //    System.ArgumentException: The specified value is not valid in the 'SslProtocolType' enumeration.
+            if (amqpTransportSettings.GetTransportType() == TransportType.Amqp_Tcp_Only
+            && protocols == SslProtocols.None)
+            {
+                protocols = TlsVersions.MinimumTlsVersions;
+            }
+#endif
 
             _tlsTransportSettings = new TlsTransportSettings(tcpTransportSettings)
             {
                 TargetHost = hostName,
                 Certificate = null,
-                CertificateValidationCallback = _amqpTransportSettings.RemoteCertificateValidationCallback ?? OnRemoteCertificateValidation
+                CertificateValidationCallback = _amqpTransportSettings.RemoteCertificateValidationCallback ?? OnRemoteCertificateValidation,
+                Protocols = protocols,
             };
 
             if (_amqpTransportSettings.ClientCertificate != null)

@@ -48,6 +48,7 @@ namespace Microsoft.Azure.Devices
             this.defaultErrorMapping =
                 new ReadOnlyDictionary<HttpStatusCode, Func<HttpResponseMessage, Task<Exception>>>(defaultErrorMapping);
             this.defaultOperationTimeout = timeout;
+            TlsVersions.SetLegacyAcceptableVersions();
 
 
         }
@@ -847,21 +848,24 @@ namespace Microsoft.Azure.Devices
 
         private HttpClient BuildHttpClient(TimeSpan timeout)
         {
-            HttpClient httpClient;
+            var httpClientHandler = new HttpClientHandler
+            {
+#if !NET451
+                SslProtocols = TlsVersions.Preferred,
+#endif
+            };
+
             if (customHttpProxy != DefaultWebProxySettings.Instance)
             {
-                HttpClientHandler httpClientHandler = new HttpClientHandler();
                 httpClientHandler.UseProxy = (customHttpProxy != null);
                 httpClientHandler.Proxy = customHttpProxy;
-                httpClient = new HttpClient(httpClientHandler);
-            }
-            else
-            {
-                httpClient = new HttpClient();
             }
 
-            httpClient.BaseAddress = this.baseAddress;
-            httpClient.Timeout = timeout;
+            var httpClient = new HttpClient(httpClientHandler)
+            {
+                BaseAddress = this.baseAddress,
+                Timeout = timeout
+            };
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue(CommonConstants.MediaTypeForDeviceManagementApis));
             httpClient.DefaultRequestHeaders.ExpectContinue = false;
 
