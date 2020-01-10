@@ -4,6 +4,8 @@
     <TargetFrameworks>netcoreapp2.2;net47</TargetFrameworks>
     <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">netcoreapp2.2</TargetFrameworks>
     <IsPackable>false</IsPackable>
+    <RootNamespace>Microsoft.Azure.Devices.DigitalTwin.E2ETests</RootNamespace>
+    <AssemblyName>Microsoft.Azure.Devices.DigitalTwin.E2ETests</AssemblyName>
     <RootDir>$(MSBuildProjectDirectory)\..\..\..</RootDir>
   </PropertyGroup>
 
