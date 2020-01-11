@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.Devices.E2ETests
@@ -17,45 +18,40 @@ namespace Microsoft.Azure.Devices.E2ETests
     // This is using the new Microsoft.Azure.EventHubs from https://github.com/Azure/azure-event-hubs
     public partial class EventHubTestListener
     {
-        private PartitionReceiver _receiver;
-
-        private EventHubTestListener(PartitionReceiver receiver)
+        public static void CreateListenerPalAndReceiveMessages()
         {
-            _receiver = receiver;
-        }
-
-        public static async Task<EventHubTestListener> CreateListenerPal(string deviceName)
-        {
-            PartitionReceiver receiver = null;
-            Stopwatch sw = new Stopwatch();
-            sw.Start();
-
             var builder = new EventHubsConnectionStringBuilder(Configuration.IoTHub.EventHubString)
             {
                 EntityPath = Configuration.IoTHub.EventHubCompatibleName
             };
 
             EventHubClient eventHubClient = EventHubClient.CreateFromConnectionString(builder.ToString());
-            var eventRuntimeInformation = await eventHubClient.GetRuntimeInformationAsync().ConfigureAwait(false);
+            var eventRuntimeInformation = eventHubClient.GetRuntimeInformationAsync().Result;
             var eventHubPartitionsCount = eventRuntimeInformation.PartitionCount;
-            string partition = EventHubPartitionKeyResolver.ResolveToPartition(deviceName, eventHubPartitionsCount);
             string consumerGroupName = Configuration.IoTHub.EventHubConsumerGroup;
 
-            while (receiver == null && sw.Elapsed.TotalMinutes < MaximumWaitTimeInMinutes)
+            foreach (string partitionId in eventRuntimeInformation.PartitionIds)
             {
                 try
                 {
-                    receiver = eventHubClient.CreateReceiver(consumerGroupName, partition, DateTime.Now.AddMinutes(-LookbackTimeInMinutes));
+                    PartitionReceiver receiver = eventHubClient.CreateReceiver(PartitionReceiver.DefaultConsumerGroupName, partitionId, DateTime.Now.AddMinutes(-LookbackTimeInMinutes));
+                    s_log.WriteLine($"EventHub receiver created for partition {partitionId}, listening from {LookbackTimeInMinutes}");
+
+                    new Task(async () =>
+                    {
+                        while (true)
+                        {
+                            IEnumerable<EventData> eventDatas = await receiver.ReceiveAsync(int.MaxValue, TimeSpan.FromSeconds(OperationTimeoutInSeconds)).ConfigureAwait(false);
+                            ProcessEventData(eventDatas);
+                        }
+                    }).Start();
                 }
                 catch (EventHubsException ex)
                 {
-                    s_log.WriteLine($"{nameof(EventHubTestListener)}.{nameof(CreateListener)}: Cannot create receiver: {ex}");
+                    s_log.WriteLine($"{nameof(EventHubTestListener)}.{nameof(CreateListenerPalAndReceiveMessages)}: Cannot create receiver for partitionID {partitionId}: {ex}");
                 }
             }
 
-            sw.Stop();
-
-            return new EventHubTestListener(receiver);
         }
     }
 }

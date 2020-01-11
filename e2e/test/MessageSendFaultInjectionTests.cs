@@ -376,11 +376,8 @@ namespace Microsoft.Azure.Devices.E2ETests
             int durationInSec = FaultInjection.DefaultDurationInSec,
             int retryDurationInMilliSec = FaultInjection.RecoveryTimeMilliseconds)
         {
-            EventHubTestListener testListener = null;
-
             Func<DeviceClient, TestDevice, Task> init = async (deviceClient, testDevice) =>
             {
-                testListener = await EventHubTestListener.CreateListener(testDevice.Id).ConfigureAwait(false);
                 deviceClient.OperationTimeoutInMilliseconds = (uint)retryDurationInMilliSec;
             };
 
@@ -390,20 +387,8 @@ namespace Microsoft.Azure.Devices.E2ETests
                 await deviceClient.SendEventAsync(testMessage).ConfigureAwait(false);
 
                 bool isReceived = false;
-                isReceived = await testListener.WaitForMessage(testDevice.Id, payload, p1Value).ConfigureAwait(false);
+                isReceived = EventHubTestListener.VerifyIfMessageIsReceived(testDevice.Id, payload, p1Value);
                 Assert.IsTrue(isReceived);
-            };
-
-            Func<Task> cleanupOperation = () =>
-            {
-                if (testListener != null)
-                {
-                    return testListener.CloseAsync();
-                }
-                else
-                {
-                    return Task.FromResult(false);
-                }
             };
 
             await FaultInjection.TestErrorInjectionAsync(
@@ -416,7 +401,7 @@ namespace Microsoft.Azure.Devices.E2ETests
                 durationInSec,
                 init,
                 testOperation,
-                cleanupOperation).ConfigureAwait(false);
+                () => { return Task.FromResult(false); }).ConfigureAwait(false);
         }
 
         public void Dispose()
