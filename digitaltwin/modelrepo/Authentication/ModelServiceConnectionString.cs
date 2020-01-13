@@ -44,7 +44,7 @@ namespace Microsoft.Azure.DigitalTwin.Model.Service
         /// </summary>
         public string RepositoryId { get; private set; }
 
-        private override string BuildToken()
+        public override string BuildToken(out TimeSpan ttl)
         {
             var builder = new SharedAccessSignature
             {

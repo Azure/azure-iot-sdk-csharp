@@ -13,11 +13,11 @@
     <Compile Include="$(common)\auth\IoTServiceClientCredentials.cs" Link="common\IoTServiceClientCredentials.cs" />
     <Compile Include="$(common)\auth\ServiceConnectionString.cs" Link="common\ServiceConnectionString.cs" />
     <Compile Include="$(common)\auth\ServiceConnectionStringParser.cs" Link="common\ServiceConnectionStringParser.cs" />
-    <Compile Include="$(common)\auth\SharedAccessKeySignatureCredentials.cs" Link="common\SharedAccessKeySignatureCredentials.cs" />
-    <Compile Include="$(common)\auth\SharedAccessKeySignature.cs" Link="common\SharedAccessKeySignature.cs" />
-    <Compile Include="$(common)\auth\SharedAccessKeySignatureBuilder.cs" Link="common\SharedAccessKeySignatureBuilder.cs" />
-    <Compile Include="$(common)\auth\SharedAccessKeySignatureConstants.cs" Link="common\SharedAccessKeySignatureConstants.cs" />
-    <Compile Include="$(common)\auth\SharedAccessKeySignatureCredentials.cs" Link="common\SharedAccessKeySignatureCredentials.cs" />
+    <Compile Include="$(common)\auth\SharedAccessKeyCredentials.cs" Link="common\SharedAccessKeyCredentials.cs" />
+    <Compile Include="$(common)\auth\SharedAccessSignature.cs" Link="common\SharedAccessSignature.cs" />
+    <Compile Include="$(common)\auth\SharedAccessSignatureBuilder.cs" Link="common\SharedAccessSignatureBuilder.cs" />
+    <Compile Include="$(common)\auth\SharedAccessSignatureConstants.cs" Link="common\SharedAccessSignatureConstants.cs" />
+    <Compile Include="$(common)\auth\SharedAccessSignatureCredentials.cs" Link="common\SharedAccessSignatureCredentials.cs" />
     <Compile Include="$(common)\service\CommonResources.cs" Link="common\CommonResources.cs" />
   </ItemGroup>
 
