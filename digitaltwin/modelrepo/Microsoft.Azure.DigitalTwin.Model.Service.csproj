@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <RootDir>$(MSBuildProjectDirectory)\..\..</RootDir>
+    <common>$(RootDir)\common\src</common>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(common)\auth\IoTServiceClientCredentials.cs" Link="common\IoTServiceClientCredentials.cs" />
+    <Compile Include="$(common)\auth\ServiceConnectionString.cs" Link="common\ServiceConnectionString.cs" />
+    <Compile Include="$(common)\auth\ServiceConnectionStringParser.cs" Link="common\ServiceConnectionStringParser.cs" />
+    <Compile Include="$(common)\auth\SharedAccessKeySignatureCredentials.cs" Link="common\SharedAccessKeySignatureCredentials.cs" />
+    <Compile Include="$(common)\auth\SharedAccessKeySignature.cs" Link="common\SharedAccessKeySignature.cs" />
+    <Compile Include="$(common)\auth\SharedAccessKeySignatureBuilder.cs" Link="common\SharedAccessKeySignatureBuilder.cs" />
+    <Compile Include="$(common)\auth\SharedAccessKeySignatureConstants.cs" Link="common\SharedAccessKeySignatureConstants.cs" />
+    <Compile Include="$(common)\auth\SharedAccessKeySignatureCredentials.cs" Link="common\SharedAccessKeySignatureCredentials.cs" />
+    <Compile Include="$(common)\service\CommonResources.cs" Link="common\CommonResources.cs" />
+  </ItemGroup>
+
+</Project>

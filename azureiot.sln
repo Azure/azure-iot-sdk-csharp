@@ -87,6 +87,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.Dig
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.Devices.DigitalTwin.E2ETests", "digitaltwin\e2e\tests\Microsoft.Azure.Devices.DigitalTwin.E2ETests.csproj", "{3FC74170-8B26-4AF9-9E19-B3E4AB2BA814}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "modelrepo", "modelrepo", "{3DF65133-EC05-464C-B654-ABE573843FBC}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.DigitalTwin.Model.Service", "digitaltwin\modelrepo\Microsoft.Azure.DigitalTwin.Model.Service.csproj", "{65982220-6DC8-4015-96AF-E53DAFC42B9A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -175,6 +179,10 @@ Global
 		{3FC74170-8B26-4AF9-9E19-B3E4AB2BA814}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3FC74170-8B26-4AF9-9E19-B3E4AB2BA814}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3FC74170-8B26-4AF9-9E19-B3E4AB2BA814}.Release|Any CPU.Build.0 = Release|Any CPU
+		{65982220-6DC8-4015-96AF-E53DAFC42B9A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{65982220-6DC8-4015-96AF-E53DAFC42B9A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{65982220-6DC8-4015-96AF-E53DAFC42B9A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{65982220-6DC8-4015-96AF-E53DAFC42B9A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -216,6 +224,8 @@ Global
 		{AE718D49-860F-44D9-8514-8B589330C525} = {AD5062A3-72EA-4273-9858-E01594763C39}
 		{BFF03EEB-A6B7-45B9-BFBB-FAE5FC3BF94B} = {AD5062A3-72EA-4273-9858-E01594763C39}
 		{3FC74170-8B26-4AF9-9E19-B3E4AB2BA814} = {F997B975-3764-450B-9D35-CDD76C320885}
+		{3DF65133-EC05-464C-B654-ABE573843FBC} = {FC80F2D0-52B5-4C0C-A6E6-26E845018E5C}
+		{65982220-6DC8-4015-96AF-E53DAFC42B9A} = {3DF65133-EC05-464C-B654-ABE573843FBC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AF61665D-340A-494B-9705-571456BDC752}
