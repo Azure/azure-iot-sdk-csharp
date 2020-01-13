@@ -30,13 +30,13 @@ namespace Microsoft.Azure.Devices.Common.Authorization
             return BuildSignature(KeyName, Key, HostName, TimeToLive).ToString();
         }
 
-        protected StringBuilder BuildSignature()
+        public virtual StringBuilder BuildSignature(string keyName, string key, string Hostname, TimeSpan timeToLive)
         {
             string expiresOn = BuildExpiresOn(TimeToLive);
             string audience = WebUtility.UrlEncode(Hostname);
             List<string> fields = new List<string>();
-            fields.Add(Audience);
-            fields.Add(ExpiresOn);
+            fields.Add(audience);
+            fields.Add(expiresOn);
 
             // Example string to be signed:
             // dh://myiothub.azure-devices.net/a/b/c?myvalue1=a
@@ -53,7 +53,7 @@ namespace Microsoft.Azure.Devices.Common.Authorization
                 "{0} {1}={2}&{3}={4}&{5}={6}",
                 SharedAccessSignatureConstants.SharedAccessSignature,
                 SharedAccessSignatureConstants.AudienceFieldName,
-                Audience,
+                audience,
                 SharedAccessSignatureConstants.SignatureFieldName,
                 WebUtility.UrlEncode(signature),
                 SharedAccessSignatureConstants.ExpiryFieldName,
@@ -71,7 +71,7 @@ namespace Microsoft.Azure.Devices.Common.Authorization
             return buffer;
         }
 
-        private static string BuildExpiresOn(TimeSpan timeToLive)
+        protected string BuildExpiresOn(TimeSpan timeToLive)
         {
             DateTime expiresOn = DateTime.UtcNow.Add(timeToLive);
             TimeSpan secondsFromBaseTime = expiresOn.Subtract(SharedAccessSignatureConstants.EpochTime);
@@ -79,7 +79,7 @@ namespace Microsoft.Azure.Devices.Common.Authorization
             return Convert.ToString(seconds, CultureInfo.InvariantCulture);
         }
 
-        private static string Sign(string requestString, string key)
+        protected string Sign(string requestString, string key)
         {
             using (var hmac = new HMACSHA256(Convert.FromBase64String(key)))
             {

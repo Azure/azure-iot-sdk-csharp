@@ -6,9 +6,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
-using Microsoft.Azure.DigitalTwin.Model.Service;
+using Microsoft.Azure.Devices.Common.Authorization;
 
-namespace Microsoft.Azure.Devices.Common.Authorization
+namespace Microsoft.Azure.DigitalTwin.Model.Service
 {
     /// <summary>
     /// The Service Connection String Parser class

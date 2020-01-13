@@ -32,8 +32,8 @@ namespace Microsoft.Azure.DigitalTwin.Model.Service
         {
             GuardHelper.ThrowIfNullOrWhiteSpace(connectionString, nameof(connectionString));
 
-            var iothubConnectionStringParser = ServiceConnectionStringParser.Create(connectionString);
-            this.repositoryId = iothubConnectionStringParser.RespositoryId;
+            var modelConnectionStringParser = ModelServiceConnectionStringParser.Create(connectionString);
+            this.repositoryId = modelConnectionStringParser.RespositoryId;
             ServiceConnectionString iothubServiceConnectionString = new ServiceConnectionString(iothubConnectionStringParser);
             IoTServiceClientCredentials serviceClientCredentials = new SharedAccessKeyCredentials(iothubServiceConnectionString);
             // parse repository Id

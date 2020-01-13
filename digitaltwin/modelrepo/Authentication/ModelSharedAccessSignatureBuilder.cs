@@ -7,7 +7,6 @@ using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using System.Net;
-using Microsoft.Azure.DigitalTwin.Model.Service;
 
 namespace Microsoft.Azure.Devices.Common.Authorization
 {
@@ -15,18 +14,18 @@ namespace Microsoft.Azure.Devices.Common.Authorization
     {
         public string RepositoryId { get; set; }
 
-        public virtual string ToSignature()
+        public override string ToSignature()
         {
             return BuildSignature(KeyName, Key, HostName, RepositoryId, TimeToLive).ToString();
         }
 
-        protected override StringBuilder BuildSignature()
+        public override StringBuilder BuildSignature(string keyName, string key, string Hostname, string repositoryId, TimeSpan timeToLive)
         {
             string expiresOn = BuildExpiresOn(TimeToLive);
             string audience = WebUtility.UrlEncode(Hostname);
             List<string> fields = new List<string>();
-            fields.Add(Audience);
-            fields.Add(ExpiresOn);
+            fields.Add(audience);
+            fields.Add(expiresOn);
 
             // Example string to be signed:
             // dh://myiothub.azure-devices.net/a/b/c?myvalue1=a
@@ -41,14 +40,14 @@ namespace Microsoft.Azure.Devices.Common.Authorization
             buffer.AppendFormat(
                 CultureInfo.InvariantCulture,
                 "{0} {1}={2}&{3}={4}&{5}={6}&{7}={8}",
-                SharedAccessSignatureConstants.SharedAccessSignature,
-                SharedAccessSignatureConstants.AudienceFieldName,
-                Audience,
-                SharedAccessSignatureConstants.SignatureFieldName,
+                ModelSharedAccessSignatureConstants.SharedAccessSignature,
+                ModelSharedAccessSignatureConstants.AudienceFieldName,
+                audience,
+                ModelSharedAccessSignatureConstants.SignatureFieldName,
                 WebUtility.UrlEncode(signature),
-                SharedAccessSignatureConstants.ExpiryFieldName,
+                ModelSharedAccessSignatureConstants.ExpiryFieldName,
                 WebUtility.UrlEncode(expiresOn),
-                SharedAccessSignatureConstants.repositoryIdFiledName,
+                ModelSharedAccessSignatureConstants.repositoryIdFiledName,
                 repositoryId);
 
             if (!string.IsNullOrEmpty(KeyName))

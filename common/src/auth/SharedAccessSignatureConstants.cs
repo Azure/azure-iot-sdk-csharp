@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.Azure.Devices.Common.Authorization
 {
-    protected class SharedAccessSignatureConstants
+    public class SharedAccessSignatureConstants
     {
         public const int MaxKeyNameLength = 256;
         public const int MaxKeyLength = 256;

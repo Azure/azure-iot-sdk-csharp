@@ -140,7 +140,7 @@ namespace Microsoft.Azure.Devices.Common.Authorization
 
         public virtual string BuildToken(out TimeSpan ttl)
         {
-            var builder = new SharedAccessSignature
+            var builder = new SharedAccessSignatureBuilder
             {
                 KeyName = SharedAccessKeyName,
                 Key = SharedAccessKey,

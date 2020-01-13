@@ -79,13 +79,6 @@ namespace Microsoft.Azure.Devices.Common.Authorization
             }
         }
 
-        public string RepositoryId
-        {
-            get
-            {
-                return _repositoryId;
-            }
-        }
         public virtual SharedAccessSignature Parse(string shareAccessSignatureName, string rawToken)
         {
             if (string.IsNullOrWhiteSpace(shareAccessSignatureName))
@@ -104,12 +97,6 @@ namespace Microsoft.Azure.Devices.Common.Authorization
             if (!parsedFields.TryGetValue(SharedAccessSignatureConstants.SignatureFieldName, out signature))
             {
                 throw new FormatException(string.Format(CultureInfo.InvariantCulture, "Missing field: {0}", SharedAccessSignatureConstants.SignatureFieldName));
-            }
-
-            string repositoryId;
-            if (!parsedFields.TryGetValue(SharedAccessSignatureConstants.repositoryIdFiledName, out repositoryId))
-            {
-                throw new FormatException(string.Format(CultureInfo.InvariantCulture, "Missing field: {0}", SharedAccessSignatureConstants.repositoryIdFiledName));
             }
 
             string expiry;
@@ -131,7 +118,7 @@ namespace Microsoft.Azure.Devices.Common.Authorization
             return new SharedAccessSignature(
                 shareAccessSignatureName,
                 SharedAccessSignatureConstants.EpochTime + TimeSpan.FromSeconds(double.Parse(expiry, CultureInfo.InvariantCulture)),
-                expiry, keyName, signature, repositoryId, encodedAudience);
+                expiry, keyName, signature, encodedAudience);
         }
 
         public static bool IsSharedAccessSignature(string rawSignature)

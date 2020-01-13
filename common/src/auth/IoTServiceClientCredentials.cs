@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Common.Authorization
     /// <summary>
     /// Base credentials class.
     /// </summary>
-    public class IoTServiceClientCredentials : ServiceClientCredentials
+    public abstract class IoTServiceClientCredentials : ServiceClientCredentials
     {
         /// <summary>
         /// Add a sas token to the outgoing http request, then send it to the next pipeline segment

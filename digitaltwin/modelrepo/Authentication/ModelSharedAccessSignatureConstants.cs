@@ -6,7 +6,7 @@ using Microsoft.Azure.DigitalTwin.Model.Service;
 
 namespace Microsoft.Azure.Devices.Common.Authorization
 {
-    protected class ModelSharedAccessSignatureConstants : SharedAccessSignatureConstants
+    public class ModelSharedAccessSignatureConstants : SharedAccessSignatureConstants
     {
         public const string repositoryIdFiledName = "rid";
     }
