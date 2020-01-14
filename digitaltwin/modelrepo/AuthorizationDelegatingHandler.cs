@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+﻿using Microsoft.Azure.Devices.Common.Authorization;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 

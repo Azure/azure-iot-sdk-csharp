@@ -1,20 +1,21 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+using Microsoft.Azure.Devices.Common.Authorization;
 
-namespace Microsoft.Azure.Devices.Common.Authorization
+namespace Microsoft.Azure.DigitalTwin.Model.Service
 {
     /// <summary>
     /// Shared Access Key Signature class.
     /// </summary>
     public class ModelSharedAccessKeyCredentials : IoTServiceClientCredentials
     {
-        private static ServiceConnectionString _serviceConnectionString;
+        private static ModelServiceConnectionString _serviceConnectionString;
 
         /// <summary>
         /// Create a new instance of <code>SharedAccessKeyCredentials</code> using
         /// the Service Connection String
         /// </summary>
-        public ModelSharedAccessKeyCredentials(ServiceConnectionString serviceConnectionString)
+        public ModelSharedAccessKeyCredentials(ModelServiceConnectionString serviceConnectionString)
         {
             _serviceConnectionString = serviceConnectionString;
         }

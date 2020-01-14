@@ -52,7 +52,7 @@ namespace Microsoft.Azure.Devices.Common.Authorization
         /// </remarks>
         /// <param name="serviceConnectionString">the <code>string</code> with the connection string information.</param>
         /// <returns>A <code>ServiceConnectionStringParser</code> object with the parsed connection string.</returns>
-        protected static ServiceConnectionStringParser Create(string serviceConnectionString)
+        public static ServiceConnectionStringParser Create(string serviceConnectionString)
         {
             if (string.IsNullOrWhiteSpace(serviceConnectionString))
             {
