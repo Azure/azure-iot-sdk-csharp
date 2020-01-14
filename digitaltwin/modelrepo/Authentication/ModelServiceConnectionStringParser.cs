@@ -39,19 +39,19 @@ namespace Microsoft.Azure.DigitalTwin.Model.Service
         /// HostName=[ServiceName];SharedAccessKeyName=[keyName];SharedAccessKey=[Key]
         /// </code>
         ///
-        /// This object parse the connection string providing the artifacts to the <see cref="ServiceConnectionString"/> object.
+        /// This object parse the connection string providing the artifacts to the <see cref="ModelServiceConnectionString"/> object.
         /// </remarks>
-        /// <param name="serviceConnectionString">the <code>string</code> with the connection string information.</param>
-        /// <returns>A <code>ServiceConnectionStringParser</code> object with the parsed connection string.</returns>
-        public static ModelServiceConnectionStringParser CreateForModel(string serviceConnectionString)
+        /// <param name="modelServiceConnectionString">the <code>string</code> with the connection string information.</param>
+        /// <returns>A <code>ModelServiceConnectionStringParser</code> object with the parsed connection string.</returns>
+        public static ModelServiceConnectionStringParser CreateForModel(string modelServiceConnectionString)
         {
-            if (string.IsNullOrWhiteSpace(serviceConnectionString))
+            if (string.IsNullOrWhiteSpace(modelServiceConnectionString))
             {
-                throw new ArgumentNullException(nameof(serviceConnectionString));
+                throw new ArgumentNullException(nameof(modelServiceConnectionString));
             }
 
             var ServiceConnectionStringParser = new ModelServiceConnectionStringParser();
-            ServiceConnectionStringParser.Parse(serviceConnectionString);
+            ServiceConnectionStringParser.Parse(modelServiceConnectionString);
 
             return ServiceConnectionStringParser;
         }
@@ -69,6 +69,7 @@ namespace Microsoft.Azure.DigitalTwin.Model.Service
             stringBuilder.AppendKeyValuePairIfNotEmpty(SharedAccessKeyNamePropertyName, SharedAccessKeyName);
             stringBuilder.AppendKeyValuePairIfNotEmpty(SharedAccessKeyPropertyName, SharedAccessKey);
             stringBuilder.AppendKeyValuePairIfNotEmpty(SharedAccessSignaturePropertyName, SharedAccessSignatureString);
+            stringBuilder.AppendKeyValuePairIfNotEmpty(RepositoryIdPropertyName, RespositoryId);
             if (stringBuilder.Length > 0)
             {
                 stringBuilder.Remove(stringBuilder.Length - 1, 1);
@@ -108,7 +109,7 @@ namespace Microsoft.Azure.DigitalTwin.Model.Service
 
             if (SharedAccessSignature.IsSharedAccessSignature(SharedAccessSignatureString))
             {
-                SharedAccessSignature.Parse(ServiceName, SharedAccessSignatureString);
+                ModelSharedAccessSignature.ParseForModel(ServiceName, SharedAccessSignatureString);
             }
 
             ValidateFormat(HostName, HostNamePropertyName, HostNameRegex);

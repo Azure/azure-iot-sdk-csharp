@@ -72,14 +72,14 @@ namespace Microsoft.Azure.DigitalTwin.Model.Service
         /// <param name='modelId'>
         /// Digital twin model id Ex:
         /// &lt;example&gt;urn:contoso:com:temperaturesensor:1&lt;/example&gt;
+        /// <param name='expand'>
+        /// Indicates whether to expand the capability model's interface definitions
+        /// inline or not. This query parameter ONLY applies to Capability model.
+        /// </param>
         /// <param name='clientRequestId'>
         /// Optional. Provides a client-generated opaque value that is recorded in the
         /// logs. Using this header is highly recommended for correlating client-side
         /// activities with requests received by the server.
-        /// </param>
-        /// <param name='expand'>
-        /// Indicates whether to expand the capability model's interface definitions
-        /// inline or not. This query parameter ONLY applies to Capability model.
         /// </param>
         /// <param name='cancellationToken'>
         /// The cancellation token.
@@ -232,7 +232,7 @@ namespace Microsoft.Azure.DigitalTwin.Model.Service
             var config = new MapperConfiguration(cfg => {
                 cfg.CreateMap<SearchModelHeaders, SearchModelResponse>();
             });
-            IMapper iMapper = config.CreateMapper();
+            IMapper iMapperResponse = config.CreateMapper();
 
             var configInput = new MapperConfiguration(cfg => {
                 cfg.CreateMap<SearchModelOptions, SearchOptions>();
@@ -244,7 +244,7 @@ namespace Microsoft.Azure.DigitalTwin.Model.Service
             var _result = new HttpOperationResponse<SearchResponse, SearchModelHeaders>();
             _result = await digitalTwinRepositoryService.SearchModelWithHttpMessagesAsync(searchOptions, _apiVersion, this.repositoryId, clientRequestId, null, cancellationToken).ConfigureAwait(false);
 
-            var searchModelResponse = iMapper.Map<SearchResponse, SearchModelResponse>(_result.Body);
+            var searchModelResponse = iMapperResponse.Map<SearchResponse, SearchModelResponse>(_result.Body);
             searchModelResponse.StatusCode = _result.Response.StatusCode;
 
             return new Response<SearchModelResponse>(null, searchModelResponse);

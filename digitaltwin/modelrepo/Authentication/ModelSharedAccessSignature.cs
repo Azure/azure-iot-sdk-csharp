@@ -23,7 +23,7 @@ namespace Microsoft.Azure.Devices.Common.Authorization
                 return _repositoryId;
             }
         }
-        public static SharedAccessSignature ParseForModel(string shareAccessSignatureName, string rawToken)
+        public static ModelSharedAccessSignature ParseForModel(string shareAccessSignatureName, string rawToken)
         {
             if (string.IsNullOrWhiteSpace(shareAccessSignatureName))
             {

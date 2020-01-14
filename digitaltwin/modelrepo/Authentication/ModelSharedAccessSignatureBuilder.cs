@@ -15,10 +15,10 @@ namespace Microsoft.Azure.Devices.Common.Authorization
 
         public override string ToSignature()
         {
-            return BuildSignatureForModel(KeyName, Key, HostName, RepositoryId, TimeToLive).ToString();
+            return BuildSignatureForModelRepo(KeyName, Key, HostName, RepositoryId, TimeToLive).ToString();
         }
 
-        public StringBuilder BuildSignatureForModel(string keyName, string key, string Hostname, string repositoryId, TimeSpan timeToLive)
+        public StringBuilder BuildSignatureForModelRepo(string keyName, string key, string Hostname, string repositoryId, TimeSpan timeToLive)
         {
             string expiresOn = BuildExpiresOn(TimeToLive);
             string audience = WebUtility.UrlEncode(Hostname);
