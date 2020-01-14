@@ -30,7 +30,7 @@ namespace Microsoft.Azure.Devices.Common.Authorization
             return BuildSignature(KeyName, Key, HostName, TimeToLive).ToString();
         }
 
-        public virtual StringBuilder BuildSignature(string keyName, string key, string Hostname, TimeSpan timeToLive)
+        protected StringBuilder BuildSignature(string keyName, string key, string Hostname, TimeSpan timeToLive)
         {
             string expiresOn = BuildExpiresOn(TimeToLive);
             string audience = WebUtility.UrlEncode(Hostname);

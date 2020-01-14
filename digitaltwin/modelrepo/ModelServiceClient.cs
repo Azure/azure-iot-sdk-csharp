@@ -8,6 +8,7 @@ using Azure;
 using Azure.Core.Http;
 using Azure.IoT.DigitalTwin.Model.Service.Generated;
 using Azure.IoT.DigitalTwin.Model.Service.Generated.Models;
+using Microsoft.Azure.Devices.Common.Authorization;
 using Microsoft.Rest;
 
 namespace Microsoft.Azure.DigitalTwin.Model.Service
@@ -32,12 +33,12 @@ namespace Microsoft.Azure.DigitalTwin.Model.Service
         {
             GuardHelper.ThrowIfNullOrWhiteSpace(connectionString, nameof(connectionString));
 
-            var modelConnectionStringParser = ModelServiceConnectionStringParser.Create(connectionString);
+            var modelConnectionStringParser = ModelServiceConnectionStringParser.CreateForModel(connectionString);
             this.repositoryId = modelConnectionStringParser.RespositoryId;
-            ServiceConnectionString iothubServiceConnectionString = new ServiceConnectionString(iothubConnectionStringParser);
-            IoTServiceClientCredentials serviceClientCredentials = new SharedAccessKeyCredentials(iothubServiceConnectionString);
+            ModelServiceConnectionString modelServiceConnectionString = new ModelServiceConnectionString(modelConnectionStringParser);
+            IoTServiceClientCredentials serviceClientCredentials = new ModelSharedAccessKeyCredentials(modelServiceConnectionString);
             // parse repository Id
-            this.SetupModelServiceClient(iothubServiceConnectionString.HttpsEndpoint, serviceClientCredentials);
+            this.SetupModelServiceClient(modelServiceConnectionString.HttpsEndpoint, serviceClientCredentials);
         }
 
         /// <summary>

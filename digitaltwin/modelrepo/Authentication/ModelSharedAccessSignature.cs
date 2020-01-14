@@ -4,10 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Security.Cryptography;
-using System.Text;
-using System.Net;
-using Microsoft.Azure.DigitalTwin.Model.Service;
 
 namespace Microsoft.Azure.Devices.Common.Authorization
 {
@@ -27,7 +23,7 @@ namespace Microsoft.Azure.Devices.Common.Authorization
                 return _repositoryId;
             }
         }
-        public override SharedAccessSignature Parse(string shareAccessSignatureName, string rawToken)
+        public static SharedAccessSignature ParseForModel(string shareAccessSignatureName, string rawToken)
         {
             if (string.IsNullOrWhiteSpace(shareAccessSignatureName))
             {
@@ -48,9 +44,9 @@ namespace Microsoft.Azure.Devices.Common.Authorization
             }
 
             string repositoryId;
-            if (!parsedFields.TryGetValue(SharedAccessSignatureConstants.repositoryIdFiledName, out repositoryId))
+            if (!parsedFields.TryGetValue(ModelSharedAccessSignatureConstants.repositoryIdFiledName, out repositoryId))
             {
-                throw new FormatException(string.Format(CultureInfo.InvariantCulture, "Missing field: {0}", SharedAccessSignatureConstants.repositoryIdFiledName));
+                throw new FormatException(string.Format(CultureInfo.InvariantCulture, "Missing field: {0}", ModelSharedAccessSignatureConstants.repositoryIdFiledName));
             }
 
             string expiry;
@@ -69,7 +65,7 @@ namespace Microsoft.Azure.Devices.Common.Authorization
                 throw new FormatException(string.Format(CultureInfo.InvariantCulture, "Missing field: {0}", SharedAccessSignatureConstants.AudienceFieldName));
             }
 
-            return new SharedAccessSignature(
+            return new ModelSharedAccessSignature(
                 shareAccessSignatureName,
                 SharedAccessSignatureConstants.EpochTime + TimeSpan.FromSeconds(double.Parse(expiry, CultureInfo.InvariantCulture)),
                 expiry, keyName, signature, repositoryId, encodedAudience);

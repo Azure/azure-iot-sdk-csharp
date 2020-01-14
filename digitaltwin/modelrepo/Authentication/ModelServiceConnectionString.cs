@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Text;
 using Microsoft.Azure.Devices.Common.Authorization;
 
 namespace Microsoft.Azure.DigitalTwin.Model.Service
@@ -26,7 +25,7 @@ namespace Microsoft.Azure.DigitalTwin.Model.Service
         /// <summary>
         /// CONSTRUCOR
         /// </summary>
-        /// <param name="parser">the <see cref="ServiceConnectionStringParser"/> with the connection string content.</param>
+        /// <param name="parser">the <see cref="ModelServiceConnectionStringParser"/> with the connection string content.</param>
         /// <exception cref="ArgumentNullException">if the provided parser is null.</exception>
         public ModelServiceConnectionString(ModelServiceConnectionStringParser parser)
             : base(parser)
@@ -46,7 +45,7 @@ namespace Microsoft.Azure.DigitalTwin.Model.Service
 
         public override string BuildToken(out TimeSpan ttl)
         {
-            var builder = new SharedAccessSignature
+            var builder = new ModelSharedAccessSignatureBuilder
             {
                 KeyName = SharedAccessKeyName,
                 Key = SharedAccessKey,

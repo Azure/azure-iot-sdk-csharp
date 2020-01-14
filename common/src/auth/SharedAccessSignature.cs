@@ -79,7 +79,7 @@ namespace Microsoft.Azure.Devices.Common.Authorization
             }
         }
 
-        public virtual SharedAccessSignature Parse(string shareAccessSignatureName, string rawToken)
+        public static SharedAccessSignature Parse(string shareAccessSignatureName, string rawToken)
         {
             if (string.IsNullOrWhiteSpace(shareAccessSignatureName))
             {
@@ -140,7 +140,7 @@ namespace Microsoft.Azure.Devices.Common.Authorization
             return ExpiresOn + SharedAccessSignatureConstants.MaxClockSkew < DateTime.UtcNow;
         }
 
-        private static IDictionary<string, string> ExtractFieldValues(string sharedAccessSignature)
+        protected static IDictionary<string, string> ExtractFieldValues(string sharedAccessSignature)
         {
             string[] lines = sharedAccessSignature.Split();
 

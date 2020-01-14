@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Security.Cryptography;
 using System.Text;
 using System.Net;
 
@@ -16,10 +15,10 @@ namespace Microsoft.Azure.Devices.Common.Authorization
 
         public override string ToSignature()
         {
-            return BuildSignature(KeyName, Key, HostName, RepositoryId, TimeToLive).ToString();
+            return BuildSignatureForModel(KeyName, Key, HostName, RepositoryId, TimeToLive).ToString();
         }
 
-        public override StringBuilder BuildSignature(string keyName, string key, string Hostname, string repositoryId, TimeSpan timeToLive)
+        public StringBuilder BuildSignatureForModel(string keyName, string key, string Hostname, string repositoryId, TimeSpan timeToLive)
         {
             string expiresOn = BuildExpiresOn(TimeToLive);
             string audience = WebUtility.UrlEncode(Hostname);
@@ -40,12 +39,12 @@ namespace Microsoft.Azure.Devices.Common.Authorization
             buffer.AppendFormat(
                 CultureInfo.InvariantCulture,
                 "{0} {1}={2}&{3}={4}&{5}={6}&{7}={8}",
-                ModelSharedAccessSignatureConstants.SharedAccessSignature,
-                ModelSharedAccessSignatureConstants.AudienceFieldName,
+                SharedAccessSignatureConstants.SharedAccessSignature,
+                SharedAccessSignatureConstants.AudienceFieldName,
                 audience,
-                ModelSharedAccessSignatureConstants.SignatureFieldName,
+                SharedAccessSignatureConstants.SignatureFieldName,
                 WebUtility.UrlEncode(signature),
-                ModelSharedAccessSignatureConstants.ExpiryFieldName,
+                SharedAccessSignatureConstants.ExpiryFieldName,
                 WebUtility.UrlEncode(expiresOn),
                 ModelSharedAccessSignatureConstants.repositoryIdFiledName,
                 repositoryId);

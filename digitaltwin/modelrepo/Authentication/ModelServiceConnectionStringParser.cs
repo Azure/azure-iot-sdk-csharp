@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.Azure.Devices.Common.Authorization;
@@ -11,7 +10,7 @@ using Microsoft.Azure.Devices.Common.Authorization;
 namespace Microsoft.Azure.DigitalTwin.Model.Service
 {
     /// <summary>
-    /// The Service Connection String Parser class
+    /// The Model Service Connection String Parser class
     /// </summary>
     public class ModelServiceConnectionStringParser : ServiceConnectionStringParser
     {
@@ -27,6 +26,35 @@ namespace Microsoft.Azure.DigitalTwin.Model.Service
         /// The Repository Id for private/Company repository
         /// </summary>
         public string RespositoryId { get; internal set; }
+
+
+        /// <summary>
+        /// Factory for new Connection String object.
+        /// </summary>
+        /// <remarks>
+        /// The connection string contains a set of information that uniquely identify an IoT Service.
+        ///
+        /// A valid connection string shall be in the following format:
+        /// <code>
+        /// HostName=[ServiceName];SharedAccessKeyName=[keyName];SharedAccessKey=[Key]
+        /// </code>
+        ///
+        /// This object parse the connection string providing the artifacts to the <see cref="ServiceConnectionString"/> object.
+        /// </remarks>
+        /// <param name="serviceConnectionString">the <code>string</code> with the connection string information.</param>
+        /// <returns>A <code>ServiceConnectionStringParser</code> object with the parsed connection string.</returns>
+        public static ModelServiceConnectionStringParser CreateForModel(string serviceConnectionString)
+        {
+            if (string.IsNullOrWhiteSpace(serviceConnectionString))
+            {
+                throw new ArgumentNullException(nameof(serviceConnectionString));
+            }
+
+            var ServiceConnectionStringParser = new ModelServiceConnectionStringParser();
+            ServiceConnectionStringParser.Parse(serviceConnectionString);
+
+            return ServiceConnectionStringParser;
+        }
 
         /// <summary>
         /// Returns the Service Connection string
