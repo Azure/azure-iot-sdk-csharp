@@ -11,7 +11,7 @@ using Microsoft.Rest;
 namespace Microsoft.Azure.Devices.Common.Authorization
 {
     /// <summary>
-    /// Base credentials class.
+    /// Base credentials class for adding Service Credentials on outgoing HTTP requests.
     /// </summary>
     public abstract class IoTServiceClientCredentials : ServiceClientCredentials
     {

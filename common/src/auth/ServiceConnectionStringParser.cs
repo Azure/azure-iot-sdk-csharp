@@ -15,14 +15,14 @@ namespace Microsoft.Azure.Devices.Common.Authorization
     /// </summary>
     public class ServiceConnectionStringParser
     {
-        protected char ValuePairDelimiter = ';';
-        protected char ValuePairSeparator = '=';
-        protected static string HostNameSeparator = ".";
+        protected const char ValuePairDelimiter = ';';
+        protected const char ValuePairSeparator = '=';
+        protected const string HostNameSeparator = ".";
 
-        protected string HostNamePropertyName = nameof(HostName);
-        protected string SharedAccessKeyNamePropertyName = nameof(SharedAccessKeyName);
-        protected string SharedAccessKeyPropertyName = nameof(SharedAccessKey);
-        protected string SharedAccessSignaturePropertyName = nameof(SharedAccessSignatureString);
+        protected string HostNamePropertyName = "HostName";
+        protected string SharedAccessKeyNamePropertyName = "SharedAccessKeyName";
+        protected string SharedAccessKeyPropertyName = "SharedAccessKey";
+        protected string SharedAccessSignaturePropertyName = "SharedAccessSignature";
 
         protected static TimeSpan regexTimeoutMilliseconds = TimeSpan.FromMilliseconds(500);
         protected Regex HostNameRegex = new Regex(@"[a-zA-Z0-9_\-\.]+$", RegexOptions.Compiled | RegexOptions.IgnoreCase, regexTimeoutMilliseconds);
@@ -31,7 +31,6 @@ namespace Microsoft.Azure.Devices.Common.Authorization
         protected Regex SharedAccessSignatureRegex = new Regex(@"^.+$", RegexOptions.Compiled | RegexOptions.IgnoreCase, regexTimeoutMilliseconds);
 
         private string _hostName;
-        private string _serviceName;
 
         protected ServiceConnectionStringParser()
         {
@@ -41,11 +40,11 @@ namespace Microsoft.Azure.Devices.Common.Authorization
         /// Factory for new Connection String object.
         /// </summary>
         /// <remarks>
-        /// The connection string contains a set of information that uniquely identify an IoT Service.
+        /// The connection string contains a set of information that uniquely identifies an IoT service.
         ///
         /// A valid connection string shall be in the following format:
         /// <code>
-        /// HostName=[ServiceName];SharedAccessKeyName=[keyName];SharedAccessKey=[Key]
+        /// HostName={repo host name};RepositoryId={repo ID};SharedAccessKeyName={repo key ID};SharedAccessKey={repo key secret}
         /// </code>
         ///
         /// This object parse the connection string providing the artifacts to the <see cref="ServiceConnectionString"/> object.
@@ -93,10 +92,7 @@ namespace Microsoft.Azure.Devices.Common.Authorization
         /// <summary>
         /// The Service Name
         /// </summary>
-        public string ServiceName
-        {
-            get { return _serviceName; }
-        }
+        public string ServiceName { get; private set; }
 
         internal ServiceConnectionString ToServiceConnectionString()
         {
@@ -173,7 +169,7 @@ namespace Microsoft.Azure.Devices.Common.Authorization
 
         private void SetServiceName()
         {
-            _serviceName = GetServiceName(HostName);
+            ServiceName = GetServiceName(HostName);
 
             if (string.IsNullOrWhiteSpace(ServiceName))
             {
