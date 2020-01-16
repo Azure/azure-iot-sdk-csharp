@@ -109,7 +109,7 @@ Function BuildProject($path, $message) {
         }
     }
 
-    & dotnet build --verbosity $verbosity --configuration $configuration
+    & dotnet build --verbosity $verbosity --configuration $configuration --sources https://api.nuget.org/v3/index.json
 
     if ($LASTEXITCODE -ne 0) {
         throw "Build failed: $label"
