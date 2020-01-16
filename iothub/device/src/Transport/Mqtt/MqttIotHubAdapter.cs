@@ -805,14 +805,15 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
         {
             if (Logging.IsEnabled) Logging.Enter(this, nameof(CloseIotHubConnection));
 
-            if (this.IsInState(StateFlags.NotConnected) || this.IsInState(StateFlags.Connecting))
-            {
-                // closure has happened before IoT Hub connection was established or it was initiated due to disconnect
-                return;
-            }
 
             try
             {
+                if (this.IsInState(StateFlags.NotConnected) || this.IsInState(StateFlags.Connecting))
+                {
+                    // closure has happened before IoT Hub connection was established or it was initiated due to disconnect
+                    return;
+                }
+
                 this.serviceBoundOneWayProcessor.Complete();
                 this.deviceBoundOneWayProcessor.Complete();
                 this.serviceBoundTwoWayProcessor.Complete();
@@ -826,7 +827,10 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
             catch (Exception completeEx) when (!completeEx.IsFatal())
             {
                 if (Logging.IsEnabled) Logging.Error(this, $"Complete exception: {completeEx.ToString()}", nameof(CloseIotHubConnection));
-
+            }
+            finally
+            {
+                // Fix race condition, cleanup processors to make sure no task hanging
                 try
                 {
                     this.serviceBoundOneWayProcessor.Abort();
@@ -839,9 +843,7 @@ namespace Microsoft.Azure.Devices.Client.Transport.Mqtt
                     // ignored on closing
                     if (Logging.IsEnabled) Logging.Error(this, $"Abort exception: {abortEx.ToString()}", nameof(CloseIotHubConnection));
                 }
-            }
-            finally
-            {
+
                 if (Logging.IsEnabled) Logging.Exit(this, nameof(CloseIotHubConnection));
             }
         }
