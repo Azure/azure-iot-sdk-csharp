@@ -13,7 +13,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
     {
         private ProvisioningServiceClient _provisioningServiceClient;
         // Maximum number of elements per query.
-        private const int QueryPageSize = 10;
+        private const int QueryPageSize = 100;
         private static int _individualEnrollmentsDeleted;
         private static int _enrollmentGroupsDeleted;
         private List<string> individualEnrollmentsToBeRetained =
