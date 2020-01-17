@@ -320,6 +320,11 @@ try {
 
         $verbosity = $oldVerbosity
 
+        if ($testsFailed)
+        {
+            throw "Tests failed: $label"
+        }
+
         # Samples
         BuildProject security\tpm\samples "SecurityProvider for TPM Samples"
 
