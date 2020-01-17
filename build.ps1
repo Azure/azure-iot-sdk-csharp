@@ -187,7 +187,8 @@ Function RunTests($path, $message, $framework="*", $filterTestCategory="*") {
     }
 
     if ($LASTEXITCODE -ne 0) {
-        throw "Tests failed: $label"
+        Write-Host -ForegroundColor Cyan "*******Tests failed: $label"
+        $testsFailed = $true
     }
 }
 
@@ -314,6 +315,8 @@ try {
             # To exclude the Pooling Fault Injection Tests from E2E test run:
             # RunTests e2e\test "End-to-end tests (NetCoreApp2.1)" "netcoreapp2.1" "TestCategory!=IoTHub-FaultInjection-PoolAmqp"
         }
+
+        Write-Host -ForegroundColor Cyan "************ The result of E2E test run is: $testsFailed**************"
 
         $verbosity = $oldVerbosity
 
