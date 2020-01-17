@@ -108,12 +108,8 @@ try {
         RunApp iot-hub\Samples\device\MethodSample "IoTHub\Device\MethodSample"
         RunApp iot-hub\Samples\device\TwinSample "IoTHub\Device\TwinSample"
 
-        # TODO #10: Add module configuration in Jenkins.
-        #RunApp iot-hub\Samples\module\MessageSample "IoTHub\Module\MessageSample"
-        #RunApp iot-hub\Samples\module\MethodSample "IoTHub\Module\MethodSample"
-
-        # TODO: Modify registry manager device deletion to delete devices in bulk
-        #RunApp iot-hub\Samples\service\CleanUpDevicesSample "IoTHub\Service\CleanUpDevicesSample"
+        RunApp iot-hub\Samples\module\MessageSample "IoTHub\Module\MessageSample"
+        RunApp iot-hub\Samples\module\MethodSample "IoTHub\Module\TwinSample"
 
         RunApp iot-hub\Samples\service\AutomaticDeviceManagementSample "IoTHub\Service\AutomaticDeviceManagementSample"
         RunApp iot-hub\Samples\service\JobsSample "IoTHub\Service\JobsSample"
@@ -125,12 +121,13 @@ try {
 
         # TODO #11: Modify Provisioning\device samples to run unattended.
 
-        # TODO: Modify bulk enrollment operation to take in more device per operation
-        #RunApp provisioning\Samples\service\CleanupEnrollmentsSample "Provisioning\Service\CleanupEnrollmentsSample"
-
         RunApp provisioning\Samples\service\BulkOperationSample "Provisioning\Service\BulkOperationSample"
         # TODO #11 :RunApp provisioning\Samples\service\EnrollmentGroupSample "Provisioning\Service\EnrollmentGroupSample"
         RunApp provisioning\Samples\service\EnrollmentSample "Provisioning\Service\EnrollmentSample"
+
+        # IoT Hub devices and DPS enrollments cleanup
+        RunApp provisioning\Samples\service\CleanupEnrollmentsSample "Provisioning\Service\CleanupEnrollmentsSample"
+        RunApp iot-hub\Samples\service\CleanUpDevicesSample "IoTHub\Service\CleanUpDevicesSample"
     }
 
     $buildFailed = $false

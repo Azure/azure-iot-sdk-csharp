@@ -29,7 +29,6 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
             }
 
             Console.WriteLine("Done.\n");
-            Console.ReadLine();
             return 0;
         }
     }
