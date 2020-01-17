@@ -109,7 +109,7 @@ Function BuildProject($path, $message) {
         }
     }
 
-    & dotnet build --verbosity $verbosity --configuration $configuration --source https://api.nuget.org/v3/index.json
+    & dotnet build --verbosity $verbosity --configuration $configuration
 
     if ($LASTEXITCODE -ne 0) {
         throw "Build failed: $label"
@@ -187,7 +187,7 @@ Function RunTests($path, $message, $framework="*", $filterTestCategory="*") {
     }
 
     if ($LASTEXITCODE -ne 0) {
-        throw "Tests failed: $label"
+        $testsFailed = $true
     }
 }
 
@@ -211,6 +211,7 @@ $localPackages = Join-Path $rootDir "bin\pkg"
 $startTime = Get-Date
 $buildFailed = $true
 $errorMessage = ""
+$testsFailed = $false
 
 try {
     if ($sign)
@@ -324,6 +325,11 @@ try {
         if ($xamarintests)
         {
             # TODO #335 - create new Xamarin automated samples/tests
+        }
+
+        if ($testsFailed)
+        {
+            throw "Tests failed."
         }
     }
 
