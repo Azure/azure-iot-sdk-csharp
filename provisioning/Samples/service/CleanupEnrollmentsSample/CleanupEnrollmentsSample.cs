@@ -12,8 +12,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
     public class CleanupEnrollmentsSample
     {
         private ProvisioningServiceClient _provisioningServiceClient;
-        // Maximum number of elements per query.
-        private const int QueryPageSize = 100;
+        // Maximum number of elements per query - DPS has a limit of 10.
+        private const int QueryPageSize = 10;
         private static int _individualEnrollmentsDeleted;
         private static int _enrollmentGroupsDeleted;
         private List<string> individualEnrollmentsToBeRetained =
@@ -66,6 +66,8 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
                     {
                         await DeleteBulkIndividualEnrollments(individualEnrollments).ConfigureAwait(false);
                     }
+
+                    await Task.Delay(1000).ConfigureAwait(false);
                 }
             }
         }

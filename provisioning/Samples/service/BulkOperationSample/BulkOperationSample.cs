@@ -18,9 +18,9 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
             "yKhZS3dkcvfBisBhP1XH9B33VqHG9SHnbnQXdBUaCgKAfxome8UmBKfe+naTsE5fkvjb/do3/dD6l4sGBwFCnKR" +
             "dln4XpM03zLpoHFao8zOwt8l/uP3qUIxmCYv9A7m69Ms+5/pCkTu/rK4mRDsfhZ0QLfbzVI6zQFOKF/rwsfBtFe" +
             "WlWtcuJMKlXdD8TXWElTzgh7JS4qhFzreL0c1mI0GCj+Aws0usZh7dLIVPnlgZcBhgy1SSDQMQ==";
-
+        
         // Maximum number of elements per query.
-        private const int QueryPageSize = 2;
+        private const int QueryPageSize = 100;
 
         private static IDictionary<string, string> _registrationIds = new Dictionary<string, string>
         {
@@ -85,6 +85,7 @@ namespace Microsoft.Azure.Devices.Provisioning.Service.Samples
         {
             Console.WriteLine("\nCreating a query for enrollments...");
             QuerySpecification querySpecification = new QuerySpecification("SELECT * FROM enrollments");
+
             using (Query query = _provisioningServiceClient.CreateIndividualEnrollmentQuery(querySpecification, QueryPageSize))
             {
                 while (query.HasNext())
